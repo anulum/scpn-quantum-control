@@ -9,7 +9,7 @@
 """Generate no-QPU entanglement/tomography readiness artefacts.
 
 The generated package implements the offline gate in
-``docs/entanglement_tomography_prereg_2026-05-06.md``.  It defines the
+``docs/campaigns/entanglement_tomography_prereg_2026-05-06.md``.  It defines the
 reduced Pauli-tomography observable set, computes exact statevector
 references for the promoted DLA and FIM circuit families, estimates the
 measurement-setting count, and decides whether a later hardware block is

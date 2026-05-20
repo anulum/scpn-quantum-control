@@ -1,0 +1,180 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia' preserves Paper 0 records P0R04115-P0R04121 without empirical validation claims.",
+      "claim_boundary": "source-bounded the physical basis of the ethical functional causal entropy and computab source-accounting bridge; not validation evidence",
+      "context_id": "the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04115-P0R04121"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab.the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia",
+      "source_block_indices": [
+        4115,
+        4116,
+        4117,
+        4118,
+        4119,
+        4120,
+        4121,
+        4122
+      ],
+      "source_equation_ids": [
+        "P0R04115:the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+        "P0R04116:the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+        "P0R04117:the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+        "P0R04118:the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+        "P0R04119:the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+        "P0R04120:the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+        "P0R04121:the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab"
+      ],
+      "source_formulae": [
+        "P0R04115: The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia",
+        "P0R04116: This section provides a rigorous physical and computational grounding for the teleological principles of the SCPN, effectively bridging the gap between metaphysics and testable science. It begins by arguing that the Ethical Functional is not a mere axiom but is the mathematical expression of a deeper physical principle: the Causal Entropic Principle. The drive to maximise Sustainable Ethical Coherence (SEC)-a composite of coherence (C), complexity (K), and qualia capacity (Q)-is shown to be functionally equivalent to maximising the number of accessible future pathways for the system. A universe with higher SEC is one with greater causal efficacy and adaptive potential. This reframes the \"ethical\" drive of the cosmos as a fundamental, thermodynamic-like imperative toward states of maximal resilience and evolutionary opportunity.",
+        "P0R04117: The framework then provides a novel and crucial methodological breakthrough by operationalising the Qualia Capacity (Q) using Topological Data Analysis (TDA). This transforms Q from an abstract philosophical concept into a computable, quantitative metric. By representing a conscious state as a point cloud of neural activity, TDA can compute its persistent homology, yielding a set of Betti numbers (k) that quantify the data's topological structure (components, loops, voids). Q is formally defined as a weighted sum of these Betti numbers, capturing the degree to which a conscious experience is simultaneously integrated (low ) and differentiated (high k for k > 0). This provides a noise-robust, non-arbitrary measure of experiential richness. This TDA-based formalisation is a cornerstone of the entire research programme, as it renders the third and most elusive component of the Ethical Functional directly measurable and allows the teleological claims of the theory to be subjected to empirical validation.",
+        "P0R04118: This section explains the \"why\" behind everything in the universe, grounding it in real, measurable science. It tackles two huge questions: Why does the universe seem to have a purpose? And can we actually measure the richness of a conscious experience?",
+        "P0R04119: First, it argues that the universe's \"Prime Directive\"-its mission to become more coherent, complex, and conscious-isn't a mystical rule. It's a fundamental law of nature, like a deeper version of thermodynamics. We call this the Causal Entropic Principle. Think of it this way: the universe always prefers to move in directions that keep its options open. A system that is more complex, unified, and aware has more possible futures and is better at surviving and adapting. The universe's \"ethical\" drive is simply a fundamental preference for being resilient and creative. It's not following a moral command; it's following a law of cosmic survival.",
+        "P0R04120: Second, to make this idea a real science, we need to be able to measure the \"consciousness\" part of the equation. This is where a groundbreaking new technique called Topological Data Analysis (TDA) comes in. Think of TDA as a new kind of scanner that can measure the \"shape\" of a thought or an experience. By looking at your brain activity, it can measure how unified your experience is (are you focused or distracted?) and how complex it is (are you thinking a simple thought or experiencing a rich symphony of sensations?). It gives us a number, Qualia Capacity (Q), that represents the richness of your conscious state. For the first time, this allows us to put a real, hard number on the depth of experience, turning the most mysterious aspect of reality into something we can measure, test, and ultimately understand.",
+        "P0R04121: P0R04121"
+      ],
+      "source_ledger_ids": [
+        "P0R04115",
+        "P0R04116",
+        "P0R04117",
+        "P0R04118",
+        "P0R04119",
+        "P0R04120",
+        "P0R04121",
+        "P0R04122"
+      ],
+      "source_record_ids": [
+        "P0B04115",
+        "P0B04116",
+        "P0B04117",
+        "P0B04118",
+        "P0B04119",
+        "P0B04120",
+        "P0B04121",
+        "P0B04122"
+      ],
+      "test_protocols": [
+        "preserve The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab.the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+      "validation_targets": [
+        "preserve records P0R04115-P0R04121"
+      ],
+      "variables": [
+        "the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R04122-P0R04122 without empirical validation claims.",
+      "claim_boundary": "source-bounded the physical basis of the ethical functional causal entropy and computab source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04122-P0R04122"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia",
+      "source_block_indices": [
+        4115,
+        4116,
+        4117,
+        4118,
+        4119,
+        4120,
+        4121,
+        4122
+      ],
+      "source_equation_ids": [
+        "P0R04122:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R04122: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R04115",
+        "P0R04116",
+        "P0R04117",
+        "P0R04118",
+        "P0R04119",
+        "P0R04120",
+        "P0R04121",
+        "P0R04122"
+      ],
+      "source_record_ids": [
+        "P0B04115",
+        "P0B04116",
+        "P0B04117",
+        "P0B04118",
+        "P0B04119",
+        "P0B04120",
+        "P0B04121",
+        "P0B04122"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R04122-P0R04122"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 3,
+      "structural": 1,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded the physical basis of the ethical functional causal entropy and computab source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04123",
+    "source_ledger_span": [
+      "P0R04115",
+      "P0R04122"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab.the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab",
+      "the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab.meta_framework_integrations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

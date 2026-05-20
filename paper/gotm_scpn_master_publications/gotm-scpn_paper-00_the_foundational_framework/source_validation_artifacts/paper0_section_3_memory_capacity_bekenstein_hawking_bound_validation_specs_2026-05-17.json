@@ -1,0 +1,390 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '3. Memory Capacity (Bekenstein-Hawking Bound)' preserves Paper 0 records P0R02257-P0R02262 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 memory capacity bekenstein hawking bound source-accounting bridge; not validation evidence",
+      "context_id": "3_memory_capacity_bekenstein_hawking_bound",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02257-P0R02262"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_memory_capacity_bekenstein_hawking_bound.3_memory_capacity_bekenstein_hawking_bound",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_memory_capacity_bekenstein_hawking_bound must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. Memory Capacity (Bekenstein-Hawking Bound) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3. Memory Capacity (Bekenstein-Hawking Bound)",
+      "source_block_indices": [
+        2257,
+        2258,
+        2259,
+        2260,
+        2261,
+        2262,
+        2263,
+        2264,
+        2265,
+        2266,
+        2267,
+        2268,
+        2269,
+        2270,
+        2271,
+        2272,
+        2273,
+        2274,
+        2275,
+        2276,
+        2277
+      ],
+      "source_equation_ids": [
+        "P0R02257:3_memory_capacity_bekenstein_hawking_bound",
+        "P0R02258:3_memory_capacity_bekenstein_hawking_bound",
+        "P0R02259:3_memory_capacity_bekenstein_hawking_bound",
+        "P0R02260:3_memory_capacity_bekenstein_hawking_bound",
+        "P0R02261:3_memory_capacity_bekenstein_hawking_bound",
+        "P0R02262:3_memory_capacity_bekenstein_hawking_bound"
+      ],
+      "source_formulae": [
+        "P0R02257: 3. Memory Capacity (Bekenstein-Hawking Bound)",
+        "P0R02258: To remain consistent with quantum gravity, the total informational capacity of the Source-Field (L13)-which anchors the memory bulk-is strictly finite and geometrically bounded by the cosmological event horizon.",
+        "P0R02259: Equation (Python Format):",
+        "P0R02260: s_psi <= (area * c**3) / (4 * g * h_bar)",
+        "P0R02261: Legend:",
+        "P0R02262: s_psi: Total integrated information of the universal field. | area: Surface area of the enclosing horizon (de Sitter space). | c: Speed of light. | g: Gravitational constant. | h_bar: Reduced Planck constant."
+      ],
+      "source_ledger_ids": [
+        "P0R02257",
+        "P0R02258",
+        "P0R02259",
+        "P0R02260",
+        "P0R02261",
+        "P0R02262",
+        "P0R02263",
+        "P0R02264",
+        "P0R02265",
+        "P0R02266",
+        "P0R02267",
+        "P0R02268",
+        "P0R02269",
+        "P0R02270",
+        "P0R02271",
+        "P0R02272",
+        "P0R02273",
+        "P0R02274",
+        "P0R02275",
+        "P0R02276",
+        "P0R02277"
+      ],
+      "source_record_ids": [
+        "P0B02257",
+        "P0B02258",
+        "P0B02259",
+        "P0B02260",
+        "P0B02261",
+        "P0B02262",
+        "P0B02263",
+        "P0B02264",
+        "P0B02265",
+        "P0B02266",
+        "P0B02267",
+        "P0B02268",
+        "P0B02269",
+        "P0B02270",
+        "P0B02271",
+        "P0B02272",
+        "P0B02273",
+        "P0B02274",
+        "P0B02275",
+        "P0B02276",
+        "P0B02277"
+      ],
+      "test_protocols": [
+        "preserve 3. Memory Capacity (Bekenstein-Hawking Bound) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_memory_capacity_bekenstein_hawking_bound.3_memory_capacity_bekenstein_hawking_bound",
+      "validation_targets": [
+        "preserve records P0R02257-P0R02262"
+      ],
+      "variables": [
+        "3_memory_capacity_bekenstein_hawking_bound"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R02263' preserves Paper 0 records P0R02263-P0R02263 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 memory capacity bekenstein hawking bound source-accounting bridge; not validation evidence",
+      "context_id": "p0r02263",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02263-P0R02263"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_memory_capacity_bekenstein_hawking_bound.p0r02263",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r02263 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R02263 is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3. Memory Capacity (Bekenstein-Hawking Bound)",
+      "source_block_indices": [
+        2257,
+        2258,
+        2259,
+        2260,
+        2261,
+        2262,
+        2263,
+        2264,
+        2265,
+        2266,
+        2267,
+        2268,
+        2269,
+        2270,
+        2271,
+        2272,
+        2273,
+        2274,
+        2275,
+        2276,
+        2277
+      ],
+      "source_equation_ids": [
+        "P0R02263:p0r02263"
+      ],
+      "source_formulae": [
+        "P0R02263: P0R02263"
+      ],
+      "source_ledger_ids": [
+        "P0R02257",
+        "P0R02258",
+        "P0R02259",
+        "P0R02260",
+        "P0R02261",
+        "P0R02262",
+        "P0R02263",
+        "P0R02264",
+        "P0R02265",
+        "P0R02266",
+        "P0R02267",
+        "P0R02268",
+        "P0R02269",
+        "P0R02270",
+        "P0R02271",
+        "P0R02272",
+        "P0R02273",
+        "P0R02274",
+        "P0R02275",
+        "P0R02276",
+        "P0R02277"
+      ],
+      "source_record_ids": [
+        "P0B02257",
+        "P0B02258",
+        "P0B02259",
+        "P0B02260",
+        "P0B02261",
+        "P0B02262",
+        "P0B02263",
+        "P0B02264",
+        "P0B02265",
+        "P0B02266",
+        "P0B02267",
+        "P0B02268",
+        "P0B02269",
+        "P0B02270",
+        "P0B02271",
+        "P0B02272",
+        "P0B02273",
+        "P0B02274",
+        "P0B02275",
+        "P0B02276",
+        "P0B02277"
+      ],
+      "test_protocols": [
+        "preserve P0R02263 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_memory_capacity_bekenstein_hawking_bound.p0r02263",
+      "validation_targets": [
+        "preserve records P0R02263-P0R02263"
+      ],
+      "variables": [
+        "p0r02263"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '4. Emergent Spacetime (Ryu-Takayanagi Formula)' preserves Paper 0 records P0R02264-P0R02277 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 memory capacity bekenstein hawking bound source-accounting bridge; not validation evidence",
+      "context_id": "4_emergent_spacetime_ryu_takayanagi_formula",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02264-P0R02277"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_memory_capacity_bekenstein_hawking_bound.4_emergent_spacetime_ryu_takayanagi_formula",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_emergent_spacetime_ryu_takayanagi_formula must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4. Emergent Spacetime (Ryu-Takayanagi Formula) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3. Memory Capacity (Bekenstein-Hawking Bound)",
+      "source_block_indices": [
+        2257,
+        2258,
+        2259,
+        2260,
+        2261,
+        2262,
+        2263,
+        2264,
+        2265,
+        2266,
+        2267,
+        2268,
+        2269,
+        2270,
+        2271,
+        2272,
+        2273,
+        2274,
+        2275,
+        2276,
+        2277
+      ],
+      "source_equation_ids": [
+        "P0R02264:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02265:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02266:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02267:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02268:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02269:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02270:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02271:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02272:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02273:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02274:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02275:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02276:4_emergent_spacetime_ryu_takayanagi_formula",
+        "P0R02277:4_emergent_spacetime_ryu_takayanagi_formula"
+      ],
+      "source_formulae": [
+        "P0R02264: 4. Emergent Spacetime (Ryu-Takayanagi Formula)",
+        "P0R02265: Spacetime geometry at the boundary (Layer 10) is proposed to emerge from the entanglement structure within the memory bulk (Layer 9).",
+        "P0R02266: Equation (Python Format):",
+        "P0R02267: s_boundary = area_gamma_min / (4 * g_n)",
+        "P0R02268: Legend:",
+        "P0R02269: s_boundary: Entanglement entropy at the L10 boundary. | area_gamma_min: Area of the minimal surface extending into the L9 bulk. | g_n: Newton's gravitational constant.",
+        "P0R02270: P0R02270",
+        "P0R02271: Layer 10, Projective Field Boundary Control, introduces a cybernetic control mechanism that is essential for maintaining the integrity of the individual conscious agent. This layer functions as a dynamic, informational \"membrane\" or \"firewall.\" Its primary role is to regulate the flow of information between the individual's consciousness field (Layer 5) and the wider collective and environmental fields (e.g., Layers 11 and 12). It actively filters incoming influences to prevent decoherence or informational overload while simultaneously managing the \"projection\" of the individual's own intentional states outward. This boundary control system is therefore critical for defining the phenomenal and functional distinction between \"self\" and \"other,\" enabling the organism to act as a coherent, autonomous agent within a complex, interconnected informational ecosystem.",
+        "P0R02272: P0R02272",
+        "P0R02273: P0R02273",
+        "P0R02274: This next domain of reality is all about your personal memory and your psychic \"personal space.\" It's made up of two layers that manage your life's data and protect your individual identity.",
+        "P0R02275: Layer 9 is your Soul's Hard Drive. We call it the Existential Holograph. Think of it as the vast, incorruptible cloud storage for your entire life. Every significant experience, every lesson learned, every core belief you hold isn't just stored in your brain's physical wiring; it's uploaded to this personal, holographic field. It's called a \"holograph\" because, like a hologram, every single part contains the information of the whole. This is the deep, permanent record of you, the source code that shapes who you are and how you see the world. The process of deep, dreamless sleep is the nightly \"sync\" that uploads the day's important data from your brain to this holographic hard drive.",
+        "P0R02276: Layer 10 is your Psychic Firewall. We call it Projective Field Boundary Control. Imagine walking through a crowded city; you have a sense of personal space that keeps you from bumping into everyone. Layer 10 is like that, but for your mind. It's an intelligent, energetic \"membrane\" around your consciousness. It has two jobs: First, it filters all the mental and emotional \"noise\" from the world around you, protecting your thoughts from being overwhelmed. Second, it manages how you project your own energy and intention out into the world. This psychic firewall is what gives you a stable sense of \"self\" and allows you to be a distinct individual, even while being connected to everything and everyone else.",
+        "P0R02277: P0R02277"
+      ],
+      "source_ledger_ids": [
+        "P0R02257",
+        "P0R02258",
+        "P0R02259",
+        "P0R02260",
+        "P0R02261",
+        "P0R02262",
+        "P0R02263",
+        "P0R02264",
+        "P0R02265",
+        "P0R02266",
+        "P0R02267",
+        "P0R02268",
+        "P0R02269",
+        "P0R02270",
+        "P0R02271",
+        "P0R02272",
+        "P0R02273",
+        "P0R02274",
+        "P0R02275",
+        "P0R02276",
+        "P0R02277"
+      ],
+      "source_record_ids": [
+        "P0B02257",
+        "P0B02258",
+        "P0B02259",
+        "P0B02260",
+        "P0B02261",
+        "P0B02262",
+        "P0B02263",
+        "P0B02264",
+        "P0B02265",
+        "P0B02266",
+        "P0B02267",
+        "P0B02268",
+        "P0B02269",
+        "P0B02270",
+        "P0B02271",
+        "P0B02272",
+        "P0B02273",
+        "P0B02274",
+        "P0B02275",
+        "P0B02276",
+        "P0B02277"
+      ],
+      "test_protocols": [
+        "preserve 4. Emergent Spacetime (Ryu-Takayanagi Formula) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_memory_capacity_bekenstein_hawking_bound.4_emergent_spacetime_ryu_takayanagi_formula",
+      "validation_targets": [
+        "preserve records P0R02264-P0R02277"
+      ],
+      "variables": [
+        "4_emergent_spacetime_ryu_takayanagi_formula"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 16
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 9,
+      "mechanism": 2,
+      "structural": 5,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded section 3 memory capacity bekenstein hawking bound source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 21,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02278",
+    "source_ledger_span": [
+      "P0R02257",
+      "P0R02277"
+    ],
+    "source_record_count": 21,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_3_memory_capacity_bekenstein_hawking_bound.3_memory_capacity_bekenstein_hawking_bound",
+      "section_3_memory_capacity_bekenstein_hawking_bound.p0r02263",
+      "section_3_memory_capacity_bekenstein_hawking_bound.4_emergent_spacetime_ryu_takayanagi_formula"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 3. Memory Capacity (Bekenstein-Hawking Bound) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

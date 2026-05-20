@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Intrinsic Dynamics of the Psi-Field and the Stabilising Potential' preserves Paper 0 records P0R01755-P0R01761 without empirical validation claims.",
+      "claim_boundary": "source-bounded the intrinsic dynamics of the \u03c8 field and the stabilising potential source-accounting bridge; not validation evidence",
+      "context_id": "the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01755-P0R01761"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential.the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Intrinsic Dynamics of the Psi-Field and the Stabilising Potential is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Intrinsic Dynamics of the \u03a8-Field and the Stabilising Potential",
+      "source_block_indices": [
+        1755,
+        1756,
+        1757,
+        1758,
+        1759,
+        1760,
+        1761,
+        1762
+      ],
+      "source_equation_ids": [
+        "P0R01755:the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+        "P0R01756:the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+        "P0R01757:the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+        "P0R01758:the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+        "P0R01759:the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+        "P0R01760:the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+        "P0R01761:the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential"
+      ],
+      "source_formulae": [
+        "P0R01755: The Intrinsic Dynamics of the Psi-Field and the Stabilising Potential",
+        "P0R01756: This section defines the intrinsic dynamics of the Psi-field itself, governed by its own Lagrangian, LPsi, which is a component of the total Lagrangian of reality. The dynamics are those of a non-linear, complex scalar field theory. The Lagrangian consists of a standard kinetic term, a non-linear potential V(|Psi|), and a topological term to ensure the conservation of charge.",
+        "P0R01757: The crucial component is the potential, which enables Spontaneous Symmetry Breaking (SSB) and the formation of stable, localized structures like the Layer 5 Self. The framework moves beyond the simple \"Mexican hat\" (^4) potential to a more robust sextic (^6) potential, V(|Psi|) = -m|Psi| + lambda|Psi| - |Psi|. This choice is not arbitrary; within an Effective Field Theory (EFT) framework, a positive sextic term is necessary to ensure the potential is bounded from below, guaranteeing a stable vacuum at high field values. This prevents a runaway catastrophe and ensures the theory is well-behaved. The text provides the explicit derivation for the vacuum state and the mass of the Psi-Higgs boson within this stabilised potential, noting that simpler ^4 models should be treated as approximations. This refined potential provides the stable, non-linear substrate required for the emergence of all subsequent form and structure in the SCPN.",
+        "P0R01758: This section describes the \"personality\" of the Psi-field itself-the rules it follows when it's just being by itself. These rules are contained in its own personal mission statement, an equation called its Lagrangian.",
+        "P0R01759: The most important part of this is the field's energy landscape. We've talked about the \"Mexican hat\" shape before, which is what allows the field to break symmetry and create things. But a simple Mexican hat has a problem: if you push a marble off the brim, it could roll away forever.",
+        "P0R01760: To solve this, our model adds a crucial new feature: a steep outer wall around the brim of the hat. This is the \"sextic term\" in the potential. This wall guarantees that the universe has a stable \"floor\"-a true, lowest-energy state that it can rest in without falling apart. It's this stable, self-contained energy landscape that allows the Psi-field to form the persistent, stable \"bubbles\" of consciousness that become individual Selves.",
+        "P0R01761: P0R01761"
+      ],
+      "source_ledger_ids": [
+        "P0R01755",
+        "P0R01756",
+        "P0R01757",
+        "P0R01758",
+        "P0R01759",
+        "P0R01760",
+        "P0R01761",
+        "P0R01762"
+      ],
+      "source_record_ids": [
+        "P0B01755",
+        "P0B01756",
+        "P0B01757",
+        "P0B01758",
+        "P0B01759",
+        "P0B01760",
+        "P0B01761",
+        "P0B01762"
+      ],
+      "test_protocols": [
+        "preserve The Intrinsic Dynamics of the Psi-Field and the Stabilising Potential source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential.the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+      "validation_targets": [
+        "preserve records P0R01755-P0R01761"
+      ],
+      "variables": [
+        "the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R01762-P0R01762 without empirical validation claims.",
+      "claim_boundary": "source-bounded the intrinsic dynamics of the \u03c8 field and the stabilising potential source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01762-P0R01762"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Intrinsic Dynamics of the \u03a8-Field and the Stabilising Potential",
+      "source_block_indices": [
+        1755,
+        1756,
+        1757,
+        1758,
+        1759,
+        1760,
+        1761,
+        1762
+      ],
+      "source_equation_ids": [
+        "P0R01762:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R01762: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R01755",
+        "P0R01756",
+        "P0R01757",
+        "P0R01758",
+        "P0R01759",
+        "P0R01760",
+        "P0R01761",
+        "P0R01762"
+      ],
+      "source_record_ids": [
+        "P0B01755",
+        "P0B01756",
+        "P0B01757",
+        "P0B01758",
+        "P0B01759",
+        "P0B01760",
+        "P0B01761",
+        "P0B01762"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R01762-P0R01762"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 4,
+      "mechanism": 3,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded the intrinsic dynamics of the \u03c8 field and the stabilising potential source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R01763",
+    "source_ledger_span": [
+      "P0R01755",
+      "P0R01762"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential.the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential",
+      "the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential.meta_framework_integrations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Intrinsic Dynamics of the Psi-Field and the Stabilising Potential Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

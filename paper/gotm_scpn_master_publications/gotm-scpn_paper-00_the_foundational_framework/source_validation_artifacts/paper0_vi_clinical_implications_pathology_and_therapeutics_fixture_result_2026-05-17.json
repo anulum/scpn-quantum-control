@@ -1,0 +1,53 @@
+{
+  "claim_boundary": "source-bounded vi clinical implications pathology and therapeutics source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "1_the_dendritic_arbour_the_antenna_of_the_neuron": "1_the_dendritic_arbour_the_antenna_of_the_neuron_source_boundary",
+    "i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4": "i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4_source_boundary",
+    "the_ultra_detailed_architecture_of_the_neuron_within_the_scpn": "the_ultra_detailed_architecture_of_the_neuron_within_the_scpn_source_boundary",
+    "vi_clinical_implications_pathology_and_therapeutics": "vi_clinical_implications_pathology_and_therapeutics_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "VI. Clinical Implications: Pathology and Therapeutics",
+    "component_2": "The Ultra-Detailed Architecture of the Neuron within the SCPN",
+    "component_3": "I. Neuronal Geometry and the Physics of Information Flow (L3/L4)",
+    "component_4": "1. The Dendritic Arbour: The Antenna of the Neuron",
+    "component_count": "4",
+    "next_boundary": "P0R04703",
+    "section": "VI. Clinical Implications: Pathology and Therapeutics",
+    "source_span": "P0R04693-P0R04702"
+  },
+  "next_source_boundary": "P0R04703",
+  "null_controls": {
+    "1_the_dendritic_arbour_the_antenna_of_the_neuron_is_not_empirical_validation_evidence": 1.0,
+    "i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4_is_not_empirical_validation_evidence": 1.0,
+    "the_ultra_detailed_architecture_of_the_neuron_within_the_scpn_is_not_empirical_validation_evidence": 1.0,
+    "vi_clinical_implications_pathology_and_therapeutics_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded vi clinical implications pathology and therapeutics source-accounting bridge; not validation evidence",
+    "protocol_state": "source_vi_clinical_implications_pathology_and_therapeutics_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04693",
+      "P0R04694",
+      "P0R04695",
+      "P0R04696",
+      "P0R04697",
+      "P0R04698",
+      "P0R04699",
+      "P0R04700",
+      "P0R04701",
+      "P0R04702"
+    ],
+    "source_ledger_span": [
+      "P0R04693",
+      "P0R04702"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04693",
+    "P0R04702"
+  ],
+  "source_record_count": 10
+}

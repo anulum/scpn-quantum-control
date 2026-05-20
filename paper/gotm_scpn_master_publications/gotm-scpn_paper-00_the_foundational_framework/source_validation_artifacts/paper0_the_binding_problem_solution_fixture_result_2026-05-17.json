@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded the binding problem solution source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "mary_s_room_resolution": "mary_s_room_resolution_source_boundary",
+    "the_binding_problem_solution": "the_binding_problem_solution_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Binding Problem Solution:",
+    "component_2": "Mary's Room Resolution:",
+    "component_count": "2",
+    "next_boundary": "P0R03453",
+    "section": "The Binding Problem Solution:",
+    "source_span": "P0R03440-P0R03452"
+  },
+  "next_source_boundary": "P0R03453",
+  "null_controls": {
+    "mary_s_room_resolution_is_not_empirical_validation_evidence": 1.0,
+    "the_binding_problem_solution_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the binding problem solution source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_binding_problem_solution_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03440",
+      "P0R03441",
+      "P0R03442",
+      "P0R03443",
+      "P0R03444",
+      "P0R03445",
+      "P0R03446",
+      "P0R03447",
+      "P0R03448",
+      "P0R03449",
+      "P0R03450",
+      "P0R03451",
+      "P0R03452"
+    ],
+    "source_ledger_span": [
+      "P0R03440",
+      "P0R03452"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03440",
+    "P0R03452"
+  ],
+  "source_record_count": 13
+}

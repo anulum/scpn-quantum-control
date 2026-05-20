@@ -1,0 +1,131 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Citations:' preserves Paper 0 records P0R05560-P0R05570 without empirical validation claims.",
+      "claim_boundary": "source-bounded citations source-accounting bridge; not validation evidence",
+      "context_id": "citations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05560-P0R05570"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "citations.citations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "citations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Citations: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Citations:",
+      "source_block_indices": [
+        5560,
+        5561,
+        5562,
+        5563,
+        5564,
+        5565,
+        5566,
+        5567,
+        5568,
+        5569,
+        5570
+      ],
+      "source_equation_ids": [
+        "P0R05560:citations",
+        "P0R05561:citations",
+        "P0R05562:citations",
+        "P0R05563:citations",
+        "P0R05564:citations",
+        "P0R05565:citations",
+        "P0R05566:citations",
+        "P0R05567:citations",
+        "P0R05568:citations",
+        "P0R05569:citations",
+        "P0R05570:citations"
+      ],
+      "source_formulae": [
+        "P0R05560: Citations:",
+        "P0R05561: Domain III-IV - Memory & Collective Dynamics",
+        "P0R05562: \"non-local holographic memory parallels AdS/CFT duality\" -> (Maldacena, 1999; Susskind, 2016)",
+        "P0R05563: \"cultural attractors and noospheric spin-glass dynamics\" -> (Hofstadter, 1979; Castellano et al., 2009)",
+        "P0R05564: \"biodiversity acts as projection stabiliser in Gaian synchrony\" -> (Margulis & Lovelock, 1974; Volk, 2002)",
+        "P0R05565: Domain III-IV - Memory, Control & Collective Dynamics",
+        "P0R05566: \"retrocausal propagation formalised by the two-state vector formalism\" -> (Aharonov et al., 1964; Vaidman, 2013)",
+        "P0R05567: \"memory imprint field parallels holographic duality in string theory\" -> ('t Hooft, 1993; Maldacena, 1999)",
+        "P0R05568: \"noospheric synchronisation emerges as spin-glass phase transition\" -> (Mezard et al., 1987; Castellano et al., 2009)",
+        "P0R05569: \"collective attractors in memetic culture act as dissipative structures\" -> (Prigogine & Stengers, 1984; Dawkins, 1976)",
+        "P0R05570: P0R05570"
+      ],
+      "source_ledger_ids": [
+        "P0R05560",
+        "P0R05561",
+        "P0R05562",
+        "P0R05563",
+        "P0R05564",
+        "P0R05565",
+        "P0R05566",
+        "P0R05567",
+        "P0R05568",
+        "P0R05569",
+        "P0R05570"
+      ],
+      "source_record_ids": [
+        "P0B05560",
+        "P0B05561",
+        "P0B05562",
+        "P0B05563",
+        "P0B05564",
+        "P0B05565",
+        "P0B05566",
+        "P0B05567",
+        "P0B05568",
+        "P0B05569",
+        "P0B05570"
+      ],
+      "test_protocols": [
+        "preserve Citations: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.citations.citations",
+      "validation_targets": [
+        "preserve records P0R05560-P0R05570"
+      ],
+      "variables": [
+        "citations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 10
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "mechanism": 2,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded citations source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05571",
+    "source_ledger_span": [
+      "P0R05560",
+      "P0R05570"
+    ],
+    "source_record_count": 11,
+    "spec_count": 1,
+    "spec_keys": [
+      "citations.citations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Citations: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

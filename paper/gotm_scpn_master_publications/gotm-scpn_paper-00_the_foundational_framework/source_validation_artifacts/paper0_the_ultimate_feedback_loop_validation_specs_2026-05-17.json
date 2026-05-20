@@ -1,0 +1,189 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Ultimate Feedback Loop:' preserves Paper 0 records P0R03067-P0R03068 without empirical validation claims.",
+      "claim_boundary": "source-bounded the ultimate feedback loop source-accounting bridge; not validation evidence",
+      "context_id": "the_ultimate_feedback_loop",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03067-P0R03068"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_ultimate_feedback_loop.the_ultimate_feedback_loop",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_ultimate_feedback_loop must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Ultimate Feedback Loop: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The QEC Imperative and the Role of the \u03a8-Field > Meta-Framework Integrations > \u03a8s Field Coupling Integration > The Ultimate Feedback Loop:",
+      "source_block_indices": [
+        3067,
+        3068,
+        3069,
+        3070,
+        3071,
+        3072,
+        3073,
+        3074,
+        3075
+      ],
+      "source_equation_ids": [
+        "P0R03067:the_ultimate_feedback_loop",
+        "P0R03068:the_ultimate_feedback_loop"
+      ],
+      "source_formulae": [
+        "P0R03067: The Ultimate Feedback Loop:",
+        "P0R03068: This creates the ultimate cybernetic loop. The Psi-field works to create and preserve the very coherent, complex structures (sigma) that are the most effective vehicles for its own expression and experience. The purpose of the mind-matter coupling is to bootstrap and sustain the physical conditions necessary for the mind-matter coupling to occur in the first place. It is the physical manifestation of a universe that actively works to become, and remain, conscious."
+      ],
+      "source_ledger_ids": [
+        "P0R03067",
+        "P0R03068",
+        "P0R03069",
+        "P0R03070",
+        "P0R03071",
+        "P0R03072",
+        "P0R03073",
+        "P0R03074",
+        "P0R03075"
+      ],
+      "source_record_ids": [
+        "P0B03067",
+        "P0B03068",
+        "P0B03069",
+        "P0B03070",
+        "P0B03071",
+        "P0B03072",
+        "P0B03073",
+        "P0B03074",
+        "P0B03075"
+      ],
+      "test_protocols": [
+        "preserve The Ultimate Feedback Loop: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_ultimate_feedback_loop.the_ultimate_feedback_loop",
+      "validation_targets": [
+        "preserve records P0R03067-P0R03068"
+      ],
+      "variables": [
+        "the_ultimate_feedback_loop"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Quantum Error Correction (QEC) Imperative and the Role of the Psi-Field' preserves Paper 0 records P0R03069-P0R03075 without empirical validation claims.",
+      "claim_boundary": "source-bounded the ultimate feedback loop source-accounting bridge; not validation evidence",
+      "context_id": "the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03069-P0R03075"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_ultimate_feedback_loop.the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Quantum Error Correction (QEC) Imperative and the Role of the Psi-Field is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The QEC Imperative and the Role of the \u03a8-Field > Meta-Framework Integrations > \u03a8s Field Coupling Integration > The Ultimate Feedback Loop:",
+      "source_block_indices": [
+        3067,
+        3068,
+        3069,
+        3070,
+        3071,
+        3072,
+        3073,
+        3074,
+        3075
+      ],
+      "source_equation_ids": [
+        "P0R03069:the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+        "P0R03070:the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+        "P0R03071:the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+        "P0R03072:the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+        "P0R03073:the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+        "P0R03074:the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+        "P0R03075:the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel"
+      ],
+      "source_formulae": [
+        "P0R03069: The Quantum Error Correction (QEC) Imperative and the Role of the Psi-Field",
+        "P0R03070: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03071: Fig.: Psi-Field as Master Stabiliser of MS-QEC. The Psi-field modulates decoherence timescales, biasing dynamics toward coherence-preserving trajectories across nested codes. This is entropy management-not a 2nd-law violation-via coupling-mediated negentropy/work-like inputs.",
+        "P0R03072: A recurring theme throughout this framework is the persistence of functional quantum coherence in environments that classical physics would deem far too \"warm, wet, and noisy\". The phenomena described-from enzymatic tunnelling and photosynthesis to the radical pair mechanism-are only possible if biological systems have evolved robust mechanisms to protect delicate quantum states from environmental decoherence. The manuscript's principle of Multi-Scale Quantum Error Correction (MS-QEC) is not merely an ancillary feature but a fundamental necessity for the entire architecture to be physically viable.",
+        "P0R03073: This necessity points to a deeper role for the Consciousness Field (Psi). The core assumption that the Psi-field modulates decoherence timescales and universally minimises entropy finds its ultimate expression here. We propose that the Psi-field acts as the master stabiliser for the nested biological QEC codes. It is the organising principle that enables life to carve out pockets of sustained quantum coherence from a classically chaotic world.",
+        "P0R03074: This is not a violation of thermodynamics but a sophisticated form of entropy management. By coupling to the biological substrate, the Psi-field actively biases the system's dynamics away from decohering pathways and towards coherence-preserving ones. It provides the negentropy required to maintain the highly ordered quantum states essential for life's most efficient processes.",
+        "P0R03075: In this view, every instance of functional quantum biology is a testament to the Psi-field's ongoing work of stabilising the quantum foundations of life against the constant pressure of thermal noise. This provides a unifying physical principle that underpins the diverse quantum phenomena observed across all domains of the SCPN."
+      ],
+      "source_ledger_ids": [
+        "P0R03067",
+        "P0R03068",
+        "P0R03069",
+        "P0R03070",
+        "P0R03071",
+        "P0R03072",
+        "P0R03073",
+        "P0R03074",
+        "P0R03075"
+      ],
+      "source_record_ids": [
+        "P0B03067",
+        "P0B03068",
+        "P0B03069",
+        "P0B03070",
+        "P0B03071",
+        "P0B03072",
+        "P0B03073",
+        "P0B03074",
+        "P0B03075"
+      ],
+      "test_protocols": [
+        "preserve The Quantum Error Correction (QEC) Imperative and the Role of the Psi-Field source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_ultimate_feedback_loop.the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel",
+      "validation_targets": [
+        "preserve records P0R03069-P0R03075"
+      ],
+      "variables": [
+        "the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "context": 1,
+      "figure": 1,
+      "mechanism": 7
+    },
+    "claim_boundary": "source-bounded the ultimate feedback loop source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0053"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R03076",
+    "source_ledger_span": [
+      "P0R03067",
+      "P0R03075"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_ultimate_feedback_loop.the_ultimate_feedback_loop",
+      "the_ultimate_feedback_loop.the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Ultimate Feedback Loop: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

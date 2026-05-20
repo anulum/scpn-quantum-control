@@ -1,0 +1,256 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. Impedance Matching:' preserves Paper 0 records P0R05641-P0R05643 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 impedance matching source-accounting bridge; not validation evidence",
+      "context_id": "2_impedance_matching",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05641-P0R05643"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_impedance_matching.2_impedance_matching",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_impedance_matching must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Impedance Matching: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > 2. Impedance Matching:",
+      "source_block_indices": [
+        5641,
+        5642,
+        5643,
+        5644,
+        5645,
+        5646,
+        5647,
+        5648,
+        5649
+      ],
+      "source_equation_ids": [
+        "P0R05641:2_impedance_matching",
+        "P0R05642:2_impedance_matching",
+        "P0R05643:2_impedance_matching"
+      ],
+      "source_formulae": [
+        "P0R05641: 2. Impedance Matching:",
+        "P0R05642: Efficient information transfer requires Impedance Matching-alignment of characteristic timescales. The Quasicritical state facilitates this matching by ensuring scale-free dynamics. Mismatch leads to information loss and pathology.",
+        "P0R05643: P0R05643"
+      ],
+      "source_ledger_ids": [
+        "P0R05641",
+        "P0R05642",
+        "P0R05643",
+        "P0R05644",
+        "P0R05645",
+        "P0R05646",
+        "P0R05647",
+        "P0R05648",
+        "P0R05649"
+      ],
+      "source_record_ids": [
+        "P0B05641",
+        "P0B05642",
+        "P0B05643",
+        "P0B05644",
+        "P0B05645",
+        "P0B05646",
+        "P0B05647",
+        "P0B05648",
+        "P0B05649"
+      ],
+      "test_protocols": [
+        "preserve 2. Impedance Matching: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_impedance_matching.2_impedance_matching",
+      "validation_targets": [
+        "preserve records P0R05641-P0R05643"
+      ],
+      "variables": [
+        "2_impedance_matching"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Citations: Cross-Domain Anchors' preserves Paper 0 records P0R05644-P0R05644 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 impedance matching source-accounting bridge; not validation evidence",
+      "context_id": "citations_cross_domain_anchors",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05644-P0R05644"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_impedance_matching.citations_cross_domain_anchors",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "citations_cross_domain_anchors must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Citations: Cross-Domain Anchors is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > 2. Impedance Matching:",
+      "source_block_indices": [
+        5641,
+        5642,
+        5643,
+        5644,
+        5645,
+        5646,
+        5647,
+        5648,
+        5649
+      ],
+      "source_equation_ids": [
+        "P0R05644:citations_cross_domain_anchors"
+      ],
+      "source_formulae": [
+        "P0R05644: Citations: Cross-Domain Anchors"
+      ],
+      "source_ledger_ids": [
+        "P0R05641",
+        "P0R05642",
+        "P0R05643",
+        "P0R05644",
+        "P0R05645",
+        "P0R05646",
+        "P0R05647",
+        "P0R05648",
+        "P0R05649"
+      ],
+      "source_record_ids": [
+        "P0B05641",
+        "P0B05642",
+        "P0B05643",
+        "P0B05644",
+        "P0B05645",
+        "P0B05646",
+        "P0B05647",
+        "P0B05648",
+        "P0B05649"
+      ],
+      "test_protocols": [
+        "preserve Citations: Cross-Domain Anchors source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_impedance_matching.citations_cross_domain_anchors",
+      "validation_targets": [
+        "preserve records P0R05644-P0R05644"
+      ],
+      "variables": [
+        "citations_cross_domain_anchors"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Cross-Domain Anchors (Core Dynamics)' preserves Paper 0 records P0R05645-P0R05649 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 impedance matching source-accounting bridge; not validation evidence",
+      "context_id": "cross_domain_anchors_core_dynamics",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05645-P0R05649"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_impedance_matching.cross_domain_anchors_core_dynamics",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "cross_domain_anchors_core_dynamics must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Cross-Domain Anchors (Core Dynamics) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > 2. Impedance Matching:",
+      "source_block_indices": [
+        5641,
+        5642,
+        5643,
+        5644,
+        5645,
+        5646,
+        5647,
+        5648,
+        5649
+      ],
+      "source_equation_ids": [
+        "P0R05645:cross_domain_anchors_core_dynamics",
+        "P0R05646:cross_domain_anchors_core_dynamics",
+        "P0R05647:cross_domain_anchors_core_dynamics",
+        "P0R05648:cross_domain_anchors_core_dynamics",
+        "P0R05649:cross_domain_anchors_core_dynamics"
+      ],
+      "source_formulae": [
+        "P0R05645: Cross-Domain Anchors (Core Dynamics)",
+        "P0R05646: \"all layers governed by the Unified Phase Dynamics Equation (UPDE)\" -> (Kuramoto, 1975; Acebrn et al., 2005)",
+        "P0R05647: \"quasicriticality defines optimal information throughput across scales\" -> (Bak et al., 1987; Mora & Bialek, 2011)",
+        "P0R05648: \"consciousness as ontological primitive (Psi-field) modelled as scalar field with self-interaction\" -> (Chalmers, 1996; Strawson, 2006; Kauffman, 2016)",
+        "P0R05649: \"field interactions governed by information geometry\" -> (Amari, 2016; Ay et al., 2015)"
+      ],
+      "source_ledger_ids": [
+        "P0R05641",
+        "P0R05642",
+        "P0R05643",
+        "P0R05644",
+        "P0R05645",
+        "P0R05646",
+        "P0R05647",
+        "P0R05648",
+        "P0R05649"
+      ],
+      "source_record_ids": [
+        "P0B05641",
+        "P0B05642",
+        "P0B05643",
+        "P0B05644",
+        "P0B05645",
+        "P0B05646",
+        "P0B05647",
+        "P0B05648",
+        "P0B05649"
+      ],
+      "test_protocols": [
+        "preserve Cross-Domain Anchors (Core Dynamics) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_impedance_matching.cross_domain_anchors_core_dynamics",
+      "validation_targets": [
+        "preserve records P0R05645-P0R05649"
+      ],
+      "variables": [
+        "cross_domain_anchors_core_dynamics"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "mechanism": 1,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 2 impedance matching source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05650",
+    "source_ledger_span": [
+      "P0R05641",
+      "P0R05649"
+    ],
+    "source_record_count": 9,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_2_impedance_matching.2_impedance_matching",
+      "section_2_impedance_matching.citations_cross_domain_anchors",
+      "section_2_impedance_matching.cross_domain_anchors_core_dynamics"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. Impedance Matching: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

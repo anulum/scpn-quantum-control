@@ -1,0 +1,171 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'BIBO Stability and Lyapunov Certificate:' preserves Paper 0 records P0R02991-P0R03009 without empirical validation claims.",
+      "claim_boundary": "source-bounded bibo stability and lyapunov certificate source-accounting bridge; not validation evidence",
+      "context_id": "bibo_stability_and_lyapunov_certificate",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02991-P0R03009"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "bibo_stability_and_lyapunov_certificate.bibo_stability_and_lyapunov_certificate",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "bibo_stability_and_lyapunov_certificate must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "BIBO Stability and Lyapunov Certificate: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > Quasicriticality with MS-QEC: Two-Timescale Control and Stability Certificates (revision 11.07) > BIBO Stability and Lyapunov Certificate:",
+      "source_block_indices": [
+        2991,
+        2992,
+        2993,
+        2994,
+        2995,
+        2996,
+        2997,
+        2998,
+        2999,
+        3000,
+        3001,
+        3002,
+        3003,
+        3004,
+        3005,
+        3006,
+        3007,
+        3008,
+        3009
+      ],
+      "source_equation_ids": [
+        "P0R02991:bibo_stability_and_lyapunov_certificate",
+        "P0R02992:bibo_stability_and_lyapunov_certificate",
+        "P0R02993:bibo_stability_and_lyapunov_certificate",
+        "P0R02994:bibo_stability_and_lyapunov_certificate",
+        "P0R02995:bibo_stability_and_lyapunov_certificate",
+        "P0R02996:bibo_stability_and_lyapunov_certificate",
+        "P0R02997:bibo_stability_and_lyapunov_certificate",
+        "P0R02998:bibo_stability_and_lyapunov_certificate",
+        "P0R02999:bibo_stability_and_lyapunov_certificate",
+        "P0R03000:bibo_stability_and_lyapunov_certificate",
+        "P0R03001:bibo_stability_and_lyapunov_certificate",
+        "P0R03002:bibo_stability_and_lyapunov_certificate",
+        "P0R03003:bibo_stability_and_lyapunov_certificate",
+        "P0R03004:bibo_stability_and_lyapunov_certificate",
+        "P0R03005:bibo_stability_and_lyapunov_certificate",
+        "P0R03006:bibo_stability_and_lyapunov_certificate",
+        "P0R03007:bibo_stability_and_lyapunov_certificate",
+        "P0R03008:bibo_stability_and_lyapunov_certificate",
+        "P0R03009:bibo_stability_and_lyapunov_certificate"
+      ],
+      "source_formulae": [
+        "P0R02991: BIBO Stability and Lyapunov Certificate:",
+        "P0R02992: The stability of this closed-loop system is guaranteed under the assumptions of timescale separation and bounded disturbances (BIBO stability). This is formally certified by constructing a composite Lyapunov function:",
+        "P0R02993: Vtotal=Vfast+Vslow+Vcross",
+        "P0R02994: Vfast is the MS-QEC/coherence Lyapunov function. Vslow measures deviation from the target criticality and coherence, e.g., Vslow=(sigma1)2+(RR)2.",
+        "P0R02995: For sufficiently separated timescales and appropriately scheduled gains, it can be shown that the time derivative satisfies:",
+        "P0R02996: VtotalfVfastsVslow+kinput2",
+        "P0R02997: where f,s>0. This guarantees that the system remains bounded and returns to the quasicritical basin after perturbation, providing a rigorous certificate for the stability of the SCPN's dynamic regime.",
+        "P0R02998: The \"Edge of Chaos\": Quasicriticality as the Optimal State for Computation",
+        "P0R02999: Source Material: The unification of all passages that argue for the functional advantages of operating in a state balanced between order and chaos, highlighting its maximization of information storage, transmission, and modification.",
+        "P0R03000: Source Pages: 220-223",
+        "P0R03001: P0R03001",
+        "P0R03002: Self-Organised Criticality (SOC) as the Tuning Mechanism",
+        "P0R03003: Source Material: The description of the feedback mechanisms inherent in the UPDE that allow the network to automatically tune its own parameters to maintain this quasicritical state without external control.",
+        "P0R03004: P0R03004",
+        "P0R03005: Signatures of Criticality: Power Laws and Long-Range Correlations",
+        "P0R03006: Source Material: The discussion of the specific, observable signatures (e.g., 1/f noise, avalanche dynamics, fractal structures) that are predicted to exist across all layers of the SCPN as evidence of its critical state.",
+        "P0R03007: P0R03007",
+        "P0R03008: P0R03008",
+        "P0R03009: P0R03009"
+      ],
+      "source_ledger_ids": [
+        "P0R02991",
+        "P0R02992",
+        "P0R02993",
+        "P0R02994",
+        "P0R02995",
+        "P0R02996",
+        "P0R02997",
+        "P0R02998",
+        "P0R02999",
+        "P0R03000",
+        "P0R03001",
+        "P0R03002",
+        "P0R03003",
+        "P0R03004",
+        "P0R03005",
+        "P0R03006",
+        "P0R03007",
+        "P0R03008",
+        "P0R03009"
+      ],
+      "source_record_ids": [
+        "P0B02991",
+        "P0B02992",
+        "P0B02993",
+        "P0B02994",
+        "P0B02995",
+        "P0B02996",
+        "P0B02997",
+        "P0B02998",
+        "P0B02999",
+        "P0B03000",
+        "P0B03001",
+        "P0B03002",
+        "P0B03003",
+        "P0B03004",
+        "P0B03005",
+        "P0B03006",
+        "P0B03007",
+        "P0B03008",
+        "P0B03009"
+      ],
+      "test_protocols": [
+        "preserve BIBO Stability and Lyapunov Certificate: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.bibo_stability_and_lyapunov_certificate.bibo_stability_and_lyapunov_certificate",
+      "validation_targets": [
+        "preserve records P0R02991-P0R03009"
+      ],
+      "variables": [
+        "bibo_stability_and_lyapunov_certificate"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 18
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 8,
+      "mechanism": 3,
+      "structural": 5,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded bibo stability and lyapunov certificate source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 19,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03010",
+    "source_ledger_span": [
+      "P0R02991",
+      "P0R03009"
+    ],
+    "source_record_count": 19,
+    "spec_count": 1,
+    "spec_keys": [
+      "bibo_stability_and_lyapunov_certificate.bibo_stability_and_lyapunov_certificate"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 BIBO Stability and Lyapunov Certificate: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

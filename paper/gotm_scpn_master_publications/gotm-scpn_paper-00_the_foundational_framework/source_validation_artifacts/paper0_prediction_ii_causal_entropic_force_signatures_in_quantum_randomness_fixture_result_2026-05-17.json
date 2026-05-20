@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded prediction ii causal entropic force signatures in quantum randomness source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "predicted_signature": "predicted_signature_source_boundary",
+    "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness": "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_source_boundary",
+    "theoretical_derivation": "theoretical_derivation_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Prediction II: Causal Entropic Force Signatures in Quantum Randomness",
+    "component_2": "Theoretical Derivation",
+    "component_3": "Predicted Signature",
+    "component_count": "3",
+    "next_boundary": "P0R05217",
+    "section": "Prediction II: Causal Entropic Force Signatures in Quantum Randomness",
+    "source_span": "P0R05202-P0R05216"
+  },
+  "next_source_boundary": "P0R05217",
+  "null_controls": {
+    "predicted_signature_is_not_empirical_validation_evidence": 1.0,
+    "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_is_not_empirical_validation_evidence": 1.0,
+    "theoretical_derivation_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded prediction ii causal entropic force signatures in quantum randomness source-accounting bridge; not validation evidence",
+    "protocol_state": "source_prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05202",
+      "P0R05203",
+      "P0R05204",
+      "P0R05205",
+      "P0R05206",
+      "P0R05207",
+      "P0R05208",
+      "P0R05209",
+      "P0R05210",
+      "P0R05211",
+      "P0R05212",
+      "P0R05213",
+      "P0R05214",
+      "P0R05215",
+      "P0R05216"
+    ],
+    "source_ledger_span": [
+      "P0R05202",
+      "P0R05216"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05202",
+    "P0R05216"
+  ],
+  "source_record_count": 15
+}

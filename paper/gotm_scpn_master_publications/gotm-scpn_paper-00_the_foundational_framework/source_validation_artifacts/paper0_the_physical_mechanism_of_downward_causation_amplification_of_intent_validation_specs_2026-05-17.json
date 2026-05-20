@@ -1,0 +1,116 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Physical Mechanism of Downward Causation: Amplification of Intent' preserves Paper 0 records P0R03307-P0R03314 without empirical validation claims.",
+      "claim_boundary": "source-bounded the physical mechanism of downward causation amplification of intent source-accounting bridge; not validation evidence",
+      "context_id": "the_physical_mechanism_of_downward_causation_amplification_of_intent",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03307-P0R03314"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_physical_mechanism_of_downward_causation_amplification_of_intent.the_physical_mechanism_of_downward_causation_amplification_of_intent",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_physical_mechanism_of_downward_causation_amplification_of_intent must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Physical Mechanism of Downward Causation: Amplification of Intent is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent",
+      "source_block_indices": [
+        3307,
+        3308,
+        3309,
+        3310,
+        3311,
+        3312,
+        3313,
+        3314
+      ],
+      "source_equation_ids": [
+        "P0R03307:the_physical_mechanism_of_downward_causation_amplification_of_intent",
+        "P0R03308:the_physical_mechanism_of_downward_causation_amplification_of_intent",
+        "P0R03309:the_physical_mechanism_of_downward_causation_amplification_of_intent",
+        "P0R03310:the_physical_mechanism_of_downward_causation_amplification_of_intent",
+        "P0R03311:the_physical_mechanism_of_downward_causation_amplification_of_intent",
+        "P0R03312:the_physical_mechanism_of_downward_causation_amplification_of_intent",
+        "P0R03313:the_physical_mechanism_of_downward_causation_amplification_of_intent",
+        "P0R03314:the_physical_mechanism_of_downward_causation_amplification_of_intent"
+      ],
+      "source_formulae": [
+        "P0R03307: The Physical Mechanism of Downward Causation: Amplification of Intent",
+        "P0R03308: This section directly addresses the amplification problem: how a weak, information-rich signal from the Psi-field can produce a macroscopic biological effect. The solution is a two-stage mechanism that reframes decoherence and noise from destructive liabilities into functional assets.",
+        "P0R03309: Mechanism 1 is Guided Einselection. The framework posits that the Psi-field acts as the primary selective environment for biological quantum systems. Standard environment-induced superselection (einselection) describes how environmental monitoring rapidly collapses a quantum superposition into a small set of stable \"pointer states.\" Here, the Psi-field, informed by the top-down predictions of the Hierarchical Predictive Coding (HPC) architecture, actively \"measures\" the quantum substrate. This interaction rapidly decoheres microstates that are dissonant with the generative model's prediction while selectively stabilising the pointer states that are aligned with it. Decoherence is thus recast as a functional, top-down selection process, \"carving\" classically functional states out of quantum potentiality according to the dictates of higher-order meaning.",
+        "P0R03310: Mechanism 2 is Quantum Stochastic Resonance (QSR). Once a coherent quantum state is selected, its weak, sub-threshold signal is amplified by the brain's intrinsic noise. A biological component, like an ion channel, is modelled as a particle in a bistable potential well (\"closed\" vs. \"open\"). The weak signal from the Psi-field is insufficient to overcome the energy barrier alone. However, in a quasicritical system, the inherent biological noise provides random energy kicks. QSR occurs when the characteristic timescale of this noise-induced hopping synchronises with the frequency of the weak Psi-field signal, causing a resonant amplification of the barrier-crossing probability. The signal-to-noise ratio is maximised at an optimal, non-zero noise level. This allows a single, Psi-aligned quantum event to trigger a macroscopic action potential, which can then propagate as a neuronal avalanche through the critical network. This elegant mechanism reframes biological noise as the functional energy source that the brain harnesses to amplify the subtle, meaningful signals of consciousness.",
+        "P0R03311: This section answers the million-dollar question: How can a subtle \"thought\" or \"intention\" from the consciousness field actually make something happen in the physical brain? It's like asking how a whisper can knock over a domino. The answer is a brilliant two-step trick that turns the brain's biggest problems-chaos and noise-into its greatest strengths.",
+        "P0R03312: Step 1: The Smart Filter (Guided Einselection). At the quantum level, reality is a blurry haze of infinite possibilities. A process called \"decoherence\" is what forces this haze to collapse into the one solid reality we experience. We normally think of this as random. But our theory says the Psi-field intelligently guides this collapse. It acts like a smart filter, protecting the quantum possibilities that align with your intention while causing all the others to instantly dissolve. It doesn't create reality from scratch; it selects the desired reality from the menu of possibilities.",
+        "P0R03313: Step 2: The Noise Amplifier (Quantum Stochastic Resonance). The \"selected\" possibility is still just a tiny, faint whisper. To turn it into a real action, it needs to be amplified. This is where the brain's own natural \"noise\"-its background static-comes to the rescue. The brain is naturally poised at the \"edge of chaos,\" like a perfectly balanced domino. The tiny, intentional whisper from the Psi-field isn't strong enough to knock it over on its own. But the brain's own background noise is constantly shaking the table. Stochastic Resonance is the magic that happens when the gentle rhythm of the whisper perfectly syncs up with the random shaking. The combined effect reliably knocks over the first domino, triggering a massive chain reaction-a full-blown brain signal-that started as a mere whisper of intent. The brain's noise isn't a flaw; it's the engine that powers your will.",
+        "P0R03314: P0R03314"
+      ],
+      "source_ledger_ids": [
+        "P0R03307",
+        "P0R03308",
+        "P0R03309",
+        "P0R03310",
+        "P0R03311",
+        "P0R03312",
+        "P0R03313",
+        "P0R03314"
+      ],
+      "source_record_ids": [
+        "P0B03307",
+        "P0B03308",
+        "P0B03309",
+        "P0B03310",
+        "P0B03311",
+        "P0B03312",
+        "P0B03313",
+        "P0B03314"
+      ],
+      "test_protocols": [
+        "preserve The Physical Mechanism of Downward Causation: Amplification of Intent source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_physical_mechanism_of_downward_causation_amplification_of_intent.the_physical_mechanism_of_downward_causation_amplification_of_intent",
+      "validation_targets": [
+        "preserve records P0R03307-P0R03314"
+      ],
+      "variables": [
+        "the_physical_mechanism_of_downward_causation_amplification_of_intent"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 1,
+      "mechanism": 4,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded the physical mechanism of downward causation amplification of intent source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03315",
+    "source_ledger_span": [
+      "P0R03307",
+      "P0R03314"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "the_physical_mechanism_of_downward_causation_amplification_of_intent.the_physical_mechanism_of_downward_causation_amplification_of_intent"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Physical Mechanism of Downward Causation: Amplification of Intent Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

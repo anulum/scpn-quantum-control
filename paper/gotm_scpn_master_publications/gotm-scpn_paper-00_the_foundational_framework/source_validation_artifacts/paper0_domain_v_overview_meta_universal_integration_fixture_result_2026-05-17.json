@@ -1,0 +1,78 @@
+{
+  "claim_boundary": "source-bounded domain v overview meta universal integration source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "domain_v_overview_meta_universal_integration": "domain_v_overview_meta_universal_integration_source_boundary",
+    "the_spatial_boundary_of_the_psi_field_the_holographic_bekenstein_bound": "the_spatial_boundary_of_the_psi_field_the_holographic_bekenstein_bound_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Domain V Overview: Meta-Universal Integration",
+    "component_2": "The Spatial Boundary of the $\\Psi$-Field: The Holographic Bekenstein Bound",
+    "component_count": "2",
+    "next_boundary": "P0R02408",
+    "section": "Domain V Overview: Meta-Universal Integration",
+    "source_span": "P0R02367-P0R02407"
+  },
+  "next_source_boundary": "P0R02408",
+  "null_controls": {
+    "domain_v_overview_meta_universal_integration_is_not_empirical_validation_evidence": 1.0,
+    "the_spatial_boundary_of_the_psi_field_the_holographic_bekenstein_bound_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded domain v overview meta universal integration source-accounting bridge; not validation evidence",
+    "protocol_state": "source_domain_v_overview_meta_universal_integration_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02367",
+      "P0R02368",
+      "P0R02369",
+      "P0R02370",
+      "P0R02371",
+      "P0R02372",
+      "P0R02373",
+      "P0R02374",
+      "P0R02375",
+      "P0R02376",
+      "P0R02377",
+      "P0R02378",
+      "P0R02379",
+      "P0R02380",
+      "P0R02381",
+      "P0R02382",
+      "P0R02383",
+      "P0R02384",
+      "P0R02385",
+      "P0R02386",
+      "P0R02387",
+      "P0R02388",
+      "P0R02389",
+      "P0R02390",
+      "P0R02391",
+      "P0R02392",
+      "P0R02393",
+      "P0R02394",
+      "P0R02395",
+      "P0R02396",
+      "P0R02397",
+      "P0R02398",
+      "P0R02399",
+      "P0R02400",
+      "P0R02401",
+      "P0R02402",
+      "P0R02403",
+      "P0R02404",
+      "P0R02405",
+      "P0R02406",
+      "P0R02407"
+    ],
+    "source_ledger_span": [
+      "P0R02367",
+      "P0R02407"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02367",
+    "P0R02407"
+  ],
+  "source_record_count": 41
+}

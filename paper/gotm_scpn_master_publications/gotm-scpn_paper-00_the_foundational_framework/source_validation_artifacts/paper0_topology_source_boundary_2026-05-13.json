@@ -1,0 +1,775 @@
+{
+  "adaptive_parameters": {
+    "quasicritical_controller": {
+      "guarded_controls": [
+        "bounded_update",
+        "zero_gain_null",
+        "wrong_sign_feedback"
+      ],
+      "source_equation_ids": [
+        "EQ0045"
+      ],
+      "source_ledger_ids": [
+        "P0R02910"
+      ],
+      "variables": [
+        "K_ij_L",
+        "gamma_L",
+        "R_L",
+        "R_L_star",
+        "lambda_L",
+        "xi_ij_L",
+        "eta_L",
+        "alpha_L",
+        "sigma_L"
+      ]
+    }
+  },
+  "field_ports": {
+    "global_psi_field": {
+      "couples_to_layers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "description": "UPDE global field-coupling port C_Field.",
+      "source_equation_ids": [
+        "EQ0034",
+        "EQ0041",
+        "EQ0043"
+      ],
+      "source_ledger_ids": [
+        "P0R02512",
+        "P0R02634",
+        "P0R02644"
+      ],
+      "variables": [
+        "zeta_L",
+        "Psi_Global",
+        "Theta_Psi",
+        "theta_i_L"
+      ]
+    }
+  },
+  "hardware_status": "source_boundary_only_no_provider_submission",
+  "inter_layer_edges": [
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 15,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 14
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 14,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 13
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 13,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 12
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 12,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 11
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 11,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 10
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 10,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 9
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 9,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 8
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 8,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 7
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 7,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 6
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 6,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 5
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 5,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 4
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 4,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 3
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 3,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 2
+    },
+    {
+      "channel": "downward_generation",
+      "description": "top-down generative projection in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 2,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 1
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 1,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 2
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 2,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 3
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 3,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 4
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 4,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 5
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 5,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 6
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 6,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 7
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 7,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 8
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 8,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 9
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 9,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 10
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 10,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 11
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 11,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 12
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 12,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 13
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 13,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 14
+    },
+    {
+      "channel": "upward_inference",
+      "description": "bottom-up inference or prediction-error flow in the Paper 0 hierarchy",
+      "source_equation_ids": [
+        "EQ0033",
+        "EQ0040"
+      ],
+      "source_layer": 14,
+      "source_ledger_ids": [
+        "P0R02510",
+        "P0R02630",
+        "P0R02559",
+        "P0R00574",
+        "P0R00575"
+      ],
+      "target_layer": 15
+    },
+    {
+      "channel": "recursive_closure",
+      "description": "bottom-up feedback enters the layer-16 recursive supervisor",
+      "source_equation_ids": [],
+      "source_layer": 1,
+      "source_ledger_ids": [
+        "P0R00574",
+        "P0R00575",
+        "P0R02559"
+      ],
+      "target_layer": 16
+    },
+    {
+      "channel": "recursive_closure",
+      "description": "layer-16 supervisory recursion returns control to layer 15",
+      "source_equation_ids": [],
+      "source_layer": 16,
+      "source_ledger_ids": [
+        "P0R00574",
+        "P0R00575",
+        "P0R02559"
+      ],
+      "target_layer": 15
+    }
+  ],
+  "layer_count": 16,
+  "layers": [
+    {
+      "is_meta_layer": false,
+      "layer_id": 1,
+      "name": "Quantum Biological",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00031"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 2,
+      "name": "Neurochemical-Neurological",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00032"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 3,
+      "name": "Genomic-Epigenomic-Morphogenetic",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00033"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 4,
+      "name": "Cellular-Tissue Synchronisation",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00034"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 5,
+      "name": "Organismal-Psychoemotional Feedback",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00036"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 6,
+      "name": "Planetary-Biospheric",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00037"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 7,
+      "name": "Geometrical-Symbolic",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00038"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 8,
+      "name": "Cosmic Phase-Locking",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00039"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 9,
+      "name": "Memory Imprint-Existential Holograph",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00041"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 10,
+      "name": "Projective Field Boundary Control",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00042"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 11,
+      "name": "Noospheric-Cultural-Informational",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00043"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 12,
+      "name": "Ecological-Gaian Synchrony",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00044"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 13,
+      "name": "Source-Field / Meta-Universal",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00046"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 14,
+      "name": "Transdimensional Resonance",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00047"
+      ]
+    },
+    {
+      "is_meta_layer": false,
+      "layer_id": 15,
+      "name": "Consilium / Oversoul Integrator",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00048"
+      ]
+    },
+    {
+      "is_meta_layer": true,
+      "layer_id": 16,
+      "name": "Cybernetic Closure",
+      "oscillator_population": "finite Paper 0 layer population; cardinality unresolved",
+      "source_ledger_ids": [
+        "P0R00049",
+        "P0R00050",
+        "P0R00574"
+      ]
+    }
+  ],
+  "meta_layer": 16,
+  "numeric_coupling_matrix": null,
+  "policy": "This source boundary does not export a numeric K_nm matrix. Synthetic chain, ring, and complete graphs remain controls only.",
+  "provenance_status": "paper0_source_anchored_no_numeric_matrix",
+  "provider_ready": false,
+  "schema_key": "paper0.topology.source_boundary.v1",
+  "source_equation_ids": [
+    "EQ0003",
+    "EQ0032",
+    "EQ0033",
+    "EQ0034",
+    "EQ0037",
+    "EQ0039",
+    "EQ0040",
+    "EQ0041",
+    "EQ0043",
+    "EQ0045",
+    "EQ0129"
+  ],
+  "source_ledger_ids": [
+    "P0R00031",
+    "P0R00032",
+    "P0R00033",
+    "P0R00034",
+    "P0R00036",
+    "P0R00037",
+    "P0R00038",
+    "P0R00039",
+    "P0R00041",
+    "P0R00042",
+    "P0R00043",
+    "P0R00044",
+    "P0R00046",
+    "P0R00047",
+    "P0R00048",
+    "P0R00049",
+    "P0R00050",
+    "P0R00520",
+    "P0R00574",
+    "P0R00575",
+    "P0R02507",
+    "P0R02510",
+    "P0R02512",
+    "P0R02530",
+    "P0R02559",
+    "P0R02622",
+    "P0R02630",
+    "P0R02634",
+    "P0R02644",
+    "P0R02910",
+    "P0R06120"
+  ],
+  "synthetic_controls": [
+    "control.chain",
+    "control.ring",
+    "control.complete"
+  ]
+}

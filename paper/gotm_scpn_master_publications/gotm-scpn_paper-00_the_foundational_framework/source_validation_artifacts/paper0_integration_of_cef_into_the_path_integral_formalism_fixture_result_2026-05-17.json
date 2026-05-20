@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded integration of cef into the path integral formalism source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "how_consciousness_shapes_reality_focusing_the_quantum_world": "how_consciousness_shapes_reality_focusing_the_quantum_world_source_boundary",
+    "integration_of_cef_into_the_path_integral_formalism": "integration_of_cef_into_the_path_integral_formalism_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Integration of CEF into the Path Integral Formalism:",
+    "component_2": "How Consciousness Shapes Reality: Focusing the Quantum World",
+    "component_count": "2",
+    "next_boundary": "P0R03715",
+    "section": "Integration of CEF into the Path Integral Formalism:",
+    "source_span": "P0R03704-P0R03714"
+  },
+  "next_source_boundary": "P0R03715",
+  "null_controls": {
+    "how_consciousness_shapes_reality_focusing_the_quantum_world_is_not_empirical_validation_evidence": 1.0,
+    "integration_of_cef_into_the_path_integral_formalism_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded integration of cef into the path integral formalism source-accounting bridge; not validation evidence",
+    "protocol_state": "source_integration_of_cef_into_the_path_integral_formalism_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03704",
+      "P0R03705",
+      "P0R03706",
+      "P0R03707",
+      "P0R03708",
+      "P0R03709",
+      "P0R03710",
+      "P0R03711",
+      "P0R03712",
+      "P0R03713",
+      "P0R03714"
+    ],
+    "source_ledger_span": [
+      "P0R03704",
+      "P0R03714"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03704",
+    "P0R03714"
+  ],
+  "source_record_count": 11
+}

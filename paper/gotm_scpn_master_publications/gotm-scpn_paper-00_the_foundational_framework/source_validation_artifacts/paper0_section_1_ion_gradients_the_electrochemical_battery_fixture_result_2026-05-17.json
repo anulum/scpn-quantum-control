@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded section 1 ion gradients the electrochemical battery source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_ion_gradients_the_electrochemical_battery": "1_ion_gradients_the_electrochemical_battery_source_boundary",
+    "2_the_aqueous_substrate_qed_water_and_coherence_domains_l1": "2_the_aqueous_substrate_qed_water_and_coherence_domains_l1_source_boundary",
+    "iii_the_neuronal_membrane_the_critical_interface_l2_l3": "iii_the_neuronal_membrane_the_critical_interface_l2_l3_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "1. Ion Gradients: The Electrochemical Battery",
+    "component_2": "2. The Aqueous Substrate: QED Water and Coherence Domains (L1)",
+    "component_3": "III. The Neuronal Membrane: The Critical Interface (L2/L3)",
+    "component_count": "3",
+    "next_boundary": "P0R04720",
+    "section": "1. Ion Gradients: The Electrochemical Battery",
+    "source_span": "P0R04711-P0R04719"
+  },
+  "next_source_boundary": "P0R04720",
+  "null_controls": {
+    "1_ion_gradients_the_electrochemical_battery_is_not_empirical_validation_evidence": 1.0,
+    "2_the_aqueous_substrate_qed_water_and_coherence_domains_l1_is_not_empirical_validation_evidence": 1.0,
+    "iii_the_neuronal_membrane_the_critical_interface_l2_l3_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 1 ion gradients the electrochemical battery source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_1_ion_gradients_the_electrochemical_battery_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04711",
+      "P0R04712",
+      "P0R04713",
+      "P0R04714",
+      "P0R04715",
+      "P0R04716",
+      "P0R04717",
+      "P0R04718",
+      "P0R04719"
+    ],
+    "source_ledger_span": [
+      "P0R04711",
+      "P0R04719"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04711",
+    "P0R04719"
+  ],
+  "source_record_count": 9
+}

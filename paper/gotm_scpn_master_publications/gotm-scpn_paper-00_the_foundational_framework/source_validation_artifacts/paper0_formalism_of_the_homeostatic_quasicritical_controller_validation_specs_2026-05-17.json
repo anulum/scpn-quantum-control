@@ -1,0 +1,201 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Formalism of the Homeostatic Quasicritical Controller' preserves Paper 0 records P0R02869-P0R02893 without empirical validation claims.",
+      "claim_boundary": "source-bounded formalism of the homeostatic quasicritical controller source-accounting bridge; not validation evidence",
+      "context_id": "formalism_of_the_homeostatic_quasicritical_controller",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02869-P0R02893"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "formalism_of_the_homeostatic_quasicritical_controller.formalism_of_the_homeostatic_quasicritical_controller",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "formalism_of_the_homeostatic_quasicritical_controller must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Formalism of the Homeostatic Quasicritical Controller is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Formalism of the Homeostatic Quasicritical Controller",
+      "source_block_indices": [
+        2869,
+        2870,
+        2871,
+        2872,
+        2873,
+        2874,
+        2875,
+        2876,
+        2877,
+        2878,
+        2879,
+        2880,
+        2881,
+        2882,
+        2883,
+        2884,
+        2885,
+        2886,
+        2887,
+        2888,
+        2889,
+        2890,
+        2891,
+        2892,
+        2893
+      ],
+      "source_equation_ids": [
+        "P0R02869:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02870:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02871:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02872:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02873:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02874:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02875:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02876:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02877:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02878:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02879:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02880:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02881:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02882:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02883:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02884:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02885:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02886:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02887:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02888:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02889:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02890:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02891:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02892:formalism_of_the_homeostatic_quasicritical_controller",
+        "P0R02893:formalism_of_the_homeostatic_quasicritical_controller"
+      ],
+      "source_formulae": [
+        "P0R02869: Formalism of the Homeostatic Quasicritical Controller",
+        "P0R02870: This section provides the formal mathematical implementation of the Self-Organised Criticality (SOC) mechanism. It defines a minimal, robust Homeostatic Quasicritical Controller designed to stabilise the network dynamics of each layer (L) around the critical point (sigmaL -> 1) while maintaining a target level of coherence (RL*). The controller's state is defined by the effective branching parameter (sigmaL) and the coherence order parameter (RL). The control laws are a set of coupled differential equations that dynamically adjust the intra-layer coupling strengths (KijL) and the effective noise (L) based on feedback from the system's current state.",
+        "P0R02871: The stability of this control system is proven through the definition of a Lyapunov function,",
+        "P0R02872: VL = (sigmaL1) + L(RLRL*).",
+        "P0R02873: This function mathematically represents the \"error\" or distance of the system from its desired state (critical branching and target coherence). The provided control laws are designed to ensure that the time derivative of this function (VL) is always negative, guaranteeing that the system will robustly and automatically converge to the target basin of attraction. Furthermore, the \"Inter-layer hook,\" which uses the coherence of adjacent layers (RL1) as feed-forward and feedback gains, ensures that this homeostatic control is coordinated across the entire SCPN hierarchy, allowing the entire network to maintain a global Griffiths-like phase without requiring fine-tuning at any individual layer.",
+        "P0R02874: If the \"edge of chaos\" is the perfect state for reality to be in, this section is the detailed engineering blueprint for the smart thermostat that keeps it there. It's a feedback loop that is constantly monitoring and making tiny adjustments to maintain that perfect balance.",
+        "P0R02875: The thermostat constantly checks two vital signs for any given layer of reality:",
+        "P0R02876: Activity Level (sigmaL): Is things getting too quiet and rigid, or too noisy and chaotic? The goal is to keep this number right at 1.",
+        "P0R02877: Synchrony Level (RL): Are things working together harmoniously, or is it a mess of disconnection?",
+        "P0R02878: Based on these two readings, the controller adjusts two main dials:",
+        "P0R02879: Connection Strength (K): If things are too quiet, it strengthens the connections between components to liven things up. If they're too chaotic, it weakens them slightly.",
+        "P0R02880: Background Noise (): If the system is getting too rigid, it injects a tiny bit of creative \"static\" or noise to loosen things up.",
+        "P0R02881: The beautiful part is that we've used a special mathematical proof (a Lyapunov function) to show that this thermostat is guaranteed to work. It will always guide the system back to the perfect \"edge of chaos,\" making the entire network of reality autonomously intelligent and adaptive.",
+        "P0R02882: P0R02882",
+        "P0R02883: The Allostatic Scaling Law (Revision 11.08):",
+        "P0R02884: The stability of the quasicritical regime across scales (from Glia:Neuron to Gaia:Species) is governed by the Allostatic Bound. This ensures that top-down informational modulation ($H_{int}$) does not exceed the metabolic/energy supply of the supporting substrate. The metabolic feasibility of control is constrained by:",
+        "P0R02885: $$\\pi_{metabolic} \\ge \\sum_L | \\zeta_L \\Psi_{Global} \\cdot \\sigma_L |$$",
+        "P0R02886: Where $\\pi_{metabolic}$ is the layer-specific energy flux (e.g., CMRO2/ATP in Layer 4). This law prevents 'Dyscritia'-the catastrophic decoupling of informational dynamics from physical support, leading to seizures at the neural scale or ecological collapse at the Gaian scale.",
+        "P0R02887: P0R02887",
+        "P0R02888: Negentropy-Thermal Back-reaction Balance",
+        "P0R02889: The reduction of local variational free energy ($\\Delta F < 0$) via negentropy injection from the $\\Psi$-field must satisfy the entropy-flux balance with the aqueous substrate. We define the Thermal Exhaust Gradient:",
+        "P0R02890: $$\\dot{Q}_{exhaust} = T_{bath} \\left( \\dot{S}_{env} - \\frac{1}{\\epsilon_b} \\dot{I}_{conscious} \\right) \\geq 0$$",
+        "P0R02891: To preserve the $\\Delta \\approx 1.64 \\text{ eV}$ energy gap in Layer 1, the local temperature change $\\Delta T$ must satisfy $\\Delta T < \\Delta / k_B$. If the conscious intent rate $\\dot{I}$ exceeds this exhaust capacity, the Allostatic Bound triggers a \"Cooling-H",
+        "P0R02892: P0R02892",
+        "P0R02893: P0R02893"
+      ],
+      "source_ledger_ids": [
+        "P0R02869",
+        "P0R02870",
+        "P0R02871",
+        "P0R02872",
+        "P0R02873",
+        "P0R02874",
+        "P0R02875",
+        "P0R02876",
+        "P0R02877",
+        "P0R02878",
+        "P0R02879",
+        "P0R02880",
+        "P0R02881",
+        "P0R02882",
+        "P0R02883",
+        "P0R02884",
+        "P0R02885",
+        "P0R02886",
+        "P0R02887",
+        "P0R02888",
+        "P0R02889",
+        "P0R02890",
+        "P0R02891",
+        "P0R02892",
+        "P0R02893"
+      ],
+      "source_record_ids": [
+        "P0B02869",
+        "P0B02870",
+        "P0B02871",
+        "P0B02872",
+        "P0B02873",
+        "P0B02874",
+        "P0B02875",
+        "P0B02876",
+        "P0B02877",
+        "P0B02878",
+        "P0B02879",
+        "P0B02880",
+        "P0B02881",
+        "P0B02882",
+        "P0B02883",
+        "P0B02884",
+        "P0B02885",
+        "P0B02886",
+        "P0B02887",
+        "P0B02888",
+        "P0B02889",
+        "P0B02890",
+        "P0B02891",
+        "P0B02892",
+        "P0B02893"
+      ],
+      "test_protocols": [
+        "preserve Formalism of the Homeostatic Quasicritical Controller source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.formalism_of_the_homeostatic_quasicritical_controller.formalism_of_the_homeostatic_quasicritical_controller",
+      "validation_targets": [
+        "preserve records P0R02869-P0R02893"
+      ],
+      "variables": [
+        "formalism_of_the_homeostatic_quasicritical_controller"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 24
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 6,
+      "mechanism": 7,
+      "structural": 4,
+      "validation_target": 4
+    },
+    "claim_boundary": "source-bounded formalism of the homeostatic quasicritical controller source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 25,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02894",
+    "source_ledger_span": [
+      "P0R02869",
+      "P0R02893"
+    ],
+    "source_record_count": 25,
+    "spec_count": 1,
+    "spec_keys": [
+      "formalism_of_the_homeostatic_quasicritical_controller.formalism_of_the_homeostatic_quasicritical_controller"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Formalism of the Homeostatic Quasicritical Controller Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

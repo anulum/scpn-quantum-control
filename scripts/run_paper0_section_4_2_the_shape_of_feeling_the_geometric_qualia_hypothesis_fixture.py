@@ -20,7 +20,13 @@ from scpn_quantum_control.paper0.section_4_2_the_shape_of_feeling_the_geometric_
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_OUTPUT_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_OUTPUT_PATH = (
     DEFAULT_OUTPUT_DIR
     / "paper0_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_fixture_result_2026-05-17.json"

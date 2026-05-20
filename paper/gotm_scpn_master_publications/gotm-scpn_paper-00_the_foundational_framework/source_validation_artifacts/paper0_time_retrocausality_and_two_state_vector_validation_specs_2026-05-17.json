@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Time, Retrocausality, and Two-State Vector' preserves Paper 0 records P0R05902-P0R05905 without empirical validation claims.",
+      "claim_boundary": "source-bounded time retrocausality and two state vector source-accounting bridge; not validation evidence",
+      "context_id": "time_retrocausality_and_two_state_vector",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05902-P0R05905"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "time_retrocausality_and_two_state_vector.time_retrocausality_and_two_state_vector",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "time_retrocausality_and_two_state_vector must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Time, Retrocausality, and Two-State Vector is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Time, Retrocausality, and Two-State Vector",
+      "source_block_indices": [
+        5902,
+        5903,
+        5904,
+        5905,
+        5906,
+        5907,
+        5908,
+        5909
+      ],
+      "source_equation_ids": [
+        "P0R05902:time_retrocausality_and_two_state_vector",
+        "P0R05903:time_retrocausality_and_two_state_vector",
+        "P0R05904:time_retrocausality_and_two_state_vector",
+        "P0R05905:time_retrocausality_and_two_state_vector"
+      ],
+      "source_formulae": [
+        "P0R05902: Time, Retrocausality, and Two-State Vector",
+        "P0R05903: Aharonov, Bergmann, & Lebowitz (1964, Time Symmetry in Quantum Mechanics) -> foundation of TSVF, which you invoke in Layer 9.",
+        "P0R05904: Price (1996, Time's Arrow and Archimedes' Point) -> philosophical treatment of retrocausality.",
+        "P0R05905: Cramer (1986, Transactional Interpretation of QM) -> strengthens your bidirectional causality narrative."
+      ],
+      "source_ledger_ids": [
+        "P0R05902",
+        "P0R05903",
+        "P0R05904",
+        "P0R05905",
+        "P0R05906",
+        "P0R05907",
+        "P0R05908",
+        "P0R05909"
+      ],
+      "source_record_ids": [
+        "P0B05902",
+        "P0B05903",
+        "P0B05904",
+        "P0B05905",
+        "P0B05906",
+        "P0B05907",
+        "P0B05908",
+        "P0B05909"
+      ],
+      "test_protocols": [
+        "preserve Time, Retrocausality, and Two-State Vector source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.time_retrocausality_and_two_state_vector.time_retrocausality_and_two_state_vector",
+      "validation_targets": [
+        "preserve records P0R05902-P0R05905"
+      ],
+      "variables": [
+        "time_retrocausality_and_two_state_vector"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Memory & Holography' preserves Paper 0 records P0R05906-P0R05909 without empirical validation claims.",
+      "claim_boundary": "source-bounded time retrocausality and two state vector source-accounting bridge; not validation evidence",
+      "context_id": "memory_holography",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05906-P0R05909"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "time_retrocausality_and_two_state_vector.memory_holography",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "memory_holography must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Memory & Holography is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Time, Retrocausality, and Two-State Vector",
+      "source_block_indices": [
+        5902,
+        5903,
+        5904,
+        5905,
+        5906,
+        5907,
+        5908,
+        5909
+      ],
+      "source_equation_ids": [
+        "P0R05906:memory_holography",
+        "P0R05907:memory_holography",
+        "P0R05908:memory_holography",
+        "P0R05909:memory_holography"
+      ],
+      "source_formulae": [
+        "P0R05906: Memory & Holography",
+        "P0R05907: Pribram (1991, Brain and Perception: Holographic Model) -> supports your L9 \"existential holograph.\"",
+        "P0R05908: 't Hooft (1993, Dimensional Reduction in Quantum Gravity) -> early holographic principle reference.",
+        "P0R05909: Susskind (1995, The World as a Hologram) -> standard citation for holography, aligns with your memory imprint layer."
+      ],
+      "source_ledger_ids": [
+        "P0R05902",
+        "P0R05903",
+        "P0R05904",
+        "P0R05905",
+        "P0R05906",
+        "P0R05907",
+        "P0R05908",
+        "P0R05909"
+      ],
+      "source_record_ids": [
+        "P0B05902",
+        "P0B05903",
+        "P0B05904",
+        "P0B05905",
+        "P0B05906",
+        "P0B05907",
+        "P0B05908",
+        "P0B05909"
+      ],
+      "test_protocols": [
+        "preserve Memory & Holography source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.time_retrocausality_and_two_state_vector.memory_holography",
+      "validation_targets": [
+        "preserve records P0R05906-P0R05909"
+      ],
+      "variables": [
+        "memory_holography"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 3,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded time retrocausality and two state vector source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05910",
+    "source_ledger_span": [
+      "P0R05902",
+      "P0R05909"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "time_retrocausality_and_two_state_vector.time_retrocausality_and_two_state_vector",
+      "time_retrocausality_and_two_state_vector.memory_holography"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Time, Retrocausality, and Two-State Vector Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

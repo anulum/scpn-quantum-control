@@ -13,7 +13,7 @@
       "lane_id": "P0L01_front_matter_context",
       "no_hardware_submission": true,
       "no_qpu_submission": true,
-      "related_spec_bundle_path": "docs/internal/paper0_foundational_extraction/paper0_front_matter_context_validation_specs_2026-05-13.json",
+      "related_spec_bundle_path": "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_front_matter_context_validation_specs_2026-05-13.json",
       "related_spec_key": "front_matter_context.collection_identity",
       "source_ledger_span": [
         "P0R00018",

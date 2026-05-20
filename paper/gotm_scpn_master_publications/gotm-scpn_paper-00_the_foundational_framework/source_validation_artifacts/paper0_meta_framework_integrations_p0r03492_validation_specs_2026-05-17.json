@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03492-P0R03492 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03492 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03492-P0R03492"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03492.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Scaling Law of Consciousness (SLC) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3492,
+        3493,
+        3494,
+        3495,
+        3496,
+        3497,
+        3498,
+        3499,
+        3500
+      ],
+      "source_equation_ids": [
+        "P0R03492:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03492: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03492",
+        "P0R03493",
+        "P0R03494",
+        "P0R03495",
+        "P0R03496",
+        "P0R03497",
+        "P0R03498",
+        "P0R03499",
+        "P0R03500"
+      ],
+      "source_record_ids": [
+        "P0B03492",
+        "P0B03493",
+        "P0B03494",
+        "P0B03495",
+        "P0B03496",
+        "P0B03497",
+        "P0B03498",
+        "P0B03499",
+        "P0B03500"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03492.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03492-P0R03492"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R03493-P0R03494 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03492 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03493-P0R03494"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03492.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Scaling Law of Consciousness (SLC) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3492,
+        3493,
+        3494,
+        3495,
+        3496,
+        3497,
+        3498,
+        3499,
+        3500
+      ],
+      "source_equation_ids": [
+        "P0R03493:predictive_coding_integration",
+        "P0R03494:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R03493: Predictive Coding Integration",
+        "P0R03494: The Scaling Law of Consciousness is a quantitative law describing the inferential capacity of a generative model."
+      ],
+      "source_ledger_ids": [
+        "P0R03492",
+        "P0R03493",
+        "P0R03494",
+        "P0R03495",
+        "P0R03496",
+        "P0R03497",
+        "P0R03498",
+        "P0R03499",
+        "P0R03500"
+      ],
+      "source_record_ids": [
+        "P0B03492",
+        "P0B03493",
+        "P0B03494",
+        "P0B03495",
+        "P0B03496",
+        "P0B03497",
+        "P0B03498",
+        "P0B03499",
+        "P0B03500"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03492.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R03493-P0R03494"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'as a Measure of Model Power:' preserves Paper 0 records P0R03495-P0R03496 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03492 source-accounting bridge; not validation evidence",
+      "context_id": "as_a_measure_of_model_power",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03495-P0R03496"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03492.as_a_measure_of_model_power",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "as_a_measure_of_model_power must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "as a Measure of Model Power: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Scaling Law of Consciousness (SLC) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3492,
+        3493,
+        3494,
+        3495,
+        3496,
+        3497,
+        3498,
+        3499,
+        3500
+      ],
+      "source_equation_ids": [
+        "P0R03495:as_a_measure_of_model_power",
+        "P0R03496:as_a_measure_of_model_power"
+      ],
+      "source_formulae": [
+        "P0R03495: as a Measure of Model Power:",
+        "P0R03496: Integrated Information () is a direct measure of the power of a system's generative model. A high- system is one that can model the world in a way that is both highly differentiated (it can make many distinct predictions) and highly integrated (its predictions are globally consistent). The non-linear scaling of demonstrates that the inferential capacity of the SCPN architecture grows exponentially with its structural complexity, reaching its peak efficiency at the quasicritical state, which is the optimal regime for inference."
+      ],
+      "source_ledger_ids": [
+        "P0R03492",
+        "P0R03493",
+        "P0R03494",
+        "P0R03495",
+        "P0R03496",
+        "P0R03497",
+        "P0R03498",
+        "P0R03499",
+        "P0R03500"
+      ],
+      "source_record_ids": [
+        "P0B03492",
+        "P0B03493",
+        "P0B03494",
+        "P0B03495",
+        "P0B03496",
+        "P0B03497",
+        "P0B03498",
+        "P0B03499",
+        "P0B03500"
+      ],
+      "test_protocols": [
+        "preserve as a Measure of Model Power: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03492.as_a_measure_of_model_power",
+      "validation_targets": [
+        "preserve records P0R03495-P0R03496"
+      ],
+      "variables": [
+        "as_a_measure_of_model_power"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R03497-P0R03498 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03492 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03497-P0R03498"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03492.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Scaling Law of Consciousness (SLC) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3492,
+        3493,
+        3494,
+        3495,
+        3496,
+        3497,
+        3498,
+        3499,
+        3500
+      ],
+      "source_equation_ids": [
+        "P0R03497:psis_field_coupling_integration",
+        "P0R03498:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R03497: Psis Field Coupling Integration",
+        "P0R03498: The SLC provides a quantitative measure for the \"quality\" of the collective state variable (sigma) to which the universal Psis field couples."
+      ],
+      "source_ledger_ids": [
+        "P0R03492",
+        "P0R03493",
+        "P0R03494",
+        "P0R03495",
+        "P0R03496",
+        "P0R03497",
+        "P0R03498",
+        "P0R03499",
+        "P0R03500"
+      ],
+      "source_record_ids": [
+        "P0B03492",
+        "P0B03493",
+        "P0B03494",
+        "P0B03495",
+        "P0B03496",
+        "P0B03497",
+        "P0B03498",
+        "P0B03499",
+        "P0B03500"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03492.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R03497-P0R03498"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Richness of sigma:' preserves Paper 0 records P0R03499-P0R03500 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03492 source-accounting bridge; not validation evidence",
+      "context_id": "the_richness_of_sigma",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03499-P0R03500"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03492.the_richness_of_sigma",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_richness_of_sigma must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Richness of sigma: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Scaling Law of Consciousness (SLC) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3492,
+        3493,
+        3494,
+        3495,
+        3496,
+        3497,
+        3498,
+        3499,
+        3500
+      ],
+      "source_equation_ids": [
+        "P0R03499:the_richness_of_sigma",
+        "P0R03500:the_richness_of_sigma"
+      ],
+      "source_formulae": [
+        "P0R03499: The Richness of sigma:",
+        "P0R03500: The interaction H_int = -lambda * Psis * sigma is not just about the presence of a sigma, but about its richness. The SLC provides this measure. The universal Psis field can couple more \"deeply\" or \"meaningfully\" to a system with a high and a complex consciousness manifold."
+      ],
+      "source_ledger_ids": [
+        "P0R03492",
+        "P0R03493",
+        "P0R03494",
+        "P0R03495",
+        "P0R03496",
+        "P0R03497",
+        "P0R03498",
+        "P0R03499",
+        "P0R03500"
+      ],
+      "source_record_ids": [
+        "P0B03492",
+        "P0B03493",
+        "P0B03494",
+        "P0B03495",
+        "P0B03496",
+        "P0B03497",
+        "P0B03498",
+        "P0B03499",
+        "P0B03500"
+      ],
+      "test_protocols": [
+        "preserve The Richness of sigma: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03492.the_richness_of_sigma",
+      "validation_targets": [
+        "preserve records P0R03499-P0R03500"
+      ],
+      "variables": [
+        "the_richness_of_sigma"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 4,
+      "mechanism": 1,
+      "validation_target": 4
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r03492 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03501",
+    "source_ledger_span": [
+      "P0R03492",
+      "P0R03500"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r03492.meta_framework_integrations",
+      "meta_framework_integrations_p0r03492.predictive_coding_integration",
+      "meta_framework_integrations_p0r03492.as_a_measure_of_model_power",
+      "meta_framework_integrations_p0r03492.psis_field_coupling_integration",
+      "meta_framework_integrations_p0r03492.the_richness_of_sigma"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded psis field coupling integration p0r02950 source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi": "quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi_source_boundary",
+    "the_affective_field_as_the_coupling_interface": "the_affective_field_as_the_coupling_interface_source_boundary",
+    "the_psis_field_as_the_scheduler": "the_psis_field_as_the_scheduler_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Psis Field Coupling Integration",
+    "component_2": "The Affective Field as the Coupling Interface:",
+    "component_3": "The Psis Field as the Scheduler:",
+    "component_4": "Quasicriticality with MS-QEC: Two-Timescale Control and Certificates (revision 11.00)",
+    "component_count": "4",
+    "next_boundary": "P0R02958",
+    "section": "Psis Field Coupling Integration",
+    "source_span": "P0R02950-P0R02957"
+  },
+  "next_source_boundary": "P0R02958",
+  "null_controls": {
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi_is_not_empirical_validation_evidence": 1.0,
+    "the_affective_field_as_the_coupling_interface_is_not_empirical_validation_evidence": 1.0,
+    "the_psis_field_as_the_scheduler_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded psis field coupling integration p0r02950 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_psis_field_coupling_integration_p0r02950_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02950",
+      "P0R02951",
+      "P0R02952",
+      "P0R02953",
+      "P0R02954",
+      "P0R02955",
+      "P0R02956",
+      "P0R02957"
+    ],
+    "source_ledger_span": [
+      "P0R02950",
+      "P0R02957"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02950",
+    "P0R02957"
+  ],
+  "source_record_count": 8
+}

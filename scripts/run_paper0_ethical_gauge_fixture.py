@@ -27,7 +27,13 @@ from scpn_quantum_control.paper0.ethical_gauge_validation import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_EXTRACTION_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 
 
 @dataclass(frozen=True, slots=True)

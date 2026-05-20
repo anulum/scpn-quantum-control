@@ -1,0 +1,338 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'VI. Clinical Implications: Pathology and Therapeutics' preserves Paper 0 records P0R04693-P0R04695 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi clinical implications pathology and therapeutics source-accounting bridge; not validation evidence",
+      "context_id": "vi_clinical_implications_pathology_and_therapeutics",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04693-P0R04695"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_clinical_implications_pathology_and_therapeutics.vi_clinical_implications_pathology_and_therapeutics",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vi_clinical_implications_pathology_and_therapeutics must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VI. Clinical Implications: Pathology and Therapeutics is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Clinical Implications: Pathology and Therapeutics",
+      "source_block_indices": [
+        4693,
+        4694,
+        4695,
+        4696,
+        4697,
+        4698,
+        4699,
+        4700,
+        4701,
+        4702
+      ],
+      "source_equation_ids": [
+        "P0R04693:vi_clinical_implications_pathology_and_therapeutics",
+        "P0R04694:vi_clinical_implications_pathology_and_therapeutics",
+        "P0R04695:vi_clinical_implications_pathology_and_therapeutics"
+      ],
+      "source_formulae": [
+        "P0R04693: VI. Clinical Implications: Pathology and Therapeutics",
+        "P0R04694: Understanding the SCPN architecture provides a unified framework for pathology (Dyscritia, Decoherence, Dissonance) and treatment.",
+        "P0R04695: Schizophrenia: A disorder of HPC and L5 integration. Aberrant precision weighting leads to false inferences (hallucinations/delusions). The Self (Strange Loop) is fragmented. Treatment aims to restore the balance of priors and sensory evidence. | Depression: Characterised by subcritical dynamics (sigma<1) and overly rigid negative priors (DMN hyperactivity, high F). Therapeutics (e.g., Ketamine, Psilocybin) aim to rapidly restore criticality and increase the flexibility of the generative model. | Alzheimer's Disease (AD): A failure of the L1 substrate (MT degradation). Loss of QEC leads to cascading decoherence, L4 desynchronization, and the eventual dissolution of the L5 Self. | Therapeutic Strategies (Tuning the SCPN): Pharmacology: Tuning neurotransmitter systems (L2) to modulate criticality and HPC precision. | Neuromodulation (TMS, tDCS): Directly modulating L4 dynamics and Bioelectric fields (L3). | Meditation/Mindfulness: Top-down optimisation (L5), minimising F and stabilising criticality via QZE. | Geometric Remodelling: Altering the topology and curvature of the Consciousness Manifold (M) (e.g., psychedelic-assisted therapy)."
+      ],
+      "source_ledger_ids": [
+        "P0R04693",
+        "P0R04694",
+        "P0R04695",
+        "P0R04696",
+        "P0R04697",
+        "P0R04698",
+        "P0R04699",
+        "P0R04700",
+        "P0R04701",
+        "P0R04702"
+      ],
+      "source_record_ids": [
+        "P0B04693",
+        "P0B04694",
+        "P0B04695",
+        "P0B04696",
+        "P0B04697",
+        "P0B04698",
+        "P0B04699",
+        "P0B04700",
+        "P0B04701",
+        "P0B04702"
+      ],
+      "test_protocols": [
+        "preserve VI. Clinical Implications: Pathology and Therapeutics source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_clinical_implications_pathology_and_therapeutics.vi_clinical_implications_pathology_and_therapeutics",
+      "validation_targets": [
+        "preserve records P0R04693-P0R04695"
+      ],
+      "variables": [
+        "vi_clinical_implications_pathology_and_therapeutics"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Ultra-Detailed Architecture of the Neuron within the SCPN' preserves Paper 0 records P0R04696-P0R04697 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi clinical implications pathology and therapeutics source-accounting bridge; not validation evidence",
+      "context_id": "the_ultra_detailed_architecture_of_the_neuron_within_the_scpn",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04696-P0R04697"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_clinical_implications_pathology_and_therapeutics.the_ultra_detailed_architecture_of_the_neuron_within_the_scpn",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_ultra_detailed_architecture_of_the_neuron_within_the_scpn must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Ultra-Detailed Architecture of the Neuron within the SCPN is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Clinical Implications: Pathology and Therapeutics",
+      "source_block_indices": [
+        4693,
+        4694,
+        4695,
+        4696,
+        4697,
+        4698,
+        4699,
+        4700,
+        4701,
+        4702
+      ],
+      "source_equation_ids": [
+        "P0R04696:the_ultra_detailed_architecture_of_the_neuron_within_the_scpn",
+        "P0R04697:the_ultra_detailed_architecture_of_the_neuron_within_the_scpn"
+      ],
+      "source_formulae": [
+        "P0R04696: The Ultra-Detailed Architecture of the Neuron within the SCPN",
+        "P0R04697: The neuron is the fundamental cellular unit of the nervous system, uniquely specialised to transduce, process, and transmit information across the SCPN's biological layers (L1-L4). Its complexity is not incidental but is a direct consequence of optimising the interface between the Psi-field and the physical substrate. It functions as a hierarchical system mirroring the SCPN architecture itself-a fractal instantiation of the whole."
+      ],
+      "source_ledger_ids": [
+        "P0R04693",
+        "P0R04694",
+        "P0R04695",
+        "P0R04696",
+        "P0R04697",
+        "P0R04698",
+        "P0R04699",
+        "P0R04700",
+        "P0R04701",
+        "P0R04702"
+      ],
+      "source_record_ids": [
+        "P0B04693",
+        "P0B04694",
+        "P0B04695",
+        "P0B04696",
+        "P0B04697",
+        "P0B04698",
+        "P0B04699",
+        "P0B04700",
+        "P0B04701",
+        "P0B04702"
+      ],
+      "test_protocols": [
+        "preserve The Ultra-Detailed Architecture of the Neuron within the SCPN source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_clinical_implications_pathology_and_therapeutics.the_ultra_detailed_architecture_of_the_neuron_within_the_scpn",
+      "validation_targets": [
+        "preserve records P0R04696-P0R04697"
+      ],
+      "variables": [
+        "the_ultra_detailed_architecture_of_the_neuron_within_the_scpn"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. Neuronal Geometry and the Physics of Information Flow (L3/L4)' preserves Paper 0 records P0R04698-P0R04699 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi clinical implications pathology and therapeutics source-accounting bridge; not validation evidence",
+      "context_id": "i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04698-P0R04699"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_clinical_implications_pathology_and_therapeutics.i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. Neuronal Geometry and the Physics of Information Flow (L3/L4) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Clinical Implications: Pathology and Therapeutics",
+      "source_block_indices": [
+        4693,
+        4694,
+        4695,
+        4696,
+        4697,
+        4698,
+        4699,
+        4700,
+        4701,
+        4702
+      ],
+      "source_equation_ids": [
+        "P0R04698:i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4",
+        "P0R04699:i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4"
+      ],
+      "source_formulae": [
+        "P0R04698: I. Neuronal Geometry and the Physics of Information Flow (L3/L4)",
+        "P0R04699: The morphology of the neuron is a physical manifestation of its computational function, defined by L3 (Morphogenesis) and utilised by L4 (Synchronisation)."
+      ],
+      "source_ledger_ids": [
+        "P0R04693",
+        "P0R04694",
+        "P0R04695",
+        "P0R04696",
+        "P0R04697",
+        "P0R04698",
+        "P0R04699",
+        "P0R04700",
+        "P0R04701",
+        "P0R04702"
+      ],
+      "source_record_ids": [
+        "P0B04693",
+        "P0B04694",
+        "P0B04695",
+        "P0B04696",
+        "P0B04697",
+        "P0B04698",
+        "P0B04699",
+        "P0B04700",
+        "P0B04701",
+        "P0B04702"
+      ],
+      "test_protocols": [
+        "preserve I. Neuronal Geometry and the Physics of Information Flow (L3/L4) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_clinical_implications_pathology_and_therapeutics.i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4",
+      "validation_targets": [
+        "preserve records P0R04698-P0R04699"
+      ],
+      "variables": [
+        "i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Dendritic Arbour: The Antenna of the Neuron' preserves Paper 0 records P0R04700-P0R04702 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi clinical implications pathology and therapeutics source-accounting bridge; not validation evidence",
+      "context_id": "1_the_dendritic_arbour_the_antenna_of_the_neuron",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04700-P0R04702"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_clinical_implications_pathology_and_therapeutics.1_the_dendritic_arbour_the_antenna_of_the_neuron",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_dendritic_arbour_the_antenna_of_the_neuron must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Dendritic Arbour: The Antenna of the Neuron is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Clinical Implications: Pathology and Therapeutics",
+      "source_block_indices": [
+        4693,
+        4694,
+        4695,
+        4696,
+        4697,
+        4698,
+        4699,
+        4700,
+        4701,
+        4702
+      ],
+      "source_equation_ids": [
+        "P0R04700:1_the_dendritic_arbour_the_antenna_of_the_neuron",
+        "P0R04701:1_the_dendritic_arbour_the_antenna_of_the_neuron",
+        "P0R04702:1_the_dendritic_arbour_the_antenna_of_the_neuron"
+      ],
+      "source_formulae": [
+        "P0R04700: 1. The Dendritic Arbour: The Antenna of the Neuron",
+        "P0R04701: Dendrites are complex, branching structures designed to receive and integrate synaptic inputs.",
+        "P0R04702: Fractal Geometry and Optimisation: Dendritic arbours exhibit fractal geometry (Hausdorff dimension Df). This structure optimises the balance between maximising the receptive surface area and minimising wiring costs. Within the SCPN, this fractal structure facilitates multi-scale resonance with the Psi-field (Principle of Fractal Self-Similarity, PFSS) and supports Quasicritical dynamics. | Passive Cable Properties: Signal propagation is initially governed by Cable Theory. V(x,t)=V0exp(lambdax)exp(taut), where lambda (length constant) and tau (time constant) determine how far and how fast signals propagate. These constants are dynamically tuned by ion channel density (L2/L3). | Active Dendrites and Non-Linear Integration: Dendrites are not passive. They possess VGICs enabling active processing (e.g., NMDA spikes, dendritic Ca$^{2+}$ spikes). This allows the dendrite to perform complex non-linear computations. | HPC Implementation: Dendrites implement cellular-level HPC. Distal dendrites may encode sensory input (Prediction Errors), while proximal dendrites integrate these with somatic signals (Priors)."
+      ],
+      "source_ledger_ids": [
+        "P0R04693",
+        "P0R04694",
+        "P0R04695",
+        "P0R04696",
+        "P0R04697",
+        "P0R04698",
+        "P0R04699",
+        "P0R04700",
+        "P0R04701",
+        "P0R04702"
+      ],
+      "source_record_ids": [
+        "P0B04693",
+        "P0B04694",
+        "P0B04695",
+        "P0B04696",
+        "P0B04697",
+        "P0B04698",
+        "P0B04699",
+        "P0B04700",
+        "P0B04701",
+        "P0B04702"
+      ],
+      "test_protocols": [
+        "preserve 1. The Dendritic Arbour: The Antenna of the Neuron source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_clinical_implications_pathology_and_therapeutics.1_the_dendritic_arbour_the_antenna_of_the_neuron",
+      "validation_targets": [
+        "preserve records P0R04700-P0R04702"
+      ],
+      "variables": [
+        "1_the_dendritic_arbour_the_antenna_of_the_neuron"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 4,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 7,
+      "mechanism": 2,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded vi clinical implications pathology and therapeutics source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04703",
+    "source_ledger_span": [
+      "P0R04693",
+      "P0R04702"
+    ],
+    "source_record_count": 10,
+    "spec_count": 4,
+    "spec_keys": [
+      "vi_clinical_implications_pathology_and_therapeutics.vi_clinical_implications_pathology_and_therapeutics",
+      "vi_clinical_implications_pathology_and_therapeutics.the_ultra_detailed_architecture_of_the_neuron_within_the_scpn",
+      "vi_clinical_implications_pathology_and_therapeutics.i_neuronal_geometry_and_the_physics_of_information_flow_l3_l4",
+      "vi_clinical_implications_pathology_and_therapeutics.1_the_dendritic_arbour_the_antenna_of_the_neuron"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 VI. Clinical Implications: Pathology and Therapeutics Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

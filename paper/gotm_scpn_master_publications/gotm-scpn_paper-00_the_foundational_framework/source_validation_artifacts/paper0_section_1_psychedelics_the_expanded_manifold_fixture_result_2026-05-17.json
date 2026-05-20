@@ -1,0 +1,56 @@
+{
+  "claim_boundary": "source-bounded section 1 psychedelics the expanded manifold source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "1_psychedelics_the_expanded_manifold": "1_psychedelics_the_expanded_manifold_source_boundary",
+    "2_meditation_and_flow_states_optimised_criticality": "2_meditation_and_flow_states_optimised_criticality_source_boundary",
+    "3_anaesthesia_the_decoupling": "3_anaesthesia_the_decoupling_source_boundary",
+    "vii_the_embodied_brain_and_the_extended_environment_l6_coupling": "vii_the_embodied_brain_and_the_extended_environment_l6_coupling_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "1. Psychedelics (The Expanded Manifold):",
+    "component_2": "2. Meditation and Flow States (Optimised Criticality):",
+    "component_3": "3. Anaesthesia (The Decoupling):",
+    "component_4": "VII. The Embodied Brain and the Extended Environment (L6 Coupling)",
+    "component_count": "4",
+    "next_boundary": "P0R05039",
+    "section": "1. Psychedelics (The Expanded Manifold):",
+    "source_span": "P0R05026-P0R05038"
+  },
+  "next_source_boundary": "P0R05039",
+  "null_controls": {
+    "1_psychedelics_the_expanded_manifold_is_not_empirical_validation_evidence": 1.0,
+    "2_meditation_and_flow_states_optimised_criticality_is_not_empirical_validation_evidence": 1.0,
+    "3_anaesthesia_the_decoupling_is_not_empirical_validation_evidence": 1.0,
+    "vii_the_embodied_brain_and_the_extended_environment_l6_coupling_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 1 psychedelics the expanded manifold source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_1_psychedelics_the_expanded_manifold_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05026",
+      "P0R05027",
+      "P0R05028",
+      "P0R05029",
+      "P0R05030",
+      "P0R05031",
+      "P0R05032",
+      "P0R05033",
+      "P0R05034",
+      "P0R05035",
+      "P0R05036",
+      "P0R05037",
+      "P0R05038"
+    ],
+    "source_ledger_span": [
+      "P0R05026",
+      "P0R05038"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05026",
+    "P0R05038"
+  ],
+  "source_record_count": 13
+}

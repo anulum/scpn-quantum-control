@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded axion photon mixing with the plasma term source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "axionphoton_mixing_with_the_plasma_term": "axionphoton_mixing_with_the_plasma_term_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Axionphoton mixing with the plasma term.",
+    "component_count": "1",
+    "next_boundary": "P0R04359",
+    "section": "Axionphoton mixing with the plasma term.",
+    "source_span": "P0R04348-P0R04358"
+  },
+  "next_source_boundary": "P0R04359",
+  "null_controls": {
+    "axionphoton_mixing_with_the_plasma_term_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded axion photon mixing with the plasma term source-accounting bridge; not validation evidence",
+    "protocol_state": "source_axion_photon_mixing_with_the_plasma_term_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04348",
+      "P0R04349",
+      "P0R04350",
+      "P0R04351",
+      "P0R04352",
+      "P0R04353",
+      "P0R04354",
+      "P0R04355",
+      "P0R04356",
+      "P0R04357",
+      "P0R04358"
+    ],
+    "source_ledger_span": [
+      "P0R04348",
+      "P0R04358"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04348",
+    "P0R04358"
+  ],
+  "source_record_count": 11
+}

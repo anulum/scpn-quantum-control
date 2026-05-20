@@ -1,0 +1,189 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "post-selection is conditioning, not backwards causal signalling",
+        "probabilities are normalised over explicit projectors",
+        "passing the fixture is not anomalous evidence"
+      ],
+      "canonical_statement": "The precognition wording is bounded to TSVF/ABL post-selection probability conditioning in finite Hilbert spaces.",
+      "claim_boundary": "simulator-only falsification boundary; not anomalous evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify ABL probabilities normalise under post-selection",
+        "verify changing post-selection changes conditional probabilities",
+        "verify no-retrocausal-signalling control preserves marginal bounds"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "applied.anomalous_boundary.tsvf_precognition_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "orthogonal-post-selection control must reject zero denominator",
+        "born-rule control must match when post-selection is uninformative",
+        "retrocausal-signalling control must be labelled unsupported"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. Framework for Anomalous Phenomena (Psi)",
+      "source_block_indices": [
+        6212,
+        6213,
+        6214
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06212",
+        "P0R06213",
+        "P0R06214"
+      ],
+      "source_record_ids": [
+        "P0B06212",
+        "P0B06213",
+        "P0B06214"
+      ],
+      "validation_protocol": "paper0.applied.anomalous_boundary.tsvf_precognition",
+      "validation_targets": [
+        "verify ABL probabilities normalise under post-selection",
+        "verify changing post-selection changes conditional probabilities",
+        "verify no-retrocausal-signalling control preserves marginal bounds"
+      ],
+      "variables": [
+        "pre_state",
+        "post_state",
+        "projectors",
+        "abl_probability"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "ER=EPR language remains interpretive context only",
+        "CHSH correlation is not information transfer",
+        "passing the fixture is not anomalous evidence"
+      ],
+      "canonical_statement": "Remote-perception/telepathy wording is bounded to entanglement correlation tests that can violate classical correlation limits without enabling signalling.",
+      "claim_boundary": "simulator-only falsification boundary; not anomalous evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify Bell-state CHSH value exceeds classical bound",
+        "verify product-state control stays within classical bound",
+        "verify no-signalling marginal residual is zero"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "applied.anomalous_boundary.entanglement_correlation_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "product-state control must not violate CHSH bound",
+        "signalling control must reject marginal dependence",
+        "non-normalised-state control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. Framework for Anomalous Phenomena (Psi)",
+      "source_block_indices": [
+        6212,
+        6213,
+        6214
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06212",
+        "P0R06213",
+        "P0R06214"
+      ],
+      "source_record_ids": [
+        "P0B06212",
+        "P0B06213",
+        "P0B06214"
+      ],
+      "validation_protocol": "paper0.applied.anomalous_boundary.entanglement_correlation",
+      "validation_targets": [
+        "verify Bell-state CHSH value exceeds classical bound",
+        "verify product-state control stays within classical bound",
+        "verify no-signalling marginal residual is zero"
+      ],
+      "variables": [
+        "bell_state",
+        "measurement_angles",
+        "chsh_value",
+        "no_signalling_residual"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "intent is a simulator control parameter, not a mind-matter claim",
+        "probabilities remain in the unit interval",
+        "passing the fixture is not anomalous evidence"
+      ],
+      "canonical_statement": "Psychokinesis wording is bounded to a weak-measurement probability-bias fixture with explicit bounded intent parameter and null controls.",
+      "claim_boundary": "simulator-only falsification boundary; not anomalous evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify bounded weak bias shifts probability monotonically",
+        "verify zero-intent control returns prior probability",
+        "verify out-of-range intent or strength is rejected"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "applied.anomalous_boundary.weak_measurement_bias_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "zero-intent control must produce zero probability shift",
+        "saturated-probability control must remain bounded",
+        "out-of-range-bias control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. Framework for Anomalous Phenomena (Psi)",
+      "source_block_indices": [
+        6212,
+        6213,
+        6214
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06212",
+        "P0R06213",
+        "P0R06214"
+      ],
+      "source_record_ids": [
+        "P0B06212",
+        "P0B06213",
+        "P0B06214"
+      ],
+      "validation_protocol": "paper0.applied.anomalous_boundary.weak_measurement_bias",
+      "validation_targets": [
+        "verify bounded weak bias shifts probability monotonically",
+        "verify zero-intent control returns prior probability",
+        "verify out-of-range intent or strength is rejected"
+      ],
+      "variables": [
+        "prior_probability",
+        "intent_bias",
+        "measurement_strength",
+        "biased_probability"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_avoid_invented_equation_ids": true,
+    "all_specs_have_anomalous_evidence_boundary": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 3,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06212-P0R06214 are promoted as source-covered falsification-boundary specifications only. Passing fixtures is not anomalous evidence.",
+    "source_ledger_span": [
+      "P0R06212",
+      "P0R06214"
+    ],
+    "source_record_count": 3,
+    "spec_count": 3,
+    "spec_keys": [
+      "applied.anomalous_boundary.tsvf_precognition_boundary",
+      "applied.anomalous_boundary.entanglement_correlation_boundary",
+      "applied.anomalous_boundary.weak_measurement_bias_boundary"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

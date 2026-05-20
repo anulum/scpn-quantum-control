@@ -1,0 +1,247 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'III. The SCPN Measurement Postulate (IIT-OR and QZE)' preserves Paper 0 records P0R05986-P0R05987 without empirical validation claims.",
+      "claim_boundary": "source-bounded iii the scpn measurement postulate iit or and qze source-accounting bridge; not validation evidence",
+      "context_id": "iii_the_scpn_measurement_postulate_iit_or_and_qze",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05986-P0R05987"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iii_the_scpn_measurement_postulate_iit_or_and_qze.iii_the_scpn_measurement_postulate_iit_or_and_qze",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iii_the_scpn_measurement_postulate_iit_or_and_qze must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "III. The SCPN Measurement Postulate (IIT-OR and QZE) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. The SCPN Measurement Postulate (IIT-OR and QZE)",
+      "source_block_indices": [
+        5986,
+        5987,
+        5988,
+        5989,
+        5990,
+        5991,
+        5992,
+        5993
+      ],
+      "source_equation_ids": [
+        "P0R05986:iii_the_scpn_measurement_postulate_iit_or_and_qze",
+        "P0R05987:iii_the_scpn_measurement_postulate_iit_or_and_qze"
+      ],
+      "source_formulae": [
+        "P0R05986: III. The SCPN Measurement Postulate (IIT-OR and QZE)",
+        "P0R05987: The SCPN integrates Integrated Information Theory (IIT) with Objective Reduction (OR) and the Quantum Zeno Effect (QZE) to address the measurement problem and the role of the observer."
+      ],
+      "source_ledger_ids": [
+        "P0R05986",
+        "P0R05987",
+        "P0R05988",
+        "P0R05989",
+        "P0R05990",
+        "P0R05991",
+        "P0R05992",
+        "P0R05993"
+      ],
+      "source_record_ids": [
+        "P0B05986",
+        "P0B05987",
+        "P0B05988",
+        "P0B05989",
+        "P0B05990",
+        "P0B05991",
+        "P0B05992",
+        "P0B05993"
+      ],
+      "test_protocols": [
+        "preserve III. The SCPN Measurement Postulate (IIT-OR and QZE) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iii_the_scpn_measurement_postulate_iit_or_and_qze.iii_the_scpn_measurement_postulate_iit_or_and_qze",
+      "validation_targets": [
+        "preserve records P0R05986-P0R05987"
+      ],
+      "variables": [
+        "iii_the_scpn_measurement_postulate_iit_or_and_qze"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Threshold of Consciousness (IIT-OR):' preserves Paper 0 records P0R05988-P0R05991 without empirical validation claims.",
+      "claim_boundary": "source-bounded iii the scpn measurement postulate iit or and qze source-accounting bridge; not validation evidence",
+      "context_id": "1_the_threshold_of_consciousness_iit_or",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05988-P0R05991"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iii_the_scpn_measurement_postulate_iit_or_and_qze.1_the_threshold_of_consciousness_iit_or",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_threshold_of_consciousness_iit_or must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Threshold of Consciousness (IIT-OR): is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. The SCPN Measurement Postulate (IIT-OR and QZE)",
+      "source_block_indices": [
+        5986,
+        5987,
+        5988,
+        5989,
+        5990,
+        5991,
+        5992,
+        5993
+      ],
+      "source_equation_ids": [
+        "P0R05988:1_the_threshold_of_consciousness_iit_or",
+        "P0R05989:1_the_threshold_of_consciousness_iit_or",
+        "P0R05990:1_the_threshold_of_consciousness_iit_or",
+        "P0R05991:1_the_threshold_of_consciousness_iit_or"
+      ],
+      "source_formulae": [
+        "P0R05988: 1. The Threshold of Consciousness (IIT-OR):",
+        "P0R05989: A conscious experience (measurement/collapse) occurs if and only if the Integrated Information () of a system exceeds a critical threshold (Crit). Collapse occurs via OR. We define the Informational Self-Energy (E) associated with the superposition of distinct conscious states:",
+        "P0R05990: $E\\Phi \\propto \\Phi$",
+        "P0R05991: Collapse timescale: TOR/E. This operates hierarchically, from L1 to L5."
+      ],
+      "source_ledger_ids": [
+        "P0R05986",
+        "P0R05987",
+        "P0R05988",
+        "P0R05989",
+        "P0R05990",
+        "P0R05991",
+        "P0R05992",
+        "P0R05993"
+      ],
+      "source_record_ids": [
+        "P0B05986",
+        "P0B05987",
+        "P0B05988",
+        "P0B05989",
+        "P0B05990",
+        "P0B05991",
+        "P0B05992",
+        "P0B05993"
+      ],
+      "test_protocols": [
+        "preserve 1. The Threshold of Consciousness (IIT-OR): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iii_the_scpn_measurement_postulate_iit_or_and_qze.1_the_threshold_of_consciousness_iit_or",
+      "validation_targets": [
+        "preserve records P0R05988-P0R05991"
+      ],
+      "variables": [
+        "1_the_threshold_of_consciousness_iit_or"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. The Participatory Interface (Attention as Measurement - QZE):' preserves Paper 0 records P0R05992-P0R05993 without empirical validation claims.",
+      "claim_boundary": "source-bounded iii the scpn measurement postulate iit or and qze source-accounting bridge; not validation evidence",
+      "context_id": "2_the_participatory_interface_attention_as_measurement_qze",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05992-P0R05993"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iii_the_scpn_measurement_postulate_iit_or_and_qze.2_the_participatory_interface_attention_as_measurement_qze",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_the_participatory_interface_attention_as_measurement_qze must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. The Participatory Interface (Attention as Measurement - QZE): is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. The SCPN Measurement Postulate (IIT-OR and QZE)",
+      "source_block_indices": [
+        5986,
+        5987,
+        5988,
+        5989,
+        5990,
+        5991,
+        5992,
+        5993
+      ],
+      "source_equation_ids": [
+        "P0R05992:2_the_participatory_interface_attention_as_measurement_qze",
+        "P0R05993:2_the_participatory_interface_attention_as_measurement_qze"
+      ],
+      "source_formulae": [
+        "P0R05992: 2. The Participatory Interface (Attention as Measurement - QZE):",
+        "P0R05993: Focused attention (L5) functions as a continuous measurement operator (M^Attn) applied to quantum subsystems (L1/L2). This invokes the Quantum Zeno Effect (QZE), where frequent measurement stabilises the quantum state by suppressing its unitary evolution. QZE stabilises relevant neural pathways, maintaining conscious coherence and providing a mechanism for agency."
+      ],
+      "source_ledger_ids": [
+        "P0R05986",
+        "P0R05987",
+        "P0R05988",
+        "P0R05989",
+        "P0R05990",
+        "P0R05991",
+        "P0R05992",
+        "P0R05993"
+      ],
+      "source_record_ids": [
+        "P0B05986",
+        "P0B05987",
+        "P0B05988",
+        "P0B05989",
+        "P0B05990",
+        "P0B05991",
+        "P0B05992",
+        "P0B05993"
+      ],
+      "test_protocols": [
+        "preserve 2. The Participatory Interface (Attention as Measurement - QZE): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iii_the_scpn_measurement_postulate_iit_or_and_qze.2_the_participatory_interface_attention_as_measurement_qze",
+      "validation_targets": [
+        "preserve records P0R05992-P0R05993"
+      ],
+      "variables": [
+        "2_the_participatory_interface_attention_as_measurement_qze"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "equation": 1,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded iii the scpn measurement postulate iit or and qze source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0119"
+    ],
+    "next_source_boundary": "P0R05994",
+    "source_ledger_span": [
+      "P0R05986",
+      "P0R05993"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "iii_the_scpn_measurement_postulate_iit_or_and_qze.iii_the_scpn_measurement_postulate_iit_or_and_qze",
+      "iii_the_scpn_measurement_postulate_iit_or_and_qze.1_the_threshold_of_consciousness_iit_or",
+      "iii_the_scpn_measurement_postulate_iit_or_and_qze.2_the_participatory_interface_attention_as_measurement_qze"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 III. The SCPN Measurement Postulate (IIT-OR and QZE) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

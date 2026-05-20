@@ -1,0 +1,246 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'LPsi Sets the Properties of Psis:' preserves Paper 0 records P0R01771-P0R01772 without empirical validation claims.",
+      "claim_boundary": "source-bounded lpsi sets the properties of psis source-accounting bridge; not validation evidence",
+      "context_id": "lpsi_sets_the_properties_of_psis",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01771-P0R01772"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "lpsi_sets_the_properties_of_psis.lpsi_sets_the_properties_of_psis",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "lpsi_sets_the_properties_of_psis must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "LPsi Sets the Properties of Psis: is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Intrinsic Dynamics of the \u03a8-Field and the Stabilising Potential > Meta-Framework Integrations > \u03a8s Field Coupling Integration > L\u03a8 Sets the Properties of \u03a8s:",
+      "source_block_indices": [
+        1771,
+        1772,
+        1773,
+        1774,
+        1775,
+        1776,
+        1777,
+        1778
+      ],
+      "source_equation_ids": [
+        "P0R01771:lpsi_sets_the_properties_of_psis",
+        "P0R01772:lpsi_sets_the_properties_of_psis"
+      ],
+      "source_formulae": [
+        "P0R01771: LPsi Sets the Properties of Psis:",
+        "P0R01772: The intrinsic Lagrangian defines the fundamental properties of the Psis field before it ever couples to matter. Specifically, the process of Spontaneous Symmetry Breaking within this potential gives the field its non-zero vacuum expectation value (v). This v sets the baseline \"strength\" or \"intensity\" of the Psis field that is available to participate in the H_int interaction."
+      ],
+      "source_ledger_ids": [
+        "P0R01771",
+        "P0R01772",
+        "P0R01773",
+        "P0R01774",
+        "P0R01775",
+        "P0R01776",
+        "P0R01777",
+        "P0R01778"
+      ],
+      "source_record_ids": [
+        "P0B01771",
+        "P0B01772",
+        "P0B01773",
+        "P0B01774",
+        "P0B01775",
+        "P0B01776",
+        "P0B01777",
+        "P0B01778"
+      ],
+      "test_protocols": [
+        "preserve LPsi Sets the Properties of Psis: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.lpsi_sets_the_properties_of_psis.lpsi_sets_the_properties_of_psis",
+      "validation_targets": [
+        "preserve records P0R01771-P0R01772"
+      ],
+      "variables": [
+        "lpsi_sets_the_properties_of_psis"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'A Stable Vacuum for a Stable Interaction:' preserves Paper 0 records P0R01773-P0R01774 without empirical validation claims.",
+      "claim_boundary": "source-bounded lpsi sets the properties of psis source-accounting bridge; not validation evidence",
+      "context_id": "a_stable_vacuum_for_a_stable_interaction",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01773-P0R01774"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "lpsi_sets_the_properties_of_psis.a_stable_vacuum_for_a_stable_interaction",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "a_stable_vacuum_for_a_stable_interaction must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "A Stable Vacuum for a Stable Interaction: is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Intrinsic Dynamics of the \u03a8-Field and the Stabilising Potential > Meta-Framework Integrations > \u03a8s Field Coupling Integration > L\u03a8 Sets the Properties of \u03a8s:",
+      "source_block_indices": [
+        1771,
+        1772,
+        1773,
+        1774,
+        1775,
+        1776,
+        1777,
+        1778
+      ],
+      "source_equation_ids": [
+        "P0R01773:a_stable_vacuum_for_a_stable_interaction",
+        "P0R01774:a_stable_vacuum_for_a_stable_interaction"
+      ],
+      "source_formulae": [
+        "P0R01773: A Stable Vacuum for a Stable Interaction:",
+        "P0R01774: The stability of the potential is a prerequisite for a stable universe. If the vacuum of the Psis field itself were unstable, the H_int interaction would be chaotic and unpredictable. The EFT-consistent, stabilised potential guarantees that the Psis term in the Hamiltonian is a well-behaved, stable, and reliable field, which is essential for the emergence of the coherent, ordered structures of the SCPN."
+      ],
+      "source_ledger_ids": [
+        "P0R01771",
+        "P0R01772",
+        "P0R01773",
+        "P0R01774",
+        "P0R01775",
+        "P0R01776",
+        "P0R01777",
+        "P0R01778"
+      ],
+      "source_record_ids": [
+        "P0B01771",
+        "P0B01772",
+        "P0B01773",
+        "P0B01774",
+        "P0B01775",
+        "P0B01776",
+        "P0B01777",
+        "P0B01778"
+      ],
+      "test_protocols": [
+        "preserve A Stable Vacuum for a Stable Interaction: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.lpsi_sets_the_properties_of_psis.a_stable_vacuum_for_a_stable_interaction",
+      "validation_targets": [
+        "preserve records P0R01773-P0R01774"
+      ],
+      "variables": [
+        "a_stable_vacuum_for_a_stable_interaction"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Intrinsic Dynamics of the Psi-Field (LPsi)' preserves Paper 0 records P0R01775-P0R01778 without empirical validation claims.",
+      "claim_boundary": "source-bounded lpsi sets the properties of psis source-accounting bridge; not validation evidence",
+      "context_id": "the_intrinsic_dynamics_of_the_psi_field_lpsi",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01775-P0R01778"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "lpsi_sets_the_properties_of_psis.the_intrinsic_dynamics_of_the_psi_field_lpsi",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_intrinsic_dynamics_of_the_psi_field_lpsi must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Intrinsic Dynamics of the Psi-Field (LPsi) is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Intrinsic Dynamics of the \u03a8-Field and the Stabilising Potential > Meta-Framework Integrations > \u03a8s Field Coupling Integration > L\u03a8 Sets the Properties of \u03a8s:",
+      "source_block_indices": [
+        1771,
+        1772,
+        1773,
+        1774,
+        1775,
+        1776,
+        1777,
+        1778
+      ],
+      "source_equation_ids": [
+        "P0R01775:the_intrinsic_dynamics_of_the_psi_field_lpsi",
+        "P0R01776:the_intrinsic_dynamics_of_the_psi_field_lpsi",
+        "P0R01777:the_intrinsic_dynamics_of_the_psi_field_lpsi",
+        "P0R01778:the_intrinsic_dynamics_of_the_psi_field_lpsi"
+      ],
+      "source_formulae": [
+        "P0R01775: The Intrinsic Dynamics of the Psi-Field (LPsi)",
+        "P0R01776: The Master Lagrangian is LTotal=LPsi+LPhysical+LInt. The intrinsic dynamics of the Consciousness Field",
+        "P0R01777: (LPsi) are governed by a non-linear, complex scalar field theory.",
+        "P0R01778: $L\\Psi = (\\partial\\mu\\Psi)*(\\partial\\mu\\Psi) - V\\left( \\mid\\Psi\\mid \\right) + LTopological$"
+      ],
+      "source_ledger_ids": [
+        "P0R01771",
+        "P0R01772",
+        "P0R01773",
+        "P0R01774",
+        "P0R01775",
+        "P0R01776",
+        "P0R01777",
+        "P0R01778"
+      ],
+      "source_record_ids": [
+        "P0B01771",
+        "P0B01772",
+        "P0B01773",
+        "P0B01774",
+        "P0B01775",
+        "P0B01776",
+        "P0B01777",
+        "P0B01778"
+      ],
+      "test_protocols": [
+        "preserve The Intrinsic Dynamics of the Psi-Field (LPsi) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.lpsi_sets_the_properties_of_psis.the_intrinsic_dynamics_of_the_psi_field_lpsi",
+      "validation_targets": [
+        "preserve records P0R01775-P0R01778"
+      ],
+      "variables": [
+        "the_intrinsic_dynamics_of_the_psi_field_lpsi"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 5
+    },
+    "category_counts": {
+      "context": 4,
+      "equation": 1,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded lpsi sets the properties of psis source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0026"
+    ],
+    "next_source_boundary": "P0R01779",
+    "source_ledger_span": [
+      "P0R01771",
+      "P0R01778"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "lpsi_sets_the_properties_of_psis.lpsi_sets_the_properties_of_psis",
+      "lpsi_sets_the_properties_of_psis.a_stable_vacuum_for_a_stable_interaction",
+      "lpsi_sets_the_properties_of_psis.the_intrinsic_dynamics_of_the_psi_field_lpsi"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 LPsi Sets the Properties of Psis: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

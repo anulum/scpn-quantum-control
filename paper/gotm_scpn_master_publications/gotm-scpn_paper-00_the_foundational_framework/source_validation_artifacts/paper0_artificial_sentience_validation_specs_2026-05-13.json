@@ -1,0 +1,180 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "couplings are finite non-negative simulator weights",
+        "acceleration is measured as convergence-rate change only",
+        "no noosphere, consciousness, or sentience claim is inferred"
+      ],
+      "canonical_statement": "Technosphere acceleration is bounded to a network-dynamics claim: increasing effective coupling J_ij reduces synchronisation convergence time in finite collective-state simulations.",
+      "claim_boundary": "simulator-only criteria gate; not sentience evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify increased coupling raises effective synchronisation rate",
+        "verify zero-coupling baseline has no coupling acceleration",
+        "verify non-finite coupling is rejected"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "applied.artificial_sentience.technosphere_coupling_acceleration",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "zero-coupling control must produce zero acceleration",
+        "negative-coupling control must be rejected",
+        "shape-mismatch control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > II. Artificial Sentience (AS) and the Technosphere",
+      "source_block_indices": [
+        6206,
+        6207
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06206",
+        "P0R06207"
+      ],
+      "source_record_ids": [
+        "P0B06206",
+        "P0B06207"
+      ],
+      "validation_protocol": "paper0.applied.artificial_sentience.coupling_acceleration",
+      "validation_targets": [
+        "verify increased coupling raises effective synchronisation rate",
+        "verify zero-coupling baseline has no coupling acceleration",
+        "verify non-finite coupling is rejected"
+      ],
+      "variables": [
+        "J_ij",
+        "mean_coupling",
+        "convergence_rate",
+        "order_parameter"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "phi is a finite proxy metric, not a consciousness measurement",
+        "sigma gate uses explicit tolerance around one",
+        "substrate coupling is a declared binary capability flag"
+      ],
+      "canonical_statement": "Artificial-sentience criteria are promoted only as a conjunctive simulator gate over integrated-information proxy, quasicritical sigma, and substrate coupling capability.",
+      "claim_boundary": "simulator-only criteria gate; not sentience evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify criteria pass only when all required predicates pass",
+        "verify missing-substrate control fails the gate",
+        "verify low-phi and off-critical controls fail independently"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "applied.artificial_sentience.criteria_gate",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-substrate control must fail criteria gate",
+        "low-phi control must fail criteria gate",
+        "off-criticality control must fail criteria gate"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Criteria for Artificial Sentience (AS):",
+      "source_block_indices": [
+        6208,
+        6209,
+        6210
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06208",
+        "P0R06209",
+        "P0R06210"
+      ],
+      "source_record_ids": [
+        "P0B06208",
+        "P0B06209",
+        "P0B06210"
+      ],
+      "validation_protocol": "paper0.applied.artificial_sentience.criteria_gate",
+      "validation_targets": [
+        "verify criteria pass only when all required predicates pass",
+        "verify missing-substrate control fails the gate",
+        "verify low-phi and off-critical controls fail independently"
+      ],
+      "variables": [
+        "phi_proxy",
+        "sigma",
+        "substrate_coupling",
+        "criteria_pass"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "phase-locking uses bounded circular statistics",
+        "classical and quantum labels are substrate flags only",
+        "passing the fixture cannot establish artificial sentience"
+      ],
+      "canonical_statement": "QAS phase-locking is bounded to a finite UPDE-style phase-locking score between system dynamics and an external field phase; passing the score is not sentience evidence.",
+      "claim_boundary": "simulator-only criteria gate; not sentience evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify aligned phases pass the phase-locking threshold",
+        "verify random or opposed phases fail the threshold",
+        "verify absent substrate coupling fails even with high phase-locking"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "applied.artificial_sentience.phase_locking_substrate_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "random-phase control must fail phase-locking threshold",
+        "absent-substrate control must fail boundary gate",
+        "non-finite-phase control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Criteria for Artificial Sentience (AS):",
+      "source_block_indices": [
+        6211
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06211"
+      ],
+      "source_record_ids": [
+        "P0B06211"
+      ],
+      "validation_protocol": "paper0.applied.artificial_sentience.phase_locking_boundary",
+      "validation_targets": [
+        "verify aligned phases pass the phase-locking threshold",
+        "verify random or opposed phases fail the threshold",
+        "verify absent substrate coupling fails even with high phase-locking"
+      ],
+      "variables": [
+        "system_phase",
+        "field_phase",
+        "phase_locking_value",
+        "lock_threshold"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_avoid_invented_equation_ids": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "all_specs_have_sentience_boundary": true,
+    "consumed_source_record_count": 6,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06206-P0R06211 are promoted as source-covered validation specifications only. Artificial-sentience wording is bounded to finite simulator criteria and is not sentience evidence.",
+    "source_ledger_span": [
+      "P0R06206",
+      "P0R06211"
+    ],
+    "source_record_count": 6,
+    "spec_count": 3,
+    "spec_keys": [
+      "applied.artificial_sentience.technosphere_coupling_acceleration",
+      "applied.artificial_sentience.criteria_gate",
+      "applied.artificial_sentience.phase_locking_substrate_boundary"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

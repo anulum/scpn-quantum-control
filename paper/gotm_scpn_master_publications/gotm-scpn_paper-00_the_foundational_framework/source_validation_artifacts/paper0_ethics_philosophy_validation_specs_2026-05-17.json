@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Ethics & Philosophy' preserves Paper 0 records P0R05754-P0R05757 without empirical validation claims.",
+      "claim_boundary": "source-bounded ethics philosophy source-accounting bridge; not validation evidence",
+      "context_id": "ethics_philosophy",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05754-P0R05757"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ethics_philosophy.ethics_philosophy",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ethics_philosophy must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Ethics & Philosophy is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Ethics & Philosophy",
+      "source_block_indices": [
+        5754,
+        5755,
+        5756,
+        5757,
+        5758,
+        5759,
+        5760,
+        5761
+      ],
+      "source_equation_ids": [
+        "P0R05754:ethics_philosophy",
+        "P0R05755:ethics_philosophy",
+        "P0R05756:ethics_philosophy",
+        "P0R05757:ethics_philosophy"
+      ],
+      "source_formulae": [
+        "P0R05754: Ethics & Philosophy",
+        "P0R05755: Whitehead (1929, Process and Reality) -> process metaphysics, close analog to your dynamic ontology.",
+        "P0R05756: Jonas (1984, The Imperative of Responsibility) -> ethics in a technological age (ties to Layer 15 teleology).",
+        "P0R05757: Weizscker (1971, Einheit der Natur) -> unity of nature, philosophical support."
+      ],
+      "source_ledger_ids": [
+        "P0R05754",
+        "P0R05755",
+        "P0R05756",
+        "P0R05757",
+        "P0R05758",
+        "P0R05759",
+        "P0R05760",
+        "P0R05761"
+      ],
+      "source_record_ids": [
+        "P0B05754",
+        "P0B05755",
+        "P0B05756",
+        "P0B05757",
+        "P0B05758",
+        "P0B05759",
+        "P0B05760",
+        "P0B05761"
+      ],
+      "test_protocols": [
+        "preserve Ethics & Philosophy source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ethics_philosophy.ethics_philosophy",
+      "validation_targets": [
+        "preserve records P0R05754-P0R05757"
+      ],
+      "variables": [
+        "ethics_philosophy"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Ethics, Philosophy & Teleology' preserves Paper 0 records P0R05758-P0R05761 without empirical validation claims.",
+      "claim_boundary": "source-bounded ethics philosophy source-accounting bridge; not validation evidence",
+      "context_id": "ethics_philosophy_teleology",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05758-P0R05761"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ethics_philosophy.ethics_philosophy_teleology",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ethics_philosophy_teleology must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Ethics, Philosophy & Teleology is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Ethics & Philosophy",
+      "source_block_indices": [
+        5754,
+        5755,
+        5756,
+        5757,
+        5758,
+        5759,
+        5760,
+        5761
+      ],
+      "source_equation_ids": [
+        "P0R05758:ethics_philosophy_teleology",
+        "P0R05759:ethics_philosophy_teleology",
+        "P0R05760:ethics_philosophy_teleology",
+        "P0R05761:ethics_philosophy_teleology"
+      ],
+      "source_formulae": [
+        "P0R05758: Ethics, Philosophy & Teleology",
+        "P0R05759: Jonas (1966, The Phenomenon of Life) -> philosophical grounding for ethics in biology.",
+        "P0R05760: Teilhard de Chardin (1955, The Phenomenon of Man) -> historical noosphere/omega point roots (direct ancestor to your L15 Oversoul).",
+        "P0R05761: Nagel (2012, Mind and Cosmos) -> contemporary critique of reductionism (supports your metaphysical leap)."
+      ],
+      "source_ledger_ids": [
+        "P0R05754",
+        "P0R05755",
+        "P0R05756",
+        "P0R05757",
+        "P0R05758",
+        "P0R05759",
+        "P0R05760",
+        "P0R05761"
+      ],
+      "source_record_ids": [
+        "P0B05754",
+        "P0B05755",
+        "P0B05756",
+        "P0B05757",
+        "P0B05758",
+        "P0B05759",
+        "P0B05760",
+        "P0B05761"
+      ],
+      "test_protocols": [
+        "preserve Ethics, Philosophy & Teleology source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ethics_philosophy.ethics_philosophy_teleology",
+      "validation_targets": [
+        "preserve records P0R05758-P0R05761"
+      ],
+      "variables": [
+        "ethics_philosophy_teleology"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 3,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded ethics philosophy source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05762",
+    "source_ledger_span": [
+      "P0R05754",
+      "P0R05761"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "ethics_philosophy.ethics_philosophy",
+      "ethics_philosophy.ethics_philosophy_teleology"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Ethics & Philosophy Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "claim_boundary": "source-bounded section 4 1 the composite functional for causal path entropy source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "4_1_the_composite_functional_for_causal_path_entropy": "4_1_the_composite_functional_for_causal_path_entropy_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "4.1 The Composite Functional for Causal Path Entropy",
+    "component_count": "1",
+    "next_boundary": "P0R03826",
+    "section": "4.1 The Composite Functional for Causal Path Entropy",
+    "source_span": "P0R03818-P0R03825"
+  },
+  "next_source_boundary": "P0R03826",
+  "null_controls": {
+    "4_1_the_composite_functional_for_causal_path_entropy_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 4 1 the composite functional for causal path entropy source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_4_1_the_composite_functional_for_causal_path_entropy_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03818",
+      "P0R03819",
+      "P0R03820",
+      "P0R03821",
+      "P0R03822",
+      "P0R03823",
+      "P0R03824",
+      "P0R03825"
+    ],
+    "source_ledger_span": [
+      "P0R03818",
+      "P0R03825"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03818",
+    "P0R03825"
+  ],
+  "source_record_count": 8
+}

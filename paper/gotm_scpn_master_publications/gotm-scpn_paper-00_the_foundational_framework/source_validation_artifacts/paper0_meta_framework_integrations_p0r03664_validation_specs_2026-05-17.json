@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03664-P0R03664 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03664-P0R03664"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03664.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > Causal Entropic Forces (CEF) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3664,
+        3665,
+        3666,
+        3667,
+        3668,
+        3669,
+        3670,
+        3671,
+        3672
+      ],
+      "source_equation_ids": [
+        "P0R03664:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03664: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03664",
+        "P0R03665",
+        "P0R03666",
+        "P0R03667",
+        "P0R03668",
+        "P0R03669",
+        "P0R03670",
+        "P0R03671",
+        "P0R03672"
+      ],
+      "source_record_ids": [
+        "P0B03664",
+        "P0B03665",
+        "P0B03666",
+        "P0B03667",
+        "P0B03668",
+        "P0B03669",
+        "P0B03670",
+        "P0B03671",
+        "P0B03672"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03664.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03664-P0R03664"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R03665-P0R03666 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03665-P0R03666"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03664.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > Causal Entropic Forces (CEF) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3664,
+        3665,
+        3666,
+        3667,
+        3668,
+        3669,
+        3670,
+        3671,
+        3672
+      ],
+      "source_equation_ids": [
+        "P0R03665:predictive_coding_integration",
+        "P0R03666:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R03665: Predictive Coding Integration",
+        "P0R03666: The CEF mechanism provides the ultimate prior for the cosmic generative model, implemented via a retrocausal inference loop."
+      ],
+      "source_ledger_ids": [
+        "P0R03664",
+        "P0R03665",
+        "P0R03666",
+        "P0R03667",
+        "P0R03668",
+        "P0R03669",
+        "P0R03670",
+        "P0R03671",
+        "P0R03672"
+      ],
+      "source_record_ids": [
+        "P0B03664",
+        "P0B03665",
+        "P0B03666",
+        "P0B03667",
+        "P0B03668",
+        "P0B03669",
+        "P0B03670",
+        "P0B03671",
+        "P0B03672"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03664.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R03665-P0R03666"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The SEC Attractor as the Ultimate Prior:' preserves Paper 0 records P0R03667-P0R03668 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+      "context_id": "the_sec_attractor_as_the_ultimate_prior",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03667-P0R03668"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03664.the_sec_attractor_as_the_ultimate_prior",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_sec_attractor_as_the_ultimate_prior must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The SEC Attractor as the Ultimate Prior: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > Causal Entropic Forces (CEF) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3664,
+        3665,
+        3666,
+        3667,
+        3668,
+        3669,
+        3670,
+        3671,
+        3672
+      ],
+      "source_equation_ids": [
+        "P0R03667:the_sec_attractor_as_the_ultimate_prior",
+        "P0R03668:the_sec_attractor_as_the_ultimate_prior"
+      ],
+      "source_formulae": [
+        "P0R03667: The SEC Attractor as the Ultimate Prior:",
+        "P0R03668: The high-SEC future state is the deepest, most fundamental prior belief of the cosmic generative model."
+      ],
+      "source_ledger_ids": [
+        "P0R03664",
+        "P0R03665",
+        "P0R03666",
+        "P0R03667",
+        "P0R03668",
+        "P0R03669",
+        "P0R03670",
+        "P0R03671",
+        "P0R03672"
+      ],
+      "source_record_ids": [
+        "P0B03664",
+        "P0B03665",
+        "P0B03666",
+        "P0B03667",
+        "P0B03668",
+        "P0B03669",
+        "P0B03670",
+        "P0B03671",
+        "P0B03672"
+      ],
+      "test_protocols": [
+        "preserve The SEC Attractor as the Ultimate Prior: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03664.the_sec_attractor_as_the_ultimate_prior",
+      "validation_targets": [
+        "preserve records P0R03667-P0R03668"
+      ],
+      "variables": [
+        "the_sec_attractor_as_the_ultimate_prior"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'TSVF as Bayesian Smoothing:' preserves Paper 0 records P0R03669-P0R03670 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+      "context_id": "tsvf_as_bayesian_smoothing",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03669-P0R03670"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03664.tsvf_as_bayesian_smoothing",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "tsvf_as_bayesian_smoothing must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "TSVF as Bayesian Smoothing: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > Causal Entropic Forces (CEF) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3664,
+        3665,
+        3666,
+        3667,
+        3668,
+        3669,
+        3670,
+        3671,
+        3672
+      ],
+      "source_equation_ids": [
+        "P0R03669:tsvf_as_bayesian_smoothing",
+        "P0R03670:tsvf_as_bayesian_smoothing"
+      ],
+      "source_formulae": [
+        "P0R03669: TSVF as Bayesian Smoothing:",
+        "P0R03670: The TSVF is a physical implementation of Bayesian smoothing. Standard inference updates beliefs based on past evidence. Smoothing is a more powerful form of inference that updates beliefs about the present based on both past and future evidence. The forward-evolving vector is the influence of the past, and the backward-evolving vector is the influence of the future \"evidence\" (the teleological prior). The CEF-biased probabilities are the result of this optimal, temporally non-local inference process."
+      ],
+      "source_ledger_ids": [
+        "P0R03664",
+        "P0R03665",
+        "P0R03666",
+        "P0R03667",
+        "P0R03668",
+        "P0R03669",
+        "P0R03670",
+        "P0R03671",
+        "P0R03672"
+      ],
+      "source_record_ids": [
+        "P0B03664",
+        "P0B03665",
+        "P0B03666",
+        "P0B03667",
+        "P0B03668",
+        "P0B03669",
+        "P0B03670",
+        "P0B03671",
+        "P0B03672"
+      ],
+      "test_protocols": [
+        "preserve TSVF as Bayesian Smoothing: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03664.tsvf_as_bayesian_smoothing",
+      "validation_targets": [
+        "preserve records P0R03669-P0R03670"
+      ],
+      "variables": [
+        "tsvf_as_bayesian_smoothing"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R03671-P0R03672 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03671-P0R03672"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03664.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > Causal Entropic Forces (CEF) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3664,
+        3665,
+        3666,
+        3667,
+        3668,
+        3669,
+        3670,
+        3671,
+        3672
+      ],
+      "source_equation_ids": [
+        "P0R03671:psis_field_coupling_integration",
+        "P0R03672:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R03671: Psis Field Coupling Integration",
+        "P0R03672: The CEF triadic mechanism is the most complete and fundamental description of how the H_int = -lambda * Psis * sigma interaction is globally coordinated to serve a purpose."
+      ],
+      "source_ledger_ids": [
+        "P0R03664",
+        "P0R03665",
+        "P0R03666",
+        "P0R03667",
+        "P0R03668",
+        "P0R03669",
+        "P0R03670",
+        "P0R03671",
+        "P0R03672"
+      ],
+      "source_record_ids": [
+        "P0B03664",
+        "P0B03665",
+        "P0B03666",
+        "P0B03667",
+        "P0B03668",
+        "P0B03669",
+        "P0B03670",
+        "P0B03671",
+        "P0B03672"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03664.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R03671-P0R03672"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03673",
+    "source_ledger_span": [
+      "P0R03664",
+      "P0R03672"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r03664.meta_framework_integrations",
+      "meta_framework_integrations_p0r03664.predictive_coding_integration",
+      "meta_framework_integrations_p0r03664.the_sec_attractor_as_the_ultimate_prior",
+      "meta_framework_integrations_p0r03664.tsvf_as_bayesian_smoothing",
+      "meta_framework_integrations_p0r03664.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

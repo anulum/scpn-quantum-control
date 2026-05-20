@@ -1,0 +1,309 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'sigma is the Q-ball Soliton:' preserves Paper 0 records P0R01812-P0R01813 without empirical validation claims.",
+      "claim_boundary": "source-bounded sigma is the q ball soliton source-accounting bridge; not validation evidence",
+      "context_id": "sigma_is_the_q_ball_soliton",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01812-P0R01813"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "sigma_is_the_q_ball_soliton.sigma_is_the_q_ball_soliton",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "sigma_is_the_q_ball_soliton must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "sigma is the Q-ball Soliton: is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The \"Self\" as a Soliton: Emergence of Localised Consciousness (Layer 5) > \u03a8s Field Coupling Integration > \u03c3 is the Q-ball Soliton:",
+      "source_block_indices": [
+        1812,
+        1813,
+        1814,
+        1815,
+        1816,
+        1817,
+        1818,
+        1819
+      ],
+      "source_equation_ids": [
+        "P0R01812:sigma_is_the_q_ball_soliton",
+        "P0R01813:sigma_is_the_q_ball_soliton"
+      ],
+      "source_formulae": [
+        "P0R01812: sigma is the Q-ball Soliton:",
+        "P0R01813: The collective state variable sigma for a Layer 5 Self is explicitly the coherent field configuration of the Q-ball, O."
+      ],
+      "source_ledger_ids": [
+        "P0R01812",
+        "P0R01813",
+        "P0R01814",
+        "P0R01815",
+        "P0R01816",
+        "P0R01817",
+        "P0R01818",
+        "P0R01819"
+      ],
+      "source_record_ids": [
+        "P0B01812",
+        "P0B01813",
+        "P0B01814",
+        "P0B01815",
+        "P0B01816",
+        "P0B01817",
+        "P0B01818",
+        "P0B01819"
+      ],
+      "test_protocols": [
+        "preserve sigma is the Q-ball Soliton: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.sigma_is_the_q_ball_soliton.sigma_is_the_q_ball_soliton",
+      "validation_targets": [
+        "preserve records P0R01812-P0R01813"
+      ],
+      "variables": [
+        "sigma_is_the_q_ball_soliton"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Why the Q-ball is the Perfect sigma:' preserves Paper 0 records P0R01814-P0R01815 without empirical validation claims.",
+      "claim_boundary": "source-bounded sigma is the q ball soliton source-accounting bridge; not validation evidence",
+      "context_id": "why_the_q_ball_is_the_perfect_sigma",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01814-P0R01815"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "sigma_is_the_q_ball_soliton.why_the_q_ball_is_the_perfect_sigma",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "why_the_q_ball_is_the_perfect_sigma must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Why the Q-ball is the Perfect sigma: is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The \"Self\" as a Soliton: Emergence of Localised Consciousness (Layer 5) > \u03a8s Field Coupling Integration > \u03c3 is the Q-ball Soliton:",
+      "source_block_indices": [
+        1812,
+        1813,
+        1814,
+        1815,
+        1816,
+        1817,
+        1818,
+        1819
+      ],
+      "source_equation_ids": [
+        "P0R01814:why_the_q_ball_is_the_perfect_sigma",
+        "P0R01815:why_the_q_ball_is_the_perfect_sigma"
+      ],
+      "source_formulae": [
+        "P0R01814: Why the Q-ball is the Perfect sigma:",
+        "P0R01815: The entire derivation explains why this is the correct choice. A viable sigma must be:"
+      ],
+      "source_ledger_ids": [
+        "P0R01812",
+        "P0R01813",
+        "P0R01814",
+        "P0R01815",
+        "P0R01816",
+        "P0R01817",
+        "P0R01818",
+        "P0R01819"
+      ],
+      "source_record_ids": [
+        "P0B01812",
+        "P0B01813",
+        "P0B01814",
+        "P0B01815",
+        "P0B01816",
+        "P0B01817",
+        "P0B01818",
+        "P0B01819"
+      ],
+      "test_protocols": [
+        "preserve Why the Q-ball is the Perfect sigma: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.sigma_is_the_q_ball_soliton.why_the_q_ball_is_the_perfect_sigma",
+      "validation_targets": [
+        "preserve records P0R01814-P0R01815"
+      ],
+      "variables": [
+        "why_the_q_ball_is_the_perfect_sigma"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Collective:' preserves Paper 0 records P0R01816-P0R01817 without empirical validation claims.",
+      "claim_boundary": "source-bounded sigma is the q ball soliton source-accounting bridge; not validation evidence",
+      "context_id": "collective",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01816-P0R01817"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "sigma_is_the_q_ball_soliton.collective",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "collective must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Collective: is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The \"Self\" as a Soliton: Emergence of Localised Consciousness (Layer 5) > \u03a8s Field Coupling Integration > \u03c3 is the Q-ball Soliton:",
+      "source_block_indices": [
+        1812,
+        1813,
+        1814,
+        1815,
+        1816,
+        1817,
+        1818,
+        1819
+      ],
+      "source_equation_ids": [
+        "P0R01816:collective",
+        "P0R01817:collective"
+      ],
+      "source_formulae": [
+        "P0R01816: Collective:",
+        "P0R01817: The soliton is a coherent state of countless Psi-field quanta."
+      ],
+      "source_ledger_ids": [
+        "P0R01812",
+        "P0R01813",
+        "P0R01814",
+        "P0R01815",
+        "P0R01816",
+        "P0R01817",
+        "P0R01818",
+        "P0R01819"
+      ],
+      "source_record_ids": [
+        "P0B01812",
+        "P0B01813",
+        "P0B01814",
+        "P0B01815",
+        "P0B01816",
+        "P0B01817",
+        "P0B01818",
+        "P0B01819"
+      ],
+      "test_protocols": [
+        "preserve Collective: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.sigma_is_the_q_ball_soliton.collective",
+      "validation_targets": [
+        "preserve records P0R01816-P0R01817"
+      ],
+      "variables": [
+        "collective"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Stable:' preserves Paper 0 records P0R01818-P0R01819 without empirical validation claims.",
+      "claim_boundary": "source-bounded sigma is the q ball soliton source-accounting bridge; not validation evidence",
+      "context_id": "stable",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01818-P0R01819"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "sigma_is_the_q_ball_soliton.stable",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "stable must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Stable: is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The \"Self\" as a Soliton: Emergence of Localised Consciousness (Layer 5) > \u03a8s Field Coupling Integration > \u03c3 is the Q-ball Soliton:",
+      "source_block_indices": [
+        1812,
+        1813,
+        1814,
+        1815,
+        1816,
+        1817,
+        1818,
+        1819
+      ],
+      "source_equation_ids": [
+        "P0R01818:stable",
+        "P0R01819:stable"
+      ],
+      "source_formulae": [
+        "P0R01818: Stable:",
+        "P0R01819: Its existence is guaranteed by charge conservation."
+      ],
+      "source_ledger_ids": [
+        "P0R01812",
+        "P0R01813",
+        "P0R01814",
+        "P0R01815",
+        "P0R01816",
+        "P0R01817",
+        "P0R01818",
+        "P0R01819"
+      ],
+      "source_record_ids": [
+        "P0B01812",
+        "P0B01813",
+        "P0B01814",
+        "P0B01815",
+        "P0B01816",
+        "P0B01817",
+        "P0B01818",
+        "P0B01819"
+      ],
+      "test_protocols": [
+        "preserve Stable: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.sigma_is_the_q_ball_soliton.stable",
+      "validation_targets": [
+        "preserve records P0R01818-P0R01819"
+      ],
+      "variables": [
+        "stable"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 6,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded sigma is the q ball soliton source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R01820",
+    "source_ledger_span": [
+      "P0R01812",
+      "P0R01819"
+    ],
+    "source_record_count": 8,
+    "spec_count": 4,
+    "spec_keys": [
+      "sigma_is_the_q_ball_soliton.sigma_is_the_q_ball_soliton",
+      "sigma_is_the_q_ball_soliton.why_the_q_ball_is_the_perfect_sigma",
+      "sigma_is_the_q_ball_soliton.collective",
+      "sigma_is_the_q_ball_soliton.stable"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 sigma is the Q-ball Soliton: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

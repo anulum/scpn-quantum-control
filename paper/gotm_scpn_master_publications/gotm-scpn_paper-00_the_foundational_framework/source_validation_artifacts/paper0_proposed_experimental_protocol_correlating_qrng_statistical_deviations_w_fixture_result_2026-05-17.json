@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded proposed experimental protocol correlating qrng statistical deviations w source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "apparatus": "apparatus_source_boundary",
+    "proposed_experimental_protocol_correlating_qrng_statistical_deviations_w": "proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_source_boundary",
+    "protocol": "protocol_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Proposed Experimental Protocol: Correlating QRNG Statistical Deviations with Collective Coherence Metrics",
+    "component_2": "Apparatus",
+    "component_3": "Protocol",
+    "component_count": "3",
+    "next_boundary": "P0R05228",
+    "section": "Proposed Experimental Protocol: Correlating QRNG Statistical Deviations with Collective Coherence Metrics",
+    "source_span": "P0R05217-P0R05227"
+  },
+  "next_source_boundary": "P0R05228",
+  "null_controls": {
+    "apparatus_is_not_empirical_validation_evidence": 1.0,
+    "proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_is_not_empirical_validation_evidence": 1.0,
+    "protocol_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded proposed experimental protocol correlating qrng statistical deviations w source-accounting bridge; not validation evidence",
+    "protocol_state": "source_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05217",
+      "P0R05218",
+      "P0R05219",
+      "P0R05220",
+      "P0R05221",
+      "P0R05222",
+      "P0R05223",
+      "P0R05224",
+      "P0R05225",
+      "P0R05226",
+      "P0R05227"
+    ],
+    "source_ledger_span": [
+      "P0R05217",
+      "P0R05227"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05217",
+    "P0R05227"
+  ],
+  "source_record_count": 11
+}

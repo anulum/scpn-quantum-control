@@ -1,0 +1,180 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The QEC Imperative and the Role of the Psi-Field' preserves Paper 0 records P0R03051-P0R03057 without empirical validation claims.",
+      "claim_boundary": "source-bounded the qec imperative and the role of the psi field source-accounting bridge; not validation evidence",
+      "context_id": "the_qec_imperative_and_the_role_of_the_psi_field",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03051-P0R03057"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_qec_imperative_and_the_role_of_the_psi_field.the_qec_imperative_and_the_role_of_the_psi_field",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_qec_imperative_and_the_role_of_the_psi_field must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The QEC Imperative and the Role of the Psi-Field is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The QEC Imperative and the Role of the \u03a8-Field",
+      "source_block_indices": [
+        3051,
+        3052,
+        3053,
+        3054,
+        3055,
+        3056,
+        3057,
+        3058
+      ],
+      "source_equation_ids": [
+        "P0R03051:the_qec_imperative_and_the_role_of_the_psi_field",
+        "P0R03052:the_qec_imperative_and_the_role_of_the_psi_field",
+        "P0R03053:the_qec_imperative_and_the_role_of_the_psi_field",
+        "P0R03054:the_qec_imperative_and_the_role_of_the_psi_field",
+        "P0R03055:the_qec_imperative_and_the_role_of_the_psi_field",
+        "P0R03056:the_qec_imperative_and_the_role_of_the_psi_field",
+        "P0R03057:the_qec_imperative_and_the_role_of_the_psi_field"
+      ],
+      "source_formulae": [
+        "P0R03051: The QEC Imperative and the Role of the Psi-Field",
+        "P0R03052: This section articulates the fundamental imperative for the Multi-Scale Quantum Error Correction (MS-QEC) architecture and posits a primary functional role for the Psi-field in its operation. The framework confronts the central challenge to quantum biology: the persistence of functional quantum coherence in \"warm, wet, and noisy\" biological environments. It asserts that MS-QEC is not an ancillary feature but a prerequisite for the physical viability of the entire SCPN.",
+        "P0R03053: The core proposal is that the Psi-field acts as the master stabiliser for the nested QEC codes. It is the active organising principle that allows life to create and sustain pockets of quantum coherence against the overwhelming statistical pressure of environmental decoherence. This is framed not as a violation of the Second Law of Thermodynamics, but as a sophisticated form of entropy management. By coupling to the biological substrate, the Psi-field provides a continuous input of negentropy-analogous to work-that actively biases the system's dynamics towards coherence-preserving pathways. In this view, every observed instance of functional quantum biology, from photosynthesis to enzymatic action, serves as direct physical evidence of the Psi-field's ongoing role in stabilising the quantum foundations of life.",
+        "P0R03054: This section tackles a huge puzzle: how can the delicate, fragile world of quantum mechanics possibly play a role in the warm, messy, and chaotic environment of a living cell? It's like trying to build a perfectly stable sandcastle in the middle of a hurricane. The answer is that life has a secret weapon.",
+        "P0R03055: That secret weapon is the Psi-field itself. We propose that the fundamental job of the consciousness field is to act as the ultimate guardian of quantum coherence. It's like a focused, intelligent force field that creates tiny, calm pockets in the middle of the biological storm, allowing delicate quantum processes to happen without being instantly destroyed.",
+        "P0R03056: This isn't magic or a violation of the laws of physics. It's a form of \"entropy management.\" Think of it like a tiny, super-efficient refrigerator. A fridge uses energy to pump heat out and create a pocket of cold, ordered space inside. In the same way, the Psi-field \"pumps\" chaos out of biological systems, creating the pockets of quantum order that are essential for life to function. Every time a plant efficiently captures sunlight, that's evidence of the Psi-field at work, protecting the quantum magic of life.",
+        "P0R03057: P0R03057"
+      ],
+      "source_ledger_ids": [
+        "P0R03051",
+        "P0R03052",
+        "P0R03053",
+        "P0R03054",
+        "P0R03055",
+        "P0R03056",
+        "P0R03057",
+        "P0R03058"
+      ],
+      "source_record_ids": [
+        "P0B03051",
+        "P0B03052",
+        "P0B03053",
+        "P0B03054",
+        "P0B03055",
+        "P0B03056",
+        "P0B03057",
+        "P0B03058"
+      ],
+      "test_protocols": [
+        "preserve The QEC Imperative and the Role of the Psi-Field source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_qec_imperative_and_the_role_of_the_psi_field.the_qec_imperative_and_the_role_of_the_psi_field",
+      "validation_targets": [
+        "preserve records P0R03051-P0R03057"
+      ],
+      "variables": [
+        "the_qec_imperative_and_the_role_of_the_psi_field"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03058-P0R03058 without empirical validation claims.",
+      "claim_boundary": "source-bounded the qec imperative and the role of the psi field source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03058-P0R03058"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_qec_imperative_and_the_role_of_the_psi_field.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The QEC Imperative and the Role of the \u03a8-Field",
+      "source_block_indices": [
+        3051,
+        3052,
+        3053,
+        3054,
+        3055,
+        3056,
+        3057,
+        3058
+      ],
+      "source_equation_ids": [
+        "P0R03058:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03058: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03051",
+        "P0R03052",
+        "P0R03053",
+        "P0R03054",
+        "P0R03055",
+        "P0R03056",
+        "P0R03057",
+        "P0R03058"
+      ],
+      "source_record_ids": [
+        "P0B03051",
+        "P0B03052",
+        "P0B03053",
+        "P0B03054",
+        "P0B03055",
+        "P0B03056",
+        "P0B03057",
+        "P0B03058"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_qec_imperative_and_the_role_of_the_psi_field.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03058-P0R03058"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 2,
+      "mechanism": 3,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded the qec imperative and the role of the psi field source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03059",
+    "source_ledger_span": [
+      "P0R03051",
+      "P0R03058"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_qec_imperative_and_the_role_of_the_psi_field.the_qec_imperative_and_the_role_of_the_psi_field",
+      "the_qec_imperative_and_the_role_of_the_psi_field.meta_framework_integrations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The QEC Imperative and the Role of the Psi-Field Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

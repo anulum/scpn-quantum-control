@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Quantum & Gravitation Edge Cases' preserves Paper 0 records P0R05689-P0R05692 without empirical validation claims.",
+      "claim_boundary": "source-bounded quantum gravitation edge cases source-accounting bridge; not validation evidence",
+      "context_id": "quantum_gravitation_edge_cases",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05689-P0R05692"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "quantum_gravitation_edge_cases.quantum_gravitation_edge_cases",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "quantum_gravitation_edge_cases must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Quantum & Gravitation Edge Cases is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Quantum & Gravitation Edge Cases",
+      "source_block_indices": [
+        5689,
+        5690,
+        5691,
+        5692,
+        5693,
+        5694,
+        5695,
+        5696
+      ],
+      "source_equation_ids": [
+        "P0R05689:quantum_gravitation_edge_cases",
+        "P0R05690:quantum_gravitation_edge_cases",
+        "P0R05691:quantum_gravitation_edge_cases",
+        "P0R05692:quantum_gravitation_edge_cases"
+      ],
+      "source_formulae": [
+        "P0R05689: Quantum & Gravitation Edge Cases",
+        "P0R05690: Two-State Vector Formalism (retrocausality in memory layers) -> Aharonov, Bergmann & Lebowitz (1964).",
+        "P0R05691: Quantum Darwinism (environmental selection of states) -> Zurek (2009).",
+        "P0R05692: Holographic principle roots -> 't Hooft (1993), Susskind (1995)."
+      ],
+      "source_ledger_ids": [
+        "P0R05689",
+        "P0R05690",
+        "P0R05691",
+        "P0R05692",
+        "P0R05693",
+        "P0R05694",
+        "P0R05695",
+        "P0R05696"
+      ],
+      "source_record_ids": [
+        "P0B05689",
+        "P0B05690",
+        "P0B05691",
+        "P0B05692",
+        "P0B05693",
+        "P0B05694",
+        "P0B05695",
+        "P0B05696"
+      ],
+      "test_protocols": [
+        "preserve Quantum & Gravitation Edge Cases source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.quantum_gravitation_edge_cases.quantum_gravitation_edge_cases",
+      "validation_targets": [
+        "preserve records P0R05689-P0R05692"
+      ],
+      "variables": [
+        "quantum_gravitation_edge_cases"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Quantum Foundations & Info' preserves Paper 0 records P0R05693-P0R05696 without empirical validation claims.",
+      "claim_boundary": "source-bounded quantum gravitation edge cases source-accounting bridge; not validation evidence",
+      "context_id": "quantum_foundations_info",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05693-P0R05696"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "quantum_gravitation_edge_cases.quantum_foundations_info",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "quantum_foundations_info must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Quantum Foundations & Info is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Quantum & Gravitation Edge Cases",
+      "source_block_indices": [
+        5689,
+        5690,
+        5691,
+        5692,
+        5693,
+        5694,
+        5695,
+        5696
+      ],
+      "source_equation_ids": [
+        "P0R05693:quantum_foundations_info",
+        "P0R05694:quantum_foundations_info",
+        "P0R05695:quantum_foundations_info",
+        "P0R05696:quantum_foundations_info"
+      ],
+      "source_formulae": [
+        "P0R05693: Quantum Foundations & Info",
+        "P0R05694: Zurek (2003) -> decoherence & environment-induced superselection (anchors your CIGD decoherence angle).",
+        "P0R05695: Nielsen (2010) -> \"Quantum Information as a Resource\" (ties to UPDE informational coupling).",
+        "P0R05696: Vedral (2010, Decoding Reality) -> direct on information as fundamental."
+      ],
+      "source_ledger_ids": [
+        "P0R05689",
+        "P0R05690",
+        "P0R05691",
+        "P0R05692",
+        "P0R05693",
+        "P0R05694",
+        "P0R05695",
+        "P0R05696"
+      ],
+      "source_record_ids": [
+        "P0B05689",
+        "P0B05690",
+        "P0B05691",
+        "P0B05692",
+        "P0B05693",
+        "P0B05694",
+        "P0B05695",
+        "P0B05696"
+      ],
+      "test_protocols": [
+        "preserve Quantum Foundations & Info source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.quantum_gravitation_edge_cases.quantum_foundations_info",
+      "validation_targets": [
+        "preserve records P0R05693-P0R05696"
+      ],
+      "variables": [
+        "quantum_foundations_info"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded quantum gravitation edge cases source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05697",
+    "source_ledger_span": [
+      "P0R05689",
+      "P0R05696"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "quantum_gravitation_edge_cases.quantum_gravitation_edge_cases",
+      "quantum_gravitation_edge_cases.quantum_foundations_info"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Quantum & Gravitation Edge Cases Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

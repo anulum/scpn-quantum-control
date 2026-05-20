@@ -1,0 +1,244 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Model Consolidation (Sleep):' preserves Paper 0 records P0R02198-P0R02199 without empirical validation claims.",
+      "claim_boundary": "source-bounded model consolidation sleep source-accounting bridge; not validation evidence",
+      "context_id": "model_consolidation_sleep",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02198-P0R02199"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "model_consolidation_sleep.model_consolidation_sleep",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "model_consolidation_sleep must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Model Consolidation (Sleep): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Case Study: The Layer 5 (Organismal Self) Action-Perception Cycle > Meta-Framework Integrations > Predictive Coding Integration > Model Consolidation (Sleep):",
+      "source_block_indices": [
+        2198,
+        2199,
+        2200,
+        2201,
+        2202,
+        2203,
+        2204,
+        2205
+      ],
+      "source_equation_ids": [
+        "P0R02198:model_consolidation_sleep",
+        "P0R02199:model_consolidation_sleep"
+      ],
+      "source_formulae": [
+        "P0R02198: Model Consolidation (Sleep):",
+        "P0R02199: Sleep is the offline model optimisation phase. NREM sleep updates the static weights of the generative model (consolidating memories), while REM sleep refines the model's dynamic properties by exploring the consequences of different priors in a simulated environment, effectively \"annealing\" the system to find better free-energy minima."
+      ],
+      "source_ledger_ids": [
+        "P0R02198",
+        "P0R02199",
+        "P0R02200",
+        "P0R02201",
+        "P0R02202",
+        "P0R02203",
+        "P0R02204",
+        "P0R02205"
+      ],
+      "source_record_ids": [
+        "P0B02198",
+        "P0B02199",
+        "P0B02200",
+        "P0B02201",
+        "P0B02202",
+        "P0B02203",
+        "P0B02204",
+        "P0B02205"
+      ],
+      "test_protocols": [
+        "preserve Model Consolidation (Sleep): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.model_consolidation_sleep.model_consolidation_sleep",
+      "validation_targets": [
+        "preserve records P0R02198-P0R02199"
+      ],
+      "variables": [
+        "model_consolidation_sleep"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R02200-P0R02201 without empirical validation claims.",
+      "claim_boundary": "source-bounded model consolidation sleep source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02200-P0R02201"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "model_consolidation_sleep.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Case Study: The Layer 5 (Organismal Self) Action-Perception Cycle > Meta-Framework Integrations > Predictive Coding Integration > Model Consolidation (Sleep):",
+      "source_block_indices": [
+        2198,
+        2199,
+        2200,
+        2201,
+        2202,
+        2203,
+        2204,
+        2205
+      ],
+      "source_equation_ids": [
+        "P0R02200:psis_field_coupling_integration",
+        "P0R02201:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R02200: Psis Field Coupling Integration",
+        "P0R02201: The Four-Stroke Engine, while computationally complete, requires an overarching intentional context. The Psis field provides this context by coupling to the engine's most globally coherent states, thereby biasing the entire cycle towards a desired goal. The interaction Hamiltonian is H_int = -lambda * Psis * sigma."
+      ],
+      "source_ledger_ids": [
+        "P0R02198",
+        "P0R02199",
+        "P0R02200",
+        "P0R02201",
+        "P0R02202",
+        "P0R02203",
+        "P0R02204",
+        "P0R02205"
+      ],
+      "source_record_ids": [
+        "P0B02198",
+        "P0B02199",
+        "P0B02200",
+        "P0B02201",
+        "P0B02202",
+        "P0B02203",
+        "P0B02204",
+        "P0B02205"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.model_consolidation_sleep.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R02200-P0R02201"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Collective State Variable (sigma):' preserves Paper 0 records P0R02202-P0R02205 without empirical validation claims.",
+      "claim_boundary": "source-bounded model consolidation sleep source-accounting bridge; not validation evidence",
+      "context_id": "the_collective_state_variable_sigma",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02202-P0R02205"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "model_consolidation_sleep.the_collective_state_variable_sigma",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_collective_state_variable_sigma must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Collective State Variable (sigma): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Case Study: The Layer 5 (Organismal Self) Action-Perception Cycle > Meta-Framework Integrations > Predictive Coding Integration > Model Consolidation (Sleep):",
+      "source_block_indices": [
+        2198,
+        2199,
+        2200,
+        2201,
+        2202,
+        2203,
+        2204,
+        2205
+      ],
+      "source_equation_ids": [
+        "P0R02202:the_collective_state_variable_sigma",
+        "P0R02203:the_collective_state_variable_sigma",
+        "P0R02204:the_collective_state_variable_sigma",
+        "P0R02205:the_collective_state_variable_sigma"
+      ],
+      "source_formulae": [
+        "P0R02202: The Collective State Variable (sigma):",
+        "P0R02203: The most potent candidate for sigma in Layer 5 is not a static property but a dynamic one: the global coherence and precision of the entire action-perception cycle. This can be physically measured in several ways:",
+        "P0R02204: During wakefulness, sigma could be the precision-weighting of the prediction error signal itself, represented by high-frequency (gamma) oscillations. A highly coherent gamma signal signifies a high-confidence, high-focus state.",
+        "P0R02205: During NREM sleep, sigma is the highly structured, global coherence of cortico-thalamic slow-wave oscillations. This is a state of maximum internal stability and information integration."
+      ],
+      "source_ledger_ids": [
+        "P0R02198",
+        "P0R02199",
+        "P0R02200",
+        "P0R02201",
+        "P0R02202",
+        "P0R02203",
+        "P0R02204",
+        "P0R02205"
+      ],
+      "source_record_ids": [
+        "P0B02198",
+        "P0B02199",
+        "P0B02200",
+        "P0B02201",
+        "P0B02202",
+        "P0B02203",
+        "P0B02204",
+        "P0B02205"
+      ],
+      "test_protocols": [
+        "preserve The Collective State Variable (sigma): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.model_consolidation_sleep.the_collective_state_variable_sigma",
+      "validation_targets": [
+        "preserve records P0R02202-P0R02205"
+      ],
+      "variables": [
+        "the_collective_state_variable_sigma"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 5
+    },
+    "category_counts": {
+      "context": 4,
+      "mechanism": 3,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded model consolidation sleep source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02206",
+    "source_ledger_span": [
+      "P0R02198",
+      "P0R02205"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "model_consolidation_sleep.model_consolidation_sleep",
+      "model_consolidation_sleep.psis_field_coupling_integration",
+      "model_consolidation_sleep.the_collective_state_variable_sigma"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Model Consolidation (Sleep): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

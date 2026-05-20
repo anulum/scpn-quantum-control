@@ -1,0 +1,53 @@
+{
+  "claim_boundary": "source-bounded the pseudoscalar coupling source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "the_pseudoscalar_coupling": "the_pseudoscalar_coupling_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Pseudoscalar Coupling",
+    "component_count": "1",
+    "next_boundary": "P0R04310",
+    "section": "The Pseudoscalar Coupling",
+    "source_span": "P0R04291-P0R04309"
+  },
+  "next_source_boundary": "P0R04310",
+  "null_controls": {
+    "the_pseudoscalar_coupling_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the pseudoscalar coupling source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_pseudoscalar_coupling_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04291",
+      "P0R04292",
+      "P0R04293",
+      "P0R04294",
+      "P0R04295",
+      "P0R04296",
+      "P0R04297",
+      "P0R04298",
+      "P0R04299",
+      "P0R04300",
+      "P0R04301",
+      "P0R04302",
+      "P0R04303",
+      "P0R04304",
+      "P0R04305",
+      "P0R04306",
+      "P0R04307",
+      "P0R04308",
+      "P0R04309"
+    ],
+    "source_ledger_span": [
+      "P0R04291",
+      "P0R04309"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04291",
+    "P0R04309"
+  ],
+  "source_record_count": 19
+}

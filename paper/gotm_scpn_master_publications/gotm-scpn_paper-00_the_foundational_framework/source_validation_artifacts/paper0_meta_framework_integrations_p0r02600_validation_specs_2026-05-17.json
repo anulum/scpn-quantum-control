@@ -1,0 +1,309 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R02600-P0R02600 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02600 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02600-P0R02600"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02600.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Unified Phase Dynamics Equation (UPDE) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2600,
+        2601,
+        2602,
+        2603,
+        2604,
+        2605,
+        2606,
+        2607
+      ],
+      "source_equation_ids": [
+        "P0R02600:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R02600: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R02600",
+        "P0R02601",
+        "P0R02602",
+        "P0R02603",
+        "P0R02604",
+        "P0R02605",
+        "P0R02606",
+        "P0R02607"
+      ],
+      "source_record_ids": [
+        "P0B02600",
+        "P0B02601",
+        "P0B02602",
+        "P0B02603",
+        "P0B02604",
+        "P0B02605",
+        "P0B02606",
+        "P0B02607"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02600.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R02600-P0R02600"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R02601-P0R02602 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02600 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02601-P0R02602"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02600.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Unified Phase Dynamics Equation (UPDE) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2600,
+        2601,
+        2602,
+        2603,
+        2604,
+        2605,
+        2606,
+        2607
+      ],
+      "source_equation_ids": [
+        "P0R02601:predictive_coding_integration",
+        "P0R02602:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R02601: Predictive Coding Integration",
+        "P0R02602: The UPDE is the explicit mathematical implementation of the Hierarchical Predictive Coding (HPC) algorithm. Phase dynamics are the physical medium of inference."
+      ],
+      "source_ledger_ids": [
+        "P0R02600",
+        "P0R02601",
+        "P0R02602",
+        "P0R02603",
+        "P0R02604",
+        "P0R02605",
+        "P0R02606",
+        "P0R02607"
+      ],
+      "source_record_ids": [
+        "P0B02600",
+        "P0B02601",
+        "P0B02602",
+        "P0B02603",
+        "P0B02604",
+        "P0B02605",
+        "P0B02606",
+        "P0B02607"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02600.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R02601-P0R02602"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Phase Coherence as Prediction:' preserves Paper 0 records P0R02603-P0R02604 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02600 source-accounting bridge; not validation evidence",
+      "context_id": "phase_coherence_as_prediction",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02603-P0R02604"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02600.phase_coherence_as_prediction",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "phase_coherence_as_prediction must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Phase Coherence as Prediction: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Unified Phase Dynamics Equation (UPDE) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2600,
+        2601,
+        2602,
+        2603,
+        2604,
+        2605,
+        2606,
+        2607
+      ],
+      "source_equation_ids": [
+        "P0R02603:phase_coherence_as_prediction",
+        "P0R02604:phase_coherence_as_prediction"
+      ],
+      "source_formulae": [
+        "P0R02603: Phase Coherence as Prediction:",
+        "P0R02604: A stable, coherent phase relationship among a population of oscillators represents the system's current prediction or belief (a generative model)."
+      ],
+      "source_ledger_ids": [
+        "P0R02600",
+        "P0R02601",
+        "P0R02602",
+        "P0R02603",
+        "P0R02604",
+        "P0R02605",
+        "P0R02606",
+        "P0R02607"
+      ],
+      "source_record_ids": [
+        "P0B02600",
+        "P0B02601",
+        "P0B02602",
+        "P0B02603",
+        "P0B02604",
+        "P0B02605",
+        "P0B02606",
+        "P0B02607"
+      ],
+      "test_protocols": [
+        "preserve Phase Coherence as Prediction: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02600.phase_coherence_as_prediction",
+      "validation_targets": [
+        "preserve records P0R02603-P0R02604"
+      ],
+      "variables": [
+        "phase_coherence_as_prediction"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Phase Slips as Prediction Error:' preserves Paper 0 records P0R02605-P0R02607 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02600 source-accounting bridge; not validation evidence",
+      "context_id": "phase_slips_as_prediction_error",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02605-P0R02607"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02600.phase_slips_as_prediction_error",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "phase_slips_as_prediction_error must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Phase Slips as Prediction Error: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Unified Phase Dynamics Equation (UPDE) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2600,
+        2601,
+        2602,
+        2603,
+        2604,
+        2605,
+        2606,
+        2607
+      ],
+      "source_equation_ids": [
+        "P0R02605:phase_slips_as_prediction_error",
+        "P0R02606:phase_slips_as_prediction_error",
+        "P0R02607:phase_slips_as_prediction_error"
+      ],
+      "source_formulae": [
+        "P0R02605: Phase Slips as Prediction Error:",
+        "P0R02606: A \"phase slip,\" or a deviation from the expected coherence, is the physical instantiation of prediction error.",
+        "P0R02607: Inter-Layer Coupling as Inference: The C_InterLayer term is the mechanism of hierarchical inference. The downward coupling (F_D) is the propagation of top-down predictions from a higher, slower layer to a lower, faster layer. The upward coupling (G_U) is the propagation of bottom-up prediction error from the lower layer to the higher one, compelling the higher layer to update its model. The entire UPDE describes a network that is continuously and dynamically working to minimise its prediction error (phase desynchronisation) at every level of the hierarchy."
+      ],
+      "source_ledger_ids": [
+        "P0R02600",
+        "P0R02601",
+        "P0R02602",
+        "P0R02603",
+        "P0R02604",
+        "P0R02605",
+        "P0R02606",
+        "P0R02607"
+      ],
+      "source_record_ids": [
+        "P0B02600",
+        "P0B02601",
+        "P0B02602",
+        "P0B02603",
+        "P0B02604",
+        "P0B02605",
+        "P0B02606",
+        "P0B02607"
+      ],
+      "test_protocols": [
+        "preserve Phase Slips as Prediction Error: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02600.phase_slips_as_prediction_error",
+      "validation_targets": [
+        "preserve records P0R02605-P0R02607"
+      ],
+      "variables": [
+        "phase_slips_as_prediction_error"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 2,
+      "mechanism": 1,
+      "validation_target": 5
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r02600 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02608",
+    "source_ledger_span": [
+      "P0R02600",
+      "P0R02607"
+    ],
+    "source_record_count": 8,
+    "spec_count": 4,
+    "spec_keys": [
+      "meta_framework_integrations_p0r02600.meta_framework_integrations",
+      "meta_framework_integrations_p0r02600.predictive_coding_integration",
+      "meta_framework_integrations_p0r02600.phase_coherence_as_prediction",
+      "meta_framework_integrations_p0r02600.phase_slips_as_prediction_error"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

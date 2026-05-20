@@ -1,0 +1,44 @@
+{
+  "claim_boundary": "source-bounded the slow control network glial homeostasis and neuronal criticality source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "the_slow_control_network_glial_homeostasis_and_neuronal_criticality": "the_slow_control_network_glial_homeostasis_and_neuronal_criticality_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Slow Control Network: Glial Homeostasis and Neuronal Criticality",
+    "component_count": "1",
+    "next_boundary": "P0R05390",
+    "section": "The Slow Control Network: Glial Homeostasis and Neuronal Criticality",
+    "source_span": "P0R05380-P0R05389"
+  },
+  "next_source_boundary": "P0R05390",
+  "null_controls": {
+    "the_slow_control_network_glial_homeostasis_and_neuronal_criticality_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the slow control network glial homeostasis and neuronal criticality source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05380",
+      "P0R05381",
+      "P0R05382",
+      "P0R05383",
+      "P0R05384",
+      "P0R05385",
+      "P0R05386",
+      "P0R05387",
+      "P0R05388",
+      "P0R05389"
+    ],
+    "source_ledger_span": [
+      "P0R05380",
+      "P0R05389"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05380",
+    "P0R05389"
+  ],
+  "source_record_count": 10
+}

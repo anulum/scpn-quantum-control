@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded the quantum to classical transition amplification of intent source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "mechanism_1_guided_einselection": "mechanism_1_guided_einselection_source_boundary",
+    "the_quantum_to_classical_transition_amplification_of_intent": "the_quantum_to_classical_transition_amplification_of_intent_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Quantum-to-Classical Transition: Amplification of Intent",
+    "component_2": "Mechanism 1: Guided Einselection",
+    "component_count": "2",
+    "next_boundary": "P0R03343",
+    "section": "The Quantum-to-Classical Transition: Amplification of Intent",
+    "source_span": "P0R03332-P0R03342"
+  },
+  "next_source_boundary": "P0R03343",
+  "null_controls": {
+    "mechanism_1_guided_einselection_is_not_empirical_validation_evidence": 1.0,
+    "the_quantum_to_classical_transition_amplification_of_intent_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the quantum to classical transition amplification of intent source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_quantum_to_classical_transition_amplification_of_intent_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03332",
+      "P0R03333",
+      "P0R03334",
+      "P0R03335",
+      "P0R03336",
+      "P0R03337",
+      "P0R03338",
+      "P0R03339",
+      "P0R03340",
+      "P0R03341",
+      "P0R03342"
+    ],
+    "source_ledger_span": [
+      "P0R03332",
+      "P0R03342"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03332",
+    "P0R03342"
+  ],
+  "source_record_count": 11
+}

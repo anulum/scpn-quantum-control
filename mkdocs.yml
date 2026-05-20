@@ -14,12 +14,10 @@ repo_url: https://github.com/anulum/scpn-quantum-control
 repo_name: anulum/scpn-quantum-control
 edit_uri: edit/main/docs/
 
-# Raw OCR/PDF extracts are retained for internal auditability, but they
-# are not curated site pages. Their equation fragments and bracketed
-# scientific tokens look like Markdown links/autorefs, which breaks
-# `mkdocs build --strict` even though the public docs are clean.
+# Internal operational notes, audits, correspondence, and raw OCR/PDF extracts
+# are retained locally for auditability, but they are not public site pages.
 exclude_docs: |
-  internal/paper_extracts/**
+  internal/**
 
 theme:
   name: material
@@ -58,6 +56,8 @@ nav:
       - Equations: equations.md
       - Architecture: architecture.md
       - Research Gems: research_gems.md
+      - Literature Catalogue: literature/README.md
+      - Literature Survey 2024-2026: literature/literature_survey_2024_2026.md
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
       - Stable Facades API: stable_facades_api.md
@@ -67,14 +67,16 @@ nav:
       - Kuramoto Core Facade: kuramoto_core_facade.md
       - Core Package Boundary: core_package_boundary.md
       - API Overview: api.md
-      - GOTM-SCPN Paper 0 Validation Register: paper0_validation_register.md
-      - GOTM-SCPN Paper 0 Experimental Pathway: paper0_experimental_pathway.md
-      - GOTM-SCPN Paper 0 Lane Registry: paper0_lane_registry.md
-      - GOTM-SCPN Paper 0 Methodology Paper Outline: paper0_methodology_paper_outline.md
-      - GOTM-SCPN Paper 0 First Preregistered Experiment: paper0_first_preregistered_downstream_experiment.md
-      - GOTM-SCPN Paper 0 K_nm Preregistered Replay: paper0_knm_preregistered_replay.md
-      - GOTM-SCPN Paper 0 K_nm Replay Contract: paper0_knm_preregistered_replay_contract.md
-      - GOTM-SCPN Paper 0 K_nm Evidence Checklist: paper0_knm_measured_coupling_evidence_checklist.md
+      - GOTM-SCPN Paper 0 Index: paper0/README.md
+      - GOTM-SCPN Paper 0 Validation Register: paper0/paper0_validation_register.md
+      - GOTM-SCPN Paper 0 Processing Methodology: paper0/paper0_processing_methodology.md
+      - GOTM-SCPN Paper 0 Experimental Pathway: paper0/paper0_experimental_pathway.md
+      - GOTM-SCPN Paper 0 Lane Registry: paper0/paper0_lane_registry.md
+      - GOTM-SCPN Paper 0 Methodology Paper Outline: paper0/paper0_methodology_paper_outline.md
+      - GOTM-SCPN Paper 0 First Preregistered Experiment: paper0/paper0_first_preregistered_downstream_experiment.md
+      - GOTM-SCPN Paper 0 K_nm Preregistered Replay: paper0/paper0_knm_preregistered_replay.md
+      - GOTM-SCPN Paper 0 K_nm Replay Contract: paper0/paper0_knm_preregistered_replay_contract.md
+      - GOTM-SCPN Paper 0 K_nm Evidence Checklist: paper0/paper0_knm_measured_coupling_evidence_checklist.md
       - Runtime Contracts:
           - QPU Data Artifact: qpu_data_artifact.md
           - Pipeline Runtime Contract: pipeline_runtime_contract.md
@@ -82,11 +84,11 @@ nav:
           - QPU Provider Readiness: qpu_provider_readiness.md
       - QPU System Capability Dossier: qpu_system_capability_dossier.md
       - Pipeline Performance: pipeline_performance.md
-      - S2 Scaling Readiness Index: s2_scaling_readiness_index_2026-05-06.md
-      - S3 Design Readiness Index: s3_design_readiness_index_2026-05-06.md
-      - Hybrid Feedback Loop S1: hybrid_feedback_loop_s1_2026-05-06.md
-      - S1 Feedback Readiness Index: s1_feedback_readiness_index_2026-05-06.md
-      - S1 Live Submission Preflight: s1_live_submission_preflight_2026-05-06.md
+      - S2 Scaling Readiness Index: campaigns/s2_scaling_readiness_index_2026-05-06.md
+      - S3 Design Readiness Index: campaigns/s3_design_readiness_index_2026-05-06.md
+      - Hybrid Feedback Loop S1: campaigns/hybrid_feedback_loop_s1_2026-05-06.md
+      - S1 Feedback Readiness Index: campaigns/s1_feedback_readiness_index_2026-05-06.md
+      - S1 Live Submission Preflight: campaigns/s1_live_submission_preflight_2026-05-06.md
       - Artifact Storage Audit: artifact_storage.md
       - Advanced Module Reference:
           - Auto-Generated Module Index: autodoc.md
@@ -115,9 +117,9 @@ nav:
       - "Preprint: Quantum Kuramoto-XY on Hardware": preprint.md
       - "Paper: Synchronisation Witnesses": paper_sync_witnesses.md
       - "Paper: DLA Parity Theorem": paper_dla_parity.md
-      - "Paper Plan: SCPN/FIM Hamiltonian": scpn_fim_hamiltonian_paper_plan_2026-05-05.md
-      - "Protocol: SCPN/FIM Validation": scpn_fim_validation_protocol_2026-05-05.md
-      - "Claim Boundary: SCPN/FIM": scpn_fim_claim_boundary_2026-05-05.md
+      - "Paper Plan: SCPN/FIM Hamiltonian": campaigns/scpn_fim_hamiltonian_paper_plan_2026-05-05.md
+      - "Protocol: SCPN/FIM Validation": campaigns/scpn_fim_validation_protocol_2026-05-05.md
+      - "Claim Boundary: SCPN/FIM": campaigns/scpn_fim_claim_boundary_2026-05-05.md
       - "DLA-parity Validation": dla_parity.md
       - "Classical Irreproducibility": classical_irreproducibility.md
       - Hardware Status Ledger: hardware_status_ledger.md
@@ -143,12 +145,12 @@ nav:
       - Strategic Roadmap: strategic_roadmap.md
       - Release Readiness Gate: release_readiness.md
       - Actions History Dashboard: actions_history_dashboard.md
+      - Campaign Artefacts: campaigns/README.md
+      - Publication Operations: publication/README.md
       - E2E Contract Boundaries: e2e_contract_boundaries.md
-      - Behavioural Test Audit Closure: behavioural_test_audit_closure_2026-05-06.md
-      - Coverage Gap Audit: coverage_gap_audit_2026-05-06.md
-      - pyOpenSci Submission Readiness: pyopensci_submission_readiness_2026-05-06.md
-      - arXiv Source Packaging Readiness: arxiv_source_packaging_readiness_2026-05-06.md
-      - SciPy 2026 CFP Readiness: scipy_2026_cfp_readiness_2026-05-06.md
+      - pyOpenSci Submission Readiness: publication/pyopensci_submission_readiness_2026-05-06.md
+      - arXiv Source Packaging Readiness: publication/arxiv_source_packaging_readiness_2026-05-06.md
+      - SciPy 2026 CFP Readiness: publication/scipy_2026_cfp_readiness_2026-05-06.md
   - Changelog: changelog.md
 
 markdown_extensions:

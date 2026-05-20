@@ -1,0 +1,394 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Python-format seed wording is bounded to a source-code-like manuscript contract for compute_teleological_seed.",
+      "claim_boundary": "source-bounded seed-function simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve the source function signature",
+        "require structured tachyonic mass-term purpose text",
+        "reject treating manuscript code format as empirical evidence"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "seed_function.python_format_source_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-function-signature control must be rejected",
+        "missing-purpose-text control must be rejected",
+        "code-format-as-evidence control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. The Mathematics of the Meta Metatron Cycle (MMC): > The $t=0$ Initial Value Problem: Teleological Seeding of SSB",
+      "source_block_indices": [
+        6363,
+        6364,
+        6365,
+        6366,
+        6367,
+        6368,
+        6369,
+        6370,
+        6371,
+        6372,
+        6373,
+        6374,
+        6375,
+        6376,
+        6377
+      ],
+      "source_equation_ids": [
+        "P0R06364:function_signature"
+      ],
+      "source_formulae": [
+        "def compute_teleological_seed(prev_cycle_sec, coupling_constant_g):"
+      ],
+      "source_ledger_ids": [
+        "P0R06363",
+        "P0R06364",
+        "P0R06365",
+        "P0R06366",
+        "P0R06367",
+        "P0R06368",
+        "P0R06369",
+        "P0R06370",
+        "P0R06371",
+        "P0R06372",
+        "P0R06373",
+        "P0R06374",
+        "P0R06375",
+        "P0R06376",
+        "P0R06377"
+      ],
+      "source_record_ids": [
+        "P0B06363",
+        "P0B06364",
+        "P0B06365",
+        "P0B06366",
+        "P0B06367",
+        "P0B06368",
+        "P0B06369",
+        "P0B06370",
+        "P0B06371",
+        "P0B06372",
+        "P0B06373",
+        "P0B06374",
+        "P0B06375",
+        "P0B06376",
+        "P0B06377"
+      ],
+      "validation_protocol": "paper0.seed_function.python_format_source_boundary",
+      "validation_targets": [
+        "preserve the source function signature",
+        "require structured tachyonic mass-term purpose text",
+        "reject treating manuscript code format as empirical evidence"
+      ],
+      "variables": [
+        "prev_cycle_sec",
+        "coupling_constant_g",
+        "compute_teleological_seed"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "The mu-squared seed formula is bounded to sqrt(prev_cycle_sec / coupling_constant_g).",
+      "claim_boundary": "source-bounded seed-function simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve the source seed formula",
+        "reject negative SEC and non-positive coupling",
+        "verify deterministic finite numeric output"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "seed_function.mu_squared_seed_formula",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "negative-SEC control must be rejected",
+        "zero-coupling control must be rejected",
+        "non-finite-output control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. The Mathematics of the Meta Metatron Cycle (MMC): > The $t=0$ Initial Value Problem: Teleological Seeding of SSB",
+      "source_block_indices": [
+        6363,
+        6364,
+        6365,
+        6366,
+        6367,
+        6368,
+        6369,
+        6370,
+        6371,
+        6372,
+        6373,
+        6374,
+        6375,
+        6376,
+        6377
+      ],
+      "source_equation_ids": [
+        "P0R06371:mu_squared_seed"
+      ],
+      "source_formulae": [
+        "mu_squared_seed = sqrt(prev_cycle_sec / coupling_constant_g)"
+      ],
+      "source_ledger_ids": [
+        "P0R06363",
+        "P0R06364",
+        "P0R06365",
+        "P0R06366",
+        "P0R06367",
+        "P0R06368",
+        "P0R06369",
+        "P0R06370",
+        "P0R06371",
+        "P0R06372",
+        "P0R06373",
+        "P0R06374",
+        "P0R06375",
+        "P0R06376",
+        "P0R06377"
+      ],
+      "source_record_ids": [
+        "P0B06363",
+        "P0B06364",
+        "P0B06365",
+        "P0B06366",
+        "P0B06367",
+        "P0B06368",
+        "P0B06369",
+        "P0B06370",
+        "P0B06371",
+        "P0B06372",
+        "P0B06373",
+        "P0B06374",
+        "P0B06375",
+        "P0B06376",
+        "P0B06377"
+      ],
+      "validation_protocol": "paper0.seed_function.mu_squared_seed_formula",
+      "validation_targets": [
+        "preserve the source seed formula",
+        "reject negative SEC and non-positive coupling",
+        "verify deterministic finite numeric output"
+      ],
+      "variables": [
+        "mu_squared_seed",
+        "prev_cycle_sec",
+        "coupling_constant_g"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Return-payload wording is bounded to ssb_bias_magnitude and is_random_reset=False source fields.",
+      "claim_boundary": "source-bounded seed-function simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve ssb_bias_magnitude payload field",
+        "preserve is_random_reset False field",
+        "reject payloads that omit source fields"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "seed_function.return_payload_contract",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-ssb-bias-field control must be rejected",
+        "random-reset-true control must be rejected",
+        "missing-payload control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. The Mathematics of the Meta Metatron Cycle (MMC): > The $t=0$ Initial Value Problem: Teleological Seeding of SSB",
+      "source_block_indices": [
+        6363,
+        6364,
+        6365,
+        6366,
+        6367,
+        6368,
+        6369,
+        6370,
+        6371,
+        6372,
+        6373,
+        6374,
+        6375,
+        6376,
+        6377
+      ],
+      "source_equation_ids": [
+        "P0R06373:ssb_bias_magnitude",
+        "P0R06374:is_random_reset"
+      ],
+      "source_formulae": [
+        "ssb_bias_magnitude = mu_squared_seed",
+        "is_random_reset = False"
+      ],
+      "source_ledger_ids": [
+        "P0R06363",
+        "P0R06364",
+        "P0R06365",
+        "P0R06366",
+        "P0R06367",
+        "P0R06368",
+        "P0R06369",
+        "P0R06370",
+        "P0R06371",
+        "P0R06372",
+        "P0R06373",
+        "P0R06374",
+        "P0R06375",
+        "P0R06376",
+        "P0R06377"
+      ],
+      "source_record_ids": [
+        "P0B06363",
+        "P0B06364",
+        "P0B06365",
+        "P0B06366",
+        "P0B06367",
+        "P0B06368",
+        "P0B06369",
+        "P0B06370",
+        "P0B06371",
+        "P0B06372",
+        "P0B06373",
+        "P0B06374",
+        "P0B06375",
+        "P0B06376",
+        "P0B06377"
+      ],
+      "validation_protocol": "paper0.seed_function.return_payload_contract",
+      "validation_targets": [
+        "preserve ssb_bias_magnitude payload field",
+        "preserve is_random_reset False field",
+        "reject payloads that omit source fields"
+      ],
+      "variables": [
+        "ssb_bias_magnitude",
+        "mu_squared_seed",
+        "is_random_reset"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Conformal-continuity wording is bounded to the source predicate prev_cycle_sec > 0.",
+      "claim_boundary": "source-bounded seed-function simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve conformal_continuity source predicate",
+        "verify positive SEC marks continuity true",
+        "reject continuity as empirical MMC proof"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "seed_function.conformal_continuity_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "non-positive-SEC-continuity control must be rejected",
+        "missing-continuity-field control must be rejected",
+        "MMC-proof control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. The Mathematics of the Meta Metatron Cycle (MMC): > The $t=0$ Initial Value Problem: Teleological Seeding of SSB",
+      "source_block_indices": [
+        6363,
+        6364,
+        6365,
+        6366,
+        6367,
+        6368,
+        6369,
+        6370,
+        6371,
+        6372,
+        6373,
+        6374,
+        6375,
+        6376,
+        6377
+      ],
+      "source_equation_ids": [
+        "P0R06375:conformal_continuity"
+      ],
+      "source_formulae": [
+        "conformal_continuity = prev_cycle_sec > 0"
+      ],
+      "source_ledger_ids": [
+        "P0R06363",
+        "P0R06364",
+        "P0R06365",
+        "P0R06366",
+        "P0R06367",
+        "P0R06368",
+        "P0R06369",
+        "P0R06370",
+        "P0R06371",
+        "P0R06372",
+        "P0R06373",
+        "P0R06374",
+        "P0R06375",
+        "P0R06376",
+        "P0R06377"
+      ],
+      "source_record_ids": [
+        "P0B06363",
+        "P0B06364",
+        "P0B06365",
+        "P0B06366",
+        "P0B06367",
+        "P0B06368",
+        "P0B06369",
+        "P0B06370",
+        "P0B06371",
+        "P0B06372",
+        "P0B06373",
+        "P0B06374",
+        "P0B06375",
+        "P0B06376",
+        "P0B06377"
+      ],
+      "validation_protocol": "paper0.seed_function.conformal_continuity_boundary",
+      "validation_targets": [
+        "preserve conformal_continuity source predicate",
+        "verify positive SEC marks continuity true",
+        "reject continuity as empirical MMC proof"
+      ],
+      "variables": [
+        "conformal_continuity",
+        "prev_cycle_sec"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_claim_bounded": true,
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06363-P0R06377 are promoted as source-covered seed-function specifications only. Passing fixtures is not empirical evidence.",
+    "source_formula_ids": [
+      "P0R06364:function_signature",
+      "P0R06371:mu_squared_seed",
+      "P0R06373:ssb_bias_magnitude",
+      "P0R06374:is_random_reset",
+      "P0R06375:conformal_continuity"
+    ],
+    "source_ledger_span": [
+      "P0R06363",
+      "P0R06377"
+    ],
+    "source_record_count": 15,
+    "spec_count": 4,
+    "spec_keys": [
+      "seed_function.python_format_source_boundary",
+      "seed_function.mu_squared_seed_formula",
+      "seed_function.return_payload_contract",
+      "seed_function.conformal_continuity_boundary"
+    ],
+    "structural_source_ledger_ids": [
+      "P0R06377"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

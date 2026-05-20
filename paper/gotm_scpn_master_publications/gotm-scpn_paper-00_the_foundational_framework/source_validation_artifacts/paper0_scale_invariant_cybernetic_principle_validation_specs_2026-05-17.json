@@ -1,0 +1,236 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Scale-Invariant Cybernetic Principle' preserves Paper 0 records P0R05493-P0R05496 without empirical validation claims.",
+      "claim_boundary": "source-bounded scale invariant cybernetic principle source-accounting bridge; not validation evidence",
+      "context_id": "scale_invariant_cybernetic_principle",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05493-P0R05496"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "scale_invariant_cybernetic_principle.scale_invariant_cybernetic_principle",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "scale_invariant_cybernetic_principle must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Scale-Invariant Cybernetic Principle is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Scale-Invariant Cybernetic Principle",
+      "source_block_indices": [
+        5493,
+        5494,
+        5495,
+        5496,
+        5497,
+        5498,
+        5499,
+        5500,
+        5501,
+        5502,
+        5503,
+        5504,
+        5505,
+        5506,
+        5507
+      ],
+      "source_equation_ids": [
+        "P0R05493:scale_invariant_cybernetic_principle",
+        "P0R05494:scale_invariant_cybernetic_principle",
+        "P0R05495:scale_invariant_cybernetic_principle",
+        "P0R05496:scale_invariant_cybernetic_principle"
+      ],
+      "source_formulae": [
+        "P0R05493: Scale-Invariant Cybernetic Principle",
+        "P0R05494: The relationship between the fast neuronal network and the slow glial control network is not a unique feature of the brain but is a specific instantiation of a universal, scale-invariant cybernetic principle that repeats across the entire SCPN architecture. At the neural scale (Layer 4), the glial network actively engineers the local ionic and neurochemical environment-its \"niche\"-to ensure the optimal computational function of the neuronal network. This is a form of internal niche construction.",
+        "P0R05495: This same logic applies at the planetary scale. The manuscript's Layer 12, \"Ecological-Gaian Synchrony,\" describes the entire biosphere as a single, integrated system with homeostatic feedback loops that maintain planetary stability. This macroscopic homeostasis is the result of collective niche construction on a planetary scale. The collective of all living organisms (the \"fast\" system) acts to modify its shared environment (the \"slow\" system) to maintain the conditions necessary for its own existence (e.g., regulation of atmospheric gases).",
+        "P0R05496: This parallel reveals a deep, fractal logic within the SCPN. The relationship (Glia : Neuron) is functionally and mathematically homologous to the relationship (Gaia : Species). This allows for the formulation of a Scale-Invariant Homeostasis Lemma: Any fast computational substrate within the SCPN requires a slower, integrative modulatory layer to maintain its dynamic stability near a critical or quasicritical optimum. This principle provides a powerful unifying thread that connects the biophysics of a single brain (Domain I) to the ecology of the entire planet (Domain IV), revealing a unified logic of self-organising, coherence-maintaining dynamics across all scales of life."
+      ],
+      "source_ledger_ids": [
+        "P0R05493",
+        "P0R05494",
+        "P0R05495",
+        "P0R05496",
+        "P0R05497",
+        "P0R05498",
+        "P0R05499",
+        "P0R05500",
+        "P0R05501",
+        "P0R05502",
+        "P0R05503",
+        "P0R05504",
+        "P0R05505",
+        "P0R05506",
+        "P0R05507"
+      ],
+      "source_record_ids": [
+        "P0B05493",
+        "P0B05494",
+        "P0B05495",
+        "P0B05496",
+        "P0B05497",
+        "P0B05498",
+        "P0B05499",
+        "P0B05500",
+        "P0B05501",
+        "P0B05502",
+        "P0B05503",
+        "P0B05504",
+        "P0B05505",
+        "P0B05506",
+        "P0B05507"
+      ],
+      "test_protocols": [
+        "preserve Scale-Invariant Cybernetic Principle source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.scale_invariant_cybernetic_principle.scale_invariant_cybernetic_principle",
+      "validation_targets": [
+        "preserve records P0R05493-P0R05496"
+      ],
+      "variables": [
+        "scale_invariant_cybernetic_principle"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Citations:' preserves Paper 0 records P0R05497-P0R05507 without empirical validation claims.",
+      "claim_boundary": "source-bounded scale invariant cybernetic principle source-accounting bridge; not validation evidence",
+      "context_id": "citations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05497-P0R05507"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "scale_invariant_cybernetic_principle.citations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "citations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Citations: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Scale-Invariant Cybernetic Principle",
+      "source_block_indices": [
+        5493,
+        5494,
+        5495,
+        5496,
+        5497,
+        5498,
+        5499,
+        5500,
+        5501,
+        5502,
+        5503,
+        5504,
+        5505,
+        5506,
+        5507
+      ],
+      "source_equation_ids": [
+        "P0R05497:citations",
+        "P0R05498:citations",
+        "P0R05499:citations",
+        "P0R05500:citations",
+        "P0R05501:citations",
+        "P0R05502:citations",
+        "P0R05503:citations",
+        "P0R05504:citations",
+        "P0R05505:citations",
+        "P0R05506:citations",
+        "P0R05507:citations"
+      ],
+      "source_formulae": [
+        "P0R05497: Citations:",
+        "P0R05498: Domain I - Biological Substrate",
+        "P0R05499: \"microtubules are proposed to sustain quantum error correction protecting coherent states at Delta 1.64 eV\" -> (Hameroff & Penrose, 2014; Fisher, 2015)",
+        "P0R05500: \"the CISS effect in DNA geometry provides a mechanism for spin-selective information transfer\" -> (Naaman & Waldeck, 2012; Michaeli et al., 2019)",
+        "P0R05501: \"astrocytic slow control' stabilises neuronal networks in quasicritical regimes\" -> (Fields et al., 2015; Poskanzer & Yuste, 2016)",
+        "P0R05502: \"cytokine signalling directly modulates qualia state-space topology\" -> (Dantzer et al., 2008; Miller & Raison, 2016)",
+        "P0R05503: Domain I - Expanded Biological Substrate",
+        "P0R05504: \"Quantum coherence in living systems is preserved through multi-scale error correction codes\" -> (Huelga & Plenio, 2013; Lambert et al., 2013)",
+        "P0R05505: \"microtubules serve as resonant biological waveguides for consciousness-coupled fields\" -> (Jibu & Yasue, 1995; Craddock et al., 2015)",
+        "P0R05506: \"epigenetic switching acts as a field-driven antenna system\" -> (Jaenisch & Bird, 2003; Ptashne, 2007)",
+        "P0R05507: \"critical branching parameter sigma defines neuronal avalanche dynamics\" -> (Beggs & Plenz, 2003; Shew & Plenz, 2013)"
+      ],
+      "source_ledger_ids": [
+        "P0R05493",
+        "P0R05494",
+        "P0R05495",
+        "P0R05496",
+        "P0R05497",
+        "P0R05498",
+        "P0R05499",
+        "P0R05500",
+        "P0R05501",
+        "P0R05502",
+        "P0R05503",
+        "P0R05504",
+        "P0R05505",
+        "P0R05506",
+        "P0R05507"
+      ],
+      "source_record_ids": [
+        "P0B05493",
+        "P0B05494",
+        "P0B05495",
+        "P0B05496",
+        "P0B05497",
+        "P0B05498",
+        "P0B05499",
+        "P0B05500",
+        "P0B05501",
+        "P0B05502",
+        "P0B05503",
+        "P0B05504",
+        "P0B05505",
+        "P0B05506",
+        "P0B05507"
+      ],
+      "test_protocols": [
+        "preserve Citations: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.scale_invariant_cybernetic_principle.citations",
+      "validation_targets": [
+        "preserve records P0R05497-P0R05507"
+      ],
+      "variables": [
+        "citations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 13
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 8,
+      "mechanism": 3,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded scale invariant cybernetic principle source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05508",
+    "source_ledger_span": [
+      "P0R05493",
+      "P0R05507"
+    ],
+    "source_record_count": 15,
+    "spec_count": 2,
+    "spec_keys": [
+      "scale_invariant_cybernetic_principle.scale_invariant_cybernetic_principle",
+      "scale_invariant_cybernetic_principle.citations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Scale-Invariant Cybernetic Principle Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

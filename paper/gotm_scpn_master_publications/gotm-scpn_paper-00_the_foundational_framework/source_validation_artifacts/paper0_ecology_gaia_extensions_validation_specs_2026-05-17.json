@@ -1,0 +1,177 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Ecology & Gaia Extensions' preserves Paper 0 records P0R05746-P0R05749 without empirical validation claims.",
+      "claim_boundary": "source-bounded ecology gaia extensions source-accounting bridge; not validation evidence",
+      "context_id": "ecology_gaia_extensions",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05746-P0R05749"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ecology_gaia_extensions.ecology_gaia_extensions",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ecology_gaia_extensions must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Ecology & Gaia Extensions is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Ecology & Gaia Extensions",
+      "source_block_indices": [
+        5746,
+        5747,
+        5748,
+        5749,
+        5750,
+        5751,
+        5752,
+        5753
+      ],
+      "source_equation_ids": [
+        "P0R05746:ecology_gaia_extensions",
+        "P0R05747:ecology_gaia_extensions",
+        "P0R05748:ecology_gaia_extensions",
+        "P0R05749:ecology_gaia_extensions"
+      ],
+      "source_formulae": [
+        "P0R05746: Ecology & Gaia Extensions",
+        "P0R05747: \"Gaian synchrony and planetary regulation\" -> Margulis & Lovelock (1974).",
+        "P0R05748: \"biosphere as complex adaptive system\" -> Lenton & Latour (2018).",
+        "P0R05749: \"resonances in planetary fields\" -> Schumann (1952 original), Nickolaenko & Hayakawa (2014)."
+      ],
+      "source_ledger_ids": [
+        "P0R05746",
+        "P0R05747",
+        "P0R05748",
+        "P0R05749",
+        "P0R05750",
+        "P0R05751",
+        "P0R05752",
+        "P0R05753"
+      ],
+      "source_record_ids": [
+        "P0B05746",
+        "P0B05747",
+        "P0B05748",
+        "P0B05749",
+        "P0B05750",
+        "P0B05751",
+        "P0B05752",
+        "P0B05753"
+      ],
+      "test_protocols": [
+        "preserve Ecology & Gaia Extensions source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ecology_gaia_extensions.ecology_gaia_extensions",
+      "validation_targets": [
+        "preserve records P0R05746-P0R05749"
+      ],
+      "variables": [
+        "ecology_gaia_extensions"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Ecology & Collective Systems' preserves Paper 0 records P0R05750-P0R05753 without empirical validation claims.",
+      "claim_boundary": "source-bounded ecology gaia extensions source-accounting bridge; not validation evidence",
+      "context_id": "ecology_collective_systems",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05750-P0R05753"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ecology_gaia_extensions.ecology_collective_systems",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ecology_collective_systems must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Ecology & Collective Systems is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Ecology & Gaia Extensions",
+      "source_block_indices": [
+        5746,
+        5747,
+        5748,
+        5749,
+        5750,
+        5751,
+        5752,
+        5753
+      ],
+      "source_equation_ids": [
+        "P0R05750:ecology_collective_systems",
+        "P0R05751:ecology_collective_systems",
+        "P0R05752:ecology_collective_systems",
+        "P0R05753:ecology_collective_systems"
+      ],
+      "source_formulae": [
+        "P0R05750: Ecology & Collective Systems",
+        "P0R05751: Odum (1971, Fundamentals of Ecology) -> systems-level ecology, energy circuits (Gaian synchrony).",
+        "P0R05752: Capra (1996, The Web of Life) -> complexity & ecology crossover, public-intellectual anchor.",
+        "P0R05753: Ho & Ulanowicz (2005) -> entropy, negentropy & sustainability in ecosystems."
+      ],
+      "source_ledger_ids": [
+        "P0R05746",
+        "P0R05747",
+        "P0R05748",
+        "P0R05749",
+        "P0R05750",
+        "P0R05751",
+        "P0R05752",
+        "P0R05753"
+      ],
+      "source_record_ids": [
+        "P0B05746",
+        "P0B05747",
+        "P0B05748",
+        "P0B05749",
+        "P0B05750",
+        "P0B05751",
+        "P0B05752",
+        "P0B05753"
+      ],
+      "test_protocols": [
+        "preserve Ecology & Collective Systems source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ecology_gaia_extensions.ecology_collective_systems",
+      "validation_targets": [
+        "preserve records P0R05750-P0R05753"
+      ],
+      "variables": [
+        "ecology_collective_systems"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 8
+    },
+    "claim_boundary": "source-bounded ecology gaia extensions source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05754",
+    "source_ledger_span": [
+      "P0R05746",
+      "P0R05753"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "ecology_gaia_extensions.ecology_gaia_extensions",
+      "ecology_gaia_extensions.ecology_collective_systems"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Ecology & Gaia Extensions Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

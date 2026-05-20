@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded meta framework integrations p0r02542 source-accounting bridge; not validation evidence",
+  "component_count": 5,
+  "components": {
+    "meta_framework_integrations": "meta_framework_integrations_source_boundary",
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary",
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "the_poloidal_flow_is_the_hpc_loop": "the_poloidal_flow_is_the_hpc_loop_source_boundary",
+    "the_toroidal_flow_is_the_evolution_of_the_model": "the_toroidal_flow_is_the_evolution_of_the_model_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Meta-Framework Integrations",
+    "component_2": "Predictive Coding Integration",
+    "component_3": "The Poloidal Flow is the HPC Loop:",
+    "component_4": "The Toroidal Flow is the Evolution of the Model:",
+    "component_5": "Psis Field Coupling Integration",
+    "component_count": "5",
+    "next_boundary": "P0R02551",
+    "section": "Meta-Framework Integrations",
+    "source_span": "P0R02542-P0R02550"
+  },
+  "next_source_boundary": "P0R02551",
+  "null_controls": {
+    "meta_framework_integrations_is_not_empirical_validation_evidence": 1.0,
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0,
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "the_poloidal_flow_is_the_hpc_loop_is_not_empirical_validation_evidence": 1.0,
+    "the_toroidal_flow_is_the_evolution_of_the_model_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded meta framework integrations p0r02542 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_meta_framework_integrations_p0r02542_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02542",
+      "P0R02543",
+      "P0R02544",
+      "P0R02545",
+      "P0R02546",
+      "P0R02547",
+      "P0R02548",
+      "P0R02549",
+      "P0R02550"
+    ],
+    "source_ledger_span": [
+      "P0R02542",
+      "P0R02550"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02542",
+    "P0R02550"
+  ],
+  "source_record_count": 9
+}

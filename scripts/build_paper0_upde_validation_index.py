@@ -16,7 +16,13 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_EXTRACTION_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_SPECS_PATH = DEFAULT_EXTRACTION_DIR / "paper0_upde_validation_specs_2026-05-13.json"
 DEFAULT_RESULT_GLOB = "paper0_upde_*_fixture_result_2026-05-13.json"
 SIMULATOR_ONLY_STATUS = "simulator_only_no_provider_submission"

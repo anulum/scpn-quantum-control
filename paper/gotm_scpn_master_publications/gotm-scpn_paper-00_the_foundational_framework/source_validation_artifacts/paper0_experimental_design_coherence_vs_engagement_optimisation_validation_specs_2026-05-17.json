@@ -1,0 +1,117 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Experimental Design: Coherence vs. Engagement Optimisation' preserves Paper 0 records P0R05256-P0R05263 without empirical validation claims.",
+      "claim_boundary": "source-bounded experimental design coherence vs engagement optimisation source-accounting bridge; not validation evidence",
+      "context_id": "experimental_design_coherence_vs_engagement_optimisation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05256-P0R05263"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "experimental_design_coherence_vs_engagement_optimisation.experimental_design_coherence_vs_engagement_optimisation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "experimental_design_coherence_vs_engagement_optimisation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Experimental Design: Coherence vs. Engagement Optimisation is not empirical validation evidence"
+      ],
+      "section_path": " >  > Simulating the Noosphere-Technosphere Hybrid System (NTHS) Phase Transition > Experimental Design: Coherence vs. Engagement Optimisation",
+      "source_block_indices": [
+        5256,
+        5257,
+        5258,
+        5259,
+        5260,
+        5261,
+        5262,
+        5263
+      ],
+      "source_equation_ids": [
+        "P0R05256:experimental_design_coherence_vs_engagement_optimisation",
+        "P0R05257:experimental_design_coherence_vs_engagement_optimisation",
+        "P0R05258:experimental_design_coherence_vs_engagement_optimisation",
+        "P0R05259:experimental_design_coherence_vs_engagement_optimisation",
+        "P0R05260:experimental_design_coherence_vs_engagement_optimisation",
+        "P0R05261:experimental_design_coherence_vs_engagement_optimisation",
+        "P0R05262:experimental_design_coherence_vs_engagement_optimisation",
+        "P0R05263:experimental_design_coherence_vs_engagement_optimisation"
+      ],
+      "source_formulae": [
+        "P0R05256: Experimental Design: Coherence vs. Engagement Optimisation",
+        "P0R05257: An external \"AI Controller\" will modulate the information environment and social graph according to one of two distinct optimisation policies, representing two different philosophies of information technology design.",
+        "P0R05258: Control Condition (Coherence-Optimising AI):",
+        "P0R05259: The AI's objective is to minimise the collective free energy of the entire system (miniFi). It achieves this by:",
+        "P0R05260: Modulating hi: Presenting agents with information that resolves uncertainty and promotes consensus. | Modulating Jij: Strengthening connections between agents with differing beliefs to encourage dialogue and belief convergence (i.e., increasing Jij for agents where sigmai=sigmaj).",
+        "P0R05261: Experimental Condition (Engagement-Optimising AI):",
+        "P0R05262: The AI's objective is to maximise a proxy for \"engagement,\" which is formalised in active inference as maximising the sum of individual agents' surprise (or variational free energy). It achieves this by:",
+        "P0R05263: Modulating hi: Presenting agents with novel, surprising, or emotionally charged information that challenges their current model, forcing them to update their beliefs constantly. | Modulating Jij: Strengthening connections between agents with similar beliefs (homophily) and weakening or creating negative connections between agents with different beliefs. This corresponds to the algorithmic feedback loops described in the manuscript that foster in-group cohesion while increasing inter-group antagonism."
+      ],
+      "source_ledger_ids": [
+        "P0R05256",
+        "P0R05257",
+        "P0R05258",
+        "P0R05259",
+        "P0R05260",
+        "P0R05261",
+        "P0R05262",
+        "P0R05263"
+      ],
+      "source_record_ids": [
+        "P0B05256",
+        "P0B05257",
+        "P0B05258",
+        "P0B05259",
+        "P0B05260",
+        "P0B05261",
+        "P0B05262",
+        "P0B05263"
+      ],
+      "test_protocols": [
+        "preserve Experimental Design: Coherence vs. Engagement Optimisation source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.experimental_design_coherence_vs_engagement_optimisation.experimental_design_coherence_vs_engagement_optimisation",
+      "validation_targets": [
+        "preserve records P0R05256-P0R05263"
+      ],
+      "variables": [
+        "experimental_design_coherence_vs_engagement_optimisation"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BlockQuote": 2,
+      "BulletList": 4,
+      "Header": 1,
+      "Para": 1
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 2,
+      "mechanism": 2,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded experimental design coherence vs engagement optimisation source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05264",
+    "source_ledger_span": [
+      "P0R05256",
+      "P0R05263"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "experimental_design_coherence_vs_engagement_optimisation.experimental_design_coherence_vs_engagement_optimisation"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Experimental Design: Coherence vs. Engagement Optimisation Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

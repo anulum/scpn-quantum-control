@@ -1,0 +1,584 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The Positioning Preface opens Book II as a threshold text for the SCPN.",
+      "claim_boundary": "source-bounded Positioning Preface context; not validation evidence",
+      "context_id": "book_ii_threshold",
+      "domain_review_status": "source_context_preserved",
+      "executable_validation_targets": [
+        "preserve Positioning Preface boundary",
+        "preserve Book II subtitle",
+        "reject preface as validation evidence"
+      ],
+      "hardware_status": "source_context_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "positioning_preface_context.book_ii_threshold",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "preface-as-evidence control must be rejected",
+        "missing-Book-II-subtitle control must be rejected"
+      ],
+      "null_results": [
+        "threshold preface text is not empirical evidence"
+      ],
+      "section_path": "Positioning Preface",
+      "source_block_indices": [
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267
+      ],
+      "source_equation_ids": [
+        "P0R00249:positioning_preface_title",
+        "P0R00250:book_ii_subtitle",
+        "P0R00251:humanity_threshold_positioning"
+      ],
+      "source_formulae": [
+        "Positioning Preface",
+        "Book II - The Sentient-Consciousness Projection Network",
+        "Humanity stands at a threshold"
+      ],
+      "source_ledger_ids": [
+        "P0R00249",
+        "P0R00250",
+        "P0R00251",
+        "P0R00252",
+        "P0R00253",
+        "P0R00254",
+        "P0R00255",
+        "P0R00256",
+        "P0R00257",
+        "P0R00258",
+        "P0R00259",
+        "P0R00260",
+        "P0R00261",
+        "P0R00262",
+        "P0R00263",
+        "P0R00264",
+        "P0R00265",
+        "P0R00266",
+        "P0R00267"
+      ],
+      "source_record_ids": [
+        "P0B00249",
+        "P0B00250",
+        "P0B00251",
+        "P0B00252",
+        "P0B00253",
+        "P0B00254",
+        "P0B00255",
+        "P0B00256",
+        "P0B00257",
+        "P0B00258",
+        "P0B00259",
+        "P0B00260",
+        "P0B00261",
+        "P0B00262",
+        "P0B00263",
+        "P0B00264",
+        "P0B00265",
+        "P0B00266",
+        "P0B00267"
+      ],
+      "test_protocols": [
+        "preserve Book II threshold positioning"
+      ],
+      "validation_protocol": "paper0.positioning_preface_context.book_ii_threshold",
+      "validation_targets": [
+        "preserve Positioning Preface boundary",
+        "preserve Book II subtitle",
+        "reject preface as validation evidence"
+      ],
+      "variables": [
+        "Book_II",
+        "SCPN",
+        "threshold"
+      ]
+    },
+    {
+      "canonical_statement": "The preface positions consciousness as structural, then names Field Architecture, Consciousness Engineering, and Noetic Field Theory with a rigour boundary.",
+      "claim_boundary": "source-bounded Positioning Preface context; not validation evidence",
+      "context_id": "discipline_positioning",
+      "domain_review_status": "source_context_preserved",
+      "executable_validation_targets": [
+        "preserve structural-consciousness positioning",
+        "preserve Field Architecture and Consciousness Engineering distinction",
+        "preserve rigour and testability boundary"
+      ],
+      "hardware_status": "source_context_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "positioning_preface_context.discipline_positioning",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "discipline-framing-as-proof control must be rejected",
+        "missing-testability-boundary control must be rejected"
+      ],
+      "null_results": [
+        "discipline framing is not a measured coupling"
+      ],
+      "section_path": "Positioning Preface",
+      "source_block_indices": [
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267
+      ],
+      "source_equation_ids": [
+        "P0R00251-P0R00255:discipline_positioning_claims"
+      ],
+      "source_formulae": [
+        "structural principle of reality",
+        "Field Architecture",
+        "Consciousness Engineering",
+        "Noetic Field Theory",
+        "explicit equations, testable couplings"
+      ],
+      "source_ledger_ids": [
+        "P0R00249",
+        "P0R00250",
+        "P0R00251",
+        "P0R00252",
+        "P0R00253",
+        "P0R00254",
+        "P0R00255",
+        "P0R00256",
+        "P0R00257",
+        "P0R00258",
+        "P0R00259",
+        "P0R00260",
+        "P0R00261",
+        "P0R00262",
+        "P0R00263",
+        "P0R00264",
+        "P0R00265",
+        "P0R00266",
+        "P0R00267"
+      ],
+      "source_record_ids": [
+        "P0B00249",
+        "P0B00250",
+        "P0B00251",
+        "P0B00252",
+        "P0B00253",
+        "P0B00254",
+        "P0B00255",
+        "P0B00256",
+        "P0B00257",
+        "P0B00258",
+        "P0B00259",
+        "P0B00260",
+        "P0B00261",
+        "P0B00262",
+        "P0B00263",
+        "P0B00264",
+        "P0B00265",
+        "P0B00266",
+        "P0B00267"
+      ],
+      "test_protocols": [
+        "preserve discipline-positioning claims as hypotheses"
+      ],
+      "validation_protocol": "paper0.positioning_preface_context.discipline_positioning",
+      "validation_targets": [
+        "preserve structural-consciousness positioning",
+        "preserve Field Architecture and Consciousness Engineering distinction",
+        "preserve rigour and testability boundary"
+      ],
+      "variables": [
+        "Field_Architecture",
+        "Consciousness_Engineering",
+        "Noetic_Field_Theory"
+      ]
+    },
+    {
+      "canonical_statement": "The preface frames the work as an architecture manual with projection layers, VIBRANA, symbolic operators, and self-reference/closure warning.",
+      "claim_boundary": "source-bounded Positioning Preface context; not validation evidence",
+      "context_id": "architecture_manual_boundary",
+      "domain_review_status": "source_context_preserved",
+      "executable_validation_targets": [
+        "preserve projection-layer scope",
+        "preserve VIBRANA operator framing",
+        "preserve self-reference closure warning"
+      ],
+      "hardware_status": "source_context_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "positioning_preface_context.architecture_manual_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "manual-framing-as-protocol control must be rejected",
+        "missing-closure-warning control must be rejected"
+      ],
+      "null_results": [
+        "architecture-manual framing is not an implementation protocol"
+      ],
+      "section_path": "Positioning Preface",
+      "source_block_indices": [
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267
+      ],
+      "source_equation_ids": [
+        "P0R00256:architecture_manual_scope",
+        "P0R00257-P0R00258:foundation_stone_and_practical_horizon",
+        "P0R00259:self_reference_closure_warning"
+      ],
+      "source_formulae": [
+        "projection layers",
+        "VIBRANA",
+        "foundation stone",
+        "infinite regress",
+        "self-reference"
+      ],
+      "source_ledger_ids": [
+        "P0R00249",
+        "P0R00250",
+        "P0R00251",
+        "P0R00252",
+        "P0R00253",
+        "P0R00254",
+        "P0R00255",
+        "P0R00256",
+        "P0R00257",
+        "P0R00258",
+        "P0R00259",
+        "P0R00260",
+        "P0R00261",
+        "P0R00262",
+        "P0R00263",
+        "P0R00264",
+        "P0R00265",
+        "P0R00266",
+        "P0R00267"
+      ],
+      "source_record_ids": [
+        "P0B00249",
+        "P0B00250",
+        "P0B00251",
+        "P0B00252",
+        "P0B00253",
+        "P0B00254",
+        "P0B00255",
+        "P0B00256",
+        "P0B00257",
+        "P0B00258",
+        "P0B00259",
+        "P0B00260",
+        "P0B00261",
+        "P0B00262",
+        "P0B00263",
+        "P0B00264",
+        "P0B00265",
+        "P0B00266",
+        "P0B00267"
+      ],
+      "test_protocols": [
+        "preserve architecture-manual and closure-warning context"
+      ],
+      "validation_protocol": "paper0.positioning_preface_context.architecture_manual_boundary",
+      "validation_targets": [
+        "preserve projection-layer scope",
+        "preserve VIBRANA operator framing",
+        "preserve self-reference closure warning"
+      ],
+      "variables": [
+        "VIBRANA",
+        "self_reference",
+        "closure"
+      ]
+    },
+    {
+      "canonical_statement": "The Author's Note states that the manuscript operates in academic and visionary registers.",
+      "claim_boundary": "source-bounded Positioning Preface context; not validation evidence",
+      "context_id": "dual_register_author_note",
+      "domain_review_status": "source_context_preserved",
+      "executable_validation_targets": [
+        "preserve two-frequency framing",
+        "preserve academic register boundary",
+        "preserve visionary register boundary"
+      ],
+      "hardware_status": "source_context_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "positioning_preface_context.dual_register_author_note",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "authors-note-as-evidence control must be rejected",
+        "missing-dual-register-boundary control must be rejected"
+      ],
+      "null_results": [
+        "dual-register framing is not validation evidence"
+      ],
+      "section_path": "Positioning Preface",
+      "source_block_indices": [
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267
+      ],
+      "source_equation_ids": [
+        "P0R00261:authors_note_title",
+        "P0R00262:two_frequencies_statement",
+        "P0R00263:academic_register",
+        "P0R00264:visionary_register",
+        "P0R00265:dual_voice_boundary"
+      ],
+      "source_formulae": [
+        "two frequencies",
+        "academic register",
+        "visionary register",
+        "foundational architecture manual"
+      ],
+      "source_ledger_ids": [
+        "P0R00249",
+        "P0R00250",
+        "P0R00251",
+        "P0R00252",
+        "P0R00253",
+        "P0R00254",
+        "P0R00255",
+        "P0R00256",
+        "P0R00257",
+        "P0R00258",
+        "P0R00259",
+        "P0R00260",
+        "P0R00261",
+        "P0R00262",
+        "P0R00263",
+        "P0R00264",
+        "P0R00265",
+        "P0R00266",
+        "P0R00267"
+      ],
+      "source_record_ids": [
+        "P0B00249",
+        "P0B00250",
+        "P0B00251",
+        "P0B00252",
+        "P0B00253",
+        "P0B00254",
+        "P0B00255",
+        "P0B00256",
+        "P0B00257",
+        "P0B00258",
+        "P0B00259",
+        "P0B00260",
+        "P0B00261",
+        "P0B00262",
+        "P0B00263",
+        "P0B00264",
+        "P0B00265",
+        "P0B00266",
+        "P0B00267"
+      ],
+      "test_protocols": [
+        "preserve dual-register note as interpretive boundary"
+      ],
+      "validation_protocol": "paper0.positioning_preface_context.dual_register_author_note",
+      "validation_targets": [
+        "preserve two-frequency framing",
+        "preserve academic register boundary",
+        "preserve visionary register boundary"
+      ],
+      "variables": [
+        "academic_register",
+        "visionary_register"
+      ]
+    },
+    {
+      "canonical_statement": "Blank separators and one image marker are counted, and Part I starts at P0R00268.",
+      "claim_boundary": "source-bounded Positioning Preface context; not validation evidence",
+      "context_id": "separator_and_part_boundary",
+      "domain_review_status": "source_context_preserved",
+      "executable_validation_targets": [
+        "preserve blank separator count",
+        "preserve image marker count",
+        "preserve Part I boundary"
+      ],
+      "hardware_status": "source_context_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "positioning_preface_context.separator_and_part_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "blank-skip control must be rejected",
+        "missing-Part-I-boundary control must be rejected"
+      ],
+      "null_results": [
+        "image and blank records are not validation evidence"
+      ],
+      "section_path": "Positioning Preface",
+      "source_block_indices": [
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267
+      ],
+      "source_equation_ids": [
+        "P0R00260:blank_separator",
+        "P0R00266:image_marker",
+        "P0R00267:blank_separator"
+      ],
+      "source_formulae": [
+        "2 blank separator records",
+        "1 image marker",
+        "Part I boundary P0R00268"
+      ],
+      "source_ledger_ids": [
+        "P0R00249",
+        "P0R00250",
+        "P0R00251",
+        "P0R00252",
+        "P0R00253",
+        "P0R00254",
+        "P0R00255",
+        "P0R00256",
+        "P0R00257",
+        "P0R00258",
+        "P0R00259",
+        "P0R00260",
+        "P0R00261",
+        "P0R00262",
+        "P0R00263",
+        "P0R00264",
+        "P0R00265",
+        "P0R00266",
+        "P0R00267"
+      ],
+      "source_record_ids": [
+        "P0B00249",
+        "P0B00250",
+        "P0B00251",
+        "P0B00252",
+        "P0B00253",
+        "P0B00254",
+        "P0B00255",
+        "P0B00256",
+        "P0B00257",
+        "P0B00258",
+        "P0B00259",
+        "P0B00260",
+        "P0B00261",
+        "P0B00262",
+        "P0B00263",
+        "P0B00264",
+        "P0B00265",
+        "P0B00266",
+        "P0B00267"
+      ],
+      "test_protocols": [
+        "preserve source accounting and next-section boundary"
+      ],
+      "validation_protocol": "paper0.positioning_preface_context.separator_and_part_boundary",
+      "validation_targets": [
+        "preserve blank separator count",
+        "preserve image marker count",
+        "preserve Part I boundary"
+      ],
+      "variables": [
+        "blank_separator_count",
+        "image_marker_count",
+        "part_i_boundary"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_null_controls": true,
+    "blank_separator_count": 2,
+    "claim_boundary": "source-bounded Positioning Preface context; not validation evidence",
+    "consumed_source_record_count": 19,
+    "coverage_match": true,
+    "hardware_status": "source_context_no_experiment",
+    "image_marker_count": 1,
+    "part_i_boundary": "P0R00268",
+    "source_ledger_span": [
+      "P0R00249",
+      "P0R00267"
+    ],
+    "source_record_count": 19,
+    "spec_count": 5,
+    "spec_keys": [
+      "positioning_preface_context.book_ii_threshold",
+      "positioning_preface_context.discipline_positioning",
+      "positioning_preface_context.architecture_manual_boundary",
+      "positioning_preface_context.dual_register_author_note",
+      "positioning_preface_context.separator_and_part_boundary"
+    ],
+    "title": "Paper 0 Positioning Preface Context Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

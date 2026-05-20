@@ -1,0 +1,443 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "MMC operator wording is bounded to conformal rescaling between aeons, Ethical Functional conservation, information preservation, and entropy reset.",
+      "claim_boundary": "source-bounded dark-sector simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "score conformal-rescaling channel",
+        "require Ethical Functional conservation across the boundary",
+        "require entropy-reset and information-preservation labels"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "dark_sector.mmc_operator_information_preservation",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-conformal-rescaling control must be rejected",
+        "missing-L15-conserved-quantity control must be rejected",
+        "missing-entropy-reset control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. Formalisation of the Meta Metatron Cycle (MMC):",
+      "source_block_indices": [
+        6311,
+        6312,
+        6313,
+        6314,
+        6315,
+        6316,
+        6317,
+        6318,
+        6319,
+        6320,
+        6321,
+        6322,
+        6323
+      ],
+      "source_equation_ids": [],
+      "source_formulae": [],
+      "source_ledger_ids": [
+        "P0R06311",
+        "P0R06312",
+        "P0R06313",
+        "P0R06314",
+        "P0R06315",
+        "P0R06316",
+        "P0R06317",
+        "P0R06318",
+        "P0R06319",
+        "P0R06320",
+        "P0R06321",
+        "P0R06322",
+        "P0R06323"
+      ],
+      "source_record_ids": [
+        "P0B06311",
+        "P0B06312",
+        "P0B06313",
+        "P0B06314",
+        "P0B06315",
+        "P0B06316",
+        "P0B06317",
+        "P0B06318",
+        "P0B06319",
+        "P0B06320",
+        "P0B06321",
+        "P0B06322",
+        "P0B06323"
+      ],
+      "validation_protocol": "paper0.dark_sector.mmc_operator_information_preservation",
+      "validation_targets": [
+        "score conformal-rescaling channel",
+        "require Ethical Functional conservation across the boundary",
+        "require entropy-reset and information-preservation labels"
+      ],
+      "variables": [
+        "O_MMC",
+        "conformal_rescaling",
+        "E",
+        "L15",
+        "entropy_reset"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Dark-energy wording is bounded to a Lambda-as-teleological-potential context score over RG-flow pressure and Cosmic Attractor drive.",
+      "claim_boundary": "source-bounded dark-sector simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "score Lambda-potential context",
+        "require RG-flow pressure and Cosmic Attractor channels",
+        "reject treating dark-energy interpretation as observation"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "dark_sector.dark_energy_teleological_potential_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-Lambda-potential control must be rejected",
+        "missing-RG-flow-pressure control must be rejected",
+        "dark-energy-observation control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. Formalisation of the Meta Metatron Cycle (MMC):",
+      "source_block_indices": [
+        6311,
+        6312,
+        6313,
+        6314,
+        6315,
+        6316,
+        6317,
+        6318,
+        6319,
+        6320,
+        6321,
+        6322,
+        6323
+      ],
+      "source_equation_ids": [],
+      "source_formulae": [],
+      "source_ledger_ids": [
+        "P0R06311",
+        "P0R06312",
+        "P0R06313",
+        "P0R06314",
+        "P0R06315",
+        "P0R06316",
+        "P0R06317",
+        "P0R06318",
+        "P0R06319",
+        "P0R06320",
+        "P0R06321",
+        "P0R06322",
+        "P0R06323"
+      ],
+      "source_record_ids": [
+        "P0B06311",
+        "P0B06312",
+        "P0B06313",
+        "P0B06314",
+        "P0B06315",
+        "P0B06316",
+        "P0B06317",
+        "P0B06318",
+        "P0B06319",
+        "P0B06320",
+        "P0B06321",
+        "P0B06322",
+        "P0B06323"
+      ],
+      "validation_protocol": "paper0.dark_sector.dark_energy_teleological_potential_boundary",
+      "validation_targets": [
+        "score Lambda-potential context",
+        "require RG-flow pressure and Cosmic Attractor channels",
+        "reject treating dark-energy interpretation as observation"
+      ],
+      "variables": [
+        "DE",
+        "\u039b",
+        "RG_flow",
+        "E",
+        "L8"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Psi-DM wording is bounded to a hypothesis that dark matter is coherent Psi-field structure, with ALP/BEC and Q-ball candidates.",
+      "claim_boundary": "source-bounded dark-sector simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "classify complete and incomplete Psi-DM candidate descriptions",
+        "require SSB and non-linear potential labels",
+        "reject treating the hypothesis as dark-matter evidence"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "dark_sector.psi_dark_matter_hypothesis_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-SSB control must be rejected",
+        "missing-candidate-structure control must be rejected",
+        "dark-matter-evidence control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. Formalisation of the Meta Metatron Cycle (MMC):",
+      "source_block_indices": [
+        6311,
+        6312,
+        6313,
+        6314,
+        6315,
+        6316,
+        6317,
+        6318,
+        6319,
+        6320,
+        6321,
+        6322,
+        6323
+      ],
+      "source_equation_ids": [],
+      "source_formulae": [],
+      "source_ledger_ids": [
+        "P0R06311",
+        "P0R06312",
+        "P0R06313",
+        "P0R06314",
+        "P0R06315",
+        "P0R06316",
+        "P0R06317",
+        "P0R06318",
+        "P0R06319",
+        "P0R06320",
+        "P0R06321",
+        "P0R06322",
+        "P0R06323"
+      ],
+      "source_record_ids": [
+        "P0B06311",
+        "P0B06312",
+        "P0B06313",
+        "P0B06314",
+        "P0B06315",
+        "P0B06316",
+        "P0B06317",
+        "P0B06318",
+        "P0B06319",
+        "P0B06320",
+        "P0B06321",
+        "P0B06322",
+        "P0B06323"
+      ],
+      "validation_protocol": "paper0.dark_sector.psi_dark_matter_hypothesis_boundary",
+      "validation_targets": [
+        "classify complete and incomplete Psi-DM candidate descriptions",
+        "require SSB and non-linear potential labels",
+        "reject treating the hypothesis as dark-matter evidence"
+      ],
+      "variables": [
+        "DM",
+        "Psi_field",
+        "SSB",
+        "ALP",
+        "BEC",
+        "Q_ball",
+        "V_abs_Psi"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Psi-DM interaction wording is bounded to stress-energy tensor, geometric curvature coupling, and weak informational coupling mechanisms.",
+      "claim_boundary": "source-bounded dark-sector simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "score stress-energy and curvature-coupling channels",
+        "require weak ordinary-matter coupling boundary",
+        "preserve the source geometric-coupling formula text"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "dark_sector.psi_dm_interaction_mechanisms",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-geometric-coupling control must be rejected",
+        "missing-weak-coupling-boundary control must be rejected",
+        "dark-matter-evidence control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. Formalisation of the Meta Metatron Cycle (MMC):",
+      "source_block_indices": [
+        6311,
+        6312,
+        6313,
+        6314,
+        6315,
+        6316,
+        6317,
+        6318,
+        6319,
+        6320,
+        6321,
+        6322,
+        6323
+      ],
+      "source_equation_ids": [
+        "P0R06319:L_geometric"
+      ],
+      "source_formulae": [
+        "L_Geometric proportional to -xi R Psi* Psi"
+      ],
+      "source_ledger_ids": [
+        "P0R06311",
+        "P0R06312",
+        "P0R06313",
+        "P0R06314",
+        "P0R06315",
+        "P0R06316",
+        "P0R06317",
+        "P0R06318",
+        "P0R06319",
+        "P0R06320",
+        "P0R06321",
+        "P0R06322",
+        "P0R06323"
+      ],
+      "source_record_ids": [
+        "P0B06311",
+        "P0B06312",
+        "P0B06313",
+        "P0B06314",
+        "P0B06315",
+        "P0B06316",
+        "P0B06317",
+        "P0B06318",
+        "P0B06319",
+        "P0B06320",
+        "P0B06321",
+        "P0B06322",
+        "P0B06323"
+      ],
+      "validation_protocol": "paper0.dark_sector.psi_dm_interaction_mechanisms",
+      "validation_targets": [
+        "score stress-energy and curvature-coupling channels",
+        "require weak ordinary-matter coupling boundary",
+        "preserve the source geometric-coupling formula text"
+      ],
+      "variables": [
+        "T_mu_nu_Psi",
+        "R",
+        "xi",
+        "A_mu",
+        "Psi_Higgs",
+        "ordinary_matter"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Cosmic-coherence-reservoir wording is bounded to source labels for structure scaffolding, halo coherence, L8 phase-locking, and L12 Gaian synchrony.",
+      "claim_boundary": "source-bounded dark-sector simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "score structure-scaffolding and halo-coherence labels",
+        "require L8 and L12 integration channels",
+        "reject biological negentropy coupling as empirical evidence"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "dark_sector.cosmic_coherence_reservoir_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-halo-coherence control must be rejected",
+        "missing-L8-L12 control must be rejected",
+        "biological-negentropy-evidence control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. Formalisation of the Meta Metatron Cycle (MMC):",
+      "source_block_indices": [
+        6311,
+        6312,
+        6313,
+        6314,
+        6315,
+        6316,
+        6317,
+        6318,
+        6319,
+        6320,
+        6321,
+        6322,
+        6323
+      ],
+      "source_equation_ids": [],
+      "source_formulae": [],
+      "source_ledger_ids": [
+        "P0R06311",
+        "P0R06312",
+        "P0R06313",
+        "P0R06314",
+        "P0R06315",
+        "P0R06316",
+        "P0R06317",
+        "P0R06318",
+        "P0R06319",
+        "P0R06320",
+        "P0R06321",
+        "P0R06322",
+        "P0R06323"
+      ],
+      "source_record_ids": [
+        "P0B06311",
+        "P0B06312",
+        "P0B06313",
+        "P0B06314",
+        "P0B06315",
+        "P0B06316",
+        "P0B06317",
+        "P0B06318",
+        "P0B06319",
+        "P0B06320",
+        "P0B06321",
+        "P0B06322",
+        "P0B06323"
+      ],
+      "validation_protocol": "paper0.dark_sector.cosmic_coherence_reservoir_boundary",
+      "validation_targets": [
+        "score structure-scaffolding and halo-coherence labels",
+        "require L8 and L12 integration channels",
+        "reject biological negentropy coupling as empirical evidence"
+      ],
+      "variables": [
+        "structure_formation",
+        "halo_coherence",
+        "negentropy",
+        "L8",
+        "L12"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_claim_bounded": true,
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 13,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06311-P0R06323 are promoted as source-covered dark-sector specifications only. Passing fixtures is not empirical evidence.",
+    "source_formula_ids": [
+      "P0R06319:L_geometric"
+    ],
+    "source_ledger_span": [
+      "P0R06311",
+      "P0R06323"
+    ],
+    "source_record_count": 13,
+    "spec_count": 5,
+    "spec_keys": [
+      "dark_sector.mmc_operator_information_preservation",
+      "dark_sector.dark_energy_teleological_potential_boundary",
+      "dark_sector.psi_dark_matter_hypothesis_boundary",
+      "dark_sector.psi_dm_interaction_mechanisms",
+      "dark_sector.cosmic_coherence_reservoir_boundary"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

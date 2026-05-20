@@ -1,0 +1,61 @@
+{
+  "claim_boundary": "source-bounded glial scaffolding astrocytic regulation of neural synchrony and critical source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical": "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_source_boundary",
+    "the_neuro_immune_interface_state_space_geometry_and_embodied_coherence": "the_neuro_immune_interface_state_space_geometry_and_embodied_coherence_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality",
+    "component_2": "The Neuro-Immune Interface: State-Space Geometry and Embodied Coherence",
+    "component_count": "2",
+    "next_boundary": "P0R05479",
+    "section": "Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality",
+    "source_span": "P0R05455-P0R05478"
+  },
+  "next_source_boundary": "P0R05479",
+  "null_controls": {
+    "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_is_not_empirical_validation_evidence": 1.0,
+    "the_neuro_immune_interface_state_space_geometry_and_embodied_coherence_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded glial scaffolding astrocytic regulation of neural synchrony and critical source-accounting bridge; not validation evidence",
+    "protocol_state": "source_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05455",
+      "P0R05456",
+      "P0R05457",
+      "P0R05458",
+      "P0R05459",
+      "P0R05460",
+      "P0R05461",
+      "P0R05462",
+      "P0R05463",
+      "P0R05464",
+      "P0R05465",
+      "P0R05466",
+      "P0R05467",
+      "P0R05468",
+      "P0R05469",
+      "P0R05470",
+      "P0R05471",
+      "P0R05472",
+      "P0R05473",
+      "P0R05474",
+      "P0R05475",
+      "P0R05476",
+      "P0R05477",
+      "P0R05478"
+    ],
+    "source_ledger_span": [
+      "P0R05455",
+      "P0R05478"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05455",
+    "P0R05478"
+  ],
+  "source_record_count": 24
+}

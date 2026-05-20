@@ -1,0 +1,44 @@
+{
+  "baseline_lagrangian_count": 1,
+  "claim_boundary": "source-bounded Axiom II infoton-geometry map; not validation evidence",
+  "components": {
+    "fim_dynamics": "infoton_dynamics_governed_by_fim",
+    "gauge_necessity": "u1_local_complex_field_requires_spin1_infoton",
+    "problem_heading": "infoton_geometry_problem",
+    "spacetime_baseline": "standard_em_spacetime_metric_kinetic_term"
+  },
+  "fim_claim_count": 1,
+  "gauge_necessity_count": 1,
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "baseline_lagrangian": "L_EM = -1/4 F_mu_nu F^mu_nu",
+    "next_boundary": "The Fisher Information Metric (FIM) as the Solution",
+    "section": "The Central Problem: The Geometry of the \"Infoton\""
+  },
+  "next_source_boundary": "P0R00775",
+  "null_controls": {
+    "fim_dynamics_claim_requires_downstream_validation": 1.0,
+    "gauge_necessity_is_source_derivation_pointer_not_rederived_here": 1.0,
+    "standard_em_lagrangian_is_baseline_not_scpn_result": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Axiom II infoton-geometry map; not validation evidence",
+    "protocol_state": "source_axiom_ii_infoton_geometry_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00770",
+      "P0R00771",
+      "P0R00772",
+      "P0R00773",
+      "P0R00774"
+    ],
+    "source_ledger_span": [
+      "P0R00770",
+      "P0R00774"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R00770",
+    "P0R00774"
+  ],
+  "source_record_count": 5
+}

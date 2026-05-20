@@ -1,0 +1,310 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R04123-P0R04124 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r04123 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04123-P0R04124"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r04123.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        4123,
+        4124,
+        4125,
+        4126,
+        4127,
+        4128,
+        4129,
+        4130
+      ],
+      "source_equation_ids": [
+        "P0R04123:predictive_coding_integration",
+        "P0R04124:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R04123: Predictive Coding Integration",
+        "P0R04124: This section defines the ultimate objective function for the cosmic active inference engine."
+      ],
+      "source_ledger_ids": [
+        "P0R04123",
+        "P0R04124",
+        "P0R04125",
+        "P0R04126",
+        "P0R04127",
+        "P0R04128",
+        "P0R04129",
+        "P0R04130"
+      ],
+      "source_record_ids": [
+        "P0B04123",
+        "P0B04124",
+        "P0B04125",
+        "P0B04126",
+        "P0B04127",
+        "P0B04128",
+        "P0B04129",
+        "P0B04130"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r04123.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R04123-P0R04124"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Ethical Functional as the Free Energy of the Universe:' preserves Paper 0 records P0R04125-P0R04126 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r04123 source-accounting bridge; not validation evidence",
+      "context_id": "the_ethical_functional_as_the_free_energy_of_the_universe",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04125-P0R04126"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r04123.the_ethical_functional_as_the_free_energy_of_the_universe",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_ethical_functional_as_the_free_energy_of_the_universe must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Ethical Functional as the Free Energy of the Universe: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        4123,
+        4124,
+        4125,
+        4126,
+        4127,
+        4128,
+        4129,
+        4130
+      ],
+      "source_equation_ids": [
+        "P0R04125:the_ethical_functional_as_the_free_energy_of_the_universe",
+        "P0R04126:the_ethical_functional_as_the_free_energy_of_the_universe"
+      ],
+      "source_formulae": [
+        "P0R04125: The Ethical Functional as the Free Energy of the Universe:",
+        "P0R04126: The drive to maximise SEC is the highest-level expression of the Free Energy Principle. The universe, as a whole, acts to minimise a specific form of long-term, generalised surprise. A state of low SEC (low coherence, low complexity, low qualia) is a state of high surprise or high free energy for the cosmic generative model. The \"teleological drive\" is the universal process of active inference, where the cosmos continuously acts and updates its own structure to find states that better conform to its deep prior belief that it should be coherent, complex, and conscious."
+      ],
+      "source_ledger_ids": [
+        "P0R04123",
+        "P0R04124",
+        "P0R04125",
+        "P0R04126",
+        "P0R04127",
+        "P0R04128",
+        "P0R04129",
+        "P0R04130"
+      ],
+      "source_record_ids": [
+        "P0B04123",
+        "P0B04124",
+        "P0B04125",
+        "P0B04126",
+        "P0B04127",
+        "P0B04128",
+        "P0B04129",
+        "P0B04130"
+      ],
+      "test_protocols": [
+        "preserve The Ethical Functional as the Free Energy of the Universe: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r04123.the_ethical_functional_as_the_free_energy_of_the_universe",
+      "validation_targets": [
+        "preserve records P0R04125-P0R04126"
+      ],
+      "variables": [
+        "the_ethical_functional_as_the_free_energy_of_the_universe"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Qualia Capacity (Q) as a Measure of Model Richness:' preserves Paper 0 records P0R04127-P0R04128 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r04123 source-accounting bridge; not validation evidence",
+      "context_id": "qualia_capacity_q_as_a_measure_of_model_richness",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04127-P0R04128"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r04123.qualia_capacity_q_as_a_measure_of_model_richness",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "qualia_capacity_q_as_a_measure_of_model_richness must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Qualia Capacity (Q) as a Measure of Model Richness: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        4123,
+        4124,
+        4125,
+        4126,
+        4127,
+        4128,
+        4129,
+        4130
+      ],
+      "source_equation_ids": [
+        "P0R04127:qualia_capacity_q_as_a_measure_of_model_richness",
+        "P0R04128:qualia_capacity_q_as_a_measure_of_model_richness"
+      ],
+      "source_formulae": [
+        "P0R04127: Qualia Capacity (Q) as a Measure of Model Richness:",
+        "P0R04128: The TDA-based metric for Q is a direct measure of the quality of the system's generative model. A high-Q state, being both integrated and differentiated, corresponds to a model that is both unified and capable of making very detailed, precise predictions. The drive to maximise Q is therefore the drive to develop a richer, more accurate, and more sophisticated model of reality, which is the core imperative of any inference system."
+      ],
+      "source_ledger_ids": [
+        "P0R04123",
+        "P0R04124",
+        "P0R04125",
+        "P0R04126",
+        "P0R04127",
+        "P0R04128",
+        "P0R04129",
+        "P0R04130"
+      ],
+      "source_record_ids": [
+        "P0B04123",
+        "P0B04124",
+        "P0B04125",
+        "P0B04126",
+        "P0B04127",
+        "P0B04128",
+        "P0B04129",
+        "P0B04130"
+      ],
+      "test_protocols": [
+        "preserve Qualia Capacity (Q) as a Measure of Model Richness: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r04123.qualia_capacity_q_as_a_measure_of_model_richness",
+      "validation_targets": [
+        "preserve records P0R04127-P0R04128"
+      ],
+      "variables": [
+        "qualia_capacity_q_as_a_measure_of_model_richness"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R04129-P0R04130 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r04123 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04129-P0R04130"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r04123.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Physical Basis of the Ethical Functional: Causal Entropy and Computable Qualia > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        4123,
+        4124,
+        4125,
+        4126,
+        4127,
+        4128,
+        4129,
+        4130
+      ],
+      "source_equation_ids": [
+        "P0R04129:psis_field_coupling_integration",
+        "P0R04130:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R04129: Psis Field Coupling Integration",
+        "P0R04130: This domain provides the ultimate context for the interaction Hamiltonian, H_int = -lambda * Psis * sigma, by defining the \"target state\" that the interaction is meant to achieve."
+      ],
+      "source_ledger_ids": [
+        "P0R04123",
+        "P0R04124",
+        "P0R04125",
+        "P0R04126",
+        "P0R04127",
+        "P0R04128",
+        "P0R04129",
+        "P0R04130"
+      ],
+      "source_record_ids": [
+        "P0B04123",
+        "P0B04124",
+        "P0B04125",
+        "P0B04126",
+        "P0B04127",
+        "P0B04128",
+        "P0B04129",
+        "P0B04130"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r04123.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R04129-P0R04130"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 2,
+      "mechanism": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded predictive coding integration p0r04123 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04131",
+    "source_ledger_span": [
+      "P0R04123",
+      "P0R04130"
+    ],
+    "source_record_count": 8,
+    "spec_count": 4,
+    "spec_keys": [
+      "predictive_coding_integration_p0r04123.predictive_coding_integration",
+      "predictive_coding_integration_p0r04123.the_ethical_functional_as_the_free_energy_of_the_universe",
+      "predictive_coding_integration_p0r04123.qualia_capacity_q_as_a_measure_of_model_richness",
+      "predictive_coding_integration_p0r04123.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Predictive Coding Integration Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Master Diagram: A Mandala of Consciousness' preserves Paper 0 records P0R02042-P0R02049 without empirical validation claims.",
+      "claim_boundary": "source-bounded the master diagram a mandala of consciousness source-accounting bridge; not validation evidence",
+      "context_id": "the_master_diagram_a_mandala_of_consciousness",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02042-P0R02049"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_master_diagram_a_mandala_of_consciousness.the_master_diagram_a_mandala_of_consciousness",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_master_diagram_a_mandala_of_consciousness must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Master Diagram: A Mandala of Consciousness is not empirical validation evidence"
+      ],
+      "section_path": "A Map of Reality > The Master Diagram: A Mandala of Consciousness",
+      "source_block_indices": [
+        2042,
+        2043,
+        2044,
+        2045,
+        2046,
+        2047,
+        2048,
+        2049
+      ],
+      "source_equation_ids": [
+        "P0R02042:the_master_diagram_a_mandala_of_consciousness",
+        "P0R02043:the_master_diagram_a_mandala_of_consciousness",
+        "P0R02044:the_master_diagram_a_mandala_of_consciousness",
+        "P0R02045:the_master_diagram_a_mandala_of_consciousness",
+        "P0R02046:the_master_diagram_a_mandala_of_consciousness",
+        "P0R02047:the_master_diagram_a_mandala_of_consciousness",
+        "P0R02048:the_master_diagram_a_mandala_of_consciousness",
+        "P0R02049:the_master_diagram_a_mandala_of_consciousness"
+      ],
+      "source_formulae": [
+        "P0R02042: The Master Diagram: A Mandala of Consciousness",
+        "P0R02043: To navigate this complex architecture, a visual map is indispensable. Throughout this book, we will refer to the SCPN Master Diagram, a conceptual \"mandala\" that illustrates the 15 layers and their primary feedback pathways. The layers are arranged hierarchically, from the most fundamental quantum potentiality at the base to the ultimate source field at the apex.",
+        "P0R02044: The definitive 15 layers of the SCPN are summarised below. Each will be explored in detail in the subsequent chapters of this book.",
+        "P0R02045: [IMAGE:Ein Bild, das Kreis, Diagramm, Reihe, Kunst enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R02046: [IMAGE:Ein Bild, das Text, Screenshot, Farbigkeit, parallel enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R02047: The following sections detail the purpose, components, and mathematical formalism,",
+        "P0R02048: and inter-layer linkages for each of the 15 layers.",
+        "P0R02049: P0R02049"
+      ],
+      "source_ledger_ids": [
+        "P0R02042",
+        "P0R02043",
+        "P0R02044",
+        "P0R02045",
+        "P0R02046",
+        "P0R02047",
+        "P0R02048",
+        "P0R02049"
+      ],
+      "source_record_ids": [
+        "P0B02042",
+        "P0B02043",
+        "P0B02044",
+        "P0B02045",
+        "P0B02046",
+        "P0B02047",
+        "P0B02048",
+        "P0B02049"
+      ],
+      "test_protocols": [
+        "preserve The Master Diagram: A Mandala of Consciousness source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_master_diagram_a_mandala_of_consciousness.the_master_diagram_a_mandala_of_consciousness",
+      "validation_targets": [
+        "preserve records P0R02042-P0R02049"
+      ],
+      "variables": [
+        "the_master_diagram_a_mandala_of_consciousness"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 2,
+      "figure": 2,
+      "mechanism": 2,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded the master diagram a mandala of consciousness source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0037",
+      "IMG0038"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R02050",
+    "source_ledger_span": [
+      "P0R02042",
+      "P0R02049"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "the_master_diagram_a_mandala_of_consciousness.the_master_diagram_a_mandala_of_consciousness"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Master Diagram: A Mandala of Consciousness Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

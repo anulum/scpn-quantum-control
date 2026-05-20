@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded topological invariants bk determine the structure and richness of the qu source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_adaptive_potential_landscape_apl": "1_the_adaptive_potential_landscape_apl_source_boundary",
+    "topological_invariants_bk_determine_the_structure_and_richness_of_the_qu": "topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_source_boundary",
+    "v_the_scpn_evolutionary_synthesis": "v_the_scpn_evolutionary_synthesis_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Topological Invariants (bk): Determine the structure and richness of the qualia (Betti numbers).",
+    "component_2": "V. The SCPN Evolutionary Synthesis",
+    "component_3": "1. The Adaptive Potential Landscape (APL):",
+    "component_count": "3",
+    "next_boundary": "P0R06031",
+    "section": "Topological Invariants (bk): Determine the structure and richness of the qualia (Betti numbers).",
+    "source_span": "P0R06023-P0R06030"
+  },
+  "next_source_boundary": "P0R06031",
+  "null_controls": {
+    "1_the_adaptive_potential_landscape_apl_is_not_empirical_validation_evidence": 1.0,
+    "topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_is_not_empirical_validation_evidence": 1.0,
+    "v_the_scpn_evolutionary_synthesis_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded topological invariants bk determine the structure and richness of the qu source-accounting bridge; not validation evidence",
+    "protocol_state": "source_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R06023",
+      "P0R06024",
+      "P0R06025",
+      "P0R06026",
+      "P0R06027",
+      "P0R06028",
+      "P0R06029",
+      "P0R06030"
+    ],
+    "source_ledger_span": [
+      "P0R06023",
+      "P0R06030"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06023",
+    "P0R06030"
+  ],
+  "source_record_count": 8
+}

@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded section 3 the holographic interface l9 source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "1_development_the_ascent_to_criticality": "1_development_the_ascent_to_criticality_source_boundary",
+    "2_ageing_the_descent_from_criticality_and_decoherence": "2_ageing_the_descent_from_criticality_and_decoherence_source_boundary",
+    "3_the_holographic_interface_l9": "3_the_holographic_interface_l9_source_boundary",
+    "v_dynamics_across_the_lifespan_development_ageing_and_sleep": "v_dynamics_across_the_lifespan_development_ageing_and_sleep_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. The Holographic Interface (L9):",
+    "component_2": "V. Dynamics Across the Lifespan: Development, Ageing, and Sleep",
+    "component_3": "1. Development (The Ascent to Criticality):",
+    "component_4": "2. Ageing (The Descent from Criticality and Decoherence):",
+    "component_count": "4",
+    "next_boundary": "P0R05017",
+    "section": "3. The Holographic Interface (L9):",
+    "source_span": "P0R05009-P0R05016"
+  },
+  "next_source_boundary": "P0R05017",
+  "null_controls": {
+    "1_development_the_ascent_to_criticality_is_not_empirical_validation_evidence": 1.0,
+    "2_ageing_the_descent_from_criticality_and_decoherence_is_not_empirical_validation_evidence": 1.0,
+    "3_the_holographic_interface_l9_is_not_empirical_validation_evidence": 1.0,
+    "v_dynamics_across_the_lifespan_development_ageing_and_sleep_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 the holographic interface l9 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_the_holographic_interface_l9_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05009",
+      "P0R05010",
+      "P0R05011",
+      "P0R05012",
+      "P0R05013",
+      "P0R05014",
+      "P0R05015",
+      "P0R05016"
+    ],
+    "source_ledger_span": [
+      "P0R05009",
+      "P0R05016"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05009",
+    "P0R05016"
+  ],
+  "source_record_count": 8
+}

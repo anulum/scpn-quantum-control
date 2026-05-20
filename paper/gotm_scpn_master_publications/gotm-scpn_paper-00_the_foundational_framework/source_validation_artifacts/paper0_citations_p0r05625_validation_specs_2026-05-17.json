@@ -1,0 +1,113 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Citations:' preserves Paper 0 records P0R05625-P0R05632 without empirical validation claims.",
+      "claim_boundary": "source-bounded citations p0r05625 source-accounting bridge; not validation evidence",
+      "context_id": "citations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05625-P0R05632"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "citations_p0r05625.citations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "citations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Citations: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Citations:",
+      "source_block_indices": [
+        5625,
+        5626,
+        5627,
+        5628,
+        5629,
+        5630,
+        5631,
+        5632
+      ],
+      "source_equation_ids": [
+        "P0R05625:citations",
+        "P0R05626:citations",
+        "P0R05627:citations",
+        "P0R05628:citations",
+        "P0R05629:citations",
+        "P0R05630:citations",
+        "P0R05631:citations",
+        "P0R05632:citations"
+      ],
+      "source_formulae": [
+        "P0R05625: Citations:",
+        "P0R05626: Quantum-Consciousness Interfaces",
+        "P0R05627: \"consciousness accelerates decoherence: CIGD model\" -> (Tegmark, 2000; Bassi et al., 2013)",
+        "P0R05628: \"Unified Phase Dynamics Equation generalises Kuramoto model across scales\" -> (Kuramoto, 1975; Acebrn et al., 2005)",
+        "P0R05629: Meta-Layer 16 - Strange Loop of Closure",
+        "P0R05630: \"recursive optimisation Hamiltonian (Hrec) supervises the full 15-layer stack\" -> (Pontryagin et al., 1962; Bertsekas, 2005)",
+        "P0R05631: \"quantum error correction required for transdimensional feedback integrity\" -> (Shor, 1995; Gottesman, 1997)",
+        "P0R05632: \"cybernetic closure completes the Anulum as a living recursive organism\" -> (von Foerster, 1979; Hofstadter, 2007)"
+      ],
+      "source_ledger_ids": [
+        "P0R05625",
+        "P0R05626",
+        "P0R05627",
+        "P0R05628",
+        "P0R05629",
+        "P0R05630",
+        "P0R05631",
+        "P0R05632"
+      ],
+      "source_record_ids": [
+        "P0B05625",
+        "P0B05626",
+        "P0B05627",
+        "P0B05628",
+        "P0B05629",
+        "P0B05630",
+        "P0B05631",
+        "P0B05632"
+      ],
+      "test_protocols": [
+        "preserve Citations: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.citations_p0r05625.citations",
+      "validation_targets": [
+        "preserve records P0R05625-P0R05632"
+      ],
+      "variables": [
+        "citations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 7
+    },
+    "category_counts": {
+      "context": 5,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded citations p0r05625 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05633",
+    "source_ledger_span": [
+      "P0R05625",
+      "P0R05632"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "citations_p0r05625.citations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Citations: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

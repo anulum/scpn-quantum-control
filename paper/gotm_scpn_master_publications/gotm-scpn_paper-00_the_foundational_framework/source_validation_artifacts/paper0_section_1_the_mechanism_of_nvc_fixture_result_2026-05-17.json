@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "source-bounded section 1 the mechanism of nvc source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "1_the_mechanism_of_nvc": "1_the_mechanism_of_nvc_source_boundary",
+    "2_hemodynamics_and_the_upde": "2_hemodynamics_and_the_upde_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "1. The Mechanism of NVC:",
+    "component_2": "2. Hemodynamics and the UPDE:",
+    "component_count": "2",
+    "next_boundary": "P0R04894",
+    "section": "1. The Mechanism of NVC:",
+    "source_span": "P0R04879-P0R04893"
+  },
+  "next_source_boundary": "P0R04894",
+  "null_controls": {
+    "1_the_mechanism_of_nvc_is_not_empirical_validation_evidence": 1.0,
+    "2_hemodynamics_and_the_upde_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 1 the mechanism of nvc source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_1_the_mechanism_of_nvc_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04879",
+      "P0R04880",
+      "P0R04881",
+      "P0R04882",
+      "P0R04883",
+      "P0R04884",
+      "P0R04885",
+      "P0R04886",
+      "P0R04887",
+      "P0R04888",
+      "P0R04889",
+      "P0R04890",
+      "P0R04891",
+      "P0R04892",
+      "P0R04893"
+    ],
+    "source_ledger_span": [
+      "P0R04879",
+      "P0R04893"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04879",
+    "P0R04893"
+  ],
+  "source_record_count": 15
+}

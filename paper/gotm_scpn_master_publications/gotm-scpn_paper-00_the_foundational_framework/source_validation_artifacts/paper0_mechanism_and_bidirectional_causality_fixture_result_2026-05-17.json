@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded mechanism and bidirectional causality source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_connectome_topology_the_optimised_scaffold": "1_the_connectome_topology_the_optimised_scaffold_source_boundary",
+    "iv_the_geometry_of_networks_and_dynamics_domain_i_l4": "iv_the_geometry_of_networks_and_dynamics_domain_i_l4_source_boundary",
+    "mechanism_and_bidirectional_causality": "mechanism_and_bidirectional_causality_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Mechanism and Bidirectional Causality",
+    "component_2": "IV. The Geometry of Networks and Dynamics (Domain I: L4)",
+    "component_3": "1. The Connectome Topology (The Optimised Scaffold):",
+    "component_count": "3",
+    "next_boundary": "P0R04413",
+    "section": "Mechanism and Bidirectional Causality",
+    "source_span": "P0R04404-P0R04412"
+  },
+  "next_source_boundary": "P0R04413",
+  "null_controls": {
+    "1_the_connectome_topology_the_optimised_scaffold_is_not_empirical_validation_evidence": 1.0,
+    "iv_the_geometry_of_networks_and_dynamics_domain_i_l4_is_not_empirical_validation_evidence": 1.0,
+    "mechanism_and_bidirectional_causality_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded mechanism and bidirectional causality source-accounting bridge; not validation evidence",
+    "protocol_state": "source_mechanism_and_bidirectional_causality_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04404",
+      "P0R04405",
+      "P0R04406",
+      "P0R04407",
+      "P0R04408",
+      "P0R04409",
+      "P0R04410",
+      "P0R04411",
+      "P0R04412"
+    ],
+    "source_ledger_span": [
+      "P0R04404",
+      "P0R04412"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04404",
+    "P0R04412"
+  ],
+  "source_record_count": 9
+}

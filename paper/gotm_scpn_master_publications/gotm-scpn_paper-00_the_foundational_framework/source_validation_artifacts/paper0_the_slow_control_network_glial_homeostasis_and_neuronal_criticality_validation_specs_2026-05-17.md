@@ -1,0 +1,20 @@
+# Paper 0 The Slow Control Network: Glial Homeostasis and Neuronal Criticality Specs
+
+- Source span: P0R05380 - P0R05389
+- Source records: 10
+- Consumed source records: 10
+- Coverage match: True
+- Spec count: 1
+- Claim boundary: source-bounded the slow control network glial homeostasis and neuronal criticality source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R05390
+
+## Specs
+### `the_slow_control_network_glial_homeostasis_and_neuronal_criticality.the_slow_control_network_glial_homeostasis_and_neuronal_criticality`
+
+The source-bounded component 'The Slow Control Network: Glial Homeostasis and Neuronal Criticality' preserves Paper 0 records P0R05380-P0R05389 without empirical validation claims.
+
+- Context: `the_slow_control_network_glial_homeostasis_and_neuronal_criticality`
+- Protocol: `paper0.the_slow_control_network_glial_homeostasis_and_neuronal_criticality.the_slow_control_network_glial_homeostasis_and_neuronal_criticality`
+- Source equations: P0R05380:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05381:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05382:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05383:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05384:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05385:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05386:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05387:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05388:the_slow_control_network_glial_homeostasis_and_neuronal_criticality, P0R05389:the_slow_control_network_glial_homeostasis_and_neuronal_criticality
+- Null controls: the_slow_control_network_glial_homeostasis_and_neuronal_criticality must remain source-bounded accounting

@@ -325,9 +325,9 @@ def build_replay_payload(
             "primary_candidate": str(primary_path.relative_to(REPO_ROOT)),
             "negative_control": str(negative_path.relative_to(REPO_ROOT)),
             "negative_measured_couplings": str(negative_measured_path.relative_to(REPO_ROOT)),
-            "preregistration": "docs/paper0_first_preregistered_downstream_experiment.md",
-            "pathway": "docs/paper0_experimental_pathway.md",
-            "lane_registry": "docs/paper0_lane_registry.md",
+            "preregistration": "docs/paper0/paper0_first_preregistered_downstream_experiment.md",
+            "pathway": "docs/paper0/paper0_experimental_pathway.md",
+            "lane_registry": "docs/paper0/paper0_lane_registry.md",
         },
         "primary_candidate": {
             "source_name": primary_payload.get("source_name"),

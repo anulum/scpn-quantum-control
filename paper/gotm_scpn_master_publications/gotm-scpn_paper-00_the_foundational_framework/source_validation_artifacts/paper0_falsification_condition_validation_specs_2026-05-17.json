@@ -1,0 +1,182 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Falsification Condition' preserves Paper 0 records P0R05228-P0R05233 without empirical validation claims.",
+      "claim_boundary": "source-bounded falsification condition source-accounting bridge; not validation evidence",
+      "context_id": "falsification_condition",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05228-P0R05233"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "falsification_condition.falsification_condition",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "falsification_condition must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Falsification Condition is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction II: Causal Entropic Force Signatures in Quantum Randomness > Proposed Experimental Protocol: Correlating QRNG Statistical Deviations with Collective Coherence Metrics > Falsification Condition",
+      "source_block_indices": [
+        5228,
+        5229,
+        5230,
+        5231,
+        5232,
+        5233,
+        5234,
+        5235
+      ],
+      "source_equation_ids": [
+        "P0R05228:falsification_condition",
+        "P0R05229:falsification_condition",
+        "P0R05230:falsification_condition",
+        "P0R05231:falsification_condition",
+        "P0R05232:falsification_condition",
+        "P0R05233:falsification_condition"
+      ],
+      "source_formulae": [
+        "P0R05228: Falsification Condition",
+        "P0R05229: The theory is falsified if no statistically significant correlation is found between the QRNG deviation metric and the collective coherence metric, or if any observed correlation can be attributed to environmental artefacts (e.g., electromagnetic leakage) not controlled for by the shielding.",
+        "P0R05230: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R05231: Fig.: Data Analysis Protocol. This flowchart provides a step-by-step overview of the data processing pipeline, from raw data streams to the final statistical test of the core hypothesis.",
+        "P0R05232: Input -> Physiology -> QRNG -> Statistics -> Falsification, stacked top-to-bottom: From raw QRNG bitstream and multi-participant ECG/EEG, compute a group coherence metric C(t)C(t)C(t) (HRV coherence, inter-subject EEG PLV -> average) and a randomness deviation D(t)D(t)D(t) (windowed NIST STS p-values -> K-S vs. Uniform(0,1)). Test the coupling via cross-correlation C(t)D(t)C(t)\\leftrightarrow D(t)C(t)D(t) with lag scans. Falsify if no significant correlation remains after controls.",
+        "P0R05233: P0R05233"
+      ],
+      "source_ledger_ids": [
+        "P0R05228",
+        "P0R05229",
+        "P0R05230",
+        "P0R05231",
+        "P0R05232",
+        "P0R05233",
+        "P0R05234",
+        "P0R05235"
+      ],
+      "source_record_ids": [
+        "P0B05228",
+        "P0B05229",
+        "P0B05230",
+        "P0B05231",
+        "P0B05232",
+        "P0B05233",
+        "P0B05234",
+        "P0B05235"
+      ],
+      "test_protocols": [
+        "preserve Falsification Condition source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.falsification_condition.falsification_condition",
+      "validation_targets": [
+        "preserve records P0R05228-P0R05233"
+      ],
+      "variables": [
+        "falsification_condition"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Simulating the Noosphere-Technosphere Hybrid System (NTHS) Phase Transition' preserves Paper 0 records P0R05234-P0R05235 without empirical validation claims.",
+      "claim_boundary": "source-bounded falsification condition source-accounting bridge; not validation evidence",
+      "context_id": "simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05234-P0R05235"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "falsification_condition.simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Simulating the Noosphere-Technosphere Hybrid System (NTHS) Phase Transition is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction II: Causal Entropic Force Signatures in Quantum Randomness > Proposed Experimental Protocol: Correlating QRNG Statistical Deviations with Collective Coherence Metrics > Falsification Condition",
+      "source_block_indices": [
+        5228,
+        5229,
+        5230,
+        5231,
+        5232,
+        5233,
+        5234,
+        5235
+      ],
+      "source_equation_ids": [
+        "P0R05234:simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio",
+        "P0R05235:simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio"
+      ],
+      "source_formulae": [
+        "P0R05234: Simulating the Noosphere-Technosphere Hybrid System (NTHS) Phase Transition",
+        "P0R05235: This section provides a complete blueprint for a computational experiment to test the manuscript's central hypothesis that AI algorithms optimised for engagement (surprise) rather than coherence will drive society into a fragmented, polarised spin-glass phase."
+      ],
+      "source_ledger_ids": [
+        "P0R05228",
+        "P0R05229",
+        "P0R05230",
+        "P0R05231",
+        "P0R05232",
+        "P0R05233",
+        "P0R05234",
+        "P0R05235"
+      ],
+      "source_record_ids": [
+        "P0B05228",
+        "P0B05229",
+        "P0B05230",
+        "P0B05231",
+        "P0B05232",
+        "P0B05233",
+        "P0B05234",
+        "P0B05235"
+      ],
+      "test_protocols": [
+        "preserve Simulating the Noosphere-Technosphere Hybrid System (NTHS) Phase Transition source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.falsification_condition.simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio",
+      "validation_targets": [
+        "preserve records P0R05234-P0R05235"
+      ],
+      "variables": [
+        "simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 3,
+      "figure": 1,
+      "structural": 1,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded falsification condition source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0141"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05236",
+    "source_ledger_span": [
+      "P0R05228",
+      "P0R05235"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "falsification_condition.falsification_condition",
+      "falsification_condition.simulating_the_noosphere_technosphere_hybrid_system_nths_phase_transitio"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Falsification Condition Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

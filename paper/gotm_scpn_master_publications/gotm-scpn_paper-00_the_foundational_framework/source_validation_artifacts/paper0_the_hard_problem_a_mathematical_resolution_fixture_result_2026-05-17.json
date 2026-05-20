@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded the hard problem a mathematical resolution source-accounting bridge; not validation evidence",
+  "component_count": 5,
+  "components": {
+    "key_insight": "key_insight_source_boundary",
+    "scpn": "scpn_source_boundary",
+    "the_hard_problem_a_mathematical_resolution": "the_hard_problem_a_mathematical_resolution_source_boundary",
+    "the_hard_problem_reformulated": "the_hard_problem_reformulated_source_boundary",
+    "traditional": "traditional_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Hard Problem: A Mathematical Resolution",
+    "component_2": "The Hard Problem Reformulated:",
+    "component_3": "Traditional:",
+    "component_4": "SCPN:",
+    "component_5": "Key insight:",
+    "component_count": "5",
+    "next_boundary": "P0R03427",
+    "section": "The Hard Problem: A Mathematical Resolution",
+    "source_span": "P0R03418-P0R03426"
+  },
+  "next_source_boundary": "P0R03427",
+  "null_controls": {
+    "key_insight_is_not_empirical_validation_evidence": 1.0,
+    "scpn_is_not_empirical_validation_evidence": 1.0,
+    "the_hard_problem_a_mathematical_resolution_is_not_empirical_validation_evidence": 1.0,
+    "the_hard_problem_reformulated_is_not_empirical_validation_evidence": 1.0,
+    "traditional_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the hard problem a mathematical resolution source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_hard_problem_a_mathematical_resolution_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03418",
+      "P0R03419",
+      "P0R03420",
+      "P0R03421",
+      "P0R03422",
+      "P0R03423",
+      "P0R03424",
+      "P0R03425",
+      "P0R03426"
+    ],
+    "source_ledger_span": [
+      "P0R03418",
+      "P0R03426"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03418",
+    "P0R03426"
+  ],
+  "source_record_count": 9
+}

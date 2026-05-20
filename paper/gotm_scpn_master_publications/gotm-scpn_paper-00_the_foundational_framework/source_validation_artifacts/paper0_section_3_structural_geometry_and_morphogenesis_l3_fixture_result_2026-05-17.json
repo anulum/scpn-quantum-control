@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded section 3 structural geometry and morphogenesis l3 source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "3_structural_geometry_and_morphogenesis_l3": "3_structural_geometry_and_morphogenesis_l3_source_boundary",
+    "4_the_infoton_ciss_bridge_coupling_the_psi_field_to_spin_dynamics": "4_the_infoton_ciss_bridge_coupling_the_psi_field_to_spin_dynamics_source_boundary",
+    "the_interaction_lagrangian": "the_interaction_lagrangian_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. Structural Geometry and Morphogenesis (L3):",
+    "component_2": "4. The Infoton-CISS Bridge: Coupling the Psi-Field to Spin Dynamics",
+    "component_3": "The Interaction Lagrangian",
+    "component_count": "3",
+    "next_boundary": "P0R04404",
+    "section": "3. Structural Geometry and Morphogenesis (L3):",
+    "source_span": "P0R04396-P0R04403"
+  },
+  "next_source_boundary": "P0R04404",
+  "null_controls": {
+    "3_structural_geometry_and_morphogenesis_l3_is_not_empirical_validation_evidence": 1.0,
+    "4_the_infoton_ciss_bridge_coupling_the_psi_field_to_spin_dynamics_is_not_empirical_validation_evidence": 1.0,
+    "the_interaction_lagrangian_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 structural geometry and morphogenesis l3 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_structural_geometry_and_morphogenesis_l3_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04396",
+      "P0R04397",
+      "P0R04398",
+      "P0R04399",
+      "P0R04400",
+      "P0R04401",
+      "P0R04402",
+      "P0R04403"
+    ],
+    "source_ledger_span": [
+      "P0R04396",
+      "P0R04403"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04396",
+    "P0R04403"
+  ],
+  "source_record_count": 8
+}

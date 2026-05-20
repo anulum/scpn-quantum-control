@@ -1,0 +1,20 @@
+# Paper 0 The Bridge Between Mind and Matter: How Consciousness Influences the Brain's Electricity Specs
+
+- Source span: P0R04359 - P0R04371
+- Source records: 13
+- Consumed source records: 13
+- Coverage match: True
+- Spec count: 1
+- Claim boundary: source-bounded the bridge between mind and matter how consciousness influences the brai source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R04372
+
+## Specs
+### `the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai.the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai`
+
+The source-bounded component 'The Bridge Between Mind and Matter: How Consciousness Influences the Brain's Electricity' preserves Paper 0 records P0R04359-P0R04371 without empirical validation claims.
+
+- Context: `the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai`
+- Protocol: `paper0.the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai.the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai`
+- Source equations: P0R04359:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04360:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04361:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04362:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04363:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04364:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04365:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04366:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04367:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04368:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04369:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04370:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai, P0R04371:the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai
+- Null controls: the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai must remain source-bounded accounting

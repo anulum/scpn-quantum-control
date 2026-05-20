@@ -1,0 +1,246 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Intrinsic Dynamics (iL):' preserves Paper 0 records P0R02624-P0R02625 without empirical validation claims.",
+      "claim_boundary": "source-bounded intrinsic dynamics il source-accounting bridge; not validation evidence",
+      "context_id": "intrinsic_dynamics_il",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02624-P0R02625"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "intrinsic_dynamics_il.intrinsic_dynamics_il",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "intrinsic_dynamics_il must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Intrinsic Dynamics (iL): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Unified Phase Dynamics Equation (UPDE) > Components of the UPDE: > Intrinsic Dynamics (\u03c9iL\u200b):",
+      "source_block_indices": [
+        2624,
+        2625,
+        2626,
+        2627,
+        2628,
+        2629,
+        2630,
+        2631
+      ],
+      "source_equation_ids": [
+        "P0R02624:intrinsic_dynamics_il",
+        "P0R02625:intrinsic_dynamics_il"
+      ],
+      "source_formulae": [
+        "P0R02624: Intrinsic Dynamics (iL):",
+        "P0R02625: The natural frequency, specific to the layer's timescale (e.g., THz in L1, Hz in L4, infra-slow in L11)."
+      ],
+      "source_ledger_ids": [
+        "P0R02624",
+        "P0R02625",
+        "P0R02626",
+        "P0R02627",
+        "P0R02628",
+        "P0R02629",
+        "P0R02630",
+        "P0R02631"
+      ],
+      "source_record_ids": [
+        "P0B02624",
+        "P0B02625",
+        "P0B02626",
+        "P0B02627",
+        "P0B02628",
+        "P0B02629",
+        "P0B02630",
+        "P0B02631"
+      ],
+      "test_protocols": [
+        "preserve Intrinsic Dynamics (iL): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.intrinsic_dynamics_il.intrinsic_dynamics_il",
+      "validation_targets": [
+        "preserve records P0R02624-P0R02625"
+      ],
+      "variables": [
+        "intrinsic_dynamics_il"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Intra-Layer Coupling (KijL):' preserves Paper 0 records P0R02626-P0R02627 without empirical validation claims.",
+      "claim_boundary": "source-bounded intrinsic dynamics il source-accounting bridge; not validation evidence",
+      "context_id": "intra_layer_coupling_kijl",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02626-P0R02627"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "intrinsic_dynamics_il.intra_layer_coupling_kijl",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "intra_layer_coupling_kijl must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Intra-Layer Coupling (KijL): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Unified Phase Dynamics Equation (UPDE) > Components of the UPDE: > Intrinsic Dynamics (\u03c9iL\u200b):",
+      "source_block_indices": [
+        2624,
+        2625,
+        2626,
+        2627,
+        2628,
+        2629,
+        2630,
+        2631
+      ],
+      "source_equation_ids": [
+        "P0R02626:intra_layer_coupling_kijl",
+        "P0R02627:intra_layer_coupling_kijl"
+      ],
+      "source_formulae": [
+        "P0R02626: Intra-Layer Coupling (KijL):",
+        "P0R02627: Coupling strength within the layer determines local synchronisation."
+      ],
+      "source_ledger_ids": [
+        "P0R02624",
+        "P0R02625",
+        "P0R02626",
+        "P0R02627",
+        "P0R02628",
+        "P0R02629",
+        "P0R02630",
+        "P0R02631"
+      ],
+      "source_record_ids": [
+        "P0B02624",
+        "P0B02625",
+        "P0B02626",
+        "P0B02627",
+        "P0B02628",
+        "P0B02629",
+        "P0B02630",
+        "P0B02631"
+      ],
+      "test_protocols": [
+        "preserve Intra-Layer Coupling (KijL): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.intrinsic_dynamics_il.intra_layer_coupling_kijl",
+      "validation_targets": [
+        "preserve records P0R02626-P0R02627"
+      ],
+      "variables": [
+        "intra_layer_coupling_kijl"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Inter-Layer Coupling (CInterLayer):' preserves Paper 0 records P0R02628-P0R02631 without empirical validation claims.",
+      "claim_boundary": "source-bounded intrinsic dynamics il source-accounting bridge; not validation evidence",
+      "context_id": "inter_layer_coupling_cinterlayer",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02628-P0R02631"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "intrinsic_dynamics_il.inter_layer_coupling_cinterlayer",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "inter_layer_coupling_cinterlayer must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Inter-Layer Coupling (CInterLayer): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Unified Phase Dynamics Equation (UPDE) > Components of the UPDE: > Intrinsic Dynamics (\u03c9iL\u200b):",
+      "source_block_indices": [
+        2624,
+        2625,
+        2626,
+        2627,
+        2628,
+        2629,
+        2630,
+        2631
+      ],
+      "source_equation_ids": [
+        "P0R02628:inter_layer_coupling_cinterlayer",
+        "P0R02629:inter_layer_coupling_cinterlayer",
+        "P0R02630:inter_layer_coupling_cinterlayer",
+        "P0R02631:inter_layer_coupling_cinterlayer"
+      ],
+      "source_formulae": [
+        "P0R02628: Inter-Layer Coupling (CInterLayer):",
+        "P0R02629: Represents hierarchical nesting and timescale separation (Bidirectional Causality).",
+        "P0R02630: $CInterLayer = \\epsilon L - 1 FD\\left( \\left\\langle \\theta L - 1 \\right\\rangle,\\theta iL \\right) + \\epsilon L + 1 GU\\left( \\theta iL,\\left\\langle \\theta L + 1 \\right\\rangle \\right)$",
+        "P0R02631: Where are scale separation parameters. FD (Downward coupling) often involves mechanisms like Phase-Amplitude Coupling (PAC), where the phase of the higher layer modulates the dynamics of the lower layer. GU (Upward coupling) involves the aggregation of lower-layer coherence."
+      ],
+      "source_ledger_ids": [
+        "P0R02624",
+        "P0R02625",
+        "P0R02626",
+        "P0R02627",
+        "P0R02628",
+        "P0R02629",
+        "P0R02630",
+        "P0R02631"
+      ],
+      "source_record_ids": [
+        "P0B02624",
+        "P0B02625",
+        "P0B02626",
+        "P0B02627",
+        "P0B02628",
+        "P0B02629",
+        "P0B02630",
+        "P0B02631"
+      ],
+      "test_protocols": [
+        "preserve Inter-Layer Coupling (CInterLayer): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.intrinsic_dynamics_il.inter_layer_coupling_cinterlayer",
+      "validation_targets": [
+        "preserve records P0R02628-P0R02631"
+      ],
+      "variables": [
+        "inter_layer_coupling_cinterlayer"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 5
+    },
+    "category_counts": {
+      "context": 2,
+      "equation": 1,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded intrinsic dynamics il source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0040"
+    ],
+    "next_source_boundary": "P0R02632",
+    "source_ledger_span": [
+      "P0R02624",
+      "P0R02631"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "intrinsic_dynamics_il.intrinsic_dynamics_il",
+      "intrinsic_dynamics_il.intra_layer_coupling_kijl",
+      "intrinsic_dynamics_il.inter_layer_coupling_cinterlayer"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Intrinsic Dynamics (iL): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

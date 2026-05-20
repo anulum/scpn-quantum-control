@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded section 2 embodied predictive coding interoceptive inference source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "2_embodied_predictive_coding_interoceptive_inference": "2_embodied_predictive_coding_interoceptive_inference_source_boundary",
+    "3_distributed_criticality": "3_distributed_criticality_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "2. Embodied Predictive Coding (Interoceptive Inference)",
+    "component_2": "3. Distributed Criticality:",
+    "component_count": "2",
+    "next_boundary": "P0R04975",
+    "section": "2. Embodied Predictive Coding (Interoceptive Inference)",
+    "source_span": "P0R04967-P0R04974"
+  },
+  "next_source_boundary": "P0R04975",
+  "null_controls": {
+    "2_embodied_predictive_coding_interoceptive_inference_is_not_empirical_validation_evidence": 1.0,
+    "3_distributed_criticality_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 2 embodied predictive coding interoceptive inference source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_2_embodied_predictive_coding_interoceptive_inference_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04967",
+      "P0R04968",
+      "P0R04969",
+      "P0R04970",
+      "P0R04971",
+      "P0R04972",
+      "P0R04973",
+      "P0R04974"
+    ],
+    "source_ledger_span": [
+      "P0R04967",
+      "P0R04974"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04967",
+    "P0R04974"
+  ],
+  "source_record_count": 8
+}

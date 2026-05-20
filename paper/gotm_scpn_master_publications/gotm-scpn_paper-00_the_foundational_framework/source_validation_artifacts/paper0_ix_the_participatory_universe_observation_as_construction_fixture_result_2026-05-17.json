@@ -1,0 +1,47 @@
+{
+  "claim_boundary": "source-bounded ix the participatory universe observation as construction source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "ix_the_participatory_universe_observation_as_construction": "ix_the_participatory_universe_observation_as_construction_source_boundary",
+    "x_symmetry_conservation_laws_and_the_coherence_current": "x_symmetry_conservation_laws_and_the_coherence_current_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "IX. The Participatory Universe: Observation as Construction",
+    "component_2": "X. Symmetry, Conservation Laws, and the Coherence Current",
+    "component_count": "2",
+    "next_boundary": "P0R06057",
+    "section": "IX. The Participatory Universe: Observation as Construction",
+    "source_span": "P0R06047-P0R06056"
+  },
+  "next_source_boundary": "P0R06057",
+  "null_controls": {
+    "ix_the_participatory_universe_observation_as_construction_is_not_empirical_validation_evidence": 1.0,
+    "x_symmetry_conservation_laws_and_the_coherence_current_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded ix the participatory universe observation as construction source-accounting bridge; not validation evidence",
+    "protocol_state": "source_ix_the_participatory_universe_observation_as_construction_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R06047",
+      "P0R06048",
+      "P0R06049",
+      "P0R06050",
+      "P0R06051",
+      "P0R06052",
+      "P0R06053",
+      "P0R06054",
+      "P0R06055",
+      "P0R06056"
+    ],
+    "source_ledger_span": [
+      "P0R06047",
+      "P0R06056"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06047",
+    "P0R06056"
+  ],
+  "source_record_count": 10
+}

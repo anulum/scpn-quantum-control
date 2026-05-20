@@ -1,0 +1,165 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Mechanism 2: Quantum Stochastic Resonance (QSR)' preserves Paper 0 records P0R03343-P0R03359 without empirical validation claims.",
+      "claim_boundary": "source-bounded mechanism 2 quantum stochastic resonance qsr source-accounting bridge; not validation evidence",
+      "context_id": "mechanism_2_quantum_stochastic_resonance_qsr",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03343-P0R03359"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "mechanism_2_quantum_stochastic_resonance_qsr.mechanism_2_quantum_stochastic_resonance_qsr",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "mechanism_2_quantum_stochastic_resonance_qsr must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Mechanism 2: Quantum Stochastic Resonance (QSR) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > The Quantum-to-Classical Transition: Amplification of Intent > Mechanism 2: Quantum Stochastic Resonance (QSR)",
+      "source_block_indices": [
+        3343,
+        3344,
+        3345,
+        3346,
+        3347,
+        3348,
+        3349,
+        3350,
+        3351,
+        3352,
+        3353,
+        3354,
+        3355,
+        3356,
+        3357,
+        3358,
+        3359
+      ],
+      "source_equation_ids": [
+        "P0R03343:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03344:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03345:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03346:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03347:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03348:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03349:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03350:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03351:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03352:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03353:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03354:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03355:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03356:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03357:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03358:mechanism_2_quantum_stochastic_resonance_qsr",
+        "P0R03359:mechanism_2_quantum_stochastic_resonance_qsr"
+      ],
+      "source_formulae": [
+        "P0R03343: Mechanism 2: Quantum Stochastic Resonance (QSR)",
+        "P0R03344: Once a coherent quantum state is selected, its weak signal must be amplified. This is achieved through Quantum Stochastic Resonance (QSR), a phenomenon where a noisy, non-linear system can amplify a weak, sub-threshold signal.",
+        "P0R03345: The brain, operating at the quasicritical state described in Layer 4, is precisely such a system: it is inherently noisy and poised at a threshold for large-scale activation.",
+        "P0R03346: This process can be formalised by modelling a key molecular component, such as a voltage-gated ion channel, as a particle in a bistable potential V(x) with two wells (e.g., \"closed\" and \"open\") separated by an energy barrier DeltaV.",
+        "P0R03347: The weak, periodic signal from the Psi-field is insufficient on its own to cause the channel to cross the barrier. However, the brain's intrinsic biological noise (thermal and synaptic), with intensity D, can occasionally provide the necessary energy boost.",
+        "P0R03348: The rate of noise-induced barrier crossing is given by the Kramers rate. Stochastic resonance occurs when the characteristic timescale of the noise-induced hopping aligns with the period of the weak signal, leading to a massive amplification of the system's response.",
+        "P0R03349: [IMAGE:Ein Bild, das Text, Screenshot, Diagramm, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03350: Fig. - Quantum Stochastic Resonance (QSR) on an ion channel. A double-well potential V(x)V(x)V(x) (closed/open states) receives a weak periodic Psi-drive (A). Intrinsic biological noise with intensity DDD induces barrier crossings (Kramers mechanism). When hopping times synchronise with the drive period, SR amplifies the response.",
+        "P0R03351: The signal-to-noise ratio (SNR) of the output is maximised at an optimal, non-zero noise level, Dopt, and can be approximated by:",
+        "P0R03352: SNRD2A2exp(DDeltaV)",
+        "P0R03353: where A is the amplitude of the weak Psi-field signal. The Psi-field provides the coherent, information-rich signal, and the brain's own thermal and synaptic noise provides the energy that amplifies it, potentially triggering a single action potential that then propagates as a neuronal avalanche through the critical network of Layer 4.",
+        "P0R03354: This mechanism reframes the role of biological noise from a mere nuisance to a necessary and functional component of consciousness. The brain does not work despite noise; it works because of it. Noise is the energy source that the quasicritical brain harnesses to amplify the subtle, information-rich signals of the Psi-field, providing a deeply physical and elegant solution to the amplification problem of downward causation.",
+        "P0R03355: [IMAGE:Ein Bild, das Text, Screenshot, Diagramm, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03356: Fig. - Timing match & avalanche propagation. When tauhopTsignal\\tau_{\\rm hop}\\approx T_{\\rm signal}tauhopTsignal, the subthreshold Psi-aligned signal plus optimal noise triggers a single action potential that seeds a neuronal avalanche across a quasicritical Layer-4 network (sigma1), yielding a macroscopic, energy-dependent effect.",
+        "P0R03357: [IMAGE:Ein Bild, das Text, Diagramm, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03358: Fig. - SNR vs noise intensity. The output SNR peaks at a non-zero DoptD_{\\rm opt}Dopt (schematic), e.g. SNR(D)D2A2exp(DeltaV D)\\mathrm{SNR}(D) \\propto D^{2}A^{2} \\exp(-\\Delta V\\,D)SNR(D)D2A2exp(DeltaVD). Resonance corresponds to matching the noise-induced hopping timescale to the signal period.",
+        "P0R03359: [IMAGE:Ein Bild, das Text, Screenshot, Kreis, Diagramm enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]"
+      ],
+      "source_ledger_ids": [
+        "P0R03343",
+        "P0R03344",
+        "P0R03345",
+        "P0R03346",
+        "P0R03347",
+        "P0R03348",
+        "P0R03349",
+        "P0R03350",
+        "P0R03351",
+        "P0R03352",
+        "P0R03353",
+        "P0R03354",
+        "P0R03355",
+        "P0R03356",
+        "P0R03357",
+        "P0R03358",
+        "P0R03359"
+      ],
+      "source_record_ids": [
+        "P0B03343",
+        "P0B03344",
+        "P0B03345",
+        "P0B03346",
+        "P0B03347",
+        "P0B03348",
+        "P0B03349",
+        "P0B03350",
+        "P0B03351",
+        "P0B03352",
+        "P0B03353",
+        "P0B03354",
+        "P0B03355",
+        "P0B03356",
+        "P0B03357",
+        "P0B03358",
+        "P0B03359"
+      ],
+      "test_protocols": [
+        "preserve Mechanism 2: Quantum Stochastic Resonance (QSR) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.mechanism_2_quantum_stochastic_resonance_qsr.mechanism_2_quantum_stochastic_resonance_qsr",
+      "validation_targets": [
+        "preserve records P0R03343-P0R03359"
+      ],
+      "variables": [
+        "mechanism_2_quantum_stochastic_resonance_qsr"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 16
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "figure": 4,
+      "mechanism": 6
+    },
+    "claim_boundary": "source-bounded mechanism 2 quantum stochastic resonance qsr source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 17,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0057",
+      "IMG0058",
+      "IMG0059",
+      "IMG0060"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R03360",
+    "source_ledger_span": [
+      "P0R03343",
+      "P0R03359"
+    ],
+    "source_record_count": 17,
+    "spec_count": 1,
+    "spec_keys": [
+      "mechanism_2_quantum_stochastic_resonance_qsr.mechanism_2_quantum_stochastic_resonance_qsr"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Mechanism 2: Quantum Stochastic Resonance (QSR) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

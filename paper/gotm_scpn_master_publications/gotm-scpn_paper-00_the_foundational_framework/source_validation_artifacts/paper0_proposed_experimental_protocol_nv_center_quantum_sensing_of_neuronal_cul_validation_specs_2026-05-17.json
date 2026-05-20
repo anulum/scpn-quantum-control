@@ -1,0 +1,191 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity' preserves Paper 0 records P0R05182-P0R05182 without empirical validation claims.",
+      "claim_boundary": "source-bounded proposed experimental protocol nv center quantum sensing of neuronal cul source-accounting bridge; not validation evidence",
+      "context_id": "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05182-P0R05182"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul.proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction I: Information-Geometric Deviations in Quasicritical Systems > Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity",
+      "source_block_indices": [
+        5182,
+        5183,
+        5184,
+        5185,
+        5186,
+        5187,
+        5188,
+        5189,
+        5190
+      ],
+      "source_equation_ids": [
+        "P0R05182:proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul"
+      ],
+      "source_formulae": [
+        "P0R05182: Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity"
+      ],
+      "source_ledger_ids": [
+        "P0R05182",
+        "P0R05183",
+        "P0R05184",
+        "P0R05185",
+        "P0R05186",
+        "P0R05187",
+        "P0R05188",
+        "P0R05189",
+        "P0R05190"
+      ],
+      "source_record_ids": [
+        "P0B05182",
+        "P0B05183",
+        "P0B05184",
+        "P0B05185",
+        "P0B05186",
+        "P0B05187",
+        "P0B05188",
+        "P0B05189",
+        "P0B05190"
+      ],
+      "test_protocols": [
+        "preserve Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul.proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul",
+      "validation_targets": [
+        "preserve records P0R05182-P0R05182"
+      ],
+      "variables": [
+        "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Apparatus' preserves Paper 0 records P0R05183-P0R05190 without empirical validation claims.",
+      "claim_boundary": "source-bounded proposed experimental protocol nv center quantum sensing of neuronal cul source-accounting bridge; not validation evidence",
+      "context_id": "apparatus",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05183-P0R05190"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul.apparatus",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "apparatus must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Apparatus is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction I: Information-Geometric Deviations in Quasicritical Systems > Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity",
+      "source_block_indices": [
+        5182,
+        5183,
+        5184,
+        5185,
+        5186,
+        5187,
+        5188,
+        5189,
+        5190
+      ],
+      "source_equation_ids": [
+        "P0R05183:apparatus",
+        "P0R05184:apparatus",
+        "P0R05185:apparatus",
+        "P0R05186:apparatus",
+        "P0R05187:apparatus",
+        "P0R05188:apparatus",
+        "P0R05189:apparatus",
+        "P0R05190:apparatus"
+      ],
+      "source_formulae": [
+        "P0R05183: Apparatus",
+        "P0R05184: Source System: A high-density primary neuronal culture grown on a multi-electrode array (MEA). Such cultures are known to self-organise into a quasicritical state, exhibiting spontaneous, system-wide neuronal avalanches that follow power-law statistics. Pharmacological agents can be used to controllably tune the culture's activity patterns between subcritical (quiescent, with tetrodotoxin, TTX), critical (synchronous bursting, with bicuculline), and supercritical states, providing a controllable source of varying informational complexity. | Quantum Sensor: A high-purity diamond sliver containing a shallow ensemble of Nitrogen-Vacancy (NV) centers, positioned in close proximity (<50 nm) to the neuronal culture. NV centers are atomic-scale quantum defects whose spin states are exquisitely sensitive to local magnetic fields and other environmental parameters, and they function effectively at room temperature, making them ideal for biological sensing applications. | Instrumentation: A standard confocal microscopy setup with integrated microwave delivery and optical readout for controlling and measuring the NV center spin states. Simultaneous MEA recording is required to capture the full spike train data from the neuronal culture. The entire apparatus must be housed within a multi-layer mu-metal magnetic shield to isolate it from external environmental noise and to ensure that any detected effects are locally generated.",
+        "P0R05185: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R05186: Fig.: Shielded NV-MEA hybrid for Psi->FIM tests. This schematic provides a visual overview of the proposed experimental setup, showing the key components and their spatial relationships. This apparatus provides a clean, magnetically quiet stage to co-record neural dynamics and NV-spin decoherence, enabling rigorous, time-aligned tests of the proposed Psi-information-geometry coupling.",
+        "P0R05187: A multi-layer mu-metal shield encloses:",
+        "P0R05188: (i) a multi-electrode array (MEA) hosting the primary neuronal culture;",
+        "P0R05189: (ii) an NV-center quantum sensor (diamond sliver with shallow NV ensemble at <50 nm proximity) read out by a confocal microscope with microwave spin control; and",
+        "P0R05190: (iii) time-synchronised control & data acquisition (MEA spike-train recorder; pulse sequencer + optical readout electronics). The MEA is held in close proximity to the diamond, enabling tests of information-geometric coupling via anomalous decoherence in the NV probe correlated with network statistics."
+      ],
+      "source_ledger_ids": [
+        "P0R05182",
+        "P0R05183",
+        "P0R05184",
+        "P0R05185",
+        "P0R05186",
+        "P0R05187",
+        "P0R05188",
+        "P0R05189",
+        "P0R05190"
+      ],
+      "source_record_ids": [
+        "P0B05182",
+        "P0B05183",
+        "P0B05184",
+        "P0B05185",
+        "P0B05186",
+        "P0B05187",
+        "P0B05188",
+        "P0B05189",
+        "P0B05190"
+      ],
+      "test_protocols": [
+        "preserve Apparatus source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul.apparatus",
+      "validation_targets": [
+        "preserve records P0R05183-P0R05190"
+      ],
+      "variables": [
+        "apparatus"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "OrderedList": 1,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 2,
+      "figure": 1,
+      "mechanism": 3,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded proposed experimental protocol nv center quantum sensing of neuronal cul source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0137"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05191",
+    "source_ledger_span": [
+      "P0R05182",
+      "P0R05190"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul.proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul",
+      "proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul.apparatus"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

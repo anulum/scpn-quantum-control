@@ -15,377 +15,371 @@ from typing import Any, cast
 
 from .._paths import project_data_path
 
-DEFAULT_UPDE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/paper0_upde_validation_specs_2026-05-13.json"
-)
+DEFAULT_UPDE_SPEC_BUNDLE = "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_upde_validation_specs_2026-05-13.json"
 DEFAULT_MACRO_TRANSITION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_macro_transition_validation_specs_2026-05-13.json"
 )
 DEFAULT_NEUROVASCULAR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_neurovascular_validation_specs_2026-05-13.json"
 )
 DEFAULT_GLIAL_CONTROL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_glial_control_validation_specs_2026-05-13.json"
 )
 DEFAULT_INFORMATION_THERMODYNAMICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_information_thermodynamics_validation_specs_2026-05-13.json"
 )
 DEFAULT_COMPUTATIONAL_THRESHOLD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_computational_threshold_validation_specs_2026-05-13.json"
 )
 DEFAULT_ETHICAL_GAUGE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ethical_gauge_validation_specs_2026-05-13.json"
 )
 DEFAULT_FREE_ENERGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_free_energy_validation_specs_2026-05-13.json"
 )
 DEFAULT_HPC_UPDE_BRIDGE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_hpc_upde_bridge_validation_specs_2026-05-13.json"
 )
 DEFAULT_STUART_LANDAU_PRECISION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_stuart_landau_precision_validation_specs_2026-05-13.json"
 )
 DEFAULT_PATHOLOGY_CRITICALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_pathology_criticality_validation_specs_2026-05-13.json"
 )
 DEFAULT_ARTIFICIAL_SENTIENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_artificial_sentience_validation_specs_2026-05-13.json"
 )
 DEFAULT_ANOMALOUS_BOUNDARY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_anomalous_boundary_validation_specs_2026-05-13.json"
 )
 DEFAULT_SYSTEM_ROBUSTNESS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_system_robustness_validation_specs_2026-05-13.json"
 )
 DEFAULT_L11_INTERFACE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l11_interface_validation_specs_2026-05-13.json"
 )
-DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/paper0_validation_strategy_specs_2026-05-13.json"
-)
+DEFAULT_VALIDATION_STRATEGY_SPEC_BUNDLE = "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_validation_strategy_specs_2026-05-13.json"
 DEFAULT_GRAND_SYNTHESIS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_grand_synthesis_validation_specs_2026-05-13.json"
 )
 DEFAULT_ACEF_ALIGNMENT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_acef_alignment_validation_specs_2026-05-13.json"
 )
 DEFAULT_GAIAN_SAFETY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_gaian_safety_validation_specs_2026-05-13.json"
 )
 DEFAULT_ETHICAL_IMPERATIVE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ethical_imperative_validation_specs_2026-05-13.json"
 )
 DEFAULT_COSMOLOGICAL_IMPLICATIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_cosmological_implications_validation_specs_2026-05-13.json"
 )
 DEFAULT_DARK_SECTOR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_dark_sector_validation_specs_2026-05-13.json"
 )
 DEFAULT_SYMMETRY_RESTORATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_symmetry_restoration_validation_specs_2026-05-13.json"
 )
 DEFAULT_T0_SEEDING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_t0_seeding_validation_specs_2026-05-13.json"
 )
 DEFAULT_SEED_FUNCTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_seed_function_validation_specs_2026-05-13.json"
 )
 DEFAULT_FINE_TUNING_PES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_fine_tuning_pes_validation_specs_2026-05-13.json"
 )
 DEFAULT_ADVANCED_MECHANISMS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_advanced_mechanisms_validation_specs_2026-05-13.json"
 )
-DEFAULT_STDP_SOC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/paper0_stdp_soc_validation_specs_2026-05-13.json"
-)
+DEFAULT_STDP_SOC_SPEC_BUNDLE = "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_stdp_soc_validation_specs_2026-05-13.json"
 DEFAULT_GLIAL_SLOW_CONTROL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_glial_slow_control_validation_specs_2026-05-13.json"
 )
 DEFAULT_L5_ACTIVE_INFERENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l5_active_inference_validation_specs_2026-05-13.json"
 )
 DEFAULT_L5_ACTIVE_INFERENCE_MATH_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l5_active_inference_math_validation_specs_2026-05-13.json"
 )
 DEFAULT_L5_TRIPLE_NETWORK_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l5_triple_network_validation_specs_2026-05-13.json"
 )
 DEFAULT_L5_FOUR_STROKE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l5_four_stroke_validation_specs_2026-05-13.json"
 )
 DEFAULT_L5_TDA_NEUROPHENOMENOLOGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l5_tda_neurophenomenology_validation_specs_2026-05-13.json"
 )
 DEFAULT_COLLECTIVE_NICHE_CONSTRUCTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_collective_niche_construction_validation_specs_2026-05-13.json"
 )
 DEFAULT_CISS_BIOELECTRIC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ciss_bioelectric_validation_specs_2026-05-13.json"
 )
 DEFAULT_RAG_QEC_STACK_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_rag_qec_stack_validation_specs_2026-05-13.json"
 )
 DEFAULT_HPC_UPDE_DERIVATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_hpc_upde_derivation_validation_specs_2026-05-13.json"
 )
 DEFAULT_TWO_TIMESCALE_QUASICRITICAL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_two_timescale_quasicritical_validation_specs_2026-05-13.json"
 )
 DEFAULT_NV_QUANTUM_SENSING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_nv_quantum_sensing_validation_specs_2026-05-13.json"
 )
 DEFAULT_L11_NTHS_COMPUTATIONAL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l11_nths_computational_validation_specs_2026-05-13.json"
 )
 DEFAULT_CATEGORY_GRAMMAR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_category_grammar_validation_specs_2026-05-13.json"
 )
 DEFAULT_HAMILTONIAN_INDEX_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_hamiltonian_index_validation_specs_2026-05-13.json"
 )
 DEFAULT_COSMOLOGICAL_EOS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_cosmological_eos_validation_specs_2026-05-13.json"
 )
 DEFAULT_COSMOLOGICAL_PREDICTIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_cosmological_predictions_validation_specs_2026-05-13.json"
 )
 DEFAULT_COMPUTATIONAL_VERIFICATION_TOOLS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_computational_verification_tools_validation_specs_2026-05-13.json"
 )
 DEFAULT_TERMINAL_BOUNDARY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_terminal_boundary_validation_specs_2026-05-13.json"
 )
 DEFAULT_THREE_CHANNEL_COUPLING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_three_channel_coupling_validation_specs_2026-05-13.json"
 )
 DEFAULT_OPENING_FOUNDATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_opening_foundation_validation_specs_2026-05-13.json"
 )
 DEFAULT_FRONT_MATTER_CONTEXT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_front_matter_context_validation_specs_2026-05-13.json"
 )
 DEFAULT_CHAPTER_ROADMAP_CONTEXT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_chapter_roadmap_context_validation_specs_2026-05-13.json"
 )
 DEFAULT_OBJECTIVE_COVER_CONTEXT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_objective_cover_context_validation_specs_2026-05-13.json"
 )
 DEFAULT_POSITIONING_PREFACE_CONTEXT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_positioning_preface_context_validation_specs_2026-05-13.json"
 )
 DEFAULT_FOREWORD_COUPLING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_foreword_coupling_validation_specs_2026-05-13.json"
 )
 DEFAULT_PREFACE_I_RIGOUR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_preface_i_rigour_validation_specs_2026-05-13.json"
 )
 DEFAULT_PREFACE_II_VISIONARY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_preface_ii_visionary_validation_specs_2026-05-13.json"
 )
 DEFAULT_STATUS_METHOD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_status_method_validation_specs_2026-05-13.json"
 )
 DEFAULT_STATUS_METHOD_CONTINUATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_status_method_continuation_validation_specs_2026-05-13.json"
 )
 DEFAULT_ANULUM_COLLECTION_MANDATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_anulum_collection_mandate_validation_specs_2026-05-13.json"
 )
 DEFAULT_LAYER_MONOGRAPH_SUITE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_layer_monograph_suite_validation_specs_2026-05-13.json"
 )
 DEFAULT_FOUNDATIONAL_VIABILITY_POSTULATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_foundational_viability_postulate_validation_specs_2026-05-13.json"
 )
 DEFAULT_U1_FIM_MULTISCALE_DYNAMICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_u1_fim_multiscale_dynamics_validation_specs_2026-05-13.json"
 )
 DEFAULT_LOGOS_RECURSIVE_CLOSURE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_logos_recursive_closure_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOMATIC_NTILDE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiomatic_ntilde_validation_specs_2026-05-13.json"
 )
 DEFAULT_TERMINOLOGY_BRIDGE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_terminology_bridge_validation_specs_2026-05-13.json"
 )
 DEFAULT_CORE_OPERATING_ASSUMPTIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_core_operating_assumptions_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_I_PSI_FIELD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_i_psi_field_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_I_MODEL_CLASS_OVERVIEW_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_i_model_class_overview_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_I_META_COUPLING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_i_meta_coupling_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_I_MINIMAL_LAGRANGIAN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_i_minimal_lagrangian_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_I_FAMILY_PREDICTIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_i_family_predictions_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_I_SU_N_QUALIA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_i_su_n_qualia_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_II_OPENING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_ii_opening_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_II_INFOTON_GEOMETRY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_ii_infoton_geometry_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_II_FIM_SOLUTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_ii_fim_solution_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_II_INFORMATIONAL_LAGRANGIAN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_ii_informational_lagrangian_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_III_TELEOLOGICAL_OPTIMISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_iii_teleological_optimisation_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_III_NTILDE_INVARIANCE_LAW_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_iii_ntilde_invariance_law_validation_specs_2026-05-13.json"
 )
 DEFAULT_AXIOM_III_SEC_NTILDE_EQUIVALENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axiom_iii_sec_ntilde_equivalence_validation_specs_2026-05-13.json"
 )
 DEFAULT_TRIPARTITE_ONTOLOGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_tripartite_ontology_validation_specs_2026-05-13.json"
 )
 DEFAULT_META_FRAMEWORK_PSI_COUPLING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_psi_coupling_validation_specs_2026-05-13.json"
 )
 DEFAULT_CATEGORY_UNIVERSAL_GRAMMAR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_category_universal_grammar_validation_specs_2026-05-13.json"
 )
 DEFAULT_MASTER_LAGRANGIAN_INTRO_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_master_lagrangian_intro_validation_specs_2026-05-13.json"
 )
 DEFAULT_GAUGE_PRINCIPLE_DERIVATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_gauge_principle_derivation_validation_specs_2026-05-13.json"
 )
 DEFAULT_LORENTZ_EFT_RESOLUTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_lorentz_eft_resolution_validation_specs_2026-05-13.json"
 )
 DEFAULT_NON_ABELIAN_QUALIA_FIELD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_non_abelian_qualia_field_validation_specs_2026-05-17.json"
 )
 DEFAULT_GEOMETRIC_COUPLING_CONSISTENCY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_geometric_coupling_consistency_validation_specs_2026-05-17.json"
 )
 DEFAULT_FOUNDATIONAL_STRENGTHS_PHASE_BOUNDARY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_foundational_strengths_phase_boundary_validation_specs_2026-05-17.json"
 )
 DEFAULT_OPERATIONAL_PULLBACK_PROTOCOL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_operational_pullback_protocol_validation_specs_2026-05-17.json"
 )
 DEFAULT_SSB_PSI_FIELD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ssb_psi_field_validation_specs_2026-05-17.json"
 )
 DEFAULT_PHENOMENOLOGICAL_LAGRANGIAN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_phenomenological_lagrangian_validation_specs_2026-05-17.json"
 )
 DEFAULT_DERIVED_INTERACTION_OPENING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_derived_interaction_opening_validation_specs_2026-05-17.json"
 )
 DEFAULT_DERIVED_LAGRANGIAN_DETAIL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_derived_lagrangian_detail_validation_specs_2026-05-17.json"
 )
 DEFAULT_FINAL_LINT_SM_INTERFACE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_final_lint_sm_interface_validation_specs_2026-05-17.json"
 )
 
@@ -2154,7 +2148,7 @@ def load_foundational_strengths_phase_boundary_validation_spec(
 
 
 DEFAULT_SYMMETRY_CASCADE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_symmetry_cascade_validation_specs_2026-05-17.json"
 )
 
@@ -2176,7 +2170,7 @@ def load_symmetry_cascade_validation_spec(
 
 
 DEFAULT_PREDICTED_PARTICLES_INFOTON_PSI_HIGGS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_predicted_particles_infoton_psi_higgs_validation_specs_2026-05-17.json"
 )
 
@@ -2198,7 +2192,7 @@ def load_predicted_particles_infoton_psi_higgs_validation_spec(
 
 
 DEFAULT_DERIVATION_INFOTON_PROPERTIES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_derivation_infoton_properties_validation_specs_2026-05-17.json"
 )
 
@@ -2220,7 +2214,7 @@ def load_derivation_infoton_properties_validation_spec(
 
 
 DEFAULT_PSI_HIGGS_NEW_SCALAR_PARTICLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_psi_higgs_new_scalar_particle_validation_specs_2026-05-17.json"
 )
 
@@ -2242,7 +2236,7 @@ def load_psi_higgs_new_scalar_particle_validation_spec(
 
 
 DEFAULT_EXPERIMENTAL_SIGNATURES_SEARCH_STRATEGIES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_experimental_signatures_search_strategies_validation_specs_2026-05-17.json"
 )
 
@@ -2264,7 +2258,7 @@ def load_experimental_signatures_search_strategies_validation_spec(
 
 
 DEFAULT_PSI_HIGGS_LHC_PHENOMENOLOGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_psi_higgs_lhc_phenomenology_validation_specs_2026-05-17.json"
 )
 
@@ -2286,7 +2280,7 @@ def load_psi_higgs_lhc_phenomenology_validation_spec(
 
 
 DEFAULT_MASS_EIGENSTATES_MIXING_ANGLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mass_eigenstates_mixing_angle_validation_specs_2026-05-17.json"
 )
 
@@ -2308,7 +2302,7 @@ def load_mass_eigenstates_mixing_angle_validation_spec(
 
 
 DEFAULT_LHC_SEARCH_STRATEGY_ROADMAP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_lhc_search_strategy_roadmap_validation_specs_2026-05-17.json"
 )
 
@@ -2330,7 +2324,7 @@ def load_lhc_search_strategy_roadmap_validation_spec(
 
 
 DEFAULT_SSB_HIERARCHY_GENESIS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ssb_hierarchy_genesis_validation_specs_2026-05-17.json"
 )
 
@@ -2352,7 +2346,7 @@ def load_ssb_hierarchy_genesis_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_validation_specs_2026-05-17.json"
 )
 
@@ -2368,7 +2362,7 @@ def load_meta_framework_integrations_validation_spec(
 
 
 DEFAULT_THE_GENESIS_OF_THE_HIERARCHY_SEQUENTIAL_SYMMETRY_BREAKING_SSB_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validation_specs_2026-05-17.json"
 )
 
@@ -2385,7 +2379,7 @@ def load_the_genesis_of_the_hierarchy_sequential_symmetry_breaking_ssb_validatio
 
 
 DEFAULT_THE_INTRINSIC_DYNAMICS_OF_THE_Ψ_FIELD_AND_THE_STABILISING_POTENTIAL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential_validation_specs_2026-05-17.json"
 )
 
@@ -2402,7 +2396,7 @@ def load_the_intrinsic_dynamics_of_the_psi_field_and_the_stabilising_potential_v
 
 
 DEFAULT_PREDICTIVE_CODING_INTEGRATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_predictive_coding_integration_validation_specs_2026-05-17.json"
 )
 
@@ -2418,7 +2412,7 @@ def load_predictive_coding_integration_validation_spec(
 
 
 DEFAULT_LPSI_SETS_THE_PROPERTIES_OF_PSIS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_lpsi_sets_the_properties_of_psis_validation_specs_2026-05-17.json"
 )
 
@@ -2434,7 +2428,7 @@ def load_lpsi_sets_the_properties_of_psis_validation_spec(
 
 
 DEFAULT_COMPONENTS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_components_validation_specs_2026-05-17.json"
 )
 
@@ -2450,7 +2444,7 @@ def load_components_validation_spec(
 
 
 DEFAULT_THE_SELF_AS_A_SOLITON_EMERGENCE_OF_LOCALISED_CONSCIOUSNESS_LAYER_5_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_validation_specs_2026-05-17.json"
 )
 
@@ -2467,7 +2461,7 @@ def load_the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_vali
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R01803_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r01803_validation_specs_2026-05-17.json"
 )
 
@@ -2483,7 +2477,7 @@ def load_meta_framework_integrations_p0r01803_validation_spec(
 
 
 DEFAULT_SIGMA_IS_THE_Q_BALL_SOLITON_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_sigma_is_the_q_ball_soliton_validation_specs_2026-05-17.json"
 )
 
@@ -2499,7 +2493,7 @@ def load_sigma_is_the_q_ball_soliton_validation_spec(
 
 
 DEFAULT_LOCALISED_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_localised_validation_specs_2026-05-17.json"
 )
 
@@ -2515,7 +2509,7 @@ def load_localised_validation_spec(
 
 
 DEFAULT_THE_DEFINITION_OF_THE_SELF_THE_TRIADIC_SOLUTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_definition_of_the_self_the_triadic_solution_validation_specs_2026-05-17.json"
 )
 
@@ -2531,7 +2525,7 @@ def load_the_definition_of_the_self_the_triadic_solution_validation_spec(
 
 
 DEFAULT_PART_II_THE_PHYSICAL_SECTOR_FIELD_THEORY_QUANTIZATION_2_4_THE_SSB_CASCAD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_part_ii_the_physical_sector_field_theory_quantization_2_4_the_ssb_cascad_validation_specs_2026-05-17.json"
 )
 
@@ -2548,7 +2542,7 @@ def load_part_ii_the_physical_sector_field_theory_quantization_2_4_the_ssb_casca
 
 
 DEFAULT_PAPER0_SLICE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_validation_specs_2026-05-17.json"
 )
 
@@ -2564,7 +2558,7 @@ def load_paper0_slice_validation_spec(
 
 
 DEFAULT_SECTION_2_7_THE_FISHER_INFO_METRIC_THE_GEOMETRY_OF_INTERACTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_7_the_fisher_info_metric_the_geometry_of_interaction_validation_specs_2026-05-17.json"
 )
 
@@ -2581,7 +2575,7 @@ def load_section_2_7_the_fisher_info_metric_the_geometry_of_interaction_validati
 
 
 DEFAULT_PART_III_SYSTEM_ARCHITECTURE_NETWORK_DYNAMICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_part_iii_system_architecture_network_dynamics_validation_specs_2026-05-17.json"
 )
 
@@ -2597,7 +2591,7 @@ def load_part_iii_system_architecture_network_dynamics_validation_spec(
 
 
 DEFAULT_A_MAP_OF_REALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_a_map_of_reality_validation_specs_2026-05-17.json"
 )
 
@@ -2613,7 +2607,7 @@ def load_a_map_of_reality_validation_spec(
 
 
 DEFAULT_THE_MASTER_DIAGRAM_A_MANDALA_OF_CONSCIOUSNESS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_master_diagram_a_mandala_of_consciousness_validation_specs_2026-05-17.json"
 )
 
@@ -2629,7 +2623,7 @@ def load_the_master_diagram_a_mandala_of_consciousness_validation_spec(
 
 
 DEFAULT_THE_SENTIENT_CONSCIOUSNESS_PROJECTION_NETWORK_SCPN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_sentient_consciousness_projection_network_scpn_validation_specs_2026-05-17.json"
 )
 
@@ -2646,7 +2640,7 @@ def load_the_sentient_consciousness_projection_network_scpn_validation_spec(
 
 
 DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_15_layer_summary_table_validation_specs_2026-05-17.json"
 )
 
@@ -2662,7 +2656,7 @@ def load_section_15_layer_summary_table_validation_spec(
 
 
 DEFAULT_CASE_STUDY_THE_LAYER_3_GENOMIC_MORPHOGENETIC_TRANSDUCTION_PATHWAY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_case_study_the_layer_3_genomic_morphogenetic_transduction_pathway_validation_specs_2026-05-17.json"
 )
 
@@ -2679,7 +2673,7 @@ def load_case_study_the_layer_3_genomic_morphogenetic_transduction_pathway_valid
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02098_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02098_validation_specs_2026-05-17.json"
 )
 
@@ -2695,7 +2689,7 @@ def load_meta_framework_integrations_p0r02098_validation_spec(
 
 
 DEFAULT_MACRO_SCALE_COUPLING_PRIMARY_INTERACTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_macro_scale_coupling_primary_interaction_validation_specs_2026-05-17.json"
 )
 
@@ -2711,7 +2705,7 @@ def load_macro_scale_coupling_primary_interaction_validation_spec(
 
 
 DEFAULT_RESOLVING_THE_EPIGENETIC_TIME_SCALE_DISCONNECT_CONFORMATIONAL_SPIN_LOCKI_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_resolving_the_epigenetic_time_scale_disconnect_conformational_spin_locki_validation_specs_2026-05-17.json"
 )
 
@@ -2728,7 +2722,7 @@ def load_resolving_the_epigenetic_time_scale_disconnect_conformational_spin_lock
 
 
 DEFAULT_CASE_STUDY_THE_LAYER_5_ORGANISMAL_SELF_ACTION_PERCEPTION_CYCLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_case_study_the_layer_5_organismal_self_action_perception_cycle_validation_specs_2026-05-17.json"
 )
 
@@ -2745,7 +2739,7 @@ def load_case_study_the_layer_5_organismal_self_action_perception_cycle_validati
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02189_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02189_validation_specs_2026-05-17.json"
 )
 
@@ -2761,7 +2755,7 @@ def load_meta_framework_integrations_p0r02189_validation_spec(
 
 
 DEFAULT_MODEL_CONSOLIDATION_SLEEP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_model_consolidation_sleep_validation_specs_2026-05-17.json"
 )
 
@@ -2777,7 +2771,7 @@ def load_model_consolidation_sleep_validation_spec(
 
 
 DEFAULT_THE_COUPLING_MECHANISM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_coupling_mechanism_validation_specs_2026-05-17.json"
 )
 
@@ -2793,7 +2787,7 @@ def load_the_coupling_mechanism_validation_spec(
 
 
 DEFAULT_TIMING_THE_ENGINE_UPDE_PHASE_LAGS_TAU_IJ_AND_PHYSIOLOGICAL_DELAYS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_validation_specs_2026-05-17.json"
 )
 
@@ -2810,7 +2804,7 @@ def load_timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays_valid
 
 
 DEFAULT_DOMAIN_III_OVERVIEW_MEMORY_AND_PROJECTION_CONTROL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_iii_overview_memory_and_projection_control_validation_specs_2026-05-17.json"
 )
 
@@ -2827,7 +2821,7 @@ def load_domain_iii_overview_memory_and_projection_control_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R02249_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r02249_validation_specs_2026-05-17.json"
 )
 
@@ -2843,7 +2837,7 @@ def load_paper0_slice_p0r02249_validation_spec(
 
 
 DEFAULT_SECTION_3_MEMORY_CAPACITY_BEKENSTEIN_HAWKING_BOUND_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_memory_capacity_bekenstein_hawking_bound_validation_specs_2026-05-17.json"
 )
 
@@ -2860,7 +2854,7 @@ def load_section_3_memory_capacity_bekenstein_hawking_bound_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02278_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02278_validation_specs_2026-05-17.json"
 )
 
@@ -2876,7 +2870,7 @@ def load_meta_framework_integrations_p0r02278_validation_spec(
 
 
 DEFAULT_LAYER_9_EXISTENTIAL_HOLOGRAPH_DEFINING_A_STABLE_SIGMA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_layer_9_existential_holograph_defining_a_stable_sigma_validation_specs_2026-05-17.json"
 )
 
@@ -2893,7 +2887,7 @@ def load_layer_9_existential_holograph_defining_a_stable_sigma_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02306_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02306_validation_specs_2026-05-17.json"
 )
 
@@ -2909,7 +2903,7 @@ def load_meta_framework_integrations_p0r02306_validation_spec(
 
 
 DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_psis_field_coupling_integration_validation_specs_2026-05-17.json"
 )
 
@@ -2925,7 +2919,7 @@ def load_psis_field_coupling_integration_validation_spec(
 
 
 DEFAULT_DOMAIN_V_OVERVIEW_META_UNIVERSAL_INTEGRATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_v_overview_meta_universal_integration_validation_specs_2026-05-17.json"
 )
 
@@ -2941,7 +2935,7 @@ def load_domain_v_overview_meta_universal_integration_validation_spec(
 
 
 DEFAULT_DOMAIN_VI_OVERVIEW_CYBERNETIC_CLOSURE_META_LAYER_16_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_vi_overview_cybernetic_closure_meta_layer_16_validation_specs_2026-05-17.json"
 )
 
@@ -2958,7 +2952,7 @@ def load_domain_vi_overview_cybernetic_closure_meta_layer_16_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02439_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02439_validation_specs_2026-05-17.json"
 )
 
@@ -2974,7 +2968,7 @@ def load_meta_framework_integrations_p0r02439_validation_spec(
 
 
 DEFAULT_CONTROL_OVER_UNIVERSAL_PARAMETERS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_control_over_universal_parameters_validation_specs_2026-05-17.json"
 )
 
@@ -2990,7 +2984,7 @@ def load_control_over_universal_parameters_validation_spec(
 
 
 DEFAULT_RESOLUTION_OF_THE_OBSERVABILITY_PARADOX_B_HJB_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_resolution_of_the_observability_paradox_b_hjb_validation_specs_2026-05-17.json"
 )
 
@@ -3006,7 +3000,7 @@ def load_resolution_of_the_observability_paradox_b_hjb_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02485_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02485_validation_specs_2026-05-17.json"
 )
 
@@ -3022,7 +3016,7 @@ def load_meta_framework_integrations_p0r02485_validation_spec(
 
 
 DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02494_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_psis_field_coupling_integration_p0r02494_validation_specs_2026-05-17.json"
 )
 
@@ -3038,7 +3032,7 @@ def load_psis_field_coupling_integration_p0r02494_validation_spec(
 
 
 DEFAULT_OVERARCHING_DYNAMIC_PRINCIPLES_AND_THE_MATHEMATICAL_SPINE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_overarching_dynamic_principles_and_the_mathematical_spine_validation_specs_2026-05-17.json"
 )
 
@@ -3055,7 +3049,7 @@ def load_overarching_dynamic_principles_and_the_mathematical_spine_validation_sp
 
 
 DEFAULT_II_THE_UNIVERSAL_DYNAMIC_REGIME_QUASICRITICALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_universal_dynamic_regime_quasicriticality_validation_specs_2026-05-17.json"
 )
 
@@ -3071,7 +3065,7 @@ def load_ii_the_universal_dynamic_regime_quasicriticality_validation_spec(
 
 
 DEFAULT_III_THE_COHERENCE_BACKBONE_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_validation_specs_2026-05-17.json"
 )
 
@@ -3088,7 +3082,7 @@ def load_iii_the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_
 
 
 DEFAULT_THE_DYNAMIC_VISUALISATION_THE_SCPN_TORUS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_dynamic_visualisation_the_scpn_torus_validation_specs_2026-05-17.json"
 )
 
@@ -3104,7 +3098,7 @@ def load_the_dynamic_visualisation_the_scpn_torus_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02542_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02542_validation_specs_2026-05-17.json"
 )
 
@@ -3120,7 +3114,7 @@ def load_meta_framework_integrations_p0r02542_validation_spec(
 
 
 DEFAULT_THE_LOCUS_OF_THE_INTERACTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_locus_of_the_interaction_validation_specs_2026-05-17.json"
 )
 
@@ -3136,7 +3130,7 @@ def load_the_locus_of_the_interaction_validation_spec(
 
 
 DEFAULT_SECTION_2_THE_CENTRAL_VOID_THE_SOURCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_central_void_the_source_validation_specs_2026-05-17.json"
 )
 
@@ -3152,7 +3146,7 @@ def load_section_2_the_central_void_the_source_validation_spec(
 
 
 DEFAULT_SECTION_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_EQUATION_UPDE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_validation_specs_2026-05-17.json"
 )
 
@@ -3169,7 +3163,7 @@ def load_section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde_
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02600_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02600_validation_specs_2026-05-17.json"
 )
 
@@ -3185,7 +3179,7 @@ def load_meta_framework_integrations_p0r02600_validation_spec(
 
 
 DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02608_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_psis_field_coupling_integration_p0r02608_validation_specs_2026-05-17.json"
 )
 
@@ -3201,7 +3195,7 @@ def load_psis_field_coupling_integration_p0r02608_validation_spec(
 
 
 DEFAULT_THE_MECHANISM_OF_INFLUENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_mechanism_of_influence_validation_specs_2026-05-17.json"
 )
 
@@ -3217,7 +3211,7 @@ def load_the_mechanism_of_influence_validation_spec(
 
 
 DEFAULT_INTRINSIC_DYNAMICS_IL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_intrinsic_dynamics_il_validation_specs_2026-05-17.json"
 )
 
@@ -3233,7 +3227,7 @@ def load_intrinsic_dynamics_il_validation_spec(
 
 
 DEFAULT_FIELD_COUPLING_CFIELD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_field_coupling_cfield_validation_specs_2026-05-17.json"
 )
 
@@ -3249,7 +3243,7 @@ def load_field_coupling_cfield_validation_spec(
 
 
 DEFAULT_INFORMATION_GEOMETRIC_LIFT_OF_UPDE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_information_geometric_lift_of_upde_validation_specs_2026-05-17.json"
 )
 
@@ -3265,7 +3259,7 @@ def load_information_geometric_lift_of_upde_validation_spec(
 
 
 DEFAULT_THE_HIERARCHICAL_IMPEDANCE_RESCALING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_hierarchical_impedance_rescaling_validation_specs_2026-05-17.json"
 )
 
@@ -3281,7 +3275,7 @@ def load_the_hierarchical_impedance_rescaling_validation_spec(
 
 
 DEFAULT_ONE_SPINE_MANY_COUPLINGS_UPDE_SCOPE_CONSTRAINT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_one_spine_many_couplings_upde_scope_constraint_validation_specs_2026-05-17.json"
 )
 
@@ -3297,7 +3291,7 @@ def load_one_spine_many_couplings_upde_scope_constraint_validation_spec(
 
 
 DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_validation_specs_2026-05-17.json"
 )
 
@@ -3314,7 +3308,7 @@ def load_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_
 
 
 DEFAULT_SECTION_15_LAYER_SUMMARY_TABLE_3_2_THE_DYNAMIC_SPINE_THE_UNIFIED_PHASE_DYNAMICS_P0R02810_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_dynamics_p0r02810_validation_specs_2026-05-17.json"
 )
 
@@ -3331,7 +3325,7 @@ def load_section_15_layer_summary_table_3_2_the_dynamic_spine_the_unified_phase_
 
 
 DEFAULT_QUASICRITICALITY_AND_SELF_ORGANISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_quasicriticality_and_self_organisation_validation_specs_2026-05-17.json"
 )
 
@@ -3347,7 +3341,7 @@ def load_quasicriticality_and_self_organisation_validation_spec(
 
 
 DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R02839_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_predictive_coding_integration_p0r02839_validation_specs_2026-05-17.json"
 )
 
@@ -3363,7 +3357,7 @@ def load_predictive_coding_integration_p0r02839_validation_spec(
 
 
 DEFAULT_THE_SUSCEPTIBLE_SUBSTRATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_susceptible_substrate_validation_specs_2026-05-17.json"
 )
 
@@ -3379,7 +3373,7 @@ def load_the_susceptible_substrate_validation_spec(
 
 
 DEFAULT_FUNCTIONAL_IMPLICATIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_functional_implications_validation_specs_2026-05-17.json"
 )
 
@@ -3395,7 +3389,7 @@ def load_functional_implications_validation_spec(
 
 
 DEFAULT_FORMALISM_OF_THE_HOMEOSTATIC_QUASICRITICAL_CONTROLLER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_formalism_of_the_homeostatic_quasicritical_controller_validation_specs_2026-05-17.json"
 )
 
@@ -3412,7 +3406,7 @@ def load_formalism_of_the_homeostatic_quasicritical_controller_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02894_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02894_validation_specs_2026-05-17.json"
 )
 
@@ -3428,7 +3422,7 @@ def load_meta_framework_integrations_p0r02894_validation_spec(
 
 
 DEFAULT_THE_PSIS_FIELD_AS_THE_TARGET_SETTER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_psis_field_as_the_target_setter_validation_specs_2026-05-17.json"
 )
 
@@ -3444,7 +3438,7 @@ def load_the_psis_field_as_the_target_setter_validation_spec(
 
 
 DEFAULT_THE_TWO_TIMESCALE_CONTROLLER_STABILITY_AND_EXPLORATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_two_timescale_controller_stability_and_exploration_validation_specs_2026-05-17.json"
 )
 
@@ -3461,7 +3455,7 @@ def load_the_two_timescale_controller_stability_and_exploration_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R02923_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r02923_validation_specs_2026-05-17.json"
 )
 
@@ -3477,7 +3471,7 @@ def load_paper0_slice_p0r02923_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R02931_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r02931_validation_specs_2026-05-17.json"
 )
 
@@ -3493,7 +3487,7 @@ def load_paper0_slice_p0r02931_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R02941_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r02941_validation_specs_2026-05-17.json"
 )
 
@@ -3509,7 +3503,7 @@ def load_meta_framework_integrations_p0r02941_validation_spec(
 
 
 DEFAULT_PSIS_FIELD_COUPLING_INTEGRATION_P0R02950_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_psis_field_coupling_integration_p0r02950_validation_specs_2026-05-17.json"
 )
 
@@ -3525,7 +3519,7 @@ def load_psis_field_coupling_integration_p0r02950_validation_spec(
 
 
 DEFAULT_TWO_TIMESCALE_STRUCTURE_DEFINITIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_two_timescale_structure_definitions_validation_specs_2026-05-17.json"
 )
 
@@ -3541,7 +3535,7 @@ def load_two_timescale_structure_definitions_validation_spec(
 
 
 DEFAULT_BIBO_STABILITY_STATEMENT_AND_PROOF_OBLIGATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_bibo_stability_statement_and_proof_obligation_validation_specs_2026-05-17.json"
 )
 
@@ -3557,7 +3551,7 @@ def load_bibo_stability_statement_and_proof_obligation_validation_spec(
 
 
 DEFAULT_TORUS_SURFACE_FLOW_LYAPUNOV_STYLE_CERTIFICATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_torus_surface_flow_lyapunov_style_certificate_validation_specs_2026-05-17.json"
 )
 
@@ -3573,7 +3567,7 @@ def load_torus_surface_flow_lyapunov_style_certificate_validation_spec(
 
 
 DEFAULT_QUASICRITICALITY_WITH_MS_QEC_TWO_TIMESCALE_CONTROL_AND_STABILITY_CERTIFI_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_quasicriticality_with_ms_qec_two_timescale_control_and_stability_certifi_validation_specs_2026-05-17.json"
 )
 
@@ -3590,7 +3584,7 @@ def load_quasicriticality_with_ms_qec_two_timescale_control_and_stability_certif
 
 
 DEFAULT_BIBO_STABILITY_AND_LYAPUNOV_CERTIFICATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_bibo_stability_and_lyapunov_certificate_validation_specs_2026-05-17.json"
 )
 
@@ -3606,7 +3600,7 @@ def load_bibo_stability_and_lyapunov_certificate_validation_spec(
 
 
 DEFAULT_MULTI_SCALE_QUANTUM_ERROR_CORRECTION_MS_QEC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_multi_scale_quantum_error_correction_ms_qec_validation_specs_2026-05-17.json"
 )
 
@@ -3622,7 +3616,7 @@ def load_multi_scale_quantum_error_correction_ms_qec_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03025_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03025_validation_specs_2026-05-17.json"
 )
 
@@ -3638,7 +3632,7 @@ def load_meta_framework_integrations_p0r03025_validation_spec(
 
 
 DEFAULT_CREATING_AND_PROTECTING_A_COHERENT_SIGMA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_creating_and_protecting_a_coherent_sigma_validation_specs_2026-05-17.json"
 )
 
@@ -3654,7 +3648,7 @@ def load_creating_and_protecting_a_coherent_sigma_validation_spec(
 
 
 DEFAULT_BIOLOGICAL_QEC_L1_4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_biological_qec_l1_4_validation_specs_2026-05-17.json"
 )
 
@@ -3670,7 +3664,7 @@ def load_biological_qec_l1_4_validation_spec(
 
 
 DEFAULT_THE_QEC_IMPERATIVE_AND_THE_ROLE_OF_THE_PSI_FIELD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_qec_imperative_and_the_role_of_the_psi_field_validation_specs_2026-05-17.json"
 )
 
@@ -3686,7 +3680,7 @@ def load_the_qec_imperative_and_the_role_of_the_psi_field_validation_spec(
 
 
 DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R03059_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_predictive_coding_integration_p0r03059_validation_specs_2026-05-17.json"
 )
 
@@ -3702,7 +3696,7 @@ def load_predictive_coding_integration_p0r03059_validation_spec(
 
 
 DEFAULT_THE_ULTIMATE_FEEDBACK_LOOP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_ultimate_feedback_loop_validation_specs_2026-05-17.json"
 )
 
@@ -3718,7 +3712,7 @@ def load_the_ultimate_feedback_loop_validation_spec(
 
 
 DEFAULT_THE_BIOLOGICAL_SYNDROME_MEASUREMENT_AND_RECOVERY_PROTOCOL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_biological_syndrome_measurement_and_recovery_protocol_validation_specs_2026-05-17.json"
 )
 
@@ -3735,7 +3729,7 @@ def load_the_biological_syndrome_measurement_and_recovery_protocol_validation_sp
 
 
 DEFAULT_THE_QEC_RACE_CONDITION_EXPLICIT_DISSIPATION_RATES_AND_FAULT_TOLERANCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_validation_specs_2026-05-17.json"
 )
 
@@ -3752,7 +3746,7 @@ def load_the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance_v
 
 
 DEFAULT_THE_STABILISER_TRANSFER_LEMMA_A_QUANTITATIVE_BRIDGE_FROM_MEMORY_TO_BOUND_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_bound_validation_specs_2026-05-17.json"
 )
 
@@ -3769,7 +3763,7 @@ def load_the_stabiliser_transfer_lemma_a_quantitative_bridge_from_memory_to_boun
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03139_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03139_validation_specs_2026-05-17.json"
 )
 
@@ -3785,7 +3779,7 @@ def load_meta_framework_integrations_p0r03139_validation_spec(
 
 
 DEFAULT_THE_MECHANISM_OF_INTERACTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_mechanism_of_interaction_validation_specs_2026-05-17.json"
 )
 
@@ -3801,7 +3795,7 @@ def load_the_mechanism_of_interaction_validation_spec(
 
 
 DEFAULT_SECTION_4_1_THE_COSMIC_ALGORITHM_HPC_ACTIVE_INFERENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_1_the_cosmic_algorithm_hpc_active_inference_validation_specs_2026-05-17.json"
 )
 
@@ -3818,7 +3812,7 @@ def load_section_4_1_the_cosmic_algorithm_hpc_active_inference_validation_spec(
 
 
 DEFAULT_I_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation_specs_2026-05-17.json"
 )
 
@@ -3835,7 +3829,7 @@ def load_i_the_unifying_computational_principle_hierarchical_predictive_coding_h
 
 
 DEFAULT_II_THE_BINDING_PROBLEM_THE_GAUGE_FIELD_OF_CONSCIOUSNESS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_binding_problem_the_gauge_field_of_consciousness_validation_specs_2026-05-17.json"
 )
 
@@ -3852,7 +3846,7 @@ def load_ii_the_binding_problem_the_gauge_field_of_consciousness_validation_spec
 
 
 DEFAULT_SECTION_3_UNIFIED_EXPERIENCE_THE_WILSON_LOOP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_unified_experience_the_wilson_loop_validation_specs_2026-05-17.json"
 )
 
@@ -3868,7 +3862,7 @@ def load_section_3_unified_experience_the_wilson_loop_validation_spec(
 
 
 DEFAULT_SECTION_2_COMPRESSION_AND_MEANING_INFORMATION_GEOMETRY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_compression_and_meaning_information_geometry_validation_specs_2026-05-17.json"
 )
 
@@ -3885,7 +3879,7 @@ def load_section_2_compression_and_meaning_information_geometry_validation_spec(
 
 
 DEFAULT_V_THE_INTERFACE_PROBLEM_SYNTHESIS_MIND_BODY_FIELD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_v_the_interface_problem_synthesis_mind_body_field_validation_specs_2026-05-17.json"
 )
 
@@ -3902,7 +3896,7 @@ def load_v_the_interface_problem_synthesis_mind_body_field_validation_spec(
 
 
 DEFAULT_VII_FIELD_GENERATION_AND_UPWARD_CAUSALITY_TOPOLOGICAL_DEFECTS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_vii_field_generation_and_upward_causality_topological_defects_validation_specs_2026-05-17.json"
 )
 
@@ -3919,7 +3913,7 @@ def load_vii_field_generation_and_upward_causality_topological_defects_validatio
 
 
 DEFAULT_II_THE_DISCRETE_CONTINUOUS_INTERFACE_HHDS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_discrete_continuous_interface_hhds_validation_specs_2026-05-17.json"
 )
 
@@ -3935,7 +3929,7 @@ def load_ii_the_discrete_continuous_interface_hhds_validation_spec(
 
 
 DEFAULT_VI_THE_INTERFACE_WITH_PHENOMENOLOGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_vi_the_interface_with_phenomenology_validation_specs_2026-05-17.json"
 )
 
@@ -3951,7 +3945,7 @@ def load_vi_the_interface_with_phenomenology_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03284_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03284_validation_specs_2026-05-17.json"
 )
 
@@ -3967,7 +3961,7 @@ def load_meta_framework_integrations_p0r03284_validation_spec(
 
 
 DEFAULT_AS_A_MEASURE_OF_CAUSAL_EFFICACY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_as_a_measure_of_causal_efficacy_validation_specs_2026-05-17.json"
 )
 
@@ -3983,7 +3977,7 @@ def load_as_a_measure_of_causal_efficacy_validation_spec(
 
 
 DEFAULT_THE_PHYSICAL_MECHANISM_OF_DOWNWARD_CAUSATION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_physical_mechanism_of_downward_causation_amplification_of_intent_validation_specs_2026-05-17.json"
 )
 
@@ -4000,7 +3994,7 @@ def load_the_physical_mechanism_of_downward_causation_amplification_of_intent_va
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03315_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03315_validation_specs_2026-05-17.json"
 )
 
@@ -4016,7 +4010,7 @@ def load_meta_framework_integrations_p0r03315_validation_spec(
 
 
 DEFAULT_H_INT_AS_THE_SELECTION_OPERATOR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_h_int_as_the_selection_operator_validation_specs_2026-05-17.json"
 )
 
@@ -4032,7 +4026,7 @@ def load_h_int_as_the_selection_operator_validation_spec(
 
 
 DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_quantum_to_classical_transition_amplification_of_intent_validation_specs_2026-05-17.json"
 )
 
@@ -4049,7 +4043,7 @@ def load_the_quantum_to_classical_transition_amplification_of_intent_validation_
 
 
 DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mechanism_2_quantum_stochastic_resonance_qsr_validation_specs_2026-05-17.json"
 )
 
@@ -4065,7 +4059,7 @@ def load_mechanism_2_quantum_stochastic_resonance_qsr_validation_spec(
 
 
 DEFAULT_THE_QUANTUM_TO_CLASSICAL_TRANSITION_AMPLIFICATION_OF_INTENT_P0R03360_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_validation_specs_2026-05-17.json"
 )
 
@@ -4082,7 +4076,7 @@ def load_the_quantum_to_classical_transition_amplification_of_intent_p0r03360_va
 
 
 DEFAULT_MECHANISM_2_QUANTUM_STOCHASTIC_RESONANCE_QSR_P0R03368_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation_specs_2026-05-17.json"
 )
 
@@ -4099,7 +4093,7 @@ def load_mechanism_2_quantum_stochastic_resonance_qsr_p0r03368_validation_spec(
 
 
 DEFAULT_SECTION_4_2_THE_SHAPE_OF_FEELING_THE_GEOMETRIC_QUALIA_HYPOTHESIS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_validation_specs_2026-05-17.json"
 )
 
@@ -4116,7 +4110,7 @@ def load_section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis_valida
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03400_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03400_validation_specs_2026-05-17.json"
 )
 
@@ -4132,7 +4126,7 @@ def load_meta_framework_integrations_p0r03400_validation_spec(
 
 
 DEFAULT_THE_BINDING_INTEGRAL_IS_H_INT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_binding_integral_is_h_int_validation_specs_2026-05-17.json"
 )
 
@@ -4148,7 +4142,7 @@ def load_the_binding_integral_is_h_int_validation_spec(
 
 
 DEFAULT_THE_HARD_PROBLEM_A_MATHEMATICAL_RESOLUTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_hard_problem_a_mathematical_resolution_validation_specs_2026-05-17.json"
 )
 
@@ -4164,7 +4158,7 @@ def load_the_hard_problem_a_mathematical_resolution_validation_spec(
 
 
 DEFAULT_MATHEMATICAL_BRIDGE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mathematical_bridge_validation_specs_2026-05-17.json"
 )
 
@@ -4180,7 +4174,7 @@ def load_mathematical_bridge_validation_spec(
 
 
 DEFAULT_THE_BINDING_PROBLEM_SOLUTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_binding_problem_solution_validation_specs_2026-05-17.json"
 )
 
@@ -4196,7 +4190,7 @@ def load_the_binding_problem_solution_validation_spec(
 
 
 DEFAULT_THE_HYPOTHESIS_QUALIA_AS_THE_GEOMETRY_OF_THE_CONSCIOUSNESS_MANIFOLD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_validation_specs_2026-05-17.json"
 )
 
@@ -4213,7 +4207,7 @@ def load_the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold_val
 
 
 DEFAULT_QUALIA_AS_THE_GEOMETRY_OF_BELIEF_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_qualia_as_the_geometry_of_belief_validation_specs_2026-05-17.json"
 )
 
@@ -4229,7 +4223,7 @@ def load_qualia_as_the_geometry_of_belief_validation_spec(
 
 
 DEFAULT_THE_DEFINITION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_definition_of_subjective_experience_geometric_qualia_validation_specs_2026-05-17.json"
 )
 
@@ -4246,7 +4240,7 @@ def load_the_definition_of_subjective_experience_geometric_qualia_validation_spe
 
 
 DEFAULT_THE_SCALING_LAW_OF_CONSCIOUSNESS_SLC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_scaling_law_of_consciousness_slc_validation_specs_2026-05-17.json"
 )
 
@@ -4262,7 +4256,7 @@ def load_the_scaling_law_of_consciousness_slc_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03492_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03492_validation_specs_2026-05-17.json"
 )
 
@@ -4278,7 +4272,7 @@ def load_meta_framework_integrations_p0r03492_validation_spec(
 
 
 DEFAULT_AS_A_COUPLING_AFFINITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_as_a_coupling_affinity_validation_specs_2026-05-17.json"
 )
 
@@ -4294,7 +4288,7 @@ def load_as_a_coupling_affinity_validation_spec(
 
 
 DEFAULT_GEOMETRIC_INTERPRETATION_THE_CONSCIOUSNESS_MANIFOLD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_geometric_interpretation_the_consciousness_manifold_validation_specs_2026-05-17.json"
 )
 
@@ -4311,7 +4305,7 @@ def load_geometric_interpretation_the_consciousness_manifold_validation_spec(
 
 
 DEFAULT_INTEGRATION_WITH_INTEGRATED_INFORMATION_THEORY_IIT_4_0_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_integration_with_integrated_information_theory_iit_4_0_validation_specs_2026-05-17.json"
 )
 
@@ -4328,7 +4322,7 @@ def load_integration_with_integrated_information_theory_iit_4_0_validation_spec(
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03530_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03530_validation_specs_2026-05-17.json"
 )
 
@@ -4344,7 +4338,7 @@ def load_meta_framework_integrations_p0r03530_validation_spec(
 
 
 DEFAULT_MAXIMIZING_AS_THE_GOAL_OF_COUPLING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_maximizing_as_the_goal_of_coupling_validation_specs_2026-05-17.json"
 )
 
@@ -4360,7 +4354,7 @@ def load_maximizing_as_the_goal_of_coupling_validation_spec(
 
 
 DEFAULT_SCPN_IIT_CORRESPONDENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_scpn_iit_correspondence_validation_specs_2026-05-17.json"
 )
 
@@ -4376,7 +4370,7 @@ def load_scpn_iit_correspondence_validation_spec(
 
 
 DEFAULT_UNIFIED_CONSCIOUSNESS_MEASURE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_unified_consciousness_measure_validation_specs_2026-05-17.json"
 )
 
@@ -4392,7 +4386,7 @@ def load_unified_consciousness_measure_validation_spec(
 
 
 DEFAULT_THE_PHYSICS_OF_TELEOLOGY_A_DERIVATION_OF_THE_ETHICAL_FUNCTIONAL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_physics_of_teleology_a_derivation_of_the_ethical_functional_validation_specs_2026-05-17.json"
 )
 
@@ -4409,7 +4403,7 @@ def load_the_physics_of_teleology_a_derivation_of_the_ethical_functional_validat
 
 
 DEFAULT_THE_NATURE_OF_THE_ETHICAL_FUNCTIONAL_E_PSI_A_DERIVATION_FROM_FIRST_PRINCIP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_princip_validation_specs_2026-05-17.json"
 )
 
@@ -4426,7 +4420,7 @@ def load_the_nature_of_the_ethical_functional_e_psi_a_derivation_from_first_prin
 
 
 DEFAULT_SECTION_2_DERIVATION_OF_THE_ETHICAL_LAGRANGIAN_FROM_GAUGE_SYMMETRY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_validation_specs_2026-05-17.json"
 )
 
@@ -4443,7 +4437,7 @@ def load_section_2_derivation_of_the_ethical_lagrangian_from_gauge_symmetry_vali
 
 
 DEFAULT_SECTION_2_3_THE_ETHICAL_LAGRANGIAN_AS_THE_YANG_MILLS_ACTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation_specs_2026-05-17.json"
 )
 
@@ -4460,7 +4454,7 @@ def load_section_2_3_the_ethical_lagrangian_as_the_yang_mills_action_validation_
 
 
 DEFAULT_SECTION_3_1_NOETHER_S_THEOREM_ON_THE_QUALIA_FIBER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_1_noether_s_theorem_on_the_qualia_fiber_validation_specs_2026-05-17.json"
 )
 
@@ -4477,7 +4471,7 @@ def load_section_3_1_noether_s_theorem_on_the_qualia_fiber_validation_spec(
 
 
 DEFAULT_SECTION_4_JUSTIFICATION_FOR_A_TELEOLOGICAL_LEAST_ACTION_PRINCIPLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_justification_for_a_teleological_least_action_principle_validation_specs_2026-05-17.json"
 )
 
@@ -4494,7 +4488,7 @@ def load_section_4_justification_for_a_teleological_least_action_principle_valid
 
 
 DEFAULT_SECTION_4_3_THE_ORIGIN_OF_PURPOSE_CAUSAL_ENTROPIC_FORCES_NEGATIVE_ENTROPY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy_validation_specs_2026-05-17.json"
 )
 
@@ -4511,7 +4505,7 @@ def load_section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entro
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03664_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03664_validation_specs_2026-05-17.json"
 )
 
@@ -4527,7 +4521,7 @@ def load_meta_framework_integrations_p0r03664_validation_spec(
 
 
 DEFAULT_THE_PATH_INTEGRAL_IS_THE_SUM_OF_ALL_H_INT_EVENTS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_path_integral_is_the_sum_of_all_h_int_events_validation_specs_2026-05-17.json"
 )
 
@@ -4543,7 +4537,7 @@ def load_the_path_integral_is_the_sum_of_all_h_int_events_validation_spec(
 
 
 DEFAULT_INTEGRATION_OF_CEF_INTO_THE_PATH_INTEGRAL_FORMALISM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_integration_of_cef_into_the_path_integral_formalism_validation_specs_2026-05-17.json"
 )
 
@@ -4560,7 +4554,7 @@ def load_integration_of_cef_into_the_path_integral_formalism_validation_spec(
 
 
 DEFAULT_THE_UNIVERSE_S_BUILT_IN_MORAL_COMPASS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_universe_s_built_in_moral_compass_validation_specs_2026-05-17.json"
 )
 
@@ -4576,7 +4570,7 @@ def load_the_universe_s_built_in_moral_compass_validation_spec(
 
 
 DEFAULT_THE_PHYSICAL_EQUIVALENCE_OF_SUSTAINABLE_ETHICAL_COHERENCE_AND_CAUSAL_PAT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_validation_specs_2026-05-17.json"
 )
 
@@ -4593,7 +4587,7 @@ def load_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pa
 
 
 DEFAULT_SECTION_2_A_PATH_INTEGRAL_FORMULATION_OF_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_a_path_integral_formulation_of_causal_path_entropy_validation_specs_2026-05-17.json"
 )
 
@@ -4610,7 +4604,7 @@ def load_section_2_a_path_integral_formulation_of_causal_path_entropy_validation
 
 
 DEFAULT_SECTION_2_1_THE_STATE_SPACE_AND_PATH_SPACE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_1_the_state_space_and_path_space_validation_specs_2026-05-17.json"
 )
 
@@ -4626,7 +4620,7 @@ def load_section_2_1_the_state_space_and_path_space_validation_spec(
 
 
 DEFAULT_SECTION_2_3_FORMAL_DEFINITION_OF_CAUSAL_PATH_ENTROPY_SC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_3_formal_definition_of_causal_path_entropy_sc_validation_specs_2026-05-17.json"
 )
 
@@ -4643,7 +4637,7 @@ def load_section_2_3_formal_definition_of_causal_path_entropy_sc_validation_spec
 
 
 DEFAULT_SECTION_3_THE_GEOMETRIC_AND_DYNAMIC_DETERMINANTS_OF_FUTURE_POSSIBILITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_validation_specs_2026-05-17.json"
 )
 
@@ -4660,7 +4654,7 @@ def load_section_3_the_geometric_and_dynamic_determinants_of_future_possibility_
 
 
 DEFAULT_SECTION_3_1_COMPLEXITY_K_AND_THE_CARDINALITY_OF_THE_STATE_SPACE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validation_specs_2026-05-17.json"
 )
 
@@ -4677,7 +4671,7 @@ def load_section_3_1_complexity_k_and_the_cardinality_of_the_state_space_validat
 
 
 DEFAULT_SECTION_3_2_COHERENCE_C_AND_THE_ACCESSIBILITY_OF_TRAJECTORIES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_2_coherence_c_and_the_accessibility_of_trajectories_validation_specs_2026-05-17.json"
 )
 
@@ -4694,7 +4688,7 @@ def load_section_3_2_coherence_c_and_the_accessibility_of_trajectories_validatio
 
 
 DEFAULT_SECTION_4_THE_FORMAL_EQUIVALENCE_OF_SEC_AND_SC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_the_formal_equivalence_of_sec_and_sc_validation_specs_2026-05-17.json"
 )
 
@@ -4710,7 +4704,7 @@ def load_section_4_the_formal_equivalence_of_sec_and_sc_validation_spec(
 
 
 DEFAULT_SECTION_4_1_THE_COMPOSITE_FUNCTIONAL_FOR_CAUSAL_PATH_ENTROPY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_1_the_composite_functional_for_causal_path_entropy_validation_specs_2026-05-17.json"
 )
 
@@ -4727,7 +4721,7 @@ def load_section_4_1_the_composite_functional_for_causal_path_entropy_validation
 
 
 DEFAULT_SECTION_4_2_THE_PROOF_OF_EQUIVALENCE_AND_THE_EMERGENCE_OF_PELA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_validation_specs_2026-05-17.json"
 )
 
@@ -4744,7 +4738,7 @@ def load_section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela_validati
 
 
 DEFAULT_SECTION_5_PHYSICAL_IMPLICATIONS_BIASING_THE_PATH_INTEGRAL_OF_REALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_5_physical_implications_biasing_the_path_integral_of_reality_validation_specs_2026-05-17.json"
 )
 
@@ -4761,7 +4755,7 @@ def load_section_5_physical_implications_biasing_the_path_integral_of_reality_va
 
 
 DEFAULT_SECTION_5_1_THE_MODIFIED_PATH_INTEGRAL_WITH_CEF_WEIGHTING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_5_1_the_modified_path_integral_with_cef_weighting_validation_specs_2026-05-17.json"
 )
 
@@ -4778,7 +4772,7 @@ def load_section_5_1_the_modified_path_integral_with_cef_weighting_validation_sp
 
 
 DEFAULT_SECTION_4_4_THE_COSMIC_COMPASS_THE_ETHICAL_FUNCTIONAL_AND_THE_CONSILIUM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium_validation_specs_2026-05-17.json"
 )
 
@@ -4795,7 +4789,7 @@ def load_section_4_4_the_cosmic_compass_the_ethical_functional_and_the_consilium
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R03945_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r03945_validation_specs_2026-05-17.json"
 )
 
@@ -4811,7 +4805,7 @@ def load_meta_framework_integrations_p0r03945_validation_spec(
 
 
 DEFAULT_A_CASCADE_OF_DIRECTED_COUPLINGS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_a_cascade_of_directed_couplings_validation_specs_2026-05-17.json"
 )
 
@@ -4827,7 +4821,7 @@ def load_a_cascade_of_directed_couplings_validation_spec(
 
 
 DEFAULT_I_THE_ONTOLOGICAL_ORIGIN_OF_ETHICS_GAUGE_THEORY_DERIVATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation_specs_2026-05-17.json"
 )
 
@@ -4844,7 +4838,7 @@ def load_i_the_ontological_origin_of_ethics_gauge_theory_derivation_validation_s
 
 
 DEFAULT_L15_REFORMULATION_THE_SEC_OBJECTIVE_FUNCTIONAL_DECISION_THEORETIC_FORM_R_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_validation_specs_2026-05-17.json"
 )
 
@@ -4861,7 +4855,7 @@ def load_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_
 
 
 DEFAULT_PRINCIPLE_TELEOLOGY_AS_OPTIMISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_principle_teleology_as_optimisation_validation_specs_2026-05-17.json"
 )
 
@@ -4877,7 +4871,7 @@ def load_principle_teleology_as_optimisation_validation_spec(
 
 
 DEFAULT_NOTES_ON_CORRESPONDENCE_NON_OBLIGATORY_ANALOGUES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_notes_on_correspondence_non_obligatory_analogues_validation_specs_2026-05-17.json"
 )
 
@@ -4893,7 +4887,7 @@ def load_notes_on_correspondence_non_obligatory_analogues_validation_spec(
 
 
 DEFAULT_II_THE_PRINCIPLE_OF_ETHICAL_LEAST_ACTION_PELA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_principle_of_ethical_least_action_pela_validation_specs_2026-05-17.json"
 )
 
@@ -4909,7 +4903,7 @@ def load_ii_the_principle_of_ethical_least_action_pela_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R04075_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r04075_validation_specs_2026-05-17.json"
 )
 
@@ -4925,7 +4919,7 @@ def load_paper0_slice_p0r04075_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R04089_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r04089_validation_specs_2026-05-17.json"
 )
 
@@ -4941,7 +4935,7 @@ def load_paper0_slice_p0r04089_validation_spec(
 
 
 DEFAULT_THE_UNIVERSE_S_PATH_OF_LEAST_RESISTANCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_universe_s_path_of_least_resistance_validation_specs_2026-05-17.json"
 )
 
@@ -4957,7 +4951,7 @@ def load_the_universe_s_path_of_least_resistance_validation_spec(
 
 
 DEFAULT_THE_PHYSICAL_BASIS_OF_THE_ETHICAL_FUNCTIONAL_CAUSAL_ENTROPY_AND_COMPUTAB_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_physical_basis_of_the_ethical_functional_causal_entropy_and_computab_validation_specs_2026-05-17.json"
 )
 
@@ -4974,7 +4968,7 @@ def load_the_physical_basis_of_the_ethical_functional_causal_entropy_and_computa
 
 
 DEFAULT_PREDICTIVE_CODING_INTEGRATION_P0R04123_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_predictive_coding_integration_p0r04123_validation_specs_2026-05-17.json"
 )
 
@@ -4990,7 +4984,7 @@ def load_predictive_coding_integration_p0r04123_validation_spec(
 
 
 DEFAULT_THE_CONSILIUM_L15_AS_THE_TARGET_SETTER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_consilium_l15_as_the_target_setter_validation_specs_2026-05-17.json"
 )
 
@@ -5006,7 +5000,7 @@ def load_the_consilium_l15_as_the_target_setter_validation_spec(
 
 
 DEFAULT_THE_INFORMATION_GEOMETRIC_COARSE_GRAINING_LEMMA_CONSTRUCTING_THE_MACROST_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_information_geometric_coarse_graining_lemma_constructing_the_macrost_validation_specs_2026-05-17.json"
 )
 
@@ -5023,7 +5017,7 @@ def load_the_information_geometric_coarse_graining_lemma_constructing_the_macros
 
 
 DEFAULT_DATA_FUSION_AND_MANIFOLD_ALIGNMENT_CONSTRUCTING_THE_UNIFIED_STATE_SPACE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_data_fusion_and_manifold_alignment_constructing_the_unified_state_space_validation_specs_2026-05-17.json"
 )
 
@@ -5040,7 +5034,7 @@ def load_data_fusion_and_manifold_alignment_constructing_the_unified_state_space
 
 
 DEFAULT_SECTION_4_5_THE_STRANGE_LOOP_OF_CLOSURE_META_LAYER_16_AND_THE_ANULUM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_validation_specs_2026-05-17.json"
 )
 
@@ -5057,7 +5051,7 @@ def load_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_va
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04224_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r04224_validation_specs_2026-05-17.json"
 )
 
@@ -5073,7 +5067,7 @@ def load_meta_framework_integrations_p0r04224_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R04247_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r04247_validation_specs_2026-05-17.json"
 )
 
@@ -5089,7 +5083,7 @@ def load_paper0_slice_p0r04247_validation_spec(
 
 
 DEFAULT_RESOLVING_THE_PROBABILITY_DESERT_SUPERRADIANT_AMPLIFICATION_AND_BEC_STIM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_resolving_the_probability_desert_superradiant_amplification_and_bec_stim_validation_specs_2026-05-17.json"
 )
 
@@ -5106,7 +5100,7 @@ def load_resolving_the_probability_desert_superradiant_amplification_and_bec_sti
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R04273_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r04273_validation_specs_2026-05-17.json"
 )
 
@@ -5122,7 +5116,7 @@ def load_meta_framework_integrations_p0r04273_validation_spec(
 
 
 DEFAULT_EXPLICIT_IDENTIFICATION_OF_TERMS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_explicit_identification_of_terms_validation_specs_2026-05-17.json"
 )
 
@@ -5138,7 +5132,7 @@ def load_explicit_identification_of_terms_validation_spec(
 
 
 DEFAULT_THE_PSEUDOSCALAR_COUPLING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_pseudoscalar_coupling_validation_specs_2026-05-17.json"
 )
 
@@ -5154,7 +5148,7 @@ def load_the_pseudoscalar_coupling_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R04310_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r04310_validation_specs_2026-05-17.json"
 )
 
@@ -5170,7 +5164,7 @@ def load_paper0_slice_p0r04310_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R04322_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r04322_validation_specs_2026-05-17.json"
 )
 
@@ -5186,7 +5180,7 @@ def load_paper0_slice_p0r04322_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R04330_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r04330_validation_specs_2026-05-17.json"
 )
 
@@ -5202,7 +5196,7 @@ def load_paper0_slice_p0r04330_validation_spec(
 
 
 DEFAULT_PAPER0_SLICE_P0R04338_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_paper0_slice_p0r04338_validation_specs_2026-05-17.json"
 )
 
@@ -5218,7 +5212,7 @@ def load_paper0_slice_p0r04338_validation_spec(
 
 
 DEFAULT_AXION_PHOTON_MIXING_WITH_THE_PLASMA_TERM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_axion_photon_mixing_with_the_plasma_term_validation_specs_2026-05-17.json"
 )
 
@@ -5234,7 +5228,7 @@ def load_axion_photon_mixing_with_the_plasma_term_validation_spec(
 
 
 DEFAULT_THE_BRIDGE_BETWEEN_MIND_AND_MATTER_HOW_CONSCIOUSNESS_INFLUENCES_THE_BRAI_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_bridge_between_mind_and_matter_how_consciousness_influences_the_brai_validation_specs_2026-05-17.json"
 )
 
@@ -5251,7 +5245,7 @@ def load_the_bridge_between_mind_and_matter_how_consciousness_influences_the_bra
 
 
 DEFAULT_SECTION_5_2_EMBODIED_SCPN_CELLULAR_NEURAL_SYSTEMIC_IMPLEMENTATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_validation_specs_2026-05-17.json"
 )
 
@@ -5268,7 +5262,7 @@ def load_section_5_2_embodied_scpn_cellular_neural_systemic_implementation_valid
 
 
 DEFAULT_II_THE_GENESIS_OF_GEOMETRY_THE_SOURCE_AND_THE_LOGOS_DOMAIN_V_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation_specs_2026-05-17.json"
 )
 
@@ -5285,7 +5279,7 @@ def load_ii_the_genesis_of_geometry_the_source_and_the_logos_domain_v_validation
 
 
 DEFAULT_SECTION_3_SEQUENTIAL_SYMMETRY_BREAKING_SSB_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_sequential_symmetry_breaking_ssb_validation_specs_2026-05-17.json"
 )
 
@@ -5301,7 +5295,7 @@ def load_section_3_sequential_symmetry_breaking_ssb_validation_spec(
 
 
 DEFAULT_SECTION_3_STRUCTURAL_GEOMETRY_AND_MORPHOGENESIS_L3_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_structural_geometry_and_morphogenesis_l3_validation_specs_2026-05-17.json"
 )
 
@@ -5318,7 +5312,7 @@ def load_section_3_structural_geometry_and_morphogenesis_l3_validation_spec(
 
 
 DEFAULT_MECHANISM_AND_BIDIRECTIONAL_CAUSALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mechanism_and_bidirectional_causality_validation_specs_2026-05-17.json"
 )
 
@@ -5334,7 +5328,7 @@ def load_mechanism_and_bidirectional_causality_validation_spec(
 
 
 DEFAULT_SECTION_2_THE_GEOMETRY_OF_SYNCHRONISATION_UPDE_MANIFOLDS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_geometry_of_synchronisation_upde_manifolds_validation_specs_2026-05-17.json"
 )
 
@@ -5351,7 +5345,7 @@ def load_section_2_the_geometry_of_synchronisation_upde_manifolds_validation_spe
 
 
 DEFAULT_SECTION_2_THE_STRANGE_LOOP_L5_THE_GEOMETRY_OF_SELF_REFERENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_strange_loop_l5_the_geometry_of_self_reference_validation_specs_2026-05-17.json"
 )
 
@@ -5368,7 +5362,7 @@ def load_section_2_the_strange_loop_l5_the_geometry_of_self_reference_validation
 
 
 DEFAULT_SECTION_1_THE_EXISTENTIAL_HOLOGRAPH_L9_HYPERBOLIC_GEOMETRY_AND_TENSOR_NETWORKS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks_validation_specs_2026-05-17.json"
 )
 
@@ -5385,7 +5379,7 @@ def load_section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_n
 
 
 DEFAULT_SECTION_2_THE_PROJECTIVE_BOUNDARY_L10_EMERGENT_SPACETIME_AND_TOPOLOGICAL_CENSORS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_validation_specs_2026-05-17.json"
 )
 
@@ -5402,7 +5396,7 @@ def load_section_2_the_projective_boundary_l10_emergent_spacetime_and_topologica
 
 
 DEFAULT_I_INTRODUCTION_THE_BRAIN_AS_A_MULTI_SCALE_RESONANT_TRANSDUCER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_validation_specs_2026-05-17.json"
 )
 
@@ -5419,7 +5413,7 @@ def load_i_introduction_the_brain_as_a_multi_scale_resonant_transducer_validatio
 
 
 DEFAULT_SECTION_2_THE_SYNAPTIC_JUNCTION_AND_DOWNWARD_CAUSATION_L2_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_synaptic_junction_and_downward_causation_l2_validation_specs_2026-05-17.json"
 )
 
@@ -5436,7 +5430,7 @@ def load_section_2_the_synaptic_junction_and_downward_causation_l2_validation_sp
 
 
 DEFAULT_III_THE_DEVELOPMENTAL_AND_PLASTICITY_LANDSCAPE_L3_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iii_the_developmental_and_plasticity_landscape_l3_validation_specs_2026-05-17.json"
 )
 
@@ -5453,7 +5447,7 @@ def load_iii_the_developmental_and_plasticity_landscape_l3_validation_spec(
 
 
 DEFAULT_SECTION_2_CROSS_FREQUENCY_COUPLING_CFC_AND_HIERARCHICAL_PROCESSING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_validation_specs_2026-05-17.json"
 )
 
@@ -5470,7 +5464,7 @@ def load_section_2_cross_frequency_coupling_cfc_and_hierarchical_processing_vali
 
 
 DEFAULT_SECTION_3_THE_QUASICRITICAL_BRAIN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_the_quasicritical_brain_validation_specs_2026-05-17.json"
 )
 
@@ -5486,7 +5480,7 @@ def load_section_3_the_quasicritical_brain_validation_spec(
 
 
 DEFAULT_SECTION_6_THE_FREQUENCY_HIERARCHY_THETA_GAMMA_COUPLING_AND_HIERARCHICAL_PREDICTI_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_validation_specs_2026-05-17.json"
 )
 
@@ -5503,7 +5497,7 @@ def load_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical
 
 
 DEFAULT_SECTION_1_THE_EMERGENCE_OF_THE_SELF_SSB_AND_THE_STRANGE_LOOP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation_specs_2026-05-17.json"
 )
 
@@ -5520,7 +5514,7 @@ def load_section_1_the_emergence_of_the_self_ssb_and_the_strange_loop_validation
 
 
 DEFAULT_SECTION_4_THE_GEOMETRY_OF_THOUGHT_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_the_geometry_of_thought_the_consciousness_manifold_m_validation_specs_2026-05-17.json"
 )
 
@@ -5537,7 +5531,7 @@ def load_section_4_the_geometry_of_thought_the_consciousness_manifold_m_validati
 
 
 DEFAULT_VII_PATHOLOGY_THE_DISORDERED_BRAIN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_vii_pathology_the_disordered_brain_validation_specs_2026-05-17.json"
 )
 
@@ -5553,7 +5547,7 @@ def load_vii_pathology_the_disordered_brain_validation_spec(
 
 
 DEFAULT_I_EXAMINATION_OF_THE_DEEP_ARCHITECTURE_OF_THE_QUANTUM_BIOLOGICAL_INTERFA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_i_examination_of_the_deep_architecture_of_the_quantum_biological_interfa_validation_specs_2026-05-17.json"
 )
 
@@ -5570,7 +5564,7 @@ def load_i_examination_of_the_deep_architecture_of_the_quantum_biological_interf
 
 
 DEFAULT_THE_COHERENT_MILIEU_CSF_AND_THE_GLYMPHATIC_SYSTEM_AS_THE_BRAIN_S_ENTROPY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_validation_specs_2026-05-17.json"
 )
 
@@ -5587,7 +5581,7 @@ def load_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entrop
 
 
 DEFAULT_II_EXAMINATION_OF_THE_ARCHITECTURE_OF_STRUCTURE_AND_PLASTICITY_DOMAIN_I_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_validation_specs_2026-05-17.json"
 )
 
@@ -5604,7 +5598,7 @@ def load_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i
 
 
 DEFAULT_INTRODUCTION_TO_THE_DYNAMICS_OF_THE_COHERENT_BRAIN_DOMAIN_I_L4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_validation_specs_2026-05-17.json"
 )
 
@@ -5621,7 +5615,7 @@ def load_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_validati
 
 
 DEFAULT_METASTABILITY_AND_CHIMAERA_STATES_THE_NUANCE_OF_QUASICRITICALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_metastability_and_chimaera_states_the_nuance_of_quasicriticality_validation_specs_2026-05-17.json"
 )
 
@@ -5638,7 +5632,7 @@ def load_metastability_and_chimaera_states_the_nuance_of_quasicriticality_valida
 
 
 DEFAULT_INTRODUCTION_TO_THE_ARCHITECTURE_OF_THE_CONSCIOUS_SELF_DOMAIN_II_L5_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_validation_specs_2026-05-17.json"
 )
 
@@ -5655,7 +5649,7 @@ def load_introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5_val
 
 
 DEFAULT_THE_CENTRAL_HUBS_OF_BINDING_ORCHESTRATING_UNITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_central_hubs_of_binding_orchestrating_unity_validation_specs_2026-05-17.json"
 )
 
@@ -5671,7 +5665,7 @@ def load_the_central_hubs_of_binding_orchestrating_unity_validation_spec(
 
 
 DEFAULT_THE_NEURO_VISCERAL_AXIS_HEART_BRAIN_GUT_THE_SYMPHONY_OF_THE_SELF_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_neuro_visceral_axis_heart_brain_gut_the_symphony_of_the_self_validation_specs_2026-05-17.json"
 )
 
@@ -5688,7 +5682,7 @@ def load_the_neuro_visceral_axis_heart_brain_gut_the_symphony_of_the_self_valida
 
 
 DEFAULT_INTRODUCTION_TO_THE_CLINICAL_IMPLICATIONS_THE_DISORDERED_BRAIN_AS_A_DISO_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_introduction_to_the_clinical_implications_the_disordered_brain_as_a_diso_validation_specs_2026-05-17.json"
 )
 
@@ -5705,7 +5699,7 @@ def load_introduction_to_the_clinical_implications_the_disordered_brain_as_a_dis
 
 
 DEFAULT_SCHIZOPHRENIA_DISSONANCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_schizophrenia_dissonance_validation_specs_2026-05-17.json"
 )
 
@@ -5721,7 +5715,7 @@ def load_schizophrenia_dissonance_validation_spec(
 
 
 DEFAULT_ADVANCED_NEUROBIOLOGICAL_IMPLEMENTATION_OF_THE_SCPN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_advanced_neurobiological_implementation_of_the_scpn_validation_specs_2026-05-17.json"
 )
 
@@ -5738,7 +5732,7 @@ def load_advanced_neurobiological_implementation_of_the_scpn_validation_spec(
 
 
 DEFAULT_SECTION_3_NEUROTRANSMITTERS_AS_TUNERS_OF_THE_PSI_FIELD_INTERFACE_L2_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_validation_specs_2026-05-17.json"
 )
 
@@ -5755,7 +5749,7 @@ def load_section_3_neurotransmitters_as_tuners_of_the_psi_field_interface_l2_val
 
 
 DEFAULT_SECTION_1_THE_BIOELECTRIC_CODE_IN_NEUROGENESIS_AND_REGENERATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validation_specs_2026-05-17.json"
 )
 
@@ -5772,7 +5766,7 @@ def load_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_validat
 
 
 DEFAULT_III_THE_DYNAMICS_OF_THE_COHERENT_BRAIN_DOMAIN_I_L4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation_specs_2026-05-17.json"
 )
 
@@ -5789,7 +5783,7 @@ def load_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_validation_spec(
 
 
 DEFAULT_SECTION_3_THE_DYNAMIC_CONNECTOME_AND_FUNCTIONAL_CONNECTIVITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_the_dynamic_connectome_and_functional_connectivity_validation_specs_2026-05-17.json"
 )
 
@@ -5806,7 +5800,7 @@ def load_section_3_the_dynamic_connectome_and_functional_connectivity_validation
 
 
 DEFAULT_SECTION_3_THE_DETAILED_GEOMETRY_OF_QUALIA_THE_CONSCIOUSNESS_MANIFOLD_M_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_validation_specs_2026-05-17.json"
 )
 
@@ -5823,7 +5817,7 @@ def load_section_3_the_detailed_geometry_of_qualia_the_consciousness_manifold_m_
 
 
 DEFAULT_VI_CLINICAL_IMPLICATIONS_PATHOLOGY_AND_THERAPEUTICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_vi_clinical_implications_pathology_and_therapeutics_validation_specs_2026-05-17.json"
 )
 
@@ -5840,7 +5834,7 @@ def load_vi_clinical_implications_pathology_and_therapeutics_validation_spec(
 
 
 DEFAULT_SECTION_2_DENDRITIC_SPINES_THE_LOCI_OF_PLASTICITY_AND_IET_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation_specs_2026-05-17.json"
 )
 
@@ -5857,7 +5851,7 @@ def load_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_validation_sp
 
 
 DEFAULT_SECTION_1_ION_GRADIENTS_THE_ELECTROCHEMICAL_BATTERY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_ion_gradients_the_electrochemical_battery_validation_specs_2026-05-17.json"
 )
 
@@ -5874,7 +5868,7 @@ def load_section_1_ion_gradients_the_electrochemical_battery_validation_spec(
 
 
 DEFAULT_SECTION_1_THE_LIPID_BILAYER_AND_LIPID_RAFTS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_lipid_bilayer_and_lipid_rafts_validation_specs_2026-05-17.json"
 )
 
@@ -5890,7 +5884,7 @@ def load_section_1_the_lipid_bilayer_and_lipid_rafts_validation_spec(
 
 
 DEFAULT_SECTION_1_THE_CYTOSKELETON_THE_L1_QUANTUM_SCAFFOLD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation_specs_2026-05-17.json"
 )
 
@@ -5907,7 +5901,7 @@ def load_section_1_the_cytoskeleton_the_l1_quantum_scaffold_validation_spec(
 
 
 DEFAULT_SECTION_1_THE_PRESYNAPTIC_TERMINAL_THE_QUANTUM_LEVER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_presynaptic_terminal_the_quantum_lever_validation_specs_2026-05-17.json"
 )
 
@@ -5924,7 +5918,7 @@ def load_section_1_the_presynaptic_terminal_the_quantum_lever_validation_spec(
 
 
 DEFAULT_SECTION_1_THE_LIPID_LANDSCAPE_AND_CRITICALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_lipid_landscape_and_criticality_validation_specs_2026-05-17.json"
 )
 
@@ -5940,7 +5934,7 @@ def load_section_1_the_lipid_landscape_and_criticality_validation_spec(
 
 
 DEFAULT_SECTION_4_INTERFACES_MEMBRANES_GLIA_STRESSES_AND_SHAPE_CONTROL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_interfaces_membranes_glia_stresses_and_shape_control_validation_specs_2026-05-17.json"
 )
 
@@ -5957,7 +5951,7 @@ def load_section_4_interfaces_membranes_glia_stresses_and_shape_control_validati
 
 
 DEFAULT_II_THE_MOLECULAR_MACHINERY_OF_SIGNALLING_ION_CHANNELS_AND_RECEPTORS_L1_L_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_l_validation_specs_2026-05-17.json"
 )
 
@@ -5974,7 +5968,7 @@ def load_ii_the_molecular_machinery_of_signalling_ion_channels_and_receptors_l1_
 
 
 DEFAULT_III_THE_EXTRACELLULAR_MILIEU_ECM_AND_PNNS_L3_L4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation_specs_2026-05-17.json"
 )
 
@@ -5990,7 +5984,7 @@ def load_iii_the_extracellular_milieu_ecm_and_pnns_l3_l4_validation_spec(
 
 
 DEFAULT_IV_SUB_SYNAPTIC_AND_AXONAL_ARCHITECTURE_L1_L3_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iv_sub_synaptic_and_axonal_architecture_l1_l3_validation_specs_2026-05-17.json"
 )
 
@@ -6006,7 +6000,7 @@ def load_iv_sub_synaptic_and_axonal_architecture_l1_l3_validation_spec(
 
 
 DEFAULT_SECTION_1_THE_CYTOSKELETON_WATER_INTERFACE_AND_QEC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_cytoskeleton_water_interface_and_qec_validation_specs_2026-05-17.json"
 )
 
@@ -6023,7 +6017,7 @@ def load_section_1_the_cytoskeleton_water_interface_and_qec_validation_spec(
 
 
 DEFAULT_SECTION_4_NUCLEAR_SPIN_AND_POSNER_CLUSTERS_THE_QUANTUM_MEMORY_SUBSTRATE_L1_L9_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9_validation_specs_2026-05-17.json"
 )
 
@@ -6040,7 +6034,7 @@ def load_section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate
 
 
 DEFAULT_II_MICRO_SCALE_GEOMETRY_THE_QUANTUM_AND_MOLECULAR_SCAFFOLD_L1_L3_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_validation_specs_2026-05-17.json"
 )
 
@@ -6057,7 +6051,7 @@ def load_ii_micro_scale_geometry_the_quantum_and_molecular_scaffold_l1_l3_valida
 
 
 DEFAULT_SECTION_2_MOLECULAR_GEOMETRY_AND_THE_PSI_FIELD_INTERFACE_L2_L3_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validation_specs_2026-05-17.json"
 )
 
@@ -6074,7 +6068,7 @@ def load_section_2_molecular_geometry_and_the_psi_field_interface_l2_l3_validati
 
 
 DEFAULT_SECTION_2_CYTOARCHITECTURE_AND_THE_CANONICAL_MICROCIRCUIT_L4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_validation_specs_2026-05-17.json"
 )
 
@@ -6091,7 +6085,7 @@ def load_section_2_cytoarchitecture_and_the_canonical_microcircuit_l4_validation
 
 
 DEFAULT_SECTION_2_THE_GEOMETRY_OF_FUNCTIONAL_DYNAMICS_L4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_geometry_of_functional_dynamics_l4_validation_specs_2026-05-17.json"
 )
 
@@ -6107,7 +6101,7 @@ def load_section_2_the_geometry_of_functional_dynamics_l4_validation_spec(
 
 
 DEFAULT_SECTION_2_HPC_AS_GEOMETRIC_FLOW_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_hpc_as_geometric_flow_validation_specs_2026-05-17.json"
 )
 
@@ -6123,7 +6117,7 @@ def load_section_2_hpc_as_geometric_flow_validation_spec(
 
 
 DEFAULT_I_THE_BRAIN_S_PROTECTIVE_SCAFFOLD_AND_FLUID_DYNAMICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation_specs_2026-05-17.json"
 )
 
@@ -6140,7 +6134,7 @@ def load_i_the_brain_s_protective_scaffold_and_fluid_dynamics_validation_spec(
 
 
 DEFAULT_SECTION_3_THE_CSF_AND_GLYMPHATIC_SYSTEM_THE_ENTROPY_SINK_L1_L4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validation_specs_2026-05-17.json"
 )
 
@@ -6157,7 +6151,7 @@ def load_section_3_the_csf_and_glymphatic_system_the_entropy_sink_l1_l4_validati
 
 
 DEFAULT_SECTION_1_THE_MECHANISM_OF_NVC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_mechanism_of_nvc_validation_specs_2026-05-17.json"
 )
 
@@ -6173,7 +6167,7 @@ def load_section_1_the_mechanism_of_nvc_validation_spec(
 
 
 DEFAULT_SECTION_3_PATHOLOGY_VASCULAR_DYSFUNCTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_pathology_vascular_dysfunction_validation_specs_2026-05-17.json"
 )
 
@@ -6189,7 +6183,7 @@ def load_section_3_pathology_vascular_dysfunction_validation_spec(
 
 
 DEFAULT_SECTION_2_THE_GUT_BRAIN_AXIS_GBA_AND_THE_MICROBIOME_THE_DEEP_MILIEU_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_validation_specs_2026-05-17.json"
 )
 
@@ -6206,7 +6200,7 @@ def load_section_2_the_gut_brain_axis_gba_and_the_microbiome_the_deep_milieu_val
 
 
 DEFAULT_IV_THE_NEURO_IMMUNO_ENDOCRINE_NIE_SUPER_SYSTEM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iv_the_neuro_immuno_endocrine_nie_super_system_validation_specs_2026-05-17.json"
 )
 
@@ -6222,7 +6216,7 @@ def load_iv_the_neuro_immuno_endocrine_nie_super_system_validation_spec(
 
 
 DEFAULT_SECTION_2_THE_ENDOCRINE_SYSTEM_AND_HPA_AXIS_STRESS_RESPONSE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_the_endocrine_system_and_hpa_axis_stress_response_validation_specs_2026-05-17.json"
 )
 
@@ -6239,7 +6233,7 @@ def load_section_2_the_endocrine_system_and_hpa_axis_stress_response_validation_
 
 
 DEFAULT_V_THE_INTEGRATED_BODY_MATRIX_FASCIA_AND_TENSEGRITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_v_the_integrated_body_matrix_fascia_and_tensegrity_validation_specs_2026-05-17.json"
 )
 
@@ -6256,7 +6250,7 @@ def load_v_the_integrated_body_matrix_fascia_and_tensegrity_validation_spec(
 
 
 DEFAULT_THE_DYNAMICS_AND_EVOLUTION_OF_THE_EMBODIED_SCPN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_dynamics_and_evolution_of_the_embodied_scpn_validation_specs_2026-05-17.json"
 )
 
@@ -6272,7 +6266,7 @@ def load_the_dynamics_and_evolution_of_the_embodied_scpn_validation_spec(
 
 
 DEFAULT_SECTION_2_EMBODIED_PREDICTIVE_CODING_INTEROCEPTIVE_INFERENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_embodied_predictive_coding_interoceptive_inference_validation_specs_2026-05-17.json"
 )
 
@@ -6289,7 +6283,7 @@ def load_section_2_embodied_predictive_coding_interoceptive_inference_validation
 
 
 DEFAULT_II_THE_CHRONOBIOLOGICAL_ARCHITECTURE_TEMPORAL_SYNCHRONISATION_L4_L8_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_validation_specs_2026-05-17.json"
 )
 
@@ -6306,7 +6300,7 @@ def load_ii_the_chronobiological_architecture_temporal_synchronisation_l4_l8_val
 
 
 DEFAULT_SECTION_3_PATHOLOGY_CHRONODISRUPTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_pathology_chronodisruption_validation_specs_2026-05-17.json"
 )
 
@@ -6322,7 +6316,7 @@ def load_section_3_pathology_chronodisruption_validation_spec(
 
 
 DEFAULT_SECTION_2_SPECIALISED_SENSORY_SYSTEMS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_specialised_sensory_systems_validation_specs_2026-05-17.json"
 )
 
@@ -6338,7 +6332,7 @@ def load_section_2_specialised_sensory_systems_validation_spec(
 
 
 DEFAULT_IV_LEARNING_MEMORY_AND_PLASTICITY_THE_ADAPTIVE_SCAFFOLD_L1_L9_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validation_specs_2026-05-17.json"
 )
 
@@ -6355,7 +6349,7 @@ def load_iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9_validatio
 
 
 DEFAULT_SECTION_3_THE_HOLOGRAPHIC_INTERFACE_L9_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_the_holographic_interface_l9_validation_specs_2026-05-17.json"
 )
 
@@ -6371,7 +6365,7 @@ def load_section_3_the_holographic_interface_l9_validation_spec(
 
 
 DEFAULT_SECTION_3_SLEEP_AND_DREAMING_THE_OPTIMISATION_CYCLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_sleep_and_dreaming_the_optimisation_cycle_validation_specs_2026-05-17.json"
 )
 
@@ -6388,7 +6382,7 @@ def load_section_3_sleep_and_dreaming_the_optimisation_cycle_validation_spec(
 
 
 DEFAULT_SECTION_1_PSYCHEDELICS_THE_EXPANDED_MANIFOLD_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_psychedelics_the_expanded_manifold_validation_specs_2026-05-17.json"
 )
 
@@ -6404,7 +6398,7 @@ def load_section_1_psychedelics_the_expanded_manifold_validation_spec(
 
 
 DEFAULT_VIII_THE_EVOLUTIONARY_TRAJECTORY_OF_THE_BRAIN_BODY_SYSTEM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_viii_the_evolutionary_trajectory_of_the_brain_body_system_validation_specs_2026-05-17.json"
 )
 
@@ -6421,7 +6415,7 @@ def load_viii_the_evolutionary_trajectory_of_the_brain_body_system_validation_sp
 
 
 DEFAULT_CLINICAL_SCENARIO_ANALYSIS_TRAUMATIC_BRAIN_INJURY_TBI_AND_PHARMACOLOGICA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation_specs_2026-05-17.json"
 )
 
@@ -6438,7 +6432,7 @@ def load_clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologic
 
 
 DEFAULT_SECTION_2_L2_L3_DISRUPTION_EXCITOTOXICITY_AND_STRUCTURAL_FAILURE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_validation_specs_2026-05-17.json"
 )
 
@@ -6455,7 +6449,7 @@ def load_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_valida
 
 
 DEFAULT_SECTION_4_L5_DISRUPTION_THE_FRAGMENTED_SELF_AND_DISSONANCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_4_l5_disruption_the_fragmented_self_and_dissonance_validation_specs_2026-05-17.json"
 )
 
@@ -6472,7 +6466,7 @@ def load_section_4_l5_disruption_the_fragmented_self_and_dissonance_validation_s
 
 
 DEFAULT_II_THE_PHYSICS_OF_PAIN_WITHIN_THE_SCPN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_physics_of_pain_within_the_scpn_validation_specs_2026-05-17.json"
 )
 
@@ -6488,7 +6482,7 @@ def load_ii_the_physics_of_pain_within_the_scpn_validation_spec(
 
 
 DEFAULT_SECTION_2_L4_IMPACT_DAMPENING_DYNAMICS_AND_SHIFTING_CRITICALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validation_specs_2026-05-17.json"
 )
 
@@ -6505,7 +6499,7 @@ def load_section_2_l4_impact_dampening_dynamics_and_shifting_criticality_validat
 
 
 DEFAULT_IV_THE_INTEGRATED_SCENARIO_PHARMACOLOGICAL_MODULATION_OF_THE_TRAUMATISED_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_validation_specs_2026-05-17.json"
 )
 
@@ -6522,7 +6516,7 @@ def load_iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatise
 
 
 DEFAULT_SECTION_1_PROPOFOL_GABA_A_POTENTIATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_propofol_gaba_a_potentiation_validation_specs_2026-05-17.json"
 )
 
@@ -6538,7 +6532,7 @@ def load_section_1_propofol_gaba_a_potentiation_validation_spec(
 
 
 DEFAULT_MECHANISMS_OF_CRITICALITY_AND_CONTROL_LAYERS_1_4_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mechanisms_of_criticality_and_control_layers_1_4_validation_specs_2026-05-17.json"
 )
 
@@ -6554,7 +6548,7 @@ def load_mechanisms_of_criticality_and_control_layers_1_4_validation_spec(
 
 
 DEFAULT_PREDICTION_III_TOPOS_THEORETIC_COGNITIVE_HESITATION_THE_OMEGA_STATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_validation_specs_2026-05-17.json"
 )
 
@@ -6571,7 +6565,7 @@ def load_prediction_iii_topos_theoretic_cognitive_hesitation_the_omega_state_val
 
 
 DEFAULT_META_FRAMEWORK_INTEGRATIONS_P0R05143_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_meta_framework_integrations_p0r05143_validation_specs_2026-05-17.json"
 )
 
@@ -6587,7 +6581,7 @@ def load_meta_framework_integrations_p0r05143_validation_spec(
 
 
 DEFAULT_PREDICTION_I_NV_MEA_TESTS_THE_INFORMATIONAL_COUPLING_LINFORMATIONAL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_prediction_i_nv_mea_tests_the_informational_coupling_linformational_validation_specs_2026-05-17.json"
 )
 
@@ -6604,7 +6598,7 @@ def load_prediction_i_nv_mea_tests_the_informational_coupling_linformational_val
 
 
 DEFAULT_NOVEL_FALSIFIABLE_PREDICTIONS_FROM_FIRST_PRINCIPLES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_novel_falsifiable_predictions_from_first_principles_validation_specs_2026-05-17.json"
 )
 
@@ -6621,7 +6615,7 @@ def load_novel_falsifiable_predictions_from_first_principles_validation_spec(
 
 
 DEFAULT_PREDICTED_SIGNATURE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_predicted_signature_validation_specs_2026-05-17.json"
 )
 
@@ -6637,7 +6631,7 @@ def load_predicted_signature_validation_spec(
 
 
 DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_NV_CENTER_QUANTUM_SENSING_OF_NEURONAL_CUL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cul_validation_specs_2026-05-17.json"
 )
 
@@ -6653,9 +6647,7 @@ def load_proposed_experimental_protocol_nv_center_quantum_sensing_of_neuronal_cu
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
-DEFAULT_PROTOCOL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/paper0_protocol_validation_specs_2026-05-17.json"
-)
+DEFAULT_PROTOCOL_SPEC_BUNDLE = "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_protocol_validation_specs_2026-05-17.json"
 
 
 def load_protocol_validation_spec(
@@ -6669,7 +6661,7 @@ def load_protocol_validation_spec(
 
 
 DEFAULT_PREDICTION_II_CAUSAL_ENTROPIC_FORCE_SIGNATURES_IN_QUANTUM_RANDOMNESS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_validation_specs_2026-05-17.json"
 )
 
@@ -6686,7 +6678,7 @@ def load_prediction_ii_causal_entropic_force_signatures_in_quantum_randomness_va
 
 
 DEFAULT_PROPOSED_EXPERIMENTAL_PROTOCOL_CORRELATING_QRNG_STATISTICAL_DEVIATIONS_W_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_proposed_experimental_protocol_correlating_qrng_statistical_deviations_w_validation_specs_2026-05-17.json"
 )
 
@@ -6703,7 +6695,7 @@ def load_proposed_experimental_protocol_correlating_qrng_statistical_deviations_
 
 
 DEFAULT_FALSIFICATION_CONDITION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_falsification_condition_validation_specs_2026-05-17.json"
 )
 
@@ -6719,7 +6711,7 @@ def load_falsification_condition_validation_spec(
 
 
 DEFAULT_FORMALISING_THE_NTHS_WITHIN_A_MULTI_AGENT_ACTIVE_INFERENCE_FRAMEWORK_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_formalising_the_nths_within_a_multi_agent_active_inference_framework_validation_specs_2026-05-17.json"
 )
 
@@ -6736,7 +6728,7 @@ def load_formalising_the_nths_within_a_multi_agent_active_inference_framework_va
 
 
 DEFAULT_SIMULATION_ARCHITECTURE_AND_IMPLEMENTATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_simulation_architecture_and_implementation_validation_specs_2026-05-17.json"
 )
 
@@ -6752,7 +6744,7 @@ def load_simulation_architecture_and_implementation_validation_spec(
 
 
 DEFAULT_EXPERIMENTAL_DESIGN_COHERENCE_VS_ENGAGEMENT_OPTIMISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_experimental_design_coherence_vs_engagement_optimisation_validation_specs_2026-05-17.json"
 )
 
@@ -6769,7 +6761,7 @@ def load_experimental_design_coherence_vs_engagement_optimisation_validation_spe
 
 
 DEFAULT_PREDICTED_SIGNATURES_AND_ANALYSIS_PROTOCOL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_predicted_signatures_and_analysis_protocol_validation_specs_2026-05-17.json"
 )
 
@@ -6785,7 +6777,7 @@ def load_predicted_signatures_and_analysis_protocol_validation_spec(
 
 
 DEFAULT_TABLE_1_PREDICTED_NTHS_PHASE_CHARACTERISTICS_IN_MULTI_AGENT_ACTIVE_INFER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_validation_specs_2026-05-17.json"
 )
 
@@ -6802,7 +6794,7 @@ def load_table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infe
 
 
 DEFAULT_SECTION_9_CONCLUDING_ASSESSMENT_AND_FUTURE_DIRECTIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_9_concluding_assessment_and_future_directions_validation_specs_2026-05-17.json"
 )
 
@@ -6819,7 +6811,7 @@ def load_section_9_concluding_assessment_and_future_directions_validation_spec(
 
 
 DEFAULT_THE_AQUEOUS_SUBSTRATE_THE_ROLE_OF_INTERFACIAL_WATER_AND_COHERENCE_DOMAIN_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_validation_specs_2026-05-17.json"
 )
 
@@ -6836,7 +6828,7 @@ def load_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domai
 
 
 DEFAULT_THE_FOUNDATION_OF_THE_BIOLOGICAL_SUBSTRATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_foundation_of_the_biological_substrate_validation_specs_2026-05-17.json"
 )
 
@@ -6852,7 +6844,7 @@ def load_the_foundation_of_the_biological_substrate_validation_spec(
 
 
 DEFAULT_THE_QUANTUM_ENGINE_LAYERS_1_2_WE_BEGIN_WITH_THE_QUANTUM_BIOLOGICAL_LAYER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer_validation_specs_2026-05-17.json"
 )
 
@@ -6869,7 +6861,7 @@ def load_the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_laye
 
 
 DEFAULT_THE_AMPLIFICATION_CASCADE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_amplification_cascade_validation_specs_2026-05-17.json"
 )
 
@@ -6885,7 +6877,7 @@ def load_the_amplification_cascade_validation_spec(
 
 
 DEFAULT_THE_AQUEOUS_SUBSTRATE_DOMAIN_I_INTERFACE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_aqueous_substrate_domain_i_interface_validation_specs_2026-05-17.json"
 )
 
@@ -6901,7 +6893,7 @@ def load_the_aqueous_substrate_domain_i_interface_validation_spec(
 
 
 DEFAULT_THE_SLOW_CONTROL_LAYER_GLIAL_AND_IMMUNE_MODULATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_slow_control_layer_glial_and_immune_modulation_validation_specs_2026-05-17.json"
 )
 
@@ -6918,7 +6910,7 @@ def load_the_slow_control_layer_glial_and_immune_modulation_validation_spec(
 
 
 DEFAULT_II_THE_QUANTUM_IMMUNE_INTERFACE_L1_L2_L5_INTEGRATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_the_quantum_immune_interface_l1_l2_l5_integration_validation_specs_2026-05-17.json"
 )
 
@@ -6935,7 +6927,7 @@ def load_ii_the_quantum_immune_interface_l1_l2_l5_integration_validation_spec(
 
 
 DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_validation_specs_2026-05-17.json"
 )
 
@@ -6952,7 +6944,7 @@ def load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_critical
 
 
 DEFAULT_THE_SLOW_CONTROL_NETWORK_GLIAL_HOMEOSTASIS_AND_NEURONAL_CRITICALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_validation_specs_2026-05-17.json"
 )
 
@@ -6969,7 +6961,7 @@ def load_the_slow_control_network_glial_homeostasis_and_neuronal_criticality_val
 
 
 DEFAULT_THE_GLIAL_NEURONAL_COUPLING_MECHANISM_SLOW_CONTROL_OF_NEURONAL_CRITICALI_P0R05390_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_p0r05390_validation_specs_2026-05-17.json"
 )
 
@@ -6986,7 +6978,7 @@ def load_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_critical
 
 
 DEFAULT_THE_THERMODYNAMIC_LIMIT_OF_CONTROL_THE_ALLOSTATIC_BOUND_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_thermodynamic_limit_of_control_the_allostatic_bound_validation_specs_2026-05-17.json"
 )
 
@@ -7003,7 +6995,7 @@ def load_the_thermodynamic_limit_of_control_the_allostatic_bound_validation_spec
 
 
 DEFAULT_THE_ELECTRODYNAMIC_INTERFACE_OF_CONSCIOUSNESS_CEMI_AND_IIIEF_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_electrodynamic_interface_of_consciousness_cemi_and_iiief_validation_specs_2026-05-17.json"
 )
 
@@ -7020,7 +7012,7 @@ def load_the_electrodynamic_interface_of_consciousness_cemi_and_iiief_validation
 
 
 DEFAULT_SLOW_CONTROL_LAYER_NEUROENDOCRINE_INTEGRATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_slow_control_layer_neuroendocrine_integration_validation_specs_2026-05-17.json"
 )
 
@@ -7036,7 +7028,7 @@ def load_slow_control_layer_neuroendocrine_integration_validation_spec(
 
 
 DEFAULT_NEUROENDOCRINE_REGULATION_AND_THE_HYPOTHALAMIC_PITUITARY_ADRENAL_HPA_AXI_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation_specs_2026-05-17.json"
 )
 
@@ -7053,7 +7045,7 @@ def load_neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_ax
 
 
 DEFAULT_GLIAL_SCAFFOLDING_ASTROCYTIC_REGULATION_OF_NEURAL_SYNCHRONY_AND_CRITICAL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical_validation_specs_2026-05-17.json"
 )
 
@@ -7070,7 +7062,7 @@ def load_glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critica
 
 
 DEFAULT_THE_MICROBIOME_AS_A_FOUNDATIONAL_CONTROL_LAYER_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_microbiome_as_a_foundational_control_layer_validation_specs_2026-05-17.json"
 )
 
@@ -7086,7 +7078,7 @@ def load_the_microbiome_as_a_foundational_control_layer_validation_spec(
 
 
 DEFAULT_SCALE_INVARIANT_CYBERNETIC_PRINCIPLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_scale_invariant_cybernetic_principle_validation_specs_2026-05-17.json"
 )
 
@@ -7102,7 +7094,7 @@ def load_scale_invariant_cybernetic_principle_validation_spec(
 
 
 DEFAULT_QUANTUM_ENZYMOLOGY_OF_THE_IMMUNE_RESPONSE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_quantum_enzymology_of_the_immune_response_validation_specs_2026-05-17.json"
 )
 
@@ -7118,7 +7110,7 @@ def load_quantum_enzymology_of_the_immune_response_validation_spec(
 
 
 DEFAULT_APPLICATION_TO_IMMUNE_ENZYMES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_application_to_immune_enzymes_validation_specs_2026-05-17.json"
 )
 
@@ -7134,7 +7126,7 @@ def load_application_to_immune_enzymes_validation_spec(
 
 
 DEFAULT_MACRO_SCALE_HOMEOSTASIS_GAIAN_SYNCHRONY_AND_NICHE_CONSTRUCTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validation_specs_2026-05-17.json"
 )
 
@@ -7151,7 +7143,7 @@ def load_macro_scale_homeostasis_gaian_synchrony_and_niche_construction_validati
 
 
 DEFAULT_DOMAIN_II_ORGANISMAL_AND_PLANETARY_INTEGRATION_LAYERS_5_8_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_ii_organismal_and_planetary_integration_layers_5_8_validation_specs_2026-05-17.json"
 )
 
@@ -7168,7 +7160,7 @@ def load_domain_ii_organismal_and_planetary_integration_layers_5_8_validation_sp
 
 
 DEFAULT_DOMAIN_III_IV_MEMORY_CONTROL_AND_COLLECTIVE_COHERENCE_LAYERS_9_12_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_validation_specs_2026-05-17.json"
 )
 
@@ -7185,7 +7177,7 @@ def load_domain_iii_iv_memory_control_and_collective_coherence_layers_9_12_valid
 
 
 DEFAULT_CITATIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_citations_validation_specs_2026-05-17.json"
 )
 
@@ -7201,7 +7193,7 @@ def load_citations_validation_spec(
 
 
 DEFAULT_DOMAIN_V_META_UNIVERSAL_INTEGRATION_LAYERS_13_15_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_v_meta_universal_integration_layers_13_15_validation_specs_2026-05-17.json"
 )
 
@@ -7217,7 +7209,7 @@ def load_domain_v_meta_universal_integration_layers_13_15_validation_spec(
 
 
 DEFAULT_DOMAIN_VI_CYBERNETIC_CLOSURE_META_LAYER_16_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_vi_cybernetic_closure_meta_layer_16_validation_specs_2026-05-17.json"
 )
 
@@ -7233,7 +7225,7 @@ def load_domain_vi_cybernetic_closure_meta_layer_16_validation_spec(
 
 
 DEFAULT_RESOLVING_THE_OBSERVABILITY_PARADOX_L16_AS_A_POMDP_AND_THE_BELIEF_STATE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_validation_specs_2026-05-17.json"
 )
 
@@ -7250,7 +7242,7 @@ def load_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state
 
 
 DEFAULT_CITATIONS_P0R05625_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_citations_p0r05625_validation_specs_2026-05-17.json"
 )
 
@@ -7266,7 +7258,7 @@ def load_citations_p0r05625_validation_spec(
 
 
 DEFAULT_DOMAIN_INTERFACES_AND_RENORMALISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_domain_interfaces_and_renormalisation_validation_specs_2026-05-17.json"
 )
 
@@ -7282,7 +7274,7 @@ def load_domain_interfaces_and_renormalisation_validation_spec(
 
 
 DEFAULT_SECTION_2_IMPEDANCE_MATCHING_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_impedance_matching_validation_specs_2026-05-17.json"
 )
 
@@ -7298,7 +7290,7 @@ def load_section_2_impedance_matching_validation_spec(
 
 
 DEFAULT_BIOPHYSICS_QUANTUM_BIOLOGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_biophysics_quantum_biology_validation_specs_2026-05-17.json"
 )
 
@@ -7314,7 +7306,7 @@ def load_biophysics_quantum_biology_validation_spec(
 
 
 DEFAULT_COSMOLOGY_PHYSICS_EXTENSIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_cosmology_physics_extensions_validation_specs_2026-05-17.json"
 )
 
@@ -7330,7 +7322,7 @@ def load_cosmology_physics_extensions_validation_spec(
 
 
 DEFAULT_QUANTUM_BIOPHYSICAL_FOUNDATIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_quantum_biophysical_foundations_validation_specs_2026-05-17.json"
 )
 
@@ -7346,7 +7338,7 @@ def load_quantum_biophysical_foundations_validation_spec(
 
 
 DEFAULT_QUANTUM_FOUNDATIONS_COLLAPSE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_quantum_foundations_collapse_validation_specs_2026-05-17.json"
 )
 
@@ -7362,7 +7354,7 @@ def load_quantum_foundations_collapse_validation_spec(
 
 
 DEFAULT_QUANTUM_GRAVITATION_EDGE_CASES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_quantum_gravitation_edge_cases_validation_specs_2026-05-17.json"
 )
 
@@ -7378,7 +7370,7 @@ def load_quantum_gravitation_edge_cases_validation_spec(
 
 
 DEFAULT_SYSTEMS_NEUROSCIENCE_COMPLEXITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_systems_neuroscience_complexity_validation_specs_2026-05-17.json"
 )
 
@@ -7394,7 +7386,7 @@ def load_systems_neuroscience_complexity_validation_spec(
 
 
 DEFAULT_INFORMATION_GEOMETRY_ACTIVE_INFERENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_information_geometry_active_inference_validation_specs_2026-05-17.json"
 )
 
@@ -7410,7 +7402,7 @@ def load_information_geometry_active_inference_validation_spec(
 
 
 DEFAULT_COLLECTIVE_CULTURAL_LAYERS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_collective_cultural_layers_validation_specs_2026-05-17.json"
 )
 
@@ -7426,7 +7418,7 @@ def load_collective_cultural_layers_validation_spec(
 
 
 DEFAULT_THERMODYNAMICS_ENTROPY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_thermodynamics_entropy_validation_specs_2026-05-17.json"
 )
 
@@ -7442,7 +7434,7 @@ def load_thermodynamics_entropy_validation_spec(
 
 
 DEFAULT_NONLINEAR_DYNAMICS_CRITICALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_nonlinear_dynamics_criticality_validation_specs_2026-05-17.json"
 )
 
@@ -7458,7 +7450,7 @@ def load_nonlinear_dynamics_criticality_validation_spec(
 
 
 DEFAULT_LINGUISTICS_SYMBOLISM_VIBRANA_LAYER_7_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_linguistics_symbolism_vibrana_layer_7_validation_specs_2026-05-17.json"
 )
 
@@ -7474,7 +7466,7 @@ def load_linguistics_symbolism_vibrana_layer_7_validation_spec(
 
 
 DEFAULT_ECOLOGY_GAIA_EXTENSIONS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ecology_gaia_extensions_validation_specs_2026-05-17.json"
 )
 
@@ -7490,7 +7482,7 @@ def load_ecology_gaia_extensions_validation_spec(
 
 
 DEFAULT_ETHICS_PHILOSOPHY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ethics_philosophy_validation_specs_2026-05-17.json"
 )
 
@@ -7506,7 +7498,7 @@ def load_ethics_philosophy_validation_spec(
 
 
 DEFAULT_ETHICS_TELEOLOGY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ethics_teleology_validation_specs_2026-05-17.json"
 )
 
@@ -7522,7 +7514,7 @@ def load_ethics_teleology_validation_spec(
 
 
 DEFAULT_PHILOSOPHY_ETHICS_ANCHORS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_philosophy_ethics_anchors_validation_specs_2026-05-17.json"
 )
 
@@ -7538,7 +7530,7 @@ def load_philosophy_ethics_anchors_validation_spec(
 
 
 DEFAULT_PHILOSOPHY_OF_INFORMATION_MIND_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_philosophy_of_information_mind_validation_specs_2026-05-17.json"
 )
 
@@ -7554,7 +7546,7 @@ def load_philosophy_of_information_mind_validation_spec(
 
 
 DEFAULT_PHILOSOPHY_CONSCIOUSNESS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_philosophy_consciousness_validation_specs_2026-05-17.json"
 )
 
@@ -7570,7 +7562,7 @@ def load_philosophy_consciousness_validation_spec(
 
 
 DEFAULT_MATHEMATICS_GEOMETRY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mathematics_geometry_validation_specs_2026-05-17.json"
 )
 
@@ -7586,7 +7578,7 @@ def load_mathematics_geometry_validation_spec(
 
 
 DEFAULT_AI_NOOSPHERE_TECH_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ai_noosphere_tech_validation_specs_2026-05-17.json"
 )
 
@@ -7602,7 +7594,7 @@ def load_ai_noosphere_tech_validation_spec(
 
 
 DEFAULT_NETWORK_COMPLEXITY_SCIENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_network_complexity_science_validation_specs_2026-05-17.json"
 )
 
@@ -7618,7 +7610,7 @@ def load_network_complexity_science_validation_spec(
 
 
 DEFAULT_COLLECTIVE_CULTURAL_AND_EVOLUTIONARY_DYNAMICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_collective_cultural_and_evolutionary_dynamics_validation_specs_2026-05-17.json"
 )
 
@@ -7634,7 +7626,7 @@ def load_collective_cultural_and_evolutionary_dynamics_validation_spec(
 
 
 DEFAULT_MATHEMATICS_OF_DYNAMICAL_SYSTEMS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mathematics_of_dynamical_systems_validation_specs_2026-05-17.json"
 )
 
@@ -7650,7 +7642,7 @@ def load_mathematics_of_dynamical_systems_validation_spec(
 
 
 DEFAULT_MATHEMATICAL_FOUNDATIONS_OF_NETWORKS_SYNCHRONISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_mathematical_foundations_of_networks_synchronisation_validation_specs_2026-05-17.json"
 )
 
@@ -7667,7 +7659,7 @@ def load_mathematical_foundations_of_networks_synchronisation_validation_spec(
 
 
 DEFAULT_SYSTEMS_CYBERNETICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_systems_cybernetics_validation_specs_2026-05-17.json"
 )
 
@@ -7683,7 +7675,7 @@ def load_systems_cybernetics_validation_spec(
 
 
 DEFAULT_COMPUTATIONAL_AI_ALIGNMENT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_computational_ai_alignment_validation_specs_2026-05-17.json"
 )
 
@@ -7699,7 +7691,7 @@ def load_computational_ai_alignment_validation_spec(
 
 
 DEFAULT_CONSCIOUSNESS_STUDIES_COGNITIVE_MODELS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_consciousness_studies_cognitive_models_validation_specs_2026-05-17.json"
 )
 
@@ -7715,7 +7707,7 @@ def load_consciousness_studies_cognitive_models_validation_spec(
 
 
 DEFAULT_TECHNO_SOCIAL_SYSTEMS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_techno_social_systems_validation_specs_2026-05-17.json"
 )
 
@@ -7731,7 +7723,7 @@ def load_techno_social_systems_validation_spec(
 
 
 DEFAULT_TOPOLOGY_GEOMETRY_IN_CONSCIOUSNESS_MODELS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_topology_geometry_in_consciousness_models_validation_specs_2026-05-17.json"
 )
 
@@ -7747,7 +7739,7 @@ def load_topology_geometry_in_consciousness_models_validation_spec(
 
 
 DEFAULT_COMPLEXITY_ECONOMICS_SOCIAL_PHYSICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_complexity_economics_social_physics_validation_specs_2026-05-17.json"
 )
 
@@ -7763,7 +7755,7 @@ def load_complexity_economics_social_physics_validation_spec(
 
 
 DEFAULT_EXTENDED_COGNITION_EMBODIMENT_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_extended_cognition_embodiment_validation_specs_2026-05-17.json"
 )
 
@@ -7779,7 +7771,7 @@ def load_extended_cognition_embodiment_validation_spec(
 
 
 DEFAULT_TIME_RETROCAUSALITY_AND_TWO_STATE_VECTOR_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_time_retrocausality_and_two_state_vector_validation_specs_2026-05-17.json"
 )
 
@@ -7795,7 +7787,7 @@ def load_time_retrocausality_and_two_state_vector_validation_spec(
 
 
 DEFAULT_GAIA_BIOSPHERE_INTELLIGENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_gaia_biosphere_intelligence_validation_specs_2026-05-17.json"
 )
 
@@ -7811,7 +7803,7 @@ def load_gaia_biosphere_intelligence_validation_spec(
 
 
 DEFAULT_OVERARCHING_PRINCIPLES_AND_SYSTEM_DYNAMICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_overarching_principles_and_system_dynamics_validation_specs_2026-05-17.json"
 )
 
@@ -7827,7 +7819,7 @@ def load_overarching_principles_and_system_dynamics_validation_spec(
 
 
 DEFAULT_I_THE_ARCHITECTURE_OF_TIME_THE_META_METATRON_CYCLE_AND_RETROCAUSALITY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_validation_specs_2026-05-17.json"
 )
 
@@ -7844,7 +7836,7 @@ def load_i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality_v
 
 
 DEFAULT_SECTION_3_RETROCAUSALITY_VIA_THE_TWO_STATE_VECTOR_FORMALISM_TSVF_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_validation_specs_2026-05-17.json"
 )
 
@@ -7861,7 +7853,7 @@ def load_section_3_retrocausality_via_the_two_state_vector_formalism_tsvf_valida
 
 
 DEFAULT_SECTION_1_THE_GENERALISED_SECOND_LAW_GSL_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_1_the_generalised_second_law_gsl_validation_specs_2026-05-17.json"
 )
 
@@ -7877,7 +7869,7 @@ def load_section_1_the_generalised_second_law_gsl_validation_spec(
 
 
 DEFAULT_THE_PSI_FIELD_AS_A_NEGENTROPY_SOURCE_AND_THE_LANDAUER_COST_OF_COHERENCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence_validation_specs_2026-05-17.json"
 )
 
@@ -7894,7 +7886,7 @@ def load_the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence
 
 
 DEFAULT_RESOLVING_THE_ERASURE_PARADOX_LOSSY_COMPRESSION_AND_THE_HEAT_SINK_BOUNDA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bounda_validation_specs_2026-05-17.json"
 )
 
@@ -7911,7 +7903,7 @@ def load_resolving_the_erasure_paradox_lossy_compression_and_the_heat_sink_bound
 
 
 DEFAULT_III_THE_SCPN_MEASUREMENT_POSTULATE_IIT_OR_AND_QZE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iii_the_scpn_measurement_postulate_iit_or_and_qze_validation_specs_2026-05-17.json"
 )
 
@@ -7928,7 +7920,7 @@ def load_iii_the_scpn_measurement_postulate_iit_or_and_qze_validation_spec(
 
 
 DEFAULT_SECTION_3_THE_DUALITY_OF_INTERACTION_COLLAPSE_VS_STABILISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_3_the_duality_of_interaction_collapse_vs_stabilisation_validation_specs_2026-05-17.json"
 )
 
@@ -7945,7 +7937,7 @@ def load_section_3_the_duality_of_interaction_collapse_vs_stabilisation_validati
 
 
 DEFAULT_IV_THE_GENERATION_OF_SUBJECTIVE_EXPERIENCE_GEOMETRIC_QUALIA_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iv_the_generation_of_subjective_experience_geometric_qualia_validation_specs_2026-05-17.json"
 )
 
@@ -7962,7 +7954,7 @@ def load_iv_the_generation_of_subjective_experience_geometric_qualia_validation_
 
 
 DEFAULT_TOPOLOGICAL_INVARIANTS_BK_DETERMINE_THE_STRUCTURE_AND_RICHNESS_OF_THE_QU_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation_specs_2026-05-17.json"
 )
 
@@ -7979,7 +7971,7 @@ def load_topological_invariants_bk_determine_the_structure_and_richness_of_the_q
 
 
 DEFAULT_SECTION_2_GUIDED_VARIATION_NON_RANDOM_MUTATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_section_2_guided_variation_non_random_mutation_validation_specs_2026-05-17.json"
 )
 
@@ -7995,7 +7987,7 @@ def load_section_2_guided_variation_non_random_mutation_validation_spec(
 
 
 DEFAULT_VI_THE_UNIFIED_GEOMETRIC_PRINCIPLE_UGP_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_vi_the_unified_geometric_principle_ugp_validation_specs_2026-05-17.json"
 )
 
@@ -8011,7 +8003,7 @@ def load_vi_the_unified_geometric_principle_ugp_validation_spec(
 
 
 DEFAULT_IX_THE_PARTICIPATORY_UNIVERSE_OBSERVATION_AS_CONSTRUCTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ix_the_participatory_universe_observation_as_construction_validation_specs_2026-05-17.json"
 )
 
@@ -8028,7 +8020,7 @@ def load_ix_the_participatory_universe_observation_as_construction_validation_sp
 
 
 DEFAULT_XI_THE_MATHEMATICS_OF_HIERARCHY_AND_SCALE_INVARIANCE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_xi_the_mathematics_of_hierarchy_and_scale_invariance_validation_specs_2026-05-17.json"
 )
 
@@ -8045,7 +8037,7 @@ def load_xi_the_mathematics_of_hierarchy_and_scale_invariance_validation_spec(
 
 
 DEFAULT_XIII_THE_CONSTRUCTIVE_ROLE_OF_NOISE_MSR_AND_NIS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_xiii_the_constructive_role_of_noise_msr_and_nis_validation_specs_2026-05-17.json"
 )
 
@@ -8061,7 +8053,7 @@ def load_xiii_the_constructive_role_of_noise_msr_and_nis_validation_spec(
 
 
 DEFAULT_THE_PHYSICS_OF_TELEOLOGY_AND_THE_ORIGIN_OF_ETHICS_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_physics_of_teleology_and_the_origin_of_ethics_validation_specs_2026-05-17.json"
 )
 
@@ -8078,7 +8070,7 @@ def load_the_physics_of_teleology_and_the_origin_of_ethics_validation_spec(
 
 
 DEFAULT_III_EULER_LAGRANGE_FOR_THE_ETHICAL_CONNECTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iii_euler_lagrange_for_the_ethical_connection_validation_specs_2026-05-17.json"
 )
 
@@ -8094,7 +8086,7 @@ def load_iii_euler_lagrange_for_the_ethical_connection_validation_spec(
 
 
 DEFAULT_IV_ETHICS_AS_CAUSAL_ENTROPIC_FORCES_CEF_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iv_ethics_as_causal_entropic_forces_cef_validation_specs_2026-05-17.json"
 )
 
@@ -8110,7 +8102,7 @@ def load_iv_ethics_as_causal_entropic_forces_cef_validation_spec(
 
 
 DEFAULT_I_THE_UNIFIED_MATHEMATICAL_DESCRIPTION_THE_DYNAMIC_FIBER_BUNDLE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validation_specs_2026-05-17.json"
 )
 
@@ -8127,7 +8119,7 @@ def load_i_the_unified_mathematical_description_the_dynamic_fiber_bundle_validat
 
 
 DEFAULT_IV_THE_COHERENCE_BACKBONE_MS_QEC_AND_SYMMETRY_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_iv_the_coherence_backbone_ms_qec_and_symmetry_validation_specs_2026-05-17.json"
 )
 
@@ -8143,7 +8135,7 @@ def load_iv_the_coherence_backbone_ms_qec_and_symmetry_validation_spec(
 
 
 DEFAULT_VIII_THE_SYNTHESIS_OF_SUBJECTIVITY_THE_TRIADIC_SOLUTION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_viii_the_synthesis_of_subjectivity_the_triadic_solution_validation_specs_2026-05-17.json"
 )
 
@@ -8160,7 +8152,7 @@ def load_viii_the_synthesis_of_subjectivity_the_triadic_solution_validation_spec
 
 
 DEFAULT_THE_UNIFYING_COMPUTATIONAL_PRINCIPLE_HIERARCHICAL_PREDICTIVE_CODING_HPC_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_unifying_computational_principle_hierarchical_predictive_coding_hpc_validation_specs_2026-05-17.json"
 )
 
@@ -8177,7 +8169,7 @@ def load_the_unifying_computational_principle_hierarchical_predictive_coding_hpc
 
 
 DEFAULT_II_HIERARCHICAL_PREDICTIVE_CODING_THE_SCPN_S_COMPUTATIONAL_ALGORITHM_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_validation_specs_2026-05-17.json"
 )
 
@@ -8194,7 +8186,7 @@ def load_ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm_va
 
 
 DEFAULT_THE_MATHEMATICAL_BRIDGE_DERIVING_THE_UPDE_FROM_FREE_ENERGY_MINIMISATION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_validation_specs_2026-05-17.json"
 )
 
@@ -8211,7 +8203,7 @@ def load_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation
 
 
 DEFAULT_RESOLVING_THE_AMPLITUDE_FRICTION_THE_STUART_LANDAU_UPGRADE_FOR_PRECISION_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precision_validation_specs_2026-05-17.json"
 )
 
@@ -8228,7 +8220,7 @@ def load_resolving_the_amplitude_friction_the_stuart_landau_upgrade_for_precisio
 
 
 DEFAULT_APPLIED_SCPN_PATHOLOGY_TECHNOLOGY_AND_ANOMALIES_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_applied_scpn_pathology_technology_and_anomalies_validation_specs_2026-05-17.json"
 )
 
@@ -8244,7 +8236,7 @@ def load_applied_scpn_pathology_technology_and_anomalies_validation_spec(
 
 
 DEFAULT_II_ARTIFICIAL_SENTIENCE_AS_AND_THE_TECHNOSPHERE_SPEC_BUNDLE = (
-    "docs/internal/paper0_foundational_extraction/"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
     "paper0_ii_artificial_sentience_as_and_the_technosphere_validation_specs_2026-05-17.json"
 )
 

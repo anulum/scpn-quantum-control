@@ -1,0 +1,114 @@
+{
+  "schema": "scpn_s1_ibm_feedback_pair_readiness_v1",
+  "timestamp_utc": "20260520T155826Z",
+  "backend": "ibm_marrakesh",
+  "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "target_r": 0.72,
+  "observable": "binary_phase_synchrony_from_final_counts",
+  "arms": [
+    {
+      "label": "feedback",
+      "shots": 1024,
+      "repetitions": 12,
+      "source_depth": 38,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3,
+        "if_else": 3
+      },
+      "transpiled_depth_max": 715,
+      "transpiled_depths": [
+        715,
+        715,
+        715,
+        715,
+        715,
+        715,
+        715,
+        715,
+        715,
+        715,
+        715,
+        715
+      ],
+      "transpiled_operation_counts": {
+        "rz": 374,
+        "sx": 355,
+        "cz": 180,
+        "measure": 6,
+        "if_else": 3,
+        "reset": 3,
+        "x": 2
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 12.0
+    },
+    {
+      "label": "matched_open_loop_control",
+      "shots": 1024,
+      "repetitions": 12,
+      "source_depth": 35,
+      "source_operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "PauliEvolution": 3,
+        "reset": 3
+      },
+      "transpiled_depth_max": 696,
+      "transpiled_depths": [
+        696,
+        696,
+        696,
+        696,
+        696,
+        696,
+        696,
+        696,
+        696,
+        696,
+        696,
+        696
+      ],
+      "transpiled_operation_counts": {
+        "rz": 374,
+        "sx": 350,
+        "cz": 180,
+        "measure": 6,
+        "x": 4,
+        "reset": 3
+      },
+      "seed_transpiler": 20260520,
+      "estimated_qpu_seconds": 12.0
+    }
+  ],
+  "physical_layout": {
+    "system_qubits": [
+      7,
+      17,
+      6
+    ],
+    "monitor_qubit": 8,
+    "logical_order": [
+      "sys_0",
+      "sys_1",
+      "sys_2",
+      "monitor"
+    ],
+    "selection": "explicit_same_layout_repeat"
+  },
+  "max_depth": 1200,
+  "max_qpu_seconds": 120.0,
+  "estimated_qpu_seconds": 24.0,
+  "package_hash": "60ed80e15b0f03ff125ff6171aa71fe95eb21b50f71fef1dffe60b2f4a85f866",
+  "reasons": [
+    "both S1 arms satisfy the transpiled depth ceiling",
+    "paired-arm estimate satisfies the approved QPU-second ceiling"
+  ],
+  "repeat_label": "s1_primary_same_layout_repeat_marrakesh_2026-05-20"
+}

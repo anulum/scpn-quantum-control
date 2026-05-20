@@ -1,0 +1,57 @@
+{
+  "claim_boundary": "source-bounded section 3 pathology vascular dysfunction source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_heart_brain_axis_hba_the_physics_of_emotion_and_coherence": "1_the_heart_brain_axis_hba_the_physics_of_emotion_and_coherence_source_boundary",
+    "3_pathology_vascular_dysfunction": "3_pathology_vascular_dysfunction_source_boundary",
+    "iii_the_neuro_visceral_axis_the_architecture_of_embodiment_l5": "iii_the_neuro_visceral_axis_the_architecture_of_embodiment_l5_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. Pathology (Vascular Dysfunction):",
+    "component_2": "III. The Neuro-Visceral Axis: The Architecture of Embodiment (L5)",
+    "component_3": "1. The Heart-Brain Axis (HBA): The Physics of Emotion and Coherence",
+    "component_count": "3",
+    "next_boundary": "P0R04911",
+    "section": "3. Pathology (Vascular Dysfunction):",
+    "source_span": "P0R04894-P0R04910"
+  },
+  "next_source_boundary": "P0R04911",
+  "null_controls": {
+    "1_the_heart_brain_axis_hba_the_physics_of_emotion_and_coherence_is_not_empirical_validation_evidence": 1.0,
+    "3_pathology_vascular_dysfunction_is_not_empirical_validation_evidence": 1.0,
+    "iii_the_neuro_visceral_axis_the_architecture_of_embodiment_l5_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 pathology vascular dysfunction source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_pathology_vascular_dysfunction_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04894",
+      "P0R04895",
+      "P0R04896",
+      "P0R04897",
+      "P0R04898",
+      "P0R04899",
+      "P0R04900",
+      "P0R04901",
+      "P0R04902",
+      "P0R04903",
+      "P0R04904",
+      "P0R04905",
+      "P0R04906",
+      "P0R04907",
+      "P0R04908",
+      "P0R04909",
+      "P0R04910"
+    ],
+    "source_ledger_span": [
+      "P0R04894",
+      "P0R04910"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04894",
+    "P0R04910"
+  ],
+  "source_record_count": 17
+}

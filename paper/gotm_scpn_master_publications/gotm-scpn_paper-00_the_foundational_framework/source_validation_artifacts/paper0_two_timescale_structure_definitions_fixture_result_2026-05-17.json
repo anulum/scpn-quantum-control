@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded two timescale structure definitions source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "gain_scheduling_via_the_affective_field": "gain_scheduling_via_the_affective_field_source_boundary",
+    "two_timescale_structure_definitions": "two_timescale_structure_definitions_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Two-timescale structure (definitions).",
+    "component_2": "Gain scheduling via the Affective Field.",
+    "component_count": "2",
+    "next_boundary": "P0R02967",
+    "section": "Two-timescale structure (definitions).",
+    "source_span": "P0R02958-P0R02966"
+  },
+  "next_source_boundary": "P0R02967",
+  "null_controls": {
+    "gain_scheduling_via_the_affective_field_is_not_empirical_validation_evidence": 1.0,
+    "two_timescale_structure_definitions_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded two timescale structure definitions source-accounting bridge; not validation evidence",
+    "protocol_state": "source_two_timescale_structure_definitions_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02958",
+      "P0R02959",
+      "P0R02960",
+      "P0R02961",
+      "P0R02962",
+      "P0R02963",
+      "P0R02964",
+      "P0R02965",
+      "P0R02966"
+    ],
+    "source_ledger_span": [
+      "P0R02958",
+      "P0R02966"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02958",
+    "P0R02966"
+  ],
+  "source_record_count": 9
+}

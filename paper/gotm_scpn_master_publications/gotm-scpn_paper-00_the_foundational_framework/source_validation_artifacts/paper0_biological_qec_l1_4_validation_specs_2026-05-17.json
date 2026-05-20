@@ -1,0 +1,322 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Biological QEC (L1-4):' preserves Paper 0 records P0R03042-P0R03043 without empirical validation claims.",
+      "claim_boundary": "source-bounded biological qec l1 4 source-accounting bridge; not validation evidence",
+      "context_id": "biological_qec_l1_4",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03042-P0R03043"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "biological_qec_l1_4.biological_qec_l1_4",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "biological_qec_l1_4 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Biological QEC (L1-4): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Multi-Scale Quantum Error Correction (MS-QEC) > The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC) > Biological QEC (L1-4):",
+      "source_block_indices": [
+        3042,
+        3043,
+        3044,
+        3045,
+        3046,
+        3047,
+        3048,
+        3049,
+        3050
+      ],
+      "source_equation_ids": [
+        "P0R03042:biological_qec_l1_4",
+        "P0R03043:biological_qec_l1_4"
+      ],
+      "source_formulae": [
+        "P0R03042: Biological QEC (L1-4):",
+        "P0R03043: Topological codes protecting against thermal noise (e.g., the Delta1.64 eV gap in L1)."
+      ],
+      "source_ledger_ids": [
+        "P0R03042",
+        "P0R03043",
+        "P0R03044",
+        "P0R03045",
+        "P0R03046",
+        "P0R03047",
+        "P0R03048",
+        "P0R03049",
+        "P0R03050"
+      ],
+      "source_record_ids": [
+        "P0B03042",
+        "P0B03043",
+        "P0B03044",
+        "P0B03045",
+        "P0B03046",
+        "P0B03047",
+        "P0B03048",
+        "P0B03049",
+        "P0B03050"
+      ],
+      "test_protocols": [
+        "preserve Biological QEC (L1-4): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.biological_qec_l1_4.biological_qec_l1_4",
+      "validation_targets": [
+        "preserve records P0R03042-P0R03043"
+      ],
+      "variables": [
+        "biological_qec_l1_4"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Network QEC (L4-8):' preserves Paper 0 records P0R03044-P0R03045 without empirical validation claims.",
+      "claim_boundary": "source-bounded biological qec l1 4 source-accounting bridge; not validation evidence",
+      "context_id": "network_qec_l4_8",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03044-P0R03045"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "biological_qec_l1_4.network_qec_l4_8",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "network_qec_l4_8 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Network QEC (L4-8): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Multi-Scale Quantum Error Correction (MS-QEC) > The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC) > Biological QEC (L1-4):",
+      "source_block_indices": [
+        3042,
+        3043,
+        3044,
+        3045,
+        3046,
+        3047,
+        3048,
+        3049,
+        3050
+      ],
+      "source_equation_ids": [
+        "P0R03044:network_qec_l4_8",
+        "P0R03045:network_qec_l4_8"
+      ],
+      "source_formulae": [
+        "P0R03044: Network QEC (L4-8):",
+        "P0R03045: Network topology (small-world, rich-club) providing redundancy against phase slips, optimised by criticality."
+      ],
+      "source_ledger_ids": [
+        "P0R03042",
+        "P0R03043",
+        "P0R03044",
+        "P0R03045",
+        "P0R03046",
+        "P0R03047",
+        "P0R03048",
+        "P0R03049",
+        "P0R03050"
+      ],
+      "source_record_ids": [
+        "P0B03042",
+        "P0B03043",
+        "P0B03044",
+        "P0B03045",
+        "P0B03046",
+        "P0B03047",
+        "P0B03048",
+        "P0B03049",
+        "P0B03050"
+      ],
+      "test_protocols": [
+        "preserve Network QEC (L4-8): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.biological_qec_l1_4.network_qec_l4_8",
+      "validation_targets": [
+        "preserve records P0R03044-P0R03045"
+      ],
+      "variables": [
+        "network_qec_l4_8"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Holographic QEC (L9-10):' preserves Paper 0 records P0R03046-P0R03047 without empirical validation claims.",
+      "claim_boundary": "source-bounded biological qec l1 4 source-accounting bridge; not validation evidence",
+      "context_id": "holographic_qec_l9_10",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03046-P0R03047"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "biological_qec_l1_4.holographic_qec_l9_10",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "holographic_qec_l9_10 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Holographic QEC (L9-10): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Multi-Scale Quantum Error Correction (MS-QEC) > The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC) > Biological QEC (L1-4):",
+      "source_block_indices": [
+        3042,
+        3043,
+        3044,
+        3045,
+        3046,
+        3047,
+        3048,
+        3049,
+        3050
+      ],
+      "source_equation_ids": [
+        "P0R03046:holographic_qec_l9_10",
+        "P0R03047:holographic_qec_l9_10"
+      ],
+      "source_formulae": [
+        "P0R03046: Holographic QEC (L9-10):",
+        "P0R03047: Tensor network codes (MERA) protect bulk memory from boundary fluctuations (the \"firewall\" mechanism)."
+      ],
+      "source_ledger_ids": [
+        "P0R03042",
+        "P0R03043",
+        "P0R03044",
+        "P0R03045",
+        "P0R03046",
+        "P0R03047",
+        "P0R03048",
+        "P0R03049",
+        "P0R03050"
+      ],
+      "source_record_ids": [
+        "P0B03042",
+        "P0B03043",
+        "P0B03044",
+        "P0B03045",
+        "P0B03046",
+        "P0B03047",
+        "P0B03048",
+        "P0B03049",
+        "P0B03050"
+      ],
+      "test_protocols": [
+        "preserve Holographic QEC (L9-10): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.biological_qec_l1_4.holographic_qec_l9_10",
+      "validation_targets": [
+        "preserve records P0R03046-P0R03047"
+      ],
+      "variables": [
+        "holographic_qec_l9_10"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Cosmological QEC (L13-15):' preserves Paper 0 records P0R03048-P0R03050 without empirical validation claims.",
+      "claim_boundary": "source-bounded biological qec l1 4 source-accounting bridge; not validation evidence",
+      "context_id": "cosmological_qec_l13_15",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03048-P0R03050"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "biological_qec_l1_4.cosmological_qec_l13_15",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "cosmological_qec_l13_15 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Cosmological QEC (L13-15): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Multi-Scale Quantum Error Correction (MS-QEC) > The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC) > Biological QEC (L1-4):",
+      "source_block_indices": [
+        3042,
+        3043,
+        3044,
+        3045,
+        3046,
+        3047,
+        3048,
+        3049,
+        3050
+      ],
+      "source_equation_ids": [
+        "P0R03048:cosmological_qec_l13_15",
+        "P0R03049:cosmological_qec_l13_15",
+        "P0R03050:cosmological_qec_l13_15"
+      ],
+      "source_formulae": [
+        "P0R03048: Cosmological QEC (L13-15):",
+        "P0R03049: Ethical Functionals (L15) acting as ultimate stabiliser generators, minimising deviations relative to axiomatic foundations.",
+        "P0R03050: MS-QEC ensures the SCPN maintains its integrity as a unified quantum system across all scales."
+      ],
+      "source_ledger_ids": [
+        "P0R03042",
+        "P0R03043",
+        "P0R03044",
+        "P0R03045",
+        "P0R03046",
+        "P0R03047",
+        "P0R03048",
+        "P0R03049",
+        "P0R03050"
+      ],
+      "source_record_ids": [
+        "P0B03042",
+        "P0B03043",
+        "P0B03044",
+        "P0B03045",
+        "P0B03046",
+        "P0B03047",
+        "P0B03048",
+        "P0B03049",
+        "P0B03050"
+      ],
+      "test_protocols": [
+        "preserve Cosmological QEC (L13-15): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.biological_qec_l1_4.cosmological_qec_l13_15",
+      "validation_targets": [
+        "preserve records P0R03048-P0R03050"
+      ],
+      "variables": [
+        "cosmological_qec_l13_15"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 5
+    },
+    "category_counts": {
+      "context": 3,
+      "mechanism": 6
+    },
+    "claim_boundary": "source-bounded biological qec l1 4 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03051",
+    "source_ledger_span": [
+      "P0R03042",
+      "P0R03050"
+    ],
+    "source_record_count": 9,
+    "spec_count": 4,
+    "spec_keys": [
+      "biological_qec_l1_4.biological_qec_l1_4",
+      "biological_qec_l1_4.network_qec_l4_8",
+      "biological_qec_l1_4.holographic_qec_l9_10",
+      "biological_qec_l1_4.cosmological_qec_l13_15"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Biological QEC (L1-4): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

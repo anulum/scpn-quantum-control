@@ -23,9 +23,9 @@ The following is stable and covered by this contract:
 - Every name exported from a subpackage `__init__.__all__`.
 - The CLI entry points declared in `pyproject.toml` (`project.scripts`).
 - The command-line arguments of scripts in `scripts/` that are
-  referenced from `README.md` or `CHANGELOG.md`.
+  referenced from `literature/README.md` or `CHANGELOG.md`.
 - The JSON schema of hardware-result files under `data/` (keys
-  documented in that directory's `README.md`).
+  documented in that directory's `literature/README.md`).
 - The `scpn_quantum_engine` Rust crate's `#[pyfunction]` exports
   and their type signatures.
 

@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Extended Cognition & Embodiment' preserves Paper 0 records P0R05894-P0R05897 without empirical validation claims.",
+      "claim_boundary": "source-bounded extended cognition embodiment source-accounting bridge; not validation evidence",
+      "context_id": "extended_cognition_embodiment",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05894-P0R05897"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "extended_cognition_embodiment.extended_cognition_embodiment",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "extended_cognition_embodiment must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Extended Cognition & Embodiment is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Extended Cognition & Embodiment",
+      "source_block_indices": [
+        5894,
+        5895,
+        5896,
+        5897,
+        5898,
+        5899,
+        5900,
+        5901
+      ],
+      "source_equation_ids": [
+        "P0R05894:extended_cognition_embodiment",
+        "P0R05895:extended_cognition_embodiment",
+        "P0R05896:extended_cognition_embodiment",
+        "P0R05897:extended_cognition_embodiment"
+      ],
+      "source_formulae": [
+        "P0R05894: Extended Cognition & Embodiment",
+        "P0R05895: Clark & Chalmers (1998, The Extended Mind) -> fits Layer 5-7, where cognition extends into artefacts and symbols.",
+        "P0R05896: Gallagher (2005, How the Body Shapes the Mind) -> embodiment anchors for Layer 5 organismal integration.",
+        "P0R05897: Menary (2010, Cognitive Integration) -> clarifies external symbolic scaffolds in consciousness, relevant to L7."
+      ],
+      "source_ledger_ids": [
+        "P0R05894",
+        "P0R05895",
+        "P0R05896",
+        "P0R05897",
+        "P0R05898",
+        "P0R05899",
+        "P0R05900",
+        "P0R05901"
+      ],
+      "source_record_ids": [
+        "P0B05894",
+        "P0B05895",
+        "P0B05896",
+        "P0B05897",
+        "P0B05898",
+        "P0B05899",
+        "P0B05900",
+        "P0B05901"
+      ],
+      "test_protocols": [
+        "preserve Extended Cognition & Embodiment source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.extended_cognition_embodiment.extended_cognition_embodiment",
+      "validation_targets": [
+        "preserve records P0R05894-P0R05897"
+      ],
+      "variables": [
+        "extended_cognition_embodiment"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Information Geometry & Statistical Foundations' preserves Paper 0 records P0R05898-P0R05901 without empirical validation claims.",
+      "claim_boundary": "source-bounded extended cognition embodiment source-accounting bridge; not validation evidence",
+      "context_id": "information_geometry_statistical_foundations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05898-P0R05901"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "extended_cognition_embodiment.information_geometry_statistical_foundations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "information_geometry_statistical_foundations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Information Geometry & Statistical Foundations is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Extended Cognition & Embodiment",
+      "source_block_indices": [
+        5894,
+        5895,
+        5896,
+        5897,
+        5898,
+        5899,
+        5900,
+        5901
+      ],
+      "source_equation_ids": [
+        "P0R05898:information_geometry_statistical_foundations",
+        "P0R05899:information_geometry_statistical_foundations",
+        "P0R05900:information_geometry_statistical_foundations",
+        "P0R05901:information_geometry_statistical_foundations"
+      ],
+      "source_formulae": [
+        "P0R05898: Information Geometry & Statistical Foundations",
+        "P0R05899: Amari & Nagaoka (2000, Methods of Information Geometry) -> already on your radar, but must be cited wherever you invoke Fisher metric.",
+        "P0R05900: Cover & Thomas (2006, Elements of Information Theory) -> canonical for entropy, divergence, coding arguments.",
+        "P0R05901: Jaynes (1957, Information Theory and Statistical Mechanics) -> connects entropy, inference, and physics."
+      ],
+      "source_ledger_ids": [
+        "P0R05894",
+        "P0R05895",
+        "P0R05896",
+        "P0R05897",
+        "P0R05898",
+        "P0R05899",
+        "P0R05900",
+        "P0R05901"
+      ],
+      "source_record_ids": [
+        "P0B05894",
+        "P0B05895",
+        "P0B05896",
+        "P0B05897",
+        "P0B05898",
+        "P0B05899",
+        "P0B05900",
+        "P0B05901"
+      ],
+      "test_protocols": [
+        "preserve Information Geometry & Statistical Foundations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.extended_cognition_embodiment.information_geometry_statistical_foundations",
+      "validation_targets": [
+        "preserve records P0R05898-P0R05901"
+      ],
+      "variables": [
+        "information_geometry_statistical_foundations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded extended cognition embodiment source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05902",
+    "source_ledger_span": [
+      "P0R05894",
+      "P0R05901"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "extended_cognition_embodiment.extended_cognition_embodiment",
+      "extended_cognition_embodiment.information_geometry_statistical_foundations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Extended Cognition & Embodiment Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

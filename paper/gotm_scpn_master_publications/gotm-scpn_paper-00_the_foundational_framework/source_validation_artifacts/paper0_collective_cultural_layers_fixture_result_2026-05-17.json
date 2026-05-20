@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded collective cultural layers source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "collective_cultural_layers": "collective_cultural_layers_source_boundary",
+    "thermodynamics_information": "thermodynamics_information_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Collective & Cultural Layers",
+    "component_2": "Thermodynamics & Information",
+    "component_count": "2",
+    "next_boundary": "P0R05721",
+    "section": " Collective & Cultural Layers",
+    "source_span": "P0R05713-P0R05720"
+  },
+  "next_source_boundary": "P0R05721",
+  "null_controls": {
+    "collective_cultural_layers_is_not_empirical_validation_evidence": 1.0,
+    "thermodynamics_information_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded collective cultural layers source-accounting bridge; not validation evidence",
+    "protocol_state": "source_collective_cultural_layers_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05713",
+      "P0R05714",
+      "P0R05715",
+      "P0R05716",
+      "P0R05717",
+      "P0R05718",
+      "P0R05719",
+      "P0R05720"
+    ],
+    "source_ledger_span": [
+      "P0R05713",
+      "P0R05720"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05713",
+    "P0R05720"
+  ],
+  "source_record_count": 8
+}

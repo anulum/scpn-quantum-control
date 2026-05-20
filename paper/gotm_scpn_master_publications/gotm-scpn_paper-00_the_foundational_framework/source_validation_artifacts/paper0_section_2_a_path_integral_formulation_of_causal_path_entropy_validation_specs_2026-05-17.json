@@ -1,0 +1,159 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. A Path Integral Formulation of Causal Path Entropy' preserves Paper 0 records P0R03737-P0R03752 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 a path integral formulation of causal path entropy source-accounting bridge; not validation evidence",
+      "context_id": "2_a_path_integral_formulation_of_causal_path_entropy",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03737-P0R03752"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_a_path_integral_formulation_of_causal_path_entropy.2_a_path_integral_formulation_of_causal_path_entropy",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_a_path_integral_formulation_of_causal_path_entropy must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. A Path Integral Formulation of Causal Path Entropy is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 2. A Path Integral Formulation of Causal Path Entropy",
+      "source_block_indices": [
+        3737,
+        3738,
+        3739,
+        3740,
+        3741,
+        3742,
+        3743,
+        3744,
+        3745,
+        3746,
+        3747,
+        3748,
+        3749,
+        3750,
+        3751,
+        3752
+      ],
+      "source_equation_ids": [
+        "P0R03737:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03738:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03739:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03740:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03741:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03742:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03743:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03744:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03745:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03746:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03747:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03748:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03749:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03750:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03751:2_a_path_integral_formulation_of_causal_path_entropy",
+        "P0R03752:2_a_path_integral_formulation_of_causal_path_entropy"
+      ],
+      "source_formulae": [
+        "P0R03737: 2. A Path Integral Formulation of Causal Path Entropy",
+        "P0R03738: To formalise the connection between SEC and CEF, we must first establish a rigorous mathematical definition for the quantity that the Causal Entropic Force maximises: the causal path entropy, SC. This quantity can be understood intuitively as a measure of the number of possible future histories available to a system, given its current state. Its formal definition requires the tools of statistical mechanics, specifically the path integral formalism, which provides a way to sum over all possible trajectories of a system.",
+        "P0R03739: [IMAGE:Ein Bild, das Feuerwerk, Licht, drauen, Nacht enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03740: To formally connect the universe's purpose with its future possibilities, we first need a way to count those possibilities. This section builds the mathematical toolkit for doing just that.",
+        "P0R03741: Imagine a map.",
+        "P0R03742: The \"State Space\" is every single possible location on that map. A \"microstate\" is your exact position-your precise coordinates at one instant. | A \"Path\" is a specific route you draw on the map from your starting point, describing your journey over time. | The \"Path Space\" is the collection of every single possible route you could take.",
+        "P0R03743: Because the universe isn't perfectly predictable, each of these future paths has a certain probability. The \"Path Integral\" is a powerful mathematical tool that sums up all the probabilities for all possible paths.",
+        "P0R03744: Using this tool, we define Causal Path Entropy (SC). In simple terms, it's a measure of the universe's \"freedom\" or the number of open doors to the future. If a system is in a state that has a vast number of very different future paths available to it, it has high causal path entropy.",
+        "P0R03745: Finally, the Causal Entropic Force is the natural tendency for a system to move from a state with fewer future paths to a state with more. It's the universe's inherent drive to keep its options open.",
+        "P0R03746: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Zahl enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03747: Fig.: Formal Construction of the Causal Entropic Force. This diagram provides a formal, step-by-step construction of the Causal Entropic Force. It begins with the foundational geometric concepts (the state and path spaces) and builds up to the final definition of the force, showing how each concept logically follows from the last. CEF formalizes a drive toward macrostates with greater accessible futures: by maximizing SCS_CSC, evolution experiences an effective force TCXSCT_C\\nabla_X S_CTCXSC that biases dynamics toward option-rich regions of state space.",
+        "P0R03748: From a microstate x(0)x(0)x(0) in the state space MMM, enumerate all admissible futures x(t)x(t)x(t) over a horizon tau\\tautau to form the path space PPP. A normalized path probability functional Pr[x(t) x(0)]\\Pr[x(t)\\!\\mid\\!x(0)]Pr[x(t)x(0)] ( D[x(t)] Pr=1\\int \\! \\mathcal D[x(t)]\\,\\Pr=1D[x(t)]Pr=1) induces the causal path entropy for macrostate XXX,",
+        "P0R03749: SC(X)=kB P(X) Pr[x(t)] logPr[x(t)] D[x(t)].S_C(X)= -k_B \\!\\!\\int_{P(X)}\\!\\! \\Pr[x(t)]\\,\\log \\Pr[x(t)]\\,\\mathcal D[x(t)] .SC(X)=kBP(X)Pr[x(t)]logPr[x(t)]D[x(t)].",
+        "P0R03750: The causal entropic force is the thermodynamic-like drive along macrostate coordinates that increases future optionality,",
+        "P0R03751: FC = TC XSC,\\mathbf F_C \\;=\\; T_C\\,\\nabla_X S_C ,FC=TCXSC,",
+        "P0R03752: with TCT_CTC setting units/scale. The arrows in the figure mark the logical pipeline: M->P->Pr->SC->FCM \\to P \\to \\Pr \\to S_C \\to \\mathbf F_CM->P->Pr->SC->FC."
+      ],
+      "source_ledger_ids": [
+        "P0R03737",
+        "P0R03738",
+        "P0R03739",
+        "P0R03740",
+        "P0R03741",
+        "P0R03742",
+        "P0R03743",
+        "P0R03744",
+        "P0R03745",
+        "P0R03746",
+        "P0R03747",
+        "P0R03748",
+        "P0R03749",
+        "P0R03750",
+        "P0R03751",
+        "P0R03752"
+      ],
+      "source_record_ids": [
+        "P0B03737",
+        "P0B03738",
+        "P0B03739",
+        "P0B03740",
+        "P0B03741",
+        "P0B03742",
+        "P0B03743",
+        "P0B03744",
+        "P0B03745",
+        "P0B03746",
+        "P0B03747",
+        "P0B03748",
+        "P0B03749",
+        "P0B03750",
+        "P0B03751",
+        "P0B03752"
+      ],
+      "test_protocols": [
+        "preserve 2. A Path Integral Formulation of Causal Path Entropy source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_a_path_integral_formulation_of_causal_path_entropy.2_a_path_integral_formulation_of_causal_path_entropy",
+      "validation_targets": [
+        "preserve records P0R03737-P0R03752"
+      ],
+      "variables": [
+        "2_a_path_integral_formulation_of_causal_path_entropy"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 1,
+      "Para": 14
+    },
+    "category_counts": {
+      "claim": 5,
+      "context": 7,
+      "figure": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded section 2 a path integral formulation of causal path entropy source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 16,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0069",
+      "IMG0070"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R03753",
+    "source_ledger_span": [
+      "P0R03737",
+      "P0R03752"
+    ],
+    "source_record_count": 16,
+    "spec_count": 1,
+    "spec_keys": [
+      "section_2_a_path_integral_formulation_of_causal_path_entropy.2_a_path_integral_formulation_of_causal_path_entropy"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. A Path Integral Formulation of Causal Path Entropy Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

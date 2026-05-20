@@ -1,0 +1,54 @@
+{
+  "claim_boundary": "source-bounded iv the integrated scenario pharmacological modulation of the traumatised source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "1_the_therapeutic_effects_stabilisation_and_f_minimisation": "1_the_therapeutic_effects_stabilisation_and_f_minimisation_source_boundary",
+    "2_the_synergistic_risks_the_dangers_of_dyscritia": "2_the_synergistic_risks_the_dangers_of_dyscritia_source_boundary",
+    "iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised": "iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_source_boundary",
+    "v_intervention_adjunct_agents": "v_intervention_adjunct_agents_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "IV. The Integrated Scenario: Pharmacological Modulation of the Traumatised Brain",
+    "component_2": "1. The Therapeutic Effects (Stabilisation and F Minimisation)",
+    "component_3": "2. The Synergistic Risks (The Dangers of Dyscritia)",
+    "component_4": "V. Intervention: Adjunct Agents",
+    "component_count": "4",
+    "next_boundary": "P0R05102",
+    "section": "IV. The Integrated Scenario: Pharmacological Modulation of the Traumatised Brain",
+    "source_span": "P0R05091-P0R05101"
+  },
+  "next_source_boundary": "P0R05102",
+  "null_controls": {
+    "1_the_therapeutic_effects_stabilisation_and_f_minimisation_is_not_empirical_validation_evidence": 1.0,
+    "2_the_synergistic_risks_the_dangers_of_dyscritia_is_not_empirical_validation_evidence": 1.0,
+    "iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_is_not_empirical_validation_evidence": 1.0,
+    "v_intervention_adjunct_agents_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded iv the integrated scenario pharmacological modulation of the traumatised source-accounting bridge; not validation evidence",
+    "protocol_state": "source_iv_the_integrated_scenario_pharmacological_modulation_of_the_traumatised_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05091",
+      "P0R05092",
+      "P0R05093",
+      "P0R05094",
+      "P0R05095",
+      "P0R05096",
+      "P0R05097",
+      "P0R05098",
+      "P0R05099",
+      "P0R05100",
+      "P0R05101"
+    ],
+    "source_ledger_span": [
+      "P0R05091",
+      "P0R05101"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05091",
+    "P0R05101"
+  ],
+  "source_record_count": 11
+}

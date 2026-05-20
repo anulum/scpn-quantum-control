@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded schizophrenia dissonance source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "alzheimer_s_disease_decoherence_cascade": "alzheimer_s_disease_decoherence_cascade_source_boundary",
+    "depression_dyscritia_dissonance": "depression_dyscritia_dissonance_source_boundary",
+    "schizophrenia_dissonance": "schizophrenia_dissonance_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Schizophrenia (Dissonance)",
+    "component_2": "Depression (Dyscritia & Dissonance)",
+    "component_3": "Alzheimer's Disease (Decoherence Cascade)",
+    "component_count": "3",
+    "next_boundary": "P0R04640",
+    "section": "Schizophrenia (Dissonance)",
+    "source_span": "P0R04630-P0R04639"
+  },
+  "next_source_boundary": "P0R04640",
+  "null_controls": {
+    "alzheimer_s_disease_decoherence_cascade_is_not_empirical_validation_evidence": 1.0,
+    "depression_dyscritia_dissonance_is_not_empirical_validation_evidence": 1.0,
+    "schizophrenia_dissonance_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded schizophrenia dissonance source-accounting bridge; not validation evidence",
+    "protocol_state": "source_schizophrenia_dissonance_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04630",
+      "P0R04631",
+      "P0R04632",
+      "P0R04633",
+      "P0R04634",
+      "P0R04635",
+      "P0R04636",
+      "P0R04637",
+      "P0R04638",
+      "P0R04639"
+    ],
+    "source_ledger_span": [
+      "P0R04630",
+      "P0R04639"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04630",
+    "P0R04639"
+  ],
+  "source_record_count": 10
+}

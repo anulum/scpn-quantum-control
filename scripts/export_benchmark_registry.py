@@ -20,7 +20,7 @@ from scpn_quantum_control.benchmark_harness.registry import benchmark_registry_p
 DATE = "2026-05-06"
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "s5_benchmark_harness"
-DOC_PATH = REPO_ROOT / f"docs/benchmark_harness_registry_{DATE}.md"
+DOC_PATH = REPO_ROOT / f"docs/campaigns/benchmark_harness_registry_{DATE}.md"
 
 
 def _markdown(payload: dict[str, Any]) -> str:

@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded the ultimate feedback loop source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel": "the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel_source_boundary",
+    "the_ultimate_feedback_loop": "the_ultimate_feedback_loop_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Ultimate Feedback Loop:",
+    "component_2": "The Quantum Error Correction (QEC) Imperative and the Role of the Psi-Field",
+    "component_count": "2",
+    "next_boundary": "P0R03076",
+    "section": "The Ultimate Feedback Loop:",
+    "source_span": "P0R03067-P0R03075"
+  },
+  "next_source_boundary": "P0R03076",
+  "null_controls": {
+    "the_quantum_error_correction_qec_imperative_and_the_role_of_the_psi_fiel_is_not_empirical_validation_evidence": 1.0,
+    "the_ultimate_feedback_loop_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the ultimate feedback loop source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_ultimate_feedback_loop_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03067",
+      "P0R03068",
+      "P0R03069",
+      "P0R03070",
+      "P0R03071",
+      "P0R03072",
+      "P0R03073",
+      "P0R03074",
+      "P0R03075"
+    ],
+    "source_ledger_span": [
+      "P0R03067",
+      "P0R03075"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03067",
+    "P0R03075"
+  ],
+  "source_record_count": 9
+}

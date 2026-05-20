@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Cosmology & Physics Extensions' preserves Paper 0 records P0R05665-P0R05668 without empirical validation claims.",
+      "claim_boundary": "source-bounded cosmology physics extensions source-accounting bridge; not validation evidence",
+      "context_id": "cosmology_physics_extensions",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05665-P0R05668"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "cosmology_physics_extensions.cosmology_physics_extensions",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "cosmology_physics_extensions must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Cosmology & Physics Extensions is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Cosmology & Physics Extensions",
+      "source_block_indices": [
+        5665,
+        5666,
+        5667,
+        5668,
+        5669,
+        5670,
+        5671,
+        5672
+      ],
+      "source_equation_ids": [
+        "P0R05665:cosmology_physics_extensions",
+        "P0R05666:cosmology_physics_extensions",
+        "P0R05667:cosmology_physics_extensions",
+        "P0R05668:cosmology_physics_extensions"
+      ],
+      "source_formulae": [
+        "P0R05665: Cosmology & Physics Extensions",
+        "P0R05666: Misner, Thorne & Wheeler (1973, Gravitation) -> standard GR reference (anchors your modifications).",
+        "P0R05667: Hawking (1988, A Brief History of Time) -> entropy, black holes, cosmological time.",
+        "P0R05668: 't Hooft (1993) -> holographic principle (precursor to Susskind, essential for L9)."
+      ],
+      "source_ledger_ids": [
+        "P0R05665",
+        "P0R05666",
+        "P0R05667",
+        "P0R05668",
+        "P0R05669",
+        "P0R05670",
+        "P0R05671",
+        "P0R05672"
+      ],
+      "source_record_ids": [
+        "P0B05665",
+        "P0B05666",
+        "P0B05667",
+        "P0B05668",
+        "P0B05669",
+        "P0B05670",
+        "P0B05671",
+        "P0B05672"
+      ],
+      "test_protocols": [
+        "preserve Cosmology & Physics Extensions source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.cosmology_physics_extensions.cosmology_physics_extensions",
+      "validation_targets": [
+        "preserve records P0R05665-P0R05668"
+      ],
+      "variables": [
+        "cosmology_physics_extensions"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Cosmological & Quantum Foundations' preserves Paper 0 records P0R05669-P0R05672 without empirical validation claims.",
+      "claim_boundary": "source-bounded cosmology physics extensions source-accounting bridge; not validation evidence",
+      "context_id": "cosmological_quantum_foundations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05669-P0R05672"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "cosmology_physics_extensions.cosmological_quantum_foundations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "cosmological_quantum_foundations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Cosmological & Quantum Foundations is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Cosmology & Physics Extensions",
+      "source_block_indices": [
+        5665,
+        5666,
+        5667,
+        5668,
+        5669,
+        5670,
+        5671,
+        5672
+      ],
+      "source_equation_ids": [
+        "P0R05669:cosmological_quantum_foundations",
+        "P0R05670:cosmological_quantum_foundations",
+        "P0R05671:cosmological_quantum_foundations",
+        "P0R05672:cosmological_quantum_foundations"
+      ],
+      "source_formulae": [
+        "P0R05669: Cosmological & Quantum Foundations",
+        "P0R05670: Everett (1957, Relative State Formulation) -> multiverse framing resonates with L14/L15 resonance bridges.",
+        "P0R05671: Wheeler (1983, It from Bit) -> connects information as substrate of physical reality, matches your Logos Axiom II.",
+        "P0R05672: DeWitt & Graham (1973, Many Worlds Interpretation) -> anchors multiverse references in recognised physics."
+      ],
+      "source_ledger_ids": [
+        "P0R05665",
+        "P0R05666",
+        "P0R05667",
+        "P0R05668",
+        "P0R05669",
+        "P0R05670",
+        "P0R05671",
+        "P0R05672"
+      ],
+      "source_record_ids": [
+        "P0B05665",
+        "P0B05666",
+        "P0B05667",
+        "P0B05668",
+        "P0B05669",
+        "P0B05670",
+        "P0B05671",
+        "P0B05672"
+      ],
+      "test_protocols": [
+        "preserve Cosmological & Quantum Foundations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.cosmology_physics_extensions.cosmological_quantum_foundations",
+      "validation_targets": [
+        "preserve records P0R05669-P0R05672"
+      ],
+      "variables": [
+        "cosmological_quantum_foundations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 6
+    },
+    "claim_boundary": "source-bounded cosmology physics extensions source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05673",
+    "source_ledger_span": [
+      "P0R05665",
+      "P0R05672"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "cosmology_physics_extensions.cosmology_physics_extensions",
+      "cosmology_physics_extensions.cosmological_quantum_foundations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Cosmology & Physics Extensions Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

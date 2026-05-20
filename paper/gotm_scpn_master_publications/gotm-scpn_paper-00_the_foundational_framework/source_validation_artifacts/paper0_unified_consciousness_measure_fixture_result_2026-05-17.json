@@ -1,0 +1,54 @@
+{
+  "claim_boundary": "source-bounded unified consciousness measure source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "iit_axioms_in_scpn": "iit_axioms_in_scpn_source_boundary",
+    "unified_consciousness_measure": "unified_consciousness_measure_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Unified Consciousness Measure:",
+    "component_2": "IIT Axioms in SCPN:",
+    "component_count": "2",
+    "next_boundary": "P0R03581",
+    "section": "Unified Consciousness Measure:",
+    "source_span": "P0R03564-P0R03580"
+  },
+  "next_source_boundary": "P0R03581",
+  "null_controls": {
+    "iit_axioms_in_scpn_is_not_empirical_validation_evidence": 1.0,
+    "unified_consciousness_measure_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded unified consciousness measure source-accounting bridge; not validation evidence",
+    "protocol_state": "source_unified_consciousness_measure_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03564",
+      "P0R03565",
+      "P0R03566",
+      "P0R03567",
+      "P0R03568",
+      "P0R03569",
+      "P0R03570",
+      "P0R03571",
+      "P0R03572",
+      "P0R03573",
+      "P0R03574",
+      "P0R03575",
+      "P0R03576",
+      "P0R03577",
+      "P0R03578",
+      "P0R03579",
+      "P0R03580"
+    ],
+    "source_ledger_span": [
+      "P0R03564",
+      "P0R03580"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03564",
+    "P0R03580"
+  ],
+  "source_record_count": 17
+}

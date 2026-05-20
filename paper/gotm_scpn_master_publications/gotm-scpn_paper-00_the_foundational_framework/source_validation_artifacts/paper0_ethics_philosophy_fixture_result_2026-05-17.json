@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded ethics philosophy source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "ethics_philosophy": "ethics_philosophy_source_boundary",
+    "ethics_philosophy_teleology": "ethics_philosophy_teleology_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Ethics & Philosophy",
+    "component_2": "Ethics, Philosophy & Teleology",
+    "component_count": "2",
+    "next_boundary": "P0R05762",
+    "section": " Ethics & Philosophy",
+    "source_span": "P0R05754-P0R05761"
+  },
+  "next_source_boundary": "P0R05762",
+  "null_controls": {
+    "ethics_philosophy_is_not_empirical_validation_evidence": 1.0,
+    "ethics_philosophy_teleology_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded ethics philosophy source-accounting bridge; not validation evidence",
+    "protocol_state": "source_ethics_philosophy_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05754",
+      "P0R05755",
+      "P0R05756",
+      "P0R05757",
+      "P0R05758",
+      "P0R05759",
+      "P0R05760",
+      "P0R05761"
+    ],
+    "source_ledger_span": [
+      "P0R05754",
+      "P0R05761"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05754",
+    "P0R05761"
+  ],
+  "source_record_count": 8
+}

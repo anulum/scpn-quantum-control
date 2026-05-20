@@ -1,0 +1,57 @@
+{
+  "claim_boundary": "source-bounded the consilium l15 as the target setter source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "qualia_capacity_q_as_a_key_component_of_sigma_universe": "qualia_capacity_q_as_a_key_component_of_sigma_universe_source_boundary",
+    "the_consilium_l15_as_the_target_setter": "the_consilium_l15_as_the_target_setter_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Consilium (L15) as the Target Setter:",
+    "component_2": "Qualia Capacity (Q) as a Key Component of sigma_universe:",
+    "component_count": "2",
+    "next_boundary": "P0R04151",
+    "section": "The Consilium (L15) as the Target Setter:",
+    "source_span": "P0R04131-P0R04150"
+  },
+  "next_source_boundary": "P0R04151",
+  "null_controls": {
+    "qualia_capacity_q_as_a_key_component_of_sigma_universe_is_not_empirical_validation_evidence": 1.0,
+    "the_consilium_l15_as_the_target_setter_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the consilium l15 as the target setter source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_consilium_l15_as_the_target_setter_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04131",
+      "P0R04132",
+      "P0R04133",
+      "P0R04134",
+      "P0R04135",
+      "P0R04136",
+      "P0R04137",
+      "P0R04138",
+      "P0R04139",
+      "P0R04140",
+      "P0R04141",
+      "P0R04142",
+      "P0R04143",
+      "P0R04144",
+      "P0R04145",
+      "P0R04146",
+      "P0R04147",
+      "P0R04148",
+      "P0R04149",
+      "P0R04150"
+    ],
+    "source_ledger_span": [
+      "P0R04131",
+      "P0R04150"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04131",
+    "P0R04150"
+  ],
+  "source_record_count": 20
+}

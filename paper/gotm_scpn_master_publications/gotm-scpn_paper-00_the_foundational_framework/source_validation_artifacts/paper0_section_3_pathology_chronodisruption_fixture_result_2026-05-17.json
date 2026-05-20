@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded section 3 pathology chronodisruption source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_perception_as_geometric_transduction_l1_l5": "1_perception_as_geometric_transduction_l1_l5_source_boundary",
+    "3_pathology_chronodisruption": "3_pathology_chronodisruption_source_boundary",
+    "iii_the_sensory_motor_loop_action_perception_and_agency": "iii_the_sensory_motor_loop_action_perception_and_agency_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. Pathology (Chronodisruption):",
+    "component_2": "III. The Sensory-Motor Loop: Action, Perception, and Agency",
+    "component_3": "1. Perception as Geometric Transduction (L1-L5)",
+    "component_count": "3",
+    "next_boundary": "P0R04993",
+    "section": "3. Pathology (Chronodisruption):",
+    "source_span": "P0R04983-P0R04992"
+  },
+  "next_source_boundary": "P0R04993",
+  "null_controls": {
+    "1_perception_as_geometric_transduction_l1_l5_is_not_empirical_validation_evidence": 1.0,
+    "3_pathology_chronodisruption_is_not_empirical_validation_evidence": 1.0,
+    "iii_the_sensory_motor_loop_action_perception_and_agency_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 pathology chronodisruption source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_pathology_chronodisruption_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04983",
+      "P0R04984",
+      "P0R04985",
+      "P0R04986",
+      "P0R04987",
+      "P0R04988",
+      "P0R04989",
+      "P0R04990",
+      "P0R04991",
+      "P0R04992"
+    ],
+    "source_ledger_span": [
+      "P0R04983",
+      "P0R04992"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04983",
+    "P0R04992"
+  ],
+  "source_record_count": 10
+}

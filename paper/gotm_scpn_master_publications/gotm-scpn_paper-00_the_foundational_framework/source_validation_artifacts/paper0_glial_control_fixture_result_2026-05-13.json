@@ -1,0 +1,96 @@
+{
+  "glial_sigma": {
+    "final_G": 1.2050071405534404,
+    "final_sigma": 1.4412587576405256,
+    "final_sigma_shift": 0.4412587576405256,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "integrated_calcium_drive": 26.688677641175836,
+    "null_controls": {
+      "baseline_sigma_relaxation_error": 1.4646062140855065e-12,
+      "gamma_zero_blockade_attenuation": 0.4412587576405256,
+      "matched_noise_sigma_only_shift": 0.0,
+      "zero_calcium_G_final_abs": 0.0
+    },
+    "problem_metadata": {
+      "dt": 0.02,
+      "duration": 40.0,
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_spec_key": "embodied.glial_sigma_control",
+      "paper0_validation_protocol": "paper0.embodied.glial_sigma.two_timescale_control",
+      "sample_count": 2001,
+      "simulator_only_mechanism_evidence": true,
+      "timescale_boundary_label": "slow_glial_control_over_fast_branching_proxy"
+    },
+    "source_equation_ids": [
+      "EQ0106",
+      "EQ0107",
+      "EQ0108",
+      "EQ0109",
+      "EQ0110",
+      "EQ0111",
+      "EQ0112"
+    ],
+    "source_ledger_ids": [
+      "P0R05366",
+      "P0R05367",
+      "P0R05368",
+      "P0R05369",
+      "P0R05370",
+      "P0R05371",
+      "P0R05372",
+      "P0R05376",
+      "P0R05377",
+      "P0R05385",
+      "P0R05388",
+      "P0R05390",
+      "P0R05391",
+      "P0R05392",
+      "P0R05395",
+      "P0R05396",
+      "P0R05397",
+      "P0R05399",
+      "P0R05400",
+      "P0R05403",
+      "P0R05404",
+      "P0R05405",
+      "P0R05406"
+    ],
+    "spec_key": "embodied.glial_sigma_control",
+    "validation_protocol": "paper0.embodied.glial_sigma.two_timescale_control"
+  },
+  "hardware_status": "simulator_only_no_provider_submission",
+  "quantum_immune": {
+    "cytokine_spectral_shift": 0.11399999999999999,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "hermiticity_error": 0.0,
+    "high_cytokine_lambda_value": 0.1416,
+    "lambda_value": 0.10360000000000001,
+    "null_controls": {
+      "fixed_cytokine_lambda_delta": 0.03799999999999999,
+      "non_hermitian_rejection_label": 1.0,
+      "operator_sign_reversal_norm_delta": 0.0,
+      "zero_lambda_operator_norm": 0.0
+    },
+    "operator_norm": 0.3108,
+    "problem_metadata": {
+      "dense_boundary": 10,
+      "dimension": 8,
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_spec_key": "embodied.quantum_immune_interface",
+      "paper0_validation_protocol": "paper0.embodied.quantum_immune.hamiltonian_parameter_scan",
+      "qubits": 3,
+      "simulator_only_mechanism_evidence": true
+    },
+    "source_equation_ids": [
+      "EQ0105"
+    ],
+    "source_ledger_ids": [
+      "P0R05360",
+      "P0R05361",
+      "P0R05363"
+    ],
+    "spec_key": "embodied.quantum_immune_interface",
+    "validation_protocol": "paper0.embodied.quantum_immune.hamiltonian_parameter_scan"
+  },
+  "runtime_ms": 11.343162987031974
+}

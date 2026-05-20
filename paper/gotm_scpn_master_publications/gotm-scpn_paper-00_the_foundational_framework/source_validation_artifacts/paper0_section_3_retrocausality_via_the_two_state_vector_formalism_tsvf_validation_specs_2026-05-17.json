@@ -1,0 +1,182 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '3. Retrocausality via the Two-State Vector Formalism (TSVF):' preserves Paper 0 records P0R05936-P0R05941 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 retrocausality via the two state vector formalism tsvf source-accounting bridge; not validation evidence",
+      "context_id": "3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05936-P0R05941"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_retrocausality_via_the_two_state_vector_formalism_tsvf.3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_retrocausality_via_the_two_state_vector_formalism_tsvf must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. Retrocausality via the Two-State Vector Formalism (TSVF): is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 3. Retrocausality via the Two-State Vector Formalism (TSVF):",
+      "source_block_indices": [
+        5936,
+        5937,
+        5938,
+        5939,
+        5940,
+        5941,
+        5942,
+        5943
+      ],
+      "source_equation_ids": [
+        "P0R05936:3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+        "P0R05937:3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+        "P0R05938:3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+        "P0R05939:3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+        "P0R05940:3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+        "P0R05941:3_retrocausality_via_the_two_state_vector_formalism_tsvf"
+      ],
+      "source_formulae": [
+        "P0R05936: 3. Retrocausality via the Two-State Vector Formalism (TSVF):",
+        "P0R05937: The SCPN integrates retrocausality (e.g., L9 memory access, L15 optimisation) via the TSVF. Reality is described by a two-state vector (t)psi(t), where (t) evolves backward from a future boundary condition (e.g., the Cosmic Attractor L8, or Ethical Functional L15).",
+        "P0R05938: The probability of an intermediate outcome A=a at time t is given by the ABL rule:",
+        "P0R05939: $P\\left( A = a\\mid t \\right) = \\sum_{}^{}{j} \\mid \\left\\langle \\phi(t)\\mid Pj\\mid\\psi(t) \\right\\rangle \\mid 2 \\mid \\left\\langle \\phi(t)\\mid Pa\\mid\\psi(t) \\right\\rangle \\mid 2$",
+        "P0R05940: This allows future attractors to influence present dynamics.",
+        "P0R05941: P0R05941"
+      ],
+      "source_ledger_ids": [
+        "P0R05936",
+        "P0R05937",
+        "P0R05938",
+        "P0R05939",
+        "P0R05940",
+        "P0R05941",
+        "P0R05942",
+        "P0R05943"
+      ],
+      "source_record_ids": [
+        "P0B05936",
+        "P0B05937",
+        "P0B05938",
+        "P0B05939",
+        "P0B05940",
+        "P0B05941",
+        "P0B05942",
+        "P0B05943"
+      ],
+      "test_protocols": [
+        "preserve 3. Retrocausality via the Two-State Vector Formalism (TSVF): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_retrocausality_via_the_two_state_vector_formalism_tsvf.3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+      "validation_targets": [
+        "preserve records P0R05936-P0R05941"
+      ],
+      "variables": [
+        "3_retrocausality_via_the_two_state_vector_formalism_tsvf"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'II. The Thermodynamics of Consciousness: Negentropy and Information' preserves Paper 0 records P0R05942-P0R05943 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 retrocausality via the two state vector formalism tsvf source-accounting bridge; not validation evidence",
+      "context_id": "ii_the_thermodynamics_of_consciousness_negentropy_and_information",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05942-P0R05943"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_retrocausality_via_the_two_state_vector_formalism_tsvf.ii_the_thermodynamics_of_consciousness_negentropy_and_information",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ii_the_thermodynamics_of_consciousness_negentropy_and_information must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "II. The Thermodynamics of Consciousness: Negentropy and Information is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 3. Retrocausality via the Two-State Vector Formalism (TSVF):",
+      "source_block_indices": [
+        5936,
+        5937,
+        5938,
+        5939,
+        5940,
+        5941,
+        5942,
+        5943
+      ],
+      "source_equation_ids": [
+        "P0R05942:ii_the_thermodynamics_of_consciousness_negentropy_and_information",
+        "P0R05943:ii_the_thermodynamics_of_consciousness_negentropy_and_information"
+      ],
+      "source_formulae": [
+        "P0R05942: II. The Thermodynamics of Consciousness: Negentropy and Information",
+        "P0R05943: The SCPN requires a thermodynamic treatment accounting for consciousness as an organising field."
+      ],
+      "source_ledger_ids": [
+        "P0R05936",
+        "P0R05937",
+        "P0R05938",
+        "P0R05939",
+        "P0R05940",
+        "P0R05941",
+        "P0R05942",
+        "P0R05943"
+      ],
+      "source_record_ids": [
+        "P0B05936",
+        "P0B05937",
+        "P0B05938",
+        "P0B05939",
+        "P0B05940",
+        "P0B05941",
+        "P0B05942",
+        "P0B05943"
+      ],
+      "test_protocols": [
+        "preserve II. The Thermodynamics of Consciousness: Negentropy and Information source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_retrocausality_via_the_two_state_vector_formalism_tsvf.ii_the_thermodynamics_of_consciousness_negentropy_and_information",
+      "validation_targets": [
+        "preserve records P0R05942-P0R05943"
+      ],
+      "variables": [
+        "ii_the_thermodynamics_of_consciousness_negentropy_and_information"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "equation": 1,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 3 retrocausality via the two state vector formalism tsvf source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0116"
+    ],
+    "next_source_boundary": "P0R05944",
+    "source_ledger_span": [
+      "P0R05936",
+      "P0R05943"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_3_retrocausality_via_the_two_state_vector_formalism_tsvf.3_retrocausality_via_the_two_state_vector_formalism_tsvf",
+      "section_3_retrocausality_via_the_two_state_vector_formalism_tsvf.ii_the_thermodynamics_of_consciousness_negentropy_and_information"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 3. Retrocausality via the Two-State Vector Formalism (TSVF): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

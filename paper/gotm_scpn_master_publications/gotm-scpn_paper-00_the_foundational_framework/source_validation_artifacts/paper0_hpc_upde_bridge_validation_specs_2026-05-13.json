@@ -1,0 +1,230 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "hierarchy is directed from higher to lower layers for prediction",
+        "upward messages carry residual error rather than duplicated state",
+        "biological-cell correspondences are treated as interpretation boundaries"
+      ],
+      "canonical_statement": "Hierarchical predictive coding is treated as a bounded computational mapping: downward generative predictions and upward prediction-error filtering must form a directed hierarchy with error-only upward flow.",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "construct finite layered graph with downward prediction edges",
+        "verify upward message equals observed lower state minus prediction",
+        "verify generative model refinement reduces held-out residual error"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.hpc_bidirectional_flow",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "disconnected-hierarchy control must block residual propagation",
+        "state-copy control must reject upward flow that is not prediction error",
+        "layer-order reversal control must fail directional consistency"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm",
+      "source_block_indices": [
+        6156,
+        6157,
+        6158
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06156",
+        "P0R06157",
+        "P0R06158"
+      ],
+      "source_record_ids": [
+        "P0B06156",
+        "P0B06157",
+        "P0B06158"
+      ],
+      "validation_protocol": "paper0.computational.hpc.bidirectional_flow",
+      "validation_targets": [
+        "construct finite layered graph with downward prediction edges",
+        "verify upward message equals observed lower state minus prediction",
+        "verify generative model refinement reduces held-out residual error"
+      ],
+      "variables": [
+        "layer_state",
+        "top_down_prediction",
+        "prediction_error",
+        "hierarchy_adjacency"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "phase error is local to explicitly coupled layers",
+        "small-step coupling is dissipative for attractive non-negative weights",
+        "DMN/CEN and salience labels remain biological hypotheses outside fixture scope"
+      ],
+      "canonical_statement": "The UPDE phase-coupling term is promoted as a falsifiable prediction-error surrogate only where inter-layer phase differences and precision weights are explicitly represented.",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify sin(theta_upper - theta_lower) is the signed phase residual",
+        "verify attractive phase update reduces squared phase residual",
+        "verify precision weights scale inter-layer residual contribution"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.upde_phase_prediction_error",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "zero-coupling control must not reduce residual through hidden dynamics",
+        "negative-precision control must be rejected",
+        "uncoupled-layer control must not receive precision-weighted residual"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. The UPDE as the Physical Implementation of Free Energy Minimisation",
+      "source_block_indices": [
+        6159,
+        6160,
+        6161,
+        6162,
+        6163
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06159",
+        "P0R06160",
+        "P0R06161",
+        "P0R06162",
+        "P0R06163"
+      ],
+      "source_record_ids": [
+        "P0B06159",
+        "P0B06160",
+        "P0B06161",
+        "P0B06162",
+        "P0B06163"
+      ],
+      "validation_protocol": "paper0.computational.upde.phase_prediction_error",
+      "validation_targets": [
+        "verify sin(theta_upper - theta_lower) is the signed phase residual",
+        "verify attractive phase update reduces squared phase residual",
+        "verify precision weights scale inter-layer residual contribution"
+      ],
+      "variables": [
+        "theta_lower",
+        "theta_upper",
+        "sin_delta_theta",
+        "precision_weight",
+        "effective_coupling"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "couplings are finite and sign-explicit",
+        "gradient claims are tested on finite phase vectors",
+        "cosmic-scale interpretation is not promoted beyond the mathematical identity"
+      ],
+      "canonical_statement": "The UPDE-to-free-energy bridge is accepted only as an XY-potential gradient identity: F(theta) = -sum K_ij cos(theta_j - theta_i), with Kuramoto drift equal to intrinsic drive plus negative gradient and explicit noise.",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify XY potential is minimised at zero coupled phase differences",
+        "verify analytic gradient against central finite-difference derivative",
+        "verify Kuramoto drift equals omega minus gradient plus eta"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.upde_free_energy_gradient_bridge",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "wrong-sign coupling control must increase rather than decrease potential",
+        "asymmetric-coupling control must declare directed-gradient convention",
+        "non-finite phase control must be rejected before gradient evaluation"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. The UPDE as the Physical Implementation of Free Energy Minimisation > The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation",
+      "source_block_indices": [
+        6164,
+        6165,
+        6166,
+        6167,
+        6168,
+        6169,
+        6170,
+        6171,
+        6172,
+        6173,
+        6174,
+        6175,
+        6176,
+        6177,
+        6178
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06164",
+        "P0R06165",
+        "P0R06166",
+        "P0R06167",
+        "P0R06168",
+        "P0R06169",
+        "P0R06170",
+        "P0R06171",
+        "P0R06172",
+        "P0R06173",
+        "P0R06174",
+        "P0R06175",
+        "P0R06176",
+        "P0R06177",
+        "P0R06178"
+      ],
+      "source_record_ids": [
+        "P0B06164",
+        "P0B06165",
+        "P0B06166",
+        "P0B06167",
+        "P0B06168",
+        "P0B06169",
+        "P0B06170",
+        "P0B06171",
+        "P0B06172",
+        "P0B06173",
+        "P0B06174",
+        "P0B06175",
+        "P0B06176",
+        "P0B06177",
+        "P0B06178"
+      ],
+      "validation_protocol": "paper0.computational.upde.free_energy_gradient_bridge",
+      "validation_targets": [
+        "verify XY potential is minimised at zero coupled phase differences",
+        "verify analytic gradient against central finite-difference derivative",
+        "verify Kuramoto drift equals omega minus gradient plus eta"
+      ],
+      "variables": [
+        "theta_i",
+        "theta_j",
+        "K_ij",
+        "omega_i",
+        "eta_i",
+        "free_energy_gradient"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_avoid_invented_equation_ids": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 23,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06156-P0R06178 are promoted as source-covered validation specifications. No standalone equation IDs are invented for formula text lacking canonical EQ anchors; all claims remain bounded to finite mathematical and computational fixtures before domain promotion.",
+    "source_ledger_span": [
+      "P0R06156",
+      "P0R06178"
+    ],
+    "source_record_count": 23,
+    "spec_count": 3,
+    "spec_keys": [
+      "computational.hpc_bidirectional_flow",
+      "computational.upde_phase_prediction_error",
+      "computational.upde_free_energy_gradient_bridge"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

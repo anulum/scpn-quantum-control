@@ -1,0 +1,69 @@
+{
+  "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+  "component_count": 5,
+  "components": {
+    "meta_framework_integrations": "meta_framework_integrations_source_boundary",
+    "meta_layer_16_as_precision_weighting_optimisation": "meta_layer_16_as_precision_weighting_optimisation_source_boundary",
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary",
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "supervisory_control_of_the_coupling_constant_lambda": "supervisory_control_of_the_coupling_constant_lambda_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Meta-Framework Integrations",
+    "component_2": "Predictive Coding Integration",
+    "component_3": "Meta-Layer 16 as Precision-Weighting Optimisation:",
+    "component_4": "Psis Field Coupling Integration",
+    "component_5": "Supervisory Control of the Coupling Constant lambda:",
+    "component_count": "5",
+    "next_boundary": "P0R04247",
+    "section": "Meta-Framework Integrations",
+    "source_span": "P0R04224-P0R04246"
+  },
+  "next_source_boundary": "P0R04247",
+  "null_controls": {
+    "meta_framework_integrations_is_not_empirical_validation_evidence": 1.0,
+    "meta_layer_16_as_precision_weighting_optimisation_is_not_empirical_validation_evidence": 1.0,
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0,
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "supervisory_control_of_the_coupling_constant_lambda_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_meta_framework_integrations_p0r04224_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04224",
+      "P0R04225",
+      "P0R04226",
+      "P0R04227",
+      "P0R04228",
+      "P0R04229",
+      "P0R04230",
+      "P0R04231",
+      "P0R04232",
+      "P0R04233",
+      "P0R04234",
+      "P0R04235",
+      "P0R04236",
+      "P0R04237",
+      "P0R04238",
+      "P0R04239",
+      "P0R04240",
+      "P0R04241",
+      "P0R04242",
+      "P0R04243",
+      "P0R04244",
+      "P0R04245",
+      "P0R04246"
+    ],
+    "source_ledger_span": [
+      "P0R04224",
+      "P0R04246"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04224",
+    "P0R04246"
+  ],
+  "source_record_count": 23
+}

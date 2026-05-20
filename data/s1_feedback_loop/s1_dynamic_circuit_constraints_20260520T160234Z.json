@@ -1,0 +1,534 @@
+{
+  "backends": [
+    {
+      "backend": "ibm_fez",
+      "provider": {
+        "layout_properties": {
+          "available": true,
+          "mean_readout_error": 0.010894775390625,
+          "qubits": [
+            143,
+            142,
+            136,
+            144
+          ],
+          "readout_error_by_qubit": {
+            "136": 0.0067138671875,
+            "142": 0.0076904296875,
+            "143": 0.011962890625,
+            "144": 0.0172119140625
+          },
+          "reset_error": null,
+          "reset_fidelity_note": "Reset error/fidelity was not exposed by backend.properties() in this runtime API snapshot; final-readout calibration is reported separately.",
+          "t1_us_by_qubit": {
+            "136": 92.93058442463754,
+            "142": 105.33531856418644,
+            "143": 122.05221206659442,
+            "144": 107.99013274525774
+          },
+          "t2_us_by_qubit": {
+            "136": 51.71566319131291,
+            "142": 115.04858047802777,
+            "143": 101.41037187445164,
+            "144": 121.75378394039468
+          }
+        },
+        "live_backend_loaded": true,
+        "timing": {
+          "conditional_latency": null,
+          "conditional_latency_note": "A per-branch classical-conditioning latency was not exposed by the runtime backend API used here. The artefact therefore reports transpiled control-flow depth and operation counts as the measured dynamic-circuit cost boundary.",
+          "dt_s": 4e-09,
+          "dtm_s": 4e-09,
+          "target_timing_constraints": {
+            "acquire_alignment": 1,
+            "available": true,
+            "granularity": 1,
+            "min_length": 2,
+            "pulse_alignment": 1
+          }
+        }
+      },
+      "readout_zne_lane": {
+        "aggregate_readout": {
+          "condition_number": 1.0649716530239766,
+          "max_multi_bit_flip_probability": 0.001171875,
+          "max_single_state_leakage": 0.0404296875,
+          "mean_excess_multi_bit_flip_over_independent_proxy": 8.238693699240685e-05,
+          "mean_multi_bit_flip_probability": 0.00029296875,
+          "mean_nonretention": 0.02587890625,
+          "mean_retention": 0.97412109375,
+          "min_retention": 0.9595703125
+        },
+        "lanes": [
+          {
+            "analysis_json": "data/s1_feedback_loop/s1b_readout_zne_analysis_ibm_fez_20260520T153231Z.json",
+            "lane": "s1b",
+            "linear_zne_mean_abs": 0.06319173177083333,
+            "mitigated_linear_zne_mean_abs": 0.0638677060052738,
+            "readout": {
+              "condition_number": 1.0782151961632485,
+              "max_multi_bit_flip_probability": 0.0009765625,
+              "max_single_state_leakage": 0.0498046875,
+              "mean_excess_multi_bit_flip_over_independent_proxy": -2.8875889256596565e-05,
+              "mean_multi_bit_flip_probability": 0.000244140625,
+              "mean_nonretention": 0.0291748046875,
+              "mean_retention": 0.9708251953125,
+              "min_retention": 0.9501953125
+            },
+            "scale1_mean_abs": 0.05631510416666667
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1c_readout_zne_analysis_ibm_fez_20260520T153317Z.json",
+            "lane": "s1c",
+            "linear_zne_mean_abs": 0.03842502170138886,
+            "mitigated_linear_zne_mean_abs": 0.039430261414611256,
+            "readout": {
+              "condition_number": 1.0590594803776017,
+              "max_multi_bit_flip_probability": 0.0,
+              "max_single_state_leakage": 0.0390625,
+              "mean_excess_multi_bit_flip_over_independent_proxy": -0.00016546156257390976,
+              "mean_multi_bit_flip_probability": 0.0,
+              "mean_nonretention": 0.022705078125,
+              "mean_retention": 0.977294921875,
+              "min_retention": 0.9609375
+            },
+            "scale1_mean_abs": 0.031738281249999986
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1d_readout_zne_analysis_ibm_fez_20260520T153357Z.json",
+            "lane": "s1d",
+            "linear_zne_mean_abs": 0.043936270254629615,
+            "mitigated_linear_zne_mean_abs": 0.045296639554519215,
+            "readout": {
+              "condition_number": 1.0599702900941346,
+              "max_multi_bit_flip_probability": 0.0009765625,
+              "max_single_state_leakage": 0.0341796875,
+              "mean_excess_multi_bit_flip_over_independent_proxy": 0.00017927750013768673,
+              "mean_multi_bit_flip_probability": 0.0003662109375,
+              "mean_nonretention": 0.0260009765625,
+              "mean_retention": 0.9739990234375,
+              "min_retention": 0.9658203125
+            },
+            "scale1_mean_abs": 0.038031684027777776
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1e_readout_zne_analysis_ibm_fez_20260520T153528Z.json",
+            "lane": "s1e",
+            "linear_zne_mean_abs": 0.045203993055555544,
+            "mitigated_linear_zne_mean_abs": 0.04670662660786614,
+            "readout": {
+              "condition_number": 1.0612074981150983,
+              "max_multi_bit_flip_probability": 0.0009765625,
+              "max_single_state_leakage": 0.0390625,
+              "mean_excess_multi_bit_flip_over_independent_proxy": 4.661339335143566e-05,
+              "mean_multi_bit_flip_probability": 0.000244140625,
+              "mean_nonretention": 0.0245361328125,
+              "mean_retention": 0.9754638671875,
+              "min_retention": 0.9609375
+            },
+            "scale1_mean_abs": 0.037434895833333336
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1f_readout_zne_analysis_ibm_fez_20260520T153820Z.json",
+            "lane": "s1f",
+            "linear_zne_mean_abs": 0.04143880208333334,
+            "mitigated_linear_zne_mean_abs": 0.042974960704295524,
+            "readout": {
+              "condition_number": 1.0664058003697996,
+              "max_multi_bit_flip_probability": 0.0029296875,
+              "max_single_state_leakage": 0.0400390625,
+              "mean_excess_multi_bit_flip_over_independent_proxy": 0.00038038124330341816,
+              "mean_multi_bit_flip_probability": 0.0006103515625,
+              "mean_nonretention": 0.0269775390625,
+              "mean_retention": 0.9730224609375,
+              "min_retention": 0.9599609375
+            },
+            "scale1_mean_abs": 0.054140625
+          }
+        ],
+        "physical_layout": {
+          "logical_order": [
+            "sys_0",
+            "sys_1",
+            "sys_2",
+            "monitor"
+          ],
+          "monitor_qubit": 144,
+          "system_qubits": [
+            143,
+            142,
+            136
+          ]
+        }
+      },
+      "same_layout_primary_repeat": {
+        "analysis_json": "data/s1_feedback_loop/s1_feedback_analysis_summary_ibm_fez_20260520T145159Z.json",
+        "arms": [
+          {
+            "estimated_qpu_seconds": 12.0,
+            "label": "feedback",
+            "repetitions": 12,
+            "seed_transpiler": 20260520,
+            "shots": 1024,
+            "source_depth": 38,
+            "source_operation_counts": {
+              "PauliEvolution": 3,
+              "cx": 18,
+              "if_else": 3,
+              "measure": 6,
+              "reset": 3,
+              "ry": 12
+            },
+            "transpiled_depth_max": 717,
+            "transpiled_depths": [
+              717,
+              717,
+              717,
+              717,
+              717,
+              717,
+              717,
+              717,
+              717,
+              717,
+              717,
+              717
+            ],
+            "transpiled_operation_counts": {
+              "cz": 183,
+              "if_else": 3,
+              "measure": 6,
+              "reset": 3,
+              "rz": 380,
+              "sx": 363,
+              "x": 2
+            }
+          },
+          {
+            "estimated_qpu_seconds": 12.0,
+            "label": "matched_open_loop_control",
+            "repetitions": 12,
+            "seed_transpiler": 20260520,
+            "shots": 1024,
+            "source_depth": 35,
+            "source_operation_counts": {
+              "PauliEvolution": 3,
+              "cx": 18,
+              "measure": 6,
+              "reset": 3,
+              "ry": 12
+            },
+            "transpiled_depth_max": 684,
+            "transpiled_depths": [
+              684,
+              684,
+              684,
+              684,
+              684,
+              684,
+              684,
+              684,
+              684,
+              684,
+              684,
+              684
+            ],
+            "transpiled_operation_counts": {
+              "cz": 174,
+              "measure": 6,
+              "reset": 3,
+              "rz": 376,
+              "sx": 345,
+              "x": 1
+            }
+          }
+        ],
+        "decision": "positive",
+        "feedback_minus_control_mean_r_live": 0.16384548611111105,
+        "job_ids": [
+          "d86sl45g7okc73elimdg",
+          "d86slcp789is73904bng"
+        ],
+        "physical_layout": null,
+        "readiness_json": "data/s1_feedback_loop/s1_ibm_feedback_pair_readiness_ibm_fez_20260520T145159Z.json",
+        "relative_target_error_improvement": 0.7230659946554814,
+        "repeat_label": null,
+        "target_error_improvement": 0.09277777777777774
+      }
+    },
+    {
+      "backend": "ibm_marrakesh",
+      "provider": {
+        "layout_properties": {
+          "available": true,
+          "mean_readout_error": 0.006378173828125,
+          "qubits": [
+            7,
+            17,
+            6,
+            8
+          ],
+          "readout_error_by_qubit": {
+            "17": 0.0062255859375,
+            "6": 0.0048828125,
+            "7": 0.0047607421875,
+            "8": 0.0096435546875
+          },
+          "reset_error": null,
+          "reset_fidelity_note": "Reset error/fidelity was not exposed by backend.properties() in this runtime API snapshot; final-readout calibration is reported separately.",
+          "t1_us_by_qubit": {
+            "17": 147.11037915952926,
+            "6": 309.763458082043,
+            "7": 257.75349884593544,
+            "8": 258.68979941482684
+          },
+          "t2_us_by_qubit": {
+            "17": 9.219987893217322,
+            "6": 322.84720564796186,
+            "7": 155.47183449036058,
+            "8": 138.23009435585124
+          }
+        },
+        "live_backend_loaded": true,
+        "timing": {
+          "conditional_latency": null,
+          "conditional_latency_note": "A per-branch classical-conditioning latency was not exposed by the runtime backend API used here. The artefact therefore reports transpiled control-flow depth and operation counts as the measured dynamic-circuit cost boundary.",
+          "dt_s": 4e-09,
+          "dtm_s": 4e-09,
+          "target_timing_constraints": {
+            "acquire_alignment": 1,
+            "available": true,
+            "granularity": 1,
+            "min_length": 2,
+            "pulse_alignment": 1
+          }
+        }
+      },
+      "readout_zne_lane": {
+        "aggregate_readout": {
+          "condition_number": 1.0353200970794612,
+          "max_multi_bit_flip_probability": 0.0005859375,
+          "max_single_state_leakage": 0.0232421875,
+          "mean_excess_multi_bit_flip_over_independent_proxy": 7.824599742889405e-06,
+          "mean_multi_bit_flip_probability": 7.32421875e-05,
+          "mean_nonretention": 0.0142822265625,
+          "mean_retention": 0.9857177734375,
+          "min_retention": 0.9767578125
+        },
+        "lanes": [
+          {
+            "analysis_json": "data/s1_feedback_loop/s1b_readout_zne_analysis_ibm_marrakesh_20260520T153231Z.json",
+            "lane": "s1b",
+            "linear_zne_mean_abs": 0.04025607638888888,
+            "mitigated_linear_zne_mean_abs": 0.04043720792901012,
+            "readout": {
+              "condition_number": 1.0363858166093736,
+              "max_multi_bit_flip_probability": 0.0,
+              "max_single_state_leakage": 0.0234375,
+              "mean_excess_multi_bit_flip_over_independent_proxy": -5.531730130314827e-05,
+              "mean_multi_bit_flip_probability": 0.0,
+              "mean_nonretention": 0.0145263671875,
+              "mean_retention": 0.9854736328125,
+              "min_retention": 0.9765625
+            },
+            "scale1_mean_abs": 0.030273437499999997
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1c_readout_zne_analysis_ibm_marrakesh_20260520T153321Z.json",
+            "lane": "s1c",
+            "linear_zne_mean_abs": 0.12040201822916666,
+            "mitigated_linear_zne_mean_abs": 0.122239347695956,
+            "readout": {
+              "condition_number": 1.0296542513805882,
+              "max_multi_bit_flip_probability": 0.0009765625,
+              "max_single_state_leakage": 0.0185546875,
+              "mean_excess_multi_bit_flip_over_independent_proxy": 7.438194006681442e-05,
+              "mean_multi_bit_flip_probability": 0.0001220703125,
+              "mean_nonretention": 0.0125732421875,
+              "mean_retention": 0.9874267578125,
+              "min_retention": 0.9814453125
+            },
+            "scale1_mean_abs": 0.11393229166666667
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1d_readout_zne_analysis_ibm_marrakesh_20260520T153407Z.json",
+            "lane": "s1d",
+            "linear_zne_mean_abs": 0.1019513165509259,
+            "mitigated_linear_zne_mean_abs": 0.1029651830648205,
+            "readout": {
+              "condition_number": 1.0313478089328914,
+              "max_multi_bit_flip_probability": 0.0009765625,
+              "max_single_state_leakage": 0.01953125,
+              "mean_excess_multi_bit_flip_over_independent_proxy": 6.72503374516964e-05,
+              "mean_multi_bit_flip_probability": 0.0001220703125,
+              "mean_nonretention": 0.0125732421875,
+              "mean_retention": 0.9874267578125,
+              "min_retention": 0.98046875
+            },
+            "scale1_mean_abs": 0.0954861111111111
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1e_readout_zne_analysis_ibm_marrakesh_20260520T153601Z.json",
+            "lane": "s1e",
+            "linear_zne_mean_abs": 0.11381022135416664,
+            "mitigated_linear_zne_mean_abs": 0.11599739512534792,
+            "readout": {
+              "condition_number": 1.0385469156078118,
+              "max_multi_bit_flip_probability": 0.0,
+              "max_single_state_leakage": 0.0244140625,
+              "mean_excess_multi_bit_flip_over_independent_proxy": -8.851173333823681e-05,
+              "mean_multi_bit_flip_probability": 0.0,
+              "mean_nonretention": 0.0172119140625,
+              "mean_retention": 0.9827880859375,
+              "min_retention": 0.9755859375
+            },
+            "scale1_mean_abs": 0.10458984375
+          },
+          {
+            "analysis_json": "data/s1_feedback_loop/s1f_readout_zne_analysis_ibm_marrakesh_20260520T153847Z.json",
+            "lane": "s1f",
+            "linear_zne_mean_abs": 0.07643229166666667,
+            "mitigated_linear_zne_mean_abs": 0.07761689227185693,
+            "readout": {
+              "condition_number": 1.0406656928666411,
+              "max_multi_bit_flip_probability": 0.0009765625,
+              "max_single_state_leakage": 0.0302734375,
+              "mean_excess_multi_bit_flip_over_independent_proxy": 4.131975583732128e-05,
+              "mean_multi_bit_flip_probability": 0.0001220703125,
+              "mean_nonretention": 0.0145263671875,
+              "mean_retention": 0.9854736328125,
+              "min_retention": 0.9697265625
+            },
+            "scale1_mean_abs": 0.06953125
+          }
+        ],
+        "physical_layout": {
+          "logical_order": [
+            "sys_0",
+            "sys_1",
+            "sys_2",
+            "monitor"
+          ],
+          "monitor_qubit": 8,
+          "system_qubits": [
+            7,
+            17,
+            6
+          ]
+        }
+      },
+      "same_layout_primary_repeat": {
+        "analysis_json": "data/s1_feedback_loop/s1_feedback_analysis_summary_ibm_marrakesh_20260520T155826Z.json",
+        "arms": [
+          {
+            "estimated_qpu_seconds": 12.0,
+            "label": "feedback",
+            "repetitions": 12,
+            "seed_transpiler": 20260520,
+            "shots": 1024,
+            "source_depth": 38,
+            "source_operation_counts": {
+              "PauliEvolution": 3,
+              "cx": 18,
+              "if_else": 3,
+              "measure": 6,
+              "reset": 3,
+              "ry": 12
+            },
+            "transpiled_depth_max": 715,
+            "transpiled_depths": [
+              715,
+              715,
+              715,
+              715,
+              715,
+              715,
+              715,
+              715,
+              715,
+              715,
+              715,
+              715
+            ],
+            "transpiled_operation_counts": {
+              "cz": 180,
+              "if_else": 3,
+              "measure": 6,
+              "reset": 3,
+              "rz": 374,
+              "sx": 355,
+              "x": 2
+            }
+          },
+          {
+            "estimated_qpu_seconds": 12.0,
+            "label": "matched_open_loop_control",
+            "repetitions": 12,
+            "seed_transpiler": 20260520,
+            "shots": 1024,
+            "source_depth": 35,
+            "source_operation_counts": {
+              "PauliEvolution": 3,
+              "cx": 18,
+              "measure": 6,
+              "reset": 3,
+              "ry": 12
+            },
+            "transpiled_depth_max": 696,
+            "transpiled_depths": [
+              696,
+              696,
+              696,
+              696,
+              696,
+              696,
+              696,
+              696,
+              696,
+              696,
+              696,
+              696
+            ],
+            "transpiled_operation_counts": {
+              "cz": 180,
+              "measure": 6,
+              "reset": 3,
+              "rz": 374,
+              "sx": 350,
+              "x": 4
+            }
+          }
+        ],
+        "decision": "positive",
+        "feedback_minus_control_mean_r_live": 0.05013020833333337,
+        "job_ids": [
+          "d86tk8op0eas73dlf4pg",
+          "d86tkbp789is73905hkg"
+        ],
+        "physical_layout": {
+          "logical_order": [
+            "sys_0",
+            "sys_1",
+            "sys_2",
+            "monitor"
+          ],
+          "monitor_qubit": 8,
+          "selection": "explicit_same_layout_repeat",
+          "system_qubits": [
+            7,
+            17,
+            6
+          ]
+        },
+        "readiness_json": "data/s1_feedback_loop/s1_ibm_feedback_pair_readiness_ibm_marrakesh_20260520T155826Z.json",
+        "relative_target_error_improvement": 0.13724699620998237,
+        "repeat_label": "s1_primary_same_layout_repeat_marrakesh_2026-05-20",
+        "target_error_improvement": 0.0036935763888888695
+      }
+    }
+  ],
+  "claim_boundary": "The crosstalk metric is a final-readout multi-bit leakage proxy from dedicated calibration circuits, not a mid-circuit measurement crosstalk tomography result.",
+  "schema": "scpn_s1_dynamic_circuit_constraints_v1",
+  "scope": "Provider timing fields, same-layout repeat metadata, and final-readout leakage proxies for the S1 dynamic-circuit paper.",
+  "timestamp_utc": "20260520T160234Z"
+}

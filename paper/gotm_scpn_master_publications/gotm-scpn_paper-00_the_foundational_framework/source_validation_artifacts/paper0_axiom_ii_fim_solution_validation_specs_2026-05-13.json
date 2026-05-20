@@ -1,0 +1,331 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source identifies the Fisher Information Metric as the natural unique Riemannian metric on a statistical manifold and as the local distinguishability geometry for nearby probability states.",
+      "claim_boundary": "source-bounded Axiom II FIM-solution map; not validation evidence",
+      "context_id": "metric_definition",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve FIM solution heading",
+        "preserve natural unique Riemannian metric statement",
+        "preserve probability-state distinguishability role"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_ii_fim_solution.metric_definition",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "metric-definition-as-empirical-proof control must be rejected",
+        "non-statistical-manifold metric control must be rejected"
+      ],
+      "null_results": [
+        "FIM natural-metric statement is a source claim, not proof"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom II: The Language of Information Geometry > The Fisher Information Metric (FIM) as the Solution",
+      "source_block_indices": [
+        775,
+        776,
+        777,
+        778,
+        779,
+        780,
+        781
+      ],
+      "source_equation_ids": [
+        "P0R00775:fim_solution_heading",
+        "P0R00776:fim_natural_unique_metric",
+        "P0R00776:nearby_probability_state_distinguishability"
+      ],
+      "source_formulae": [
+        "The Fisher Information Metric (FIM) as the Solution",
+        "natural unique Riemannian metric on a statistical manifold",
+        "distinguishability between nearby probability states"
+      ],
+      "source_ledger_ids": [
+        "P0R00775",
+        "P0R00776",
+        "P0R00777",
+        "P0R00778",
+        "P0R00779",
+        "P0R00780",
+        "P0R00781"
+      ],
+      "source_record_ids": [
+        "P0B00775",
+        "P0B00776",
+        "P0B00777",
+        "P0B00778",
+        "P0B00779",
+        "P0B00780",
+        "P0B00781"
+      ],
+      "test_protocols": [
+        "preserve FIM statistical-manifold metric definition"
+      ],
+      "validation_protocol": "paper0.axiom_ii_fim_solution.metric_definition",
+      "validation_targets": [
+        "preserve FIM solution heading",
+        "preserve natural unique Riemannian metric statement",
+        "preserve probability-state distinguishability role"
+      ],
+      "variables": [
+        "g_FIM",
+        "statistical_manifold",
+        "probability_state"
+      ]
+    },
+    {
+      "canonical_statement": "The source frames Axiom II as a physical statement: interaction is informational, not primarily a push or pull in physical space, and the infoton propagates through information geometry.",
+      "claim_boundary": "source-bounded Axiom II FIM-solution map; not validation evidence",
+      "context_id": "informational_interaction",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve physical-statement framing",
+        "preserve probabilistic-belief interaction role",
+        "preserve information-geometry propagation claim"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_ii_fim_solution.informational_interaction",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "mechanical-push-pull-only control must be rejected",
+        "missing-information-geometry-propagation control must be rejected"
+      ],
+      "null_results": [
+        "informational interaction is source-bounded until operationalized"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom II: The Language of Information Geometry > The Fisher Information Metric (FIM) as the Solution",
+      "source_block_indices": [
+        775,
+        776,
+        777,
+        778,
+        779,
+        780,
+        781
+      ],
+      "source_equation_ids": [
+        "P0R00777:axiom_ii_physical_statements",
+        "P0R00778:interaction_informational",
+        "P0R00778:infoton_information_geometry_propagation"
+      ],
+      "source_formulae": [
+        "Axiom II makes physical statements",
+        "interaction is informational",
+        "force not primarily push or pull in physical space",
+        "acts on probabilistic beliefs",
+        "infoton propagates through the geometry of information itself"
+      ],
+      "source_ledger_ids": [
+        "P0R00775",
+        "P0R00776",
+        "P0R00777",
+        "P0R00778",
+        "P0R00779",
+        "P0R00780",
+        "P0R00781"
+      ],
+      "source_record_ids": [
+        "P0B00775",
+        "P0B00776",
+        "P0B00777",
+        "P0B00778",
+        "P0B00779",
+        "P0B00780",
+        "P0B00781"
+      ],
+      "test_protocols": [
+        "preserve informational-interaction claim boundary"
+      ],
+      "validation_protocol": "paper0.axiom_ii_fim_solution.informational_interaction",
+      "validation_targets": [
+        "preserve physical-statement framing",
+        "preserve probabilistic-belief interaction role",
+        "preserve information-geometry propagation claim"
+      ],
+      "variables": [
+        "infoton",
+        "probabilistic_beliefs",
+        "information_geometry"
+      ]
+    },
+    {
+      "canonical_statement": "The source states that coupling strength and effective curvature track informational complexity rather than mass or energy, with quasicritical brain dynamics as a high-curvature example.",
+      "claim_boundary": "source-bounded Axiom II FIM-solution map; not validation evidence",
+      "context_id": "complexity_coupling",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve informational-complexity proportionality claim",
+        "preserve mass-energy contrast",
+        "preserve quasicritical high-curvature brain example"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_ii_fim_solution.complexity_coupling",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "mass-energy-only-coupling control must be rejected",
+        "complexity-coupling-as-measured-result control must be rejected"
+      ],
+      "null_results": [
+        "complexity coupling requires downstream operational metric"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom II: The Language of Information Geometry > The Fisher Information Metric (FIM) as the Solution",
+      "source_block_indices": [
+        775,
+        776,
+        777,
+        778,
+        779,
+        780,
+        781
+      ],
+      "source_equation_ids": [
+        "P0R00779:coupling_proportional_to_complexity",
+        "P0R00779:effective_curvature_information_space",
+        "P0R00779:quasicritical_brain_high_curvature"
+      ],
+      "source_formulae": [
+        "coupling is proportional to informational complexity",
+        "effective curvature of information space",
+        "not determined by mass or energy",
+        "brain at quasicriticality has large highly curved FIM",
+        "couples more strongly to Psi-field"
+      ],
+      "source_ledger_ids": [
+        "P0R00775",
+        "P0R00776",
+        "P0R00777",
+        "P0R00778",
+        "P0R00779",
+        "P0R00780",
+        "P0R00781"
+      ],
+      "source_record_ids": [
+        "P0B00775",
+        "P0B00776",
+        "P0B00777",
+        "P0B00778",
+        "P0B00779",
+        "P0B00780",
+        "P0B00781"
+      ],
+      "test_protocols": [
+        "preserve complexity-coupling source claim"
+      ],
+      "validation_protocol": "paper0.axiom_ii_fim_solution.complexity_coupling",
+      "validation_targets": [
+        "preserve informational-complexity proportionality claim",
+        "preserve mass-energy contrast",
+        "preserve quasicritical high-curvature brain example"
+      ],
+      "variables": [
+        "informational_complexity",
+        "effective_curvature",
+        "Psi"
+      ]
+    },
+    {
+      "canonical_statement": "The source unifies FEP, HPC/FEP, UPDE, and fundamental physics as sharing information geometry, with FEP as gradient descent on a FIM-governed manifold and UPDE as the physical implementation.",
+      "claim_boundary": "source-bounded Axiom II FIM-solution map; not validation evidence",
+      "context_id": "fep_hpc_upde_synthesis",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve FEP-as-FIM-gradient-descent statement",
+        "preserve UPDE physical-implementation statement",
+        "preserve shared information-geometry synthesis"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_ii_fim_solution.fep_hpc_upde_synthesis",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "synthesis-as-validation control must be rejected",
+        "missing-HPC-FEP-UPDE linkage control must be rejected"
+      ],
+      "null_results": [
+        "FEP/HPC/UPDE synthesis is not empirical validation by itself"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom II: The Language of Information Geometry > The Fisher Information Metric (FIM) as the Solution",
+      "source_block_indices": [
+        775,
+        776,
+        777,
+        778,
+        779,
+        780,
+        781
+      ],
+      "source_equation_ids": [
+        "P0R00780:fep_fim_gradient_descent",
+        "P0R00780:upde_physical_implementation",
+        "P0R00781:g_fim_hpc_fep_upde_shared_geometry"
+      ],
+      "source_formulae": [
+        "FEP is gradient descent on a manifold whose geometry is the FIM",
+        "UPDE is physical implementation of this gradient descent",
+        "fundamental physics g_FIM algorithm HPC/FEP and dynamics UPDE share information geometry",
+        "deep unifying synthesis"
+      ],
+      "source_ledger_ids": [
+        "P0R00775",
+        "P0R00776",
+        "P0R00777",
+        "P0R00778",
+        "P0R00779",
+        "P0R00780",
+        "P0R00781"
+      ],
+      "source_record_ids": [
+        "P0B00775",
+        "P0B00776",
+        "P0B00777",
+        "P0B00778",
+        "P0B00779",
+        "P0B00780",
+        "P0B00781"
+      ],
+      "test_protocols": [
+        "preserve FEP/HPC/UPDE information-geometry synthesis"
+      ],
+      "validation_protocol": "paper0.axiom_ii_fim_solution.fep_hpc_upde_synthesis",
+      "validation_targets": [
+        "preserve FEP-as-FIM-gradient-descent statement",
+        "preserve UPDE physical-implementation statement",
+        "preserve shared information-geometry synthesis"
+      ],
+      "variables": [
+        "g_FIM",
+        "FEP",
+        "HPC",
+        "UPDE",
+        "information_geometry"
+      ]
+    }
+  ],
+  "summary": {
+    "claim_boundary": "source-bounded Axiom II FIM-solution map; not validation evidence",
+    "consumed_source_record_count": 7,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "metric_definition_count": 1,
+    "next_source_boundary": "P0R00782",
+    "physical_statement_count": 2,
+    "source_ledger_span": [
+      "P0R00775",
+      "P0R00781"
+    ],
+    "source_record_count": 7,
+    "spec_count": 4,
+    "spec_keys": [
+      "axiom_ii_fim_solution.metric_definition",
+      "axiom_ii_fim_solution.informational_interaction",
+      "axiom_ii_fim_solution.complexity_coupling",
+      "axiom_ii_fim_solution.fep_hpc_upde_synthesis"
+    ],
+    "synthesis_statement_count": 2,
+    "title": "Paper 0 Axiom II FIM Solution Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

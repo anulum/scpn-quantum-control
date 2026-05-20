@@ -1,0 +1,188 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'XI. The Mathematics of Hierarchy and Scale Invariance' preserves Paper 0 records P0R06057-P0R06062 without empirical validation claims.",
+      "claim_boundary": "source-bounded xi the mathematics of hierarchy and scale invariance source-accounting bridge; not validation evidence",
+      "context_id": "xi_the_mathematics_of_hierarchy_and_scale_invariance",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06057-P0R06062"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "xi_the_mathematics_of_hierarchy_and_scale_invariance.xi_the_mathematics_of_hierarchy_and_scale_invariance",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "xi_the_mathematics_of_hierarchy_and_scale_invariance must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "XI. The Mathematics of Hierarchy and Scale Invariance is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > XI. The Mathematics of Hierarchy and Scale Invariance",
+      "source_block_indices": [
+        6057,
+        6058,
+        6059,
+        6060,
+        6061,
+        6062,
+        6063,
+        6064,
+        6065
+      ],
+      "source_equation_ids": [
+        "P0R06057:xi_the_mathematics_of_hierarchy_and_scale_invariance",
+        "P0R06058:xi_the_mathematics_of_hierarchy_and_scale_invariance",
+        "P0R06059:xi_the_mathematics_of_hierarchy_and_scale_invariance",
+        "P0R06060:xi_the_mathematics_of_hierarchy_and_scale_invariance",
+        "P0R06061:xi_the_mathematics_of_hierarchy_and_scale_invariance",
+        "P0R06062:xi_the_mathematics_of_hierarchy_and_scale_invariance"
+      ],
+      "source_formulae": [
+        "P0R06057: XI. The Mathematics of Hierarchy and Scale Invariance",
+        "P0R06058: The scale invariance of the SCPN (from Quasicriticality) is formalised using Conformal Field Theory (CFT) and Renormalisation Group (RG) flow.",
+        "P0R06059: 1. The SCPN as a Hierarchical CFT:",
+        "P0R06060: We model the SCPN as a hierarchical CFT. The flow of information is governed by the c-theorem (or analogs), where the central charge (c) decreases along the RG flow (L1 to L15), implying information compression while preserving the essential structure (the Cosmic Attractor g).",
+        "P0R06061: 2. Holographic Renormalisation:",
+        "P0R06062: The Unified Phase Dynamics Equation (UPDE) across scales is mathematically equivalent to Holographic Renormalisation, rigorously defining the Inter-Layer Coupling (CInterLayer)."
+      ],
+      "source_ledger_ids": [
+        "P0R06057",
+        "P0R06058",
+        "P0R06059",
+        "P0R06060",
+        "P0R06061",
+        "P0R06062",
+        "P0R06063",
+        "P0R06064",
+        "P0R06065"
+      ],
+      "source_record_ids": [
+        "P0B06057",
+        "P0B06058",
+        "P0B06059",
+        "P0B06060",
+        "P0B06061",
+        "P0B06062",
+        "P0B06063",
+        "P0B06064",
+        "P0B06065"
+      ],
+      "test_protocols": [
+        "preserve XI. The Mathematics of Hierarchy and Scale Invariance source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.xi_the_mathematics_of_hierarchy_and_scale_invariance.xi_the_mathematics_of_hierarchy_and_scale_invariance",
+      "validation_targets": [
+        "preserve records P0R06057-P0R06062"
+      ],
+      "variables": [
+        "xi_the_mathematics_of_hierarchy_and_scale_invariance"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'XII. The Principle of Fractal Self-Similarity (PFSS)' preserves Paper 0 records P0R06063-P0R06065 without empirical validation claims.",
+      "claim_boundary": "source-bounded xi the mathematics of hierarchy and scale invariance source-accounting bridge; not validation evidence",
+      "context_id": "xii_the_principle_of_fractal_self_similarity_pfss",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06063-P0R06065"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "xi_the_mathematics_of_hierarchy_and_scale_invariance.xii_the_principle_of_fractal_self_similarity_pfss",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "xii_the_principle_of_fractal_self_similarity_pfss must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "XII. The Principle of Fractal Self-Similarity (PFSS) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > XI. The Mathematics of Hierarchy and Scale Invariance",
+      "source_block_indices": [
+        6057,
+        6058,
+        6059,
+        6060,
+        6061,
+        6062,
+        6063,
+        6064,
+        6065
+      ],
+      "source_equation_ids": [
+        "P0R06063:xii_the_principle_of_fractal_self_similarity_pfss",
+        "P0R06064:xii_the_principle_of_fractal_self_similarity_pfss",
+        "P0R06065:xii_the_principle_of_fractal_self_similarity_pfss"
+      ],
+      "source_formulae": [
+        "P0R06063: XII. The Principle of Fractal Self-Similarity (PFSS)",
+        "P0R06064: The architecture exhibits fractal self-similarity (Hausdorff dimension D). PFSS optimises information flow (minimising impedance mismatch), enhances robustness (MS-QEC), and facilitates holographic encoding (L9).",
+        "P0R06065: P0R06065"
+      ],
+      "source_ledger_ids": [
+        "P0R06057",
+        "P0R06058",
+        "P0R06059",
+        "P0R06060",
+        "P0R06061",
+        "P0R06062",
+        "P0R06063",
+        "P0R06064",
+        "P0R06065"
+      ],
+      "source_record_ids": [
+        "P0B06057",
+        "P0B06058",
+        "P0B06059",
+        "P0B06060",
+        "P0B06061",
+        "P0B06062",
+        "P0B06063",
+        "P0B06064",
+        "P0B06065"
+      ],
+      "test_protocols": [
+        "preserve XII. The Principle of Fractal Self-Similarity (PFSS) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.xi_the_mathematics_of_hierarchy_and_scale_invariance.xii_the_principle_of_fractal_self_similarity_pfss",
+      "validation_targets": [
+        "preserve records P0R06063-P0R06065"
+      ],
+      "variables": [
+        "xii_the_principle_of_fractal_self_similarity_pfss"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 2,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded xi the mathematics of hierarchy and scale invariance source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R06066",
+    "source_ledger_span": [
+      "P0R06057",
+      "P0R06065"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "xi_the_mathematics_of_hierarchy_and_scale_invariance.xi_the_mathematics_of_hierarchy_and_scale_invariance",
+      "xi_the_mathematics_of_hierarchy_and_scale_invariance.xii_the_principle_of_fractal_self_similarity_pfss"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 XI. The Mathematics of Hierarchy and Scale Invariance Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,356 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)' preserves Paper 0 records P0R03197-P0R03198 without empirical validation claims.",
+      "claim_boundary": "source-bounded i the unifying computational principle hierarchical predictive coding hp source-accounting bridge; not validation evidence",
+      "context_id": "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03197-P0R03198"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.i_the_unifying_computational_principle_hierarchical_predictive_coding_hp",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+      "source_block_indices": [
+        3197,
+        3198,
+        3199,
+        3200,
+        3201,
+        3202,
+        3203,
+        3204,
+        3205,
+        3206,
+        3207
+      ],
+      "source_equation_ids": [
+        "P0R03197:i_the_unifying_computational_principle_hierarchical_predictive_coding_hp",
+        "P0R03198:i_the_unifying_computational_principle_hierarchical_predictive_coding_hp"
+      ],
+      "source_formulae": [
+        "P0R03197: I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+        "P0R03198: The bidirectional flow of the SCPN (projection downward, filtering upward) is unified under a single computational imperative: the minimisation of Variational Free Energy (F), implemented via Hierarchical Predictive Coding (HPC)."
+      ],
+      "source_ledger_ids": [
+        "P0R03197",
+        "P0R03198",
+        "P0R03199",
+        "P0R03200",
+        "P0R03201",
+        "P0R03202",
+        "P0R03203",
+        "P0R03204",
+        "P0R03205",
+        "P0R03206",
+        "P0R03207"
+      ],
+      "source_record_ids": [
+        "P0B03197",
+        "P0B03198",
+        "P0B03199",
+        "P0B03200",
+        "P0B03201",
+        "P0B03202",
+        "P0B03203",
+        "P0B03204",
+        "P0B03205",
+        "P0B03206",
+        "P0B03207"
+      ],
+      "test_protocols": [
+        "preserve I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.i_the_unifying_computational_principle_hierarchical_predictive_coding_hp",
+      "validation_targets": [
+        "preserve records P0R03197-P0R03198"
+      ],
+      "variables": [
+        "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Generative Model (Downward Projection):' preserves Paper 0 records P0R03199-P0R03200 without empirical validation claims.",
+      "claim_boundary": "source-bounded i the unifying computational principle hierarchical predictive coding hp source-accounting bridge; not validation evidence",
+      "context_id": "1_the_generative_model_downward_projection",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03199-P0R03200"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.1_the_generative_model_downward_projection",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_generative_model_downward_projection must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Generative Model (Downward Projection): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+      "source_block_indices": [
+        3197,
+        3198,
+        3199,
+        3200,
+        3201,
+        3202,
+        3203,
+        3204,
+        3205,
+        3206,
+        3207
+      ],
+      "source_equation_ids": [
+        "P0R03199:1_the_generative_model_downward_projection",
+        "P0R03200:1_the_generative_model_downward_projection"
+      ],
+      "source_formulae": [
+        "P0R03199: 1. The Generative Model (Downward Projection):",
+        "P0R03200: The downward flow (L15 to L1) constitutes the system's generative model. Each higher layer (L+1) generates predictions (P(SLSL+1)) about the layer below (L)."
+      ],
+      "source_ledger_ids": [
+        "P0R03197",
+        "P0R03198",
+        "P0R03199",
+        "P0R03200",
+        "P0R03201",
+        "P0R03202",
+        "P0R03203",
+        "P0R03204",
+        "P0R03205",
+        "P0R03206",
+        "P0R03207"
+      ],
+      "source_record_ids": [
+        "P0B03197",
+        "P0B03198",
+        "P0B03199",
+        "P0B03200",
+        "P0B03201",
+        "P0B03202",
+        "P0B03203",
+        "P0B03204",
+        "P0B03205",
+        "P0B03206",
+        "P0B03207"
+      ],
+      "test_protocols": [
+        "preserve 1. The Generative Model (Downward Projection): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.1_the_generative_model_downward_projection",
+      "validation_targets": [
+        "preserve records P0R03199-P0R03200"
+      ],
+      "variables": [
+        "1_the_generative_model_downward_projection"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. Inference and Error (Upward Filtering):' preserves Paper 0 records P0R03201-P0R03203 without empirical validation claims.",
+      "claim_boundary": "source-bounded i the unifying computational principle hierarchical predictive coding hp source-accounting bridge; not validation evidence",
+      "context_id": "2_inference_and_error_upward_filtering",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03201-P0R03203"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.2_inference_and_error_upward_filtering",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_inference_and_error_upward_filtering must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Inference and Error (Upward Filtering): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+      "source_block_indices": [
+        3197,
+        3198,
+        3199,
+        3200,
+        3201,
+        3202,
+        3203,
+        3204,
+        3205,
+        3206,
+        3207
+      ],
+      "source_equation_ids": [
+        "P0R03201:2_inference_and_error_upward_filtering",
+        "P0R03202:2_inference_and_error_upward_filtering",
+        "P0R03203:2_inference_and_error_upward_filtering"
+      ],
+      "source_formulae": [
+        "P0R03201: 2. Inference and Error (Upward Filtering):",
+        "P0R03202: The upward flow performs Bayesian inference, updating the model via the propagation of Prediction Errors (EL).",
+        "P0R03203: $EL = SL - Prediction(SL + 1)$"
+      ],
+      "source_ledger_ids": [
+        "P0R03197",
+        "P0R03198",
+        "P0R03199",
+        "P0R03200",
+        "P0R03201",
+        "P0R03202",
+        "P0R03203",
+        "P0R03204",
+        "P0R03205",
+        "P0R03206",
+        "P0R03207"
+      ],
+      "source_record_ids": [
+        "P0B03197",
+        "P0B03198",
+        "P0B03199",
+        "P0B03200",
+        "P0B03201",
+        "P0B03202",
+        "P0B03203",
+        "P0B03204",
+        "P0B03205",
+        "P0B03206",
+        "P0B03207"
+      ],
+      "test_protocols": [
+        "preserve 2. Inference and Error (Upward Filtering): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.2_inference_and_error_upward_filtering",
+      "validation_targets": [
+        "preserve records P0R03201-P0R03203"
+      ],
+      "variables": [
+        "2_inference_and_error_upward_filtering"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '3. Optimisation (Free Energy Minimisation):' preserves Paper 0 records P0R03204-P0R03207 without empirical validation claims.",
+      "claim_boundary": "source-bounded i the unifying computational principle hierarchical predictive coding hp source-accounting bridge; not validation evidence",
+      "context_id": "3_optimisation_free_energy_minimisation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03204-P0R03207"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.3_optimisation_free_energy_minimisation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_optimisation_free_energy_minimisation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. Optimisation (Free Energy Minimisation): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+      "source_block_indices": [
+        3197,
+        3198,
+        3199,
+        3200,
+        3201,
+        3202,
+        3203,
+        3204,
+        3205,
+        3206,
+        3207
+      ],
+      "source_equation_ids": [
+        "P0R03204:3_optimisation_free_energy_minimisation",
+        "P0R03205:3_optimisation_free_energy_minimisation",
+        "P0R03206:3_optimisation_free_energy_minimisation",
+        "P0R03207:3_optimisation_free_energy_minimisation"
+      ],
+      "source_formulae": [
+        "P0R03204: 3. Optimisation (Free Energy Minimisation):",
+        "P0R03205: The SCPN seeks to minimise the global Variational Free Energy (F):",
+        "P0R03206: $FGlobal = \\sum_{}^{}L = 115 FL$",
+        "P0R03207: Minimising F optimises the internal model of existence, driving both action (adjusting the world to the model) and perception (adjusting the model to the world)."
+      ],
+      "source_ledger_ids": [
+        "P0R03197",
+        "P0R03198",
+        "P0R03199",
+        "P0R03200",
+        "P0R03201",
+        "P0R03202",
+        "P0R03203",
+        "P0R03204",
+        "P0R03205",
+        "P0R03206",
+        "P0R03207"
+      ],
+      "source_record_ids": [
+        "P0B03197",
+        "P0B03198",
+        "P0B03199",
+        "P0B03200",
+        "P0B03201",
+        "P0B03202",
+        "P0B03203",
+        "P0B03204",
+        "P0B03205",
+        "P0B03206",
+        "P0B03207"
+      ],
+      "test_protocols": [
+        "preserve 3. Optimisation (Free Energy Minimisation): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.3_optimisation_free_energy_minimisation",
+      "validation_targets": [
+        "preserve records P0R03204-P0R03207"
+      ],
+      "variables": [
+        "3_optimisation_free_energy_minimisation"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 3,
+      "equation": 2,
+      "mechanism": 3,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded i the unifying computational principle hierarchical predictive coding hp source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0046",
+      "EQ0047"
+    ],
+    "next_source_boundary": "P0R03208",
+    "source_ledger_span": [
+      "P0R03197",
+      "P0R03207"
+    ],
+    "source_record_count": 11,
+    "spec_count": 4,
+    "spec_keys": [
+      "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.i_the_unifying_computational_principle_hierarchical_predictive_coding_hp",
+      "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.1_the_generative_model_downward_projection",
+      "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.2_inference_and_error_upward_filtering",
+      "i_the_unifying_computational_principle_hierarchical_predictive_coding_hp.3_optimisation_free_energy_minimisation"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 I. The Unifying Computational Principle: Hierarchical Predictive Coding (HPC) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

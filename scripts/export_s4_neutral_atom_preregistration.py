@@ -144,7 +144,7 @@ def build_neutral_atom_dossier(payload: dict[str, Any] | None = None) -> Hardwar
             "s4_readiness": str(READINESS_PATH.relative_to(REPO_ROOT)),
             "preregistration_script": "scripts/export_s4_neutral_atom_preregistration.py",
             "bench_command": "scpn-bench s4-neutral-atom-preregistration",
-            "readiness_doc": f"docs/s4_multi_hardware_readiness_{DATE}.md",
+            "readiness_doc": f"docs/campaigns/s4_multi_hardware_readiness_{DATE}.md",
         },
         prerequisites=(
             "install or verify provider SDK versions in an isolated environment",

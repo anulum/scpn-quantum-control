@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "source-bounded section 3 2 coherence c and the accessibility of trajectories source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "3_2_coherence_c_and_the_accessibility_of_trajectories": "3_2_coherence_c_and_the_accessibility_of_trajectories_source_boundary",
+    "x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics": "x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3.2 Coherence (C) and the Accessibility of Trajectories",
+    "component_2": "X.3.3 Qualia Capacity (Q) and the Diversity of Dynamics",
+    "component_count": "2",
+    "next_boundary": "P0R03804",
+    "section": "3.2 Coherence (C) and the Accessibility of Trajectories",
+    "source_span": "P0R03789-P0R03803"
+  },
+  "next_source_boundary": "P0R03804",
+  "null_controls": {
+    "3_2_coherence_c_and_the_accessibility_of_trajectories_is_not_empirical_validation_evidence": 1.0,
+    "x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 2 coherence c and the accessibility of trajectories source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_2_coherence_c_and_the_accessibility_of_trajectories_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03789",
+      "P0R03790",
+      "P0R03791",
+      "P0R03792",
+      "P0R03793",
+      "P0R03794",
+      "P0R03795",
+      "P0R03796",
+      "P0R03797",
+      "P0R03798",
+      "P0R03799",
+      "P0R03800",
+      "P0R03801",
+      "P0R03802",
+      "P0R03803"
+    ],
+    "source_ledger_span": [
+      "P0R03789",
+      "P0R03803"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03789",
+    "P0R03803"
+  ],
+  "source_record_count": 15
+}

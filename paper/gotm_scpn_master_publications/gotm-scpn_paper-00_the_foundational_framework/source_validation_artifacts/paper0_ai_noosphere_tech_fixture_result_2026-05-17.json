@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded ai noosphere tech source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "ai_culture_and_noosphere_dynamics": "ai_culture_and_noosphere_dynamics_source_boundary",
+    "ai_noosphere_tech": "ai_noosphere_tech_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "AI, Noosphere & Tech",
+    "component_2": "AI, Culture, and Noosphere Dynamics",
+    "component_count": "2",
+    "next_boundary": "P0R05810",
+    "section": " AI, Noosphere & Tech",
+    "source_span": "P0R05802-P0R05809"
+  },
+  "next_source_boundary": "P0R05810",
+  "null_controls": {
+    "ai_culture_and_noosphere_dynamics_is_not_empirical_validation_evidence": 1.0,
+    "ai_noosphere_tech_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded ai noosphere tech source-accounting bridge; not validation evidence",
+    "protocol_state": "source_ai_noosphere_tech_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05802",
+      "P0R05803",
+      "P0R05804",
+      "P0R05805",
+      "P0R05806",
+      "P0R05807",
+      "P0R05808",
+      "P0R05809"
+    ],
+    "source_ledger_span": [
+      "P0R05802",
+      "P0R05809"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05802",
+    "P0R05809"
+  ],
+  "source_record_count": 8
+}

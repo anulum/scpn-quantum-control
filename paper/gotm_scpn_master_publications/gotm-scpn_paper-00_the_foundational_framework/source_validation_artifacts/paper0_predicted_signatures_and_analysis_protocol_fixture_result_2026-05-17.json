@@ -1,0 +1,43 @@
+{
+  "claim_boundary": "source-bounded predicted signatures and analysis protocol source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "predicted_signatures_and_analysis_protocol": "predicted_signatures_and_analysis_protocol_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Predicted Signatures and Analysis Protocol",
+    "component_count": "1",
+    "next_boundary": "P0R05273",
+    "section": "Predicted Signatures and Analysis Protocol",
+    "source_span": "P0R05264-P0R05272"
+  },
+  "next_source_boundary": "P0R05273",
+  "null_controls": {
+    "predicted_signatures_and_analysis_protocol_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded predicted signatures and analysis protocol source-accounting bridge; not validation evidence",
+    "protocol_state": "source_predicted_signatures_and_analysis_protocol_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05264",
+      "P0R05265",
+      "P0R05266",
+      "P0R05267",
+      "P0R05268",
+      "P0R05269",
+      "P0R05270",
+      "P0R05271",
+      "P0R05272"
+    ],
+    "source_ledger_span": [
+      "P0R05264",
+      "P0R05272"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05264",
+    "P0R05272"
+  ],
+  "source_record_count": 9
+}

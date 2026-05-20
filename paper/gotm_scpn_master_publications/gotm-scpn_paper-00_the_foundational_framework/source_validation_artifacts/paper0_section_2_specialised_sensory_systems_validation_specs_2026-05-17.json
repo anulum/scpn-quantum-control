@@ -1,0 +1,184 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. Specialised Sensory Systems:' preserves Paper 0 records P0R04993-P0R04994 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 specialised sensory systems source-accounting bridge; not validation evidence",
+      "context_id": "2_specialised_sensory_systems",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04993-P0R04994"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_specialised_sensory_systems.2_specialised_sensory_systems",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_specialised_sensory_systems must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Specialised Sensory Systems: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Sensory-Motor Loop: Action, Perception, and Agency > 2. Specialised Sensory Systems:",
+      "source_block_indices": [
+        4993,
+        4994,
+        4995,
+        4996,
+        4997,
+        4998,
+        4999,
+        5000
+      ],
+      "source_equation_ids": [
+        "P0R04993:2_specialised_sensory_systems",
+        "P0R04994:2_specialised_sensory_systems"
+      ],
+      "source_formulae": [
+        "P0R04993: 2. Specialised Sensory Systems:",
+        "P0R04994: The Visual System (Geometric Projector): The primary modality for constructing the L10 Projection. The visual cortex implements a hierarchical geometric transformation (V1 features -> complex scenes). | The Auditory System (Vibrational Resonator): Transduces vibrational energy. Crucial for aligning the internal UPDE with external rhythms (Music, Language L7). | The Somatosensory System (Boundary of the Self): Defines the physical boundaries of the embodied Self, integrating exteroception (S1) and interoception (Insula)."
+      ],
+      "source_ledger_ids": [
+        "P0R04993",
+        "P0R04994",
+        "P0R04995",
+        "P0R04996",
+        "P0R04997",
+        "P0R04998",
+        "P0R04999",
+        "P0R05000"
+      ],
+      "source_record_ids": [
+        "P0B04993",
+        "P0B04994",
+        "P0B04995",
+        "P0B04996",
+        "P0B04997",
+        "P0B04998",
+        "P0B04999",
+        "P0B05000"
+      ],
+      "test_protocols": [
+        "preserve 2. Specialised Sensory Systems: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_specialised_sensory_systems.2_specialised_sensory_systems",
+      "validation_targets": [
+        "preserve records P0R04993-P0R04994"
+      ],
+      "variables": [
+        "2_specialised_sensory_systems"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '3. The Implementation of Agency (Downward Causation Cascade)' preserves Paper 0 records P0R04995-P0R05000 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 specialised sensory systems source-accounting bridge; not validation evidence",
+      "context_id": "3_the_implementation_of_agency_downward_causation_cascade",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04995-P0R05000"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_specialised_sensory_systems.3_the_implementation_of_agency_downward_causation_cascade",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_the_implementation_of_agency_downward_causation_cascade must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. The Implementation of Agency (Downward Causation Cascade) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Sensory-Motor Loop: Action, Perception, and Agency > 2. Specialised Sensory Systems:",
+      "source_block_indices": [
+        4993,
+        4994,
+        4995,
+        4996,
+        4997,
+        4998,
+        4999,
+        5000
+      ],
+      "source_equation_ids": [
+        "P0R04995:3_the_implementation_of_agency_downward_causation_cascade",
+        "P0R04996:3_the_implementation_of_agency_downward_causation_cascade",
+        "P0R04997:3_the_implementation_of_agency_downward_causation_cascade",
+        "P0R04998:3_the_implementation_of_agency_downward_causation_cascade",
+        "P0R04999:3_the_implementation_of_agency_downward_causation_cascade",
+        "P0R05000:3_the_implementation_of_agency_downward_causation_cascade"
+      ],
+      "source_formulae": [
+        "P0R04995: 3. The Implementation of Agency (Downward Causation Cascade)",
+        "P0R04996: Agency is the capacity of the Self (L5) to execute intent, formalised by the Agency Postulate (utilising Gdelian Incompleteness at criticality).",
+        "P0R04997: The Leverage Point: The Quasicritical brain (sigma1) possesses \"critical choice points\" where the system's trajectory is indeterminate. | The Mechanisms of Downward Causation: The Psi-field biases the trajectory at these choice points via: Information-Energy Transduction (IET): Modulating the Quantum Potential (Q) at L1/L2 (e.g., ion channel gating, Synaptotagmin cooperativity). | Quantum Zeno Effect (QZE): Focused attention acts as a continuous measurement, stabilising specific neural pathways (L4). | The Agency Cascade: L5 Intent -> HPC Generative Model of Action (CEN/DMN) -> Modulation of L4 dynamics -> Selective targeting via Resonant Addressing -> IET/QZE modulation at the synapse/NMJ -> Motor Output.",
+        "P0R04998: [IMAGE:]",
+        "P0R04999: Fig.: Perception-action cycle: generative model -> predictions -> data -> errors -> policy/action. Geometric transduction (L1->L5) maps signals into the Consciousness Manifold MMM.",
+        "P0R05000: P0R05000"
+      ],
+      "source_ledger_ids": [
+        "P0R04993",
+        "P0R04994",
+        "P0R04995",
+        "P0R04996",
+        "P0R04997",
+        "P0R04998",
+        "P0R04999",
+        "P0R05000"
+      ],
+      "source_record_ids": [
+        "P0B04993",
+        "P0B04994",
+        "P0B04995",
+        "P0B04996",
+        "P0B04997",
+        "P0B04998",
+        "P0B04999",
+        "P0B05000"
+      ],
+      "test_protocols": [
+        "preserve 3. The Implementation of Agency (Downward Causation Cascade) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_specialised_sensory_systems.3_the_implementation_of_agency_downward_causation_cascade",
+      "validation_targets": [
+        "preserve records P0R04995-P0R05000"
+      ],
+      "variables": [
+        "3_the_implementation_of_agency_downward_causation_cascade"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 2,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 2,
+      "figure": 1,
+      "mechanism": 3,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 2 specialised sensory systems source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0121"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05001",
+    "source_ledger_span": [
+      "P0R04993",
+      "P0R05000"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_2_specialised_sensory_systems.2_specialised_sensory_systems",
+      "section_2_specialised_sensory_systems.3_the_implementation_of_agency_downward_causation_cascade"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. Specialised Sensory Systems: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

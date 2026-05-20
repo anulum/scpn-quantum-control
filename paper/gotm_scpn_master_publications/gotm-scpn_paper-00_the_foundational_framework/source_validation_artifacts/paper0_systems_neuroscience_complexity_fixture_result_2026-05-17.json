@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded systems neuroscience complexity source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "neuroscience_cognitive_science": "neuroscience_cognitive_science_source_boundary",
+    "systems_neuroscience_complexity": "systems_neuroscience_complexity_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Systems Neuroscience & Complexity",
+    "component_2": "Neuroscience & Cognitive Science",
+    "component_count": "2",
+    "next_boundary": "P0R05705",
+    "section": " Systems Neuroscience & Complexity",
+    "source_span": "P0R05697-P0R05704"
+  },
+  "next_source_boundary": "P0R05705",
+  "null_controls": {
+    "neuroscience_cognitive_science_is_not_empirical_validation_evidence": 1.0,
+    "systems_neuroscience_complexity_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded systems neuroscience complexity source-accounting bridge; not validation evidence",
+    "protocol_state": "source_systems_neuroscience_complexity_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05697",
+      "P0R05698",
+      "P0R05699",
+      "P0R05700",
+      "P0R05701",
+      "P0R05702",
+      "P0R05703",
+      "P0R05704"
+    ],
+    "source_ledger_span": [
+      "P0R05697",
+      "P0R05704"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05697",
+    "P0R05704"
+  ],
+  "source_record_count": 8
+}

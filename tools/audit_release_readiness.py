@@ -30,12 +30,9 @@ VERSION_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 REQUIRED_RELEASE_ARTIFACTS: tuple[str, ...] = (
-    "docs/coverage_justified_exclusions_2026-05-18.json",
-    "docs/coverage_gap_audit_2026-05-06.md",
-    "docs/behavioural_test_audit_closure_2026-05-06.md",
-    "docs/paper0_validation_register.md",
-    "docs/paper0_experimental_pathway.md",
-    "docs/paper0_knm_measured_coupling_evidence_checklist.md",
+    "docs/paper0/paper0_validation_register.md",
+    "docs/paper0/paper0_experimental_pathway.md",
+    "docs/paper0/paper0_knm_measured_coupling_evidence_checklist.md",
     "data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json",
     "data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json",
     "data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json",
@@ -373,7 +370,12 @@ def audit_release_readiness(
     project_root = project_root.resolve()
     if justified_exclusions is None:
         default_exclusions = (
-            project_root / "docs" / "coverage_justified_exclusions_2026-05-18.json"
+            project_root
+            / "docs"
+            / "internal"
+            / "audits"
+            / "release_readiness"
+            / "coverage_justified_exclusions_2026-05-18.json"
         )
         justified_exclusions = default_exclusions if default_exclusions.exists() else None
     checks = (

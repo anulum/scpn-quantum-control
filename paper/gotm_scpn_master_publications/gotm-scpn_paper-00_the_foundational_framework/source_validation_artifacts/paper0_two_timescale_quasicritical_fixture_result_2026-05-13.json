@@ -1,0 +1,79 @@
+{
+  "claim_boundary": "source-bounded two-timescale quasicritical controller simulator contract; not empirical evidence",
+  "config_thresholds": {
+    "alpha_f": 1.2,
+    "alpha_s": 0.4,
+    "beta": 0.75,
+    "delta": 0.08,
+    "max_timescale_ratio": 0.1
+  },
+  "hardware_status": "simulator_only_no_provider_submission",
+  "high_surprise_fast_gain": 1.6079999999999999,
+  "high_surprise_slow_gain": 0.024256869968548478,
+  "low_surprise_fast_gain": 0.24300000000000002,
+  "low_surprise_slow_gain": 0.9450553913108126,
+  "lyapunov_drift_upper_bound": -0.05899999999999998,
+  "lyapunov_value": 0.07,
+  "null_controls": {
+    "invalid_delta_rejection_label": 1.0,
+    "invalid_timescale_rejection_label": 1.0,
+    "unsupported_bibo_empirical_claim_rejection_label": 1.0
+  },
+  "outside_band_slow_gain": 0.0,
+  "problem_metadata": {
+    "claim_boundary": "source-bounded two-timescale quasicritical controller simulator contract; not empirical evidence",
+    "controller_channels": [
+      "fast_stabilizer",
+      "slow_explorer"
+    ],
+    "source_ledger_ids": [
+      "P0R06646",
+      "P0R06647",
+      "P0R06648",
+      "P0R06649",
+      "P0R06650",
+      "P0R06651",
+      "P0R06652",
+      "P0R06653",
+      "P0R06654",
+      "P0R06655",
+      "P0R06656",
+      "P0R06657",
+      "P0R06658",
+      "P0R06659",
+      "P0R06660",
+      "P0R06661",
+      "P0R06662",
+      "P0R06663",
+      "P0R06664",
+      "P0R06665",
+      "P0R06666",
+      "P0R06667",
+      "P0R06668",
+      "P0R06669",
+      "P0R06670",
+      "P0R06671",
+      "P0R06672",
+      "P0R06673",
+      "P0R06674",
+      "P0R06675",
+      "P0R06676"
+    ],
+    "source_ledger_span": [
+      "P0R06646",
+      "P0R06676"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06646",
+    "P0R06676"
+  ],
+  "spec_keys": [
+    "two_timescale_quasicritical.block_framing",
+    "two_timescale_quasicritical.dual_channel_architecture",
+    "two_timescale_quasicritical.affective_gain_scheduling",
+    "two_timescale_quasicritical.bibo_stability_certificate",
+    "two_timescale_quasicritical.operational_consequence"
+  ],
+  "timescale_ratio": 0.04
+}

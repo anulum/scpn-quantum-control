@@ -1,0 +1,116 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4.1 The Composite Functional for Causal Path Entropy' preserves Paper 0 records P0R03818-P0R03825 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 1 the composite functional for causal path entropy source-accounting bridge; not validation evidence",
+      "context_id": "4_1_the_composite_functional_for_causal_path_entropy",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03818-P0R03825"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_1_the_composite_functional_for_causal_path_entropy.4_1_the_composite_functional_for_causal_path_entropy",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_1_the_composite_functional_for_causal_path_entropy must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4.1 The Composite Functional for Causal Path Entropy is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 4. The Formal Equivalence of SEC and SC\u200b > 4.1 The Composite Functional for Causal Path Entropy",
+      "source_block_indices": [
+        3818,
+        3819,
+        3820,
+        3821,
+        3822,
+        3823,
+        3824,
+        3825
+      ],
+      "source_equation_ids": [
+        "P0R03818:4_1_the_composite_functional_for_causal_path_entropy",
+        "P0R03819:4_1_the_composite_functional_for_causal_path_entropy",
+        "P0R03820:4_1_the_composite_functional_for_causal_path_entropy",
+        "P0R03821:4_1_the_composite_functional_for_causal_path_entropy",
+        "P0R03822:4_1_the_composite_functional_for_causal_path_entropy",
+        "P0R03823:4_1_the_composite_functional_for_causal_path_entropy",
+        "P0R03824:4_1_the_composite_functional_for_causal_path_entropy",
+        "P0R03825:4_1_the_composite_functional_for_causal_path_entropy"
+      ],
+      "source_formulae": [
+        "P0R03818: 4.1 The Composite Functional for Causal Path Entropy",
+        "P0R03819: We can construct a functional form for SC that makes its dependence on the metrics for C, K, and Q explicit. The total \"volume\" of the accessible path space, Wpaths, can be approximated as the product of three factors: the number of distinguishable states the system can occupy (Nstates), the fraction of these states that are dynamically accessible and stable (facc), and a factor representing the diversity of the path types (Dpaths).",
+        "P0R03820: WpathsNstatesfaccDpaths",
+        "P0R03821: From our analysis:",
+        "P0R03822: Nstates is a monotonically increasing function of Complexity (K), as measured by . | facc is maximised when Coherence (C) is tuned to the quasicritical point. | Dpaths is a monotonically increasing function of Qualia Capacity (Q), as measured by the topological complexity of the state space.",
+        "P0R03823: The causal path entropy is the logarithm of this volume:",
+        "P0R03824: $SC = kB ln(Wpaths) \\approx kB\\left( \\ln\\left( Nstates(K) \\right) + ln\\left( facc(C) \\right) + ln\\left( Dpaths(Q) \\right) \\right)$",
+        "P0R03825: This expression demonstrates that SC is a composite function that is maximised only when K, C, and Q are jointly maximised."
+      ],
+      "source_ledger_ids": [
+        "P0R03818",
+        "P0R03819",
+        "P0R03820",
+        "P0R03821",
+        "P0R03822",
+        "P0R03823",
+        "P0R03824",
+        "P0R03825"
+      ],
+      "source_record_ids": [
+        "P0B03818",
+        "P0B03819",
+        "P0B03820",
+        "P0B03821",
+        "P0B03822",
+        "P0B03823",
+        "P0B03824",
+        "P0B03825"
+      ],
+      "test_protocols": [
+        "preserve 4.1 The Composite Functional for Causal Path Entropy source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_1_the_composite_functional_for_causal_path_entropy.4_1_the_composite_functional_for_causal_path_entropy",
+      "validation_targets": [
+        "preserve records P0R03818-P0R03825"
+      ],
+      "variables": [
+        "4_1_the_composite_functional_for_causal_path_entropy"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 1,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 7,
+      "equation": 1
+    },
+    "claim_boundary": "source-bounded section 4 1 the composite functional for causal path entropy source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0072"
+    ],
+    "next_source_boundary": "P0R03826",
+    "source_ledger_span": [
+      "P0R03818",
+      "P0R03825"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "section_4_1_the_composite_functional_for_causal_path_entropy.4_1_the_composite_functional_for_causal_path_entropy"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4.1 The Composite Functional for Causal Path Entropy Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

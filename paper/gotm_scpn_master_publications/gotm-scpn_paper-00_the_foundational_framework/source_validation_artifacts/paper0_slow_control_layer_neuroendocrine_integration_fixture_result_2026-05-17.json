@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "source-bounded slow control layer neuroendocrine integration source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "hormonal_modulation_as_a_third_control_layer": "hormonal_modulation_as_a_third_control_layer_source_boundary",
+    "slow_control_layer_neuroendocrine_integration": "slow_control_layer_neuroendocrine_integration_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Slow Control Layer: Neuroendocrine Integration",
+    "component_2": "Hormonal Modulation as a Third Control Layer",
+    "component_count": "2",
+    "next_boundary": "P0R05445",
+    "section": "Slow Control Layer: Neuroendocrine Integration",
+    "source_span": "P0R05430-P0R05444"
+  },
+  "next_source_boundary": "P0R05445",
+  "null_controls": {
+    "hormonal_modulation_as_a_third_control_layer_is_not_empirical_validation_evidence": 1.0,
+    "slow_control_layer_neuroendocrine_integration_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded slow control layer neuroendocrine integration source-accounting bridge; not validation evidence",
+    "protocol_state": "source_slow_control_layer_neuroendocrine_integration_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05430",
+      "P0R05431",
+      "P0R05432",
+      "P0R05433",
+      "P0R05434",
+      "P0R05435",
+      "P0R05436",
+      "P0R05437",
+      "P0R05438",
+      "P0R05439",
+      "P0R05440",
+      "P0R05441",
+      "P0R05442",
+      "P0R05443",
+      "P0R05444"
+    ],
+    "source_ledger_span": [
+      "P0R05430",
+      "P0R05444"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05430",
+    "P0R05444"
+  ],
+  "source_record_count": 15
+}

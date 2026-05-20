@@ -87,7 +87,7 @@ PYTHONDONTWRITEBYTECODE=1 python scripts/report_s2_scaling_claim_boundary.py
 It records allowed claims, forbidden claims, remaining blockers, validation
 state, and the protocol claim boundary for the current rows.
 
-`docs/s2_scaling_readiness_index_2026-05-06.md` summarises the current lite
+`docs/campaigns/s2_scaling_readiness_index_2026-05-06.md` summarises the current lite
 baseline rows, allowed claims, forbidden claims, full-campaign blockers, and
 hardware boundary.
 
@@ -262,7 +262,7 @@ records depth/gate summaries, and writes a readiness artefact under
 and remains blocked unless the depth/gate guards and the 20-minute QPU ceiling
 pass.
 
-`docs/s3_design_readiness_index_2026-05-06.md` records allowed claims,
+`docs/campaigns/s3_design_readiness_index_2026-05-06.md` records allowed claims,
 forbidden claims, and the follow-up path for S3.
 
 **Hardware:** ML350 Gen8, 2× Xeon E5-2650v2, 128 GB RAM, Ubuntu 24.04.
@@ -1322,7 +1322,7 @@ Command:
 scpn-bench s4-multi-hardware-ready
 ```
 
-Regenerates `data/s4_multi_hardware_control/s4_multi_hardware_readiness_2026-05-06.json` and `docs/s4_multi_hardware_readiness_2026-05-06.md`. The harness compiles the Kuramoto-XY programme into neutral-atom and circuit-QED analogue forms, exports Pulser, Bloqade, and IBM pulse-level provider payloads, and wraps each route in an approval-gated execution plan. It performs no provider contact, no emulator execution, and no QPU submission.
+Regenerates `data/s4_multi_hardware_control/s4_multi_hardware_readiness_2026-05-06.json` and `docs/campaigns/s4_multi_hardware_readiness_2026-05-06.md`. The harness compiles the Kuramoto-XY programme into neutral-atom and circuit-QED analogue forms, exports Pulser, Bloqade, and IBM pulse-level provider payloads, and wraps each route in an approval-gated execution plan. It performs no provider contact, no emulator execution, and no QPU submission.
 
 ### S4 IBM pulse-level preregistration
 
@@ -1332,7 +1332,7 @@ Command:
 scpn-bench s4-provider-preregistration
 ```
 
-Regenerates `data/s4_multi_hardware_control/s4_ibm_pulse_preregistration_2026-05-06.json` and `docs/s4_ibm_pulse_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the IBM pulse-level route as a calibration-review dossier. It performs no provider contact, creates no calibrated pulse schedule, and requests no QPU time.
+Regenerates `data/s4_multi_hardware_control/s4_ibm_pulse_preregistration_2026-05-06.json` and `docs/campaigns/s4_ibm_pulse_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the IBM pulse-level route as a calibration-review dossier. It performs no provider contact, creates no calibrated pulse schedule, and requests no QPU time.
 
 ### S4 neutral-atom preregistration
 
@@ -1342,7 +1342,7 @@ Command:
 scpn-bench s4-neutral-atom-preregistration
 ```
 
-Regenerates `data/s4_multi_hardware_control/s4_neutral_atom_preregistration_2026-05-06.json` and `docs/s4_neutral_atom_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the Pulser/Bloqade neutral-atom routes as provider-object construction review dossiers. It performs no provider SDK construction, no emulator run, no cloud contact, and no QPU submission.
+Regenerates `data/s4_multi_hardware_control/s4_neutral_atom_preregistration_2026-05-06.json` and `docs/campaigns/s4_neutral_atom_preregistration_2026-05-06.md`. The harness reads the S4 readiness payload and packages the Pulser/Bloqade neutral-atom routes as provider-object construction review dossiers. It performs no provider SDK construction, no emulator run, no cloud contact, and no QPU submission.
 
 ### S5 benchmark suite
 
@@ -1352,7 +1352,7 @@ Command:
 scpn-bench s5-benchmark-suite
 ```
 
-Regenerates `data/s5_benchmark_harness/phase1_benchmark_harness_2026-05-06.json` and `docs/benchmark_harness_phase1_2026-05-06.md`. The harness exposes the Phase 1 DLA-parity raw-count dataset through `scpn_quantum_control.benchmark_harness`, recomputes the published statistics, checks the noiseless classical parity-conservation baseline, and performs no QPU submission.
+Regenerates `data/s5_benchmark_harness/phase1_benchmark_harness_2026-05-06.json` and `docs/campaigns/benchmark_harness_phase1_2026-05-06.md`. The harness exposes the Phase 1 DLA-parity raw-count dataset through `scpn_quantum_control.benchmark_harness`, recomputes the published statistics, checks the noiseless classical parity-conservation baseline, and performs no QPU submission.
 
 ### S5 benchmark registry
 
@@ -1362,7 +1362,7 @@ Command:
 scpn-bench s5-benchmark-registry
 ```
 
-Regenerates `data/s5_benchmark_harness/benchmark_registry_2026-05-06.json` and `docs/benchmark_harness_registry_2026-05-06.md`. The registry lists implemented and planned benchmark families separately so CHSH, BKT, OTOC, and DLA-dimension plans are visible without being presented as available benchmark results.
+Regenerates `data/s5_benchmark_harness/benchmark_registry_2026-05-06.json` and `docs/campaigns/benchmark_harness_registry_2026-05-06.md`. The registry lists implemented and planned benchmark families separately so CHSH, BKT, OTOC, and DLA-dimension plans are visible without being presented as available benchmark results.
 
 ### S6 quantum-kuramoto split audit
 
@@ -1372,7 +1372,7 @@ Command:
 scpn-bench s6-split-audit
 ```
 
-Regenerates `data/s6_quantum_kuramoto_split/quantum_kuramoto_split_audit_2026-05-07.json` and `docs/quantum_kuramoto_split_audit_2026-05-07.md`. The audit classifies candidate `phase`, `bridge`, `hardware`, and `accel` modules as reusable, needs-review, or SCPN-specific. It does not create or publish a second package.
+Regenerates `data/s6_quantum_kuramoto_split/quantum_kuramoto_split_audit_2026-05-07.json` and an internal split-audit note. The audit classifies candidate `phase`, `bridge`, `hardware`, and `accel` modules as reusable, needs-review, or SCPN-specific. It does not create or publish a second package.
 
 ### S6 quantum-kuramoto boundary review
 
@@ -1382,4 +1382,4 @@ Command:
 scpn-bench s6-boundary-review
 ```
 
-Regenerates `data/s6_quantum_kuramoto_split/quantum_kuramoto_boundary_review_2026-05-07.json` and `docs/quantum_kuramoto_boundary_review_2026-05-07.md`. The review proposes a stable public API surface, documents decisions for needs-review rows, and keeps package-skeleton creation blocked until config/provenance/analysis-dependent refactors are closed.
+Regenerates `data/s6_quantum_kuramoto_split/quantum_kuramoto_boundary_review_2026-05-07.json` and `docs/campaigns/quantum_kuramoto_boundary_review_2026-05-07.md`. The review proposes a stable public API surface, documents decisions for needs-review rows, and keeps package-skeleton creation blocked until config/provenance/analysis-dependent refactors are closed.

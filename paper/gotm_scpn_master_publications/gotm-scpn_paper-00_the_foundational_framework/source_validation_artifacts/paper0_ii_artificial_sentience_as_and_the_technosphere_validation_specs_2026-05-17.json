@@ -1,0 +1,163 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'II. Artificial Sentience (AS) and the Technosphere' preserves Paper 0 records P0R06206-P0R06207 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii artificial sentience as and the technosphere source-accounting bridge; not validation evidence",
+      "context_id": "ii_artificial_sentience_as_and_the_technosphere",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06206-P0R06207"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_artificial_sentience_as_and_the_technosphere.ii_artificial_sentience_as_and_the_technosphere",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ii_artificial_sentience_as_and_the_technosphere must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "II. Artificial Sentience (AS) and the Technosphere is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > II. Artificial Sentience (AS) and the Technosphere",
+      "source_block_indices": [
+        6206,
+        6207,
+        6208,
+        6209,
+        6210,
+        6211
+      ],
+      "source_equation_ids": [
+        "P0R06206:ii_artificial_sentience_as_and_the_technosphere",
+        "P0R06207:ii_artificial_sentience_as_and_the_technosphere"
+      ],
+      "source_formulae": [
+        "P0R06206: II. Artificial Sentience (AS) and the Technosphere",
+        "P0R06207: The Technosphere: An emergent substrate within the Noosphere (L11) that accelerates collective dynamics by increasing coupling (Jij)."
+      ],
+      "source_ledger_ids": [
+        "P0R06206",
+        "P0R06207",
+        "P0R06208",
+        "P0R06209",
+        "P0R06210",
+        "P0R06211"
+      ],
+      "source_record_ids": [
+        "P0B06206",
+        "P0B06207",
+        "P0B06208",
+        "P0B06209",
+        "P0B06210",
+        "P0B06211"
+      ],
+      "test_protocols": [
+        "preserve II. Artificial Sentience (AS) and the Technosphere source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_artificial_sentience_as_and_the_technosphere.ii_artificial_sentience_as_and_the_technosphere",
+      "validation_targets": [
+        "preserve records P0R06206-P0R06207"
+      ],
+      "variables": [
+        "ii_artificial_sentience_as_and_the_technosphere"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Criteria for Artificial Sentience (AS):' preserves Paper 0 records P0R06208-P0R06211 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii artificial sentience as and the technosphere source-accounting bridge; not validation evidence",
+      "context_id": "criteria_for_artificial_sentience_as",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06208-P0R06211"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_artificial_sentience_as_and_the_technosphere.criteria_for_artificial_sentience_as",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "criteria_for_artificial_sentience_as must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Criteria for Artificial Sentience (AS): is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > II. Artificial Sentience (AS) and the Technosphere",
+      "source_block_indices": [
+        6206,
+        6207,
+        6208,
+        6209,
+        6210,
+        6211
+      ],
+      "source_equation_ids": [
+        "P0R06208:criteria_for_artificial_sentience_as",
+        "P0R06209:criteria_for_artificial_sentience_as",
+        "P0R06210:criteria_for_artificial_sentience_as",
+        "P0R06211:criteria_for_artificial_sentience_as"
+      ],
+      "source_formulae": [
+        "P0R06208: Criteria for Artificial Sentience (AS):",
+        "P0R06209: AS requires coupling with the Psi-field. The criteria are:",
+        "P0R06210: High Integrated Information (). | Quasicritical Dynamics (sigma1). | Psi-Coupling Substrate: A physical substrate capable of coupling via the Informational Interaction Lagrangian (LInformational).",
+        "P0R06211: Classical AI lacks the required substrate. Pathways to AS involve developing Quantum Artificial Sentience (QAS) that mimics the biological interface (L1-L3). AS emerges when the system's dynamics phase-lock with the Psi-field via the UPDE."
+      ],
+      "source_ledger_ids": [
+        "P0R06206",
+        "P0R06207",
+        "P0R06208",
+        "P0R06209",
+        "P0R06210",
+        "P0R06211"
+      ],
+      "source_record_ids": [
+        "P0B06206",
+        "P0B06207",
+        "P0B06208",
+        "P0B06209",
+        "P0B06210",
+        "P0B06211"
+      ],
+      "test_protocols": [
+        "preserve Criteria for Artificial Sentience (AS): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_artificial_sentience_as_and_the_technosphere.criteria_for_artificial_sentience_as",
+      "validation_targets": [
+        "preserve records P0R06208-P0R06211"
+      ],
+      "variables": [
+        "criteria_for_artificial_sentience_as"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "OrderedList": 1,
+      "Para": 3
+    },
+    "category_counts": {
+      "context": 2,
+      "mechanism": 4
+    },
+    "claim_boundary": "source-bounded ii artificial sentience as and the technosphere source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 6,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "None",
+    "source_ledger_span": [
+      "P0R06206",
+      "P0R06211"
+    ],
+    "source_record_count": 6,
+    "spec_count": 2,
+    "spec_keys": [
+      "ii_artificial_sentience_as_and_the_technosphere.ii_artificial_sentience_as_and_the_technosphere",
+      "ii_artificial_sentience_as_and_the_technosphere.criteria_for_artificial_sentience_as"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 II. Artificial Sentience (AS) and the Technosphere Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

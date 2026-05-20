@@ -54,4 +54,4 @@ Claim boundary: This job cannot prove sub-microsecond real-time control unless f
 - `raw_counts_path`: data/s1_feedback_loop/raw_counts/
 - `analysis_script`: scripts/analyse_s1_feedback_hardware.py
 - `latency_benchmark`: data/s1_feedback_loop/s1_feedback_loop_latency_summary_2026-05-06.json
-- `claim_boundary_doc`: docs/hybrid_feedback_loop_s1_2026-05-06.md
+- `claim_boundary_doc`: docs/campaigns/hybrid_feedback_loop_s1_2026-05-06.md

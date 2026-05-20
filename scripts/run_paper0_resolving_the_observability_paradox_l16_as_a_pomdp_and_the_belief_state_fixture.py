@@ -20,7 +20,13 @@ from scpn_quantum_control.paper0.resolving_the_observability_paradox_l16_as_a_po
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_OUTPUT_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_OUTPUT_PATH = (
     DEFAULT_OUTPUT_DIR
     / "paper0_resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state_fixture_result_2026-05-17.json"

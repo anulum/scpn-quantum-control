@@ -1,0 +1,40 @@
+{
+  "hardware_status": "simulator_only_no_provider_submission",
+  "high_incoming_over_prior_phase_drive_ratio": 9.000000000000004,
+  "max_amplitude_ratio_deviation": 2.0,
+  "max_complex_polar_residual": 5.551115123125783e-17,
+  "max_phase_ratio_residual": 0.0,
+  "null_controls": {
+    "direct_phase_salience_delta_abs": 0.0,
+    "mismatched_shape_rejection_label": 1.0,
+    "negative_amplitude_rejection_label": 1.0,
+    "non_finite_complex_state_rejection_label": 1.0,
+    "non_finite_rho_rejection_label": 1.0,
+    "phase_only_missing_amplitude_norm": 0.5444585551756124,
+    "uniform_amplitude_ratio_deviation": 0.0,
+    "zero_incoming_amplitude_rejection_label": 1.0,
+    "zero_radius_rejection_label": 1.0
+  },
+  "phase_only_missing_amplitude_norm": 0.5444585551756124,
+  "problem_metadata": {
+    "dynamics": {
+      "claim_boundary": "finite_polar_precision_fixture_not_active_inference_proof",
+      "simulator_only_mechanism_evidence": true
+    },
+    "salience": {
+      "claim_boundary": "finite_radial_gain_fixture_not_salience_network_confirmation",
+      "simulator_only_mechanism_evidence": true
+    },
+    "upgrade": {
+      "claim_boundary": "finite_stuart_landau_identity_not_biological_confirmation",
+      "simulator_only_mechanism_evidence": true
+    }
+  },
+  "rho_gain_radius_dot_delta": 0.15000000000000002,
+  "runtime_ms": 3.207647008821368,
+  "spec_keys": [
+    "computational.stuart_landau_precision_upgrade",
+    "computational.precision_weighted_phase_amplitude_dynamics",
+    "computational.salience_radial_precision_control"
+  ]
+}

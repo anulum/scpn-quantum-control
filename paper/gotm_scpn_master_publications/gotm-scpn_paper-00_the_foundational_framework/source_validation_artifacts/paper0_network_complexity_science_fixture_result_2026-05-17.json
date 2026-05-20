@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded network complexity science source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "cognitive_computational_foundations": "cognitive_computational_foundations_source_boundary",
+    "network_complexity_science": "network_complexity_science_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Network & Complexity Science",
+    "component_2": "Cognitive & Computational Foundations",
+    "component_count": "2",
+    "next_boundary": "P0R05818",
+    "section": " Network & Complexity Science",
+    "source_span": "P0R05810-P0R05817"
+  },
+  "next_source_boundary": "P0R05818",
+  "null_controls": {
+    "cognitive_computational_foundations_is_not_empirical_validation_evidence": 1.0,
+    "network_complexity_science_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded network complexity science source-accounting bridge; not validation evidence",
+    "protocol_state": "source_network_complexity_science_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05810",
+      "P0R05811",
+      "P0R05812",
+      "P0R05813",
+      "P0R05814",
+      "P0R05815",
+      "P0R05816",
+      "P0R05817"
+    ],
+    "source_ledger_span": [
+      "P0R05810",
+      "P0R05817"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05810",
+    "P0R05817"
+  ],
+  "source_record_count": 8
+}

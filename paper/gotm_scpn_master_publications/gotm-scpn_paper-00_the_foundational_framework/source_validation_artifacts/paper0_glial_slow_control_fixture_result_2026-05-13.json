@@ -1,0 +1,56 @@
+{
+  "claim_boundary": "source-bounded glial slow-control simulator contract; not empirical evidence",
+  "config_thresholds": {
+    "decoupling_threshold": 0.45,
+    "stability_threshold": 0.7
+  },
+  "decoupling_score": 0.54,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "incomplete_protocol_rejection_label": 1.0,
+    "missing_slow_feedback_rejection_label": 1.0,
+    "unsupported_empirical_evidence_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded glial slow-control simulator contract; not empirical evidence",
+    "source_ledger_ids": [
+      "P0R06414",
+      "P0R06415",
+      "P0R06416",
+      "P0R06417",
+      "P0R06418",
+      "P0R06419",
+      "P0R06420",
+      "P0R06421",
+      "P0R06422",
+      "P0R06423",
+      "P0R06424",
+      "P0R06425",
+      "P0R06426",
+      "P0R06427",
+      "P0R06428",
+      "P0R06429",
+      "P0R06430",
+      "P0R06431",
+      "P0R06432",
+      "P0R06433"
+    ],
+    "source_ledger_span": [
+      "P0R06414",
+      "P0R06433"
+    ]
+  },
+  "protocol_completeness": 1.0,
+  "runtime_ms": 0.05259699537418783,
+  "source_ledger_span": [
+    "P0R06414",
+    "P0R06433"
+  ],
+  "spec_keys": [
+    "glial_slow_control.two_timescale_governor",
+    "glial_slow_control.homeostatic_feedback_channels",
+    "glial_slow_control.experimental_protocol_catalogue",
+    "glial_slow_control.falsification_and_causal_decoupling"
+  ],
+  "stability_score": 0.8096912238466978
+}

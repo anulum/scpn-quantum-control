@@ -10,7 +10,7 @@ is copied here.
 ### Current platform programme: reproducible evidence and benchmark infrastructure
 
 - [x] **Platform opportunity prioritisation.** Recorded 2026-05-18 in
-  `docs/internal/platform_opportunity_prioritisation_2026-05-18.md`: first
+  `docs/internal/strategy/2026-05-18_platform_opportunity_prioritisation.md`: first
   result packs, then benchmark suite, then symmetry/sector-aware mitigation
   compiler, then Kuramoto/XY DSL, then differentiable control co-design.
 - [x] **Hardware result-pack manifest and offline verifier.** Implemented
@@ -240,7 +240,7 @@ is copied here.
   and `0` remaining source records. This remains source-bounded
   ingestion, not external validation evidence.
 - [x] **GOTM-SCPN Paper 0 experimental-pathway and methodology-paper route.**
-  Implemented 2026-05-18: `docs/paper0_experimental_pathway.md`
+  Implemented 2026-05-18: `docs/paper0/paper0_experimental_pathway.md`
   defines GOTM-SCPN Paper 0: The Foundational Framework as the upstream
   programme source, reclassifies Paper 27 as a bounded implementation candidate rather than the
   definitive source of truth, and records the methodology-paper
@@ -253,12 +253,12 @@ is copied here.
   registry remains a programme-planning artefact, not external
   validation evidence or hardware readiness.
 - [x] **Methodology-paper outline.** Implemented 2026-05-19:
-  `docs/paper0_methodology_paper_outline.md` defines the source-bounded
+  `docs/paper0/paper0_methodology_paper_outline.md` defines the source-bounded
   methodology-paper structure, required artefacts, evidence classes,
   figure/table regeneration commands, and acceptance gates while keeping
   fixture preservation separate from external validation.
 - [x] **First preregistered downstream experiment.** Implemented 2026-05-19:
-  `docs/paper0_first_preregistered_downstream_experiment.md` selects the
+  `docs/paper0/paper0_first_preregistered_downstream_experiment.md` selects the
   K_nm causal-efficacy and coupling-affinity lane as a no-QPU measured-system
   replay design with EEG alpha PLV as the primary candidate, IEEE 5-bus power
   grid as a negative control, explicit acceptance gates, falsifiers, and
@@ -480,12 +480,12 @@ is copied here.
   promotes a specific raw-count claim.
 - [x] **Coauthor meeting claim-readiness pass.** Implemented
   2026-05-12 for the 2026-05-13 15:00 Europe/Zurich Teams meeting:
-  `paper/ibm_fez_synchronisation/main.tex`, `docs/preprint.md`, and `docs/PAPER_CLAIMS.md`
+  `paper/submissions/submission_001_ibm_fez_synchronisation/main.tex`, `docs/preprint.md`, and `docs/PAPER_CLAIMS.md`
   now avoid first-hardware, hardware-DTC, backend-general coherence,
   generic-outperformance, and clean-readout overclaims. The FIM
   manuscript boundary remains regression-tested as a backend/circuit-
   specific negative hardware result, and an internal meeting brief was
-  added at `docs/internal/coauthor_meeting_readiness_2026-05-13.md`.
+  added at `docs/internal/publication_planning/2026-05-13_coauthor_meeting_readiness.md`.
 - [x] **NumPy NQS sampling-contract hardening.** Implemented
   2026-05-12: `vmc_ground_state()` now rejects explicit `n_samples`
   because the current NumPy RBM path performs exact enumeration with
@@ -594,7 +594,7 @@ is copied here.
   per-file threshold, and provides `--fail-on-gap` for release-gating
   without running tests or treating line coverage as scientific
   validation. Usage and boundaries are documented in
-  `docs/coverage_gap_audit_2026-05-06.md`.
+  `docs/internal/audits/release_readiness/coverage_gap_audit_2026-05-06.md`.
 - [x] **Coverage XML freshness guard.** Implemented 2026-05-07:
   `tools/audit_coverage_gaps.py` now emits an explicit
   `coverage_report_warning` when no selected package source files match
@@ -614,7 +614,7 @@ is copied here.
   `Test*` classes, so class-based pytest modules are no longer
   misreported as empty.
 - [x] **Behavioural-test audit.** Completed 2026-05-06:
-  `docs/behavioural_test_audit_closure_2026-05-06.md` records the
+  `docs/internal/audits/release_readiness/behavioural_test_audit_closure_2026-05-06.md` records the
   final audit state after targeted hardening passes. The current
   automated inventory covers `319` test modules and reports no
   smoke-only tests; broader coverage-to-100% work remains open as a
@@ -814,7 +814,7 @@ is copied here.
 ### Active paper and submission tasks
 
 - [x] **DLA parity preprint submission package.** Completed 2026-05-06:
-  `docs/dla_parity_submission_checklist_2026-05-06.md` freezes the
+  `docs/publication/dla_parity_submission_checklist_2026-05-06.md` freezes the
   conservative parity-sector/excitation-number framing, required job IDs,
   committed artefact index, unsupported claims, and final no-QPU
   pre-upload gate. Updated 2026-05-07 after the Phase 3 state/layout
@@ -822,26 +822,26 @@ is copied here.
   layout-independent and same-sector-state-independent parity-protection
   claims.
 - [x] **Rust/VQE methods paper package.** Completed 2026-05-06:
-  `docs/rust_vqe_methods_submission_checklist_2026-05-06.md` freezes
+  `docs/publication/rust_vqe_methods_submission_checklist_2026-05-06.md` freezes
   the artefact-first table boundary, supported/unsupported claims,
   generator-script index, `scpn-bench reproduce-methods` gate, and
   no-QPU final pre-upload checklist.
 - [x] **JOSS-style software paper package.** Completed 2026-05-06:
-  `docs/joss_software_submission_checklist_2026-05-06.md` freezes the
+  `docs/publication/joss_software_submission_checklist_2026-05-06.md` freezes the
   software-paper claim boundary, JOSS/pyOpenSci framing, metadata gate,
   reproducibility gate, and no-QPU final pre-upload checklist.
 - [x] **SCPN/FIM Hamiltonian paper package.** Completed 2026-05-06:
-  `docs/scpn_fim_submission_checklist_2026-05-06.md` freezes the
+  `docs/campaigns/scpn_fim_submission_checklist_2026-05-06.md` freezes the
   negative hardware falsification boundary, committed artefact index,
   IBM job IDs, `scpn-bench fim-all` gate, full-basis readout-mitigation
   scope, and blocked hardware-protection claims.
 - [x] **Combined submission checklist.** Completed 2026-05-06:
-  `docs/combined_submission_checklist_2026-05-06.md` ties the four
+  `docs/publication/combined_submission_checklist_2026-05-06.md` ties the four
   paper packages together with final PDF build commands, no-QPU
   reproduction gates, arXiv metadata draft, URL/identifier checks, and a
   minimal venue-conditional AI disclosure policy.
 - [x] **IBM Quantum Credits follow-up.** Completed 2026-05-06:
-  `docs/ibm_quantum_credits_followup_2026-05-06.md` records the
+  `docs/internal/publication_ops/ibm_quantum_credits_followup_2026-05-06.md` records the
   5--10 hour QPU allocation boundary, current evidence package,
   affiliation wording, draft locations, and per-run spend gates. The
   older allocation draft now matches the 5--10 hour scope.
@@ -885,7 +885,7 @@ is copied here.
   `AdaptiveFIMConfig`, `FIMWitness`, `propose_next_lambda`, and
   `adaptive_lambda_schedule`.
 - [x] **Adaptive-QPU protocol.** Implemented 2026-05-06:
-  `docs/adaptive_fim_qpu_protocol_2026-05-06.md` defines the
+  `docs/campaigns/adaptive_fim_qpu_protocol_2026-05-06.md` defines the
   non-submitting adaptive `lambda_fim` hardware boundary, QPU budget
   gate, live transpilation gate, falsification rules, artefact names,
   and blocked claims before any IBM submission.
@@ -906,7 +906,7 @@ offline artefacts, a preregistered manifest, depth/shot gates, and an
 explicit QPU-time estimate before submission.
 
 - [x] **Multi-device DLA replication preregistration.** Completed
-  2026-05-06: `docs/dla_multidevice_replication_prereg_2026-05-06.md`
+  2026-05-06: `docs/campaigns/dla_multidevice_replication_prereg_2026-05-06.md`
   defines the second-Heron backend rule, reduced `n=4` circuit matrix,
   148-circuit scope, 3--6 minute estimate, 10-minute ceiling,
   live-depth gates, analysis plan, falsification rules, and output
@@ -918,13 +918,13 @@ explicit QPU-time estimate before submission.
   `ibm-run-0f96961442e05a77` produced the raw-count artefact,
   generated summary, row metrics, and manifest in
   `data/phase3_multidevice_dla/` and
-  `docs/phase3_multidevice_dla_manifest_2026-05-06.md`. Result:
+  `docs/campaigns/phase3_multidevice_dla_manifest_2026-05-06.md`. Result:
   mixed/mostly opposite-sign backend-transfer evidence, later
   strengthened by matching full-basis readout correction, weakening any
   backend-stable DLA leakage-asymmetry claim.
 - [x] **Systematic state/layout randomisation preregistration.**
   Completed 2026-05-06:
-  `docs/dla_state_layout_randomisation_prereg_2026-05-06.md` defines
+  `docs/campaigns/dla_state_layout_randomisation_prereg_2026-05-06.md` defines
   the `n=4` state/depth/layout matrix, 495-circuit scope, 8--15 minute
   estimate, 20-minute ceiling, layout-selection gates, analysis plan,
   readout boundary, falsification rules, and output artefact paths. QPU
@@ -956,7 +956,7 @@ explicit QPU-time estimate before submission.
   `--confirm-budget` before any IBM job is launched.
 - [x] **Full readout-mitigation calibration preregistration.**
   Completed 2026-05-06:
-  `docs/readout_full_basis_calibration_prereg_2026-05-06.md` defines
+  `docs/campaigns/readout_full_basis_calibration_prereg_2026-05-06.md` defines
   the eligibility boundary, basis-state calibration matrix for `n=4,6,8`,
   QPU-time estimates and ceilings, live layout gates, analysis plan,
   falsification rules, and output artefact paths. Calibration execution
@@ -966,7 +966,7 @@ explicit QPU-time estimate before submission.
   qubits `[5,6,7,8]` after live readiness checks, budget confirmation,
   and explicit approval. Job `ibm-run-ddd29a2fbcaeed61` produced the
   full-basis assignment artefacts under `data/readout_full_basis/` and
-  manifest `docs/readout_full_basis_manifest_2026-05-06.md`.
+  manifest `docs/campaigns/readout_full_basis_manifest_2026-05-06.md`.
   Calibration quality: mean retention `0.96999`, max parity flip
   `0.04724`, condition number `1.07570`.
 - [x] **Phase 3 full-basis readout correction.** Completed
@@ -979,7 +979,7 @@ explicit QPU-time estimate before submission.
   readout correction does not rescue backend-transfer replication.
 - [x] **GUESS / symmetry-decay calibration preregistration.**
   Completed 2026-05-06:
-  `docs/guess_symmetry_decay_prereg_2026-05-06.md` defines the
+  `docs/campaigns/guess_symmetry_decay_prereg_2026-05-06.md` defines the
   folded-noise parity-leakage witness protocol, readiness basis, `n=4`
   circuit matrix, 196-circuit default scope, 5--12 minute estimate,
   15-minute ceiling, live folding/depth gates, analysis plan,
@@ -996,14 +996,14 @@ explicit QPU-time estimate before submission.
   2026-05-07: `scripts/analyse_phase3_guess_dla.py` generated
   `data/phase3_guess_dla/phase3_guess_summary_2026-05-07.json`,
   fit rows, witness/extrapolation rows, and
-  `docs/phase3_guess_dla_manifest_2026-05-07.md`. Result: 6 raw
+  `docs/campaigns/phase3_guess_dla_manifest_2026-05-07.md`. Result: 6 raw
   log-survival fits and 5 exact-state-readout-corrected fits pass the
   preregistered monotone/R2/RMSE witness criteria; universal GUESS
   mitigation, backend-general transfer, and full confusion-matrix
   mitigation remain blocked claims.
 - [x] **Layer-selective qubit assignment preregistration.** Completed
   2026-05-06:
-  `docs/layer_selective_qubit_assignment_prereg_2026-05-06.md`
+  `docs/campaigns/layer_selective_qubit_assignment_prereg_2026-05-06.md`
   defines the coupling-aware scoring rule, comparator layouts, offline
   readiness matrix, optional 152-circuit hardware follow-up, 4--10
   minute estimate, 12-minute ceiling, live gates, analysis plan,
@@ -1015,7 +1015,7 @@ explicit QPU-time estimate before submission.
   Phase 3 state/layout artefact and generates
   `data/phase3_layer_layout/layer_selective_readiness_ibm_marrakesh_2026-05-07.json`,
   `data/phase3_layer_layout/layer_selective_transpile_rows_2026-05-07.csv`,
-  and `docs/phase3_layer_layout_readiness_2026-05-07.md`. Decision:
+  and `docs/campaigns/phase3_layer_layout_readiness_2026-05-07.md`. Decision:
   `blocked_missing_comparators`, because the saved artefact has
   connected low-readout layout rows but not the preregistered default,
   SABRE, and true layer-selective comparator matrix required before a
@@ -1026,7 +1026,7 @@ explicit QPU-time estimate before submission.
   default, SABRE, and true layer-selective transpilation matrix in
   `data/phase3_layer_layout/layer_selective_comparator_matrix_ibm_marrakesh_2026-05-07.json`,
   row CSV, SHA256 sidecar, and
-  `docs/phase3_layer_layout_comparator_matrix_2026-05-07.md`.
+  `docs/campaigns/phase3_layer_layout_comparator_matrix_2026-05-07.md`.
   Decision: `blocked_layer_selective_worse_than_default`; layer-selective
   increased max depth by `79.5 %` and max two-qubit gates by `46.4 %`
   versus default, so the optional hardware follow-up is not promoted.
@@ -1037,7 +1037,7 @@ explicit QPU-time estimate before submission.
   mechanism.
 - [x] **Entanglement entropy or tomography check preregistration.**
   Completed 2026-05-06:
-  `docs/entanglement_tomography_prereg_2026-05-06.md` defines the
+  `docs/campaigns/entanglement_tomography_prereg_2026-05-06.md` defines the
   reduced-tomography/shadow-tomography decision rule, small-`n` claim
   boundary, offline readiness matrix, optional hardware scope, circuit
   and QPU-time ceilings, live gates, analysis plan, falsification rules,
@@ -1050,7 +1050,7 @@ explicit QPU-time estimate before submission.
   families. Artefacts:
   `data/phase3_entanglement_tomography/entanglement_tomography_readiness_2026-05-07.json`,
   `data/phase3_entanglement_tomography/entanglement_observable_rows_2026-05-07.csv`,
-  and `docs/phase3_entanglement_tomography_readiness_2026-05-07.md`.
+  and `docs/campaigns/phase3_entanglement_tomography_readiness_2026-05-07.md`.
   Decision: `ready_for_optional_hardware_preregistration`; the promoted
   reduced-tomography block uses `9` basis settings and `166` total
   circuits, so full tomography is unnecessary and the optional hardware
@@ -1065,7 +1065,7 @@ explicit QPU-time estimate before submission.
   First-pass analysis generated
   `data/phase3_entanglement_tomography/entanglement_tomography_summary_2026-05-20.json`,
   `data/phase3_entanglement_tomography/entanglement_tomography_rows_2026-05-20.csv`,
-  and `docs/phase3_entanglement_tomography_manifest_2026-05-20.md`.
+  and `docs/campaigns/phase3_entanglement_tomography_manifest_2026-05-20.md`.
   Result snapshot: 54 observable rows, mean absolute deviation
   `0.12989296537986128`, maximum absolute deviation
   `0.5560906424788263`, bounded to reduced-Pauli small-system
@@ -1087,7 +1087,7 @@ explicit QPU-time estimate before submission.
   `scripts/analyse_phase3_entanglement_zne.py` generated
   `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_fez_zne.json`,
   scale rows, channel summary, and
-  `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_fez_zne.md`.
+  `docs/campaigns/phase3_entanglement_zne_manifest_2026-05-20_ibm_fez_zne.md`.
   Result: simple global-folding ZNE does not erase the four dominant DLA
   transverse deviations; the FIM control channel behaves differently and
   improves under linear extrapolation. Remaining paper work is
@@ -1105,7 +1105,7 @@ explicit QPU-time estimate before submission.
   `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json`,
   `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne.json`,
   `data/phase3_entanglement_tomography/entanglement_zne_channel_summary_2026-05-20_ibm_kingston_zne.csv`,
-  and `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne.md`.
+  and `docs/campaigns/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne.md`.
   Result: Kingston reproduces the qualitative Fez ZNE stress-test pattern:
   the four DLA transverse channels move farther from exact under linear ZNE,
   while the FIM control improves. Remaining paper work is manuscript/PDF
@@ -1123,13 +1123,13 @@ explicit QPU-time estimate before submission.
   Reducer outputs:
   `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne_repeat.json`,
   scale rows, channel summary, and
-  `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne_repeat.md`.
+  `docs/campaigns/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne_repeat.md`.
   Result: the same-layout repeat preserves the completed Kingston pattern:
   all four DLA transverse channels move farther from exact under linear ZNE,
   while the FIM control improves.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
-  `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`
+  `docs/campaigns/depth_optimal_native_decomposition_prereg_2026-05-06.md`
   defines comparator circuits, native-target candidate rules, offline
   readiness matrix, equivalence gates, optional 160-circuit hardware
   follow-up, 12-minute ceiling, live gates, analysis plan,
@@ -1144,7 +1144,7 @@ explicit QPU-time estimate before submission.
   `data/phase3_native_decomposition/native_decomposition_readiness_2026-05-07.json`,
   `data/phase3_native_decomposition/native_decomposition_transpile_rows_2026-05-07.csv`,
   `data/phase3_native_decomposition/native_decomposition_equivalence_rows_2026-05-07.csv`,
-  and `docs/phase3_native_decomposition_readiness_2026-05-07.md`.
+  and `docs/campaigns/phase3_native_decomposition_readiness_2026-05-07.md`.
   Decision: `blocked_current_xy_invalid_no_native_gain_vs_generic`. The
   native-targeted `rxx+ryy` path passes equivalence but has no median
   depth or two-qubit-gate gain versus the generic Pauli baseline, while
@@ -1157,7 +1157,7 @@ explicit QPU-time estimate before submission.
   budget confirmation, and explicit approval for QPU submission.
 - [x] **Variational quantum simulation alternative preregistration.**
   Completed 2026-05-06:
-  `docs/vqs_alternative_prereg_2026-05-06.md` defines candidate VQS
+  `docs/campaigns/vqs_alternative_prereg_2026-05-06.md` defines candidate VQS
   modes, offline readiness matrix, promotion gates, tolerances,
   optional hardware scope, QPU-time ceilings, live gates, analysis
   plan, falsification rules, and artefact paths. Execution remains
@@ -1171,7 +1171,7 @@ explicit QPU-time estimate before submission.
   `data/phase3_vqs_alternative/vqs_readiness_2026-05-07.json`,
   `data/phase3_vqs_alternative/vqs_candidate_rows_2026-05-07.csv`,
   `data/phase3_vqs_alternative/vqs_resource_rows_2026-05-07.csv`, and
-  `docs/phase3_vqs_alternative_readiness_2026-05-07.md`. Decision:
+  `docs/campaigns/phase3_vqs_alternative_readiness_2026-05-07.md`. Decision:
   `blocked_no_vqs_candidate_passed_promotion_gate`. No shallow VQS
   ansatz family passed both the preregistered target-observable accuracy
   gate and the compiled-resource gate, so hardware execution is not
@@ -1182,7 +1182,7 @@ explicit QPU-time estimate before submission.
   explicit approval for QPU submission.
 - [x] **Multi-circuit QEC demonstration preregistration.** Completed
   2026-05-06:
-  `docs/multicircuit_qec_prereg_2026-05-06.md` defines required
+  `docs/campaigns/multicircuit_qec_prereg_2026-05-06.md` defines required
   baselines, logical-error metrics, observable tolerances, offline
   readiness matrix, promotion gates, optional 180-circuit hardware
   scope, 15-minute ceiling, live gates, analysis plan, ablations,
@@ -1199,7 +1199,7 @@ explicit QPU-time estimate before submission.
   `data/phase3_multicircuit_qec/qec_readiness_2026-05-07.json`,
   `data/phase3_multicircuit_qec/qec_decoder_rows_2026-05-07.csv`,
   `data/phase3_multicircuit_qec/qec_resource_rows_2026-05-07.csv`,
-  and `docs/phase3_multicircuit_qec_readiness_2026-05-07.md`.
+  and `docs/campaigns/phase3_multicircuit_qec_readiness_2026-05-07.md`.
   Decision:
   `blocked_physics_aware_decoder_did_not_beat_baselines`. Hardware
   execution is not promoted because the physics-aware decoder did not
@@ -1228,16 +1228,16 @@ explicit QPU-time estimate before submission.
 - [x] **Zenodo DOI.** Existing DOI is live.
 - [x] **GitHub Pages docs.** Published.
 - [x] **Software Heritage SWHID follow-up.** Completed 2026-05-06:
-  `docs/software_heritage_swhid_2026-05-06.md` records the successful
+  `docs/publication/software_heritage_swhid_2026-05-06.md` records the successful
   Software Heritage save request, full visit status, origin SWHID, and
   archived snapshot SWHID.
 - [x] **Zenodo communities and metadata refresh preparation.**
   Completed 2026-05-06:
-  `docs/zenodo_metadata_refresh_checklist_2026-05-06.md` records the
+  `docs/internal/publication_ops/zenodo_metadata_refresh_checklist_2026-05-06.md` records the
   DOI, current version consistency, community targets, related
   identifiers, claim boundary, and manual-session update procedure.
 - [x] **Zenodo metadata refresh execution.** Completed 2026-05-06:
-  `docs/zenodo_metadata_refresh_execution_2026-05-06.md` records the
+  `docs/internal/publication_ops/zenodo_metadata_refresh_execution_2026-05-06.md` records the
   authenticated Zenodo API edit/publish cycle. Public metadata now
   reports version `0.9.6`, publication date `2026-03-29`, license
   `agpl-3.0-or-later`, bounded description, and refreshed keywords for
@@ -1245,27 +1245,27 @@ explicit QPU-time estimate before submission.
   `10.5281/zenodo.18821929`.
 - [x] **Zenodo community submission UI follow-up.** Completed
   2026-05-06:
-  `docs/zenodo_community_submission_2026-05-06.md` records the pending
+  `docs/internal/publication_ops/zenodo_community_submission_2026-05-06.md` records the pending
   Zenodo `community-inclusion` request for the `Research Software
   Engineering` community. Public record community membership remains
   pending curator acceptance.
 - [x] **Qiskit Ecosystem Catalog.** Submitted 2026-05-06:
-  `docs/qiskit_ecosystem_submission_2026-05-06.md` records the
+  `docs/publication/qiskit_ecosystem_submission_2026-05-06.md` records the
   submitted project metadata and open review issue
   `Qiskit/ecosystem#1123`.
 - [ ] **awesome-qiskit.** Blocked until Qiskit Ecosystem membership is
   accepted.
 - [x] **Conda-forge recipe.** Submitted 2026-05-06:
-  `docs/conda_forge_submission_2026-05-06.md` records the staged-recipes
+  `docs/publication/conda_forge_submission_2026-05-06.md` records the staged-recipes
   recipe metadata and open PR `conda-forge/staged-recipes#33236`.
 - [x] **Metriq local readiness smoke.** Completed 2026-05-06:
-  `docs/metriq_local_smoke_2026-05-06.md` records a no-QPU
+  `docs/publication/metriq_local_smoke_2026-05-06.md` records a no-QPU
   `metriq-gym` Bernstein--Vazirani local simulator dispatch and poll
   using the isolated `/home/anulum/.venvs/scpn-metriq` environment.
   This proves the Metriq CLI path is executable without treating SCPN
   paper benchmark tables as Metriq-native results.
 - [x] **Metriq submission decision.** Completed 2026-05-07:
-  `docs/metriq_submission_decision_2026-05-07.md` records a deliberate
+  `docs/publication/metriq_submission_decision_2026-05-07.md` records a deliberate
   no-upload decision. The Metriq-Gym upload path was verified in
   dry-run mode for the local Bernstein--Vazirani smoke result, but no
   public upload was made because the available artefact is a generic
@@ -1274,7 +1274,7 @@ explicit QPU-time estimate before submission.
   Metriq upload unless an accepted Metriq schema exists.
 - [x] **Metriq SCPN benchmark schema proposal preparation.**
   Completed 2026-05-07:
-  `docs/metriq_scpn_benchmark_schema_proposal_2026-05-07.md` defines a
+  `docs/publication/metriq_scpn_benchmark_schema_proposal_2026-05-07.md` defines a
   bounded Kuramoto--XY parity-leakage benchmark proposal with required
   inputs, circuit definition, primary score, secondary metrics,
   acceptance gates, non-claim boundary, and upstream draft text. It is a
@@ -1287,7 +1287,7 @@ explicit QPU-time estimate before submission.
 - [ ] **pyOpenSci review.** Submit the software package for review and
   possible JOSS fast-track.
 - [x] **pyOpenSci review preparation.** Completed 2026-05-06:
-  `docs/pyopensci_submission_readiness_2026-05-06.md` records the
+  `docs/publication/pyopensci_submission_readiness_2026-05-06.md` records the
   package scope, unsupported claims, metadata gate, reviewer evidence,
   no-QPU pre-submission gates, and suggested issue summary. External
   issue submission remains open until an issue URL is recorded.
@@ -1296,13 +1296,13 @@ explicit QPU-time estimate before submission.
 - [ ] **arXiv submission.** Submit the paper set once final PDFs,
   references, source tarballs, and artefact links are aligned.
 - [x] **arXiv source packaging preparation.** Completed 2026-05-06:
-  `docs/arxiv_source_packaging_readiness_2026-05-06.md` records the
+  `docs/publication/arxiv_source_packaging_readiness_2026-05-06.md` records the
   public source-bundle boundaries, build gates, claim gates, metadata
   draft, and private-file exclusions for the DLA parity, Rust/VQE
   methods, and SCPN/FIM papers. Actual arXiv upload remains open until
   explicitly approved and recorded.
 - [x] **SciPy 2026 CFP preparation.** Completed 2026-05-06:
-  `docs/scipy_2026_cfp_readiness_2026-05-06.md` records the proposed
+  `docs/publication/scipy_2026_cfp_readiness_2026-05-06.md` records the proposed
   SciPy angle, format options, title options, draft abstract,
   reviewer-visible evidence, claims to avoid, and no-QPU submission
   boundary. Actual CFP submission remains external and should only be
@@ -1312,14 +1312,14 @@ explicit QPU-time estimate before submission.
   Unitary Discord, Hacker News, LinkedIn, and X posts only after the
   public preprints are live.
 - [x] **Registry-listing preparation pack.** Completed 2026-05-06:
-  `docs/registry_listing_plan_2026-05-06.md` records the canonical
+  `docs/publication/registry_listing_plan_2026-05-06.md` records the canonical
   metadata, target-by-target readiness, account/manual blockers,
   submission copy, and do-not-submit-yet boundaries for Quantiki, QOSF,
   best-of-python, Papers With Code, SciCrunch RRID, Open Hub, and
   Research Software Directory.
 - [x] **Community-announcement preparation pack.** Completed
   2026-05-06:
-  `docs/community_announcement_pack_2026-05-06.md` prepares bounded
+  `docs/internal/publication_ops/community_announcement_pack_2026-05-06.md` prepares bounded
   Reddit, Qiskit Slack, Unitary Discord, Hacker News, LinkedIn, and X
   copy while keeping publication deferred until public preprint links
   are live.
@@ -1342,7 +1342,7 @@ be executed until individually activated.
   gates, explicit hardware approval enforcement, and a proportional
   metric observer. Tests and documentation are in
   `tests/test_feedback_loop.py` and
-  `docs/hybrid_feedback_loop_s1_2026-05-06.md`. This does not submit
+  `docs/campaigns/hybrid_feedback_loop_s1_2026-05-06.md`. This does not submit
   IBM jobs and does not claim intra-shot feedback.
 - [x] **S1 realtime-controller simulator scheduler.** Implemented
   2026-05-06: `RealtimeControllerScheduler` wraps
@@ -1414,7 +1414,7 @@ be executed until individually activated.
   preregistration, provider dry-run, capability-example, and synthetic
   analysis artefacts in one command.
 - [x] **S1 live-submission preflight checklist.** Implemented
-  2026-05-06: `docs/s1_live_submission_preflight_2026-05-06.md`
+  2026-05-06: `docs/campaigns/s1_live_submission_preflight_2026-05-06.md`
   records the mandatory manual gates for artefacts, scientific purpose,
   provider capability, budget, reproducibility, approval records, stop
   conditions, and post-run handling before any live S1 provider submitter
@@ -1430,13 +1430,13 @@ be executed until individually activated.
   targets from provider-neutral metadata JSON and records
   `hardware_submission=false` plus `network_access=false`.
 - [x] **S1 readiness index.** Implemented 2026-05-06:
-  `docs/s1_feedback_readiness_index_2026-05-06.md` consolidates the S1
+  `docs/campaigns/s1_feedback_readiness_index_2026-05-06.md` consolidates the S1
   no-QPU readiness state, artefact inventory, exact commands,
   preregistered job shape, claim boundary, platform interpretation, and
   remaining live-submission blockers.
 - [x] **S1 IBM feedback-control paper scaffold.** Implemented
-  2026-05-20: `docs/s1_feedback_ibm_paper_plan_2026-05-20.md` and
-  `paper/s1_feedback_control/s1_feedback_control_short_paper.md` define
+  2026-05-20: `docs/campaigns/s1_feedback_ibm_paper_plan_2026-05-20.md` and
+  `paper/submissions/submission_006_s1_feedback_control/s1_feedback_control_short_paper.md` define
   the next no-QPU preparation lane for a monitored-feedback versus
   matched-open-loop IBM dynamic-circuit paper. The package records the
   4-qubit, 2-circuit, 1024-shot, 12-repetition, 24-second preregistered
@@ -1508,7 +1508,7 @@ be executed until individually activated.
   grid entries and remaining blockers, and refuses IBM advantage readiness
   while the no-QPU matrix, hardware rows, or claim gates remain incomplete.
 - [x] **S2 scaling readiness index.** Implemented 2026-05-06:
-  `docs/s2_scaling_readiness_index_2026-05-06.md` summarises the S2
+  `docs/campaigns/s2_scaling_readiness_index_2026-05-06.md` summarises the S2
   lite baseline rows, canonical command, artefacts, allowed claims,
   forbidden claims, full-campaign blockers, hardware boundary, and next
   non-QPU scaling step.
@@ -1525,7 +1525,7 @@ be executed until individually activated.
   optional hardware, and generates
   `data/s2_advantage_scaling/s2_full_campaign_plan_2026-05-07.json`,
   `data/s2_advantage_scaling/s2_full_campaign_rows_2026-05-07.csv`,
-  and `docs/s2_full_campaign_plan_2026-05-07.md`. Decision:
+  and `docs/campaigns/s2_full_campaign_plan_2026-05-07.md`. Decision:
   `ready_for_deliberate_no_qpu_full_classical_campaign`; hardware rows
   and broad quantum-advantage language remain blocked.
 - [x] **S2 bounded full-campaign execution slice.** Implemented
@@ -1535,7 +1535,7 @@ be executed until individually activated.
   `n=8` slice generated
   `data/s2_advantage_scaling/s2_full_campaign_slice_n8_2026-05-07.json`,
   `data/s2_advantage_scaling/s2_full_campaign_slice_rows_n8_2026-05-07.csv`,
-  and `docs/s2_full_campaign_slice_n8_2026-05-07.md`. Decision:
+  and `docs/campaigns/s2_full_campaign_slice_n8_2026-05-07.md`. Decision:
   `completed_no_qpu_campaign_slice`; this is not the full campaign, not
   hardware evidence, and not a quantum-advantage claim.
 - [x] **S2 bounded full-campaign execution slice, `n=10`.** Implemented
@@ -1543,7 +1543,7 @@ be executed until individually activated.
   `n=10` scaling slice and generated
   `data/s2_advantage_scaling/s2_full_campaign_slice_n10_2026-05-07.json`,
   `data/s2_advantage_scaling/s2_full_campaign_slice_rows_n10_2026-05-07.csv`,
-  and `docs/s2_full_campaign_slice_n10_2026-05-07.md`. The slice recorded
+  and `docs/campaigns/s2_full_campaign_slice_n10_2026-05-07.md`. The slice recorded
   5 executed rows, 5 successful rows, 0 skipped rows, and decision
   `completed_no_qpu_campaign_slice`; this is still not the full campaign,
   not hardware evidence, and not a quantum-advantage claim.
@@ -1553,7 +1553,7 @@ be executed until individually activated.
   all set to 12 qubits. It generated
   `data/s2_advantage_scaling/s2_full_campaign_slice_n12_2026-05-07.json`,
   `data/s2_advantage_scaling/s2_full_campaign_slice_rows_n12_2026-05-07.csv`,
-  and `docs/s2_full_campaign_slice_n12_2026-05-07.md`. The slice recorded
+  and `docs/campaigns/s2_full_campaign_slice_n12_2026-05-07.md`. The slice recorded
   5 executed rows, 5 successful rows, 0 skipped rows, and decision
   `completed_no_qpu_campaign_slice`; this is still not the full campaign,
   not hardware evidence, and not a quantum-advantage claim.
@@ -1561,7 +1561,7 @@ be executed until individually activated.
   `scripts/report_s2_slice_progress.py` aggregates the completed bounded
   no-QPU S2 slices for `n=8,10,12` from committed JSON/CSV artefacts and
   writes `data/s2_advantage_scaling/s2_slice_progress_report_2026-05-07.json`
-  plus `docs/s2_slice_progress_report_2026-05-07.md`. The aggregate report
+  plus `docs/campaigns/s2_slice_progress_report_2026-05-07.md`. The aggregate report
   records 15 successful rows out of 15 executed rows, total measured wall time
   `510907.947844` ms, maximum recorded memory `2416024559` bytes, and decision
   `ready_for_next_bounded_no_qpu_slice`; this is still not hardware evidence,
@@ -1570,7 +1570,7 @@ be executed until individually activated.
   `scripts/report_s2_n14_resource_gate.py` compares the planned `n=14`
   required rows against the committed `n=8,10,12` progress artefacts and
   writes `data/s2_advantage_scaling/s2_n14_resource_gate_2026-05-07.json`
-  plus `docs/s2_n14_resource_gate_2026-05-07.md`. The report records a
+  plus `docs/campaigns/s2_n14_resource_gate_2026-05-07.md`. The report records a
   dense-matrix estimate of `4294967296` bytes, prior maximum recorded memory
   `2416024559` bytes, dense/prior-memory ratio `1.7777`, and decision
   `blocked_for_scheduled_or_offloaded_no_qpu_run`; this is a resource gate,
@@ -1583,7 +1583,7 @@ be executed until individually activated.
   artefacts are
   `data/s2_advantage_scaling/s2_full_campaign_slice_n14_2026-05-07.json`,
   `data/s2_advantage_scaling/s2_full_campaign_slice_rows_n14_2026-05-07.csv`,
-  and `docs/s2_full_campaign_slice_n14_2026-05-07.md`. The slice recorded
+  and `docs/campaigns/s2_full_campaign_slice_n14_2026-05-07.md`. The slice recorded
   5 executed rows, 5 successful rows, 0 skipped rows, decision
   `completed_no_qpu_campaign_slice`, all caps set to 14 qubits, and no QPU
   time. The ML350 timing log reported wall time `3:03:29`, peak RSS
@@ -1604,7 +1604,7 @@ be executed until individually activated.
   design-readiness JSON/Markdown artefacts through the canonical
   benchmark CLI without hardware submission.
 - [x] **S3 design readiness index.** Implemented 2026-05-06:
-  `docs/s3_design_readiness_index_2026-05-06.md` documents the
+  `docs/campaigns/s3_design_readiness_index_2026-05-06.md` documents the
   candidate families, canonical command, allowed claims, forbidden
   claims, and the next S3 steps: held-out surrogate training, VQE or
   observable validation, provider-specific pulse feasibility probes, and
@@ -1735,7 +1735,7 @@ be executed until individually activated.
   CI smoke step. 100 % line coverage across all modules; 128 / 128
   tests green.
 - **B1** arXiv LaTeX preprint — **closed 2026-04-18** (commit
-  `457b734`): `paper/phase1_dla_parity/phase1_dla_parity.tex` compiles to a 4-page
+  `457b734`): `paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity.tex` compiles to a 4-page
   PDF; `paper/README.md` documents the submission packaging.
 - **Qiskit 1.x → 2.x migration** — **closed 2026-04-18** (commit
   `b786fc2`): pin bump to `qiskit>=2.2,<3.0`, closed the Dependabot
@@ -1995,11 +1995,11 @@ more physics tracks listed above.
   `scripts/compare_paper0_knm_preregistered_replay.py`,
   `scripts/run_paper0_knm_preregistered_replay_gate.py`,
   `data/paper0_knm_preregistered_replay.json`,
-  `docs/paper0_knm_preregistered_replay.md`, and
+  `docs/paper0/paper0_knm_preregistered_replay.md`, and
   `tests/test_paper0_knm_preregistered_replay.py`.
 - Contract artefacts: `scripts/export_paper0_knm_replay_contract.py`,
-  `docs/paper0_knm_preregistered_replay_contract.md`, and
-  `docs/paper0_knm_measured_coupling_evidence_checklist.md`.
+  `docs/paper0/paper0_knm_preregistered_replay_contract.md`, and
+  `docs/paper0/paper0_knm_measured_coupling_evidence_checklist.md`.
 - Contract check: `scripts/export_paper0_knm_replay_contract.py --check-replay
   data/paper0_knm_preregistered_replay.json` validates the semantic fail-closed
   replay boundary in addition to the comparator's artefact drift check.

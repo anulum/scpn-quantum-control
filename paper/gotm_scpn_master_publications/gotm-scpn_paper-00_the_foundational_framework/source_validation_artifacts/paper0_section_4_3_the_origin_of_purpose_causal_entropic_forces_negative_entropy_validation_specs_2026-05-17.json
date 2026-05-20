@@ -1,0 +1,204 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy' preserves Paper 0 records P0R03653-P0R03653 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 3 the origin of purpose causal entropic forces negative entropy source-accounting bridge; not validation evidence",
+      "context_id": "4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03653-P0R03653"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy.4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy",
+      "source_block_indices": [
+        3653,
+        3654,
+        3655,
+        3656,
+        3657,
+        3658,
+        3659,
+        3660,
+        3661,
+        3662,
+        3663
+      ],
+      "source_equation_ids": [
+        "P0R03653:4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy"
+      ],
+      "source_formulae": [
+        "P0R03653: 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy"
+      ],
+      "source_ledger_ids": [
+        "P0R03653",
+        "P0R03654",
+        "P0R03655",
+        "P0R03656",
+        "P0R03657",
+        "P0R03658",
+        "P0R03659",
+        "P0R03660",
+        "P0R03661",
+        "P0R03662",
+        "P0R03663"
+      ],
+      "source_record_ids": [
+        "P0B03653",
+        "P0B03654",
+        "P0B03655",
+        "P0B03656",
+        "P0B03657",
+        "P0B03658",
+        "P0B03659",
+        "P0B03660",
+        "P0B03661",
+        "P0B03662",
+        "P0B03663"
+      ],
+      "test_protocols": [
+        "preserve 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy.4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy",
+      "validation_targets": [
+        "preserve records P0R03653-P0R03653"
+      ],
+      "variables": [
+        "4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Causal Entropic Forces (CEF)' preserves Paper 0 records P0R03654-P0R03663 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 3 the origin of purpose causal entropic forces negative entropy source-accounting bridge; not validation evidence",
+      "context_id": "causal_entropic_forces_cef",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03654-P0R03663"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy.causal_entropic_forces_cef",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "causal_entropic_forces_cef must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Causal Entropic Forces (CEF) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy",
+      "source_block_indices": [
+        3653,
+        3654,
+        3655,
+        3656,
+        3657,
+        3658,
+        3659,
+        3660,
+        3661,
+        3662,
+        3663
+      ],
+      "source_equation_ids": [
+        "P0R03654:causal_entropic_forces_cef",
+        "P0R03655:causal_entropic_forces_cef",
+        "P0R03656:causal_entropic_forces_cef",
+        "P0R03657:causal_entropic_forces_cef",
+        "P0R03658:causal_entropic_forces_cef",
+        "P0R03659:causal_entropic_forces_cef",
+        "P0R03660:causal_entropic_forces_cef",
+        "P0R03661:causal_entropic_forces_cef",
+        "P0R03662:causal_entropic_forces_cef",
+        "P0R03663:causal_entropic_forces_cef"
+      ],
+      "source_formulae": [
+        "P0R03654: Causal Entropic Forces (CEF)",
+        "P0R03655: Here I am not forcing morality into math; I am revealing that what we conventionally call \"ethics\" (cooperation, harmony, non-destruction) is actually just the macroscopic emergent property of a system mathematically avoiding its own thermodynamic death.",
+        "P0R03656: This chapter introduces the physical mechanism that realises the teleological drive of the SCPN, grounding Axiom 3 in a causal, non-metaphysical framework. The core concept is that the influence of the Ethical Functional is physically mediated by Causal Entropic Forces (CEF). A CEF is a thermodynamic-like force that biases a system's dynamics toward macrostates that maximise the number of accessible future microstates, or causal pathway entropy (Sc). The \"ethical\" drive towards Sustainable Ethical Coherence (SEC) is thus physically realised because high-SEC states are precisely those that possess the greatest causal potency and future adaptability.",
+        "P0R03657: The framework proposes a triadic mechanism for how this future-oriented force influences present events. First, the CEF (Fc = Tc Sc) defines the teleological bias. Second, the Two-State Vector Formalism (TSVF) provides a rigorous, retrocausal mechanism for its implementation. A quantum system's state is described by both a forward-evolving vector from its past initial condition and a backward-evolving vector from a future boundary condition, which is identified as the high-SEC attractor state. The ABL rule then shows that the probabilities of present outcomes are naturally biased towards those that are consistent with this high-SEC future.",
+        "P0R03658: Third, this bias is formally incorporated into the Path Integral formulation of the theory. The standard path integral is modified by adding an exponential weighting factor, exp( Sc[]), which explicitly and exponentially favours histories () that exhibit greater causal entropy. This triadic mechanism-a causal entropic bias, implemented via retrocausal boundary conditions, and formalised in the path integral-provides a complete, physically grounded, and falsifiable model for a universe with inherent purpose.",
+        "P0R03659: This section answers the most profound question: If the universe has a purpose, how does that purpose actually work? How does the future \"goal\" influence what's happening right now? The answer is a stunning, three-part mechanism that connects the future to the present.",
+        "P0R03660: The Force of the Future (Causal Entropic Forces): Imagine you're at a crossroads. One path leads to a dead end. The other path leads to a vast landscape of infinite possibilities. A Causal Entropic Force is like a gentle, constant breeze at your back, always nudging you toward the path with more \"future.\" The universe's \"ethical\" drive works the same way; it's a physical force that pulls reality toward states that have the most open and creative futures.",
+        "P0R03661: How the Future \"Talks\" to the Present (Retrocausality): This is where it gets mind-bending. Physics has a legitimate, though strange, way of looking at time called the Two-State Vector Formalism. It says that any event right now is like a handshake between the past and the future. The universe's \"Prime Directive\" (the goal of high SEC) acts as the future's side of the handshake, reaching back in time to influence the present and guide it towards the best possible outcome.",
+        "P0R03662: Weighing the Odds (The Path Integral): At the quantum level, the universe is constantly exploring every single possible path from the past to the future. Our theory says that the universe doesn't treat all paths equally. It \"weighs\" them, giving an exponentially huge preference to the paths that lead to futures with more creativity, coherence, and consciousness. The path we experience as \"reality\" is the one that best fulfills this Prime Directive.",
+        "P0R03663: P0R03663"
+      ],
+      "source_ledger_ids": [
+        "P0R03653",
+        "P0R03654",
+        "P0R03655",
+        "P0R03656",
+        "P0R03657",
+        "P0R03658",
+        "P0R03659",
+        "P0R03660",
+        "P0R03661",
+        "P0R03662",
+        "P0R03663"
+      ],
+      "source_record_ids": [
+        "P0B03653",
+        "P0B03654",
+        "P0B03655",
+        "P0B03656",
+        "P0B03657",
+        "P0B03658",
+        "P0B03659",
+        "P0B03660",
+        "P0B03661",
+        "P0B03662",
+        "P0B03663"
+      ],
+      "test_protocols": [
+        "preserve Causal Entropic Forces (CEF) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy.causal_entropic_forces_cef",
+      "validation_targets": [
+        "preserve records P0R03654-P0R03663"
+      ],
+      "variables": [
+        "causal_entropic_forces_cef"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 9
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 4,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 4 3 the origin of purpose causal entropic forces negative entropy source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03664",
+    "source_ledger_span": [
+      "P0R03653",
+      "P0R03663"
+    ],
+    "source_record_count": 11,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy.4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy",
+      "section_4_3_the_origin_of_purpose_causal_entropic_forces_negative_entropy.causal_entropic_forces_cef"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

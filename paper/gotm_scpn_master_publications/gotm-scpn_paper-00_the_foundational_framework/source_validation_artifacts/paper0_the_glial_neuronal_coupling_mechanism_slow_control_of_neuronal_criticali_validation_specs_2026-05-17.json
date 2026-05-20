@@ -1,0 +1,151 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality' preserves Paper 0 records P0R05366-P0R05379 without empirical validation claims.",
+      "claim_boundary": "source-bounded the glial neuronal coupling mechanism slow control of neuronal criticali source-accounting bridge; not validation evidence",
+      "context_id": "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05366-P0R05379"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali.the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality",
+      "source_block_indices": [
+        5366,
+        5367,
+        5368,
+        5369,
+        5370,
+        5371,
+        5372,
+        5373,
+        5374,
+        5375,
+        5376,
+        5377,
+        5378,
+        5379
+      ],
+      "source_equation_ids": [
+        "P0R05366:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05367:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05368:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05369:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05370:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05371:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05372:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05373:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05374:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05375:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05376:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05377:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05378:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+        "P0R05379:the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali"
+      ],
+      "source_formulae": [
+        "P0R05366: The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality",
+        "P0R05367: The homeostatic regulation that maintains neuronal networks within the quasicritical regime (Layer 4) is not a purely neuronal process. It is subject to slow, top-down modulation from the neurochemical environment (Layer 2), primarily mediated by the glial cell network. Astrocytes, in particular, provide a \"slow control\" layer that dynamically tunes the criticality of the \"fast\" neuronal processing layer. This coupling is essential for adapting the brain's computational regime to changing metabolic and cognitive demands.",
+        "P0R05368: The baseline dynamics of the neuronal network's proximity to criticality can be described by the evolution of its average branching parameter, sigma, which relaxes toward the critical point at sigma=1:",
+        "P0R05369: $dtd\\sigma\\mathbf{} = - \\kappa(\\sigma - 1) + \\eta(t)$",
+        "P0R05370: where is the homeostatic relaxation rate and (t) represents stochastic fluctuations.",
+        "P0R05371: The modulatory influence of the astrocyte network is introduced as a dynamic shift in this homeostatic set-point. Astrocytic calcium signalling, [Ca2+]A(t), triggers the release of gliotransmitters, G(t), which diffuse into the synaptic space and alter the local excitation-inhibition (E/I) balance of the neuronal network. The concentration of an excitatory gliotransmitter (e.g., glutamate) can be modelled with simple first-order kinetics:",
+        "P0R05372: $dtdG\\mathbf{} = \\alpha\\lbrack Ca2 + \\rbrack A\\mathbf{}(t) - \\beta G(t)$",
+        "P0R05373: where is the calcium-dependent release rate and is the clearance rate (due to uptake and degradation).",
+        "P0R05374: This ambient gliotransmitter concentration directly biases the E/I balance, effectively shifting the target set-point of the neuronal network's branching parameter.",
+        "P0R05375: The following set of equations therefore describes the coupled system:",
+        "P0R05376: $dtd\\sigma = - \\kappa\\left( \\sigma - \\left( 1 + \\gamma G(t) \\right) \\right) + \\eta(t)$",
+        "P0R05377: $dtdG = \\alpha\\lbrack Ca2 + \\rbrack A(t) - \\beta G(t)$",
+        "P0R05378: Here, the coupling parameter represents the sensitivity of the neuronal network's E/I balance to the gliotransmitter. For an excitatory gliotransmitter, >0, meaning that a sustained increase in astrocyte activity (leading to a higher steady-state concentration of G) pushes the neuronal network's stable operating point into a slightly supercritical regime (sigma>1). Conversely, inhibitory gliotransmitters would be represented by <0.",
+        "P0R05379: This formal model provides a direct mechanistic explanation for the \"Glial Slow Control\" hypothesis. The slow timescale of astrocyte calcium waves (seconds to minutes) induces a slow modulation of the parameter sigma, which in turn alters the statistics of the fast (millisecond-scale) neuronal avalanches. This generates a clear, falsifiable prediction: the pharmacological application of gliotransmitter antagonists should functionally decouple the two systems. In the presence of such antagonists, astrocyte calcium waves would persist, but the correlated shift in the power-law exponent of neuronal avalanches would be significantly attenuated or abolished."
+      ],
+      "source_ledger_ids": [
+        "P0R05366",
+        "P0R05367",
+        "P0R05368",
+        "P0R05369",
+        "P0R05370",
+        "P0R05371",
+        "P0R05372",
+        "P0R05373",
+        "P0R05374",
+        "P0R05375",
+        "P0R05376",
+        "P0R05377",
+        "P0R05378",
+        "P0R05379"
+      ],
+      "source_record_ids": [
+        "P0B05366",
+        "P0B05367",
+        "P0B05368",
+        "P0B05369",
+        "P0B05370",
+        "P0B05371",
+        "P0B05372",
+        "P0B05373",
+        "P0B05374",
+        "P0B05375",
+        "P0B05376",
+        "P0B05377",
+        "P0B05378",
+        "P0B05379"
+      ],
+      "test_protocols": [
+        "preserve The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali.the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali",
+      "validation_targets": [
+        "preserve records P0R05366-P0R05379"
+      ],
+      "variables": [
+        "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 13
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "equation": 4,
+      "mechanism": 1,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded the glial neuronal coupling mechanism slow control of neuronal criticali source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0106",
+      "EQ0107",
+      "EQ0108",
+      "EQ0109"
+    ],
+    "next_source_boundary": "P0R05380",
+    "source_ledger_span": [
+      "P0R05366",
+      "P0R05379"
+    ],
+    "source_record_count": 14,
+    "spec_count": 1,
+    "spec_keys": [
+      "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali.the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "claim_boundary": "source-bounded section 2 the geometry of synchronisation upde manifolds source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia": "1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia_source_boundary",
+    "2_the_geometry_of_synchronisation_upde_manifolds": "2_the_geometry_of_synchronisation_upde_manifolds_source_boundary",
+    "v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7": "v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "2. The Geometry of Synchronisation (UPDE Manifolds):",
+    "component_2": "V. The Geometry of Subjectivity and Meaning (Domain II: L5/L7)",
+    "component_3": "1. The Consciousness Manifold (L5): The Intrinsic Geometry of Qualia",
+    "component_count": "3",
+    "next_boundary": "P0R04433",
+    "section": "2. The Geometry of Synchronisation (UPDE Manifolds):",
+    "source_span": "P0R04413-P0R04432"
+  },
+  "next_source_boundary": "P0R04433",
+  "null_controls": {
+    "1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia_is_not_empirical_validation_evidence": 1.0,
+    "2_the_geometry_of_synchronisation_upde_manifolds_is_not_empirical_validation_evidence": 1.0,
+    "v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 2 the geometry of synchronisation upde manifolds source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_2_the_geometry_of_synchronisation_upde_manifolds_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04413",
+      "P0R04414",
+      "P0R04415",
+      "P0R04416",
+      "P0R04417",
+      "P0R04418",
+      "P0R04419",
+      "P0R04420",
+      "P0R04421",
+      "P0R04422",
+      "P0R04423",
+      "P0R04424",
+      "P0R04425",
+      "P0R04426",
+      "P0R04427",
+      "P0R04428",
+      "P0R04429",
+      "P0R04430",
+      "P0R04431",
+      "P0R04432"
+    ],
+    "source_ledger_span": [
+      "P0R04413",
+      "P0R04432"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04413",
+    "P0R04432"
+  ],
+  "source_record_count": 20
+}

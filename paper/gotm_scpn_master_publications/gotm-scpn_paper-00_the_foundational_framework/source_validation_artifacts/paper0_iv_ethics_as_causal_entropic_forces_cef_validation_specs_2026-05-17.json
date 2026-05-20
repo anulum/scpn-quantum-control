@@ -1,0 +1,183 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'IV. Ethics as Causal Entropic Forces (CEF):' preserves Paper 0 records P0R06107-P0R06113 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv ethics as causal entropic forces cef source-accounting bridge; not validation evidence",
+      "context_id": "iv_ethics_as_causal_entropic_forces_cef",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06107-P0R06113"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_ethics_as_causal_entropic_forces_cef.iv_ethics_as_causal_entropic_forces_cef",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iv_ethics_as_causal_entropic_forces_cef must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IV. Ethics as Causal Entropic Forces (CEF): is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > IV. Ethics as Causal Entropic Forces (CEF):",
+      "source_block_indices": [
+        6107,
+        6108,
+        6109,
+        6110,
+        6111,
+        6112,
+        6113,
+        6114
+      ],
+      "source_equation_ids": [
+        "P0R06107:iv_ethics_as_causal_entropic_forces_cef",
+        "P0R06108:iv_ethics_as_causal_entropic_forces_cef",
+        "P0R06109:iv_ethics_as_causal_entropic_forces_cef",
+        "P0R06110:iv_ethics_as_causal_entropic_forces_cef",
+        "P0R06111:iv_ethics_as_causal_entropic_forces_cef",
+        "P0R06112:iv_ethics_as_causal_entropic_forces_cef",
+        "P0R06113:iv_ethics_as_causal_entropic_forces_cef"
+      ],
+      "source_formulae": [
+        "P0R06107: IV. Ethics as Causal Entropic Forces (CEF):",
+        "P0R06108: The Ethical Functional exerts physical influence via Causal Entropic Forces (CEF). Systems evolve to maximise their future causal pathway entropy (SC). SEC defines the configuration space with the highest SC.",
+        "P0R06109: $FCausal = TC\\nabla X SC(X,\\tau)$",
+        "P0R06110: This force (FCausal) biases dynamics at all layers-guiding evolution (L3/L8), biasing Free Energy minimisation (L5/HPC), and influencing quantum collapse (L1/IIT-OR)-grounding the Ethical Functional in causal physics.",
+        "P0R06111: \"Ethical naturalism\" defence",
+        "P0R06112: \"We treat SEC not as deriving ought' from is' but as a selection principle on feasible attractors: systems that sustain coherence, complexity, and qualia persist under UPDE-constrained dynamics. The ethical' label names this feasibility frontier, not a moral fiat; L16 ensures continual audit against energy/information constraints.\"",
+        "P0R06113: P0R06113"
+      ],
+      "source_ledger_ids": [
+        "P0R06107",
+        "P0R06108",
+        "P0R06109",
+        "P0R06110",
+        "P0R06111",
+        "P0R06112",
+        "P0R06113",
+        "P0R06114"
+      ],
+      "source_record_ids": [
+        "P0B06107",
+        "P0B06108",
+        "P0B06109",
+        "P0B06110",
+        "P0B06111",
+        "P0B06112",
+        "P0B06113",
+        "P0B06114"
+      ],
+      "test_protocols": [
+        "preserve IV. Ethics as Causal Entropic Forces (CEF): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_ethics_as_causal_entropic_forces_cef.iv_ethics_as_causal_entropic_forces_cef",
+      "validation_targets": [
+        "preserve records P0R06107-P0R06113"
+      ],
+      "variables": [
+        "iv_ethics_as_causal_entropic_forces_cef"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Overarching Principles and System Dynamics In short' preserves Paper 0 records P0R06114-P0R06114 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv ethics as causal entropic forces cef source-accounting bridge; not validation evidence",
+      "context_id": "overarching_principles_and_system_dynamics_in_short",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06114-P0R06114"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_ethics_as_causal_entropic_forces_cef.overarching_principles_and_system_dynamics_in_short",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "overarching_principles_and_system_dynamics_in_short must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Overarching Principles and System Dynamics In short is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > IV. Ethics as Causal Entropic Forces (CEF):",
+      "source_block_indices": [
+        6107,
+        6108,
+        6109,
+        6110,
+        6111,
+        6112,
+        6113,
+        6114
+      ],
+      "source_equation_ids": [
+        "P0R06114:overarching_principles_and_system_dynamics_in_short"
+      ],
+      "source_formulae": [
+        "P0R06114: Overarching Principles and System Dynamics In short"
+      ],
+      "source_ledger_ids": [
+        "P0R06107",
+        "P0R06108",
+        "P0R06109",
+        "P0R06110",
+        "P0R06111",
+        "P0R06112",
+        "P0R06113",
+        "P0R06114"
+      ],
+      "source_record_ids": [
+        "P0B06107",
+        "P0B06108",
+        "P0B06109",
+        "P0B06110",
+        "P0B06111",
+        "P0B06112",
+        "P0B06113",
+        "P0B06114"
+      ],
+      "test_protocols": [
+        "preserve Overarching Principles and System Dynamics In short source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_ethics_as_causal_entropic_forces_cef.overarching_principles_and_system_dynamics_in_short",
+      "validation_targets": [
+        "preserve records P0R06114-P0R06114"
+      ],
+      "variables": [
+        "overarching_principles_and_system_dynamics_in_short"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 4,
+      "equation": 1,
+      "mechanism": 1,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded iv ethics as causal entropic forces cef source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0128"
+    ],
+    "next_source_boundary": "P0R06115",
+    "source_ledger_span": [
+      "P0R06107",
+      "P0R06114"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "iv_ethics_as_causal_entropic_forces_cef.iv_ethics_as_causal_entropic_forces_cef",
+      "iv_ethics_as_causal_entropic_forces_cef.overarching_principles_and_system_dynamics_in_short"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 IV. Ethics as Causal Entropic Forces (CEF): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

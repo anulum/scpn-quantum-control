@@ -1,0 +1,191 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2.1 The State Space and Path Space' preserves Paper 0 records P0R03753-P0R03755 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 1 the state space and path space source-accounting bridge; not validation evidence",
+      "context_id": "2_1_the_state_space_and_path_space",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03753-P0R03755"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_1_the_state_space_and_path_space.2_1_the_state_space_and_path_space",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_1_the_state_space_and_path_space must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2.1 The State Space and Path Space is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 2. A Path Integral Formulation of Causal Path Entropy > 2.1 The State Space and Path Space",
+      "source_block_indices": [
+        3753,
+        3754,
+        3755,
+        3756,
+        3757,
+        3758,
+        3759,
+        3760,
+        3761
+      ],
+      "source_equation_ids": [
+        "P0R03753:2_1_the_state_space_and_path_space",
+        "P0R03754:2_1_the_state_space_and_path_space",
+        "P0R03755:2_1_the_state_space_and_path_space"
+      ],
+      "source_formulae": [
+        "P0R03753: 2.1 The State Space and Path Space",
+        "P0R03754: Let the total state space of the system described by the SCPN be a high-dimensional manifold, M. A specific, complete microstate of the system at a given instant is represented by a point xM. This point encodes all relevant degrees of freedom across all 15 layers of the architecture. A trajectory, or path, is a continuous map from a time interval [0,tau] to this manifold, denoted as a function x(t).",
+        "P0R03755: This function describes the complete evolution of the system's microstate over a future time horizon tau. The set of all such possible future paths, originating from a specific initial state x(0), constitutes the path space, P."
+      ],
+      "source_ledger_ids": [
+        "P0R03753",
+        "P0R03754",
+        "P0R03755",
+        "P0R03756",
+        "P0R03757",
+        "P0R03758",
+        "P0R03759",
+        "P0R03760",
+        "P0R03761"
+      ],
+      "source_record_ids": [
+        "P0B03753",
+        "P0B03754",
+        "P0B03755",
+        "P0B03756",
+        "P0B03757",
+        "P0B03758",
+        "P0B03759",
+        "P0B03760",
+        "P0B03761"
+      ],
+      "test_protocols": [
+        "preserve 2.1 The State Space and Path Space source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_1_the_state_space_and_path_space.2_1_the_state_space_and_path_space",
+      "validation_targets": [
+        "preserve records P0R03753-P0R03755"
+      ],
+      "variables": [
+        "2_1_the_state_space_and_path_space"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2.2 The Path Integral Measure' preserves Paper 0 records P0R03756-P0R03761 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 1 the state space and path space source-accounting bridge; not validation evidence",
+      "context_id": "2_2_the_path_integral_measure",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03756-P0R03761"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_1_the_state_space_and_path_space.2_2_the_path_integral_measure",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_2_the_path_integral_measure must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2.2 The Path Integral Measure is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 2. A Path Integral Formulation of Causal Path Entropy > 2.1 The State Space and Path Space",
+      "source_block_indices": [
+        3753,
+        3754,
+        3755,
+        3756,
+        3757,
+        3758,
+        3759,
+        3760,
+        3761
+      ],
+      "source_equation_ids": [
+        "P0R03756:2_2_the_path_integral_measure",
+        "P0R03757:2_2_the_path_integral_measure",
+        "P0R03758:2_2_the_path_integral_measure",
+        "P0R03759:2_2_the_path_integral_measure",
+        "P0R03760:2_2_the_path_integral_measure",
+        "P0R03761:2_2_the_path_integral_measure"
+      ],
+      "source_formulae": [
+        "P0R03756: 2.2 The Path Integral Measure",
+        "P0R03757: For any open thermodynamic system, its evolution is not deterministic but probabilistic, due to interactions with its environment and intrinsic quantum fluctuations. We can therefore define a conditional probability functional,",
+        "P0R03758: $\\mathbf{\\Pr}\\left\\lbrack \\mathbf{x}\\left( \\mathbf{t} \\right)\\mid\\mathbf{x}\\left( \\mathbf{0} \\right) \\right\\rbrack\\mathbf{,}$",
+        "P0R03759: which represents the probability of the system traversing a specific future path x(t) given that it started at the microstate x(0). This probability functional accounts for all sources of stochasticity and is normalised over the entire path space:",
+        "P0R03760: $\\int_{}^{}{\\mathbf{P Pr}\\left\\lbrack \\mathbf{x}\\left( \\mathbf{t} \\right)\\mid\\mathbf{x}\\left( \\mathbf{0} \\right) \\right\\rbrack\\mathbf{D}\\left\\lbrack \\mathbf{x}\\left( \\mathbf{t} \\right) \\right\\rbrack}\\mathbf{= 1}$",
+        "P0R03761: Here, D[x(t)] is the path integral measure, a notational convention for summing over all possible paths in the space P."
+      ],
+      "source_ledger_ids": [
+        "P0R03753",
+        "P0R03754",
+        "P0R03755",
+        "P0R03756",
+        "P0R03757",
+        "P0R03758",
+        "P0R03759",
+        "P0R03760",
+        "P0R03761"
+      ],
+      "source_record_ids": [
+        "P0B03753",
+        "P0B03754",
+        "P0B03755",
+        "P0B03756",
+        "P0B03757",
+        "P0B03758",
+        "P0B03759",
+        "P0B03760",
+        "P0B03761"
+      ],
+      "test_protocols": [
+        "preserve 2.2 The Path Integral Measure source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_1_the_state_space_and_path_space.2_2_the_path_integral_measure",
+      "validation_targets": [
+        "preserve records P0R03756-P0R03761"
+      ],
+      "variables": [
+        "2_2_the_path_integral_measure"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 4,
+      "equation": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded section 2 1 the state space and path space source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0066",
+      "EQ0067"
+    ],
+    "next_source_boundary": "P0R03762",
+    "source_ledger_span": [
+      "P0R03753",
+      "P0R03761"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_2_1_the_state_space_and_path_space.2_1_the_state_space_and_path_space",
+      "section_2_1_the_state_space_and_path_space.2_2_the_path_integral_measure"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2.1 The State Space and Path Space Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

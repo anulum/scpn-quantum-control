@@ -58,7 +58,7 @@ def test_manifest_scans_public_capability_surfaces() -> None:
     assert manifest["counts"]["notebook_files"] == len(manifest["documentation"]["notebooks"])
     assert manifest["counts"]["example_files"] == len(manifest["documentation"]["examples"])
     assert "ibm" in manifest["packaging"]["optional_extras"]
-    assert "docs/paper0_validation_register.md" in manifest["documentation"]["public_pages"]
+    assert "docs/paper0/paper0_validation_register.md" in manifest["documentation"]["public_pages"]
     assert "tests/test_bench_cli.py" in manifest["quality_gates"]["test_files"]
 
 

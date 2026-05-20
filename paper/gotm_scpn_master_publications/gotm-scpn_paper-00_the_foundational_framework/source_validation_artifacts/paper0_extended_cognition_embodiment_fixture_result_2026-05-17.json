@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded extended cognition embodiment source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "extended_cognition_embodiment": "extended_cognition_embodiment_source_boundary",
+    "information_geometry_statistical_foundations": "information_geometry_statistical_foundations_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Extended Cognition & Embodiment",
+    "component_2": "Information Geometry & Statistical Foundations",
+    "component_count": "2",
+    "next_boundary": "P0R05902",
+    "section": " Extended Cognition & Embodiment",
+    "source_span": "P0R05894-P0R05901"
+  },
+  "next_source_boundary": "P0R05902",
+  "null_controls": {
+    "extended_cognition_embodiment_is_not_empirical_validation_evidence": 1.0,
+    "information_geometry_statistical_foundations_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded extended cognition embodiment source-accounting bridge; not validation evidence",
+    "protocol_state": "source_extended_cognition_embodiment_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05894",
+      "P0R05895",
+      "P0R05896",
+      "P0R05897",
+      "P0R05898",
+      "P0R05899",
+      "P0R05900",
+      "P0R05901"
+    ],
+    "source_ledger_span": [
+      "P0R05894",
+      "P0R05901"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05894",
+    "P0R05901"
+  ],
+  "source_record_count": 8
+}

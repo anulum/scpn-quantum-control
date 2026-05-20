@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded multi scale quantum error correction ms qec source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "multi_scale_quantum_error_correction_ms_qec": "multi_scale_quantum_error_correction_ms_qec_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Multi-Scale Quantum Error Correction (MS-QEC)",
+    "component_count": "1",
+    "next_boundary": "P0R03025",
+    "section": "Multi-Scale Quantum Error Correction (MS-QEC)",
+    "source_span": "P0R03010-P0R03024"
+  },
+  "next_source_boundary": "P0R03025",
+  "null_controls": {
+    "multi_scale_quantum_error_correction_ms_qec_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded multi scale quantum error correction ms qec source-accounting bridge; not validation evidence",
+    "protocol_state": "source_multi_scale_quantum_error_correction_ms_qec_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03010",
+      "P0R03011",
+      "P0R03012",
+      "P0R03013",
+      "P0R03014",
+      "P0R03015",
+      "P0R03016",
+      "P0R03017",
+      "P0R03018",
+      "P0R03019",
+      "P0R03020",
+      "P0R03021",
+      "P0R03022",
+      "P0R03023",
+      "P0R03024"
+    ],
+    "source_ledger_span": [
+      "P0R03010",
+      "P0R03024"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03010",
+    "P0R03024"
+  ],
+  "source_record_count": 15
+}

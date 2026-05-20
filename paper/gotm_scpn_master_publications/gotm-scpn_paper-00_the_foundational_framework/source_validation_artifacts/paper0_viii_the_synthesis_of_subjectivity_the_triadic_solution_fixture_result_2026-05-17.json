@@ -1,0 +1,58 @@
+{
+  "claim_boundary": "source-bounded viii the synthesis of subjectivity the triadic solution source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "ix_the_physics_of_teleology_and_ethics_the_teleological_engine": "ix_the_physics_of_teleology_and_ethics_the_teleological_engine_source_boundary",
+    "the_physics_of_information_weaving_space_time_and_consciousness": "the_physics_of_information_weaving_space_time_and_consciousness_source_boundary",
+    "viii_the_synthesis_of_subjectivity_the_triadic_solution": "viii_the_synthesis_of_subjectivity_the_triadic_solution_source_boundary",
+    "x_the_dynamics_of_dissolution_death_and_transcendence": "x_the_dynamics_of_dissolution_death_and_transcendence_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "VIII. The Synthesis of Subjectivity (The Triadic Solution)",
+    "component_2": "IX. The Physics of Teleology and Ethics (The Teleological Engine)",
+    "component_3": "X. The Dynamics of Dissolution (Death and Transcendence)",
+    "component_4": "The Physics of Information: Weaving Space-Time and Consciousness",
+    "component_count": "4",
+    "next_boundary": "P0R06147",
+    "section": "VIII. The Synthesis of Subjectivity (The Triadic Solution)",
+    "source_span": "P0R06132-P0R06146"
+  },
+  "next_source_boundary": "P0R06147",
+  "null_controls": {
+    "ix_the_physics_of_teleology_and_ethics_the_teleological_engine_is_not_empirical_validation_evidence": 1.0,
+    "the_physics_of_information_weaving_space_time_and_consciousness_is_not_empirical_validation_evidence": 1.0,
+    "viii_the_synthesis_of_subjectivity_the_triadic_solution_is_not_empirical_validation_evidence": 1.0,
+    "x_the_dynamics_of_dissolution_death_and_transcendence_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded viii the synthesis of subjectivity the triadic solution source-accounting bridge; not validation evidence",
+    "protocol_state": "source_viii_the_synthesis_of_subjectivity_the_triadic_solution_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R06132",
+      "P0R06133",
+      "P0R06134",
+      "P0R06135",
+      "P0R06136",
+      "P0R06137",
+      "P0R06138",
+      "P0R06139",
+      "P0R06140",
+      "P0R06141",
+      "P0R06142",
+      "P0R06143",
+      "P0R06144",
+      "P0R06145",
+      "P0R06146"
+    ],
+    "source_ledger_span": [
+      "P0R06132",
+      "P0R06146"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06132",
+    "P0R06146"
+  ],
+  "source_record_count": 15
+}

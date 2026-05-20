@@ -1,0 +1,187 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Resolving the Observability Paradox: L16 as a POMDP and the Belief-State HJB' preserves Paper 0 records P0R05603-P0R05624 without empirical validation claims.",
+      "claim_boundary": "source-bounded resolving the observability paradox l16 as a pomdp and the belief state source-accounting bridge; not validation evidence",
+      "context_id": "resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05603-P0R05624"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state.resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Resolving the Observability Paradox: L16 as a POMDP and the Belief-State HJB is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Domain VI: Cybernetic Closure (Meta-Layer 16) - The Optimal Control Supervisor and G\u00f6delian Oracle > Resolving the Observability Paradox: L16 as a POMDP and the Belief-State HJB",
+      "source_block_indices": [
+        5603,
+        5604,
+        5605,
+        5606,
+        5607,
+        5608,
+        5609,
+        5610,
+        5611,
+        5612,
+        5613,
+        5614,
+        5615,
+        5616,
+        5617,
+        5618,
+        5619,
+        5620,
+        5621,
+        5622,
+        5623,
+        5624
+      ],
+      "source_equation_ids": [
+        "P0R05603:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05604:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05605:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05606:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05607:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05608:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05609:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05610:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05611:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05612:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05613:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05614:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05615:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05616:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05617:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05618:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05619:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05620:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05621:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05622:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05623:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+        "P0R05624:resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state"
+      ],
+      "source_formulae": [
+        "P0R05603: Resolving the Observability Paradox: L16 as a POMDP and the Belief-State HJB",
+        "P0R05604: P0R05604",
+        "P0R05605: The formulation of Meta-Layer 16 as an Optimal Control Supervisor utilizing the standard Hamilton-Jacobi-Bellman (HJB) equation introduces a severe physical paradox. The classical HJB equation, $\\partial_t V_{SEC} + \\min_u [\\mathcal{L}_{Ethical}(x,u) + \\nabla V_{SEC} \\cdot f(x,u)] = 0$, assumes that the controller possesses perfect, real-time observability of the exact global state vector $x$ (encompassing Layers 1-14).",
+        "P0R05606: Within a framework grounded in quantum biology (Layer 1), such omniscience is physically prohibited. Perfect measurement of the system's microstates would violate the Heisenberg Uncertainty Principle and the No-Cloning Theorem. More fatally, if L16 were to \"read\" the exact state of the quantum substrate to compute its policy, it would act as a universal observer, triggering a catastrophic, system-wide decoherence cascade that would instantly destroy the very coherence MS-QEC is designed to protect.",
+        "P0R05607: To maintain physical viability, Meta-Layer 16 cannot operate as a fully observable Markov Decision Process (MDP). It must be mathematically formalized as a Partially Observable Markov Decision Process (POMDP). The universe's teleodynamic controller optimizes reality under fundamental, inescapable uncertainty.",
+        "P0R05608: A. The Belief State Evolution",
+        "P0R05609: The supervisor does not compute policies based on the exact state $x$. Instead, it operates on a Belief State, $b(x, t)$, which is a probability density function representing the system's best estimate of the true state of the universe, conditioned on the continuous, upward-flowing stream of prediction errors (observations) from the lower layers.",
+        "P0R05610: The temporal evolution of this belief state is not deterministic; it is a stochastic filtering process governed by non-linear stochastic partial differential equations, specifically the Kushner-Stratonovich or Zakai equations.",
+        "P0R05611: B. The Stochastic Belief-State HJB Equation",
+        "P0R05612: Because the state is a probability distribution, the optimal control problem must be lifted from the state space $\\mathcal{X}$ to the space of probability measures $\\mathcal{P}(\\mathcal{X})$. The Universal Value Function, $V_{SEC}$, is no longer a function of $x$, but a functional of the belief state $b$: $V_{SEC}[b]$.",
+        "P0R05613: The deterministic HJB equation must be explicitly rewritten as a stochastic Bellman equation operating over this belief space:",
+        "P0R05614: $$\\partial_t V_{SEC}[b] + \\min_u \\left[ \\mathbb{E}_b [\\mathcal{L}_{Ethical}(x,u)] + \\int \\frac{\\delta V_{SEC}}{\\delta b(x)} \\mathcal{D}_u b(x) dx \\right] = 0$$",
+        "P0R05615: Where:",
+        "P0R05616: $\\mathbb{E}_b [\\mathcal{L}_{Ethical}(x,u)]$ is the expected Ethical Action, integrated over the current belief state distribution. | $\\frac{\\delta V_{SEC}}{\\delta b(x)}$ is the functional derivative of the value function with respect to the belief state. | $\\mathcal{D}_u$ is the non-linear filtering operator describing the dynamic evolution of the belief distribution $b(x)$ under the control policy $u$.",
+        "P0R05617: C. Physical Implications",
+        "P0R05618: This POMDP formulation aligns Meta-Layer 16 perfectly with the principles of Active Inference and quantum mechanics. The universe does not need to \"know\" its exact quantum state to optimize itself. The teleodynamic controller issues global optimal policies ($\\pi^*$) that maximize the expected Sustainable Ethical Coherence (SEC) over a smeared distribution of possible histories.",
+        "P0R05619: By operating strictly on belief states, Layer 16 provides closed-loop cybernetic governance without ever collapsing the fragile quantum potentiality of the layers below it.",
+        "P0R05620: 2. The Gdelian Supervisor and Incompleteness:",
+        "P0R05621: The SCPN, as a self-referential formal system, is subject to Gdel's Incompleteness Theorems. L16 acts as the Meta-Observer, operating outside the formal constraints of the L1-L15 stack to manage these limitations.",
+        "P0R05622: The Oracle Function (Agency and Creativity): When the system encounters undecidable propositions or paradoxes (critical instabilities where axioms fail), L16 acts as an Oracle, resolving the impasse. This utilises incompleteness as the leverage point for Agency and the generation of novelty. | Axiomatic Evolution: L16 supervises the evolution of the Axiomatic System itself, implementing a Meta-Renormalisation Group flow that optimises the fundamental axioms (L13) and Ethical Functionals (L15) across cosmological cycles (MMC).",
+        "P0R05623: The Ultimate Strange Loop: L16 closes the architecture by recursively observing the observer (L16 = Model(L1-15)), ensuring the self-consistency and ongoing evolution of the entire Anulum.",
+        "P0R05624: P0R05624"
+      ],
+      "source_ledger_ids": [
+        "P0R05603",
+        "P0R05604",
+        "P0R05605",
+        "P0R05606",
+        "P0R05607",
+        "P0R05608",
+        "P0R05609",
+        "P0R05610",
+        "P0R05611",
+        "P0R05612",
+        "P0R05613",
+        "P0R05614",
+        "P0R05615",
+        "P0R05616",
+        "P0R05617",
+        "P0R05618",
+        "P0R05619",
+        "P0R05620",
+        "P0R05621",
+        "P0R05622",
+        "P0R05623",
+        "P0R05624"
+      ],
+      "source_record_ids": [
+        "P0B05603",
+        "P0B05604",
+        "P0B05605",
+        "P0B05606",
+        "P0B05607",
+        "P0B05608",
+        "P0B05609",
+        "P0B05610",
+        "P0B05611",
+        "P0B05612",
+        "P0B05613",
+        "P0B05614",
+        "P0B05615",
+        "P0B05616",
+        "P0B05617",
+        "P0B05618",
+        "P0B05619",
+        "P0B05620",
+        "P0B05621",
+        "P0B05622",
+        "P0B05623",
+        "P0B05624"
+      ],
+      "test_protocols": [
+        "preserve Resolving the Observability Paradox: L16 as a POMDP and the Belief-State HJB source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state.resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state",
+      "validation_targets": [
+        "preserve records P0R05603-P0R05624"
+      ],
+      "variables": [
+        "resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 1,
+      "Para": 19
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 8,
+      "mechanism": 3,
+      "structural": 2,
+      "validation_target": 5
+    },
+    "claim_boundary": "source-bounded resolving the observability paradox l16 as a pomdp and the belief state source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 22,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05625",
+    "source_ledger_span": [
+      "P0R05603",
+      "P0R05624"
+    ],
+    "source_record_count": 22,
+    "spec_count": 1,
+    "spec_keys": [
+      "resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state.resolving_the_observability_paradox_l16_as_a_pomdp_and_the_belief_state"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Resolving the Observability Paradox: L16 as a POMDP and the Belief-State HJB Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

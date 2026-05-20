@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded section 4 the geometry of thought the consciousness manifold m source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "4_the_geometry_of_thought_the_consciousness_manifold_m": "4_the_geometry_of_thought_the_consciousness_manifold_m_source_boundary",
+    "5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis": "5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis_source_boundary",
+    "vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes": "vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "4. The Geometry of Thought (The Consciousness Manifold M):",
+    "component_2": "5. The Neural Correlates of Consciousness (NCC) - An SCPN Synthesis:",
+    "component_3": "VI. The Extended Brain: Neuro-Visceral and Neuro-Immune Axes",
+    "component_count": "3",
+    "next_boundary": "P0R04534",
+    "section": "4. The Geometry of Thought (The Consciousness Manifold M):",
+    "source_span": "P0R04526-P0R04533"
+  },
+  "next_source_boundary": "P0R04534",
+  "null_controls": {
+    "4_the_geometry_of_thought_the_consciousness_manifold_m_is_not_empirical_validation_evidence": 1.0,
+    "5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis_is_not_empirical_validation_evidence": 1.0,
+    "vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 4 the geometry of thought the consciousness manifold m source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_4_the_geometry_of_thought_the_consciousness_manifold_m_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04526",
+      "P0R04527",
+      "P0R04528",
+      "P0R04529",
+      "P0R04530",
+      "P0R04531",
+      "P0R04532",
+      "P0R04533"
+    ],
+    "source_ledger_span": [
+      "P0R04526",
+      "P0R04533"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04526",
+    "P0R04533"
+  ],
+  "source_record_count": 8
+}

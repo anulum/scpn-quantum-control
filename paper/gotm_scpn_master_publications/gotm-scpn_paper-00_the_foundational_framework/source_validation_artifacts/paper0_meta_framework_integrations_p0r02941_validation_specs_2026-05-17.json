@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R02941-P0R02941 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02941 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02941-P0R02941"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02941.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > Meta-Framework Integrations",
+      "source_block_indices": [
+        2941,
+        2942,
+        2943,
+        2944,
+        2945,
+        2946,
+        2947,
+        2948,
+        2949
+      ],
+      "source_equation_ids": [
+        "P0R02941:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R02941: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R02941",
+        "P0R02942",
+        "P0R02943",
+        "P0R02944",
+        "P0R02945",
+        "P0R02946",
+        "P0R02947",
+        "P0R02948",
+        "P0R02949"
+      ],
+      "source_record_ids": [
+        "P0B02941",
+        "P0B02942",
+        "P0B02943",
+        "P0B02944",
+        "P0B02945",
+        "P0B02946",
+        "P0B02947",
+        "P0B02948",
+        "P0B02949"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02941.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R02941-P0R02941"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R02942-P0R02943 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02941 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02942-P0R02943"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02941.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > Meta-Framework Integrations",
+      "source_block_indices": [
+        2941,
+        2942,
+        2943,
+        2944,
+        2945,
+        2946,
+        2947,
+        2948,
+        2949
+      ],
+      "source_equation_ids": [
+        "P0R02942:predictive_coding_integration",
+        "P0R02943:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R02942: Predictive Coding Integration",
+        "P0R02943: This two-timescale controller is the explicit algorithm for managing the exploration-exploitation trade-off in active inference."
+      ],
+      "source_ledger_ids": [
+        "P0R02941",
+        "P0R02942",
+        "P0R02943",
+        "P0R02944",
+        "P0R02945",
+        "P0R02946",
+        "P0R02947",
+        "P0R02948",
+        "P0R02949"
+      ],
+      "source_record_ids": [
+        "P0B02941",
+        "P0B02942",
+        "P0B02943",
+        "P0B02944",
+        "P0B02945",
+        "P0B02946",
+        "P0B02947",
+        "P0B02948",
+        "P0B02949"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02941.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R02942-P0R02943"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Fast Channel as Exploitation:' preserves Paper 0 records P0R02944-P0R02945 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02941 source-accounting bridge; not validation evidence",
+      "context_id": "the_fast_channel_as_exploitation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02944-P0R02945"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02941.the_fast_channel_as_exploitation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_fast_channel_as_exploitation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Fast Channel as Exploitation: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > Meta-Framework Integrations",
+      "source_block_indices": [
+        2941,
+        2942,
+        2943,
+        2944,
+        2945,
+        2946,
+        2947,
+        2948,
+        2949
+      ],
+      "source_equation_ids": [
+        "P0R02944:the_fast_channel_as_exploitation",
+        "P0R02945:the_fast_channel_as_exploitation"
+      ],
+      "source_formulae": [
+        "P0R02944: The Fast Channel as Exploitation:",
+        "P0R02945: The fast stabiliser, driven by MS-QEC, is the mechanism for exploiting the current generative model. It rapidly quenches prediction errors and forces the system's state to conform to its current best predictions, ensuring stability and coherence."
+      ],
+      "source_ledger_ids": [
+        "P0R02941",
+        "P0R02942",
+        "P0R02943",
+        "P0R02944",
+        "P0R02945",
+        "P0R02946",
+        "P0R02947",
+        "P0R02948",
+        "P0R02949"
+      ],
+      "source_record_ids": [
+        "P0B02941",
+        "P0B02942",
+        "P0B02943",
+        "P0B02944",
+        "P0B02945",
+        "P0B02946",
+        "P0B02947",
+        "P0B02948",
+        "P0B02949"
+      ],
+      "test_protocols": [
+        "preserve The Fast Channel as Exploitation: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02941.the_fast_channel_as_exploitation",
+      "validation_targets": [
+        "preserve records P0R02944-P0R02945"
+      ],
+      "variables": [
+        "the_fast_channel_as_exploitation"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Slow Channel as Exploration:' preserves Paper 0 records P0R02946-P0R02947 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02941 source-accounting bridge; not validation evidence",
+      "context_id": "the_slow_channel_as_exploration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02946-P0R02947"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02941.the_slow_channel_as_exploration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_slow_channel_as_exploration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Slow Channel as Exploration: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > Meta-Framework Integrations",
+      "source_block_indices": [
+        2941,
+        2942,
+        2943,
+        2944,
+        2945,
+        2946,
+        2947,
+        2948,
+        2949
+      ],
+      "source_equation_ids": [
+        "P0R02946:the_slow_channel_as_exploration",
+        "P0R02947:the_slow_channel_as_exploration"
+      ],
+      "source_formulae": [
+        "P0R02946: The Slow Channel as Exploration:",
+        "P0R02947: The slow exploratory drift is the mechanism for exploring the space of possible models. By allowing for gentle, bounded fluctuations, it enables the system to sample new states and gather the evidence needed to potentially switch to a better (lower free energy) generative model in the future."
+      ],
+      "source_ledger_ids": [
+        "P0R02941",
+        "P0R02942",
+        "P0R02943",
+        "P0R02944",
+        "P0R02945",
+        "P0R02946",
+        "P0R02947",
+        "P0R02948",
+        "P0R02949"
+      ],
+      "source_record_ids": [
+        "P0B02941",
+        "P0B02942",
+        "P0B02943",
+        "P0B02944",
+        "P0B02945",
+        "P0B02946",
+        "P0B02947",
+        "P0B02948",
+        "P0B02949"
+      ],
+      "test_protocols": [
+        "preserve The Slow Channel as Exploration: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02941.the_slow_channel_as_exploration",
+      "validation_targets": [
+        "preserve records P0R02946-P0R02947"
+      ],
+      "variables": [
+        "the_slow_channel_as_exploration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Affective Field as the Arbiter:' preserves Paper 0 records P0R02948-P0R02949 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02941 source-accounting bridge; not validation evidence",
+      "context_id": "the_affective_field_as_the_arbiter",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02948-P0R02949"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02941.the_affective_field_as_the_arbiter",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_affective_field_as_the_arbiter must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Affective Field as the Arbiter: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > Meta-Framework Integrations",
+      "source_block_indices": [
+        2941,
+        2942,
+        2943,
+        2944,
+        2945,
+        2946,
+        2947,
+        2948,
+        2949
+      ],
+      "source_equation_ids": [
+        "P0R02948:the_affective_field_as_the_arbiter",
+        "P0R02949:the_affective_field_as_the_arbiter"
+      ],
+      "source_formulae": [
+        "P0R02948: The Affective Field as the Arbiter:",
+        "P0R02949: The Affective Field (A = -F) is the direct measure of the agent's confidence in its current model. When surprise is high (steep affective gradient), the system's priority is to reduce that surprise, so it exploits its current model. When surprise is low (flat affective gradient), the system can afford to explore. This provides a first-principles, free-energy-based mechanism for optimally balancing stability and learning."
+      ],
+      "source_ledger_ids": [
+        "P0R02941",
+        "P0R02942",
+        "P0R02943",
+        "P0R02944",
+        "P0R02945",
+        "P0R02946",
+        "P0R02947",
+        "P0R02948",
+        "P0R02949"
+      ],
+      "source_record_ids": [
+        "P0B02941",
+        "P0B02942",
+        "P0B02943",
+        "P0B02944",
+        "P0B02945",
+        "P0B02946",
+        "P0B02947",
+        "P0B02948",
+        "P0B02949"
+      ],
+      "test_protocols": [
+        "preserve The Affective Field as the Arbiter: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02941.the_affective_field_as_the_arbiter",
+      "validation_targets": [
+        "preserve records P0R02948-P0R02949"
+      ],
+      "variables": [
+        "the_affective_field_as_the_arbiter"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 5,
+      "mechanism": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r02941 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02950",
+    "source_ledger_span": [
+      "P0R02941",
+      "P0R02949"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r02941.meta_framework_integrations",
+      "meta_framework_integrations_p0r02941.predictive_coding_integration",
+      "meta_framework_integrations_p0r02941.the_fast_channel_as_exploitation",
+      "meta_framework_integrations_p0r02941.the_slow_channel_as_exploration",
+      "meta_framework_integrations_p0r02941.the_affective_field_as_the_arbiter"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

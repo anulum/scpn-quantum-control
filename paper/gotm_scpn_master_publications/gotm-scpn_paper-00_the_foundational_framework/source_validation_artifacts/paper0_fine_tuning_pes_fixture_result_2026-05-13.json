@@ -1,0 +1,44 @@
+{
+  "claim_boundary": "source-bounded fine-tuning PES roadmap contract; not empirical evidence",
+  "config_thresholds": {
+    "protocol_threshold": 1.0,
+    "selection_threshold": 0.95
+  },
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "missing_protocol_rejection_label": 1.0,
+    "nonpositive_sec_rejection_label": 1.0,
+    "unsupported_empirical_evidence_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded fine-tuning PES roadmap contract; not empirical evidence",
+    "source_ledger_ids": [
+      "P0R06378",
+      "P0R06379",
+      "P0R06380",
+      "P0R06381"
+    ],
+    "source_ledger_span": [
+      "P0R06378",
+      "P0R06381"
+    ]
+  },
+  "protocol_completeness": 1.0,
+  "runtime_ms": 0.021526007913053036,
+  "selection_probability": 1.0,
+  "source_ledger_span": [
+    "P0R06378",
+    "P0R06381"
+  ],
+  "source_protocols": [
+    "PTA:L5:TMS/tFUS plus TDA Betti-number qualia correlation",
+    "AWVA:L1:NV-centre or BEC weak-value search",
+    "QRNG-TSVF:L9:retrocausal priming with future QRNG stimuli",
+    "CEF-RG:L15/L8:evolutionary convergence towards SEC-maximising configurations"
+  ],
+  "spec_keys": [
+    "fine_tuning_pes.selection_formula_boundary",
+    "fine_tuning_pes.advanced_protocol_catalogue",
+    "fine_tuning_pes.protocol_falsification_boundaries"
+  ]
+}

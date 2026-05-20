@@ -9,7 +9,7 @@
 """Generate no-QPU VQS alternative-readiness artefacts.
 
 This implements the offline gate in
-``docs/vqs_alternative_prereg_2026-05-06.md``.  It compares shallow
+``docs/campaigns/vqs_alternative_prereg_2026-05-06.md``.  It compares shallow
 variational ansatz families against exact small-system Kuramoto-XY/FIM
 statevector targets and local-basis Trotter resource comparators.  The
 script never opens an IBM provider session and never submits jobs.

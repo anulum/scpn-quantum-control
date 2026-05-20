@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded the microbiome as a foundational control layer source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "a_two_timescale_model_of_glial_neuronal_coupling": "a_two_timescale_model_of_glial_neuronal_coupling_source_boundary",
+    "the_microbiome_as_a_foundational_control_layer": "the_microbiome_as_a_foundational_control_layer_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Microbiome as a Foundational Control Layer",
+    "component_2": "A Two-Timescale Model of Glial-Neuronal Coupling",
+    "component_count": "2",
+    "next_boundary": "P0R05493",
+    "section": "The Microbiome as a Foundational Control Layer",
+    "source_span": "P0R05479-P0R05492"
+  },
+  "next_source_boundary": "P0R05493",
+  "null_controls": {
+    "a_two_timescale_model_of_glial_neuronal_coupling_is_not_empirical_validation_evidence": 1.0,
+    "the_microbiome_as_a_foundational_control_layer_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the microbiome as a foundational control layer source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_microbiome_as_a_foundational_control_layer_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05479",
+      "P0R05480",
+      "P0R05481",
+      "P0R05482",
+      "P0R05483",
+      "P0R05484",
+      "P0R05485",
+      "P0R05486",
+      "P0R05487",
+      "P0R05488",
+      "P0R05489",
+      "P0R05490",
+      "P0R05491",
+      "P0R05492"
+    ],
+    "source_ledger_span": [
+      "P0R05479",
+      "P0R05492"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05479",
+    "P0R05492"
+  ],
+  "source_record_count": 14
+}

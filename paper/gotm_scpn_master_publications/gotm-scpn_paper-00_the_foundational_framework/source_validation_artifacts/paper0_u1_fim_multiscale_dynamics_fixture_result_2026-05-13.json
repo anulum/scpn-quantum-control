@@ -1,0 +1,77 @@
+{
+  "blank_separator_count": 1,
+  "claim_boundary": "source-bounded U(1)/FIM multiscale dynamics; not validation evidence",
+  "covariant_derivative": "D_mu = partial_mu - i g A_mu",
+  "hardware_status": "source_methodology_no_experiment",
+  "next_source_boundary": "P0R00545",
+  "null_controls": {
+    "informational_lagrangian_is_not_empirical_validation": 1.0,
+    "ms_qec_energy_gap_requires_external_validation": 1.0,
+    "sentience_field_convergence_is_not_independent_proof": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded U(1)/FIM multiscale dynamics; not validation evidence",
+    "protocol_state": "source_equation_and_dynamics_map_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00506",
+      "P0R00507",
+      "P0R00508",
+      "P0R00509",
+      "P0R00510",
+      "P0R00511",
+      "P0R00512",
+      "P0R00513",
+      "P0R00514",
+      "P0R00515",
+      "P0R00516",
+      "P0R00517",
+      "P0R00518",
+      "P0R00519",
+      "P0R00520",
+      "P0R00521",
+      "P0R00522",
+      "P0R00523",
+      "P0R00524",
+      "P0R00525",
+      "P0R00526",
+      "P0R00527",
+      "P0R00528",
+      "P0R00529",
+      "P0R00530",
+      "P0R00531",
+      "P0R00532",
+      "P0R00533",
+      "P0R00534",
+      "P0R00535",
+      "P0R00536",
+      "P0R00537",
+      "P0R00538",
+      "P0R00539",
+      "P0R00540",
+      "P0R00541",
+      "P0R00542",
+      "P0R00543",
+      "P0R00544"
+    ],
+    "source_ledger_span": [
+      "P0R00506",
+      "P0R00544"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R00506",
+    "P0R00544"
+  ],
+  "upde_component_count": 3,
+  "upde_components": {
+    "inter_layer_coupling": "cross_layer_causal_flow",
+    "intra_layer_coupling": "kij_layer_synchronisation",
+    "intrinsic_dynamics": "omega_i_layer_timescale"
+  },
+  "validation_boundaries": {
+    "fim_geometry": "information_geometry_claim",
+    "ms_qec": "requires_quantitative_biophysical_validation",
+    "sfh_analogue": "conceptual_convergence_not_independent_proof"
+  },
+  "validation_boundary_count": 3
+}

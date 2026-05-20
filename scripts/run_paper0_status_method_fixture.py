@@ -18,7 +18,13 @@ from typing import Any, cast
 from scpn_quantum_control.paper0.status_method_validation import validate_status_method_fixture
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_OUTPUT_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 
 
 def _json_ready(value: Any) -> Any:

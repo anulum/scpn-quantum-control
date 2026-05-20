@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded the universe s built in moral compass source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "formalisation_of_the_causal_entropic_principle": "formalisation_of_the_causal_entropic_principle_source_boundary",
+    "the_pull_of_the_future_how_purpose_guides_the_present": "the_pull_of_the_future_how_purpose_guides_the_present_source_boundary",
+    "the_universe_s_built_in_moral_compass": "the_universe_s_built_in_moral_compass_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Universe's Built-in Moral Compass",
+    "component_2": "The Pull of the Future: How Purpose Guides the Present",
+    "component_3": "Formalisation of the Causal Entropic Principle:",
+    "component_count": "3",
+    "next_boundary": "P0R03723",
+    "section": "The Universe's Built-in Moral Compass",
+    "source_span": "P0R03715-P0R03722"
+  },
+  "next_source_boundary": "P0R03723",
+  "null_controls": {
+    "formalisation_of_the_causal_entropic_principle_is_not_empirical_validation_evidence": 1.0,
+    "the_pull_of_the_future_how_purpose_guides_the_present_is_not_empirical_validation_evidence": 1.0,
+    "the_universe_s_built_in_moral_compass_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the universe s built in moral compass source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_universe_s_built_in_moral_compass_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03715",
+      "P0R03716",
+      "P0R03717",
+      "P0R03718",
+      "P0R03719",
+      "P0R03720",
+      "P0R03721",
+      "P0R03722"
+    ],
+    "source_ledger_span": [
+      "P0R03715",
+      "P0R03722"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03715",
+    "P0R03722"
+  ],
+  "source_record_count": 8
+}

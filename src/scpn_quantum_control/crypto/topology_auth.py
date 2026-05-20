@@ -75,7 +75,9 @@ def normalized_laplacian_fingerprint(K: np.ndarray) -> dict:
     """
     n = K.shape[0]
     d = K.sum(axis=1)
-    d_inv_sqrt = np.where(d > EIGENVALUE_ZERO_ATOL, 1.0 / np.sqrt(d), 0.0)
+    d_inv_sqrt = np.zeros_like(d, dtype=float)
+    positive_degree = d > EIGENVALUE_ZERO_ATOL
+    d_inv_sqrt[positive_degree] = 1.0 / np.sqrt(d[positive_degree])
     D_inv_sqrt = np.diag(d_inv_sqrt)
     L_sym = np.eye(n) - D_inv_sqrt @ K @ D_inv_sqrt
 

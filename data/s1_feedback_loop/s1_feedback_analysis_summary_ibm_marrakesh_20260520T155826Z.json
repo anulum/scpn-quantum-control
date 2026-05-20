@@ -1,0 +1,31 @@
+{
+  "experiment_id": "s1_dynamic_feedback_preregistration_2026-05-06",
+  "target_r": 0.72,
+  "job_ids": [
+    "d86tk8op0eas73dlf4pg",
+    "d86tkbp789is73905hkg"
+  ],
+  "arm_summaries": [
+    {
+      "arm": "feedback",
+      "repetitions": 12,
+      "total_shots": 12288,
+      "mean_r_live": 0.7432183159722222,
+      "mean_target_error": 0.023218315972222237,
+      "final_r_live": 0.75
+    },
+    {
+      "arm": "matched_open_loop_control",
+      "repetitions": 12,
+      "total_shots": 12288,
+      "mean_r_live": 0.6930881076388888,
+      "mean_target_error": 0.026911892361111106,
+      "final_r_live": 0.67578125
+    }
+  ],
+  "feedback_minus_control_mean_r_live": 0.05013020833333337,
+  "target_error_improvement": 0.0036935763888888695,
+  "relative_target_error_improvement": 0.13724699620998237,
+  "decision": "positive",
+  "claim_boundary": "This analysis compares the preregistered feedback and matched open-loop arms only. It does not establish sub-microsecond feedback, quantum advantage, or backend-independent behaviour."
+}

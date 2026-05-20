@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded the physical equivalence of sustainable ethical coherence and causal pat source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "1_introduction_from_teleological_principle_to_thermodynamic_imperative": "1_introduction_from_teleological_principle_to_thermodynamic_imperative_source_boundary",
+    "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat": "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy",
+    "component_2": "1. Introduction: From Teleological Principle to Thermodynamic Imperative",
+    "component_count": "2",
+    "next_boundary": "P0R03737",
+    "section": "The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy",
+    "source_span": "P0R03723-P0R03736"
+  },
+  "next_source_boundary": "P0R03737",
+  "null_controls": {
+    "1_introduction_from_teleological_principle_to_thermodynamic_imperative_is_not_empirical_validation_evidence": 1.0,
+    "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the physical equivalence of sustainable ethical coherence and causal pat source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03723",
+      "P0R03724",
+      "P0R03725",
+      "P0R03726",
+      "P0R03727",
+      "P0R03728",
+      "P0R03729",
+      "P0R03730",
+      "P0R03731",
+      "P0R03732",
+      "P0R03733",
+      "P0R03734",
+      "P0R03735",
+      "P0R03736"
+    ],
+    "source_ledger_span": [
+      "P0R03723",
+      "P0R03736"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03723",
+    "P0R03736"
+  ],
+  "source_record_count": 14
+}

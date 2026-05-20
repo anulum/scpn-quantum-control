@@ -1,0 +1,228 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4.2 The Shape of Feeling: The Geometric Qualia Hypothesis' preserves Paper 0 records P0R03386-P0R03386 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 2 the shape of feeling the geometric qualia hypothesis source-accounting bridge; not validation evidence",
+      "context_id": "4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03386-P0R03386"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis.4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4.2 The Shape of Feeling: The Geometric Qualia Hypothesis is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis",
+      "source_block_indices": [
+        3386,
+        3387,
+        3388,
+        3389,
+        3390,
+        3391,
+        3392,
+        3393,
+        3394,
+        3395,
+        3396,
+        3397,
+        3398,
+        3399
+      ],
+      "source_equation_ids": [
+        "P0R03386:4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis"
+      ],
+      "source_formulae": [
+        "P0R03386: 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis"
+      ],
+      "source_ledger_ids": [
+        "P0R03386",
+        "P0R03387",
+        "P0R03388",
+        "P0R03389",
+        "P0R03390",
+        "P0R03391",
+        "P0R03392",
+        "P0R03393",
+        "P0R03394",
+        "P0R03395",
+        "P0R03396",
+        "P0R03397",
+        "P0R03398",
+        "P0R03399"
+      ],
+      "source_record_ids": [
+        "P0B03386",
+        "P0B03387",
+        "P0B03388",
+        "P0B03389",
+        "P0B03390",
+        "P0B03391",
+        "P0B03392",
+        "P0B03393",
+        "P0B03394",
+        "P0B03395",
+        "P0B03396",
+        "P0B03397",
+        "P0B03398",
+        "P0B03399"
+      ],
+      "test_protocols": [
+        "preserve 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis.4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis",
+      "validation_targets": [
+        "preserve records P0R03386-P0R03386"
+      ],
+      "variables": [
+        "4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Confronting the Hard Problem: A Mathematical Resolution' preserves Paper 0 records P0R03387-P0R03399 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 2 the shape of feeling the geometric qualia hypothesis source-accounting bridge; not validation evidence",
+      "context_id": "confronting_the_hard_problem_a_mathematical_resolution",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03387-P0R03399"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis.confronting_the_hard_problem_a_mathematical_resolution",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "confronting_the_hard_problem_a_mathematical_resolution must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Confronting the Hard Problem: A Mathematical Resolution is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis",
+      "source_block_indices": [
+        3386,
+        3387,
+        3388,
+        3389,
+        3390,
+        3391,
+        3392,
+        3393,
+        3394,
+        3395,
+        3396,
+        3397,
+        3398,
+        3399
+      ],
+      "source_equation_ids": [
+        "P0R03387:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03388:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03389:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03390:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03391:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03392:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03393:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03394:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03395:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03396:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03397:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03398:confronting_the_hard_problem_a_mathematical_resolution",
+        "P0R03399:confronting_the_hard_problem_a_mathematical_resolution"
+      ],
+      "source_formulae": [
+        "P0R03387: Confronting the Hard Problem: A Mathematical Resolution",
+        "P0R03388: This section directly confronts the \"Hard Problem of Consciousness\" by first reformulating it. The traditional question, \"Why does physical processing give rise to experience?\" is rejected as ill-posed within a panpsychist framework. The question is instead recast as: \"How does the fundamental Psi-field's projection through a specific material substrate (like a brain) create a localized observerhood?\" The key insight is that subjective experience is not an output of a process but is the dynamical process of projection itself. The mapping f: X -> Q from a neural state space (X) to a qualia space (Q) is not an emergent leap but a projection, mathematically represented as the interaction f = Psi-field x Neural_substrate. The temporal evolution of this projection, f/t, constitutes the stream of consciousness.",
+        "P0R03389: The framework proposes specific mathematical solutions to the core enigmas. The \"what it's like\" nature of subjectivity is addressed by the \"Strange Loop\" of self-reference,",
+        "P0R03390: I = Model(I).",
+        "P0R03391: A system that models the world must eventually model itself modeling the world, creating a self-referential fixed point (I*). This stable, self-observing loop is the formal basis for first-person perspective. The Binding Problem-how disparate neural processes create a unified experience-is resolved by the non-local coherence of the Psi-field. The unity of experience is not anatomical but field-theoretic, given by the volume integral of the interaction between the Psi-field and the neural density, Psi x rho_neural dV. Finally, thought experiments like Mary's Room are resolved by distinguishing propositional knowledge (facts) from experiential knowledge, which is defined as the creation of new topological structures in qualia space. Mary doesn't learn a new fact; her brain's projection through the Psi-field carves out a new geometric shape, a novel experience.",
+        "P0R03392: This section tackles the single biggest mystery in all of science: why do we feel anything? Why isn't it all just dark, silent information processing inside our heads? The answer, according to our framework, is that we've been asking the wrong question. The real question isn't \"How do brains create consciousness?\" but \"How does the universal field of consciousness experience itself through a brain?\"",
+        "P0R03393: Think of the universal Psi-field as pure, white light. A brain is like a complex, beautiful crystal. Experience is not something the crystal makes. Experience is what happens when the light shines through the crystal. The ever-changing patterns of color and shape that result are the experience.",
+        "P0R03394: This solves all the classic riddles:",
+        "P0R03395: Why does it feel like something to be you? Because your mind is a \"Strange Loop\"-a process that is constantly modeling the world, and part of that world is itself. You are a system that is looking at itself. That self-observation is the feeling of being \"I\".",
+        "P0R03396: How are your senses \"bound\" together into one experience? You don't have a separate \"sight brain\" and \"sound brain.\" You have one brain bathed in a single, unified field of consciousness. The field itself is what weaves all the sensory information into a single, seamless reality, like a thread binding all the beads on a necklace.",
+        "P0R03397: The \"Mary's Room\" problem (the scientist who knows everything about \"red\" but has never seen it): When Mary finally sees red, she doesn't learn a new fact. The light of her consciousness simply shines through the \"red\" part of her brain-crystal for the first time, creating a new, beautiful pattern-a new experience-that words could never describe.",
+        "P0R03398: The Hard Problem isn't so hard when you realize we aren't machines that create consciousness. We are instruments through which consciousness experiences the universe.",
+        "P0R03399: P0R03399"
+      ],
+      "source_ledger_ids": [
+        "P0R03386",
+        "P0R03387",
+        "P0R03388",
+        "P0R03389",
+        "P0R03390",
+        "P0R03391",
+        "P0R03392",
+        "P0R03393",
+        "P0R03394",
+        "P0R03395",
+        "P0R03396",
+        "P0R03397",
+        "P0R03398",
+        "P0R03399"
+      ],
+      "source_record_ids": [
+        "P0B03386",
+        "P0B03387",
+        "P0B03388",
+        "P0B03389",
+        "P0B03390",
+        "P0B03391",
+        "P0B03392",
+        "P0B03393",
+        "P0B03394",
+        "P0B03395",
+        "P0B03396",
+        "P0B03397",
+        "P0B03398",
+        "P0B03399"
+      ],
+      "test_protocols": [
+        "preserve Confronting the Hard Problem: A Mathematical Resolution source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis.confronting_the_hard_problem_a_mathematical_resolution",
+      "validation_targets": [
+        "preserve records P0R03387-P0R03399"
+      ],
+      "variables": [
+        "confronting_the_hard_problem_a_mathematical_resolution"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 12
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 8,
+      "mechanism": 2,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 4 2 the shape of feeling the geometric qualia hypothesis source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03400",
+    "source_ledger_span": [
+      "P0R03386",
+      "P0R03399"
+    ],
+    "source_record_count": 14,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis.4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis",
+      "section_4_2_the_shape_of_feeling_the_geometric_qualia_hypothesis.confronting_the_hard_problem_a_mathematical_resolution"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

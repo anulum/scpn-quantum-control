@@ -1,0 +1,269 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'III. The Developmental and Plasticity Landscape (L3)' preserves Paper 0 records P0R04478-P0R04481 without empirical validation claims.",
+      "claim_boundary": "source-bounded iii the developmental and plasticity landscape l3 source-accounting bridge; not validation evidence",
+      "context_id": "iii_the_developmental_and_plasticity_landscape_l3",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04478-P0R04481"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iii_the_developmental_and_plasticity_landscape_l3.iii_the_developmental_and_plasticity_landscape_l3",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iii_the_developmental_and_plasticity_landscape_l3 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "III. The Developmental and Plasticity Landscape (L3) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Developmental and Plasticity Landscape (L3)",
+      "source_block_indices": [
+        4478,
+        4479,
+        4480,
+        4481,
+        4482,
+        4483,
+        4484,
+        4485,
+        4486,
+        4487
+      ],
+      "source_equation_ids": [
+        "P0R04478:iii_the_developmental_and_plasticity_landscape_l3",
+        "P0R04479:iii_the_developmental_and_plasticity_landscape_l3",
+        "P0R04480:iii_the_developmental_and_plasticity_landscape_l3",
+        "P0R04481:iii_the_developmental_and_plasticity_landscape_l3"
+      ],
+      "source_formulae": [
+        "P0R04478: III. The Developmental and Plasticity Landscape (L3)",
+        "P0R04479: L3 governs the morphogenesis of the brain and its ongoing plasticity, encoding the structural constraints for the network dynamics.",
+        "P0R04480: Neurogenesis and Migration (Bioelectric Codes): The development of the brain architecture is guided by endogenous Bioelectric Codes (Vmem). These gradients act as a scaffold, translating the genomic blueprint into the physical structure. | The Connectome Blueprint: L3 defines the structural connectivity (KijStructural) of the Connectome, characterised by Small-World topology and Rich-Club organisation, optimising for and criticality. | Synaptic Plasticity (The Adaptive Interface): Hebbian Plasticity (LTP/LTD): The mechanism for learning and memory encoding. | Homeostatic Plasticity: The mechanism maintaining the network within the Quasicritical regime (SOC). | Epigenetics and Experience (The CBC Bridge): Experience (L5) modulates gene expression via the CISS-Bioelectric-Chromatin (CBC) Bridge. CISS (L1/L3) influences bioelectric gradients (L3), which in turn remodel the chromatin landscape, linking psychological states to long-term structural changes.",
+        "P0R04481: P0R04481"
+      ],
+      "source_ledger_ids": [
+        "P0R04478",
+        "P0R04479",
+        "P0R04480",
+        "P0R04481",
+        "P0R04482",
+        "P0R04483",
+        "P0R04484",
+        "P0R04485",
+        "P0R04486",
+        "P0R04487"
+      ],
+      "source_record_ids": [
+        "P0B04478",
+        "P0B04479",
+        "P0B04480",
+        "P0B04481",
+        "P0B04482",
+        "P0B04483",
+        "P0B04484",
+        "P0B04485",
+        "P0B04486",
+        "P0B04487"
+      ],
+      "test_protocols": [
+        "preserve III. The Developmental and Plasticity Landscape (L3) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iii_the_developmental_and_plasticity_landscape_l3.iii_the_developmental_and_plasticity_landscape_l3",
+      "validation_targets": [
+        "preserve records P0R04478-P0R04481"
+      ],
+      "variables": [
+        "iii_the_developmental_and_plasticity_landscape_l3"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'IV. The Dynamic Core: Synchronisation, Criticality, and the Connectome (L4)' preserves Paper 0 records P0R04482-P0R04483 without empirical validation claims.",
+      "claim_boundary": "source-bounded iii the developmental and plasticity landscape l3 source-accounting bridge; not validation evidence",
+      "context_id": "iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04482-P0R04483"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iii_the_developmental_and_plasticity_landscape_l3.iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IV. The Dynamic Core: Synchronisation, Criticality, and the Connectome (L4) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Developmental and Plasticity Landscape (L3)",
+      "source_block_indices": [
+        4478,
+        4479,
+        4480,
+        4481,
+        4482,
+        4483,
+        4484,
+        4485,
+        4486,
+        4487
+      ],
+      "source_equation_ids": [
+        "P0R04482:iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4",
+        "P0R04483:iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4"
+      ],
+      "source_formulae": [
+        "P0R04482: IV. The Dynamic Core: Synchronisation, Criticality, and the Connectome (L4)",
+        "P0R04483: L4 describes the emergence of coherent, large-scale dynamics-the immediate substrate of cognition and consciousness."
+      ],
+      "source_ledger_ids": [
+        "P0R04478",
+        "P0R04479",
+        "P0R04480",
+        "P0R04481",
+        "P0R04482",
+        "P0R04483",
+        "P0R04484",
+        "P0R04485",
+        "P0R04486",
+        "P0R04487"
+      ],
+      "source_record_ids": [
+        "P0B04478",
+        "P0B04479",
+        "P0B04480",
+        "P0B04481",
+        "P0B04482",
+        "P0B04483",
+        "P0B04484",
+        "P0B04485",
+        "P0B04486",
+        "P0B04487"
+      ],
+      "test_protocols": [
+        "preserve IV. The Dynamic Core: Synchronisation, Criticality, and the Connectome (L4) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iii_the_developmental_and_plasticity_landscape_l3.iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4",
+      "validation_targets": [
+        "preserve records P0R04482-P0R04483"
+      ],
+      "variables": [
+        "iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The UPDE in the Brain (The Neural Symphony):' preserves Paper 0 records P0R04484-P0R04487 without empirical validation claims.",
+      "claim_boundary": "source-bounded iii the developmental and plasticity landscape l3 source-accounting bridge; not validation evidence",
+      "context_id": "1_the_upde_in_the_brain_the_neural_symphony",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04484-P0R04487"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iii_the_developmental_and_plasticity_landscape_l3.1_the_upde_in_the_brain_the_neural_symphony",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_upde_in_the_brain_the_neural_symphony must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The UPDE in the Brain (The Neural Symphony): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Developmental and Plasticity Landscape (L3)",
+      "source_block_indices": [
+        4478,
+        4479,
+        4480,
+        4481,
+        4482,
+        4483,
+        4484,
+        4485,
+        4486,
+        4487
+      ],
+      "source_equation_ids": [
+        "P0R04484:1_the_upde_in_the_brain_the_neural_symphony",
+        "P0R04485:1_the_upde_in_the_brain_the_neural_symphony",
+        "P0R04486:1_the_upde_in_the_brain_the_neural_symphony",
+        "P0R04487:1_the_upde_in_the_brain_the_neural_symphony"
+      ],
+      "source_formulae": [
+        "P0R04484: 1. The UPDE in the Brain (The Neural Symphony):",
+        "P0R04485: The UPDE governs the synchronisation of neural ensembles.",
+        "P0R04486: dtdthetai=i+jKijsin(thetajthetai)+...",
+        "P0R04487: Neural Oscillations (EEG Spectrum): The Eigenmodes of the L4 network manifest as the EEG spectrum, each associated with specific functions within the HPC framework: Delta/Theta (0.5-8 Hz): Long-range integration, memory consolidation, HPC generative model backbone. | Alpha (8-12 Hz): Attention modulation, criticality regulation, sensory gating. | Beta (13-30 Hz): Localised processing, motor control, maintenance of the current cognitive state (Priors). | Gamma (>30 Hz): Feature binding, high-fidelity information transfer, prediction error signalling."
+      ],
+      "source_ledger_ids": [
+        "P0R04478",
+        "P0R04479",
+        "P0R04480",
+        "P0R04481",
+        "P0R04482",
+        "P0R04483",
+        "P0R04484",
+        "P0R04485",
+        "P0R04486",
+        "P0R04487"
+      ],
+      "source_record_ids": [
+        "P0B04478",
+        "P0B04479",
+        "P0B04480",
+        "P0B04481",
+        "P0B04482",
+        "P0B04483",
+        "P0B04484",
+        "P0B04485",
+        "P0B04486",
+        "P0B04487"
+      ],
+      "test_protocols": [
+        "preserve 1. The UPDE in the Brain (The Neural Symphony): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iii_the_developmental_and_plasticity_landscape_l3.1_the_upde_in_the_brain_the_neural_symphony",
+      "validation_targets": [
+        "preserve records P0R04484-P0R04487"
+      ],
+      "variables": [
+        "1_the_upde_in_the_brain_the_neural_symphony"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 2,
+      "mechanism": 5,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded iii the developmental and plasticity landscape l3 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04488",
+    "source_ledger_span": [
+      "P0R04478",
+      "P0R04487"
+    ],
+    "source_record_count": 10,
+    "spec_count": 3,
+    "spec_keys": [
+      "iii_the_developmental_and_plasticity_landscape_l3.iii_the_developmental_and_plasticity_landscape_l3",
+      "iii_the_developmental_and_plasticity_landscape_l3.iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4",
+      "iii_the_developmental_and_plasticity_landscape_l3.1_the_upde_in_the_brain_the_neural_symphony"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 III. The Developmental and Plasticity Landscape (L3) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

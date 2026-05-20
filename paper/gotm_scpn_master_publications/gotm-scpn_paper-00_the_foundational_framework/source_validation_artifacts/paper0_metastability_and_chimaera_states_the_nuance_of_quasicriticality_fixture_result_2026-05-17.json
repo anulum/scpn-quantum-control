@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded metastability and chimaera states the nuance of quasicriticality source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "metastability_and_chimaera_states_the_nuance_of_quasicriticality": "metastability_and_chimaera_states_the_nuance_of_quasicriticality_source_boundary",
+    "the_dynamic_connectome_functional_reconfiguration_on_a_static_scaffold": "the_dynamic_connectome_functional_reconfiguration_on_a_static_scaffold_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Metastability and Chimaera States: The Nuance of Quasicriticality",
+    "component_2": "The Dynamic Connectome: Functional Reconfiguration on a Static Scaffold",
+    "component_count": "2",
+    "next_boundary": "P0R04589",
+    "section": "Metastability and Chimaera States: The Nuance of Quasicriticality",
+    "source_span": "P0R04581-P0R04588"
+  },
+  "next_source_boundary": "P0R04589",
+  "null_controls": {
+    "metastability_and_chimaera_states_the_nuance_of_quasicriticality_is_not_empirical_validation_evidence": 1.0,
+    "the_dynamic_connectome_functional_reconfiguration_on_a_static_scaffold_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded metastability and chimaera states the nuance of quasicriticality source-accounting bridge; not validation evidence",
+    "protocol_state": "source_metastability_and_chimaera_states_the_nuance_of_quasicriticality_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04581",
+      "P0R04582",
+      "P0R04583",
+      "P0R04584",
+      "P0R04585",
+      "P0R04586",
+      "P0R04587",
+      "P0R04588"
+    ],
+    "source_ledger_span": [
+      "P0R04581",
+      "P0R04588"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04581",
+    "P0R04588"
+  ],
+  "source_record_count": 8
+}

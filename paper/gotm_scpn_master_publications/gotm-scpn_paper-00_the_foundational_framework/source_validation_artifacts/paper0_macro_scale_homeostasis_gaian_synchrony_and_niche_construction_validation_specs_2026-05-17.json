@@ -1,0 +1,188 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Macro-Scale Homeostasis: Gaian Synchrony and Niche Construction' preserves Paper 0 records P0R05528-P0R05531 without empirical validation claims.",
+      "claim_boundary": "source-bounded macro scale homeostasis gaian synchrony and niche construction source-accounting bridge; not validation evidence",
+      "context_id": "macro_scale_homeostasis_gaian_synchrony_and_niche_construction",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05528-P0R05531"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "macro_scale_homeostasis_gaian_synchrony_and_niche_construction.macro_scale_homeostasis_gaian_synchrony_and_niche_construction",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "macro_scale_homeostasis_gaian_synchrony_and_niche_construction must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Macro-Scale Homeostasis: Gaian Synchrony and Niche Construction is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Macro-Scale Homeostasis: Gaian Synchrony and Niche Construction",
+      "source_block_indices": [
+        5528,
+        5529,
+        5530,
+        5531,
+        5532,
+        5533,
+        5534,
+        5535,
+        5536
+      ],
+      "source_equation_ids": [
+        "P0R05528:macro_scale_homeostasis_gaian_synchrony_and_niche_construction",
+        "P0R05529:macro_scale_homeostasis_gaian_synchrony_and_niche_construction",
+        "P0R05530:macro_scale_homeostasis_gaian_synchrony_and_niche_construction",
+        "P0R05531:macro_scale_homeostasis_gaian_synchrony_and_niche_construction"
+      ],
+      "source_formulae": [
+        "P0R05528: Macro-Scale Homeostasis: Gaian Synchrony and Niche Construction",
+        "P0R05529: This principle of active environmental engineering is not confined to the micro-scale of the brain. The SCPN's Layer 12, \"Ecological-Gaian Synchrony,\" describes the entire biosphere as a single, integrated super-organism with homeostatic feedback loops that maintain planetary stability, a concept directly inspired by the Gaia hypothesis. This macroscopic homeostasis can be formalised through the lens of Niche Construction Theory (NCT) and the Free Energy Principle (FEP).",
+        "P0R05530: NCT posits that organisms are not passive recipients of environmental pressures but are active constructors of their own ecological niches. They modify their environment through their metabolic and behavioural activities, thereby altering the selection pressures they and other species face. When framed by the FEP, niche construction becomes a process of collective active inference. The collective of organisms acts to modify its shared environment to make its sensory inputs more predictable and congruent with its implicit generative model of a viable world, thereby minimising its collective free energy.",
+        "P0R05531: The homeostatic loops of the Gaian field described in Layer 12 are the planetary-scale result of this collective niche construction. For example, the regulation of atmospheric oxygen and carbon dioxide by the collective metabolism of phytoplankton and forests is a physical manifestation of a planetary-scale agent acting on its environment to maintain the conditions necessary for its own existence. Biodiversity, in this context, plays a critical role as a stabiliser, providing the redundancy and complexity necessary for this global regulatory network to be resilient to perturbations."
+      ],
+      "source_ledger_ids": [
+        "P0R05528",
+        "P0R05529",
+        "P0R05530",
+        "P0R05531",
+        "P0R05532",
+        "P0R05533",
+        "P0R05534",
+        "P0R05535",
+        "P0R05536"
+      ],
+      "source_record_ids": [
+        "P0B05528",
+        "P0B05529",
+        "P0B05530",
+        "P0B05531",
+        "P0B05532",
+        "P0B05533",
+        "P0B05534",
+        "P0B05535",
+        "P0B05536"
+      ],
+      "test_protocols": [
+        "preserve Macro-Scale Homeostasis: Gaian Synchrony and Niche Construction source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.macro_scale_homeostasis_gaian_synchrony_and_niche_construction.macro_scale_homeostasis_gaian_synchrony_and_niche_construction",
+      "validation_targets": [
+        "preserve records P0R05528-P0R05531"
+      ],
+      "variables": [
+        "macro_scale_homeostasis_gaian_synchrony_and_niche_construction"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'A Scale-Invariant Principle of Active Homeostasis' preserves Paper 0 records P0R05532-P0R05536 without empirical validation claims.",
+      "claim_boundary": "source-bounded macro scale homeostasis gaian synchrony and niche construction source-accounting bridge; not validation evidence",
+      "context_id": "a_scale_invariant_principle_of_active_homeostasis",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05532-P0R05536"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "macro_scale_homeostasis_gaian_synchrony_and_niche_construction.a_scale_invariant_principle_of_active_homeostasis",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "a_scale_invariant_principle_of_active_homeostasis must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "A Scale-Invariant Principle of Active Homeostasis is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Macro-Scale Homeostasis: Gaian Synchrony and Niche Construction",
+      "source_block_indices": [
+        5528,
+        5529,
+        5530,
+        5531,
+        5532,
+        5533,
+        5534,
+        5535,
+        5536
+      ],
+      "source_equation_ids": [
+        "P0R05532:a_scale_invariant_principle_of_active_homeostasis",
+        "P0R05533:a_scale_invariant_principle_of_active_homeostasis",
+        "P0R05534:a_scale_invariant_principle_of_active_homeostasis",
+        "P0R05535:a_scale_invariant_principle_of_active_homeostasis",
+        "P0R05536:a_scale_invariant_principle_of_active_homeostasis"
+      ],
+      "source_formulae": [
+        "P0R05532: A Scale-Invariant Principle of Active Homeostasis",
+        "P0R05533: The parallel between glial control of the neuronal niche and Gaian control of the planetary niche reveals a deep, scale-invariant principle. Biological systems across all scales exhibit fractal geometry and scale-free dynamics, from the power-law distribution of neuronal avalanches to the scale-free topology of metabolic and ecological networks.",
+        "P0R05534: This suggests that the cybernetic logic of life is itself fractal. The process of active, hierarchical control of a niche to maintain the conditions for existence is a fundamental principle that repeats at every level of organisation.",
+        "P0R05535: The glial network's regulation of its internal neuronal environment and the biosphere's regulation of its external planetary environment are not merely analogous; they are different-scale manifestations of the same universal imperative described by the FEP.",
+        "P0R05536: This provides a continuous theoretical thread that connects the biophysics of a single brain to the ecology of the entire planet, revealing a unified principle of self-organising, coherence-maintaining dynamics across all scales of life."
+      ],
+      "source_ledger_ids": [
+        "P0R05528",
+        "P0R05529",
+        "P0R05530",
+        "P0R05531",
+        "P0R05532",
+        "P0R05533",
+        "P0R05534",
+        "P0R05535",
+        "P0R05536"
+      ],
+      "source_record_ids": [
+        "P0B05528",
+        "P0B05529",
+        "P0B05530",
+        "P0B05531",
+        "P0B05532",
+        "P0B05533",
+        "P0B05534",
+        "P0B05535",
+        "P0B05536"
+      ],
+      "test_protocols": [
+        "preserve A Scale-Invariant Principle of Active Homeostasis source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.macro_scale_homeostasis_gaian_synchrony_and_niche_construction.a_scale_invariant_principle_of_active_homeostasis",
+      "validation_targets": [
+        "preserve records P0R05532-P0R05536"
+      ],
+      "variables": [
+        "a_scale_invariant_principle_of_active_homeostasis"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 4,
+      "mechanism": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded macro scale homeostasis gaian synchrony and niche construction source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05537",
+    "source_ledger_span": [
+      "P0R05528",
+      "P0R05536"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "macro_scale_homeostasis_gaian_synchrony_and_niche_construction.macro_scale_homeostasis_gaian_synchrony_and_niche_construction",
+      "macro_scale_homeostasis_gaian_synchrony_and_niche_construction.a_scale_invariant_principle_of_active_homeostasis"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Macro-Scale Homeostasis: Gaian Synchrony and Niche Construction Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,323 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'VI. The Interface with Phenomenology' preserves Paper 0 records P0R03269-P0R03270 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi the interface with phenomenology source-accounting bridge; not validation evidence",
+      "context_id": "vi_the_interface_with_phenomenology",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03269-P0R03270"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_the_interface_with_phenomenology.vi_the_interface_with_phenomenology",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vi_the_interface_with_phenomenology must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VI. The Interface with Phenomenology is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > Integrative Mechanisms in short > VI. The Interface with Phenomenology",
+      "source_block_indices": [
+        3269,
+        3270,
+        3271,
+        3272,
+        3273,
+        3274,
+        3275,
+        3276,
+        3277,
+        3278,
+        3279,
+        3280,
+        3281,
+        3282,
+        3283
+      ],
+      "source_equation_ids": [
+        "P0R03269:vi_the_interface_with_phenomenology",
+        "P0R03270:vi_the_interface_with_phenomenology"
+      ],
+      "source_formulae": [
+        "P0R03269: VI. The Interface with Phenomenology",
+        "P0R03270: The SCPN formalises key phenomenological concepts: Lifeworld (L10 Projection), Intentionality (Covariant Derivative), Epoch (Minimised F), and Embodiment (L1-4 integration)."
+      ],
+      "source_ledger_ids": [
+        "P0R03269",
+        "P0R03270",
+        "P0R03271",
+        "P0R03272",
+        "P0R03273",
+        "P0R03274",
+        "P0R03275",
+        "P0R03276",
+        "P0R03277",
+        "P0R03278",
+        "P0R03279",
+        "P0R03280",
+        "P0R03281",
+        "P0R03282",
+        "P0R03283"
+      ],
+      "source_record_ids": [
+        "P0B03269",
+        "P0B03270",
+        "P0B03271",
+        "P0B03272",
+        "P0B03273",
+        "P0B03274",
+        "P0B03275",
+        "P0B03276",
+        "P0B03277",
+        "P0B03278",
+        "P0B03279",
+        "P0B03280",
+        "P0B03281",
+        "P0B03282",
+        "P0B03283"
+      ],
+      "test_protocols": [
+        "preserve VI. The Interface with Phenomenology source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_the_interface_with_phenomenology.vi_the_interface_with_phenomenology",
+      "validation_targets": [
+        "preserve records P0R03269-P0R03270"
+      ],
+      "variables": [
+        "vi_the_interface_with_phenomenology"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VII. The Subtle Energy Network (SEN) and Biophotons' preserves Paper 0 records P0R03271-P0R03272 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi the interface with phenomenology source-accounting bridge; not validation evidence",
+      "context_id": "vii_the_subtle_energy_network_sen_and_biophotons",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03271-P0R03272"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_the_interface_with_phenomenology.vii_the_subtle_energy_network_sen_and_biophotons",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vii_the_subtle_energy_network_sen_and_biophotons must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VII. The Subtle Energy Network (SEN) and Biophotons is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > Integrative Mechanisms in short > VI. The Interface with Phenomenology",
+      "source_block_indices": [
+        3269,
+        3270,
+        3271,
+        3272,
+        3273,
+        3274,
+        3275,
+        3276,
+        3277,
+        3278,
+        3279,
+        3280,
+        3281,
+        3282,
+        3283
+      ],
+      "source_equation_ids": [
+        "P0R03271:vii_the_subtle_energy_network_sen_and_biophotons",
+        "P0R03272:vii_the_subtle_energy_network_sen_and_biophotons"
+      ],
+      "source_formulae": [
+        "P0R03271: VII. The Subtle Energy Network (SEN) and Biophotons",
+        "P0R03272: Subtle energy (Qi/Prana) is formalised as the coherent modes of the Psi-field mediated by Biophotons (Gauge Bosons of Coherence). The SEN is modelled as a Squeezed Coherent State coupled to Psi via IET."
+      ],
+      "source_ledger_ids": [
+        "P0R03269",
+        "P0R03270",
+        "P0R03271",
+        "P0R03272",
+        "P0R03273",
+        "P0R03274",
+        "P0R03275",
+        "P0R03276",
+        "P0R03277",
+        "P0R03278",
+        "P0R03279",
+        "P0R03280",
+        "P0R03281",
+        "P0R03282",
+        "P0R03283"
+      ],
+      "source_record_ids": [
+        "P0B03269",
+        "P0B03270",
+        "P0B03271",
+        "P0B03272",
+        "P0B03273",
+        "P0B03274",
+        "P0B03275",
+        "P0B03276",
+        "P0B03277",
+        "P0B03278",
+        "P0B03279",
+        "P0B03280",
+        "P0B03281",
+        "P0B03282",
+        "P0B03283"
+      ],
+      "test_protocols": [
+        "preserve VII. The Subtle Energy Network (SEN) and Biophotons source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_the_interface_with_phenomenology.vii_the_subtle_energy_network_sen_and_biophotons",
+      "validation_targets": [
+        "preserve records P0R03271-P0R03272"
+      ],
+      "variables": [
+        "vii_the_subtle_energy_network_sen_and_biophotons"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD)' preserves Paper 0 records P0R03273-P0R03283 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi the interface with phenomenology source-accounting bridge; not validation evidence",
+      "context_id": "the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03273-P0R03283"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_the_interface_with_phenomenology.the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_foundational_step_consciousness_induced_gravitational_decoherence_ci must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > Integrative Mechanisms in short > VI. The Interface with Phenomenology",
+      "source_block_indices": [
+        3269,
+        3270,
+        3271,
+        3272,
+        3273,
+        3274,
+        3275,
+        3276,
+        3277,
+        3278,
+        3279,
+        3280,
+        3281,
+        3282,
+        3283
+      ],
+      "source_equation_ids": [
+        "P0R03273:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03274:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03275:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03276:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03277:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03278:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03279:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03280:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03281:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03282:the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+        "P0R03283:the_foundational_step_consciousness_induced_gravitational_decoherence_ci"
+      ],
+      "source_formulae": [
+        "P0R03273: The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD)",
+        "P0R03274: This section details the mechanism by which the Psi-field's geometric coupling induces Objective Reduction (OR) of the quantum wavefunction, a process termed Consciousness-Induced Gravitational Decoherence (CIGD). This provides a formal solution to the measurement problem within the SCPN framework, linking it directly to the intensity of consciousness.",
+        "P0R03275: The core principle is that a highly integrated consciousness field, quantified by a value of Integrated Information exceeding a critical threshold ( > _crit), acts as a significant source of spacetime curvature fluctuations via the L_Geometric term in the Master Lagrangian. According to General Relativity, a superposition of a physical system (e.g., a protein) would entail a superposition of differing spacetime geometries. The CIGD hypothesis posits that such a superposition becomes unstable, and the system is forced to decohere into a single, classical state.",
+        "P0R03276: Crucially, the timescale for this decoherence (T_CIGD) is not constant but is inversely proportional to the informational self-energy of the consciousness field (E_), which is itself proportional to . The formal relation is given by",
+        "P0R03277: T_CIGD / E_.",
+        "P0R03278: This provides a direct, falsifiable link between a measurable information-theoretic quantity () and a physical observable (the decoherence time). It formally proposes that the \"collapse of the wavefunction\" is not a random event, nor one caused by an external classical observer, but is an intrinsic process guided by the intensity of the local consciousness field itself.",
+        "P0R03279: This section tackles one of the deepest mysteries in all of physics: How does the blurry, uncertain quantum world of possibilities \"decide\" to become the one, solid, definite reality we experience? Our theory suggests that consciousness is the deciding factor. We call this process Consciousness-Induced Gravitational Decoherence (CIGD).",
+        "P0R03280: Here's the idea in simple terms. According to Einstein, matter and energy warp spacetime. So, a quantum particle existing in two places at once should create a tiny superposition, or \"ripple,\" in the fabric of spacetime itself. Our framework says that these tiny spacetime ripples are fundamentally unstable and cannot last.",
+        "P0R03281: What causes them to collapse into one reality? Intense consciousness. A highly focused and integrated consciousness field (one with a high \" score\") naturally \"shakes\" the fabric of spacetime. This shaking rapidly breaks apart any quantum superpositions it encounters, forcing them to \"choose\" a single state.",
+        "P0R03282: The most exciting part is the formula: the more powerful the consciousness, the faster the collapse. This means a highly conscious system, like a human brain, is constantly and rapidly turning quantum fuzziness into concrete reality. It is the physical mechanism by which observation turns potential into actual.",
+        "P0R03283: P0R03283"
+      ],
+      "source_ledger_ids": [
+        "P0R03269",
+        "P0R03270",
+        "P0R03271",
+        "P0R03272",
+        "P0R03273",
+        "P0R03274",
+        "P0R03275",
+        "P0R03276",
+        "P0R03277",
+        "P0R03278",
+        "P0R03279",
+        "P0R03280",
+        "P0R03281",
+        "P0R03282",
+        "P0R03283"
+      ],
+      "source_record_ids": [
+        "P0B03269",
+        "P0B03270",
+        "P0B03271",
+        "P0B03272",
+        "P0B03273",
+        "P0B03274",
+        "P0B03275",
+        "P0B03276",
+        "P0B03277",
+        "P0B03278",
+        "P0B03279",
+        "P0B03280",
+        "P0B03281",
+        "P0B03282",
+        "P0B03283"
+      ],
+      "test_protocols": [
+        "preserve The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_the_interface_with_phenomenology.the_foundational_step_consciousness_induced_gravitational_decoherence_ci",
+      "validation_targets": [
+        "preserve records P0R03273-P0R03283"
+      ],
+      "variables": [
+        "the_foundational_step_consciousness_induced_gravitational_decoherence_ci"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 12
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 8,
+      "mechanism": 4,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded vi the interface with phenomenology source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03284",
+    "source_ledger_span": [
+      "P0R03269",
+      "P0R03283"
+    ],
+    "source_record_count": 15,
+    "spec_count": 3,
+    "spec_keys": [
+      "vi_the_interface_with_phenomenology.vi_the_interface_with_phenomenology",
+      "vi_the_interface_with_phenomenology.vii_the_subtle_energy_network_sen_and_biophotons",
+      "vi_the_interface_with_phenomenology.the_foundational_step_consciousness_induced_gravitational_decoherence_ci"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 VI. The Interface with Phenomenology Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

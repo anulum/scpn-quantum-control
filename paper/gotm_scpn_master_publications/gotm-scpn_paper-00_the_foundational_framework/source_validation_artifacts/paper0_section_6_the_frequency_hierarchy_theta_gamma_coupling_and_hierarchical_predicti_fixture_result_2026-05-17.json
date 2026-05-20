@@ -1,0 +1,47 @@
+{
+  "claim_boundary": "source-bounded section 6 the frequency hierarchy theta gamma coupling and hierarchical predicti source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti": "6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_source_boundary",
+    "v_the_architecture_of_cognition_and_self_l5": "v_the_architecture_of_cognition_and_self_l5_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "6. The Frequency Hierarchy: Theta-Gamma Coupling and Hierarchical Predictive Coding",
+    "component_2": "V. The Architecture of Cognition and Self (L5)",
+    "component_count": "2",
+    "next_boundary": "P0R04517",
+    "section": "6. The Frequency Hierarchy: Theta-Gamma Coupling and Hierarchical Predictive Coding",
+    "source_span": "P0R04507-P0R04516"
+  },
+  "next_source_boundary": "P0R04517",
+  "null_controls": {
+    "6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_is_not_empirical_validation_evidence": 1.0,
+    "v_the_architecture_of_cognition_and_self_l5_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 6 the frequency hierarchy theta gamma coupling and hierarchical predicti source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_6_the_frequency_hierarchy_theta_gamma_coupling_and_hierarchical_predicti_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04507",
+      "P0R04508",
+      "P0R04509",
+      "P0R04510",
+      "P0R04511",
+      "P0R04512",
+      "P0R04513",
+      "P0R04514",
+      "P0R04515",
+      "P0R04516"
+    ],
+    "source_ledger_span": [
+      "P0R04507",
+      "P0R04516"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04507",
+    "P0R04516"
+  ],
+  "source_record_count": 10
+}

@@ -1,0 +1,40 @@
+{
+  "accuracy_loss": 0.5610885094221719,
+  "complexity_kl": 0.00805154756607123,
+  "decomposition_residual": 0.0,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "identical_density_kl_abs": 0.0,
+    "support_mismatch_rejection_label": 1.0,
+    "zero_likelihood_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "finite_probability_decomposition_not_neurobiological_confirmation",
+    "evidence": 0.7,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "paper0_spec_key": "computational.variational_free_energy",
+    "paper0_validation_protocol": "paper0.computational.free_energy.variational_decomposition",
+    "simulator_only_mechanism_evidence": true,
+    "state_count": 3
+  },
+  "runtime_ms": 1.0637659870553762,
+  "source_equation_ids": [
+    "EQ0130",
+    "EQ0131"
+  ],
+  "source_ledger_ids": [
+    "P0R06148",
+    "P0R06149",
+    "P0R06150",
+    "P0R06151",
+    "P0R06152",
+    "P0R06153",
+    "P0R06154",
+    "P0R06155"
+  ],
+  "spec_key": "computational.variational_free_energy",
+  "surprise": 0.35667494393873245,
+  "surprise_upper_bound_margin": 0.21246511304951066,
+  "total_free_energy": 0.5691400569882431,
+  "validation_protocol": "paper0.computational.free_energy.variational_decomposition"
+}

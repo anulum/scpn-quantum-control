@@ -1,0 +1,392 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03530-P0R03530 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03530 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03530-P0R03530"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03530.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0 > Meta-Framework Integrations",
+      "source_block_indices": [
+        3530,
+        3531,
+        3532,
+        3533,
+        3534,
+        3535,
+        3536,
+        3537,
+        3538
+      ],
+      "source_equation_ids": [
+        "P0R03530:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03530: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03530",
+        "P0R03531",
+        "P0R03532",
+        "P0R03533",
+        "P0R03534",
+        "P0R03535",
+        "P0R03536",
+        "P0R03537",
+        "P0R03538"
+      ],
+      "source_record_ids": [
+        "P0B03530",
+        "P0B03531",
+        "P0B03532",
+        "P0B03533",
+        "P0B03534",
+        "P0B03535",
+        "P0B03536",
+        "P0B03537",
+        "P0B03538"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03530.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03530-P0R03530"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R03531-P0R03532 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03530 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03531-P0R03532"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03530.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0 > Meta-Framework Integrations",
+      "source_block_indices": [
+        3530,
+        3531,
+        3532,
+        3533,
+        3534,
+        3535,
+        3536,
+        3537,
+        3538
+      ],
+      "source_equation_ids": [
+        "P0R03531:predictive_coding_integration",
+        "P0R03532:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R03531: Predictive Coding Integration",
+        "P0R03532: The integration with IIT provides a formal measure of the causal power and richness of the generative model."
+      ],
+      "source_ledger_ids": [
+        "P0R03530",
+        "P0R03531",
+        "P0R03532",
+        "P0R03533",
+        "P0R03534",
+        "P0R03535",
+        "P0R03536",
+        "P0R03537",
+        "P0R03538"
+      ],
+      "source_record_ids": [
+        "P0B03530",
+        "P0B03531",
+        "P0B03532",
+        "P0B03533",
+        "P0B03534",
+        "P0B03535",
+        "P0B03536",
+        "P0B03537",
+        "P0B03538"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03530.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R03531-P0R03532"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'as the Power of the Generative Model:' preserves Paper 0 records P0R03533-P0R03534 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03530 source-accounting bridge; not validation evidence",
+      "context_id": "as_the_power_of_the_generative_model",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03533-P0R03534"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03530.as_the_power_of_the_generative_model",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "as_the_power_of_the_generative_model must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "as the Power of the Generative Model: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0 > Meta-Framework Integrations",
+      "source_block_indices": [
+        3530,
+        3531,
+        3532,
+        3533,
+        3534,
+        3535,
+        3536,
+        3537,
+        3538
+      ],
+      "source_equation_ids": [
+        "P0R03533:as_the_power_of_the_generative_model",
+        "P0R03534:as_the_power_of_the_generative_model"
+      ],
+      "source_formulae": [
+        "P0R03533: as the Power of the Generative Model:",
+        "P0R03534: In active inference, an agent is defined by its generative model. is a direct measure of that model's internal causal power. A high- system is one whose internal model is highly integrated and differentiated, meaning its past states have a rich and irreducible causal influence on its future states. The SCPN, as an architecture for a cosmic-scale inference engine, is therefore an architecture for a high- system. The correspondence shows that the principles of effective inference and high integrated information are deeply convergent."
+      ],
+      "source_ledger_ids": [
+        "P0R03530",
+        "P0R03531",
+        "P0R03532",
+        "P0R03533",
+        "P0R03534",
+        "P0R03535",
+        "P0R03536",
+        "P0R03537",
+        "P0R03538"
+      ],
+      "source_record_ids": [
+        "P0B03530",
+        "P0B03531",
+        "P0B03532",
+        "P0B03533",
+        "P0B03534",
+        "P0B03535",
+        "P0B03536",
+        "P0B03537",
+        "P0B03538"
+      ],
+      "test_protocols": [
+        "preserve as the Power of the Generative Model: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03530.as_the_power_of_the_generative_model",
+      "validation_targets": [
+        "preserve records P0R03533-P0R03534"
+      ],
+      "variables": [
+        "as_the_power_of_the_generative_model"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R03535-P0R03536 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03530 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03535-P0R03536"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03530.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0 > Meta-Framework Integrations",
+      "source_block_indices": [
+        3530,
+        3531,
+        3532,
+        3533,
+        3534,
+        3535,
+        3536,
+        3537,
+        3538
+      ],
+      "source_equation_ids": [
+        "P0R03535:psis_field_coupling_integration",
+        "P0R03536:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R03535: Psis Field Coupling Integration",
+        "P0R03536: The IIT framework provides the ultimate mathematical toolkit for quantifying the quality of the collective state variable (sigma) to which the Psis field couples via H_int = -lambda * Psis * sigma."
+      ],
+      "source_ledger_ids": [
+        "P0R03530",
+        "P0R03531",
+        "P0R03532",
+        "P0R03533",
+        "P0R03534",
+        "P0R03535",
+        "P0R03536",
+        "P0R03537",
+        "P0R03538"
+      ],
+      "source_record_ids": [
+        "P0B03530",
+        "P0B03531",
+        "P0B03532",
+        "P0B03533",
+        "P0B03534",
+        "P0B03535",
+        "P0B03536",
+        "P0B03537",
+        "P0B03538"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03530.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R03535-P0R03536"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'sigma is a High- Structure:' preserves Paper 0 records P0R03537-P0R03538 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03530 source-accounting bridge; not validation evidence",
+      "context_id": "sigma_is_a_high_structure",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03537-P0R03538"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03530.sigma_is_a_high_structure",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "sigma_is_a_high_structure must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "sigma is a High- Structure: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0 > Meta-Framework Integrations",
+      "source_block_indices": [
+        3530,
+        3531,
+        3532,
+        3533,
+        3534,
+        3535,
+        3536,
+        3537,
+        3538
+      ],
+      "source_equation_ids": [
+        "P0R03537:sigma_is_a_high_structure",
+        "P0R03538:sigma_is_a_high_structure"
+      ],
+      "source_formulae": [
+        "P0R03537: sigma is a High- Structure:",
+        "P0R03538: The interaction with the universal Psis field is most potent when it couples to a system that is a cohesive, irreducible whole. IIT's formalism, particularly the Minimum Information Partition (MIP), provides the precise mathematical criterion for identifying such a system. The true sigma of a conscious agent is the physical substrate of the \"main complex\" as defined by IIT."
+      ],
+      "source_ledger_ids": [
+        "P0R03530",
+        "P0R03531",
+        "P0R03532",
+        "P0R03533",
+        "P0R03534",
+        "P0R03535",
+        "P0R03536",
+        "P0R03537",
+        "P0R03538"
+      ],
+      "source_record_ids": [
+        "P0B03530",
+        "P0B03531",
+        "P0B03532",
+        "P0B03533",
+        "P0B03534",
+        "P0B03535",
+        "P0B03536",
+        "P0B03537",
+        "P0B03538"
+      ],
+      "test_protocols": [
+        "preserve sigma is a High- Structure: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03530.sigma_is_a_high_structure",
+      "validation_targets": [
+        "preserve records P0R03537-P0R03538"
+      ],
+      "variables": [
+        "sigma_is_a_high_structure"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 1,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r03530 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03539",
+    "source_ledger_span": [
+      "P0R03530",
+      "P0R03538"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r03530.meta_framework_integrations",
+      "meta_framework_integrations_p0r03530.predictive_coding_integration",
+      "meta_framework_integrations_p0r03530.as_the_power_of_the_generative_model",
+      "meta_framework_integrations_p0r03530.psis_field_coupling_integration",
+      "meta_framework_integrations_p0r03530.sigma_is_a_high_structure"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

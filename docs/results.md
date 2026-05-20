@@ -169,7 +169,7 @@ Reproducible from the raw JSON in `data/phase1_dla_parity/` via
 
 A 267-line short paper draft for *Quantum Science and Technology* /
 *Physical Review Research* is in
-[`paper/phase1_dla_parity/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity/phase1_dla_parity_short_paper.md).
+[`paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity_short_paper.md`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity_short_paper.md).
 
 ### Phase 2 — Reduced A+G Replication (May 2026, ibm_kingston)
 
@@ -232,12 +232,12 @@ Reproduce from raw counts via
 ### Phase 2 Publication Package
 
 The release-ready Phase 2 manifest is
-[`docs/publication_phase2_package_2026-05-05.md`](publication_phase2_package_2026-05-05.md).
+[`docs/publication/publication_phase2_package_2026-05-05.md`](publication/publication_phase2_package_2026-05-05.md).
 It indexes the promoted raw-count files, integrity hashes, job IDs, figure
 artefacts, reproduction commands, and claim boundaries.
 
 The excitation-count confound control is preregistered in
-[`docs/ibm_popcount_control_manifest_2026-05-05.md`](ibm_popcount_control_manifest_2026-05-05.md).
+[`docs/campaigns/ibm_popcount_control_manifest_2026-05-05.md`](campaigns/ibm_popcount_control_manifest_2026-05-05.md).
 It has now been executed and promoted under
 `data/phase2_popcount_control/`. The control shows that the original middle-depth
 contrast survives, but same-popcount within-sector swaps are also significant

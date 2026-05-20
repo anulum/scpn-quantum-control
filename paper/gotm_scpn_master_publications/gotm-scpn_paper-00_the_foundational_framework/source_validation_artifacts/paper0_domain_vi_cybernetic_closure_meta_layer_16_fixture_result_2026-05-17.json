@@ -1,0 +1,56 @@
+{
+  "claim_boundary": "source-bounded domain vi cybernetic closure meta layer 16 source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "domain_vi_cybernetic_closure_meta_layer_16": "domain_vi_cybernetic_closure_meta_layer_16_source_boundary",
+    "domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso": "domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Domain VI: Cybernetic Closure (Meta-Layer 16)",
+    "component_2": "Domain VI: Cybernetic Closure (Meta-Layer 16) - The Optimal Control Supervisor and Gdelian Oracle",
+    "component_count": "2",
+    "next_boundary": "P0R05603",
+    "section": "Domain VI: Cybernetic Closure (Meta-Layer 16)",
+    "source_span": "P0R05584-P0R05602"
+  },
+  "next_source_boundary": "P0R05603",
+  "null_controls": {
+    "domain_vi_cybernetic_closure_meta_layer_16_is_not_empirical_validation_evidence": 1.0,
+    "domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded domain vi cybernetic closure meta layer 16 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_domain_vi_cybernetic_closure_meta_layer_16_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05584",
+      "P0R05585",
+      "P0R05586",
+      "P0R05587",
+      "P0R05588",
+      "P0R05589",
+      "P0R05590",
+      "P0R05591",
+      "P0R05592",
+      "P0R05593",
+      "P0R05594",
+      "P0R05595",
+      "P0R05596",
+      "P0R05597",
+      "P0R05598",
+      "P0R05599",
+      "P0R05600",
+      "P0R05601",
+      "P0R05602"
+    ],
+    "source_ledger_span": [
+      "P0R05584",
+      "P0R05602"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05584",
+    "P0R05602"
+  ],
+  "source_record_count": 19
+}

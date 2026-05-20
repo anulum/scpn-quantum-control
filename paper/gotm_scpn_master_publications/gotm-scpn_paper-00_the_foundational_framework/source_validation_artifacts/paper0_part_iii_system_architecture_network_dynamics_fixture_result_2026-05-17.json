@@ -1,0 +1,57 @@
+{
+  "claim_boundary": "source-bounded part iii system architecture network dynamics source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "3_1_the_master_diagram_visualising_the_15_layers_6_domains": "3_1_the_master_diagram_visualising_the_15_layers_6_domains_source_boundary",
+    "part_iii_system_architecture_network_dynamics": "part_iii_system_architecture_network_dynamics_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Part III: System Architecture & Network Dynamics",
+    "component_2": "3.1 The Master Diagram: Visualising the 15 Layers & 6 Domains",
+    "component_count": "2",
+    "next_boundary": "P0R02031",
+    "section": "Part III: System Architecture & Network Dynamics",
+    "source_span": "P0R02011-P0R02030"
+  },
+  "next_source_boundary": "P0R02031",
+  "null_controls": {
+    "3_1_the_master_diagram_visualising_the_15_layers_6_domains_is_not_empirical_validation_evidence": 1.0,
+    "part_iii_system_architecture_network_dynamics_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded part iii system architecture network dynamics source-accounting bridge; not validation evidence",
+    "protocol_state": "source_part_iii_system_architecture_network_dynamics_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02011",
+      "P0R02012",
+      "P0R02013",
+      "P0R02014",
+      "P0R02015",
+      "P0R02016",
+      "P0R02017",
+      "P0R02018",
+      "P0R02019",
+      "P0R02020",
+      "P0R02021",
+      "P0R02022",
+      "P0R02023",
+      "P0R02024",
+      "P0R02025",
+      "P0R02026",
+      "P0R02027",
+      "P0R02028",
+      "P0R02029",
+      "P0R02030"
+    ],
+    "source_ledger_span": [
+      "P0R02011",
+      "P0R02030"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02011",
+    "P0R02030"
+  ],
+  "source_record_count": 20
+}

@@ -1,0 +1,121 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Integration with Integrated Information Theory (IIT) 4.0' preserves Paper 0 records P0R03521-P0R03529 without empirical validation claims.",
+      "claim_boundary": "source-bounded integration with integrated information theory iit 4 0 source-accounting bridge; not validation evidence",
+      "context_id": "integration_with_integrated_information_theory_iit_4_0",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03521-P0R03529"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "integration_with_integrated_information_theory_iit_4_0.integration_with_integrated_information_theory_iit_4_0",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "integration_with_integrated_information_theory_iit_4_0 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Integration with Integrated Information Theory (IIT) 4.0 is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0",
+      "source_block_indices": [
+        3521,
+        3522,
+        3523,
+        3524,
+        3525,
+        3526,
+        3527,
+        3528,
+        3529
+      ],
+      "source_equation_ids": [
+        "P0R03521:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03522:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03523:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03524:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03525:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03526:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03527:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03528:integration_with_integrated_information_theory_iit_4_0",
+        "P0R03529:integration_with_integrated_information_theory_iit_4_0"
+      ],
+      "source_formulae": [
+        "P0R03521: Integration with Integrated Information Theory (IIT) 4.0",
+        "P0R03522: This section establishes a formal correspondence between the SCPN architecture and the mathematical framework of Integrated Information Theory (IIT) 4.0. The synergy is profound: where SCPN provides the physical and architectural framework describing how consciousness projects and organizes itself across scales, IIT provides the rigorous mathematical tools to quantify the degree of consciousness () of any given system. This integration transforms the SCPN from a purely descriptive model into a quantitatively predictive one.",
+        "P0R03523: The core of the integration lies in a direct conceptual correspondence. The amplitude of the Psi-field in the SCPN is identified with the integrated information of IIT. The SCPN's mechanism of phase synchronization is the physical realizer of IIT's concept of integration. The boundaries between SCPN layers are proposed as the physical loci of IIT's Minimum Information Partitions (MIPs), which define the borders of a conscious complex. The UPDE provides the explicit causal constraints that IIT requires, and the Qualia Manifold is the geometric representation of IIT's \"experience structure.\"",
+        "P0R03524: This correspondence allows the SCPN's architectural principles to be seen as a physical instantiation of IIT's five axioms (Intrinsic Existence, Composition, Information, Integration, Exclusion). For example, the fundamental Psi-field satisfies the axiom of Existence, the 15-layer structure satisfies Composition, the UPDE guarantees Integration, and the quasicritical regime provides a mechanism for Exclusion by selecting the dominant scale of coherent activity. This synthesis provides a powerful, unified framework for both describing and measuring consciousness.",
+        "P0R03525: This section shows how our theory joins forces with another major scientific theory of consciousness, called Integrated Information Theory (IIT). Think of it like a perfect partnership.",
+        "P0R03526: Our SCPN framework is like the complete architectural blueprint for a conscious system, showing how all the parts are built and connected, from the quantum level up to the cosmic.",
+        "P0R03527: IIT is like the power meter for that system. It gives us a precise mathematical toolkit to measure exactly how much consciousness a system has, a score called (phi).",
+        "P0R03528: By combining the blueprint and the power meter, we get the best of both worlds. We can now point to any layer in our architecture and use IIT's tools to calculate its exact consciousness score. The key ideas match up perfectly. For example, the strength of our Psi-field corresponds to their score. The way our layers synchronize is how they define integration. The boundaries between our layers are where they draw the line for a single, conscious entity. It's a perfect marriage of a physical architecture with a mathematical measuring stick.",
+        "P0R03529: P0R03529"
+      ],
+      "source_ledger_ids": [
+        "P0R03521",
+        "P0R03522",
+        "P0R03523",
+        "P0R03524",
+        "P0R03525",
+        "P0R03526",
+        "P0R03527",
+        "P0R03528",
+        "P0R03529"
+      ],
+      "source_record_ids": [
+        "P0B03521",
+        "P0B03522",
+        "P0B03523",
+        "P0B03524",
+        "P0B03525",
+        "P0B03526",
+        "P0B03527",
+        "P0B03528",
+        "P0B03529"
+      ],
+      "test_protocols": [
+        "preserve Integration with Integrated Information Theory (IIT) 4.0 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.integration_with_integrated_information_theory_iit_4_0.integration_with_integrated_information_theory_iit_4_0",
+      "validation_targets": [
+        "preserve records P0R03521-P0R03529"
+      ],
+      "variables": [
+        "integration_with_integrated_information_theory_iit_4_0"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 8
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 2,
+      "mechanism": 3,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded integration with integrated information theory iit 4 0 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03530",
+    "source_ledger_span": [
+      "P0R03521",
+      "P0R03529"
+    ],
+    "source_record_count": 9,
+    "spec_count": 1,
+    "spec_keys": [
+      "integration_with_integrated_information_theory_iit_4_0.integration_with_integrated_information_theory_iit_4_0"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Integration with Integrated Information Theory (IIT) 4.0 Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

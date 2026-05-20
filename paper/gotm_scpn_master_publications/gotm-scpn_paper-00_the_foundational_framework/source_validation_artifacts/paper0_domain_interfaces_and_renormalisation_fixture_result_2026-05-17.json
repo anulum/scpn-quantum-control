@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded domain interfaces and renormalisation source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "1_renormalisation_group_rg_flow_across_domains": "1_renormalisation_group_rg_flow_across_domains_source_boundary",
+    "domain_interfaces_and_renormalisation": "domain_interfaces_and_renormalisation_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Domain Interfaces and Renormalisation",
+    "component_2": "1. Renormalisation Group (RG) Flow Across Domains:",
+    "component_count": "2",
+    "next_boundary": "P0R05641",
+    "section": "Domain Interfaces and Renormalisation",
+    "source_span": "P0R05633-P0R05640"
+  },
+  "next_source_boundary": "P0R05641",
+  "null_controls": {
+    "1_renormalisation_group_rg_flow_across_domains_is_not_empirical_validation_evidence": 1.0,
+    "domain_interfaces_and_renormalisation_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded domain interfaces and renormalisation source-accounting bridge; not validation evidence",
+    "protocol_state": "source_domain_interfaces_and_renormalisation_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05633",
+      "P0R05634",
+      "P0R05635",
+      "P0R05636",
+      "P0R05637",
+      "P0R05638",
+      "P0R05639",
+      "P0R05640"
+    ],
+    "source_ledger_span": [
+      "P0R05633",
+      "P0R05640"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05633",
+    "P0R05640"
+  ],
+  "source_record_count": 8
+}

@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded mathematics geometry source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "cybernetics_systems_theory": "cybernetics_systems_theory_source_boundary",
+    "mathematics_geometry": "mathematics_geometry_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Mathematics & Geometry",
+    "component_2": "Cybernetics & Systems Theory",
+    "component_count": "2",
+    "next_boundary": "P0R05802",
+    "section": " Mathematics & Geometry",
+    "source_span": "P0R05794-P0R05801"
+  },
+  "next_source_boundary": "P0R05802",
+  "null_controls": {
+    "cybernetics_systems_theory_is_not_empirical_validation_evidence": 1.0,
+    "mathematics_geometry_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded mathematics geometry source-accounting bridge; not validation evidence",
+    "protocol_state": "source_mathematics_geometry_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05794",
+      "P0R05795",
+      "P0R05796",
+      "P0R05797",
+      "P0R05798",
+      "P0R05799",
+      "P0R05800",
+      "P0R05801"
+    ],
+    "source_ledger_span": [
+      "P0R05794",
+      "P0R05801"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05794",
+    "P0R05801"
+  ],
+  "source_record_count": 8
+}

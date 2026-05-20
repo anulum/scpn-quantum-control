@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded creating and protecting a coherent sigma source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "creating_and_protecting_a_coherent_sigma": "creating_and_protecting_a_coherent_sigma_source_boundary",
+    "the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec": "the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_source_boundary",
+    "the_hierarchy_of_protection": "the_hierarchy_of_protection_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Creating and Protecting a Coherent sigma:",
+    "component_2": "The Hierarchy of Protection:",
+    "component_3": "The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC)",
+    "component_count": "3",
+    "next_boundary": "P0R03042",
+    "section": "Creating and Protecting a Coherent sigma:",
+    "source_span": "P0R03034-P0R03041"
+  },
+  "next_source_boundary": "P0R03042",
+  "null_controls": {
+    "creating_and_protecting_a_coherent_sigma_is_not_empirical_validation_evidence": 1.0,
+    "the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec_is_not_empirical_validation_evidence": 1.0,
+    "the_hierarchy_of_protection_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded creating and protecting a coherent sigma source-accounting bridge; not validation evidence",
+    "protocol_state": "source_creating_and_protecting_a_coherent_sigma_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03034",
+      "P0R03035",
+      "P0R03036",
+      "P0R03037",
+      "P0R03038",
+      "P0R03039",
+      "P0R03040",
+      "P0R03041"
+    ],
+    "source_ledger_span": [
+      "P0R03034",
+      "P0R03041"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03034",
+    "P0R03041"
+  ],
+  "source_record_count": 8
+}

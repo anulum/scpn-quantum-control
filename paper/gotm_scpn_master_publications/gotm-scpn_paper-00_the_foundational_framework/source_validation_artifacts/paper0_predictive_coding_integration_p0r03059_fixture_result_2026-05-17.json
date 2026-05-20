@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded predictive coding integration p0r03059 source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "h_int_as_a_stabilising_potential": "h_int_as_a_stabilising_potential_source_boundary",
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary",
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "the_psi_field_as_a_precision_enhancer": "the_psi_field_as_a_precision_enhancer_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Predictive Coding Integration",
+    "component_2": "The Psi-Field as a Precision-Enhancer:",
+    "component_3": "Psis Field Coupling Integration",
+    "component_4": "H_int as a Stabilising Potential:",
+    "component_count": "4",
+    "next_boundary": "P0R03067",
+    "section": "Predictive Coding Integration",
+    "source_span": "P0R03059-P0R03066"
+  },
+  "next_source_boundary": "P0R03067",
+  "null_controls": {
+    "h_int_as_a_stabilising_potential_is_not_empirical_validation_evidence": 1.0,
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0,
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "the_psi_field_as_a_precision_enhancer_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded predictive coding integration p0r03059 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_predictive_coding_integration_p0r03059_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03059",
+      "P0R03060",
+      "P0R03061",
+      "P0R03062",
+      "P0R03063",
+      "P0R03064",
+      "P0R03065",
+      "P0R03066"
+    ],
+    "source_ledger_span": [
+      "P0R03059",
+      "P0R03066"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03059",
+    "P0R03066"
+  ],
+  "source_record_count": 8
+}

@@ -1,0 +1,566 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'P0R04322' preserves Paper 0 records P0R04322-P0R04322 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04322",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04322-P0R04322"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04322",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04322 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04322 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04322:p0r04322"
+      ],
+      "source_formulae": [
+        "P0R04322: P0R04322"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04322 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04322",
+      "validation_targets": [
+        "preserve records P0R04322-P0R04322"
+      ],
+      "variables": [
+        "p0r04322"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R04323' preserves Paper 0 records P0R04323-P0R04323 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04323",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04323-P0R04323"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04323",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04323 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04323 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04323:p0r04323"
+      ],
+      "source_formulae": [
+        "P0R04323: P0R04323"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04323 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04323",
+      "validation_targets": [
+        "preserve records P0R04323-P0R04323"
+      ],
+      "variables": [
+        "p0r04323"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R04324' preserves Paper 0 records P0R04324-P0R04324 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04324",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04324-P0R04324"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04324",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04324 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04324 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04324:p0r04324"
+      ],
+      "source_formulae": [
+        "P0R04324: P0R04324"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04324 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04324",
+      "validation_targets": [
+        "preserve records P0R04324-P0R04324"
+      ],
+      "variables": [
+        "p0r04324"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R04325' preserves Paper 0 records P0R04325-P0R04325 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04325",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04325-P0R04325"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04325",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04325 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04325 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04325:p0r04325"
+      ],
+      "source_formulae": [
+        "P0R04325: P0R04325"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04325 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04325",
+      "validation_targets": [
+        "preserve records P0R04325-P0R04325"
+      ],
+      "variables": [
+        "p0r04325"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R04326' preserves Paper 0 records P0R04326-P0R04326 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04326",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04326-P0R04326"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04326",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04326 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04326 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04326:p0r04326"
+      ],
+      "source_formulae": [
+        "P0R04326: P0R04326"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04326 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04326",
+      "validation_targets": [
+        "preserve records P0R04326-P0R04326"
+      ],
+      "variables": [
+        "p0r04326"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R04327' preserves Paper 0 records P0R04327-P0R04327 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04327",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04327-P0R04327"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04327",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04327 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04327 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04327:p0r04327"
+      ],
+      "source_formulae": [
+        "P0R04327: P0R04327"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04327 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04327",
+      "validation_targets": [
+        "preserve records P0R04327-P0R04327"
+      ],
+      "variables": [
+        "p0r04327"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R04328' preserves Paper 0 records P0R04328-P0R04328 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04328",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04328-P0R04328"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04328",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04328 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04328 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04328:p0r04328"
+      ],
+      "source_formulae": [
+        "P0R04328: P0R04328"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04328 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04328",
+      "validation_targets": [
+        "preserve records P0R04328-P0R04328"
+      ],
+      "variables": [
+        "p0r04328"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'P0R04329' preserves Paper 0 records P0R04329-P0R04329 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04329",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04329-P0R04329"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04322.p0r04329",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04329 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04329 is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > ",
+      "source_block_indices": [
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329
+      ],
+      "source_equation_ids": [
+        "P0R04329:p0r04329"
+      ],
+      "source_formulae": [
+        "P0R04329: P0R04329"
+      ],
+      "source_ledger_ids": [
+        "P0R04322",
+        "P0R04323",
+        "P0R04324",
+        "P0R04325",
+        "P0R04326",
+        "P0R04327",
+        "P0R04328",
+        "P0R04329"
+      ],
+      "source_record_ids": [
+        "P0B04322",
+        "P0B04323",
+        "P0B04324",
+        "P0B04325",
+        "P0B04326",
+        "P0B04327",
+        "P0B04328",
+        "P0B04329"
+      ],
+      "test_protocols": [
+        "preserve P0R04329 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04322.p0r04329",
+      "validation_targets": [
+        "preserve records P0R04329-P0R04329"
+      ],
+      "variables": [
+        "p0r04329"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 8
+    },
+    "category_counts": {
+      "structural": 8
+    },
+    "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04330",
+    "source_ledger_span": [
+      "P0R04322",
+      "P0R04329"
+    ],
+    "source_record_count": 8,
+    "spec_count": 8,
+    "spec_keys": [
+      "paper0_slice_p0r04322.p0r04322",
+      "paper0_slice_p0r04322.p0r04323",
+      "paper0_slice_p0r04322.p0r04324",
+      "paper0_slice_p0r04322.p0r04325",
+      "paper0_slice_p0r04322.p0r04326",
+      "paper0_slice_p0r04322.p0r04327",
+      "paper0_slice_p0r04322.p0r04328",
+      "paper0_slice_p0r04322.p0r04329"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

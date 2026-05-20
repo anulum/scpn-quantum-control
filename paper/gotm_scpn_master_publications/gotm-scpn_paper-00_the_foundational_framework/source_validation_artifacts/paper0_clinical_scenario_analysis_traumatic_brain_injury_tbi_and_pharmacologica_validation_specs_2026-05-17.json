@@ -1,0 +1,248 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention' preserves Paper 0 records P0R05050-P0R05050 without empirical validation claims.",
+      "claim_boundary": "source-bounded clinical scenario analysis traumatic brain injury tbi and pharmacologica source-accounting bridge; not validation evidence",
+      "context_id": "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05050-P0R05050"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention",
+      "source_block_indices": [
+        5050,
+        5051,
+        5052,
+        5053,
+        5054,
+        5055,
+        5056,
+        5057
+      ],
+      "source_equation_ids": [
+        "P0R05050:clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica"
+      ],
+      "source_formulae": [
+        "P0R05050: Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention"
+      ],
+      "source_ledger_ids": [
+        "P0R05050",
+        "P0R05051",
+        "P0R05052",
+        "P0R05053",
+        "P0R05054",
+        "P0R05055",
+        "P0R05056",
+        "P0R05057"
+      ],
+      "source_record_ids": [
+        "P0B05050",
+        "P0B05051",
+        "P0B05052",
+        "P0B05053",
+        "P0B05054",
+        "P0B05055",
+        "P0B05056",
+        "P0B05057"
+      ],
+      "test_protocols": [
+        "preserve Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica",
+      "validation_targets": [
+        "preserve records P0R05050-P0R05050"
+      ],
+      "variables": [
+        "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. The Traumatised Brain: Catastrophic Disruption of the SCPN Architecture' preserves Paper 0 records P0R05051-P0R05054 without empirical validation claims.",
+      "claim_boundary": "source-bounded clinical scenario analysis traumatic brain injury tbi and pharmacologica source-accounting bridge; not validation evidence",
+      "context_id": "i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05051-P0R05054"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Traumatised Brain: Catastrophic Disruption of the SCPN Architecture is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention",
+      "source_block_indices": [
+        5050,
+        5051,
+        5052,
+        5053,
+        5054,
+        5055,
+        5056,
+        5057
+      ],
+      "source_equation_ids": [
+        "P0R05051:i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture",
+        "P0R05052:i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture",
+        "P0R05053:i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture",
+        "P0R05054:i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture"
+      ],
+      "source_formulae": [
+        "P0R05051: I. The Traumatised Brain: Catastrophic Disruption of the SCPN Architecture",
+        "P0R05052: Traumatic Brain Injury (TBI) induces a rapid, multi-scale disruption of the SCPN's biological substrate (L1-L5). It is characterised by the activation of the Triad of Pathology: Decoherence, Dyscritia, and Dissonance.",
+        "P0R05053: [IMAGE:]",
+        "P0R05054: Fig.: Triad of Pathology in TBI. L1 Decoherence (DAI -> microtubule lattice fracture; QEC failure; mitochondrial/ROS; glymphatic failure) cascades into L4 Dyscritia (E/I imbalance, sigma->sub/supercritical, CSD/seizures, CFC loss), culminating in L5 Dissonance (, F, manifold curvature negative with bkb_kbk)."
+      ],
+      "source_ledger_ids": [
+        "P0R05050",
+        "P0R05051",
+        "P0R05052",
+        "P0R05053",
+        "P0R05054",
+        "P0R05055",
+        "P0R05056",
+        "P0R05057"
+      ],
+      "source_record_ids": [
+        "P0B05050",
+        "P0B05051",
+        "P0B05052",
+        "P0B05053",
+        "P0B05054",
+        "P0B05055",
+        "P0B05056",
+        "P0B05057"
+      ],
+      "test_protocols": [
+        "preserve I. The Traumatised Brain: Catastrophic Disruption of the SCPN Architecture source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture",
+      "validation_targets": [
+        "preserve records P0R05051-P0R05054"
+      ],
+      "variables": [
+        "i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. L1 Disruption (The Decoherence Cascade):' preserves Paper 0 records P0R05055-P0R05057 without empirical validation claims.",
+      "claim_boundary": "source-bounded clinical scenario analysis traumatic brain injury tbi and pharmacologica source-accounting bridge; not validation evidence",
+      "context_id": "1_l1_disruption_the_decoherence_cascade",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05055-P0R05057"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.1_l1_disruption_the_decoherence_cascade",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_l1_disruption_the_decoherence_cascade must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. L1 Disruption (The Decoherence Cascade): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention",
+      "source_block_indices": [
+        5050,
+        5051,
+        5052,
+        5053,
+        5054,
+        5055,
+        5056,
+        5057
+      ],
+      "source_equation_ids": [
+        "P0R05055:1_l1_disruption_the_decoherence_cascade",
+        "P0R05056:1_l1_disruption_the_decoherence_cascade",
+        "P0R05057:1_l1_disruption_the_decoherence_cascade"
+      ],
+      "source_formulae": [
+        "P0R05055: 1. L1 Disruption (The Decoherence Cascade):",
+        "P0R05056: The primary mechanical insult and secondary injury cascades critically damage the L1 substrate.",
+        "P0R05057: Cytoskeletal Fracture and QEC Failure: Mechanical shearing forces (Diffuse Axonal Injury, DAI) directly disrupt the Microtubule (MT) lattice. This catastrophically impairs the Topological Quantum Error Correction (QEC) mechanism (Delta1.64 eV), leading to rapid Decoherence. | Mitochondrial Failure and Oxidative Stress: Mitochondrial damage leads to ATP depletion and excessive Reactive Oxygen Species (ROS). This halts the metabolic pumping required for Frhlich condensation and directly damages the L1 substrate. The resulting environment acts as a potent Decoherence Field."
+      ],
+      "source_ledger_ids": [
+        "P0R05050",
+        "P0R05051",
+        "P0R05052",
+        "P0R05053",
+        "P0R05054",
+        "P0R05055",
+        "P0R05056",
+        "P0R05057"
+      ],
+      "source_record_ids": [
+        "P0B05050",
+        "P0B05051",
+        "P0B05052",
+        "P0B05053",
+        "P0B05054",
+        "P0B05055",
+        "P0B05056",
+        "P0B05057"
+      ],
+      "test_protocols": [
+        "preserve 1. L1 Disruption (The Decoherence Cascade): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.1_l1_disruption_the_decoherence_cascade",
+      "validation_targets": [
+        "preserve records P0R05055-P0R05057"
+      ],
+      "variables": [
+        "1_l1_disruption_the_decoherence_cascade"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 3,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 3,
+      "figure": 1,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded clinical scenario analysis traumatic brain injury tbi and pharmacologica source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0128"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05058",
+    "source_ledger_span": [
+      "P0R05050",
+      "P0R05057"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica",
+      "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.i_the_traumatised_brain_catastrophic_disruption_of_the_scpn_architecture",
+      "clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica.1_l1_disruption_the_decoherence_cascade"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Clinical Scenario Analysis: Traumatic Brain Injury (TBI) and Pharmacological Intervention Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

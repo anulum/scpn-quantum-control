@@ -1,0 +1,79 @@
+{
+  "claim_boundary": "source-bounded derived interaction opening; not experimental validation evidence",
+  "component_count": 5,
+  "components": {
+    "gauge_principle_nonabelian_boundary": "local_u1_su_n_hypothesis_fim_dynamics_boundary",
+    "gauge_theory_grounding": "complex_scalar_u1_infoton_grounding_boundary",
+    "h_int_gauge_identification": "h_int_to_u1_gauge_interaction_identification_boundary",
+    "intrinsic_properties_quantum_numbers": "spin_zero_psi_charge_infoton_fim_quantum_number_boundary",
+    "predictive_coding_mapping": "psi_charge_belief_infoton_prediction_error_mapping_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "current": "J_mu = Psi* partial_mu Psi - Psi partial_mu Psi*",
+    "field": "Psi is a complex scalar field with spin-0 quanta and Psi-charge",
+    "interaction": "L_interaction = i g A_mu J_mu",
+    "next_boundary": "The Master Interaction Lagrangian (Derived from First Principles)",
+    "section": "Deriving the Master Interaction Lagrangian"
+  },
+  "next_source_boundary": "P0R01422",
+  "null_controls": {
+    "diagram_caption_is_not_particle_detection_evidence": 1.0,
+    "phenomenological_black_box_h_int_rejected_for_derived_boundary": 1.0,
+    "predictive_coding_mapping_is_not_observed_infoton_signal": 1.0,
+    "su_n_qualia_confinement_remains_hypothesis_not_established_gauge_group": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded derived interaction opening; not experimental validation evidence",
+    "protocol_state": "source_derived_interaction_opening_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01384",
+      "P0R01385",
+      "P0R01386",
+      "P0R01387",
+      "P0R01388",
+      "P0R01389",
+      "P0R01390",
+      "P0R01391",
+      "P0R01392",
+      "P0R01393",
+      "P0R01394",
+      "P0R01395",
+      "P0R01396",
+      "P0R01397",
+      "P0R01398",
+      "P0R01399",
+      "P0R01400",
+      "P0R01401",
+      "P0R01402",
+      "P0R01403",
+      "P0R01404",
+      "P0R01405",
+      "P0R01406",
+      "P0R01407",
+      "P0R01408",
+      "P0R01409",
+      "P0R01410",
+      "P0R01411",
+      "P0R01412",
+      "P0R01413",
+      "P0R01414",
+      "P0R01415",
+      "P0R01416",
+      "P0R01417",
+      "P0R01418",
+      "P0R01419",
+      "P0R01420",
+      "P0R01421"
+    ],
+    "source_ledger_span": [
+      "P0R01384",
+      "P0R01421"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01384",
+    "P0R01421"
+  ],
+  "source_record_count": 38
+}

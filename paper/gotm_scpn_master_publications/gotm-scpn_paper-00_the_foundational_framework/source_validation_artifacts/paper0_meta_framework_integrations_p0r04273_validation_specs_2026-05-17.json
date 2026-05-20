@@ -1,0 +1,409 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R04273-P0R04273 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04273 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04273-P0R04273"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04273.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > Meta-Framework Integrations",
+      "source_block_indices": [
+        4273,
+        4274,
+        4275,
+        4276,
+        4277,
+        4278,
+        4279,
+        4280,
+        4281,
+        4282
+      ],
+      "source_equation_ids": [
+        "P0R04273:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R04273: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R04273",
+        "P0R04274",
+        "P0R04275",
+        "P0R04276",
+        "P0R04277",
+        "P0R04278",
+        "P0R04279",
+        "P0R04280",
+        "P0R04281",
+        "P0R04282"
+      ],
+      "source_record_ids": [
+        "P0B04273",
+        "P0B04274",
+        "P0B04275",
+        "P0B04276",
+        "P0B04277",
+        "P0B04278",
+        "P0B04279",
+        "P0B04280",
+        "P0B04281",
+        "P0B04282"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04273.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R04273-P0R04273"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R04274-P0R04275 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04273 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04274-P0R04275"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04273.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > Meta-Framework Integrations",
+      "source_block_indices": [
+        4273,
+        4274,
+        4275,
+        4276,
+        4277,
+        4278,
+        4279,
+        4280,
+        4281,
+        4282
+      ],
+      "source_equation_ids": [
+        "P0R04274:predictive_coding_integration",
+        "P0R04275:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R04274: Predictive Coding Integration",
+        "P0R04275: The ALP-mediated interface is the physical read/write head for the generative model in the brain."
+      ],
+      "source_ledger_ids": [
+        "P0R04273",
+        "P0R04274",
+        "P0R04275",
+        "P0R04276",
+        "P0R04277",
+        "P0R04278",
+        "P0R04279",
+        "P0R04280",
+        "P0R04281",
+        "P0R04282"
+      ],
+      "source_record_ids": [
+        "P0B04273",
+        "P0B04274",
+        "P0B04275",
+        "P0B04276",
+        "P0B04277",
+        "P0B04278",
+        "P0B04279",
+        "P0B04280",
+        "P0B04281",
+        "P0B04282"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04273.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R04274-P0R04275"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Downward Causation (Psi->EM) is the \"Write\" operation:' preserves Paper 0 records P0R04276-P0R04277 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04273 source-accounting bridge; not validation evidence",
+      "context_id": "downward_causation_psi_em_is_the_write_operation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04276-P0R04277"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04273.downward_causation_psi_em_is_the_write_operation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "downward_causation_psi_em_is_the_write_operation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Downward Causation (Psi->EM) is the \"Write\" operation: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > Meta-Framework Integrations",
+      "source_block_indices": [
+        4273,
+        4274,
+        4275,
+        4276,
+        4277,
+        4278,
+        4279,
+        4280,
+        4281,
+        4282
+      ],
+      "source_equation_ids": [
+        "P0R04276:downward_causation_psi_em_is_the_write_operation",
+        "P0R04277:downward_causation_psi_em_is_the_write_operation"
+      ],
+      "source_formulae": [
+        "P0R04276: Downward Causation (Psi->EM) is the \"Write\" operation:",
+        "P0R04277: The top-down predictions from the generative model, encoded in the phase of the Psi-field, are \"written\" onto the neural substrate. The ALP-to-photon conversion is the physical process that translates the model's abstract prediction into a concrete pattern of electromagnetic activity in the brain."
+      ],
+      "source_ledger_ids": [
+        "P0R04273",
+        "P0R04274",
+        "P0R04275",
+        "P0R04276",
+        "P0R04277",
+        "P0R04278",
+        "P0R04279",
+        "P0R04280",
+        "P0R04281",
+        "P0R04282"
+      ],
+      "source_record_ids": [
+        "P0B04273",
+        "P0B04274",
+        "P0B04275",
+        "P0B04276",
+        "P0B04277",
+        "P0B04278",
+        "P0B04279",
+        "P0B04280",
+        "P0B04281",
+        "P0B04282"
+      ],
+      "test_protocols": [
+        "preserve Downward Causation (Psi->EM) is the \"Write\" operation: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04273.downward_causation_psi_em_is_the_write_operation",
+      "validation_targets": [
+        "preserve records P0R04276-P0R04277"
+      ],
+      "variables": [
+        "downward_causation_psi_em_is_the_write_operation"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Upward Causation (EM->Psi) is the \"Read\" operation:' preserves Paper 0 records P0R04278-P0R04279 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04273 source-accounting bridge; not validation evidence",
+      "context_id": "upward_causation_em_psi_is_the_read_operation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04278-P0R04279"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04273.upward_causation_em_psi_is_the_read_operation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "upward_causation_em_psi_is_the_read_operation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Upward Causation (EM->Psi) is the \"Read\" operation: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > Meta-Framework Integrations",
+      "source_block_indices": [
+        4273,
+        4274,
+        4275,
+        4276,
+        4277,
+        4278,
+        4279,
+        4280,
+        4281,
+        4282
+      ],
+      "source_equation_ids": [
+        "P0R04278:upward_causation_em_psi_is_the_read_operation",
+        "P0R04279:upward_causation_em_psi_is_the_read_operation"
+      ],
+      "source_formulae": [
+        "P0R04278: Upward Causation (EM->Psi) is the \"Read\" operation:",
+        "P0R04279: The prediction error, calculated at the neural level and encoded in the brain's EM field, is \"read\" back by the generative model. The photon-to-ALP conversion is the physical process that translates this bottom-up error signal into a modulation of the Psi-field's phase, compelling the model to update its beliefs."
+      ],
+      "source_ledger_ids": [
+        "P0R04273",
+        "P0R04274",
+        "P0R04275",
+        "P0R04276",
+        "P0R04277",
+        "P0R04278",
+        "P0R04279",
+        "P0R04280",
+        "P0R04281",
+        "P0R04282"
+      ],
+      "source_record_ids": [
+        "P0B04273",
+        "P0B04274",
+        "P0B04275",
+        "P0B04276",
+        "P0B04277",
+        "P0B04278",
+        "P0B04279",
+        "P0B04280",
+        "P0B04281",
+        "P0B04282"
+      ],
+      "test_protocols": [
+        "preserve Upward Causation (EM->Psi) is the \"Read\" operation: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04273.upward_causation_em_psi_is_the_read_operation",
+      "validation_targets": [
+        "preserve records P0R04278-P0R04279"
+      ],
+      "variables": [
+        "upward_causation_em_psi_is_the_read_operation"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R04280-P0R04282 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04273 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04280-P0R04282"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04273.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": " > 5.1 The EM Interface: An ALP-Mediated Bridge > An ALP-Mediated Bridge > Meta-Framework Integrations",
+      "source_block_indices": [
+        4273,
+        4274,
+        4275,
+        4276,
+        4277,
+        4278,
+        4279,
+        4280,
+        4281,
+        4282
+      ],
+      "source_equation_ids": [
+        "P0R04280:psis_field_coupling_integration",
+        "P0R04281:psis_field_coupling_integration",
+        "P0R04282:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R04280: Psis Field Coupling Integration",
+        "P0R04281: This chapter provides the most specific, mechanistic implementation of the interaction Hamiltonian,",
+        "P0R04282: H_int = -lambda * Psis * sigma, for the electromagnetic interface."
+      ],
+      "source_ledger_ids": [
+        "P0R04273",
+        "P0R04274",
+        "P0R04275",
+        "P0R04276",
+        "P0R04277",
+        "P0R04278",
+        "P0R04279",
+        "P0R04280",
+        "P0R04281",
+        "P0R04282"
+      ],
+      "source_record_ids": [
+        "P0B04273",
+        "P0B04274",
+        "P0B04275",
+        "P0B04276",
+        "P0B04277",
+        "P0B04278",
+        "P0B04279",
+        "P0B04280",
+        "P0B04281",
+        "P0B04282"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04273.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R04280-P0R04282"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "mechanism": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r04273 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04283",
+    "source_ledger_span": [
+      "P0R04273",
+      "P0R04282"
+    ],
+    "source_record_count": 10,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r04273.meta_framework_integrations",
+      "meta_framework_integrations_p0r04273.predictive_coding_integration",
+      "meta_framework_integrations_p0r04273.downward_causation_psi_em_is_the_write_operation",
+      "meta_framework_integrations_p0r04273.upward_causation_em_psi_is_the_read_operation",
+      "meta_framework_integrations_p0r04273.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

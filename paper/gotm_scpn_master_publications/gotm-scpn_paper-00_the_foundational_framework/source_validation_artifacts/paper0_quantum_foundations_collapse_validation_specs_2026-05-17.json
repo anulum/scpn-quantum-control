@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Quantum Foundations & Collapse' preserves Paper 0 records P0R05681-P0R05684 without empirical validation claims.",
+      "claim_boundary": "source-bounded quantum foundations collapse source-accounting bridge; not validation evidence",
+      "context_id": "quantum_foundations_collapse",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05681-P0R05684"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "quantum_foundations_collapse.quantum_foundations_collapse",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "quantum_foundations_collapse must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Quantum Foundations & Collapse is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Quantum Foundations & Collapse",
+      "source_block_indices": [
+        5681,
+        5682,
+        5683,
+        5684,
+        5685,
+        5686,
+        5687,
+        5688
+      ],
+      "source_equation_ids": [
+        "P0R05681:quantum_foundations_collapse",
+        "P0R05682:quantum_foundations_collapse",
+        "P0R05683:quantum_foundations_collapse",
+        "P0R05684:quantum_foundations_collapse"
+      ],
+      "source_formulae": [
+        "P0R05681: Quantum Foundations & Collapse",
+        "P0R05682: \"consciousness-induced decoherence (CIGD)\" -> should be triangulated with Ghirardi-Rimini-Weber (GRW, 1986) and Diosi (1987).",
+        "P0R05683: \"link to gravitational collapse\" -> Penrose (1996, 2014) beyond Orch-OR.",
+        "P0R05684: \"informational measures of collapse\" -> Bassi & Ghirardi (2003)."
+      ],
+      "source_ledger_ids": [
+        "P0R05681",
+        "P0R05682",
+        "P0R05683",
+        "P0R05684",
+        "P0R05685",
+        "P0R05686",
+        "P0R05687",
+        "P0R05688"
+      ],
+      "source_record_ids": [
+        "P0B05681",
+        "P0B05682",
+        "P0B05683",
+        "P0B05684",
+        "P0B05685",
+        "P0B05686",
+        "P0B05687",
+        "P0B05688"
+      ],
+      "test_protocols": [
+        "preserve Quantum Foundations & Collapse source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.quantum_foundations_collapse.quantum_foundations_collapse",
+      "validation_targets": [
+        "preserve records P0R05681-P0R05684"
+      ],
+      "variables": [
+        "quantum_foundations_collapse"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Quantum Information & Computing' preserves Paper 0 records P0R05685-P0R05688 without empirical validation claims.",
+      "claim_boundary": "source-bounded quantum foundations collapse source-accounting bridge; not validation evidence",
+      "context_id": "quantum_information_computing",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05685-P0R05688"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "quantum_foundations_collapse.quantum_information_computing",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "quantum_information_computing must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Quantum Information & Computing is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Quantum Foundations & Collapse",
+      "source_block_indices": [
+        5681,
+        5682,
+        5683,
+        5684,
+        5685,
+        5686,
+        5687,
+        5688
+      ],
+      "source_equation_ids": [
+        "P0R05685:quantum_information_computing",
+        "P0R05686:quantum_information_computing",
+        "P0R05687:quantum_information_computing",
+        "P0R05688:quantum_information_computing"
+      ],
+      "source_formulae": [
+        "P0R05685: Quantum Information & Computing",
+        "P0R05686: Preskill (2018, Quantum Computation Lecture Notes) -> canonical QEC foundations, strengthens MS-QEC arguments.",
+        "P0R05687: Nielsen & Chuang (2000, Quantum Computation and Quantum Information) -> the reference, already mentioned but must be cited consistently wherever QEC or tensor networks appear.",
+        "P0R05688: Raussendorf & Briegel (2001, Cluster State Quantum Computing) -> supports network-like computing analogies in your architecture."
+      ],
+      "source_ledger_ids": [
+        "P0R05681",
+        "P0R05682",
+        "P0R05683",
+        "P0R05684",
+        "P0R05685",
+        "P0R05686",
+        "P0R05687",
+        "P0R05688"
+      ],
+      "source_record_ids": [
+        "P0B05681",
+        "P0B05682",
+        "P0B05683",
+        "P0B05684",
+        "P0B05685",
+        "P0B05686",
+        "P0B05687",
+        "P0B05688"
+      ],
+      "test_protocols": [
+        "preserve Quantum Information & Computing source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.quantum_foundations_collapse.quantum_information_computing",
+      "validation_targets": [
+        "preserve records P0R05685-P0R05688"
+      ],
+      "variables": [
+        "quantum_information_computing"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 6,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded quantum foundations collapse source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05689",
+    "source_ledger_span": [
+      "P0R05681",
+      "P0R05688"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "quantum_foundations_collapse.quantum_foundations_collapse",
+      "quantum_foundations_collapse.quantum_information_computing"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Quantum Foundations & Collapse Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

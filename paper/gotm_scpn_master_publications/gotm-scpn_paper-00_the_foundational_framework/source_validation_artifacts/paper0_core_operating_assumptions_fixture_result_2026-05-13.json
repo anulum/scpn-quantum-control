@@ -1,0 +1,79 @@
+{
+  "assumption_roles": {
+    "bidirectional_causality": "recursive_top_down_bottom_up_causality",
+    "consciousness_fundamentality": "ontological_primitive_generative_assumption",
+    "ethical_functionals": "teleological_layer15_objective_prior",
+    "field_realism": "physical_measurable_engineerable_field_claim",
+    "unified_phase_dynamics": "universal_phase_synchronisation_language"
+  },
+  "blank_separator_count": 3,
+  "claim_boundary": "source-bounded core operating assumptions; not validation evidence",
+  "core_assumption_count": 5,
+  "hardware_status": "source_methodology_no_experiment",
+  "hint_contexts": {
+    "causality": "reciprocal_top_down_bottom_up_interaction",
+    "lambda": "ethical_functional_tunes_parameter_not_force",
+    "psi_s": "real_physical_field_context",
+    "sigma": "phase_coherence_or_synchrony_candidate"
+  },
+  "labels": {
+    "h_int": "H_int = -lambda * Psi_s * sigma",
+    "next_boundary": "Axiom I: The Primacy of Consciousness",
+    "section": "The SCPN: Core Operating Assumptions"
+  },
+  "next_source_boundary": "P0R00670",
+  "null_controls": {
+    "ethical_functional_does_not_add_force_to_h_int": 1.0,
+    "field_realism_claim_requires_downstream_validation": 1.0,
+    "operating_assumptions_are_not_empirical_results": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded core operating assumptions; not validation evidence",
+    "protocol_state": "source_assumption_map_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00635",
+      "P0R00636",
+      "P0R00637",
+      "P0R00638",
+      "P0R00639",
+      "P0R00640",
+      "P0R00641",
+      "P0R00642",
+      "P0R00643",
+      "P0R00644",
+      "P0R00645",
+      "P0R00646",
+      "P0R00647",
+      "P0R00648",
+      "P0R00649",
+      "P0R00650",
+      "P0R00651",
+      "P0R00652",
+      "P0R00653",
+      "P0R00654",
+      "P0R00655",
+      "P0R00656",
+      "P0R00657",
+      "P0R00658",
+      "P0R00659",
+      "P0R00660",
+      "P0R00661",
+      "P0R00662",
+      "P0R00663",
+      "P0R00664",
+      "P0R00665",
+      "P0R00666",
+      "P0R00667",
+      "P0R00668",
+      "P0R00669"
+    ],
+    "source_ledger_span": [
+      "P0R00635",
+      "P0R00669"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R00635",
+    "P0R00669"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded paper0 slice p0r04075 source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "p0r04075": "p0r04075_source_boundary",
+    "resolving_the_attractor_freeze_paradox_the_strange_attractor_of_sec": "resolving_the_attractor_freeze_paradox_the_strange_attractor_of_sec_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "P0R04075",
+    "component_2": "Resolving the Attractor Freeze Paradox: The Strange Attractor of SEC",
+    "component_count": "2",
+    "next_boundary": "P0R04089",
+    "section": "",
+    "source_span": "P0R04075-P0R04088"
+  },
+  "next_source_boundary": "P0R04089",
+  "null_controls": {
+    "p0r04075_is_not_empirical_validation_evidence": 1.0,
+    "resolving_the_attractor_freeze_paradox_the_strange_attractor_of_sec_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded paper0 slice p0r04075 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_paper0_slice_p0r04075_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04075",
+      "P0R04076",
+      "P0R04077",
+      "P0R04078",
+      "P0R04079",
+      "P0R04080",
+      "P0R04081",
+      "P0R04082",
+      "P0R04083",
+      "P0R04084",
+      "P0R04085",
+      "P0R04086",
+      "P0R04087",
+      "P0R04088"
+    ],
+    "source_ledger_span": [
+      "P0R04075",
+      "P0R04088"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04075",
+    "P0R04088"
+  ],
+  "source_record_count": 14
+}

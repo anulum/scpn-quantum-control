@@ -1,0 +1,20 @@
+{
+  "schema": "scpn_rust_vqe_methods_ansatz_ibm_analysis_v1",
+  "energy_estimates": [
+    {
+      "ansatz": "efficient_su2",
+      "raw_energy": -6.046109098757683
+    },
+    {
+      "ansatz": "knm_informed",
+      "raw_energy": -6.1937531798347285
+    },
+    {
+      "ansatz": "two_local",
+      "raw_energy": -6.073329269758216
+    }
+  ],
+  "readout_calibration_rows": 16,
+  "raw_counts_json": "data/rust_vqe_methods/ansatz_ibm_validation_raw_counts_ibm_marrakesh_20260520T163529Z.json",
+  "raw_counts_sha256": "c329eca62e2384bb6a72641e54a1b45d526e663478736c5e725afb0fff2e332d"
+}

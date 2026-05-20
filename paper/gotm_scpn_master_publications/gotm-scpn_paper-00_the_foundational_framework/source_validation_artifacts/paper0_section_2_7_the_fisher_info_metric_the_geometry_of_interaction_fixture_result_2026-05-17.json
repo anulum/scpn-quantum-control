@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "source-bounded section 2 7 the fisher info metric the geometry of interaction source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "2_7_the_fisher_info_metric_the_geometry_of_interaction": "2_7_the_fisher_info_metric_the_geometry_of_interaction_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "2.7 The Fisher Info Metric: The Geometry of Interaction",
+    "component_count": "1",
+    "next_boundary": "P0R02011",
+    "section": "2.7 The Fisher Info Metric: The Geometry of Interaction",
+    "source_span": "P0R01993-P0R02010"
+  },
+  "next_source_boundary": "P0R02011",
+  "null_controls": {
+    "2_7_the_fisher_info_metric_the_geometry_of_interaction_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 2 7 the fisher info metric the geometry of interaction source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_2_7_the_fisher_info_metric_the_geometry_of_interaction_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01993",
+      "P0R01994",
+      "P0R01995",
+      "P0R01996",
+      "P0R01997",
+      "P0R01998",
+      "P0R01999",
+      "P0R02000",
+      "P0R02001",
+      "P0R02002",
+      "P0R02003",
+      "P0R02004",
+      "P0R02005",
+      "P0R02006",
+      "P0R02007",
+      "P0R02008",
+      "P0R02009",
+      "P0R02010"
+    ],
+    "source_ledger_span": [
+      "P0R01993",
+      "P0R02010"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01993",
+    "P0R02010"
+  ],
+  "source_record_count": 18
+}

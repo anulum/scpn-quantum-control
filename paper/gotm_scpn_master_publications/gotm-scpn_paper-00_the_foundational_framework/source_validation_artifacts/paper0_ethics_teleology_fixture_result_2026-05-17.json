@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded ethics teleology source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "ethics_evolution_systems": "ethics_evolution_systems_source_boundary",
+    "ethics_teleology": "ethics_teleology_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Ethics & Teleology",
+    "component_2": "Ethics, Evolution & Systems",
+    "component_count": "2",
+    "next_boundary": "P0R05770",
+    "section": " Ethics & Teleology",
+    "source_span": "P0R05762-P0R05769"
+  },
+  "next_source_boundary": "P0R05770",
+  "null_controls": {
+    "ethics_evolution_systems_is_not_empirical_validation_evidence": 1.0,
+    "ethics_teleology_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded ethics teleology source-accounting bridge; not validation evidence",
+    "protocol_state": "source_ethics_teleology_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05762",
+      "P0R05763",
+      "P0R05764",
+      "P0R05765",
+      "P0R05766",
+      "P0R05767",
+      "P0R05768",
+      "P0R05769"
+    ],
+    "source_ledger_span": [
+      "P0R05762",
+      "P0R05769"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05762",
+    "P0R05769"
+  ],
+  "source_record_count": 8
+}

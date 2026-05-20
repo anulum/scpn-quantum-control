@@ -1,0 +1,209 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'VIII. The Evolutionary Trajectory of the Brain-Body System' preserves Paper 0 records P0R05039-P0R05044 without empirical validation claims.",
+      "claim_boundary": "source-bounded viii the evolutionary trajectory of the brain body system source-accounting bridge; not validation evidence",
+      "context_id": "viii_the_evolutionary_trajectory_of_the_brain_body_system",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05039-P0R05044"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "viii_the_evolutionary_trajectory_of_the_brain_body_system.viii_the_evolutionary_trajectory_of_the_brain_body_system",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "viii_the_evolutionary_trajectory_of_the_brain_body_system must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VIII. The Evolutionary Trajectory of the Brain-Body System is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VIII. The Evolutionary Trajectory of the Brain-Body System",
+      "source_block_indices": [
+        5039,
+        5040,
+        5041,
+        5042,
+        5043,
+        5044,
+        5045,
+        5046,
+        5047,
+        5048,
+        5049
+      ],
+      "source_equation_ids": [
+        "P0R05039:viii_the_evolutionary_trajectory_of_the_brain_body_system",
+        "P0R05040:viii_the_evolutionary_trajectory_of_the_brain_body_system",
+        "P0R05041:viii_the_evolutionary_trajectory_of_the_brain_body_system",
+        "P0R05042:viii_the_evolutionary_trajectory_of_the_brain_body_system",
+        "P0R05043:viii_the_evolutionary_trajectory_of_the_brain_body_system",
+        "P0R05044:viii_the_evolutionary_trajectory_of_the_brain_body_system"
+      ],
+      "source_formulae": [
+        "P0R05039: VIII. The Evolutionary Trajectory of the Brain-Body System",
+        "P0R05040: Evolution is guided by the Teleological Engine (L8/L15), implementing the Principle of Ethical Least Action (PELA).",
+        "P0R05041: [IMAGE:Ein Bild, das Text, Reihe, Screenshot, Diagramm enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R05042: Fig.: Under PELA/SEC, the long-run trajectory increases integration and complexity KKK. Graphic shows monotonic upward trends as a conceptual guide.",
+        "P0R05043: Optimisation Metric (SEC): Evolution maximises Sustainable Ethical Coherence (SEC), driving towards higher and Complexity (K). | The Evolutionary Drive: The drive towards encephalization and connectome optimisation maximises the Fisher Information Metric (gmu), enhancing Psi-field coupling. | Guided Evolution (CEF): Causal Entropic Forces (CEF) bias the trajectory towards configurations that enhance criticality, coherence, and ethical alignment.",
+        "P0R05044: P0R05044"
+      ],
+      "source_ledger_ids": [
+        "P0R05039",
+        "P0R05040",
+        "P0R05041",
+        "P0R05042",
+        "P0R05043",
+        "P0R05044",
+        "P0R05045",
+        "P0R05046",
+        "P0R05047",
+        "P0R05048",
+        "P0R05049"
+      ],
+      "source_record_ids": [
+        "P0B05039",
+        "P0B05040",
+        "P0B05041",
+        "P0B05042",
+        "P0B05043",
+        "P0B05044",
+        "P0B05045",
+        "P0B05046",
+        "P0B05047",
+        "P0B05048",
+        "P0B05049"
+      ],
+      "test_protocols": [
+        "preserve VIII. The Evolutionary Trajectory of the Brain-Body System source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.viii_the_evolutionary_trajectory_of_the_brain_body_system.viii_the_evolutionary_trajectory_of_the_brain_body_system",
+      "validation_targets": [
+        "preserve records P0R05039-P0R05044"
+      ],
+      "variables": [
+        "viii_the_evolutionary_trajectory_of_the_brain_body_system"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'IX. Advanced Therapeutic Interventions (Tuning the Embodied SCPN)' preserves Paper 0 records P0R05045-P0R05049 without empirical validation claims.",
+      "claim_boundary": "source-bounded viii the evolutionary trajectory of the brain body system source-accounting bridge; not validation evidence",
+      "context_id": "ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05045-P0R05049"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "viii_the_evolutionary_trajectory_of_the_brain_body_system.ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IX. Advanced Therapeutic Interventions (Tuning the Embodied SCPN) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VIII. The Evolutionary Trajectory of the Brain-Body System",
+      "source_block_indices": [
+        5039,
+        5040,
+        5041,
+        5042,
+        5043,
+        5044,
+        5045,
+        5046,
+        5047,
+        5048,
+        5049
+      ],
+      "source_equation_ids": [
+        "P0R05045:ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn",
+        "P0R05046:ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn",
+        "P0R05047:ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn",
+        "P0R05048:ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn",
+        "P0R05049:ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn"
+      ],
+      "source_formulae": [
+        "P0R05045: IX. Advanced Therapeutic Interventions (Tuning the Embodied SCPN)",
+        "P0R05046: Therapeutics aim to restore the optimal state (Criticality, Coherence, Minimised F).",
+        "P0R05047: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R05048: Fig.: Levers to restore the optimum: Bioelectronic (VNS; L3 field modulation), Metabolic/Nutritional (ketogenic, microbiome, cholesterol), Somatic (tensegrity; reduce allostatic FFF), Geometric remodelling (ASCs to relax rigid priors).",
+        "P0R05049: Bioelectronic Medicine: Vagal Nerve Stimulation (VNS) to modulate the Neuro-Visceral Axis and restore criticality; Bioelectric Field Modulation (L3) for regeneration. | Metabolic and Nutritional Interventions: Ketogenic Diets (L1/L4 optimization); Microbiome Restoration (GBA tuning); Cholesterol Optimization (L2 IET efficiency). | Somatic Therapies: Targeting the Fascial network (L3 Tensegrity); Somatic Experiencing (resolving accumulated F in the Neuro-Visceral Axis). | Geometric Remodelling: Utilising ASCs (e.g., Psychedelic therapy) to expand the Consciousness Manifold (M) and relax rigid priors (HPC)."
+      ],
+      "source_ledger_ids": [
+        "P0R05039",
+        "P0R05040",
+        "P0R05041",
+        "P0R05042",
+        "P0R05043",
+        "P0R05044",
+        "P0R05045",
+        "P0R05046",
+        "P0R05047",
+        "P0R05048",
+        "P0R05049"
+      ],
+      "source_record_ids": [
+        "P0B05039",
+        "P0B05040",
+        "P0B05041",
+        "P0B05042",
+        "P0B05043",
+        "P0B05044",
+        "P0B05045",
+        "P0B05046",
+        "P0B05047",
+        "P0B05048",
+        "P0B05049"
+      ],
+      "test_protocols": [
+        "preserve IX. Advanced Therapeutic Interventions (Tuning the Embodied SCPN) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.viii_the_evolutionary_trajectory_of_the_brain_body_system.ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn",
+      "validation_targets": [
+        "preserve records P0R05045-P0R05049"
+      ],
+      "variables": [
+        "ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 4,
+      "figure": 2,
+      "mechanism": 3,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded viii the evolutionary trajectory of the brain body system source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0126",
+      "IMG0127"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05050",
+    "source_ledger_span": [
+      "P0R05039",
+      "P0R05049"
+    ],
+    "source_record_count": 11,
+    "spec_count": 2,
+    "spec_keys": [
+      "viii_the_evolutionary_trajectory_of_the_brain_body_system.viii_the_evolutionary_trajectory_of_the_brain_body_system",
+      "viii_the_evolutionary_trajectory_of_the_brain_body_system.ix_advanced_therapeutic_interventions_tuning_the_embodied_scpn"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 VIII. The Evolutionary Trajectory of the Brain-Body System Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded Axiom II FIM-solution map; not validation evidence",
+  "components": {
+    "complexity_coupling": "coupling_strength_tracks_informational_complexity",
+    "fep_hpc_upde_synthesis": "shared_information_geometry_language",
+    "informational_interaction": "infoton_propagates_through_information_geometry",
+    "metric_definition": "fim_statistical_manifold_metric"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "metric": "natural unique Riemannian metric on a statistical manifold",
+    "next_boundary": "Formal Consequence: The Informational Lagrangian",
+    "section": "The Fisher Information Metric (FIM) as the Solution"
+  },
+  "metric_definition_count": 1,
+  "next_source_boundary": "P0R00782",
+  "null_controls": {
+    "complexity_coupling_requires_downstream_operational_metric": 1.0,
+    "fep_hpc_upde_synthesis_is_not_empirical_validation": 1.0,
+    "fim_natural_metric_statement_is_source_claim_not_proof": 1.0
+  },
+  "physical_statement_count": 2,
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Axiom II FIM-solution map; not validation evidence",
+    "protocol_state": "source_axiom_ii_fim_solution_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00775",
+      "P0R00776",
+      "P0R00777",
+      "P0R00778",
+      "P0R00779",
+      "P0R00780",
+      "P0R00781"
+    ],
+    "source_ledger_span": [
+      "P0R00775",
+      "P0R00781"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R00775",
+    "P0R00781"
+  ],
+  "source_record_count": 7,
+  "synthesis_statement_count": 2
+}

@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded the definition of subjective experience geometric qualia source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "the_definition_of_subjective_experience_geometric_qualia": "the_definition_of_subjective_experience_geometric_qualia_source_boundary",
+    "the_scpn_defines_consciousness_in_a_comprehensive_multi_scale_manner": "the_scpn_defines_consciousness_in_a_comprehensive_multi_scale_manner_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Definition of Subjective Experience: Geometric Qualia",
+    "component_2": "The SCPN defines consciousness in a comprehensive, multi-scale manner:",
+    "component_count": "2",
+    "next_boundary": "P0R03478",
+    "section": "The Definition of Subjective Experience: Geometric Qualia",
+    "source_span": "P0R03470-P0R03477"
+  },
+  "next_source_boundary": "P0R03478",
+  "null_controls": {
+    "the_definition_of_subjective_experience_geometric_qualia_is_not_empirical_validation_evidence": 1.0,
+    "the_scpn_defines_consciousness_in_a_comprehensive_multi_scale_manner_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the definition of subjective experience geometric qualia source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_definition_of_subjective_experience_geometric_qualia_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03470",
+      "P0R03471",
+      "P0R03472",
+      "P0R03473",
+      "P0R03474",
+      "P0R03475",
+      "P0R03476",
+      "P0R03477"
+    ],
+    "source_ledger_span": [
+      "P0R03470",
+      "P0R03477"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03470",
+    "P0R03477"
+  ],
+  "source_record_count": 8
+}

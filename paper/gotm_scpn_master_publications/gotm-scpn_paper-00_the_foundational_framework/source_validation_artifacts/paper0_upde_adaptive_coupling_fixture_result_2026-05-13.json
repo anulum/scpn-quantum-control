@@ -1,0 +1,23 @@
+{
+  "K_dot_linf": 0.1405,
+  "K_next_linf": 0.302975,
+  "bounded_update_linf": 0.007025000000000001,
+  "eta_dot": -0.08099999999999997,
+  "eta_next": 0.39595,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "wrong_sign_K_dot_l2": 0.509493866498901,
+    "wrong_sign_eta_dot_abs": 0.16199999999999995,
+    "zero_gain_K_dot_linf": 0.0,
+    "zero_gain_eta_dot_abs": 0.0
+  },
+  "runtime_ms": 1.2968219962203875,
+  "source_equation_ids": [
+    "EQ0045"
+  ],
+  "source_ledger_ids": [
+    "P0R02910"
+  ],
+  "spec_key": "upde.adaptive_coupling",
+  "validation_protocol": "paper0.upde.adaptive_coupling.quasicritical_controller"
+}

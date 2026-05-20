@@ -9,7 +9,7 @@
 """Generate no-QPU multi-circuit QEC readiness artefacts.
 
 This implements the offline gate in
-``docs/multicircuit_qec_prereg_2026-05-06.md``.  It compares an
+``docs/campaigns/multicircuit_qec_prereg_2026-05-06.md``.  It compares an
 unencoded physical baseline, a standard toric-code MWPM decoder, and a
 K-matrix-weighted physics-aware decoder on the same small Kuramoto-XY
 observable families.  It never opens a provider session and never submits

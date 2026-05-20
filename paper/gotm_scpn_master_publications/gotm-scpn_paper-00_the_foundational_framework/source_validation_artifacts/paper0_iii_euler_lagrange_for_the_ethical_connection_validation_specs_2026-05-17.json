@@ -1,0 +1,119 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'III. Euler-Lagrange for the Ethical Connection' preserves Paper 0 records P0R06099-P0R06106 without empirical validation claims.",
+      "claim_boundary": "source-bounded iii euler lagrange for the ethical connection source-accounting bridge; not validation evidence",
+      "context_id": "iii_euler_lagrange_for_the_ethical_connection",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06099-P0R06106"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iii_euler_lagrange_for_the_ethical_connection.iii_euler_lagrange_for_the_ethical_connection",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iii_euler_lagrange_for_the_ethical_connection must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "III. Euler-Lagrange for the Ethical Connection is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. Euler\u2013Lagrange for the Ethical Connection",
+      "source_block_indices": [
+        6099,
+        6100,
+        6101,
+        6102,
+        6103,
+        6104,
+        6105,
+        6106
+      ],
+      "source_equation_ids": [
+        "P0R06099:iii_euler_lagrange_for_the_ethical_connection",
+        "P0R06100:iii_euler_lagrange_for_the_ethical_connection",
+        "P0R06101:iii_euler_lagrange_for_the_ethical_connection",
+        "P0R06102:iii_euler_lagrange_for_the_ethical_connection",
+        "P0R06103:iii_euler_lagrange_for_the_ethical_connection",
+        "P0R06104:iii_euler_lagrange_for_the_ethical_connection",
+        "P0R06105:iii_euler_lagrange_for_the_ethical_connection",
+        "P0R06106:iii_euler_lagrange_for_the_ethical_connection"
+      ],
+      "source_formulae": [
+        "P0R06099: III. Euler-Lagrange for the Ethical Connection",
+        "P0R06100: Varying SEthical=14MTr(FF)S_{\\text{Ethical}}=\\tfrac14\\int_M \\mathrm{Tr}(F\\wedge\\star F)SEthical=41MTr(FF) yields",
+        "P0R06101: $D \\dagger F = JCEF,JCEF \\propto \\nabla XSC(X,\\tau),D^{\\backslash dagger}F = J_{\\text{CEF}},\\quad\\quad J_{\\text{CEF}} \\propto \\nabla_{X}S_{C}(X,\\tau),D \\dagger F = JCEF,JCEF \\propto \\nabla X SC(X,\\tau),$",
+        "P0R06102: linking Yang-Mills stationarity to the Causal-Entropic gradient that biases accessible futures. The boundary term from the variation is",
+        "P0R06103: $\\delta SEthical \\mid \\partial M = \\int_{}^{}{\\partial M}\\, Tr\\,(\\delta A \\land \\star F).\\delta S_{\\text{Ethical}\\backslash}big\\left. \\ \\right|_{\\partial M} = \\int_{\\partial M}^{}{\\text{!}\\text{Tr}}\\text{!}(\\delta A \\land \\star F).\\delta SEthical\\partial M = \\int_{}^{}{\\partial M Tr(\\delta A \\land \\star F)}.$",
+        "P0R06104: Firewall correspondence. Interpreting the L10 firewall as a boundary controller that reduces rendering complexity implies a Complexity-Flux Inequality",
+        "P0R06105: $dCL10dt\\ \\mspace{2mu} \\leq \\ \\mspace{2mu} - \\kappa Eth\\,\\Phi\\partial M\\ \\mspace{2mu} + \\ \\mspace{2mu}\\xi(t),\\Phi\\partial M = \\int_{}^{}{\\partial M}\\, Tr( \\star F),\\frac{d\\mathcal{C}_{\\text{L0}}}{dt}\\ \\leq \\ - \\kappa_{\\text{Eth}}\\,\\Phi_{\\partial M}\\ + \\ \\xi(t),\\quad\\Phi_{\\partial M} = \\int_{\\partial M}^{}{\\text{!}\\text{Tr}( \\star F)},dtdCL10 \\leq - \\kappa Eth\\Phi\\partial M + \\xi(t),\\Phi\\partial M = \\int_{}^{}{\\partial M Tr( \\star F)},$",
+        "P0R06106: tying lower boundary complexity to higher SEC consistency."
+      ],
+      "source_ledger_ids": [
+        "P0R06099",
+        "P0R06100",
+        "P0R06101",
+        "P0R06102",
+        "P0R06103",
+        "P0R06104",
+        "P0R06105",
+        "P0R06106"
+      ],
+      "source_record_ids": [
+        "P0B06099",
+        "P0B06100",
+        "P0B06101",
+        "P0B06102",
+        "P0B06103",
+        "P0B06104",
+        "P0B06105",
+        "P0B06106"
+      ],
+      "test_protocols": [
+        "preserve III. Euler-Lagrange for the Ethical Connection source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iii_euler_lagrange_for_the_ethical_connection.iii_euler_lagrange_for_the_ethical_connection",
+      "validation_targets": [
+        "preserve records P0R06099-P0R06106"
+      ],
+      "variables": [
+        "iii_euler_lagrange_for_the_ethical_connection"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 2,
+      "equation": 3,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded iii euler lagrange for the ethical connection source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0125",
+      "EQ0126",
+      "EQ0127"
+    ],
+    "next_source_boundary": "P0R06107",
+    "source_ledger_span": [
+      "P0R06099",
+      "P0R06106"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "iii_euler_lagrange_for_the_ethical_connection.iii_euler_lagrange_for_the_ethical_connection"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 III. Euler-Lagrange for the Ethical Connection Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded predictive coding integration p0r04123 source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary",
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "qualia_capacity_q_as_a_measure_of_model_richness": "qualia_capacity_q_as_a_measure_of_model_richness_source_boundary",
+    "the_ethical_functional_as_the_free_energy_of_the_universe": "the_ethical_functional_as_the_free_energy_of_the_universe_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Predictive Coding Integration",
+    "component_2": "The Ethical Functional as the Free Energy of the Universe:",
+    "component_3": "Qualia Capacity (Q) as a Measure of Model Richness:",
+    "component_4": "Psis Field Coupling Integration",
+    "component_count": "4",
+    "next_boundary": "P0R04131",
+    "section": "Predictive Coding Integration",
+    "source_span": "P0R04123-P0R04130"
+  },
+  "next_source_boundary": "P0R04131",
+  "null_controls": {
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0,
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "qualia_capacity_q_as_a_measure_of_model_richness_is_not_empirical_validation_evidence": 1.0,
+    "the_ethical_functional_as_the_free_energy_of_the_universe_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded predictive coding integration p0r04123 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_predictive_coding_integration_p0r04123_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04123",
+      "P0R04124",
+      "P0R04125",
+      "P0R04126",
+      "P0R04127",
+      "P0R04128",
+      "P0R04129",
+      "P0R04130"
+    ],
+    "source_ledger_span": [
+      "P0R04123",
+      "P0R04130"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04123",
+    "P0R04130"
+  ],
+  "source_record_count": 8
+}

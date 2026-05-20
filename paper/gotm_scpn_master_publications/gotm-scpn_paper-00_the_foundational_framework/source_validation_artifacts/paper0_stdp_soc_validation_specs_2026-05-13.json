@@ -1,0 +1,413 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "STDP wording is bounded to an asymmetric learning window: LTP for pre-before-post timing and LTD for post-before-pre timing.",
+      "caption_ledger_ids": [
+        "P0R06405",
+        "P0R06409"
+      ],
+      "claim_boundary": "source-bounded STDP/SOC simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve positive LTP for Delta t greater than zero",
+        "preserve negative LTD for Delta t less than zero",
+        "reject sign-inverted STDP windows"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "image_ledger_ids": [
+        "P0R06404",
+        "P0R06408"
+      ],
+      "implementation_status": "implemented_executable_fixture",
+      "key": "stdp_soc.asymmetric_learning_window",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "wrong-STDP-sign control must be rejected",
+        "missing-LTP control must be rejected",
+        "missing-LTD control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Spike-Timing-Dependent Plasticity (STDP) as the Engine of SOC",
+      "source_block_indices": [
+        6402,
+        6403,
+        6404,
+        6405,
+        6406,
+        6407,
+        6408,
+        6409,
+        6410,
+        6411,
+        6412,
+        6413
+      ],
+      "source_equation_ids": [
+        "P0R06405:Delta_w_Delta_t",
+        "P0R06405:Delta_t_gt_0_LTP",
+        "P0R06405:Delta_t_lt_0_LTD"
+      ],
+      "source_formulae": [
+        "Delta w(Delta t) is asymmetric",
+        "Delta t > 0 implies LTP",
+        "Delta t < 0 implies LTD"
+      ],
+      "source_ledger_ids": [
+        "P0R06402",
+        "P0R06403",
+        "P0R06404",
+        "P0R06405",
+        "P0R06406",
+        "P0R06407",
+        "P0R06408",
+        "P0R06409",
+        "P0R06410",
+        "P0R06411",
+        "P0R06412",
+        "P0R06413"
+      ],
+      "source_mechanisms": [],
+      "source_record_ids": [
+        "P0B06402",
+        "P0B06403",
+        "P0B06404",
+        "P0B06405",
+        "P0B06406",
+        "P0B06407",
+        "P0B06408",
+        "P0B06409",
+        "P0B06410",
+        "P0B06411",
+        "P0B06412",
+        "P0B06413"
+      ],
+      "validation_protocol": "paper0.stdp_soc.asymmetric_learning_window",
+      "validation_targets": [
+        "preserve positive LTP for Delta t greater than zero",
+        "preserve negative LTD for Delta t less than zero",
+        "reject sign-inverted STDP windows"
+      ],
+      "variables": [
+        "Delta_w",
+        "Delta_t",
+        "LTP",
+        "LTD"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Criticality wording is bounded to neuronal avalanche size density P(S) proportional to S^-tau with tau approximately 1.5.",
+      "caption_ledger_ids": [
+        "P0R06405",
+        "P0R06409"
+      ],
+      "claim_boundary": "source-bounded STDP/SOC simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve the power-law density form",
+        "preserve tau approximately 1.5 as source reference",
+        "reject non-decreasing avalanche-size density"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "image_ledger_ids": [
+        "P0R06404",
+        "P0R06408"
+      ],
+      "implementation_status": "implemented_executable_fixture",
+      "key": "stdp_soc.avalanche_power_law_signature",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "nondecreasing-density control must be rejected",
+        "invalid-size control must be rejected",
+        "invalid-tau control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Spike-Timing-Dependent Plasticity (STDP) as the Engine of SOC",
+      "source_block_indices": [
+        6402,
+        6403,
+        6404,
+        6405,
+        6406,
+        6407,
+        6408,
+        6409,
+        6410,
+        6411,
+        6412,
+        6413
+      ],
+      "source_equation_ids": [
+        "P0R06409:P_of_S",
+        "P0R06409:tau_approximately_1_5"
+      ],
+      "source_formulae": [
+        "P(S) proportional_to S^(-tau)",
+        "tau approximately 1.5"
+      ],
+      "source_ledger_ids": [
+        "P0R06402",
+        "P0R06403",
+        "P0R06404",
+        "P0R06405",
+        "P0R06406",
+        "P0R06407",
+        "P0R06408",
+        "P0R06409",
+        "P0R06410",
+        "P0R06411",
+        "P0R06412",
+        "P0R06413"
+      ],
+      "source_mechanisms": [],
+      "source_record_ids": [
+        "P0B06402",
+        "P0B06403",
+        "P0B06404",
+        "P0B06405",
+        "P0B06406",
+        "P0B06407",
+        "P0B06408",
+        "P0B06409",
+        "P0B06410",
+        "P0B06411",
+        "P0B06412",
+        "P0B06413"
+      ],
+      "validation_protocol": "paper0.stdp_soc.avalanche_power_law_signature",
+      "validation_targets": [
+        "preserve the power-law density form",
+        "preserve tau approximately 1.5 as source reference",
+        "reject non-decreasing avalanche-size density"
+      ],
+      "variables": [
+        "P(S)",
+        "S",
+        "tau",
+        "neuronal_avalanches"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "The source maps STDP ensemble dynamics to the homeostatic relaxation equation d sigma_L/dt = -kappa_L(sigma_L-1)+eta_L(t).",
+      "caption_ledger_ids": [
+        "P0R06405",
+        "P0R06409"
+      ],
+      "claim_boundary": "source-bounded STDP/SOC simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve the source relaxation equation",
+        "verify sigma above one relaxes downward when eta is zero",
+        "verify sigma below one relaxes upward when eta is zero"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "image_ledger_ids": [
+        "P0R06404",
+        "P0R06408"
+      ],
+      "implementation_status": "implemented_executable_fixture",
+      "key": "stdp_soc.quasicritical_relaxation_mapping",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-relaxation control must be rejected",
+        "negative-kappa control must be rejected",
+        "nonfinite-sigma control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Spike-Timing-Dependent Plasticity (STDP) as the Engine of SOC",
+      "source_block_indices": [
+        6402,
+        6403,
+        6404,
+        6405,
+        6406,
+        6407,
+        6408,
+        6409,
+        6410,
+        6411,
+        6412,
+        6413
+      ],
+      "source_equation_ids": [
+        "P0R06410:d_sigma_L_dt",
+        "P0R06411:sigma_towards_1"
+      ],
+      "source_formulae": [
+        "d sigma_L / dt = -kappa_L * (sigma_L - 1) + eta_L(t)",
+        "sigma tends towards 1"
+      ],
+      "source_ledger_ids": [
+        "P0R06402",
+        "P0R06403",
+        "P0R06404",
+        "P0R06405",
+        "P0R06406",
+        "P0R06407",
+        "P0R06408",
+        "P0R06409",
+        "P0R06410",
+        "P0R06411",
+        "P0R06412",
+        "P0R06413"
+      ],
+      "source_mechanisms": [],
+      "source_record_ids": [
+        "P0B06402",
+        "P0B06403",
+        "P0B06404",
+        "P0B06405",
+        "P0B06406",
+        "P0B06407",
+        "P0B06408",
+        "P0B06409",
+        "P0B06410",
+        "P0B06411",
+        "P0B06412",
+        "P0B06413"
+      ],
+      "validation_protocol": "paper0.stdp_soc.quasicritical_relaxation_mapping",
+      "validation_targets": [
+        "preserve the source relaxation equation",
+        "verify sigma above one relaxes downward when eta is zero",
+        "verify sigma below one relaxes upward when eta is zero"
+      ],
+      "variables": [
+        "sigma_L",
+        "kappa_L",
+        "eta_L",
+        "sigma"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Layer 4 wording is bounded to STDP as a plausible microscopic engine for quasicritical cellular-tissue synchronisation.",
+      "caption_ledger_ids": [
+        "P0R06405",
+        "P0R06409"
+      ],
+      "claim_boundary": "source-bounded STDP/SOC simulator contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve Hebbian reinforcement and depressive pruning mechanisms",
+        "separate plausible mechanism wording from empirical validation",
+        "reject treating source text as measured neurophysiology"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "image_ledger_ids": [
+        "P0R06404",
+        "P0R06408"
+      ],
+      "implementation_status": "implemented_executable_fixture",
+      "key": "stdp_soc.l4_microscopic_engine_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-Hebbian-reinforcement control must be rejected",
+        "missing-depressive-pruning control must be rejected",
+        "empirical-neurophysiology control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Spike-Timing-Dependent Plasticity (STDP) as the Engine of SOC",
+      "source_block_indices": [
+        6402,
+        6403,
+        6404,
+        6405,
+        6406,
+        6407,
+        6408,
+        6409,
+        6410,
+        6411,
+        6412,
+        6413
+      ],
+      "source_equation_ids": [],
+      "source_formulae": [],
+      "source_ledger_ids": [
+        "P0R06402",
+        "P0R06403",
+        "P0R06404",
+        "P0R06405",
+        "P0R06406",
+        "P0R06407",
+        "P0R06408",
+        "P0R06409",
+        "P0R06410",
+        "P0R06411",
+        "P0R06412",
+        "P0R06413"
+      ],
+      "source_mechanisms": [
+        "Hebbian STDP reinforces causally effective pathways",
+        "anti-Hebbian and depressive plasticity prune ineffective or anti-causal connections",
+        "Layer 4 maintains quasicritical cellular-tissue synchronisation"
+      ],
+      "source_record_ids": [
+        "P0B06402",
+        "P0B06403",
+        "P0B06404",
+        "P0B06405",
+        "P0B06406",
+        "P0B06407",
+        "P0B06408",
+        "P0B06409",
+        "P0B06410",
+        "P0B06411",
+        "P0B06412",
+        "P0B06413"
+      ],
+      "validation_protocol": "paper0.stdp_soc.l4_microscopic_engine_boundary",
+      "validation_targets": [
+        "preserve Hebbian reinforcement and depressive pruning mechanisms",
+        "separate plausible mechanism wording from empirical validation",
+        "reject treating source text as measured neurophysiology"
+      ],
+      "variables": [
+        "L4",
+        "STDP",
+        "quasicriticality",
+        "cellular_tissue_synchronisation"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_claim_bounded": true,
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "caption_source_ledger_ids": [
+      "P0R06405",
+      "P0R06409"
+    ],
+    "consumed_source_record_count": 12,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06402-P0R06413 are promoted as source-covered STDP/SOC specifications only. Passing fixtures is not empirical evidence.",
+    "source_formula_ids": [
+      "P0R06405:Delta_w_Delta_t",
+      "P0R06405:Delta_t_gt_0_LTP",
+      "P0R06405:Delta_t_lt_0_LTD",
+      "P0R06409:P_of_S",
+      "P0R06409:tau_approximately_1_5",
+      "P0R06410:d_sigma_L_dt",
+      "P0R06411:sigma_towards_1"
+    ],
+    "source_ledger_span": [
+      "P0R06402",
+      "P0R06413"
+    ],
+    "source_record_count": 12,
+    "spec_count": 4,
+    "spec_keys": [
+      "stdp_soc.asymmetric_learning_window",
+      "stdp_soc.avalanche_power_law_signature",
+      "stdp_soc.quasicritical_relaxation_mapping",
+      "stdp_soc.l4_microscopic_engine_boundary"
+    ],
+    "structural_source_ledger_ids": [
+      "P0R06402",
+      "P0R06404",
+      "P0R06408"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

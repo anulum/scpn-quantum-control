@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded section 1 the lipid bilayer and lipid rafts source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_lipid_bilayer_and_lipid_rafts": "1_the_lipid_bilayer_and_lipid_rafts_source_boundary",
+    "2_ion_channels_the_molecular_transistors_l1_l2_interface": "2_ion_channels_the_molecular_transistors_l1_l2_interface_source_boundary",
+    "iv_the_internal_architecture_cytoskeleton_and_organelles_l1_l3": "iv_the_internal_architecture_cytoskeleton_and_organelles_l1_l3_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "1. The Lipid Bilayer and Lipid Rafts:",
+    "component_2": "2. Ion Channels: The Molecular Transistors (L1/L2 Interface)",
+    "component_3": "IV. The Internal Architecture: Cytoskeleton and Organelles (L1/L3)",
+    "component_count": "3",
+    "next_boundary": "P0R04728",
+    "section": "1. The Lipid Bilayer and Lipid Rafts:",
+    "source_span": "P0R04720-P0R04727"
+  },
+  "next_source_boundary": "P0R04728",
+  "null_controls": {
+    "1_the_lipid_bilayer_and_lipid_rafts_is_not_empirical_validation_evidence": 1.0,
+    "2_ion_channels_the_molecular_transistors_l1_l2_interface_is_not_empirical_validation_evidence": 1.0,
+    "iv_the_internal_architecture_cytoskeleton_and_organelles_l1_l3_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 1 the lipid bilayer and lipid rafts source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_1_the_lipid_bilayer_and_lipid_rafts_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04720",
+      "P0R04721",
+      "P0R04722",
+      "P0R04723",
+      "P0R04724",
+      "P0R04725",
+      "P0R04726",
+      "P0R04727"
+    ],
+    "source_ledger_span": [
+      "P0R04720",
+      "P0R04727"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04720",
+    "P0R04727"
+  ],
+  "source_record_count": 8
+}

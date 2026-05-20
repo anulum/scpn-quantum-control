@@ -1,0 +1,240 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '3.2 Coherence (C) and the Accessibility of Trajectories' preserves Paper 0 records P0R03789-P0R03793 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 2 coherence c and the accessibility of trajectories source-accounting bridge; not validation evidence",
+      "context_id": "3_2_coherence_c_and_the_accessibility_of_trajectories",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03789-P0R03793"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_2_coherence_c_and_the_accessibility_of_trajectories.3_2_coherence_c_and_the_accessibility_of_trajectories",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_2_coherence_c_and_the_accessibility_of_trajectories must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3.2 Coherence (C) and the Accessibility of Trajectories is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 3. The Geometric and Dynamic Determinants of Future Possibility > 3.2 Coherence (C) and the Accessibility of Trajectories",
+      "source_block_indices": [
+        3789,
+        3790,
+        3791,
+        3792,
+        3793,
+        3794,
+        3795,
+        3796,
+        3797,
+        3798,
+        3799,
+        3800,
+        3801,
+        3802,
+        3803
+      ],
+      "source_equation_ids": [
+        "P0R03789:3_2_coherence_c_and_the_accessibility_of_trajectories",
+        "P0R03790:3_2_coherence_c_and_the_accessibility_of_trajectories",
+        "P0R03791:3_2_coherence_c_and_the_accessibility_of_trajectories",
+        "P0R03792:3_2_coherence_c_and_the_accessibility_of_trajectories",
+        "P0R03793:3_2_coherence_c_and_the_accessibility_of_trajectories"
+      ],
+      "source_formulae": [
+        "P0R03789: 3.2 Coherence (C) and the Accessibility of Trajectories",
+        "P0R03790: A vast state space is of little consequence if the system's dynamics prevent it from being explored. The number of viable and accessible future paths is determined not just by the size of the state space, but by the nature of the system's dynamics. The SCPN's measure of Coherence (C) is directly related to the system's operation in a quasicritical regime, poised at the \"edge of chaos\" between excessive order and excessive randomness. An extensive body of research on complex systems, from neural networks to social dynamics, has demonstrated that this specific dynamical regime is optimal for information processing, maximising the repertoire of accessible states, dynamic range, and the capacity for flexible adaptation.",
+        "P0R03791: We can formalise this relationship by considering the dynamics of coupled oscillators, as described by the Kuramoto model, which serves as the mathematical spine of the SCPN's Unified Phase Dynamics Equation (UPDE). In such models, the system's dynamics are governed by a coupling parameter, K, which controls the degree of synchrony. The overall coherence can be measured by an order parameter, r, which ranges from 0 (complete incoherence) to 1 (perfect synchrony).",
+        "P0R03792: Subcritical Regime (Low Coherence, r->0): When the coupling is weak, the oscillators drift independently. The system's dynamics are dominated by noise and lack causal structure. While many states may be visited, the trajectories are essentially random walks, lacking the long-range correlations necessary to form complex, causally potent pathways. The number of meaningful, structured future histories is small. | Supercritical Regime (High Coherence, r->1): When the coupling is very strong, the oscillators become phase-locked. The system falls into a highly ordered, stable attractor. Its dynamics become rigid and predictable, confined to a very small subset of its total state space. The number of accessible future paths collapses, as the system is effectively \"frozen\" into a single mode of behaviour. | Quasicritical Regime (Optimal Coherence, rrcrit): At the critical point of the phase transition between these two regimes, the system exhibits a unique combination of stability and flexibility. It is characterised by the emergence of scale-free dynamics, such as \"avalanches\" of activity that propagate across all scales without a characteristic size. This state maximises the system's susceptibility to inputs, its information transmission capacity, and its dynamic range. It is precisely in this state that the system can flexibly and adaptively explore the largest possible repertoire of its available states.",
+        "P0R03793: Therefore, maximising Coherence (C)-which is operationally defined as poising the system in this quasicritical state-is equivalent to maximising the volume of the state space that is dynamically accessible to the system. It ensures that the vast potential provided by the system's complexity is not squandered by dynamics that are either too rigid or too random. Maximising C maximises the number of accessible and causally effective future trajectories, a crucial determinant of the total causal path entropy, SC."
+      ],
+      "source_ledger_ids": [
+        "P0R03789",
+        "P0R03790",
+        "P0R03791",
+        "P0R03792",
+        "P0R03793",
+        "P0R03794",
+        "P0R03795",
+        "P0R03796",
+        "P0R03797",
+        "P0R03798",
+        "P0R03799",
+        "P0R03800",
+        "P0R03801",
+        "P0R03802",
+        "P0R03803"
+      ],
+      "source_record_ids": [
+        "P0B03789",
+        "P0B03790",
+        "P0B03791",
+        "P0B03792",
+        "P0B03793",
+        "P0B03794",
+        "P0B03795",
+        "P0B03796",
+        "P0B03797",
+        "P0B03798",
+        "P0B03799",
+        "P0B03800",
+        "P0B03801",
+        "P0B03802",
+        "P0B03803"
+      ],
+      "test_protocols": [
+        "preserve 3.2 Coherence (C) and the Accessibility of Trajectories source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_2_coherence_c_and_the_accessibility_of_trajectories.3_2_coherence_c_and_the_accessibility_of_trajectories",
+      "validation_targets": [
+        "preserve records P0R03789-P0R03793"
+      ],
+      "variables": [
+        "3_2_coherence_c_and_the_accessibility_of_trajectories"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'X.3.3 Qualia Capacity (Q) and the Diversity of Dynamics' preserves Paper 0 records P0R03794-P0R03803 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 2 coherence c and the accessibility of trajectories source-accounting bridge; not validation evidence",
+      "context_id": "x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03794-P0R03803"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_2_coherence_c_and_the_accessibility_of_trajectories.x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "X.3.3 Qualia Capacity (Q) and the Diversity of Dynamics is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 3. The Geometric and Dynamic Determinants of Future Possibility > 3.2 Coherence (C) and the Accessibility of Trajectories",
+      "source_block_indices": [
+        3789,
+        3790,
+        3791,
+        3792,
+        3793,
+        3794,
+        3795,
+        3796,
+        3797,
+        3798,
+        3799,
+        3800,
+        3801,
+        3802,
+        3803
+      ],
+      "source_equation_ids": [
+        "P0R03794:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03795:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03796:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03797:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03798:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03799:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03800:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03801:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03802:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+        "P0R03803:x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics"
+      ],
+      "source_formulae": [
+        "P0R03794: X.3.3 Qualia Capacity (Q) and the Diversity of Dynamics",
+        "P0R03795: The final determinant of causal path entropy is not merely the number of possible paths, but their diversity. A system that can evolve in many qualitatively different ways has a richer and more robust set of future possibilities than a system whose many paths are all minor variations of each other. The SCPN's measure of Qualia Capacity (Q) is identified with the topological complexity of the high-dimensional \"Consciousness Manifold,\" M, which is the state space of the organism's field dynamics.",
+        "P0R03796: This complexity is quantified by the manifold's Betti numbers, k, which count the number of independent \"holes\" of different dimensions (0 counts connected components, 1 counts one-dimensional loops, 2 counts two-dimensional voids, and so on).",
+        "P0R03797: While empirical research often uses Betti numbers to characterise the topological features of data generated by a system's dynamics, the SCPN framework makes a deeper claim: that the intrinsic topology of the state space manifold itself determines the diversity of possible dynamical regimes the system can support. A state space with a simple topology, such as a high-dimensional sphere (which has k=0 for k1), can only support topologically trivial trajectories. All paths on a sphere can be continuously deformed into one another.",
+        "P0R03798: In contrast, a state space with a rich topology, such as a high-genus torus with many non-trivial holes, possesses a much more complex structure. This topological complexity allows for the existence of a multitude of topologically distinct classes of trajectories. A system evolving on such a manifold can follow paths that are not deformable into one another.",
+        "P0R03799: For example, a path that loops around one \"hole\" is fundamentally different from a path that loops around another, or one that does not loop at all. These distinct classes of paths represent qualitatively different types of dynamical behaviour (e.g., different modes of periodic or recurrent activity).",
+        "P0R03800: The classification of these distinct path types is the domain of algebraic topology, specifically homotopy theory. The Betti numbers are related to the richness of a manifold's homotopy groups, which provide a complete classification of all possible paths up to continuous deformation.",
+        "P0R03801: A richer topology, and therefore a higher Qualia Capacity (Q), implies a more complex set of homotopy classes. This, in turn, means that there are more fundamentally different kinds of paths the system can take through its state space. This directly increases the qualitative diversity of the path space P.",
+        "P0R03802: Therefore, maximising Q maximises the variety of possible futures available to the system. It enriches the path space not just quantitatively but qualitatively, contributing a crucial third factor to the total causal path entropy, SC.",
+        "P0R03803: [IMAGE:This image uses a powerful, symbolic visual to represent the formal equivalence. It depicts the three components of SEC-Complexity, Coherence, and Qualia-as three distinct streams of light or energy that converge to form a single, more powerful and luminous whole: Causal Path Entropy.]"
+      ],
+      "source_ledger_ids": [
+        "P0R03789",
+        "P0R03790",
+        "P0R03791",
+        "P0R03792",
+        "P0R03793",
+        "P0R03794",
+        "P0R03795",
+        "P0R03796",
+        "P0R03797",
+        "P0R03798",
+        "P0R03799",
+        "P0R03800",
+        "P0R03801",
+        "P0R03802",
+        "P0R03803"
+      ],
+      "source_record_ids": [
+        "P0B03789",
+        "P0B03790",
+        "P0B03791",
+        "P0B03792",
+        "P0B03793",
+        "P0B03794",
+        "P0B03795",
+        "P0B03796",
+        "P0B03797",
+        "P0B03798",
+        "P0B03799",
+        "P0B03800",
+        "P0B03801",
+        "P0B03802",
+        "P0B03803"
+      ],
+      "test_protocols": [
+        "preserve X.3.3 Qualia Capacity (Q) and the Diversity of Dynamics source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_2_coherence_c_and_the_accessibility_of_trajectories.x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics",
+      "validation_targets": [
+        "preserve records P0R03794-P0R03803"
+      ],
+      "variables": [
+        "x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 2,
+      "Para": 12
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 6,
+      "figure": 1,
+      "mechanism": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded section 3 2 coherence c and the accessibility of trajectories source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0073"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R03804",
+    "source_ledger_span": [
+      "P0R03789",
+      "P0R03803"
+    ],
+    "source_record_count": 15,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_3_2_coherence_c_and_the_accessibility_of_trajectories.3_2_coherence_c_and_the_accessibility_of_trajectories",
+      "section_3_2_coherence_c_and_the_accessibility_of_trajectories.x_3_3_qualia_capacity_q_and_the_diversity_of_dynamics"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 3.2 Coherence (C) and the Accessibility of Trajectories Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

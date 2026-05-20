@@ -1,0 +1,42 @@
+{
+  "claim_boundary": "source-bounded citations p0r05625 source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "citations": "citations_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Citations:",
+    "component_count": "1",
+    "next_boundary": "P0R05633",
+    "section": "Citations:",
+    "source_span": "P0R05625-P0R05632"
+  },
+  "next_source_boundary": "P0R05633",
+  "null_controls": {
+    "citations_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded citations p0r05625 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_citations_p0r05625_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05625",
+      "P0R05626",
+      "P0R05627",
+      "P0R05628",
+      "P0R05629",
+      "P0R05630",
+      "P0R05631",
+      "P0R05632"
+    ],
+    "source_ledger_span": [
+      "P0R05625",
+      "P0R05632"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05625",
+    "P0R05632"
+  ],
+  "source_record_count": 8
+}

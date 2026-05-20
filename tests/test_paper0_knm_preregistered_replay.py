@@ -72,7 +72,7 @@ def test_replay_markdown_exposes_inputs_gates_and_no_qpu_boundary() -> None:
     markdown = render_markdown(build_replay_payload())
 
     assert "# GOTM-SCPN Paper 0 K_nm preregistered replay" in markdown
-    assert "docs/paper0_first_preregistered_downstream_experiment.md" in markdown
+    assert "docs/paper0/paper0_first_preregistered_downstream_experiment.md" in markdown
     assert "## Reproducibility manifest" in markdown
     assert "Input digests:" in markdown
     assert "## Promotion decision" in markdown

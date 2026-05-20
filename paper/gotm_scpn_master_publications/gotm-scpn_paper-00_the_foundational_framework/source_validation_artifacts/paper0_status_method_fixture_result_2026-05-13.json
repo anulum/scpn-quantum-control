@@ -1,0 +1,92 @@
+{
+  "blank_separator_count": 2,
+  "claim_boundary": "source-bounded Status and Method protocol; not validation evidence",
+  "hardware_status": "source_methodology_no_experiment",
+  "interaction_formula": "H_int = -lambda * Psi_s * sigma",
+  "methodology_commitments": {
+    "falsifiability_first": {
+      "key": "falsifiability_first",
+      "operational_role": "admission_gate",
+      "rejection_control": "untestable_sigma_rejection_label",
+      "source_record": "P0R00360"
+    },
+    "hypothesis_registry": {
+      "key": "hypothesis_registry",
+      "operational_role": "prediction_inventory",
+      "rejection_control": "unregistered_prediction_rejection_label",
+      "source_record": "P0R00360"
+    },
+    "tiered_status": {
+      "key": "tiered_status",
+      "operational_role": "claim_status_tracking",
+      "rejection_control": "status_collapse_rejection_label",
+      "source_record": "P0R00360"
+    },
+    "versioning_and_correction": {
+      "key": "versioning_and_correction",
+      "operational_role": "model_update",
+      "rejection_control": "unversioned_update_rejection_label",
+      "source_record": "P0R00360"
+    }
+  },
+  "next_boundary": "P0R00391",
+  "null_controls": {
+    "analogy_without_empirical_handle_rejection_label": 1.0,
+    "doctrine_promotion_rejection_label": 1.0,
+    "unknown_inference_step_rejection_label": 1.0,
+    "untestable_sigma_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Status and Method protocol; not validation evidence",
+    "protocol_state": "source_methodology_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00358",
+      "P0R00359",
+      "P0R00360",
+      "P0R00361",
+      "P0R00362",
+      "P0R00363",
+      "P0R00364",
+      "P0R00365",
+      "P0R00366",
+      "P0R00367",
+      "P0R00368",
+      "P0R00369",
+      "P0R00370",
+      "P0R00371",
+      "P0R00372",
+      "P0R00373",
+      "P0R00374",
+      "P0R00375",
+      "P0R00376",
+      "P0R00377",
+      "P0R00378",
+      "P0R00379",
+      "P0R00380",
+      "P0R00381",
+      "P0R00382",
+      "P0R00383",
+      "P0R00384",
+      "P0R00385",
+      "P0R00386",
+      "P0R00387",
+      "P0R00388",
+      "P0R00389",
+      "P0R00390"
+    ],
+    "source_ledger_span": [
+      "P0R00358",
+      "P0R00390"
+    ]
+  },
+  "scientific_inference_roles": {
+    "experiment": "sensory_evidence",
+    "falsification": "prediction_error",
+    "revision": "model_update",
+    "theory": "generative_model"
+  },
+  "source_ledger_span": [
+    "P0R00358",
+    "P0R00390"
+  ]
+}

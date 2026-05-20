@@ -1,0 +1,20 @@
+# Paper 0 2.7 The Fisher Info Metric: The Geometry of Interaction Specs
+
+- Source span: P0R01993 - P0R02010
+- Source records: 18
+- Consumed source records: 18
+- Coverage match: True
+- Spec count: 1
+- Claim boundary: source-bounded section 2 7 the fisher info metric the geometry of interaction source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R02011
+
+## Specs
+### `section_2_7_the_fisher_info_metric_the_geometry_of_interaction.2_7_the_fisher_info_metric_the_geometry_of_interaction`
+
+The source-bounded component '2.7 The Fisher Info Metric: The Geometry of Interaction' preserves Paper 0 records P0R01993-P0R02010 without empirical validation claims.
+
+- Context: `2_7_the_fisher_info_metric_the_geometry_of_interaction`
+- Protocol: `paper0.section_2_7_the_fisher_info_metric_the_geometry_of_interaction.2_7_the_fisher_info_metric_the_geometry_of_interaction`
+- Source equations: P0R01993:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R01994:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R01995:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R01996:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R01997:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R01998:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R01999:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02000:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02001:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02002:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02003:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02004:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02005:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02006:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02007:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02008:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02009:2_7_the_fisher_info_metric_the_geometry_of_interaction, P0R02010:2_7_the_fisher_info_metric_the_geometry_of_interaction
+- Null controls: 2_7_the_fisher_info_metric_the_geometry_of_interaction must remain source-bounded accounting

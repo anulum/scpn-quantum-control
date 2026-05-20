@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded meta framework integrations p0r01803 source-accounting bridge; not validation evidence",
+  "component_count": 5,
+  "components": {
+    "charge_conservation_as_model_integrity": "charge_conservation_as_model_integrity_source_boundary",
+    "meta_framework_integrations": "meta_framework_integrations_source_boundary",
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary",
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "the_soliton_as_the_physical_prior": "the_soliton_as_the_physical_prior_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Meta-Framework Integrations",
+    "component_2": "Predictive Coding Integration",
+    "component_3": "The Soliton as the Physical Prior:",
+    "component_4": "Charge Conservation as Model Integrity:",
+    "component_5": "Psis Field Coupling Integration",
+    "component_count": "5",
+    "next_boundary": "P0R01812",
+    "section": "Meta-Framework Integrations",
+    "source_span": "P0R01803-P0R01811"
+  },
+  "next_source_boundary": "P0R01812",
+  "null_controls": {
+    "charge_conservation_as_model_integrity_is_not_empirical_validation_evidence": 1.0,
+    "meta_framework_integrations_is_not_empirical_validation_evidence": 1.0,
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0,
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "the_soliton_as_the_physical_prior_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded meta framework integrations p0r01803 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_meta_framework_integrations_p0r01803_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01803",
+      "P0R01804",
+      "P0R01805",
+      "P0R01806",
+      "P0R01807",
+      "P0R01808",
+      "P0R01809",
+      "P0R01810",
+      "P0R01811"
+    ],
+    "source_ledger_span": [
+      "P0R01803",
+      "P0R01811"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01803",
+    "P0R01811"
+  ],
+  "source_record_count": 9
+}

@@ -1,0 +1,56 @@
+{
+  "field_alignment_projection": 0.48216188793076825,
+  "field_term": [
+    0.3675806553085481,
+    0.6299856610476267,
+    0.7122514141808416,
+    0.6630665498016283,
+    0.4923018811275473
+  ],
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "bounded_amplitude": 0.714,
+    "randomised_phase_projection_abs_mean": 0.029577256961382775,
+    "zero_field_linf": 0.0
+  },
+  "phase_artifact_payload": {
+    "cross_layer_alignment": [
+      [
+        1.0
+      ]
+    ],
+    "layers": [
+      {
+        "R": 0.8048526531377117,
+        "lock_signatures": {},
+        "psi": 0.23472010013534805
+      }
+    ],
+    "metadata": {
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_spec_key": "upde.field_coupling",
+      "paper0_validation_protocol": "paper0.upde.field.global_phase_coupling",
+      "psi_global": 1.7,
+      "theta_psi": 0.31,
+      "zeta_L": 0.42
+    },
+    "regime_id": "paper0_upde_field_fixture",
+    "stability_proxy": 0.48216188793076825
+  },
+  "psi_global": 1.7,
+  "runtime_ms": 6.5162550017703325,
+  "source_equation_ids": [
+    "EQ0034",
+    "EQ0041",
+    "EQ0043"
+  ],
+  "source_ledger_ids": [
+    "P0R02512",
+    "P0R02634",
+    "P0R02644"
+  ],
+  "spec_key": "upde.field_coupling",
+  "theta_psi": 0.31,
+  "validation_protocol": "paper0.upde.field.global_phase_coupling",
+  "zeta_L": 0.42
+}

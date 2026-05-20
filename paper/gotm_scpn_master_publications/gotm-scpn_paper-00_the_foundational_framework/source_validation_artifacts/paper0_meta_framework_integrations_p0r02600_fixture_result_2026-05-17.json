@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded meta framework integrations p0r02600 source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "meta_framework_integrations": "meta_framework_integrations_source_boundary",
+    "phase_coherence_as_prediction": "phase_coherence_as_prediction_source_boundary",
+    "phase_slips_as_prediction_error": "phase_slips_as_prediction_error_source_boundary",
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Meta-Framework Integrations",
+    "component_2": "Predictive Coding Integration",
+    "component_3": "Phase Coherence as Prediction:",
+    "component_4": "Phase Slips as Prediction Error:",
+    "component_count": "4",
+    "next_boundary": "P0R02608",
+    "section": "Meta-Framework Integrations",
+    "source_span": "P0R02600-P0R02607"
+  },
+  "next_source_boundary": "P0R02608",
+  "null_controls": {
+    "meta_framework_integrations_is_not_empirical_validation_evidence": 1.0,
+    "phase_coherence_as_prediction_is_not_empirical_validation_evidence": 1.0,
+    "phase_slips_as_prediction_error_is_not_empirical_validation_evidence": 1.0,
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded meta framework integrations p0r02600 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_meta_framework_integrations_p0r02600_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02600",
+      "P0R02601",
+      "P0R02602",
+      "P0R02603",
+      "P0R02604",
+      "P0R02605",
+      "P0R02606",
+      "P0R02607"
+    ],
+    "source_ledger_span": [
+      "P0R02600",
+      "P0R02607"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02600",
+    "P0R02607"
+  ],
+  "source_record_count": 8
+}

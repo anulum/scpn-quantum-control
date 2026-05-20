@@ -1,0 +1,246 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality' preserves Paper 0 records P0R05928-P0R05929 without empirical validation claims.",
+      "claim_boundary": "source-bounded i the architecture of time the meta metatron cycle and retrocausality source-accounting bridge; not validation evidence",
+      "context_id": "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05928-P0R05929"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality",
+      "source_block_indices": [
+        5928,
+        5929,
+        5930,
+        5931,
+        5932,
+        5933,
+        5934,
+        5935
+      ],
+      "source_equation_ids": [
+        "P0R05928:i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality",
+        "P0R05929:i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality"
+      ],
+      "source_formulae": [
+        "P0R05928: I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality",
+        "P0R05929: The SCPN operates within a temporal framework defined by the \"Meta Metatron Cycle\" (MMC, P3), which posits underlying cyclic, reversible dynamics from which the linear arrow of time emerges."
+      ],
+      "source_ledger_ids": [
+        "P0R05928",
+        "P0R05929",
+        "P0R05930",
+        "P0R05931",
+        "P0R05932",
+        "P0R05933",
+        "P0R05934",
+        "P0R05935"
+      ],
+      "source_record_ids": [
+        "P0B05928",
+        "P0B05929",
+        "P0B05930",
+        "P0B05931",
+        "P0B05932",
+        "P0B05933",
+        "P0B05934",
+        "P0B05935"
+      ],
+      "test_protocols": [
+        "preserve I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality",
+      "validation_targets": [
+        "preserve records P0R05928-P0R05929"
+      ],
+      "variables": [
+        "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Cyclic Operator and Reversibility:' preserves Paper 0 records P0R05930-P0R05933 without empirical validation claims.",
+      "claim_boundary": "source-bounded i the architecture of time the meta metatron cycle and retrocausality source-accounting bridge; not validation evidence",
+      "context_id": "1_the_cyclic_operator_and_reversibility",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05930-P0R05933"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.1_the_cyclic_operator_and_reversibility",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_cyclic_operator_and_reversibility must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Cyclic Operator and Reversibility: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality",
+      "source_block_indices": [
+        5928,
+        5929,
+        5930,
+        5931,
+        5932,
+        5933,
+        5934,
+        5935
+      ],
+      "source_equation_ids": [
+        "P0R05930:1_the_cyclic_operator_and_reversibility",
+        "P0R05931:1_the_cyclic_operator_and_reversibility",
+        "P0R05932:1_the_cyclic_operator_and_reversibility",
+        "P0R05933:1_the_cyclic_operator_and_reversibility"
+      ],
+      "source_formulae": [
+        "P0R05930: 1. The Cyclic Operator and Reversibility:",
+        "P0R05931: The Source-Field (L13) dynamics are governed by a cyclic operator (O^MMC), implying periodic evolution.",
+        "P0R05932: $O\\hat{}MMC \\mid \\Psi Source(t)\\rangle = \\mid \\Psi Source(t + TMMC)\\rangle$",
+        "P0R05933: The fundamental evolution operator U(t) is unitary and periodic."
+      ],
+      "source_ledger_ids": [
+        "P0R05928",
+        "P0R05929",
+        "P0R05930",
+        "P0R05931",
+        "P0R05932",
+        "P0R05933",
+        "P0R05934",
+        "P0R05935"
+      ],
+      "source_record_ids": [
+        "P0B05928",
+        "P0B05929",
+        "P0B05930",
+        "P0B05931",
+        "P0B05932",
+        "P0B05933",
+        "P0B05934",
+        "P0B05935"
+      ],
+      "test_protocols": [
+        "preserve 1. The Cyclic Operator and Reversibility: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.1_the_cyclic_operator_and_reversibility",
+      "validation_targets": [
+        "preserve records P0R05930-P0R05933"
+      ],
+      "variables": [
+        "1_the_cyclic_operator_and_reversibility"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. Emergence of the Arrow of Time:' preserves Paper 0 records P0R05934-P0R05935 without empirical validation claims.",
+      "claim_boundary": "source-bounded i the architecture of time the meta metatron cycle and retrocausality source-accounting bridge; not validation evidence",
+      "context_id": "2_emergence_of_the_arrow_of_time",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05934-P0R05935"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.2_emergence_of_the_arrow_of_time",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_emergence_of_the_arrow_of_time must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Emergence of the Arrow of Time: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality",
+      "source_block_indices": [
+        5928,
+        5929,
+        5930,
+        5931,
+        5932,
+        5933,
+        5934,
+        5935
+      ],
+      "source_equation_ids": [
+        "P0R05934:2_emergence_of_the_arrow_of_time",
+        "P0R05935:2_emergence_of_the_arrow_of_time"
+      ],
+      "source_formulae": [
+        "P0R05934: 2. Emergence of the Arrow of Time:",
+        "P0R05935: The linear arrow of time emerges at lower layers (L1-L5) due to decoherence and coarse-graining. Interactions with complex biological substrates introduce effective non-unitary evolution (Lindblad dynamics) and the increase of von Neumann entropy (S=Tr(rhologrho)), defining the emergent thermodynamic arrow."
+      ],
+      "source_ledger_ids": [
+        "P0R05928",
+        "P0R05929",
+        "P0R05930",
+        "P0R05931",
+        "P0R05932",
+        "P0R05933",
+        "P0R05934",
+        "P0R05935"
+      ],
+      "source_record_ids": [
+        "P0B05928",
+        "P0B05929",
+        "P0B05930",
+        "P0B05931",
+        "P0B05932",
+        "P0B05933",
+        "P0B05934",
+        "P0B05935"
+      ],
+      "test_protocols": [
+        "preserve 2. Emergence of the Arrow of Time: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.2_emergence_of_the_arrow_of_time",
+      "validation_targets": [
+        "preserve records P0R05934-P0R05935"
+      ],
+      "variables": [
+        "2_emergence_of_the_arrow_of_time"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "equation": 1
+    },
+    "claim_boundary": "source-bounded i the architecture of time the meta metatron cycle and retrocausality source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0115"
+    ],
+    "next_source_boundary": "P0R05936",
+    "source_ledger_span": [
+      "P0R05928",
+      "P0R05935"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality",
+      "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.1_the_cyclic_operator_and_reversibility",
+      "i_the_architecture_of_time_the_meta_metatron_cycle_and_retrocausality.2_emergence_of_the_arrow_of_time"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 I. The Architecture of Time: The Meta Metatron Cycle and Retrocausality Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

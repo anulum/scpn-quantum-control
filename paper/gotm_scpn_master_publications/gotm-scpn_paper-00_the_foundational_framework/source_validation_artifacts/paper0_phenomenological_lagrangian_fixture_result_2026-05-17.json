@@ -1,0 +1,91 @@
+{
+  "claim_boundary": "source-bounded phenomenological Lagrangian scaffold; not derived gauge theory",
+  "component_count": 5,
+  "components": {
+    "architecture_stationary_action": "stationary_action_upde_scaffold_boundary",
+    "black_box_interaction": "black_box_h_int_limitation_boundary",
+    "master_interaction_terms": "early_master_interaction_equation_boundary",
+    "predictive_coding_free_energy": "heuristic_free_energy_mapping_boundary",
+    "section_opening_dual_coupling": "phenomenological_scaffold_dual_coupling_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "interaction_split": "L_Int = L_Geometric + L_Informational",
+    "next_boundary": "Deriving the Master Interaction Lagrangian",
+    "section": "The Phenomenological Formulation: An Evolutionary Starting Point",
+    "total_lagrangian": "L_Total = L_Psi + L_Physical + L_Int",
+    "upde_scaffold": "delta S_Master / delta theta_iL = 0 -> d theta_iL / dt = omega_iL + sum K_ij sin(Delta theta) + ..."
+  },
+  "next_source_boundary": "P0R01384",
+  "null_controls": {
+    "black_box_h_int_must_not_satisfy_symmetry_derived_boundary": 1.0,
+    "phenomenological_scaffold_is_not_final_gauge_derivation": 1.0,
+    "stationary_action_scaffold_is_not_complete_upde_proof": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded phenomenological Lagrangian scaffold; not derived gauge theory",
+    "protocol_state": "source_phenomenological_lagrangian_scaffold_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01333",
+      "P0R01334",
+      "P0R01335",
+      "P0R01336",
+      "P0R01337",
+      "P0R01338",
+      "P0R01339",
+      "P0R01340",
+      "P0R01341",
+      "P0R01342",
+      "P0R01343",
+      "P0R01344",
+      "P0R01345",
+      "P0R01346",
+      "P0R01347",
+      "P0R01348",
+      "P0R01349",
+      "P0R01350",
+      "P0R01351",
+      "P0R01352",
+      "P0R01353",
+      "P0R01354",
+      "P0R01355",
+      "P0R01356",
+      "P0R01357",
+      "P0R01358",
+      "P0R01359",
+      "P0R01360",
+      "P0R01361",
+      "P0R01362",
+      "P0R01363",
+      "P0R01364",
+      "P0R01365",
+      "P0R01366",
+      "P0R01367",
+      "P0R01368",
+      "P0R01369",
+      "P0R01370",
+      "P0R01371",
+      "P0R01372",
+      "P0R01373",
+      "P0R01374",
+      "P0R01375",
+      "P0R01376",
+      "P0R01377",
+      "P0R01378",
+      "P0R01379",
+      "P0R01380",
+      "P0R01381",
+      "P0R01382",
+      "P0R01383"
+    ],
+    "source_ledger_span": [
+      "P0R01333",
+      "P0R01383"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01333",
+    "P0R01383"
+  ],
+  "source_record_count": 51
+}

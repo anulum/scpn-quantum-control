@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded case study the layer 5 organismal self action perception cycle source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "case_study_the_layer_5_organismal_self_action_perception_cycle": "case_study_the_layer_5_organismal_self_action_perception_cycle_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Case Study: The Layer 5 (Organismal Self) Action-Perception Cycle",
+    "component_count": "1",
+    "next_boundary": "P0R02189",
+    "section": "Case Study: The Layer 5 (Organismal Self) Action-Perception Cycle",
+    "source_span": "P0R02177-P0R02188"
+  },
+  "next_source_boundary": "P0R02189",
+  "null_controls": {
+    "case_study_the_layer_5_organismal_self_action_perception_cycle_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded case study the layer 5 organismal self action perception cycle source-accounting bridge; not validation evidence",
+    "protocol_state": "source_case_study_the_layer_5_organismal_self_action_perception_cycle_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02177",
+      "P0R02178",
+      "P0R02179",
+      "P0R02180",
+      "P0R02181",
+      "P0R02182",
+      "P0R02183",
+      "P0R02184",
+      "P0R02185",
+      "P0R02186",
+      "P0R02187",
+      "P0R02188"
+    ],
+    "source_ledger_span": [
+      "P0R02177",
+      "P0R02188"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02177",
+    "P0R02188"
+  ],
+  "source_record_count": 12
+}

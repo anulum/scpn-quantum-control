@@ -1,0 +1,57 @@
+{
+  "claim_boundary": "source-bounded Axiom I minimal Lagrangian map; not validation evidence",
+  "equation_record_count": 4,
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "lagrangian": "L_min = |D_mu Psi|^2 - V(|Psi|) - 1/4 g_F F F - xi R |Psi|^2",
+    "next_boundary": "Why this family satisfies (i)-(iii)",
+    "section": "Model-Class Justification: From Axiom 1 to a Minimal Psi-Field Lagrangian"
+  },
+  "lagrangian_operator_count": 4,
+  "lagrangian_operators": {
+    "curvature": "nonminimal_curvature_coupling",
+    "infoton": "pulled_back_information_metric_dynamics",
+    "kinetic": "covariant_psi_kinetic_term",
+    "potential": "quartic_ssb_potential"
+  },
+  "minimal_criterion_count": 3,
+  "minimal_requirements": {
+    "phase": "intentional_phase_variable",
+    "soliton": "stable_finite_energy_organismal_soliton",
+    "spin0": "single_irreducible_spin0_dof"
+  },
+  "next_source_boundary": "P0R00747",
+  "null_controls": {
+    "curvature_and_information_metric_terms_require_downstream_tests": 1.0,
+    "minimal_lagrangian_is_source_formula_not_empirical_fit": 1.0,
+    "ssb_boundedness_claim_requires_model_validation": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Axiom I minimal Lagrangian map; not validation evidence",
+    "protocol_state": "source_minimal_lagrangian_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00733",
+      "P0R00734",
+      "P0R00735",
+      "P0R00736",
+      "P0R00737",
+      "P0R00738",
+      "P0R00739",
+      "P0R00740",
+      "P0R00741",
+      "P0R00742",
+      "P0R00743",
+      "P0R00744",
+      "P0R00745",
+      "P0R00746"
+    ],
+    "source_ledger_span": [
+      "P0R00733",
+      "P0R00746"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R00733",
+    "P0R00746"
+  ]
+}

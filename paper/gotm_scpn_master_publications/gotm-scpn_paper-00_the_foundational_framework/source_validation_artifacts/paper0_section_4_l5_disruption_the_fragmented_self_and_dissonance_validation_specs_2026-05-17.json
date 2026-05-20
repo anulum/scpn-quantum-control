@@ -1,0 +1,125 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4. L5 Disruption (The Fragmented Self and Dissonance):' preserves Paper 0 records P0R05066-P0R05074 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 l5 disruption the fragmented self and dissonance source-accounting bridge; not validation evidence",
+      "context_id": "4_l5_disruption_the_fragmented_self_and_dissonance",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05066-P0R05074"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_l5_disruption_the_fragmented_self_and_dissonance.4_l5_disruption_the_fragmented_self_and_dissonance",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_l5_disruption_the_fragmented_self_and_dissonance must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4. L5 Disruption (The Fragmented Self and Dissonance): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > I. The Traumatised Brain: Catastrophic Disruption of the SCPN Architecture > 4. L5 Disruption (The Fragmented Self and Dissonance):",
+      "source_block_indices": [
+        5066,
+        5067,
+        5068,
+        5069,
+        5070,
+        5071,
+        5072,
+        5073,
+        5074
+      ],
+      "source_equation_ids": [
+        "P0R05066:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05067:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05068:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05069:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05070:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05071:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05072:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05073:4_l5_disruption_the_fragmented_self_and_dissonance",
+        "P0R05074:4_l5_disruption_the_fragmented_self_and_dissonance"
+      ],
+      "source_formulae": [
+        "P0R05066: 4. L5 Disruption (The Fragmented Self and Dissonance):",
+        "P0R05067: The integration of the Self (O) collapses, leading to Dissonance.",
+        "P0R05068: -Collapse (Loss of Consciousness): Integrated Information drops drastically (<Crit), resulting in altered consciousness or coma.",
+        "P0R05069: [IMAGE:]",
+        "P0R05070: Fig.: Integration collapse. (t)\\Phi(t)(t) declines after TBI; morphine produces an additional reduction (sedation), risking deep subcriticality when combined with TBI-induced dyscritia.",
+        "P0R05071: Free Energy Surge (High F): The system experiences massive, uncontrolled Prediction Errors (Pain, Disorientation), resulting in extremely high Variational Free Energy (F).",
+        "P0R05072: [IMAGE:]",
+        "P0R05073: Fig.: Free-energy surge and relief. F(t)F(t)F(t) spikes after TBI (high-precision nociceptive error/surprise), then falls with morphine as precision-weighting of ascending errors is reduced (analgesia).",
+        "P0R05074: Geometric Distortion (Suffering): The Consciousness Manifold (M) fragments. Topological complexity (bk) decreases, and the curvature becomes highly negative (extreme negative valence/suffering)."
+      ],
+      "source_ledger_ids": [
+        "P0R05066",
+        "P0R05067",
+        "P0R05068",
+        "P0R05069",
+        "P0R05070",
+        "P0R05071",
+        "P0R05072",
+        "P0R05073",
+        "P0R05074"
+      ],
+      "source_record_ids": [
+        "P0B05066",
+        "P0B05067",
+        "P0B05068",
+        "P0B05069",
+        "P0B05070",
+        "P0B05071",
+        "P0B05072",
+        "P0B05073",
+        "P0B05074"
+      ],
+      "test_protocols": [
+        "preserve 4. L5 Disruption (The Fragmented Self and Dissonance): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_l5_disruption_the_fragmented_self_and_dissonance.4_l5_disruption_the_fragmented_self_and_dissonance",
+      "validation_targets": [
+        "preserve records P0R05066-P0R05074"
+      ],
+      "variables": [
+        "4_l5_disruption_the_fragmented_self_and_dissonance"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BlockQuote": 2,
+      "BulletList": 3,
+      "Header": 1,
+      "Para": 3
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "figure": 2,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded section 4 l5 disruption the fragmented self and dissonance source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0130",
+      "IMG0131"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05075",
+    "source_ledger_span": [
+      "P0R05066",
+      "P0R05074"
+    ],
+    "source_record_count": 9,
+    "spec_count": 1,
+    "spec_keys": [
+      "section_4_l5_disruption_the_fragmented_self_and_dissonance.4_l5_disruption_the_fragmented_self_and_dissonance"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4. L5 Disruption (The Fragmented Self and Dissonance): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

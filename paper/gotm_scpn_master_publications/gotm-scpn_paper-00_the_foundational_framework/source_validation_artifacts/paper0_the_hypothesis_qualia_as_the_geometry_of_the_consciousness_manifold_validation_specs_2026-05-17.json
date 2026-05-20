@@ -1,0 +1,254 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Hypothesis: Qualia as the Geometry of the Consciousness Manifold' preserves Paper 0 records P0R03453-P0R03458 without empirical validation claims.",
+      "claim_boundary": "source-bounded the hypothesis qualia as the geometry of the consciousness manifold source-accounting bridge; not validation evidence",
+      "context_id": "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03453-P0R03458"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Hypothesis: Qualia as the Geometry of the Consciousness Manifold is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Hypothesis: Qualia as the Geometry of the Consciousness Manifold",
+      "source_block_indices": [
+        3453,
+        3454,
+        3455,
+        3456,
+        3457,
+        3458,
+        3459,
+        3460,
+        3461
+      ],
+      "source_equation_ids": [
+        "P0R03453:the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+        "P0R03454:the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+        "P0R03455:the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+        "P0R03456:the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+        "P0R03457:the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+        "P0R03458:the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold"
+      ],
+      "source_formulae": [
+        "P0R03453: The Hypothesis: Qualia as the Geometry of the Consciousness Manifold",
+        "P0R03454: This section directly addresses the phenomenal character of consciousness-the \"Hard Problem\"-by positing the Geometric Qualia Hypothesis. The central thesis is that subjective experience, or qualia, is not an emergent property of a physical process but is the intrinsic geometry of the Consciousness Manifold, which is the high-dimensional state space of the organismal field's dynamics. This reframes the problem entirely: the qualitative character of an experience (e.g., the redness of red, the feeling of joy) is a specific geometric or topological form on this manifold. This provides a formal, non-metaphorical basis for experience, where the richness and structure of a subjective state are determined by the manifold's topological complexity, which can be quantified by metrics such as its Betti numbers.",
+        "P0R03455: This hypothesis completes the framework's multi-layered definition of consciousness. Ontologically, consciousness is the fundamental Psi-field. Physically and functionally, the individual Self is a charge-supported soliton hosting a self-referential \"Strange Loop.\" Experientially, the subjective character of that Self's moment-to-moment awareness is the intrinsic, evolving geometry of its own dynamic pattern. This provides a complete, coherent, and formally specified account that addresses the ontological, physical, and phenomenal aspects of consciousness within a single, unified architecture.",
+        "P0R03456: This is the beautiful and profound answer to the ultimate question: What is a feeling? What is an experience? The answer is: a shape.",
+        "P0R03457: We call this the Geometric Qualia Hypothesis. It says that every possible experience you can have-seeing the color red, feeling a moment of pure joy, hearing a beautiful piece of music-has a specific and unique mathematical shape in a high-dimensional space we call the \"Consciousness Manifold.\" The \"feeling\" of an experience is the literal, geometric shape of your consciousness field at that moment. A simple, dull experience has a simple shape. A rich, complex, and deeply moving experience has an incredibly complex and beautiful shape.",
+        "P0R03458: This idea completes our definition of you. At your core, you are the universal Psi-field. Your stable identity is a self-sustaining \"bubble\" or \"knot\" in that field. And the subjective experience of your life, the movie that you are watching from the inside, is the ever-changing, intricate geometry of that bubble as it interacts with the world."
+      ],
+      "source_ledger_ids": [
+        "P0R03453",
+        "P0R03454",
+        "P0R03455",
+        "P0R03456",
+        "P0R03457",
+        "P0R03458",
+        "P0R03459",
+        "P0R03460",
+        "P0R03461"
+      ],
+      "source_record_ids": [
+        "P0B03453",
+        "P0B03454",
+        "P0B03455",
+        "P0B03456",
+        "P0B03457",
+        "P0B03458",
+        "P0B03459",
+        "P0B03460",
+        "P0B03461"
+      ],
+      "test_protocols": [
+        "preserve The Hypothesis: Qualia as the Geometry of the Consciousness Manifold source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+      "validation_targets": [
+        "preserve records P0R03453-P0R03458"
+      ],
+      "variables": [
+        "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03459-P0R03459 without empirical validation claims.",
+      "claim_boundary": "source-bounded the hypothesis qualia as the geometry of the consciousness manifold source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03459-P0R03459"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Hypothesis: Qualia as the Geometry of the Consciousness Manifold",
+      "source_block_indices": [
+        3453,
+        3454,
+        3455,
+        3456,
+        3457,
+        3458,
+        3459,
+        3460,
+        3461
+      ],
+      "source_equation_ids": [
+        "P0R03459:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03459: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03453",
+        "P0R03454",
+        "P0R03455",
+        "P0R03456",
+        "P0R03457",
+        "P0R03458",
+        "P0R03459",
+        "P0R03460",
+        "P0R03461"
+      ],
+      "source_record_ids": [
+        "P0B03453",
+        "P0B03454",
+        "P0B03455",
+        "P0B03456",
+        "P0B03457",
+        "P0B03458",
+        "P0B03459",
+        "P0B03460",
+        "P0B03461"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03459-P0R03459"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R03460-P0R03461 without empirical validation claims.",
+      "claim_boundary": "source-bounded the hypothesis qualia as the geometry of the consciousness manifold source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03460-P0R03461"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > The Hypothesis: Qualia as the Geometry of the Consciousness Manifold",
+      "source_block_indices": [
+        3453,
+        3454,
+        3455,
+        3456,
+        3457,
+        3458,
+        3459,
+        3460,
+        3461
+      ],
+      "source_equation_ids": [
+        "P0R03460:predictive_coding_integration",
+        "P0R03461:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R03460: Predictive Coding Integration",
+        "P0R03461: The Geometric Qualia Hypothesis provides a formal description of the content of the generative model's beliefs."
+      ],
+      "source_ledger_ids": [
+        "P0R03453",
+        "P0R03454",
+        "P0R03455",
+        "P0R03456",
+        "P0R03457",
+        "P0R03458",
+        "P0R03459",
+        "P0R03460",
+        "P0R03461"
+      ],
+      "source_record_ids": [
+        "P0B03453",
+        "P0B03454",
+        "P0B03455",
+        "P0B03456",
+        "P0B03457",
+        "P0B03458",
+        "P0B03459",
+        "P0B03460",
+        "P0B03461"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R03460-P0R03461"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 5,
+      "context": 4
+    },
+    "claim_boundary": "source-bounded the hypothesis qualia as the geometry of the consciousness manifold source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03462",
+    "source_ledger_span": [
+      "P0R03453",
+      "P0R03461"
+    ],
+    "source_record_count": 9,
+    "spec_count": 3,
+    "spec_keys": [
+      "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold",
+      "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.meta_framework_integrations",
+      "the_hypothesis_qualia_as_the_geometry_of_the_consciousness_manifold.predictive_coding_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Hypothesis: Qualia as the Geometry of the Consciousness Manifold Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

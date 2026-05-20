@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded section 3 sequential symmetry breaking ssb source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "1_quantum_geometry_and_topological_order_l1": "1_quantum_geometry_and_topological_order_l1_source_boundary",
+    "2_molecular_geometry_chirality_and_iet_l2_l3": "2_molecular_geometry_chirality_and_iet_l2_l3_source_boundary",
+    "3_sequential_symmetry_breaking_ssb": "3_sequential_symmetry_breaking_ssb_source_boundary",
+    "iii_the_geometry_of_the_quantum_biological_interface_domain_i_l1_l3": "iii_the_geometry_of_the_quantum_biological_interface_domain_i_l1_l3_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. Sequential Symmetry Breaking (SSB):",
+    "component_2": "III. The Geometry of the Quantum-Biological Interface (Domain I: L1-L3)",
+    "component_3": "1. Quantum Geometry and Topological Order (L1):",
+    "component_4": "2. Molecular Geometry, Chirality, and IET (L2/L3):",
+    "component_count": "4",
+    "next_boundary": "P0R04396",
+    "section": "3. Sequential Symmetry Breaking (SSB):",
+    "source_span": "P0R04388-P0R04395"
+  },
+  "next_source_boundary": "P0R04396",
+  "null_controls": {
+    "1_quantum_geometry_and_topological_order_l1_is_not_empirical_validation_evidence": 1.0,
+    "2_molecular_geometry_chirality_and_iet_l2_l3_is_not_empirical_validation_evidence": 1.0,
+    "3_sequential_symmetry_breaking_ssb_is_not_empirical_validation_evidence": 1.0,
+    "iii_the_geometry_of_the_quantum_biological_interface_domain_i_l1_l3_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 sequential symmetry breaking ssb source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_sequential_symmetry_breaking_ssb_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04388",
+      "P0R04389",
+      "P0R04390",
+      "P0R04391",
+      "P0R04392",
+      "P0R04393",
+      "P0R04394",
+      "P0R04395"
+    ],
+    "source_ledger_span": [
+      "P0R04388",
+      "P0R04395"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04388",
+    "P0R04395"
+  ],
+  "source_record_count": 8
+}

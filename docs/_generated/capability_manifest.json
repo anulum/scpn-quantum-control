@@ -1,20 +1,20 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 24,
+    "domain_package_families": 27,
     "example_files": 22,
-    "github_workflows": 17,
+    "github_workflows": 18,
     "model_documentation_pages": 0,
     "notebook_files": 98,
-    "optional_extras": 24,
+    "optional_extras": 39,
     "paper0_validation_modules": 466,
-    "public_api_exports": 162,
-    "public_documentation_pages": 189,
-    "python_model_classes": 1335,
-    "python_model_source_modules": 720,
+    "public_api_exports": 257,
+    "public_documentation_pages": 212,
+    "python_model_classes": 1402,
+    "python_model_source_modules": 750,
     "rust_pyo3_model_wrappers": 48,
     "rust_source_modules": 24,
-    "test_files": 1807
+    "test_files": 1854
   },
   "documentation": {
     "examples": [
@@ -149,109 +149,151 @@
       "docs/REPRODUCIBILITY.md",
       "docs/THREAT_MODEL.md",
       "docs/actions_history_dashboard.md",
-      "docs/adaptive_fim_qpu_protocol_2026-05-06.md",
+      "docs/adaptive_branching.md",
       "docs/adopters.md",
       "docs/analog_backends.md",
+      "docs/analog_native_readiness.md",
       "docs/analysis_api.md",
       "docs/api.md",
       "docs/application_benchmarks.md",
       "docs/architecture.md",
       "docs/artifact_storage.md",
-      "docs/arxiv_source_packaging_readiness_2026-05-06.md",
       "docs/autodoc.md",
       "docs/backend_selector.md",
       "docs/backends.md",
-      "docs/behavioural_test_audit_closure_2026-05-06.md",
       "docs/bench_dynamic_coupling.md",
       "docs/bench_hw_topological_optimizer.md",
       "docs/bench_structured_ansatz.md",
       "docs/benchmark_harness.md",
-      "docs/benchmark_harness_phase1_2026-05-06.md",
-      "docs/benchmark_harness_registry_2026-05-06.md",
       "docs/benchmarks_api.md",
       "docs/bridges_api.md",
+      "docs/campaigns/README.md",
+      "docs/campaigns/adaptive_fim_qpu_protocol_2026-05-06.md",
+      "docs/campaigns/benchmark_harness_phase1_2026-05-06.md",
+      "docs/campaigns/benchmark_harness_registry_2026-05-06.md",
+      "docs/campaigns/depth_optimal_native_decomposition_prereg_2026-05-06.md",
+      "docs/campaigns/dla_multidevice_replication_prereg_2026-05-06.md",
+      "docs/campaigns/dla_state_layout_randomisation_prereg_2026-05-06.md",
+      "docs/campaigns/entanglement_tomography_prereg_2026-05-06.md",
+      "docs/campaigns/guess_symmetry_decay_prereg_2026-05-06.md",
+      "docs/campaigns/hybrid_feedback_loop_s1_2026-05-06.md",
+      "docs/campaigns/ibm_phase2_preregistered_manifest_2026-05-05.md",
+      "docs/campaigns/ibm_phase2_scaling_bc_manifest_2026-05-05.md",
+      "docs/campaigns/ibm_popcount_control_manifest_2026-05-05.md",
+      "docs/campaigns/layer_selective_qubit_assignment_prereg_2026-05-06.md",
+      "docs/campaigns/multicircuit_qec_prereg_2026-05-06.md",
+      "docs/campaigns/next_validation_protocols_2026-05-05.md",
+      "docs/campaigns/phase2_no_qpu_crosschecks_2026-05-05.md",
+      "docs/campaigns/phase3_entanglement_tomography_execution_package_2026-05-20.md",
+      "docs/campaigns/phase3_entanglement_tomography_manifest_2026-05-20.md",
+      "docs/campaigns/phase3_entanglement_tomography_manifest_2026-05-20_ibm_fez.md",
+      "docs/campaigns/phase3_entanglement_tomography_manifest_2026-05-20_ibm_fez_pinned_full_readout.md",
+      "docs/campaigns/phase3_entanglement_tomography_paper_plan_2026-05-20.md",
+      "docs/campaigns/phase3_entanglement_tomography_readiness_2026-05-07.md",
+      "docs/campaigns/phase3_entanglement_zne_kingston_statistical_repeat_2026-05-20.md",
+      "docs/campaigns/phase3_entanglement_zne_manifest_2026-05-20_ibm_fez_zne.md",
+      "docs/campaigns/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne.md",
+      "docs/campaigns/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne_repeat.md",
+      "docs/campaigns/phase3_entanglement_zne_third_backend_kingston_2026-05-20.md",
+      "docs/campaigns/phase3_guess_dla_manifest_2026-05-07.md",
+      "docs/campaigns/phase3_layer_layout_comparator_matrix_2026-05-07.md",
+      "docs/campaigns/phase3_layer_layout_readiness_2026-05-07.md",
+      "docs/campaigns/phase3_multicircuit_qec_readiness_2026-05-07.md",
+      "docs/campaigns/phase3_multidevice_dla_manifest_2026-05-06.md",
+      "docs/campaigns/phase3_native_decomposition_readiness_2026-05-07.md",
+      "docs/campaigns/phase3_state_layout_dla_manifest_2026-05-07.md",
+      "docs/campaigns/phase3_vqs_alternative_readiness_2026-05-07.md",
+      "docs/campaigns/quantum_kuramoto_api_contract_2026-05-07.md",
+      "docs/campaigns/quantum_kuramoto_boundary_review_2026-05-07.md",
+      "docs/campaigns/readout_full_basis_calibration_prereg_2026-05-06.md",
+      "docs/campaigns/readout_full_basis_manifest_2026-05-06.md",
+      "docs/campaigns/s1_feedback_ibm_paper_plan_2026-05-20.md",
+      "docs/campaigns/s1_feedback_readiness_index_2026-05-06.md",
+      "docs/campaigns/s1_ibm_feedback_pair_result_2026-05-20.md",
+      "docs/campaigns/s1_ibm_live_readiness_ibm_fez_2026-05-20.md",
+      "docs/campaigns/s1_ibm_live_readiness_ibm_kingston_2026-05-20.md",
+      "docs/campaigns/s1_ibm_live_readiness_ibm_marrakesh_2026-05-20.md",
+      "docs/campaigns/s1_live_submission_preflight_2026-05-06.md",
+      "docs/campaigns/s1b_ibm_xy_observable_result_2026-05-20.md",
+      "docs/campaigns/s1c_ibm_shallow_xy_readiness_2026-05-20.md",
+      "docs/campaigns/s1d_ibm_policy_sweep_result_2026-05-20.md",
+      "docs/campaigns/s1e_ibm_policy_sweep_confirmatory_repeat_2026-05-20.md",
+      "docs/campaigns/s1f_ibm_quadrature_mechanism_check_2026-05-20.md",
+      "docs/campaigns/s2_full_campaign_plan_2026-05-07.md",
+      "docs/campaigns/s2_full_campaign_slice_n10_2026-05-07.md",
+      "docs/campaigns/s2_full_campaign_slice_n12_2026-05-07.md",
+      "docs/campaigns/s2_full_campaign_slice_n14_2026-05-07.md",
+      "docs/campaigns/s2_full_campaign_slice_n8_2026-05-07.md",
+      "docs/campaigns/s2_n14_resource_gate_2026-05-07.md",
+      "docs/campaigns/s2_scaling_readiness_index_2026-05-06.md",
+      "docs/campaigns/s2_slice_progress_report_2026-05-07.md",
+      "docs/campaigns/s3_design_readiness_index_2026-05-06.md",
+      "docs/campaigns/s4_ibm_pulse_preregistration_2026-05-06.md",
+      "docs/campaigns/s4_multi_hardware_readiness_2026-05-06.md",
+      "docs/campaigns/s4_neutral_atom_preregistration_2026-05-06.md",
+      "docs/campaigns/scpn_fim_claim_boundary_2026-05-05.md",
+      "docs/campaigns/scpn_fim_hamiltonian_paper_plan_2026-05-05.md",
+      "docs/campaigns/scpn_fim_ibm_pilot_analysis_2026-05-05.md",
+      "docs/campaigns/scpn_fim_repeated_followup_analysis_2026-05-05.md",
+      "docs/campaigns/scpn_fim_repeated_followup_protocol_2026-05-05.md",
+      "docs/campaigns/scpn_fim_submission_checklist_2026-05-06.md",
+      "docs/campaigns/scpn_fim_validation_protocol_2026-05-05.md",
+      "docs/campaigns/validation_readiness_2026-05-05.md",
+      "docs/campaigns/vqs_alternative_prereg_2026-05-06.md",
       "docs/changelog.md",
       "docs/classical_baselines.md",
       "docs/classical_irreproducibility.md",
-      "docs/combined_submission_checklist_2026-05-06.md",
-      "docs/community_announcement_pack_2026-05-06.md",
-      "docs/conda_forge_submission_2026-05-06.md",
       "docs/core_package_boundary.md",
-      "docs/coverage_gap_audit_2026-05-06.md",
       "docs/datasets.md",
-      "docs/depth_optimal_native_decomposition_prereg_2026-05-06.md",
-      "docs/dla_multidevice_replication_prereg_2026-05-06.md",
       "docs/dla_parity.md",
-      "docs/dla_parity_submission_checklist_2026-05-06.md",
       "docs/dla_protected_scar_memory.md",
       "docs/dla_protected_subspace.md",
-      "docs/dla_state_layout_randomisation_prereg_2026-05-06.md",
       "docs/dynq_qubit_mapping.md",
       "docs/e2e_contract_boundaries.md",
       "docs/e2e_testing.md",
-      "docs/entanglement_tomography_prereg_2026-05-06.md",
       "docs/equations.md",
       "docs/error_mitigation.md",
       "docs/execution_surface_policy.md",
       "docs/falsification.md",
       "docs/free_energy_principle.md",
       "docs/gpu.md",
-      "docs/guess_symmetry_decay_prereg_2026-05-06.md",
       "docs/hardware_guide.md",
       "docs/hardware_result_pack_release_checklist.md",
       "docs/hardware_result_packs.md",
       "docs/hardware_status_ledger.md",
       "docs/hybrid_digital_analog.md",
-      "docs/hybrid_feedback_loop_s1_2026-05-06.md",
-      "docs/ibm_phase2_preregistered_manifest_2026-05-05.md",
-      "docs/ibm_phase2_scaling_bc_manifest_2026-05-05.md",
-      "docs/ibm_popcount_control_manifest_2026-05-05.md",
-      "docs/ibm_quantum_credits_followup_2026-05-06.md",
       "docs/identity_api.md",
       "docs/index.md",
       "docs/installation.md",
-      "docs/joss_software_submission_checklist_2026-05-06.md",
       "docs/kuramoto_core_facade.md",
       "docs/kuramoto_variants.md",
       "docs/language_policy.md",
-      "docs/layer_selective_qubit_assignment_prereg_2026-05-06.md",
       "docs/lindblad.md",
+      "docs/literature/README.md",
+      "docs/literature/literature_survey_2024_2026.md",
+      "docs/logical_dla_parity.md",
       "docs/methods_benchmark_dashboard.md",
-      "docs/metriq_local_smoke_2026-05-06.md",
-      "docs/metriq_scpn_benchmark_schema_proposal_2026-05-07.md",
-      "docs/metriq_submission_decision_2026-05-07.md",
-      "docs/metriq_submission_readiness_2026-05-06.md",
       "docs/mitigation_api.md",
       "docs/multi_platform.md",
-      "docs/multicircuit_qec_prereg_2026-05-06.md",
       "docs/multiscale_qec.md",
       "docs/mutation_testing.md",
       "docs/neural_quantum_states.md",
       "docs/new_modules.md",
-      "docs/next_validation_protocols_2026-05-05.md",
       "docs/notebooks.md",
       "docs/open_system_hardware.md",
       "docs/orchestrator_integration.md",
-      "docs/paper0_experimental_pathway.md",
-      "docs/paper0_first_preregistered_downstream_experiment.md",
-      "docs/paper0_knm_measured_coupling_evidence_checklist.md",
-      "docs/paper0_knm_preregistered_replay.md",
-      "docs/paper0_knm_preregistered_replay_contract.md",
-      "docs/paper0_lane_registry.md",
-      "docs/paper0_methodology_paper_outline.md",
-      "docs/paper0_validation_register.md",
+      "docs/paper0/README.md",
+      "docs/paper0/paper0_experimental_pathway.md",
+      "docs/paper0/paper0_first_preregistered_downstream_experiment.md",
+      "docs/paper0/paper0_knm_measured_coupling_evidence_checklist.md",
+      "docs/paper0/paper0_knm_preregistered_replay.md",
+      "docs/paper0/paper0_knm_preregistered_replay_contract.md",
+      "docs/paper0/paper0_lane_registry.md",
+      "docs/paper0/paper0_methodology_paper_outline.md",
+      "docs/paper0/paper0_processing_methodology.md",
+      "docs/paper0/paper0_validation_register.md",
       "docs/paper_dla_parity.md",
       "docs/paper_sync_witnesses.md",
-      "docs/phase2_no_qpu_crosschecks_2026-05-05.md",
-      "docs/phase3_entanglement_tomography_readiness_2026-05-07.md",
-      "docs/phase3_guess_dla_manifest_2026-05-07.md",
-      "docs/phase3_layer_layout_comparator_matrix_2026-05-07.md",
-      "docs/phase3_layer_layout_readiness_2026-05-07.md",
-      "docs/phase3_multicircuit_qec_readiness_2026-05-07.md",
-      "docs/phase3_multidevice_dla_manifest_2026-05-06.md",
-      "docs/phase3_native_decomposition_readiness_2026-05-07.md",
-      "docs/phase3_state_layout_dla_manifest_2026-05-07.md",
-      "docs/phase3_vqs_alternative_readiness_2026-05-07.md",
       "docs/phase_api.md",
       "docs/physics_first_kuramoto_xy.md",
       "docs/pipeline_performance.md",
@@ -259,51 +301,37 @@
       "docs/preprint.md",
       "docs/preregistration.md",
       "docs/psi_field_lattice.md",
-      "docs/publication_phase2_package_2026-05-05.md",
-      "docs/pyopensci_submission_readiness_2026-05-06.md",
-      "docs/qiskit_ecosystem_submission_2026-05-06.md",
+      "docs/publication/README.md",
+      "docs/publication/arxiv_source_packaging_readiness_2026-05-06.md",
+      "docs/publication/combined_submission_checklist_2026-05-06.md",
+      "docs/publication/conda_forge_submission_2026-05-06.md",
+      "docs/publication/dla_parity_submission_checklist_2026-05-06.md",
+      "docs/publication/joss_software_submission_checklist_2026-05-06.md",
+      "docs/publication/metriq_local_smoke_2026-05-06.md",
+      "docs/publication/metriq_scpn_benchmark_schema_proposal_2026-05-07.md",
+      "docs/publication/metriq_submission_decision_2026-05-07.md",
+      "docs/publication/metriq_submission_readiness_2026-05-06.md",
+      "docs/publication/publication_phase2_package_2026-05-05.md",
+      "docs/publication/pyopensci_submission_readiness_2026-05-06.md",
+      "docs/publication/qiskit_ecosystem_submission_2026-05-06.md",
+      "docs/publication/registry_listing_plan_2026-05-06.md",
+      "docs/publication/rust_vqe_methods_paper_plan_2026-05-05.md",
+      "docs/publication/rust_vqe_methods_submission_checklist_2026-05-06.md",
+      "docs/publication/scipy_2026_cfp_readiness_2026-05-06.md",
+      "docs/publication/software_heritage_swhid_2026-05-06.md",
       "docs/qpu_compute_unit.md",
       "docs/qpu_data_artifact.md",
       "docs/qpu_provider_readiness.md",
       "docs/qpu_system_capability_dossier.md",
-      "docs/quantum_kuramoto_api_contract_2026-05-07.md",
-      "docs/quantum_kuramoto_boundary_review_2026-05-07.md",
-      "docs/quantum_kuramoto_split_audit_2026-05-07.md",
+      "docs/quantum_sensing.md",
+      "docs/quantum_thermo.md",
       "docs/quickstart.md",
-      "docs/readout_full_basis_calibration_prereg_2026-05-06.md",
-      "docs/readout_full_basis_manifest_2026-05-06.md",
       "docs/real_data_sync_forecasting.md",
       "docs/realtime_feedback.md",
-      "docs/registry_listing_plan_2026-05-06.md",
       "docs/release_readiness.md",
       "docs/research_gems.md",
       "docs/results.md",
       "docs/rust_engine.md",
-      "docs/rust_vqe_methods_paper_plan_2026-05-05.md",
-      "docs/rust_vqe_methods_submission_checklist_2026-05-06.md",
-      "docs/s1_feedback_readiness_index_2026-05-06.md",
-      "docs/s1_live_submission_preflight_2026-05-06.md",
-      "docs/s2_full_campaign_plan_2026-05-07.md",
-      "docs/s2_full_campaign_slice_n10_2026-05-07.md",
-      "docs/s2_full_campaign_slice_n12_2026-05-07.md",
-      "docs/s2_full_campaign_slice_n14_2026-05-07.md",
-      "docs/s2_full_campaign_slice_n8_2026-05-07.md",
-      "docs/s2_n14_resource_gate_2026-05-07.md",
-      "docs/s2_scaling_readiness_index_2026-05-06.md",
-      "docs/s2_slice_progress_report_2026-05-07.md",
-      "docs/s3_design_readiness_index_2026-05-06.md",
-      "docs/s4_ibm_pulse_preregistration_2026-05-06.md",
-      "docs/s4_multi_hardware_readiness_2026-05-06.md",
-      "docs/s4_neutral_atom_preregistration_2026-05-06.md",
-      "docs/scipy_2026_cfp_readiness_2026-05-06.md",
-      "docs/scpn_fim_claim_boundary_2026-05-05.md",
-      "docs/scpn_fim_hamiltonian_paper_plan_2026-05-05.md",
-      "docs/scpn_fim_ibm_pilot_analysis_2026-05-05.md",
-      "docs/scpn_fim_repeated_followup_analysis_2026-05-05.md",
-      "docs/scpn_fim_repeated_followup_protocol_2026-05-05.md",
-      "docs/scpn_fim_submission_checklist_2026-05-06.md",
-      "docs/scpn_fim_validation_protocol_2026-05-05.md",
-      "docs/software_heritage_swhid_2026-05-06.md",
       "docs/sparse.md",
       "docs/stable_core_api.md",
       "docs/stable_core_backend_capability_matrix.md",
@@ -323,14 +351,9 @@
       "docs/theory.md",
       "docs/triage.md",
       "docs/tutorials.md",
-      "docs/validation_readiness_2026-05-05.md",
       "docs/variational.md",
-      "docs/vqs_alternative_prereg_2026-05-06.md",
       "docs/witness_discovery.md",
-      "docs/xy_compiler.md",
-      "docs/zenodo_community_submission_2026-05-06.md",
-      "docs/zenodo_metadata_refresh_checklist_2026-05-06.md",
-      "docs/zenodo_metadata_refresh_execution_2026-05-06.md"
+      "docs/xy_compiler.md"
     ]
   },
   "evidence_boundary": "Counts are file-system and static-source inventory only; benchmark, coverage, hardware, and scientific-fidelity claims remain governed by their dedicated evidence artifacts.",
@@ -366,7 +389,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 57
+        "python_modules": 58
       },
       {
         "package": "applications",
@@ -389,14 +412,24 @@
         "python_modules": 13
       },
       {
+        "package": "compiler",
+        "path": "src/scpn_quantum_control/compiler",
+        "python_modules": 1
+      },
+      {
         "package": "control",
         "path": "src/scpn_quantum_control/control",
-        "python_modules": 9
+        "python_modules": 11
       },
       {
         "package": "crypto",
         "path": "src/scpn_quantum_control/crypto",
         "python_modules": 6
+      },
+      {
+        "package": "deployment",
+        "path": "src/scpn_quantum_control/deployment",
+        "python_modules": 1
       },
       {
         "package": "dla_parity",
@@ -421,7 +454,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 37
+        "python_modules": 59
       },
       {
         "package": "identity",
@@ -461,7 +494,7 @@
       {
         "package": "qec",
         "path": "src/scpn_quantum_control/qec",
-        "python_modules": 9
+        "python_modules": 10
       },
       {
         "package": "qsnn",
@@ -476,6 +509,11 @@
       {
         "package": "tcbo",
         "path": "src/scpn_quantum_control/tcbo",
+        "python_modules": 1
+      },
+      {
+        "package": "thermodynamics",
+        "path": "src/scpn_quantum_control/thermodynamics",
         "python_modules": 1
       }
     ],
@@ -997,6 +1035,18 @@
         "path": "src/scpn_quantum_control/paper0/l11_interface_validation.py"
       },
       {
+        "name": "AdaptiveBranchDecision",
+        "path": "src/scpn_quantum_control/control/adaptive_branching.py"
+      },
+      {
+        "name": "AdaptiveBranchingConfig",
+        "path": "src/scpn_quantum_control/control/adaptive_branching.py"
+      },
+      {
+        "name": "AdaptiveBranchingReadiness",
+        "path": "src/scpn_quantum_control/control/adaptive_branching.py"
+      },
+      {
         "name": "AdaptiveCouplingConfig",
         "path": "src/scpn_quantum_control/paper0/upde_adaptive_coupling_validation.py"
       },
@@ -1045,6 +1095,14 @@
         "path": "src/scpn_quantum_control/benchmarks/quantum_advantage.py"
       },
       {
+        "name": "AggregatorProviderOptionalDependencyRow",
+        "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
+      },
+      {
+        "name": "AggregatorProviderRoute",
+        "path": "src/scpn_quantum_control/hardware/aggregators.py"
+      },
+      {
         "name": "AiNoosphereTechConfig",
         "path": "src/scpn_quantum_control/paper0/ai_noosphere_tech_validation.py"
       },
@@ -1087,6 +1145,18 @@
       {
         "name": "AnalogKuramotoProgram",
         "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py"
+      },
+      {
+        "name": "AnalogNativePrimitiveComparison",
+        "path": "src/scpn_quantum_control/hardware/analog_native_readiness.py"
+      },
+      {
+        "name": "AnalogNativeReadinessConfig",
+        "path": "src/scpn_quantum_control/hardware/analog_native_readiness.py"
+      },
+      {
+        "name": "AnalogProviderReadinessRow",
+        "path": "src/scpn_quantum_control/hardware/analog_native_readiness.py"
       },
       {
         "name": "AnalogProviderTarget",
@@ -1321,6 +1391,10 @@
         "path": "src/scpn_quantum_control/paper0/axion_photon_mixing_with_the_plasma_term_validation.py"
       },
       {
+        "name": "AzureQuantumHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_azure.py"
+      },
+      {
         "name": "BKTResult",
         "path": "src/scpn_quantum_control/analysis/bkt_analysis.py"
       },
@@ -1333,8 +1407,16 @@
         "path": "src/scpn_quantum_control/stable_core.py"
       },
       {
+        "name": "BackendCapabilities",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
+      },
+      {
         "name": "BackendCapabilitySnapshot",
         "path": "src/scpn_quantum_control/hardware/feedback_capability_probe.py"
+      },
+      {
+        "name": "BackendProfile",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
       },
       {
         "name": "BackendProtocol",
@@ -1413,6 +1495,14 @@
         "path": "src/scpn_quantum_control/paper0/biophysics_quantum_biology_validation.py"
       },
       {
+        "name": "BraketAwsHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_braket.py"
+      },
+      {
+        "name": "BraketLocalHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_braket.py"
+      },
+      {
         "name": "CFTResult",
         "path": "src/scpn_quantum_control/gauge/cft_analysis.py"
       },
@@ -1427,6 +1517,10 @@
       {
         "name": "CPDRResult",
         "path": "src/scpn_quantum_control/mitigation/cpdr.py"
+      },
+      {
+        "name": "CalibratedWorkIdentity",
+        "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
       },
       {
         "name": "CascadingFailurePercolationValidationResult",
@@ -1489,6 +1583,10 @@
         "path": "src/scpn_quantum_control/hardware/circuit_cutting.py"
       },
       {
+        "name": "CirqLocalHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_cirq.py"
+      },
+      {
         "name": "CirqResult",
         "path": "src/scpn_quantum_control/hardware/cirq_adapter.py"
       },
@@ -1531,6 +1629,14 @@
       {
         "name": "ClinicalScenarioAnalysisTraumaticBrainInjuryTbiAndPharmacologicaFixtureResult",
         "path": "src/scpn_quantum_control/paper0/clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation.py"
+      },
+      {
+        "name": "CloudDeploymentSpec",
+        "path": "src/scpn_quantum_control/deployment/cloud_native.py"
+      },
+      {
+        "name": "CloudManifestBundle",
+        "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
       {
         "name": "CoherenceBreakdownValidationResult",
@@ -1619,6 +1725,10 @@
       {
         "name": "ConsciousnessStudiesCognitiveModelsFixtureResult",
         "path": "src/scpn_quantum_control/paper0/consciousness_studies_cognitive_models_validation.py"
+      },
+      {
+        "name": "ContainerResources",
+        "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
       {
         "name": "ControlOverUniversalParametersConfig",
@@ -1757,6 +1867,10 @@
         "path": "src/scpn_quantum_control/analysis/dynamical_lie_algebra.py"
       },
       {
+        "name": "DWaveLeapHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_dwave.py"
+      },
+      {
         "name": "DarkSectorConfig",
         "path": "src/scpn_quantum_control/paper0/dark_sector_validation.py"
       },
@@ -1815,6 +1929,10 @@
       {
         "name": "DerivedLagrangianDetailFixtureResult",
         "path": "src/scpn_quantum_control/paper0/derived_lagrangian_detail_validation.py"
+      },
+      {
+        "name": "DifferentiableOptimizer",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "DisciplineRole",
@@ -1967,6 +2085,10 @@
       {
         "name": "EntropyBudgetRates",
         "path": "src/scpn_quantum_control/paper0/computational_unifier_validation.py"
+      },
+      {
+        "name": "EntropyProductionRate",
+        "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
       },
       {
         "name": "ErrorBudget",
@@ -2365,6 +2487,10 @@
         "path": "src/scpn_quantum_control/paper0/gaian_safety_validation.py"
       },
       {
+        "name": "GradientResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "GrandSynthesisConfig",
         "path": "src/scpn_quantum_control/paper0/grand_synthesis_validation.py"
       },
@@ -2409,6 +2535,10 @@
         "path": "src/scpn_quantum_control/analysis/hamiltonian_learning.py"
       },
       {
+        "name": "HardwareAbstractionLayer",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
+      },
+      {
         "name": "HardwareApprovalRecord",
         "path": "src/scpn_quantum_control/hardware/feedback_hardware_scheduler.py"
       },
@@ -2431,6 +2561,10 @@
       {
         "name": "Harness",
         "path": "src/scpn_quantum_control/bench_cli.py"
+      },
+      {
+        "name": "HeatDissipationRate",
+        "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
       },
       {
         "name": "HigherOrderKuramotoSpec",
@@ -2515,6 +2649,10 @@
       {
         "name": "IQMBackendConfig",
         "path": "src/scpn_quantum_control/hardware/iqm_backend.py"
+      },
+      {
+        "name": "IQMHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_iqm.py"
       },
       {
         "name": "IQMQuantumBackend",
@@ -2833,6 +2971,18 @@
         "path": "src/scpn_quantum_control/paper0/introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_validation.py"
       },
       {
+        "name": "IonQCloudHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_ionq.py"
+      },
+      {
+        "name": "IrreversibilityResidual",
+        "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
+      },
+      {
+        "name": "IsolatedProviderSmokeLane",
+        "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
+      },
+      {
         "name": "IvEthicsAsCausalEntropicForcesCefConfig",
         "path": "src/scpn_quantum_control/paper0/iv_ethics_as_causal_entropic_forces_cef_validation.py"
       },
@@ -3053,6 +3203,10 @@
         "path": "src/scpn_quantum_control/paper0/linguistics_symbolism_vibrana_layer_7_validation.py"
       },
       {
+        "name": "LocalDeterministicSimulator",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
+      },
+      {
         "name": "LocalisedConfig",
         "path": "src/scpn_quantum_control/paper0/localised_validation.py"
       },
@@ -3063,6 +3217,10 @@
       {
         "name": "LockSignatureArtifact",
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
+      },
+      {
+        "name": "LogicalDLAParityRow",
+        "path": "src/scpn_quantum_control/qec/logical_dla_parity.py"
       },
       {
         "name": "LogicalQubit",
@@ -3103,6 +3261,14 @@
       {
         "name": "MCResult",
         "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py"
+      },
+      {
+        "name": "MLIRCompileConfig",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
+        "name": "MLIRModule",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
         "name": "MPSBaselineResult",
@@ -3453,6 +3619,10 @@
         "path": "src/scpn_quantum_control/phase/kuramoto_variants.py"
       },
       {
+        "name": "MonotonicRealtimeClock",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
         "name": "MpembaResult",
         "path": "src/scpn_quantum_control/analysis/quantum_mpemba.py"
       },
@@ -3467,6 +3637,10 @@
       {
         "name": "MultiScaleQuantumErrorCorrectionMsQecFixtureResult",
         "path": "src/scpn_quantum_control/paper0/multi_scale_quantum_error_correction_ms_qec_validation.py"
+      },
+      {
+        "name": "MultiscaleComparison",
+        "path": "src/scpn_quantum_control/qec/logical_dla_parity.py"
       },
       {
         "name": "MultiscaleQECResult",
@@ -3559,6 +3733,10 @@
       {
         "name": "NovelFalsifiablePredictionsFromFirstPrinciplesFixtureResult",
         "path": "src/scpn_quantum_control/paper0/novel_falsifiable_predictions_from_first_principles_validation.py"
+      },
+      {
+        "name": "OQCHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_oqc.py"
       },
       {
         "name": "OTOC",
@@ -3793,6 +3971,14 @@
         "path": "src/scpn_quantum_control/paper0/topology_schema.py"
       },
       {
+        "name": "Parameter",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ParameterShiftRule",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "PartIiThePhysicalSectorFieldTheoryQuantization24TheSsbCascadConfig",
         "path": "src/scpn_quantum_control/paper0/part_ii_the_physical_sector_field_theory_quantization_2_4_the_ssb_cascad_validation.py"
       },
@@ -3809,12 +3995,20 @@
         "path": "src/scpn_quantum_control/paper0/part_iii_system_architecture_network_dynamics_validation.py"
       },
       {
+        "name": "PasqalPulserHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_pasqal.py"
+      },
+      {
         "name": "PathologyCriticalityConfig",
         "path": "src/scpn_quantum_control/paper0/pathology_criticality_validation.py"
       },
       {
         "name": "PathologyCriticalityFixtureResult",
         "path": "src/scpn_quantum_control/paper0/pathology_criticality_validation.py"
+      },
+      {
+        "name": "PennyLaneDeviceHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_pennylane.py"
       },
       {
         "name": "PennyLaneResult",
@@ -4101,6 +4295,18 @@
         "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py"
       },
       {
+        "name": "ProviderCapabilityDecision",
+        "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py"
+      },
+      {
+        "name": "ProviderCapabilitySnapshot",
+        "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py"
+      },
+      {
+        "name": "ProviderOptionalDependencyRow",
+        "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
+      },
+      {
         "name": "PsiDmInteractionValidationResult",
         "path": "src/scpn_quantum_control/paper0/dark_sector_validation.py"
       },
@@ -4237,12 +4443,40 @@
         "path": "src/scpn_quantum_control/phase/qsvt_evolution.py"
       },
       {
+        "name": "QbraidRuntimeHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_qbraid.py"
+      },
+      {
+        "name": "QiskitAerHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_qiskit.py"
+      },
+      {
+        "name": "QiskitRuntimeHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_qiskit.py"
+      },
+      {
+        "name": "QuEraBloqadeHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_quera_bloqade.py"
+      },
+      {
         "name": "QualiaAsTheGeometryOfBeliefConfig",
         "path": "src/scpn_quantum_control/paper0/qualia_as_the_geometry_of_belief_validation.py"
       },
       {
         "name": "QualiaAsTheGeometryOfBeliefFixtureResult",
         "path": "src/scpn_quantum_control/paper0/qualia_as_the_geometry_of_belief_validation.py"
+      },
+      {
+        "name": "QuandelaPercevalHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_quandela.py"
+      },
+      {
+        "name": "QuantinuumCloudHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_quantinuum.py"
+      },
+      {
+        "name": "QuantumBackend",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
       },
       {
         "name": "QuantumBackendDescriptor",
@@ -4313,6 +4547,14 @@
         "path": "src/scpn_quantum_control/paper0/glial_control_validation.py"
       },
       {
+        "name": "QuantumJobRef",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
+      },
+      {
+        "name": "QuantumJobResult",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
+      },
+      {
         "name": "QuantumKernelResult",
         "path": "src/scpn_quantum_control/applications/quantum_kernel.py"
       },
@@ -4337,12 +4579,20 @@
         "path": "src/scpn_quantum_control/qsnn/qstdp.py"
       },
       {
+        "name": "QuantumSensingReadinessConfig",
+        "path": "src/scpn_quantum_control/analysis/sensing.py"
+      },
+      {
         "name": "QuantumSynapse",
         "path": "src/scpn_quantum_control/qsnn/qsynapse.py"
       },
       {
         "name": "QuantumUPDESolver",
         "path": "src/scpn_quantum_control/phase/trotter_upde.py"
+      },
+      {
+        "name": "QuantumWorkload",
+        "path": "src/scpn_quantum_control/hardware/hal.py"
       },
       {
         "name": "QuasicriticalityAndSelfOrganisationConfig",
@@ -4397,6 +4647,10 @@
         "path": "src/scpn_quantum_control/mitigation/readout_matrix.py"
       },
       {
+        "name": "RealtimeClock",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
         "name": "RealtimeControllerScheduler",
         "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
       },
@@ -4405,8 +4659,20 @@
         "path": "src/scpn_quantum_control/control/realtime_feedback.py"
       },
       {
+        "name": "RealtimeRunResult",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
+        "name": "RealtimeRuntimeConfig",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
         "name": "RealtimeSyncFeedbackController",
         "path": "src/scpn_quantum_control/control/realtime_feedback.py"
+      },
+      {
+        "name": "RealtimeTickRecord",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
         "name": "RepetitionCodeUPDE",
@@ -4431,6 +4697,10 @@
       {
         "name": "ResolutionOfTheObservabilityParadoxBHjbFixtureResult",
         "path": "src/scpn_quantum_control/paper0/resolution_of_the_observability_paradox_b_hjb_validation.py"
+      },
+      {
+        "name": "ResolvedAggregatorProviderRoute",
+        "path": "src/scpn_quantum_control/hardware/aggregators.py"
       },
       {
         "name": "ResolvingTheAmplitudeFrictionTheStuartLandauUpgradeForPrecisionConfig",
@@ -4477,8 +4747,16 @@
         "path": "src/scpn_quantum_control/stable_core.py"
       },
       {
+        "name": "RigettiQCSHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_rigetti.py"
+      },
+      {
         "name": "RobustnessCertificate",
         "path": "src/scpn_quantum_control/identity/robustness.py"
+      },
+      {
+        "name": "S1FeedbackArmCircuit",
+        "path": "src/scpn_quantum_control/hardware/s1_feedback_ibm.py"
       },
       {
         "name": "S3DesignCandidate",
@@ -5237,6 +5515,14 @@
         "path": "src/scpn_quantum_control/analysis/hamiltonian_self_consistency.py"
       },
       {
+        "name": "SensingGainRow",
+        "path": "src/scpn_quantum_control/analysis/sensing.py"
+      },
+      {
+        "name": "SensingGainScan",
+        "path": "src/scpn_quantum_control/analysis/sensing.py"
+      },
+      {
         "name": "ShadowResult",
         "path": "src/scpn_quantum_control/analysis/shadow_tomography.py"
       },
@@ -5311,6 +5597,10 @@
       {
         "name": "StatusMethodFixtureResult",
         "path": "src/scpn_quantum_control/paper0/status_method_validation.py"
+      },
+      {
+        "name": "StrangeworksComputeHALAdapter",
+        "path": "src/scpn_quantum_control/hardware/hal_strangeworks.py"
       },
       {
         "name": "StructuredAnsatz",
@@ -5985,6 +6275,18 @@
         "path": "src/scpn_quantum_control/paper0/pathology_criticality_validation.py"
       },
       {
+        "name": "ThermodynamicSweepConfig",
+        "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
+      },
+      {
+        "name": "ThermodynamicSweepResult",
+        "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
+      },
+      {
+        "name": "ThermodynamicSweepRow",
+        "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
+      },
+      {
         "name": "ThermodynamicWitness",
         "path": "src/scpn_quantum_control/analysis/thermodynamic_witness.py"
       },
@@ -6221,6 +6523,10 @@
         "path": "src/scpn_quantum_control/paper0/viii_the_synthesis_of_subjectivity_the_triadic_solution_validation.py"
       },
       {
+        "name": "VirtualRealtimeClock",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
         "name": "VisionaryOperator",
         "path": "src/scpn_quantum_control/paper0/preface_ii_visionary_validation.py"
       },
@@ -6340,6 +6646,7 @@
       "src/scpn_quantum_control/analysis/quantum_speed_limit.py",
       "src/scpn_quantum_control/analysis/rl_discovery_agent.py",
       "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py",
+      "src/scpn_quantum_control/analysis/sensing.py",
       "src/scpn_quantum_control/analysis/shadow_tomography.py",
       "src/scpn_quantum_control/analysis/spectral_form_factor.py",
       "src/scpn_quantum_control/analysis/symmetry_sectors.py",
@@ -6391,13 +6698,16 @@
       "src/scpn_quantum_control/bridge/spn_to_qcircuit.py",
       "src/scpn_quantum_control/bridge/ssgf_adapter.py",
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
+      "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/config.py",
+      "src/scpn_quantum_control/control/adaptive_branching.py",
       "src/scpn_quantum_control/control/hardware_topological_optimizer.py",
       "src/scpn_quantum_control/control/q_disruption.py",
       "src/scpn_quantum_control/control/q_disruption_iter.py",
       "src/scpn_quantum_control/control/qaoa_mpc.py",
       "src/scpn_quantum_control/control/qpetri.py",
       "src/scpn_quantum_control/control/realtime_feedback.py",
+      "src/scpn_quantum_control/control/realtime_runtime.py",
       "src/scpn_quantum_control/control/structured_ansatz.py",
       "src/scpn_quantum_control/control/topological_optimizer.py",
       "src/scpn_quantum_control/control/vqls_gs.py",
@@ -6408,6 +6718,8 @@
       "src/scpn_quantum_control/crypto/percolation.py",
       "src/scpn_quantum_control/crypto/topology_auth.py",
       "src/scpn_quantum_control/dense_budget.py",
+      "src/scpn_quantum_control/deployment/cloud_native.py",
+      "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
@@ -6422,7 +6734,9 @@
       "src/scpn_quantum_control/gauge/vortex_detector.py",
       "src/scpn_quantum_control/gauge/wilson_loop.py",
       "src/scpn_quantum_control/hardware/_experiment_helpers.py",
+      "src/scpn_quantum_control/hardware/aggregators.py",
       "src/scpn_quantum_control/hardware/analog_kuramoto.py",
+      "src/scpn_quantum_control/hardware/analog_native_readiness.py",
       "src/scpn_quantum_control/hardware/async_runner.py",
       "src/scpn_quantum_control/hardware/backends.py",
       "src/scpn_quantum_control/hardware/circuit_cutting.py",
@@ -6443,6 +6757,23 @@
       "src/scpn_quantum_control/hardware/feedback_provider_metadata.py",
       "src/scpn_quantum_control/hardware/feedback_submission.py",
       "src/scpn_quantum_control/hardware/gpu_accel.py",
+      "src/scpn_quantum_control/hardware/hal.py",
+      "src/scpn_quantum_control/hardware/hal_azure.py",
+      "src/scpn_quantum_control/hardware/hal_braket.py",
+      "src/scpn_quantum_control/hardware/hal_cirq.py",
+      "src/scpn_quantum_control/hardware/hal_dwave.py",
+      "src/scpn_quantum_control/hardware/hal_ionq.py",
+      "src/scpn_quantum_control/hardware/hal_iqm.py",
+      "src/scpn_quantum_control/hardware/hal_oqc.py",
+      "src/scpn_quantum_control/hardware/hal_pasqal.py",
+      "src/scpn_quantum_control/hardware/hal_pennylane.py",
+      "src/scpn_quantum_control/hardware/hal_qbraid.py",
+      "src/scpn_quantum_control/hardware/hal_qiskit.py",
+      "src/scpn_quantum_control/hardware/hal_quandela.py",
+      "src/scpn_quantum_control/hardware/hal_quantinuum.py",
+      "src/scpn_quantum_control/hardware/hal_quera_bloqade.py",
+      "src/scpn_quantum_control/hardware/hal_rigetti.py",
+      "src/scpn_quantum_control/hardware/hal_strangeworks.py",
       "src/scpn_quantum_control/hardware/hybrid_digital_analog.py",
       "src/scpn_quantum_control/hardware/iqm_backend.py",
       "src/scpn_quantum_control/hardware/jax_accel.py",
@@ -6451,12 +6782,15 @@
       "src/scpn_quantum_control/hardware/pennylane_adapter.py",
       "src/scpn_quantum_control/hardware/plugin_registry.py",
       "src/scpn_quantum_control/hardware/provenance.py",
+      "src/scpn_quantum_control/hardware/provider_capability_discovery.py",
+      "src/scpn_quantum_control/hardware/provider_smoke.py",
       "src/scpn_quantum_control/hardware/pulse_feasibility.py",
       "src/scpn_quantum_control/hardware/qasm_export.py",
       "src/scpn_quantum_control/hardware/qcvv.py",
       "src/scpn_quantum_control/hardware/qiskit_compat.py",
       "src/scpn_quantum_control/hardware/qubit_mapper.py",
       "src/scpn_quantum_control/hardware/runner.py",
+      "src/scpn_quantum_control/hardware/s1_feedback_ibm.py",
       "src/scpn_quantum_control/hardware/trapped_ion.py",
       "src/scpn_quantum_control/hardware_result_pack_evidence.py",
       "src/scpn_quantum_control/hardware_result_packs.py",
@@ -6991,6 +7325,7 @@
       "src/scpn_quantum_control/qec/dla_protected_subspace.py",
       "src/scpn_quantum_control/qec/error_budget.py",
       "src/scpn_quantum_control/qec/fault_tolerant.py",
+      "src/scpn_quantum_control/qec/logical_dla_parity.py",
       "src/scpn_quantum_control/qec/multiscale_qec.py",
       "src/scpn_quantum_control/qec/surface_code_upde.py",
       "src/scpn_quantum_control/qec/syndrome_flow.py",
@@ -7009,7 +7344,8 @@
       "src/scpn_quantum_control/ssgf/quantum_spectral.py",
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
-      "src/scpn_quantum_control/tcbo/quantum_observer.py"
+      "src/scpn_quantum_control/tcbo/quantum_observer.py",
+      "src/scpn_quantum_control/thermodynamics/readiness.py"
     ],
     "rust_pyo3_wrappers": [
       "all_xy_expectations",
@@ -7091,12 +7427,26 @@
   "package_exports": [
     "ARCANE_SAPIENCE_SPEC",
     "AdvantageResult",
+    "AggregatorProviderOptionalDependencyRow",
+    "AggregatorProviderRoute",
     "ArcaneNeuronBridge",
+    "AzureQuantumHALAdapter",
     "Backend",
+    "BackendCapabilities",
+    "BackendProfile",
     "BiologicalMWPMDecoder",
     "BiologicalSurfaceCode",
+    "BraketAwsHALAdapter",
+    "BraketLocalHALAdapter",
+    "CapabilityDecisionStatus",
+    "CirqLocalHALAdapter",
     "ClassicalBaselineRun",
+    "CloudDeploymentSpec",
+    "CloudManifestBundle",
+    "ContainerResources",
     "ControlQEC",
+    "DWaveLeapHALAdapter",
+    "DifferentiableOptimizer",
     "DisruptionBenchmark",
     "DynamicCouplingEngine",
     "ExecutionRegion",
@@ -7104,44 +7454,77 @@
     "FaultTolerantUPDE",
     "ForecastModelRun",
     "GUESSResult",
+    "GradientResult",
+    "HardwareAbstractionLayer",
     "HardwareRunner",
     "HardwareTopologicalOptimizer",
     "HigherOrderKuramotoSpec",
+    "IQMHALAdapter",
     "ITERFeatureSpec",
     "IdentityAttractor",
+    "IonQCloudHALAdapter",
     "JobResult",
     "KuramotoProblem",
     "KuramotoVariant",
     "KuramotoVariantResult",
     "LayerStateArtifact",
     "LindbladSyncEngine",
+    "LocalDeterministicSimulator",
     "LockSignatureArtifact",
     "LogicalQubit",
+    "MLIRCompileConfig",
+    "MLIRModule",
     "MonitoredKuramotoSpec",
+    "MonotonicRealtimeClock",
     "MultiscaleQECResult",
     "OMEGA_N_16",
+    "OQCHALAdapter",
     "ORCHESTRATOR_MAPPING",
     "PECResult",
     "PTSymmetricKuramotoSpec",
+    "Parameter",
+    "ParameterShiftRule",
+    "PasqalPulserHALAdapter",
+    "PennyLaneDeviceHALAdapter",
     "PhaseOrchestratorAdapter",
     "PhaseVQE",
     "Problem",
+    "ProviderCapabilityDecision",
+    "ProviderCapabilitySnapshot",
+    "ProviderMetadataProbe",
+    "ProviderOptionalDependencyRow",
     "QAOA_MPC",
     "QECLevel",
     "QSNNTrainer",
+    "QbraidRuntimeHALAdapter",
+    "QiskitAerHALAdapter",
+    "QiskitRuntimeHALAdapter",
+    "QuEraBloqadeHALAdapter",
+    "QuandelaPercevalHALAdapter",
+    "QuantinuumCloudHALAdapter",
+    "QuantumBackend",
     "QuantumDenseLayer",
     "QuantumDisruptionClassifier",
+    "QuantumJobRef",
+    "QuantumJobResult",
     "QuantumKuramotoSolver",
     "QuantumLIFNeuron",
     "QuantumPetriNet",
     "QuantumSTDP",
     "QuantumSynapse",
     "QuantumUPDESolver",
+    "QuantumWorkload",
     "QubitMappingResult",
+    "RealtimeRunResult",
+    "RealtimeRuntimeConfig",
+    "RealtimeTickRecord",
+    "ResolvedAggregatorProviderRoute",
     "Result",
+    "RigettiQCSHALAdapter",
     "SNNQuantumBridge",
     "SSGFQuantumLoop",
     "StableCorePreflightResult",
+    "StrangeworksComputeHALAdapter",
     "SurfaceCodeSpec",
     "SurfaceCodeUPDE",
     "SymmetryDecayModel",
@@ -7151,11 +7534,19 @@
     "TrotterEvolutionConfig",
     "UPDEPhaseArtifact",
     "VQLS_GradShafranov",
+    "VirtualRealtimeClock",
     "ZNEResult",
+    "aggregator_provider_optional_dependency_matrix",
+    "aggregator_provider_routes_for",
     "analysis",
     "applications",
+    "assess_provider_capability_snapshot",
     "available_baselines",
+    "azure_openqasm3_to_workload",
     "backend_capability_matrix",
+    "batch_parameter_shift_gradient",
+    "bloqade_ahs_workload",
+    "braket_circuit_to_workload",
     "build_backend",
     "build_experiment",
     "build_identity_attractor",
@@ -7170,16 +7561,21 @@
     "build_result",
     "build_structured_ansatz",
     "build_triadic_ring_terms",
+    "built_in_aggregator_provider_routes",
+    "built_in_backend_profiles",
     "chsh_from_statevector",
+    "cirq_circuit_workload",
     "classical_benchmark",
     "classical_reference_backend",
     "coherence_budget",
     "compile_dense_hamiltonian",
     "compile_hamiltonian",
+    "compile_kuramoto_to_mlir",
     "compile_trotter_circuit",
     "compound_mitigate_pipeline",
     "concatenated_logical_rate",
     "disposition_entanglement_map",
+    "dwave_bqm_workload",
     "dynq_initial_layout",
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
@@ -7191,10 +7587,15 @@
     "from_fusion_core_shot",
     "gate_fold_circuit",
     "gauge",
+    "generate_cloud_manifests",
     "generate_synthetic_iter_data",
     "guess_extrapolate",
     "hardware_replay_backend",
     "identity_fingerprint",
+    "ionq_qis_workload",
+    "iqm_qiskit_workload",
+    "is_jax_autodiff_available",
+    "jax_value_and_grad",
     "knm_to_ansatz",
     "knm_to_hamiltonian",
     "l16",
@@ -7204,27 +7605,41 @@
     "measure_order_parameter",
     "mps_tebd_baseline",
     "normalize_iter_features",
+    "oqc_openqasm3_workload",
     "orchestrator_to_quantum_phases",
+    "parameter_shift_gradient",
     "pauli_twirl_decompose",
     "pec_sample",
     "pennylane_backend",
+    "pennylane_gate_workload",
     "pgbo",
     "plasma_omega",
+    "probe_aggregator_provider_capability",
     "problem_from_kuramoto",
     "problem_to_kuramoto",
     "prove_identity",
+    "provider_optional_dependency_matrix",
     "psi_field",
+    "pulser_sequence_workload",
     "pulser_surrogate_backend",
+    "qbraid_program_to_workload",
     "qiskit_backend",
+    "qiskit_circuit_to_qasm3_workload",
+    "qiskit_circuit_to_workload",
+    "quandela_perceval_workload",
+    "quantinuum_tket_workload",
     "quantum_benchmark",
     "quantum_measurement_to_current",
     "quantum_to_orchestrator_phases",
     "quantum_to_ssgf_state",
     "qutip_backend",
     "qutip_lindblad_baseline",
+    "resolve_aggregator_provider_route",
+    "rigetti_quil_workload",
     "run_documented_classical_baselines",
     "run_real_data_sync_forecast_benchmark",
     "run_real_data_sync_forecast_suite",
+    "run_realtime_control_loop",
     "run_scaling_benchmark",
     "run_stable_core_preflight",
     "scipy_ode_baseline",
@@ -7232,6 +7647,20 @@
     "simulate_monitored_kuramoto",
     "simulate_pt_symmetric_kuramoto",
     "simulate_variant_trajectory",
+    "snapshot_from_azure_target",
+    "snapshot_from_braket_device",
+    "snapshot_from_dwave_solver",
+    "snapshot_from_ionq_backend",
+    "snapshot_from_iqm_backend",
+    "snapshot_from_oqc_target",
+    "snapshot_from_pasqal_target",
+    "snapshot_from_qbraid_device",
+    "snapshot_from_qiskit_runtime_backend",
+    "snapshot_from_quandela_processor",
+    "snapshot_from_quantinuum_backend",
+    "snapshot_from_quera_bloqade",
+    "snapshot_from_rigetti_qcs",
+    "snapshot_from_strangeworks_backend",
     "solve_identity",
     "spike_train_to_rotations",
     "ssgf",
@@ -7243,11 +7672,13 @@
     "stable_core_preflight_fixtures_json",
     "stable_core_preflight_fixtures_markdown",
     "stable_core_preflight_fixtures_payload",
+    "strangeworks_program_to_workload",
     "syndrome_flow_analysis",
     "tcbo",
     "transpile_for_trapped_ion",
     "trapped_ion_noise_model",
     "validate_kuramoto_inputs",
+    "value_and_parameter_shift_grad",
     "verify_identity",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
@@ -7261,19 +7692,34 @@
       "app-fep",
       "app-plasma",
       "app-power-grid",
+      "azure",
+      "braket",
+      "cirq",
       "config",
       "dev",
       "dla-parity",
       "docs",
+      "dwave",
       "gpu",
       "ibm",
+      "ionq",
+      "iqm",
       "jax",
       "julia",
       "logging",
       "mitigation",
       "opensys",
+      "oqc",
+      "pasqal",
       "pennylane",
+      "providers",
+      "qbraid",
+      "quandela",
+      "quantinuum",
+      "quera",
+      "rigetti",
       "rust",
+      "strangeworks",
       "tensor",
       "topology",
       "viz",
@@ -7302,6 +7748,7 @@
       ".github/workflows/mutation-testing.yml",
       ".github/workflows/notebooks.yml",
       ".github/workflows/pre-commit.yml",
+      ".github/workflows/provider-isolated-smoke.yml",
       ".github/workflows/publish.yml",
       ".github/workflows/rust-benches.yml",
       ".github/workflows/rust-wheels.yml",
@@ -7315,13 +7762,16 @@
       "tests/test_accel_dispatch.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_adapt_vqe.py",
+      "tests/test_adaptive_branching.py",
       "tests/test_adaptive_fim_feedback.py",
       "tests/test_adiabatic_preparation.py",
       "tests/test_advantage_protocol.py",
       "tests/test_analog_kuramoto.py",
+      "tests/test_analog_native_readiness.py",
       "tests/test_analyse_iqm_dla_parity.py",
       "tests/test_analyse_iqm_layout_campaign.py",
       "tests/test_analyse_iqm_layout_pinned_repeat.py",
+      "tests/test_analyse_s1_dynamic_circuit_constraints.py",
       "tests/test_analyse_s1_feedback_hardware.py",
       "tests/test_ancilla_lindblad.py",
       "tests/test_ansatz_bench.py",
@@ -7826,6 +8276,7 @@
       "tests/test_check_rust_pyi_exports.py",
       "tests/test_check_secrets.py",
       "tests/test_check_version_consistency.py",
+      "tests/test_ci_documentation_surface_gate.py",
       "tests/test_circuit_cutting.py",
       "tests/test_circuit_depth.py",
       "tests/test_circuit_export.py",
@@ -7890,6 +8341,7 @@
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
+      "tests/test_differentiable.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",
       "tests/test_dla_parity_dataset.py",
@@ -7922,6 +8374,11 @@
       "tests/test_experiments_coverage.py",
       "tests/test_experiments_edge_cases.py",
       "tests/test_experiments_helpers.py",
+      "tests/test_export_s10_analog_native_readiness.py",
+      "tests/test_export_s11_quantum_sensing_readiness.py",
+      "tests/test_export_s7_logical_dla_roadmap.py",
+      "tests/test_export_s8_adaptive_branching_readiness.py",
+      "tests/test_export_s9_quantum_thermo_readiness.py",
       "tests/test_extract_paper0_foundational_register.py",
       "tests/test_fast_classical.py",
       "tests/test_fault_tolerant.py",
@@ -7952,6 +8409,24 @@
       "tests/test_hamiltonian_learning.py",
       "tests/test_hamiltonian_self_consistency.py",
       "tests/test_hardware_classical_fuzz.py",
+      "tests/test_hardware_hal.py",
+      "tests/test_hardware_hal_azure_adapters.py",
+      "tests/test_hardware_hal_braket_adapters.py",
+      "tests/test_hardware_hal_cirq_adapters.py",
+      "tests/test_hardware_hal_dwave_adapters.py",
+      "tests/test_hardware_hal_ionq_adapters.py",
+      "tests/test_hardware_hal_iqm_adapters.py",
+      "tests/test_hardware_hal_oqc_adapters.py",
+      "tests/test_hardware_hal_pasqal_adapters.py",
+      "tests/test_hardware_hal_pennylane_adapters.py",
+      "tests/test_hardware_hal_provider_conformance.py",
+      "tests/test_hardware_hal_qbraid_adapters.py",
+      "tests/test_hardware_hal_qiskit_adapters.py",
+      "tests/test_hardware_hal_quandela_adapters.py",
+      "tests/test_hardware_hal_quantinuum_adapters.py",
+      "tests/test_hardware_hal_quera_bloqade_adapters.py",
+      "tests/test_hardware_hal_rigetti_adapters.py",
+      "tests/test_hardware_hal_strangeworks_adapters.py",
       "tests/test_hardware_optional_imports.py",
       "tests/test_hardware_result_pack_evidence.py",
       "tests/test_hardware_result_packs.py",
@@ -7977,6 +8452,7 @@
       "tests/test_josephson_array.py",
       "tests/test_knm_hamiltonian.py",
       "tests/test_knm_hamiltonian_mutation_kills.py",
+      "tests/test_knm_measured_candidate_gate.py",
       "tests/test_knm_parity.py",
       "tests/test_knm_physical_validation_audit.py",
       "tests/test_knm_properties.py",
@@ -7993,10 +8469,12 @@
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
       "tests/test_logging_setup.py",
+      "tests/test_logical_dla_parity.py",
       "tests/test_loschmidt_echo.py",
       "tests/test_magic_nonstabilizerness.py",
       "tests/test_magnetisation_sectors.py",
       "tests/test_mitiq_integration.py",
+      "tests/test_mlir_realtime_cloud.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",
       "tests/test_mps_evolution.py",
@@ -8504,6 +8982,10 @@
       "tests/test_persistent_homology.py",
       "tests/test_pgbo_bridge.py",
       "tests/test_phase1_dla_parity_reproduces.py",
+      "tests/test_phase3_entanglement_paper_assets.py",
+      "tests/test_phase3_entanglement_tomography_analysis.py",
+      "tests/test_phase3_entanglement_tomography_ibm.py",
+      "tests/test_phase3_entanglement_zne_analysis.py",
       "tests/test_phase3_guess_analysis.py",
       "tests/test_phase3_guess_submitter.py",
       "tests/test_phase3_state_layout_analysis.py",
@@ -8521,12 +9003,16 @@
       "tests/test_plugin_registry.py",
       "tests/test_power_grid.py",
       "tests/test_power_grid_measured_couplings.py",
+      "tests/test_pre_commit_documentation_surface_gate.py",
       "tests/test_preflight_tool.py",
       "tests/test_prepare_iqm_paper_replication.py",
+      "tests/test_prepare_s1_ibm_live_readiness.py",
       "tests/test_probe_s1_generic_gate_metadata.py",
       "tests/test_probe_s1_ibm_metadata.py",
       "tests/test_project_paths.py",
       "tests/test_provenance.py",
+      "tests/test_provider_capability_discovery.py",
+      "tests/test_provider_isolated_smoke_workflow.py",
       "tests/test_psi_field.py",
       "tests/test_public_api.py",
       "tests/test_pulse_feasibility.py",
@@ -8567,7 +9053,9 @@
       "tests/test_quantum_persistent_homology.py",
       "tests/test_quantum_phi.py",
       "tests/test_quantum_reservoir.py",
+      "tests/test_quantum_sensing_readiness.py",
       "tests/test_quantum_speed_limit.py",
+      "tests/test_quantum_thermo_readiness.py",
       "tests/test_qubit_mapper.py",
       "tests/test_readout_matrix.py",
       "tests/test_readout_mitigation_eligibility_audit.py",
@@ -9048,6 +9536,7 @@
       "tests/test_rust_new_functions.py",
       "tests/test_rust_parity.py",
       "tests/test_rust_path_benchmarks.py",
+      "tests/test_s1_feedback_ibm.py",
       "tests/test_s2_full_campaign_plan.py",
       "tests/test_s2_full_campaign_slice.py",
       "tests/test_s2_n14_resource_gate.py",
@@ -9081,6 +9570,10 @@
       "tests/test_stable_core_release_gate.py",
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
+      "tests/test_submit_fim_replication_zne_ibm.py",
+      "tests/test_submit_s1_ibm_feedback_pair.py",
+      "tests/test_submit_s1_readout_zne_ibm.py",
+      "tests/test_submit_s1b_xy_observable_pair.py",
       "tests/test_surface_code_upde.py",
       "tests/test_symmetry_decay.py",
       "tests/test_symmetry_sector_compiler.py",
@@ -9107,6 +9600,7 @@
       "tests/test_varqite.py",
       "tests/test_vortex_binding.py",
       "tests/test_vortex_detector.py",
+      "tests/test_vqe_methods_evidence_scripts.py",
       "tests/test_vqls_edge_cases.py",
       "tests/test_vqls_gs.py",
       "tests/test_vqs_alternative_readiness.py",

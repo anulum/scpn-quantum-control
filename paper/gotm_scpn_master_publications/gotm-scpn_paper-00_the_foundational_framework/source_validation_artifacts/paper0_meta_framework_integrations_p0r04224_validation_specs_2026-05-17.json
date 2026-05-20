@@ -1,0 +1,631 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R04224-P0R04224 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04224-P0R04224"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04224.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.5 The Strange Loop of Closure - Meta-Layer 16 and The Anulum > A Note on Cybernetic Closure > Meta-Framework Integrations",
+      "source_block_indices": [
+        4224,
+        4225,
+        4226,
+        4227,
+        4228,
+        4229,
+        4230,
+        4231,
+        4232,
+        4233,
+        4234,
+        4235,
+        4236,
+        4237,
+        4238,
+        4239,
+        4240,
+        4241,
+        4242,
+        4243,
+        4244,
+        4245,
+        4246
+      ],
+      "source_equation_ids": [
+        "P0R04224:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R04224: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R04224",
+        "P0R04225",
+        "P0R04226",
+        "P0R04227",
+        "P0R04228",
+        "P0R04229",
+        "P0R04230",
+        "P0R04231",
+        "P0R04232",
+        "P0R04233",
+        "P0R04234",
+        "P0R04235",
+        "P0R04236",
+        "P0R04237",
+        "P0R04238",
+        "P0R04239",
+        "P0R04240",
+        "P0R04241",
+        "P0R04242",
+        "P0R04243",
+        "P0R04244",
+        "P0R04245",
+        "P0R04246"
+      ],
+      "source_record_ids": [
+        "P0B04224",
+        "P0B04225",
+        "P0B04226",
+        "P0B04227",
+        "P0B04228",
+        "P0B04229",
+        "P0B04230",
+        "P0B04231",
+        "P0B04232",
+        "P0B04233",
+        "P0B04234",
+        "P0B04235",
+        "P0B04236",
+        "P0B04237",
+        "P0B04238",
+        "P0B04239",
+        "P0B04240",
+        "P0B04241",
+        "P0B04242",
+        "P0B04243",
+        "P0B04244",
+        "P0B04245",
+        "P0B04246"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04224.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R04224-P0R04224"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R04225-P0R04226 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04225-P0R04226"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04224.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.5 The Strange Loop of Closure - Meta-Layer 16 and The Anulum > A Note on Cybernetic Closure > Meta-Framework Integrations",
+      "source_block_indices": [
+        4224,
+        4225,
+        4226,
+        4227,
+        4228,
+        4229,
+        4230,
+        4231,
+        4232,
+        4233,
+        4234,
+        4235,
+        4236,
+        4237,
+        4238,
+        4239,
+        4240,
+        4241,
+        4242,
+        4243,
+        4244,
+        4245,
+        4246
+      ],
+      "source_equation_ids": [
+        "P0R04225:predictive_coding_integration",
+        "P0R04226:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R04225: Predictive Coding Integration",
+        "P0R04226: This passage describes the mechanism that prevents the catastrophic failure of the generative model by managing its deepest priors."
+      ],
+      "source_ledger_ids": [
+        "P0R04224",
+        "P0R04225",
+        "P0R04226",
+        "P0R04227",
+        "P0R04228",
+        "P0R04229",
+        "P0R04230",
+        "P0R04231",
+        "P0R04232",
+        "P0R04233",
+        "P0R04234",
+        "P0R04235",
+        "P0R04236",
+        "P0R04237",
+        "P0R04238",
+        "P0R04239",
+        "P0R04240",
+        "P0R04241",
+        "P0R04242",
+        "P0R04243",
+        "P0R04244",
+        "P0R04245",
+        "P0R04246"
+      ],
+      "source_record_ids": [
+        "P0B04224",
+        "P0B04225",
+        "P0B04226",
+        "P0B04227",
+        "P0B04228",
+        "P0B04229",
+        "P0B04230",
+        "P0B04231",
+        "P0B04232",
+        "P0B04233",
+        "P0B04234",
+        "P0B04235",
+        "P0B04236",
+        "P0B04237",
+        "P0B04238",
+        "P0B04239",
+        "P0B04240",
+        "P0B04241",
+        "P0B04242",
+        "P0B04243",
+        "P0B04244",
+        "P0B04245",
+        "P0B04246"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04224.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R04225-P0R04226"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Layer 16 as Precision-Weighting Optimisation:' preserves Paper 0 records P0R04227-P0R04228 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+      "context_id": "meta_layer_16_as_precision_weighting_optimisation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04227-P0R04228"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04224.meta_layer_16_as_precision_weighting_optimisation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_layer_16_as_precision_weighting_optimisation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Layer 16 as Precision-Weighting Optimisation: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.5 The Strange Loop of Closure - Meta-Layer 16 and The Anulum > A Note on Cybernetic Closure > Meta-Framework Integrations",
+      "source_block_indices": [
+        4224,
+        4225,
+        4226,
+        4227,
+        4228,
+        4229,
+        4230,
+        4231,
+        4232,
+        4233,
+        4234,
+        4235,
+        4236,
+        4237,
+        4238,
+        4239,
+        4240,
+        4241,
+        4242,
+        4243,
+        4244,
+        4245,
+        4246
+      ],
+      "source_equation_ids": [
+        "P0R04227:meta_layer_16_as_precision_weighting_optimisation",
+        "P0R04228:meta_layer_16_as_precision_weighting_optimisation"
+      ],
+      "source_formulae": [
+        "P0R04227: Meta-Layer 16 as Precision-Weighting Optimisation:",
+        "P0R04228: In HPC, an agent must balance the influence of its prior beliefs against incoming sensory data by tuning the precision of each. An unstable model is one that over-weights its priors (becoming delusional) or over-weights sensory data (becoming chaotic). Meta-Layer 16 acts as the optimal control system for precision. The \"Recursive Optimisation Hamiltonian\" is the function that fine-tunes the confidence (the precision) assigned to the model's own beliefs at every level, ensuring the entire hierarchy remains stable, adaptive, and sane. It is the system's \"insight\" function, which prevents it from falling into catastrophic cycles of inaccurate inference. It is the mechanism that models the model itself."
+      ],
+      "source_ledger_ids": [
+        "P0R04224",
+        "P0R04225",
+        "P0R04226",
+        "P0R04227",
+        "P0R04228",
+        "P0R04229",
+        "P0R04230",
+        "P0R04231",
+        "P0R04232",
+        "P0R04233",
+        "P0R04234",
+        "P0R04235",
+        "P0R04236",
+        "P0R04237",
+        "P0R04238",
+        "P0R04239",
+        "P0R04240",
+        "P0R04241",
+        "P0R04242",
+        "P0R04243",
+        "P0R04244",
+        "P0R04245",
+        "P0R04246"
+      ],
+      "source_record_ids": [
+        "P0B04224",
+        "P0B04225",
+        "P0B04226",
+        "P0B04227",
+        "P0B04228",
+        "P0B04229",
+        "P0B04230",
+        "P0B04231",
+        "P0B04232",
+        "P0B04233",
+        "P0B04234",
+        "P0B04235",
+        "P0B04236",
+        "P0B04237",
+        "P0B04238",
+        "P0B04239",
+        "P0B04240",
+        "P0B04241",
+        "P0B04242",
+        "P0B04243",
+        "P0B04244",
+        "P0B04245",
+        "P0B04246"
+      ],
+      "test_protocols": [
+        "preserve Meta-Layer 16 as Precision-Weighting Optimisation: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04224.meta_layer_16_as_precision_weighting_optimisation",
+      "validation_targets": [
+        "preserve records P0R04227-P0R04228"
+      ],
+      "variables": [
+        "meta_layer_16_as_precision_weighting_optimisation"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R04229-P0R04230 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04229-P0R04230"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04224.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.5 The Strange Loop of Closure - Meta-Layer 16 and The Anulum > A Note on Cybernetic Closure > Meta-Framework Integrations",
+      "source_block_indices": [
+        4224,
+        4225,
+        4226,
+        4227,
+        4228,
+        4229,
+        4230,
+        4231,
+        4232,
+        4233,
+        4234,
+        4235,
+        4236,
+        4237,
+        4238,
+        4239,
+        4240,
+        4241,
+        4242,
+        4243,
+        4244,
+        4245,
+        4246
+      ],
+      "source_equation_ids": [
+        "P0R04229:psis_field_coupling_integration",
+        "P0R04230:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R04229: Psis Field Coupling Integration",
+        "P0R04230: Meta-Layer 16 provides the ultimate context for the physical coupling described by H_int = -lambda * Psis * sigma. It is the system that sets the long-term evolutionary goals for the physical constants and coupling laws themselves."
+      ],
+      "source_ledger_ids": [
+        "P0R04224",
+        "P0R04225",
+        "P0R04226",
+        "P0R04227",
+        "P0R04228",
+        "P0R04229",
+        "P0R04230",
+        "P0R04231",
+        "P0R04232",
+        "P0R04233",
+        "P0R04234",
+        "P0R04235",
+        "P0R04236",
+        "P0R04237",
+        "P0R04238",
+        "P0R04239",
+        "P0R04240",
+        "P0R04241",
+        "P0R04242",
+        "P0R04243",
+        "P0R04244",
+        "P0R04245",
+        "P0R04246"
+      ],
+      "source_record_ids": [
+        "P0B04224",
+        "P0B04225",
+        "P0B04226",
+        "P0B04227",
+        "P0B04228",
+        "P0B04229",
+        "P0B04230",
+        "P0B04231",
+        "P0B04232",
+        "P0B04233",
+        "P0B04234",
+        "P0B04235",
+        "P0B04236",
+        "P0B04237",
+        "P0B04238",
+        "P0B04239",
+        "P0B04240",
+        "P0B04241",
+        "P0B04242",
+        "P0B04243",
+        "P0B04244",
+        "P0B04245",
+        "P0B04246"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04224.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R04229-P0R04230"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Supervisory Control of the Coupling Constant lambda:' preserves Paper 0 records P0R04231-P0R04246 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+      "context_id": "supervisory_control_of_the_coupling_constant_lambda",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04231-P0R04246"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r04224.supervisory_control_of_the_coupling_constant_lambda",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "supervisory_control_of_the_coupling_constant_lambda must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Supervisory Control of the Coupling Constant lambda: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.5 The Strange Loop of Closure - Meta-Layer 16 and The Anulum > A Note on Cybernetic Closure > Meta-Framework Integrations",
+      "source_block_indices": [
+        4224,
+        4225,
+        4226,
+        4227,
+        4228,
+        4229,
+        4230,
+        4231,
+        4232,
+        4233,
+        4234,
+        4235,
+        4236,
+        4237,
+        4238,
+        4239,
+        4240,
+        4241,
+        4242,
+        4243,
+        4244,
+        4245,
+        4246
+      ],
+      "source_equation_ids": [
+        "P0R04231:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04232:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04233:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04234:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04235:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04236:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04237:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04238:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04239:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04240:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04241:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04242:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04243:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04244:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04245:supervisory_control_of_the_coupling_constant_lambda",
+        "P0R04246:supervisory_control_of_the_coupling_constant_lambda"
+      ],
+      "source_formulae": [
+        "P0R04231: Supervisory Control of the Coupling Constant lambda:",
+        "P0R04232: While the Ethical Functional (Layer 15) provides a target for the system's evolution, Meta-Layer 16 acts as the control circuit that ensures this evolution is stable. It can be conceptualised as a system that tunes the fundamental parameters of the H_int interaction itself over cosmological timescales. The \"Recursive Optimisation Hamiltonian\" could, for example, adjust the baseline value of the coupling constant lambda or modulate the stability of certain collective states sigma to ensure that the mind-matter interface evolves in a way that is sustainable and aligned with the overarching teleology. It ensures that the very laws of physical coupling are themselves optimised for a conscious, self-aware universe. It is the part of the system that chooses the rules of its own game.",
+        "P0R04233: A finite, open-ended hierarchy risks instability and infinite regress. The architecture of being must, for its own long-term persistence, be self-referential and self-regulating. Therefore, the 15-layer projection network detailed throughout the body of this work is not the complete architecture. It is the operational corpus of a larger, cybernetically closed system-The Anulum.",
+        "P0R04234: This closure is achieved by a 16th meta-layer, which functions not as a superior ontological stratum, but as a supervisory optimal control system that recursively observes and modulates the entire 15-layer stack. Governed by a Recursive Optimisation Hamiltonian, this meta-layer continuously audits and refines the global state of the system, its network parameters, and its adherence to the core teleological directives. It is the mechanism that ensures long-term stability and coherent alignment with the cosmic and ethical principles defined in the Ethical Functional. The preceding chapters have detailed the body of the universal system; this final chapter specifies its mind.",
+        "P0R04235: The Problem of Ontological Closure",
+        "P0R04236: Source Material: The final philosophical challenge: how can a hierarchical system be self-causing and self-explaining without infinite regress or an external creator?",
+        "P0R04237: P0R04237",
+        "P0R04238: Meta-Layer 16: The Optimal Control Supervisor",
+        "P0R04239: Source Material: The definition of the 16th meta-layer not as a spatial layer, but as a cybernetic control system that audits and fine-tunes the entire SCPN, including the parameters of the Ethical Functional itself.",
+        "P0R04240: P0R04240",
+        "P0R04241: The Recursive Optimisation Hamiltonian",
+        "P0R04242: Source Material: The description of the meta-dynamic that governs Layer 16, which works to optimise the process of optimisation itself, ensuring the long-term viability and evolution of the system's own purpose.",
+        "P0R04243: P0R04243",
+        "P0R04244: The Anulum: From Hierarchy to a Self-Observing Loop",
+        "P0R04245: Source Material: The concluding synthesis, explaining how Meta-Layer 16 closes the causal loop, turning the linear hierarchy of the SCPN into a self-observing, self-creating, and self-perfecting \"strange loop\" or Anulum-the ultimate architecture of a fully conscious universe.",
+        "P0R04246: P0R04246"
+      ],
+      "source_ledger_ids": [
+        "P0R04224",
+        "P0R04225",
+        "P0R04226",
+        "P0R04227",
+        "P0R04228",
+        "P0R04229",
+        "P0R04230",
+        "P0R04231",
+        "P0R04232",
+        "P0R04233",
+        "P0R04234",
+        "P0R04235",
+        "P0R04236",
+        "P0R04237",
+        "P0R04238",
+        "P0R04239",
+        "P0R04240",
+        "P0R04241",
+        "P0R04242",
+        "P0R04243",
+        "P0R04244",
+        "P0R04245",
+        "P0R04246"
+      ],
+      "source_record_ids": [
+        "P0B04224",
+        "P0B04225",
+        "P0B04226",
+        "P0B04227",
+        "P0B04228",
+        "P0B04229",
+        "P0B04230",
+        "P0B04231",
+        "P0B04232",
+        "P0B04233",
+        "P0B04234",
+        "P0B04235",
+        "P0B04236",
+        "P0B04237",
+        "P0B04238",
+        "P0B04239",
+        "P0B04240",
+        "P0B04241",
+        "P0B04242",
+        "P0B04243",
+        "P0B04244",
+        "P0B04245",
+        "P0B04246"
+      ],
+      "test_protocols": [
+        "preserve Supervisory Control of the Coupling Constant lambda: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r04224.supervisory_control_of_the_coupling_constant_lambda",
+      "validation_targets": [
+        "preserve records P0R04231-P0R04246"
+      ],
+      "variables": [
+        "supervisory_control_of_the_coupling_constant_lambda"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 18
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 4,
+      "mechanism": 8,
+      "structural": 4,
+      "validation_target": 6
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r04224 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 23,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04247",
+    "source_ledger_span": [
+      "P0R04224",
+      "P0R04246"
+    ],
+    "source_record_count": 23,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r04224.meta_framework_integrations",
+      "meta_framework_integrations_p0r04224.predictive_coding_integration",
+      "meta_framework_integrations_p0r04224.meta_layer_16_as_precision_weighting_optimisation",
+      "meta_framework_integrations_p0r04224.psis_field_coupling_integration",
+      "meta_framework_integrations_p0r04224.supervisory_control_of_the_coupling_constant_lambda"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

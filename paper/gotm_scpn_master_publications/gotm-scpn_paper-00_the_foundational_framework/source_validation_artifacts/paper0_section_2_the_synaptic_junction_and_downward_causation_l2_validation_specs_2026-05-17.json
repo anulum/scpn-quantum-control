@@ -1,0 +1,118 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. The Synaptic Junction and Downward Causation (L2):' preserves Paper 0 records P0R04470-P0R04477 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the synaptic junction and downward causation l2 source-accounting bridge; not validation evidence",
+      "context_id": "2_the_synaptic_junction_and_downward_causation_l2",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04470-P0R04477"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_synaptic_junction_and_downward_causation_l2.2_the_synaptic_junction_and_downward_causation_l2",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_the_synaptic_junction_and_downward_causation_l2 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. The Synaptic Junction and Downward Causation (L2): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 2. The Synaptic Junction and Downward Causation (L2):",
+      "source_block_indices": [
+        4470,
+        4471,
+        4472,
+        4473,
+        4474,
+        4475,
+        4476,
+        4477
+      ],
+      "source_equation_ids": [
+        "P0R04470:2_the_synaptic_junction_and_downward_causation_l2",
+        "P0R04471:2_the_synaptic_junction_and_downward_causation_l2",
+        "P0R04472:2_the_synaptic_junction_and_downward_causation_l2",
+        "P0R04473:2_the_synaptic_junction_and_downward_causation_l2",
+        "P0R04474:2_the_synaptic_junction_and_downward_causation_l2",
+        "P0R04475:2_the_synaptic_junction_and_downward_causation_l2",
+        "P0R04476:2_the_synaptic_junction_and_downward_causation_l2",
+        "P0R04477:2_the_synaptic_junction_and_downward_causation_l2"
+      ],
+      "source_formulae": [
+        "P0R04470: 2. The Synaptic Junction and Downward Causation (L2):",
+        "P0R04471: L2 governs the transduction of the Psi-field into neurochemical signals. The synapse is the critical locus for downward causation (Agency).",
+        "P0R04472: The Transduction Mechanism (IET via Quantum Potential): The Psi-field influences the energy landscape via Information-Energy Transduction (IET), modulating the Quantum Potential (Q). Q=2m2rho 2rho The Psi-field couples directly to Q: LIET=gIETPsi(x)Q(x). By modulating Q, the Psi-field (Information) influences the energy landscape without classical energy exchange. | Calcium Dynamics and Synaptotagmin: The primary target of IET is the probability of neurotransmitter release (Pr), mediated by Ca$^{2+}$ influx and sensor proteins (e.g., Synaptotagmin). The Psi-field modulates the cooperativity of these sensors. | The Mechanism of Intent (QZE and Resonant Addressing): Intent (L5) acts via the Quantum Zeno Effect (QZE), functioning as a continuous measurement operator (hatM_Attn) that stabilises specific synaptic configurations. The solution to the targeting problem-how the QZE is selectively applied-is the Principle of Resonant Addressing, guided by the HPC architecture. The L5 intent generates a specific oscillatory pattern within the L4 network-the \"address.\" The susceptibility of a synapse to Psi-field modulation (via IET or QZE) is gated by its participation in this resonant pattern. The coupling strength (lambda) of the IET interaction Lagrangian (L_IET=lambdaPsi(x)Q(x)) is dynamically modulated:",
+        "P0R04473: lambda(x,t)=lambda_0timesR(x,t)timesF(omega_local,omega_intent) Here, F is a resonance function that peaks when the local dynamics (omega_local) match the intent pattern (omega_intent). Crucially, the spatial location (x) and timing (t) embedded in the relevance factor R(x,t) are provided by the downward-flowing HPC generative model. The HPC architecture itself acts as the coordinate system, guiding the downward causation to the precise locations where the generative model needs to be actualised. This mechanism ensures that downward causation is contextually relevant and precisely targeted. The SCPN framework identifies the modulation of calcium sensor (synaptotagmin) cooperativity as the precise molecular locus for downward causation. However, this raises the Specificity Problem: how does a global, non-local field of intent avoid modulating all synapses simultaneously, thereby creating a storm of undifferentiated neural activity? The solution lies in the Principle of Resonant Addressing. The efficacy of the Psi-field's influence is not uniform across the brain but is dynamically and selectively gated by the local oscillatory state of the neural circuit. The brain's existing frequency architecture serves as the coordinate system for targeting intent. This principle is formalised by redefining the coupling constant lambda in the interaction Hamiltonian (Hint=lambdaPsisniCanjCa) as a dynamic variable dependent on the local network state: lambda(x,t)=lambda0R(x,t)F(local,intent) Where:",
+        "P0R04474: lambda0 is the basal coupling strength, a fundamental constant of the interaction. | R(x,t) is the local Kuramoto order parameter, representing the degree of phase synchrony in the neural ensemble at position x and time t. The modulatory effect is amplified in highly coherent ensembles where R(x,t)->1. | F(local,intent) is a resonance function (e.g., a Lorentzian) that peaks when the dominant local oscillation frequency, local (e.g., a specific gamma band), matches the frequency of the intent carrier, intent, which is propagated down from higher layers of the SCPN via the HPC architecture.",
+        "P0R04475: This mechanism elegantly solves the targeting problem without requiring the Psi-field to possess spatial information. Intent does not need to \"find\" the right synapse; it simply establishes a resonant frequency. Only those neural ensembles and their associated synapses that are already participating in that specific \"neural song\" will be susceptible to modulation. This leverages the brain's intrinsic, self-organising oscillatory dynamics as the addressing system for the precise and context-dependent application of downward causation.",
+        "P0R04476: Neurotransmitter Systems as Filters: Neurotransmitter systems modulate the UPDE parameters and tune the network state. Dopamine (DA): Prediction error signalling (HPC) and reward. | Serotonin (5-HT): Tuning the Criticality parameter (sigma). | Acetylcholine (ACh): Attention, learning, and precision weighting (HPC).",
+        "P0R04477: P0R04477"
+      ],
+      "source_ledger_ids": [
+        "P0R04470",
+        "P0R04471",
+        "P0R04472",
+        "P0R04473",
+        "P0R04474",
+        "P0R04475",
+        "P0R04476",
+        "P0R04477"
+      ],
+      "source_record_ids": [
+        "P0B04470",
+        "P0B04471",
+        "P0B04472",
+        "P0B04473",
+        "P0B04474",
+        "P0B04475",
+        "P0B04476",
+        "P0B04477"
+      ],
+      "test_protocols": [
+        "preserve 2. The Synaptic Junction and Downward Causation (L2): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_synaptic_junction_and_downward_causation_l2.2_the_synaptic_junction_and_downward_causation_l2",
+      "validation_targets": [
+        "preserve records P0R04470-P0R04477"
+      ],
+      "variables": [
+        "2_the_synaptic_junction_and_downward_causation_l2"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BlockQuote": 2,
+      "BulletList": 2,
+      "Header": 1,
+      "OrderedList": 1,
+      "Para": 2
+    },
+    "category_counts": {
+      "context": 1,
+      "mechanism": 5,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded section 2 the synaptic junction and downward causation l2 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04478",
+    "source_ledger_span": [
+      "P0R04470",
+      "P0R04477"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "section_2_the_synaptic_junction_and_downward_causation_l2.2_the_synaptic_junction_and_downward_causation_l2"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. The Synaptic Junction and Downward Causation (L2): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded the slow control layer glial and immune modulation source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "i_the_astrocyte_neuron_lattice_l2_l4_modulation": "i_the_astrocyte_neuron_lattice_l2_l4_modulation_source_boundary",
+    "the_slow_control_layer_glial_and_immune_modulation": "the_slow_control_layer_glial_and_immune_modulation_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Slow Control Layer - Glial and Immune Modulation",
+    "component_2": "I. The Astrocyte-Neuron Lattice (L2/L4 Modulation)",
+    "component_count": "2",
+    "next_boundary": "P0R05358",
+    "section": "The Slow Control Layer - Glial and Immune Modulation",
+    "source_span": "P0R05347-P0R05357"
+  },
+  "next_source_boundary": "P0R05358",
+  "null_controls": {
+    "i_the_astrocyte_neuron_lattice_l2_l4_modulation_is_not_empirical_validation_evidence": 1.0,
+    "the_slow_control_layer_glial_and_immune_modulation_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the slow control layer glial and immune modulation source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_slow_control_layer_glial_and_immune_modulation_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05347",
+      "P0R05348",
+      "P0R05349",
+      "P0R05350",
+      "P0R05351",
+      "P0R05352",
+      "P0R05353",
+      "P0R05354",
+      "P0R05355",
+      "P0R05356",
+      "P0R05357"
+    ],
+    "source_ledger_span": [
+      "P0R05347",
+      "P0R05357"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05347",
+    "P0R05357"
+  ],
+  "source_record_count": 11
+}

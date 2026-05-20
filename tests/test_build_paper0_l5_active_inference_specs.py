@@ -20,7 +20,7 @@ from scripts.build_paper0_l5_active_inference_specs import (
 )
 
 LEDGER_PATH = Path(
-    "docs/internal/paper0_foundational_extraction/paper0_canonical_review_ledger_2026-05-13.jsonl"
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_canonical_review_ledger_2026-05-13.jsonl"
 )
 
 

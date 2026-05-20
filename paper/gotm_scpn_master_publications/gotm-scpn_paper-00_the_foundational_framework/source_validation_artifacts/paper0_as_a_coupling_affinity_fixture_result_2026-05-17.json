@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded as a coupling affinity source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "as_a_coupling_affinity": "as_a_coupling_affinity_source_boundary",
+    "formalisation_via_integrated_information": "formalisation_via_integrated_information_source_boundary",
+    "the_scaling_law_of_consciousness_slc": "the_scaling_law_of_consciousness_slc_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "as a Coupling Affinity:",
+    "component_2": "The Scaling Law of Consciousness (SLC)",
+    "component_3": "Formalisation via Integrated Information ():",
+    "component_count": "3",
+    "next_boundary": "P0R03510",
+    "section": " as a Coupling Affinity:",
+    "source_span": "P0R03501-P0R03509"
+  },
+  "next_source_boundary": "P0R03510",
+  "null_controls": {
+    "as_a_coupling_affinity_is_not_empirical_validation_evidence": 1.0,
+    "formalisation_via_integrated_information_is_not_empirical_validation_evidence": 1.0,
+    "the_scaling_law_of_consciousness_slc_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded as a coupling affinity source-accounting bridge; not validation evidence",
+    "protocol_state": "source_as_a_coupling_affinity_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03501",
+      "P0R03502",
+      "P0R03503",
+      "P0R03504",
+      "P0R03505",
+      "P0R03506",
+      "P0R03507",
+      "P0R03508",
+      "P0R03509"
+    ],
+    "source_ledger_span": [
+      "P0R03501",
+      "P0R03509"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03501",
+    "P0R03509"
+  ],
+  "source_record_count": 9
+}

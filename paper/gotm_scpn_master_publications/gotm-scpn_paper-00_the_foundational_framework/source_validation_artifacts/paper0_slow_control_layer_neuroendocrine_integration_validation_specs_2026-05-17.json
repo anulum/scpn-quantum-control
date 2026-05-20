@@ -1,0 +1,240 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Slow Control Layer: Neuroendocrine Integration' preserves Paper 0 records P0R05430-P0R05430 without empirical validation claims.",
+      "claim_boundary": "source-bounded slow control layer neuroendocrine integration source-accounting bridge; not validation evidence",
+      "context_id": "slow_control_layer_neuroendocrine_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05430-P0R05430"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "slow_control_layer_neuroendocrine_integration.slow_control_layer_neuroendocrine_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "slow_control_layer_neuroendocrine_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Slow Control Layer: Neuroendocrine Integration is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Slow Control Layer: Neuroendocrine Integration",
+      "source_block_indices": [
+        5430,
+        5431,
+        5432,
+        5433,
+        5434,
+        5435,
+        5436,
+        5437,
+        5438,
+        5439,
+        5440,
+        5441,
+        5442,
+        5443,
+        5444
+      ],
+      "source_equation_ids": [
+        "P0R05430:slow_control_layer_neuroendocrine_integration"
+      ],
+      "source_formulae": [
+        "P0R05430: Slow Control Layer: Neuroendocrine Integration"
+      ],
+      "source_ledger_ids": [
+        "P0R05430",
+        "P0R05431",
+        "P0R05432",
+        "P0R05433",
+        "P0R05434",
+        "P0R05435",
+        "P0R05436",
+        "P0R05437",
+        "P0R05438",
+        "P0R05439",
+        "P0R05440",
+        "P0R05441",
+        "P0R05442",
+        "P0R05443",
+        "P0R05444"
+      ],
+      "source_record_ids": [
+        "P0B05430",
+        "P0B05431",
+        "P0B05432",
+        "P0B05433",
+        "P0B05434",
+        "P0B05435",
+        "P0B05436",
+        "P0B05437",
+        "P0B05438",
+        "P0B05439",
+        "P0B05440",
+        "P0B05441",
+        "P0B05442",
+        "P0B05443",
+        "P0B05444"
+      ],
+      "test_protocols": [
+        "preserve Slow Control Layer: Neuroendocrine Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.slow_control_layer_neuroendocrine_integration.slow_control_layer_neuroendocrine_integration",
+      "validation_targets": [
+        "preserve records P0R05430-P0R05430"
+      ],
+      "variables": [
+        "slow_control_layer_neuroendocrine_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Hormonal Modulation as a Third Control Layer' preserves Paper 0 records P0R05431-P0R05444 without empirical validation claims.",
+      "claim_boundary": "source-bounded slow control layer neuroendocrine integration source-accounting bridge; not validation evidence",
+      "context_id": "hormonal_modulation_as_a_third_control_layer",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05431-P0R05444"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "slow_control_layer_neuroendocrine_integration.hormonal_modulation_as_a_third_control_layer",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "hormonal_modulation_as_a_third_control_layer must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Hormonal Modulation as a Third Control Layer is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Slow Control Layer: Neuroendocrine Integration",
+      "source_block_indices": [
+        5430,
+        5431,
+        5432,
+        5433,
+        5434,
+        5435,
+        5436,
+        5437,
+        5438,
+        5439,
+        5440,
+        5441,
+        5442,
+        5443,
+        5444
+      ],
+      "source_equation_ids": [
+        "P0R05431:hormonal_modulation_as_a_third_control_layer",
+        "P0R05432:hormonal_modulation_as_a_third_control_layer",
+        "P0R05433:hormonal_modulation_as_a_third_control_layer",
+        "P0R05434:hormonal_modulation_as_a_third_control_layer",
+        "P0R05435:hormonal_modulation_as_a_third_control_layer",
+        "P0R05436:hormonal_modulation_as_a_third_control_layer",
+        "P0R05437:hormonal_modulation_as_a_third_control_layer",
+        "P0R05438:hormonal_modulation_as_a_third_control_layer",
+        "P0R05439:hormonal_modulation_as_a_third_control_layer",
+        "P0R05440:hormonal_modulation_as_a_third_control_layer",
+        "P0R05441:hormonal_modulation_as_a_third_control_layer",
+        "P0R05442:hormonal_modulation_as_a_third_control_layer",
+        "P0R05443:hormonal_modulation_as_a_third_control_layer",
+        "P0R05444:hormonal_modulation_as_a_third_control_layer"
+      ],
+      "source_formulae": [
+        "P0R05431: Hormonal Modulation as a Third Control Layer",
+        "P0R05432: The glial-neuronal system provides a two-timescale model of brain regulation. However, the brain is not an isolated system; it is embedded within a body regulated by an even slower, more globally acting control system: the endocrine system. Hormones, particularly steroids and stress hormones governed by the Hypothalamic-Pituitary-Adrenal (HPA) axis, act as a third control layer, modulating the dynamics of both neurons and glia over timescales of hours, days, and weeks.",
+        "P0R05433: The HPA axis is the body's primary neuroendocrine stress-response system. In response to perceived stressors, the hypothalamus releases Corticotropin-releasing hormone (CRH), which stimulates the pituitary gland to release Adrenocorticotropic hormone (ACTH). ACTH, in turn, acts on the adrenal glands to produce and release the glucocorticoid hormone cortisol. Cortisol exerts widespread effects, including the modulation of neurotransmitter dynamics and immune function, and its levels are regulated by a negative feedback loop acting on the hypothalamus and pituitary.",
+        "P0R05434: This multi-timescale regulatory cascade can be formalised with a system of coupled ordinary differential equations, based on established models of HPA dynamics. A minimal model capturing the core feedback loop is given by:",
+        "P0R05435: dtd=1+c1[C](t)k0fstress(t)w1",
+        "P0R05436: dtd=1+c2[C](t)k1w2",
+        "P0R05437: dtd[C]=k2w3[C]",
+        "P0R05438: Here, $$, $$, and [C] represent the concentrations of the respective hormones. The term fstress(t) represents external or internal stressors that drive the system. The parameters k0,k1,k2 are production rates, while w1,w2,w3 are clearance rates. The terms (1+ci[C](t))1 are inhibitory Hill functions that model the negative feedback of cortisol on CRH and ACTH release, with c1 and c2 controlling the feedback strength.",
+        "P0R05439: This third control layer is integrated directly with the glial-neuronal system by making the parameters of the \"Glial Slow Control\" model dependent on the hormonal state. The output of the HPA model, the circulating cortisol concentration [C](t), acts as a slow-varying parameter that modulates the gains in the glial-neuronal coupling equations. Specifically, the neuronal relaxation rate and the glial coupling sensitivity become functions of the hormonal state:",
+        "P0R05440: ->([C](t))",
+        "P0R05441: ->([C](t))",
+        "P0R05442: This hierarchical model provides a comprehensive picture of embodied regulation. The fast, millisecond-scale computations of the neuronal network are stabilised by the second-to-minute scale feedback from the glial network, and this entire coupled system is tuned and contextualised by the hour-to-day scale fluctuations of the endocrine system.",
+        "P0R05443: This grounds the SCPN's abstract layers in concrete endocrinology, ensuring that the organism's conscious state is robustly maintained yet adaptively responsive to both internal physiological states and external environmental demands.",
+        "P0R05444: [TABLE]"
+      ],
+      "source_ledger_ids": [
+        "P0R05430",
+        "P0R05431",
+        "P0R05432",
+        "P0R05433",
+        "P0R05434",
+        "P0R05435",
+        "P0R05436",
+        "P0R05437",
+        "P0R05438",
+        "P0R05439",
+        "P0R05440",
+        "P0R05441",
+        "P0R05442",
+        "P0R05443",
+        "P0R05444"
+      ],
+      "source_record_ids": [
+        "P0B05430",
+        "P0B05431",
+        "P0B05432",
+        "P0B05433",
+        "P0B05434",
+        "P0B05435",
+        "P0B05436",
+        "P0B05437",
+        "P0B05438",
+        "P0B05439",
+        "P0B05440",
+        "P0B05441",
+        "P0B05442",
+        "P0B05443",
+        "P0B05444"
+      ],
+      "test_protocols": [
+        "preserve Hormonal Modulation as a Third Control Layer source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.slow_control_layer_neuroendocrine_integration.hormonal_modulation_as_a_third_control_layer",
+      "validation_targets": [
+        "preserve records P0R05431-P0R05444"
+      ],
+      "variables": [
+        "hormonal_modulation_as_a_third_control_layer"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 12,
+      "Table": 1
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 3,
+      "mechanism": 4,
+      "table": 1,
+      "validation_target": 4
+    },
+    "claim_boundary": "source-bounded slow control layer neuroendocrine integration source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05445",
+    "source_ledger_span": [
+      "P0R05430",
+      "P0R05444"
+    ],
+    "source_record_count": 15,
+    "spec_count": 2,
+    "spec_keys": [
+      "slow_control_layer_neuroendocrine_integration.slow_control_layer_neuroendocrine_integration",
+      "slow_control_layer_neuroendocrine_integration.hormonal_modulation_as_a_third_control_layer"
+    ],
+    "table_ids": [
+      "TBL016"
+    ],
+    "title": "Paper 0 Slow Control Layer: Neuroendocrine Integration Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

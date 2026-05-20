@@ -20,7 +20,13 @@ from scpn_quantum_control.paper0.iv_ethics_as_causal_entropic_forces_cef_validat
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_OUTPUT_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_OUTPUT_PATH = (
     DEFAULT_OUTPUT_DIR
     / "paper0_iv_ethics_as_causal_entropic_forces_cef_fixture_result_2026-05-17.json"

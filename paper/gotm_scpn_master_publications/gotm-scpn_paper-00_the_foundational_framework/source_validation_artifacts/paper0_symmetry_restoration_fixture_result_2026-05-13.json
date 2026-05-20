@@ -1,0 +1,98 @@
+{
+  "claim_boundary": "source-bounded symmetry-restoration simulator contract; not empirical evidence",
+  "config_thresholds": {
+    "conformal_threshold": 0.72,
+    "legal_rescaling_threshold": 0.72,
+    "restoration_threshold": 0.7,
+    "vev_limit_threshold": 0.95,
+    "violation_threshold": 0.65
+  },
+  "conformal_score": 0.8334,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "legal_rescaling_score": 0.8501,
+  "problem_metadata": {
+    "claim_boundary": "source-bounded symmetry-restoration simulator contract; not empirical evidence",
+    "source_ledger_ids": [
+      "P0R06324",
+      "P0R06325",
+      "P0R06326",
+      "P0R06327",
+      "P0R06328",
+      "P0R06329",
+      "P0R06330",
+      "P0R06331",
+      "P0R06332",
+      "P0R06333",
+      "P0R06334",
+      "P0R06335",
+      "P0R06336",
+      "P0R06337",
+      "P0R06338"
+    ],
+    "source_ledger_span": [
+      "P0R06324",
+      "P0R06338"
+    ]
+  },
+  "quadratic_coefficient_broken": -0.5000000000000001,
+  "quadratic_coefficient_restored": 0.08999999999999991,
+  "restoration_score": 1.1124999999999998,
+  "restored_violation_score": 0.072,
+  "runtime_ms": 0.045808992581442,
+  "source_ledger_span": [
+    "P0R06324",
+    "P0R06338"
+  ],
+  "spec_keys": [
+    "symmetry_restoration.mmc_conformal_geometry_boundary",
+    "symmetry_restoration.conformal_boundary_masslessness_constraint",
+    "symmetry_restoration.effective_potential_flip_boundary",
+    "symmetry_restoration.vev_melting_massless_limit",
+    "symmetry_restoration.legal_conformal_rescaling_boundary"
+  ],
+  "vev_melting": {
+    "claim_boundary": "source-bounded symmetry-restoration simulator contract; not empirical evidence",
+    "hardware_status": "simulator_only_no_provider_submission",
+    "infoton_mass_limit": 0.0,
+    "null_controls": {
+      "negative_lambda_rejection_label": 1.0,
+      "nonzero_vev_rejection_label": 1.0,
+      "unsupported_empirical_boundary_rejection_label": 1.0
+    },
+    "problem_metadata": {
+      "claim_boundary": "source-bounded symmetry-restoration simulator contract; not empirical evidence",
+      "massless_tolerance": 1e-09,
+      "source_ledger_span": [
+        "P0R06324",
+        "P0R06338"
+      ],
+      "vev_limit_threshold": 0.95
+    },
+    "psi_higgs_mass_limit": 0.0,
+    "source_formulae": [
+      "lim_{t -> infinity} v(t) = 0",
+      "m_A = g v; m_h = sqrt(2 lambda) v"
+    ],
+    "source_ledger_ids": [
+      "P0R06324",
+      "P0R06325",
+      "P0R06326",
+      "P0R06327",
+      "P0R06328",
+      "P0R06329",
+      "P0R06330",
+      "P0R06331",
+      "P0R06332",
+      "P0R06333",
+      "P0R06334",
+      "P0R06335",
+      "P0R06336",
+      "P0R06337",
+      "P0R06338"
+    ],
+    "spec_key": "symmetry_restoration.vev_melting_massless_limit",
+    "validation_protocol": "paper0.symmetry_restoration.vev_melting_massless_limit",
+    "vev_limit_score": 1.0
+  },
+  "violation_score": 0.886
+}

@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded Axiom II informational-Lagrangian map; not validation evidence",
+  "components": {
+    "kinetic_term_modification": "infoton_kinetic_term_uses_pulled_back_information_metric",
+    "operational_pullback_protocol": "chapter6_pullback_protocol_falsifiability_bridge",
+    "scpn_gauge_lagrangian": "scpn_gauge_lagrangian_information_metric_substitution",
+    "standard_gauge_baseline": "standard_gauge_lagrangian_spacetime_metric_baseline"
+  },
+  "gauge_equation_count": 2,
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "next_boundary": "Axiom III: The Drive of Teleological Optimisation",
+    "scpn_lagrangian": "L_gauge = -1/4 tilde_g_F^{mu alpha} tilde_g_F^{nu beta} F_{mu nu} F_{alpha beta}",
+    "section": "Formal Consequence: The Informational Lagrangian",
+    "standard_lagrangian": "L_gauge = -1/4 g^{mu alpha} g^{nu beta} F_{mu nu} F_{alpha beta}"
+  },
+  "next_source_boundary": "P0R00791",
+  "null_controls": {
+    "falsifiability_claim_requires_downstream_bridge_tests": 1.0,
+    "informational_lagrangian_is_source_formula_not_empirical_evidence": 1.0,
+    "pulled_back_fim_requires_chapter6_operational_protocol": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Axiom II informational-Lagrangian map; not validation evidence",
+    "protocol_state": "source_axiom_ii_informational_lagrangian_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00782",
+      "P0R00783",
+      "P0R00784",
+      "P0R00785",
+      "P0R00786",
+      "P0R00787",
+      "P0R00788",
+      "P0R00789",
+      "P0R00790"
+    ],
+    "source_ledger_span": [
+      "P0R00782",
+      "P0R00790"
+    ]
+  },
+  "pullback_protocol_count": 1,
+  "scpn_gauge_count": 3,
+  "source_ledger_span": [
+    "P0R00782",
+    "P0R00790"
+  ],
+  "source_record_count": 9,
+  "standard_gauge_baseline_count": 3
+}

@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded gaia biosphere intelligence source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "gaia_biosphere_intelligence": "gaia_biosphere_intelligence_source_boundary",
+    "metaphysical_foundational_crossovers": "metaphysical_foundational_crossovers_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Gaia & Biosphere Intelligence",
+    "component_2": "Metaphysical / Foundational Crossovers",
+    "component_count": "2",
+    "next_boundary": "P0R05919",
+    "section": " Gaia & Biosphere Intelligence",
+    "source_span": "P0R05910-P0R05918"
+  },
+  "next_source_boundary": "P0R05919",
+  "null_controls": {
+    "gaia_biosphere_intelligence_is_not_empirical_validation_evidence": 1.0,
+    "metaphysical_foundational_crossovers_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded gaia biosphere intelligence source-accounting bridge; not validation evidence",
+    "protocol_state": "source_gaia_biosphere_intelligence_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05910",
+      "P0R05911",
+      "P0R05912",
+      "P0R05913",
+      "P0R05914",
+      "P0R05915",
+      "P0R05916",
+      "P0R05917",
+      "P0R05918"
+    ],
+    "source_ledger_span": [
+      "P0R05910",
+      "P0R05918"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05910",
+    "P0R05918"
+  ],
+  "source_record_count": 9
+}

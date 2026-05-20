@@ -1,0 +1,227 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [
+        "EQ0105"
+      ],
+      "assumptions": [
+        "finite-dimensional two-state subsystem representation",
+        "cytokine state enters only through declared coupling lambda",
+        "operator support and units are declared before numerical simulation",
+        "immune-interface claims remain mechanism-level until empirical data exist"
+      ],
+      "canonical_latex": "H_{\\mathrm{int}}=-\\lambda(\\Psi_s,C_{\\mathrm{cyto}})\\sum_i\\sigma_x^{(i)}",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "construct the finite-dimensional H_int operator and verify Hermiticity",
+        "scan cytokine-state inputs through lambda(Psi_s, C_cyto)",
+        "measure spectral shift and operator norm under bounded cytokine drive",
+        "label all quantum-biological interpretation as simulator-only mechanism evidence"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_links": [
+        "src/scpn_quantum_control/paper0/equation_register.py",
+        "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_canonical_review_ledger_2026-05-13.jsonl"
+      ],
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "embodied.quantum_immune_interface",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "zero lambda immune-decoupled Hamiltonian control",
+        "fixed C_cyto parameter control with no cytokine sensitivity",
+        "operator-sign reversal control for the sigma_x coupling convention",
+        "non-Hermitian perturbation rejection guard"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > The Slow Control Layer - Glial and Immune Modulation > II. The Quantum-Immune Interface (L1/L2/L5 Integration)",
+      "source_block_indices": [
+        5360,
+        5361,
+        5363
+      ],
+      "source_equation_ids": [
+        "EQ0105"
+      ],
+      "source_ledger_ids": [
+        "P0R05360",
+        "P0R05361",
+        "P0R05363"
+      ],
+      "source_record_ids": [
+        "P0B05360",
+        "P0B05361",
+        "P0B05363"
+      ],
+      "validation_protocol": "paper0.embodied.quantum_immune.hamiltonian_parameter_scan",
+      "validation_targets": [
+        "cytokine-dependent Hamiltonian parameter scan",
+        "zero lambda immune-decoupled null control",
+        "fixed cytokine-state sensitivity and sign-convention control",
+        "operator-norm boundedness and Hermiticity checks"
+      ],
+      "variables": {
+        "C_cyto": "systemic cytokine concentration or cytokine-state vector",
+        "H_int": "immune-state dependent interaction Hamiltonian term",
+        "Psi_s": "biological substrate field state used by the Paper 0 source",
+        "lambda": "coupling amplitude as a function of substrate state and cytokines",
+        "sigma_x": "Pauli-X operator on the affected two-state quantum-biological mode"
+      }
+    },
+    {
+      "anchor_math_ids": [
+        "EQ0106",
+        "EQ0107",
+        "EQ0108",
+        "EQ0109",
+        "EQ0110",
+        "EQ0111",
+        "EQ0112"
+      ],
+      "assumptions": [
+        "sigma is a coarse-grained finite branching observable",
+        "G is non-negative and cleared with positive beta",
+        "astrocyte calcium drive is externally measured or explicitly generated",
+        "timescale separation between fast neuronal avalanches and slow glial control"
+      ],
+      "canonical_latex": "\\dot{\\sigma}=-\\kappa\\left(\\sigma-(1+\\gamma G(t))\\right)+\\eta(t),\\quad \\dot{G}=\\alpha[Ca^{2+}]_A(t)-\\beta G(t)",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "integrate coupled sigma and G dynamics under measured or generated calcium drive",
+        "verify sigma relaxes toward one without glial drive",
+        "quantify glial set-point shift under finite gamma and bounded G(t)",
+        "test gliotransmitter blockade falsifier as attenuation of sigma response"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_links": [
+        "src/scpn_quantum_control/paper0/equation_register.py",
+        "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_canonical_review_ledger_2026-05-13.jsonl"
+      ],
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "embodied.glial_sigma_control",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "gamma = 0 gliotransmitter blockade control",
+        "zero calcium-drive control for G(t) clearance to baseline",
+        "negative beta rejection guard for non-physical gliotransmitter growth",
+        "matched-noise sigma-only control without astrocyte set-point shift"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality",
+      "source_block_indices": [
+        5366,
+        5367,
+        5368,
+        5369,
+        5370,
+        5371,
+        5372,
+        5376,
+        5377,
+        5385,
+        5388,
+        5390,
+        5391,
+        5392,
+        5395,
+        5396,
+        5397,
+        5399,
+        5400,
+        5403,
+        5404,
+        5405,
+        5406
+      ],
+      "source_equation_ids": [
+        "EQ0106",
+        "EQ0107",
+        "EQ0108",
+        "EQ0109",
+        "EQ0110",
+        "EQ0111",
+        "EQ0112"
+      ],
+      "source_ledger_ids": [
+        "P0R05366",
+        "P0R05367",
+        "P0R05368",
+        "P0R05369",
+        "P0R05370",
+        "P0R05371",
+        "P0R05372",
+        "P0R05376",
+        "P0R05377",
+        "P0R05385",
+        "P0R05388",
+        "P0R05390",
+        "P0R05391",
+        "P0R05392",
+        "P0R05395",
+        "P0R05396",
+        "P0R05397",
+        "P0R05399",
+        "P0R05400",
+        "P0R05403",
+        "P0R05404",
+        "P0R05405",
+        "P0R05406"
+      ],
+      "source_record_ids": [
+        "P0B05366",
+        "P0B05367",
+        "P0B05368",
+        "P0B05369",
+        "P0B05370",
+        "P0B05371",
+        "P0B05372",
+        "P0B05376",
+        "P0B05377",
+        "P0B05385",
+        "P0B05388",
+        "P0B05390",
+        "P0B05391",
+        "P0B05392",
+        "P0B05395",
+        "P0B05396",
+        "P0B05397",
+        "P0B05399",
+        "P0B05400",
+        "P0B05403",
+        "P0B05404",
+        "P0B05405",
+        "P0B05406"
+      ],
+      "validation_protocol": "paper0.embodied.glial_sigma.two_timescale_control",
+      "validation_targets": [
+        "sigma relaxation to one under baseline homeostasis",
+        "calcium-driven gliotransmitter response with positive alpha and beta",
+        "glial slow-control shift in sigma set-point under finite gamma",
+        "gliotransmitter blockade falsifier with attenuated sigma response"
+      ],
+      "variables": {
+        "Ca_A": "astrocyte intracellular calcium signal",
+        "G": "local gliotransmitter concentration",
+        "alpha": "calcium-dependent gliotransmitter release rate",
+        "beta": "gliotransmitter clearance or degradation rate",
+        "eta": "stochastic fluctuation term in branching-parameter dynamics",
+        "gamma": "sensitivity of neuronal excitation-inhibition balance to G",
+        "kappa": "homeostatic relaxation rate of the neuronal criticality variable",
+        "sigma": "average neuronal branching parameter"
+      }
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 26,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "EQ0105-EQ0112 anchors are promoted only into validation specifications. Abiogenesis, immune-interface, and glial-control claims remain bounded mechanism hypotheses until executable fixtures, null controls, source-to-result provenance, and empirical boundary labels pass.",
+    "source_record_count": 26,
+    "spec_count": 2,
+    "spec_keys": [
+      "embodied.quantum_immune_interface",
+      "embodied.glial_sigma_control"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

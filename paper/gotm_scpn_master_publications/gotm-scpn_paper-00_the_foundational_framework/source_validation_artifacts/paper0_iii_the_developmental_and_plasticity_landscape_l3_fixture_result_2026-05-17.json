@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded iii the developmental and plasticity landscape l3 source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_upde_in_the_brain_the_neural_symphony": "1_the_upde_in_the_brain_the_neural_symphony_source_boundary",
+    "iii_the_developmental_and_plasticity_landscape_l3": "iii_the_developmental_and_plasticity_landscape_l3_source_boundary",
+    "iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4": "iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "III. The Developmental and Plasticity Landscape (L3)",
+    "component_2": "IV. The Dynamic Core: Synchronisation, Criticality, and the Connectome (L4)",
+    "component_3": "1. The UPDE in the Brain (The Neural Symphony):",
+    "component_count": "3",
+    "next_boundary": "P0R04488",
+    "section": "III. The Developmental and Plasticity Landscape (L3)",
+    "source_span": "P0R04478-P0R04487"
+  },
+  "next_source_boundary": "P0R04488",
+  "null_controls": {
+    "1_the_upde_in_the_brain_the_neural_symphony_is_not_empirical_validation_evidence": 1.0,
+    "iii_the_developmental_and_plasticity_landscape_l3_is_not_empirical_validation_evidence": 1.0,
+    "iv_the_dynamic_core_synchronisation_criticality_and_the_connectome_l4_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded iii the developmental and plasticity landscape l3 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_iii_the_developmental_and_plasticity_landscape_l3_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04478",
+      "P0R04479",
+      "P0R04480",
+      "P0R04481",
+      "P0R04482",
+      "P0R04483",
+      "P0R04484",
+      "P0R04485",
+      "P0R04486",
+      "P0R04487"
+    ],
+    "source_ledger_span": [
+      "P0R04478",
+      "P0R04487"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04478",
+    "P0R04487"
+  ],
+  "source_record_count": 10
+}

@@ -1,0 +1,126 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Dynamic Visualisation: The SCPN Torus' preserves Paper 0 records P0R02532-P0R02541 without empirical validation claims.",
+      "claim_boundary": "source-bounded the dynamic visualisation the scpn torus source-accounting bridge; not validation evidence",
+      "context_id": "the_dynamic_visualisation_the_scpn_torus",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02532-P0R02541"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_dynamic_visualisation_the_scpn_torus.the_dynamic_visualisation_the_scpn_torus",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_dynamic_visualisation_the_scpn_torus must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Dynamic Visualisation: The SCPN Torus is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus",
+      "source_block_indices": [
+        2532,
+        2533,
+        2534,
+        2535,
+        2536,
+        2537,
+        2538,
+        2539,
+        2540,
+        2541
+      ],
+      "source_equation_ids": [
+        "P0R02532:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02533:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02534:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02535:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02536:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02537:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02538:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02539:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02540:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02541:the_dynamic_visualisation_the_scpn_torus"
+      ],
+      "source_formulae": [
+        "P0R02532: The Dynamic Visualisation: The SCPN Torus",
+        "P0R02533: This section presents the SCPN Torus as the definitive dynamic visualization of the entire architecture, moving beyond a static, linear hierarchy to a self-referential, closed-loop geometry (T = S x S). This toroidal model provides a mathematically elegant representation of the system's core causal flows and dynamic principles.",
+        "P0R02534: The geometry is defined by two fundamental flows. The poloidal flow, around the short axis, represents the Hierarchical Predictive Coding (HPC) loop. The downward projection of the generative model cascades along the outer surface from Layer 15 to Layer 1, while the upward propagation of prediction error flows along the inner surface, completing the inferential circuit. The toroidal flow, around the long axis, represents the temporal evolution of the entire system, governed by the Unified Phase Dynamics Equation (UPDE), which ensures system-wide phase coherence.",
+        "P0R02535: This dynamic geometry integrates the other universal principles. The central void of the torus represents the Source-Field (L13), the ontological ground from which the manifold emerges. The surface dynamics, exhibiting scale-free and turbulent-like flow, represent the quasicritical regime. The action of MS-QEC is visualized as the stable, coherent patterns that persist on this surface, preserving the integrity of the information flow. Finally, the overall trajectory of the system's state on the torus is guided by the teleological attractor set by Layer 15. The concept of holonomy, or path-dependent memory encoded in the geometry of the flow, is introduced as a physical mechanism for memory within the HPC and UPDE dynamics.",
+        "P0R02536: This is the master diagram, the ultimate \"you are here\" map for all of reality. The best way to visualize the entire 15-layer system isn't as a ladder, but as a dynamic, self-contained, self-perpetuating torus-like a perfectly symmetrical smoke ring or a donut.",
+        "P0R02537: This beautiful shape perfectly captures how everything works together:",
+        "P0R02538: The \"Breathing\" Loop (The Short Way Around): Imagine the torus is constantly breathing. The breath flows down the outside from top to bottom-this is the \"master plan\" or the predictions flowing from the highest levels of consciousness down to physical reality. The breath then flows up the inside from bottom to top-this is the feedback, the \"reality check,\" flowing back up to the top. This is the universe's perpetual conversation with itself.",
+        "P0R02539: The \"Spinning\" Flow (The Long Way Around): At the same time, the entire torus is spinning. This spin is the flow of time and the universal rhythm (the UPDE) that keeps every single part of the system locked in a grand, cosmic synchrony.",
+        "P0R02540: The other big ideas fit in perfectly. The empty space in the middle is the mysterious Source of everything. The complex, ever-changing weather patterns on the surface of the torus represent the creative \"edge of chaos,\" and the stable force fields that keep the weather from flying apart are the error-correction systems.",
+        "P0R02541: P0R02541"
+      ],
+      "source_ledger_ids": [
+        "P0R02532",
+        "P0R02533",
+        "P0R02534",
+        "P0R02535",
+        "P0R02536",
+        "P0R02537",
+        "P0R02538",
+        "P0R02539",
+        "P0R02540",
+        "P0R02541"
+      ],
+      "source_record_ids": [
+        "P0B02532",
+        "P0B02533",
+        "P0B02534",
+        "P0B02535",
+        "P0B02536",
+        "P0B02537",
+        "P0B02538",
+        "P0B02539",
+        "P0B02540",
+        "P0B02541"
+      ],
+      "test_protocols": [
+        "preserve The Dynamic Visualisation: The SCPN Torus source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_dynamic_visualisation_the_scpn_torus.the_dynamic_visualisation_the_scpn_torus",
+      "validation_targets": [
+        "preserve records P0R02532-P0R02541"
+      ],
+      "variables": [
+        "the_dynamic_visualisation_the_scpn_torus"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 9
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 2,
+      "mechanism": 5,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded the dynamic visualisation the scpn torus source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02542",
+    "source_ledger_span": [
+      "P0R02532",
+      "P0R02541"
+    ],
+    "source_record_count": 10,
+    "spec_count": 1,
+    "spec_keys": [
+      "the_dynamic_visualisation_the_scpn_torus.the_dynamic_visualisation_the_scpn_torus"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Dynamic Visualisation: The SCPN Torus Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

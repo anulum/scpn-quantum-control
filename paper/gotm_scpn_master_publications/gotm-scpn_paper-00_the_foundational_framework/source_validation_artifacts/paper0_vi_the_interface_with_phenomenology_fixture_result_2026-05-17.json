@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded vi the interface with phenomenology source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "the_foundational_step_consciousness_induced_gravitational_decoherence_ci": "the_foundational_step_consciousness_induced_gravitational_decoherence_ci_source_boundary",
+    "vi_the_interface_with_phenomenology": "vi_the_interface_with_phenomenology_source_boundary",
+    "vii_the_subtle_energy_network_sen_and_biophotons": "vii_the_subtle_energy_network_sen_and_biophotons_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "VI. The Interface with Phenomenology",
+    "component_2": "VII. The Subtle Energy Network (SEN) and Biophotons",
+    "component_3": "The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD)",
+    "component_count": "3",
+    "next_boundary": "P0R03284",
+    "section": "VI. The Interface with Phenomenology",
+    "source_span": "P0R03269-P0R03283"
+  },
+  "next_source_boundary": "P0R03284",
+  "null_controls": {
+    "the_foundational_step_consciousness_induced_gravitational_decoherence_ci_is_not_empirical_validation_evidence": 1.0,
+    "vi_the_interface_with_phenomenology_is_not_empirical_validation_evidence": 1.0,
+    "vii_the_subtle_energy_network_sen_and_biophotons_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded vi the interface with phenomenology source-accounting bridge; not validation evidence",
+    "protocol_state": "source_vi_the_interface_with_phenomenology_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03269",
+      "P0R03270",
+      "P0R03271",
+      "P0R03272",
+      "P0R03273",
+      "P0R03274",
+      "P0R03275",
+      "P0R03276",
+      "P0R03277",
+      "P0R03278",
+      "P0R03279",
+      "P0R03280",
+      "P0R03281",
+      "P0R03282",
+      "P0R03283"
+    ],
+    "source_ledger_span": [
+      "P0R03269",
+      "P0R03283"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03269",
+    "P0R03283"
+  ],
+  "source_record_count": 15
+}

@@ -1,0 +1,290 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'II. Examination of The Architecture of Structure and Plasticity (Domain I: L3)' preserves Paper 0 records P0R04560-P0R04561 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii examination of the architecture of structure and plasticity domain i source-accounting bridge; not validation evidence",
+      "context_id": "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04560-P0R04561"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "II. Examination of The Architecture of Structure and Plasticity (Domain I: L3) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > II. Examination of The Architecture of Structure and Plasticity (Domain I: L3)",
+      "source_block_indices": [
+        4560,
+        4561,
+        4562,
+        4563,
+        4564,
+        4565,
+        4566,
+        4567,
+        4568,
+        4569,
+        4570,
+        4571
+      ],
+      "source_equation_ids": [
+        "P0R04560:ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i",
+        "P0R04561:ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i"
+      ],
+      "source_formulae": [
+        "P0R04560: II. Examination of The Architecture of Structure and Plasticity (Domain I: L3)",
+        "P0R04561: Layer 3 governs the physical structure of the brain, the dynamic blueprint that is sculpted by both evolutionary pressures and lifetime experience. It is the domain of the connectome's geometry and the slow, powerful modulatory networks that provide homeostatic stability."
+      ],
+      "source_ledger_ids": [
+        "P0R04560",
+        "P0R04561",
+        "P0R04562",
+        "P0R04563",
+        "P0R04564",
+        "P0R04565",
+        "P0R04566",
+        "P0R04567",
+        "P0R04568",
+        "P0R04569",
+        "P0R04570",
+        "P0R04571"
+      ],
+      "source_record_ids": [
+        "P0B04560",
+        "P0B04561",
+        "P0B04562",
+        "P0B04563",
+        "P0B04564",
+        "P0B04565",
+        "P0B04566",
+        "P0B04567",
+        "P0B04568",
+        "P0B04569",
+        "P0B04570",
+        "P0B04571"
+      ],
+      "test_protocols": [
+        "preserve II. Examination of The Architecture of Structure and Plasticity (Domain I: L3) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i",
+      "validation_targets": [
+        "preserve records P0R04560-P0R04561"
+      ],
+      "variables": [
+        "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Optimised Connectome: The Geometric Scaffold of Thought' preserves Paper 0 records P0R04562-P0R04564 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii examination of the architecture of structure and plasticity domain i source-accounting bridge; not validation evidence",
+      "context_id": "the_optimised_connectome_the_geometric_scaffold_of_thought",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04562-P0R04564"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.the_optimised_connectome_the_geometric_scaffold_of_thought",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_optimised_connectome_the_geometric_scaffold_of_thought must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Optimised Connectome: The Geometric Scaffold of Thought is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > II. Examination of The Architecture of Structure and Plasticity (Domain I: L3)",
+      "source_block_indices": [
+        4560,
+        4561,
+        4562,
+        4563,
+        4564,
+        4565,
+        4566,
+        4567,
+        4568,
+        4569,
+        4570,
+        4571
+      ],
+      "source_equation_ids": [
+        "P0R04562:the_optimised_connectome_the_geometric_scaffold_of_thought",
+        "P0R04563:the_optimised_connectome_the_geometric_scaffold_of_thought",
+        "P0R04564:the_optimised_connectome_the_geometric_scaffold_of_thought"
+      ],
+      "source_formulae": [
+        "P0R04562: The Optimised Connectome: The Geometric Scaffold of Thought",
+        "P0R04563: The brain's network of physical connections-the structural connectome-is not a random tangle of wires. It is a highly optimised architecture shaped by evolutionary pressures (L8/L15) to support complex, integrated dynamics (high Integrated Information, ) at a minimal metabolic and wiring cost. This optimisation is evident in several key geometric properties that are conserved from the microcircuit to the macroscale :",
+        "P0R04564: Small-World Topology: The connectome exhibits a small-world architecture, a design that masterfully balances two competing demands: functional segregation and global integration. It is characterised by dense local clustering of connections (allowing for specialised, modular processing) and a surprisingly short average path length between any two neurons (allowing for rapid, efficient communication across the entire brain). | Hierarchical Modularity: The network is organised into a fractal-like hierarchy of modules within modules. This structure allows the brain to process information at multiple scales simultaneously, from fine-grained sensory details to abstract conceptual relationships. | The \"Rich Club\": A defining feature of this architecture is the existence of a \"rich club\"-a dense core of highly connected hub regions that are more interconnected with each other than would be expected by chance. These hubs, which exhibit high metabolic activity, form the structural backbone for global information integration. They are the physical substrate for the Global Neuronal Workspace (L5), enabling the widespread broadcasting of information that is central to conscious experience. The high cost of maintaining these long-distance connections is justified by their critical value for adaptive, coordinated behaviour."
+      ],
+      "source_ledger_ids": [
+        "P0R04560",
+        "P0R04561",
+        "P0R04562",
+        "P0R04563",
+        "P0R04564",
+        "P0R04565",
+        "P0R04566",
+        "P0R04567",
+        "P0R04568",
+        "P0R04569",
+        "P0R04570",
+        "P0R04571"
+      ],
+      "source_record_ids": [
+        "P0B04560",
+        "P0B04561",
+        "P0B04562",
+        "P0B04563",
+        "P0B04564",
+        "P0B04565",
+        "P0B04566",
+        "P0B04567",
+        "P0B04568",
+        "P0B04569",
+        "P0B04570",
+        "P0B04571"
+      ],
+      "test_protocols": [
+        "preserve The Optimised Connectome: The Geometric Scaffold of Thought source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.the_optimised_connectome_the_geometric_scaffold_of_thought",
+      "validation_targets": [
+        "preserve records P0R04562-P0R04564"
+      ],
+      "variables": [
+        "the_optimised_connectome_the_geometric_scaffold_of_thought"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Active Role of Glia: The Slow Control Network' preserves Paper 0 records P0R04565-P0R04571 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii examination of the architecture of structure and plasticity domain i source-accounting bridge; not validation evidence",
+      "context_id": "the_active_role_of_glia_the_slow_control_network",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04565-P0R04571"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.the_active_role_of_glia_the_slow_control_network",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_active_role_of_glia_the_slow_control_network must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Active Role of Glia: The Slow Control Network is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > II. Examination of The Architecture of Structure and Plasticity (Domain I: L3)",
+      "source_block_indices": [
+        4560,
+        4561,
+        4562,
+        4563,
+        4564,
+        4565,
+        4566,
+        4567,
+        4568,
+        4569,
+        4570,
+        4571
+      ],
+      "source_equation_ids": [
+        "P0R04565:the_active_role_of_glia_the_slow_control_network",
+        "P0R04566:the_active_role_of_glia_the_slow_control_network",
+        "P0R04567:the_active_role_of_glia_the_slow_control_network",
+        "P0R04568:the_active_role_of_glia_the_slow_control_network",
+        "P0R04569:the_active_role_of_glia_the_slow_control_network",
+        "P0R04570:the_active_role_of_glia_the_slow_control_network",
+        "P0R04571:the_active_role_of_glia_the_slow_control_network"
+      ],
+      "source_formulae": [
+        "P0R04565: The Active Role of Glia: The Slow Control Network",
+        "P0R04566: The fast, computationally powerful neuronal network is embedded within and regulated by a parallel, slower network of glial cells, particularly astrocytes. Moving beyond a neuron-centric view, the SCPN formalises the \"tripartite synapse,\" where the astrocyte is an active and indispensable component of information processing. Astrocytes form a vast, interconnected syncytium that functions as the brain's \"slow control network,\" providing the homeostatic stability that allows the fast neuronal network to operate safely at its computationally optimal critical point.",
+        "P0R04567: Mechanism of Slow Control: Astrocytes integrate neuronal activity over long timescales (seconds to minutes) via intercellular calcium (Ca) waves. In response, they release \"gliotransmitters\" (such as glutamate and ATP) that modulate synaptic release probability, neuronal excitability, and plasticity over broad domains. This establishes a slow-acting feedback loop that regulates the overall state of the neuronal network. | Stabilising Quasicriticality: This glial-neuronal coupling is the primary mechanism that solves the \"fine-tuning problem\" of criticality in Layer 4. The synaptic potentiation that occurs during learning constantly pushes the neuronal network toward a supercritical state, while metabolic costs can push it toward a subcritical state. The astrocyte network acts as the homeostatic governor, sensing these shifts and applying corrective feedback to gently and continuously nudge the neuronal network back towards the optimal quasicritical regime (sigma1). | Formalism of Glial-Neuronal Coupling: The SCPN models this interaction with a set of coupled equations where the slow dynamics of gliotransmitter concentration, G(t), driven by astrocyte calcium activity, directly modulate the homeostatic set-point of the fast neuronal network's branching parameter, sigma :",
+        "P0R04568: dtdsigma=(sigma(1+G(t)))+(t)",
+        "P0R04569: dtdG=[Ca2+]A(t)G(t)",
+        "P0R04570: Here, the astrocyte-driven term G(t) dynamically shifts the target operating point of the neuronal network, providing a robust mechanism for maintaining its computational efficiency. This cybernetic relationship demonstrates the",
+        "P0R04571: Scale-Invariant Homeostasis Lemma of the SCPN: every fast computational substrate (e.g., neurons) requires a slower modulatory layer (e.g., glia) to maintain its critical balance."
+      ],
+      "source_ledger_ids": [
+        "P0R04560",
+        "P0R04561",
+        "P0R04562",
+        "P0R04563",
+        "P0R04564",
+        "P0R04565",
+        "P0R04566",
+        "P0R04567",
+        "P0R04568",
+        "P0R04569",
+        "P0R04570",
+        "P0R04571"
+      ],
+      "source_record_ids": [
+        "P0B04560",
+        "P0B04561",
+        "P0B04562",
+        "P0B04563",
+        "P0B04564",
+        "P0B04565",
+        "P0B04566",
+        "P0B04567",
+        "P0B04568",
+        "P0B04569",
+        "P0B04570",
+        "P0B04571"
+      ],
+      "test_protocols": [
+        "preserve The Active Role of Glia: The Slow Control Network source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.the_active_role_of_glia_the_slow_control_network",
+      "validation_targets": [
+        "preserve records P0R04565-P0R04571"
+      ],
+      "variables": [
+        "the_active_role_of_glia_the_slow_control_network"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 3,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded ii examination of the architecture of structure and plasticity domain i source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 12,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04572",
+    "source_ledger_span": [
+      "P0R04560",
+      "P0R04571"
+    ],
+    "source_record_count": 12,
+    "spec_count": 3,
+    "spec_keys": [
+      "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i",
+      "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.the_optimised_connectome_the_geometric_scaffold_of_thought",
+      "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i.the_active_role_of_glia_the_slow_control_network"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 II. Examination of The Architecture of Structure and Plasticity (Domain I: L3) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

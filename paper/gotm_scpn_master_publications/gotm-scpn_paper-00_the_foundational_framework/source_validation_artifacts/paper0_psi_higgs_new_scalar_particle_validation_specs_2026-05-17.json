@@ -1,0 +1,279 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source identifies the radial h(x) fluctuation left by the Higgs mechanism as a new massive scalar called the Psi-Higgs.",
+      "claim_boundary": "source-bounded Psi-Higgs new-scalar-particle bridge; not validation evidence",
+      "context_id": "scalar_remnant_identity",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve radial-fluctuation identity",
+        "preserve Psi-Higgs naming boundary"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psi_higgs_new_scalar_particle.scalar_remnant_identity",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "scalar identity claim must remain source prediction, not observed scalar detection"
+      ],
+      "null_results": [
+        "naming the scalar remnant is not particle-discovery evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > The \u03a8-Higgs Boson: A New Scalar Particle",
+      "source_block_indices": [
+        1638,
+        1639,
+        1640,
+        1641,
+        1642,
+        1643,
+        1644,
+        1645,
+        1646
+      ],
+      "source_equation_ids": [
+        "P0R01638:scalar_remnant_identity",
+        "P0R01639:scalar_remnant_identity"
+      ],
+      "source_formulae": [
+        "The Psi-Higgs Boson: A New Scalar Particle",
+        "Higgs mechanism leaves a physical remnant of the original scalar field",
+        "h(x) magnitude fluctuations correspond to a new massive physical scalar particle",
+        "within SCPN this particle is named the Psi-Higgs boson"
+      ],
+      "source_ledger_ids": [
+        "P0R01638",
+        "P0R01639",
+        "P0R01640",
+        "P0R01641",
+        "P0R01642",
+        "P0R01643",
+        "P0R01644",
+        "P0R01645",
+        "P0R01646"
+      ],
+      "source_record_ids": [
+        "P0B01638",
+        "P0B01639",
+        "P0B01640",
+        "P0B01641",
+        "P0B01642",
+        "P0B01643",
+        "P0B01644",
+        "P0B01645",
+        "P0B01646"
+      ],
+      "test_protocols": [
+        "preserve Psi-Higgs scalar-remnant identity boundary"
+      ],
+      "validation_protocol": "paper0.psi_higgs_new_scalar_particle.scalar_remnant_identity",
+      "validation_targets": [
+        "preserve radial-fluctuation identity",
+        "preserve Psi-Higgs naming boundary"
+      ],
+      "variables": [
+        "Psi",
+        "h_x",
+        "scalar_field",
+        "Psi_Higgs"
+      ]
+    },
+    {
+      "canonical_statement": "The source derives the Psi-Higgs mass term by expanding the potential around the vacuum expectation value.",
+      "claim_boundary": "source-bounded Psi-Higgs new-scalar-particle bridge; not validation evidence",
+      "context_id": "potential_mass_term",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve potential expansion",
+        "preserve h-field mass term"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psi_higgs_new_scalar_particle.potential_mass_term",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "derived potential term must not be treated as collider mass reconstruction"
+      ],
+      "null_results": [
+        "potential expansion is not a measured scalar spectrum"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > The \u03a8-Higgs Boson: A New Scalar Particle",
+      "source_block_indices": [
+        1638,
+        1639,
+        1640,
+        1641,
+        1642,
+        1643,
+        1644,
+        1645,
+        1646
+      ],
+      "source_equation_ids": [
+        "P0R01640:potential_mass_term",
+        "P0R01641:potential_mass_term",
+        "P0R01642:potential_mass_term",
+        "P0R01643:potential_mass_term"
+      ],
+      "source_formulae": [
+        "expanding V(|Psi|) around VEV v reveals a mass term for h(x)",
+        "V(v+h) ~= V(v) + 1/2 (2 mu^2) h^2 + ...",
+        "substituting mu^2 = lambda v^2 gives the Psi-Higgs mass term",
+        "L_mass,h = -lambda v^2 h^2"
+      ],
+      "source_ledger_ids": [
+        "P0R01638",
+        "P0R01639",
+        "P0R01640",
+        "P0R01641",
+        "P0R01642",
+        "P0R01643",
+        "P0R01644",
+        "P0R01645",
+        "P0R01646"
+      ],
+      "source_record_ids": [
+        "P0B01638",
+        "P0B01639",
+        "P0B01640",
+        "P0B01641",
+        "P0B01642",
+        "P0B01643",
+        "P0B01644",
+        "P0B01645",
+        "P0B01646"
+      ],
+      "test_protocols": [
+        "preserve potential-expansion mass-term boundary"
+      ],
+      "validation_protocol": "paper0.psi_higgs_new_scalar_particle.potential_mass_term",
+      "validation_targets": [
+        "preserve potential expansion",
+        "preserve h-field mass term"
+      ],
+      "variables": [
+        "V",
+        "v",
+        "h",
+        "mu",
+        "lambda",
+        "L_mass_h"
+      ]
+    },
+    {
+      "canonical_statement": "The source states the Psi-Higgs mass relation and frames discovery as future direct evidence for the underlying scalar field.",
+      "claim_boundary": "source-bounded Psi-Higgs new-scalar-particle bridge; not validation evidence",
+      "context_id": "mass_and_detection_boundary",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve mass relation",
+        "preserve coupling and discovery boundary"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psi_higgs_new_scalar_particle.mass_and_detection_boundary",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "discovery-would-provide-evidence clause must not be reported as current evidence"
+      ],
+      "null_results": [
+        "future-discovery language is not present validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > The \u03a8-Higgs Boson: A New Scalar Particle",
+      "source_block_indices": [
+        1638,
+        1639,
+        1640,
+        1641,
+        1642,
+        1643,
+        1644,
+        1645,
+        1646
+      ],
+      "source_equation_ids": [
+        "P0R01644:mass_and_detection_boundary",
+        "P0R01645:mass_and_detection_boundary",
+        "P0R01646:mass_and_detection_boundary"
+      ],
+      "source_formulae": [
+        "physical particle mass is m_h = sqrt(2 lambda) v",
+        "SCPN predicts a new massive scalar boson, the Psi-Higgs",
+        "Psi-Higgs would couple to the Psi-field and massive infoton",
+        "higher-order Standard Model couplings are potential interactions",
+        "discovery would provide evidence only if observed; this fixture records the source prediction"
+      ],
+      "source_ledger_ids": [
+        "P0R01638",
+        "P0R01639",
+        "P0R01640",
+        "P0R01641",
+        "P0R01642",
+        "P0R01643",
+        "P0R01644",
+        "P0R01645",
+        "P0R01646"
+      ],
+      "source_record_ids": [
+        "P0B01638",
+        "P0B01639",
+        "P0B01640",
+        "P0B01641",
+        "P0B01642",
+        "P0B01643",
+        "P0B01644",
+        "P0B01645",
+        "P0B01646"
+      ],
+      "test_protocols": [
+        "preserve Psi-Higgs mass and discovery-boundary source accounting"
+      ],
+      "validation_protocol": "paper0.psi_higgs_new_scalar_particle.mass_and_detection_boundary",
+      "validation_targets": [
+        "preserve mass relation",
+        "preserve coupling and discovery boundary"
+      ],
+      "variables": [
+        "m_h",
+        "lambda",
+        "v",
+        "Psi_field",
+        "infoton",
+        "Standard_Model"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 8
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 4,
+      "mechanism": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded Psi-Higgs new-scalar-particle bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R01647",
+    "source_ledger_span": [
+      "P0R01638",
+      "P0R01646"
+    ],
+    "source_record_count": 9,
+    "spec_count": 3,
+    "spec_keys": [
+      "psi_higgs_new_scalar_particle.scalar_remnant_identity",
+      "psi_higgs_new_scalar_particle.potential_mass_term",
+      "psi_higgs_new_scalar_particle.mass_and_detection_boundary"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Psi-Higgs New Scalar Particle Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

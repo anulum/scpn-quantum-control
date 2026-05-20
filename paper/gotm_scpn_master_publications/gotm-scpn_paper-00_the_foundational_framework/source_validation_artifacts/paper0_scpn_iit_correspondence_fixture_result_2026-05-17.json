@@ -1,0 +1,43 @@
+{
+  "claim_boundary": "source-bounded scpn iit correspondence source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "scpn_iit_correspondence": "scpn_iit_correspondence_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "SCPN-IIT Correspondence:",
+    "component_count": "1",
+    "next_boundary": "P0R03564",
+    "section": "SCPN-IIT Correspondence:",
+    "source_span": "P0R03555-P0R03563"
+  },
+  "next_source_boundary": "P0R03564",
+  "null_controls": {
+    "scpn_iit_correspondence_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded scpn iit correspondence source-accounting bridge; not validation evidence",
+    "protocol_state": "source_scpn_iit_correspondence_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03555",
+      "P0R03556",
+      "P0R03557",
+      "P0R03558",
+      "P0R03559",
+      "P0R03560",
+      "P0R03561",
+      "P0R03562",
+      "P0R03563"
+    ],
+    "source_ledger_span": [
+      "P0R03555",
+      "P0R03563"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03555",
+    "P0R03563"
+  ],
+  "source_record_count": 9
+}

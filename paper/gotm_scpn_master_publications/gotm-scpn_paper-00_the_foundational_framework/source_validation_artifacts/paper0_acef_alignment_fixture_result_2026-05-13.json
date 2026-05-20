@@ -1,0 +1,110 @@
+{
+  "acef": {
+    "claim_boundary": "source-bounded A-CEF simulator contract; not empirical evidence",
+    "consequence_phase_steering_label": true,
+    "evaluation_state": [
+      0.42,
+      0.61,
+      0.78
+    ],
+    "force": [
+      0.43595093289994225,
+      0.12595976649931725,
+      -0.09183605982454601
+    ],
+    "force_norm": 0.462982656864153,
+    "formal_statement": "F_A-CEF = T_A grad_X S_C(X,tau)",
+    "hardware_status": "simulator_only_no_provider_submission",
+    "null_controls": {
+      "missing_temperature_rejection_label": 1.0,
+      "non_finite_state_rejection_label": 1.0,
+      "unsupported_empirical_evidence_rejection_label": 1.0,
+      "zero_gradient_control_label": 1.0
+    },
+    "problem_metadata": {
+      "claim_boundary": "source-bounded A-CEF simulator contract; not empirical evidence",
+      "equation_source": "P0R06246",
+      "source_ledger_ids": [
+        "P0R06233",
+        "P0R06234",
+        "P0R06235",
+        "P0R06236",
+        "P0R06237",
+        "P0R06238",
+        "P0R06239",
+        "P0R06240",
+        "P0R06241",
+        "P0R06242",
+        "P0R06243",
+        "P0R06244",
+        "P0R06245",
+        "P0R06246",
+        "P0R06247",
+        "P0R06248",
+        "P0R06249",
+        "P0R06250"
+      ],
+      "state_dimension": 3
+    },
+    "sec_objective_delta": 0.4729777777777777,
+    "source_equation_ids": [
+      "P0R06246"
+    ],
+    "source_ledger_ids": [
+      "P0R06233",
+      "P0R06234",
+      "P0R06235",
+      "P0R06236",
+      "P0R06237",
+      "P0R06238",
+      "P0R06239",
+      "P0R06240",
+      "P0R06241",
+      "P0R06242",
+      "P0R06243",
+      "P0R06244",
+      "P0R06245",
+      "P0R06246",
+      "P0R06247",
+      "P0R06248",
+      "P0R06249",
+      "P0R06250"
+    ],
+    "spec_key": "acef_alignment.algorithmic_causal_entropic_force",
+    "validation_protocol": "paper0.acef_alignment.algorithmic_causal_entropic_force"
+  },
+  "claim_boundary": "source-bounded A-CEF simulator contract; not empirical evidence",
+  "hardware_status": "simulator_only_no_provider_submission",
+  "problem_metadata": {
+    "claim_boundary": "source-bounded A-CEF simulator contract; not empirical evidence",
+    "equation_source": "P0R06246",
+    "source_ledger_ids": [
+      "P0R06233",
+      "P0R06234",
+      "P0R06235",
+      "P0R06236",
+      "P0R06237",
+      "P0R06238",
+      "P0R06239",
+      "P0R06240",
+      "P0R06241",
+      "P0R06242",
+      "P0R06243",
+      "P0R06244",
+      "P0R06245",
+      "P0R06246",
+      "P0R06247",
+      "P0R06248",
+      "P0R06249",
+      "P0R06250"
+    ]
+  },
+  "runtime_ms": 5.039398994995281,
+  "spec_keys": [
+    "acef_alignment.is_ought_claim_boundary",
+    "acef_alignment.governance_quasicriticality_metric",
+    "acef_alignment.ai_alignment_risk_boundary",
+    "acef_alignment.algorithmic_causal_entropic_force",
+    "acef_alignment.consequence_phase_steering"
+  ]
+}

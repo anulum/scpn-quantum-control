@@ -75,6 +75,14 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument("--instance")
     parser.add_argument("--credentials-vault", type=Path, default=DEFAULT_CREDENTIALS_VAULT)
+    parser.add_argument(
+        "--physical-qubits",
+        help=(
+            "Optional comma-separated physical layout in logical order "
+            "sys_0,sys_1,sys_2,monitor for same-layout repeats."
+        ),
+    )
+    parser.add_argument("--repeat-label", help="Optional label for a preregistered repeat lane.")
     parser.add_argument("--shots", type=int, default=DEFAULT_SHOTS)
     parser.add_argument("--repetitions", type=int, default=DEFAULT_REPETITIONS)
     parser.add_argument("--timeout-s", type=float, default=3600.0)
@@ -86,6 +94,17 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--approval-id", default="s1_ibm_feedback_pair_2026-05-20")
     parser.add_argument("--approver", default="Miroslav Sotek")
     return parser.parse_args(argv)
+
+
+def _parse_physical_qubits(value: str | None) -> tuple[int, ...] | None:
+    if value is None:
+        return None
+    physical_qubits = tuple(int(part) for part in value.split(",") if part)
+    if len(physical_qubits) != 4:
+        raise ValueError("--physical-qubits must provide exactly four physical qubits")
+    if len(set(physical_qubits)) != len(physical_qubits):
+        raise ValueError("--physical-qubits must not contain duplicates")
+    return physical_qubits
 
 
 def _controller() -> RealtimeSyncFeedbackController:
@@ -114,12 +133,21 @@ def _operation_counts(circuit: QuantumCircuit) -> dict[str, int]:
     return {str(name): int(count) for name, count in circuit.count_ops().items()}
 
 
-def _transpile_arm(backend: Any, arm: S1FeedbackArmCircuit) -> list[QuantumCircuit]:
+def _transpile_arm(
+    backend: Any,
+    arm: S1FeedbackArmCircuit,
+    *,
+    physical_qubits: Sequence[int] | None,
+) -> list[QuantumCircuit]:
+    kwargs: dict[str, Any] = {}
+    if physical_qubits is not None:
+        kwargs["initial_layout"] = list(physical_qubits)
     isa = transpile(
         arm.circuit,
         backend=backend,
         optimization_level=1,
         seed_transpiler=SEED_TRANSPILER,
+        **kwargs,
     )
     return [isa.copy(name=f"{arm.label}_{index:02d}") for index in range(arm.repetitions)]
 
@@ -138,6 +166,17 @@ def _arm_summary(arm: S1FeedbackArmCircuit, isa: Sequence[QuantumCircuit]) -> di
         "transpiled_operation_counts": _operation_counts(first),
         "seed_transpiler": SEED_TRANSPILER,
         "estimated_qpu_seconds": arm.estimated_qpu_seconds,
+    }
+
+
+def _selected_layout_payload(physical_qubits: Sequence[int] | None) -> dict[str, Any] | None:
+    if physical_qubits is None:
+        return None
+    return {
+        "system_qubits": [int(qubit) for qubit in physical_qubits[:SYSTEM_QUBITS]],
+        "monitor_qubit": int(physical_qubits[SYSTEM_QUBITS]),
+        "logical_order": ["sys_0", "sys_1", "sys_2", "monitor"],
+        "selection": "explicit_same_layout_repeat",
     }
 
 
@@ -163,11 +202,13 @@ def _build_readiness_document(
     arm_summaries: Sequence[Mapping[str, Any]],
     max_depth: int,
     max_qpu_seconds: float,
+    physical_qubits: Sequence[int] | None,
+    repeat_label: str | None,
 ) -> dict[str, Any]:
     estimated = sum(float(row["estimated_qpu_seconds"]) for row in arm_summaries)
     depth_ok = all(int(row["transpiled_depth_max"]) <= max_depth for row in arm_summaries)
     budget_ok = estimated <= max_qpu_seconds
-    return {
+    document: dict[str, Any] = {
         "schema": "scpn_s1_ibm_feedback_pair_readiness_v1",
         "timestamp_utc": _timestamp(),
         "backend": backend_name,
@@ -177,12 +218,16 @@ def _build_readiness_document(
         "target_r": TARGET_R,
         "observable": "binary_phase_synchrony_from_final_counts",
         "arms": list(arm_summaries),
+        "physical_layout": _selected_layout_payload(physical_qubits),
         "max_depth": max_depth,
         "max_qpu_seconds": max_qpu_seconds,
         "estimated_qpu_seconds": estimated,
         "package_hash": hash_package_manifest(package_manifest),
         "reasons": _readiness_reasons(depth_ok=depth_ok, budget_ok=budget_ok),
     }
+    if repeat_label:
+        document["repeat_label"] = repeat_label
+    return document
 
 
 def _readiness_reasons(*, depth_ok: bool, budget_ok: bool) -> list[str]:
@@ -216,25 +261,35 @@ def main(argv: Sequence[str] | None = None) -> int:
         estimated_seconds_per_circuit=1.0,
     )
     backend = load_authenticated_backend(args.backend, args.instance, args.credentials_vault)
+    physical_qubits = _parse_physical_qubits(args.physical_qubits)
     feedback_arm, control_arm = build_s1_feedback_arm_circuits(
         controller,
         n_rounds=N_ROUNDS,
         shots=args.shots,
         repetitions=args.repetitions,
     )
-    feedback_isa = _transpile_arm(backend, feedback_arm)
-    control_isa = _transpile_arm(backend, control_arm)
+    feedback_isa = _transpile_arm(backend, feedback_arm, physical_qubits=physical_qubits)
+    control_isa = _transpile_arm(backend, control_arm, physical_qubits=physical_qubits)
     arm_summaries = (
         _arm_summary(feedback_arm, feedback_isa),
         _arm_summary(control_arm, control_isa),
     )
-    provisional_manifest = _manifest(package.to_dict(), {"arms": arm_summaries})
+    provisional_manifest = _manifest(
+        package.to_dict(),
+        {
+            "arms": arm_summaries,
+            "physical_layout": _selected_layout_payload(physical_qubits),
+            "repeat_label": args.repeat_label,
+        },
+    )
     readiness = _build_readiness_document(
         backend_name=args.backend,
         package_manifest=provisional_manifest,
         arm_summaries=arm_summaries,
         max_depth=args.max_depth,
         max_qpu_seconds=args.max_qpu_seconds,
+        physical_qubits=physical_qubits,
+        repeat_label=args.repeat_label,
     )
     manifest = _manifest(package.to_dict(), readiness)
     readiness["package_hash"] = hash_package_manifest(manifest)
@@ -290,6 +345,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         {
             "schema": "scpn_s1_feedback_raw_counts_v1",
             "backend": args.backend,
+            "repeat_label": args.repeat_label,
+            "physical_layout": _selected_layout_payload(physical_qubits),
             "approval": {
                 "approval_id": approval.approval_id,
                 "approver": approval.approver,

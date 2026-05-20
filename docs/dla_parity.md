@@ -174,4 +174,4 @@ assert 0.17 < r.reproduction.peak_asymmetry_relative < 0.18
 * Analysis reference script:
   [`scripts/analyse_phase1_dla_parity.py`](https://github.com/anulum/scpn-quantum-control/blob/main/scripts/analyse_phase1_dla_parity.py)
 * Short paper LaTeX:
-  [`paper/phase1_dla_parity/phase1_dla_parity.tex`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity/phase1_dla_parity.tex)
+  [`paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity.tex`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity.tex)

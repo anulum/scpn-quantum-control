@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R02278-P0R02278 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02278 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02278-P0R02278"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02278.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2278,
+        2279,
+        2280,
+        2281,
+        2282,
+        2283,
+        2284,
+        2285,
+        2286
+      ],
+      "source_equation_ids": [
+        "P0R02278:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R02278: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R02278",
+        "P0R02279",
+        "P0R02280",
+        "P0R02281",
+        "P0R02282",
+        "P0R02283",
+        "P0R02284",
+        "P0R02285",
+        "P0R02286"
+      ],
+      "source_record_ids": [
+        "P0B02278",
+        "P0B02279",
+        "P0B02280",
+        "P0B02281",
+        "P0B02282",
+        "P0B02283",
+        "P0B02284",
+        "P0B02285",
+        "P0B02286"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02278.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R02278-P0R02278"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R02279-P0R02280 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02278 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02279-P0R02280"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02278.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2278,
+        2279,
+        2280,
+        2281,
+        2282,
+        2283,
+        2284,
+        2285,
+        2286
+      ],
+      "source_equation_ids": [
+        "P0R02279:predictive_coding_integration",
+        "P0R02280:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R02279: Predictive Coding Integration",
+        "P0R02280: Domain III provides the architectural components for a stable, long-term active inference agent."
+      ],
+      "source_ledger_ids": [
+        "P0R02278",
+        "P0R02279",
+        "P0R02280",
+        "P0R02281",
+        "P0R02282",
+        "P0R02283",
+        "P0R02284",
+        "P0R02285",
+        "P0R02286"
+      ],
+      "source_record_ids": [
+        "P0B02278",
+        "P0B02279",
+        "P0B02280",
+        "P0B02281",
+        "P0B02282",
+        "P0B02283",
+        "P0B02284",
+        "P0B02285",
+        "P0B02286"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02278.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R02279-P0R02280"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Layer 9 (Existential Holograph) as the Deep Priors:' preserves Paper 0 records P0R02281-P0R02282 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02278 source-accounting bridge; not validation evidence",
+      "context_id": "layer_9_existential_holograph_as_the_deep_priors",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02281-P0R02282"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02278.layer_9_existential_holograph_as_the_deep_priors",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "layer_9_existential_holograph_as_the_deep_priors must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Layer 9 (Existential Holograph) as the Deep Priors: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2278,
+        2279,
+        2280,
+        2281,
+        2282,
+        2283,
+        2284,
+        2285,
+        2286
+      ],
+      "source_equation_ids": [
+        "P0R02281:layer_9_existential_holograph_as_the_deep_priors",
+        "P0R02282:layer_9_existential_holograph_as_the_deep_priors"
+      ],
+      "source_formulae": [
+        "P0R02281: Layer 9 (Existential Holograph) as the Deep Priors:",
+        "P0R02282: This layer is the physical instantiation of the agent's deepest and most slowly changing priors. It is the generative model's long-term memory. The experiences consolidated into this holograph form the core beliefs that constrain and shape all future predictions. An agent's \"personality\" or \"character\" is, in this model, the specific structure of its Layer 9 priors, which have been built up over a lifetime of prediction error minimisation."
+      ],
+      "source_ledger_ids": [
+        "P0R02278",
+        "P0R02279",
+        "P0R02280",
+        "P0R02281",
+        "P0R02282",
+        "P0R02283",
+        "P0R02284",
+        "P0R02285",
+        "P0R02286"
+      ],
+      "source_record_ids": [
+        "P0B02278",
+        "P0B02279",
+        "P0B02280",
+        "P0B02281",
+        "P0B02282",
+        "P0B02283",
+        "P0B02284",
+        "P0B02285",
+        "P0B02286"
+      ],
+      "test_protocols": [
+        "preserve Layer 9 (Existential Holograph) as the Deep Priors: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02278.layer_9_existential_holograph_as_the_deep_priors",
+      "validation_targets": [
+        "preserve records P0R02281-P0R02282"
+      ],
+      "variables": [
+        "layer_9_existential_holograph_as_the_deep_priors"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Layer 10 (Boundary Control) as Precision-Weighting at the Self/World Interface:' preserves Paper 0 records P0R02283-P0R02284 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02278 source-accounting bridge; not validation evidence",
+      "context_id": "layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02283-P0R02284"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02278.layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Layer 10 (Boundary Control) as Precision-Weighting at the Self/World Interface: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2278,
+        2279,
+        2280,
+        2281,
+        2282,
+        2283,
+        2284,
+        2285,
+        2286
+      ],
+      "source_equation_ids": [
+        "P0R02283:layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter",
+        "P0R02284:layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter"
+      ],
+      "source_formulae": [
+        "P0R02283: Layer 10 (Boundary Control) as Precision-Weighting at the Self/World Interface:",
+        "P0R02284: This layer is the primary mechanism for regulating precision. It functions as a dynamic filter that adjusts the gain on both incoming sensory evidence (prediction error from the world) and outgoing predictions (the agent's influence on the world). By managing the precision of these informational channels, Layer 10 determines the agent's \"openness to experience\" versus its \"integrity of self.\" A well-regulated Layer 10 allows the agent to learn from surprise without having its core model catastrophically overwritten. It is the cybernetic governor on the engine of inference."
+      ],
+      "source_ledger_ids": [
+        "P0R02278",
+        "P0R02279",
+        "P0R02280",
+        "P0R02281",
+        "P0R02282",
+        "P0R02283",
+        "P0R02284",
+        "P0R02285",
+        "P0R02286"
+      ],
+      "source_record_ids": [
+        "P0B02278",
+        "P0B02279",
+        "P0B02280",
+        "P0B02281",
+        "P0B02282",
+        "P0B02283",
+        "P0B02284",
+        "P0B02285",
+        "P0B02286"
+      ],
+      "test_protocols": [
+        "preserve Layer 10 (Boundary Control) as Precision-Weighting at the Self/World Interface: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02278.layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter",
+      "validation_targets": [
+        "preserve records P0R02283-P0R02284"
+      ],
+      "variables": [
+        "layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R02285-P0R02286 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02278 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02285-P0R02286"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02278.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Meta-Framework Integrations",
+      "source_block_indices": [
+        2278,
+        2279,
+        2280,
+        2281,
+        2282,
+        2283,
+        2284,
+        2285,
+        2286
+      ],
+      "source_equation_ids": [
+        "P0R02285:psis_field_coupling_integration",
+        "P0R02286:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R02285: Psis Field Coupling Integration",
+        "P0R02286: Domain III describes how the conscious Self creates a stable, persistent interface with the universal Psis field via the interaction Hamiltonian H_int = -lambda * Psis * sigma."
+      ],
+      "source_ledger_ids": [
+        "P0R02278",
+        "P0R02279",
+        "P0R02280",
+        "P0R02281",
+        "P0R02282",
+        "P0R02283",
+        "P0R02284",
+        "P0R02285",
+        "P0R02286"
+      ],
+      "source_record_ids": [
+        "P0B02278",
+        "P0B02279",
+        "P0B02280",
+        "P0B02281",
+        "P0B02282",
+        "P0B02283",
+        "P0B02284",
+        "P0B02285",
+        "P0B02286"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02278.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R02285-P0R02286"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 3,
+      "mechanism": 3,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r02278 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02287",
+    "source_ledger_span": [
+      "P0R02278",
+      "P0R02286"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r02278.meta_framework_integrations",
+      "meta_framework_integrations_p0r02278.predictive_coding_integration",
+      "meta_framework_integrations_p0r02278.layer_9_existential_holograph_as_the_deep_priors",
+      "meta_framework_integrations_p0r02278.layer_10_boundary_control_as_precision_weighting_at_the_self_world_inter",
+      "meta_framework_integrations_p0r02278.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

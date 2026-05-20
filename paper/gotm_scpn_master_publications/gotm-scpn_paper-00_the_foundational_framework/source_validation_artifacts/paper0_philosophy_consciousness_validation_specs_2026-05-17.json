@@ -1,0 +1,180 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Philosophy & Consciousness' preserves Paper 0 records P0R05786-P0R05789 without empirical validation claims.",
+      "claim_boundary": "source-bounded philosophy consciousness source-accounting bridge; not validation evidence",
+      "context_id": "philosophy_consciousness",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05786-P0R05789"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "philosophy_consciousness.philosophy_consciousness",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "philosophy_consciousness must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Philosophy & Consciousness is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Philosophy & Consciousness",
+      "source_block_indices": [
+        5786,
+        5787,
+        5788,
+        5789,
+        5790,
+        5791,
+        5792,
+        5793
+      ],
+      "source_equation_ids": [
+        "P0R05786:philosophy_consciousness",
+        "P0R05787:philosophy_consciousness",
+        "P0R05788:philosophy_consciousness",
+        "P0R05789:philosophy_consciousness"
+      ],
+      "source_formulae": [
+        "P0R05786: Philosophy & Consciousness",
+        "P0R05787: \"participatory universe framing\" -> Wheeler (1983, Law Without Law).",
+        "P0R05788: \"extended mind / distributed cognition\" -> Clark & Chalmers (1998).",
+        "P0R05789: \"embodiment\" -> Varela, Thompson, Rosch (1991, The Embodied Mind)."
+      ],
+      "source_ledger_ids": [
+        "P0R05786",
+        "P0R05787",
+        "P0R05788",
+        "P0R05789",
+        "P0R05790",
+        "P0R05791",
+        "P0R05792",
+        "P0R05793"
+      ],
+      "source_record_ids": [
+        "P0B05786",
+        "P0B05787",
+        "P0B05788",
+        "P0B05789",
+        "P0B05790",
+        "P0B05791",
+        "P0B05792",
+        "P0B05793"
+      ],
+      "test_protocols": [
+        "preserve Philosophy & Consciousness source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.philosophy_consciousness.philosophy_consciousness",
+      "validation_targets": [
+        "preserve records P0R05786-P0R05789"
+      ],
+      "variables": [
+        "philosophy_consciousness"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Layer 16 Specific' preserves Paper 0 records P0R05790-P0R05793 without empirical validation claims.",
+      "claim_boundary": "source-bounded philosophy consciousness source-accounting bridge; not validation evidence",
+      "context_id": "meta_layer_16_specific",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05790-P0R05793"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "philosophy_consciousness.meta_layer_16_specific",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_layer_16_specific must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Layer 16 Specific is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Philosophy & Consciousness",
+      "source_block_indices": [
+        5786,
+        5787,
+        5788,
+        5789,
+        5790,
+        5791,
+        5792,
+        5793
+      ],
+      "source_equation_ids": [
+        "P0R05790:meta_layer_16_specific",
+        "P0R05791:meta_layer_16_specific",
+        "P0R05792:meta_layer_16_specific",
+        "P0R05793:meta_layer_16_specific"
+      ],
+      "source_formulae": [
+        "P0R05790: Meta-Layer 16 Specific",
+        "P0R05791: \"optimal control and recursive Hamiltonians\" -> Pontryagin (Optimal Processes, 1962).",
+        "P0R05792: \"quantum error correction as dimensional stabilizer\" -> Shor (1995), Gottesman (1997).",
+        "P0R05793: \"closure and autopoiesis\" -> Maturana & Varela (1980, Autopoiesis and Cognition)."
+      ],
+      "source_ledger_ids": [
+        "P0R05786",
+        "P0R05787",
+        "P0R05788",
+        "P0R05789",
+        "P0R05790",
+        "P0R05791",
+        "P0R05792",
+        "P0R05793"
+      ],
+      "source_record_ids": [
+        "P0B05786",
+        "P0B05787",
+        "P0B05788",
+        "P0B05789",
+        "P0B05790",
+        "P0B05791",
+        "P0B05792",
+        "P0B05793"
+      ],
+      "test_protocols": [
+        "preserve Meta-Layer 16 Specific source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.philosophy_consciousness.meta_layer_16_specific",
+      "validation_targets": [
+        "preserve records P0R05790-P0R05793"
+      ],
+      "variables": [
+        "meta_layer_16_specific"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "mechanism": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded philosophy consciousness source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05794",
+    "source_ledger_span": [
+      "P0R05786",
+      "P0R05793"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "philosophy_consciousness.philosophy_consciousness",
+      "philosophy_consciousness.meta_layer_16_specific"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Philosophy & Consciousness Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

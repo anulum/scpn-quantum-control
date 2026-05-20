@@ -1,0 +1,329 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Prediction II: Causal Entropic Force Signatures in Quantum Randomness' preserves Paper 0 records P0R05202-P0R05202 without empirical validation claims.",
+      "claim_boundary": "source-bounded prediction ii causal entropic force signatures in quantum randomness source-accounting bridge; not validation evidence",
+      "context_id": "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05202-P0R05202"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.prediction_ii_causal_entropic_force_signatures_in_quantum_randomness",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Prediction II: Causal Entropic Force Signatures in Quantum Randomness is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction II: Causal Entropic Force Signatures in Quantum Randomness",
+      "source_block_indices": [
+        5202,
+        5203,
+        5204,
+        5205,
+        5206,
+        5207,
+        5208,
+        5209,
+        5210,
+        5211,
+        5212,
+        5213,
+        5214,
+        5215,
+        5216
+      ],
+      "source_equation_ids": [
+        "P0R05202:prediction_ii_causal_entropic_force_signatures_in_quantum_randomness"
+      ],
+      "source_formulae": [
+        "P0R05202: Prediction II: Causal Entropic Force Signatures in Quantum Randomness"
+      ],
+      "source_ledger_ids": [
+        "P0R05202",
+        "P0R05203",
+        "P0R05204",
+        "P0R05205",
+        "P0R05206",
+        "P0R05207",
+        "P0R05208",
+        "P0R05209",
+        "P0R05210",
+        "P0R05211",
+        "P0R05212",
+        "P0R05213",
+        "P0R05214",
+        "P0R05215",
+        "P0R05216"
+      ],
+      "source_record_ids": [
+        "P0B05202",
+        "P0B05203",
+        "P0B05204",
+        "P0B05205",
+        "P0B05206",
+        "P0B05207",
+        "P0B05208",
+        "P0B05209",
+        "P0B05210",
+        "P0B05211",
+        "P0B05212",
+        "P0B05213",
+        "P0B05214",
+        "P0B05215",
+        "P0B05216"
+      ],
+      "test_protocols": [
+        "preserve Prediction II: Causal Entropic Force Signatures in Quantum Randomness source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.prediction_ii_causal_entropic_force_signatures_in_quantum_randomness",
+      "validation_targets": [
+        "preserve records P0R05202-P0R05202"
+      ],
+      "variables": [
+        "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Theoretical Derivation' preserves Paper 0 records P0R05203-P0R05208 without empirical validation claims.",
+      "claim_boundary": "source-bounded prediction ii causal entropic force signatures in quantum randomness source-accounting bridge; not validation evidence",
+      "context_id": "theoretical_derivation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05203-P0R05208"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.theoretical_derivation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "theoretical_derivation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Theoretical Derivation is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction II: Causal Entropic Force Signatures in Quantum Randomness",
+      "source_block_indices": [
+        5202,
+        5203,
+        5204,
+        5205,
+        5206,
+        5207,
+        5208,
+        5209,
+        5210,
+        5211,
+        5212,
+        5213,
+        5214,
+        5215,
+        5216
+      ],
+      "source_equation_ids": [
+        "P0R05203:theoretical_derivation",
+        "P0R05204:theoretical_derivation",
+        "P0R05205:theoretical_derivation",
+        "P0R05206:theoretical_derivation",
+        "P0R05207:theoretical_derivation",
+        "P0R05208:theoretical_derivation"
+      ],
+      "source_formulae": [
+        "P0R05203: Theoretical Derivation",
+        "P0R05204: The SCPN posits that the teleological evolution of the universe is not a metaphysical imposition but a physical principle implemented via Causal Entropic Forces (CEF). A CEF is a thermodynamic force that biases a system's evolution toward macroscopic states that maximise the number of accessible future pathways, or its causal path entropy, SC.",
+        "P0R05205: This mechanism is proposed to bias the probabilities of quantum collapse outcomes subtly. While in most systems this bias is infinitesimally small and averages out over time, the SCPN predicts it could become detectable in the vicinity of systems with extremely high collective coherence, as these systems would strongly bias the local causal path entropy.",
+        "P0R05206: The ideal detector for such a bias is a Quantum Random Number Generator (QRNG), as its output is, by definition, derived from an unpredictable quantum process whose randomness is rooted in fundamental quantum indeterminacy. The ideal source of bias would be a large, coherent biological system.",
+        "P0R05207: The manuscript suggests synchronised meditation groups, which can be operationalised by measuring collective psychophysiological coherence through simultaneous monitoring of multiple participants.",
+        "P0R05208: A strong CEF source is a highly coherent biological system, and collective coherence in human groups can be measured using Heart Rate Variability (HRV) and electroencephalography (EEG) synchronisation. Therefore, the statistical output of a QRNG should exhibit deviations from pure randomness that are temporally correlated with measurable peaks in collective human coherence."
+      ],
+      "source_ledger_ids": [
+        "P0R05202",
+        "P0R05203",
+        "P0R05204",
+        "P0R05205",
+        "P0R05206",
+        "P0R05207",
+        "P0R05208",
+        "P0R05209",
+        "P0R05210",
+        "P0R05211",
+        "P0R05212",
+        "P0R05213",
+        "P0R05214",
+        "P0R05215",
+        "P0R05216"
+      ],
+      "source_record_ids": [
+        "P0B05202",
+        "P0B05203",
+        "P0B05204",
+        "P0B05205",
+        "P0B05206",
+        "P0B05207",
+        "P0B05208",
+        "P0B05209",
+        "P0B05210",
+        "P0B05211",
+        "P0B05212",
+        "P0B05213",
+        "P0B05214",
+        "P0B05215",
+        "P0B05216"
+      ],
+      "test_protocols": [
+        "preserve Theoretical Derivation source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.theoretical_derivation",
+      "validation_targets": [
+        "preserve records P0R05203-P0R05208"
+      ],
+      "variables": [
+        "theoretical_derivation"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predicted Signature' preserves Paper 0 records P0R05209-P0R05216 without empirical validation claims.",
+      "claim_boundary": "source-bounded prediction ii causal entropic force signatures in quantum randomness source-accounting bridge; not validation evidence",
+      "context_id": "predicted_signature",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05209-P0R05216"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.predicted_signature",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predicted_signature must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predicted Signature is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction II: Causal Entropic Force Signatures in Quantum Randomness",
+      "source_block_indices": [
+        5202,
+        5203,
+        5204,
+        5205,
+        5206,
+        5207,
+        5208,
+        5209,
+        5210,
+        5211,
+        5212,
+        5213,
+        5214,
+        5215,
+        5216
+      ],
+      "source_equation_ids": [
+        "P0R05209:predicted_signature",
+        "P0R05210:predicted_signature",
+        "P0R05211:predicted_signature",
+        "P0R05212:predicted_signature",
+        "P0R05213:predicted_signature",
+        "P0R05214:predicted_signature",
+        "P0R05215:predicted_signature",
+        "P0R05216:predicted_signature"
+      ],
+      "source_formulae": [
+        "P0R05209: Predicted Signature",
+        "P0R05210: The output of a cryptographically secure, shielded QRNG will exhibit minute but statistically significant, time-varying deviations from a uniform random distribution. These deviations will be non-locally and temporally correlated with peaks in a quantitative measure of collective biological coherence from a proximate, large-scale coherent system.",
+        "P0R05211: The signature is not a simple static bias (which would indicate a flawed generator), but a dynamic correlation between the time-series of randomness quality and the time-series of biological coherence.",
+        "P0R05212: P0R05212",
+        "P0R05213: Theoretical Mechanism Diagram",
+        "P0R05214: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Zahl enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R05215: Fig.: Coherent Minds -> SCS_CSC Gradient -> FCF_CFC -> QRNG Bias. This diagram outlines the hypothesized causal chain, from the generation of a coherent biological field to the resulting statistical anomaly in a quantum random system. This plate summarises the testable pathway: collective coherence -> information-geometric gradient -> entropic force -> measurable QRNG skew, offering a clean empirical target for CEF-based teleological effects.",
+        "P0R05216: A synchronized, high-coherence group (e.g., meditation/HRV entrainment) amplifies the local Psi-field integration ()(\\Phi)(). This produces a local gradient in causal path entropy SCS_CSC, generating a causal entropic force $FC = TC\\nabla SCF_{C} = T_{C}\\nabla S_{C}FC = TC\\nabla SC$ that slightly biases quantum evolution. The bias manifests as small, time-locked deviations from ideal randomness in a QRNG bitstream during coherence intervals (relative to matched sham/baseline). The mechanism predicts: stronger coherence -> larger SC\\nabla S_CSC -> stronger FCF_CFC -> greater QRNG deviation."
+      ],
+      "source_ledger_ids": [
+        "P0R05202",
+        "P0R05203",
+        "P0R05204",
+        "P0R05205",
+        "P0R05206",
+        "P0R05207",
+        "P0R05208",
+        "P0R05209",
+        "P0R05210",
+        "P0R05211",
+        "P0R05212",
+        "P0R05213",
+        "P0R05214",
+        "P0R05215",
+        "P0R05216"
+      ],
+      "source_record_ids": [
+        "P0B05202",
+        "P0B05203",
+        "P0B05204",
+        "P0B05205",
+        "P0B05206",
+        "P0B05207",
+        "P0B05208",
+        "P0B05209",
+        "P0B05210",
+        "P0B05211",
+        "P0B05212",
+        "P0B05213",
+        "P0B05214",
+        "P0B05215",
+        "P0B05216"
+      ],
+      "test_protocols": [
+        "preserve Predicted Signature source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.predicted_signature",
+      "validation_targets": [
+        "preserve records P0R05209-P0R05216"
+      ],
+      "variables": [
+        "predicted_signature"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 12
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "equation": 1,
+      "figure": 1,
+      "mechanism": 3,
+      "structural": 1,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded prediction ii causal entropic force signatures in quantum randomness source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0139"
+    ],
+    "math_ids": [
+      "EQ0102"
+    ],
+    "next_source_boundary": "P0R05217",
+    "source_ledger_span": [
+      "P0R05202",
+      "P0R05216"
+    ],
+    "source_record_count": 15,
+    "spec_count": 3,
+    "spec_keys": [
+      "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.prediction_ii_causal_entropic_force_signatures_in_quantum_randomness",
+      "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.theoretical_derivation",
+      "prediction_ii_causal_entropic_force_signatures_in_quantum_randomness.predicted_signature"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Prediction II: Causal Entropic Force Signatures in Quantum Randomness Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

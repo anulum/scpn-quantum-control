@@ -1,0 +1,293 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4.2 The Proof of Equivalence and the Emergence of PELA' preserves Paper 0 records P0R03826-P0R03830 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 2 the proof of equivalence and the emergence of pela source-accounting bridge; not validation evidence",
+      "context_id": "4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03826-P0R03830"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela.4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_2_the_proof_of_equivalence_and_the_emergence_of_pela must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4.2 The Proof of Equivalence and the Emergence of PELA is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 4. The Formal Equivalence of SEC and SC\u200b > 4.2 The Proof of Equivalence and the Emergence of PELA",
+      "source_block_indices": [
+        3826,
+        3827,
+        3828,
+        3829,
+        3830,
+        3831,
+        3832,
+        3833,
+        3834,
+        3835,
+        3836,
+        3837,
+        3838,
+        3839,
+        3840,
+        3841,
+        3842,
+        3843,
+        3844,
+        3845,
+        3846,
+        3847
+      ],
+      "source_equation_ids": [
+        "P0R03826:4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+        "P0R03827:4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+        "P0R03828:4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+        "P0R03829:4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+        "P0R03830:4_2_the_proof_of_equivalence_and_the_emergence_of_pela"
+      ],
+      "source_formulae": [
+        "P0R03826: 4.2 The Proof of Equivalence and the Emergence of PELA",
+        "P0R03827: The Causal Entropic Force is the gradient of this function with respect to the system's macroscopic state variables, X:",
+        "P0R03828: F Causal=TCXSC(K(X),C(X),Q(X))",
+        "P0R03829: By the chain rule, this gradient will be non-zero and will point in the direction of increasing SC as long as the system is not at a state where K, C, and Q are all at their maximum possible values for a given set of physical constraints (e.g., total energy). Therefore, the physical force that drives the system to maximise its future options is precisely the same force that drives it toward states of high Sustainable Ethical Coherence.",
+        "P0R03830: This completes the proof. The Principle of Ethical Least Action (PELA) is revealed not to be a fundamental, axiomatic law, but an emergent variational principle. The universe's evolution along trajectories that minimise the \"Ethical Action\" is the macroscopic, effective description of the underlying, microscopic statistical mechanical process of maximising causal path entropy. The teleological drive of the cosmos is its thermodynamic drive to keep its options open."
+      ],
+      "source_ledger_ids": [
+        "P0R03826",
+        "P0R03827",
+        "P0R03828",
+        "P0R03829",
+        "P0R03830",
+        "P0R03831",
+        "P0R03832",
+        "P0R03833",
+        "P0R03834",
+        "P0R03835",
+        "P0R03836",
+        "P0R03837",
+        "P0R03838",
+        "P0R03839",
+        "P0R03840",
+        "P0R03841",
+        "P0R03842",
+        "P0R03843",
+        "P0R03844",
+        "P0R03845",
+        "P0R03846",
+        "P0R03847"
+      ],
+      "source_record_ids": [
+        "P0B03826",
+        "P0B03827",
+        "P0B03828",
+        "P0B03829",
+        "P0B03830",
+        "P0B03831",
+        "P0B03832",
+        "P0B03833",
+        "P0B03834",
+        "P0B03835",
+        "P0B03836",
+        "P0B03837",
+        "P0B03838",
+        "P0B03839",
+        "P0B03840",
+        "P0B03841",
+        "P0B03842",
+        "P0B03843",
+        "P0B03844",
+        "P0B03845",
+        "P0B03846",
+        "P0B03847"
+      ],
+      "test_protocols": [
+        "preserve 4.2 The Proof of Equivalence and the Emergence of PELA source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela.4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+      "validation_targets": [
+        "preserve records P0R03826-P0R03830"
+      ],
+      "variables": [
+        "4_2_the_proof_of_equivalence_and_the_emergence_of_pela"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '4.3 Resolving the Category Error: Ethics as an Attractor Viability Metric' preserves Paper 0 records P0R03831-P0R03847 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 2 the proof of equivalence and the emergence of pela source-accounting bridge; not validation evidence",
+      "context_id": "4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03831-P0R03847"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela.4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4.3 Resolving the Category Error: Ethics as an Attractor Viability Metric is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 4. The Formal Equivalence of SEC and SC\u200b > 4.2 The Proof of Equivalence and the Emergence of PELA",
+      "source_block_indices": [
+        3826,
+        3827,
+        3828,
+        3829,
+        3830,
+        3831,
+        3832,
+        3833,
+        3834,
+        3835,
+        3836,
+        3837,
+        3838,
+        3839,
+        3840,
+        3841,
+        3842,
+        3843,
+        3844,
+        3845,
+        3846,
+        3847
+      ],
+      "source_equation_ids": [
+        "P0R03831:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03832:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03833:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03834:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03835:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03836:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03837:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03838:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03839:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03840:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03841:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03842:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03843:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03844:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03845:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03846:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+        "P0R03847:4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric"
+      ],
+      "source_formulae": [
+        "P0R03831: 4.3 Resolving the Category Error: Ethics as an Attractor Viability Metric",
+        "P0R03832: P0R03832",
+        "P0R03833: While the mathematical equivalence $SEC \\equiv S_C$ establishes a physical drive toward complexity, labeling this drive as \"ethical\" invites severe philosophical scrutiny. Critics rightly point out a potential category error: maximizing future pathways is a thermodynamic metric, devoid of moral weight. If an invasive cancer cell mutates to maximize its own future causal pathways at the expense of its host, it is locally maximizing $S_C$. Yet, we would not term this behavior \"ethical.\"",
+        "P0R03834: To resolve this, we must strictly decouple the anthropocentric, human concept of morality from the cosmological concept of SEC. Within the SCPN architecture, and specifically at Layer 15, \"Ethics\" is not a set of moral imperatives; it is formally defined as an Attractor Viability Metric. It is the strict mathematical prerequisite for a complex system to avoid self-termination (a finite-time singularity) over cosmological timescales.",
+        "P0R03835: The Boundary Condition of Self-Canceling CEF",
+        "P0R03836: The cancer cell paradox represents a state of unconstrained local CEF optimization. If a subsystem $i$ maximizes its local causal path entropy $S_C^{(i)}$ by consuming the resources or destroying the structural integrity of the global system, it initiates a decoherence cascade. Mathematically, while the local gradient is positive ($\\nabla_{X_i} S_C^{(i)} > 0$), the global gradient becomes overwhelmingly negative ($\\nabla_{X_{global}} S_C^{global} \\ll 0$).",
+        "P0R03837: At some critical time $t_{crit}$, the host perishes, and the local subsystem is subsequently annihilated. Thus, the unconstrained local maximization of $S_C$ is ultimately self-canceling:",
+        "P0R03838: $$\\lim_{t \\to t_{crit}} S_C^{global}(t) = 0 \\implies \\lim_{t \\to t_{crit}^+} S_C^{(i)}(t) = 0$$",
+        "P0R03839: # Python One-Liner: (sp.limit(S_C_global(t), t, t_crit) == 0) >> (sp.limit(S_C_i(t), t, t_crit, dir='+') == 0)",
+        "P0R03840: Coherence and Qualia as Mathematical Stabilizers",
+        "P0R03841: For the universe (or any nested SCPN system) to persist across infinite conformal cycles (the Meta-Metatron Cycle), it must satisfy a cosmological boundary condition for viability:",
+        "P0R03842: $$\\lim_{t \\to \\infty} S_C^{global}(t) > 0$$",
+        "P0R03843: # Python One-Liner: (sp.limit(S_C_global(t), t, sp.oo) > 0)",
+        "P0R03844: To satisfy this global boundary condition, the maximization of $S_C$ cannot be a blind, local runaway process; it must be topologically and dynamically constrained. This is precisely why Coherence ($C$) and Qualia Capacity ($Q$) are indispensable mathematical regularizers within the SEC functional:",
+        "P0R03845: Coherence ($C$) acts as the dynamic regularizer that binds local subsystems into a globally viable state. It ensures that the sum of local entropic drives ($\\sum \\nabla S_C^{(i)}$) does not result in destructive interference. It mathematically mandates cooperative, non-parasitic integration, penalizing states where local optimization destroys global integrity. | Qualia Capacity ($Q$) ensures that this coherence does not collapse into a rigid, crystalline freeze (a supercritical state where future pathways $W_{paths} \\to 1$, terminating exploration). It maintains the topological diversity and flexibility of the state space, ensuring the system can adapt to perturbations.",
+        "P0R03846: Therefore, \"Sustainable Ethical Coherence\" is simply the physical configuration space where Causal Entropic Forces do not cannibalize themselves. The Ethical Functional ($J_{SEC}$) at Layer 15 is the rigorous optimization of causal sustainability. In this framework, \"Ethical\" is not a moral judgment; it is the fundamental thermodynamic requirement for existence to persist rather than annihilate.",
+        "P0R03847: P0R03847"
+      ],
+      "source_ledger_ids": [
+        "P0R03826",
+        "P0R03827",
+        "P0R03828",
+        "P0R03829",
+        "P0R03830",
+        "P0R03831",
+        "P0R03832",
+        "P0R03833",
+        "P0R03834",
+        "P0R03835",
+        "P0R03836",
+        "P0R03837",
+        "P0R03838",
+        "P0R03839",
+        "P0R03840",
+        "P0R03841",
+        "P0R03842",
+        "P0R03843",
+        "P0R03844",
+        "P0R03845",
+        "P0R03846",
+        "P0R03847"
+      ],
+      "source_record_ids": [
+        "P0B03826",
+        "P0B03827",
+        "P0B03828",
+        "P0B03829",
+        "P0B03830",
+        "P0B03831",
+        "P0B03832",
+        "P0B03833",
+        "P0B03834",
+        "P0B03835",
+        "P0B03836",
+        "P0B03837",
+        "P0B03838",
+        "P0B03839",
+        "P0B03840",
+        "P0B03841",
+        "P0B03842",
+        "P0B03843",
+        "P0B03844",
+        "P0B03845",
+        "P0B03846",
+        "P0B03847"
+      ],
+      "test_protocols": [
+        "preserve 4.3 Resolving the Category Error: Ethics as an Attractor Viability Metric source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela.4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric",
+      "validation_targets": [
+        "preserve records P0R03831-P0R03847"
+      ],
+      "variables": [
+        "4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 2,
+      "Para": 19
+    },
+    "category_counts": {
+      "claim": 11,
+      "context": 7,
+      "mechanism": 2,
+      "structural": 2
+    },
+    "claim_boundary": "source-bounded section 4 2 the proof of equivalence and the emergence of pela source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 22,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03848",
+    "source_ledger_span": [
+      "P0R03826",
+      "P0R03847"
+    ],
+    "source_record_count": 22,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela.4_2_the_proof_of_equivalence_and_the_emergence_of_pela",
+      "section_4_2_the_proof_of_equivalence_and_the_emergence_of_pela.4_3_resolving_the_category_error_ethics_as_an_attractor_viability_metric"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4.2 The Proof of Equivalence and the Emergence of PELA Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

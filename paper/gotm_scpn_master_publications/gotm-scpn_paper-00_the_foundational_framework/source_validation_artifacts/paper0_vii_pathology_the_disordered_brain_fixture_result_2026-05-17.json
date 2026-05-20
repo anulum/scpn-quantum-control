@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded vii pathology the disordered brain source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "introduction_to_the_deep_architecture_of_the_quantum_biological_interfac": "introduction_to_the_deep_architecture_of_the_quantum_biological_interfac_source_boundary",
+    "the_embodied_engine_a_deeper_neurobiological_grounding_for_the_scpn": "the_embodied_engine_a_deeper_neurobiological_grounding_for_the_scpn_source_boundary",
+    "vii_pathology_the_disordered_brain": "vii_pathology_the_disordered_brain_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "VII. Pathology: The Disordered Brain",
+    "component_2": "The Embodied Engine: A Deeper Neurobiological Grounding for the SCPN",
+    "component_3": "Introduction to The Deep Architecture of the Quantum-Biological Interface (Domain I: L1-L2)",
+    "component_count": "3",
+    "next_boundary": "P0R04544",
+    "section": "VII. Pathology: The Disordered Brain",
+    "source_span": "P0R04534-P0R04543"
+  },
+  "next_source_boundary": "P0R04544",
+  "null_controls": {
+    "introduction_to_the_deep_architecture_of_the_quantum_biological_interfac_is_not_empirical_validation_evidence": 1.0,
+    "the_embodied_engine_a_deeper_neurobiological_grounding_for_the_scpn_is_not_empirical_validation_evidence": 1.0,
+    "vii_pathology_the_disordered_brain_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded vii pathology the disordered brain source-accounting bridge; not validation evidence",
+    "protocol_state": "source_vii_pathology_the_disordered_brain_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04534",
+      "P0R04535",
+      "P0R04536",
+      "P0R04537",
+      "P0R04538",
+      "P0R04539",
+      "P0R04540",
+      "P0R04541",
+      "P0R04542",
+      "P0R04543"
+    ],
+    "source_ledger_span": [
+      "P0R04534",
+      "P0R04543"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04534",
+    "P0R04543"
+  ],
+  "source_record_count": 10
+}

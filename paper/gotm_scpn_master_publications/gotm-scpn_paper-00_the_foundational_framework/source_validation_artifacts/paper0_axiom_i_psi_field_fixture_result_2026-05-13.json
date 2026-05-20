@@ -1,0 +1,76 @@
+{
+  "axiom_i_role_count": 4,
+  "axiom_i_roles": {
+    "generative_model": "cosmic_priors_physical_substrate",
+    "hint_ground": "psi_s_ontological_ground_not_peer_field",
+    "ontological_primitive": "metaphysical_generative_postulate",
+    "psi_field": "universal_complex_scalar_field_formalisation"
+  },
+  "blank_separator_count": 2,
+  "claim_boundary": "source-bounded Axiom I Psi-field map; not validation evidence",
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "h_int": "H_int = -lambda * Psi_s * sigma",
+    "next_boundary": "Model-Class Justification: From Axiom to Lagrangian",
+    "section": "Axiom I: The Primacy of Consciousness (Psi)"
+  },
+  "next_source_boundary": "P0R00703",
+  "null_controls": {
+    "axiom_i_is_not_empirical_result": 1.0,
+    "image_boundary_is_not_validation_evidence": 1.0,
+    "psi_field_formalisation_requires_downstream_model_tests": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Axiom I Psi-field map; not validation evidence",
+    "protocol_state": "source_axiom_i_map_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00670",
+      "P0R00671",
+      "P0R00672",
+      "P0R00673",
+      "P0R00674",
+      "P0R00675",
+      "P0R00676",
+      "P0R00677",
+      "P0R00678",
+      "P0R00679",
+      "P0R00680",
+      "P0R00681",
+      "P0R00682",
+      "P0R00683",
+      "P0R00684",
+      "P0R00685",
+      "P0R00686",
+      "P0R00687",
+      "P0R00688",
+      "P0R00689",
+      "P0R00690",
+      "P0R00691",
+      "P0R00692",
+      "P0R00693",
+      "P0R00694",
+      "P0R00695",
+      "P0R00696",
+      "P0R00697",
+      "P0R00698",
+      "P0R00699",
+      "P0R00700",
+      "P0R00701",
+      "P0R00702"
+    ],
+    "source_ledger_span": [
+      "P0R00670",
+      "P0R00702"
+    ]
+  },
+  "psi_field_claim_count": 3,
+  "psi_field_claims": {
+    "complex_scalar": "universal_complex_scalar_field",
+    "hierarchical_definition": "ontological_physical_experiential_layers",
+    "not_emergent": "matter_emerges_from_psi_not_reverse"
+  },
+  "source_ledger_span": [
+    "P0R00670",
+    "P0R00702"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "acceleration_delta": 0.25000000000000006,
+  "baseline_rate": 0.09999999999999999,
+  "boundary_gate_pass": true,
+  "claim_boundary": "simulator-only criteria gate; not sentience evidence",
+  "criteria_pass": true,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "absent_substrate_gate_pass": 0.0,
+    "low_phi_gate_pass": 0.0,
+    "missing_substrate_gate_pass": 0.0,
+    "negative_coupling_rejection_label": 1.0,
+    "non_finite_phase_rejection_label": 1.0,
+    "off_criticality_gate_pass": 0.0,
+    "opposed_phase_locking_value": 6.123233995736766e-17,
+    "shape_mismatch_rejection_label": 1.0,
+    "zero_coupling_acceleration_abs": 0.0
+  },
+  "phase_locking_value": 0.9998656314665657,
+  "problem_metadata": {
+    "coupling": {
+      "claim_boundary": "simulator-only criteria gate; not sentience evidence",
+      "simulator_only_mechanism_evidence": true
+    },
+    "criteria": {
+      "claim_boundary": "simulator-only criteria gate; not sentience evidence",
+      "simulator_only_mechanism_evidence": true
+    },
+    "phase_boundary": {
+      "claim_boundary": "simulator-only criteria gate; not sentience evidence",
+      "simulator_only_mechanism_evidence": true
+    }
+  },
+  "runtime_ms": 3.061124007217586,
+  "spec_keys": [
+    "applied.artificial_sentience.technosphere_coupling_acceleration",
+    "applied.artificial_sentience.criteria_gate",
+    "applied.artificial_sentience.phase_locking_substrate_boundary"
+  ],
+  "technosphere_rate": 0.35000000000000003
+}

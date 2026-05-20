@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded application to immune enzymes source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "application_to_immune_enzymes": "application_to_immune_enzymes_source_boundary",
+    "micro_scale_homeostasis_glial_control_of_neuronal_criticality": "micro_scale_homeostasis_glial_control_of_neuronal_criticality_source_boundary",
+    "the_biophysics_of_coherence_a_scale_invariant_cybernetic_thread": "the_biophysics_of_coherence_a_scale_invariant_cybernetic_thread_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Application to Immune Enzymes",
+    "component_2": "The Biophysics of Coherence: A Scale-Invariant Cybernetic Thread",
+    "component_3": "Micro-Scale Homeostasis: Glial Control of Neuronal Criticality",
+    "component_count": "3",
+    "next_boundary": "P0R05528",
+    "section": "Application to Immune Enzymes",
+    "source_span": "P0R05517-P0R05527"
+  },
+  "next_source_boundary": "P0R05528",
+  "null_controls": {
+    "application_to_immune_enzymes_is_not_empirical_validation_evidence": 1.0,
+    "micro_scale_homeostasis_glial_control_of_neuronal_criticality_is_not_empirical_validation_evidence": 1.0,
+    "the_biophysics_of_coherence_a_scale_invariant_cybernetic_thread_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded application to immune enzymes source-accounting bridge; not validation evidence",
+    "protocol_state": "source_application_to_immune_enzymes_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05517",
+      "P0R05518",
+      "P0R05519",
+      "P0R05520",
+      "P0R05521",
+      "P0R05522",
+      "P0R05523",
+      "P0R05524",
+      "P0R05525",
+      "P0R05526",
+      "P0R05527"
+    ],
+    "source_ledger_span": [
+      "P0R05517",
+      "P0R05527"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05517",
+    "P0R05527"
+  ],
+  "source_record_count": 11
+}

@@ -1,0 +1,187 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Gaia & Biosphere Intelligence' preserves Paper 0 records P0R05910-P0R05913 without empirical validation claims.",
+      "claim_boundary": "source-bounded gaia biosphere intelligence source-accounting bridge; not validation evidence",
+      "context_id": "gaia_biosphere_intelligence",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05910-P0R05913"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "gaia_biosphere_intelligence.gaia_biosphere_intelligence",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "gaia_biosphere_intelligence must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Gaia & Biosphere Intelligence is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Gaia & Biosphere Intelligence",
+      "source_block_indices": [
+        5910,
+        5911,
+        5912,
+        5913,
+        5914,
+        5915,
+        5916,
+        5917,
+        5918
+      ],
+      "source_equation_ids": [
+        "P0R05910:gaia_biosphere_intelligence",
+        "P0R05911:gaia_biosphere_intelligence",
+        "P0R05912:gaia_biosphere_intelligence",
+        "P0R05913:gaia_biosphere_intelligence"
+      ],
+      "source_formulae": [
+        "P0R05910: Gaia & Biosphere Intelligence",
+        "P0R05911: Lovelock (1979, Gaia: A New Look at Life on Earth) -> the Gaia Hypothesis origin, should anchor your L12.",
+        "P0R05912: Margulis (1998, Symbiotic Planet) -> gives biological depth to planetary consciousness.",
+        "P0R05913: Volk (2003, Gaia is Life in a Wasteworld) -> adds updated ecological framing."
+      ],
+      "source_ledger_ids": [
+        "P0R05910",
+        "P0R05911",
+        "P0R05912",
+        "P0R05913",
+        "P0R05914",
+        "P0R05915",
+        "P0R05916",
+        "P0R05917",
+        "P0R05918"
+      ],
+      "source_record_ids": [
+        "P0B05910",
+        "P0B05911",
+        "P0B05912",
+        "P0B05913",
+        "P0B05914",
+        "P0B05915",
+        "P0B05916",
+        "P0B05917",
+        "P0B05918"
+      ],
+      "test_protocols": [
+        "preserve Gaia & Biosphere Intelligence source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.gaia_biosphere_intelligence.gaia_biosphere_intelligence",
+      "validation_targets": [
+        "preserve records P0R05910-P0R05913"
+      ],
+      "variables": [
+        "gaia_biosphere_intelligence"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Metaphysical / Foundational Crossovers' preserves Paper 0 records P0R05914-P0R05918 without empirical validation claims.",
+      "claim_boundary": "source-bounded gaia biosphere intelligence source-accounting bridge; not validation evidence",
+      "context_id": "metaphysical_foundational_crossovers",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05914-P0R05918"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "gaia_biosphere_intelligence.metaphysical_foundational_crossovers",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "metaphysical_foundational_crossovers must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Metaphysical / Foundational Crossovers is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Gaia & Biosphere Intelligence",
+      "source_block_indices": [
+        5910,
+        5911,
+        5912,
+        5913,
+        5914,
+        5915,
+        5916,
+        5917,
+        5918
+      ],
+      "source_equation_ids": [
+        "P0R05914:metaphysical_foundational_crossovers",
+        "P0R05915:metaphysical_foundational_crossovers",
+        "P0R05916:metaphysical_foundational_crossovers",
+        "P0R05917:metaphysical_foundational_crossovers",
+        "P0R05918:metaphysical_foundational_crossovers"
+      ],
+      "source_formulae": [
+        "P0R05914: Metaphysical / Foundational Crossovers",
+        "P0R05915: Whitehead (1929, Process and Reality) -> process philosophy link to your dynamic cosmos.",
+        "P0R05916: Spinoza (1677, Ethics) -> ontological monism that parallels your Psi-field primitive.",
+        "P0R05917: Teilhard de Chardin (already noted, but anchored explicitly in the noosphere layers).",
+        "P0R05918: P0R05918"
+      ],
+      "source_ledger_ids": [
+        "P0R05910",
+        "P0R05911",
+        "P0R05912",
+        "P0R05913",
+        "P0R05914",
+        "P0R05915",
+        "P0R05916",
+        "P0R05917",
+        "P0R05918"
+      ],
+      "source_record_ids": [
+        "P0B05910",
+        "P0B05911",
+        "P0B05912",
+        "P0B05913",
+        "P0B05914",
+        "P0B05915",
+        "P0B05916",
+        "P0B05917",
+        "P0B05918"
+      ],
+      "test_protocols": [
+        "preserve Metaphysical / Foundational Crossovers source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.gaia_biosphere_intelligence.metaphysical_foundational_crossovers",
+      "validation_targets": [
+        "preserve records P0R05914-P0R05918"
+      ],
+      "variables": [
+        "metaphysical_foundational_crossovers"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 6,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded gaia biosphere intelligence source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05919",
+    "source_ledger_span": [
+      "P0R05910",
+      "P0R05918"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "gaia_biosphere_intelligence.gaia_biosphere_intelligence",
+      "gaia_biosphere_intelligence.metaphysical_foundational_crossovers"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Gaia & Biosphere Intelligence Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

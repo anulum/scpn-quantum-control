@@ -1,0 +1,311 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source opens the subsection by naming the equivalence between Sustainable Ethical Coherence and the tilde_N_t equals one state.",
+      "claim_boundary": "source-bounded Axiom III SEC-Ntilde-equivalence map; not validation evidence",
+      "context_id": "equivalence_heading",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve SEC and tilde_N_t equals one heading"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_sec_ntilde_equivalence.equivalence_heading",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "heading-as-measured-equivalence control must be rejected"
+      ],
+      "null_results": [
+        "heading alone is source context, not empirical validation"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Equivalence of SEC and the $\\tilde{N}_{t}=1$ State",
+      "source_block_indices": [
+        811,
+        812,
+        813,
+        814,
+        815,
+        816,
+        817
+      ],
+      "source_equation_ids": [
+        "P0R00811:sec_ntilde_unity_equivalence_heading"
+      ],
+      "source_formulae": [
+        "Equivalence of SEC and the tilde_N_t = 1 State"
+      ],
+      "source_ledger_ids": [
+        "P0R00811",
+        "P0R00812",
+        "P0R00813",
+        "P0R00814",
+        "P0R00815",
+        "P0R00816",
+        "P0R00817"
+      ],
+      "source_record_ids": [
+        "P0B00811",
+        "P0B00812",
+        "P0B00813",
+        "P0B00814",
+        "P0B00815",
+        "P0B00816",
+        "P0B00817"
+      ],
+      "test_protocols": [
+        "preserve SEC-Ntilde-equivalence heading"
+      ],
+      "validation_protocol": "paper0.axiom_iii_sec_ntilde_equivalence.equivalence_heading",
+      "validation_targets": [
+        "preserve SEC and tilde_N_t equals one heading"
+      ],
+      "variables": [
+        "SEC",
+        "tilde_N_t"
+      ]
+    },
+    {
+      "canonical_statement": "The source states that SEC is the macroscopic physical realisation of tilde_N_t equals one and frames it as a physical, universal, measurable target for the SCPN cybernetic architecture.",
+      "claim_boundary": "source-bounded Axiom III SEC-Ntilde-equivalence map; not validation evidence",
+      "context_id": "macroscopic_realisation",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve macroscopic physical realisation claim",
+        "preserve universal measurable target framing"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_sec_ntilde_equivalence.macroscopic_realisation",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "equivalence-as-empirical-result control must be rejected",
+        "missing-cybernetic-architecture-target control must be rejected"
+      ],
+      "null_results": [
+        "SEC-Ntilde equivalence remains a source claim in this fixture"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Equivalence of SEC and the $\\tilde{N}_{t}=1$ State",
+      "source_block_indices": [
+        811,
+        812,
+        813,
+        814,
+        815,
+        816,
+        817
+      ],
+      "source_equation_ids": [
+        "P0R00812:sec_as_macroscopic_realisation_of_ntilde_unity",
+        "P0R00813:physical_universal_measurable_target"
+      ],
+      "source_formulae": [
+        "SEC is macroscopic physical realisation of tilde_N_t = 1",
+        "physical universal measurable target for SCPN cybernetic architecture"
+      ],
+      "source_ledger_ids": [
+        "P0R00811",
+        "P0R00812",
+        "P0R00813",
+        "P0R00814",
+        "P0R00815",
+        "P0R00816",
+        "P0R00817"
+      ],
+      "source_record_ids": [
+        "P0B00811",
+        "P0B00812",
+        "P0B00813",
+        "P0B00814",
+        "P0B00815",
+        "P0B00816",
+        "P0B00817"
+      ],
+      "test_protocols": [
+        "preserve SEC-as-Ntilde-unity equivalence claim"
+      ],
+      "validation_protocol": "paper0.axiom_iii_sec_ntilde_equivalence.macroscopic_realisation",
+      "validation_targets": [
+        "preserve macroscopic physical realisation claim",
+        "preserve universal measurable target framing"
+      ],
+      "variables": [
+        "SEC",
+        "tilde_N_t",
+        "cybernetic_architecture"
+      ]
+    },
+    {
+      "canonical_statement": "The source defines tilde_N_t tending to one as the formal physical definition of the optimal quasicritical regime and as the maximum thermodynamic-efficiency point where actual power matches the minimum reversible power required.",
+      "claim_boundary": "source-bounded Axiom III SEC-Ntilde-equivalence map; not validation evidence",
+      "context_id": "quasicritical_efficiency",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve Ntilde-unity quasicritical definition",
+        "preserve edge-of-chaos architecture target",
+        "preserve actual-power and reversible-power matching claim"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_sec_ntilde_equivalence.quasicritical_efficiency",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "quasicriticality-as-observed-result control must be rejected",
+        "missing-reversible-power-matching control must be rejected"
+      ],
+      "null_results": [
+        "quasicritical efficiency requires downstream operational validation"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Equivalence of SEC and the $\\tilde{N}_{t}=1$ State",
+      "source_block_indices": [
+        811,
+        812,
+        813,
+        814,
+        815,
+        816,
+        817
+      ],
+      "source_equation_ids": [
+        "P0R00814:ntilde_unity_quasicritical_edge_of_chaos",
+        "P0R00815:actual_power_matches_minimum_reversible_power"
+      ],
+      "source_formulae": [
+        "tilde_N_t -> 1 is formal physical definition of optimal quasicritical regime",
+        "edge of chaos that entire 15-layer architecture seeks to maintain",
+        "actual power expended matches minimum reversible power required"
+      ],
+      "source_ledger_ids": [
+        "P0R00811",
+        "P0R00812",
+        "P0R00813",
+        "P0R00814",
+        "P0R00815",
+        "P0R00816",
+        "P0R00817"
+      ],
+      "source_record_ids": [
+        "P0B00811",
+        "P0B00812",
+        "P0B00813",
+        "P0B00814",
+        "P0B00815",
+        "P0B00816",
+        "P0B00817"
+      ],
+      "test_protocols": [
+        "preserve quasicriticality and efficiency definitions"
+      ],
+      "validation_protocol": "paper0.axiom_iii_sec_ntilde_equivalence.quasicritical_efficiency",
+      "validation_targets": [
+        "preserve Ntilde-unity quasicritical definition",
+        "preserve edge-of-chaos architecture target",
+        "preserve actual-power and reversible-power matching claim"
+      ],
+      "variables": [
+        "tilde_N_t",
+        "actual_power",
+        "minimum_reversible_power",
+        "efficiency"
+      ]
+    },
+    {
+      "canonical_statement": "The source grounds the Axiom III teleological drive in a physical causal imperative toward perfect informational-energetic efficiency and describes the 15-layer SCPN architecture as the machine that finds, maintains, and locks the system into that optimal state.",
+      "claim_boundary": "source-bounded Axiom III SEC-Ntilde-equivalence map; not validation evidence",
+      "context_id": "causal_imperative_architecture",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve causal-imperative grounding",
+        "preserve 15-layer locking-architecture role",
+        "preserve truncated-source and blank-record integrity notes"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_sec_ntilde_equivalence.causal_imperative_architecture",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "completed-source-text control must be rejected for P0R00816",
+        "silent-blank-record-omission control must be rejected for P0R00817"
+      ],
+      "null_results": [
+        "truncated source text requires audit before completion claim"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Equivalence of SEC and the $\\tilde{N}_{t}=1$ State",
+      "source_block_indices": [
+        811,
+        812,
+        813,
+        814,
+        815,
+        816,
+        817
+      ],
+      "source_equation_ids": [
+        "P0R00816:causal_imperative_and_15_layer_locking_architecture",
+        "P0R00817:blank_terminal_record_preserved"
+      ],
+      "source_formulae": [
+        "physical causal imperative toward perfect informational-energetic efficiency",
+        "15-layer architecture of the SCPN is the cybernetic machine",
+        "source record P0R00816 ends with truncated token quasic",
+        "P0R00817 is blank within the same source section"
+      ],
+      "source_ledger_ids": [
+        "P0R00811",
+        "P0R00812",
+        "P0R00813",
+        "P0R00814",
+        "P0R00815",
+        "P0R00816",
+        "P0R00817"
+      ],
+      "source_record_ids": [
+        "P0B00811",
+        "P0B00812",
+        "P0B00813",
+        "P0B00814",
+        "P0B00815",
+        "P0B00816",
+        "P0B00817"
+      ],
+      "test_protocols": [
+        "preserve causal-imperative and source-integrity notes"
+      ],
+      "validation_protocol": "paper0.axiom_iii_sec_ntilde_equivalence.causal_imperative_architecture",
+      "validation_targets": [
+        "preserve causal-imperative grounding",
+        "preserve 15-layer locking-architecture role",
+        "preserve truncated-source and blank-record integrity notes"
+      ],
+      "variables": [
+        "Axiom_III",
+        "informational_energetic_efficiency",
+        "SCPN_architecture"
+      ]
+    }
+  ],
+  "summary": {
+    "architecture_target_count": 2,
+    "blank_terminal_record_count": 1,
+    "claim_boundary": "source-bounded Axiom III SEC-Ntilde-equivalence map; not validation evidence",
+    "consumed_source_record_count": 7,
+    "coverage_match": true,
+    "efficiency_claim_count": 2,
+    "equivalence_claim_count": 2,
+    "hardware_status": "source_methodology_no_experiment",
+    "next_source_boundary": "P0R00818",
+    "source_ledger_span": [
+      "P0R00811",
+      "P0R00817"
+    ],
+    "source_record_count": 7,
+    "spec_count": 4,
+    "spec_keys": [
+      "axiom_iii_sec_ntilde_equivalence.equivalence_heading",
+      "axiom_iii_sec_ntilde_equivalence.macroscopic_realisation",
+      "axiom_iii_sec_ntilde_equivalence.quasicritical_efficiency",
+      "axiom_iii_sec_ntilde_equivalence.causal_imperative_architecture"
+    ],
+    "title": "Paper 0 Axiom III SEC-Ntilde Equivalence Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

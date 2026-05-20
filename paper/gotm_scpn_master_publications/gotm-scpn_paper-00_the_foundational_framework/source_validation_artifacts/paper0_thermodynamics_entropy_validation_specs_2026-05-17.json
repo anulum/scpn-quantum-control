@@ -1,0 +1,186 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Thermodynamics & Entropy' preserves Paper 0 records P0R05721-P0R05726 without empirical validation claims.",
+      "claim_boundary": "source-bounded thermodynamics entropy source-accounting bridge; not validation evidence",
+      "context_id": "thermodynamics_entropy",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05721-P0R05726"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "thermodynamics_entropy.thermodynamics_entropy",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "thermodynamics_entropy must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Thermodynamics & Entropy is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Thermodynamics & Entropy",
+      "source_block_indices": [
+        5721,
+        5722,
+        5723,
+        5724,
+        5725,
+        5726,
+        5727,
+        5728,
+        5729
+      ],
+      "source_equation_ids": [
+        "P0R05721:thermodynamics_entropy",
+        "P0R05722:thermodynamics_entropy",
+        "P0R05723:thermodynamics_entropy",
+        "P0R05724:thermodynamics_entropy",
+        "P0R05725:thermodynamics_entropy",
+        "P0R05726:thermodynamics_entropy"
+      ],
+      "source_formulae": [
+        "P0R05721: Thermodynamics & Entropy",
+        "P0R05722: Prigogine & Stengers (1984, Order out of Chaos) -> dissipative structures, entropy management (Layer 16 entropy flux).",
+        "P0R05723: Schrdinger (1944, What is Life?) -> negentropy concept, baseline for your living-systems framing.",
+        "P0R05724: Jaynes (1957) -> information theory & statistical mechanics (bridges your entropy-functionals).",
+        "P0R05725: \"entropy flux balancing across layers\" -> references to Prigogine (dissipative structures, 1977 Nobel) and Schrdinger (What is Life?, 1944).",
+        "P0R05726: \"negentropy in living systems\" -> Brillouin (1962)."
+      ],
+      "source_ledger_ids": [
+        "P0R05721",
+        "P0R05722",
+        "P0R05723",
+        "P0R05724",
+        "P0R05725",
+        "P0R05726",
+        "P0R05727",
+        "P0R05728",
+        "P0R05729"
+      ],
+      "source_record_ids": [
+        "P0B05721",
+        "P0B05722",
+        "P0B05723",
+        "P0B05724",
+        "P0B05725",
+        "P0B05726",
+        "P0B05727",
+        "P0B05728",
+        "P0B05729"
+      ],
+      "test_protocols": [
+        "preserve Thermodynamics & Entropy source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.thermodynamics_entropy.thermodynamics_entropy",
+      "validation_targets": [
+        "preserve records P0R05721-P0R05726"
+      ],
+      "variables": [
+        "thermodynamics_entropy"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Gauge & Field Theory Foundations' preserves Paper 0 records P0R05727-P0R05729 without empirical validation claims.",
+      "claim_boundary": "source-bounded thermodynamics entropy source-accounting bridge; not validation evidence",
+      "context_id": "gauge_field_theory_foundations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05727-P0R05729"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "thermodynamics_entropy.gauge_field_theory_foundations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "gauge_field_theory_foundations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Gauge & Field Theory Foundations is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Thermodynamics & Entropy",
+      "source_block_indices": [
+        5721,
+        5722,
+        5723,
+        5724,
+        5725,
+        5726,
+        5727,
+        5728,
+        5729
+      ],
+      "source_equation_ids": [
+        "P0R05727:gauge_field_theory_foundations",
+        "P0R05728:gauge_field_theory_foundations",
+        "P0R05729:gauge_field_theory_foundations"
+      ],
+      "source_formulae": [
+        "P0R05727: Gauge & Field Theory Foundations",
+        "P0R05728: \"Master Lagrangian coupling consciousness to geometry/information\" -> needs Yang & Mills (1954), Weinberg (1995, QFT).",
+        "P0R05729: \"fiber bundles and gauge connections as metaphors for consciousness fields\" -> Kobayashi & Nomizu (Differential Geometry, 1963)."
+      ],
+      "source_ledger_ids": [
+        "P0R05721",
+        "P0R05722",
+        "P0R05723",
+        "P0R05724",
+        "P0R05725",
+        "P0R05726",
+        "P0R05727",
+        "P0R05728",
+        "P0R05729"
+      ],
+      "source_record_ids": [
+        "P0B05721",
+        "P0B05722",
+        "P0B05723",
+        "P0B05724",
+        "P0B05725",
+        "P0B05726",
+        "P0B05727",
+        "P0B05728",
+        "P0B05729"
+      ],
+      "test_protocols": [
+        "preserve Gauge & Field Theory Foundations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.thermodynamics_entropy.gauge_field_theory_foundations",
+      "validation_targets": [
+        "preserve records P0R05727-P0R05729"
+      ],
+      "variables": [
+        "gauge_field_theory_foundations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "context": 7,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded thermodynamics entropy source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05730",
+    "source_ledger_span": [
+      "P0R05721",
+      "P0R05729"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "thermodynamics_entropy.thermodynamics_entropy",
+      "thermodynamics_entropy.gauge_field_theory_foundations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Thermodynamics & Entropy Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

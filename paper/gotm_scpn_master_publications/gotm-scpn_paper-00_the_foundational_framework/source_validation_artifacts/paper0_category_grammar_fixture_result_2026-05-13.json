@@ -1,0 +1,117 @@
+{
+  "category_laws": {
+    "associativity_law": true,
+    "identity_law": true,
+    "layer_count": 4
+  },
+  "claim_boundary": "source-bounded category-theory formal grammar fixture; not empirical evidence",
+  "functorial_mapping_valid": true,
+  "hardware_status": "formal_consistency_fixture_no_execution",
+  "kan_extension_roles": {
+    "Lan": "best approximation from below",
+    "Ran": "best approximation from above"
+  },
+  "layer_count": 16,
+  "natural_transformation_boundary": "formal square-commutation obligation",
+  "null_controls": {
+    "missing_functor_endpoint_rejection_label": 1.0,
+    "noncomposable_morphism_rejection_label": 1.0,
+    "unsupported_empirical_claim_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded category-theory formal grammar fixture; not empirical evidence",
+    "protocol_state": "formal_consistency_only_no_empirical_execution",
+    "source_ledger_ids": [
+      "P0R06815",
+      "P0R06816",
+      "P0R06817",
+      "P0R06818",
+      "P0R06819",
+      "P0R06820",
+      "P0R06821",
+      "P0R06822",
+      "P0R06823",
+      "P0R06824",
+      "P0R06825",
+      "P0R06826",
+      "P0R06827",
+      "P0R06828",
+      "P0R06829",
+      "P0R06830",
+      "P0R06831",
+      "P0R06832",
+      "P0R06833",
+      "P0R06834",
+      "P0R06835",
+      "P0R06836",
+      "P0R06837",
+      "P0R06838",
+      "P0R06839",
+      "P0R06840",
+      "P0R06841",
+      "P0R06842",
+      "P0R06843",
+      "P0R06844",
+      "P0R06845",
+      "P0R06846",
+      "P0R06847",
+      "P0R06848",
+      "P0R06849",
+      "P0R06850",
+      "P0R06851",
+      "P0R06852",
+      "P0R06853",
+      "P0R06854",
+      "P0R06855",
+      "P0R06856",
+      "P0R06857",
+      "P0R06858",
+      "P0R06859",
+      "P0R06860",
+      "P0R06861",
+      "P0R06862",
+      "P0R06863",
+      "P0R06864",
+      "P0R06865",
+      "P0R06866",
+      "P0R06867",
+      "P0R06868",
+      "P0R06869",
+      "P0R06870",
+      "P0R06871",
+      "P0R06872",
+      "P0R06873",
+      "P0R06874",
+      "P0R06875",
+      "P0R06876",
+      "P0R06877"
+    ],
+    "source_ledger_span": [
+      "P0R06815",
+      "P0R06877"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06815",
+    "P0R06877"
+  ],
+  "spec_keys": [
+    "integration_synthesis.category_grammar.block_boundary",
+    "integration_synthesis.category_grammar.scpn_category",
+    "integration_synthesis.category_grammar.functorial_mappings",
+    "integration_synthesis.category_grammar.topos_internal_logic",
+    "integration_synthesis.category_grammar.kan_inference_mechanism",
+    "integration_synthesis.category_grammar.string_diagram_calculus",
+    "integration_synthesis.category_grammar.upde_category_application",
+    "integration_synthesis.category_grammar.theorem_obligation_boundary"
+  ],
+  "theorem_obligations": [
+    "Yoneda lemma",
+    "adjoint functor theorem"
+  ],
+  "truth_values": [
+    "true",
+    "false",
+    "uncertain"
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [
+        "EQ0113"
+      ],
+      "assumptions": [
+        "finite agent set",
+        "binary belief-state reduction",
+        "symmetric pair couplings for Hamiltonian evaluation",
+        "external fields separated from endogenised social couplings"
+      ],
+      "canonical_latex": "H=-\\sum_{i<j}J_{ij}\\sigma_i\\sigma_j-\\sum_i h_i\\sigma_i",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "compute Hamiltonian energy for finite binary belief-state fixtures",
+        "measure magnetisation m and q_EA across matched disorder replicas",
+        "test ultrametric triplet inequality on final-state distance matrices",
+        "contrast coherence-optimising and engagement-optimising controller policies"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_links": [
+        "src/scpn_quantum_control/paper0/equation_register.py",
+        "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_canonical_review_ledger_2026-05-13.jsonl"
+      ],
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "nths.spin_glass_hamiltonian",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "shuffle J_ij at fixed marginal weight distribution and require phase-signature degradation",
+        "set h_i to zero and separate external-field effects from endogenous couplings",
+        "compare ferromagnetic positive-coupling control against frustrated mixed-sign couplings",
+        "run matched disorder replicas before accepting q_EA or ultrametricity claims"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Domain III & IV: Memory, Control, and Collective Coherence (Layers 9-12)",
+      "source_block_indices": [
+        7,
+        382,
+        5266,
+        5272,
+        5556,
+        5557,
+        5558
+      ],
+      "source_equation_ids": [
+        "EQ0113"
+      ],
+      "source_ledger_ids": [
+        "P0R00007",
+        "P0R00382",
+        "P0R05266",
+        "P0R05272",
+        "P0R05556",
+        "P0R05557",
+        "P0R05558"
+      ],
+      "source_record_ids": [
+        "P0B00007",
+        "P0B00382",
+        "P0B05266",
+        "P0B05272",
+        "P0B05556",
+        "P0B05557",
+        "P0B05558"
+      ],
+      "validation_protocol": "paper0.nths.spin_glass.phase_contrast",
+      "validation_targets": [
+        "NTHS spin-glass Hamiltonian energy evaluation",
+        "magnetisation and Edwards-Anderson order-parameter contrast",
+        "ultrametric clustering test under matched disorder replicas"
+      ],
+      "variables": {
+        "H": "spin-glass Hamiltonian or social dissonance energy",
+        "J_ij": "effective social coupling between agents i and j",
+        "h_i": "media or AI-driven external field acting on agent i",
+        "sigma_i": "binary belief or agent state in {-1,+1}"
+      }
+    },
+    {
+      "anchor_math_ids": [
+        "EQ0114"
+      ],
+      "assumptions": [
+        "explicit coarse-graining scale",
+        "finite beta-function inputs",
+        "effective coupling remains within declared physical bounds",
+        "fixed-point claims require sign-change or zero-crossing evidence"
+      ],
+      "canonical_latex": "\\mu\\frac{dK_{\\mathrm{eff}}}{d\\mu}=\\beta_K(K,\\omega,\\ldots)",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "integrate finite beta_K fixtures across a declared scale grid",
+        "detect fixed point candidates and classify local stability",
+        "compare coarse-grained K_eff against microscopic coupling summaries",
+        "record scale, beta-function inputs, and boundary conditions in every result"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_links": [
+        "src/scpn_quantum_control/paper0/equation_register.py",
+        "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_canonical_review_ledger_2026-05-13.jsonl"
+      ],
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "macro_transition.effective_coupling_rg",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "set beta_K to zero and require K_eff invariance over scale",
+        "use constant beta control and verify analytic logarithmic flow",
+        "reverse beta sign and require fixed-point stability classification to change",
+        "reject non-finite scales, non-positive mu, and unbounded K_eff trajectories"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > 1. Renormalisation Group (RG) Flow Across Domains",
+      "source_block_indices": [
+        538,
+        5636,
+        5639
+      ],
+      "source_equation_ids": [
+        "EQ0114"
+      ],
+      "source_ledger_ids": [
+        "P0R00538",
+        "P0R05636",
+        "P0R05639"
+      ],
+      "source_record_ids": [
+        "P0B00538",
+        "P0B05636",
+        "P0B05639"
+      ],
+      "validation_protocol": "paper0.macro_transition.effective_coupling_rg_flow",
+      "validation_targets": [
+        "effective-coupling flow integration",
+        "fixed point and stability classification",
+        "null beta-function and constant beta controls"
+      ],
+      "variables": {
+        "K": "microscopic or lower-domain coupling parameters",
+        "K_eff": "effective coupling after coarse-graining",
+        "beta_K": "beta function for the effective coupling",
+        "mu": "coarse-graining or renormalisation scale",
+        "omega": "frequency or heterogeneity parameters entering the flow"
+      }
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "Macro-transition anchors are promoted only into validation specifications. Provider submission remains out of scope until simulator fixtures, null controls, and source-to-result provenance pass.",
+    "source_record_count": 10,
+    "spec_count": 2,
+    "spec_keys": [
+      "nths.spin_glass_hamiltonian",
+      "macro_transition.effective_coupling_rg"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

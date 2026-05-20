@@ -1,0 +1,63 @@
+{
+  "claim_boundary": "source-bounded the mechanism of interaction source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "stabiliser_transfer_lemma_sketch_ms_qec_bridge_stabiliser_transfer_acros": "stabiliser_transfer_lemma_sketch_ms_qec_bridge_stabiliser_transfer_acros_source_boundary",
+    "the_mechanism_of_interaction": "the_mechanism_of_interaction_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Mechanism of Interaction:",
+    "component_2": "Stabiliser Transfer Lemma (Sketch) - MS-QEC Bridge: Stabiliser Transfer across L9->L10",
+    "component_count": "2",
+    "next_boundary": "P0R03174",
+    "section": "The Mechanism of Interaction:",
+    "source_span": "P0R03148-P0R03173"
+  },
+  "next_source_boundary": "P0R03174",
+  "null_controls": {
+    "stabiliser_transfer_lemma_sketch_ms_qec_bridge_stabiliser_transfer_acros_is_not_empirical_validation_evidence": 1.0,
+    "the_mechanism_of_interaction_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the mechanism of interaction source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_mechanism_of_interaction_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03148",
+      "P0R03149",
+      "P0R03150",
+      "P0R03151",
+      "P0R03152",
+      "P0R03153",
+      "P0R03154",
+      "P0R03155",
+      "P0R03156",
+      "P0R03157",
+      "P0R03158",
+      "P0R03159",
+      "P0R03160",
+      "P0R03161",
+      "P0R03162",
+      "P0R03163",
+      "P0R03164",
+      "P0R03165",
+      "P0R03166",
+      "P0R03167",
+      "P0R03168",
+      "P0R03169",
+      "P0R03170",
+      "P0R03171",
+      "P0R03172",
+      "P0R03173"
+    ],
+    "source_ledger_span": [
+      "P0R03148",
+      "P0R03173"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03148",
+    "P0R03173"
+  ],
+  "source_record_count": 26
+}

@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded the binding integral is h int source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "the_binding_integral_is_h_int": "the_binding_integral_is_h_int_source_boundary",
+    "the_coupling_creates_experience": "the_coupling_creates_experience_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Binding Integral is H_int:",
+    "component_2": "The Coupling Creates Experience:",
+    "component_count": "2",
+    "next_boundary": "P0R03418",
+    "section": "The Binding Integral is H_int:",
+    "source_span": "P0R03410-P0R03417"
+  },
+  "next_source_boundary": "P0R03418",
+  "null_controls": {
+    "the_binding_integral_is_h_int_is_not_empirical_validation_evidence": 1.0,
+    "the_coupling_creates_experience_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the binding integral is h int source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_binding_integral_is_h_int_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03410",
+      "P0R03411",
+      "P0R03412",
+      "P0R03413",
+      "P0R03414",
+      "P0R03415",
+      "P0R03416",
+      "P0R03417"
+    ],
+    "source_ledger_span": [
+      "P0R03410",
+      "P0R03417"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03410",
+    "P0R03417"
+  ],
+  "source_record_count": 8
+}

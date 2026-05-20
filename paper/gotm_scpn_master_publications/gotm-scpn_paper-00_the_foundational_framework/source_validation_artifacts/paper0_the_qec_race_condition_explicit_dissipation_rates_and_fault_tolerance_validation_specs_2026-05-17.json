@@ -1,0 +1,190 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The QEC Race Condition: Explicit Dissipation Rates and Fault Tolerance' preserves Paper 0 records P0R03099-P0R03121 without empirical validation claims.",
+      "claim_boundary": "source-bounded the qec race condition explicit dissipation rates and fault tolerance source-accounting bridge; not validation evidence",
+      "context_id": "the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03099-P0R03121"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance.the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The QEC Race Condition: Explicit Dissipation Rates and Fault Tolerance is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The QEC Imperative and the Role of the \u03a8-Field > The QEC Race Condition: Explicit Dissipation Rates and Fault Tolerance",
+      "source_block_indices": [
+        3099,
+        3100,
+        3101,
+        3102,
+        3103,
+        3104,
+        3105,
+        3106,
+        3107,
+        3108,
+        3109,
+        3110,
+        3111,
+        3112,
+        3113,
+        3114,
+        3115,
+        3116,
+        3117,
+        3118,
+        3119,
+        3120,
+        3121
+      ],
+      "source_equation_ids": [
+        "P0R03099:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03100:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03101:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03102:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03103:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03104:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03105:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03106:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03107:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03108:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03109:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03110:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03111:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03112:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03113:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03114:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03115:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03116:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03117:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03118:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03119:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03120:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+        "P0R03121:the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance"
+      ],
+      "source_formulae": [
+        "P0R03099: The QEC Race Condition: Explicit Dissipation Rates and Fault Tolerance",
+        "P0R03100: P0R03100",
+        "P0R03101: For any Quantum Error Correction (QEC) architecture to be physically viable, it must strictly satisfy the fault-tolerance threshold condition: the rate of active error correction ($\\gamma_{QEC}$) must be significantly faster than the rate of environmental decoherence ($\\gamma_{decoherence}$). A large theoretical energy gap provides passive shielding, but it is insufficient if the active biochemical execution is too slow to catch accumulating errors.",
+        "P0R03102: To validate the biological QEC cycle, we must quantify the operation times of both competing processes within the Coherence Domain (CD) micro-environment:",
+        "P0R03103: 1. The Decoherence Rate ($\\gamma_{decoherence}$):",
+        "P0R03104: The logical qubits are shielded by the 1.64 eV energy gap of the microtubule lattice, and the ancilla qubits (Phosphorus-31 nuclear spins in Posner clusters) are protected by their $S=0$ singlet ground state. Within the highly ordered QED hydration layer, nuclear spin decoherence times ($T_2^*$) are exceptionally long. A conservative lower-bound estimate for these shielded nuclear spins in a biological CD is $\\tau_{decoherence} \\approx 10^{-1}$ to $10^0$ seconds. Therefore, the environmental decoherence rate is strictly bounded:",
+        "P0R03105: $$\\gamma_{decoherence} \\le 10 \\text{ Hz}$$",
+        "P0R03106: 2. The Error Correction Rate ($\\gamma_{QEC}$):",
+        "P0R03107: The total time required for a single QEC cycle ($\\tau_{QEC}$) is bottlenecked not by the quantum interactions, but by the macroscopic enzymatic step-the spin-dependent ATP hydrolysis. While the subsequent phonon propagation across the microtubule lattice is virtually instantaneous ($\\sim 10^{-12}$ seconds), the enzymatic conformational change and hydrolysis occur on the timescale of $\\tau_{hydrolysis} \\approx 10^{-4}$ to $10^{-3}$ seconds. Therefore, the frequency of the active biological correction cycle is:",
+        "P0R03108: $$\\gamma_{QEC} \\approx 10^3 \\text{ to } 10^4 \\text{ Hz}$$",
+        "P0R03109: This yields the explicit race-condition inequality:",
+        "P0R03110: $$\\gamma_{QEC} \\gg \\gamma_{decoherence}$$",
+        "P0R03111: $$10^3 \\text{ Hz} \\gg 10 \\text{ Hz}$$",
+        "P0R03112: Because the biochemical syndrome measurement and phonon-mediated recovery cycle operates at least two to three orders of magnitude faster than the shielded thermal decoherence time of the nuclear spin ancillae, the system robustly satisfies the threshold theorem for continuous QEC. The organismal substrate is mathematically proven to outpace its thermal environment, validating the physical feasibility of macroscopic quantum coherence at Layer 1.",
+        "P0R03113: P0R03113",
+        "P0R03114: P0R03114",
+        "P0R03115: Biophysical Derivation of the MT Energy Gap",
+        "P0R03116: The primary mechanism for protecting quantum coherence in the biological substrate (Layer 1) is the emergence of a topological energy gap $\\Delta$ within the microtubule (MT) lattice.",
+        "P0R03117: We model the tubulin dimers as an array of electric dipoles with magnitude $p \\approx 1000 \\text{ Debye}$ arranged in a helical geometry with lattice spacing $a \\approx 8 \\text{ nm}$. The dipole-dipole interaction energy $J$ is given by $J = \\frac{p^2}{4\\pi\\epsilon\\epsilon_0 a^3}$. For these physiological parameters, $J \\approx 0.82 \\text{ eV}$.",
+        "P0R03118: Within the proposed topological QEC code, the stabilizers $S_p$ enforce a ground state where elementary excitations (topological defects) require a minimum energy of $2J$. This yields a robust energy gap of $\\Delta \\approx 1.64 \\text{ eV}$.",
+        "P0R03119: This gap is $\\approx 63$ times the thermal energy $k_B T$ at $310 \\text{ K}$ ($\\approx 0.026 \\text{ eV}$), providing the necessary fault-tolerance to extend coherence lifetimes into the millisecond range required for synaptic integration ($L2$) and tissue synchrony ($L4$).",
+        "P0R03120: This derivation distinguishes the SCPN gap from analogous values found in non-biological semiconductors (e.g., Os/TiO2) by grounding it specifically in the dipole-dipole interactions of the tubulin protein matrix.",
+        "P0R03121: P0R03121"
+      ],
+      "source_ledger_ids": [
+        "P0R03099",
+        "P0R03100",
+        "P0R03101",
+        "P0R03102",
+        "P0R03103",
+        "P0R03104",
+        "P0R03105",
+        "P0R03106",
+        "P0R03107",
+        "P0R03108",
+        "P0R03109",
+        "P0R03110",
+        "P0R03111",
+        "P0R03112",
+        "P0R03113",
+        "P0R03114",
+        "P0R03115",
+        "P0R03116",
+        "P0R03117",
+        "P0R03118",
+        "P0R03119",
+        "P0R03120",
+        "P0R03121"
+      ],
+      "source_record_ids": [
+        "P0B03099",
+        "P0B03100",
+        "P0B03101",
+        "P0B03102",
+        "P0B03103",
+        "P0B03104",
+        "P0B03105",
+        "P0B03106",
+        "P0B03107",
+        "P0B03108",
+        "P0B03109",
+        "P0B03110",
+        "P0B03111",
+        "P0B03112",
+        "P0B03113",
+        "P0B03114",
+        "P0B03115",
+        "P0B03116",
+        "P0B03117",
+        "P0B03118",
+        "P0B03119",
+        "P0B03120",
+        "P0B03121"
+      ],
+      "test_protocols": [
+        "preserve The QEC Race Condition: Explicit Dissipation Rates and Fault Tolerance source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance.the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance",
+      "validation_targets": [
+        "preserve records P0R03099-P0R03121"
+      ],
+      "variables": [
+        "the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 22
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "mechanism": 12,
+      "structural": 4
+    },
+    "claim_boundary": "source-bounded the qec race condition explicit dissipation rates and fault tolerance source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 23,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03122",
+    "source_ledger_span": [
+      "P0R03099",
+      "P0R03121"
+    ],
+    "source_record_count": 23,
+    "spec_count": 1,
+    "spec_keys": [
+      "the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance.the_qec_race_condition_explicit_dissipation_rates_and_fault_tolerance"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The QEC Race Condition: Explicit Dissipation Rates and Fault Tolerance Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

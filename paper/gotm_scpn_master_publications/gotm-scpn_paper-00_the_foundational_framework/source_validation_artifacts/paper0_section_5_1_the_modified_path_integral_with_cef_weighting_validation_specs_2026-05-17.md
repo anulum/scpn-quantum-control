@@ -1,0 +1,29 @@
+# Paper 0 5.1 The Modified Path Integral with CEF Weighting Specs
+
+- Source span: P0R03869 - P0R03931
+- Source records: 63
+- Consumed source records: 63
+- Coverage match: True
+- Spec count: 2
+- Claim boundary: source-bounded section 5 1 the modified path integral with cef weighting source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R03932
+
+## Specs
+### `section_5_1_the_modified_path_integral_with_cef_weighting.5_1_the_modified_path_integral_with_cef_weighting`
+
+The source-bounded component '5.1 The Modified Path Integral with CEF Weighting' preserves Paper 0 records P0R03869-P0R03872 without empirical validation claims.
+
+- Context: `5_1_the_modified_path_integral_with_cef_weighting`
+- Protocol: `paper0.section_5_1_the_modified_path_integral_with_cef_weighting.5_1_the_modified_path_integral_with_cef_weighting`
+- Source equations: P0R03869:5_1_the_modified_path_integral_with_cef_weighting, P0R03870:5_1_the_modified_path_integral_with_cef_weighting, P0R03871:5_1_the_modified_path_integral_with_cef_weighting, P0R03872:5_1_the_modified_path_integral_with_cef_weighting
+- Null controls: 5_1_the_modified_path_integral_with_cef_weighting must remain source-bounded accounting
+
+### `section_5_1_the_modified_path_integral_with_cef_weighting.5_2_new_falsifiable_predictions`
+
+The source-bounded component '5.2 New Falsifiable Predictions' preserves Paper 0 records P0R03873-P0R03931 without empirical validation claims.
+
+- Context: `5_2_new_falsifiable_predictions`
+- Protocol: `paper0.section_5_1_the_modified_path_integral_with_cef_weighting.5_2_new_falsifiable_predictions`
+- Source equations: P0R03873:5_2_new_falsifiable_predictions, P0R03874:5_2_new_falsifiable_predictions, P0R03875:5_2_new_falsifiable_predictions, P0R03876:5_2_new_falsifiable_predictions, P0R03877:5_2_new_falsifiable_predictions, P0R03878:5_2_new_falsifiable_predictions, P0R03879:5_2_new_falsifiable_predictions, P0R03880:5_2_new_falsifiable_predictions, P0R03881:5_2_new_falsifiable_predictions, P0R03882:5_2_new_falsifiable_predictions, P0R03883:5_2_new_falsifiable_predictions, P0R03884:5_2_new_falsifiable_predictions, P0R03885:5_2_new_falsifiable_predictions, P0R03886:5_2_new_falsifiable_predictions, P0R03887:5_2_new_falsifiable_predictions, P0R03888:5_2_new_falsifiable_predictions, P0R03889:5_2_new_falsifiable_predictions, P0R03890:5_2_new_falsifiable_predictions, P0R03891:5_2_new_falsifiable_predictions, P0R03892:5_2_new_falsifiable_predictions, P0R03893:5_2_new_falsifiable_predictions, P0R03894:5_2_new_falsifiable_predictions, P0R03895:5_2_new_falsifiable_predictions, P0R03896:5_2_new_falsifiable_predictions, P0R03897:5_2_new_falsifiable_predictions, P0R03898:5_2_new_falsifiable_predictions, P0R03899:5_2_new_falsifiable_predictions, P0R03900:5_2_new_falsifiable_predictions, P0R03901:5_2_new_falsifiable_predictions, P0R03902:5_2_new_falsifiable_predictions, P0R03903:5_2_new_falsifiable_predictions, P0R03904:5_2_new_falsifiable_predictions, P0R03905:5_2_new_falsifiable_predictions, P0R03906:5_2_new_falsifiable_predictions, P0R03907:5_2_new_falsifiable_predictions, P0R03908:5_2_new_falsifiable_predictions, P0R03909:5_2_new_falsifiable_predictions, P0R03910:5_2_new_falsifiable_predictions, P0R03911:5_2_new_falsifiable_predictions, P0R03912:5_2_new_falsifiable_predictions, P0R03913:5_2_new_falsifiable_predictions, P0R03914:5_2_new_falsifiable_predictions, P0R03915:5_2_new_falsifiable_predictions, P0R03916:5_2_new_falsifiable_predictions, P0R03917:5_2_new_falsifiable_predictions, P0R03918:5_2_new_falsifiable_predictions, P0R03919:5_2_new_falsifiable_predictions, P0R03920:5_2_new_falsifiable_predictions, P0R03921:5_2_new_falsifiable_predictions, P0R03922:5_2_new_falsifiable_predictions, P0R03923:5_2_new_falsifiable_predictions, P0R03924:5_2_new_falsifiable_predictions, P0R03925:5_2_new_falsifiable_predictions, P0R03926:5_2_new_falsifiable_predictions, P0R03927:5_2_new_falsifiable_predictions, P0R03928:5_2_new_falsifiable_predictions, P0R03929:5_2_new_falsifiable_predictions, P0R03930:5_2_new_falsifiable_predictions, P0R03931:5_2_new_falsifiable_predictions
+- Null controls: 5_2_new_falsifiable_predictions must remain source-bounded accounting

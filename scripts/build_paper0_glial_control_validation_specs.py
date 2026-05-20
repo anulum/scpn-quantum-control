@@ -19,7 +19,13 @@ from typing import Any
 from scpn_quantum_control.paper0.equation_register import get_paper0_equation_record
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_EXTRACTION_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_LEDGER_PATH = DEFAULT_EXTRACTION_DIR / "paper0_canonical_review_ledger_2026-05-13.jsonl"
 
 SPEC_SOURCE_LEDGER_IDS: dict[str, tuple[str, ...]] = {
@@ -61,7 +67,7 @@ SPEC_METADATA: dict[str, dict[str, tuple[str, ...] | str]] = {
         "implementation_status": "validation_spec_pending_executable_fixture",
         "implementation_links": (
             "src/scpn_quantum_control/paper0/equation_register.py",
-            "docs/internal/paper0_foundational_extraction/"
+            "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
             "paper0_canonical_review_ledger_2026-05-13.jsonl",
         ),
         "null_controls": (
@@ -82,7 +88,7 @@ SPEC_METADATA: dict[str, dict[str, tuple[str, ...] | str]] = {
         "implementation_status": "validation_spec_pending_executable_fixture",
         "implementation_links": (
             "src/scpn_quantum_control/paper0/equation_register.py",
-            "docs/internal/paper0_foundational_extraction/"
+            "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"
             "paper0_canonical_review_ledger_2026-05-13.jsonl",
         ),
         "null_controls": (

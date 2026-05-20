@@ -1,0 +1,48 @@
+{
+  "architecture_target_count": 2,
+  "blank_terminal_record_count": 1,
+  "claim_boundary": "source-bounded Axiom III SEC-Ntilde-equivalence map; not validation evidence",
+  "components": {
+    "causal_imperative_architecture": "causal_imperative_and_15_layer_locking_architecture",
+    "equivalence_heading": "sec_ntilde_unity_equivalence_subsection",
+    "macroscopic_realisation": "sec_as_macroscopic_realisation_of_ntilde_unity",
+    "quasicritical_efficiency": "ntilde_unity_as_quasicritical_efficiency_target"
+  },
+  "efficiency_claim_count": 2,
+  "equivalence_claim_count": 2,
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "equivalence": "SEC is macroscopic physical realisation of tilde_N_t = 1",
+    "next_boundary": "1.4 Tripartite Ontology: The Substance of Information",
+    "section": "Equivalence of SEC and the tilde_N_t = 1 State",
+    "source_integrity": "P0R00816 truncated; P0R00817 blank"
+  },
+  "next_source_boundary": "P0R00818",
+  "null_controls": {
+    "blank_p0r00817_is_preserved_not_silently_omitted": 1.0,
+    "sec_ntilde_equivalence_is_source_claim_not_empirical_evidence": 1.0,
+    "truncated_p0r00816_requires_source_audit_before_completion_claim": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Axiom III SEC-Ntilde-equivalence map; not validation evidence",
+    "protocol_state": "source_axiom_iii_sec_ntilde_equivalence_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R00811",
+      "P0R00812",
+      "P0R00813",
+      "P0R00814",
+      "P0R00815",
+      "P0R00816",
+      "P0R00817"
+    ],
+    "source_ledger_span": [
+      "P0R00811",
+      "P0R00817"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R00811",
+    "P0R00817"
+  ],
+  "source_record_count": 7
+}

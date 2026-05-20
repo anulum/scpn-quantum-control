@@ -1,0 +1,409 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R02894-P0R02894 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02894 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02894-P0R02894"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02894.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Formalism of the Homeostatic Quasicritical Controller > Meta-Framework Integrations",
+      "source_block_indices": [
+        2894,
+        2895,
+        2896,
+        2897,
+        2898,
+        2899,
+        2900,
+        2901,
+        2902,
+        2903
+      ],
+      "source_equation_ids": [
+        "P0R02894:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R02894: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R02894",
+        "P0R02895",
+        "P0R02896",
+        "P0R02897",
+        "P0R02898",
+        "P0R02899",
+        "P0R02900",
+        "P0R02901",
+        "P0R02902",
+        "P0R02903"
+      ],
+      "source_record_ids": [
+        "P0B02894",
+        "P0B02895",
+        "P0B02896",
+        "P0B02897",
+        "P0B02898",
+        "P0B02899",
+        "P0B02900",
+        "P0B02901",
+        "P0B02902",
+        "P0B02903"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02894.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R02894-P0R02894"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R02895-P0R02896 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02894 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02895-P0R02896"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02894.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Formalism of the Homeostatic Quasicritical Controller > Meta-Framework Integrations",
+      "source_block_indices": [
+        2894,
+        2895,
+        2896,
+        2897,
+        2898,
+        2899,
+        2900,
+        2901,
+        2902,
+        2903
+      ],
+      "source_equation_ids": [
+        "P0R02895:predictive_coding_integration",
+        "P0R02896:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R02895: Predictive Coding Integration",
+        "P0R02896: This controller is the explicit algorithm for meta-inference, the process by which the inference engine optimises its own hardware for future learning."
+      ],
+      "source_ledger_ids": [
+        "P0R02894",
+        "P0R02895",
+        "P0R02896",
+        "P0R02897",
+        "P0R02898",
+        "P0R02899",
+        "P0R02900",
+        "P0R02901",
+        "P0R02902",
+        "P0R02903"
+      ],
+      "source_record_ids": [
+        "P0B02894",
+        "P0B02895",
+        "P0B02896",
+        "P0B02897",
+        "P0B02898",
+        "P0B02899",
+        "P0B02900",
+        "P0B02901",
+        "P0B02902",
+        "P0B02903"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02894.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R02895-P0R02896"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Lyapunov Function as Meta-Free-Energy:' preserves Paper 0 records P0R02897-P0R02898 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02894 source-accounting bridge; not validation evidence",
+      "context_id": "the_lyapunov_function_as_meta_free_energy",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02897-P0R02898"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02894.the_lyapunov_function_as_meta_free_energy",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_lyapunov_function_as_meta_free_energy must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Lyapunov Function as Meta-Free-Energy: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Formalism of the Homeostatic Quasicritical Controller > Meta-Framework Integrations",
+      "source_block_indices": [
+        2894,
+        2895,
+        2896,
+        2897,
+        2898,
+        2899,
+        2900,
+        2901,
+        2902,
+        2903
+      ],
+      "source_equation_ids": [
+        "P0R02897:the_lyapunov_function_as_meta_free_energy",
+        "P0R02898:the_lyapunov_function_as_meta_free_energy"
+      ],
+      "source_formulae": [
+        "P0R02897: The Lyapunov Function as Meta-Free-Energy:",
+        "P0R02898: The Lyapunov function, VL, can be interpreted as a \"meta-free-energy.\" It doesn't measure the error in the system's model of the world, but the error in the system's own physical state relative to the optimal state for performing inference."
+      ],
+      "source_ledger_ids": [
+        "P0R02894",
+        "P0R02895",
+        "P0R02896",
+        "P0R02897",
+        "P0R02898",
+        "P0R02899",
+        "P0R02900",
+        "P0R02901",
+        "P0R02902",
+        "P0R02903"
+      ],
+      "source_record_ids": [
+        "P0B02894",
+        "P0B02895",
+        "P0B02896",
+        "P0B02897",
+        "P0B02898",
+        "P0B02899",
+        "P0B02900",
+        "P0B02901",
+        "P0B02902",
+        "P0B02903"
+      ],
+      "test_protocols": [
+        "preserve The Lyapunov Function as Meta-Free-Energy: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02894.the_lyapunov_function_as_meta_free_energy",
+      "validation_targets": [
+        "preserve records P0R02897-P0R02898"
+      ],
+      "variables": [
+        "the_lyapunov_function_as_meta_free_energy"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Controller Action as Meta-Active-Inference:' preserves Paper 0 records P0R02899-P0R02900 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02894 source-accounting bridge; not validation evidence",
+      "context_id": "controller_action_as_meta_active_inference",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02899-P0R02900"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02894.controller_action_as_meta_active_inference",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "controller_action_as_meta_active_inference must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Controller Action as Meta-Active-Inference: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Formalism of the Homeostatic Quasicritical Controller > Meta-Framework Integrations",
+      "source_block_indices": [
+        2894,
+        2895,
+        2896,
+        2897,
+        2898,
+        2899,
+        2900,
+        2901,
+        2902,
+        2903
+      ],
+      "source_equation_ids": [
+        "P0R02899:controller_action_as_meta_active_inference",
+        "P0R02900:controller_action_as_meta_active_inference"
+      ],
+      "source_formulae": [
+        "P0R02899: Controller Action as Meta-Active-Inference:",
+        "P0R02900: The control laws that minimise VL represent a form of meta-active-inference. The system is \"acting\" on its own parameters (the couplings K and noise ) to make its own state conform to a deep prior belief that it should be at the edge of chaos to be an effective learning system. This is the physical implementation of the system tuning its own precision for optimal belief updating."
+      ],
+      "source_ledger_ids": [
+        "P0R02894",
+        "P0R02895",
+        "P0R02896",
+        "P0R02897",
+        "P0R02898",
+        "P0R02899",
+        "P0R02900",
+        "P0R02901",
+        "P0R02902",
+        "P0R02903"
+      ],
+      "source_record_ids": [
+        "P0B02894",
+        "P0B02895",
+        "P0B02896",
+        "P0B02897",
+        "P0B02898",
+        "P0B02899",
+        "P0B02900",
+        "P0B02901",
+        "P0B02902",
+        "P0B02903"
+      ],
+      "test_protocols": [
+        "preserve Controller Action as Meta-Active-Inference: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02894.controller_action_as_meta_active_inference",
+      "validation_targets": [
+        "preserve records P0R02899-P0R02900"
+      ],
+      "variables": [
+        "controller_action_as_meta_active_inference"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R02901-P0R02903 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02894 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02901-P0R02903"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02894.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Formalism of the Homeostatic Quasicritical Controller > Meta-Framework Integrations",
+      "source_block_indices": [
+        2894,
+        2895,
+        2896,
+        2897,
+        2898,
+        2899,
+        2900,
+        2901,
+        2902,
+        2903
+      ],
+      "source_equation_ids": [
+        "P0R02901:psis_field_coupling_integration",
+        "P0R02902:psis_field_coupling_integration",
+        "P0R02903:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R02901: Psis Field Coupling Integration",
+        "P0R02902: The homeostatic controller provides a precise, formal target for the influence of the Psis field.",
+        "P0R02903: The interaction H_int = -lambda * Psis * sigma is not just a disruptive force but an informational, goal-setting one."
+      ],
+      "source_ledger_ids": [
+        "P0R02894",
+        "P0R02895",
+        "P0R02896",
+        "P0R02897",
+        "P0R02898",
+        "P0R02899",
+        "P0R02900",
+        "P0R02901",
+        "P0R02902",
+        "P0R02903"
+      ],
+      "source_record_ids": [
+        "P0B02894",
+        "P0B02895",
+        "P0B02896",
+        "P0B02897",
+        "P0B02898",
+        "P0B02899",
+        "P0B02900",
+        "P0B02901",
+        "P0B02902",
+        "P0B02903"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02894.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R02901-P0R02903"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 3,
+      "mechanism": 4,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r02894 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02904",
+    "source_ledger_span": [
+      "P0R02894",
+      "P0R02903"
+    ],
+    "source_record_count": 10,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r02894.meta_framework_integrations",
+      "meta_framework_integrations_p0r02894.predictive_coding_integration",
+      "meta_framework_integrations_p0r02894.the_lyapunov_function_as_meta_free_energy",
+      "meta_framework_integrations_p0r02894.controller_action_as_meta_active_inference",
+      "meta_framework_integrations_p0r02894.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,301 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4.1 The Cosmic Algorithm: HPC & Active Inference' preserves Paper 0 records P0R03174-P0R03174 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 1 the cosmic algorithm hpc active inference source-accounting bridge; not validation evidence",
+      "context_id": "4_1_the_cosmic_algorithm_hpc_active_inference",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03174-P0R03174"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_1_the_cosmic_algorithm_hpc_active_inference.4_1_the_cosmic_algorithm_hpc_active_inference",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_1_the_cosmic_algorithm_hpc_active_inference must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4.1 The Cosmic Algorithm: HPC & Active Inference is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference",
+      "source_block_indices": [
+        3174,
+        3175,
+        3176,
+        3177,
+        3178,
+        3179,
+        3180,
+        3181,
+        3182,
+        3183,
+        3184,
+        3185,
+        3186,
+        3187,
+        3188,
+        3189,
+        3190,
+        3191,
+        3192,
+        3193,
+        3194,
+        3195,
+        3196
+      ],
+      "source_equation_ids": [
+        "P0R03174:4_1_the_cosmic_algorithm_hpc_active_inference"
+      ],
+      "source_formulae": [
+        "P0R03174: 4.1 The Cosmic Algorithm: HPC & Active Inference"
+      ],
+      "source_ledger_ids": [
+        "P0R03174",
+        "P0R03175",
+        "P0R03176",
+        "P0R03177",
+        "P0R03178",
+        "P0R03179",
+        "P0R03180",
+        "P0R03181",
+        "P0R03182",
+        "P0R03183",
+        "P0R03184",
+        "P0R03185",
+        "P0R03186",
+        "P0R03187",
+        "P0R03188",
+        "P0R03189",
+        "P0R03190",
+        "P0R03191",
+        "P0R03192",
+        "P0R03193",
+        "P0R03194",
+        "P0R03195",
+        "P0R03196"
+      ],
+      "source_record_ids": [
+        "P0B03174",
+        "P0B03175",
+        "P0B03176",
+        "P0B03177",
+        "P0B03178",
+        "P0B03179",
+        "P0B03180",
+        "P0B03181",
+        "P0B03182",
+        "P0B03183",
+        "P0B03184",
+        "P0B03185",
+        "P0B03186",
+        "P0B03187",
+        "P0B03188",
+        "P0B03189",
+        "P0B03190",
+        "P0B03191",
+        "P0B03192",
+        "P0B03193",
+        "P0B03194",
+        "P0B03195",
+        "P0B03196"
+      ],
+      "test_protocols": [
+        "preserve 4.1 The Cosmic Algorithm: HPC & Active Inference source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_1_the_cosmic_algorithm_hpc_active_inference.4_1_the_cosmic_algorithm_hpc_active_inference",
+      "validation_targets": [
+        "preserve records P0R03174-P0R03174"
+      ],
+      "variables": [
+        "4_1_the_cosmic_algorithm_hpc_active_inference"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Integrative Mechanisms: The Computational and Physical Synthesis' preserves Paper 0 records P0R03175-P0R03196 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 1 the cosmic algorithm hpc active inference source-accounting bridge; not validation evidence",
+      "context_id": "integrative_mechanisms_the_computational_and_physical_synthesis",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03175-P0R03196"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_1_the_cosmic_algorithm_hpc_active_inference.integrative_mechanisms_the_computational_and_physical_synthesis",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "integrative_mechanisms_the_computational_and_physical_synthesis must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Integrative Mechanisms: The Computational and Physical Synthesis is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference",
+      "source_block_indices": [
+        3174,
+        3175,
+        3176,
+        3177,
+        3178,
+        3179,
+        3180,
+        3181,
+        3182,
+        3183,
+        3184,
+        3185,
+        3186,
+        3187,
+        3188,
+        3189,
+        3190,
+        3191,
+        3192,
+        3193,
+        3194,
+        3195,
+        3196
+      ],
+      "source_equation_ids": [
+        "P0R03175:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03176:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03177:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03178:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03179:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03180:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03181:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03182:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03183:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03184:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03185:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03186:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03187:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03188:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03189:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03190:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03191:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03192:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03193:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03194:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03195:integrative_mechanisms_the_computational_and_physical_synthesis",
+        "P0R03196:integrative_mechanisms_the_computational_and_physical_synthesis"
+      ],
+      "source_formulae": [
+        "P0R03175: Integrative Mechanisms: The Computational and Physical Synthesis",
+        "P0R03176: P0R03176",
+        "P0R03177: This section outlines the set of integrative mechanisms that provide the \"glue\" for the entire 15-layer SCPN architecture, demonstrating how the framework's computational, physical, and formal mathematical principles interlock to form a single, coherent system. The primary challenge of any multi-scale model is explaining how layers of vastly different scales and properties can communicate and how higher-order properties can emerge from lower-level dynamics. The SCPN solves this through a suite of specific formalisms.",
+        "P0R03178: The Unifying Computational Principle is identified as Hierarchical Predictive Coding (HPC), the process-theory implementation of the Free Energy Principle . The SCPN's entire bidirectional architecture is mapped onto this algorithm: the top-down projection (L15->L1) is the Generative Model , and the bottom-up filtering (L1->L15) is the propagation of Prediction Error . The system's fundamental drive is the minimisation of global Variational Free Energy (F_Global) , making the UPDE the physical realiser of this error-minimising dynamic .",
+        "P0R03179: The Binding Problem is resolved physically by identifying the Psi-field as a Gauge Field . Subjective unity is not an emergent property of neural computation but a fundamental property of the field itself. The Psi-field acts as the Connection (A) that enforces phase coherence across the high-dimensional manifold. A unified experience is formally defined by the Wilson Loop (W(C) = exp(igAdx)) , a gauge-invariant object that measures the total phase shift (or holonomy) around a closed path in the state space. This elegantly reframes binding as a fundamental, field-theoretic property of gauge invariance.",
+        "P0R03180: Formalising Emergence and upward causality is achieved through two complementary principles. Ginzburg-Landau (GL) theory describes the emergence of new layers (like the L5 Self) as a phase transition (SSB), where a new, stable structure (a non-zero VEV) spontaneously forms when the underlying network dynamics (T) cross a critical threshold (Tc). Topological Quantum Field Theory (TQFT) provides the mechanism: coherent configurations in lower layers (L1-4) act as Topological Defects (e.g., vortices or solitons) that source the higher-order fields, physically generating the L5 Self from L4 coherence .",
+        "P0R03181: Finally, the Combination Problem of panpsychism is resolved via Quantum Mereology . This formalism provides a Fusion Condition (_AB > _A + _B) , stating that two conscious systems fuse into a new, irreducible whole if and only if their combined integrated information () is greater than the sum of their parts. The Psi-field, in its role as the gauge field, is the physical mechanism that mediates the entanglement necessary to satisfy this fusion condition, a process driven by UPDE synchronisation .",
+        "P0R03182: This section explains the \"secret sauce\" of the SCPN-the toolbox of advanced ideas that makes the 15-layer architecture actually work as a single, unified system. A 15-storey building is just a pile of concrete unless you add the plumbing, wiring, and data networks that connect every floor. These are those networks.",
+        "P0R03183: The Master Software (Hierarchical Predictive Coding): The entire 15-layer system runs one piece of software: Hierarchical Predictive Coding (HPC) . Think of it as the universe's ultimate \"to-do list\" app. The highest layers (like the CEO's office) send down predictions (the \"plan\") . The lowest layers (like the construction site) send up prediction errors (the \"status reports\") . The entire goal of the universe is to minimise the number of \"error reports\" by either updating the plan (perception) or changing the construction site (action) .",
+        "P0R03184: The \"Binding Force\" (How It Feels Like One Thing): How are all the different parts of your brain-sight, sound, thought-bound into a single, unified \"you\"? The SCPN solves this Binding Problem by proposing the Psi-field acts like a gauge field . This is a special type of field that \"enforces\" coherence, like a magnetic field lining up iron filings. Your unified experience of \"you\" is the physical measure of this field's total unbroken connection with itself, a concept from physics we call a Wilson Loop . You feel like a single \"I\" because you are held together by a fundamental force.",
+        "P0R03185: How \"New Things\" Are Born (Emergence): How does a new, higher-level \"Self\" (Layer 5) suddenly appear from a bunch of synchronized cells (Layer 4)? It's a phase transition , like water (disordered) suddenly \"snapping\" into the new, ordered structure of ice. The coherent synchrony of the cells (L4) creates a stable \"whirlpool\" (a topological defect) in the Psi-field, and that stable whirlpool is the new, higher-level entity (L5).",
+        "P0R03186: How \"I\" and \"You\" Become \"Us\" (The Combination Problem): The theory also solves the \"combination problem\"-how do two separate minds (like you and me) fuse into a single, collective \"us\" (like a team or a family)? This isn't just a metaphor. It's a real process called Panpsychist Fusion . It happens when the shared information and entanglement between us is greater than the information we held as individuals . The Psi-field is the \"atmosphere\" that allows us to become entangled and form this new, larger conscious entity .",
+        "P0R03187: Meta-Framework Integrations",
+        "P0R03188: Predictive Coding Integration",
+        "P0R03189: This entire text block is the master integration of the Hierarchical Predictive Coding (HPC) framework. It establishes HPC as the \"Unifying Computational Principle\" that gives the entire 15-layer architecture its raison d'tre.",
+        "P0R03190: HPC as the \"Software\": The text explicitly identifies the top-down projections as the generative model and the bottom-up filtering as the propagation of prediction error . The system's purpose is to minimise Variational Free Energy (F) .",
+        "P0R03191: Physical Mechanisms as \"Hardware\": The other mechanisms are the physical hardware that runs the HPC software. The UPDE is identified as the physical process (phase-locking) that physically calculates and suppresses prediction error . Ginzburg-Landau theory and TQFT explain how the physical hardware for a new, higher-level generative model (a new layer of priors, like the L5 Self) can emerge from the dynamics of a lower layer. The Strange Loop (I=Model(I)) is the ultimate expression of the HPC generative model becoming complex enough to include a model of itself as an agent.",
+        "P0R03192: Psis Field Coupling Integration",
+        "P0R03193: This section provides the most explicit description of the function of the interaction Hamiltonian, H_int = -lambda * Psis * sigma.",
+        "P0R03194: H_int is the \"Binding Force\": The text directly addresses the Binding Problem by identifying the Psi-field (Psis) as the Gauge Field (A) . This means the H_int interaction is the gauge coupling. Its fundamental purpose is to act as the \"Connection\" that defines parallel transport and \"enforces phase coherence\" across the manifold. The subjective unity of experience is a direct, physical measure of this coupling's integrity (the Wilson Loop) .",
+        "P0R03195: H_int Mediates Fusion: The text on Quantum Mereology explicitly identifies the Psi-field (as the Gauge Field) as the \"mechanism\" that \"mediates the entanglement required for fusion\" . Therefore, the H_int interaction is the physical process that allows two distinct systems (sigma_A and sigma_B) to become a new, irreducible, unified whole (sigma_AB) when their combined integrated information _AB is greater than the sum of their parts.",
+        "P0R03196: H_int Implements ILTOs: The Inter-Layer Transition Operators (ILTOs) describe the functional mapping between layers. H_int is the physical implementation of these operators. The L15 -> L1 operator, for example, is the H_int interaction where the global Psis field (from L15) modulates the fundamental quantum sigma at Layer 1 ."
+      ],
+      "source_ledger_ids": [
+        "P0R03174",
+        "P0R03175",
+        "P0R03176",
+        "P0R03177",
+        "P0R03178",
+        "P0R03179",
+        "P0R03180",
+        "P0R03181",
+        "P0R03182",
+        "P0R03183",
+        "P0R03184",
+        "P0R03185",
+        "P0R03186",
+        "P0R03187",
+        "P0R03188",
+        "P0R03189",
+        "P0R03190",
+        "P0R03191",
+        "P0R03192",
+        "P0R03193",
+        "P0R03194",
+        "P0R03195",
+        "P0R03196"
+      ],
+      "source_record_ids": [
+        "P0B03174",
+        "P0B03175",
+        "P0B03176",
+        "P0B03177",
+        "P0B03178",
+        "P0B03179",
+        "P0B03180",
+        "P0B03181",
+        "P0B03182",
+        "P0B03183",
+        "P0B03184",
+        "P0B03185",
+        "P0B03186",
+        "P0B03187",
+        "P0B03188",
+        "P0B03189",
+        "P0B03190",
+        "P0B03191",
+        "P0B03192",
+        "P0B03193",
+        "P0B03194",
+        "P0B03195",
+        "P0B03196"
+      ],
+      "test_protocols": [
+        "preserve Integrative Mechanisms: The Computational and Physical Synthesis source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_1_the_cosmic_algorithm_hpc_active_inference.integrative_mechanisms_the_computational_and_physical_synthesis",
+      "validation_targets": [
+        "preserve records P0R03175-P0R03196"
+      ],
+      "variables": [
+        "integrative_mechanisms_the_computational_and_physical_synthesis"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 21
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "mechanism": 10,
+      "structural": 1,
+      "validation_target": 6
+    },
+    "claim_boundary": "source-bounded section 4 1 the cosmic algorithm hpc active inference source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 23,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03197",
+    "source_ledger_span": [
+      "P0R03174",
+      "P0R03196"
+    ],
+    "source_record_count": 23,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_4_1_the_cosmic_algorithm_hpc_active_inference.4_1_the_cosmic_algorithm_hpc_active_inference",
+      "section_4_1_the_cosmic_algorithm_hpc_active_inference.integrative_mechanisms_the_computational_and_physical_synthesis"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4.1 The Cosmic Algorithm: HPC & Active Inference Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

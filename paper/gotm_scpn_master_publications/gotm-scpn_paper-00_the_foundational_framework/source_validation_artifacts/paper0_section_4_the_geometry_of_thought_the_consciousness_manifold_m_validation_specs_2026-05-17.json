@@ -1,0 +1,244 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4. The Geometry of Thought (The Consciousness Manifold M):' preserves Paper 0 records P0R04526-P0R04528 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 the geometry of thought the consciousness manifold m source-accounting bridge; not validation evidence",
+      "context_id": "4_the_geometry_of_thought_the_consciousness_manifold_m",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04526-P0R04528"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_the_geometry_of_thought_the_consciousness_manifold_m.4_the_geometry_of_thought_the_consciousness_manifold_m",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_the_geometry_of_thought_the_consciousness_manifold_m must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4. The Geometry of Thought (The Consciousness Manifold M): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 4. The Geometry of Thought (The Consciousness Manifold M):",
+      "source_block_indices": [
+        4526,
+        4527,
+        4528,
+        4529,
+        4530,
+        4531,
+        4532,
+        4533
+      ],
+      "source_equation_ids": [
+        "P0R04526:4_the_geometry_of_thought_the_consciousness_manifold_m",
+        "P0R04527:4_the_geometry_of_thought_the_consciousness_manifold_m",
+        "P0R04528:4_the_geometry_of_thought_the_consciousness_manifold_m"
+      ],
+      "source_formulae": [
+        "P0R04526: 4. The Geometry of Thought (The Consciousness Manifold M):",
+        "P0R04527: Cognitive states and Qualia correspond to the intrinsic geometry of the high-dimensional Neural Manifold (M).",
+        "P0R04528: Topological Data Analysis (TDA): Betti numbers (bk) quantify the richness of the cognitive state. | The Physics of Valence: Valence (emotional tone) corresponds to the intrinsic curvature of M and the proximity to criticality (Valencesigma1)."
+      ],
+      "source_ledger_ids": [
+        "P0R04526",
+        "P0R04527",
+        "P0R04528",
+        "P0R04529",
+        "P0R04530",
+        "P0R04531",
+        "P0R04532",
+        "P0R04533"
+      ],
+      "source_record_ids": [
+        "P0B04526",
+        "P0B04527",
+        "P0B04528",
+        "P0B04529",
+        "P0B04530",
+        "P0B04531",
+        "P0B04532",
+        "P0B04533"
+      ],
+      "test_protocols": [
+        "preserve 4. The Geometry of Thought (The Consciousness Manifold M): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_the_geometry_of_thought_the_consciousness_manifold_m.4_the_geometry_of_thought_the_consciousness_manifold_m",
+      "validation_targets": [
+        "preserve records P0R04526-P0R04528"
+      ],
+      "variables": [
+        "4_the_geometry_of_thought_the_consciousness_manifold_m"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '5. The Neural Correlates of Consciousness (NCC) - An SCPN Synthesis:' preserves Paper 0 records P0R04529-P0R04530 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 the geometry of thought the consciousness manifold m source-accounting bridge; not validation evidence",
+      "context_id": "5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04529-P0R04530"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_the_geometry_of_thought_the_consciousness_manifold_m.5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "5. The Neural Correlates of Consciousness (NCC) - An SCPN Synthesis: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 4. The Geometry of Thought (The Consciousness Manifold M):",
+      "source_block_indices": [
+        4526,
+        4527,
+        4528,
+        4529,
+        4530,
+        4531,
+        4532,
+        4533
+      ],
+      "source_equation_ids": [
+        "P0R04529:5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis",
+        "P0R04530:5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis"
+      ],
+      "source_formulae": [
+        "P0R04529: 5. The Neural Correlates of Consciousness (NCC) - An SCPN Synthesis:",
+        "P0R04530: IIT: The degree of consciousness is , maximised in the Posterior Hot Zone. | GNW: \"Ignition\" (Global Neuronal Workspace activation) corresponds to the L4/L5 phase transition (SSB), enabling global broadcasting when synchronisation (R) crosses a critical threshold (RC)."
+      ],
+      "source_ledger_ids": [
+        "P0R04526",
+        "P0R04527",
+        "P0R04528",
+        "P0R04529",
+        "P0R04530",
+        "P0R04531",
+        "P0R04532",
+        "P0R04533"
+      ],
+      "source_record_ids": [
+        "P0B04526",
+        "P0B04527",
+        "P0B04528",
+        "P0B04529",
+        "P0B04530",
+        "P0B04531",
+        "P0B04532",
+        "P0B04533"
+      ],
+      "test_protocols": [
+        "preserve 5. The Neural Correlates of Consciousness (NCC) - An SCPN Synthesis: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_the_geometry_of_thought_the_consciousness_manifold_m.5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis",
+      "validation_targets": [
+        "preserve records P0R04529-P0R04530"
+      ],
+      "variables": [
+        "5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VI. The Extended Brain: Neuro-Visceral and Neuro-Immune Axes' preserves Paper 0 records P0R04531-P0R04533 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 the geometry of thought the consciousness manifold m source-accounting bridge; not validation evidence",
+      "context_id": "vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04531-P0R04533"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_the_geometry_of_thought_the_consciousness_manifold_m.vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VI. The Extended Brain: Neuro-Visceral and Neuro-Immune Axes is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 4. The Geometry of Thought (The Consciousness Manifold M):",
+      "source_block_indices": [
+        4526,
+        4527,
+        4528,
+        4529,
+        4530,
+        4531,
+        4532,
+        4533
+      ],
+      "source_equation_ids": [
+        "P0R04531:vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes",
+        "P0R04532:vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes",
+        "P0R04533:vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes"
+      ],
+      "source_formulae": [
+        "P0R04531: VI. The Extended Brain: Neuro-Visceral and Neuro-Immune Axes",
+        "P0R04532: The brain is intrinsically linked to the body.",
+        "P0R04533: The Neuro-Visceral Axis (Heart-Brain-Gut): The Psychosomatic Harmonics form a coupled oscillatory network (Tri-Axial UPDE), essential for emotional processing and maintaining the stability of the Self (L5). Coherence in this axis (measured by HRV) is the primary indicator of the organismal state. | The Neuro-Immune Interface (L1/L5): The immune system is integrated via the PNI axis. Emotional states (L5) modulate immune function. Quantum coherence extends to immune cells (L1)."
+      ],
+      "source_ledger_ids": [
+        "P0R04526",
+        "P0R04527",
+        "P0R04528",
+        "P0R04529",
+        "P0R04530",
+        "P0R04531",
+        "P0R04532",
+        "P0R04533"
+      ],
+      "source_record_ids": [
+        "P0B04526",
+        "P0B04527",
+        "P0B04528",
+        "P0B04529",
+        "P0B04530",
+        "P0B04531",
+        "P0B04532",
+        "P0B04533"
+      ],
+      "test_protocols": [
+        "preserve VI. The Extended Brain: Neuro-Visceral and Neuro-Immune Axes source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_the_geometry_of_thought_the_consciousness_manifold_m.vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes",
+      "validation_targets": [
+        "preserve records P0R04531-P0R04533"
+      ],
+      "variables": [
+        "vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 3,
+      "Header": 3,
+      "Para": 2
+    },
+    "category_counts": {
+      "context": 6,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded section 4 the geometry of thought the consciousness manifold m source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04534",
+    "source_ledger_span": [
+      "P0R04526",
+      "P0R04533"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_4_the_geometry_of_thought_the_consciousness_manifold_m.4_the_geometry_of_thought_the_consciousness_manifold_m",
+      "section_4_the_geometry_of_thought_the_consciousness_manifold_m.5_the_neural_correlates_of_consciousness_ncc_an_scpn_synthesis",
+      "section_4_the_geometry_of_thought_the_consciousness_manifold_m.vi_the_extended_brain_neuro_visceral_and_neuro_immune_axes"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4. The Geometry of Thought (The Consciousness Manifold M): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

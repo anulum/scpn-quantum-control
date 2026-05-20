@@ -1,0 +1,242 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [
+        "EQ0115"
+      ],
+      "assumptions": [
+        "finite or explicitly regularised state space",
+        "periodic boundary condition declared before simulation",
+        "unitarity and periodicity are testable operator properties",
+        "retrocausal interpretation remains boundary-only without external evidence"
+      ],
+      "canonical_latex": "O_{\\mathrm{MMC}}|\\Psi_{\\mathrm{Source}}(t)\\rangle=|\\Psi_{\\mathrm{Source}}(t+T_{\\mathrm{MMC}})\\rangle",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify operator unitarity on a finite declared Hilbert space",
+        "measure cycle-closure residual after one T_MMC period",
+        "record periodicity failure as falsifying this computational boundary model"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.cyclic_operator_boundary",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "boundary-only claim label until periodicity data and falsifiers exist",
+        "identity-period control must close with zero residual",
+        "non-unitary operator control must be rejected before interpretation"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 1. The Cyclic Operator and Reversibility",
+      "source_block_indices": [
+        5929,
+        5930,
+        5931,
+        5932,
+        5933,
+        5934,
+        5935
+      ],
+      "source_equation_ids": [
+        "EQ0115"
+      ],
+      "source_ledger_ids": [
+        "P0R05929",
+        "P0R05930",
+        "P0R05931",
+        "P0R05932",
+        "P0R05933",
+        "P0R05934",
+        "P0R05935"
+      ],
+      "source_record_ids": [
+        "P0B05929",
+        "P0B05930",
+        "P0B05931",
+        "P0B05932",
+        "P0B05933",
+        "P0B05934",
+        "P0B05935"
+      ],
+      "validation_protocol": "paper0.computational.cyclic_operator.boundary_periodicity",
+      "validation_targets": [
+        "boundary-only periodicity and unitarity check",
+        "cycle-closure residual for O_MMC over one declared period",
+        "identity-period and non-unitary operator null controls"
+      ],
+      "variables": {
+        "O_MMC": "Meta Metatron Cycle evolution operator",
+        "Psi_Source": "source-field state vector",
+        "T_MMC": "cycle period",
+        "t": "time parameter"
+      }
+    },
+    {
+      "anchor_math_ids": [
+        "EQ0116"
+      ],
+      "assumptions": [
+        "normalisable pre- and post-selected states",
+        "projectors form a complete orthogonal resolution of identity",
+        "non-zero ABL denominator",
+        "retrocausal interpretation remains boundary-only without external evidence"
+      ],
+      "canonical_latex": "P(A=a|t)=\\frac{|\\langle\\phi(t)|P_a|\\psi(t)\\rangle|^2}{\\sum_j|\\langle\\phi(t)|P_j|\\psi(t)\\rangle|^2}",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify ABL probability normalisation over complete projectors",
+        "recover Born-rule probabilities under trivial post-selection",
+        "record denominator failure and non-projector inputs as invalid specs"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.tsvf_abl_boundary",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "boundary-only retrocausal interpretation label",
+        "ABL zero-denominator guard",
+        "non-projector measurement-family rejection control"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 3. Retrocausality via the Two-State Vector Formalism (TSVF)",
+      "source_block_indices": [
+        5936,
+        5937,
+        5938,
+        5939,
+        5940
+      ],
+      "source_equation_ids": [
+        "EQ0116"
+      ],
+      "source_ledger_ids": [
+        "P0R05936",
+        "P0R05937",
+        "P0R05938",
+        "P0R05939",
+        "P0R05940"
+      ],
+      "source_record_ids": [
+        "P0B05936",
+        "P0B05937",
+        "P0B05938",
+        "P0B05939",
+        "P0B05940"
+      ],
+      "validation_protocol": "paper0.computational.tsvf_abl.boundary_probability",
+      "validation_targets": [
+        "ABL probability normalisation check",
+        "Born-rule reduction under trivial post-selection",
+        "zero-denominator and non-projector rejection controls",
+        "boundary-only interpretation label"
+      ],
+      "variables": {
+        "P_a": "projector for intermediate outcome a",
+        "P_j": "complete projective measurement family",
+        "phi": "backward-evolving post-selected state",
+        "psi": "forward-evolving pre-selected state"
+      }
+    },
+    {
+      "anchor_math_ids": [
+        "EQ0117",
+        "EQ0118"
+      ],
+      "assumptions": [
+        "entropy rates are measured on a shared time base",
+        "local entropy reduction is paired with explicit information-processing cost",
+        "mutual information estimator and units are declared",
+        "GSL claims require non-negative total entropy-rate evidence"
+      ],
+      "canonical_latex": "\\frac{dS_{\\mathrm{Total}}}{dt}=\\frac{dS_{\\mathrm{Thermo}}}{dt}+\\frac{dS_{\\mathrm{Info}}}{dt}\\ge 0,\\quad N_{\\Psi}=-\\frac{dS_{\\mathrm{Thermo}}}{dt}\\propto I(\\Psi;B)",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "estimate thermodynamic and information entropy rates on a shared grid",
+        "scan mutual information against measured negentropy rate",
+        "verify total entropy-rate non-negativity under explicit Landauer cost"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.info_thermodynamics",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "Landauer lower-bound violation must fail the validation",
+        "independent-channel zero mutual information control",
+        "negative total entropy-rate budget rejects GSL claim promotion"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > II. The Thermodynamics of Consciousness: Negentropy and Information",
+      "source_block_indices": [
+        5942,
+        5943,
+        5944,
+        5945,
+        5946,
+        5947,
+        5949,
+        5950,
+        5951,
+        5952,
+        5953
+      ],
+      "source_equation_ids": [
+        "EQ0117",
+        "EQ0118"
+      ],
+      "source_ledger_ids": [
+        "P0R05942",
+        "P0R05943",
+        "P0R05944",
+        "P0R05945",
+        "P0R05946",
+        "P0R05947",
+        "P0R05949",
+        "P0R05950",
+        "P0R05951",
+        "P0R05952",
+        "P0R05953"
+      ],
+      "source_record_ids": [
+        "P0B05942",
+        "P0B05943",
+        "P0B05944",
+        "P0B05945",
+        "P0B05946",
+        "P0B05947",
+        "P0B05949",
+        "P0B05950",
+        "P0B05951",
+        "P0B05952",
+        "P0B05953"
+      ],
+      "validation_protocol": "paper0.computational.info_thermodynamics.entropy_budget",
+      "validation_targets": [
+        "GSL entropy-rate budget check",
+        "mutual information versus negentropy proportionality scan",
+        "Landauer cost lower-bound control",
+        "independent-channel zero-mutual-information null control"
+      ],
+      "variables": {
+        "I_Psi_B": "mutual information between Psi channel and biological substrate",
+        "N_Psi": "negentropy injection rate attributed to the modelled field channel",
+        "S_info": "information-processing entropy contribution",
+        "S_thermo": "thermodynamic entropy contribution",
+        "S_total": "total entropy budget"
+      }
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 23,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "EQ0115-EQ0118 anchors are promoted only into validation specifications. Temporal-boundary and retrocausal interpretations remain boundary-only until operator, probability, entropy-budget, and falsification controls pass.",
+    "source_record_count": 23,
+    "spec_count": 3,
+    "spec_keys": [
+      "computational.cyclic_operator_boundary",
+      "computational.tsvf_abl_boundary",
+      "computational.info_thermodynamics"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

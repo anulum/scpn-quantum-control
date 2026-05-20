@@ -22,7 +22,7 @@ scpn-bench s5-benchmark-suite
 The command regenerates:
 
 - `data/s5_benchmark_harness/phase1_benchmark_harness_2026-05-06.json`
-- `docs/benchmark_harness_phase1_2026-05-06.md`
+- `docs/campaigns/benchmark_harness_phase1_2026-05-06.md`
 
 ## Scope
 

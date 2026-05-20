@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded overarching dynamic principles and the mathematical spine source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn": "i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn_source_boundary",
+    "overarching_dynamic_principles_and_the_mathematical_spine": "overarching_dynamic_principles_and_the_mathematical_spine_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Overarching Dynamic Principles and the Mathematical Spine",
+    "component_2": "I. The Unified Phase Dynamics Equation (UPDE) - The Spine of the SCPN",
+    "component_count": "2",
+    "next_boundary": "P0R02513",
+    "section": "Overarching Dynamic Principles and the Mathematical Spine",
+    "source_span": "P0R02502-P0R02512"
+  },
+  "next_source_boundary": "P0R02513",
+  "null_controls": {
+    "i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn_is_not_empirical_validation_evidence": 1.0,
+    "overarching_dynamic_principles_and_the_mathematical_spine_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded overarching dynamic principles and the mathematical spine source-accounting bridge; not validation evidence",
+    "protocol_state": "source_overarching_dynamic_principles_and_the_mathematical_spine_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02502",
+      "P0R02503",
+      "P0R02504",
+      "P0R02505",
+      "P0R02506",
+      "P0R02507",
+      "P0R02508",
+      "P0R02509",
+      "P0R02510",
+      "P0R02511",
+      "P0R02512"
+    ],
+    "source_ledger_span": [
+      "P0R02502",
+      "P0R02512"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02502",
+    "P0R02512"
+  ],
+  "source_record_count": 11
+}

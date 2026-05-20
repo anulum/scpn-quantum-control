@@ -1,0 +1,56 @@
+{
+  "claim_boundary": "source-bounded section 3 unified experience the wilson loop source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_quantifying_causality_via_transfer_entropy_te": "1_quantifying_causality_via_transfer_entropy_te_source_boundary",
+    "3_unified_experience_the_wilson_loop": "3_unified_experience_the_wilson_loop_source_boundary",
+    "iii_information_flow_dynamics_ilit": "iii_information_flow_dynamics_ilit_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. Unified Experience (The Wilson Loop):",
+    "component_2": "III. Information Flow Dynamics (ILIT)",
+    "component_3": "1. Quantifying Causality via Transfer Entropy (TE):",
+    "component_count": "3",
+    "next_boundary": "P0R03232",
+    "section": "3. Unified Experience (The Wilson Loop):",
+    "source_span": "P0R03216-P0R03231"
+  },
+  "next_source_boundary": "P0R03232",
+  "null_controls": {
+    "1_quantifying_causality_via_transfer_entropy_te_is_not_empirical_validation_evidence": 1.0,
+    "3_unified_experience_the_wilson_loop_is_not_empirical_validation_evidence": 1.0,
+    "iii_information_flow_dynamics_ilit_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 unified experience the wilson loop source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_unified_experience_the_wilson_loop_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03216",
+      "P0R03217",
+      "P0R03218",
+      "P0R03219",
+      "P0R03220",
+      "P0R03221",
+      "P0R03222",
+      "P0R03223",
+      "P0R03224",
+      "P0R03225",
+      "P0R03226",
+      "P0R03227",
+      "P0R03228",
+      "P0R03229",
+      "P0R03230",
+      "P0R03231"
+    ],
+    "source_ledger_span": [
+      "P0R03216",
+      "P0R03231"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03216",
+    "P0R03231"
+  ],
+  "source_record_count": 16
+}

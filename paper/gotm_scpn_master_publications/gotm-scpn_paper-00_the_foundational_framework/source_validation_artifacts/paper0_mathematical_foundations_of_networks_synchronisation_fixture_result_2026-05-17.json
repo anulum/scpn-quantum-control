@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded mathematical foundations of networks synchronisation source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "mathematical_foundations_of_networks_synchronisation": "mathematical_foundations_of_networks_synchronisation_source_boundary",
+    "neuroscience_brain_rhythms": "neuroscience_brain_rhythms_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Mathematical Foundations of Networks & Synchronisation",
+    "component_2": "Neuroscience & Brain Rhythms",
+    "component_count": "2",
+    "next_boundary": "P0R05844",
+    "section": " Mathematical Foundations of Networks & Synchronisation",
+    "source_span": "P0R05836-P0R05843"
+  },
+  "next_source_boundary": "P0R05844",
+  "null_controls": {
+    "mathematical_foundations_of_networks_synchronisation_is_not_empirical_validation_evidence": 1.0,
+    "neuroscience_brain_rhythms_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded mathematical foundations of networks synchronisation source-accounting bridge; not validation evidence",
+    "protocol_state": "source_mathematical_foundations_of_networks_synchronisation_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05836",
+      "P0R05837",
+      "P0R05838",
+      "P0R05839",
+      "P0R05840",
+      "P0R05841",
+      "P0R05842",
+      "P0R05843"
+    ],
+    "source_ledger_span": [
+      "P0R05836",
+      "P0R05843"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05836",
+    "P0R05843"
+  ],
+  "source_record_count": 8
+}

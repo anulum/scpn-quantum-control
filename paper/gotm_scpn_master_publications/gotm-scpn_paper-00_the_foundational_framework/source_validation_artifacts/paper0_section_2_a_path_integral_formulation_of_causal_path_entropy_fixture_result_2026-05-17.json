@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded section 2 a path integral formulation of causal path entropy source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "2_a_path_integral_formulation_of_causal_path_entropy": "2_a_path_integral_formulation_of_causal_path_entropy_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "2. A Path Integral Formulation of Causal Path Entropy",
+    "component_count": "1",
+    "next_boundary": "P0R03753",
+    "section": "2. A Path Integral Formulation of Causal Path Entropy",
+    "source_span": "P0R03737-P0R03752"
+  },
+  "next_source_boundary": "P0R03753",
+  "null_controls": {
+    "2_a_path_integral_formulation_of_causal_path_entropy_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 2 a path integral formulation of causal path entropy source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_2_a_path_integral_formulation_of_causal_path_entropy_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03737",
+      "P0R03738",
+      "P0R03739",
+      "P0R03740",
+      "P0R03741",
+      "P0R03742",
+      "P0R03743",
+      "P0R03744",
+      "P0R03745",
+      "P0R03746",
+      "P0R03747",
+      "P0R03748",
+      "P0R03749",
+      "P0R03750",
+      "P0R03751",
+      "P0R03752"
+    ],
+    "source_ledger_span": [
+      "P0R03737",
+      "P0R03752"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03737",
+    "P0R03752"
+  ],
+  "source_record_count": 16
+}

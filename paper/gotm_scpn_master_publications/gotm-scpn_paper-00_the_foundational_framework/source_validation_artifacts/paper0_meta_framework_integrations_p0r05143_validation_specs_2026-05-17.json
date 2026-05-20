@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R05143-P0R05143 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r05143 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05143-P0R05143"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r05143.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations",
+      "source_block_indices": [
+        5143,
+        5144,
+        5145,
+        5146,
+        5147,
+        5148,
+        5149,
+        5150,
+        5151
+      ],
+      "source_equation_ids": [
+        "P0R05143:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R05143: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R05143",
+        "P0R05144",
+        "P0R05145",
+        "P0R05146",
+        "P0R05147",
+        "P0R05148",
+        "P0R05149",
+        "P0R05150",
+        "P0R05151"
+      ],
+      "source_record_ids": [
+        "P0B05143",
+        "P0B05144",
+        "P0B05145",
+        "P0B05146",
+        "P0B05147",
+        "P0B05148",
+        "P0B05149",
+        "P0B05150",
+        "P0B05151"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r05143.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R05143-P0R05143"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R05144-P0R05145 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r05143 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05144-P0R05145"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r05143.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations",
+      "source_block_indices": [
+        5143,
+        5144,
+        5145,
+        5146,
+        5147,
+        5148,
+        5149,
+        5150,
+        5151
+      ],
+      "source_equation_ids": [
+        "P0R05144:predictive_coding_integration",
+        "P0R05145:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R05144: Predictive Coding Integration",
+        "P0R05145: These experiments are direct tests of the physical reality and causal efficacy of the generative model."
+      ],
+      "source_ledger_ids": [
+        "P0R05143",
+        "P0R05144",
+        "P0R05145",
+        "P0R05146",
+        "P0R05147",
+        "P0R05148",
+        "P0R05149",
+        "P0R05150",
+        "P0R05151"
+      ],
+      "source_record_ids": [
+        "P0B05143",
+        "P0B05144",
+        "P0B05145",
+        "P0B05146",
+        "P0B05147",
+        "P0B05148",
+        "P0B05149",
+        "P0B05150",
+        "P0B05151"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r05143.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R05144-P0R05145"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Prediction I (NV-MEA) Tests the Model's Geometry:' preserves Paper 0 records P0R05146-P0R05147 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r05143 source-accounting bridge; not validation evidence",
+      "context_id": "prediction_i_nv_mea_tests_the_model_s_geometry",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05146-P0R05147"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r05143.prediction_i_nv_mea_tests_the_model_s_geometry",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "prediction_i_nv_mea_tests_the_model_s_geometry must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Prediction I (NV-MEA) Tests the Model's Geometry: is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations",
+      "source_block_indices": [
+        5143,
+        5144,
+        5145,
+        5146,
+        5147,
+        5148,
+        5149,
+        5150,
+        5151
+      ],
+      "source_equation_ids": [
+        "P0R05146:prediction_i_nv_mea_tests_the_model_s_geometry",
+        "P0R05147:prediction_i_nv_mea_tests_the_model_s_geometry"
+      ],
+      "source_formulae": [
+        "P0R05146: Prediction I (NV-MEA) Tests the Model's Geometry:",
+        "P0R05147: The FIM is the geometry of the generative model's belief space. This experiment is a direct test of whether this abstract geometry is a physically real object that can exert a measurable force. It asks: does the \"shape of belief\" itself have a physical presence?"
+      ],
+      "source_ledger_ids": [
+        "P0R05143",
+        "P0R05144",
+        "P0R05145",
+        "P0R05146",
+        "P0R05147",
+        "P0R05148",
+        "P0R05149",
+        "P0R05150",
+        "P0R05151"
+      ],
+      "source_record_ids": [
+        "P0B05143",
+        "P0B05144",
+        "P0B05145",
+        "P0B05146",
+        "P0B05147",
+        "P0B05148",
+        "P0B05149",
+        "P0B05150",
+        "P0B05151"
+      ],
+      "test_protocols": [
+        "preserve Prediction I (NV-MEA) Tests the Model's Geometry: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r05143.prediction_i_nv_mea_tests_the_model_s_geometry",
+      "validation_targets": [
+        "preserve records P0R05146-P0R05147"
+      ],
+      "variables": [
+        "prediction_i_nv_mea_tests_the_model_s_geometry"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Prediction II (QRNG) Tests the Model's Deepest Prior:' preserves Paper 0 records P0R05148-P0R05149 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r05143 source-accounting bridge; not validation evidence",
+      "context_id": "prediction_ii_qrng_tests_the_model_s_deepest_prior",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05148-P0R05149"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r05143.prediction_ii_qrng_tests_the_model_s_deepest_prior",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "prediction_ii_qrng_tests_the_model_s_deepest_prior must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Prediction II (QRNG) Tests the Model's Deepest Prior: is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations",
+      "source_block_indices": [
+        5143,
+        5144,
+        5145,
+        5146,
+        5147,
+        5148,
+        5149,
+        5150,
+        5151
+      ],
+      "source_equation_ids": [
+        "P0R05148:prediction_ii_qrng_tests_the_model_s_deepest_prior",
+        "P0R05149:prediction_ii_qrng_tests_the_model_s_deepest_prior"
+      ],
+      "source_formulae": [
+        "P0R05148: Prediction II (QRNG) Tests the Model's Deepest Prior:",
+        "P0R05149: The CEF is the physical manifestation of the model's deepest prior-the teleological drive toward coherence (Axiom 3). This experiment tests whether this fundamental \"belief\" of the cosmic generative model is powerful enough to act as a causal force, biasing the sensory data (the QRNG output) to make it conform to the model's prediction that the universe should be coherent."
+      ],
+      "source_ledger_ids": [
+        "P0R05143",
+        "P0R05144",
+        "P0R05145",
+        "P0R05146",
+        "P0R05147",
+        "P0R05148",
+        "P0R05149",
+        "P0R05150",
+        "P0R05151"
+      ],
+      "source_record_ids": [
+        "P0B05143",
+        "P0B05144",
+        "P0B05145",
+        "P0B05146",
+        "P0B05147",
+        "P0B05148",
+        "P0B05149",
+        "P0B05150",
+        "P0B05151"
+      ],
+      "test_protocols": [
+        "preserve Prediction II (QRNG) Tests the Model's Deepest Prior: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r05143.prediction_ii_qrng_tests_the_model_s_deepest_prior",
+      "validation_targets": [
+        "preserve records P0R05148-P0R05149"
+      ],
+      "variables": [
+        "prediction_ii_qrng_tests_the_model_s_deepest_prior"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R05150-P0R05151 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r05143 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05150-P0R05151"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r05143.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations",
+      "source_block_indices": [
+        5143,
+        5144,
+        5145,
+        5146,
+        5147,
+        5148,
+        5149,
+        5150,
+        5151
+      ],
+      "source_equation_ids": [
+        "P0R05150:psis_field_coupling_integration",
+        "P0R05151:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R05150: Psis Field Coupling Integration",
+        "P0R05151: These experiments provide falsifiable tests for the two distinct coupling channels in the Master Interaction Lagrangian, LInt, which is the full expression of the H_int interaction."
+      ],
+      "source_ledger_ids": [
+        "P0R05143",
+        "P0R05144",
+        "P0R05145",
+        "P0R05146",
+        "P0R05147",
+        "P0R05148",
+        "P0R05149",
+        "P0R05150",
+        "P0R05151"
+      ],
+      "source_record_ids": [
+        "P0B05143",
+        "P0B05144",
+        "P0B05145",
+        "P0B05146",
+        "P0B05147",
+        "P0B05148",
+        "P0B05149",
+        "P0B05150",
+        "P0B05151"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r05143.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R05150-P0R05151"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 3,
+      "mechanism": 2,
+      "validation_target": 4
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r05143 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05152",
+    "source_ledger_span": [
+      "P0R05143",
+      "P0R05151"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r05143.meta_framework_integrations",
+      "meta_framework_integrations_p0r05143.predictive_coding_integration",
+      "meta_framework_integrations_p0r05143.prediction_i_nv_mea_tests_the_model_s_geometry",
+      "meta_framework_integrations_p0r05143.prediction_ii_qrng_tests_the_model_s_deepest_prior",
+      "meta_framework_integrations_p0r05143.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

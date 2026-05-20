@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Systems Neuroscience & Complexity' preserves Paper 0 records P0R05697-P0R05700 without empirical validation claims.",
+      "claim_boundary": "source-bounded systems neuroscience complexity source-accounting bridge; not validation evidence",
+      "context_id": "systems_neuroscience_complexity",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05697-P0R05700"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "systems_neuroscience_complexity.systems_neuroscience_complexity",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "systems_neuroscience_complexity must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Systems Neuroscience & Complexity is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Systems Neuroscience & Complexity",
+      "source_block_indices": [
+        5697,
+        5698,
+        5699,
+        5700,
+        5701,
+        5702,
+        5703,
+        5704
+      ],
+      "source_equation_ids": [
+        "P0R05697:systems_neuroscience_complexity",
+        "P0R05698:systems_neuroscience_complexity",
+        "P0R05699:systems_neuroscience_complexity",
+        "P0R05700:systems_neuroscience_complexity"
+      ],
+      "source_formulae": [
+        "P0R05697: Systems Neuroscience & Complexity",
+        "P0R05698: \"critical brain avalanches as universal computation regime\" -> (Beggs & Plenz, 2003; Shew & Plenz, 2013)",
+        "P0R05699: \"astrocytic modulation of neural synchrony\" -> (Araque et al., 1999; Perea et al., 2009)",
+        "P0R05700: \"immune-brain coupling alters cognition\" -> (Dantzer et al., 2008; Kipnis, 2016)"
+      ],
+      "source_ledger_ids": [
+        "P0R05697",
+        "P0R05698",
+        "P0R05699",
+        "P0R05700",
+        "P0R05701",
+        "P0R05702",
+        "P0R05703",
+        "P0R05704"
+      ],
+      "source_record_ids": [
+        "P0B05697",
+        "P0B05698",
+        "P0B05699",
+        "P0B05700",
+        "P0B05701",
+        "P0B05702",
+        "P0B05703",
+        "P0B05704"
+      ],
+      "test_protocols": [
+        "preserve Systems Neuroscience & Complexity source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.systems_neuroscience_complexity.systems_neuroscience_complexity",
+      "validation_targets": [
+        "preserve records P0R05697-P0R05700"
+      ],
+      "variables": [
+        "systems_neuroscience_complexity"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Neuroscience & Cognitive Science' preserves Paper 0 records P0R05701-P0R05704 without empirical validation claims.",
+      "claim_boundary": "source-bounded systems neuroscience complexity source-accounting bridge; not validation evidence",
+      "context_id": "neuroscience_cognitive_science",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05701-P0R05704"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "systems_neuroscience_complexity.neuroscience_cognitive_science",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "neuroscience_cognitive_science must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Neuroscience & Cognitive Science is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Systems Neuroscience & Complexity",
+      "source_block_indices": [
+        5697,
+        5698,
+        5699,
+        5700,
+        5701,
+        5702,
+        5703,
+        5704
+      ],
+      "source_equation_ids": [
+        "P0R05701:neuroscience_cognitive_science",
+        "P0R05702:neuroscience_cognitive_science",
+        "P0R05703:neuroscience_cognitive_science",
+        "P0R05704:neuroscience_cognitive_science"
+      ],
+      "source_formulae": [
+        "P0R05701: Neuroscience & Cognitive Science",
+        "P0R05702: \"neural self-organisation, avalanches, synchrony\" -> Beggs & Plenz (2003, avalanches).",
+        "P0R05703: \"EEG complexity, consciousness metrics\" -> Tononi (2004, IIT formalism).",
+        "P0R05704: \"neuro-immune modulation of cognition\" -> Dantzer (2008, cytokines and sickness behavior)."
+      ],
+      "source_ledger_ids": [
+        "P0R05697",
+        "P0R05698",
+        "P0R05699",
+        "P0R05700",
+        "P0R05701",
+        "P0R05702",
+        "P0R05703",
+        "P0R05704"
+      ],
+      "source_record_ids": [
+        "P0B05697",
+        "P0B05698",
+        "P0B05699",
+        "P0B05700",
+        "P0B05701",
+        "P0B05702",
+        "P0B05703",
+        "P0B05704"
+      ],
+      "test_protocols": [
+        "preserve Neuroscience & Cognitive Science source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.systems_neuroscience_complexity.neuroscience_cognitive_science",
+      "validation_targets": [
+        "preserve records P0R05701-P0R05704"
+      ],
+      "variables": [
+        "neuroscience_cognitive_science"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 5,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded systems neuroscience complexity source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05705",
+    "source_ledger_span": [
+      "P0R05697",
+      "P0R05704"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "systems_neuroscience_complexity.systems_neuroscience_complexity",
+      "systems_neuroscience_complexity.neuroscience_cognitive_science"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Systems Neuroscience & Complexity Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

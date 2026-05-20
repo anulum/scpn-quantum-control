@@ -1,0 +1,314 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. The Central Void (The Source):' preserves Paper 0 records P0R02566-P0R02567 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the central void the source source-accounting bridge; not validation evidence",
+      "context_id": "2_the_central_void_the_source",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02566-P0R02567"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_central_void_the_source.2_the_central_void_the_source",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_the_central_void_the_source must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. The Central Void (The Source): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Conceptual Specification of the SCPN Torus: > 2. The Central Void (The Source):",
+      "source_block_indices": [
+        2566,
+        2567,
+        2568,
+        2569,
+        2570,
+        2571,
+        2572,
+        2573,
+        2574,
+        2575,
+        2576,
+        2577,
+        2578,
+        2579
+      ],
+      "source_equation_ids": [
+        "P0R02566:2_the_central_void_the_source",
+        "P0R02567:2_the_central_void_the_source"
+      ],
+      "source_formulae": [
+        "P0R02566: 2. The Central Void (The Source):",
+        "P0R02567: The centre of the Torus represents the Source-Field (L13)-the ontological ground from which the architecture emerges and returns."
+      ],
+      "source_ledger_ids": [
+        "P0R02566",
+        "P0R02567",
+        "P0R02568",
+        "P0R02569",
+        "P0R02570",
+        "P0R02571",
+        "P0R02572",
+        "P0R02573",
+        "P0R02574",
+        "P0R02575",
+        "P0R02576",
+        "P0R02577",
+        "P0R02578",
+        "P0R02579"
+      ],
+      "source_record_ids": [
+        "P0B02566",
+        "P0B02567",
+        "P0B02568",
+        "P0B02569",
+        "P0B02570",
+        "P0B02571",
+        "P0B02572",
+        "P0B02573",
+        "P0B02574",
+        "P0B02575",
+        "P0B02576",
+        "P0B02577",
+        "P0B02578",
+        "P0B02579"
+      ],
+      "test_protocols": [
+        "preserve 2. The Central Void (The Source): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_central_void_the_source.2_the_central_void_the_source",
+      "validation_targets": [
+        "preserve records P0R02566-P0R02567"
+      ],
+      "variables": [
+        "2_the_central_void_the_source"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '3. The Surface Dynamics (Criticality and Coherence):' preserves Paper 0 records P0R02568-P0R02569 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the central void the source source-accounting bridge; not validation evidence",
+      "context_id": "3_the_surface_dynamics_criticality_and_coherence",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02568-P0R02569"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_central_void_the_source.3_the_surface_dynamics_criticality_and_coherence",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_the_surface_dynamics_criticality_and_coherence must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. The Surface Dynamics (Criticality and Coherence): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Conceptual Specification of the SCPN Torus: > 2. The Central Void (The Source):",
+      "source_block_indices": [
+        2566,
+        2567,
+        2568,
+        2569,
+        2570,
+        2571,
+        2572,
+        2573,
+        2574,
+        2575,
+        2576,
+        2577,
+        2578,
+        2579
+      ],
+      "source_equation_ids": [
+        "P0R02568:3_the_surface_dynamics_criticality_and_coherence",
+        "P0R02569:3_the_surface_dynamics_criticality_and_coherence"
+      ],
+      "source_formulae": [
+        "P0R02568: 3. The Surface Dynamics (Criticality and Coherence):",
+        "P0R02569: The dynamic surface exhibits scale-free avalanches and turbulent flow, representing the Quasicritical regime (sigma1). Stable geometric patterns on the surface represent the action of Multi-Scale Quantum Error Correction (MS-QEC), maintaining the integrity of the flow."
+      ],
+      "source_ledger_ids": [
+        "P0R02566",
+        "P0R02567",
+        "P0R02568",
+        "P0R02569",
+        "P0R02570",
+        "P0R02571",
+        "P0R02572",
+        "P0R02573",
+        "P0R02574",
+        "P0R02575",
+        "P0R02576",
+        "P0R02577",
+        "P0R02578",
+        "P0R02579"
+      ],
+      "source_record_ids": [
+        "P0B02566",
+        "P0B02567",
+        "P0B02568",
+        "P0B02569",
+        "P0B02570",
+        "P0B02571",
+        "P0B02572",
+        "P0B02573",
+        "P0B02574",
+        "P0B02575",
+        "P0B02576",
+        "P0B02577",
+        "P0B02578",
+        "P0B02579"
+      ],
+      "test_protocols": [
+        "preserve 3. The Surface Dynamics (Criticality and Coherence): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_central_void_the_source.3_the_surface_dynamics_criticality_and_coherence",
+      "validation_targets": [
+        "preserve records P0R02568-P0R02569"
+      ],
+      "variables": [
+        "3_the_surface_dynamics_criticality_and_coherence"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '4. The Attractor (L15/L8):' preserves Paper 0 records P0R02570-P0R02579 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the central void the source source-accounting bridge; not validation evidence",
+      "context_id": "4_the_attractor_l15_l8",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02570-P0R02579"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_central_void_the_source.4_the_attractor_l15_l8",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_the_attractor_l15_l8 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4. The Attractor (L15/L8): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Conceptual Specification of the SCPN Torus: > 2. The Central Void (The Source):",
+      "source_block_indices": [
+        2566,
+        2567,
+        2568,
+        2569,
+        2570,
+        2571,
+        2572,
+        2573,
+        2574,
+        2575,
+        2576,
+        2577,
+        2578,
+        2579
+      ],
+      "source_equation_ids": [
+        "P0R02570:4_the_attractor_l15_l8",
+        "P0R02571:4_the_attractor_l15_l8",
+        "P0R02572:4_the_attractor_l15_l8",
+        "P0R02573:4_the_attractor_l15_l8",
+        "P0R02574:4_the_attractor_l15_l8",
+        "P0R02575:4_the_attractor_l15_l8",
+        "P0R02576:4_the_attractor_l15_l8",
+        "P0R02577:4_the_attractor_l15_l8",
+        "P0R02578:4_the_attractor_l15_l8",
+        "P0R02579:4_the_attractor_l15_l8"
+      ],
+      "source_formulae": [
+        "P0R02570: 4. The Attractor (L15/L8):",
+        "P0R02571: The overall trajectory of the Torus is guided by the Cosmic Attractor (L8) and optimised by the Ethical Functional (L15), representing the Teleological (RG) Flow.",
+        "P0R02572: [IMAGE:Ein Bild, das Text, Screenshot, Kreis, Design enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R02573: P0R02573",
+        "P0R02574: The MIP-Fiber Parallel Transport Smoothing",
+        "P0R02575: P0R02575",
+        "P0R02576: When the SCPN state-trajectory crosses a Minimum Information Partition (MIP) boundary, the internal fiber space of the $\\Psi$-field undergoes a discrete reconfiguration. To prevent discontinuities in the Berry Phase ($\\Gamma$), we define the Fiber Smoothing Operator ($\\mathcal{S}_{MIP}$):",
+        "P0R02577: $$\\mathcal{S}_{MIP} = \\lim_{\\epsilon \\to 0} \\oint_{\\gamma_{MIP}} A_\\mu dx^\\mu \\otimes \\mathbf{T}_{MIP}$$",
+        "P0R02578: where $\\mathbf{T}_{MIP}$ is a transition tensor that maps the holonomy of the pre-partitioned state to the newly emergent manifold. This ensures that memory loops are preserved even during drastic shifts in the system's organizational scale.",
+        "P0R02579: P0R02579"
+      ],
+      "source_ledger_ids": [
+        "P0R02566",
+        "P0R02567",
+        "P0R02568",
+        "P0R02569",
+        "P0R02570",
+        "P0R02571",
+        "P0R02572",
+        "P0R02573",
+        "P0R02574",
+        "P0R02575",
+        "P0R02576",
+        "P0R02577",
+        "P0R02578",
+        "P0R02579"
+      ],
+      "source_record_ids": [
+        "P0B02566",
+        "P0B02567",
+        "P0B02568",
+        "P0B02569",
+        "P0B02570",
+        "P0B02571",
+        "P0B02572",
+        "P0B02573",
+        "P0B02574",
+        "P0B02575",
+        "P0B02576",
+        "P0B02577",
+        "P0B02578",
+        "P0B02579"
+      ],
+      "test_protocols": [
+        "preserve 4. The Attractor (L15/L8): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_central_void_the_source.4_the_attractor_l15_l8",
+      "validation_targets": [
+        "preserve records P0R02570-P0R02579"
+      ],
+      "variables": [
+        "4_the_attractor_l15_l8"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 11
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 7,
+      "figure": 1,
+      "mechanism": 1,
+      "structural": 3
+    },
+    "claim_boundary": "source-bounded section 2 the central void the source source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0045"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R02580",
+    "source_ledger_span": [
+      "P0R02566",
+      "P0R02579"
+    ],
+    "source_record_count": 14,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_2_the_central_void_the_source.2_the_central_void_the_source",
+      "section_2_the_central_void_the_source.3_the_surface_dynamics_criticality_and_coherence",
+      "section_2_the_central_void_the_source.4_the_attractor_l15_l8"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. The Central Void (The Source): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -141,7 +141,7 @@ in the measured distribution. The observed asymmetry between
 even and odd sectors is therefore a **signature of the hardware's
 noise channel interacting with the chosen initial state**, not a
 property of the Hamiltonian. The short paper
-[`paper/phase1_dla_parity/phase1_dla_parity.tex`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/phase1_dla_parity/phase1_dla_parity.tex)
+[`paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity.tex`](https://github.com/anulum/scpn-quantum-control/blob/main/paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity.tex)
 presents this as a hardware-calibration observation, not as a
 quantum-advantage claim, and the distinction made in the table
 above is the reason.

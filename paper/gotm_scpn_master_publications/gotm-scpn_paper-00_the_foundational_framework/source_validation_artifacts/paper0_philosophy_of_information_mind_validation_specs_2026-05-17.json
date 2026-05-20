@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Philosophy of Information / Mind' preserves Paper 0 records P0R05778-P0R05781 without empirical validation claims.",
+      "claim_boundary": "source-bounded philosophy of information mind source-accounting bridge; not validation evidence",
+      "context_id": "philosophy_of_information_mind",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05778-P0R05781"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "philosophy_of_information_mind.philosophy_of_information_mind",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "philosophy_of_information_mind must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Philosophy of Information / Mind is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Philosophy of Information / Mind",
+      "source_block_indices": [
+        5778,
+        5779,
+        5780,
+        5781,
+        5782,
+        5783,
+        5784,
+        5785
+      ],
+      "source_equation_ids": [
+        "P0R05778:philosophy_of_information_mind",
+        "P0R05779:philosophy_of_information_mind",
+        "P0R05780:philosophy_of_information_mind",
+        "P0R05781:philosophy_of_information_mind"
+      ],
+      "source_formulae": [
+        "P0R05778: Philosophy of Information / Mind",
+        "P0R05779: Floridi (2010, Philosophy of Information) -> connects ontology with information-centric physics.",
+        "P0R05780: Chalmers (1996, The Conscious Mind) -> for contrast with your Psi-field axiom.",
+        "P0R05781: Nagel (1974, What Is It Like to Be a Bat?) -> foundational \"qualia problem,\" anchors why your geometric solution matters."
+      ],
+      "source_ledger_ids": [
+        "P0R05778",
+        "P0R05779",
+        "P0R05780",
+        "P0R05781",
+        "P0R05782",
+        "P0R05783",
+        "P0R05784",
+        "P0R05785"
+      ],
+      "source_record_ids": [
+        "P0B05778",
+        "P0B05779",
+        "P0B05780",
+        "P0B05781",
+        "P0B05782",
+        "P0B05783",
+        "P0B05784",
+        "P0B05785"
+      ],
+      "test_protocols": [
+        "preserve Philosophy of Information / Mind source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.philosophy_of_information_mind.philosophy_of_information_mind",
+      "validation_targets": [
+        "preserve records P0R05778-P0R05781"
+      ],
+      "variables": [
+        "philosophy_of_information_mind"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Philosophy of Science & Method' preserves Paper 0 records P0R05782-P0R05785 without empirical validation claims.",
+      "claim_boundary": "source-bounded philosophy of information mind source-accounting bridge; not validation evidence",
+      "context_id": "philosophy_of_science_method",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05782-P0R05785"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "philosophy_of_information_mind.philosophy_of_science_method",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "philosophy_of_science_method must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Philosophy of Science & Method is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Philosophy of Information / Mind",
+      "source_block_indices": [
+        5778,
+        5779,
+        5780,
+        5781,
+        5782,
+        5783,
+        5784,
+        5785
+      ],
+      "source_equation_ids": [
+        "P0R05782:philosophy_of_science_method",
+        "P0R05783:philosophy_of_science_method",
+        "P0R05784:philosophy_of_science_method",
+        "P0R05785:philosophy_of_science_method"
+      ],
+      "source_formulae": [
+        "P0R05782: Philosophy of Science & Method",
+        "P0R05783: Paradigm shifts -> Kuhn (1962, Structure of Scientific Revolutions).",
+        "P0R05784: Lakatos (1970) research programmes -> important for framing SCPN as progressive.",
+        "P0R05785: Popper (1934/59) on falsifiability -> already implied, but not explicitly cited."
+      ],
+      "source_ledger_ids": [
+        "P0R05778",
+        "P0R05779",
+        "P0R05780",
+        "P0R05781",
+        "P0R05782",
+        "P0R05783",
+        "P0R05784",
+        "P0R05785"
+      ],
+      "source_record_ids": [
+        "P0B05778",
+        "P0B05779",
+        "P0B05780",
+        "P0B05781",
+        "P0B05782",
+        "P0B05783",
+        "P0B05784",
+        "P0B05785"
+      ],
+      "test_protocols": [
+        "preserve Philosophy of Science & Method source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.philosophy_of_information_mind.philosophy_of_science_method",
+      "validation_targets": [
+        "preserve records P0R05782-P0R05785"
+      ],
+      "variables": [
+        "philosophy_of_science_method"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 4
+    },
+    "claim_boundary": "source-bounded philosophy of information mind source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05786",
+    "source_ledger_span": [
+      "P0R05778",
+      "P0R05785"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "philosophy_of_information_mind.philosophy_of_information_mind",
+      "philosophy_of_information_mind.philosophy_of_science_method"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Philosophy of Information / Mind Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "claim_boundary": "source-bounded the biological syndrome measurement and recovery protocol source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "the_biological_syndrome_measurement_and_recovery_protocol": "the_biological_syndrome_measurement_and_recovery_protocol_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Biological Syndrome Measurement and Recovery Protocol",
+    "component_count": "1",
+    "next_boundary": "P0R03099",
+    "section": "The Biological Syndrome Measurement and Recovery Protocol",
+    "source_span": "P0R03076-P0R03098"
+  },
+  "next_source_boundary": "P0R03099",
+  "null_controls": {
+    "the_biological_syndrome_measurement_and_recovery_protocol_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the biological syndrome measurement and recovery protocol source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_biological_syndrome_measurement_and_recovery_protocol_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03076",
+      "P0R03077",
+      "P0R03078",
+      "P0R03079",
+      "P0R03080",
+      "P0R03081",
+      "P0R03082",
+      "P0R03083",
+      "P0R03084",
+      "P0R03085",
+      "P0R03086",
+      "P0R03087",
+      "P0R03088",
+      "P0R03089",
+      "P0R03090",
+      "P0R03091",
+      "P0R03092",
+      "P0R03093",
+      "P0R03094",
+      "P0R03095",
+      "P0R03096",
+      "P0R03097",
+      "P0R03098"
+    ],
+    "source_ledger_span": [
+      "P0R03076",
+      "P0R03098"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03076",
+    "P0R03098"
+  ],
+  "source_record_count": 23
+}

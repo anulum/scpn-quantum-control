@@ -1,0 +1,57 @@
+{
+  "claim_boundary": "source-bounded l15 reformulation the sec objective functional decision theoretic form r source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "definition_canonical_form": "definition_canonical_form_source_boundary",
+    "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r": "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00)",
+    "component_2": "Definition (canonical form).",
+    "component_count": "2",
+    "next_boundary": "P0R04001",
+    "section": "L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00)",
+    "source_span": "P0R03981-P0R04000"
+  },
+  "next_source_boundary": "P0R04001",
+  "null_controls": {
+    "definition_canonical_form_is_not_empirical_validation_evidence": 1.0,
+    "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded l15 reformulation the sec objective functional decision theoretic form r source-accounting bridge; not validation evidence",
+    "protocol_state": "source_l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03981",
+      "P0R03982",
+      "P0R03983",
+      "P0R03984",
+      "P0R03985",
+      "P0R03986",
+      "P0R03987",
+      "P0R03988",
+      "P0R03989",
+      "P0R03990",
+      "P0R03991",
+      "P0R03992",
+      "P0R03993",
+      "P0R03994",
+      "P0R03995",
+      "P0R03996",
+      "P0R03997",
+      "P0R03998",
+      "P0R03999",
+      "P0R04000"
+    ],
+    "source_ledger_span": [
+      "P0R03981",
+      "P0R04000"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03981",
+    "P0R04000"
+  ],
+  "source_record_count": 20
+}

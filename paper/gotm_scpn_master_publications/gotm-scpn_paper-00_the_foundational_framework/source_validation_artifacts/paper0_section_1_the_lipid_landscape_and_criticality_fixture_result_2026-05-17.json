@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded section 1 the lipid landscape and criticality source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_lipid_landscape_and_criticality": "1_the_lipid_landscape_and_criticality_source_boundary",
+    "2_the_central_role_of_cholesterol": "2_the_central_role_of_cholesterol_source_boundary",
+    "3_lipid_rafts_the_organising_platforms_for_iet": "3_lipid_rafts_the_organising_platforms_for_iet_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "1. The Lipid Landscape and Criticality",
+    "component_2": "2. The Central Role of Cholesterol",
+    "component_3": "3. Lipid Rafts: The Organising Platforms for IET",
+    "component_count": "3",
+    "next_boundary": "P0R04754",
+    "section": "1. The Lipid Landscape and Criticality",
+    "source_span": "P0R04746-P0R04753"
+  },
+  "next_source_boundary": "P0R04754",
+  "null_controls": {
+    "1_the_lipid_landscape_and_criticality_is_not_empirical_validation_evidence": 1.0,
+    "2_the_central_role_of_cholesterol_is_not_empirical_validation_evidence": 1.0,
+    "3_lipid_rafts_the_organising_platforms_for_iet_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 1 the lipid landscape and criticality source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_1_the_lipid_landscape_and_criticality_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04746",
+      "P0R04747",
+      "P0R04748",
+      "P0R04749",
+      "P0R04750",
+      "P0R04751",
+      "P0R04752",
+      "P0R04753"
+    ],
+    "source_ledger_span": [
+      "P0R04746",
+      "P0R04753"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04746",
+    "P0R04753"
+  ],
+  "source_record_count": 8
+}

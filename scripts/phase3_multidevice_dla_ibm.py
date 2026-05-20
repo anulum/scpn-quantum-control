@@ -9,7 +9,7 @@
 """Preregistered second-backend DLA parity replication.
 
 This script implements the circuit matrix from
-``docs/dla_multidevice_replication_prereg_2026-05-06.md``:
+``docs/campaigns/dla_multidevice_replication_prereg_2026-05-06.md``:
 
 * backend must be account-visible, operational, Heron-class, and not
   ``ibm_kingston``;

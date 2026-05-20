@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded iii the dynamics of the coherent brain domain i l4 source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_upde_and_oscillatory_hierarchies": "1_the_upde_and_oscillatory_hierarchies_source_boundary",
+    "2_the_mechanisms_of_self_organised_criticality_soc": "2_the_mechanisms_of_self_organised_criticality_soc_source_boundary",
+    "iii_the_dynamics_of_the_coherent_brain_domain_i_l4": "iii_the_dynamics_of_the_coherent_brain_domain_i_l4_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "III. The Dynamics of the Coherent Brain (Domain I: L4)",
+    "component_2": "1. The UPDE and Oscillatory Hierarchies:",
+    "component_3": "2. The Mechanisms of Self-Organised Criticality (SOC):",
+    "component_count": "3",
+    "next_boundary": "P0R04674",
+    "section": "III. The Dynamics of the Coherent Brain (Domain I: L4)",
+    "source_span": "P0R04666-P0R04673"
+  },
+  "next_source_boundary": "P0R04674",
+  "null_controls": {
+    "1_the_upde_and_oscillatory_hierarchies_is_not_empirical_validation_evidence": 1.0,
+    "2_the_mechanisms_of_self_organised_criticality_soc_is_not_empirical_validation_evidence": 1.0,
+    "iii_the_dynamics_of_the_coherent_brain_domain_i_l4_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded iii the dynamics of the coherent brain domain i l4 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_iii_the_dynamics_of_the_coherent_brain_domain_i_l4_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04666",
+      "P0R04667",
+      "P0R04668",
+      "P0R04669",
+      "P0R04670",
+      "P0R04671",
+      "P0R04672",
+      "P0R04673"
+    ],
+    "source_ledger_span": [
+      "P0R04666",
+      "P0R04673"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04666",
+    "P0R04673"
+  ],
+  "source_record_count": 8
+}

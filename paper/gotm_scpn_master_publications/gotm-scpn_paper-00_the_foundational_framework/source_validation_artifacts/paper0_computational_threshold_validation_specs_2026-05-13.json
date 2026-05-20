@@ -1,0 +1,222 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [
+        "EQ0119"
+      ],
+      "assumptions": [
+        "Phi estimator, units, and coarse graining are declared before thresholding",
+        "alpha_Phi is calibrated or explicitly scanned rather than inferred post hoc",
+        "threshold labels are classifier outputs, not empirical collapse evidence",
+        "OR interpretation remains a falsifiable boundary hypothesis"
+      ],
+      "canonical_latex": "E_{\\Phi}=\\alpha_{\\Phi}\\Phi",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "fit or scan positive E_Phi versus Phi proportionality",
+        "evaluate threshold crossing against a pre-registered Phi_crit",
+        "record estimator and coarse-graining sensitivity before interpretation"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.iit_or_threshold",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "label-shuffle control must destroy threshold predictive value",
+        "alpha-zero control must produce zero informational self-energy",
+        "subcritical Phi control must not promote a collapse label"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 1. The Threshold of Consciousness (IIT-OR)",
+      "source_block_indices": [
+        5986,
+        5987,
+        5988,
+        5989,
+        5990,
+        5991
+      ],
+      "source_equation_ids": [
+        "EQ0119"
+      ],
+      "source_ledger_ids": [
+        "P0R05986",
+        "P0R05987",
+        "P0R05988",
+        "P0R05989",
+        "P0R05990",
+        "P0R05991"
+      ],
+      "source_record_ids": [
+        "P0B05986",
+        "P0B05987",
+        "P0B05988",
+        "P0B05989",
+        "P0B05990",
+        "P0B05991"
+      ],
+      "validation_protocol": "paper0.computational.iit_or.threshold_classifier",
+      "validation_targets": [
+        "linear E_Phi versus Phi proportionality check with positive alpha_Phi",
+        "threshold crossing classifier with pre-registered Phi_crit",
+        "label-shuffle and alpha-zero null controls",
+        "dimension and estimator-sensitivity scan"
+      ],
+      "variables": {
+        "E_Phi": "informational self-energy proxy assigned to a candidate state split",
+        "Phi": "integrated-information observable or estimator",
+        "Phi_crit": "critical integrated-information threshold used for event labelling",
+        "alpha_Phi": "declared proportionality constant carrying the required units"
+      }
+    },
+    {
+      "anchor_math_ids": [
+        "EQ0120"
+      ],
+      "assumptions": [
+        "field boundary conditions are declared before computing divergence",
+        "derivative discretisation and metric signature are explicit",
+        "current conservation is tested on equations of motion, not arbitrary fields",
+        "gauge or global U(1) status is labelled before interpretation"
+      ],
+      "canonical_latex": "J_{\\Psi}^{\\mu}=i\\left(\\Psi^{*}\\partial^{\\mu}\\Psi-\\Psi\\partial^{\\mu}\\Psi^{*}\\right),\\quad \\partial_{\\mu}J_{\\Psi}^{\\mu}=0",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify global U(1) phase invariance of the finite action density",
+        "measure discrete divergence residual for the Noether current",
+        "separate bulk conservation from explicit boundary flux"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.coherence_noether_current",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "phase-broken trajectory must violate current conservation",
+        "random complex field must not be labelled as conserved",
+        "open-boundary flux must be accounted before conservation claims"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > X. Symmetry, Conservation Laws, and the Coherence Current",
+      "source_block_indices": [
+        6051,
+        6052,
+        6053,
+        6054,
+        6055,
+        6056
+      ],
+      "source_equation_ids": [
+        "EQ0120"
+      ],
+      "source_ledger_ids": [
+        "P0R06051",
+        "P0R06052",
+        "P0R06053",
+        "P0R06054",
+        "P0R06055",
+        "P0R06056"
+      ],
+      "source_record_ids": [
+        "P0B06051",
+        "P0B06052",
+        "P0B06053",
+        "P0B06054",
+        "P0B06055",
+        "P0B06056"
+      ],
+      "validation_protocol": "paper0.computational.noether_current.conservation",
+      "validation_targets": [
+        "global phase invariance of the finite action density",
+        "discrete divergence residual for conserved-current trajectories",
+        "boundary-flux accounting under non-periodic boundaries",
+        "phase-broken and random-field null controls"
+      ],
+      "variables": {
+        "J_Psi_mu": "Noether coherence-current four-vector",
+        "Psi": "complex scalar field or finite lattice field",
+        "alpha": "global U(1) phase transformation parameter",
+        "partial_mu": "declared derivative operator on the chosen spacetime grid"
+      }
+    },
+    {
+      "anchor_math_ids": [
+        "EQ0121",
+        "EQ0122"
+      ],
+      "assumptions": [
+        "rho is strictly positive or regularised before division",
+        "grid spacing and boundary conditions are declared",
+        "Q is interpreted as a quantum-potential diagnostic, not direct energy output",
+        "singular-density points are rejected or handled by a stated regulariser"
+      ],
+      "canonical_latex": "Q=-\\frac{\\hbar^2}{2m}\\frac{\\nabla^2\\sqrt{\\rho}}{\\sqrt{\\rho}}",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "recover zero quantum potential for constant positive density",
+        "match Gaussian quantum-potential analytic residual under refinement",
+        "reject singular or non-positive density before division by sqrt(rho)"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "computational.information_energy_transduction",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "constant-density zero-potential control",
+        "non-positive rho rejection control",
+        "grid-coarsening control must expose Laplacian discretisation error"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > XIV. The Physics of Information-Energy Transduction (IET)",
+      "source_block_indices": [
+        6069,
+        6070,
+        6071,
+        6072
+      ],
+      "source_equation_ids": [
+        "EQ0121",
+        "EQ0122"
+      ],
+      "source_ledger_ids": [
+        "P0R06069",
+        "P0R06070",
+        "P0R06071",
+        "P0R06072"
+      ],
+      "source_record_ids": [
+        "P0B06069",
+        "P0B06070",
+        "P0B06071",
+        "P0B06072"
+      ],
+      "validation_protocol": "paper0.computational.iet.quantum_potential",
+      "validation_targets": [
+        "constant-density zero-potential null control",
+        "Gaussian-density analytic quantum-potential residual",
+        "grid-refinement convergence of the Laplacian term",
+        "non-positive rho rejection control"
+      ],
+      "variables": {
+        "Q": "Bohm quantum-potential energy density proxy",
+        "hbar": "reduced Planck constant in the chosen unit system",
+        "m": "effective mass parameter",
+        "nabla2": "declared Laplacian operator",
+        "rho": "positive probability or density field"
+      }
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 16,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "EQ0119-EQ0122 anchors are promoted only into validation specifications. IIT-OR threshold, Noether-current, and IET quantum-potential interpretations remain simulator-only mathematical-boundary checks until executable falsification controls pass.",
+    "source_record_count": 16,
+    "spec_count": 3,
+    "spec_keys": [
+      "computational.iit_or_threshold",
+      "computational.coherence_noether_current",
+      "computational.information_energy_transduction"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

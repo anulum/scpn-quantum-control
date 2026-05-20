@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+  "component_count": 5,
+  "components": {
+    "maximising_j_sec_as_minimising_free_energy": "maximising_j_sec_as_minimising_free_energy_source_boundary",
+    "meta_framework_integrations": "meta_framework_integrations_source_boundary",
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary",
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "the_optimal_policy_governs_the_psis_field": "the_optimal_policy_governs_the_psis_field_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Meta-Framework Integrations",
+    "component_2": "Predictive Coding Integration",
+    "component_3": "Maximising J_SEC as Minimising Free Energy:",
+    "component_4": "Psis Field Coupling Integration",
+    "component_5": "The Optimal Policy (*) Governs the Psis Field:",
+    "component_count": "5",
+    "next_boundary": "P0R03954",
+    "section": "Meta-Framework Integrations",
+    "source_span": "P0R03945-P0R03953"
+  },
+  "next_source_boundary": "P0R03954",
+  "null_controls": {
+    "maximising_j_sec_as_minimising_free_energy_is_not_empirical_validation_evidence": 1.0,
+    "meta_framework_integrations_is_not_empirical_validation_evidence": 1.0,
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0,
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "the_optimal_policy_governs_the_psis_field_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_meta_framework_integrations_p0r03945_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03945",
+      "P0R03946",
+      "P0R03947",
+      "P0R03948",
+      "P0R03949",
+      "P0R03950",
+      "P0R03951",
+      "P0R03952",
+      "P0R03953"
+    ],
+    "source_ledger_span": [
+      "P0R03945",
+      "P0R03953"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03945",
+    "P0R03953"
+  ],
+  "source_record_count": 9
+}

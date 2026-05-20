@@ -1,0 +1,63 @@
+{
+  "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+  "component_count": 8,
+  "components": {
+    "p0r04322": "p0r04322_source_boundary",
+    "p0r04323": "p0r04323_source_boundary",
+    "p0r04324": "p0r04324_source_boundary",
+    "p0r04325": "p0r04325_source_boundary",
+    "p0r04326": "p0r04326_source_boundary",
+    "p0r04327": "p0r04327_source_boundary",
+    "p0r04328": "p0r04328_source_boundary",
+    "p0r04329": "p0r04329_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "P0R04322",
+    "component_2": "P0R04323",
+    "component_3": "P0R04324",
+    "component_4": "P0R04325",
+    "component_5": "P0R04326",
+    "component_6": "P0R04327",
+    "component_7": "P0R04328",
+    "component_8": "P0R04329",
+    "component_count": "8",
+    "next_boundary": "P0R04330",
+    "section": "",
+    "source_span": "P0R04322-P0R04329"
+  },
+  "next_source_boundary": "P0R04330",
+  "null_controls": {
+    "p0r04322_is_not_empirical_validation_evidence": 1.0,
+    "p0r04323_is_not_empirical_validation_evidence": 1.0,
+    "p0r04324_is_not_empirical_validation_evidence": 1.0,
+    "p0r04325_is_not_empirical_validation_evidence": 1.0,
+    "p0r04326_is_not_empirical_validation_evidence": 1.0,
+    "p0r04327_is_not_empirical_validation_evidence": 1.0,
+    "p0r04328_is_not_empirical_validation_evidence": 1.0,
+    "p0r04329_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded paper0 slice p0r04322 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_paper0_slice_p0r04322_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04322",
+      "P0R04323",
+      "P0R04324",
+      "P0R04325",
+      "P0R04326",
+      "P0R04327",
+      "P0R04328",
+      "P0R04329"
+    ],
+    "source_ledger_span": [
+      "P0R04322",
+      "P0R04329"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04322",
+    "P0R04329"
+  ],
+  "source_record_count": 8
+}

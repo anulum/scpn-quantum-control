@@ -1,0 +1,120 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [
+        "EQ0093"
+      ],
+      "assumptions": [
+        "two-oscillator phase-reduced neurovascular model",
+        "finite real-valued coupling gain",
+        "hemodynamic driver phase is observable or explicitly simulated",
+        "Mayer-wave entrainment claim is separated from metabolic pathology claims"
+      ],
+      "canonical_latex": "\\dot{\\theta}_{\\mathrm{Neural}}=\\omega_N+K_{NH}\\sin(\\theta_{\\mathrm{Hemo}}-\\theta_{\\mathrm{Neural}})",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "integrate the two-oscillator neural-hemodynamic phase fixture",
+        "measure phase locking value and mean frequency slip under finite K_NH",
+        "scan K_NH against Mayer-wave detuning and record entrainment threshold",
+        "record metabolic subcriticality boundary as a labelled control channel"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_links": [
+        "src/scpn_quantum_control/paper0/equation_register.py",
+        "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_canonical_review_ledger_2026-05-13.jsonl"
+      ],
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "embodied.neurovascular_phase_coupling",
+      "manuscript": "Paper 0 foundational framework",
+      "null_controls": [
+        "set zero K_NH and require neural phase to remain at intrinsic frequency",
+        "detune Mayer-wave hemodynamic frequency and require reduced phase locking",
+        "shuffle hemodynamic phase drive while preserving marginal phase increments",
+        "simulate impaired CBF supply boundary separately from phase entrainment"
+      ],
+      "section_path": "5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > II. Neuro-Vascular Coupling and Hemodynamics: The Energetics of Consciousness > 2. Hemodynamics and the UPDE",
+      "source_block_indices": [
+        4877,
+        4878,
+        4879,
+        4880,
+        4882,
+        4883,
+        4885,
+        4886,
+        4887,
+        4889,
+        4890,
+        4891,
+        4892,
+        4896,
+        4897
+      ],
+      "source_equation_ids": [
+        "EQ0093"
+      ],
+      "source_ledger_ids": [
+        "P0R04877",
+        "P0R04878",
+        "P0R04879",
+        "P0R04880",
+        "P0R04882",
+        "P0R04883",
+        "P0R04885",
+        "P0R04886",
+        "P0R04887",
+        "P0R04889",
+        "P0R04890",
+        "P0R04891",
+        "P0R04892",
+        "P0R04896",
+        "P0R04897"
+      ],
+      "source_record_ids": [
+        "P0B04877",
+        "P0B04878",
+        "P0B04879",
+        "P0B04880",
+        "P0B04882",
+        "P0B04883",
+        "P0B04885",
+        "P0B04886",
+        "P0B04887",
+        "P0B04889",
+        "P0B04890",
+        "P0B04891",
+        "P0B04892",
+        "P0B04896",
+        "P0B04897"
+      ],
+      "validation_protocol": "paper0.embodied.neurovascular.phase_locking",
+      "validation_targets": [
+        "Mayer-wave hemodynamic entrainment phase-locking scan",
+        "zero K_NH uncoupled neural-frequency null control",
+        "detuned hemodynamic-frequency off-resonance control",
+        "impaired energy-supply subcriticality boundary test"
+      ],
+      "variables": {
+        "K_NH": "hemodynamic-to-neural phase-coupling gain",
+        "omega_N": "intrinsic neural angular frequency",
+        "theta_hemo": "phase of the hemodynamic or Mayer-wave oscillator",
+        "theta_neural": "phase of the neural oscillator or rhythm"
+      }
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "Neurovascular anchors are promoted only into validation specifications. Provider submission remains out of scope until simulator fixtures, null controls, source-to-result provenance, and biomedical boundary labels pass.",
+    "source_record_count": 15,
+    "spec_count": 1,
+    "spec_keys": [
+      "embodied.neurovascular_phase_coupling"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

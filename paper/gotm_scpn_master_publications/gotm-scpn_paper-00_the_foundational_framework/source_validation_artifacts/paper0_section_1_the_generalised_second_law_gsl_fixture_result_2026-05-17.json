@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded section 1 the generalised second law gsl source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_generalised_second_law_gsl": "1_the_generalised_second_law_gsl_source_boundary",
+    "2_the_psi_field_as_a_negentropy_source_information_thermodynamics": "2_the_psi_field_as_a_negentropy_source_information_thermodynamics_source_boundary",
+    "the_rate_of_negentropy_injection_npsi_is_proportional_to_the_mutual_info": "the_rate_of_negentropy_injection_npsi_is_proportional_to_the_mutual_info_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "1. The Generalised Second Law (GSL):",
+    "component_2": "2. The Psi-Field as a Negentropy Source (Information Thermodynamics):",
+    "component_3": "The rate of negentropy injection (NPsi) is proportional to the mutual information (I) between the Psi-field and the biological substrate (B):",
+    "component_count": "3",
+    "next_boundary": "P0R05953",
+    "section": "1. The Generalised Second Law (GSL):",
+    "source_span": "P0R05944-P0R05952"
+  },
+  "next_source_boundary": "P0R05953",
+  "null_controls": {
+    "1_the_generalised_second_law_gsl_is_not_empirical_validation_evidence": 1.0,
+    "2_the_psi_field_as_a_negentropy_source_information_thermodynamics_is_not_empirical_validation_evidence": 1.0,
+    "the_rate_of_negentropy_injection_npsi_is_proportional_to_the_mutual_info_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 1 the generalised second law gsl source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_1_the_generalised_second_law_gsl_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05944",
+      "P0R05945",
+      "P0R05946",
+      "P0R05947",
+      "P0R05948",
+      "P0R05949",
+      "P0R05950",
+      "P0R05951",
+      "P0R05952"
+    ],
+    "source_ledger_span": [
+      "P0R05944",
+      "P0R05952"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05944",
+    "P0R05952"
+  ],
+  "source_record_count": 9
+}

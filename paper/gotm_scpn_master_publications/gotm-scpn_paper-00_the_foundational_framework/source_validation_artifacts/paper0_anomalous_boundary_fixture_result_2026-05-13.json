@@ -1,0 +1,63 @@
+{
+  "abl_probabilities": [
+    0.7777777777777779,
+    0.2222222222222222
+  ],
+  "abl_probability_normalisation_error": 0.0,
+  "biased_probability": 0.48056644659228653,
+  "chsh_value": 2.8284271247461903,
+  "claim_boundary": "simulator-only falsification boundary; not anomalous evidence",
+  "hardware_status": "simulator_only_no_provider_submission",
+  "no_signalling_residual": 0.0,
+  "null_controls": {
+    "born_rule_marginalisation_l1": 0.0,
+    "negative_strength_rejection_label": 1.0,
+    "no_signalling_residual": 0.0,
+    "out_of_range_bias_rejection_label": 1.0,
+    "product_state_chsh_value": 1.4142135623730951,
+    "retrocausal_signalling_supported_label": 0.0,
+    "saturated_probability_upper_margin": 4.965855538996422e-07,
+    "signalling_rejection_label": 1.0,
+    "zero_denominator_rejection_label": 1.0,
+    "zero_intent_probability_shift_abs": 5.551115123125783e-17
+  },
+  "prior_probability": 0.42,
+  "probability_shift": 0.06056644659228655,
+  "problem_metadata": {
+    "entanglement": {
+      "claim_boundary": "simulator-only falsification boundary; not anomalous evidence",
+      "classical_chsh_bound": 2.0,
+      "hardware_status": "simulator_only_no_provider_submission",
+      "measurement_plane": "Pauli X-Z",
+      "paper0_validation_protocol": "paper0.applied.anomalous_boundary.entanglement_correlation",
+      "simulator_only_falsification_boundary": true,
+      "tsirelson_bound": 2.8284271247461903
+    },
+    "tsvf": {
+      "boundary_rule": "Aharonov-Bergmann-Lebowitz post-selection",
+      "claim_boundary": "simulator-only falsification boundary; not anomalous evidence",
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_validation_protocol": "paper0.applied.anomalous_boundary.tsvf_precognition",
+      "projector_count": 2,
+      "simulator_only_falsification_boundary": true
+    },
+    "weak_measurement": {
+      "bias_map": "bounded log-odds update",
+      "claim_boundary": "simulator-only falsification boundary; not anomalous evidence",
+      "hardware_status": "simulator_only_no_provider_submission",
+      "intent_is_simulator_parameter": true,
+      "paper0_validation_protocol": "paper0.applied.anomalous_boundary.weak_measurement_bias",
+      "simulator_only_falsification_boundary": true
+    }
+  },
+  "runtime_ms": 4.009872995084152,
+  "shifted_post_probabilities": [
+    0.36842105263157904,
+    0.631578947368421
+  ],
+  "spec_keys": [
+    "applied.anomalous_boundary.tsvf_precognition_boundary",
+    "applied.anomalous_boundary.entanglement_correlation_boundary",
+    "applied.anomalous_boundary.weak_measurement_bias_boundary"
+  ]
+}

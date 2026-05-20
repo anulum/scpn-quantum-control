@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Techno-Social Systems' preserves Paper 0 records P0R05868-P0R05871 without empirical validation claims.",
+      "claim_boundary": "source-bounded techno social systems source-accounting bridge; not validation evidence",
+      "context_id": "techno_social_systems",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05868-P0R05871"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "techno_social_systems.techno_social_systems",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "techno_social_systems must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Techno-Social Systems is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Techno-Social Systems",
+      "source_block_indices": [
+        5868,
+        5869,
+        5870,
+        5871,
+        5872,
+        5873,
+        5874,
+        5875
+      ],
+      "source_equation_ids": [
+        "P0R05868:techno_social_systems",
+        "P0R05869:techno_social_systems",
+        "P0R05870:techno_social_systems",
+        "P0R05871:techno_social_systems"
+      ],
+      "source_formulae": [
+        "P0R05868: Techno-Social Systems",
+        "P0R05869: Castells (1996, The Rise of the Network Society) -> structural noosphere-technosphere dynamics.",
+        "P0R05870: Luhmann (1995, Social Systems) -> autopoiesis applied to society (cybernetic closure tie).",
+        "P0R05871: Heylighen (2007) -> global brain hypothesis, directly resonates with L11/L12."
+      ],
+      "source_ledger_ids": [
+        "P0R05868",
+        "P0R05869",
+        "P0R05870",
+        "P0R05871",
+        "P0R05872",
+        "P0R05873",
+        "P0R05874",
+        "P0R05875"
+      ],
+      "source_record_ids": [
+        "P0B05868",
+        "P0B05869",
+        "P0B05870",
+        "P0B05871",
+        "P0B05872",
+        "P0B05873",
+        "P0B05874",
+        "P0B05875"
+      ],
+      "test_protocols": [
+        "preserve Techno-Social Systems source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.techno_social_systems.techno_social_systems",
+      "validation_targets": [
+        "preserve records P0R05868-P0R05871"
+      ],
+      "variables": [
+        "techno_social_systems"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Neurophenomenology & First-Person Science' preserves Paper 0 records P0R05872-P0R05875 without empirical validation claims.",
+      "claim_boundary": "source-bounded techno social systems source-accounting bridge; not validation evidence",
+      "context_id": "neurophenomenology_first_person_science",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05872-P0R05875"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "techno_social_systems.neurophenomenology_first_person_science",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "neurophenomenology_first_person_science must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Neurophenomenology & First-Person Science is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Techno-Social Systems",
+      "source_block_indices": [
+        5868,
+        5869,
+        5870,
+        5871,
+        5872,
+        5873,
+        5874,
+        5875
+      ],
+      "source_equation_ids": [
+        "P0R05872:neurophenomenology_first_person_science",
+        "P0R05873:neurophenomenology_first_person_science",
+        "P0R05874:neurophenomenology_first_person_science",
+        "P0R05875:neurophenomenology_first_person_science"
+      ],
+      "source_formulae": [
+        "P0R05872: Neurophenomenology & First-Person Science",
+        "P0R05873: Varela (1996, Neurophenomenology: A Methodological Remedy) -> essential for tying subjective qualia reports to formal state-space analysis (bridges your TDA/qualia manifold).",
+        "P0R05874: Thompson (2007, Mind in Life) -> develops the enactive approach, aligns with your embodied qualia treatment.",
+        "P0R05875: Husserl (1913, Ideas I) -> grounding in phenomenology, if you want philosophical depth anchors."
+      ],
+      "source_ledger_ids": [
+        "P0R05868",
+        "P0R05869",
+        "P0R05870",
+        "P0R05871",
+        "P0R05872",
+        "P0R05873",
+        "P0R05874",
+        "P0R05875"
+      ],
+      "source_record_ids": [
+        "P0B05868",
+        "P0B05869",
+        "P0B05870",
+        "P0B05871",
+        "P0B05872",
+        "P0B05873",
+        "P0B05874",
+        "P0B05875"
+      ],
+      "test_protocols": [
+        "preserve Neurophenomenology & First-Person Science source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.techno_social_systems.neurophenomenology_first_person_science",
+      "validation_targets": [
+        "preserve records P0R05872-P0R05875"
+      ],
+      "variables": [
+        "neurophenomenology_first_person_science"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 6
+    },
+    "claim_boundary": "source-bounded techno social systems source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05876",
+    "source_ledger_span": [
+      "P0R05868",
+      "P0R05875"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "techno_social_systems.techno_social_systems",
+      "techno_social_systems.neurophenomenology_first_person_science"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Techno-Social Systems Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

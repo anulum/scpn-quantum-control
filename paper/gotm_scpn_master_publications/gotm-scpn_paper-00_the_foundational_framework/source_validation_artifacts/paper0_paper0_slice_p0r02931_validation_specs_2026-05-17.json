@@ -1,0 +1,196 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'P0R02931' preserves Paper 0 records P0R02931-P0R02931 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r02931 source-accounting bridge; not validation evidence",
+      "context_id": "p0r02931",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02931-P0R02931"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r02931.p0r02931",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r02931 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R02931 is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > ",
+      "source_block_indices": [
+        2931,
+        2932,
+        2933,
+        2934,
+        2935,
+        2936,
+        2937,
+        2938,
+        2939,
+        2940
+      ],
+      "source_equation_ids": [
+        "P0R02931:p0r02931"
+      ],
+      "source_formulae": [
+        "P0R02931: P0R02931"
+      ],
+      "source_ledger_ids": [
+        "P0R02931",
+        "P0R02932",
+        "P0R02933",
+        "P0R02934",
+        "P0R02935",
+        "P0R02936",
+        "P0R02937",
+        "P0R02938",
+        "P0R02939",
+        "P0R02940"
+      ],
+      "source_record_ids": [
+        "P0B02931",
+        "P0B02932",
+        "P0B02933",
+        "P0B02934",
+        "P0B02935",
+        "P0B02936",
+        "P0B02937",
+        "P0B02938",
+        "P0B02939",
+        "P0B02940"
+      ],
+      "test_protocols": [
+        "preserve P0R02931 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r02931.p0r02931",
+      "validation_targets": [
+        "preserve records P0R02931-P0R02931"
+      ],
+      "variables": [
+        "p0r02931"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Impedance-Matching Operator and Causal Horizon' preserves Paper 0 records P0R02932-P0R02940 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r02931 source-accounting bridge; not validation evidence",
+      "context_id": "the_impedance_matching_operator_and_causal_horizon",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02932-P0R02940"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r02931.the_impedance_matching_operator_and_causal_horizon",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_impedance_matching_operator_and_causal_horizon must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Impedance-Matching Operator and Causal Horizon is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > ",
+      "source_block_indices": [
+        2931,
+        2932,
+        2933,
+        2934,
+        2935,
+        2936,
+        2937,
+        2938,
+        2939,
+        2940
+      ],
+      "source_equation_ids": [
+        "P0R02932:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02933:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02934:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02935:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02936:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02937:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02938:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02939:the_impedance_matching_operator_and_causal_horizon",
+        "P0R02940:the_impedance_matching_operator_and_causal_horizon"
+      ],
+      "source_formulae": [
+        "P0R02932: The Impedance-Matching Operator and Causal Horizon",
+        "P0R02933: The seamless transduction of intent from the $\\Psi$-field to the biological substrate requires Impedance Matching between the high-frequency quantum modes of Layer 1 and the slower neurochemical oscillations of Layer 2. We formalize this via the Transduction Impedance Operator ($\\hat{Z}_L$), ensuring that the flow of negentropy does not result in local thermal destabilization.",
+        "P0R02934: Causal Efficiency Check (Python Format):",
+        "P0R02935: Python",
+        "P0R02936: def check_mereological_fusion(phi_A, phi_B, phi_AB, entanglement_entropy): \"\"\"",
+        "P0R02937: Validates the Fusion Condition for panpsychist unity (L5 emergence).",
+        "P0R02938: Based on the Quantum Mereology formalism (Paper 0,).",
+        "P0R02939: \"\"\" # Fusion occurs only if integrated information of the whole # exceeds the sum of parts + entanglement overhead. is_fused = phi_AB > (phi_A + phi_B + entanglement_entropy) return { \"status\": \"Irreducible Whole\" if is_fused else \"Fragmented Aggregate\", \"phi_gradient\": phi_AB - (phi_A + phi_B), \"mereological_stability\": is_fused and entanglement_entropy > 0 }",
+        "P0R02940: P0R02940"
+      ],
+      "source_ledger_ids": [
+        "P0R02931",
+        "P0R02932",
+        "P0R02933",
+        "P0R02934",
+        "P0R02935",
+        "P0R02936",
+        "P0R02937",
+        "P0R02938",
+        "P0R02939",
+        "P0R02940"
+      ],
+      "source_record_ids": [
+        "P0B02931",
+        "P0B02932",
+        "P0B02933",
+        "P0B02934",
+        "P0B02935",
+        "P0B02936",
+        "P0B02937",
+        "P0B02938",
+        "P0B02939",
+        "P0B02940"
+      ],
+      "test_protocols": [
+        "preserve The Impedance-Matching Operator and Causal Horizon source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r02931.the_impedance_matching_operator_and_causal_horizon",
+      "validation_targets": [
+        "preserve records P0R02932-P0R02940"
+      ],
+      "variables": [
+        "the_impedance_matching_operator_and_causal_horizon"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 8
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "mechanism": 1,
+      "structural": 2
+    },
+    "claim_boundary": "source-bounded paper0 slice p0r02931 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02941",
+    "source_ledger_span": [
+      "P0R02931",
+      "P0R02940"
+    ],
+    "source_record_count": 10,
+    "spec_count": 2,
+    "spec_keys": [
+      "paper0_slice_p0r02931.p0r02931",
+      "paper0_slice_p0r02931.the_impedance_matching_operator_and_causal_horizon"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

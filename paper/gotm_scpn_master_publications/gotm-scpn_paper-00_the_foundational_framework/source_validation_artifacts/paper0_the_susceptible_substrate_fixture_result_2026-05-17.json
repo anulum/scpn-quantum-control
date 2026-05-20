@@ -1,0 +1,54 @@
+{
+  "claim_boundary": "source-bounded the susceptible substrate source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "a_the_universal_dynamic_regime_quasicriticality": "a_the_universal_dynamic_regime_quasicriticality_source_boundary",
+    "overarching_dynamic_principles": "overarching_dynamic_principles_source_boundary",
+    "the_branching_parameter_as_sigma": "the_branching_parameter_as_sigma_source_boundary",
+    "the_susceptible_substrate": "the_susceptible_substrate_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Susceptible Substrate:",
+    "component_2": "The Branching Parameter as sigma:",
+    "component_3": "Overarching Dynamic Principles",
+    "component_4": "A The Universal Dynamic Regime: Quasicriticality",
+    "component_count": "4",
+    "next_boundary": "P0R02859",
+    "section": "The Susceptible Substrate:",
+    "source_span": "P0R02848-P0R02858"
+  },
+  "next_source_boundary": "P0R02859",
+  "null_controls": {
+    "a_the_universal_dynamic_regime_quasicriticality_is_not_empirical_validation_evidence": 1.0,
+    "overarching_dynamic_principles_is_not_empirical_validation_evidence": 1.0,
+    "the_branching_parameter_as_sigma_is_not_empirical_validation_evidence": 1.0,
+    "the_susceptible_substrate_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the susceptible substrate source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_susceptible_substrate_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02848",
+      "P0R02849",
+      "P0R02850",
+      "P0R02851",
+      "P0R02852",
+      "P0R02853",
+      "P0R02854",
+      "P0R02855",
+      "P0R02856",
+      "P0R02857",
+      "P0R02858"
+    ],
+    "source_ledger_span": [
+      "P0R02848",
+      "P0R02858"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02848",
+    "P0R02858"
+  ],
+  "source_record_count": 11
+}

@@ -1,0 +1,112 @@
+{
+  "claim_boundary": "source-bounded Gaian safety simulator contract; not empirical evidence",
+  "degraded_stability": 0.3148,
+  "gaian_stability_delta": 0.4517999999999999,
+  "governance": {
+    "claim_boundary": "source-bounded Gaian safety simulator contract; not empirical evidence",
+    "hardware_status": "simulator_only_no_provider_submission",
+    "null_controls": {
+      "missing_entropy_budget_rejection_label": 1.0,
+      "missing_layer_15_16_anchor_rejection_label": 1.0,
+      "missing_qecc_safeguard_rejection_label": 1.0,
+      "unsupported_empirical_evidence_rejection_label": 1.0
+    },
+    "problem_metadata": {
+      "claim_boundary": "source-bounded Gaian safety simulator contract; not empirical evidence",
+      "source_ledger_ids": [
+        "P0R06251",
+        "P0R06252",
+        "P0R06253",
+        "P0R06254",
+        "P0R06255",
+        "P0R06256",
+        "P0R06257",
+        "P0R06258",
+        "P0R06259",
+        "P0R06260",
+        "P0R06261",
+        "P0R06262",
+        "P0R06263",
+        "P0R06264",
+        "P0R06265",
+        "P0R06266",
+        "P0R06267",
+        "P0R06268",
+        "P0R06269",
+        "P0R06270",
+        "P0R06271",
+        "P0R06272"
+      ]
+    },
+    "risk_score": 0.6733333333333333,
+    "safeguard_score": 1.0,
+    "source_ledger_ids": [
+      "P0R06251",
+      "P0R06252",
+      "P0R06253",
+      "P0R06254",
+      "P0R06255",
+      "P0R06256",
+      "P0R06257",
+      "P0R06258",
+      "P0R06259",
+      "P0R06260",
+      "P0R06261",
+      "P0R06262",
+      "P0R06263",
+      "P0R06264",
+      "P0R06265",
+      "P0R06266",
+      "P0R06267",
+      "P0R06268",
+      "P0R06269",
+      "P0R06270",
+      "P0R06271",
+      "P0R06272"
+    ],
+    "spec_key": "gaian_safety.governance_risk_safeguard_protocol",
+    "validation_protocol": "paper0.gaian_safety.governance_risk_safeguard_protocol"
+  },
+  "hardware_status": "simulator_only_no_provider_submission",
+  "phase_categories": [
+    "ferromagnetic_coherence",
+    "spin_glass_fragmentation",
+    "paramagnetic_incoherence"
+  ],
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Gaian safety simulator contract; not empirical evidence",
+    "source_ledger_ids": [
+      "P0R06251",
+      "P0R06252",
+      "P0R06253",
+      "P0R06254",
+      "P0R06255",
+      "P0R06256",
+      "P0R06257",
+      "P0R06258",
+      "P0R06259",
+      "P0R06260",
+      "P0R06261",
+      "P0R06262",
+      "P0R06263",
+      "P0R06264",
+      "P0R06265",
+      "P0R06266",
+      "P0R06267",
+      "P0R06268",
+      "P0R06269",
+      "P0R06270",
+      "P0R06271",
+      "P0R06272"
+    ]
+  },
+  "protected_stability": 0.7666,
+  "runtime_ms": 5.707293021259829,
+  "spec_keys": [
+    "gaian_safety.biodiversity_phi_sec_boundary",
+    "gaian_safety.ethical_functional_pela_boundary",
+    "gaian_safety.nths_phase_category_validation",
+    "gaian_safety.consciousness_engineering_safety_protocol",
+    "gaian_safety.governance_risk_safeguard_protocol"
+  ]
+}

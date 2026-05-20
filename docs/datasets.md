@@ -27,7 +27,7 @@ for moving a dataset off the filesystem into a persistent-archive
 
 A `data/<campaign>/` directory must have:
 
-- A `README.md` describing the campaign, the hardware, the
+- A `literature/README.md` describing the campaign, the hardware, the
   capture date, and the claim-to-file mapping.
 - Every JSON embedded with a `provenance` block emitted by
   `hardware/provenance.py` (git hash, versions, runtime, host).
@@ -60,7 +60,7 @@ externally-archived Zenodo record:
 
 1. **Reserve a Zenodo DOI** via the API (token in
    `agentic-shared/CREDENTIALS.md` under Zenodo). Write the DOI
-   into the campaign `README.md` before the upload, so readers
+   into the campaign `literature/README.md` before the upload, so readers
    see the eventual citation target.
 2. **Upload** the raw JSONs (plus the analysis script from
    `scripts/` and the reproducer test). Zenodo versioning handles
@@ -134,7 +134,7 @@ show".
 ## Review cycle
 
 Per campaign. Every new entry in `data/` triggers this document's
-review. Missing `README.md`, missing reproducer test, or a
+review. Missing `literature/README.md`, missing reproducer test, or a
 filesystem-size overshoot marks the campaign as non-compliant and
 blocks release.
 

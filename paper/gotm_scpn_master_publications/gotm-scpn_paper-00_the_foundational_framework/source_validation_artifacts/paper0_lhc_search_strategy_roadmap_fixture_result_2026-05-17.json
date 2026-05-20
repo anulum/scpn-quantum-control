@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded LHC search-strategy roadmap bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "search_signature_overview": "lhc_search_signature_overview_boundary",
+    "ssb_cascade_transition": "ssb_cascade_section_transition_boundary",
+    "table_roadmap": "table_2_experimental_roadmap_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "channels": "exotic Higgs decays, resonant production, cascade decays, invisible decays",
+    "next_boundary": "The Genesis of the Hierarchy: A Cascade of Sequential Symmetry Breaking",
+    "section": "Phenomenology and Search Strategies at the LHC",
+    "table": "TBL003 Proposed Experimental Search Parameters for the Psi-Higgs Boson"
+  },
+  "next_source_boundary": "P0R01693",
+  "null_controls": {
+    "lhc_search_channels_are_not_observed_psi_higgs_events": 1.0,
+    "ssb_cascade_transition_has_no_empirical_claim": 1.0,
+    "tbl003_is_source_roadmap_not_experimental_result": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded LHC search-strategy roadmap bridge; not validation evidence",
+    "protocol_state": "source_lhc_search_strategy_roadmap_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01684",
+      "P0R01685",
+      "P0R01686",
+      "P0R01687",
+      "P0R01688",
+      "P0R01689",
+      "P0R01690",
+      "P0R01691",
+      "P0R01692"
+    ],
+    "source_ledger_span": [
+      "P0R01684",
+      "P0R01692"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01684",
+    "P0R01692"
+  ],
+  "source_record_count": 9
+}

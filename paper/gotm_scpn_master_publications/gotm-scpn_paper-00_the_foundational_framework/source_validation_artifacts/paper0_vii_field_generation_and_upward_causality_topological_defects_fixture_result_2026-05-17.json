@@ -1,0 +1,53 @@
+{
+  "claim_boundary": "source-bounded vii field generation and upward causality topological defects source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "i_the_unifying_computational_principle_hpc": "i_the_unifying_computational_principle_hpc_source_boundary",
+    "integrative_mechanisms_in_short": "integrative_mechanisms_in_short_source_boundary",
+    "vii_field_generation_and_upward_causality_topological_defects": "vii_field_generation_and_upward_causality_topological_defects_source_boundary",
+    "viii_the_combination_problem_and_panpsychist_fusion_quantum_mereology": "viii_the_combination_problem_and_panpsychist_fusion_quantum_mereology_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "VII. Field Generation and Upward Causality (Topological Defects)",
+    "component_2": "VIII. The Combination Problem and Panpsychist Fusion (Quantum Mereology)",
+    "component_3": "Integrative Mechanisms in short",
+    "component_4": "I. The Unifying Computational Principle (HPC)",
+    "component_count": "4",
+    "next_boundary": "P0R03260",
+    "section": "VII. Field Generation and Upward Causality (Topological Defects)",
+    "source_span": "P0R03250-P0R03259"
+  },
+  "next_source_boundary": "P0R03260",
+  "null_controls": {
+    "i_the_unifying_computational_principle_hpc_is_not_empirical_validation_evidence": 1.0,
+    "integrative_mechanisms_in_short_is_not_empirical_validation_evidence": 1.0,
+    "vii_field_generation_and_upward_causality_topological_defects_is_not_empirical_validation_evidence": 1.0,
+    "viii_the_combination_problem_and_panpsychist_fusion_quantum_mereology_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded vii field generation and upward causality topological defects source-accounting bridge; not validation evidence",
+    "protocol_state": "source_vii_field_generation_and_upward_causality_topological_defects_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03250",
+      "P0R03251",
+      "P0R03252",
+      "P0R03253",
+      "P0R03254",
+      "P0R03255",
+      "P0R03256",
+      "P0R03257",
+      "P0R03258",
+      "P0R03259"
+    ],
+    "source_ledger_span": [
+      "P0R03250",
+      "P0R03259"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03250",
+    "P0R03259"
+  ],
+  "source_record_count": 10
+}

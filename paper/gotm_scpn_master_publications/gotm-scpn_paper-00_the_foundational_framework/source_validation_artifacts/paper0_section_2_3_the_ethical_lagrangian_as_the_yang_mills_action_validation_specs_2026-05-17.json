@@ -1,0 +1,183 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2.3. The Ethical Lagrangian as the Yang-Mills Action' preserves Paper 0 records P0R03622-P0R03627 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 3 the ethical lagrangian as the yang mills action source-accounting bridge; not validation evidence",
+      "context_id": "2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03622-P0R03627"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_3_the_ethical_lagrangian_as_the_yang_mills_action.2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_3_the_ethical_lagrangian_as_the_yang_mills_action must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2.3. The Ethical Lagrangian as the Yang-Mills Action is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > The Physics of Teleology: A Derivation of the Ethical Functional > Section 2: Derivation of the Ethical Lagrangian from Gauge Symmetry > 2.3. The Ethical Lagrangian as the Yang-Mills Action",
+      "source_block_indices": [
+        3622,
+        3623,
+        3624,
+        3625,
+        3626,
+        3627,
+        3628,
+        3629
+      ],
+      "source_equation_ids": [
+        "P0R03622:2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+        "P0R03623:2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+        "P0R03624:2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+        "P0R03625:2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+        "P0R03626:2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+        "P0R03627:2_3_the_ethical_lagrangian_as_the_yang_mills_action"
+      ],
+      "source_formulae": [
+        "P0R03622: 2.3. The Ethical Lagrangian as the Yang-Mills Action",
+        "P0R03623: An action principle governs the dynamics of any gauge field (or connection). The most natural, compact, and gauge-invariant action that can be constructed for a connection is the Yang-Mills action. This action is built from the curvature of the connection, F, which measures the field's intrinsic \"tension\" or \"field strength.\" The Ethical Lagrangian is therefore not postulated ad hoc, but is derived as the Yang-Mills action for the L15 connection :",
+        "P0R03624: $\\mathbf{LEthical = - 41 Tr}\\left( \\mathbf{F\\mu\\nu F\\mu\\nu} \\right)$",
+        "P0R03625: Or, in the language of differential forms:",
+        "P0R03626: $\\$\\$\\ S\\_\\{\\backslash text\\{ Ethical\\}\\}\\ = \\ \\backslash int\\_ M\\ \\backslash mathcal\\{ L\\}\\{\\backslash text\\{ Ethical\\}\\}\\ ,\\ d\\hat{}4x\\ = \\ \\backslash frac\\{ 1\\}\\{ 4\\}\\ \\backslash int\\_ M\\ \\backslash text\\{ Tr\\}(F\\ \\backslash wedge\\ \\backslash star\\ F)\\ \\$\\$\\ $",
+        "P0R03627: The principle of least action, $\\delta S{\\text{Ethical}} = 0$, then dictates that the field will evolve in a way that minimises this total curvature. States of high coherence, harmony, and integration correspond precisely to smooth, low-curvature field configurations that minimize this action. This derivation fixes the form of the Ethical Functional, E[Psi], based on the fundamental requirement of gauge invariance on the qualia fiber bundle, thereby resolving the first major challenge posed in the user query."
+      ],
+      "source_ledger_ids": [
+        "P0R03622",
+        "P0R03623",
+        "P0R03624",
+        "P0R03625",
+        "P0R03626",
+        "P0R03627",
+        "P0R03628",
+        "P0R03629"
+      ],
+      "source_record_ids": [
+        "P0B03622",
+        "P0B03623",
+        "P0B03624",
+        "P0B03625",
+        "P0B03626",
+        "P0B03627",
+        "P0B03628",
+        "P0B03629"
+      ],
+      "test_protocols": [
+        "preserve 2.3. The Ethical Lagrangian as the Yang-Mills Action source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_3_the_ethical_lagrangian_as_the_yang_mills_action.2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+      "validation_targets": [
+        "preserve records P0R03622-P0R03627"
+      ],
+      "variables": [
+        "2_3_the_ethical_lagrangian_as_the_yang_mills_action"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Section 3: The Conserved \"Ethical Charge\" and its Physical Basis' preserves Paper 0 records P0R03628-P0R03629 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 3 the ethical lagrangian as the yang mills action source-accounting bridge; not validation evidence",
+      "context_id": "section_3_the_conserved_ethical_charge_and_its_physical_basis",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03628-P0R03629"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_3_the_ethical_lagrangian_as_the_yang_mills_action.section_3_the_conserved_ethical_charge_and_its_physical_basis",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "section_3_the_conserved_ethical_charge_and_its_physical_basis must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Section 3: The Conserved \"Ethical Charge\" and its Physical Basis is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > The Physics of Teleology: A Derivation of the Ethical Functional > Section 2: Derivation of the Ethical Lagrangian from Gauge Symmetry > 2.3. The Ethical Lagrangian as the Yang-Mills Action",
+      "source_block_indices": [
+        3622,
+        3623,
+        3624,
+        3625,
+        3626,
+        3627,
+        3628,
+        3629
+      ],
+      "source_equation_ids": [
+        "P0R03628:section_3_the_conserved_ethical_charge_and_its_physical_basis",
+        "P0R03629:section_3_the_conserved_ethical_charge_and_its_physical_basis"
+      ],
+      "source_formulae": [
+        "P0R03628: Section 3: The Conserved \"Ethical Charge\" and its Physical Basis",
+        "P0R03629: The derivation of the Ethical Lagrangian from a gauge principle has a powerful consequence: via Noether's theorem, the symmetries of this Lagrangian imply the existence of conserved quantities, or \"charges.\" This allows for a rigorous physical definition of the \"charge\" associated with the ethical force, directly addressing the second part of the user's query. The gauge group for the qualia fiber is likely to be a non-Abelian group like SU(N) to account for the rich structure of experience, which would contain a U(1) subgroup."
+      ],
+      "source_ledger_ids": [
+        "P0R03622",
+        "P0R03623",
+        "P0R03624",
+        "P0R03625",
+        "P0R03626",
+        "P0R03627",
+        "P0R03628",
+        "P0R03629"
+      ],
+      "source_record_ids": [
+        "P0B03622",
+        "P0B03623",
+        "P0B03624",
+        "P0B03625",
+        "P0B03626",
+        "P0B03627",
+        "P0B03628",
+        "P0B03629"
+      ],
+      "test_protocols": [
+        "preserve Section 3: The Conserved \"Ethical Charge\" and its Physical Basis source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_3_the_ethical_lagrangian_as_the_yang_mills_action.section_3_the_conserved_ethical_charge_and_its_physical_basis",
+      "validation_targets": [
+        "preserve records P0R03628-P0R03629"
+      ],
+      "variables": [
+        "section_3_the_conserved_ethical_charge_and_its_physical_basis"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 1,
+      "equation": 2,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded section 2 3 the ethical lagrangian as the yang mills action source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0059",
+      "EQ0060"
+    ],
+    "next_source_boundary": "P0R03630",
+    "source_ledger_span": [
+      "P0R03622",
+      "P0R03629"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_2_3_the_ethical_lagrangian_as_the_yang_mills_action.2_3_the_ethical_lagrangian_as_the_yang_mills_action",
+      "section_2_3_the_ethical_lagrangian_as_the_yang_mills_action.section_3_the_conserved_ethical_charge_and_its_physical_basis"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2.3. The Ethical Lagrangian as the Yang-Mills Action Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

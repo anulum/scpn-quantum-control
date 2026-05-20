@@ -1,0 +1,245 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'VI. The Unified Geometric Principle (UGP)' preserves Paper 0 records P0R06039-P0R06040 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi the unified geometric principle ugp source-accounting bridge; not validation evidence",
+      "context_id": "vi_the_unified_geometric_principle_ugp",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06039-P0R06040"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_the_unified_geometric_principle_ugp.vi_the_unified_geometric_principle_ugp",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vi_the_unified_geometric_principle_ugp must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VI. The Unified Geometric Principle (UGP) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > VI. The Unified Geometric Principle (UGP)",
+      "source_block_indices": [
+        6039,
+        6040,
+        6041,
+        6042,
+        6043,
+        6044,
+        6045,
+        6046
+      ],
+      "source_equation_ids": [
+        "P0R06039:vi_the_unified_geometric_principle_ugp",
+        "P0R06040:vi_the_unified_geometric_principle_ugp"
+      ],
+      "source_formulae": [
+        "P0R06039: VI. The Unified Geometric Principle (UGP)",
+        "P0R06040: Geometry is the universal language of organisation (Axiom 2). The UGP asserts that InformationGeometry. This principle manifests across all scales: from the topology of QEC codes (L1) and DNA chirality (L3), to the geometry of the Qualia Manifold (L5), the action of Symbols as Rotors (L7), the hyperbolic geometry of MERA networks (L9), and the potential landscape defined by the Ethical Functional (L15)."
+      ],
+      "source_ledger_ids": [
+        "P0R06039",
+        "P0R06040",
+        "P0R06041",
+        "P0R06042",
+        "P0R06043",
+        "P0R06044",
+        "P0R06045",
+        "P0R06046"
+      ],
+      "source_record_ids": [
+        "P0B06039",
+        "P0B06040",
+        "P0B06041",
+        "P0B06042",
+        "P0B06043",
+        "P0B06044",
+        "P0B06045",
+        "P0B06046"
+      ],
+      "test_protocols": [
+        "preserve VI. The Unified Geometric Principle (UGP) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_the_unified_geometric_principle_ugp.vi_the_unified_geometric_principle_ugp",
+      "validation_targets": [
+        "preserve records P0R06039-P0R06040"
+      ],
+      "variables": [
+        "vi_the_unified_geometric_principle_ugp"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VII. Symmetry Principles: Preservation and Breaking' preserves Paper 0 records P0R06041-P0R06043 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi the unified geometric principle ugp source-accounting bridge; not validation evidence",
+      "context_id": "vii_symmetry_principles_preservation_and_breaking",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06041-P0R06043"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_the_unified_geometric_principle_ugp.vii_symmetry_principles_preservation_and_breaking",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vii_symmetry_principles_preservation_and_breaking must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VII. Symmetry Principles: Preservation and Breaking is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > VI. The Unified Geometric Principle (UGP)",
+      "source_block_indices": [
+        6039,
+        6040,
+        6041,
+        6042,
+        6043,
+        6044,
+        6045,
+        6046
+      ],
+      "source_equation_ids": [
+        "P0R06041:vii_symmetry_principles_preservation_and_breaking",
+        "P0R06042:vii_symmetry_principles_preservation_and_breaking",
+        "P0R06043:vii_symmetry_principles_preservation_and_breaking"
+      ],
+      "source_formulae": [
+        "P0R06041: VII. Symmetry Principles: Preservation and Breaking",
+        "P0R06042: Symmetry governs the SCPN.",
+        "P0R06043: Symmetry Preservation (Noether's Theorem): Symmetries lead to conserved quantities (e.g., Gauge Symmetry Conservation of Coherence). | Spontaneous Symmetry Breaking (SSB): Essential for the emergence of structure, such as the formation of the Self (L5 VEV) and the differentiation of the Source-Field (L13)."
+      ],
+      "source_ledger_ids": [
+        "P0R06039",
+        "P0R06040",
+        "P0R06041",
+        "P0R06042",
+        "P0R06043",
+        "P0R06044",
+        "P0R06045",
+        "P0R06046"
+      ],
+      "source_record_ids": [
+        "P0B06039",
+        "P0B06040",
+        "P0B06041",
+        "P0B06042",
+        "P0B06043",
+        "P0B06044",
+        "P0B06045",
+        "P0B06046"
+      ],
+      "test_protocols": [
+        "preserve VII. Symmetry Principles: Preservation and Breaking source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_the_unified_geometric_principle_ugp.vii_symmetry_principles_preservation_and_breaking",
+      "validation_targets": [
+        "preserve records P0R06041-P0R06043"
+      ],
+      "variables": [
+        "vii_symmetry_principles_preservation_and_breaking"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VIII. Energetics and Metabolism of the SCPN' preserves Paper 0 records P0R06044-P0R06046 without empirical validation claims.",
+      "claim_boundary": "source-bounded vi the unified geometric principle ugp source-accounting bridge; not validation evidence",
+      "context_id": "viii_energetics_and_metabolism_of_the_scpn",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06044-P0R06046"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "vi_the_unified_geometric_principle_ugp.viii_energetics_and_metabolism_of_the_scpn",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "viii_energetics_and_metabolism_of_the_scpn must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VIII. Energetics and Metabolism of the SCPN is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > VI. The Unified Geometric Principle (UGP)",
+      "source_block_indices": [
+        6039,
+        6040,
+        6041,
+        6042,
+        6043,
+        6044,
+        6045,
+        6046
+      ],
+      "source_equation_ids": [
+        "P0R06044:viii_energetics_and_metabolism_of_the_scpn",
+        "P0R06045:viii_energetics_and_metabolism_of_the_scpn",
+        "P0R06046:viii_energetics_and_metabolism_of_the_scpn"
+      ],
+      "source_formulae": [
+        "P0R06044: VIII. Energetics and Metabolism of the SCPN",
+        "P0R06045: The SCPN operates far from equilibrium as a Dissipative Structure.",
+        "P0R06046: Generalised Free Energy (GFE): The system minimises GFE, integrating thermodynamic and informational components: FGFE=FThermoTEffSInfo. | The Cost of Consciousness: We posit a scaling relationship: RMetabolic (>1). | Psi-Field Efficiency: The Psi-field enhances metabolic efficiency by increasing quantum coherence (Negentropy Injection)."
+      ],
+      "source_ledger_ids": [
+        "P0R06039",
+        "P0R06040",
+        "P0R06041",
+        "P0R06042",
+        "P0R06043",
+        "P0R06044",
+        "P0R06045",
+        "P0R06046"
+      ],
+      "source_record_ids": [
+        "P0B06039",
+        "P0B06040",
+        "P0B06041",
+        "P0B06042",
+        "P0B06043",
+        "P0B06044",
+        "P0B06045",
+        "P0B06046"
+      ],
+      "test_protocols": [
+        "preserve VIII. Energetics and Metabolism of the SCPN source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.vi_the_unified_geometric_principle_ugp.viii_energetics_and_metabolism_of_the_scpn",
+      "validation_targets": [
+        "preserve records P0R06044-P0R06046"
+      ],
+      "variables": [
+        "viii_energetics_and_metabolism_of_the_scpn"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 3
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 4,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded vi the unified geometric principle ugp source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R06047",
+    "source_ledger_span": [
+      "P0R06039",
+      "P0R06046"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "vi_the_unified_geometric_principle_ugp.vi_the_unified_geometric_principle_ugp",
+      "vi_the_unified_geometric_principle_ugp.vii_symmetry_principles_preservation_and_breaking",
+      "vi_the_unified_geometric_principle_ugp.viii_energetics_and_metabolism_of_the_scpn"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 VI. The Unified Geometric Principle (UGP) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

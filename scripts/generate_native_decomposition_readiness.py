@@ -9,7 +9,7 @@
 """Generate no-QPU native-decomposition readiness artefacts.
 
 This implements the offline equivalence/resource gate in
-``docs/depth_optimal_native_decomposition_prereg_2026-05-06.md``.  It compares
+``docs/campaigns/depth_optimal_native_decomposition_prereg_2026-05-06.md``.  It compares
 generic Pauli-evolution, the current XY compiler, and a native-targeted
 ``rxx+ryy`` construction on the same small Kuramoto-XY cases.  It does not open
 provider sessions or submit jobs.

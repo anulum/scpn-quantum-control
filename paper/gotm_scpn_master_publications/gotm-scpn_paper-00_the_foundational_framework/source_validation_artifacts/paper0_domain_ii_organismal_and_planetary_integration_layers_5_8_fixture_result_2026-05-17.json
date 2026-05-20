@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded domain ii organismal and planetary integration layers 5 8 source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "citations": "citations_source_boundary",
+    "domain_ii_organismal_and_planetary_integration_layers_5_8": "domain_ii_organismal_and_planetary_integration_layers_5_8_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Domain II: Organismal and Planetary Integration (Layers 5-8)",
+    "component_2": "Citations:",
+    "component_count": "2",
+    "next_boundary": "P0R05551",
+    "section": "Domain II: Organismal and Planetary Integration (Layers 5-8)",
+    "source_span": "P0R05537-P0R05550"
+  },
+  "next_source_boundary": "P0R05551",
+  "null_controls": {
+    "citations_is_not_empirical_validation_evidence": 1.0,
+    "domain_ii_organismal_and_planetary_integration_layers_5_8_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded domain ii organismal and planetary integration layers 5 8 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_domain_ii_organismal_and_planetary_integration_layers_5_8_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05537",
+      "P0R05538",
+      "P0R05539",
+      "P0R05540",
+      "P0R05541",
+      "P0R05542",
+      "P0R05543",
+      "P0R05544",
+      "P0R05545",
+      "P0R05546",
+      "P0R05547",
+      "P0R05548",
+      "P0R05549",
+      "P0R05550"
+    ],
+    "source_ledger_span": [
+      "P0R05537",
+      "P0R05550"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05537",
+    "P0R05550"
+  ],
+  "source_record_count": 14
+}

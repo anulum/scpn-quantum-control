@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03945-P0R03945 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03945-P0R03945"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03945.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Ethical Functional > Meta-Framework Integrations",
+      "source_block_indices": [
+        3945,
+        3946,
+        3947,
+        3948,
+        3949,
+        3950,
+        3951,
+        3952,
+        3953
+      ],
+      "source_equation_ids": [
+        "P0R03945:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03945: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03945",
+        "P0R03946",
+        "P0R03947",
+        "P0R03948",
+        "P0R03949",
+        "P0R03950",
+        "P0R03951",
+        "P0R03952",
+        "P0R03953"
+      ],
+      "source_record_ids": [
+        "P0B03945",
+        "P0B03946",
+        "P0B03947",
+        "P0B03948",
+        "P0B03949",
+        "P0B03950",
+        "P0B03951",
+        "P0B03952",
+        "P0B03953"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03945.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03945-P0R03945"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R03946-P0R03947 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03946-P0R03947"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03945.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Ethical Functional > Meta-Framework Integrations",
+      "source_block_indices": [
+        3945,
+        3946,
+        3947,
+        3948,
+        3949,
+        3950,
+        3951,
+        3952,
+        3953
+      ],
+      "source_equation_ids": [
+        "P0R03946:predictive_coding_integration",
+        "P0R03947:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R03946: Predictive Coding Integration",
+        "P0R03947: The SEC Objective Functional is the ultimate expression of the Free Energy Principle at the scale of the entire cosmos."
+      ],
+      "source_ledger_ids": [
+        "P0R03945",
+        "P0R03946",
+        "P0R03947",
+        "P0R03948",
+        "P0R03949",
+        "P0R03950",
+        "P0R03951",
+        "P0R03952",
+        "P0R03953"
+      ],
+      "source_record_ids": [
+        "P0B03945",
+        "P0B03946",
+        "P0B03947",
+        "P0B03948",
+        "P0B03949",
+        "P0B03950",
+        "P0B03951",
+        "P0B03952",
+        "P0B03953"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03945.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R03946-P0R03947"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Maximising J_SEC as Minimising Free Energy:' preserves Paper 0 records P0R03948-P0R03949 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+      "context_id": "maximising_j_sec_as_minimising_free_energy",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03948-P0R03949"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03945.maximising_j_sec_as_minimising_free_energy",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "maximising_j_sec_as_minimising_free_energy must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Maximising J_SEC as Minimising Free Energy: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Ethical Functional > Meta-Framework Integrations",
+      "source_block_indices": [
+        3945,
+        3946,
+        3947,
+        3948,
+        3949,
+        3950,
+        3951,
+        3952,
+        3953
+      ],
+      "source_equation_ids": [
+        "P0R03948:maximising_j_sec_as_minimising_free_energy",
+        "P0R03949:maximising_j_sec_as_minimising_free_energy"
+      ],
+      "source_formulae": [
+        "P0R03948: Maximising J_SEC as Minimising Free Energy:",
+        "P0R03949: The objective functional J_SEC is the formal definition of \"value\" or negative \"surprise\" for the cosmic agent. The process of learning an optimal policy * to maximize this value is active inference. The universe is a generative model that is continuously acting (a) on itself (s) to bring its state into alignment with its deepest prior belief: that it should exist in a state of maximal Sustainable Ethical Coherence. The algorithmic frameworks of Policy-Gradient and Actor-Critic methods are the explicit computational mechanisms that execute this cosmic-scale active inference."
+      ],
+      "source_ledger_ids": [
+        "P0R03945",
+        "P0R03946",
+        "P0R03947",
+        "P0R03948",
+        "P0R03949",
+        "P0R03950",
+        "P0R03951",
+        "P0R03952",
+        "P0R03953"
+      ],
+      "source_record_ids": [
+        "P0B03945",
+        "P0B03946",
+        "P0B03947",
+        "P0B03948",
+        "P0B03949",
+        "P0B03950",
+        "P0B03951",
+        "P0B03952",
+        "P0B03953"
+      ],
+      "test_protocols": [
+        "preserve Maximising J_SEC as Minimising Free Energy: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03945.maximising_j_sec_as_minimising_free_energy",
+      "validation_targets": [
+        "preserve records P0R03948-P0R03949"
+      ],
+      "variables": [
+        "maximising_j_sec_as_minimising_free_energy"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R03950-P0R03951 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03950-P0R03951"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03945.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Ethical Functional > Meta-Framework Integrations",
+      "source_block_indices": [
+        3945,
+        3946,
+        3947,
+        3948,
+        3949,
+        3950,
+        3951,
+        3952,
+        3953
+      ],
+      "source_equation_ids": [
+        "P0R03950:psis_field_coupling_integration",
+        "P0R03951:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R03950: Psis Field Coupling Integration",
+        "P0R03951: The decision-theoretic framework for Layer 15 provides the ultimate top-down causal mechanism that directs the H_int = -lambda * Psis * sigma interaction at all lower levels."
+      ],
+      "source_ledger_ids": [
+        "P0R03945",
+        "P0R03946",
+        "P0R03947",
+        "P0R03948",
+        "P0R03949",
+        "P0R03950",
+        "P0R03951",
+        "P0R03952",
+        "P0R03953"
+      ],
+      "source_record_ids": [
+        "P0B03945",
+        "P0B03946",
+        "P0B03947",
+        "P0B03948",
+        "P0B03949",
+        "P0B03950",
+        "P0B03951",
+        "P0B03952",
+        "P0B03953"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03945.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R03950-P0R03951"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Optimal Policy (*) Governs the Psis Field:' preserves Paper 0 records P0R03952-P0R03953 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+      "context_id": "the_optimal_policy_governs_the_psis_field",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03952-P0R03953"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03945.the_optimal_policy_governs_the_psis_field",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_optimal_policy_governs_the_psis_field must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Optimal Policy (*) Governs the Psis Field: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Ethical Functional > Meta-Framework Integrations",
+      "source_block_indices": [
+        3945,
+        3946,
+        3947,
+        3948,
+        3949,
+        3950,
+        3951,
+        3952,
+        3953
+      ],
+      "source_equation_ids": [
+        "P0R03952:the_optimal_policy_governs_the_psis_field",
+        "P0R03953:the_optimal_policy_governs_the_psis_field"
+      ],
+      "source_formulae": [
+        "P0R03952: The Optimal Policy (*) Governs the Psis Field:",
+        "P0R03953: The output of the L15 optimisation process-the optimal policy *-is not an abstract recommendation. It is physically implemented as a modulation of the global Psis field. The policy dictates the precise configuration of the Psi-field's amplitude and phase across spacetime."
+      ],
+      "source_ledger_ids": [
+        "P0R03945",
+        "P0R03946",
+        "P0R03947",
+        "P0R03948",
+        "P0R03949",
+        "P0R03950",
+        "P0R03951",
+        "P0R03952",
+        "P0R03953"
+      ],
+      "source_record_ids": [
+        "P0B03945",
+        "P0B03946",
+        "P0B03947",
+        "P0B03948",
+        "P0B03949",
+        "P0B03950",
+        "P0B03951",
+        "P0B03952",
+        "P0B03953"
+      ],
+      "test_protocols": [
+        "preserve The Optimal Policy (*) Governs the Psis Field: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03945.the_optimal_policy_governs_the_psis_field",
+      "validation_targets": [
+        "preserve records P0R03952-P0R03953"
+      ],
+      "variables": [
+        "the_optimal_policy_governs_the_psis_field"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 2,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r03945 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03954",
+    "source_ledger_span": [
+      "P0R03945",
+      "P0R03953"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r03945.meta_framework_integrations",
+      "meta_framework_integrations_p0r03945.predictive_coding_integration",
+      "meta_framework_integrations_p0r03945.maximising_j_sec_as_minimising_free_energy",
+      "meta_framework_integrations_p0r03945.psis_field_coupling_integration",
+      "meta_framework_integrations_p0r03945.the_optimal_policy_governs_the_psis_field"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

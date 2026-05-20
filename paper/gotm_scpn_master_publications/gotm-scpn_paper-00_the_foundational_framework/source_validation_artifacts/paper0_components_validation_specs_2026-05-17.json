@@ -1,0 +1,147 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Components:' preserves Paper 0 records P0R01779-P0R01791 without empirical validation claims.",
+      "claim_boundary": "source-bounded components source-accounting bridge; not validation evidence",
+      "context_id": "components",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R01779-P0R01791"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "components.components",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "components must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Components: is not empirical validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Intrinsic Dynamics of the \u03a8-Field and the Stabilising Potential > The Intrinsic Dynamics of the \u03a8-Field (L\u03a8\u200b) > Components:",
+      "source_block_indices": [
+        1779,
+        1780,
+        1781,
+        1782,
+        1783,
+        1784,
+        1785,
+        1786,
+        1787,
+        1788,
+        1789,
+        1790,
+        1791
+      ],
+      "source_equation_ids": [
+        "P0R01779:components",
+        "P0R01780:components",
+        "P0R01781:components",
+        "P0R01782:components",
+        "P0R01783:components",
+        "P0R01784:components",
+        "P0R01785:components",
+        "P0R01786:components",
+        "P0R01787:components",
+        "P0R01788:components",
+        "P0R01789:components",
+        "P0R01790:components",
+        "P0R01791:components"
+      ],
+      "source_formulae": [
+        "P0R01779: Components:",
+        "P0R01780: Kinetic Term: Describes field propagation. | Potential Term (V(Psi)): A non-linear potential enabling Spontaneous Symmetry Breaking (SSB) and the formation of localised structures (solitons, L5 Selves). We utilize the 6 potential, which allows for hierarchical structure formation: V(Psi)=m2Psi2+lambdaPsi4Psi6 | Topological Term (LTopological): Ensures the conservation of topological charge, related to the integrity of conscious experience (e.g., a Theta term thetaFF).",
+        "P0R01781: Stability and EFT structure of V(Psi)V(|\\Psi|)V(Psi).",
+        "P0R01782: In 3+1D, the sextic interaction must stabilise the vacuum at large field. We adopt the EFTconsistent form",
+        "P0R01783: $V\\left( \\mid\\Psi\\mid \\right)\\ \\mspace{2mu} = \\ \\mspace{2mu} - \\mu 2 \\mid \\Psi \\mid 2 + \\lambda \\mid \\Psi \\mid 4 + \\gamma\\Lambda 2 \\mid \\Psi \\mid 6,\\lambda > 0,\\ \\mspace{2mu}\\gamma > 0,V\\left( |\\Psi| \\right)\\ = \\ - \\mu^{2}|\\Psi|^{2} + \\lambda|\\Psi|^{4} + \\frac{\\gamma}{\\Lambda^{2}}|\\Psi|^{6},\\quad\\quad\\lambda > 0,\\ \\gamma > 0,V\\left( \\mid\\Psi\\mid \\right) = - \\mu 2 \\mid \\Psi \\mid 2 + \\lambda \\mid \\Psi \\mid 4 + \\Lambda 2\\gamma \\mid \\Psi \\mid 6,\\lambda > 0,\\gamma > 0$,",
+        "P0R01784: where \\Lambda is a UV scale suppressing the dimension6 operator. Writing xPsi2x\\equiv|\\Psi|^2xPsi2, stationary points satisfy",
+        "P0R01785: $dVdx = - \\mu 2 + 2\\lambda x + 3\\gamma\\Lambda 2x2 = 0\\ \\mspace{2mu} \\Rightarrow \\ \\mspace{2mu} x \\star = \\Lambda 26\\gamma\\,( - 2\\lambda + 4\\lambda 2 + 12\\gamma\\mu 2\\Lambda 2)\\,.\\frac{dV}{dx} = - \\mu^{2} + 2\\lambda x + \\frac{3\\gamma}{\\Lambda^{2}}x^{2} = 0\\ \\Rightarrow \\ x_{\\star} = \\frac{\\Lambda^{2}}{6\\gamma}\\text{!}\\left( - 2\\lambda + \\sqrt[]{4\\lambda^{2} + \\frac{12\\gamma\\mu^{2}}{\\Lambda^{2}}} \\right)\\text{!}.dxdV = - \\mu 2 + 2\\lambda x + \\Lambda 23\\gamma x2 = 0 \\Rightarrow x \\star = 6\\gamma\\Lambda 2( - 2\\lambda + 4\\lambda 2 + \\Lambda 212\\gamma\\mu 2).$",
+        "P0R01786: Thus, v=xv=\\sqrt{x_\\star}v=x and the radial (PsiHiggs) mass is",
+        "P0R01787: $mh2\\ \\mspace{2mu} = \\ \\mspace{2mu} d2Vd\\rho 2 \\mid \\rho = v = - 2\\mu 2 + 12\\lambda v2 + 30\\gamma\\Lambda 2v4,\\rho \\equiv \\mid \\Psi \\mid .m\\_ h\\hat{}2\\ \\backslash; = \\backslash;\\ \\backslash left.\\backslash frac\\{ d\\hat{}2V\\}\\{ d\\backslash rho\\hat{}2\\}\\backslash right|\\_\\{\\backslash rho = v\\}\\ = \\ - 2\\backslash mu\\hat{}2\\ + \\ 12\\backslash lambda\\ v\\hat{}2\\ + \\ 30\\backslash frac\\{\\backslash gamma\\}\\{\\backslash Lambda\\hat{}2\\} v\\hat{}4,\\ \\backslash quad\\ \\backslash rho\\backslash equiv|\\backslash Psi|.mh2 = d\\rho 2d2V\\rho = v = - 2\\mu 2 + 12\\lambda v2 + 30\\Lambda 2\\gamma v4,\\rho \\equiv \\mid \\Psi \\mid .\\ $",
+        "P0R01788: Consistency note. Expressions elsewhere that assume mh2=2lambdav2m_h^2=2\\lambda v^2mh2=2lambdav2 are the -> 0\\gamma\\!\\to\\!0->0 limit and should be interpreted as specialcase approximations. This correction preserves the \"PsiHiggs\" phenomenology while ensuring vacuum stability.",
+        "P0R01789: [IMAGE:Ein Bild, das Text, Screenshot, Diagramm, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R01790: Fig.: Psi-Field Potential and Vacuum Stability. This plot illustrates the necessity of the sextic (Psi6) term in the potential V(Psi) to ensure a stable universe. It contrasts the stable, EFT-consistent potential with unstable alternatives.",
+        "P0R01791: We plot V(Psi)=mu2Psi2+lambdaPsi4+(/2)Psi6V(|\\Psi|) = -\\mu^2 |\\Psi|^2 + \\lambda |\\Psi|^4 + (\\gamma/\\Lambda^2) |\\Psi|^6V(Psi)=mu2Psi2+lambdaPsi4+(/2)Psi6 with mu=1\\mu=1mu=1. The stable quartic case (lambda>0\\lambda>0lambda>0) yields a Mexican-hat profile with a bounded minimum. The unstable quartic case (lambda<0\\lambda<0lambda<0) runs away (unbounded from below). Adding a positive sextic term (>0\\gamma>0>0) stabilises the potential at large Psi|\\Psi|Psi, restoring a bounded vacuum consistent with EFT expectations."
+      ],
+      "source_ledger_ids": [
+        "P0R01779",
+        "P0R01780",
+        "P0R01781",
+        "P0R01782",
+        "P0R01783",
+        "P0R01784",
+        "P0R01785",
+        "P0R01786",
+        "P0R01787",
+        "P0R01788",
+        "P0R01789",
+        "P0R01790",
+        "P0R01791"
+      ],
+      "source_record_ids": [
+        "P0B01779",
+        "P0B01780",
+        "P0B01781",
+        "P0B01782",
+        "P0B01783",
+        "P0B01784",
+        "P0B01785",
+        "P0B01786",
+        "P0B01787",
+        "P0B01788",
+        "P0B01789",
+        "P0B01790",
+        "P0B01791"
+      ],
+      "test_protocols": [
+        "preserve Components: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.components.components",
+      "validation_targets": [
+        "preserve records P0R01779-P0R01791"
+      ],
+      "variables": [
+        "components"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "OrderedList": 1,
+      "Para": 11
+    },
+    "category_counts": {
+      "claim": 7,
+      "context": 2,
+      "equation": 3,
+      "figure": 1
+    },
+    "claim_boundary": "source-bounded components source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 13,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0034"
+    ],
+    "math_ids": [
+      "EQ0027",
+      "EQ0028",
+      "EQ0029"
+    ],
+    "next_source_boundary": "P0R01792",
+    "source_ledger_span": [
+      "P0R01779",
+      "P0R01791"
+    ],
+    "source_record_count": 13,
+    "spec_count": 1,
+    "spec_keys": [
+      "components.components"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Components: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

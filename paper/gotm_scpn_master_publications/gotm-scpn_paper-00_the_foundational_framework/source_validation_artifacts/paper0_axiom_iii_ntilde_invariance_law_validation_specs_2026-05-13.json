@@ -1,0 +1,388 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source identifies the Axiom III teleological drive with the Ntilde invariance law, framed as a fundamental falsifiable physical law and a dimensionless measurable invariant linking energy, information, and time.",
+      "claim_boundary": "source-bounded Axiom III Ntilde-invariance-law map; not validation evidence",
+      "context_id": "physical_law_identification",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve formal Ntilde law heading",
+        "preserve fundamental falsifiable physical-law framing",
+        "preserve dimensionless invariant linkage"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_ntilde_invariance_law.physical_law_identification",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "physical-law-as-observed-result control must be rejected",
+        "missing-energy-information-time-link control must be rejected"
+      ],
+      "null_results": [
+        "Ntilde invariance law is source claim, not empirical evidence"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Formal Physical Definition: The $\\tilde{N}_{t}$ Invariance Law",
+      "source_block_indices": [
+        800,
+        801,
+        802,
+        803,
+        804,
+        805,
+        806,
+        807,
+        808,
+        809,
+        810
+      ],
+      "source_equation_ids": [
+        "P0R00800:ntilde_invariance_law_heading",
+        "P0R00801:fundamental_falsifiable_physical_law",
+        "P0R00801:dimensionless_measurable_energy_information_time_invariant"
+      ],
+      "source_formulae": [
+        "Formal Physical Definition: The tilde_N_t Invariance Law",
+        "Axiom III is a fundamental falsifiable physical law",
+        "teleological drive identified with the tilde_N_t Invariance Law",
+        "dimensionless measurable invariant linking energy information and time",
+        "Petrasek 2025a 2025b"
+      ],
+      "source_ledger_ids": [
+        "P0R00800",
+        "P0R00801",
+        "P0R00802",
+        "P0R00803",
+        "P0R00804",
+        "P0R00805",
+        "P0R00806",
+        "P0R00807",
+        "P0R00808",
+        "P0R00809",
+        "P0R00810"
+      ],
+      "source_record_ids": [
+        "P0B00800",
+        "P0B00801",
+        "P0B00802",
+        "P0B00803",
+        "P0B00804",
+        "P0B00805",
+        "P0B00806",
+        "P0B00807",
+        "P0B00808",
+        "P0B00809",
+        "P0B00810"
+      ],
+      "test_protocols": [
+        "preserve Ntilde physical-law identification"
+      ],
+      "validation_protocol": "paper0.axiom_iii_ntilde_invariance_law.physical_law_identification",
+      "validation_targets": [
+        "preserve formal Ntilde law heading",
+        "preserve fundamental falsifiable physical-law framing",
+        "preserve dimensionless invariant linkage"
+      ],
+      "variables": [
+        "tilde_N_t",
+        "energy",
+        "information",
+        "time"
+      ]
+    },
+    {
+      "canonical_statement": "The source defines Ntilde as actual power divided by the minimum reversible free-energy cost required to process information flow.",
+      "claim_boundary": "source-bounded Axiom III Ntilde-invariance-law map; not validation evidence",
+      "context_id": "invariant_ratio_equation",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve actual-power numerator",
+        "preserve reversible information-processing cost denominator",
+        "preserve expanded E/t and Delta_F_rev/Delta_I equation"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_ntilde_invariance_law.invariant_ratio_equation",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "ratio-equation-as-validated-invariant control must be rejected",
+        "missing-expanded-equation control must be rejected"
+      ],
+      "null_results": [
+        "ratio equation requires downstream measurement protocol"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Formal Physical Definition: The $\\tilde{N}_{t}$ Invariance Law",
+      "source_block_indices": [
+        800,
+        801,
+        802,
+        803,
+        804,
+        805,
+        806,
+        807,
+        808,
+        809,
+        810
+      ],
+      "source_equation_ids": [
+        "P0R00802:actual_power_over_reversible_information_cost",
+        "P0R00803:ntilde_ratio_equation"
+      ],
+      "source_formulae": [
+        "actual power energy flux over minimum reversible free-energy cost for information flow",
+        "tilde_N_t = P / (epsilon_b dot_I) = (E/t) / ((Delta F_rev / Delta I) dot_I)"
+      ],
+      "source_ledger_ids": [
+        "P0R00800",
+        "P0R00801",
+        "P0R00802",
+        "P0R00803",
+        "P0R00804",
+        "P0R00805",
+        "P0R00806",
+        "P0R00807",
+        "P0R00808",
+        "P0R00809",
+        "P0R00810"
+      ],
+      "source_record_ids": [
+        "P0B00800",
+        "P0B00801",
+        "P0B00802",
+        "P0B00803",
+        "P0B00804",
+        "P0B00805",
+        "P0B00806",
+        "P0B00807",
+        "P0B00808",
+        "P0B00809",
+        "P0B00810"
+      ],
+      "test_protocols": [
+        "preserve Ntilde ratio equation"
+      ],
+      "validation_protocol": "paper0.axiom_iii_ntilde_invariance_law.invariant_ratio_equation",
+      "validation_targets": [
+        "preserve actual-power numerator",
+        "preserve reversible information-processing cost denominator",
+        "preserve expanded E/t and Delta_F_rev/Delta_I equation"
+      ],
+      "variables": [
+        "tilde_N_t",
+        "P",
+        "epsilon_b",
+        "dot_I",
+        "E",
+        "t",
+        "Delta_F_rev",
+        "Delta_I"
+      ]
+    },
+    {
+      "canonical_statement": "The source defines the equation variables P, dot-I, and epsilon-b as power, reliably processed information rate, and reversible free-energy cost per bit.",
+      "claim_boundary": "source-bounded Axiom III Ntilde-invariance-law map; not validation evidence",
+      "context_id": "variable_definitions",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve P equals E over t definition",
+        "preserve dot-I reliable information-rate definition",
+        "preserve epsilon-b reversible free-energy cost definition"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_ntilde_invariance_law.variable_definitions",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "undefined-variable control must be rejected",
+        "arbitrary-cost-per-bit control must be rejected"
+      ],
+      "null_results": [
+        "variable definitions do not validate measurement availability"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Formal Physical Definition: The $\\tilde{N}_{t}$ Invariance Law",
+      "source_block_indices": [
+        800,
+        801,
+        802,
+        803,
+        804,
+        805,
+        806,
+        807,
+        808,
+        809,
+        810
+      ],
+      "source_equation_ids": [
+        "P0R00804:where_clause",
+        "P0R00805:power_energy_flux_definition",
+        "P0R00806:information_rate_definition",
+        "P0R00807:reversible_cost_per_bit_definition"
+      ],
+      "source_formulae": [
+        "Where:",
+        "P = E/t is actual power or energy flux",
+        "dot_I is rate of reliably processed information bit/s",
+        "epsilon_b = Delta F_rev / Delta I is reversible free-energy cost per bit",
+        "non-arbitrary reversible free-energy cost per bit for that specific process"
+      ],
+      "source_ledger_ids": [
+        "P0R00800",
+        "P0R00801",
+        "P0R00802",
+        "P0R00803",
+        "P0R00804",
+        "P0R00805",
+        "P0R00806",
+        "P0R00807",
+        "P0R00808",
+        "P0R00809",
+        "P0R00810"
+      ],
+      "source_record_ids": [
+        "P0B00800",
+        "P0B00801",
+        "P0B00802",
+        "P0B00803",
+        "P0B00804",
+        "P0B00805",
+        "P0B00806",
+        "P0B00807",
+        "P0B00808",
+        "P0B00809",
+        "P0B00810"
+      ],
+      "test_protocols": [
+        "preserve Ntilde variable definitions"
+      ],
+      "validation_protocol": "paper0.axiom_iii_ntilde_invariance_law.variable_definitions",
+      "validation_targets": [
+        "preserve P equals E over t definition",
+        "preserve dot-I reliable information-rate definition",
+        "preserve epsilon-b reversible free-energy cost definition"
+      ],
+      "variables": [
+        "P",
+        "E",
+        "t",
+        "dot_I",
+        "epsilon_b",
+        "Delta_F_rev",
+        "Delta_I"
+      ]
+    },
+    {
+      "canonical_statement": "The source states that teleological optimisation tends towards the resonant unity threshold Ntilde equals one, identified as the reversible limit and maximum thermodynamic efficiency.",
+      "claim_boundary": "source-bounded Axiom III Ntilde-invariance-law map; not validation evidence",
+      "context_id": "unity_threshold_limit",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve tendency towards unity",
+        "preserve Ntilde tends to one threshold equation",
+        "preserve reversible-limit and thermodynamic-efficiency statement"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_ntilde_invariance_law.unity_threshold_limit",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "unity-threshold-as-measured-result control must be rejected",
+        "missing-reversible-limit control must be rejected"
+      ],
+      "null_results": [
+        "unity threshold requires downstream operational validation"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation > Formal Physical Definition: The $\\tilde{N}_{t}$ Invariance Law",
+      "source_block_indices": [
+        800,
+        801,
+        802,
+        803,
+        804,
+        805,
+        806,
+        807,
+        808,
+        809,
+        810
+      ],
+      "source_equation_ids": [
+        "P0R00808:unity_threshold_tendency",
+        "P0R00809:ntilde_tends_to_one",
+        "P0R00810:reversible_limit_maximum_efficiency"
+      ],
+      "source_formulae": [
+        "teleological optimisation seeks resonant threshold where ratio approaches unity",
+        "tilde_N_t -> 1",
+        "tilde_N_t = 1 is the reversible limit",
+        "maximum thermodynamic efficiency minimum irreversibility or entropy production"
+      ],
+      "source_ledger_ids": [
+        "P0R00800",
+        "P0R00801",
+        "P0R00802",
+        "P0R00803",
+        "P0R00804",
+        "P0R00805",
+        "P0R00806",
+        "P0R00807",
+        "P0R00808",
+        "P0R00809",
+        "P0R00810"
+      ],
+      "source_record_ids": [
+        "P0B00800",
+        "P0B00801",
+        "P0B00802",
+        "P0B00803",
+        "P0B00804",
+        "P0B00805",
+        "P0B00806",
+        "P0B00807",
+        "P0B00808",
+        "P0B00809",
+        "P0B00810"
+      ],
+      "test_protocols": [
+        "preserve Ntilde unity-threshold limit"
+      ],
+      "validation_protocol": "paper0.axiom_iii_ntilde_invariance_law.unity_threshold_limit",
+      "validation_targets": [
+        "preserve tendency towards unity",
+        "preserve Ntilde tends to one threshold equation",
+        "preserve reversible-limit and thermodynamic-efficiency statement"
+      ],
+      "variables": [
+        "tilde_N_t",
+        "irreversibility",
+        "entropy_production",
+        "efficiency"
+      ]
+    }
+  ],
+  "summary": {
+    "claim_boundary": "source-bounded Axiom III Ntilde-invariance-law map; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "invariant_definition_count": 3,
+    "next_source_boundary": "P0R00811",
+    "reversible_limit_count": 1,
+    "source_ledger_span": [
+      "P0R00800",
+      "P0R00810"
+    ],
+    "source_record_count": 11,
+    "spec_count": 4,
+    "spec_keys": [
+      "axiom_iii_ntilde_invariance_law.physical_law_identification",
+      "axiom_iii_ntilde_invariance_law.invariant_ratio_equation",
+      "axiom_iii_ntilde_invariance_law.variable_definitions",
+      "axiom_iii_ntilde_invariance_law.unity_threshold_limit"
+    ],
+    "threshold_equation_count": 1,
+    "title": "Paper 0 Axiom III Ntilde Invariance Law Specs",
+    "unconsumed_source_ledger_ids": [],
+    "variable_definition_count": 3
+  }
+}

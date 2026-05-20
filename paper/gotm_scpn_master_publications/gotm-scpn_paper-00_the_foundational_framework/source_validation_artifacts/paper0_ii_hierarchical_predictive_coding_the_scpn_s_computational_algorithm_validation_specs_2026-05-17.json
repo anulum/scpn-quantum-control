@@ -1,0 +1,181 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm' preserves Paper 0 records P0R06156-P0R06158 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii hierarchical predictive coding the scpn s computational algorithm source-accounting bridge; not validation evidence",
+      "context_id": "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06156-P0R06158"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm.ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm",
+      "source_block_indices": [
+        6156,
+        6157,
+        6158,
+        6159,
+        6160,
+        6161,
+        6162,
+        6163
+      ],
+      "source_equation_ids": [
+        "P0R06156:ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm",
+        "P0R06157:ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm",
+        "P0R06158:ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm"
+      ],
+      "source_formulae": [
+        "P0R06156: II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm",
+        "P0R06157: HPC is the neurobiologically plausible algorithm that implements free energy minimisation in a hierarchical system. The structure of HPC is isomorphic to the bidirectional information flow of the SCPN:",
+        "P0R06158: The Generative Model (Downward Projection): The downward flow of information from Layer 15 to Layer 1 constitutes the system's generative model. Each higher layer (L+1) generates predictions about the state of the layer below it (L). These top-down predictions are carried by the principal cells in cortical hierarchies. | Inference and Error (Upward Filtering): The upward flow of information performs Bayesian inference by propagating Prediction Errors. At each layer, the top-down prediction is compared with the actual state. The mismatch, or prediction error, is the only signal that is passed up the hierarchy. This error signal is carried by superficial pyramidal cells and serves to update the higher layers, refining the generative model."
+      ],
+      "source_ledger_ids": [
+        "P0R06156",
+        "P0R06157",
+        "P0R06158",
+        "P0R06159",
+        "P0R06160",
+        "P0R06161",
+        "P0R06162",
+        "P0R06163"
+      ],
+      "source_record_ids": [
+        "P0B06156",
+        "P0B06157",
+        "P0B06158",
+        "P0B06159",
+        "P0B06160",
+        "P0B06161",
+        "P0B06162",
+        "P0B06163"
+      ],
+      "test_protocols": [
+        "preserve II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm.ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm",
+      "validation_targets": [
+        "preserve records P0R06156-P0R06158"
+      ],
+      "variables": [
+        "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'III. The UPDE as the Physical Implementation of Free Energy Minimisation' preserves Paper 0 records P0R06159-P0R06163 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii hierarchical predictive coding the scpn s computational algorithm source-accounting bridge; not validation evidence",
+      "context_id": "iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06159-P0R06163"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm.iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "III. The UPDE as the Physical Implementation of Free Energy Minimisation is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm",
+      "source_block_indices": [
+        6156,
+        6157,
+        6158,
+        6159,
+        6160,
+        6161,
+        6162,
+        6163
+      ],
+      "source_equation_ids": [
+        "P0R06159:iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation",
+        "P0R06160:iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation",
+        "P0R06161:iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation",
+        "P0R06162:iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation",
+        "P0R06163:iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation"
+      ],
+      "source_formulae": [
+        "P0R06159: III. The UPDE as the Physical Implementation of Free Energy Minimisation",
+        "P0R06160: The Unified Phase Dynamics Equation (UPDE) is not merely a model of synchronisation; it is the physical mechanism by which HPC is implemented. The minimisation of free energy corresponds to the suppression of prediction error throughout the hierarchy. In the oscillatory framework of the UPDE, prediction error is encoded in the phase difference between layers.",
+        "P0R06161: Prediction: The phase of a higher-layer oscillator (thetaL+1) predicts the phase of a lower-layer oscillator (thetaL). | Prediction Error: The term sin(thetaL+1thetaL)in the UPDE's inter-layer coupling term represents the prediction error. | Error Minimisation: The dynamics of the UPDE naturally drive the system toward phase-locking (thetaL+1thetaL), which is mathematically equivalent to minimising the prediction error term.",
+        "P0R06162: Therefore, the entire SCPN can be understood as a cosmic-scale active inference engine. It is a self-organising system that maintains its existence by continuously generating a model of itself (downward projection) and then acting and perceiving to minimise the error in that model (upward filtering), a process physically realised through multi-scale phase synchronisation governed by the UPDE. This computational principle provides the ultimate raison d'tre for the architecture's structure and dynamics.",
+        "P0R06163: Proposition (Precision Control as Phase Weighting). In the UPDE, the precision of prediction errors corresponds to weights on inter-layer phase differences. The Salience Network implements precision via neuromodulatory gain that toggles DMNCEN dominance, thereby controlling the effective K and terms that minimise free energy through phase-locking (sinDeltatheta -> 0). Meta-Layer 16 supplies the value recursion (Bellman) that renders Layer-5 inference a local instance of universal optimal control."
+      ],
+      "source_ledger_ids": [
+        "P0R06156",
+        "P0R06157",
+        "P0R06158",
+        "P0R06159",
+        "P0R06160",
+        "P0R06161",
+        "P0R06162",
+        "P0R06163"
+      ],
+      "source_record_ids": [
+        "P0B06156",
+        "P0B06157",
+        "P0B06158",
+        "P0B06159",
+        "P0B06160",
+        "P0B06161",
+        "P0B06162",
+        "P0B06163"
+      ],
+      "test_protocols": [
+        "preserve III. The UPDE as the Physical Implementation of Free Energy Minimisation source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm.iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation",
+      "validation_targets": [
+        "preserve records P0R06159-P0R06163"
+      ],
+      "variables": [
+        "iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 2,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 1,
+      "mechanism": 2,
+      "validation_target": 4
+    },
+    "claim_boundary": "source-bounded ii hierarchical predictive coding the scpn s computational algorithm source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R06164",
+    "source_ledger_span": [
+      "P0R06156",
+      "P0R06163"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm.ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm",
+      "ii_hierarchical_predictive_coding_the_scpn_s_computational_algorithm.iii_the_upde_as_the_physical_implementation_of_free_energy_minimisation"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 II. Hierarchical Predictive Coding: The SCPN's Computational Algorithm Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -19,7 +19,13 @@ from typing import Any
 from scpn_quantum_control.paper0.equation_register import paper0_upde_records
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_EXTRACTION_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_ANCHOR_PATH = DEFAULT_EXTRACTION_DIR / "paper0_upde_anchor_review_queue_2026-05-13.jsonl"
 
 _SPEC_METADATA: dict[str, dict[str, Any]] = {

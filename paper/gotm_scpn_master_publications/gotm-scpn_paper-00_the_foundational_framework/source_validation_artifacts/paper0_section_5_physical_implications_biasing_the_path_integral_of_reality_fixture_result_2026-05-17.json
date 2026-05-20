@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded section 5 physical implications biasing the path integral of reality source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "5_physical_implications_biasing_the_path_integral_of_reality": "5_physical_implications_biasing_the_path_integral_of_reality_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "5. Physical Implications: Biasing the Path Integral of Reality",
+    "component_count": "1",
+    "next_boundary": "P0R03869",
+    "section": "5. Physical Implications: Biasing the Path Integral of Reality",
+    "source_span": "P0R03848-P0R03868"
+  },
+  "next_source_boundary": "P0R03869",
+  "null_controls": {
+    "5_physical_implications_biasing_the_path_integral_of_reality_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 5 physical implications biasing the path integral of reality source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_5_physical_implications_biasing_the_path_integral_of_reality_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03848",
+      "P0R03849",
+      "P0R03850",
+      "P0R03851",
+      "P0R03852",
+      "P0R03853",
+      "P0R03854",
+      "P0R03855",
+      "P0R03856",
+      "P0R03857",
+      "P0R03858",
+      "P0R03859",
+      "P0R03860",
+      "P0R03861",
+      "P0R03862",
+      "P0R03863",
+      "P0R03864",
+      "P0R03865",
+      "P0R03866",
+      "P0R03867",
+      "P0R03868"
+    ],
+    "source_ledger_span": [
+      "P0R03848",
+      "P0R03868"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03848",
+    "P0R03868"
+  ],
+  "source_record_count": 21
+}

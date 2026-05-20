@@ -35,9 +35,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "s19_resource_signatures"
 DEFAULT_PAPER0_TOPOLOGY_BOUNDARY = (
     REPO_ROOT
-    / "docs"
-    / "internal"
-    / "paper0_foundational_extraction"
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
     / "paper0_topology_source_boundary_2026-05-13.json"
 )
 DEFAULT_N_VALUES = (4, 6)

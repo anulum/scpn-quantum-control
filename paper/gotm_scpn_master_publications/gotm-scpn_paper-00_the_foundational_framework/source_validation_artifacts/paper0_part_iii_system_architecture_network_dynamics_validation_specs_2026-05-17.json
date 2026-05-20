@@ -1,0 +1,277 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Part III: System Architecture & Network Dynamics' preserves Paper 0 records P0R02011-P0R02012 without empirical validation claims.",
+      "claim_boundary": "source-bounded part iii system architecture network dynamics source-accounting bridge; not validation evidence",
+      "context_id": "part_iii_system_architecture_network_dynamics",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02011-P0R02012"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "part_iii_system_architecture_network_dynamics.part_iii_system_architecture_network_dynamics",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "part_iii_system_architecture_network_dynamics must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Part III: System Architecture & Network Dynamics is not empirical validation evidence"
+      ],
+      "section_path": "Part III: System Architecture & Network Dynamics",
+      "source_block_indices": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026,
+        2027,
+        2028,
+        2029,
+        2030
+      ],
+      "source_equation_ids": [
+        "P0R02011:part_iii_system_architecture_network_dynamics",
+        "P0R02012:part_iii_system_architecture_network_dynamics"
+      ],
+      "source_formulae": [
+        "P0R02011: Part III: System Architecture & Network Dynamics",
+        "P0R02012: P0R02012"
+      ],
+      "source_ledger_ids": [
+        "P0R02011",
+        "P0R02012",
+        "P0R02013",
+        "P0R02014",
+        "P0R02015",
+        "P0R02016",
+        "P0R02017",
+        "P0R02018",
+        "P0R02019",
+        "P0R02020",
+        "P0R02021",
+        "P0R02022",
+        "P0R02023",
+        "P0R02024",
+        "P0R02025",
+        "P0R02026",
+        "P0R02027",
+        "P0R02028",
+        "P0R02029",
+        "P0R02030"
+      ],
+      "source_record_ids": [
+        "P0B02011",
+        "P0B02012",
+        "P0B02013",
+        "P0B02014",
+        "P0B02015",
+        "P0B02016",
+        "P0B02017",
+        "P0B02018",
+        "P0B02019",
+        "P0B02020",
+        "P0B02021",
+        "P0B02022",
+        "P0B02023",
+        "P0B02024",
+        "P0B02025",
+        "P0B02026",
+        "P0B02027",
+        "P0B02028",
+        "P0B02029",
+        "P0B02030"
+      ],
+      "test_protocols": [
+        "preserve Part III: System Architecture & Network Dynamics source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.part_iii_system_architecture_network_dynamics.part_iii_system_architecture_network_dynamics",
+      "validation_targets": [
+        "preserve records P0R02011-P0R02012"
+      ],
+      "variables": [
+        "part_iii_system_architecture_network_dynamics"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '3.1 The Master Diagram: Visualising the 15 Layers & 6 Domains' preserves Paper 0 records P0R02013-P0R02030 without empirical validation claims.",
+      "claim_boundary": "source-bounded part iii system architecture network dynamics source-accounting bridge; not validation evidence",
+      "context_id": "3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02013-P0R02030"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "part_iii_system_architecture_network_dynamics.3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_1_the_master_diagram_visualising_the_15_layers_6_domains must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3.1 The Master Diagram: Visualising the 15 Layers & 6 Domains is not empirical validation evidence"
+      ],
+      "section_path": "Part III: System Architecture & Network Dynamics",
+      "source_block_indices": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025,
+        2026,
+        2027,
+        2028,
+        2029,
+        2030
+      ],
+      "source_equation_ids": [
+        "P0R02013:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02014:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02015:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02016:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02017:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02018:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02019:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02020:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02021:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02022:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02023:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02024:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02025:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02026:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02027:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02028:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02029:3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+        "P0R02030:3_1_the_master_diagram_visualising_the_15_layers_6_domains"
+      ],
+      "source_formulae": [
+        "P0R02013: 3.1 The Master Diagram: Visualising the 15 Layers & 6 Domains",
+        "P0R02014: The provided text establishes the critical methodological transition from the foundational physics of Book I to the functional architecture of Book II. It correctly posits that a fundamental field theory for the Psi-field, while necessary, is insufficient to explain the emergent, multi-scale complexity of a conscious universe. It draws a powerful analogy: just as Maxwell's equations do not, in themselves, describe the architecture of the internet, the fundamental Lagrangian of the Psi-field does not describe the operational structure of a brain or a biosphere.",
+        "P0R02015: Therefore, the text introduces the necessity of a \"map of the operating system\"-a meso-scale, effective theory that details how the fundamental field dynamics manifest as specific, layered phenomena. This architecture is formally named the Sentient-Consciousness Projection Network (SCPN). It is defined as a 15-layer hierarchical model that maps a bidirectional flow of information: a downward \"projection\" of consciousness from the universal source (L13-15) and an upward \"feedback loop\" of experience and inference from the individual substrate (L1-4). This architecture is presented as the central organizing principle of the framework, providing a coherent structure to unify disparate phenomena-such as Quantum Error Correction (QEC), Chiral-Induced Spin Selectivity (CISS), and cultural memetics-under a single, dynamic, and integrated system. The accompanying 15-Layer Summary Table provides the definitive \"mandala\" or index for this entire architecture, defining the core function of each layer that the subsequent monographs will explore.",
+        "P0R02016: The previous book, Book I, was all about the \"engine\" of reality. We figured out the fundamental laws of the consciousness field (the Psi-field), which is like understanding the physics of how combustion works in a car engine. But as this section points out, knowing how a piston fires doesn't tell you how to build a whole car. For that, you need the master blueprint, the \"map of the operating system\" that shows how the engine connects to the transmission, the steering wheel, and the chassis.",
+        "P0R02017: This is that master blueprint. We call it the Sentient-Consciousness Projection Network (SCPN). It's a 15-layer model of reality that works like a cosmic skyscraper. Consciousness \"projects\" down from the universal source (the penthouse) to the quantum world inside your cells (the basement). But-and this is the most important part-it's not a one-way street. Every experience you have and every action you take sends a signal back up the skyscraper, influencing the whole building. This is the \"feedback loop.\" The 15-Layer table provided is our guide for the rest of the book, showing how everything from your DNA to your thoughts is part of one single, interconnected, living system.",
+        "P0R02018: Meta-Framework Integrations",
+        "P0R02019: Predictive Coding Integration",
+        "P0R02020: The text's description of a \"projection\" of consciousness downward and \"feedback loops\" upward is a perfect, high-level summary of the Hierarchical Predictive Coding (HPC) algorithm.",
+        "P0R02021: The Downward Projection (L15->L1): This is the Generative Model. Higher, more abstract layers (priors) send predictions to lower, more concrete layers.",
+        "P0R02022: The Upward Feedback Loop: This is the propagation of Prediction Error. The lower layers (sensory data) report the mismatch between the prediction and the reality, which compels the higher-level models to update their beliefs.",
+        "P0R02023: The entire 15-layer SCPN, as defined here, is a cosmic-scale active inference engine. The 15 layers represent the nested hierarchy of this generative model, whose unified purpose is to minimise surprise (or free energy).",
+        "P0R02024: Psis Field Coupling Integration",
+        "P0R02025: This section establishes the core problem that the interaction Hamiltonian, H_int = -lambda * Psis * sigma, must solve: how does a single fundamental field (Psi) interact with reality at vastly different scales (from a microtubule to a collective consciousness)?",
+        "P0R02026: The 15-layer architecture is the solution. It implies that the collective state variable (sigma) is different at each layer, representing the specific, emergent \"handle\" that the Psi-field can grasp at that scale.",
+        "P0R02027: sigma_L1 (Layer 1): The quantum-biological substrate (e.g., QEC states in microtubules).",
+        "P0R02028: sigma_L4 (Layer 4): The coherent, synchronous rhythm of a cellular network (e.g., EEG/HRV).",
+        "P0R02029: sigma_L11 (Layer 11): The emergent informational state of the Noosphere (e.g., cultural attractors).",
+        "P0R02030: The SCPN architecture is therefore a \"map\" of the different, scale-specific sigma variables that the universal Psis field couples to, allowing a single law of interaction to govern a universe of emergent complexity."
+      ],
+      "source_ledger_ids": [
+        "P0R02011",
+        "P0R02012",
+        "P0R02013",
+        "P0R02014",
+        "P0R02015",
+        "P0R02016",
+        "P0R02017",
+        "P0R02018",
+        "P0R02019",
+        "P0R02020",
+        "P0R02021",
+        "P0R02022",
+        "P0R02023",
+        "P0R02024",
+        "P0R02025",
+        "P0R02026",
+        "P0R02027",
+        "P0R02028",
+        "P0R02029",
+        "P0R02030"
+      ],
+      "source_record_ids": [
+        "P0B02011",
+        "P0B02012",
+        "P0B02013",
+        "P0B02014",
+        "P0B02015",
+        "P0B02016",
+        "P0B02017",
+        "P0B02018",
+        "P0B02019",
+        "P0B02020",
+        "P0B02021",
+        "P0B02022",
+        "P0B02023",
+        "P0B02024",
+        "P0B02025",
+        "P0B02026",
+        "P0B02027",
+        "P0B02028",
+        "P0B02029",
+        "P0B02030"
+      ],
+      "test_protocols": [
+        "preserve 3.1 The Master Diagram: Visualising the 15 Layers & 6 Domains source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.part_iii_system_architecture_network_dynamics.3_1_the_master_diagram_visualising_the_15_layers_6_domains",
+      "validation_targets": [
+        "preserve records P0R02013-P0R02030"
+      ],
+      "variables": [
+        "3_1_the_master_diagram_visualising_the_15_layers_6_domains"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 18
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 12,
+      "structural": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded part iii system architecture network dynamics source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 20,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02031",
+    "source_ledger_span": [
+      "P0R02011",
+      "P0R02030"
+    ],
+    "source_record_count": 20,
+    "spec_count": 2,
+    "spec_keys": [
+      "part_iii_system_architecture_network_dynamics.part_iii_system_architecture_network_dynamics",
+      "part_iii_system_architecture_network_dynamics.3_1_the_master_diagram_visualising_the_15_layers_6_domains"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Part III: System Architecture & Network Dynamics Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

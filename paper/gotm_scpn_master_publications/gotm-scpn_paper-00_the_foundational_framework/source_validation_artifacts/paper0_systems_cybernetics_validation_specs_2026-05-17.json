@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Systems & Cybernetics' preserves Paper 0 records P0R05844-P0R05847 without empirical validation claims.",
+      "claim_boundary": "source-bounded systems cybernetics source-accounting bridge; not validation evidence",
+      "context_id": "systems_cybernetics",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05844-P0R05847"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "systems_cybernetics.systems_cybernetics",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "systems_cybernetics must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Systems & Cybernetics is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Systems & Cybernetics",
+      "source_block_indices": [
+        5844,
+        5845,
+        5846,
+        5847,
+        5848,
+        5849,
+        5850,
+        5851
+      ],
+      "source_equation_ids": [
+        "P0R05844:systems_cybernetics",
+        "P0R05845:systems_cybernetics",
+        "P0R05846:systems_cybernetics",
+        "P0R05847:systems_cybernetics"
+      ],
+      "source_formulae": [
+        "P0R05844: Systems & Cybernetics",
+        "P0R05845: Ashby (1956, An Introduction to Cybernetics) -> early articulation of closure/feedback you use in Layer 16.",
+        "P0R05846: von Foerster (1974) -> second-order cybernetics (meta-layer analog).",
+        "P0R05847: Beer (1972, Brain of the Firm) -> viable system model, useful for your noosphere/governance analogies."
+      ],
+      "source_ledger_ids": [
+        "P0R05844",
+        "P0R05845",
+        "P0R05846",
+        "P0R05847",
+        "P0R05848",
+        "P0R05849",
+        "P0R05850",
+        "P0R05851"
+      ],
+      "source_record_ids": [
+        "P0B05844",
+        "P0B05845",
+        "P0B05846",
+        "P0B05847",
+        "P0B05848",
+        "P0B05849",
+        "P0B05850",
+        "P0B05851"
+      ],
+      "test_protocols": [
+        "preserve Systems & Cybernetics source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.systems_cybernetics.systems_cybernetics",
+      "validation_targets": [
+        "preserve records P0R05844-P0R05847"
+      ],
+      "variables": [
+        "systems_cybernetics"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Cognitive Science & Language' preserves Paper 0 records P0R05848-P0R05851 without empirical validation claims.",
+      "claim_boundary": "source-bounded systems cybernetics source-accounting bridge; not validation evidence",
+      "context_id": "cognitive_science_language",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05848-P0R05851"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "systems_cybernetics.cognitive_science_language",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "cognitive_science_language must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Cognitive Science & Language is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Systems & Cybernetics",
+      "source_block_indices": [
+        5844,
+        5845,
+        5846,
+        5847,
+        5848,
+        5849,
+        5850,
+        5851
+      ],
+      "source_equation_ids": [
+        "P0R05848:cognitive_science_language",
+        "P0R05849:cognitive_science_language",
+        "P0R05850:cognitive_science_language",
+        "P0R05851:cognitive_science_language"
+      ],
+      "source_formulae": [
+        "P0R05848: Cognitive Science & Language",
+        "P0R05849: Lakoff & Johnson (1980, Metaphors We Live By) -> grounding your symbolic Layer 7 in cognitive linguistics.",
+        "P0R05850: Deacon (1997, The Symbolic Species) -> evolutionary origins of language.",
+        "P0R05851: Tomasello (2008) -> cultural cognition and shared intentionality (noosphere resonance)."
+      ],
+      "source_ledger_ids": [
+        "P0R05844",
+        "P0R05845",
+        "P0R05846",
+        "P0R05847",
+        "P0R05848",
+        "P0R05849",
+        "P0R05850",
+        "P0R05851"
+      ],
+      "source_record_ids": [
+        "P0B05844",
+        "P0B05845",
+        "P0B05846",
+        "P0B05847",
+        "P0B05848",
+        "P0B05849",
+        "P0B05850",
+        "P0B05851"
+      ],
+      "test_protocols": [
+        "preserve Cognitive Science & Language source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.systems_cybernetics.cognitive_science_language",
+      "validation_targets": [
+        "preserve records P0R05848-P0R05851"
+      ],
+      "variables": [
+        "cognitive_science_language"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 5,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded systems cybernetics source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05852",
+    "source_ledger_span": [
+      "P0R05844",
+      "P0R05851"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "systems_cybernetics.systems_cybernetics",
+      "systems_cybernetics.cognitive_science_language"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Systems & Cybernetics Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

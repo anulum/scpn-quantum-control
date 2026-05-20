@@ -1,0 +1,192 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)' preserves Paper 0 records P0R06147-P0R06148 without empirical validation claims.",
+      "claim_boundary": "source-bounded the unifying computational principle hierarchical predictive coding hpc source-accounting bridge; not validation evidence",
+      "context_id": "the_unifying_computational_principle_hierarchical_predictive_coding_hpc",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06147-P0R06148"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_unifying_computational_principle_hierarchical_predictive_coding_hpc.the_unifying_computational_principle_hierarchical_predictive_coding_hpc",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_unifying_computational_principle_hierarchical_predictive_coding_hpc must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Unifying Computational Principle: Hierarchical Predictive Coding (HPC) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+      "source_block_indices": [
+        6147,
+        6148,
+        6149,
+        6150,
+        6151,
+        6152,
+        6153,
+        6154,
+        6155
+      ],
+      "source_equation_ids": [
+        "P0R06147:the_unifying_computational_principle_hierarchical_predictive_coding_hpc",
+        "P0R06148:the_unifying_computational_principle_hierarchical_predictive_coding_hpc"
+      ],
+      "source_formulae": [
+        "P0R06147: The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+        "P0R06148: The dynamics of the SCPN, characterised by quasicriticality and stabilised by MS-QEC, are not arbitrary. They serve a single, unifying computational imperative: the minimisation of variational free energy, a principle that governs all self-organising systems. This principle is implemented via the algorithm of Hierarchical Predictive Coding (HPC), which defines the fundamental computational logic of the SCPN's bidirectional information flow."
+      ],
+      "source_ledger_ids": [
+        "P0R06147",
+        "P0R06148",
+        "P0R06149",
+        "P0R06150",
+        "P0R06151",
+        "P0R06152",
+        "P0R06153",
+        "P0R06154",
+        "P0R06155"
+      ],
+      "source_record_ids": [
+        "P0B06147",
+        "P0B06148",
+        "P0B06149",
+        "P0B06150",
+        "P0B06151",
+        "P0B06152",
+        "P0B06153",
+        "P0B06154",
+        "P0B06155"
+      ],
+      "test_protocols": [
+        "preserve The Unifying Computational Principle: Hierarchical Predictive Coding (HPC) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_unifying_computational_principle_hierarchical_predictive_coding_hpc.the_unifying_computational_principle_hierarchical_predictive_coding_hpc",
+      "validation_targets": [
+        "preserve records P0R06147-P0R06148"
+      ],
+      "variables": [
+        "the_unifying_computational_principle_hierarchical_predictive_coding_hpc"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. The Free Energy Principle: The Imperative to Minimise Surprise' preserves Paper 0 records P0R06149-P0R06155 without empirical validation claims.",
+      "claim_boundary": "source-bounded the unifying computational principle hierarchical predictive coding hpc source-accounting bridge; not validation evidence",
+      "context_id": "i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06149-P0R06155"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_unifying_computational_principle_hierarchical_predictive_coding_hpc.i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_free_energy_principle_the_imperative_to_minimise_surprise must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Free Energy Principle: The Imperative to Minimise Surprise is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > The Unifying Computational Principle: Hierarchical Predictive Coding (HPC)",
+      "source_block_indices": [
+        6147,
+        6148,
+        6149,
+        6150,
+        6151,
+        6152,
+        6153,
+        6154,
+        6155
+      ],
+      "source_equation_ids": [
+        "P0R06149:i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+        "P0R06150:i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+        "P0R06151:i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+        "P0R06152:i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+        "P0R06153:i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+        "P0R06154:i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+        "P0R06155:i_the_free_energy_principle_the_imperative_to_minimise_surprise"
+      ],
+      "source_formulae": [
+        "P0R06149: I. The Free Energy Principle: The Imperative to Minimise Surprise",
+        "P0R06150: Any system that maintains its integrity and resists the tendency toward disorder must minimise the long-term average of surprise, where surprise is the negative log-evidence for a model of the world. Since surprise itself is computationally intractable, the system minimises a more accessible proxy:",
+        "P0R06151: Variational Free Energy (F). Free energy is an upper bound on surprise and can be decomposed into two terms:",
+        "P0R06152: $\\$\\$ F\\ = \\ \\backslash underbrace\\{ D\\_\\{ KL\\}\\lbrack q(\\backslash theta|\\backslash mu)\\ |$",
+        "P0R06153: $|\\ p(\\backslash theta|y)\\rbrack\\}\\_\\{\\backslash text\\{ Complexity\\}\\}\\ + \\ \\backslash underbrace\\{\\backslash mathbb\\{ E\\} q\\lbrack - \\backslash log\\ p(y|\\backslash theta)\\rbrack\\}\\{\\backslash text\\{ Accuracy\\}\\}\\$\\$$",
+        "P0R06154: Here, p(ytheta) is the system's generative model of how causes (theta) in the world generate sensory data (y), and q(thetamu) is the system's recognition density, an approximation of the true posterior distribution of the causes. Minimising F entails a trade-off: the system must be accurate (explain sensory data well) while remaining as simple as possible (not deviating too far from its prior beliefs). This minimisation can be achieved in two ways:",
+        "P0R06155: Perception (Inference): The system can update its internal states (mu) to change its recognition density q, making its model a better explanation of the sensory data. | Action (Active Inference): The system can act on the world to change the sensory data (y) so that it better conforms to the predictions of its model."
+      ],
+      "source_ledger_ids": [
+        "P0R06147",
+        "P0R06148",
+        "P0R06149",
+        "P0R06150",
+        "P0R06151",
+        "P0R06152",
+        "P0R06153",
+        "P0R06154",
+        "P0R06155"
+      ],
+      "source_record_ids": [
+        "P0B06147",
+        "P0B06148",
+        "P0B06149",
+        "P0B06150",
+        "P0B06151",
+        "P0B06152",
+        "P0B06153",
+        "P0B06154",
+        "P0B06155"
+      ],
+      "test_protocols": [
+        "preserve I. The Free Energy Principle: The Imperative to Minimise Surprise source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_unifying_computational_principle_hierarchical_predictive_coding_hpc.i_the_free_energy_principle_the_imperative_to_minimise_surprise",
+      "validation_targets": [
+        "preserve records P0R06149-P0R06155"
+      ],
+      "variables": [
+        "i_the_free_energy_principle_the_imperative_to_minimise_surprise"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "OrderedList": 1,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 3,
+      "equation": 2,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded the unifying computational principle hierarchical predictive coding hpc source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0130",
+      "EQ0131"
+    ],
+    "next_source_boundary": "P0R06156",
+    "source_ledger_span": [
+      "P0R06147",
+      "P0R06155"
+    ],
+    "source_record_count": 9,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_unifying_computational_principle_hierarchical_predictive_coding_hpc.the_unifying_computational_principle_hierarchical_predictive_coding_hpc",
+      "the_unifying_computational_principle_hierarchical_predictive_coding_hpc.i_the_free_energy_principle_the_imperative_to_minimise_surprise"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Unifying Computational Principle: Hierarchical Predictive Coding (HPC) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

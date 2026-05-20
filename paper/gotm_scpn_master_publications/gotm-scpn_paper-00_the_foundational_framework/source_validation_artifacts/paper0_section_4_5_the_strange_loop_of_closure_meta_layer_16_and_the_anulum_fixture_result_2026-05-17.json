@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded section 4 5 the strange loop of closure meta layer 16 and the anulum source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum": "4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_source_boundary",
+    "a_note_on_cybernetic_closure": "a_note_on_cybernetic_closure_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "4.5 The Strange Loop of Closure - Meta-Layer 16 and The Anulum",
+    "component_2": "A Note on Cybernetic Closure",
+    "component_count": "2",
+    "next_boundary": "P0R04224",
+    "section": "4.5 The Strange Loop of Closure - Meta-Layer 16 and The Anulum",
+    "source_span": "P0R04216-P0R04223"
+  },
+  "next_source_boundary": "P0R04224",
+  "null_controls": {
+    "4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_is_not_empirical_validation_evidence": 1.0,
+    "a_note_on_cybernetic_closure_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 4 5 the strange loop of closure meta layer 16 and the anulum source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_4_5_the_strange_loop_of_closure_meta_layer_16_and_the_anulum_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04216",
+      "P0R04217",
+      "P0R04218",
+      "P0R04219",
+      "P0R04220",
+      "P0R04221",
+      "P0R04222",
+      "P0R04223"
+    ],
+    "source_ledger_span": [
+      "P0R04216",
+      "P0R04223"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04216",
+    "P0R04223"
+  ],
+  "source_record_count": 8
+}

@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded iii the scpn measurement postulate iit or and qze source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_threshold_of_consciousness_iit_or": "1_the_threshold_of_consciousness_iit_or_source_boundary",
+    "2_the_participatory_interface_attention_as_measurement_qze": "2_the_participatory_interface_attention_as_measurement_qze_source_boundary",
+    "iii_the_scpn_measurement_postulate_iit_or_and_qze": "iii_the_scpn_measurement_postulate_iit_or_and_qze_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "III. The SCPN Measurement Postulate (IIT-OR and QZE)",
+    "component_2": "1. The Threshold of Consciousness (IIT-OR):",
+    "component_3": "2. The Participatory Interface (Attention as Measurement - QZE):",
+    "component_count": "3",
+    "next_boundary": "P0R05994",
+    "section": "III. The SCPN Measurement Postulate (IIT-OR and QZE)",
+    "source_span": "P0R05986-P0R05993"
+  },
+  "next_source_boundary": "P0R05994",
+  "null_controls": {
+    "1_the_threshold_of_consciousness_iit_or_is_not_empirical_validation_evidence": 1.0,
+    "2_the_participatory_interface_attention_as_measurement_qze_is_not_empirical_validation_evidence": 1.0,
+    "iii_the_scpn_measurement_postulate_iit_or_and_qze_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded iii the scpn measurement postulate iit or and qze source-accounting bridge; not validation evidence",
+    "protocol_state": "source_iii_the_scpn_measurement_postulate_iit_or_and_qze_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05986",
+      "P0R05987",
+      "P0R05988",
+      "P0R05989",
+      "P0R05990",
+      "P0R05991",
+      "P0R05992",
+      "P0R05993"
+    ],
+    "source_ledger_span": [
+      "P0R05986",
+      "P0R05993"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05986",
+    "P0R05993"
+  ],
+  "source_record_count": 8
+}

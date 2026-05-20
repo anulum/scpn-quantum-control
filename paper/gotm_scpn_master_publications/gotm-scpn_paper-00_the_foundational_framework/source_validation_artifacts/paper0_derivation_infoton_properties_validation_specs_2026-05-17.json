@@ -1,0 +1,436 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source starts the infoton-property derivation from a complex Psi-field coupled to a local U(1) gauge field and a Mexican-hat potential.",
+      "claim_boundary": "source-bounded infoton-properties derivation bridge; not validation evidence",
+      "context_id": "lagrangian_and_potential",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve gauge-covariant derivative",
+        "preserve Mexican-hat potential"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "derivation_infoton_properties.lagrangian_and_potential",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "equation transcription must not be promoted to experimental confirmation"
+      ],
+      "null_results": [
+        "formal source equation is not measured particle evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > Derivation of the Infoton's Properties",
+      "source_block_indices": [
+        1623,
+        1624,
+        1625,
+        1626,
+        1627,
+        1628,
+        1629,
+        1630,
+        1631,
+        1632,
+        1633,
+        1634,
+        1635,
+        1636,
+        1637
+      ],
+      "source_equation_ids": [
+        "P0R01623:lagrangian_and_potential",
+        "P0R01624:lagrangian_and_potential",
+        "P0R01625:lagrangian_and_potential",
+        "P0R01626:lagrangian_and_potential",
+        "P0R01627:lagrangian_and_potential",
+        "P0R01628:lagrangian_and_potential"
+      ],
+      "source_formulae": [
+        "Derivation of the Infoton's Properties",
+        "spontaneous breaking of local U(1) gauge symmetry gives a massive infoton A_mu",
+        "L = (D_mu Psi)^*(D^mu Psi) - V(|Psi|) - 1/4 F_mu_nu F^mu_nu",
+        "D_mu = partial_mu - i g A_mu",
+        "V(|Psi|) = -mu^2 |Psi|^2 + lambda |Psi|^4"
+      ],
+      "source_ledger_ids": [
+        "P0R01623",
+        "P0R01624",
+        "P0R01625",
+        "P0R01626",
+        "P0R01627",
+        "P0R01628",
+        "P0R01629",
+        "P0R01630",
+        "P0R01631",
+        "P0R01632",
+        "P0R01633",
+        "P0R01634",
+        "P0R01635",
+        "P0R01636",
+        "P0R01637"
+      ],
+      "source_record_ids": [
+        "P0B01623",
+        "P0B01624",
+        "P0B01625",
+        "P0B01626",
+        "P0B01627",
+        "P0B01628",
+        "P0B01629",
+        "P0B01630",
+        "P0B01631",
+        "P0B01632",
+        "P0B01633",
+        "P0B01634",
+        "P0B01635",
+        "P0B01636",
+        "P0B01637"
+      ],
+      "test_protocols": [
+        "preserve Lagrangian and potential derivation boundary"
+      ],
+      "validation_protocol": "paper0.derivation_infoton_properties.lagrangian_and_potential",
+      "validation_targets": [
+        "preserve gauge-covariant derivative",
+        "preserve Mexican-hat potential"
+      ],
+      "variables": [
+        "Psi",
+        "A_mu",
+        "D_mu",
+        "F_mu_nu",
+        "g",
+        "mu",
+        "lambda"
+      ]
+    },
+    {
+      "canonical_statement": "The source describes non-zero VEV expansion, radial and phase fluctuations, and Goldstone absorption by the gauge field.",
+      "claim_boundary": "source-bounded infoton-properties derivation bridge; not validation evidence",
+      "context_id": "vev_and_goldstone_absorption",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve VEV expansion",
+        "preserve Goldstone absorption mechanism"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "derivation_infoton_properties.vev_and_goldstone_absorption",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "Goldstone wording must remain a source derivation, not a measured event"
+      ],
+      "null_results": [
+        "Goldstone absorption description is not direct detector evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > Derivation of the Infoton's Properties",
+      "source_block_indices": [
+        1623,
+        1624,
+        1625,
+        1626,
+        1627,
+        1628,
+        1629,
+        1630,
+        1631,
+        1632,
+        1633,
+        1634,
+        1635,
+        1636,
+        1637
+      ],
+      "source_equation_ids": [
+        "P0R01629:vev_and_goldstone_absorption",
+        "P0R01630:vev_and_goldstone_absorption",
+        "P0R01631:vev_and_goldstone_absorption"
+      ],
+      "source_formulae": [
+        "Psi-field acquires a non-zero vacuum expectation value v",
+        "|Psi| = mu / sqrt(2 lambda) = v / sqrt(2)",
+        "Psi(x) = 1/sqrt(2) (v + h(x)) exp(i xi(x)/v)",
+        "|D_mu Psi|^2 = 1/2 (partial_mu h)^2 + 1/2 (v+h)^2 (g A_mu - 1/v partial_mu xi)^2",
+        "Goldstone boson xi(x) is absorbed by A_mu and removed from the physical spectrum"
+      ],
+      "source_ledger_ids": [
+        "P0R01623",
+        "P0R01624",
+        "P0R01625",
+        "P0R01626",
+        "P0R01627",
+        "P0R01628",
+        "P0R01629",
+        "P0R01630",
+        "P0R01631",
+        "P0R01632",
+        "P0R01633",
+        "P0R01634",
+        "P0R01635",
+        "P0R01636",
+        "P0R01637"
+      ],
+      "source_record_ids": [
+        "P0B01623",
+        "P0B01624",
+        "P0B01625",
+        "P0B01626",
+        "P0B01627",
+        "P0B01628",
+        "P0B01629",
+        "P0B01630",
+        "P0B01631",
+        "P0B01632",
+        "P0B01633",
+        "P0B01634",
+        "P0B01635",
+        "P0B01636",
+        "P0B01637"
+      ],
+      "test_protocols": [
+        "preserve VEV expansion and Goldstone absorption boundary"
+      ],
+      "validation_protocol": "paper0.derivation_infoton_properties.vev_and_goldstone_absorption",
+      "validation_targets": [
+        "preserve VEV expansion",
+        "preserve Goldstone absorption mechanism"
+      ],
+      "variables": [
+        "v",
+        "h_x",
+        "xi_x",
+        "A_mu",
+        "Goldstone"
+      ]
+    },
+    {
+      "canonical_statement": "The source identifies the infoton vector-boson mass from the post-SSB mass term.",
+      "claim_boundary": "source-bounded infoton-properties derivation bridge; not validation evidence",
+      "context_id": "mass_identification",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve mass term",
+        "preserve m_A relation"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "derivation_infoton_properties.mass_identification",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "derived mass relation must not be treated as measured mass"
+      ],
+      "null_results": [
+        "mass relation is not an observed mass measurement"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > Derivation of the Infoton's Properties",
+      "source_block_indices": [
+        1623,
+        1624,
+        1625,
+        1626,
+        1627,
+        1628,
+        1629,
+        1630,
+        1631,
+        1632,
+        1633,
+        1634,
+        1635,
+        1636,
+        1637
+      ],
+      "source_equation_ids": [
+        "P0R01632:mass_identification",
+        "P0R01633:mass_identification",
+        "P0R01634:mass_identification"
+      ],
+      "source_formulae": [
+        "L_mass ~= 1/2 g^2 v^2 A_mu A^mu",
+        "standard vector-boson mass term",
+        "m_A = g v"
+      ],
+      "source_ledger_ids": [
+        "P0R01623",
+        "P0R01624",
+        "P0R01625",
+        "P0R01626",
+        "P0R01627",
+        "P0R01628",
+        "P0R01629",
+        "P0R01630",
+        "P0R01631",
+        "P0R01632",
+        "P0R01633",
+        "P0R01634",
+        "P0R01635",
+        "P0R01636",
+        "P0R01637"
+      ],
+      "source_record_ids": [
+        "P0B01623",
+        "P0B01624",
+        "P0B01625",
+        "P0B01626",
+        "P0B01627",
+        "P0B01628",
+        "P0B01629",
+        "P0B01630",
+        "P0B01631",
+        "P0B01632",
+        "P0B01633",
+        "P0B01634",
+        "P0B01635",
+        "P0B01636",
+        "P0B01637"
+      ],
+      "test_protocols": [
+        "preserve infoton mass-identification boundary"
+      ],
+      "validation_protocol": "paper0.derivation_infoton_properties.mass_identification",
+      "validation_targets": [
+        "preserve mass term",
+        "preserve m_A relation"
+      ],
+      "variables": [
+        "L_mass",
+        "g",
+        "v",
+        "A_mu",
+        "m_A"
+      ]
+    },
+    {
+      "canonical_statement": "The source links the derived infoton mass to a short-range informational force with a characteristic scale fixed by VEV and coupling.",
+      "claim_boundary": "source-bounded infoton-properties derivation bridge; not validation evidence",
+      "context_id": "range_consequence",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve force-range relation",
+        "preserve short-range consequence"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "derivation_infoton_properties.range_consequence",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "biological and cosmological implications must remain source claims"
+      ],
+      "null_results": [
+        "range estimate is not a measured force profile"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > Derivation of the Infoton's Properties",
+      "source_block_indices": [
+        1623,
+        1624,
+        1625,
+        1626,
+        1627,
+        1628,
+        1629,
+        1630,
+        1631,
+        1632,
+        1633,
+        1634,
+        1635,
+        1636,
+        1637
+      ],
+      "source_equation_ids": [
+        "P0R01635:range_consequence",
+        "P0R01636:range_consequence",
+        "P0R01637:range_consequence"
+      ],
+      "source_formulae": [
+        "range of a force mediated by mass m_A is approximately lambda_range ~= hbar / (m_A c)",
+        "spontaneous breaking predicts a short-range informational force",
+        "characteristic length scale is determined by Psi-field VEV and gauge coupling",
+        "short range distinguishes the SCPN informational force from infinite-range forces"
+      ],
+      "source_ledger_ids": [
+        "P0R01623",
+        "P0R01624",
+        "P0R01625",
+        "P0R01626",
+        "P0R01627",
+        "P0R01628",
+        "P0R01629",
+        "P0R01630",
+        "P0R01631",
+        "P0R01632",
+        "P0R01633",
+        "P0R01634",
+        "P0R01635",
+        "P0R01636",
+        "P0R01637"
+      ],
+      "source_record_ids": [
+        "P0B01623",
+        "P0B01624",
+        "P0B01625",
+        "P0B01626",
+        "P0B01627",
+        "P0B01628",
+        "P0B01629",
+        "P0B01630",
+        "P0B01631",
+        "P0B01632",
+        "P0B01633",
+        "P0B01634",
+        "P0B01635",
+        "P0B01636",
+        "P0B01637"
+      ],
+      "test_protocols": [
+        "preserve range-consequence boundary"
+      ],
+      "validation_protocol": "paper0.derivation_infoton_properties.range_consequence",
+      "validation_targets": [
+        "preserve force-range relation",
+        "preserve short-range consequence"
+      ],
+      "variables": [
+        "lambda_range",
+        "hbar",
+        "m_A",
+        "c",
+        "v",
+        "g"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 14
+    },
+    "category_counts": {
+      "claim": 5,
+      "context": 5,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded infoton-properties derivation bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R01638",
+    "source_ledger_span": [
+      "P0R01623",
+      "P0R01637"
+    ],
+    "source_record_count": 15,
+    "spec_count": 4,
+    "spec_keys": [
+      "derivation_infoton_properties.lagrangian_and_potential",
+      "derivation_infoton_properties.vev_and_goldstone_absorption",
+      "derivation_infoton_properties.mass_identification",
+      "derivation_infoton_properties.range_consequence"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Derivation Infoton Properties Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

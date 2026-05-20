@@ -1,0 +1,335 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source frames the Psi-Higgs as a massive scalar excitation that bridges SCPN to high-energy collider phenomenology.",
+      "claim_boundary": "source-bounded Psi-Higgs LHC phenomenology bridge; not validation evidence",
+      "context_id": "phenomenology_bridge",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve scalar-excitation bridge",
+        "preserve falsifiability framing"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psi_higgs_lhc_phenomenology.phenomenology_bridge",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "falsifiable bridge language must not be promoted to observed LHC signal"
+      ],
+      "null_results": [
+        "phenomenology framing is not collider evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > The \u03a8-Higgs Boson: Phenomenology and Experimental Signatures at the LHC",
+      "source_block_indices": [
+        1655,
+        1656,
+        1657,
+        1658,
+        1659,
+        1660,
+        1661,
+        1662,
+        1663,
+        1664,
+        1665,
+        1666,
+        1667,
+        1668
+      ],
+      "source_equation_ids": [
+        "P0R01655:phenomenology_bridge",
+        "P0R01656:phenomenology_bridge",
+        "P0R01657:phenomenology_bridge"
+      ],
+      "source_formulae": [
+        "The Psi-Higgs Boson: Phenomenology and Experimental Signatures at the LHC",
+        "new fundamental scalar field Psi acquires a non-zero VEV through a Mexican-hat potential",
+        "quantum excitation of the Psi-field is termed the Psi-Higgs boson h_Psi",
+        "the prediction is framed as a falsifiable bridge to experimental high-energy physics"
+      ],
+      "source_ledger_ids": [
+        "P0R01655",
+        "P0R01656",
+        "P0R01657",
+        "P0R01658",
+        "P0R01659",
+        "P0R01660",
+        "P0R01661",
+        "P0R01662",
+        "P0R01663",
+        "P0R01664",
+        "P0R01665",
+        "P0R01666",
+        "P0R01667",
+        "P0R01668"
+      ],
+      "source_record_ids": [
+        "P0B01655",
+        "P0B01656",
+        "P0B01657",
+        "P0B01658",
+        "P0B01659",
+        "P0B01660",
+        "P0B01661",
+        "P0B01662",
+        "P0B01663",
+        "P0B01664",
+        "P0B01665",
+        "P0B01666",
+        "P0B01667",
+        "P0B01668"
+      ],
+      "test_protocols": [
+        "preserve Psi-Higgs LHC phenomenology bridge boundary"
+      ],
+      "validation_protocol": "paper0.psi_higgs_lhc_phenomenology.phenomenology_bridge",
+      "validation_targets": [
+        "preserve scalar-excitation bridge",
+        "preserve falsifiability framing"
+      ],
+      "variables": [
+        "Psi",
+        "VEV",
+        "h_Psi",
+        "LHC"
+      ]
+    },
+    {
+      "canonical_statement": "The source states that radial Psi-field excitation yields h_Psi and that scalar mixing with the Standard Model Higgs is the collider portal.",
+      "claim_boundary": "source-bounded Psi-Higgs LHC phenomenology bridge; not validation evidence",
+      "context_id": "scalar_mixing_mechanism",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve radial-excitation claim",
+        "preserve Higgs-mixing portal claim"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psi_higgs_lhc_phenomenology.scalar_mixing_mechanism",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "generic-mixing language must not be reported as measured Higgs admixture"
+      ],
+      "null_results": [
+        "mixing mechanism claim is not a measured mixing angle"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > The \u03a8-Higgs Boson: Phenomenology and Experimental Signatures at the LHC",
+      "source_block_indices": [
+        1655,
+        1656,
+        1657,
+        1658,
+        1659,
+        1660,
+        1661,
+        1662,
+        1663,
+        1664,
+        1665,
+        1666,
+        1667,
+        1668
+      ],
+      "source_equation_ids": [
+        "P0R01658:scalar_mixing_mechanism",
+        "P0R01659:scalar_mixing_mechanism",
+        "P0R01660:scalar_mixing_mechanism",
+        "P0R01661:scalar_mixing_mechanism"
+      ],
+      "source_formulae": [
+        "The Psi-Higgs Mechanism and Mixing",
+        "V(|Psi|) = -m^2 |Psi|^2 + lambda |Psi|^4 facilitates SSB",
+        "radial excitation around the Psi-field VEV manifests as massive h_Psi",
+        "two scalar fields with identical quantum numbers generically mix",
+        "Psi-field scalar can mix with the Standard Model Higgs h_SM",
+        "h_Psi production and decay through SM particles is source-framed collider accessibility"
+      ],
+      "source_ledger_ids": [
+        "P0R01655",
+        "P0R01656",
+        "P0R01657",
+        "P0R01658",
+        "P0R01659",
+        "P0R01660",
+        "P0R01661",
+        "P0R01662",
+        "P0R01663",
+        "P0R01664",
+        "P0R01665",
+        "P0R01666",
+        "P0R01667",
+        "P0R01668"
+      ],
+      "source_record_ids": [
+        "P0B01655",
+        "P0B01656",
+        "P0B01657",
+        "P0B01658",
+        "P0B01659",
+        "P0B01660",
+        "P0B01661",
+        "P0B01662",
+        "P0B01663",
+        "P0B01664",
+        "P0B01665",
+        "P0B01666",
+        "P0B01667",
+        "P0B01668"
+      ],
+      "test_protocols": [
+        "preserve scalar-mixing mechanism boundary"
+      ],
+      "validation_protocol": "paper0.psi_higgs_lhc_phenomenology.scalar_mixing_mechanism",
+      "validation_targets": [
+        "preserve radial-excitation claim",
+        "preserve Higgs-mixing portal claim"
+      ],
+      "variables": [
+        "Psi",
+        "h_Psi",
+        "h_SM",
+        "V",
+        "lambda",
+        "VEV"
+      ]
+    },
+    {
+      "canonical_statement": "The source formalizes the Higgs portal scalar potential and the post-SSB mass-matrix cross-term.",
+      "claim_boundary": "source-bounded Psi-Higgs LHC phenomenology bridge; not validation evidence",
+      "context_id": "scalar_potential_and_cross_term",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve total scalar potential",
+        "preserve post-SSB cross-term"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psi_higgs_lhc_phenomenology.scalar_potential_and_cross_term",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "portal formalism must remain source equation, not fitted LHC model evidence"
+      ],
+      "null_results": [
+        "portal potential is not an experimentally fitted parameter set"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > Predicted Particles: The Infoton and the \u03a8-Higgs Boson > The \u03a8-Higgs Boson: Phenomenology and Experimental Signatures at the LHC",
+      "source_block_indices": [
+        1655,
+        1656,
+        1657,
+        1658,
+        1659,
+        1660,
+        1661,
+        1662,
+        1663,
+        1664,
+        1665,
+        1666,
+        1667,
+        1668
+      ],
+      "source_equation_ids": [
+        "P0R01662:scalar_potential_and_cross_term",
+        "P0R01663:scalar_potential_and_cross_term",
+        "P0R01664:scalar_potential_and_cross_term",
+        "P0R01665:scalar_potential_and_cross_term",
+        "P0R01666:scalar_potential_and_cross_term",
+        "P0R01667:scalar_potential_and_cross_term",
+        "P0R01668:scalar_potential_and_cross_term"
+      ],
+      "source_formulae": [
+        "Formalizing the Scalar Mixing Potential and the theta Parameter",
+        "Higgs Portal is the only renormalizable operator connecting a hidden scalar sector to the Standard Model",
+        "V(H, Psi) = V_SM(H) + V_Psi(Psi) + V_mix(H, Psi)",
+        "V_mix = lambda_mix (H^dagger H) |Psi|^2",
+        "v_h approximately 246 GeV for the SM Higgs and v_psi for the Psi-field",
+        "H -> v_h + h_bare and |Psi| -> v_psi + h_Psi,bare",
+        "mixing term generates lambda_mix v_h v_psi h_bare h_Psi,bare in the mass matrix"
+      ],
+      "source_ledger_ids": [
+        "P0R01655",
+        "P0R01656",
+        "P0R01657",
+        "P0R01658",
+        "P0R01659",
+        "P0R01660",
+        "P0R01661",
+        "P0R01662",
+        "P0R01663",
+        "P0R01664",
+        "P0R01665",
+        "P0R01666",
+        "P0R01667",
+        "P0R01668"
+      ],
+      "source_record_ids": [
+        "P0B01655",
+        "P0B01656",
+        "P0B01657",
+        "P0B01658",
+        "P0B01659",
+        "P0B01660",
+        "P0B01661",
+        "P0B01662",
+        "P0B01663",
+        "P0B01664",
+        "P0B01665",
+        "P0B01666",
+        "P0B01667",
+        "P0B01668"
+      ],
+      "test_protocols": [
+        "preserve Higgs-portal potential and cross-term boundary"
+      ],
+      "validation_protocol": "paper0.psi_higgs_lhc_phenomenology.scalar_potential_and_cross_term",
+      "validation_targets": [
+        "preserve total scalar potential",
+        "preserve post-SSB cross-term"
+      ],
+      "variables": [
+        "H",
+        "Psi",
+        "V_SM",
+        "V_Psi",
+        "V_mix",
+        "lambda_mix",
+        "v_h",
+        "v_psi"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 11
+    },
+    "category_counts": {
+      "claim": 6,
+      "context": 3,
+      "mechanism": 4,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded Psi-Higgs LHC phenomenology bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R01669",
+    "source_ledger_span": [
+      "P0R01655",
+      "P0R01668"
+    ],
+    "source_record_count": 14,
+    "spec_count": 3,
+    "spec_keys": [
+      "psi_higgs_lhc_phenomenology.phenomenology_bridge",
+      "psi_higgs_lhc_phenomenology.scalar_mixing_mechanism",
+      "psi_higgs_lhc_phenomenology.scalar_potential_and_cross_term"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Psi-Higgs LHC Phenomenology Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

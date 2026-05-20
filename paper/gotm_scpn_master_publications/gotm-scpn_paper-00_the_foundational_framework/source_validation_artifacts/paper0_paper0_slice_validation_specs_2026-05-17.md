@@ -1,0 +1,38 @@
+# Paper 0  Specs
+
+- Source span: P0R01959 - P0R01992
+- Source records: 34
+- Consumed source records: 34
+- Coverage match: True
+- Spec count: 3
+- Claim boundary: source-bounded paper0 slice source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R01993
+
+## Specs
+### `paper0_slice.source_component`
+
+The source-bounded component '' preserves Paper 0 records P0R01959-P0R01964 without empirical validation claims.
+
+- Context: `source_component`
+- Protocol: `paper0.paper0_slice.source_component`
+- Source equations: P0R01959:source_component, P0R01960:source_component, P0R01961:source_component, P0R01962:source_component, P0R01963:source_component, P0R01964:source_component
+- Null controls: source_component must remain source-bounded accounting
+
+### `paper0_slice.p0r01965`
+
+The source-bounded component 'P0R01965' preserves Paper 0 records P0R01965-P0R01965 without empirical validation claims.
+
+- Context: `p0r01965`
+- Protocol: `paper0.paper0_slice.p0r01965`
+- Source equations: P0R01965:p0r01965
+- Null controls: p0r01965 must remain source-bounded accounting
+
+### `paper0_slice.2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral`
+
+The source-bounded component '2.6.8 Formal Derivation of the Hierarchy via Bulk-Brane Overlap Integrals' preserves Paper 0 records P0R01966-P0R01992 without empirical validation claims.
+
+- Context: `2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral`
+- Protocol: `paper0.paper0_slice.2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral`
+- Source equations: P0R01966:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01967:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01968:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01969:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01970:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01971:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01972:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01973:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01974:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01975:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01976:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01977:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01978:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01979:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01980:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01981:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01982:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01983:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01984:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01985:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01986:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01987:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01988:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01989:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01990:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01991:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral, P0R01992:2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral
+- Null controls: 2_6_8_formal_derivation_of_the_hierarchy_via_bulk_brane_overlap_integral must remain source-bounded accounting

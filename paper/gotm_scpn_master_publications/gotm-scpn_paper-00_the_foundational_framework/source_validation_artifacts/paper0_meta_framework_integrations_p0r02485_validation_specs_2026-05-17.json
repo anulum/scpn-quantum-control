@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R02485-P0R02485 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02485 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02485-P0R02485"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02485.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Meta-Framework Integrations",
+      "source_block_indices": [
+        2485,
+        2486,
+        2487,
+        2488,
+        2489,
+        2490,
+        2491,
+        2492,
+        2493
+      ],
+      "source_equation_ids": [
+        "P0R02485:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R02485: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R02485",
+        "P0R02486",
+        "P0R02487",
+        "P0R02488",
+        "P0R02489",
+        "P0R02490",
+        "P0R02491",
+        "P0R02492",
+        "P0R02493"
+      ],
+      "source_record_ids": [
+        "P0B02485",
+        "P0B02486",
+        "P0B02487",
+        "P0B02488",
+        "P0B02489",
+        "P0B02490",
+        "P0B02491",
+        "P0B02492",
+        "P0B02493"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02485.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R02485-P0R02485"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R02486-P0R02487 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02485 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02486-P0R02487"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02485.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Meta-Framework Integrations",
+      "source_block_indices": [
+        2485,
+        2486,
+        2487,
+        2488,
+        2489,
+        2490,
+        2491,
+        2492,
+        2493
+      ],
+      "source_equation_ids": [
+        "P0R02486:predictive_coding_integration",
+        "P0R02487:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R02486: Predictive Coding Integration",
+        "P0R02487: These three principles are the essential requirements for a cosmic-scale active inference engine to function."
+      ],
+      "source_ledger_ids": [
+        "P0R02485",
+        "P0R02486",
+        "P0R02487",
+        "P0R02488",
+        "P0R02489",
+        "P0R02490",
+        "P0R02491",
+        "P0R02492",
+        "P0R02493"
+      ],
+      "source_record_ids": [
+        "P0B02485",
+        "P0B02486",
+        "P0B02487",
+        "P0B02488",
+        "P0B02489",
+        "P0B02490",
+        "P0B02491",
+        "P0B02492",
+        "P0B02493"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02485.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R02486-P0R02487"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'UPDE is the Inference Algorithm:' preserves Paper 0 records P0R02488-P0R02489 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02485 source-accounting bridge; not validation evidence",
+      "context_id": "upde_is_the_inference_algorithm",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02488-P0R02489"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02485.upde_is_the_inference_algorithm",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "upde_is_the_inference_algorithm must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "UPDE is the Inference Algorithm: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Meta-Framework Integrations",
+      "source_block_indices": [
+        2485,
+        2486,
+        2487,
+        2488,
+        2489,
+        2490,
+        2491,
+        2492,
+        2493
+      ],
+      "source_equation_ids": [
+        "P0R02488:upde_is_the_inference_algorithm",
+        "P0R02489:upde_is_the_inference_algorithm"
+      ],
+      "source_formulae": [
+        "P0R02488: UPDE is the Inference Algorithm:",
+        "P0R02489: The UPDE provides the explicit algorithm for updating the system's generative model. The phase dynamics are the physical medium for propagating predictions (downward) and prediction errors (upward)."
+      ],
+      "source_ledger_ids": [
+        "P0R02485",
+        "P0R02486",
+        "P0R02487",
+        "P0R02488",
+        "P0R02489",
+        "P0R02490",
+        "P0R02491",
+        "P0R02492",
+        "P0R02493"
+      ],
+      "source_record_ids": [
+        "P0B02485",
+        "P0B02486",
+        "P0B02487",
+        "P0B02488",
+        "P0B02489",
+        "P0B02490",
+        "P0B02491",
+        "P0B02492",
+        "P0B02493"
+      ],
+      "test_protocols": [
+        "preserve UPDE is the Inference Algorithm: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02485.upde_is_the_inference_algorithm",
+      "validation_targets": [
+        "preserve records P0R02488-P0R02489"
+      ],
+      "variables": [
+        "upde_is_the_inference_algorithm"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Quasicriticality is the Optimal Hardware State:' preserves Paper 0 records P0R02490-P0R02491 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02485 source-accounting bridge; not validation evidence",
+      "context_id": "quasicriticality_is_the_optimal_hardware_state",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02490-P0R02491"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02485.quasicriticality_is_the_optimal_hardware_state",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "quasicriticality_is_the_optimal_hardware_state must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Quasicriticality is the Optimal Hardware State: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Meta-Framework Integrations",
+      "source_block_indices": [
+        2485,
+        2486,
+        2487,
+        2488,
+        2489,
+        2490,
+        2491,
+        2492,
+        2493
+      ],
+      "source_equation_ids": [
+        "P0R02490:quasicriticality_is_the_optimal_hardware_state",
+        "P0R02491:quasicriticality_is_the_optimal_hardware_state"
+      ],
+      "source_formulae": [
+        "P0R02490: Quasicriticality is the Optimal Hardware State:",
+        "P0R02491: The \"edge of chaos\" is the physical state in which the hardware is maximally sensitive to prediction error, allowing for the most efficient and effective model updating (i.e., learning)."
+      ],
+      "source_ledger_ids": [
+        "P0R02485",
+        "P0R02486",
+        "P0R02487",
+        "P0R02488",
+        "P0R02489",
+        "P0R02490",
+        "P0R02491",
+        "P0R02492",
+        "P0R02493"
+      ],
+      "source_record_ids": [
+        "P0B02485",
+        "P0B02486",
+        "P0B02487",
+        "P0B02488",
+        "P0B02489",
+        "P0B02490",
+        "P0B02491",
+        "P0B02492",
+        "P0B02493"
+      ],
+      "test_protocols": [
+        "preserve Quasicriticality is the Optimal Hardware State: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02485.quasicriticality_is_the_optimal_hardware_state",
+      "validation_targets": [
+        "preserve records P0R02490-P0R02491"
+      ],
+      "variables": [
+        "quasicriticality_is_the_optimal_hardware_state"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'MS-QEC is Signal Integrity:' preserves Paper 0 records P0R02492-P0R02493 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02485 source-accounting bridge; not validation evidence",
+      "context_id": "ms_qec_is_signal_integrity",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02492-P0R02493"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02485.ms_qec_is_signal_integrity",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ms_qec_is_signal_integrity must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "MS-QEC is Signal Integrity: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Meta-Framework Integrations",
+      "source_block_indices": [
+        2485,
+        2486,
+        2487,
+        2488,
+        2489,
+        2490,
+        2491,
+        2492,
+        2493
+      ],
+      "source_equation_ids": [
+        "P0R02492:ms_qec_is_signal_integrity",
+        "P0R02493:ms_qec_is_signal_integrity"
+      ],
+      "source_formulae": [
+        "P0R02492: MS-QEC is Signal Integrity:",
+        "P0R02493: MS-QEC is the error-correction architecture that ensures the predictions and prediction error signals are transmitted with high fidelity across the noisy biological hardware, preventing the inference process from being corrupted."
+      ],
+      "source_ledger_ids": [
+        "P0R02485",
+        "P0R02486",
+        "P0R02487",
+        "P0R02488",
+        "P0R02489",
+        "P0R02490",
+        "P0R02491",
+        "P0R02492",
+        "P0R02493"
+      ],
+      "source_record_ids": [
+        "P0B02485",
+        "P0B02486",
+        "P0B02487",
+        "P0B02488",
+        "P0B02489",
+        "P0B02490",
+        "P0B02491",
+        "P0B02492",
+        "P0B02493"
+      ],
+      "test_protocols": [
+        "preserve MS-QEC is Signal Integrity: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02485.ms_qec_is_signal_integrity",
+      "validation_targets": [
+        "preserve records P0R02492-P0R02493"
+      ],
+      "variables": [
+        "ms_qec_is_signal_integrity"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 4,
+      "mechanism": 2,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r02485 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02494",
+    "source_ledger_span": [
+      "P0R02485",
+      "P0R02493"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r02485.meta_framework_integrations",
+      "meta_framework_integrations_p0r02485.predictive_coding_integration",
+      "meta_framework_integrations_p0r02485.upde_is_the_inference_algorithm",
+      "meta_framework_integrations_p0r02485.quasicriticality_is_the_optimal_hardware_state",
+      "meta_framework_integrations_p0r02485.ms_qec_is_signal_integrity"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Domain III & IV: Memory, Control, and Collective Coherence (Layers 9-12)' preserves Paper 0 records P0R05551-P0R05559 without empirical validation claims.",
+      "claim_boundary": "source-bounded domain iii iv memory control and collective coherence layers 9 12 source-accounting bridge; not validation evidence",
+      "context_id": "domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05551-P0R05559"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "domain_iii_iv_memory_control_and_collective_coherence_layers_9_12.domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "domain_iii_iv_memory_control_and_collective_coherence_layers_9_12 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Domain III & IV: Memory, Control, and Collective Coherence (Layers 9-12) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Domain III & IV: Memory, Control, and Collective Coherence (Layers 9-12)",
+      "source_block_indices": [
+        5551,
+        5552,
+        5553,
+        5554,
+        5555,
+        5556,
+        5557,
+        5558,
+        5559
+      ],
+      "source_equation_ids": [
+        "P0R05551:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05552:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05553:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05554:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05555:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05556:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05557:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05558:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+        "P0R05559:domain_iii_iv_memory_control_and_collective_coherence_layers_9_12"
+      ],
+      "source_formulae": [
+        "P0R05551: Domain III & IV: Memory, Control, and Collective Coherence (Layers 9-12)",
+        "P0R05552: These domains cover the architecture of memory, agency,",
+        "P0R05553: and the emergence of group minds.",
+        "P0R05554: The Fabric of Memory and Will (Layers 9-10): We explore the Memory Imprint-Existential Holograph (Layer 9), a non-local field storing the collective experience of the species, accessible via retrocausality. This memory is protected by the Projective Field Boundary Control (Layer 10), the \"firewall\" that uses topological knotting to ensure the integrity and agency of the projection. | The Emergent Minds (Layers 11-12): This chapter details the formation of collective fields. The Noospheric (Layer 11) layer describes the \"global mind\" of culture and information, emerging from inter-individual phase couplings. This is nested within the Ecological-Gaian Synchrony (Layer 12), the integrated consciousness of the entire biosphere, stabilised by biodiversity and quantum microbial networks.",
+        "P0R05555: Hamiltonian of the Noosphere-Technosphere Hybrid",
+        "P0R05556: We formalise the Noosphere-Technosphere Hybrid System (NTHS) as a spin-glass Hamiltonian where belief states sigmai{1,+1}\\sigma_i \\in \\{-1, +1\\}sigmai{1,+1} are dynamically coupled:",
+        "P0R05557: $H = - \\sum_{}^{}i < jJij\\sigma i\\sigma j - \\sum_{}^{}{ihi\\sigma i}\\mathcal{.H = -}\\sum_{i < j}^{}{J_{ij}\\sigma_{i}\\sigma_{j}} - \\sum_{i}^{}{h_{i}\\sigma_{i}}.H = - i < j\\sum_{}^{}{ Jij\\sigma i\\sigma j} - i\\sum_{}^{}{ hi\\sigma i}.$",
+        "P0R05558: In the SCPN, hih_ihi represents media/AI-driven external fields; JijJ_{ij}Jij are effective social couplings. Contemporary recommender algorithms do more than act as external fields-they endogenize the coupling matrix itself. By restructuring the social graph, platform algorithms modify which i,ji,ji,j interact and with what strength. When optimised for engagement proxies (e.g., surprise, outrage), this increases frustration in the Hamiltonian, pushing the system toward a spin-glass phase characterised by fragmented, metastable minima.",
+        "P0R05559: P0R05559"
+      ],
+      "source_ledger_ids": [
+        "P0R05551",
+        "P0R05552",
+        "P0R05553",
+        "P0R05554",
+        "P0R05555",
+        "P0R05556",
+        "P0R05557",
+        "P0R05558",
+        "P0R05559"
+      ],
+      "source_record_ids": [
+        "P0B05551",
+        "P0B05552",
+        "P0B05553",
+        "P0B05554",
+        "P0B05555",
+        "P0B05556",
+        "P0B05557",
+        "P0B05558",
+        "P0B05559"
+      ],
+      "test_protocols": [
+        "preserve Domain III & IV: Memory, Control, and Collective Coherence (Layers 9-12) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.domain_iii_iv_memory_control_and_collective_coherence_layers_9_12.domain_iii_iv_memory_control_and_collective_coherence_layers_9_12",
+      "validation_targets": [
+        "preserve records P0R05551-P0R05559"
+      ],
+      "variables": [
+        "domain_iii_iv_memory_control_and_collective_coherence_layers_9_12"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 1,
+      "Para": 7
+    },
+    "category_counts": {
+      "context": 2,
+      "equation": 1,
+      "mechanism": 3,
+      "structural": 1,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded domain iii iv memory control and collective coherence layers 9 12 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0113"
+    ],
+    "next_source_boundary": "P0R05560",
+    "source_ledger_span": [
+      "P0R05551",
+      "P0R05559"
+    ],
+    "source_record_count": 9,
+    "spec_count": 1,
+    "spec_keys": [
+      "domain_iii_iv_memory_control_and_collective_coherence_layers_9_12.domain_iii_iv_memory_control_and_collective_coherence_layers_9_12"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Domain III & IV: Memory, Control, and Collective Coherence (Layers 9-12) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

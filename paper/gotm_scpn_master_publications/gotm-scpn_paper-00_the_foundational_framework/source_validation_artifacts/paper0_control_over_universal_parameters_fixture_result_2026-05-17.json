@@ -1,0 +1,57 @@
+{
+  "claim_boundary": "source-bounded control over universal parameters source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "control_over_universal_parameters": "control_over_universal_parameters_source_boundary",
+    "the_gdelian_oracle_as_a_consistency_check_on_coupling_laws": "the_gdelian_oracle_as_a_consistency_check_on_coupling_laws_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Control over Universal Parameters:",
+    "component_2": "The Gdelian Oracle as a Consistency Check on Coupling Laws:",
+    "component_count": "2",
+    "next_boundary": "P0R02468",
+    "section": "Control over Universal Parameters:",
+    "source_span": "P0R02448-P0R02467"
+  },
+  "next_source_boundary": "P0R02468",
+  "null_controls": {
+    "control_over_universal_parameters_is_not_empirical_validation_evidence": 1.0,
+    "the_gdelian_oracle_as_a_consistency_check_on_coupling_laws_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded control over universal parameters source-accounting bridge; not validation evidence",
+    "protocol_state": "source_control_over_universal_parameters_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02448",
+      "P0R02449",
+      "P0R02450",
+      "P0R02451",
+      "P0R02452",
+      "P0R02453",
+      "P0R02454",
+      "P0R02455",
+      "P0R02456",
+      "P0R02457",
+      "P0R02458",
+      "P0R02459",
+      "P0R02460",
+      "P0R02461",
+      "P0R02462",
+      "P0R02463",
+      "P0R02464",
+      "P0R02465",
+      "P0R02466",
+      "P0R02467"
+    ],
+    "source_ledger_span": [
+      "P0R02448",
+      "P0R02467"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02448",
+    "P0R02467"
+  ],
+  "source_record_count": 20
+}

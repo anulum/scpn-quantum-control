@@ -1,0 +1,153 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation' preserves Paper 0 records P0R06164-P0R06178 without empirical validation claims.",
+      "claim_boundary": "source-bounded the mathematical bridge deriving the upde from free energy minimisation source-accounting bridge; not validation evidence",
+      "context_id": "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06164-P0R06178"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation.the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > III. The UPDE as the Physical Implementation of Free Energy Minimisation > The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation",
+      "source_block_indices": [
+        6164,
+        6165,
+        6166,
+        6167,
+        6168,
+        6169,
+        6170,
+        6171,
+        6172,
+        6173,
+        6174,
+        6175,
+        6176,
+        6177,
+        6178
+      ],
+      "source_equation_ids": [
+        "P0R06164:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06165:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06166:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06167:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06168:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06169:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06170:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06171:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06172:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06173:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06174:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06175:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06176:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06177:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+        "P0R06178:the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation"
+      ],
+      "source_formulae": [
+        "P0R06164: The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation",
+        "P0R06165: The claim that the Unified Phase Dynamics Equation (UPDE) is the physical implementation of Hierarchical Predictive Coding (HPC) can be rigorously demonstrated by showing that the dynamics of the UPDE correspond to a gradient descent on Variational Free Energy (F).",
+        "P0R06166: The Derivation:",
+        "P0R06167: The Free Energy Landscape:",
+        "P0R06168: In a hierarchical oscillatory system aiming for phase alignment (synchronisation), the Variational Free Energy (F) can be expressed in terms of the phases (thetai). F is minimised when the phase differences (prediction errors) are zero. A suitable potential capturing this is the negative cosine potential (the Hamiltonian of the XY model): F(theta_1,...,theta_N)=sum_i,jK_ijcos(theta_jtheta_i)",
+        "P0R06169: Gradient Descent: The dynamics of the system evolve to minimise F via gradient descent: dtheta_i/dt=fracpartialFpartialtheta_i | The Emergence of the UPDE: Calculating the gradient of the Free Energy potential:",
+        "P0R06170: $\\\\frac{\\\\partial F}{\\\\partial \\\\theta\\_i} = -\\\\frac{\\\\partial}{\\\\partial \\\\theta\\_i} \\[ -\\\\sum\\_{j} K\\_{ij} cos(\\\\theta\\_j - \\\\theta\\_i) \\]$ fracpartialFpartialtheta_i=sum_jK_ijsin(theta_jtheta_i)",
+        "P0R06171: The Full Dynamic Equation: Combining the gradient descent with the intrinsic dynamics (i) and noise (i): dtheta_i/dt=omega_i(fracpartialFpartialtheta_i)+eta_i(t) dtheta_i/dt=omega_i+sum_jK_ijsin(theta_jtheta_i)+eta_i(t)",
+        "P0R06172: This is precisely the form of the Kuramoto model, the core of the UPDE.",
+        "P0R06173: P0R06173",
+        "P0R06174: The HPC Interpretation:",
+        "P0R06175: In the context of HPC, the term sin(theta_jtheta_i) represents the phase-based prediction error (). The dynamics of the UPDE are therefore mathematically equivalent to minimising the squared prediction error (which is proportional to F).",
+        "P0R06176: dtheta_i/dtproptonablaF implies Minimising Free Energy",
+        "P0R06177: This derivation formally proves that the multi-scale synchronisation dynamics of the SCPN (UPDE) are the physical realisation of the computational imperative to minimise surprise (HPC).",
+        "P0R06178: P0R06178"
+      ],
+      "source_ledger_ids": [
+        "P0R06164",
+        "P0R06165",
+        "P0R06166",
+        "P0R06167",
+        "P0R06168",
+        "P0R06169",
+        "P0R06170",
+        "P0R06171",
+        "P0R06172",
+        "P0R06173",
+        "P0R06174",
+        "P0R06175",
+        "P0R06176",
+        "P0R06177",
+        "P0R06178"
+      ],
+      "source_record_ids": [
+        "P0B06164",
+        "P0B06165",
+        "P0B06166",
+        "P0B06167",
+        "P0B06168",
+        "P0B06169",
+        "P0B06170",
+        "P0B06171",
+        "P0B06172",
+        "P0B06173",
+        "P0B06174",
+        "P0B06175",
+        "P0B06176",
+        "P0B06177",
+        "P0B06178"
+      ],
+      "test_protocols": [
+        "preserve The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation.the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation",
+      "validation_targets": [
+        "preserve records P0R06164-P0R06178"
+      ],
+      "variables": [
+        "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BlockQuote": 2,
+      "Header": 1,
+      "OrderedList": 3,
+      "Para": 9
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 3,
+      "mechanism": 5,
+      "structural": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded the mathematical bridge deriving the upde from free energy minimisation source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R06179",
+    "source_ledger_span": [
+      "P0R06164",
+      "P0R06178"
+    ],
+    "source_record_count": 15,
+    "spec_count": 1,
+    "spec_keys": [
+      "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation.the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Integration of CEF into the Path Integral Formalism:' preserves Paper 0 records P0R03704-P0R03710 without empirical validation claims.",
+      "claim_boundary": "source-bounded integration of cef into the path integral formalism source-accounting bridge; not validation evidence",
+      "context_id": "integration_of_cef_into_the_path_integral_formalism",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03704-P0R03710"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "integration_of_cef_into_the_path_integral_formalism.integration_of_cef_into_the_path_integral_formalism",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "integration_of_cef_into_the_path_integral_formalism must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Integration of CEF into the Path Integral Formalism: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > Causal Entropic Forces (CEF) > Integration of CEF into the Path Integral Formalism:",
+      "source_block_indices": [
+        3704,
+        3705,
+        3706,
+        3707,
+        3708,
+        3709,
+        3710,
+        3711,
+        3712,
+        3713,
+        3714
+      ],
+      "source_equation_ids": [
+        "P0R03704:integration_of_cef_into_the_path_integral_formalism",
+        "P0R03705:integration_of_cef_into_the_path_integral_formalism",
+        "P0R03706:integration_of_cef_into_the_path_integral_formalism",
+        "P0R03707:integration_of_cef_into_the_path_integral_formalism",
+        "P0R03708:integration_of_cef_into_the_path_integral_formalism",
+        "P0R03709:integration_of_cef_into_the_path_integral_formalism",
+        "P0R03710:integration_of_cef_into_the_path_integral_formalism"
+      ],
+      "source_formulae": [
+        "P0R03704: Integration of CEF into the Path Integral Formalism:",
+        "P0R03705: The influence of CEF can be rigorously incorporated into the foundational physics of the SCPN by modifying the path integral formulation of the system's evolution. The standard path integral (Z) sums over all possible histories, weighted by the classical action (S):",
+        "P0R03706: $Z = \\int_{}^{}{D\\lbrack\\Phi\\rbrack\\exp\\left( iS\\lbrack\\Phi\\rbrack\\text{/}\\hslash \\right)}$",
+        "P0R03707: Causal Entropic Forces introduce a bias towards paths that maximise future causal pathway entropy (SC). This is implemented by introducing an additional weighting factor derived from SC into the path integral:",
+        "P0R03708: $Z_{C}EF = intD\\lbrack Phi\\rbrack\\exp\\left( \\left( iS\\lbrack Phi\\rbrack\\text{/}hbar \\right) + alphaS_{C}\\lbrack Phi\\rbrack \\right)$",
+        "P0R03709: Here, is a coupling constant related to the effective temperature TC. This modified partition function explicitly biases the quantum evolution towards futures with greater complexity and coherence (High SEC).",
+        "P0R03710: Mechanism at L1 (Teleological Guidance of Collapse): In the context of the Measurement Postulate (IIT-OR), this CEF weighting alters the probability amplitudes of the possible collapse outcomes. The standard Born rule is replaced by a CEF-biased probability, favouring outcomes that lie on trajectories maximising future potential. This provides a formal mechanism for the Teleological guidance of quantum events."
+      ],
+      "source_ledger_ids": [
+        "P0R03704",
+        "P0R03705",
+        "P0R03706",
+        "P0R03707",
+        "P0R03708",
+        "P0R03709",
+        "P0R03710",
+        "P0R03711",
+        "P0R03712",
+        "P0R03713",
+        "P0R03714"
+      ],
+      "source_record_ids": [
+        "P0B03704",
+        "P0B03705",
+        "P0B03706",
+        "P0B03707",
+        "P0B03708",
+        "P0B03709",
+        "P0B03710",
+        "P0B03711",
+        "P0B03712",
+        "P0B03713",
+        "P0B03714"
+      ],
+      "test_protocols": [
+        "preserve Integration of CEF into the Path Integral Formalism: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.integration_of_cef_into_the_path_integral_formalism.integration_of_cef_into_the_path_integral_formalism",
+      "validation_targets": [
+        "preserve records P0R03704-P0R03710"
+      ],
+      "variables": [
+        "integration_of_cef_into_the_path_integral_formalism"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'How Consciousness Shapes Reality: Focusing the Quantum World' preserves Paper 0 records P0R03711-P0R03714 without empirical validation claims.",
+      "claim_boundary": "source-bounded integration of cef into the path integral formalism source-accounting bridge; not validation evidence",
+      "context_id": "how_consciousness_shapes_reality_focusing_the_quantum_world",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03711-P0R03714"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "integration_of_cef_into_the_path_integral_formalism.how_consciousness_shapes_reality_focusing_the_quantum_world",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "how_consciousness_shapes_reality_focusing_the_quantum_world must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "How Consciousness Shapes Reality: Focusing the Quantum World is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > Causal Entropic Forces (CEF) > Integration of CEF into the Path Integral Formalism:",
+      "source_block_indices": [
+        3704,
+        3705,
+        3706,
+        3707,
+        3708,
+        3709,
+        3710,
+        3711,
+        3712,
+        3713,
+        3714
+      ],
+      "source_equation_ids": [
+        "P0R03711:how_consciousness_shapes_reality_focusing_the_quantum_world",
+        "P0R03712:how_consciousness_shapes_reality_focusing_the_quantum_world",
+        "P0R03713:how_consciousness_shapes_reality_focusing_the_quantum_world",
+        "P0R03714:how_consciousness_shapes_reality_focusing_the_quantum_world"
+      ],
+      "source_formulae": [
+        "P0R03711: How Consciousness Shapes Reality: Focusing the Quantum World",
+        "P0R03712: At its smallest scale, reality is like a blurry, undecided photograph-a quantum \"superposition\" where all possibilities exist at once. The theory of Consciousness-Induced Gravitational Decoherence (CIGD) suggests that consciousness acts as the focusing lens. When a mind achieves a high state of integration and focus, it creates tiny ripples in the fabric of spacetime itself. These ripples disturb the delicate quantum blur, forcing it to \"choose\" a single, definite state.",
+        "P0R03713: Think of it this way: the more focused your mind, the faster the universe around you snaps from a state of blurry potential into a sharp, clear reality. The intensity of your consciousness is directly linked to how quickly this \"collapse\" happens.",
+        "P0R03714: [IMAGE:Ein Bild, das Bild, Wolke, Landschaft, Himmel enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]"
+      ],
+      "source_ledger_ids": [
+        "P0R03704",
+        "P0R03705",
+        "P0R03706",
+        "P0R03707",
+        "P0R03708",
+        "P0R03709",
+        "P0R03710",
+        "P0R03711",
+        "P0R03712",
+        "P0R03713",
+        "P0R03714"
+      ],
+      "source_record_ids": [
+        "P0B03704",
+        "P0B03705",
+        "P0B03706",
+        "P0B03707",
+        "P0B03708",
+        "P0B03709",
+        "P0B03710",
+        "P0B03711",
+        "P0B03712",
+        "P0B03713",
+        "P0B03714"
+      ],
+      "test_protocols": [
+        "preserve How Consciousness Shapes Reality: Focusing the Quantum World source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.integration_of_cef_into_the_path_integral_formalism.how_consciousness_shapes_reality_focusing_the_quantum_world",
+      "validation_targets": [
+        "preserve records P0R03711-P0R03714"
+      ],
+      "variables": [
+        "how_consciousness_shapes_reality_focusing_the_quantum_world"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 2,
+      "Para": 8
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "equation": 2,
+      "figure": 1,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded integration of cef into the path integral formalism source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0067"
+    ],
+    "math_ids": [
+      "EQ0064",
+      "EQ0065"
+    ],
+    "next_source_boundary": "P0R03715",
+    "source_ledger_span": [
+      "P0R03704",
+      "P0R03714"
+    ],
+    "source_record_count": 11,
+    "spec_count": 2,
+    "spec_keys": [
+      "integration_of_cef_into_the_path_integral_formalism.integration_of_cef_into_the_path_integral_formalism",
+      "integration_of_cef_into_the_path_integral_formalism.how_consciousness_shapes_reality_focusing_the_quantum_world"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Integration of CEF into the Path Integral Formalism: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

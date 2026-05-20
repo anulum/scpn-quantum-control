@@ -63,7 +63,7 @@
     "reproducibility_package": {
       "bench_command": "scpn-bench s4-neutral-atom-preregistration",
       "preregistration_script": "scripts/export_s4_neutral_atom_preregistration.py",
-      "readiness_doc": "docs/s4_multi_hardware_readiness_2026-05-06.md",
+      "readiness_doc": "docs/campaigns/s4_multi_hardware_readiness_2026-05-06.md",
       "s4_readiness": "data/s4_multi_hardware_control/s4_multi_hardware_readiness_2026-05-06.json"
     },
     "risks_and_confounds": [

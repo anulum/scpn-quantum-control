@@ -116,7 +116,7 @@ on a modern laptop; no QPU access required.
 ## Related files
 
 - **Analysis script:** [`../../scripts/analyse_phase1_dla_parity.py`](../../scripts/analyse_phase1_dla_parity.py)
-- **Short paper draft:** [`../../paper/phase1_dla_parity/phase1_dla_parity_short_paper.md`](../../paper/phase1_dla_parity/phase1_dla_parity_short_paper.md)
+- **Short paper draft:** [`../../paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity_short_paper.md`](../../paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity_short_paper.md)
 - **Aggregated summary JSON:** [`../../figures/phase1/phase1_dla_parity_summary.json`](../../figures/phase1/phase1_dla_parity_summary.json)
 - **Figures:** [`../../figures/phase1/leakage_vs_depth.png`](../../figures/phase1/leakage_vs_depth.png), [`../../figures/phase1/asymmetry_vs_depth.png`](../../figures/phase1/asymmetry_vs_depth.png)
 - **Website presentation:** https://anulum.li/scpn-quantum-control/phase1-results.html

@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded quasicriticality and self organisation source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "meta_framework_integrations": "meta_framework_integrations_source_boundary",
+    "quasicriticality_and_self_organisation": "quasicriticality_and_self_organisation_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Quasicriticality and Self-Organisation",
+    "component_2": "Meta-Framework Integrations",
+    "component_count": "2",
+    "next_boundary": "P0R02839",
+    "section": "Quasicriticality and Self-Organisation",
+    "source_span": "P0R02831-P0R02838"
+  },
+  "next_source_boundary": "P0R02839",
+  "null_controls": {
+    "meta_framework_integrations_is_not_empirical_validation_evidence": 1.0,
+    "quasicriticality_and_self_organisation_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded quasicriticality and self organisation source-accounting bridge; not validation evidence",
+    "protocol_state": "source_quasicriticality_and_self_organisation_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02831",
+      "P0R02832",
+      "P0R02833",
+      "P0R02834",
+      "P0R02835",
+      "P0R02836",
+      "P0R02837",
+      "P0R02838"
+    ],
+    "source_ledger_span": [
+      "P0R02831",
+      "P0R02838"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02831",
+    "P0R02838"
+  ],
+  "source_record_count": 8
+}

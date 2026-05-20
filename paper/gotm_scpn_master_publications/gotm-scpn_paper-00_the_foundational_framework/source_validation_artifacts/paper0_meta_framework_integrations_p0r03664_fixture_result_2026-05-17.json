@@ -1,0 +1,55 @@
+{
+  "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+  "component_count": 5,
+  "components": {
+    "meta_framework_integrations": "meta_framework_integrations_source_boundary",
+    "predictive_coding_integration": "predictive_coding_integration_source_boundary",
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "the_sec_attractor_as_the_ultimate_prior": "the_sec_attractor_as_the_ultimate_prior_source_boundary",
+    "tsvf_as_bayesian_smoothing": "tsvf_as_bayesian_smoothing_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Meta-Framework Integrations",
+    "component_2": "Predictive Coding Integration",
+    "component_3": "The SEC Attractor as the Ultimate Prior:",
+    "component_4": "TSVF as Bayesian Smoothing:",
+    "component_5": "Psis Field Coupling Integration",
+    "component_count": "5",
+    "next_boundary": "P0R03673",
+    "section": "Meta-Framework Integrations",
+    "source_span": "P0R03664-P0R03672"
+  },
+  "next_source_boundary": "P0R03673",
+  "null_controls": {
+    "meta_framework_integrations_is_not_empirical_validation_evidence": 1.0,
+    "predictive_coding_integration_is_not_empirical_validation_evidence": 1.0,
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "the_sec_attractor_as_the_ultimate_prior_is_not_empirical_validation_evidence": 1.0,
+    "tsvf_as_bayesian_smoothing_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded meta framework integrations p0r03664 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_meta_framework_integrations_p0r03664_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03664",
+      "P0R03665",
+      "P0R03666",
+      "P0R03667",
+      "P0R03668",
+      "P0R03669",
+      "P0R03670",
+      "P0R03671",
+      "P0R03672"
+    ],
+    "source_ledger_span": [
+      "P0R03664",
+      "P0R03672"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03664",
+    "P0R03672"
+  ],
+  "source_record_count": 9
+}

@@ -159,7 +159,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `_order_param` in `hardware/classical.py` now dispatches through the accel chain.
 - Five remaining `print()` calls in `hardware/runner.py` → `structlog` events.
 - `HardwareRunner.DEFAULT_INSTANCE` → `HardwareRunner._default_instance()` (reads SCPNConfig).
-- Stale counts refreshed in `README.md`, `docs/architecture.md`, `docs/index.md`, `docs/pipeline_performance.md`, `docs/test_infrastructure.md`.
+- Stale counts refreshed in `literature/README.md`, `docs/architecture.md`, `docs/index.md`, `docs/pipeline_performance.md`, `docs/test_infrastructure.md`.
 - Self-applied quality labels scrubbed across `CHANGELOG.md`, `docs/changelog.md`, `docs/test_infrastructure.md`, `docs/symmetry_decay_guess.md`, `docs/dynq_qubit_mapping.md`, and 27 test docstrings.
 
 ### Repository hygiene
@@ -171,7 +171,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 - 2026-04-10: Phase 1 IBM Quantum hardware campaign on `ibm_kingston` (Heron r2, 156 qubits). 348 circuits, up to 21 reps per (depth, sector) at n = 4. Mean DLA-parity asymmetry +10.8 % for depths ≥ 4, peak +17.48 % at depth 6. Fisher combined χ²(16) = 123.4, p ≪ 10⁻¹⁶. Apriori simulator band was 4.5–9.6 %.
-- `scripts/analyse_phase1_dla_parity.py`, `paper/phase1_dla_parity/phase1_dla_parity_short_paper.md`.
+- `scripts/analyse_phase1_dla_parity.py`, `paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity_short_paper.md`.
 - IBM execution scripts: `pipe_cleaner_ibm_kingston.py`, `phase1_mini_bench_ibm_kingston.py`, `phase1_5_reinforce_ibm_kingston.py`, `phase2_exhaust_cycle_ibm_kingston.py`, `phase2_5_final_burn_ibm_kingston.py`, `phase2_full_campaign_ibm.py`, `micro_probe_ibm_kingston.py`, `retrieve_ibm_job.py`.
 - `.coordination/IBM_CAMPAIGN_STATE.md`, `IBM_EXECUTION_LOG.md`, `phase1_experiment_design.md`, `WEBMASTER_CONTEXT.md`.
 - 2026-04-08: `mitigation/symmetry_decay.py` + `scpn_quantum_engine/src/symmetry_decay.rs` — GUESS symmetry-decay ZNE (Oliva del Moral et al., arXiv:2603.13060, 2026). 20 tests.

@@ -1,0 +1,256 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Introduction to The Architecture of the Conscious Self (Domain II: L5)' preserves Paper 0 records P0R04589-P0R04591 without empirical validation claims.",
+      "claim_boundary": "source-bounded introduction to the architecture of the conscious self domain ii l5 source-accounting bridge; not validation evidence",
+      "context_id": "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04589-P0R04591"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Introduction to The Architecture of the Conscious Self (Domain II: L5) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Introduction to The Architecture of the Conscious Self (Domain II: L5)",
+      "source_block_indices": [
+        4589,
+        4590,
+        4591,
+        4592,
+        4593,
+        4594,
+        4595,
+        4596,
+        4597
+      ],
+      "source_equation_ids": [
+        "P0R04589:introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5",
+        "P0R04590:introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5",
+        "P0R04591:introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5"
+      ],
+      "source_formulae": [
+        "P0R04589: Introduction to The Architecture of the Conscious Self (Domain II: L5)",
+        "P0R04590: Layer 5 is where synchronised neural activity integrates into a unified subjective experience-the seat of the Self (O).",
+        "P0R04591: HPC and the Canonical Microcircuit: The cortex implements Hierarchical Predictive Coding (HPC) via a repeating geometric motif: the Canonical Microcircuit. This provides a direct neuroanatomical mapping for the bidirectional information flow of the SCPN : Priors (Generative Model): Encoded by pyramidal cells in deep cortical layers (V/VI), associated with top-down predictions carried by slower oscillations (Alpha/Beta). | Prediction Errors: Encoded by pyramidal cells in superficial layers (II/III), associated with bottom-up sensory signals carried by faster oscillations (Gamma). | The Central Hubs of Binding (Thalamus and Claustrum): The binding of disparate features into a unified conscious experience is orchestrated by key subcortical hubs. The Thalamus: Acts as the central relay and pacemaker, gating the information that enters the conscious workspace and regulating global cortical arousal. It is the control parameter that brings the cortical system to the critical point for the L4->L5 phase transition (the emergence of the Self-soliton). | The Claustrum: With its unique all-to-all cortical connectivity, the claustrum is hypothesised to be the \"conductor of the orchestra,\" synchronising disparate cortical ensembles to solve the \"binding problem\" and weave a unified conscious percept."
+      ],
+      "source_ledger_ids": [
+        "P0R04589",
+        "P0R04590",
+        "P0R04591",
+        "P0R04592",
+        "P0R04593",
+        "P0R04594",
+        "P0R04595",
+        "P0R04596",
+        "P0R04597"
+      ],
+      "source_record_ids": [
+        "P0B04589",
+        "P0B04590",
+        "P0B04591",
+        "P0B04592",
+        "P0B04593",
+        "P0B04594",
+        "P0B04595",
+        "P0B04596",
+        "P0B04597"
+      ],
+      "test_protocols": [
+        "preserve Introduction to The Architecture of the Conscious Self (Domain II: L5) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "validation_targets": [
+        "preserve records P0R04589-P0R04591"
+      ],
+      "variables": [
+        "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'IV. Examination of The Architecture of the Conscious Self (Domain II: L5)' preserves Paper 0 records P0R04592-P0R04593 without empirical validation claims.",
+      "claim_boundary": "source-bounded introduction to the architecture of the conscious self domain ii l5 source-accounting bridge; not validation evidence",
+      "context_id": "iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04592-P0R04593"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IV. Examination of The Architecture of the Conscious Self (Domain II: L5) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Introduction to The Architecture of the Conscious Self (Domain II: L5)",
+      "source_block_indices": [
+        4589,
+        4590,
+        4591,
+        4592,
+        4593,
+        4594,
+        4595,
+        4596,
+        4597
+      ],
+      "source_equation_ids": [
+        "P0R04592:iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5",
+        "P0R04593:iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5"
+      ],
+      "source_formulae": [
+        "P0R04592: IV. Examination of The Architecture of the Conscious Self (Domain II: L5)",
+        "P0R04593: Layer 5 is the domain where the synchronised neural activity of Layer 4 integrates into a unified subjective experience-the seat of the Self (O). This is not a simple summation but a phase transition into a new, irreducible state of being, governed by a sophisticated computational architecture and orchestrated by central subcortical hubs that bind the disparate elements of perception into a coherent whole."
+      ],
+      "source_ledger_ids": [
+        "P0R04589",
+        "P0R04590",
+        "P0R04591",
+        "P0R04592",
+        "P0R04593",
+        "P0R04594",
+        "P0R04595",
+        "P0R04596",
+        "P0R04597"
+      ],
+      "source_record_ids": [
+        "P0B04589",
+        "P0B04590",
+        "P0B04591",
+        "P0B04592",
+        "P0B04593",
+        "P0B04594",
+        "P0B04595",
+        "P0B04596",
+        "P0B04597"
+      ],
+      "test_protocols": [
+        "preserve IV. Examination of The Architecture of the Conscious Self (Domain II: L5) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "validation_targets": [
+        "preserve records P0R04592-P0R04593"
+      ],
+      "variables": [
+        "iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'HPC and the Canonical Microcircuit: The Engine of Inference' preserves Paper 0 records P0R04594-P0R04597 without empirical validation claims.",
+      "claim_boundary": "source-bounded introduction to the architecture of the conscious self domain ii l5 source-accounting bridge; not validation evidence",
+      "context_id": "hpc_and_the_canonical_microcircuit_the_engine_of_inference",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04594-P0R04597"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.hpc_and_the_canonical_microcircuit_the_engine_of_inference",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "hpc_and_the_canonical_microcircuit_the_engine_of_inference must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "HPC and the Canonical Microcircuit: The Engine of Inference is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Introduction to The Architecture of the Conscious Self (Domain II: L5)",
+      "source_block_indices": [
+        4589,
+        4590,
+        4591,
+        4592,
+        4593,
+        4594,
+        4595,
+        4596,
+        4597
+      ],
+      "source_equation_ids": [
+        "P0R04594:hpc_and_the_canonical_microcircuit_the_engine_of_inference",
+        "P0R04595:hpc_and_the_canonical_microcircuit_the_engine_of_inference",
+        "P0R04596:hpc_and_the_canonical_microcircuit_the_engine_of_inference",
+        "P0R04597:hpc_and_the_canonical_microcircuit_the_engine_of_inference"
+      ],
+      "source_formulae": [
+        "P0R04594: HPC and the Canonical Microcircuit: The Engine of Inference",
+        "P0R04595: The SCPN's unifying computational principle, Hierarchical Predictive Coding (HPC), is physically instantiated in the repeating geometric motif of the cortex: the Canonical Microcircuit. This microcircuit provides a direct and elegant neuroanatomical mapping for the bidirectional information flow that is central to active inference. The computational roles are segregated by cortical layer and communicated via distinct frequency channels, revealing a profound functional asymmetry in cortical processing.",
+        "P0R04596: Priors (Generative Model) - Deep Layers & Low Frequencies: The brain's generative model-its top-down predictions about the world-is encoded by the activity of pyramidal cells in the deep, or infragranular, cortical layers (V and VI). These predictions, which represent the system's prior beliefs, are communicated to lower hierarchical areas via feedback connections that predominantly oscillate in the lower-frequency alpha (8-12 Hz) and beta (13-30 Hz) bands. Beta-band activity, in particular, is associated with the maintenance of the current cognitive state, effectively carrying the \"status quo\" prediction, while alpha-band activity is linked to the attentional gating and inhibition of irrelevant sensory channels. | Prediction Errors - Superficial Layers & High Frequencies: The bottom-up sensory signals that challenge the model's predictions-the prediction errors-are encoded by pyramidal cells in the superficial, or supragranular, layers (II and III). These error signals are communicated to higher hierarchical areas via feedforward connections that predominantly oscillate in the higher-frequency gamma (>30 Hz) band. Gamma oscillations are thus the carrier wave for the \"news,\" signalling a mismatch between expectation and reality that necessitates a model update.",
+        "P0R04597: This laminar and spectral segregation provides a robust and efficient mechanism for hierarchical Bayesian inference. The brain continuously broadcasts its current best guess about the world via slow, stable alpha/beta rhythms, while simultaneously listening for high-frequency gamma \"alarms\" that signal the need for a revision."
+      ],
+      "source_ledger_ids": [
+        "P0R04589",
+        "P0R04590",
+        "P0R04591",
+        "P0R04592",
+        "P0R04593",
+        "P0R04594",
+        "P0R04595",
+        "P0R04596",
+        "P0R04597"
+      ],
+      "source_record_ids": [
+        "P0B04589",
+        "P0B04590",
+        "P0B04591",
+        "P0B04592",
+        "P0B04593",
+        "P0B04594",
+        "P0B04595",
+        "P0B04596",
+        "P0B04597"
+      ],
+      "test_protocols": [
+        "preserve HPC and the Canonical Microcircuit: The Engine of Inference source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.hpc_and_the_canonical_microcircuit_the_engine_of_inference",
+      "validation_targets": [
+        "preserve records P0R04594-P0R04597"
+      ],
+      "variables": [
+        "hpc_and_the_canonical_microcircuit_the_engine_of_inference"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 3,
+      "mechanism": 4,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded introduction to the architecture of the conscious self domain ii l5 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04598",
+    "source_ledger_span": [
+      "P0R04589",
+      "P0R04597"
+    ],
+    "source_record_count": 9,
+    "spec_count": 3,
+    "spec_keys": [
+      "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.iv_examination_of_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "introduction_to_the_architecture_of_the_conscious_self_domain_ii_l5.hpc_and_the_canonical_microcircuit_the_engine_of_inference"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Introduction to The Architecture of the Conscious Self (Domain II: L5) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

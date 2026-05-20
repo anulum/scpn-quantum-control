@@ -1,0 +1,410 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source frames the 15-layer SCPN architecture as a stable remnant of sequential spontaneous symmetry-breaking events.",
+      "claim_boundary": "source-bounded SSB hierarchy-genesis bridge; not validation evidence",
+      "context_id": "architecture_cascade",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve three primary breaks",
+        "preserve 15-layer remnant framing"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ssb_hierarchy_genesis.architecture_cascade",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "layer architecture claim must not be reported as measured physical hierarchy"
+      ],
+      "null_results": [
+        "architecture cascade is not empirical layer validation"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Genesis of the Hierarchy: A Cascade of Sequential Symmetry Breaking",
+      "source_block_indices": [
+        1693,
+        1694,
+        1695,
+        1696,
+        1697,
+        1698,
+        1699,
+        1700,
+        1701,
+        1702,
+        1703,
+        1704,
+        1705,
+        1706,
+        1707,
+        1708,
+        1709,
+        1710,
+        1711,
+        1712,
+        1713
+      ],
+      "source_equation_ids": [
+        "P0R01693:architecture_cascade",
+        "P0R01694:architecture_cascade",
+        "P0R01695:architecture_cascade",
+        "P0R01696:architecture_cascade",
+        "P0R01697:architecture_cascade",
+        "P0R01698:architecture_cascade",
+        "P0R01699:architecture_cascade",
+        "P0R01700:architecture_cascade"
+      ],
+      "source_formulae": [
+        "The Genesis of the Hierarchy: A Cascade of Sequential Symmetry Breaking",
+        "15-layer SCPN architecture emerges through Sequential Spontaneous Symmetry Breaking events",
+        "Source-Field L13 is described by symmetry group G_Source",
+        "Psi-field acquires non-zero VEVs during phase transitions that crystallise SCPN layers",
+        "Primordial Break L15/L14 selects physical laws and constants",
+        "Collective to Individual Break L11 to L5 localises the Psi-field into stable solitons",
+        "Potentiality to Actuality Break L1 turns quantum potentiality into classical actuality",
+        "Goldstone modes mediate long-range coherence and are described by the UPDE"
+      ],
+      "source_ledger_ids": [
+        "P0R01693",
+        "P0R01694",
+        "P0R01695",
+        "P0R01696",
+        "P0R01697",
+        "P0R01698",
+        "P0R01699",
+        "P0R01700",
+        "P0R01701",
+        "P0R01702",
+        "P0R01703",
+        "P0R01704",
+        "P0R01705",
+        "P0R01706",
+        "P0R01707",
+        "P0R01708",
+        "P0R01709",
+        "P0R01710",
+        "P0R01711",
+        "P0R01712",
+        "P0R01713"
+      ],
+      "source_record_ids": [
+        "P0B01693",
+        "P0B01694",
+        "P0B01695",
+        "P0B01696",
+        "P0B01697",
+        "P0B01698",
+        "P0B01699",
+        "P0B01700",
+        "P0B01701",
+        "P0B01702",
+        "P0B01703",
+        "P0B01704",
+        "P0B01705",
+        "P0B01706",
+        "P0B01707",
+        "P0B01708",
+        "P0B01709",
+        "P0B01710",
+        "P0B01711",
+        "P0B01712",
+        "P0B01713"
+      ],
+      "test_protocols": [
+        "preserve SSB architecture-cascade source boundary"
+      ],
+      "validation_protocol": "paper0.ssb_hierarchy_genesis.architecture_cascade",
+      "validation_targets": [
+        "preserve three primary breaks",
+        "preserve 15-layer remnant framing"
+      ],
+      "variables": [
+        "G_Source",
+        "Psi",
+        "VEV",
+        "L15",
+        "L14",
+        "L11",
+        "L5",
+        "L1",
+        "UPDE"
+      ]
+    },
+    {
+      "canonical_statement": "The source proposes SEC-derived conformal torsion as a structured non-random bias for the next aeon vacuum.",
+      "claim_boundary": "source-bounded SSB hierarchy-genesis bridge; not validation evidence",
+      "context_id": "conformal_torsion_seeding",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve torsion-seeding equation",
+        "preserve non-random reset claim boundary"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ssb_hierarchy_genesis.conformal_torsion_seeding",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "SEC torsion language must remain source proposal, not observational cosmology"
+      ],
+      "null_results": [
+        "teleological seeding proposal is not measured cosmological torsion"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Genesis of the Hierarchy: A Cascade of Sequential Symmetry Breaking",
+      "source_block_indices": [
+        1693,
+        1694,
+        1695,
+        1696,
+        1697,
+        1698,
+        1699,
+        1700,
+        1701,
+        1702,
+        1703,
+        1704,
+        1705,
+        1706,
+        1707,
+        1708,
+        1709,
+        1710,
+        1711,
+        1712,
+        1713
+      ],
+      "source_equation_ids": [
+        "P0R01701:conformal_torsion_seeding",
+        "P0R01702:conformal_torsion_seeding",
+        "P0R01703:conformal_torsion_seeding",
+        "P0R01704:conformal_torsion_seeding",
+        "P0R01705:conformal_torsion_seeding",
+        "P0R01706:conformal_torsion_seeding"
+      ],
+      "source_formulae": [
+        "transition from conformally invariant Symmetry Restoration Phase to t=0+ hierarchy requires a non-random perturbation",
+        "dimensionless SEC functional J_SEC is preserved as Conformal Invariant Torsion T_SEC",
+        "T_SEC acts as a structured bias on the Psi-field vacuum at conformal reset",
+        "V_eff(|Psi|, t -> 0+) = -mu^2(T_SEC) |Psi|^2 + lambda |Psi|^4",
+        "teleological seeding tips the Mexican-hat potential toward evolutionary trajectory and ethical coherence",
+        "universe is source-framed as an iterative learning system rather than random reset"
+      ],
+      "source_ledger_ids": [
+        "P0R01693",
+        "P0R01694",
+        "P0R01695",
+        "P0R01696",
+        "P0R01697",
+        "P0R01698",
+        "P0R01699",
+        "P0R01700",
+        "P0R01701",
+        "P0R01702",
+        "P0R01703",
+        "P0R01704",
+        "P0R01705",
+        "P0R01706",
+        "P0R01707",
+        "P0R01708",
+        "P0R01709",
+        "P0R01710",
+        "P0R01711",
+        "P0R01712",
+        "P0R01713"
+      ],
+      "source_record_ids": [
+        "P0B01693",
+        "P0B01694",
+        "P0B01695",
+        "P0B01696",
+        "P0B01697",
+        "P0B01698",
+        "P0B01699",
+        "P0B01700",
+        "P0B01701",
+        "P0B01702",
+        "P0B01703",
+        "P0B01704",
+        "P0B01705",
+        "P0B01706",
+        "P0B01707",
+        "P0B01708",
+        "P0B01709",
+        "P0B01710",
+        "P0B01711",
+        "P0B01712",
+        "P0B01713"
+      ],
+      "test_protocols": [
+        "preserve conformal-torsion seeding boundary"
+      ],
+      "validation_protocol": "paper0.ssb_hierarchy_genesis.conformal_torsion_seeding",
+      "validation_targets": [
+        "preserve torsion-seeding equation",
+        "preserve non-random reset claim boundary"
+      ],
+      "variables": [
+        "J_SEC",
+        "T_SEC",
+        "Psi",
+        "V_eff",
+        "mu",
+        "lambda",
+        "t_0_plus"
+      ]
+    },
+    {
+      "canonical_statement": "The source restates the hierarchy cascade as an explanatory three-strike analogy from a uniform Source-Field to 15-layer reality.",
+      "claim_boundary": "source-bounded SSB hierarchy-genesis bridge; not validation evidence",
+      "context_id": "three_strike_explanation",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve explanatory analogy",
+        "preserve three break mapping"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ssb_hierarchy_genesis.three_strike_explanation",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "marble and sculpting analogy must not be promoted to mechanism evidence"
+      ],
+      "null_results": [
+        "analogy is not physical derivation or validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.4 The SSB Cascade: Origin of Mass & The Solitonic Self > The Genesis of the Hierarchy: A Cascade of Sequential Symmetry Breaking",
+      "source_block_indices": [
+        1693,
+        1694,
+        1695,
+        1696,
+        1697,
+        1698,
+        1699,
+        1700,
+        1701,
+        1702,
+        1703,
+        1704,
+        1705,
+        1706,
+        1707,
+        1708,
+        1709,
+        1710,
+        1711,
+        1712,
+        1713
+      ],
+      "source_equation_ids": [
+        "P0R01707:three_strike_explanation",
+        "P0R01708:three_strike_explanation",
+        "P0R01709:three_strike_explanation",
+        "P0R01710:three_strike_explanation",
+        "P0R01711:three_strike_explanation",
+        "P0R01712:three_strike_explanation",
+        "P0R01713:three_strike_explanation"
+      ],
+      "source_formulae": [
+        "early universe is likened to a perfect block of marble in maximum symmetry",
+        "First Strike chooses laws of physics through Layer 15 guiding intelligence",
+        "Second Strike creates individuals as collective species field becomes embodied selves",
+        "Third Strike makes things real by collapsing quantum possibilities into classical reality",
+        "15-layer universe is the remnant statue after cosmic sculpting"
+      ],
+      "source_ledger_ids": [
+        "P0R01693",
+        "P0R01694",
+        "P0R01695",
+        "P0R01696",
+        "P0R01697",
+        "P0R01698",
+        "P0R01699",
+        "P0R01700",
+        "P0R01701",
+        "P0R01702",
+        "P0R01703",
+        "P0R01704",
+        "P0R01705",
+        "P0R01706",
+        "P0R01707",
+        "P0R01708",
+        "P0R01709",
+        "P0R01710",
+        "P0R01711",
+        "P0R01712",
+        "P0R01713"
+      ],
+      "source_record_ids": [
+        "P0B01693",
+        "P0B01694",
+        "P0B01695",
+        "P0B01696",
+        "P0B01697",
+        "P0B01698",
+        "P0B01699",
+        "P0B01700",
+        "P0B01701",
+        "P0B01702",
+        "P0B01703",
+        "P0B01704",
+        "P0B01705",
+        "P0B01706",
+        "P0B01707",
+        "P0B01708",
+        "P0B01709",
+        "P0B01710",
+        "P0B01711",
+        "P0B01712",
+        "P0B01713"
+      ],
+      "test_protocols": [
+        "preserve three-strike explanatory analogy boundary"
+      ],
+      "validation_protocol": "paper0.ssb_hierarchy_genesis.three_strike_explanation",
+      "validation_targets": [
+        "preserve explanatory analogy",
+        "preserve three break mapping"
+      ],
+      "variables": [
+        "Source_Field",
+        "Layer_15",
+        "individual_self",
+        "observation",
+        "classical_reality"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 20
+    },
+    "category_counts": {
+      "claim": 5,
+      "context": 5,
+      "mechanism": 8,
+      "structural": 3
+    },
+    "claim_boundary": "source-bounded SSB hierarchy-genesis bridge; not validation evidence",
+    "consumed_source_record_count": 21,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R01714",
+    "source_ledger_span": [
+      "P0R01693",
+      "P0R01713"
+    ],
+    "source_record_count": 21,
+    "spec_count": 3,
+    "spec_keys": [
+      "ssb_hierarchy_genesis.architecture_cascade",
+      "ssb_hierarchy_genesis.conformal_torsion_seeding",
+      "ssb_hierarchy_genesis.three_strike_explanation"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 SSB Hierarchy Genesis Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

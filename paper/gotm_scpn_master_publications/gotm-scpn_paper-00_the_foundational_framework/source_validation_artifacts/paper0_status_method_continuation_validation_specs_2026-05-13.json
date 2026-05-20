@@ -1,0 +1,449 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The continuation states what the framework is not: not absolute truth, not metaphor literalisation, and not a bypass of empirical standards.",
+      "claim_boundary": "source-bounded Status and Method continuation; not validation evidence",
+      "context_id": "not_absolute_truths_boundary",
+      "domain_review_status": "source_methodology_continuation_preserved",
+      "executable_validation_targets": [
+        "reject doctrine status",
+        "reject ontological load for analogy-class mathematics",
+        "reject bypass of empirical standards"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "status_method_continuation.not_absolute_truths_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "literalised-metaphor control must be rejected",
+        "empirical-bypass control must be rejected"
+      ],
+      "null_results": [
+        "not-boundary text is not empirical validation evidence"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.1 The Invitation: Field Architecture and the Framework Intro > Status and Method: A Living Research Programme > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Productive Disagreement on Coupling Mechanisms:",
+      "source_block_indices": [
+        391,
+        392,
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400
+      ],
+      "source_equation_ids": [
+        "P0R00391:what_this_is_not_boundary",
+        "P0R00392:operational_commitments_header"
+      ],
+      "source_formulae": [
+        "not a catalogue of absolute truths",
+        "not a literalisation of every metaphor or analogy",
+        "analogy-class carries no ontological load",
+        "not a licence to bypass empirical standards"
+      ],
+      "source_ledger_ids": [
+        "P0R00391",
+        "P0R00392",
+        "P0R00393",
+        "P0R00394",
+        "P0R00395",
+        "P0R00396",
+        "P0R00397",
+        "P0R00398",
+        "P0R00399",
+        "P0R00400"
+      ],
+      "source_record_ids": [
+        "P0B00391",
+        "P0B00392",
+        "P0B00393",
+        "P0B00394",
+        "P0B00395",
+        "P0B00396",
+        "P0B00397",
+        "P0B00398",
+        "P0B00399",
+        "P0B00400"
+      ],
+      "test_protocols": [
+        "classify not-boundaries and reject doctrine/metaphor promotion"
+      ],
+      "validation_protocol": "paper0.status_method_continuation.not_absolute_truths_boundary",
+      "validation_targets": [
+        "reject doctrine status",
+        "reject ontological load for analogy-class mathematics",
+        "reject bypass of empirical standards"
+      ],
+      "variables": [
+        "absolute_truths",
+        "metaphor_literalisation",
+        "empirical_bypass"
+      ]
+    },
+    {
+      "canonical_statement": "The continuation restates the four operating commitments and adds pre-registration, out-of-sample support, claim labels, and explicit changes.",
+      "claim_boundary": "source-bounded Status and Method continuation; not validation evidence",
+      "context_id": "commitments_continuation",
+      "domain_review_status": "source_methodology_continuation_preserved",
+      "executable_validation_targets": [
+        "preserve pre-registration and negative-result pruning",
+        "preserve registry hypothesis as non-premise",
+        "preserve tiered claim labelling",
+        "preserve explicit change/correction requirement"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "status_method_continuation.commitments_continuation",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "registry-as-premise control must be rejected",
+        "unlabelled-claim-status control must be rejected"
+      ],
+      "null_results": [
+        "commitment restatement is not evidence for a claim"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.1 The Invitation: Field Architecture and the Framework Intro > Status and Method: A Living Research Programme > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Productive Disagreement on Coupling Mechanisms:",
+      "source_block_indices": [
+        391,
+        392,
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400
+      ],
+      "source_equation_ids": [
+        "P0R00393:operational_commitments_continuation"
+      ],
+      "source_formulae": [
+        "Falsifiability first",
+        "Hypothesis registry",
+        "Tiered status",
+        "Versioning and correction",
+        "out-of-sample support"
+      ],
+      "source_ledger_ids": [
+        "P0R00391",
+        "P0R00392",
+        "P0R00393",
+        "P0R00394",
+        "P0R00395",
+        "P0R00396",
+        "P0R00397",
+        "P0R00398",
+        "P0R00399",
+        "P0R00400"
+      ],
+      "source_record_ids": [
+        "P0B00391",
+        "P0B00392",
+        "P0B00393",
+        "P0B00394",
+        "P0B00395",
+        "P0B00396",
+        "P0B00397",
+        "P0B00398",
+        "P0B00399",
+        "P0B00400"
+      ],
+      "test_protocols": [
+        "preserve four commitment labels and support boundary"
+      ],
+      "validation_protocol": "paper0.status_method_continuation.commitments_continuation",
+      "validation_targets": [
+        "preserve pre-registration and negative-result pruning",
+        "preserve registry hypothesis as non-premise",
+        "preserve tiered claim labelling",
+        "preserve explicit change/correction requirement"
+      ],
+      "variables": [
+        "falsifiability_first",
+        "hypothesis_registry",
+        "tiered_status",
+        "versioning_and_correction"
+      ]
+    },
+    {
+      "canonical_statement": "The axioms are starting points, not conclusions; their worth is tested by derived coherence and survived or failed tests.",
+      "claim_boundary": "source-bounded Status and Method continuation; not validation evidence",
+      "context_id": "axioms_as_generative_hypotheses",
+      "domain_review_status": "source_methodology_continuation_preserved",
+      "executable_validation_targets": [
+        "preserve starting-point boundary",
+        "preserve failure-question framing",
+        "preserve survived/failed test criterion"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "status_method_continuation.axioms_as_generative_hypotheses",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "axiom-as-conclusion control must be rejected",
+        "untested-axiom-proof control must be rejected"
+      ],
+      "null_results": [
+        "axiom declaration is not proof of derived claims"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.1 The Invitation: Field Architecture and the Framework Intro > Status and Method: A Living Research Programme > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Productive Disagreement on Coupling Mechanisms:",
+      "source_block_indices": [
+        391,
+        392,
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400
+      ],
+      "source_equation_ids": [
+        "P0R00394:how_to_read_axioms",
+        "P0R00395:axioms_as_generative_hypotheses"
+      ],
+      "source_formulae": [
+        "starting points, not conclusions",
+        "generative hypotheses",
+        "what follows and what fails",
+        "tests it survives or fails"
+      ],
+      "source_ledger_ids": [
+        "P0R00391",
+        "P0R00392",
+        "P0R00393",
+        "P0R00394",
+        "P0R00395",
+        "P0R00396",
+        "P0R00397",
+        "P0R00398",
+        "P0R00399",
+        "P0R00400"
+      ],
+      "source_record_ids": [
+        "P0B00391",
+        "P0B00392",
+        "P0B00393",
+        "P0B00394",
+        "P0B00395",
+        "P0B00396",
+        "P0B00397",
+        "P0B00398",
+        "P0B00399",
+        "P0B00400"
+      ],
+      "test_protocols": [
+        "preserve axiom status as generative hypotheses"
+      ],
+      "validation_protocol": "paper0.status_method_continuation.axioms_as_generative_hypotheses",
+      "validation_targets": [
+        "preserve starting-point boundary",
+        "preserve failure-question framing",
+        "preserve survived/failed test criterion"
+      ],
+      "variables": [
+        "axioms",
+        "generative_hypotheses",
+        "survival_tests"
+      ]
+    },
+    {
+      "canonical_statement": "Productive disagreement requires prediction/baseline comparison, empirical handles for analogies, and replacement models in the same observable slot.",
+      "claim_boundary": "source-bounded Status and Method continuation; not validation evidence",
+      "context_id": "productive_disagreement_protocol",
+      "domain_review_status": "source_methodology_continuation_preserved",
+      "executable_validation_targets": [
+        "preserve prediction-baseline comparison",
+        "preserve analogy-handle burden",
+        "preserve same-slot replacement model path"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "status_method_continuation.productive_disagreement_protocol",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "analogy-without-handle control must be rejected",
+        "dismiss-without-test control must be rejected"
+      ],
+      "null_results": [
+        "disagreement protocol is not validation by itself"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.1 The Invitation: Field Architecture and the Framework Intro > Status and Method: A Living Research Programme > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Productive Disagreement on Coupling Mechanisms:",
+      "source_block_indices": [
+        391,
+        392,
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400
+      ],
+      "source_equation_ids": [
+        "P0R00396:productive_disagreement_header",
+        "P0R00397:productive_disagreement_protocol"
+      ],
+      "source_formulae": [
+        "stated prediction and alternative baseline",
+        "empirical handle",
+        "same observables, stricter assumptions, stronger fit"
+      ],
+      "source_ledger_ids": [
+        "P0R00391",
+        "P0R00392",
+        "P0R00393",
+        "P0R00394",
+        "P0R00395",
+        "P0R00396",
+        "P0R00397",
+        "P0R00398",
+        "P0R00399",
+        "P0R00400"
+      ],
+      "source_record_ids": [
+        "P0B00391",
+        "P0B00392",
+        "P0B00393",
+        "P0B00394",
+        "P0B00395",
+        "P0B00396",
+        "P0B00397",
+        "P0B00398",
+        "P0B00399",
+        "P0B00400"
+      ],
+      "test_protocols": [
+        "classify disagreement moves and reject untested dismissal"
+      ],
+      "validation_protocol": "paper0.status_method_continuation.productive_disagreement_protocol",
+      "validation_targets": [
+        "preserve prediction-baseline comparison",
+        "preserve analogy-handle burden",
+        "preserve same-slot replacement model path"
+      ],
+      "variables": [
+        "prediction_baseline",
+        "analogy_handle",
+        "replacement_model"
+      ]
+    },
+    {
+      "canonical_statement": "The continuation closes as a standing invitation: foundation stone, not capstone, with expected refutation, reinforcement, and supersession.",
+      "claim_boundary": "source-bounded Status and Method continuation; not validation evidence",
+      "context_id": "standing_invitation_closure",
+      "domain_review_status": "source_methodology_continuation_preserved",
+      "executable_validation_targets": [
+        "preserve foundation-stone closure",
+        "preserve refute/reinforce/supersede expectation",
+        "preserve SCPN mandate boundary"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "status_method_continuation.standing_invitation_closure",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "capstone-finality control must be rejected",
+        "missing-SCPN-mandate-boundary control must be rejected"
+      ],
+      "null_results": [
+        "standing invitation is not validation evidence"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.1 The Invitation: Field Architecture and the Framework Intro > Status and Method: A Living Research Programme > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Productive Disagreement on Coupling Mechanisms:",
+      "source_block_indices": [
+        391,
+        392,
+        393,
+        394,
+        395,
+        396,
+        397,
+        398,
+        399,
+        400
+      ],
+      "source_equation_ids": [
+        "P0R00398:standing_invitation_header",
+        "P0R00399:foundation_stone_not_capstone",
+        "P0R00400:blank_separator"
+      ],
+      "source_formulae": [
+        "foundation stone, not a capstone",
+        "refutes some parts",
+        "reinforces others",
+        "supersedes many",
+        "SCPN mandate boundary P0R00401"
+      ],
+      "source_ledger_ids": [
+        "P0R00391",
+        "P0R00392",
+        "P0R00393",
+        "P0R00394",
+        "P0R00395",
+        "P0R00396",
+        "P0R00397",
+        "P0R00398",
+        "P0R00399",
+        "P0R00400"
+      ],
+      "source_record_ids": [
+        "P0B00391",
+        "P0B00392",
+        "P0B00393",
+        "P0B00394",
+        "P0B00395",
+        "P0B00396",
+        "P0B00397",
+        "P0B00398",
+        "P0B00399",
+        "P0B00400"
+      ],
+      "test_protocols": [
+        "preserve standing invitation and next-boundary accounting"
+      ],
+      "validation_protocol": "paper0.status_method_continuation.standing_invitation_closure",
+      "validation_targets": [
+        "preserve foundation-stone closure",
+        "preserve refute/reinforce/supersede expectation",
+        "preserve SCPN mandate boundary"
+      ],
+      "variables": [
+        "foundation_stone",
+        "capstone_rejection",
+        "scp_mandate_boundary"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_null_controls": true,
+    "blank_separator_count": 1,
+    "claim_boundary": "source-bounded Status and Method continuation; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "operational_commitment_count": 4,
+    "scp_mandate_boundary": "P0R00401",
+    "source_ledger_span": [
+      "P0R00391",
+      "P0R00400"
+    ],
+    "source_record_count": 10,
+    "spec_count": 5,
+    "spec_keys": [
+      "status_method_continuation.not_absolute_truths_boundary",
+      "status_method_continuation.commitments_continuation",
+      "status_method_continuation.axioms_as_generative_hypotheses",
+      "status_method_continuation.productive_disagreement_protocol",
+      "status_method_continuation.standing_invitation_closure"
+    ],
+    "title": "Paper 0 Status and Method Continuation Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

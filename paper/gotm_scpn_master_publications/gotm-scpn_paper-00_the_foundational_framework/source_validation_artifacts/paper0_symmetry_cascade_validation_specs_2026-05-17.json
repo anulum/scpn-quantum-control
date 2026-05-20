@@ -1,0 +1,434 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source introduces reality structure as a cascade of symmetry-breaking events from a simple Source-Field state.",
+      "claim_boundary": "source-bounded symmetry-cascade bridge; not validation evidence",
+      "context_id": "cascade_opening",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve source-field origin",
+        "preserve cascade framing"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "symmetry_cascade.cascade_opening",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "analogy must not be promoted to physical derivation"
+      ],
+      "null_results": [
+        "opening analogy is not validation evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.3 The Physics of Form: Spontaneous Symmetry Breaking (SSB) > Interface with Standard Model (SM) Physics > How Reality Gets Its Structure: A Cascade of Broken Symmetries",
+      "source_block_indices": [
+        1582,
+        1583,
+        1584,
+        1585,
+        1586,
+        1587,
+        1588,
+        1589,
+        1590,
+        1591,
+        1592,
+        1593,
+        1594,
+        1595,
+        1596
+      ],
+      "source_equation_ids": [
+        "P0R01582:cascade_opening",
+        "P0R01583:cascade_opening",
+        "P0R01584:cascade_opening"
+      ],
+      "source_formulae": [
+        "How Reality Gets Its Structure: A Cascade of Broken Symmetries",
+        "balanced-pen analogy for unstable symmetry",
+        "Source-Field begins as a state of perfect simple symmetry",
+        "layered reality emerges through repeated symmetry-breaking events"
+      ],
+      "source_ledger_ids": [
+        "P0R01582",
+        "P0R01583",
+        "P0R01584",
+        "P0R01585",
+        "P0R01586",
+        "P0R01587",
+        "P0R01588",
+        "P0R01589",
+        "P0R01590",
+        "P0R01591",
+        "P0R01592",
+        "P0R01593",
+        "P0R01594",
+        "P0R01595",
+        "P0R01596"
+      ],
+      "source_record_ids": [
+        "P0B01582",
+        "P0B01583",
+        "P0B01584",
+        "P0B01585",
+        "P0B01586",
+        "P0B01587",
+        "P0B01588",
+        "P0B01589",
+        "P0B01590",
+        "P0B01591",
+        "P0B01592",
+        "P0B01593",
+        "P0B01594",
+        "P0B01595",
+        "P0B01596"
+      ],
+      "test_protocols": [
+        "preserve symmetry-cascade opening boundary"
+      ],
+      "validation_protocol": "paper0.symmetry_cascade.cascade_opening",
+      "validation_targets": [
+        "preserve source-field origin",
+        "preserve cascade framing"
+      ],
+      "variables": [
+        "Source_Field",
+        "symmetry_breaking",
+        "layered_reality"
+      ]
+    },
+    {
+      "canonical_statement": "The source enumerates three claimed breaks: law selection, condensation into individual selves, and quantum actualisation, then links the cascade to the 15-layer architecture.",
+      "claim_boundary": "source-bounded symmetry-cascade bridge; not validation evidence",
+      "context_id": "three_breaks_architecture",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve three breaks",
+        "preserve architecture linkage"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "symmetry_cascade.three_breaks_architecture",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ethical law-selection claim must remain source claim, not evidence"
+      ],
+      "null_results": [
+        "three-break story is not empirical validation"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.3 The Physics of Form: Spontaneous Symmetry Breaking (SSB) > Interface with Standard Model (SM) Physics > How Reality Gets Its Structure: A Cascade of Broken Symmetries",
+      "source_block_indices": [
+        1582,
+        1583,
+        1584,
+        1585,
+        1586,
+        1587,
+        1588,
+        1589,
+        1590,
+        1591,
+        1592,
+        1593,
+        1594,
+        1595,
+        1596
+      ],
+      "source_equation_ids": [
+        "P0R01585:three_breaks_architecture",
+        "P0R01586:three_breaks_architecture",
+        "P0R01587:three_breaks_architecture",
+        "P0R01588:three_breaks_architecture"
+      ],
+      "source_formulae": [
+        "Break 1 selects physical laws via Prime Directive of Genesis",
+        "Break 2 condenses a universal field into localised selves through a Mexican-hat landscape",
+        "Break 3 converts quantum potential into actual reality through measurement or interaction",
+        "cascade of symmetry breaking gives SCPN its 15-layer architecture"
+      ],
+      "source_ledger_ids": [
+        "P0R01582",
+        "P0R01583",
+        "P0R01584",
+        "P0R01585",
+        "P0R01586",
+        "P0R01587",
+        "P0R01588",
+        "P0R01589",
+        "P0R01590",
+        "P0R01591",
+        "P0R01592",
+        "P0R01593",
+        "P0R01594",
+        "P0R01595",
+        "P0R01596"
+      ],
+      "source_record_ids": [
+        "P0B01582",
+        "P0B01583",
+        "P0B01584",
+        "P0B01585",
+        "P0B01586",
+        "P0B01587",
+        "P0B01588",
+        "P0B01589",
+        "P0B01590",
+        "P0B01591",
+        "P0B01592",
+        "P0B01593",
+        "P0B01594",
+        "P0B01595",
+        "P0B01596"
+      ],
+      "test_protocols": [
+        "preserve three-break cascade and architecture claim boundary"
+      ],
+      "validation_protocol": "paper0.symmetry_cascade.three_breaks_architecture",
+      "validation_targets": [
+        "preserve three breaks",
+        "preserve architecture linkage"
+      ],
+      "variables": [
+        "Prime_Directive",
+        "Mexican_hat",
+        "quantum_potential",
+        "SCPN_15_layers"
+      ]
+    },
+    {
+      "canonical_statement": "The source identifies the Psi-field Master Lagrangian potential term as the energy landscape required for stable vacua and persistent individual structures.",
+      "claim_boundary": "source-bounded symmetry-cascade bridge; not validation evidence",
+      "context_id": "psi_field_potential_stability",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve potential role",
+        "preserve stable-vacuum condition"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "symmetry_cascade.psi_field_potential_stability",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "runaway potential must fail stable-vacuum source accounting"
+      ],
+      "null_results": [
+        "vacuum-stability language is not a measured potential"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.3 The Physics of Form: Spontaneous Symmetry Breaking (SSB) > Interface with Standard Model (SM) Physics > How Reality Gets Its Structure: A Cascade of Broken Symmetries",
+      "source_block_indices": [
+        1582,
+        1583,
+        1584,
+        1585,
+        1586,
+        1587,
+        1588,
+        1589,
+        1590,
+        1591,
+        1592,
+        1593,
+        1594,
+        1595,
+        1596
+      ],
+      "source_equation_ids": [
+        "P0R01589:psi_field_potential_stability",
+        "P0R01590:psi_field_potential_stability",
+        "P0R01591:psi_field_potential_stability",
+        "P0R01592:psi_field_potential_stability"
+      ],
+      "source_formulae": [
+        "Psi-field behaviour is governed by a Master Lagrangian",
+        "potential term is the energy landscape for symmetry breaking",
+        "Mexican-hat landscape has a stable valley away from zero",
+        "stable vacuum prevents runaway collapse and provides a foundation for reality"
+      ],
+      "source_ledger_ids": [
+        "P0R01582",
+        "P0R01583",
+        "P0R01584",
+        "P0R01585",
+        "P0R01586",
+        "P0R01587",
+        "P0R01588",
+        "P0R01589",
+        "P0R01590",
+        "P0R01591",
+        "P0R01592",
+        "P0R01593",
+        "P0R01594",
+        "P0R01595",
+        "P0R01596"
+      ],
+      "source_record_ids": [
+        "P0B01582",
+        "P0B01583",
+        "P0B01584",
+        "P0B01585",
+        "P0B01586",
+        "P0B01587",
+        "P0B01588",
+        "P0B01589",
+        "P0B01590",
+        "P0B01591",
+        "P0B01592",
+        "P0B01593",
+        "P0B01594",
+        "P0B01595",
+        "P0B01596"
+      ],
+      "test_protocols": [
+        "preserve potential-term and vacuum-stability boundary"
+      ],
+      "validation_protocol": "paper0.symmetry_cascade.psi_field_potential_stability",
+      "validation_targets": [
+        "preserve potential role",
+        "preserve stable-vacuum condition"
+      ],
+      "variables": [
+        "Psi",
+        "Master_Lagrangian",
+        "potential",
+        "vacuum",
+        "Mexican_hat"
+      ]
+    },
+    {
+      "canonical_statement": "The source summarises how the Psi-field connects to the world indirectly through geometric and informational interfaces.",
+      "claim_boundary": "source-bounded symmetry-cascade bridge; not validation evidence",
+      "context_id": "world_interface_summary",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve no-direct-force boundary",
+        "preserve two interfaces"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "symmetry_cascade.world_interface_summary",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "new direct force wording must fail this source boundary"
+      ],
+      "null_results": [
+        "interface summary is not direct-force evidence"
+      ],
+      "section_path": "Part II: The Physical Sector (Field Theory & Quantization) > 2.3 The Physics of Form: Spontaneous Symmetry Breaking (SSB) > Interface with Standard Model (SM) Physics > How Reality Gets Its Structure: A Cascade of Broken Symmetries",
+      "source_block_indices": [
+        1582,
+        1583,
+        1584,
+        1585,
+        1586,
+        1587,
+        1588,
+        1589,
+        1590,
+        1591,
+        1592,
+        1593,
+        1594,
+        1595,
+        1596
+      ],
+      "source_equation_ids": [
+        "P0R01593:world_interface_summary",
+        "P0R01594:world_interface_summary",
+        "P0R01595:world_interface_summary",
+        "P0R01596:world_interface_summary"
+      ],
+      "source_formulae": [
+        "Psi-field does not interact through a new undiscovered direct force",
+        "geometric interface subtly influences spacetime geometry and gravity equations",
+        "informational interface biases quantum probabilities and stabilises delicate quantum states",
+        "interface is through known laws of physics in geometry and information channels"
+      ],
+      "source_ledger_ids": [
+        "P0R01582",
+        "P0R01583",
+        "P0R01584",
+        "P0R01585",
+        "P0R01586",
+        "P0R01587",
+        "P0R01588",
+        "P0R01589",
+        "P0R01590",
+        "P0R01591",
+        "P0R01592",
+        "P0R01593",
+        "P0R01594",
+        "P0R01595",
+        "P0R01596"
+      ],
+      "source_record_ids": [
+        "P0B01582",
+        "P0B01583",
+        "P0B01584",
+        "P0B01585",
+        "P0B01586",
+        "P0B01587",
+        "P0B01588",
+        "P0B01589",
+        "P0B01590",
+        "P0B01591",
+        "P0B01592",
+        "P0B01593",
+        "P0B01594",
+        "P0B01595",
+        "P0B01596"
+      ],
+      "test_protocols": [
+        "preserve world-interface summary boundary"
+      ],
+      "validation_protocol": "paper0.symmetry_cascade.world_interface_summary",
+      "validation_targets": [
+        "preserve no-direct-force boundary",
+        "preserve two interfaces"
+      ],
+      "variables": [
+        "Psi",
+        "geometric_interface",
+        "informational_interface",
+        "gravity",
+        "quantum_probability"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 4,
+      "OrderedList": 1,
+      "Para": 9
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 8,
+      "figure": 1,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded symmetry-cascade bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0031"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R01597",
+    "source_ledger_span": [
+      "P0R01582",
+      "P0R01596"
+    ],
+    "source_record_count": 15,
+    "spec_count": 4,
+    "spec_keys": [
+      "symmetry_cascade.cascade_opening",
+      "symmetry_cascade.three_breaks_architecture",
+      "symmetry_cascade.psi_field_potential_stability",
+      "symmetry_cascade.world_interface_summary"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Symmetry Cascade Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Information Geometry & Active Inference' preserves Paper 0 records P0R05705-P0R05708 without empirical validation claims.",
+      "claim_boundary": "source-bounded information geometry active inference source-accounting bridge; not validation evidence",
+      "context_id": "information_geometry_active_inference",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05705-P0R05708"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "information_geometry_active_inference.information_geometry_active_inference",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "information_geometry_active_inference must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Information Geometry & Active Inference is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Information Geometry & Active Inference",
+      "source_block_indices": [
+        5705,
+        5706,
+        5707,
+        5708,
+        5709,
+        5710,
+        5711,
+        5712
+      ],
+      "source_equation_ids": [
+        "P0R05705:information_geometry_active_inference",
+        "P0R05706:information_geometry_active_inference",
+        "P0R05707:information_geometry_active_inference",
+        "P0R05708:information_geometry_active_inference"
+      ],
+      "source_formulae": [
+        "P0R05705: Information Geometry & Active Inference",
+        "P0R05706: \"generative models and free-energy minimization\" -> (Friston, 2010; Buckley et al., 2017)",
+        "P0R05707: \"Fisher information metric in field theories\" -> (Frieden, 2004; Amari, 2016)",
+        "P0R05708: \"active inference scaling from cell to cosmos\" -> (Ramstead et al., 2018)"
+      ],
+      "source_ledger_ids": [
+        "P0R05705",
+        "P0R05706",
+        "P0R05707",
+        "P0R05708",
+        "P0R05709",
+        "P0R05710",
+        "P0R05711",
+        "P0R05712"
+      ],
+      "source_record_ids": [
+        "P0B05705",
+        "P0B05706",
+        "P0B05707",
+        "P0B05708",
+        "P0B05709",
+        "P0B05710",
+        "P0B05711",
+        "P0B05712"
+      ],
+      "test_protocols": [
+        "preserve Information Geometry & Active Inference source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.information_geometry_active_inference.information_geometry_active_inference",
+      "validation_targets": [
+        "preserve records P0R05705-P0R05708"
+      ],
+      "variables": [
+        "information_geometry_active_inference"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Topology & Qualia' preserves Paper 0 records P0R05709-P0R05712 without empirical validation claims.",
+      "claim_boundary": "source-bounded information geometry active inference source-accounting bridge; not validation evidence",
+      "context_id": "topology_qualia",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05709-P0R05712"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "information_geometry_active_inference.topology_qualia",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "topology_qualia must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Topology & Qualia is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Information Geometry & Active Inference",
+      "source_block_indices": [
+        5705,
+        5706,
+        5707,
+        5708,
+        5709,
+        5710,
+        5711,
+        5712
+      ],
+      "source_equation_ids": [
+        "P0R05709:topology_qualia",
+        "P0R05710:topology_qualia",
+        "P0R05711:topology_qualia",
+        "P0R05712:topology_qualia"
+      ],
+      "source_formulae": [
+        "P0R05709: Topology & Qualia",
+        "P0R05710: \"topological data analysis as a tool for neuroscience\" -> (Giusti et al., 2016; Sizemore et al., 2019)",
+        "P0R05711: \"persistent homology of neural state spaces\" -> (Petri et al., 2014; Saggar et al., 2018)",
+        "P0R05712: \"geometry of affective states\" -> (Kringelbach & Deco, 2020)"
+      ],
+      "source_ledger_ids": [
+        "P0R05705",
+        "P0R05706",
+        "P0R05707",
+        "P0R05708",
+        "P0R05709",
+        "P0R05710",
+        "P0R05711",
+        "P0R05712"
+      ],
+      "source_record_ids": [
+        "P0B05705",
+        "P0B05706",
+        "P0B05707",
+        "P0B05708",
+        "P0B05709",
+        "P0B05710",
+        "P0B05711",
+        "P0B05712"
+      ],
+      "test_protocols": [
+        "preserve Topology & Qualia source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.information_geometry_active_inference.topology_qualia",
+      "validation_targets": [
+        "preserve records P0R05709-P0R05712"
+      ],
+      "variables": [
+        "topology_qualia"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 8
+    },
+    "claim_boundary": "source-bounded information geometry active inference source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05713",
+    "source_ledger_span": [
+      "P0R05705",
+      "P0R05712"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "information_geometry_active_inference.information_geometry_active_inference",
+      "information_geometry_active_inference.topology_qualia"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Information Geometry & Active Inference Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

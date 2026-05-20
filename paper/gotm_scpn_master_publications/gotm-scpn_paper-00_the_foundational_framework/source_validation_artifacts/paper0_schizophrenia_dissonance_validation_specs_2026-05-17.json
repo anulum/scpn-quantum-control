@@ -1,0 +1,268 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Schizophrenia (Dissonance)' preserves Paper 0 records P0R04630-P0R04632 without empirical validation claims.",
+      "claim_boundary": "source-bounded schizophrenia dissonance source-accounting bridge; not validation evidence",
+      "context_id": "schizophrenia_dissonance",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04630-P0R04632"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "schizophrenia_dissonance.schizophrenia_dissonance",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "schizophrenia_dissonance must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Schizophrenia (Dissonance) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Clinical Implications: The Disordered Brain as a Disordered Architecture > Schizophrenia (Dissonance)",
+      "source_block_indices": [
+        4630,
+        4631,
+        4632,
+        4633,
+        4634,
+        4635,
+        4636,
+        4637,
+        4638,
+        4639
+      ],
+      "source_equation_ids": [
+        "P0R04630:schizophrenia_dissonance",
+        "P0R04631:schizophrenia_dissonance",
+        "P0R04632:schizophrenia_dissonance"
+      ],
+      "source_formulae": [
+        "P0R04630: Schizophrenia (Dissonance)",
+        "P0R04631: Schizophrenia is framed within the SCPN as a profound failure of Hierarchical Predictive Coding, a disorder of Dissonance. The core deficit lies in the brain's inability to correctly modulate the precision of prediction errors relative to its internal priors.",
+        "P0R04632: Mechanism: In a healthy system, top-down predictions normally attenuate the neural response to expected sensory input. In schizophrenia, this attenuation fails. The system is unable to dampen the gain on bottom-up sensory signals, leading to a constant flood of high-precision prediction errors. This results in aberrant salience, where mundane or irrelevant stimuli are imbued with profound, often threatening, significance. | L5 Impact: This constant error bombardment leads to a fragmentation of the Layer 5 \"Strange Loop\" (I=Model(I)). The generative model of the Self is perpetually and erroneously updated by what is essentially noise, leading to a catastrophic failure to distinguish self-generated thoughts from external reality. This manifests as the positive symptoms of the disorder: Hallucinations: The experience of sensory events (e.g., voices) that are actually top-down predictions from a corrupted generative model, which are not suppressed and are thus misinterpreted as high-precision sensory evidence. | Delusions: The cognitive attempt to create a narrative that can account for the persistent state of aberrant salience and prediction error."
+      ],
+      "source_ledger_ids": [
+        "P0R04630",
+        "P0R04631",
+        "P0R04632",
+        "P0R04633",
+        "P0R04634",
+        "P0R04635",
+        "P0R04636",
+        "P0R04637",
+        "P0R04638",
+        "P0R04639"
+      ],
+      "source_record_ids": [
+        "P0B04630",
+        "P0B04631",
+        "P0B04632",
+        "P0B04633",
+        "P0B04634",
+        "P0B04635",
+        "P0B04636",
+        "P0B04637",
+        "P0B04638",
+        "P0B04639"
+      ],
+      "test_protocols": [
+        "preserve Schizophrenia (Dissonance) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.schizophrenia_dissonance.schizophrenia_dissonance",
+      "validation_targets": [
+        "preserve records P0R04630-P0R04632"
+      ],
+      "variables": [
+        "schizophrenia_dissonance"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Depression (Dyscritia & Dissonance)' preserves Paper 0 records P0R04633-P0R04635 without empirical validation claims.",
+      "claim_boundary": "source-bounded schizophrenia dissonance source-accounting bridge; not validation evidence",
+      "context_id": "depression_dyscritia_dissonance",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04633-P0R04635"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "schizophrenia_dissonance.depression_dyscritia_dissonance",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "depression_dyscritia_dissonance must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Depression (Dyscritia & Dissonance) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Clinical Implications: The Disordered Brain as a Disordered Architecture > Schizophrenia (Dissonance)",
+      "source_block_indices": [
+        4630,
+        4631,
+        4632,
+        4633,
+        4634,
+        4635,
+        4636,
+        4637,
+        4638,
+        4639
+      ],
+      "source_equation_ids": [
+        "P0R04633:depression_dyscritia_dissonance",
+        "P0R04634:depression_dyscritia_dissonance",
+        "P0R04635:depression_dyscritia_dissonance"
+      ],
+      "source_formulae": [
+        "P0R04633: Depression (Dyscritia & Dissonance)",
+        "P0R04634: Major depression is understood as a synergistic failure of both Dyscritia and Dissonance.",
+        "P0R04635: Dyscritia: The brain network shifts into a stable subcritical state (sigma<1). This is the neurodynamic basis for the psychomotor retardation, cognitive slowing, and profound inertia of depression. The system becomes trapped in a rigid, low-complexity attractor state, unable to flexibly transition to new cognitive or emotional states. | Dissonance: This subcritical state is coupled with the entrenchment of overly rigid and pessimistic priors within the brain's generative model. Neurobiologically, this is instantiated by the hyperactivity and hyperconnectivity of the Default Mode Network (DMN), the seat of the narrative self. This DMN hyperactivity is the direct correlate of rumination-the inescapable loop of negative self-referential thought. | The Geometry of Suffering: The combination of a rigid, subcritical network state and inflexible negative priors creates a pathological feedback loop. The system is unable to generate actions or update beliefs to resolve prediction errors, leading to a sustained state of extremely high Variational Free Energy (F). Within the SCPN, this is the formal definition of suffering: a state of high, irreducible Dissonance, which corresponds geometrically to a rigid, negatively curved manifold in the L5 state space."
+      ],
+      "source_ledger_ids": [
+        "P0R04630",
+        "P0R04631",
+        "P0R04632",
+        "P0R04633",
+        "P0R04634",
+        "P0R04635",
+        "P0R04636",
+        "P0R04637",
+        "P0R04638",
+        "P0R04639"
+      ],
+      "source_record_ids": [
+        "P0B04630",
+        "P0B04631",
+        "P0B04632",
+        "P0B04633",
+        "P0B04634",
+        "P0B04635",
+        "P0B04636",
+        "P0B04637",
+        "P0B04638",
+        "P0B04639"
+      ],
+      "test_protocols": [
+        "preserve Depression (Dyscritia & Dissonance) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.schizophrenia_dissonance.depression_dyscritia_dissonance",
+      "validation_targets": [
+        "preserve records P0R04633-P0R04635"
+      ],
+      "variables": [
+        "depression_dyscritia_dissonance"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Alzheimer's Disease (Decoherence Cascade)' preserves Paper 0 records P0R04636-P0R04639 without empirical validation claims.",
+      "claim_boundary": "source-bounded schizophrenia dissonance source-accounting bridge; not validation evidence",
+      "context_id": "alzheimer_s_disease_decoherence_cascade",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04636-P0R04639"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "schizophrenia_dissonance.alzheimer_s_disease_decoherence_cascade",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "alzheimer_s_disease_decoherence_cascade must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Alzheimer's Disease (Decoherence Cascade) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Clinical Implications: The Disordered Brain as a Disordered Architecture > Schizophrenia (Dissonance)",
+      "source_block_indices": [
+        4630,
+        4631,
+        4632,
+        4633,
+        4634,
+        4635,
+        4636,
+        4637,
+        4638,
+        4639
+      ],
+      "source_equation_ids": [
+        "P0R04636:alzheimer_s_disease_decoherence_cascade",
+        "P0R04637:alzheimer_s_disease_decoherence_cascade",
+        "P0R04638:alzheimer_s_disease_decoherence_cascade",
+        "P0R04639:alzheimer_s_disease_decoherence_cascade"
+      ],
+      "source_formulae": [
+        "P0R04636: Alzheimer's Disease (Decoherence Cascade)",
+        "P0R04637: Alzheimer's Disease is the archetypal disorder of Decoherence-a catastrophic failure that begins at the most foundational level of the biological substrate and propagates upward through the entire architecture.",
+        "P0R04638: L1 Substrate Failure: The pathology begins with the degradation of the Layer 1 quantum substrate. Specifically, the aggregation of tau protein disrupts the geometric integrity of the microtubule (MT) lattice. | MS-QEC Failure: This structural damage leads to a catastrophic failure of the Multi-Scale Quantum Error Correction (MS-QEC) mechanism. The protective energy gap (Delta1.64 eV) collapses, leaving quantum information vulnerable to thermal decoherence. | The Cascade: This foundational decoherence triggers a fatal cascade up the hierarchy: L4 Desynchronization: The loss of quantum coherence at the substrate level disrupts the precise timing and phase relationships required for large-scale neural synchronisation. The dynamics of the Unified Phase Dynamics Equation (UPDE) break down, leading to a loss of coherent brain rhythms. | L5 Dissolution: The coherent, soliton-like field configuration of the Self (O) cannot be sustained without the underlying synchrony of Layer 4. As the L4 network desynchronizes, the L5 Self-soliton dissolves. This corresponds to the progressive and devastating loss of self-awareness, memory, and identity that characterises the progression of the disease.",
+        "P0R04639: The SCPN framework provides a detailed, mechanistic, and empirically tractable model of the brain as a fully embodied, multi-scale engine of consciousness, offering a unified lens through which to understand its profound disorders."
+      ],
+      "source_ledger_ids": [
+        "P0R04630",
+        "P0R04631",
+        "P0R04632",
+        "P0R04633",
+        "P0R04634",
+        "P0R04635",
+        "P0R04636",
+        "P0R04637",
+        "P0R04638",
+        "P0R04639"
+      ],
+      "source_record_ids": [
+        "P0B04630",
+        "P0B04631",
+        "P0B04632",
+        "P0B04633",
+        "P0B04634",
+        "P0B04635",
+        "P0B04636",
+        "P0B04637",
+        "P0B04638",
+        "P0B04639"
+      ],
+      "test_protocols": [
+        "preserve Alzheimer's Disease (Decoherence Cascade) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.schizophrenia_dissonance.alzheimer_s_disease_decoherence_cascade",
+      "validation_targets": [
+        "preserve records P0R04636-P0R04639"
+      ],
+      "variables": [
+        "alzheimer_s_disease_decoherence_cascade"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 3,
+      "Header": 3,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "mechanism": 1,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded schizophrenia dissonance source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04640",
+    "source_ledger_span": [
+      "P0R04630",
+      "P0R04639"
+    ],
+    "source_record_count": 10,
+    "spec_count": 3,
+    "spec_keys": [
+      "schizophrenia_dissonance.schizophrenia_dissonance",
+      "schizophrenia_dissonance.depression_dyscritia_dissonance",
+      "schizophrenia_dissonance.alzheimer_s_disease_decoherence_cascade"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Schizophrenia (Dissonance) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

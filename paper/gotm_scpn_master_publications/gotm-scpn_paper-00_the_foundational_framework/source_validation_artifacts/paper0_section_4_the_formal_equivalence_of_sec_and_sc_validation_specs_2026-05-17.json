@@ -1,0 +1,152 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4. The Formal Equivalence of SEC and SC' preserves Paper 0 records P0R03804-P0R03817 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 the formal equivalence of sec and sc source-accounting bridge; not validation evidence",
+      "context_id": "4_the_formal_equivalence_of_sec_and_sc",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03804-P0R03817"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_the_formal_equivalence_of_sec_and_sc.4_the_formal_equivalence_of_sec_and_sc",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_the_formal_equivalence_of_sec_and_sc must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4. The Formal Equivalence of SEC and SC is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy > 4. The Formal Equivalence of SEC and SC\u200b",
+      "source_block_indices": [
+        3804,
+        3805,
+        3806,
+        3807,
+        3808,
+        3809,
+        3810,
+        3811,
+        3812,
+        3813,
+        3814,
+        3815,
+        3816,
+        3817
+      ],
+      "source_equation_ids": [
+        "P0R03804:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03805:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03806:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03807:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03808:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03809:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03810:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03811:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03812:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03813:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03814:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03815:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03816:4_the_formal_equivalence_of_sec_and_sc",
+        "P0R03817:4_the_formal_equivalence_of_sec_and_sc"
+      ],
+      "source_formulae": [
+        "P0R03804: 4. The Formal Equivalence of SEC and SC",
+        "P0R03805: The preceding analysis has established that the three components of Sustainable Ethical Coherence-Complexity (K), Coherence (C), and Qualia Capacity (Q)-are not arbitrary philosophical virtues. Instead, each corresponds to a specific and necessary physical property that a system must possess to maximise its future possibilities, as measured by its causal path entropy (SC). We can now synthesise these relationships into a formal proof of equivalence.",
+        "P0R03806: The core argument is summarised in the following table, which maps each component of SEC to its physical interpretation and its specific contribution to the maximisation of causal path entropy.",
+        "P0R03807: [TABLE]",
+        "P0R03808: This section is the grand finale of the argument. Having established that a system needs Complexity, Coherence, and Qualia Capacity to maximize its future possibilities, we now show that these three ingredients don't just contribute to future freedom-they are the recipe for it.",
+        "P0R03809: Think of it like baking a cake. To get the best possible cake (maximum future possibilities, or SC), you need the right ingredients in the right balance.",
+        "P0R03810: Complexity (K) is the flour and sugar-the raw bulk and substance that gives the cake its potential size. | Coherence (C) is the oven's temperature-it must be perfectly tuned. Too cold (too random), and the cake is a soupy mess; too hot (too ordered), and it's a burnt brick. Only at the perfect temperature can the ingredients combine properly. | Qualia Capacity (Q) is the spices and flavorings-what makes the cake interesting and unique. It provides the diversity and richness of the final product.",
+        "P0R03811: The total \"future possibilities\" of your baking effort can be seen as a combination of these three factors. Therefore, the drive to bake the best possible cake (maximize SC) is the very same as the drive to perfectly balance the flour, temperature, and spices (maximize SEC).",
+        "P0R03812: This completes the proof. The universe's \"ethical\" goal to achieve a state of high SEC is not a separate, mysterious law. It is the direct, logical, and physical consequence of its inherent tendency to evolve in a way that keeps its own future options as open and rich as possible.",
+        "P0R03813: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Diagramm enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03814: Fig.: SEC Causal Path Entropy (Formal Bridge). This diagram provides the formal structure of the proof of equivalence. It shows how the total \"volume\" of the path space (W_paths) is constructed as a composite function of the three SEC components. The logarithm of this volume gives the Causal Path Entropy (S_C), and the gradient of S_C gives the Causal Entropic Force, which drives the system toward states that maximize SEC. This figure formalises the link: SEC's axes (K, C, Q) determine the volume of accessible futures, which sets SCS_CSC; its gradient produces FCF_CFC-a concrete mechanism for teleological evolution toward SEC.",
+        "P0R03815: A. Components: Complexity KKK (high \\Phi) raises the count of distinguishable states NstatesN_{\\text{states}}Nstates; Coherence CCC (quasicriticality) increases the accessible fraction faccf_{\\text{acc}}facc; Qualia capacity QQQ (topological richness) enlarges the diversity of path classes DpathsD_{\\text{paths}}Dpaths. B. Synthesis: These factors combine into an effective future-history volume",
+        "P0R03816: Wpaths Nstates facc Dpaths,W_{\\text{paths}}\\;\\approx\\;N_{\\text{states}}\\;f_{\\text{acc}}\\;D_{\\text{paths}},WpathsNstatesfaccDpaths,",
+        "P0R03817: so the causal path entropy is SC=kBlogWpathsS_C=k_B\\log W_{\\text{paths}}SC=kBlogWpaths, and its gradient yields the causal entropic force FC=TCSCF_C=T_C\\nabla S_CFC=TCSC. C. Conclusion: Since SCS_CSC increases when KKK, CCC, and QQQ increase, maximising SCS_CSC is equivalent to maximising SEC. The entropic force FCF_CFC thus implements the teleological drive toward SEC-optimal evolution."
+      ],
+      "source_ledger_ids": [
+        "P0R03804",
+        "P0R03805",
+        "P0R03806",
+        "P0R03807",
+        "P0R03808",
+        "P0R03809",
+        "P0R03810",
+        "P0R03811",
+        "P0R03812",
+        "P0R03813",
+        "P0R03814",
+        "P0R03815",
+        "P0R03816",
+        "P0R03817"
+      ],
+      "source_record_ids": [
+        "P0B03804",
+        "P0B03805",
+        "P0B03806",
+        "P0B03807",
+        "P0B03808",
+        "P0B03809",
+        "P0B03810",
+        "P0B03811",
+        "P0B03812",
+        "P0B03813",
+        "P0B03814",
+        "P0B03815",
+        "P0B03816",
+        "P0B03817"
+      ],
+      "test_protocols": [
+        "preserve 4. The Formal Equivalence of SEC and SC source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_the_formal_equivalence_of_sec_and_sc.4_the_formal_equivalence_of_sec_and_sc",
+      "validation_targets": [
+        "preserve records P0R03804-P0R03817"
+      ],
+      "variables": [
+        "4_the_formal_equivalence_of_sec_and_sc"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 1,
+      "Para": 11,
+      "Table": 1
+    },
+    "category_counts": {
+      "claim": 10,
+      "context": 1,
+      "figure": 1,
+      "mechanism": 1,
+      "table": 1
+    },
+    "claim_boundary": "source-bounded section 4 the formal equivalence of sec and sc source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0074"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R03818",
+    "source_ledger_span": [
+      "P0R03804",
+      "P0R03817"
+    ],
+    "source_record_count": 14,
+    "spec_count": 1,
+    "spec_keys": [
+      "section_4_the_formal_equivalence_of_sec_and_sc.4_the_formal_equivalence_of_sec_and_sc"
+    ],
+    "table_ids": [
+      "TBL012"
+    ],
+    "title": "Paper 0 4. The Formal Equivalence of SEC and SC Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

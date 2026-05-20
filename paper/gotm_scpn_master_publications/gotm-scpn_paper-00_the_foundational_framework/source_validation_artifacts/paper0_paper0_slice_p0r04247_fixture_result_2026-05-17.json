@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded paper0 slice p0r04247 source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "5_1_the_em_interface_an_alp_mediated_bridge": "5_1_the_em_interface_an_alp_mediated_bridge_source_boundary",
+    "an_alp_mediated_bridge": "an_alp_mediated_bridge_source_boundary",
+    "p0r04247": "p0r04247_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "P0R04247",
+    "component_2": "5.1 The EM Interface: An ALP-Mediated Bridge",
+    "component_3": "An ALP-Mediated Bridge",
+    "component_count": "3",
+    "next_boundary": "P0R04257",
+    "section": "",
+    "source_span": "P0R04247-P0R04256"
+  },
+  "next_source_boundary": "P0R04257",
+  "null_controls": {
+    "5_1_the_em_interface_an_alp_mediated_bridge_is_not_empirical_validation_evidence": 1.0,
+    "an_alp_mediated_bridge_is_not_empirical_validation_evidence": 1.0,
+    "p0r04247_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded paper0 slice p0r04247 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_paper0_slice_p0r04247_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04247",
+      "P0R04248",
+      "P0R04249",
+      "P0R04250",
+      "P0R04251",
+      "P0R04252",
+      "P0R04253",
+      "P0R04254",
+      "P0R04255",
+      "P0R04256"
+    ],
+    "source_ledger_span": [
+      "P0R04247",
+      "P0R04256"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04247",
+    "P0R04256"
+  ],
+  "source_record_count": 10
+}

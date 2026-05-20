@@ -1,0 +1,257 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. The Geometry of Functional Dynamics (L4):' preserves Paper 0 records P0R04840-P0R04843 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the geometry of functional dynamics l4 source-accounting bridge; not validation evidence",
+      "context_id": "2_the_geometry_of_functional_dynamics_l4",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04840-P0R04843"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_geometry_of_functional_dynamics_l4.2_the_geometry_of_functional_dynamics_l4",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_the_geometry_of_functional_dynamics_l4 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. The Geometry of Functional Dynamics (L4): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. Macro-Scale Geometry: Networks and Dynamics (L4) > 2. The Geometry of Functional Dynamics (L4):",
+      "source_block_indices": [
+        4840,
+        4841,
+        4842,
+        4843,
+        4844,
+        4845,
+        4846,
+        4847,
+        4848
+      ],
+      "source_equation_ids": [
+        "P0R04840:2_the_geometry_of_functional_dynamics_l4",
+        "P0R04841:2_the_geometry_of_functional_dynamics_l4",
+        "P0R04842:2_the_geometry_of_functional_dynamics_l4",
+        "P0R04843:2_the_geometry_of_functional_dynamics_l4"
+      ],
+      "source_formulae": [
+        "P0R04840: 2. The Geometry of Functional Dynamics (L4):",
+        "P0R04841: The dynamics of the brain (governed by the UPDE) unfold in a high-dimensional phase space.",
+        "P0R04842: The Synchronisation Manifold (MSync): Coherent brain activity corresponds to the system collapsing onto a lower-dimensional geometric structure (MSync) within this phase space. | The Geometry of Information Flow (Travelling Waves): Activity propagates across the cortex as Travelling Waves. The spatial geometry of these waves (velocity, direction, curvature) defines the routing of information, implementing the HPC architecture dynamically. | Fractal Dynamics (Quasicriticality): The Quasicritical state (sigma1) results in a Scale-Free (Fractal) geometry of activity in both space (neuronal avalanches) and time (LRTC), optimising information transfer across the geometric scaffold.",
+        "P0R04843: P0R04843"
+      ],
+      "source_ledger_ids": [
+        "P0R04840",
+        "P0R04841",
+        "P0R04842",
+        "P0R04843",
+        "P0R04844",
+        "P0R04845",
+        "P0R04846",
+        "P0R04847",
+        "P0R04848"
+      ],
+      "source_record_ids": [
+        "P0B04840",
+        "P0B04841",
+        "P0B04842",
+        "P0B04843",
+        "P0B04844",
+        "P0B04845",
+        "P0B04846",
+        "P0B04847",
+        "P0B04848"
+      ],
+      "test_protocols": [
+        "preserve 2. The Geometry of Functional Dynamics (L4): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_geometry_of_functional_dynamics_l4.2_the_geometry_of_functional_dynamics_l4",
+      "validation_targets": [
+        "preserve records P0R04840-P0R04843"
+      ],
+      "variables": [
+        "2_the_geometry_of_functional_dynamics_l4"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'V. The Geometry of Cognition and Subjective Experience (L5)' preserves Paper 0 records P0R04844-P0R04845 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the geometry of functional dynamics l4 source-accounting bridge; not validation evidence",
+      "context_id": "v_the_geometry_of_cognition_and_subjective_experience_l5",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04844-P0R04845"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_geometry_of_functional_dynamics_l4.v_the_geometry_of_cognition_and_subjective_experience_l5",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "v_the_geometry_of_cognition_and_subjective_experience_l5 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "V. The Geometry of Cognition and Subjective Experience (L5) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. Macro-Scale Geometry: Networks and Dynamics (L4) > 2. The Geometry of Functional Dynamics (L4):",
+      "source_block_indices": [
+        4840,
+        4841,
+        4842,
+        4843,
+        4844,
+        4845,
+        4846,
+        4847,
+        4848
+      ],
+      "source_equation_ids": [
+        "P0R04844:v_the_geometry_of_cognition_and_subjective_experience_l5",
+        "P0R04845:v_the_geometry_of_cognition_and_subjective_experience_l5"
+      ],
+      "source_formulae": [
+        "P0R04844: V. The Geometry of Cognition and Subjective Experience (L5)",
+        "P0R04845: In L5, the geometry of the physical substrate is transduced into the intrinsic geometry of conscious experience. This is the core of the Geometric Qualia hypothesis."
+      ],
+      "source_ledger_ids": [
+        "P0R04840",
+        "P0R04841",
+        "P0R04842",
+        "P0R04843",
+        "P0R04844",
+        "P0R04845",
+        "P0R04846",
+        "P0R04847",
+        "P0R04848"
+      ],
+      "source_record_ids": [
+        "P0B04840",
+        "P0B04841",
+        "P0B04842",
+        "P0B04843",
+        "P0B04844",
+        "P0B04845",
+        "P0B04846",
+        "P0B04847",
+        "P0B04848"
+      ],
+      "test_protocols": [
+        "preserve V. The Geometry of Cognition and Subjective Experience (L5) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_geometry_of_functional_dynamics_l4.v_the_geometry_of_cognition_and_subjective_experience_l5",
+      "validation_targets": [
+        "preserve records P0R04844-P0R04845"
+      ],
+      "variables": [
+        "v_the_geometry_of_cognition_and_subjective_experience_l5"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Consciousness Manifold (M): The Geometry of Qualia' preserves Paper 0 records P0R04846-P0R04848 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the geometry of functional dynamics l4 source-accounting bridge; not validation evidence",
+      "context_id": "1_the_consciousness_manifold_m_the_geometry_of_qualia",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04846-P0R04848"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_geometry_of_functional_dynamics_l4.1_the_consciousness_manifold_m_the_geometry_of_qualia",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_consciousness_manifold_m_the_geometry_of_qualia must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Consciousness Manifold (M): The Geometry of Qualia is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. Macro-Scale Geometry: Networks and Dynamics (L4) > 2. The Geometry of Functional Dynamics (L4):",
+      "source_block_indices": [
+        4840,
+        4841,
+        4842,
+        4843,
+        4844,
+        4845,
+        4846,
+        4847,
+        4848
+      ],
+      "source_equation_ids": [
+        "P0R04846:1_the_consciousness_manifold_m_the_geometry_of_qualia",
+        "P0R04847:1_the_consciousness_manifold_m_the_geometry_of_qualia",
+        "P0R04848:1_the_consciousness_manifold_m_the_geometry_of_qualia"
+      ],
+      "source_formulae": [
+        "P0R04846: 1. The Consciousness Manifold (M): The Geometry of Qualia",
+        "P0R04847: Subjective experience (Qualia) is the intrinsic geometry of the high-dimensional neural state space (M).",
+        "P0R04848: The Metric Tensor (gmu - Distinguishability): The Fisher Information Metric defines the geometry of distinguishability between conscious states. It quantifies the \"felt distance\" between experiences. | Curvature (Valence and Intensity): The intrinsic curvature of M defines the affective quality of experience. Ricci Scalar Curvature (R): Corresponds to the intensity of the experience. | Curvature Sign: Positive curvature corresponds to high integration (low Free Energy) and positive valence. Negative curvature corresponds to fragmentation (high Free Energy) and negative valence. | Topology (bk - Richness and Structure): The topological features, quantified by Betti numbers (bk) derived via Topological Data Analysis (TDA), define the richness and structure of the conscious experience. Cognitive flexibility and altered states correspond to increased topological complexity (High bk)."
+      ],
+      "source_ledger_ids": [
+        "P0R04840",
+        "P0R04841",
+        "P0R04842",
+        "P0R04843",
+        "P0R04844",
+        "P0R04845",
+        "P0R04846",
+        "P0R04847",
+        "P0R04848"
+      ],
+      "source_record_ids": [
+        "P0B04840",
+        "P0B04841",
+        "P0B04842",
+        "P0B04843",
+        "P0B04844",
+        "P0B04845",
+        "P0B04846",
+        "P0B04847",
+        "P0B04848"
+      ],
+      "test_protocols": [
+        "preserve 1. The Consciousness Manifold (M): The Geometry of Qualia source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_geometry_of_functional_dynamics_l4.1_the_consciousness_manifold_m_the_geometry_of_qualia",
+      "validation_targets": [
+        "preserve records P0R04846-P0R04848"
+      ],
+      "variables": [
+        "1_the_consciousness_manifold_m_the_geometry_of_qualia"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 2,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 2 the geometry of functional dynamics l4 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04849",
+    "source_ledger_span": [
+      "P0R04840",
+      "P0R04848"
+    ],
+    "source_record_count": 9,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_2_the_geometry_of_functional_dynamics_l4.2_the_geometry_of_functional_dynamics_l4",
+      "section_2_the_geometry_of_functional_dynamics_l4.v_the_geometry_of_cognition_and_subjective_experience_l5",
+      "section_2_the_geometry_of_functional_dynamics_l4.1_the_consciousness_manifold_m_the_geometry_of_qualia"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. The Geometry of Functional Dynamics (L4): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

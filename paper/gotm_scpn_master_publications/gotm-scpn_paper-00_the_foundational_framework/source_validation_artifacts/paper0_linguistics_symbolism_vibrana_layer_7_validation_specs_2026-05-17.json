@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Linguistics & Symbolism (VIBRANA, Layer 7)' preserves Paper 0 records P0R05738-P0R05741 without empirical validation claims.",
+      "claim_boundary": "source-bounded linguistics symbolism vibrana layer 7 source-accounting bridge; not validation evidence",
+      "context_id": "linguistics_symbolism_vibrana_layer_7",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05738-P0R05741"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "linguistics_symbolism_vibrana_layer_7.linguistics_symbolism_vibrana_layer_7",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "linguistics_symbolism_vibrana_layer_7 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Linguistics & Symbolism (VIBRANA, Layer 7) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Linguistics & Symbolism (VIBRANA, Layer 7)",
+      "source_block_indices": [
+        5738,
+        5739,
+        5740,
+        5741,
+        5742,
+        5743,
+        5744,
+        5745
+      ],
+      "source_equation_ids": [
+        "P0R05738:linguistics_symbolism_vibrana_layer_7",
+        "P0R05739:linguistics_symbolism_vibrana_layer_7",
+        "P0R05740:linguistics_symbolism_vibrana_layer_7",
+        "P0R05741:linguistics_symbolism_vibrana_layer_7"
+      ],
+      "source_formulae": [
+        "P0R05738: Linguistics & Symbolism (VIBRANA, Layer 7)",
+        "P0R05739: \"language as operator / neural entrainment to sound\" -> Patel (2008, Music, Language & the Brain).",
+        "P0R05740: \"sacred geometry in cognitive science\" -> R. Penrose (The Road to Reality, sections on tilings & quasicrystals).",
+        "P0R05741: \"semiotics as structural operators\" -> Peirce (1931-58 Collected Papers)."
+      ],
+      "source_ledger_ids": [
+        "P0R05738",
+        "P0R05739",
+        "P0R05740",
+        "P0R05741",
+        "P0R05742",
+        "P0R05743",
+        "P0R05744",
+        "P0R05745"
+      ],
+      "source_record_ids": [
+        "P0B05738",
+        "P0B05739",
+        "P0B05740",
+        "P0B05741",
+        "P0B05742",
+        "P0B05743",
+        "P0B05744",
+        "P0B05745"
+      ],
+      "test_protocols": [
+        "preserve Linguistics & Symbolism (VIBRANA, Layer 7) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.linguistics_symbolism_vibrana_layer_7.linguistics_symbolism_vibrana_layer_7",
+      "validation_targets": [
+        "preserve records P0R05738-P0R05741"
+      ],
+      "variables": [
+        "linguistics_symbolism_vibrana_layer_7"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Ecology & Gaia' preserves Paper 0 records P0R05742-P0R05745 without empirical validation claims.",
+      "claim_boundary": "source-bounded linguistics symbolism vibrana layer 7 source-accounting bridge; not validation evidence",
+      "context_id": "ecology_gaia",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05742-P0R05745"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "linguistics_symbolism_vibrana_layer_7.ecology_gaia",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ecology_gaia must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Ecology & Gaia is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Linguistics & Symbolism (VIBRANA, Layer 7)",
+      "source_block_indices": [
+        5738,
+        5739,
+        5740,
+        5741,
+        5742,
+        5743,
+        5744,
+        5745
+      ],
+      "source_equation_ids": [
+        "P0R05742:ecology_gaia",
+        "P0R05743:ecology_gaia",
+        "P0R05744:ecology_gaia",
+        "P0R05745:ecology_gaia"
+      ],
+      "source_formulae": [
+        "P0R05742: Ecology & Gaia",
+        "P0R05743: Lovelock (1972, Gaia hypothesis) -> original source, ties into L6/L12.",
+        "P0R05744: Margulis (1998, Symbiotic Planet) -> symbiogenesis as core to planetary integration.",
+        "P0R05745: Ulanowicz (1997, Ecology, the Ascendent Perspective) -> entropy, complexity, and ecosystem resilience."
+      ],
+      "source_ledger_ids": [
+        "P0R05738",
+        "P0R05739",
+        "P0R05740",
+        "P0R05741",
+        "P0R05742",
+        "P0R05743",
+        "P0R05744",
+        "P0R05745"
+      ],
+      "source_record_ids": [
+        "P0B05738",
+        "P0B05739",
+        "P0B05740",
+        "P0B05741",
+        "P0B05742",
+        "P0B05743",
+        "P0B05744",
+        "P0B05745"
+      ],
+      "test_protocols": [
+        "preserve Ecology & Gaia source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.linguistics_symbolism_vibrana_layer_7.ecology_gaia",
+      "validation_targets": [
+        "preserve records P0R05742-P0R05745"
+      ],
+      "variables": [
+        "ecology_gaia"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded linguistics symbolism vibrana layer 7 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05746",
+    "source_ledger_span": [
+      "P0R05738",
+      "P0R05745"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "linguistics_symbolism_vibrana_layer_7.linguistics_symbolism_vibrana_layer_7",
+      "linguistics_symbolism_vibrana_layer_7.ecology_gaia"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Linguistics & Symbolism (VIBRANA, Layer 7) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

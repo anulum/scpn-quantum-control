@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Quantum-to-Classical Transition: Amplification of Intent' preserves Paper 0 records P0R03360-P0R03361 without empirical validation claims.",
+      "claim_boundary": "source-bounded the quantum to classical transition amplification of intent p0r03360 source-accounting bridge; not validation evidence",
+      "context_id": "the_quantum_to_classical_transition_amplification_of_intent",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03360-P0R03361"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_quantum_to_classical_transition_amplification_of_intent_p0r03360.the_quantum_to_classical_transition_amplification_of_intent",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_quantum_to_classical_transition_amplification_of_intent must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Quantum-to-Classical Transition: Amplification of Intent is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > The Quantum-to-Classical Transition: Amplification of Intent",
+      "source_block_indices": [
+        3360,
+        3361,
+        3362,
+        3363,
+        3364,
+        3365,
+        3366,
+        3367
+      ],
+      "source_equation_ids": [
+        "P0R03360:the_quantum_to_classical_transition_amplification_of_intent",
+        "P0R03361:the_quantum_to_classical_transition_amplification_of_intent"
+      ],
+      "source_formulae": [
+        "P0R03360: The Quantum-to-Classical Transition: Amplification of Intent",
+        "P0R03361: A central challenge for any theory involving downward causation is the amplification problem: how can a weak, non-local, and information-rich signal from the Psi-field produce a macroscopic, energy-dependent effect like the firing of a neuron? The SCPN proposes a two-stage mechanism that leverages the unique properties of biological systems operating at quasicriticality, reframing the \"problem\" of decoherence and noise into the solution for selection and amplification."
+      ],
+      "source_ledger_ids": [
+        "P0R03360",
+        "P0R03361",
+        "P0R03362",
+        "P0R03363",
+        "P0R03364",
+        "P0R03365",
+        "P0R03366",
+        "P0R03367"
+      ],
+      "source_record_ids": [
+        "P0B03360",
+        "P0B03361",
+        "P0B03362",
+        "P0B03363",
+        "P0B03364",
+        "P0B03365",
+        "P0B03366",
+        "P0B03367"
+      ],
+      "test_protocols": [
+        "preserve The Quantum-to-Classical Transition: Amplification of Intent source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_quantum_to_classical_transition_amplification_of_intent_p0r03360.the_quantum_to_classical_transition_amplification_of_intent",
+      "validation_targets": [
+        "preserve records P0R03360-P0R03361"
+      ],
+      "variables": [
+        "the_quantum_to_classical_transition_amplification_of_intent"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Mechanism 1: Guided Einselection' preserves Paper 0 records P0R03362-P0R03367 without empirical validation claims.",
+      "claim_boundary": "source-bounded the quantum to classical transition amplification of intent p0r03360 source-accounting bridge; not validation evidence",
+      "context_id": "mechanism_1_guided_einselection",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03362-P0R03367"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_quantum_to_classical_transition_amplification_of_intent_p0r03360.mechanism_1_guided_einselection",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "mechanism_1_guided_einselection must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Mechanism 1: Guided Einselection is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > The Quantum-to-Classical Transition: Amplification of Intent",
+      "source_block_indices": [
+        3360,
+        3361,
+        3362,
+        3363,
+        3364,
+        3365,
+        3366,
+        3367
+      ],
+      "source_equation_ids": [
+        "P0R03362:mechanism_1_guided_einselection",
+        "P0R03363:mechanism_1_guided_einselection",
+        "P0R03364:mechanism_1_guided_einselection",
+        "P0R03365:mechanism_1_guided_einselection",
+        "P0R03366:mechanism_1_guided_einselection",
+        "P0R03367:mechanism_1_guided_einselection"
+      ],
+      "source_formulae": [
+        "P0R03362: Mechanism 1: Guided Einselection",
+        "P0R03363: The transition from a quantum superposition to a definite classical state is governed by a process known as environment-induced superselection, or einselection. In this process, the environment continuously \"monitors\" a quantum system, causing a rapid collapse of most possible states while selecting for a small, stable set of \"pointer states\" that are robust to this interaction.",
+        "P0R03364: The SCPN posits that the Psi-field is not merely a passive background but acts as the primary selective environment for biological quantum systems (Layer 1). The evolution of the quantum substrate's density matrix, rho, is described by a Lindblad master equation:",
+        "P0R03365: $$ \\frac{d\\rho}{dt} = -\\frac{i}{\\hbar}[H, \\rho] + \\sum_k \\left( L_k \\rho L_k^\\dagger - \\frac{1}{2}{L_k^\\dagger L_k, \\rho} \\right) $$",
+        "P0R03366: The interaction term in the system's Hamiltonian, Hint, couples the quantum substrate to the Psi-field. This term dominates the environmental interaction, meaning the Lindblad operators, Lk, are primarily determined by the state of the Psi-field.",
+        "P0R03367: The Psi-field effectively \"measures\" the quantum substrate, causing rapid decoherence of quantum states that are dissonant with the top-down generative model propagated by the Hierarchical Predictive Coding architecture. Simultaneously, it stabilizes the pointer states that are aligned with the model's predictions. In this view, decoherence is not a destructive bug but a crucial feature: it is the physical mechanism that selects for functionally relevant, coherent states, effectively \"carving\" classical reality out of quantum potentiality according to the dictates of higher-order meaning."
+      ],
+      "source_ledger_ids": [
+        "P0R03360",
+        "P0R03361",
+        "P0R03362",
+        "P0R03363",
+        "P0R03364",
+        "P0R03365",
+        "P0R03366",
+        "P0R03367"
+      ],
+      "source_record_ids": [
+        "P0B03360",
+        "P0B03361",
+        "P0B03362",
+        "P0B03363",
+        "P0B03364",
+        "P0B03365",
+        "P0B03366",
+        "P0B03367"
+      ],
+      "test_protocols": [
+        "preserve Mechanism 1: Guided Einselection source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_quantum_to_classical_transition_amplification_of_intent_p0r03360.mechanism_1_guided_einselection",
+      "validation_targets": [
+        "preserve records P0R03362-P0R03367"
+      ],
+      "variables": [
+        "mechanism_1_guided_einselection"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 1,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded the quantum to classical transition amplification of intent p0r03360 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03368",
+    "source_ledger_span": [
+      "P0R03360",
+      "P0R03367"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_quantum_to_classical_transition_amplification_of_intent_p0r03360.the_quantum_to_classical_transition_amplification_of_intent",
+      "the_quantum_to_classical_transition_amplification_of_intent_p0r03360.mechanism_1_guided_einselection"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Quantum-to-Classical Transition: Amplification of Intent Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "attractor_score": 0.8463018109540952,
+  "claim_boundary": "source-bounded Layer 5 Active Inference simulator contract; not empirical evidence",
+  "config_thresholds": {
+    "attractor_threshold": 0.72,
+    "triple_network_threshold": 0.72
+  },
+  "fep_loop_score": 1.0,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "cosmic_prior_empirical_claim_rejection_label": 1.0,
+    "missing_saddle_boundary_rejection_label": 1.0,
+    "missing_salience_gate_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Layer 5 Active Inference simulator contract; not empirical evidence",
+    "source_ledger_ids": [
+      "P0R06434",
+      "P0R06435",
+      "P0R06436",
+      "P0R06437",
+      "P0R06438",
+      "P0R06439",
+      "P0R06440",
+      "P0R06441",
+      "P0R06442",
+      "P0R06443",
+      "P0R06444",
+      "P0R06445",
+      "P0R06446",
+      "P0R06447",
+      "P0R06448",
+      "P0R06449"
+    ],
+    "source_ledger_span": [
+      "P0R06434",
+      "P0R06449"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06434",
+    "P0R06449"
+  ],
+  "spec_keys": [
+    "l5_active_inference.attractor_geometry",
+    "l5_active_inference.hpc_triple_network_loop",
+    "l5_active_inference.fep_perception_action_loop",
+    "l5_active_inference.cosmic_prior_boundary"
+  ],
+  "triple_network_score": 0.8220952964779319
+}

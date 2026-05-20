@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded the amplification cascade source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "the_amplification_cascade": "the_amplification_cascade_source_boundary",
+    "the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige": "the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Amplification Cascade:",
+    "component_2": "The Morphogenetic Blueprint (Layers 3-4): Here, we explore the Genomic-Epigenomic-Morphogenetic (Layer 3) layer, framing DNA as a resonant fractal antenna that reads and writes information via CISS and bioelectric codes. This blueprint guides the formation of the organism, whose tissues then learn to oscillate in unison in the Cellular-Tissue Synchronisation (Layer 4) layer, where coherent rhythms emerge from networks operating at quasicriticality.",
+    "component_count": "2",
+    "next_boundary": "P0R05331",
+    "section": "The Amplification Cascade:",
+    "source_span": "P0R05323-P0R05330"
+  },
+  "next_source_boundary": "P0R05331",
+  "null_controls": {
+    "the_amplification_cascade_is_not_empirical_validation_evidence": 1.0,
+    "the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the amplification cascade source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_amplification_cascade_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05323",
+      "P0R05324",
+      "P0R05325",
+      "P0R05326",
+      "P0R05327",
+      "P0R05328",
+      "P0R05329",
+      "P0R05330"
+    ],
+    "source_ledger_span": [
+      "P0R05323",
+      "P0R05330"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05323",
+    "P0R05330"
+  ],
+  "source_record_count": 8
+}

@@ -21,7 +21,14 @@ DATE = "2026-05-07"
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = REPO_ROOT / "src" / "scpn_quantum_control"
 OUT_DIR = REPO_ROOT / "data" / "s6_quantum_kuramoto_split"
-DOC_PATH = REPO_ROOT / "docs" / f"quantum_kuramoto_split_audit_{DATE}.md"
+DOC_PATH = (
+    REPO_ROOT
+    / "docs"
+    / "internal"
+    / "audits"
+    / "split_package"
+    / f"quantum_kuramoto_split_audit_{DATE}.md"
+)
 CANDIDATE_PACKAGES = ("phase", "bridge", "hardware", "accel")
 SCPN_MARKERS = (
     "ssgf",

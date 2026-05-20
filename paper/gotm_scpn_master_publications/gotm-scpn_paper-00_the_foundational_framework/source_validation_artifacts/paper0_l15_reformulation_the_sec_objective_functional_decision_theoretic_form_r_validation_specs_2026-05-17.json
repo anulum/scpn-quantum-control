@@ -1,0 +1,285 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00)' preserves Paper 0 records P0R03981-P0R03983 without empirical validation claims.",
+      "claim_boundary": "source-bounded l15 reformulation the sec objective functional decision theoretic form r source-accounting bridge; not validation evidence",
+      "context_id": "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03981-P0R03983"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r.l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Ethical Functional > L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00)",
+      "source_block_indices": [
+        3981,
+        3982,
+        3983,
+        3984,
+        3985,
+        3986,
+        3987,
+        3988,
+        3989,
+        3990,
+        3991,
+        3992,
+        3993,
+        3994,
+        3995,
+        3996,
+        3997,
+        3998,
+        3999,
+        4000
+      ],
+      "source_equation_ids": [
+        "P0R03981:l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r",
+        "P0R03982:l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r",
+        "P0R03983:l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r"
+      ],
+      "source_formulae": [
+        "P0R03981: L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00)",
+        "P0R03982: This section marks a significant shift in the manuscript's formalism, moving from a physical analogy (Yang-Mills) to a more rigorous and testable decision-theoretic framework.",
+        "P0R03983: Purpose. To avoid the category error of identifying a normative criterion with a specific gauge action, Layer 15 is henceforth formalised in decision-theoretic terms. We retain a variational flavour, but abandon Yang-Mills symbolism at this layer. Teleology remains explicit via Axiom 3 (the universe evolves to maximise Sustainable Ethical Coherence)."
+      ],
+      "source_ledger_ids": [
+        "P0R03981",
+        "P0R03982",
+        "P0R03983",
+        "P0R03984",
+        "P0R03985",
+        "P0R03986",
+        "P0R03987",
+        "P0R03988",
+        "P0R03989",
+        "P0R03990",
+        "P0R03991",
+        "P0R03992",
+        "P0R03993",
+        "P0R03994",
+        "P0R03995",
+        "P0R03996",
+        "P0R03997",
+        "P0R03998",
+        "P0R03999",
+        "P0R04000"
+      ],
+      "source_record_ids": [
+        "P0B03981",
+        "P0B03982",
+        "P0B03983",
+        "P0B03984",
+        "P0B03985",
+        "P0B03986",
+        "P0B03987",
+        "P0B03988",
+        "P0B03989",
+        "P0B03990",
+        "P0B03991",
+        "P0B03992",
+        "P0B03993",
+        "P0B03994",
+        "P0B03995",
+        "P0B03996",
+        "P0B03997",
+        "P0B03998",
+        "P0B03999",
+        "P0B04000"
+      ],
+      "test_protocols": [
+        "preserve L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r.l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r",
+      "validation_targets": [
+        "preserve records P0R03981-P0R03983"
+      ],
+      "variables": [
+        "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Definition (canonical form).' preserves Paper 0 records P0R03984-P0R04000 without empirical validation claims.",
+      "claim_boundary": "source-bounded l15 reformulation the sec objective functional decision theoretic form r source-accounting bridge; not validation evidence",
+      "context_id": "definition_canonical_form",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03984-P0R04000"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r.definition_canonical_form",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "definition_canonical_form must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Definition (canonical form). is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.4 The Cosmic Compass: The Ethical Functional and the Consilium > The Ethical Functional > L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00)",
+      "source_block_indices": [
+        3981,
+        3982,
+        3983,
+        3984,
+        3985,
+        3986,
+        3987,
+        3988,
+        3989,
+        3990,
+        3991,
+        3992,
+        3993,
+        3994,
+        3995,
+        3996,
+        3997,
+        3998,
+        3999,
+        4000
+      ],
+      "source_equation_ids": [
+        "P0R03984:definition_canonical_form",
+        "P0R03985:definition_canonical_form",
+        "P0R03986:definition_canonical_form",
+        "P0R03987:definition_canonical_form",
+        "P0R03988:definition_canonical_form",
+        "P0R03989:definition_canonical_form",
+        "P0R03990:definition_canonical_form",
+        "P0R03991:definition_canonical_form",
+        "P0R03992:definition_canonical_form",
+        "P0R03993:definition_canonical_form",
+        "P0R03994:definition_canonical_form",
+        "P0R03995:definition_canonical_form",
+        "P0R03996:definition_canonical_form",
+        "P0R03997:definition_canonical_form",
+        "P0R03998:definition_canonical_form",
+        "P0R03999:definition_canonical_form",
+        "P0R04000:definition_canonical_form"
+      ],
+      "source_formulae": [
+        "P0R03984: Definition (canonical form).",
+        "P0R03985: Let S\\mathcal{S}S denote the joint state-space across Layers 1 141\\!-\\!14114 (including coarse-grained phase and informational coordinates), and A\\mathcal{A}A the admissible action set (interventions, boundary updates, policy controls) available to agents embedded within the architecture. A policy (as)\\pi(a\\mid s)(as) induces trajectories (st,at)t0(s_t,a_t)_{t\\ge 0}(st,at)t0.",
+        "P0R03986: The SEC Objective Functional is",
+        "P0R03987: $JSEC\\lbrack\\pi\\rbrack\\ \\mspace{2mu} = \\ \\mspace{2mu} E\\pi\\,\\left\\lbrack \\,\\sum_{}^{}t = 0TrSEC\\,(st,at)\\, \\right\\rbrack\\boxed{\\quad J_{\\text{SEC}}\\lbrack\\pi\\rbrack\\ = \\ E_{\\pi}\\text{!}\\left\\lbrack \\,\\sum_{t = 0}^{T}r_{\\text{SEC}}\\text{!}\\backslash big\\left( s_{t},a_{t\\backslash}big \\right)\\, \\right\\rbrack\\quad}JSEC\\lbrack\\pi\\rbrack = E\\pi\\left\\lbrack t = 0\\sum_{}^{}{T rSEC(st,at)} \\right\\rbrack$",
+        "P0R03988: with horizon TTT finite or discounted infinite (common choice: discount 0<<10<\\gamma<10<<1, giving $E\\pi\\lbrack\\sum t \\geq 0\\gamma trSEC\\rbrack\\Finv o\\{ E\\}\\_\\{\\pi\\}\\lbrack\\sum\\_\\{ t \\geq 0\\}\\gamma\\hat{}\\{ t\\}\\ r\\_\\{\\Finv r\\{ SEC\\}\\}\\rbrack E\\pi\\lbrack\\sum t \\geq 0\\gamma trSEC\\rbrack).$",
+        "P0R03989: The instantaneous SEC reward decomposes as",
+        "P0R03990: $rSEC(s,a)\\ \\mspace{2mu} = \\ \\mspace{2mu} wC\\, C(s)\\ \\mspace{2mu} + \\ \\mspace{2mu} wK\\, K(s)\\ \\mspace{2mu} + \\ \\mspace{2mu} wQ\\, Q(s)\\ \\mspace{2mu} - \\ \\mspace{2mu}\\sum_{}^{}{i\\lambda i}\\,\\left\\lbrack \\, gi(s,a)\\, \\right\\rbrack + ,r_{\\text{SEC}}(s,a)\\ = \\ w_{C}\\, C(s)\\ + \\ w_{K}\\, K(s)\\ + \\ w_{Q}\\, Q(s)\\ - \\ \\sum_{i}^{}\\lambda_{i}\\,\\backslash big\\left\\lbrack \\, g_{i}(s,a)\\,\\backslash big \\right\\rbrack_{+},rSEC(s,a) = wC C(s) + wK K(s) + wQ Q(s) - i\\sum_{}^{}{\\lambda i\\left\\lbrack gi(s,a) \\right\\rbrack} + ,$",
+        "P0R03991: where CCC (system-wide coherence), KKK (integrated complexity), and QQQ (qualia-capacity/richness) are the already-defined physical/informational observables, gi 0g_i\\!\\le 0gi0 are ethical/feasibility constraints (e.g., non-harm, stability, biospheric bounds), []+[\\cdot]_+[]+ denotes the positive part, and w,lambdaw_\\cdot,\\lambda_\\cdotw,lambda are layer-aware weights.",
+        "P0R03992: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03993: Fig.: Universe as a Policy Learner (SEC). This flowchart uses the analogy of a reinforcement learning loop to explain how the universe \"learns\" to evolve towards states of higher meaning and harmony. It avoids jargon and focuses on the cyclical process of observation, action, and optimization. This figure frames cosmic evolution as policy improvement under SEC, making the teleological thesis operational for simulations and manuscript exposition.",
+        "P0R03994: The universe iteratively observes its state (C,K,Q)(C,K,Q)(C,K,Q), chooses an action via a policy \\pi, receives the SEC reward rSECr_{\\text{SEC}}rSEC, and updates \\pi to improve future outcomes. This loop converges toward an optimal policy \\pi^* that maximises total Sustainable Ethical Coherence JSECJ_{\\text{SEC}}JSEC, aligning cosmological evolution with ethical teleology.",
+        "P0R03995: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Display enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03996: Fig.: SEC as a Decision-Theoretic Program. This diagram provides a formal schematic of the L15 framework, mapping the components of a Partially Observable Markov Decision Process (POMDP) onto the cosmological scale. It is designed for readers familiar with control theory or reinforcement learning. This figure operationalises Axiom 3: SEC-guided evolution is formalised as policy optimisation over trajectories with ethical constraints and discounted rewards.",
+        "P0R03997: A policy (a s)\\pi(a\\!\\mid\\!s)(as) maps states SSS (configs of L1-14) to actions AAA (dynamics/interventions), generating trajectories (st,at)(s_t,a_t)(st,at). Each step is scored by the instantaneous SEC reward rSECr_{\\mathrm{SEC}}rSEC, combining positive contributions from C (coherence), K (complexity), Q (qualia-capacity) and soft penalties ilambdai[gi]+\\sum_i \\lambda_i [g_i]_+ilambdai[gi]+ for constraint violations. The objective functional",
+        "P0R03998: JSEC[] = E [tt rSEC(st,at)]J_{\\mathrm{SEC}}[\\pi] \\;=\\; \\mathbb{E}_{\\pi}\\!\\left[\\sum_t \\gamma^t\\, r_{\\mathrm{SEC}}(s_t,a_t)\\right]JSEC[]=E[ttrSEC(st,at)]",
+        "P0R03999: # Python One-Liner: J_SEC = sp.E * sp.Sum(sp.Pow(gamma, t) * r_SEC(s_t, a_t), (t, 0, sp.oo))",
+        "P0R04000: is maximised to obtain the operational teleological policy \\pi^*."
+      ],
+      "source_ledger_ids": [
+        "P0R03981",
+        "P0R03982",
+        "P0R03983",
+        "P0R03984",
+        "P0R03985",
+        "P0R03986",
+        "P0R03987",
+        "P0R03988",
+        "P0R03989",
+        "P0R03990",
+        "P0R03991",
+        "P0R03992",
+        "P0R03993",
+        "P0R03994",
+        "P0R03995",
+        "P0R03996",
+        "P0R03997",
+        "P0R03998",
+        "P0R03999",
+        "P0R04000"
+      ],
+      "source_record_ids": [
+        "P0B03981",
+        "P0B03982",
+        "P0B03983",
+        "P0B03984",
+        "P0B03985",
+        "P0B03986",
+        "P0B03987",
+        "P0B03988",
+        "P0B03989",
+        "P0B03990",
+        "P0B03991",
+        "P0B03992",
+        "P0B03993",
+        "P0B03994",
+        "P0B03995",
+        "P0B03996",
+        "P0B03997",
+        "P0B03998",
+        "P0B03999",
+        "P0B04000"
+      ],
+      "test_protocols": [
+        "preserve Definition (canonical form). source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r.definition_canonical_form",
+      "validation_targets": [
+        "preserve records P0R03984-P0R04000"
+      ],
+      "variables": [
+        "definition_canonical_form"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 18
+    },
+    "category_counts": {
+      "claim": 9,
+      "context": 3,
+      "equation": 3,
+      "figure": 2,
+      "mechanism": 2,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded l15 reformulation the sec objective functional decision theoretic form r source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 20,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0079",
+      "IMG0080"
+    ],
+    "math_ids": [
+      "EQ0074",
+      "EQ0075",
+      "EQ0076"
+    ],
+    "next_source_boundary": "P0R04001",
+    "source_ledger_span": [
+      "P0R03981",
+      "P0R04000"
+    ],
+    "source_record_count": 20,
+    "spec_count": 2,
+    "spec_keys": [
+      "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r.l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r",
+      "l15_reformulation_the_sec_objective_functional_decision_theoretic_form_r.definition_canonical_form"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 L15 Reformulation: The SEC Objective Functional (Decision-Theoretic Form) (revision 11.00) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

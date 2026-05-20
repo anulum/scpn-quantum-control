@@ -1,0 +1,219 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Binding Problem Solution:' preserves Paper 0 records P0R03440-P0R03444 without empirical validation claims.",
+      "claim_boundary": "source-bounded the binding problem solution source-accounting bridge; not validation evidence",
+      "context_id": "the_binding_problem_solution",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03440-P0R03444"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_binding_problem_solution.the_binding_problem_solution",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_binding_problem_solution must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Binding Problem Solution: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Confronting the Hard Problem: A Mathematical Resolution > The Hard Problem: A Mathematical Resolution > The Binding Problem Solution:",
+      "source_block_indices": [
+        3440,
+        3441,
+        3442,
+        3443,
+        3444,
+        3445,
+        3446,
+        3447,
+        3448,
+        3449,
+        3450,
+        3451,
+        3452
+      ],
+      "source_equation_ids": [
+        "P0R03440:the_binding_problem_solution",
+        "P0R03441:the_binding_problem_solution",
+        "P0R03442:the_binding_problem_solution",
+        "P0R03443:the_binding_problem_solution",
+        "P0R03444:the_binding_problem_solution"
+      ],
+      "source_formulae": [
+        "P0R03440: The Binding Problem Solution:",
+        "P0R03441: Unified_experience = Psi(x,y,z,t) x rho_neural(x,y,z,t) dV",
+        "P0R03442: The field Psi provides non-local binding",
+        "P0R03443: Physical separation irrelevant if field-coupled",
+        "P0R03444: Unity comes from field coherence, not anatomy"
+      ],
+      "source_ledger_ids": [
+        "P0R03440",
+        "P0R03441",
+        "P0R03442",
+        "P0R03443",
+        "P0R03444",
+        "P0R03445",
+        "P0R03446",
+        "P0R03447",
+        "P0R03448",
+        "P0R03449",
+        "P0R03450",
+        "P0R03451",
+        "P0R03452"
+      ],
+      "source_record_ids": [
+        "P0B03440",
+        "P0B03441",
+        "P0B03442",
+        "P0B03443",
+        "P0B03444",
+        "P0B03445",
+        "P0B03446",
+        "P0B03447",
+        "P0B03448",
+        "P0B03449",
+        "P0B03450",
+        "P0B03451",
+        "P0B03452"
+      ],
+      "test_protocols": [
+        "preserve The Binding Problem Solution: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_binding_problem_solution.the_binding_problem_solution",
+      "validation_targets": [
+        "preserve records P0R03440-P0R03444"
+      ],
+      "variables": [
+        "the_binding_problem_solution"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Mary's Room Resolution:' preserves Paper 0 records P0R03445-P0R03452 without empirical validation claims.",
+      "claim_boundary": "source-bounded the binding problem solution source-accounting bridge; not validation evidence",
+      "context_id": "mary_s_room_resolution",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03445-P0R03452"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_binding_problem_solution.mary_s_room_resolution",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "mary_s_room_resolution must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Mary's Room Resolution: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Confronting the Hard Problem: A Mathematical Resolution > The Hard Problem: A Mathematical Resolution > The Binding Problem Solution:",
+      "source_block_indices": [
+        3440,
+        3441,
+        3442,
+        3443,
+        3444,
+        3445,
+        3446,
+        3447,
+        3448,
+        3449,
+        3450,
+        3451,
+        3452
+      ],
+      "source_equation_ids": [
+        "P0R03445:mary_s_room_resolution",
+        "P0R03446:mary_s_room_resolution",
+        "P0R03447:mary_s_room_resolution",
+        "P0R03448:mary_s_room_resolution",
+        "P0R03449:mary_s_room_resolution",
+        "P0R03450:mary_s_room_resolution",
+        "P0R03451:mary_s_room_resolution",
+        "P0R03452:mary_s_room_resolution"
+      ],
+      "source_formulae": [
+        "P0R03445: Mary's Room Resolution:",
+        "P0R03446: Knowledge_propositional = {facts about light}",
+        "P0R03447: Knowledge_experiential = Psi_red x Neural_state dt",
+        "P0R03448: Seeing red for first time:",
+        "P0R03449: - Doesn't add facts",
+        "P0R03450: - Adds new projection geometry in qualia space",
+        "P0R03451: - Creates new topological structure ( increases)",
+        "P0R03452: The hard problem dissolves when we recognize that consciousness isn't generated by the brain but is the fundamental field (Psi) experiencing itself through biological projection. Asking \"why is there something it's like\" becomes equivalent to asking \"why does the field project through this particular geometric structure\" - a question with a mathematical rather than mysterious answer."
+      ],
+      "source_ledger_ids": [
+        "P0R03440",
+        "P0R03441",
+        "P0R03442",
+        "P0R03443",
+        "P0R03444",
+        "P0R03445",
+        "P0R03446",
+        "P0R03447",
+        "P0R03448",
+        "P0R03449",
+        "P0R03450",
+        "P0R03451",
+        "P0R03452"
+      ],
+      "source_record_ids": [
+        "P0B03440",
+        "P0B03441",
+        "P0B03442",
+        "P0B03443",
+        "P0B03444",
+        "P0B03445",
+        "P0B03446",
+        "P0B03447",
+        "P0B03448",
+        "P0B03449",
+        "P0B03450",
+        "P0B03451",
+        "P0B03452"
+      ],
+      "test_protocols": [
+        "preserve Mary's Room Resolution: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_binding_problem_solution.mary_s_room_resolution",
+      "validation_targets": [
+        "preserve records P0R03445-P0R03452"
+      ],
+      "variables": [
+        "mary_s_room_resolution"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 11
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 8,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded the binding problem solution source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 13,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03453",
+    "source_ledger_span": [
+      "P0R03440",
+      "P0R03452"
+    ],
+    "source_record_count": 13,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_binding_problem_solution.the_binding_problem_solution",
+      "the_binding_problem_solution.mary_s_room_resolution"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Binding Problem Solution: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

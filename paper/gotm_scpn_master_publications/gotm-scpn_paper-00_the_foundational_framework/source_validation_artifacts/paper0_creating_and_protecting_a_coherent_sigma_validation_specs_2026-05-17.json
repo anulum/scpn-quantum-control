@@ -1,0 +1,246 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Creating and Protecting a Coherent sigma:' preserves Paper 0 records P0R03034-P0R03035 without empirical validation claims.",
+      "claim_boundary": "source-bounded creating and protecting a coherent sigma source-accounting bridge; not validation evidence",
+      "context_id": "creating_and_protecting_a_coherent_sigma",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03034-P0R03035"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "creating_and_protecting_a_coherent_sigma.creating_and_protecting_a_coherent_sigma",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "creating_and_protecting_a_coherent_sigma must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Creating and Protecting a Coherent sigma: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Multi-Scale Quantum Error Correction (MS-QEC) > \u03a8s Field Coupling Integration > Creating and Protecting a Coherent \u03c3:",
+      "source_block_indices": [
+        3034,
+        3035,
+        3036,
+        3037,
+        3038,
+        3039,
+        3040,
+        3041
+      ],
+      "source_equation_ids": [
+        "P0R03034:creating_and_protecting_a_coherent_sigma",
+        "P0R03035:creating_and_protecting_a_coherent_sigma"
+      ],
+      "source_formulae": [
+        "P0R03034: Creating and Protecting a Coherent sigma:",
+        "P0R03035: The entire purpose of MS-QEC is to create and sustain a coherent collective state variable (sigma) that can couple to the Psis field. Without this nested error correction, any potential sigma (like the phase coherence of a neural assembly) would decohere almost instantly, disappearing before it could form a stable \"handle\" for the Psi-field to interact with."
+      ],
+      "source_ledger_ids": [
+        "P0R03034",
+        "P0R03035",
+        "P0R03036",
+        "P0R03037",
+        "P0R03038",
+        "P0R03039",
+        "P0R03040",
+        "P0R03041"
+      ],
+      "source_record_ids": [
+        "P0B03034",
+        "P0B03035",
+        "P0B03036",
+        "P0B03037",
+        "P0B03038",
+        "P0B03039",
+        "P0B03040",
+        "P0B03041"
+      ],
+      "test_protocols": [
+        "preserve Creating and Protecting a Coherent sigma: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.creating_and_protecting_a_coherent_sigma.creating_and_protecting_a_coherent_sigma",
+      "validation_targets": [
+        "preserve records P0R03034-P0R03035"
+      ],
+      "variables": [
+        "creating_and_protecting_a_coherent_sigma"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Hierarchy of Protection:' preserves Paper 0 records P0R03036-P0R03037 without empirical validation claims.",
+      "claim_boundary": "source-bounded creating and protecting a coherent sigma source-accounting bridge; not validation evidence",
+      "context_id": "the_hierarchy_of_protection",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03036-P0R03037"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "creating_and_protecting_a_coherent_sigma.the_hierarchy_of_protection",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_hierarchy_of_protection must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Hierarchy of Protection: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Multi-Scale Quantum Error Correction (MS-QEC) > \u03a8s Field Coupling Integration > Creating and Protecting a Coherent \u03c3:",
+      "source_block_indices": [
+        3034,
+        3035,
+        3036,
+        3037,
+        3038,
+        3039,
+        3040,
+        3041
+      ],
+      "source_equation_ids": [
+        "P0R03036:the_hierarchy_of_protection",
+        "P0R03037:the_hierarchy_of_protection"
+      ],
+      "source_formulae": [
+        "P0R03036: The Hierarchy of Protection:",
+        "P0R03037: The MS-QEC hierarchy ensures this stability at all scales. Biological QEC creates small, locally coherent sigma variables. Network QEC binds them into larger, more robust ensembles. Holographic QEC protects the long-term, integrated history of these states. Cosmological QEC ensures that the very laws governing the formation of sigma are themselves stable. In short, MS-QEC is the \"coherence backbone\" that builds and maintains the physical interface for the mind-matter interaction."
+      ],
+      "source_ledger_ids": [
+        "P0R03034",
+        "P0R03035",
+        "P0R03036",
+        "P0R03037",
+        "P0R03038",
+        "P0R03039",
+        "P0R03040",
+        "P0R03041"
+      ],
+      "source_record_ids": [
+        "P0B03034",
+        "P0B03035",
+        "P0B03036",
+        "P0B03037",
+        "P0B03038",
+        "P0B03039",
+        "P0B03040",
+        "P0B03041"
+      ],
+      "test_protocols": [
+        "preserve The Hierarchy of Protection: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.creating_and_protecting_a_coherent_sigma.the_hierarchy_of_protection",
+      "validation_targets": [
+        "preserve records P0R03036-P0R03037"
+      ],
+      "variables": [
+        "the_hierarchy_of_protection"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC)' preserves Paper 0 records P0R03038-P0R03041 without empirical validation claims.",
+      "claim_boundary": "source-bounded creating and protecting a coherent sigma source-accounting bridge; not validation evidence",
+      "context_id": "the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03038-P0R03041"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "creating_and_protecting_a_coherent_sigma.the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Multi-Scale Quantum Error Correction (MS-QEC) > \u03a8s Field Coupling Integration > Creating and Protecting a Coherent \u03c3:",
+      "source_block_indices": [
+        3034,
+        3035,
+        3036,
+        3037,
+        3038,
+        3039,
+        3040,
+        3041
+      ],
+      "source_equation_ids": [
+        "P0R03038:the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec",
+        "P0R03039:the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec",
+        "P0R03040:the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec",
+        "P0R03041:the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec"
+      ],
+      "source_formulae": [
+        "P0R03038: The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC)",
+        "P0R03039: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03040: Fig.: MS-QEC Stack & Stabiliser Transfer (L9->L10). Four-scale QEC (biological -> network -> holographic -> cosmological). Stabiliser pushforward \\*:S9->S10 \\Pi_\\*:S_9\\to S_{10}\\*:S9->S10 with MERA branching \\chi yields d10d9/, r10r9d_{10}\\ge d_9/\\chi,\\; r_{10}\\ge r_9d10d9/,r10r9; operationally, lowering L10 complexity reduces boundary logical-phase slips.",
+        "P0R03041: The integrity of the SCPN relies on preserving quantum coherence across scales via a nested hierarchy of Quantum Error Correction (MS-QEC). This operates on the principle of Holographic Redundancy, where higher-layer information is redundantly encoded in the entanglement structure of lower layers."
+      ],
+      "source_ledger_ids": [
+        "P0R03034",
+        "P0R03035",
+        "P0R03036",
+        "P0R03037",
+        "P0R03038",
+        "P0R03039",
+        "P0R03040",
+        "P0R03041"
+      ],
+      "source_record_ids": [
+        "P0B03034",
+        "P0B03035",
+        "P0B03036",
+        "P0B03037",
+        "P0B03038",
+        "P0B03039",
+        "P0B03040",
+        "P0B03041"
+      ],
+      "test_protocols": [
+        "preserve The Coherence Backbone: Multi-Scale Quantum Error Correction (MS-QEC) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.creating_and_protecting_a_coherent_sigma.the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec",
+      "validation_targets": [
+        "preserve records P0R03038-P0R03041"
+      ],
+      "variables": [
+        "the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 5
+    },
+    "category_counts": {
+      "context": 2,
+      "figure": 1,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded creating and protecting a coherent sigma source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0052"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R03042",
+    "source_ledger_span": [
+      "P0R03034",
+      "P0R03041"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "creating_and_protecting_a_coherent_sigma.creating_and_protecting_a_coherent_sigma",
+      "creating_and_protecting_a_coherent_sigma.the_hierarchy_of_protection",
+      "creating_and_protecting_a_coherent_sigma.the_coherence_backbone_multi_scale_quantum_error_correction_ms_qec"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Creating and Protecting a Coherent sigma: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

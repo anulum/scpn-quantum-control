@@ -1,0 +1,227 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Domain II: Organismal and Planetary Integration (Layers 5-8)' preserves Paper 0 records P0R05537-P0R05540 without empirical validation claims.",
+      "claim_boundary": "source-bounded domain ii organismal and planetary integration layers 5 8 source-accounting bridge; not validation evidence",
+      "context_id": "domain_ii_organismal_and_planetary_integration_layers_5_8",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05537-P0R05540"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "domain_ii_organismal_and_planetary_integration_layers_5_8.domain_ii_organismal_and_planetary_integration_layers_5_8",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "domain_ii_organismal_and_planetary_integration_layers_5_8 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Domain II: Organismal and Planetary Integration (Layers 5-8) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Domain II: Organismal and Planetary Integration (Layers 5-8)",
+      "source_block_indices": [
+        5537,
+        5538,
+        5539,
+        5540,
+        5541,
+        5542,
+        5543,
+        5544,
+        5545,
+        5546,
+        5547,
+        5548,
+        5549,
+        5550
+      ],
+      "source_equation_ids": [
+        "P0R05537:domain_ii_organismal_and_planetary_integration_layers_5_8",
+        "P0R05538:domain_ii_organismal_and_planetary_integration_layers_5_8",
+        "P0R05539:domain_ii_organismal_and_planetary_integration_layers_5_8",
+        "P0R05540:domain_ii_organismal_and_planetary_integration_layers_5_8"
+      ],
+      "source_formulae": [
+        "P0R05537: Domain II: Organismal and Planetary Integration (Layers 5-8)",
+        "P0R05538: This domain describes how the embodied mind integrates",
+        "P0R05539: into planetary and cosmic systems.",
+        "P0R05540: The Integrated Self and World (Layers 5-6): The synchronised rhythms coalesce into the unified self in the Organismal-Psychoemotional Feedback (Layer 5) layer, the seat of agency, self-awareness, and qualia. This individual field then couples with the Planetary-Biospheric (Layer 6) layer, where collective consciousness interacts with the Gaian field, exhibiting hysteresis and threshold effects. | Symbolic and Cosmic Alignment (Layers 7-8): We investigate the Geometrical-Symbolic (Layer 7) layer, where abstract symbols and language act as operators to amplify coherence. This symbolic structure helps align the organism with the Cosmic Phase-Locking (Layer 8) layer, the universal tact that synchronises life with astrophysical rhythms, guided by cosmic attractors."
+      ],
+      "source_ledger_ids": [
+        "P0R05537",
+        "P0R05538",
+        "P0R05539",
+        "P0R05540",
+        "P0R05541",
+        "P0R05542",
+        "P0R05543",
+        "P0R05544",
+        "P0R05545",
+        "P0R05546",
+        "P0R05547",
+        "P0R05548",
+        "P0R05549",
+        "P0R05550"
+      ],
+      "source_record_ids": [
+        "P0B05537",
+        "P0B05538",
+        "P0B05539",
+        "P0B05540",
+        "P0B05541",
+        "P0B05542",
+        "P0B05543",
+        "P0B05544",
+        "P0B05545",
+        "P0B05546",
+        "P0B05547",
+        "P0B05548",
+        "P0B05549",
+        "P0B05550"
+      ],
+      "test_protocols": [
+        "preserve Domain II: Organismal and Planetary Integration (Layers 5-8) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.domain_ii_organismal_and_planetary_integration_layers_5_8.domain_ii_organismal_and_planetary_integration_layers_5_8",
+      "validation_targets": [
+        "preserve records P0R05537-P0R05540"
+      ],
+      "variables": [
+        "domain_ii_organismal_and_planetary_integration_layers_5_8"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Citations:' preserves Paper 0 records P0R05541-P0R05550 without empirical validation claims.",
+      "claim_boundary": "source-bounded domain ii organismal and planetary integration layers 5 8 source-accounting bridge; not validation evidence",
+      "context_id": "citations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05541-P0R05550"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "domain_ii_organismal_and_planetary_integration_layers_5_8.citations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "citations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Citations: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Domain II: Organismal and Planetary Integration (Layers 5-8)",
+      "source_block_indices": [
+        5537,
+        5538,
+        5539,
+        5540,
+        5541,
+        5542,
+        5543,
+        5544,
+        5545,
+        5546,
+        5547,
+        5548,
+        5549,
+        5550
+      ],
+      "source_equation_ids": [
+        "P0R05541:citations",
+        "P0R05542:citations",
+        "P0R05543:citations",
+        "P0R05544:citations",
+        "P0R05545:citations",
+        "P0R05546:citations",
+        "P0R05547:citations",
+        "P0R05548:citations",
+        "P0R05549:citations",
+        "P0R05550:citations"
+      ],
+      "source_formulae": [
+        "P0R05541: Citations:",
+        "P0R05542: Domain II - Organismal & Planetary",
+        "P0R05543: \"qualia are defined by the topological features of the consciousness manifold\" -> (Giusti et al., 2015; Reimann et al., 2017)",
+        "P0R05544: \"the Self is modelled as a stable soliton excitation of the organismal field\" -> (Friston, 2010; Friston et al., 2021)",
+        "P0R05545: \"collective human states are coupled to Schumann resonances\" -> (Koenig, 1954; Pobachenko et al., 2006)",
+        "P0R05546: Domain II - Organismal & Planetary Expansion",
+        "P0R05547: \"the Self emerges as a soliton stabilized by symmetry breaking\" -> (Anderson, 1972; Friston, 2010)",
+        "P0R05548: \"qualia richness corresponds to Betti numbers of neural state manifolds\" -> (Carlsson, 2009; Giusti et al., 2016)",
+        "P0R05549: \"biospheric memory is encoded in electromagnetic resonance layers\" -> (Nickolaenko & Hayakawa, 2014; Schlegel & Fllekrug, 2020)",
+        "P0R05550: \"sacred geometries function as morphogenetic operators of coherence\" -> (Washburn & Crowe, 1983; Gafurov et al., 2019)"
+      ],
+      "source_ledger_ids": [
+        "P0R05537",
+        "P0R05538",
+        "P0R05539",
+        "P0R05540",
+        "P0R05541",
+        "P0R05542",
+        "P0R05543",
+        "P0R05544",
+        "P0R05545",
+        "P0R05546",
+        "P0R05547",
+        "P0R05548",
+        "P0R05549",
+        "P0R05550"
+      ],
+      "source_record_ids": [
+        "P0B05537",
+        "P0B05538",
+        "P0B05539",
+        "P0B05540",
+        "P0B05541",
+        "P0B05542",
+        "P0B05543",
+        "P0B05544",
+        "P0B05545",
+        "P0B05546",
+        "P0B05547",
+        "P0B05548",
+        "P0B05549",
+        "P0B05550"
+      ],
+      "test_protocols": [
+        "preserve Citations: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.domain_ii_organismal_and_planetary_integration_layers_5_8.citations",
+      "validation_targets": [
+        "preserve records P0R05541-P0R05550"
+      ],
+      "variables": [
+        "citations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 2,
+      "Para": 11
+    },
+    "category_counts": {
+      "context": 13,
+      "mechanism": 1
+    },
+    "claim_boundary": "source-bounded domain ii organismal and planetary integration layers 5 8 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05551",
+    "source_ledger_span": [
+      "P0R05537",
+      "P0R05550"
+    ],
+    "source_record_count": 14,
+    "spec_count": 2,
+    "spec_keys": [
+      "domain_ii_organismal_and_planetary_integration_layers_5_8.domain_ii_organismal_and_planetary_integration_layers_5_8",
+      "domain_ii_organismal_and_planetary_integration_layers_5_8.citations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Domain II: Organismal and Planetary Integration (Layers 5-8) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

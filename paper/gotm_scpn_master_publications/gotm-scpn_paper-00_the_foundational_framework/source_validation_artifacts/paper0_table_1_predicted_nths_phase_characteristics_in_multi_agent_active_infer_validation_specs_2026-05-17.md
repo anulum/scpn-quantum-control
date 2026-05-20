@@ -1,0 +1,38 @@
+# Paper 0 Table 1: Predicted NTHS Phase Characteristics in Multi-Agent Active Inference Simulation Specs
+
+- Source span: P0R05273 - P0R05284
+- Source records: 12
+- Consumed source records: 12
+- Coverage match: True
+- Spec count: 3
+- Claim boundary: source-bounded table 1 predicted nths phase characteristics in multi agent active infer source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R05285
+
+## Specs
+### `table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer.table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer`
+
+The source-bounded component 'Table 1: Predicted NTHS Phase Characteristics in Multi-Agent Active Inference Simulation' preserves Paper 0 records P0R05273-P0R05277 without empirical validation claims.
+
+- Context: `table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer`
+- Protocol: `paper0.table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer.table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer`
+- Source equations: P0R05273:table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer, P0R05274:table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer, P0R05275:table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer, P0R05276:table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer, P0R05277:table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer
+- Null controls: table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer must remain source-bounded accounting
+
+### `table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer.synthesis_implications_and_consequent_trajectories`
+
+The source-bounded component 'Synthesis, Implications, and Consequent Trajectories' preserves Paper 0 records P0R05278-P0R05278 without empirical validation claims.
+
+- Context: `synthesis_implications_and_consequent_trajectories`
+- Protocol: `paper0.table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer.synthesis_implications_and_consequent_trajectories`
+- Source equations: P0R05278:synthesis_implications_and_consequent_trajectories
+- Null controls: synthesis_implications_and_consequent_trajectories must remain source-bounded accounting
+
+### `table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer.section_8_the_role_of_cybernetic_closure_and_the_anulum`
+
+The source-bounded component 'Section 8: The Role of Cybernetic Closure and the Anulum' preserves Paper 0 records P0R05279-P0R05284 without empirical validation claims.
+
+- Context: `section_8_the_role_of_cybernetic_closure_and_the_anulum`
+- Protocol: `paper0.table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer.section_8_the_role_of_cybernetic_closure_and_the_anulum`
+- Source equations: P0R05279:section_8_the_role_of_cybernetic_closure_and_the_anulum, P0R05280:section_8_the_role_of_cybernetic_closure_and_the_anulum, P0R05281:section_8_the_role_of_cybernetic_closure_and_the_anulum, P0R05282:section_8_the_role_of_cybernetic_closure_and_the_anulum, P0R05283:section_8_the_role_of_cybernetic_closure_and_the_anulum, P0R05284:section_8_the_role_of_cybernetic_closure_and_the_anulum
+- Null controls: section_8_the_role_of_cybernetic_closure_and_the_anulum must remain source-bounded accounting

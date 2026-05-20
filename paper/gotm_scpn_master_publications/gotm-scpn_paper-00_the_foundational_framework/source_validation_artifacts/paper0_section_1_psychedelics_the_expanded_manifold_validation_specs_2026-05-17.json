@@ -1,0 +1,384 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '1. Psychedelics (The Expanded Manifold):' preserves Paper 0 records P0R05026-P0R05027 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 psychedelics the expanded manifold source-accounting bridge; not validation evidence",
+      "context_id": "1_psychedelics_the_expanded_manifold",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05026-P0R05027"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_psychedelics_the_expanded_manifold.1_psychedelics_the_expanded_manifold",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_psychedelics_the_expanded_manifold must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. Psychedelics (The Expanded Manifold): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Altered States of Consciousness (ASCs): Perturbations of the Architecture > 1. Psychedelics (The Expanded Manifold):",
+      "source_block_indices": [
+        5026,
+        5027,
+        5028,
+        5029,
+        5030,
+        5031,
+        5032,
+        5033,
+        5034,
+        5035,
+        5036,
+        5037,
+        5038
+      ],
+      "source_equation_ids": [
+        "P0R05026:1_psychedelics_the_expanded_manifold",
+        "P0R05027:1_psychedelics_the_expanded_manifold"
+      ],
+      "source_formulae": [
+        "P0R05026: 1. Psychedelics (The Expanded Manifold):",
+        "P0R05027: Shift to Supercriticality (sigma>1): Increased repertoire of states (Entropic Brain). | HPC Relaxation (REBUS): Relaxation of high-level priors (DMN dissolution). | Geometric Expansion (L5): Increased Topological Complexity (bk) of the Consciousness Manifold (M)."
+      ],
+      "source_ledger_ids": [
+        "P0R05026",
+        "P0R05027",
+        "P0R05028",
+        "P0R05029",
+        "P0R05030",
+        "P0R05031",
+        "P0R05032",
+        "P0R05033",
+        "P0R05034",
+        "P0R05035",
+        "P0R05036",
+        "P0R05037",
+        "P0R05038"
+      ],
+      "source_record_ids": [
+        "P0B05026",
+        "P0B05027",
+        "P0B05028",
+        "P0B05029",
+        "P0B05030",
+        "P0B05031",
+        "P0B05032",
+        "P0B05033",
+        "P0B05034",
+        "P0B05035",
+        "P0B05036",
+        "P0B05037",
+        "P0B05038"
+      ],
+      "test_protocols": [
+        "preserve 1. Psychedelics (The Expanded Manifold): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_psychedelics_the_expanded_manifold.1_psychedelics_the_expanded_manifold",
+      "validation_targets": [
+        "preserve records P0R05026-P0R05027"
+      ],
+      "variables": [
+        "1_psychedelics_the_expanded_manifold"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. Meditation and Flow States (Optimised Criticality):' preserves Paper 0 records P0R05028-P0R05029 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 psychedelics the expanded manifold source-accounting bridge; not validation evidence",
+      "context_id": "2_meditation_and_flow_states_optimised_criticality",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05028-P0R05029"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_psychedelics_the_expanded_manifold.2_meditation_and_flow_states_optimised_criticality",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_meditation_and_flow_states_optimised_criticality must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Meditation and Flow States (Optimised Criticality): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Altered States of Consciousness (ASCs): Perturbations of the Architecture > 1. Psychedelics (The Expanded Manifold):",
+      "source_block_indices": [
+        5026,
+        5027,
+        5028,
+        5029,
+        5030,
+        5031,
+        5032,
+        5033,
+        5034,
+        5035,
+        5036,
+        5037,
+        5038
+      ],
+      "source_equation_ids": [
+        "P0R05028:2_meditation_and_flow_states_optimised_criticality",
+        "P0R05029:2_meditation_and_flow_states_optimised_criticality"
+      ],
+      "source_formulae": [
+        "P0R05028: 2. Meditation and Flow States (Optimised Criticality):",
+        "P0R05029: Optimised Criticality (sigma=1): Maximised efficiency and integration. | Minimised F: Perfect alignment of the Generative Model. | Geometric Signature: Stable, high-dimensional attractor with optimal balance of integration and complexity."
+      ],
+      "source_ledger_ids": [
+        "P0R05026",
+        "P0R05027",
+        "P0R05028",
+        "P0R05029",
+        "P0R05030",
+        "P0R05031",
+        "P0R05032",
+        "P0R05033",
+        "P0R05034",
+        "P0R05035",
+        "P0R05036",
+        "P0R05037",
+        "P0R05038"
+      ],
+      "source_record_ids": [
+        "P0B05026",
+        "P0B05027",
+        "P0B05028",
+        "P0B05029",
+        "P0B05030",
+        "P0B05031",
+        "P0B05032",
+        "P0B05033",
+        "P0B05034",
+        "P0B05035",
+        "P0B05036",
+        "P0B05037",
+        "P0B05038"
+      ],
+      "test_protocols": [
+        "preserve 2. Meditation and Flow States (Optimised Criticality): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_psychedelics_the_expanded_manifold.2_meditation_and_flow_states_optimised_criticality",
+      "validation_targets": [
+        "preserve records P0R05028-P0R05029"
+      ],
+      "variables": [
+        "2_meditation_and_flow_states_optimised_criticality"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '3. Anaesthesia (The Decoupling):' preserves Paper 0 records P0R05030-P0R05031 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 psychedelics the expanded manifold source-accounting bridge; not validation evidence",
+      "context_id": "3_anaesthesia_the_decoupling",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05030-P0R05031"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_psychedelics_the_expanded_manifold.3_anaesthesia_the_decoupling",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_anaesthesia_the_decoupling must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. Anaesthesia (The Decoupling): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Altered States of Consciousness (ASCs): Perturbations of the Architecture > 1. Psychedelics (The Expanded Manifold):",
+      "source_block_indices": [
+        5026,
+        5027,
+        5028,
+        5029,
+        5030,
+        5031,
+        5032,
+        5033,
+        5034,
+        5035,
+        5036,
+        5037,
+        5038
+      ],
+      "source_equation_ids": [
+        "P0R05030:3_anaesthesia_the_decoupling",
+        "P0R05031:3_anaesthesia_the_decoupling"
+      ],
+      "source_formulae": [
+        "P0R05030: 3. Anaesthesia (The Decoupling):",
+        "P0R05031: Mechanism: Disruption of L1/L2 interface (Lipid rafts, MTs). | Shift to Subcriticality (sigma<1): Breakdown of L4 synchronization. | Collapse of the Self (L5): drops below Crit; the Self-soliton dissolves."
+      ],
+      "source_ledger_ids": [
+        "P0R05026",
+        "P0R05027",
+        "P0R05028",
+        "P0R05029",
+        "P0R05030",
+        "P0R05031",
+        "P0R05032",
+        "P0R05033",
+        "P0R05034",
+        "P0R05035",
+        "P0R05036",
+        "P0R05037",
+        "P0R05038"
+      ],
+      "source_record_ids": [
+        "P0B05026",
+        "P0B05027",
+        "P0B05028",
+        "P0B05029",
+        "P0B05030",
+        "P0B05031",
+        "P0B05032",
+        "P0B05033",
+        "P0B05034",
+        "P0B05035",
+        "P0B05036",
+        "P0B05037",
+        "P0B05038"
+      ],
+      "test_protocols": [
+        "preserve 3. Anaesthesia (The Decoupling): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_psychedelics_the_expanded_manifold.3_anaesthesia_the_decoupling",
+      "validation_targets": [
+        "preserve records P0R05030-P0R05031"
+      ],
+      "variables": [
+        "3_anaesthesia_the_decoupling"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VII. The Embodied Brain and the Extended Environment (L6 Coupling)' preserves Paper 0 records P0R05032-P0R05038 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 psychedelics the expanded manifold source-accounting bridge; not validation evidence",
+      "context_id": "vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05032-P0R05038"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_psychedelics_the_expanded_manifold.vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vii_the_embodied_brain_and_the_extended_environment_l6_coupling must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VII. The Embodied Brain and the Extended Environment (L6 Coupling) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > VI. Altered States of Consciousness (ASCs): Perturbations of the Architecture > 1. Psychedelics (The Expanded Manifold):",
+      "source_block_indices": [
+        5026,
+        5027,
+        5028,
+        5029,
+        5030,
+        5031,
+        5032,
+        5033,
+        5034,
+        5035,
+        5036,
+        5037,
+        5038
+      ],
+      "source_equation_ids": [
+        "P0R05032:vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+        "P0R05033:vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+        "P0R05034:vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+        "P0R05035:vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+        "P0R05036:vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+        "P0R05037:vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+        "P0R05038:vii_the_embodied_brain_and_the_extended_environment_l6_coupling"
+      ],
+      "source_formulae": [
+        "P0R05032: VII. The Embodied Brain and the Extended Environment (L6 Coupling)",
+        "P0R05033: The embodied brain (L1-L5) couples with the Planetary-Biospheric field (L6).",
+        "P0R05034: Geophysical Coupling (CGI): Phase-locking of L4 UPDE with Schumann Resonances. Sensitivity to the Geomagnetic Field via L1 mechanisms (RPM in Cryptochromes, Magnetite).",
+        "P0R05035: [IMAGE:]",
+        "P0R05036: Fig.: Parameter regimes: Psychedelics (sigma>1, bkb_kbk, priors relaxed), Meditation/Flow (sigma1, FFF), Anaesthesia (sigma<1, , decoupling).",
+        "P0R05037: Interspecies Interaction (Xenosphere): Coupling with non-human consciousness via L5 resonance (MNS) and the Gut-Brain Axis (linking to MQN).",
+        "P0R05038: P0R05038"
+      ],
+      "source_ledger_ids": [
+        "P0R05026",
+        "P0R05027",
+        "P0R05028",
+        "P0R05029",
+        "P0R05030",
+        "P0R05031",
+        "P0R05032",
+        "P0R05033",
+        "P0R05034",
+        "P0R05035",
+        "P0R05036",
+        "P0R05037",
+        "P0R05038"
+      ],
+      "source_record_ids": [
+        "P0B05026",
+        "P0B05027",
+        "P0B05028",
+        "P0B05029",
+        "P0B05030",
+        "P0B05031",
+        "P0B05032",
+        "P0B05033",
+        "P0B05034",
+        "P0B05035",
+        "P0B05036",
+        "P0B05037",
+        "P0B05038"
+      ],
+      "test_protocols": [
+        "preserve VII. The Embodied Brain and the Extended Environment (L6 Coupling) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_psychedelics_the_expanded_manifold.vii_the_embodied_brain_and_the_extended_environment_l6_coupling",
+      "validation_targets": [
+        "preserve records P0R05032-P0R05038"
+      ],
+      "variables": [
+        "vii_the_embodied_brain_and_the_extended_environment_l6_coupling"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 5,
+      "Header": 4,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 5,
+      "figure": 1,
+      "mechanism": 4,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 1 psychedelics the expanded manifold source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 13,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0125"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05039",
+    "source_ledger_span": [
+      "P0R05026",
+      "P0R05038"
+    ],
+    "source_record_count": 13,
+    "spec_count": 4,
+    "spec_keys": [
+      "section_1_psychedelics_the_expanded_manifold.1_psychedelics_the_expanded_manifold",
+      "section_1_psychedelics_the_expanded_manifold.2_meditation_and_flow_states_optimised_criticality",
+      "section_1_psychedelics_the_expanded_manifold.3_anaesthesia_the_decoupling",
+      "section_1_psychedelics_the_expanded_manifold.vii_the_embodied_brain_and_the_extended_environment_l6_coupling"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 1. Psychedelics (The Expanded Manifold): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

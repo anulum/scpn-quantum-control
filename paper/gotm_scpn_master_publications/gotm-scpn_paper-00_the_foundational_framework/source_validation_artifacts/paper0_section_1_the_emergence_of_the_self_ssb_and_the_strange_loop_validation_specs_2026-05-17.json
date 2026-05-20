@@ -1,0 +1,256 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '1. The Emergence of the Self (SSB and the Strange Loop):' preserves Paper 0 records P0R04517-P0R04519 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the emergence of the self ssb and the strange loop source-accounting bridge; not validation evidence",
+      "context_id": "1_the_emergence_of_the_self_ssb_and_the_strange_loop",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04517-P0R04519"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.1_the_emergence_of_the_self_ssb_and_the_strange_loop",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_emergence_of_the_self_ssb_and_the_strange_loop must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Emergence of the Self (SSB and the Strange Loop): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 1. The Emergence of the Self (SSB and the Strange Loop):",
+      "source_block_indices": [
+        4517,
+        4518,
+        4519,
+        4520,
+        4521,
+        4522,
+        4523,
+        4524,
+        4525
+      ],
+      "source_equation_ids": [
+        "P0R04517:1_the_emergence_of_the_self_ssb_and_the_strange_loop",
+        "P0R04518:1_the_emergence_of_the_self_ssb_and_the_strange_loop",
+        "P0R04519:1_the_emergence_of_the_self_ssb_and_the_strange_loop"
+      ],
+      "source_formulae": [
+        "P0R04517: 1. The Emergence of the Self (SSB and the Strange Loop):",
+        "P0R04518: The Self emerges as a stable soliton via Spontaneous Symmetry Breaking (SSB) of the underlying neural field (L4), formalised by Ginzburg-Landau theory. It is maintained by self-referential processing (Strange Loop), where the \"I\" emerges as a fixed point: I=Model(I).",
+        "P0R04519: \"Operationally, _O is the high-coherence hardware configuration; the Strange Loop is the self-referential software it uniquely sustains. The first-person I' is the emergent property of this loop instantiated in _O.\""
+      ],
+      "source_ledger_ids": [
+        "P0R04517",
+        "P0R04518",
+        "P0R04519",
+        "P0R04520",
+        "P0R04521",
+        "P0R04522",
+        "P0R04523",
+        "P0R04524",
+        "P0R04525"
+      ],
+      "source_record_ids": [
+        "P0B04517",
+        "P0B04518",
+        "P0B04519",
+        "P0B04520",
+        "P0B04521",
+        "P0B04522",
+        "P0B04523",
+        "P0B04524",
+        "P0B04525"
+      ],
+      "test_protocols": [
+        "preserve 1. The Emergence of the Self (SSB and the Strange Loop): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.1_the_emergence_of_the_self_ssb_and_the_strange_loop",
+      "validation_targets": [
+        "preserve records P0R04517-P0R04519"
+      ],
+      "variables": [
+        "1_the_emergence_of_the_self_ssb_and_the_strange_loop"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. Hierarchical Predictive Coding (HPC) in the Cortex:' preserves Paper 0 records P0R04520-P0R04522 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the emergence of the self ssb and the strange loop source-accounting bridge; not validation evidence",
+      "context_id": "2_hierarchical_predictive_coding_hpc_in_the_cortex",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04520-P0R04522"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.2_hierarchical_predictive_coding_hpc_in_the_cortex",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_hierarchical_predictive_coding_hpc_in_the_cortex must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Hierarchical Predictive Coding (HPC) in the Cortex: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 1. The Emergence of the Self (SSB and the Strange Loop):",
+      "source_block_indices": [
+        4517,
+        4518,
+        4519,
+        4520,
+        4521,
+        4522,
+        4523,
+        4524,
+        4525
+      ],
+      "source_equation_ids": [
+        "P0R04520:2_hierarchical_predictive_coding_hpc_in_the_cortex",
+        "P0R04521:2_hierarchical_predictive_coding_hpc_in_the_cortex",
+        "P0R04522:2_hierarchical_predictive_coding_hpc_in_the_cortex"
+      ],
+      "source_formulae": [
+        "P0R04520: 2. Hierarchical Predictive Coding (HPC) in the Cortex:",
+        "P0R04521: The cortex implements the HPC architecture, minimising Variational Free Energy (F).",
+        "P0R04522: Cortical Columns: The fundamental computational units. | The Flow of Information: Deep Layers (V/VI): Encode Prior Beliefs (Generative Model), associated with slower oscillations (Alpha/Beta). | Superficial Layers (II/III): Encode Prediction Errors, associated with faster oscillations (Gamma)."
+      ],
+      "source_ledger_ids": [
+        "P0R04517",
+        "P0R04518",
+        "P0R04519",
+        "P0R04520",
+        "P0R04521",
+        "P0R04522",
+        "P0R04523",
+        "P0R04524",
+        "P0R04525"
+      ],
+      "source_record_ids": [
+        "P0B04517",
+        "P0B04518",
+        "P0B04519",
+        "P0B04520",
+        "P0B04521",
+        "P0B04522",
+        "P0B04523",
+        "P0B04524",
+        "P0B04525"
+      ],
+      "test_protocols": [
+        "preserve 2. Hierarchical Predictive Coding (HPC) in the Cortex: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.2_hierarchical_predictive_coding_hpc_in_the_cortex",
+      "validation_targets": [
+        "preserve records P0R04520-P0R04522"
+      ],
+      "variables": [
+        "2_hierarchical_predictive_coding_hpc_in_the_cortex"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '3. Mapping Major Cognitive Networks:' preserves Paper 0 records P0R04523-P0R04525 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the emergence of the self ssb and the strange loop source-accounting bridge; not validation evidence",
+      "context_id": "3_mapping_major_cognitive_networks",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04523-P0R04525"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.3_mapping_major_cognitive_networks",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_mapping_major_cognitive_networks must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. Mapping Major Cognitive Networks: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 1. The Emergence of the Self (SSB and the Strange Loop):",
+      "source_block_indices": [
+        4517,
+        4518,
+        4519,
+        4520,
+        4521,
+        4522,
+        4523,
+        4524,
+        4525
+      ],
+      "source_equation_ids": [
+        "P0R04523:3_mapping_major_cognitive_networks",
+        "P0R04524:3_mapping_major_cognitive_networks",
+        "P0R04525:3_mapping_major_cognitive_networks"
+      ],
+      "source_formulae": [
+        "P0R04523: 3. Mapping Major Cognitive Networks:",
+        "P0R04524: Cognitive functions are mapped onto large-scale networks operating at criticality.",
+        "P0R04525: Default Mode Network (DMN): The substrate of the narrative self and the core of the \"Strange Loop.\" The primary physical correlate of the O field's ground state. | Salience Network (SN): (Insula, ACC). Detects salient stimuli and switches between DMN and CEN. Modulates Free Energy allocation. | Central Executive Network (CEN): (DLPFC, PPC). Goal-directed behaviour, working memory, implementation of Agency (via QZE/IET)."
+      ],
+      "source_ledger_ids": [
+        "P0R04517",
+        "P0R04518",
+        "P0R04519",
+        "P0R04520",
+        "P0R04521",
+        "P0R04522",
+        "P0R04523",
+        "P0R04524",
+        "P0R04525"
+      ],
+      "source_record_ids": [
+        "P0B04517",
+        "P0B04518",
+        "P0B04519",
+        "P0B04520",
+        "P0B04521",
+        "P0B04522",
+        "P0B04523",
+        "P0B04524",
+        "P0B04525"
+      ],
+      "test_protocols": [
+        "preserve 3. Mapping Major Cognitive Networks: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.3_mapping_major_cognitive_networks",
+      "validation_targets": [
+        "preserve records P0R04523-P0R04525"
+      ],
+      "variables": [
+        "3_mapping_major_cognitive_networks"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 6,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded section 1 the emergence of the self ssb and the strange loop source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04526",
+    "source_ledger_span": [
+      "P0R04517",
+      "P0R04525"
+    ],
+    "source_record_count": 9,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.1_the_emergence_of_the_self_ssb_and_the_strange_loop",
+      "section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.2_hierarchical_predictive_coding_hpc_in_the_cortex",
+      "section_1_the_emergence_of_the_self_ssb_and_the_strange_loop.3_mapping_major_cognitive_networks"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 1. The Emergence of the Self (SSB and the Strange Loop): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

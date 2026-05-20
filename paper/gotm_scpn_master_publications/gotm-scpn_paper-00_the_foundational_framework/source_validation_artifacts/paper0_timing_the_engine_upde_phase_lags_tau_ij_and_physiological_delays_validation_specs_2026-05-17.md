@@ -1,0 +1,20 @@
+# Paper 0 Timing the Engine: UPDE Phase-Lags ($\tau_{ij}$) and Physiological Delays Specs
+
+- Source span: P0R02223 - P0R02236
+- Source records: 14
+- Consumed source records: 14
+- Coverage match: True
+- Spec count: 1
+- Claim boundary: source-bounded timing the engine upde phase lags tau ij and physiological delays source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R02237
+
+## Specs
+### `timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays.timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays`
+
+The source-bounded component 'Timing the Engine: UPDE Phase-Lags ($\tau_{ij}$) and Physiological Delays' preserves Paper 0 records P0R02223-P0R02236 without empirical validation claims.
+
+- Context: `timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays`
+- Protocol: `paper0.timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays.timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays`
+- Source equations: P0R02223:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02224:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02225:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02226:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02227:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02228:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02229:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02230:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02231:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02232:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02233:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02234:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02235:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays, P0R02236:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays
+- Null controls: timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays must remain source-bounded accounting

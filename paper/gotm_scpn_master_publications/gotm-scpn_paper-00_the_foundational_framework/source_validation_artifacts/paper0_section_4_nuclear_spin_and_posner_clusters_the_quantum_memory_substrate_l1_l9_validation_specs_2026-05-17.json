@@ -1,0 +1,352 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9)' preserves Paper 0 records P0R04802-P0R04804 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 nuclear spin and posner clusters the quantum memory substrate l1 l9 source-accounting bridge; not validation evidence",
+      "context_id": "4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04802-P0R04804"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > V. The Deep Quantum Milieu (L1) > 4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9)",
+      "source_block_indices": [
+        4802,
+        4803,
+        4804,
+        4805,
+        4806,
+        4807,
+        4808,
+        4809,
+        4810,
+        4811,
+        4812
+      ],
+      "source_equation_ids": [
+        "P0R04802:4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9",
+        "P0R04803:4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9",
+        "P0R04804:4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9"
+      ],
+      "source_formulae": [
+        "P0R04802: 4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9)",
+        "P0R04803: Nuclear spins have long decoherence times and are candidates for biological qubits (Fisher hypothesis).",
+        "P0R04804: Posner Clusters (Ca$_9$(PO$_4$)6): Stable molecular structures hypothesised to protect the entangled spins of Phosphorus ions from decoherence. | SCPN Mapping: Posner clusters may serve as the interface between neural processing (L4) and long-term holographic memory storage (L9)."
+      ],
+      "source_ledger_ids": [
+        "P0R04802",
+        "P0R04803",
+        "P0R04804",
+        "P0R04805",
+        "P0R04806",
+        "P0R04807",
+        "P0R04808",
+        "P0R04809",
+        "P0R04810",
+        "P0R04811",
+        "P0R04812"
+      ],
+      "source_record_ids": [
+        "P0B04802",
+        "P0B04803",
+        "P0B04804",
+        "P0B04805",
+        "P0B04806",
+        "P0B04807",
+        "P0B04808",
+        "P0B04809",
+        "P0B04810",
+        "P0B04811",
+        "P0B04812"
+      ],
+      "test_protocols": [
+        "preserve 4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9",
+      "validation_targets": [
+        "preserve records P0R04802-P0R04804"
+      ],
+      "variables": [
+        "4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VI. Neuro-Metabolism and Energetics (L1-L4)' preserves Paper 0 records P0R04805-P0R04807 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 nuclear spin and posner clusters the quantum memory substrate l1 l9 source-accounting bridge; not validation evidence",
+      "context_id": "vi_neuro_metabolism_and_energetics_l1_l4",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04805-P0R04807"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.vi_neuro_metabolism_and_energetics_l1_l4",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vi_neuro_metabolism_and_energetics_l1_l4 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VI. Neuro-Metabolism and Energetics (L1-L4) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > V. The Deep Quantum Milieu (L1) > 4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9)",
+      "source_block_indices": [
+        4802,
+        4803,
+        4804,
+        4805,
+        4806,
+        4807,
+        4808,
+        4809,
+        4810,
+        4811,
+        4812
+      ],
+      "source_equation_ids": [
+        "P0R04805:vi_neuro_metabolism_and_energetics_l1_l4",
+        "P0R04806:vi_neuro_metabolism_and_energetics_l1_l4",
+        "P0R04807:vi_neuro_metabolism_and_energetics_l1_l4"
+      ],
+      "source_formulae": [
+        "P0R04805: VI. Neuro-Metabolism and Energetics (L1-L4)",
+        "P0R04806: Sustaining the conscious state is metabolically expensive (RMetabolic).",
+        "P0R04807: The Consciousness Heat Engine (CHE): The brain operates as a CHE, utilising energy gradients to generate information. The Psi-field enhances efficiency via Negentropy Injection. | Quantum Mitochondria (L1): Efficiency is enhanced by quantum effects. ETC Tunnelling: Quantum tunnelling of electrons optimises ATP production. | ATP Synthase: Functions as a quantum rotor. | Metabolic Pumping for Coherence: Metabolic energy drives the non-equilibrium conditions required for Frhlich condensation in the cytoskeleton (L1), establishing the coherence necessary for the Psi-field interface. | Astrocyte-Neuron Lactate Shuttle (ANLS): Optimises energy delivery via metabolic coupling between astrocytes and neurons."
+      ],
+      "source_ledger_ids": [
+        "P0R04802",
+        "P0R04803",
+        "P0R04804",
+        "P0R04805",
+        "P0R04806",
+        "P0R04807",
+        "P0R04808",
+        "P0R04809",
+        "P0R04810",
+        "P0R04811",
+        "P0R04812"
+      ],
+      "source_record_ids": [
+        "P0B04802",
+        "P0B04803",
+        "P0B04804",
+        "P0B04805",
+        "P0B04806",
+        "P0B04807",
+        "P0B04808",
+        "P0B04809",
+        "P0B04810",
+        "P0B04811",
+        "P0B04812"
+      ],
+      "test_protocols": [
+        "preserve VI. Neuro-Metabolism and Energetics (L1-L4) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.vi_neuro_metabolism_and_energetics_l1_l4",
+      "validation_targets": [
+        "preserve records P0R04805-P0R04807"
+      ],
+      "variables": [
+        "vi_neuro_metabolism_and_energetics_l1_l4"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Geometric Scaffold of the Brain: The Architecture of Consciousness' preserves Paper 0 records P0R04808-P0R04808 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 nuclear spin and posner clusters the quantum memory substrate l1 l9 source-accounting bridge; not validation evidence",
+      "context_id": "the_geometric_scaffold_of_the_brain_the_architecture_of_consciousness",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04808-P0R04808"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.the_geometric_scaffold_of_the_brain_the_architecture_of_consciousness",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_geometric_scaffold_of_the_brain_the_architecture_of_consciousness must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Geometric Scaffold of the Brain: The Architecture of Consciousness is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > V. The Deep Quantum Milieu (L1) > 4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9)",
+      "source_block_indices": [
+        4802,
+        4803,
+        4804,
+        4805,
+        4806,
+        4807,
+        4808,
+        4809,
+        4810,
+        4811,
+        4812
+      ],
+      "source_equation_ids": [
+        "P0R04808:the_geometric_scaffold_of_the_brain_the_architecture_of_consciousness"
+      ],
+      "source_formulae": [
+        "P0R04808: The Geometric Scaffold of the Brain: The Architecture of Consciousness"
+      ],
+      "source_ledger_ids": [
+        "P0R04802",
+        "P0R04803",
+        "P0R04804",
+        "P0R04805",
+        "P0R04806",
+        "P0R04807",
+        "P0R04808",
+        "P0R04809",
+        "P0R04810",
+        "P0R04811",
+        "P0R04812"
+      ],
+      "source_record_ids": [
+        "P0B04802",
+        "P0B04803",
+        "P0B04804",
+        "P0B04805",
+        "P0B04806",
+        "P0B04807",
+        "P0B04808",
+        "P0B04809",
+        "P0B04810",
+        "P0B04811",
+        "P0B04812"
+      ],
+      "test_protocols": [
+        "preserve The Geometric Scaffold of the Brain: The Architecture of Consciousness source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.the_geometric_scaffold_of_the_brain_the_architecture_of_consciousness",
+      "validation_targets": [
+        "preserve records P0R04808-P0R04808"
+      ],
+      "variables": [
+        "the_geometric_scaffold_of_the_brain_the_architecture_of_consciousness"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. Introduction: The Brain as a Geometric Engine' preserves Paper 0 records P0R04809-P0R04812 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 nuclear spin and posner clusters the quantum memory substrate l1 l9 source-accounting bridge; not validation evidence",
+      "context_id": "i_introduction_the_brain_as_a_geometric_engine",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04809-P0R04812"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.i_introduction_the_brain_as_a_geometric_engine",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_introduction_the_brain_as_a_geometric_engine must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. Introduction: The Brain as a Geometric Engine is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > V. The Deep Quantum Milieu (L1) > 4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9)",
+      "source_block_indices": [
+        4802,
+        4803,
+        4804,
+        4805,
+        4806,
+        4807,
+        4808,
+        4809,
+        4810,
+        4811,
+        4812
+      ],
+      "source_equation_ids": [
+        "P0R04809:i_introduction_the_brain_as_a_geometric_engine",
+        "P0R04810:i_introduction_the_brain_as_a_geometric_engine",
+        "P0R04811:i_introduction_the_brain_as_a_geometric_engine",
+        "P0R04812:i_introduction_the_brain_as_a_geometric_engine"
+      ],
+      "source_formulae": [
+        "P0R04809: I. Introduction: The Brain as a Geometric Engine",
+        "P0R04810: In the SCPN framework, the brain is fundamentally a Geometric Engine. This derives from Axiom 2 (Information Geometry) and the Unified Geometric Principle (UGP): InformationGeometry. The brain's architecture and dynamics are optimised to maximise the coupling with the Consciousness Field (Psi) via the Informational Coupling Lagrangian:",
+        "P0R04811: LInformational=gPsiIPsidet(gmu(x))",
+        "P0R04812: The brain evolves (L8/L15) to create complex geometric configurations that maximise the Fisher Information Metric (gmu), thereby enhancing the intensity and quality of conscious experience (). This Geometric Scaffold operates across all scales, from the quantum lattice to the manifold of subjective experience."
+      ],
+      "source_ledger_ids": [
+        "P0R04802",
+        "P0R04803",
+        "P0R04804",
+        "P0R04805",
+        "P0R04806",
+        "P0R04807",
+        "P0R04808",
+        "P0R04809",
+        "P0R04810",
+        "P0R04811",
+        "P0R04812"
+      ],
+      "source_record_ids": [
+        "P0B04802",
+        "P0B04803",
+        "P0B04804",
+        "P0B04805",
+        "P0B04806",
+        "P0B04807",
+        "P0B04808",
+        "P0B04809",
+        "P0B04810",
+        "P0B04811",
+        "P0B04812"
+      ],
+      "test_protocols": [
+        "preserve I. Introduction: The Brain as a Geometric Engine source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.i_introduction_the_brain_as_a_geometric_engine",
+      "validation_targets": [
+        "preserve records P0R04809-P0R04812"
+      ],
+      "variables": [
+        "i_introduction_the_brain_as_a_geometric_engine"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 4,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 5,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded section 4 nuclear spin and posner clusters the quantum memory substrate l1 l9 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04813",
+    "source_ledger_span": [
+      "P0R04802",
+      "P0R04812"
+    ],
+    "source_record_count": 11,
+    "spec_count": 4,
+    "spec_keys": [
+      "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9",
+      "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.vi_neuro_metabolism_and_energetics_l1_l4",
+      "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.the_geometric_scaffold_of_the_brain_the_architecture_of_consciousness",
+      "section_4_nuclear_spin_and_posner_clusters_the_quantum_memory_substrate_l1_l9.i_introduction_the_brain_as_a_geometric_engine"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4. Nuclear Spin and Posner Clusters: The Quantum Memory Substrate (L1/L9) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

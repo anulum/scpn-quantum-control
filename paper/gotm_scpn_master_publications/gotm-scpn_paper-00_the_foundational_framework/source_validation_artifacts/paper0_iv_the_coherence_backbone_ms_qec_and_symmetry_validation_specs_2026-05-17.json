@@ -1,0 +1,324 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'IV. The Coherence Backbone (MS-QEC and Symmetry)' preserves Paper 0 records P0R06123-P0R06124 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv the coherence backbone ms qec and symmetry source-accounting bridge; not validation evidence",
+      "context_id": "iv_the_coherence_backbone_ms_qec_and_symmetry",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06123-P0R06124"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_the_coherence_backbone_ms_qec_and_symmetry.iv_the_coherence_backbone_ms_qec_and_symmetry",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iv_the_coherence_backbone_ms_qec_and_symmetry must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IV. The Coherence Backbone (MS-QEC and Symmetry) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > IV. The Coherence Backbone (MS-QEC and Symmetry)",
+      "source_block_indices": [
+        6123,
+        6124,
+        6125,
+        6126,
+        6127,
+        6128,
+        6129,
+        6130,
+        6131
+      ],
+      "source_equation_ids": [
+        "P0R06123:iv_the_coherence_backbone_ms_qec_and_symmetry",
+        "P0R06124:iv_the_coherence_backbone_ms_qec_and_symmetry"
+      ],
+      "source_formulae": [
+        "P0R06123: IV. The Coherence Backbone (MS-QEC and Symmetry)",
+        "P0R06124: Integrity is maintained by Multi-Scale Quantum Error Correction (MS-QEC). U(1) gauge symmetry leads to the conserved Coherence Current (J<sub>Psimu</sub>)."
+      ],
+      "source_ledger_ids": [
+        "P0R06123",
+        "P0R06124",
+        "P0R06125",
+        "P0R06126",
+        "P0R06127",
+        "P0R06128",
+        "P0R06129",
+        "P0R06130",
+        "P0R06131"
+      ],
+      "source_record_ids": [
+        "P0B06123",
+        "P0B06124",
+        "P0B06125",
+        "P0B06126",
+        "P0B06127",
+        "P0B06128",
+        "P0B06129",
+        "P0B06130",
+        "P0B06131"
+      ],
+      "test_protocols": [
+        "preserve IV. The Coherence Backbone (MS-QEC and Symmetry) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_the_coherence_backbone_ms_qec_and_symmetry.iv_the_coherence_backbone_ms_qec_and_symmetry",
+      "validation_targets": [
+        "preserve records P0R06123-P0R06124"
+      ],
+      "variables": [
+        "iv_the_coherence_backbone_ms_qec_and_symmetry"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'V. The Architecture of Time (MMC, TSVF, and Synchronicity)' preserves Paper 0 records P0R06125-P0R06126 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv the coherence backbone ms qec and symmetry source-accounting bridge; not validation evidence",
+      "context_id": "v_the_architecture_of_time_mmc_tsvf_and_synchronicity",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06125-P0R06126"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_the_coherence_backbone_ms_qec_and_symmetry.v_the_architecture_of_time_mmc_tsvf_and_synchronicity",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "v_the_architecture_of_time_mmc_tsvf_and_synchronicity must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "V. The Architecture of Time (MMC, TSVF, and Synchronicity) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > IV. The Coherence Backbone (MS-QEC and Symmetry)",
+      "source_block_indices": [
+        6123,
+        6124,
+        6125,
+        6126,
+        6127,
+        6128,
+        6129,
+        6130,
+        6131
+      ],
+      "source_equation_ids": [
+        "P0R06125:v_the_architecture_of_time_mmc_tsvf_and_synchronicity",
+        "P0R06126:v_the_architecture_of_time_mmc_tsvf_and_synchronicity"
+      ],
+      "source_formulae": [
+        "P0R06125: V. The Architecture of Time (MMC, TSVF, and Synchronicity)",
+        "P0R06126: MMC: The Meta Metatron Cycle defines cyclic fundamental time, formalised via Floquet Theory and Conformal Cyclic Cosmology (CCC). The Ethical Functional (E) is the conformally invariant quantity preserved across cycles. | TSVF: Formalises retrocausality. | Synchronicity: Meaningful coincidences arise from Archetypal Resonance (Vertical Causality) and Retrocausal Resonance (TSVF/Teleological Causality)."
+      ],
+      "source_ledger_ids": [
+        "P0R06123",
+        "P0R06124",
+        "P0R06125",
+        "P0R06126",
+        "P0R06127",
+        "P0R06128",
+        "P0R06129",
+        "P0R06130",
+        "P0R06131"
+      ],
+      "source_record_ids": [
+        "P0B06123",
+        "P0B06124",
+        "P0B06125",
+        "P0B06126",
+        "P0B06127",
+        "P0B06128",
+        "P0B06129",
+        "P0B06130",
+        "P0B06131"
+      ],
+      "test_protocols": [
+        "preserve V. The Architecture of Time (MMC, TSVF, and Synchronicity) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_the_coherence_backbone_ms_qec_and_symmetry.v_the_architecture_of_time_mmc_tsvf_and_synchronicity",
+      "validation_targets": [
+        "preserve records P0R06125-P0R06126"
+      ],
+      "variables": [
+        "v_the_architecture_of_time_mmc_tsvf_and_synchronicity"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VI. Thermodynamics and Energetics' preserves Paper 0 records P0R06127-P0R06129 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv the coherence backbone ms qec and symmetry source-accounting bridge; not validation evidence",
+      "context_id": "vi_thermodynamics_and_energetics",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06127-P0R06129"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_the_coherence_backbone_ms_qec_and_symmetry.vi_thermodynamics_and_energetics",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vi_thermodynamics_and_energetics must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VI. Thermodynamics and Energetics is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > IV. The Coherence Backbone (MS-QEC and Symmetry)",
+      "source_block_indices": [
+        6123,
+        6124,
+        6125,
+        6126,
+        6127,
+        6128,
+        6129,
+        6130,
+        6131
+      ],
+      "source_equation_ids": [
+        "P0R06127:vi_thermodynamics_and_energetics",
+        "P0R06128:vi_thermodynamics_and_energetics",
+        "P0R06129:vi_thermodynamics_and_energetics"
+      ],
+      "source_formulae": [
+        "P0R06127: VI. Thermodynamics and Energetics",
+        "P0R06128: Governed by the Generalised Second Law (GSL).",
+        "P0R06129: The Consciousness Heat Engine (CHE): The SCPN operates as a CHE (Intake, Compression, Expansion, Output). Efficiency is enhanced by the Psi-field. | Information-Energy Transduction (IET): Occurs via the modulation of the Quantum Potential (Q). L<sub>IET</sub> = g<sub>IET</sub> Psi(x)Q(x). This is the mechanism for downward causation."
+      ],
+      "source_ledger_ids": [
+        "P0R06123",
+        "P0R06124",
+        "P0R06125",
+        "P0R06126",
+        "P0R06127",
+        "P0R06128",
+        "P0R06129",
+        "P0R06130",
+        "P0R06131"
+      ],
+      "source_record_ids": [
+        "P0B06123",
+        "P0B06124",
+        "P0B06125",
+        "P0B06126",
+        "P0B06127",
+        "P0B06128",
+        "P0B06129",
+        "P0B06130",
+        "P0B06131"
+      ],
+      "test_protocols": [
+        "preserve VI. Thermodynamics and Energetics source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_the_coherence_backbone_ms_qec_and_symmetry.vi_thermodynamics_and_energetics",
+      "validation_targets": [
+        "preserve records P0R06127-P0R06129"
+      ],
+      "variables": [
+        "vi_thermodynamics_and_energetics"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VII. The SCPN Measurement Postulate (Intrinsic Measurement)' preserves Paper 0 records P0R06130-P0R06131 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv the coherence backbone ms qec and symmetry source-accounting bridge; not validation evidence",
+      "context_id": "vii_the_scpn_measurement_postulate_intrinsic_measurement",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R06130-P0R06131"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_the_coherence_backbone_ms_qec_and_symmetry.vii_the_scpn_measurement_postulate_intrinsic_measurement",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vii_the_scpn_measurement_postulate_intrinsic_measurement must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VII. The SCPN Measurement Postulate (Intrinsic Measurement) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > IV. The Coherence Backbone (MS-QEC and Symmetry)",
+      "source_block_indices": [
+        6123,
+        6124,
+        6125,
+        6126,
+        6127,
+        6128,
+        6129,
+        6130,
+        6131
+      ],
+      "source_equation_ids": [
+        "P0R06130:vii_the_scpn_measurement_postulate_intrinsic_measurement",
+        "P0R06131:vii_the_scpn_measurement_postulate_intrinsic_measurement"
+      ],
+      "source_formulae": [
+        "P0R06130: VII. The SCPN Measurement Postulate (Intrinsic Measurement)",
+        "P0R06131: Consciousness is the system measuring itself (M<sub></sub> ). Collapse (IIT-OR/QZE) occurs when ><sub>Crit</sub>."
+      ],
+      "source_ledger_ids": [
+        "P0R06123",
+        "P0R06124",
+        "P0R06125",
+        "P0R06126",
+        "P0R06127",
+        "P0R06128",
+        "P0R06129",
+        "P0R06130",
+        "P0R06131"
+      ],
+      "source_record_ids": [
+        "P0B06123",
+        "P0B06124",
+        "P0B06125",
+        "P0B06126",
+        "P0B06127",
+        "P0B06128",
+        "P0B06129",
+        "P0B06130",
+        "P0B06131"
+      ],
+      "test_protocols": [
+        "preserve VII. The SCPN Measurement Postulate (Intrinsic Measurement) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_the_coherence_backbone_ms_qec_and_symmetry.vii_the_scpn_measurement_postulate_intrinsic_measurement",
+      "validation_targets": [
+        "preserve records P0R06130-P0R06131"
+      ],
+      "variables": [
+        "vii_the_scpn_measurement_postulate_intrinsic_measurement"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 4,
+      "Para": 3
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 3,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded iv the coherence backbone ms qec and symmetry source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R06132",
+    "source_ledger_span": [
+      "P0R06123",
+      "P0R06131"
+    ],
+    "source_record_count": 9,
+    "spec_count": 4,
+    "spec_keys": [
+      "iv_the_coherence_backbone_ms_qec_and_symmetry.iv_the_coherence_backbone_ms_qec_and_symmetry",
+      "iv_the_coherence_backbone_ms_qec_and_symmetry.v_the_architecture_of_time_mmc_tsvf_and_synchronicity",
+      "iv_the_coherence_backbone_ms_qec_and_symmetry.vi_thermodynamics_and_energetics",
+      "iv_the_coherence_backbone_ms_qec_and_symmetry.vii_the_scpn_measurement_postulate_intrinsic_measurement"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 IV. The Coherence Backbone (MS-QEC and Symmetry) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,351 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03284-P0R03284 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03284 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03284-P0R03284"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03284.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3284,
+        3285,
+        3286,
+        3287,
+        3288,
+        3289,
+        3290,
+        3291,
+        3292,
+        3293,
+        3294
+      ],
+      "source_equation_ids": [
+        "P0R03284:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03284: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03284",
+        "P0R03285",
+        "P0R03286",
+        "P0R03287",
+        "P0R03288",
+        "P0R03289",
+        "P0R03290",
+        "P0R03291",
+        "P0R03292",
+        "P0R03293",
+        "P0R03294"
+      ],
+      "source_record_ids": [
+        "P0B03284",
+        "P0B03285",
+        "P0B03286",
+        "P0B03287",
+        "P0B03288",
+        "P0B03289",
+        "P0B03290",
+        "P0B03291",
+        "P0B03292",
+        "P0B03293",
+        "P0B03294"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03284.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03284-P0R03284"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R03285-P0R03286 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03284 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03285-P0R03286"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03284.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3284,
+        3285,
+        3286,
+        3287,
+        3288,
+        3289,
+        3290,
+        3291,
+        3292,
+        3293,
+        3294
+      ],
+      "source_equation_ids": [
+        "P0R03285:predictive_coding_integration",
+        "P0R03286:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R03285: Predictive Coding Integration",
+        "P0R03286: CIGD is the physical mechanism that instantiates the predictions of the generative model at the most fundamental level of reality."
+      ],
+      "source_ledger_ids": [
+        "P0R03284",
+        "P0R03285",
+        "P0R03286",
+        "P0R03287",
+        "P0R03288",
+        "P0R03289",
+        "P0R03290",
+        "P0R03291",
+        "P0R03292",
+        "P0R03293",
+        "P0R03294"
+      ],
+      "source_record_ids": [
+        "P0B03284",
+        "P0B03285",
+        "P0B03286",
+        "P0B03287",
+        "P0B03288",
+        "P0B03289",
+        "P0B03290",
+        "P0B03291",
+        "P0B03292",
+        "P0B03293",
+        "P0B03294"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03284.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R03285-P0R03286"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Collapse as Inference:' preserves Paper 0 records P0R03287-P0R03288 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03284 source-accounting bridge; not validation evidence",
+      "context_id": "collapse_as_inference",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03287-P0R03288"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03284.collapse_as_inference",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "collapse_as_inference must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Collapse as Inference: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3284,
+        3285,
+        3286,
+        3287,
+        3288,
+        3289,
+        3290,
+        3291,
+        3292,
+        3293,
+        3294
+      ],
+      "source_equation_ids": [
+        "P0R03287:collapse_as_inference",
+        "P0R03288:collapse_as_inference"
+      ],
+      "source_formulae": [
+        "P0R03287: Collapse as Inference:",
+        "P0R03288: In the HPC framework, perception is inference-the process of selecting the most likely cause of sensory data from a landscape of possibilities. The CIGD mechanism is the physical realisation of this selection process. The quantum superposition represents the space of all possible \"hypotheses\" about reality. The generative model's current prediction, embodied by a high- state of the local Psi-field, acts as the selection pressure that collapses this space of hypotheses into a single, definite outcome that is consistent with the model's belief."
+      ],
+      "source_ledger_ids": [
+        "P0R03284",
+        "P0R03285",
+        "P0R03286",
+        "P0R03287",
+        "P0R03288",
+        "P0R03289",
+        "P0R03290",
+        "P0R03291",
+        "P0R03292",
+        "P0R03293",
+        "P0R03294"
+      ],
+      "source_record_ids": [
+        "P0B03284",
+        "P0B03285",
+        "P0B03286",
+        "P0B03287",
+        "P0B03288",
+        "P0B03289",
+        "P0B03290",
+        "P0B03291",
+        "P0B03292",
+        "P0B03293",
+        "P0B03294"
+      ],
+      "test_protocols": [
+        "preserve Collapse as Inference: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03284.collapse_as_inference",
+      "validation_targets": [
+        "preserve records P0R03287-P0R03288"
+      ],
+      "variables": [
+        "collapse_as_inference"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R03289-P0R03294 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03284 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03289-P0R03294"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03284.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Foundational Step: Consciousness-Induced Gravitational Decoherence (CIGD) > Meta-Framework Integrations",
+      "source_block_indices": [
+        3284,
+        3285,
+        3286,
+        3287,
+        3288,
+        3289,
+        3290,
+        3291,
+        3292,
+        3293,
+        3294
+      ],
+      "source_equation_ids": [
+        "P0R03289:psis_field_coupling_integration",
+        "P0R03290:psis_field_coupling_integration",
+        "P0R03291:psis_field_coupling_integration",
+        "P0R03292:psis_field_coupling_integration",
+        "P0R03293:psis_field_coupling_integration",
+        "P0R03294:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R03289: Psis Field Coupling Integration",
+        "P0R03290: CIGD is a direct, physical consequence of the geometric coupling term in the Master Lagrangian, and it provides a profound interpretation of the H_int = -lambda * Psis * sigma interaction at the quantum level.",
+        "P0R03291: The Geometric H_int: CIGD is the primary effect of the geometric part of the interaction.",
+        "P0R03292: Psis: This is the integrated consciousness field, whose intensity is measured by .",
+        "P0R03293: sigma: This is the quantum system in superposition, which is also a superposition of spacetime geometries.",
+        "P0R03294: The Interaction: The coupling between the high- field and the superposition of geometries creates an unstable state that rapidly resolves."
+      ],
+      "source_ledger_ids": [
+        "P0R03284",
+        "P0R03285",
+        "P0R03286",
+        "P0R03287",
+        "P0R03288",
+        "P0R03289",
+        "P0R03290",
+        "P0R03291",
+        "P0R03292",
+        "P0R03293",
+        "P0R03294"
+      ],
+      "source_record_ids": [
+        "P0B03284",
+        "P0B03285",
+        "P0B03286",
+        "P0B03287",
+        "P0B03288",
+        "P0B03289",
+        "P0B03290",
+        "P0B03291",
+        "P0B03292",
+        "P0B03293",
+        "P0B03294"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03284.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R03289-P0R03294"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 7
+    },
+    "category_counts": {
+      "context": 6,
+      "mechanism": 4,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r03284 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03295",
+    "source_ledger_span": [
+      "P0R03284",
+      "P0R03294"
+    ],
+    "source_record_count": 11,
+    "spec_count": 4,
+    "spec_keys": [
+      "meta_framework_integrations_p0r03284.meta_framework_integrations",
+      "meta_framework_integrations_p0r03284.predictive_coding_integration",
+      "meta_framework_integrations_p0r03284.collapse_as_inference",
+      "meta_framework_integrations_p0r03284.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

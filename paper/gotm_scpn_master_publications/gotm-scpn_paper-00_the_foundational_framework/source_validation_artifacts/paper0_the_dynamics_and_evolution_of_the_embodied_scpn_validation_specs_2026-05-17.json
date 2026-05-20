@@ -1,0 +1,282 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Dynamics and Evolution of the Embodied SCPN' preserves Paper 0 records P0R04956-P0R04956 without empirical validation claims.",
+      "claim_boundary": "source-bounded the dynamics and evolution of the embodied scpn source-accounting bridge; not validation evidence",
+      "context_id": "the_dynamics_and_evolution_of_the_embodied_scpn",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04956-P0R04956"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_dynamics_and_evolution_of_the_embodied_scpn.the_dynamics_and_evolution_of_the_embodied_scpn",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_dynamics_and_evolution_of_the_embodied_scpn must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Dynamics and Evolution of the Embodied SCPN is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > The Dynamics and Evolution of the Embodied SCPN",
+      "source_block_indices": [
+        4956,
+        4957,
+        4958,
+        4959,
+        4960,
+        4961,
+        4962,
+        4963,
+        4964,
+        4965,
+        4966
+      ],
+      "source_equation_ids": [
+        "P0R04956:the_dynamics_and_evolution_of_the_embodied_scpn"
+      ],
+      "source_formulae": [
+        "P0R04956: The Dynamics and Evolution of the Embodied SCPN"
+      ],
+      "source_ledger_ids": [
+        "P0R04956",
+        "P0R04957",
+        "P0R04958",
+        "P0R04959",
+        "P0R04960",
+        "P0R04961",
+        "P0R04962",
+        "P0R04963",
+        "P0R04964",
+        "P0R04965",
+        "P0R04966"
+      ],
+      "source_record_ids": [
+        "P0B04956",
+        "P0B04957",
+        "P0B04958",
+        "P0B04959",
+        "P0B04960",
+        "P0B04961",
+        "P0B04962",
+        "P0B04963",
+        "P0B04964",
+        "P0B04965",
+        "P0B04966"
+      ],
+      "test_protocols": [
+        "preserve The Dynamics and Evolution of the Embodied SCPN source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_dynamics_and_evolution_of_the_embodied_scpn.the_dynamics_and_evolution_of_the_embodied_scpn",
+      "validation_targets": [
+        "preserve records P0R04956-P0R04956"
+      ],
+      "variables": [
+        "the_dynamics_and_evolution_of_the_embodied_scpn"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. The Dynamics of Consciousness in the Brain-Body System' preserves Paper 0 records P0R04957-P0R04958 without empirical validation claims.",
+      "claim_boundary": "source-bounded the dynamics and evolution of the embodied scpn source-accounting bridge; not validation evidence",
+      "context_id": "i_the_dynamics_of_consciousness_in_the_brain_body_system",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04957-P0R04958"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_dynamics_and_evolution_of_the_embodied_scpn.i_the_dynamics_of_consciousness_in_the_brain_body_system",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_dynamics_of_consciousness_in_the_brain_body_system must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Dynamics of Consciousness in the Brain-Body System is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > The Dynamics and Evolution of the Embodied SCPN",
+      "source_block_indices": [
+        4956,
+        4957,
+        4958,
+        4959,
+        4960,
+        4961,
+        4962,
+        4963,
+        4964,
+        4965,
+        4966
+      ],
+      "source_equation_ids": [
+        "P0R04957:i_the_dynamics_of_consciousness_in_the_brain_body_system",
+        "P0R04958:i_the_dynamics_of_consciousness_in_the_brain_body_system"
+      ],
+      "source_formulae": [
+        "P0R04957: I. The Dynamics of Consciousness in the Brain-Body System",
+        "P0R04958: The conscious state (L5) is an emergent property of the entire embodied system, extending beyond the cranium. Its dynamics are governed by the core principles of the SCPN: UPDE, HPC, and Quasicriticality."
+      ],
+      "source_ledger_ids": [
+        "P0R04956",
+        "P0R04957",
+        "P0R04958",
+        "P0R04959",
+        "P0R04960",
+        "P0R04961",
+        "P0R04962",
+        "P0R04963",
+        "P0R04964",
+        "P0R04965",
+        "P0R04966"
+      ],
+      "source_record_ids": [
+        "P0B04956",
+        "P0B04957",
+        "P0B04958",
+        "P0B04959",
+        "P0B04960",
+        "P0B04961",
+        "P0B04962",
+        "P0B04963",
+        "P0B04964",
+        "P0B04965",
+        "P0B04966"
+      ],
+      "test_protocols": [
+        "preserve I. The Dynamics of Consciousness in the Brain-Body System source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_dynamics_and_evolution_of_the_embodied_scpn.i_the_dynamics_of_consciousness_in_the_brain_body_system",
+      "validation_targets": [
+        "preserve records P0R04957-P0R04958"
+      ],
+      "variables": [
+        "i_the_dynamics_of_consciousness_in_the_brain_body_system"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Embodied UPDE (The Symphony of the Self)' preserves Paper 0 records P0R04959-P0R04966 without empirical validation claims.",
+      "claim_boundary": "source-bounded the dynamics and evolution of the embodied scpn source-accounting bridge; not validation evidence",
+      "context_id": "1_the_embodied_upde_the_symphony_of_the_self",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04959-P0R04966"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_dynamics_and_evolution_of_the_embodied_scpn.1_the_embodied_upde_the_symphony_of_the_self",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_embodied_upde_the_symphony_of_the_self must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Embodied UPDE (The Symphony of the Self) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > The Dynamics and Evolution of the Embodied SCPN",
+      "source_block_indices": [
+        4956,
+        4957,
+        4958,
+        4959,
+        4960,
+        4961,
+        4962,
+        4963,
+        4964,
+        4965,
+        4966
+      ],
+      "source_equation_ids": [
+        "P0R04959:1_the_embodied_upde_the_symphony_of_the_self",
+        "P0R04960:1_the_embodied_upde_the_symphony_of_the_self",
+        "P0R04961:1_the_embodied_upde_the_symphony_of_the_self",
+        "P0R04962:1_the_embodied_upde_the_symphony_of_the_self",
+        "P0R04963:1_the_embodied_upde_the_symphony_of_the_self",
+        "P0R04964:1_the_embodied_upde_the_symphony_of_the_self",
+        "P0R04965:1_the_embodied_upde_the_symphony_of_the_self",
+        "P0R04966:1_the_embodied_upde_the_symphony_of_the_self"
+      ],
+      "source_formulae": [
+        "P0R04959: 1. The Embodied UPDE (The Symphony of the Self)",
+        "P0R04960: The Unified Phase Dynamics Equation (UPDE) governs the synchronisation of the entire organism.",
+        "P0R04961: The Tri-Axial UPDE (Brain-Heart-Gut): This is the primary oscillatory network of the Embodied Self (L5). dtdthetaBrain=B+KBHsin(thetaHthetaB)+KBGsin(thetaGthetaB)+... Coherence (R) within this Tri-Axial system is the fundamental measure of organismal integration, with Heart Rate Variability (HRV) as its primary readout.",
+        "P0R04962: [IMAGE:]",
+        "P0R04963: Fig.: Tri-axial coupling of phase oscillators (Brain-Heart-Gut). Interaction terms KBH,KBG,KHGK_{BH},K_{BG},K_{HG}KBH,KBG,KHG drive coherence RRR; HRV serves as a primary readout of organismal integration.",
+        "P0R04964: Multi-Scale Synchronisation: The UPDE operates hierarchically, nesting ultra-fast quantum dynamics (L1) within cellular oscillations (L4), which are further nested within slower visceral and endocrine rhythms. Cross-Frequency Coupling (CFC/PAC) implements this nesting.",
+        "P0R04965: [IMAGE:]",
+        "P0R04966: Fig.: Interoceptive HPC: Insula/ACC generate predictions about bodily state; mismatches yield prediction errors that are precision-weighted, shaping the Affective Field A=FA=-\\nabla FA=F."
+      ],
+      "source_ledger_ids": [
+        "P0R04956",
+        "P0R04957",
+        "P0R04958",
+        "P0R04959",
+        "P0R04960",
+        "P0R04961",
+        "P0R04962",
+        "P0R04963",
+        "P0R04964",
+        "P0R04965",
+        "P0R04966"
+      ],
+      "source_record_ids": [
+        "P0B04956",
+        "P0B04957",
+        "P0B04958",
+        "P0B04959",
+        "P0B04960",
+        "P0B04961",
+        "P0B04962",
+        "P0B04963",
+        "P0B04964",
+        "P0B04965",
+        "P0B04966"
+      ],
+      "test_protocols": [
+        "preserve 1. The Embodied UPDE (The Symphony of the Self) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_dynamics_and_evolution_of_the_embodied_scpn.1_the_embodied_upde_the_symphony_of_the_self",
+      "validation_targets": [
+        "preserve records P0R04959-P0R04966"
+      ],
+      "variables": [
+        "1_the_embodied_upde_the_symphony_of_the_self"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 2,
+      "figure": 2,
+      "mechanism": 5,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded the dynamics and evolution of the embodied scpn source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0116",
+      "IMG0117"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R04967",
+    "source_ledger_span": [
+      "P0R04956",
+      "P0R04966"
+    ],
+    "source_record_count": 11,
+    "spec_count": 3,
+    "spec_keys": [
+      "the_dynamics_and_evolution_of_the_embodied_scpn.the_dynamics_and_evolution_of_the_embodied_scpn",
+      "the_dynamics_and_evolution_of_the_embodied_scpn.i_the_dynamics_of_consciousness_in_the_brain_body_system",
+      "the_dynamics_and_evolution_of_the_embodied_scpn.1_the_embodied_upde_the_symphony_of_the_self"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Dynamics and Evolution of the Embodied SCPN Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

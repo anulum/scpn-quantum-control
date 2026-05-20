@@ -1,0 +1,62 @@
+{
+  "claim_boundary": "source-bounded xiii the constructive role of noise msr and nis source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "resolving_the_first_law_paradox_the_psi_field_as_an_information_catalyst": "resolving_the_first_law_paradox_the_psi_field_as_an_information_catalyst_source_boundary",
+    "xiii_the_constructive_role_of_noise_msr_and_nis": "xiii_the_constructive_role_of_noise_msr_and_nis_source_boundary",
+    "xiv_the_physics_of_information_energy_transduction_iet": "xiv_the_physics_of_information_energy_transduction_iet_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "XIII. The Constructive Role of Noise (MSR and NIS)",
+    "component_2": "XIV. The Physics of Information-Energy Transduction (IET)",
+    "component_3": "Resolving the First Law Paradox: The $\\Psi$-Field as an Information Catalyst",
+    "component_count": "3",
+    "next_boundary": "P0R06088",
+    "section": "XIII. The Constructive Role of Noise (MSR and NIS)",
+    "source_span": "P0R06066-P0R06087"
+  },
+  "next_source_boundary": "P0R06088",
+  "null_controls": {
+    "resolving_the_first_law_paradox_the_psi_field_as_an_information_catalyst_is_not_empirical_validation_evidence": 1.0,
+    "xiii_the_constructive_role_of_noise_msr_and_nis_is_not_empirical_validation_evidence": 1.0,
+    "xiv_the_physics_of_information_energy_transduction_iet_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded xiii the constructive role of noise msr and nis source-accounting bridge; not validation evidence",
+    "protocol_state": "source_xiii_the_constructive_role_of_noise_msr_and_nis_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R06066",
+      "P0R06067",
+      "P0R06068",
+      "P0R06069",
+      "P0R06070",
+      "P0R06071",
+      "P0R06072",
+      "P0R06073",
+      "P0R06074",
+      "P0R06075",
+      "P0R06076",
+      "P0R06077",
+      "P0R06078",
+      "P0R06079",
+      "P0R06080",
+      "P0R06081",
+      "P0R06082",
+      "P0R06083",
+      "P0R06084",
+      "P0R06085",
+      "P0R06086",
+      "P0R06087"
+    ],
+    "source_ledger_span": [
+      "P0R06066",
+      "P0R06087"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06066",
+    "P0R06087"
+  ],
+  "source_record_count": 22
+}

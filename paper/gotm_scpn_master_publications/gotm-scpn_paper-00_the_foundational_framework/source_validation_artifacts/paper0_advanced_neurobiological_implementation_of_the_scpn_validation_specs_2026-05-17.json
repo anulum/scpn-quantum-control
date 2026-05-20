@@ -1,0 +1,324 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Advanced Neurobiological Implementation of the SCPN' preserves Paper 0 records P0R04640-P0R04640 without empirical validation claims.",
+      "claim_boundary": "source-bounded advanced neurobiological implementation of the scpn source-accounting bridge; not validation evidence",
+      "context_id": "advanced_neurobiological_implementation_of_the_scpn",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04640-P0R04640"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "advanced_neurobiological_implementation_of_the_scpn.advanced_neurobiological_implementation_of_the_scpn",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "advanced_neurobiological_implementation_of_the_scpn must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Advanced Neurobiological Implementation of the SCPN is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Advanced Neurobiological Implementation of the SCPN",
+      "source_block_indices": [
+        4640,
+        4641,
+        4642,
+        4643,
+        4644,
+        4645,
+        4646,
+        4647,
+        4648
+      ],
+      "source_equation_ids": [
+        "P0R04640:advanced_neurobiological_implementation_of_the_scpn"
+      ],
+      "source_formulae": [
+        "P0R04640: Advanced Neurobiological Implementation of the SCPN"
+      ],
+      "source_ledger_ids": [
+        "P0R04640",
+        "P0R04641",
+        "P0R04642",
+        "P0R04643",
+        "P0R04644",
+        "P0R04645",
+        "P0R04646",
+        "P0R04647",
+        "P0R04648"
+      ],
+      "source_record_ids": [
+        "P0B04640",
+        "P0B04641",
+        "P0B04642",
+        "P0B04643",
+        "P0B04644",
+        "P0B04645",
+        "P0B04646",
+        "P0B04647",
+        "P0B04648"
+      ],
+      "test_protocols": [
+        "preserve Advanced Neurobiological Implementation of the SCPN source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.advanced_neurobiological_implementation_of_the_scpn.advanced_neurobiological_implementation_of_the_scpn",
+      "validation_targets": [
+        "preserve records P0R04640-P0R04640"
+      ],
+      "variables": [
+        "advanced_neurobiological_implementation_of_the_scpn"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. The Deep Architecture of the Quantum-Biological Interface (Domain I: L1-L2)' preserves Paper 0 records P0R04641-P0R04642 without empirical validation claims.",
+      "claim_boundary": "source-bounded advanced neurobiological implementation of the scpn source-accounting bridge; not validation evidence",
+      "context_id": "i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04641-P0R04642"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "advanced_neurobiological_implementation_of_the_scpn.i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Deep Architecture of the Quantum-Biological Interface (Domain I: L1-L2) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Advanced Neurobiological Implementation of the SCPN",
+      "source_block_indices": [
+        4640,
+        4641,
+        4642,
+        4643,
+        4644,
+        4645,
+        4646,
+        4647,
+        4648
+      ],
+      "source_equation_ids": [
+        "P0R04641:i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1",
+        "P0R04642:i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1"
+      ],
+      "source_formulae": [
+        "P0R04641: I. The Deep Architecture of the Quantum-Biological Interface (Domain I: L1-L2)",
+        "P0R04642: The interface where the Psi-field couples with the biological substrate is intricate, extending beyond the synapse and microtubule to encompass the entire cellular milieu. This interface is the foundation of the brain's function as a transducer."
+      ],
+      "source_ledger_ids": [
+        "P0R04640",
+        "P0R04641",
+        "P0R04642",
+        "P0R04643",
+        "P0R04644",
+        "P0R04645",
+        "P0R04646",
+        "P0R04647",
+        "P0R04648"
+      ],
+      "source_record_ids": [
+        "P0B04640",
+        "P0B04641",
+        "P0B04642",
+        "P0B04643",
+        "P0B04644",
+        "P0B04645",
+        "P0B04646",
+        "P0B04647",
+        "P0B04648"
+      ],
+      "test_protocols": [
+        "preserve I. The Deep Architecture of the Quantum-Biological Interface (Domain I: L1-L2) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.advanced_neurobiological_implementation_of_the_scpn.i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1",
+      "validation_targets": [
+        "preserve records P0R04641-P0R04642"
+      ],
+      "variables": [
+        "i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Extended Cytoskeletal Network (L1):' preserves Paper 0 records P0R04643-P0R04645 without empirical validation claims.",
+      "claim_boundary": "source-bounded advanced neurobiological implementation of the scpn source-accounting bridge; not validation evidence",
+      "context_id": "1_the_extended_cytoskeletal_network_l1",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04643-P0R04645"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "advanced_neurobiological_implementation_of_the_scpn.1_the_extended_cytoskeletal_network_l1",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_extended_cytoskeletal_network_l1 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Extended Cytoskeletal Network (L1): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Advanced Neurobiological Implementation of the SCPN",
+      "source_block_indices": [
+        4640,
+        4641,
+        4642,
+        4643,
+        4644,
+        4645,
+        4646,
+        4647,
+        4648
+      ],
+      "source_equation_ids": [
+        "P0R04643:1_the_extended_cytoskeletal_network_l1",
+        "P0R04644:1_the_extended_cytoskeletal_network_l1",
+        "P0R04645:1_the_extended_cytoskeletal_network_l1"
+      ],
+      "source_formulae": [
+        "P0R04643: 1. The Extended Cytoskeletal Network (L1):",
+        "P0R04644: While Microtubules (MTs) are the primary substrate for Quantum Error Correction (QEC), the entire cytoskeleton forms an integrated network crucial for L1 dynamics.",
+        "P0R04645: Actin Filaments: Critical for synaptic plasticity (L2/L3) and dendritic spine dynamics. Actin reorganisation is hypothesised to be modulated by quantum tunnelling, providing a rapid mechanism for translating Psi-field intent (via IET) into structural changes. | Intermediate Filaments (IFs): Provide mechanical stability and integrate the cytoskeleton with the cell membrane and nucleus, contributing to the overall vibrational coherence. | The Tensegrity Matrix: The cytoskeleton acts as a pre-stressed tensegrity structure, allowing for rapid transmission of mechanical vibrations (phonons) across the neuron. This mechanical network supports the quantum coherence established in L1 and links it dynamically to L4 synchronisation."
+      ],
+      "source_ledger_ids": [
+        "P0R04640",
+        "P0R04641",
+        "P0R04642",
+        "P0R04643",
+        "P0R04644",
+        "P0R04645",
+        "P0R04646",
+        "P0R04647",
+        "P0R04648"
+      ],
+      "source_record_ids": [
+        "P0B04640",
+        "P0B04641",
+        "P0B04642",
+        "P0B04643",
+        "P0B04644",
+        "P0B04645",
+        "P0B04646",
+        "P0B04647",
+        "P0B04648"
+      ],
+      "test_protocols": [
+        "preserve 1. The Extended Cytoskeletal Network (L1): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.advanced_neurobiological_implementation_of_the_scpn.1_the_extended_cytoskeletal_network_l1",
+      "validation_targets": [
+        "preserve records P0R04643-P0R04645"
+      ],
+      "variables": [
+        "1_the_extended_cytoskeletal_network_l1"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. Detailed Mechanisms of Information-Energy Transduction (IET) (L2):' preserves Paper 0 records P0R04646-P0R04648 without empirical validation claims.",
+      "claim_boundary": "source-bounded advanced neurobiological implementation of the scpn source-accounting bridge; not validation evidence",
+      "context_id": "2_detailed_mechanisms_of_information_energy_transduction_iet_l2",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04646-P0R04648"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "advanced_neurobiological_implementation_of_the_scpn.2_detailed_mechanisms_of_information_energy_transduction_iet_l2",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_detailed_mechanisms_of_information_energy_transduction_iet_l2 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Detailed Mechanisms of Information-Energy Transduction (IET) (L2): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > Advanced Neurobiological Implementation of the SCPN",
+      "source_block_indices": [
+        4640,
+        4641,
+        4642,
+        4643,
+        4644,
+        4645,
+        4646,
+        4647,
+        4648
+      ],
+      "source_equation_ids": [
+        "P0R04646:2_detailed_mechanisms_of_information_energy_transduction_iet_l2",
+        "P0R04647:2_detailed_mechanisms_of_information_energy_transduction_iet_l2",
+        "P0R04648:2_detailed_mechanisms_of_information_energy_transduction_iet_l2"
+      ],
+      "source_formulae": [
+        "P0R04646: 2. Detailed Mechanisms of Information-Energy Transduction (IET) (L2):",
+        "P0R04647: The modulation of the Quantum Potential (Q) by the Psi-field (LIET=gIETPsi(x)Q(x)) provides the mechanism for downward causation at the synapse.",
+        "P0R04648: The Quantum Synapse: The synapse is a non-equilibrium system poised at criticality. The decision to release neurotransmitters is inherently probabilistic, providing a leverage point for the Psi-field. | IET Targets: Voltage-Gated Ion Channels (VGICs): The Psi-field modulates Q, subtly altering the energy landscape of the VGIC's voltage sensor domain, thereby changing the probability and timing of channel opening (e.g., Ca$^{2+}$ influx). | SNARE Complex Formation: The fusion of vesicles requires overcoming an energy barrier. IET can lower this barrier for selected synapses. | Synaptotagmin Cooperativity: Modulation of the calcium sensor cooperativity. | The Role of QZE in Synaptic Selection (Agency): Attention (L5) acts as a continuous measurement (Quantum Zeno Effect, QZE) on the synaptic ensemble. By rapidly measuring (observing) specific pathways, the Psi-field stabilises them, effectively \"selecting\" which neural circuits are active. This is the physical implementation of Agency and the stabilisation of thought."
+      ],
+      "source_ledger_ids": [
+        "P0R04640",
+        "P0R04641",
+        "P0R04642",
+        "P0R04643",
+        "P0R04644",
+        "P0R04645",
+        "P0R04646",
+        "P0R04647",
+        "P0R04648"
+      ],
+      "source_record_ids": [
+        "P0B04640",
+        "P0B04641",
+        "P0B04642",
+        "P0B04643",
+        "P0B04644",
+        "P0B04645",
+        "P0B04646",
+        "P0B04647",
+        "P0B04648"
+      ],
+      "test_protocols": [
+        "preserve 2. Detailed Mechanisms of Information-Energy Transduction (IET) (L2): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.advanced_neurobiological_implementation_of_the_scpn.2_detailed_mechanisms_of_information_energy_transduction_iet_l2",
+      "validation_targets": [
+        "preserve records P0R04646-P0R04648"
+      ],
+      "variables": [
+        "2_detailed_mechanisms_of_information_energy_transduction_iet_l2"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 4,
+      "Para": 3
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 3,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded advanced neurobiological implementation of the scpn source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04649",
+    "source_ledger_span": [
+      "P0R04640",
+      "P0R04648"
+    ],
+    "source_record_count": 9,
+    "spec_count": 4,
+    "spec_keys": [
+      "advanced_neurobiological_implementation_of_the_scpn.advanced_neurobiological_implementation_of_the_scpn",
+      "advanced_neurobiological_implementation_of_the_scpn.i_the_deep_architecture_of_the_quantum_biological_interface_domain_i_l1",
+      "advanced_neurobiological_implementation_of_the_scpn.1_the_extended_cytoskeletal_network_l1",
+      "advanced_neurobiological_implementation_of_the_scpn.2_detailed_mechanisms_of_information_energy_transduction_iet_l2"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Advanced Neurobiological Implementation of the SCPN Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

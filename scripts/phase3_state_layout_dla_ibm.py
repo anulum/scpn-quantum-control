@@ -8,7 +8,7 @@
 # scpn-quantum-control -- Phase 3 state/layout DLA randomisation
 """Preregistered state/layout randomisation control for DLA parity.
 
-Implements ``docs/dla_state_layout_randomisation_prereg_2026-05-06.md``.
+Implements ``docs/campaigns/dla_state_layout_randomisation_prereg_2026-05-06.md``.
 The script is fail-closed: it records live readiness by default and submits
 only when both ``--submit`` and ``--confirm-budget`` are supplied.
 """

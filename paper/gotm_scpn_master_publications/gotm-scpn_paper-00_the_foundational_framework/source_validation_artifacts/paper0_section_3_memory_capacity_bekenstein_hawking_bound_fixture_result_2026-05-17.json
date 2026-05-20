@@ -1,0 +1,61 @@
+{
+  "claim_boundary": "source-bounded section 3 memory capacity bekenstein hawking bound source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "3_memory_capacity_bekenstein_hawking_bound": "3_memory_capacity_bekenstein_hawking_bound_source_boundary",
+    "4_emergent_spacetime_ryu_takayanagi_formula": "4_emergent_spacetime_ryu_takayanagi_formula_source_boundary",
+    "p0r02263": "p0r02263_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. Memory Capacity (Bekenstein-Hawking Bound)",
+    "component_2": "P0R02263",
+    "component_3": "4. Emergent Spacetime (Ryu-Takayanagi Formula)",
+    "component_count": "3",
+    "next_boundary": "P0R02278",
+    "section": "3. Memory Capacity (Bekenstein-Hawking Bound)",
+    "source_span": "P0R02257-P0R02277"
+  },
+  "next_source_boundary": "P0R02278",
+  "null_controls": {
+    "3_memory_capacity_bekenstein_hawking_bound_is_not_empirical_validation_evidence": 1.0,
+    "4_emergent_spacetime_ryu_takayanagi_formula_is_not_empirical_validation_evidence": 1.0,
+    "p0r02263_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 memory capacity bekenstein hawking bound source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_memory_capacity_bekenstein_hawking_bound_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02257",
+      "P0R02258",
+      "P0R02259",
+      "P0R02260",
+      "P0R02261",
+      "P0R02262",
+      "P0R02263",
+      "P0R02264",
+      "P0R02265",
+      "P0R02266",
+      "P0R02267",
+      "P0R02268",
+      "P0R02269",
+      "P0R02270",
+      "P0R02271",
+      "P0R02272",
+      "P0R02273",
+      "P0R02274",
+      "P0R02275",
+      "P0R02276",
+      "P0R02277"
+    ],
+    "source_ledger_span": [
+      "P0R02257",
+      "P0R02277"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02257",
+    "P0R02277"
+  ],
+  "source_record_count": 21
+}

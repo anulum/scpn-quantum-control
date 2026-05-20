@@ -8,7 +8,7 @@
 # scpn-quantum-control -- Phase 3 GUESS DLA hardware calibration
 """Approval-gated Phase 3 GUESS / symmetry-decay hardware run.
 
-Implements ``docs/guess_symmetry_decay_prereg_2026-05-06.md``. The default
+Implements ``docs/campaigns/guess_symmetry_decay_prereg_2026-05-06.md``. The default
 mode performs live readiness only and records no raw hardware counts. Hardware
 submission requires both ``--submit`` and ``--confirm-budget``.
 """

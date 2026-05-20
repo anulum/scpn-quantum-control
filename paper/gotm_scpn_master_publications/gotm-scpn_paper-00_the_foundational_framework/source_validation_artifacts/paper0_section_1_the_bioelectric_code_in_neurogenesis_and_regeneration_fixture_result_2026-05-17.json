@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded section 1 the bioelectric code in neurogenesis and regeneration source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_bioelectric_code_in_neurogenesis_and_regeneration": "1_the_bioelectric_code_in_neurogenesis_and_regeneration_source_boundary",
+    "2_the_optimised_connectome": "2_the_optimised_connectome_source_boundary",
+    "3_the_active_role_of_glia_the_tripartite_synapse": "3_the_active_role_of_glia_the_tripartite_synapse_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "1. The Bioelectric Code in Neurogenesis and Regeneration:",
+    "component_2": "2. The Optimised Connectome:",
+    "component_3": "3. The Active Role of Glia (The Tripartite Synapse):",
+    "component_count": "3",
+    "next_boundary": "P0R04666",
+    "section": "1. The Bioelectric Code in Neurogenesis and Regeneration:",
+    "source_span": "P0R04657-P0R04665"
+  },
+  "next_source_boundary": "P0R04666",
+  "null_controls": {
+    "1_the_bioelectric_code_in_neurogenesis_and_regeneration_is_not_empirical_validation_evidence": 1.0,
+    "2_the_optimised_connectome_is_not_empirical_validation_evidence": 1.0,
+    "3_the_active_role_of_glia_the_tripartite_synapse_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 1 the bioelectric code in neurogenesis and regeneration source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_1_the_bioelectric_code_in_neurogenesis_and_regeneration_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04657",
+      "P0R04658",
+      "P0R04659",
+      "P0R04660",
+      "P0R04661",
+      "P0R04662",
+      "P0R04663",
+      "P0R04664",
+      "P0R04665"
+    ],
+    "source_ledger_span": [
+      "P0R04657",
+      "P0R04665"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04657",
+    "P0R04665"
+  ],
+  "source_record_count": 9
+}

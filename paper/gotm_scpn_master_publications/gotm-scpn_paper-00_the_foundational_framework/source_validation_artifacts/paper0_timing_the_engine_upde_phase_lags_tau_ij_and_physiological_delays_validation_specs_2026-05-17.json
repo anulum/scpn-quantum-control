@@ -1,0 +1,149 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Timing the Engine: UPDE Phase-Lags ($\\tau_{ij}$) and Physiological Delays' preserves Paper 0 records P0R02223-P0R02236 without empirical validation claims.",
+      "claim_boundary": "source-bounded timing the engine upde phase lags tau ij and physiological delays source-accounting bridge; not validation evidence",
+      "context_id": "timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02223-P0R02236"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays.timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Timing the Engine: UPDE Phase-Lags ($\\tau_{ij}$) and Physiological Delays is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Case Study: The Layer 5 (Organismal Self) Action-Perception Cycle > Timing the Engine: UPDE Phase-Lags ($\\tau_{ij}$) and Physiological Delays",
+      "source_block_indices": [
+        2223,
+        2224,
+        2225,
+        2226,
+        2227,
+        2228,
+        2229,
+        2230,
+        2231,
+        2232,
+        2233,
+        2234,
+        2235,
+        2236
+      ],
+      "source_equation_ids": [
+        "P0R02223:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02224:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02225:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02226:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02227:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02228:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02229:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02230:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02231:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02232:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02233:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02234:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02235:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+        "P0R02236:timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays"
+      ],
+      "source_formulae": [
+        "P0R02223: Timing the Engine: UPDE Phase-Lags ($\\tau_{ij}$) and Physiological Delays",
+        "P0R02224: P0R02224",
+        "P0R02225: For the four-stroke action-perception cycle to function as an integrated Active Inference engine, the sequence of policy selection, prediction, and error processing must be strictly governed by the Unified Phase Dynamics Equation (UPDE). Within an oscillatory framework, these discrete steps are physically instantiated as specific temporal delays, denoted by the phase-lag parameter $\\tau_{ij}$ in the inter-layer coupling term: $\\sin(\\theta_j(t - \\tau_{ij}) - \\theta_i(t))$.",
+        "P0R02226: The timing of this cycle is not arbitrary; it is anchored in the hard neuroanatomical conduction delays of the mammalian brain. To ground the UPDE in measurable neurophysiology, we assign the following explicit temporal parameters to the engine's strokes:",
+        "P0R02227: Policy Selection Delay ($\\tau_{BG \\to CTX}$): The transmission of the disinhibitory signal from the basal ganglia to the thalamus and subsequently to the cortex requires approximately 15-20 ms. This delay sets the foundational rhythm for initiating a new cognitive or motor policy. | Prediction Generation Delay ($\\tau_{CB \\to CTX}$): The generation of the forward sensory model requires the efference copy to travel to the cerebellum and the resulting prediction to return to the cortex via the cerebello-thalamocortical (CTC) loop. This transit time is highly conserved at approximately 10-30 ms. | Error Processing Delay ($\\tau_{CTX \\to CTX}$): The comparison of the top-down prediction with the bottom-up sensory input relies on local cortico-cortical feedforward and feedback connections, operating on a fast timescale of 5-15 ms (corresponding to the integration window of high-frequency gamma oscillations, $>30$ Hz).",
+        "P0R02228: By plugging these physiological conduction delays into the UPDE phase-lag variables, the system's dynamics are tightly constrained. The phase-locking required to minimize Free Energy ($\\sin(\\Delta\\theta) \\to 0$) can only occur if the network's intrinsic frequencies ($\\omega_i$) naturally resonate with these hardwired anatomical delays. A disruption in these specific millisecond timings-such as white matter degradation altering $\\tau_{CB \\to CTX}$-will mathematically force the UPDE out of phase-lock, manifesting clinically as dysmetria of thought and a failure of the generative model.",
+        "P0R02229: P0R02229",
+        "P0R02230: P0R02230",
+        "P0R02231: P0R02231",
+        "P0R02232: Step 4: Model Consolidation and Refinement (Sleep)",
+        "P0R02233: The learning that occurs during the rapid, online processing of wakefulness is fragile and must be consolidated for long-term stability. This is the primary function of sleep, the system's essential offline maintenance and optimisation phase. The sleep cycle orchestrates the final, crucial steps of the action-perception loop.",
+        "P0R02234: NREM Sleep (Consolidation and Criticality Reset): During deep Non-Rapid Eye Movement (NREM) sleep, a highly structured dialogue occurs between the hippocampus, thalamus, and cortex. The hippocampus, which acts as a temporary buffer for the day's experiences, replays these memories in a temporally compressed fashion. This replay is precisely coordinated with cortical slow oscillations and thalamic spindles, a temporal coupling that is believed to drive the synaptic plasticity necessary to transfer memories from the hippocampus to the neocortex for permanent storage. This is the physical mechanism by which the experiences of the Layer 5 Self are imprinted onto the Layer 9 Existential Holograph. Simultaneously, the global, synchronous activity of NREM sleep performs a vital homeostatic function, downscaling synaptic weights across the brain to reset the network to a state of healthy quasicriticality, preventing runaway excitation and ensuring computational efficiency for the next day (the Synaptic Homeostasis Hypothesis). | REM Sleep (Generative Model Refinement): Rapid Eye Movement (REM) sleep serves a complementary function. It is an active, offline state where the brain's generative model is tested and refined. During REM sleep, the brain generates vivid, internally simulated worlds (dreams) while inhibiting motor output. This allows the system to run simulations, exploring the consequences of different actions and scenarios without real-world risk. This process is thought to optimise the brain's responses to prediction errors, effectively \"pre-training\" the action-perception loop and refining the priors that will guide behaviour in the subsequent waking period.",
+        "P0R02235: This integrated, four-step cycle-Select (BG) -> Predict (Cerebellum) -> Act/Perceive (Cortex) -> Consolidate/Refine (Sleep)-provides a complete, end-to-end model of how a biological agent implements active inference. It synthesises the functions of the brain's major cortical and subcortical systems into a single, coherent, and continuously looping process of self-organisation and learning.",
+        "P0R02236: Biospheric coupling (Layer 6), Geometrical/Symbolic operators (Layer 7), Cosmological alignment (Layer 8)."
+      ],
+      "source_ledger_ids": [
+        "P0R02223",
+        "P0R02224",
+        "P0R02225",
+        "P0R02226",
+        "P0R02227",
+        "P0R02228",
+        "P0R02229",
+        "P0R02230",
+        "P0R02231",
+        "P0R02232",
+        "P0R02233",
+        "P0R02234",
+        "P0R02235",
+        "P0R02236"
+      ],
+      "source_record_ids": [
+        "P0B02223",
+        "P0B02224",
+        "P0B02225",
+        "P0B02226",
+        "P0B02227",
+        "P0B02228",
+        "P0B02229",
+        "P0B02230",
+        "P0B02231",
+        "P0B02232",
+        "P0B02233",
+        "P0B02234",
+        "P0B02235",
+        "P0B02236"
+      ],
+      "test_protocols": [
+        "preserve Timing the Engine: UPDE Phase-Lags ($\\tau_{ij}$) and Physiological Delays source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays.timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays",
+      "validation_targets": [
+        "preserve records P0R02223-P0R02236"
+      ],
+      "variables": [
+        "timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BlockQuote": 1,
+      "BulletList": 1,
+      "Header": 1,
+      "OrderedList": 1,
+      "Para": 10
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 1,
+      "mechanism": 4,
+      "structural": 4,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded timing the engine upde phase lags tau ij and physiological delays source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02237",
+    "source_ledger_span": [
+      "P0R02223",
+      "P0R02236"
+    ],
+    "source_record_count": 14,
+    "spec_count": 1,
+    "spec_keys": [
+      "timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays.timing_the_engine_upde_phase_lags_tau_ij_and_physiological_delays"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Timing the Engine: UPDE Phase-Lags ($\\tau_{ij}$) and Physiological Delays Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

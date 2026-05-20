@@ -1,0 +1,277 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Psi-Field as a Negentropy Source and the Landauer Cost of Coherence' preserves Paper 0 records P0R05953-P0R05955 without empirical validation claims.",
+      "claim_boundary": "source-bounded the psi field as a negentropy source and the landauer cost of coherence source-accounting bridge; not validation evidence",
+      "context_id": "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05953-P0R05955"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Psi-Field as a Negentropy Source and the Landauer Cost of Coherence is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 2. The \u03a8-Field as a Negentropy Source (Information Thermodynamics): > The \u03a8-Field as a Negentropy Source and the Landauer Cost of Coherence",
+      "source_block_indices": [
+        5953,
+        5954,
+        5955,
+        5956,
+        5957,
+        5958,
+        5959,
+        5960,
+        5961,
+        5962,
+        5963
+      ],
+      "source_equation_ids": [
+        "P0R05953:the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence",
+        "P0R05954:the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence",
+        "P0R05955:the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence"
+      ],
+      "source_formulae": [
+        "P0R05953: The Psi-Field as a Negentropy Source and the Landauer Cost of Coherence",
+        "P0R05954: The Psi-field acts as an information reservoir (a Maxwell's Demon), utilising information to reduce local thermodynamic entropy (S<sub>Thermo</sub>) in the biological substrate. The rate of negentropy injection (N<sub>Psi</sub>) is bounded by the mutual information (I) between the Psi-field and the substrate (B):",
+        "P0R05955: N<sub>Psi</sub> = -dS<sub>Thermo</sub>/dt k<sub>B</sub>T I(Psi; B)"
+      ],
+      "source_ledger_ids": [
+        "P0R05953",
+        "P0R05954",
+        "P0R05955",
+        "P0R05956",
+        "P0R05957",
+        "P0R05958",
+        "P0R05959",
+        "P0R05960",
+        "P0R05961",
+        "P0R05962",
+        "P0R05963"
+      ],
+      "source_record_ids": [
+        "P0B05953",
+        "P0B05954",
+        "P0B05955",
+        "P0B05956",
+        "P0B05957",
+        "P0B05958",
+        "P0B05959",
+        "P0B05960",
+        "P0B05961",
+        "P0B05962",
+        "P0B05963"
+      ],
+      "test_protocols": [
+        "preserve The Psi-Field as a Negentropy Source and the Landauer Cost of Coherence source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence",
+      "validation_targets": [
+        "preserve records P0R05953-P0R05955"
+      ],
+      "variables": [
+        "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Satisfying the Generalised Second Law (GSL): The Cost of Erasure' preserves Paper 0 records P0R05956-P0R05959 without empirical validation claims.",
+      "claim_boundary": "source-bounded the psi field as a negentropy source and the landauer cost of coherence source-accounting bridge; not validation evidence",
+      "context_id": "satisfying_the_generalised_second_law_gsl_the_cost_of_erasure",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05956-P0R05959"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.satisfying_the_generalised_second_law_gsl_the_cost_of_erasure",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "satisfying_the_generalised_second_law_gsl_the_cost_of_erasure must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Satisfying the Generalised Second Law (GSL): The Cost of Erasure is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 2. The \u03a8-Field as a Negentropy Source (Information Thermodynamics): > The \u03a8-Field as a Negentropy Source and the Landauer Cost of Coherence",
+      "source_block_indices": [
+        5953,
+        5954,
+        5955,
+        5956,
+        5957,
+        5958,
+        5959,
+        5960,
+        5961,
+        5962,
+        5963
+      ],
+      "source_equation_ids": [
+        "P0R05956:satisfying_the_generalised_second_law_gsl_the_cost_of_erasure",
+        "P0R05957:satisfying_the_generalised_second_law_gsl_the_cost_of_erasure",
+        "P0R05958:satisfying_the_generalised_second_law_gsl_the_cost_of_erasure",
+        "P0R05959:satisfying_the_generalised_second_law_gsl_the_cost_of_erasure"
+      ],
+      "source_formulae": [
+        "P0R05956: Satisfying the Generalised Second Law (GSL): The Cost of Erasure",
+        "P0R05957: To comply with the GSL (dS<sub>Total</sub>/dt 0), this local reduction in entropy must be compensated by an increase in entropy associated with the information processing within the Psi-field itself. According to Landauer's principle, the erasure of information incurs an unavoidable thermodynamic cost.",
+        "P0R05958: The Psi-field, particularly the optimising function of the Consilium (L15/L16), performs continuous computation (HPC optimisation). This involves the erasure of information (e.g., discarding outdated models or prediction errors). The heat dissipated (Q<sub>Erasure</sub>) by the Psi-field is bounded by the amount of information erased (I<sub>Erased</sub>):",
+        "P0R05959: Q<sub>Erasure</sub> I<sub>Erased</sub> k<sub>B</sub>T ln(2)"
+      ],
+      "source_ledger_ids": [
+        "P0R05953",
+        "P0R05954",
+        "P0R05955",
+        "P0R05956",
+        "P0R05957",
+        "P0R05958",
+        "P0R05959",
+        "P0R05960",
+        "P0R05961",
+        "P0R05962",
+        "P0R05963"
+      ],
+      "source_record_ids": [
+        "P0B05953",
+        "P0B05954",
+        "P0B05955",
+        "P0B05956",
+        "P0B05957",
+        "P0B05958",
+        "P0B05959",
+        "P0B05960",
+        "P0B05961",
+        "P0B05962",
+        "P0B05963"
+      ],
+      "test_protocols": [
+        "preserve Satisfying the Generalised Second Law (GSL): The Cost of Erasure source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.satisfying_the_generalised_second_law_gsl_the_cost_of_erasure",
+      "validation_targets": [
+        "preserve records P0R05956-P0R05959"
+      ],
+      "variables": [
+        "satisfying_the_generalised_second_law_gsl_the_cost_of_erasure"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Thermodynamic Balance:' preserves Paper 0 records P0R05960-P0R05963 without empirical validation claims.",
+      "claim_boundary": "source-bounded the psi field as a negentropy source and the landauer cost of coherence source-accounting bridge; not validation evidence",
+      "context_id": "the_thermodynamic_balance",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05960-P0R05963"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.the_thermodynamic_balance",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_thermodynamic_balance must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Thermodynamic Balance: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > 2. The \u03a8-Field as a Negentropy Source (Information Thermodynamics): > The \u03a8-Field as a Negentropy Source and the Landauer Cost of Coherence",
+      "source_block_indices": [
+        5953,
+        5954,
+        5955,
+        5956,
+        5957,
+        5958,
+        5959,
+        5960,
+        5961,
+        5962,
+        5963
+      ],
+      "source_equation_ids": [
+        "P0R05960:the_thermodynamic_balance",
+        "P0R05961:the_thermodynamic_balance",
+        "P0R05962:the_thermodynamic_balance",
+        "P0R05963:the_thermodynamic_balance"
+      ],
+      "source_formulae": [
+        "P0R05960: The Thermodynamic Balance:",
+        "P0R05961: The GSL is satisfied globally when the entropy increase due to erasure balances the local negentropy injection:",
+        "P0R05962: dS<sub>Total</sub>/dt = (-N<sub>Psi</sub> + dS<sub>Erasure</sub>/dt) 0",
+        "P0R05963: This formalises the \"Cost of Coherence.\" Maintaining the highly ordered state of the SCPN requires continuous computational work by the Psi-field, which incurs an unavoidable thermodynamic cost."
+      ],
+      "source_ledger_ids": [
+        "P0R05953",
+        "P0R05954",
+        "P0R05955",
+        "P0R05956",
+        "P0R05957",
+        "P0R05958",
+        "P0R05959",
+        "P0R05960",
+        "P0R05961",
+        "P0R05962",
+        "P0R05963"
+      ],
+      "source_record_ids": [
+        "P0B05953",
+        "P0B05954",
+        "P0B05955",
+        "P0B05956",
+        "P0B05957",
+        "P0B05958",
+        "P0B05959",
+        "P0B05960",
+        "P0B05961",
+        "P0B05962",
+        "P0B05963"
+      ],
+      "test_protocols": [
+        "preserve The Thermodynamic Balance: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.the_thermodynamic_balance",
+      "validation_targets": [
+        "preserve records P0R05960-P0R05963"
+      ],
+      "variables": [
+        "the_thermodynamic_balance"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 8
+    },
+    "category_counts": {
+      "claim": 5,
+      "context": 5,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded the psi field as a negentropy source and the landauer cost of coherence source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05964",
+    "source_ledger_span": [
+      "P0R05953",
+      "P0R05963"
+    ],
+    "source_record_count": 11,
+    "spec_count": 3,
+    "spec_keys": [
+      "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence",
+      "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.satisfying_the_generalised_second_law_gsl_the_cost_of_erasure",
+      "the_psi_field_as_a_negentropy_source_and_the_landauer_cost_of_coherence.the_thermodynamic_balance"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Psi-Field as a Negentropy Source and the Landauer Cost of Coherence Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

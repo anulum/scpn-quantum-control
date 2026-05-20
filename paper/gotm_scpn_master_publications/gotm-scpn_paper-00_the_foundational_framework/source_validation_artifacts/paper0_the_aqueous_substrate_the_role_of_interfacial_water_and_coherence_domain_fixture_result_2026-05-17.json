@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded the aqueous substrate the role of interfacial water and coherence domain source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "p0r05299": "p0r05299_source_boundary",
+    "the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain": "the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Aqueous Substrate - The Role of Interfacial Water and Coherence Domains",
+    "component_2": "P0R05299",
+    "component_count": "2",
+    "next_boundary": "P0R05306",
+    "section": "The Aqueous Substrate - The Role of Interfacial Water and Coherence Domains",
+    "source_span": "P0R05293-P0R05305"
+  },
+  "next_source_boundary": "P0R05306",
+  "null_controls": {
+    "p0r05299_is_not_empirical_validation_evidence": 1.0,
+    "the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the aqueous substrate the role of interfacial water and coherence domain source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_aqueous_substrate_the_role_of_interfacial_water_and_coherence_domain_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05293",
+      "P0R05294",
+      "P0R05295",
+      "P0R05296",
+      "P0R05297",
+      "P0R05298",
+      "P0R05299",
+      "P0R05300",
+      "P0R05301",
+      "P0R05302",
+      "P0R05303",
+      "P0R05304",
+      "P0R05305"
+    ],
+    "source_ledger_span": [
+      "P0R05293",
+      "P0R05305"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05293",
+    "P0R05305"
+  ],
+  "source_record_count": 13
+}

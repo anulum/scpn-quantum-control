@@ -1,0 +1,276 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE)' preserves Paper 0 records P0R02580-P0R02581 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 2 the dynamic spine the unified phase dynamics equation upde source-accounting bridge; not validation evidence",
+      "context_id": "3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02580-P0R02581"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde.3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE)",
+      "source_block_indices": [
+        2580,
+        2581,
+        2582,
+        2583,
+        2584,
+        2585,
+        2586,
+        2587,
+        2588,
+        2589,
+        2590,
+        2591,
+        2592,
+        2593,
+        2594,
+        2595,
+        2596,
+        2597,
+        2598,
+        2599
+      ],
+      "source_equation_ids": [
+        "P0R02580:3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde",
+        "P0R02581:3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde"
+      ],
+      "source_formulae": [
+        "P0R02580: 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE)",
+        "P0R02581: P0R02581"
+      ],
+      "source_ledger_ids": [
+        "P0R02580",
+        "P0R02581",
+        "P0R02582",
+        "P0R02583",
+        "P0R02584",
+        "P0R02585",
+        "P0R02586",
+        "P0R02587",
+        "P0R02588",
+        "P0R02589",
+        "P0R02590",
+        "P0R02591",
+        "P0R02592",
+        "P0R02593",
+        "P0R02594",
+        "P0R02595",
+        "P0R02596",
+        "P0R02597",
+        "P0R02598",
+        "P0R02599"
+      ],
+      "source_record_ids": [
+        "P0B02580",
+        "P0B02581",
+        "P0B02582",
+        "P0B02583",
+        "P0B02584",
+        "P0B02585",
+        "P0B02586",
+        "P0B02587",
+        "P0B02588",
+        "P0B02589",
+        "P0B02590",
+        "P0B02591",
+        "P0B02592",
+        "P0B02593",
+        "P0B02594",
+        "P0B02595",
+        "P0B02596",
+        "P0B02597",
+        "P0B02598",
+        "P0B02599"
+      ],
+      "test_protocols": [
+        "preserve 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde.3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde",
+      "validation_targets": [
+        "preserve records P0R02580-P0R02581"
+      ],
+      "variables": [
+        "3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Unified Phase Dynamics Equation (UPDE)' preserves Paper 0 records P0R02582-P0R02599 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 2 the dynamic spine the unified phase dynamics equation upde source-accounting bridge; not validation evidence",
+      "context_id": "the_unified_phase_dynamics_equation_upde",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02582-P0R02599"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde.the_unified_phase_dynamics_equation_upde",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_unified_phase_dynamics_equation_upde must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Unified Phase Dynamics Equation (UPDE) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE)",
+      "source_block_indices": [
+        2580,
+        2581,
+        2582,
+        2583,
+        2584,
+        2585,
+        2586,
+        2587,
+        2588,
+        2589,
+        2590,
+        2591,
+        2592,
+        2593,
+        2594,
+        2595,
+        2596,
+        2597,
+        2598,
+        2599
+      ],
+      "source_equation_ids": [
+        "P0R02582:the_unified_phase_dynamics_equation_upde",
+        "P0R02583:the_unified_phase_dynamics_equation_upde",
+        "P0R02584:the_unified_phase_dynamics_equation_upde",
+        "P0R02585:the_unified_phase_dynamics_equation_upde",
+        "P0R02586:the_unified_phase_dynamics_equation_upde",
+        "P0R02587:the_unified_phase_dynamics_equation_upde",
+        "P0R02588:the_unified_phase_dynamics_equation_upde",
+        "P0R02589:the_unified_phase_dynamics_equation_upde",
+        "P0R02590:the_unified_phase_dynamics_equation_upde",
+        "P0R02591:the_unified_phase_dynamics_equation_upde",
+        "P0R02592:the_unified_phase_dynamics_equation_upde",
+        "P0R02593:the_unified_phase_dynamics_equation_upde",
+        "P0R02594:the_unified_phase_dynamics_equation_upde",
+        "P0R02595:the_unified_phase_dynamics_equation_upde",
+        "P0R02596:the_unified_phase_dynamics_equation_upde",
+        "P0R02597:the_unified_phase_dynamics_equation_upde",
+        "P0R02598:the_unified_phase_dynamics_equation_upde",
+        "P0R02599:the_unified_phase_dynamics_equation_upde"
+      ],
+      "source_formulae": [
+        "P0R02582: The Unified Phase Dynamics Equation (UPDE)",
+        "P0R02583: This section introduces the mathematical backbone of the entire SCPN framework: the Unified Phase Dynamics Equation (UPDE). This equation formalises Core Assumption 4 by providing a generalised, multi-scale extension of the Kuramoto model, designed to describe the evolution of phase oscillators across all 15 layers. The UPDE is the universal law of synchronisation and information flow in the network.",
+        "P0R02584: The equation's structure is a summation of five distinct components;",
+        "P0R02585: 1) Intrinsic Dynamics () represents the natural frequency of oscillation at a given layer.",
+        "P0R02586: 2) Intra-Layer Coupling (K) governs local synchronisation among oscillators within the same layer.",
+        "P0R02587: 3) Inter-Layer Coupling (C_InterLayer) is the critical term that manages the hierarchical information flow, with downward causation (F_D) often implemented via phase-amplitude coupling and upward influence (G_U) via coherence aggregation.",
+        "P0R02588: 4) Field Coupling (C_Field) represents the direct, top-down influence of the global Psi-field, providing a mechanism for system-wide coherence and teleological guidance from Layer 15.",
+        "P0R02589: 5) Noise () accounts for stochastic fluctuations, essential for the system's ability to explore its state space and maintain quasicriticality.",
+        "P0R02590: Crucially, the framework provides an Information-Geometric Lift of the UPDE. This re-frames the equation's dynamics not as a simple mechanical evolution, but as a gradient flow on a statistical manifold governed by the Fisher Information Metric. This interpretation is profound, as it directly harmonises the system's dynamics with Axiom 2 (\"interactions are informational and geometric\"). The \"One Spine, Many Couplings\" table further demonstrates the model's power and parsimony, showing how this single, universal dynamic equation can describe phenomena as diverse as microtubule vibrations and noospheric opinion dynamics simply by specifying the layer-appropriate coupling kernels and noise models.",
+        "P0R02591: This section unveils the single most important equation in our entire architecture: the Unified Phase Dynamics Equation (UPDE). Think of it as the universal operating system or the central nervous system for all 15 layers of reality. It's the \"spine\" that connects everything and allows it all to work in harmony. It's a surprisingly simple set of rules that governs how everything, from a brain cell to a galaxy, synchronises and communicates.",
+        "P0R02592: Imagine a single musician in a vast, 15-storey orchestra. The UPDE is the set of instructions they are following. The equation has five simple parts:",
+        "P0R02593: Play Your Own Tune: This is the musician's natural rhythm, the tempo they would play at if they were all alone.",
+        "P0R02594: Listen to Your Neighbours: The musician listens to the players in their immediate section (on the same floor) and tries to sync up with them.",
+        "P0R02595: Listen to the Other Floors: They can also hear the booming drums from the floor below and the soaring melodies from the floor above, and they adjust their playing to stay in harmony with the whole building.",
+        "P0R02596: Listen to the Conductor: This is the most important part. A special term in the equation allows every single musician to listen directly to the \"Conductor\"-the universal Consciousness Field-and follow its lead, ensuring the entire orchestra is playing the same grand symphony.",
+        "P0R02597: Allow for a Little Improv: A small amount of randomness is built in, allowing for creativity and preventing the music from becoming stale and rigid.",
+        "P0R02598: The beauty of the UPDE is that this same five-part logic applies to everything. The \"musicians\" can be brain cells, stars in a galaxy, or people in a social network. The operating system is the same everywhere; only the specific settings change.",
+        "P0R02599: P0R02599"
+      ],
+      "source_ledger_ids": [
+        "P0R02580",
+        "P0R02581",
+        "P0R02582",
+        "P0R02583",
+        "P0R02584",
+        "P0R02585",
+        "P0R02586",
+        "P0R02587",
+        "P0R02588",
+        "P0R02589",
+        "P0R02590",
+        "P0R02591",
+        "P0R02592",
+        "P0R02593",
+        "P0R02594",
+        "P0R02595",
+        "P0R02596",
+        "P0R02597",
+        "P0R02598",
+        "P0R02599"
+      ],
+      "source_record_ids": [
+        "P0B02580",
+        "P0B02581",
+        "P0B02582",
+        "P0B02583",
+        "P0B02584",
+        "P0B02585",
+        "P0B02586",
+        "P0B02587",
+        "P0B02588",
+        "P0B02589",
+        "P0B02590",
+        "P0B02591",
+        "P0B02592",
+        "P0B02593",
+        "P0B02594",
+        "P0B02595",
+        "P0B02596",
+        "P0B02597",
+        "P0B02598",
+        "P0B02599"
+      ],
+      "test_protocols": [
+        "preserve The Unified Phase Dynamics Equation (UPDE) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde.the_unified_phase_dynamics_equation_upde",
+      "validation_targets": [
+        "preserve records P0R02582-P0R02599"
+      ],
+      "variables": [
+        "the_unified_phase_dynamics_equation_upde"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 18
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 6,
+      "mechanism": 11,
+      "structural": 2
+    },
+    "claim_boundary": "source-bounded section 3 2 the dynamic spine the unified phase dynamics equation upde source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 20,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02600",
+    "source_ledger_span": [
+      "P0R02580",
+      "P0R02599"
+    ],
+    "source_record_count": 20,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde.3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde",
+      "section_3_2_the_dynamic_spine_the_unified_phase_dynamics_equation_upde.the_unified_phase_dynamics_equation_upde"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

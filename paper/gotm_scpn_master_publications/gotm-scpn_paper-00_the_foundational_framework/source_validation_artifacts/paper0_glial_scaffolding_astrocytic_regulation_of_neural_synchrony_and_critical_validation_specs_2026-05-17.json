@@ -1,0 +1,315 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality' preserves Paper 0 records P0R05455-P0R05461 without empirical validation claims.",
+      "claim_boundary": "source-bounded glial scaffolding astrocytic regulation of neural synchrony and critical source-accounting bridge; not validation evidence",
+      "context_id": "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05455-P0R05461"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical.glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality",
+      "source_block_indices": [
+        5455,
+        5456,
+        5457,
+        5458,
+        5459,
+        5460,
+        5461,
+        5462,
+        5463,
+        5464,
+        5465,
+        5466,
+        5467,
+        5468,
+        5469,
+        5470,
+        5471,
+        5472,
+        5473,
+        5474,
+        5475,
+        5476,
+        5477,
+        5478
+      ],
+      "source_equation_ids": [
+        "P0R05455:glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+        "P0R05456:glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+        "P0R05457:glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+        "P0R05458:glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+        "P0R05459:glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+        "P0R05460:glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+        "P0R05461:glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical"
+      ],
+      "source_formulae": [
+        "P0R05455: Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality",
+        "P0R05456: Beyond neurons, the glial network, particularly astrocytes, provides critical homeostatic regulation and actively shapes neural dynamics. Astrocytes are not passive support cells; they form a slow-acting control network that modulates synaptic transmission, neurotransmitter reuptake, and ionic balance, thereby maintaining the brain at a state of self-organised criticality-the optimal regime for information processing and complex computation.",
+        "P0R05457: We propose that astrocytes act as a low-pass filter and stability buffer for the fast, oscillatory dynamics of neural networks. Their role in regulating the excitatory/inhibitory (E/I) balance can be conceptualised as a feedback mechanism that dampens runaway excitation and prevents network silencing. This function is crucial for reducing noise and ensuring the stable synchrony required for coherent conscious states.",
+        "P0R05458: The influence of an astrocyte population A on a local E/I balance can be modelled as:",
+        "P0R05459: dtdthetaE/I=(thetaE/Ithetatarget)+(t)+GA(A(t))",
+        "P0R05460: Where:",
+        "P0R05461: thetaE/I is the local E/I balance parameter. | is the relaxation rate to a target set-point thetatarget. | (t) represents fast neuronal noise. | GA(A(t)) is the glial modulatory term, dependent on astrocytic calcium signalling A(t), which responds to sustained periods of high neural activity. GA acts to restore thetatarget over slower timescales, effectively filtering the noise (t) and stabilising the system against perturbations. This glial feedback is essential for the long-term integrity of the neural code."
+      ],
+      "source_ledger_ids": [
+        "P0R05455",
+        "P0R05456",
+        "P0R05457",
+        "P0R05458",
+        "P0R05459",
+        "P0R05460",
+        "P0R05461",
+        "P0R05462",
+        "P0R05463",
+        "P0R05464",
+        "P0R05465",
+        "P0R05466",
+        "P0R05467",
+        "P0R05468",
+        "P0R05469",
+        "P0R05470",
+        "P0R05471",
+        "P0R05472",
+        "P0R05473",
+        "P0R05474",
+        "P0R05475",
+        "P0R05476",
+        "P0R05477",
+        "P0R05478"
+      ],
+      "source_record_ids": [
+        "P0B05455",
+        "P0B05456",
+        "P0B05457",
+        "P0B05458",
+        "P0B05459",
+        "P0B05460",
+        "P0B05461",
+        "P0B05462",
+        "P0B05463",
+        "P0B05464",
+        "P0B05465",
+        "P0B05466",
+        "P0B05467",
+        "P0B05468",
+        "P0B05469",
+        "P0B05470",
+        "P0B05471",
+        "P0B05472",
+        "P0B05473",
+        "P0B05474",
+        "P0B05475",
+        "P0B05476",
+        "P0B05477",
+        "P0B05478"
+      ],
+      "test_protocols": [
+        "preserve Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical.glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+      "validation_targets": [
+        "preserve records P0R05455-P0R05461"
+      ],
+      "variables": [
+        "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Neuro-Immune Interface: State-Space Geometry and Embodied Coherence' preserves Paper 0 records P0R05462-P0R05478 without empirical validation claims.",
+      "claim_boundary": "source-bounded glial scaffolding astrocytic regulation of neural synchrony and critical source-accounting bridge; not validation evidence",
+      "context_id": "the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05462-P0R05478"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical.the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_neuro_immune_interface_state_space_geometry_and_embodied_coherence must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Neuro-Immune Interface: State-Space Geometry and Embodied Coherence is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality",
+      "source_block_indices": [
+        5455,
+        5456,
+        5457,
+        5458,
+        5459,
+        5460,
+        5461,
+        5462,
+        5463,
+        5464,
+        5465,
+        5466,
+        5467,
+        5468,
+        5469,
+        5470,
+        5471,
+        5472,
+        5473,
+        5474,
+        5475,
+        5476,
+        5477,
+        5478
+      ],
+      "source_equation_ids": [
+        "P0R05462:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05463:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05464:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05465:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05466:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05467:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05468:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05469:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05470:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05471:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05472:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05473:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05474:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05475:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05476:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05477:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+        "P0R05478:the_neuro_immune_interface_state_space_geometry_and_embodied_coherence"
+      ],
+      "source_formulae": [
+        "P0R05462: The Neuro-Immune Interface: State-Space Geometry and Embodied Coherence",
+        "P0R05463: The quality of conscious experience (qualia, Layer 5) is not a property of the brain in isolation but is deeply embedded within the physiological state of the entire organism. The neuro-immune interface (Layer 2) provides a formal bridge between systemic physiology and the geometry of consciousness.",
+        "P0R05464: The richness of qualia is hypothesised to correspond to the topological complexity of the brain's state-space manifold, quantifiable by its Betti numbers. A pro-inflammatory state, such as that occurring during infection or chronic stress, directly alters this geometry. Immune cells, particularly resident microglia, release pro-inflammatory cytokines that act as potent neuromodulators.",
+        "P0R05465: They increase synaptic noise, disrupt neurotransmitter homeostasis, and alter synaptic plasticity, effectively degrading the quality of information processing in neural circuits.",
+        "P0R05466: This degradation has a direct topological consequence. The increased noise and reduced precision of neural activity \"blurs\" the point cloud of states that constitutes the qualia manifold. This blurring causes a collapse of higher-order topological features, leading to a quantifiable reduction in the manifold's Betti numbers.",
+        "P0R05467: The subjective experience of \"brain fog,\" anhedonia, and cognitive slowing associated with illness is the phenomenological reflection of this topological fragmentation.",
+        "P0R05468: This process can be formalised by treating the systemic cytokine concentration, Ccyto, as a parameter that modulates the terms of the Unified Phase Dynamics Equation (UPDE). Specifically, pro-inflammatory states lead to:",
+        "P0R05469: An increase in the amplitude of the stochastic noise term: i(t)->(1+cyto)i(t), where cyto>0. | A shift in the intrinsic frequencies of key neurochemical oscillators: i->i+Delta(Ccyto).",
+        "P0R05470: This process is not merely pathological; it is an adaptive reallocation of metabolic resources. Maintaining a high-complexity conscious state is energetically expensive. During an immune challenge, the organism must divert energy to survival-critical functions.",
+        "P0R05471: Cytokines are the signalling agents of this metabolic reprioritisation, actively and functionally down-regulating the complexity of consciousness to conserve resources.",
+        "P0R05472: The state of the qualia manifold is thus inextricably linked to the homeostatic and energetic integrity of the whole organism, providing a deep, mechanistic grounding for the principle of embodied consciousness.",
+        "P0R05473: [TABLE]",
+        "P0R05474: Formalism: UPDE Extension",
+        "P0R05475: This neuro-immune link can be formally integrated into the mathematical spine of the SCPN by treating the systemic cytokine concentration, Ccyto, as a parameter that modulates the terms of the Unified Phase Dynamics Equation (UPDE). Specifically, pro-inflammatory states lead to:",
+        "P0R05476: An increase in the amplitude of the stochastic noise term: i(t)->(1+cyto)i(t), where cyto>0. | A shift in the intrinsic frequencies of key neurochemical oscillators: i->i+Delta(Ccyto).",
+        "P0R05477: This formalism directly connects the state of the peripheral immune system to the core equation governing phase dynamics across all 15 layers of the SCPN, providing a deep, mechanistic explanation for the psychosomatic unity of the organism.",
+        "P0R05478: P0R05478"
+      ],
+      "source_ledger_ids": [
+        "P0R05455",
+        "P0R05456",
+        "P0R05457",
+        "P0R05458",
+        "P0R05459",
+        "P0R05460",
+        "P0R05461",
+        "P0R05462",
+        "P0R05463",
+        "P0R05464",
+        "P0R05465",
+        "P0R05466",
+        "P0R05467",
+        "P0R05468",
+        "P0R05469",
+        "P0R05470",
+        "P0R05471",
+        "P0R05472",
+        "P0R05473",
+        "P0R05474",
+        "P0R05475",
+        "P0R05476",
+        "P0R05477",
+        "P0R05478"
+      ],
+      "source_record_ids": [
+        "P0B05455",
+        "P0B05456",
+        "P0B05457",
+        "P0B05458",
+        "P0B05459",
+        "P0B05460",
+        "P0B05461",
+        "P0B05462",
+        "P0B05463",
+        "P0B05464",
+        "P0B05465",
+        "P0B05466",
+        "P0B05467",
+        "P0B05468",
+        "P0B05469",
+        "P0B05470",
+        "P0B05471",
+        "P0B05472",
+        "P0B05473",
+        "P0B05474",
+        "P0B05475",
+        "P0B05476",
+        "P0B05477",
+        "P0B05478"
+      ],
+      "test_protocols": [
+        "preserve The Neuro-Immune Interface: State-Space Geometry and Embodied Coherence source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical.the_neuro_immune_interface_state_space_geometry_and_embodied_coherence",
+      "validation_targets": [
+        "preserve records P0R05462-P0R05478"
+      ],
+      "variables": [
+        "the_neuro_immune_interface_state_space_geometry_and_embodied_coherence"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 2,
+      "OrderedList": 2,
+      "Para": 18,
+      "Table": 1
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 13,
+      "mechanism": 6,
+      "structural": 1,
+      "table": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded glial scaffolding astrocytic regulation of neural synchrony and critical source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 24,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05479",
+    "source_ledger_span": [
+      "P0R05455",
+      "P0R05478"
+    ],
+    "source_record_count": 24,
+    "spec_count": 2,
+    "spec_keys": [
+      "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical.glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical",
+      "glial_scaffolding_astrocytic_regulation_of_neural_synchrony_and_critical.the_neuro_immune_interface_state_space_geometry_and_embodied_coherence"
+    ],
+    "table_ids": [
+      "TBL017"
+    ],
+    "title": "Paper 0 Glial Scaffolding: Astrocytic Regulation of Neural Synchrony and Criticality Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

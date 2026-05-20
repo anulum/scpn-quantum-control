@@ -1,0 +1,71 @@
+{
+  "background_fraction": 0.97,
+  "claim_boundary": "source-bounded cosmological equation-of-state fixture; not empirical evidence",
+  "hardware_status": "cosmological_constraint_fixture_no_execution",
+  "kinetic_dominated_w": 1.0,
+  "null_controls": {
+    "invalid_perturbation_fraction_rejection_label": 1.0,
+    "unsupported_cosmology_validation_rejection_label": 1.0,
+    "zero_density_rejection_label": 1.0
+  },
+  "observational_constraint_consistent": true,
+  "observed_w0": -1.03,
+  "observed_w0_sigma": 0.03,
+  "perturbation_fraction": 0.03,
+  "problem_metadata": {
+    "claim_boundary": "source-bounded cosmological equation-of-state fixture; not empirical evidence",
+    "protocol_state": "constraint_fixture_only_no_cosmological_validation",
+    "source_ledger_ids": [
+      "P0R06916",
+      "P0R06917",
+      "P0R06918",
+      "P0R06919",
+      "P0R06920",
+      "P0R06921",
+      "P0R06922",
+      "P0R06923",
+      "P0R06924",
+      "P0R06925",
+      "P0R06926",
+      "P0R06927",
+      "P0R06928",
+      "P0R06929",
+      "P0R06930",
+      "P0R06931",
+      "P0R06932",
+      "P0R06933",
+      "P0R06934",
+      "P0R06935",
+      "P0R06936",
+      "P0R06937",
+      "P0R06938",
+      "P0R06939",
+      "P0R06940",
+      "P0R06941",
+      "P0R06942",
+      "P0R06943",
+      "P0R06944",
+      "P0R06945",
+      "P0R06946",
+      "P0R06947",
+      "P0R06948"
+    ],
+    "source_ledger_span": [
+      "P0R06916",
+      "P0R06948"
+    ]
+  },
+  "slow_roll_w": -1.0,
+  "source_ledger_span": [
+    "P0R06916",
+    "P0R06948"
+  ],
+  "spec_keys": [
+    "cosmological_eos.chapter_boundary",
+    "cosmological_eos.scalar_field_equations",
+    "cosmological_eos.limiting_cases",
+    "cosmological_eos.observational_constraint",
+    "cosmological_eos.hybrid_split_and_homogeneity",
+    "cosmological_eos.quintessence_detection_target"
+  ]
+}

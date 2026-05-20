@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded introduction to the dynamics of the coherent brain domain i l4 source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "iii_examination_of_the_dynamics_of_the_coherent_brain_domain_i_l4": "iii_examination_of_the_dynamics_of_the_coherent_brain_domain_i_l4_source_boundary",
+    "introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4": "introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_source_boundary",
+    "travelling_waves_the_dynamic_scaffold_of_information_flow": "travelling_waves_the_dynamic_scaffold_of_information_flow_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Introduction to The Dynamics of the Coherent Brain (Domain I: L4)",
+    "component_2": "III. Examination of The Dynamics of the Coherent Brain (Domain I: L4)",
+    "component_3": "Travelling Waves: The Dynamic Scaffold of Information Flow",
+    "component_count": "3",
+    "next_boundary": "P0R04581",
+    "section": "Introduction to The Dynamics of the Coherent Brain (Domain I: L4)",
+    "source_span": "P0R04572-P0R04580"
+  },
+  "next_source_boundary": "P0R04581",
+  "null_controls": {
+    "iii_examination_of_the_dynamics_of_the_coherent_brain_domain_i_l4_is_not_empirical_validation_evidence": 1.0,
+    "introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_is_not_empirical_validation_evidence": 1.0,
+    "travelling_waves_the_dynamic_scaffold_of_information_flow_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded introduction to the dynamics of the coherent brain domain i l4 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_introduction_to_the_dynamics_of_the_coherent_brain_domain_i_l4_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04572",
+      "P0R04573",
+      "P0R04574",
+      "P0R04575",
+      "P0R04576",
+      "P0R04577",
+      "P0R04578",
+      "P0R04579",
+      "P0R04580"
+    ],
+    "source_ledger_span": [
+      "P0R04572",
+      "P0R04580"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04572",
+    "P0R04580"
+  ],
+  "source_record_count": 9
+}

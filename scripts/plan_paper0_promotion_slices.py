@@ -18,7 +18,13 @@ from typing import Any
 
 from scripts.reconcile_paper0_validation_coverage import REPO_ROOT, reconcile_promoted_coverage
 
-DEFAULT_EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_EXTRACTION_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_LEDGER_PATH = DEFAULT_EXTRACTION_DIR / "paper0_canonical_review_ledger_2026-05-13.jsonl"
 DEFAULT_OUTPUT_PATH = DEFAULT_EXTRACTION_DIR / "paper0_promotion_work_orders_2026-05-17.json"
 DEFAULT_REPORT_PATH = DEFAULT_EXTRACTION_DIR / "paper0_promotion_work_orders_2026-05-17.md"

@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded thermodynamics entropy source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "gauge_field_theory_foundations": "gauge_field_theory_foundations_source_boundary",
+    "thermodynamics_entropy": "thermodynamics_entropy_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Thermodynamics & Entropy",
+    "component_2": "Gauge & Field Theory Foundations",
+    "component_count": "2",
+    "next_boundary": "P0R05730",
+    "section": " Thermodynamics & Entropy",
+    "source_span": "P0R05721-P0R05729"
+  },
+  "next_source_boundary": "P0R05730",
+  "null_controls": {
+    "gauge_field_theory_foundations_is_not_empirical_validation_evidence": 1.0,
+    "thermodynamics_entropy_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded thermodynamics entropy source-accounting bridge; not validation evidence",
+    "protocol_state": "source_thermodynamics_entropy_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05721",
+      "P0R05722",
+      "P0R05723",
+      "P0R05724",
+      "P0R05725",
+      "P0R05726",
+      "P0R05727",
+      "P0R05728",
+      "P0R05729"
+    ],
+    "source_ledger_span": [
+      "P0R05721",
+      "P0R05729"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05721",
+    "P0R05729"
+  ],
+  "source_record_count": 9
+}

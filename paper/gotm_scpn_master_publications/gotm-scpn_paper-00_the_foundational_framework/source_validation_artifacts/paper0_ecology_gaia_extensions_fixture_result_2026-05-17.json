@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded ecology gaia extensions source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "ecology_collective_systems": "ecology_collective_systems_source_boundary",
+    "ecology_gaia_extensions": "ecology_gaia_extensions_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Ecology & Gaia Extensions",
+    "component_2": "Ecology & Collective Systems",
+    "component_count": "2",
+    "next_boundary": "P0R05754",
+    "section": " Ecology & Gaia Extensions",
+    "source_span": "P0R05746-P0R05753"
+  },
+  "next_source_boundary": "P0R05754",
+  "null_controls": {
+    "ecology_collective_systems_is_not_empirical_validation_evidence": 1.0,
+    "ecology_gaia_extensions_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded ecology gaia extensions source-accounting bridge; not validation evidence",
+    "protocol_state": "source_ecology_gaia_extensions_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05746",
+      "P0R05747",
+      "P0R05748",
+      "P0R05749",
+      "P0R05750",
+      "P0R05751",
+      "P0R05752",
+      "P0R05753"
+    ],
+    "source_ledger_span": [
+      "P0R05746",
+      "P0R05753"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05746",
+    "P0R05753"
+  ],
+  "source_record_count": 8
+}

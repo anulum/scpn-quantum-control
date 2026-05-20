@@ -1,0 +1,218 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Applied pathology and L11 societal phase-transition claims are bounded to validation targets for criticality, free energy, MS-QEC, and spin-glass dynamics.",
+      "claim_boundary": "validation-roadmap contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "map pathology target to deviation from criticality, free-energy accumulation, or MS-QEC failure",
+        "map societal phase transitions to L11 spin-glass dynamics",
+        "preserve quasicritical sigma equals one as a validation target"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "applied.validation_strategy.pathology_and_societal_phase_targets",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-pathology-target control must be rejected",
+        "missing-L11-spin-glass target control must be rejected",
+        "roadmap output must not be treated as empirical evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Applied SCPN and Validation",
+      "source_block_indices": [
+        6221,
+        6222
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06221",
+        "P0R06222"
+      ],
+      "source_record_ids": [
+        "P0B06221",
+        "P0B06222"
+      ],
+      "stage": "Cross-cutting",
+      "validation_protocol": "paper0.applied.validation_strategy.pathology_societal_targets",
+      "validation_targets": [
+        "map pathology target to deviation from criticality, free-energy accumulation, or MS-QEC failure",
+        "map societal phase transitions to L11 spin-glass dynamics",
+        "preserve quasicritical sigma equals one as a validation target"
+      ],
+      "variables": [
+        "pathology",
+        "criticality",
+        "free_energy",
+        "ms_qec",
+        "l11_spin_glass"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Ethical governance and alignment claims are bounded to validation targets for SEC, ethical Lagrangian/CEF, and ethical-functional embedding.",
+      "claim_boundary": "validation-roadmap contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "map governance target to SEC maximisation through ethical Lagrangian and CEF",
+        "map alignment target to ethical-functional embedding as objective function",
+        "record that roadmap classification is not empirical evidence"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "applied.validation_strategy.ethical_governance_alignment_targets",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-governance-target control must be rejected",
+        "missing-alignment-target control must be rejected",
+        "roadmap output must not prescribe deployment"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Applied SCPN and Validation",
+      "source_block_indices": [
+        6221,
+        6222
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06221",
+        "P0R06222"
+      ],
+      "source_record_ids": [
+        "P0B06221",
+        "P0B06222"
+      ],
+      "stage": "Cross-cutting",
+      "validation_protocol": "paper0.applied.validation_strategy.governance_alignment_targets",
+      "validation_targets": [
+        "map governance target to SEC maximisation through ethical Lagrangian and CEF",
+        "map alignment target to ethical-functional embedding as objective function",
+        "record that roadmap classification is not empirical evidence"
+      ],
+      "variables": [
+        "SEC",
+        "ethical_lagrangian",
+        "CEF",
+        "ethical_functional"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Stage I prioritises foundational validation: universal quasicriticality, biological quantum-interface tests, and geometry-of-qualia PTA/TDA.",
+      "claim_boundary": "validation-roadmap contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "validate universal quasicriticality before higher-level dynamics",
+        "validate L1/L2 biological quantum-interface gaps and modulation claims",
+        "validate L5 geometry-of-qualia claims with PTA/TDA targets"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "applied.validation_strategy.stage_i_foundations",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "stage-order control must place Stage I before Stage II",
+        "missing-foundation-domain control must be rejected",
+        "roadmap output must not be treated as completed validation"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Applied SCPN and Validation",
+      "source_block_indices": [
+        6221,
+        6222
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06221",
+        "P0R06222"
+      ],
+      "source_record_ids": [
+        "P0B06221",
+        "P0B06222"
+      ],
+      "stage": "Stage I",
+      "validation_protocol": "paper0.applied.validation_strategy.stage_i_foundations",
+      "validation_targets": [
+        "validate universal quasicriticality before higher-level dynamics",
+        "validate L1/L2 biological quantum-interface gaps and modulation claims",
+        "validate L5 geometry-of-qualia claims with PTA/TDA targets"
+      ],
+      "variables": [
+        "quasicriticality",
+        "biological_quantum_interface",
+        "qualia_geometry"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "canonical_statement": "Stage II prioritises UPDE and HPC mechanisms; Stage III prioritises Gaian coupling and teleology high-level dynamics.",
+      "claim_boundary": "validation-roadmap contract; not empirical evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "validate UPDE through multi-scale PAC targets",
+        "validate HPC through transfer-entropy targets",
+        "validate L12 Gaian coupling and L15/L8 teleology after mechanism targets"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "applied.validation_strategy.stage_ii_iii_mechanisms_and_high_level",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "stage-order control must place Stage II before Stage III",
+        "missing-mechanism-domain control must be rejected",
+        "missing-high-level-domain control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Applied SCPN and Validation",
+      "source_block_indices": [
+        6221,
+        6222
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06221",
+        "P0R06222"
+      ],
+      "source_record_ids": [
+        "P0B06221",
+        "P0B06222"
+      ],
+      "stage": "Stage II/III",
+      "validation_protocol": "paper0.applied.validation_strategy.stage_ii_iii",
+      "validation_targets": [
+        "validate UPDE through multi-scale PAC targets",
+        "validate HPC through transfer-entropy targets",
+        "validate L12 Gaian coupling and L15/L8 teleology after mechanism targets"
+      ],
+      "variables": [
+        "UPDE",
+        "PAC",
+        "HPC",
+        "transfer_entropy",
+        "Gaian_coupling",
+        "teleology"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_roadmap_only": true,
+    "all_specs_are_source_anchored": true,
+    "all_specs_avoid_invented_equation_ids": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 2,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06221-P0R06222 are promoted as source-covered validation-roadmap specifications only. Passing fixtures is not empirical evidence.",
+    "source_ledger_span": [
+      "P0R06221",
+      "P0R06222"
+    ],
+    "source_record_count": 2,
+    "spec_count": 4,
+    "spec_keys": [
+      "applied.validation_strategy.pathology_and_societal_phase_targets",
+      "applied.validation_strategy.ethical_governance_alignment_targets",
+      "applied.validation_strategy.stage_i_foundations",
+      "applied.validation_strategy.stage_ii_iii_mechanisms_and_high_level"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

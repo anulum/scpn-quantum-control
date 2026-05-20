@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded section 2 l2 l3 disruption excitotoxicity and structural failure source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "2_l2_l3_disruption_excitotoxicity_and_structural_failure": "2_l2_l3_disruption_excitotoxicity_and_structural_failure_source_boundary",
+    "3_l4_disruption_dyscritia_and_desynchronization": "3_l4_disruption_dyscritia_and_desynchronization_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "2. L2/L3 Disruption (Excitotoxicity and Structural Failure):",
+    "component_2": "3. L4 Disruption (Dyscritia and Desynchronization):",
+    "component_count": "2",
+    "next_boundary": "P0R05066",
+    "section": "2. L2/L3 Disruption (Excitotoxicity and Structural Failure):",
+    "source_span": "P0R05058-P0R05065"
+  },
+  "next_source_boundary": "P0R05066",
+  "null_controls": {
+    "2_l2_l3_disruption_excitotoxicity_and_structural_failure_is_not_empirical_validation_evidence": 1.0,
+    "3_l4_disruption_dyscritia_and_desynchronization_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 2 l2 l3 disruption excitotoxicity and structural failure source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_2_l2_l3_disruption_excitotoxicity_and_structural_failure_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05058",
+      "P0R05059",
+      "P0R05060",
+      "P0R05061",
+      "P0R05062",
+      "P0R05063",
+      "P0R05064",
+      "P0R05065"
+    ],
+    "source_ledger_span": [
+      "P0R05058",
+      "P0R05065"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05058",
+    "P0R05065"
+  ],
+  "source_record_count": 8
+}

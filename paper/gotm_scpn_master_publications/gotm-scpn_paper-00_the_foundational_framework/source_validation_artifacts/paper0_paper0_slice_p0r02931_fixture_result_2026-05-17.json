@@ -1,0 +1,47 @@
+{
+  "claim_boundary": "source-bounded paper0 slice p0r02931 source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "p0r02931": "p0r02931_source_boundary",
+    "the_impedance_matching_operator_and_causal_horizon": "the_impedance_matching_operator_and_causal_horizon_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "P0R02931",
+    "component_2": "The Impedance-Matching Operator and Causal Horizon",
+    "component_count": "2",
+    "next_boundary": "P0R02941",
+    "section": "",
+    "source_span": "P0R02931-P0R02940"
+  },
+  "next_source_boundary": "P0R02941",
+  "null_controls": {
+    "p0r02931_is_not_empirical_validation_evidence": 1.0,
+    "the_impedance_matching_operator_and_causal_horizon_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded paper0 slice p0r02931 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_paper0_slice_p0r02931_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R02931",
+      "P0R02932",
+      "P0R02933",
+      "P0R02934",
+      "P0R02935",
+      "P0R02936",
+      "P0R02937",
+      "P0R02938",
+      "P0R02939",
+      "P0R02940"
+    ],
+    "source_ledger_span": [
+      "P0R02931",
+      "P0R02940"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R02931",
+    "P0R02940"
+  ],
+  "source_record_count": 10
+}

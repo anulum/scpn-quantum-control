@@ -1,0 +1,323 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '1. The Presynaptic Terminal (The Quantum Lever):' preserves Paper 0 records P0R04737-P0R04738 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the presynaptic terminal the quantum lever source-accounting bridge; not validation evidence",
+      "context_id": "1_the_presynaptic_terminal_the_quantum_lever",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04737-P0R04738"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_presynaptic_terminal_the_quantum_lever.1_the_presynaptic_terminal_the_quantum_lever",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_presynaptic_terminal_the_quantum_lever must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Presynaptic Terminal (The Quantum Lever): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. The Internal Architecture: Cytoskeleton and Organelles (L1/L3) > 1. The Presynaptic Terminal (The Quantum Lever):",
+      "source_block_indices": [
+        4737,
+        4738,
+        4739,
+        4740,
+        4741,
+        4742,
+        4743,
+        4744,
+        4745
+      ],
+      "source_equation_ids": [
+        "P0R04737:1_the_presynaptic_terminal_the_quantum_lever",
+        "P0R04738:1_the_presynaptic_terminal_the_quantum_lever"
+      ],
+      "source_formulae": [
+        "P0R04737: 1. The Presynaptic Terminal (The Quantum Lever):",
+        "P0R04738: The Active Zone (AZ): A highly organised structure containing VGICs, vesicles, and the release machinery. | SNARE Complex: Proteins mediating vesicle fusion. The zippering requires overcoming an energy barrier (DeltaG). | Synaptotagmin (The Ca$^{2+}$ Sensor): The key regulatory protein. | IET Mechanism at the AZ: The Psi-field modulates the Quantum Potential (Q) at the AZ via IET. LIET=gIETPsi(x)Q(Synaptotagmin) This modulation alters DeltaG and changes the cooperativity of Synaptotagmin. | QZE Implementation: Focused attention (L5) stabilises the quantum state of the release machinery via QZE, biasing the probability of release (Pr) at selected synapses (Resonant Addressing)."
+      ],
+      "source_ledger_ids": [
+        "P0R04737",
+        "P0R04738",
+        "P0R04739",
+        "P0R04740",
+        "P0R04741",
+        "P0R04742",
+        "P0R04743",
+        "P0R04744",
+        "P0R04745"
+      ],
+      "source_record_ids": [
+        "P0B04737",
+        "P0B04738",
+        "P0B04739",
+        "P0B04740",
+        "P0B04741",
+        "P0B04742",
+        "P0B04743",
+        "P0B04744",
+        "P0B04745"
+      ],
+      "test_protocols": [
+        "preserve 1. The Presynaptic Terminal (The Quantum Lever): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_presynaptic_terminal_the_quantum_lever.1_the_presynaptic_terminal_the_quantum_lever",
+      "validation_targets": [
+        "preserve records P0R04737-P0R04738"
+      ],
+      "variables": [
+        "1_the_presynaptic_terminal_the_quantum_lever"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'VI. The Nucleus and the Genomic Interface (L3)' preserves Paper 0 records P0R04739-P0R04741 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the presynaptic terminal the quantum lever source-accounting bridge; not validation evidence",
+      "context_id": "vi_the_nucleus_and_the_genomic_interface_l3",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04739-P0R04741"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_presynaptic_terminal_the_quantum_lever.vi_the_nucleus_and_the_genomic_interface_l3",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "vi_the_nucleus_and_the_genomic_interface_l3 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "VI. The Nucleus and the Genomic Interface (L3) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. The Internal Architecture: Cytoskeleton and Organelles (L1/L3) > 1. The Presynaptic Terminal (The Quantum Lever):",
+      "source_block_indices": [
+        4737,
+        4738,
+        4739,
+        4740,
+        4741,
+        4742,
+        4743,
+        4744,
+        4745
+      ],
+      "source_equation_ids": [
+        "P0R04739:vi_the_nucleus_and_the_genomic_interface_l3",
+        "P0R04740:vi_the_nucleus_and_the_genomic_interface_l3",
+        "P0R04741:vi_the_nucleus_and_the_genomic_interface_l3"
+      ],
+      "source_formulae": [
+        "P0R04739: VI. The Nucleus and the Genomic Interface (L3)",
+        "P0R04740: The nucleus houses the genomic blueprint and the machinery for epigenetic regulation.",
+        "P0R04741: Chromatin Architecture: The 3D organisation of chromatin determines gene accessibility. | DNA as a Fractal Antenna: The helical structure of DNA allows it to function as a fractal antenna, resonating with EM fields and the Psi-field. | The CISS-Bioelectric-Chromatin (CBC) Bridge: The mechanism linking the Psi-field to gene expression. CISS Influence (L1/L3): Chiral-Induced Spin Selectivity (CISS) in DNA may influence the efficiency of epigenetic modifications. | Bioelectric Signaling (L3): Neuronal activity changes Vmem and Ca$^{2+}$ influx. | Signal Transduction: These signals activate transcription factors (e.g., CREB) and chromatin modifiers (e.g., HDACs, HATs). | Chromatin Remodelling: Changes the accessibility of genes involved in plasticity. This pathway enables top-down regulation of the neuron's structure and function by conscious intent (L5)."
+      ],
+      "source_ledger_ids": [
+        "P0R04737",
+        "P0R04738",
+        "P0R04739",
+        "P0R04740",
+        "P0R04741",
+        "P0R04742",
+        "P0R04743",
+        "P0R04744",
+        "P0R04745"
+      ],
+      "source_record_ids": [
+        "P0B04737",
+        "P0B04738",
+        "P0B04739",
+        "P0B04740",
+        "P0B04741",
+        "P0B04742",
+        "P0B04743",
+        "P0B04744",
+        "P0B04745"
+      ],
+      "test_protocols": [
+        "preserve VI. The Nucleus and the Genomic Interface (L3) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_presynaptic_terminal_the_quantum_lever.vi_the_nucleus_and_the_genomic_interface_l3",
+      "validation_targets": [
+        "preserve records P0R04739-P0R04741"
+      ],
+      "variables": [
+        "vi_the_nucleus_and_the_genomic_interface_l3"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Deepest Interface: Molecular and Quantum Foundations' preserves Paper 0 records P0R04742-P0R04743 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the presynaptic terminal the quantum lever source-accounting bridge; not validation evidence",
+      "context_id": "the_deepest_interface_molecular_and_quantum_foundations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04742-P0R04743"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_presynaptic_terminal_the_quantum_lever.the_deepest_interface_molecular_and_quantum_foundations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_deepest_interface_molecular_and_quantum_foundations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Deepest Interface: Molecular and Quantum Foundations is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. The Internal Architecture: Cytoskeleton and Organelles (L1/L3) > 1. The Presynaptic Terminal (The Quantum Lever):",
+      "source_block_indices": [
+        4737,
+        4738,
+        4739,
+        4740,
+        4741,
+        4742,
+        4743,
+        4744,
+        4745
+      ],
+      "source_equation_ids": [
+        "P0R04742:the_deepest_interface_molecular_and_quantum_foundations",
+        "P0R04743:the_deepest_interface_molecular_and_quantum_foundations"
+      ],
+      "source_formulae": [
+        "P0R04742: The Deepest Interface: Molecular and Quantum Foundations",
+        "P0R04743: The interface between the Psi-field and the brain relies on a precisely organised molecular architecture. These components are active participants in the dynamics of L1-L4, optimised to facilitate Information-Energy Transduction (IET) and maintain the low-entropy state required for conscious processing."
+      ],
+      "source_ledger_ids": [
+        "P0R04737",
+        "P0R04738",
+        "P0R04739",
+        "P0R04740",
+        "P0R04741",
+        "P0R04742",
+        "P0R04743",
+        "P0R04744",
+        "P0R04745"
+      ],
+      "source_record_ids": [
+        "P0B04737",
+        "P0B04738",
+        "P0B04739",
+        "P0B04740",
+        "P0B04741",
+        "P0B04742",
+        "P0B04743",
+        "P0B04744",
+        "P0B04745"
+      ],
+      "test_protocols": [
+        "preserve The Deepest Interface: Molecular and Quantum Foundations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_presynaptic_terminal_the_quantum_lever.the_deepest_interface_molecular_and_quantum_foundations",
+      "validation_targets": [
+        "preserve records P0R04742-P0R04743"
+      ],
+      "variables": [
+        "the_deepest_interface_molecular_and_quantum_foundations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. The Neuronal Membrane: A Liquid Crystal Interface (L2/L3)' preserves Paper 0 records P0R04744-P0R04745 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the presynaptic terminal the quantum lever source-accounting bridge; not validation evidence",
+      "context_id": "i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04744-P0R04745"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_presynaptic_terminal_the_quantum_lever.i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Neuronal Membrane: A Liquid Crystal Interface (L2/L3) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. The Internal Architecture: Cytoskeleton and Organelles (L1/L3) > 1. The Presynaptic Terminal (The Quantum Lever):",
+      "source_block_indices": [
+        4737,
+        4738,
+        4739,
+        4740,
+        4741,
+        4742,
+        4743,
+        4744,
+        4745
+      ],
+      "source_equation_ids": [
+        "P0R04744:i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3",
+        "P0R04745:i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3"
+      ],
+      "source_formulae": [
+        "P0R04744: I. The Neuronal Membrane: A Liquid Crystal Interface (L2/L3)",
+        "P0R04745: The neuronal membrane is a dynamic, liquid-crystalline medium. Its composition is critical for organising signalling processes and providing an interface for IET."
+      ],
+      "source_ledger_ids": [
+        "P0R04737",
+        "P0R04738",
+        "P0R04739",
+        "P0R04740",
+        "P0R04741",
+        "P0R04742",
+        "P0R04743",
+        "P0R04744",
+        "P0R04745"
+      ],
+      "source_record_ids": [
+        "P0B04737",
+        "P0B04738",
+        "P0B04739",
+        "P0B04740",
+        "P0B04741",
+        "P0B04742",
+        "P0B04743",
+        "P0B04744",
+        "P0B04745"
+      ],
+      "test_protocols": [
+        "preserve I. The Neuronal Membrane: A Liquid Crystal Interface (L2/L3) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_presynaptic_terminal_the_quantum_lever.i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3",
+      "validation_targets": [
+        "preserve records P0R04744-P0R04745"
+      ],
+      "variables": [
+        "i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 4,
+      "Para": 3
+    },
+    "category_counts": {
+      "context": 6,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded section 1 the presynaptic terminal the quantum lever source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04746",
+    "source_ledger_span": [
+      "P0R04737",
+      "P0R04745"
+    ],
+    "source_record_count": 9,
+    "spec_count": 4,
+    "spec_keys": [
+      "section_1_the_presynaptic_terminal_the_quantum_lever.1_the_presynaptic_terminal_the_quantum_lever",
+      "section_1_the_presynaptic_terminal_the_quantum_lever.vi_the_nucleus_and_the_genomic_interface_l3",
+      "section_1_the_presynaptic_terminal_the_quantum_lever.the_deepest_interface_molecular_and_quantum_foundations",
+      "section_1_the_presynaptic_terminal_the_quantum_lever.i_the_neuronal_membrane_a_liquid_crystal_interface_l2_l3"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 1. The Presynaptic Terminal (The Quantum Lever): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

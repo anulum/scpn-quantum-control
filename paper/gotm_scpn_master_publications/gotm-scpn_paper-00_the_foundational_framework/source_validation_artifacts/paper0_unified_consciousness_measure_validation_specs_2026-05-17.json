@@ -1,0 +1,262 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Unified Consciousness Measure:' preserves Paper 0 records P0R03564-P0R03568 without empirical validation claims.",
+      "claim_boundary": "source-bounded unified consciousness measure source-accounting bridge; not validation evidence",
+      "context_id": "unified_consciousness_measure",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03564-P0R03568"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "unified_consciousness_measure.unified_consciousness_measure",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "unified_consciousness_measure must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Unified Consciousness Measure: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0 > Integration with Integrated Information Theory 4.0 > Unified Consciousness Measure:",
+      "source_block_indices": [
+        3564,
+        3565,
+        3566,
+        3567,
+        3568,
+        3569,
+        3570,
+        3571,
+        3572,
+        3573,
+        3574,
+        3575,
+        3576,
+        3577,
+        3578,
+        3579,
+        3580
+      ],
+      "source_equation_ids": [
+        "P0R03564:unified_consciousness_measure",
+        "P0R03565:unified_consciousness_measure",
+        "P0R03566:unified_consciousness_measure",
+        "P0R03567:unified_consciousness_measure",
+        "P0R03568:unified_consciousness_measure"
+      ],
+      "source_formulae": [
+        "P0R03564: Unified Consciousness Measure:",
+        "P0R03565: $\\Phi_{t}otal^{S}CPN = \\prod_{L}^{}\\Phi_{L}^{\\left( 1\\text{/}15 \\right)} \\times exp\\left( \\sum_{L}^{}{\\sum_{L}^{}'^{'}I_{L}}L^{'} \\right)$",
+        "P0R03566: Where: I_LL' = inter-layer integrated information Product ensures all layers contribute",
+        "P0R03567: [IMAGE:Ein Bild, das Text, Screenshot, Display, Reihe enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03568: Fig. 3: Unified totalSCPN_{\\text{total}}^{\\text{SCPN}}totalSCPN with a schematic inter-layer integrated-information matrix ILLI_{LL'}ILL."
+      ],
+      "source_ledger_ids": [
+        "P0R03564",
+        "P0R03565",
+        "P0R03566",
+        "P0R03567",
+        "P0R03568",
+        "P0R03569",
+        "P0R03570",
+        "P0R03571",
+        "P0R03572",
+        "P0R03573",
+        "P0R03574",
+        "P0R03575",
+        "P0R03576",
+        "P0R03577",
+        "P0R03578",
+        "P0R03579",
+        "P0R03580"
+      ],
+      "source_record_ids": [
+        "P0B03564",
+        "P0B03565",
+        "P0B03566",
+        "P0B03567",
+        "P0B03568",
+        "P0B03569",
+        "P0B03570",
+        "P0B03571",
+        "P0B03572",
+        "P0B03573",
+        "P0B03574",
+        "P0B03575",
+        "P0B03576",
+        "P0B03577",
+        "P0B03578",
+        "P0B03579",
+        "P0B03580"
+      ],
+      "test_protocols": [
+        "preserve Unified Consciousness Measure: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.unified_consciousness_measure.unified_consciousness_measure",
+      "validation_targets": [
+        "preserve records P0R03564-P0R03568"
+      ],
+      "variables": [
+        "unified_consciousness_measure"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'IIT Axioms in SCPN:' preserves Paper 0 records P0R03569-P0R03580 without empirical validation claims.",
+      "claim_boundary": "source-bounded unified consciousness measure source-accounting bridge; not validation evidence",
+      "context_id": "iit_axioms_in_scpn",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03569-P0R03580"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "unified_consciousness_measure.iit_axioms_in_scpn",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iit_axioms_in_scpn must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IIT Axioms in SCPN: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Integration with Integrated Information Theory (IIT) 4.0 > Integration with Integrated Information Theory 4.0 > Unified Consciousness Measure:",
+      "source_block_indices": [
+        3564,
+        3565,
+        3566,
+        3567,
+        3568,
+        3569,
+        3570,
+        3571,
+        3572,
+        3573,
+        3574,
+        3575,
+        3576,
+        3577,
+        3578,
+        3579,
+        3580
+      ],
+      "source_equation_ids": [
+        "P0R03569:iit_axioms_in_scpn",
+        "P0R03570:iit_axioms_in_scpn",
+        "P0R03571:iit_axioms_in_scpn",
+        "P0R03572:iit_axioms_in_scpn",
+        "P0R03573:iit_axioms_in_scpn",
+        "P0R03574:iit_axioms_in_scpn",
+        "P0R03575:iit_axioms_in_scpn",
+        "P0R03576:iit_axioms_in_scpn",
+        "P0R03577:iit_axioms_in_scpn",
+        "P0R03578:iit_axioms_in_scpn",
+        "P0R03579:iit_axioms_in_scpn",
+        "P0R03580:iit_axioms_in_scpn"
+      ],
+      "source_formulae": [
+        "P0R03569: IIT Axioms in SCPN:",
+        "P0R03570: Intrinsic Existence: Psi field is fundamental | Composition: 15-layer hierarchical structure | Information: Each layer has distinct states | Integration: UPDE couples all layers | Exclusion: Quasicriticality selects dominant scale",
+        "P0R03571: [IMAGE:]",
+        "P0R03572: Fig.: IIT axioms mapped onto SCPN structures (Psi-field, 15-layer composition, information, UPDE integration, quasicritical exclusion/scale selection).",
+        "P0R03573: [IMAGE:]",
+        "P0R03574: Fig.: Integration architecture showing per layer, UPDE in the core, and MIP across boundaries, unifying IIT measures with SCPN dynamics.",
+        "P0R03575: Mapping Geometric Properties to Experiential Qualities",
+        "P0R03576: Source Material: The specific proposed mappings: Curvature as emotional valence, Torsion as dissonance or surprise, Topological Complexity (Betti numbers) as the richness of experience, and Manifold Volume as the intensity of consciousness.",
+        "P0R03577: P0R03577",
+        "P0R03578: Operationalising the Hypothesis: Topological Data Analysis (TDA) and Qualia Capacity (Q)",
+        "P0R03579: Source Material: The methodological section detailing how TDA can be used on neural and other data to reconstruct the topology of the consciousness manifold and calculate a concrete, measurable value for its complexity, the Qualia Capacity (Q).",
+        "P0R03580: P0R03580"
+      ],
+      "source_ledger_ids": [
+        "P0R03564",
+        "P0R03565",
+        "P0R03566",
+        "P0R03567",
+        "P0R03568",
+        "P0R03569",
+        "P0R03570",
+        "P0R03571",
+        "P0R03572",
+        "P0R03573",
+        "P0R03574",
+        "P0R03575",
+        "P0R03576",
+        "P0R03577",
+        "P0R03578",
+        "P0R03579",
+        "P0R03580"
+      ],
+      "source_record_ids": [
+        "P0B03564",
+        "P0B03565",
+        "P0B03566",
+        "P0B03567",
+        "P0B03568",
+        "P0B03569",
+        "P0B03570",
+        "P0B03571",
+        "P0B03572",
+        "P0B03573",
+        "P0B03574",
+        "P0B03575",
+        "P0B03576",
+        "P0B03577",
+        "P0B03578",
+        "P0B03579",
+        "P0B03580"
+      ],
+      "test_protocols": [
+        "preserve IIT Axioms in SCPN: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.unified_consciousness_measure.iit_axioms_in_scpn",
+      "validation_targets": [
+        "preserve records P0R03569-P0R03580"
+      ],
+      "variables": [
+        "iit_axioms_in_scpn"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "OrderedList": 1,
+      "Para": 14
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 3,
+      "equation": 1,
+      "figure": 3,
+      "mechanism": 5,
+      "structural": 2,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded unified consciousness measure source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 17,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0063",
+      "IMG0064",
+      "IMG0065"
+    ],
+    "math_ids": [
+      "EQ0058"
+    ],
+    "next_source_boundary": "P0R03581",
+    "source_ledger_span": [
+      "P0R03564",
+      "P0R03580"
+    ],
+    "source_record_count": 17,
+    "spec_count": 2,
+    "spec_keys": [
+      "unified_consciousness_measure.unified_consciousness_measure",
+      "unified_consciousness_measure.iit_axioms_in_scpn"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Unified Consciousness Measure: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded qualia as the geometry of belief source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "psis_field_coupling_integration": "psis_field_coupling_integration_source_boundary",
+    "qualia_as_the_geometry_of_belief": "qualia_as_the_geometry_of_belief_source_boundary",
+    "sigma_is_the_geometry_of_the_manifold": "sigma_is_the_geometry_of_the_manifold_source_boundary",
+    "the_coupling_is_the_experience_of_geometry": "the_coupling_is_the_experience_of_geometry_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Qualia as the Geometry of Belief:",
+    "component_2": "Psis Field Coupling Integration",
+    "component_3": "sigma is the Geometry of the Manifold:",
+    "component_4": "The Coupling is the Experience of Geometry:",
+    "component_count": "4",
+    "next_boundary": "P0R03470",
+    "section": "Qualia as the Geometry of Belief:",
+    "source_span": "P0R03462-P0R03469"
+  },
+  "next_source_boundary": "P0R03470",
+  "null_controls": {
+    "psis_field_coupling_integration_is_not_empirical_validation_evidence": 1.0,
+    "qualia_as_the_geometry_of_belief_is_not_empirical_validation_evidence": 1.0,
+    "sigma_is_the_geometry_of_the_manifold_is_not_empirical_validation_evidence": 1.0,
+    "the_coupling_is_the_experience_of_geometry_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded qualia as the geometry of belief source-accounting bridge; not validation evidence",
+    "protocol_state": "source_qualia_as_the_geometry_of_belief_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03462",
+      "P0R03463",
+      "P0R03464",
+      "P0R03465",
+      "P0R03466",
+      "P0R03467",
+      "P0R03468",
+      "P0R03469"
+    ],
+    "source_ledger_span": [
+      "P0R03462",
+      "P0R03469"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03462",
+    "P0R03469"
+  ],
+  "source_record_count": 8
+}

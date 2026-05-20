@@ -1,0 +1,73 @@
+{
+  "claim_boundary": "source-bounded RAG QEC stack simulator contract; not empirical evidence",
+  "coherence_time_fs": 0.4013487542073171,
+  "config_thresholds": {
+    "delta_e_ev": 1.64,
+    "physiological_kbt_ev": 0.026,
+    "protected_time_fs": 400.0,
+    "source_threshold_approximation": 1e-14,
+    "unprotected_time_fs": 25.0
+  },
+  "error_threshold_formula_value": 1.0,
+  "error_threshold_source_warning": true,
+  "gap_ratio": 63.07692307692307,
+  "hamiltonian_total": -1.8,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "non_positive_gap_rejection_label": 1.0,
+    "threshold_approximation_warning_label": 1.0,
+    "unsupported_spectroscopy_evidence_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded RAG QEC stack simulator contract; not empirical evidence",
+    "source_ledger_ids": [
+      "P0R06530",
+      "P0R06531",
+      "P0R06532",
+      "P0R06533",
+      "P0R06534",
+      "P0R06535",
+      "P0R06536",
+      "P0R06537",
+      "P0R06538",
+      "P0R06539",
+      "P0R06540",
+      "P0R06541",
+      "P0R06542",
+      "P0R06543",
+      "P0R06544",
+      "P0R06545",
+      "P0R06546",
+      "P0R06547",
+      "P0R06548",
+      "P0R06549",
+      "P0R06550",
+      "P0R06551",
+      "P0R06552",
+      "P0R06553",
+      "P0R06554",
+      "P0R06555",
+      "P0R06556",
+      "P0R06557",
+      "P0R06558",
+      "P0R06559"
+    ],
+    "source_ledger_span": [
+      "P0R06530",
+      "P0R06559"
+    ],
+    "threshold_source_formula_preserved": true
+  },
+  "protection_factor": 16.0,
+  "source_ledger_span": [
+    "P0R06530",
+    "P0R06559"
+  ],
+  "spec_keys": [
+    "rag_qec_stack.insert_framing",
+    "rag_qec_stack.layer1_qec_hamiltonian",
+    "rag_qec_stack.gap_coherence_protection",
+    "rag_qec_stack.programmability_and_observable"
+  ],
+  "thermal_time_fs": 25.315844496153847
+}

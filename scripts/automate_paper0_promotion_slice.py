@@ -26,7 +26,13 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+EXTRACTION_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_LEDGER_PATH = EXTRACTION_DIR / "paper0_canonical_review_ledger_2026-05-13.jsonl"
 DEFAULT_WORK_ORDERS = EXTRACTION_DIR / "paper0_promotion_work_orders_2026-05-17.json"
 DATE_TAG = "2026-05-17"
@@ -396,7 +402,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EXTRACTION_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_EXTRACTION_DIR = REPO_ROOT / "paper" / "gotm_scpn_master_publications" / "gotm-scpn_paper-00_the_foundational_framework" / "source_validation_artifacts"
 DEFAULT_LEDGER_PATH = DEFAULT_EXTRACTION_DIR / "paper0_canonical_review_ledger_2026-05-13.jsonl"
 
 SOURCE_LEDGER_IDS = {py_literal(source_ids)}
@@ -740,7 +746,7 @@ from typing import Any
 from scpn_quantum_control.paper0.{slug}_validation import validate_{slug}_fixture
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "paper" / "gotm_scpn_master_publications" / "gotm-scpn_paper-00_the_foundational_framework" / "source_validation_artifacts"
 DEFAULT_OUTPUT_PATH = DEFAULT_OUTPUT_DIR / "paper0_{slug}_fixture_result_{DATE_TAG}.json"
 DEFAULT_REPORT_PATH = DEFAULT_OUTPUT_DIR / "paper0_{slug}_fixture_report_{DATE_TAG}.md"
 
@@ -948,7 +954,7 @@ def update_spec_loader(slug: str) -> None:
     constant = f"DEFAULT_{slug.upper()}_SPEC_BUNDLE"
     loader = f"load_{slug}_validation_spec"
     if constant not in text:
-        insert = f'''\n{constant} = (\n    "docs/internal/paper0_foundational_extraction/"\n    "paper0_{slug}_validation_specs_{DATE_TAG}.json"\n)\n\n\ndef {loader}(spec_bundle: str | Path = {constant}) -> dict[str, Any]:\n    """Load the Paper 0 {slug.replace("_", " ")} validation spec bundle."""\n    return json.loads(project_data_path(spec_bundle).read_text(encoding="utf-8"))\n'''
+        insert = f'''\n{constant} = (\n    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/"\n    "paper0_{slug}_validation_specs_{DATE_TAG}.json"\n)\n\n\ndef {loader}(spec_bundle: str | Path = {constant}) -> dict[str, Any]:\n    """Load the Paper 0 {slug.replace("_", " ")} validation spec bundle."""\n    return json.loads(project_data_path(spec_bundle).read_text(encoding="utf-8"))\n'''
         text = text.replace("\n__all__ = [", insert + "\n__all__ = [", 1)
     entry = f'    "{loader}",\n'
     if entry not in text:
@@ -1104,11 +1110,11 @@ def run_generation_pipeline(slug: str, work_order: WorkOrder) -> dict[str, Any]:
         + [
             "scripts/gate_paper0_promotion_slice.py",
             "--spec-bundle",
-            f"docs/internal/paper0_foundational_extraction/paper0_{slug}_validation_specs_{DATE_TAG}.json",
+            f"paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_{slug}_validation_specs_{DATE_TAG}.json",
             "--fixture",
-            f"docs/internal/paper0_foundational_extraction/paper0_{slug}_fixture_result_{DATE_TAG}.json",
+            f"paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_{slug}_fixture_result_{DATE_TAG}.json",
             "--reconciliation",
-            f"docs/internal/paper0_foundational_extraction/paper0_validation_coverage_reconciliation_{reconciliation_tag}.json",
+            f"paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/source_validation_artifacts/paper0_validation_coverage_reconciliation_{reconciliation_tag}.json",
             "--output",
             str(gate_path.relative_to(REPO_ROOT)),
         ]

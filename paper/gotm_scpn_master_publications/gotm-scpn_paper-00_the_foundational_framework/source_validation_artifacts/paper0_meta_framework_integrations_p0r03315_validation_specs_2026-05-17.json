@@ -1,0 +1,392 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R03315-P0R03315 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03315 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03315-P0R03315"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03315.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > Meta-Framework Integrations",
+      "source_block_indices": [
+        3315,
+        3316,
+        3317,
+        3318,
+        3319,
+        3320,
+        3321,
+        3322,
+        3323
+      ],
+      "source_equation_ids": [
+        "P0R03315:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R03315: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R03315",
+        "P0R03316",
+        "P0R03317",
+        "P0R03318",
+        "P0R03319",
+        "P0R03320",
+        "P0R03321",
+        "P0R03322",
+        "P0R03323"
+      ],
+      "source_record_ids": [
+        "P0B03315",
+        "P0B03316",
+        "P0B03317",
+        "P0B03318",
+        "P0B03319",
+        "P0B03320",
+        "P0B03321",
+        "P0B03322",
+        "P0B03323"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03315.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R03315-P0R03315"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R03316-P0R03317 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03315 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03316-P0R03317"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03315.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > Meta-Framework Integrations",
+      "source_block_indices": [
+        3315,
+        3316,
+        3317,
+        3318,
+        3319,
+        3320,
+        3321,
+        3322,
+        3323
+      ],
+      "source_equation_ids": [
+        "P0R03316:predictive_coding_integration",
+        "P0R03317:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R03316: Predictive Coding Integration",
+        "P0R03317: This two-stage mechanism is the explicit physical implementation of active inference-the process by which a belief causes an action."
+      ],
+      "source_ledger_ids": [
+        "P0R03315",
+        "P0R03316",
+        "P0R03317",
+        "P0R03318",
+        "P0R03319",
+        "P0R03320",
+        "P0R03321",
+        "P0R03322",
+        "P0R03323"
+      ],
+      "source_record_ids": [
+        "P0B03315",
+        "P0B03316",
+        "P0B03317",
+        "P0B03318",
+        "P0B03319",
+        "P0B03320",
+        "P0B03321",
+        "P0B03322",
+        "P0B03323"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03315.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R03316-P0R03317"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Guided Einselection is Prediction:' preserves Paper 0 records P0R03318-P0R03319 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03315 source-accounting bridge; not validation evidence",
+      "context_id": "guided_einselection_is_prediction",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03318-P0R03319"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03315.guided_einselection_is_prediction",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "guided_einselection_is_prediction must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Guided Einselection is Prediction: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > Meta-Framework Integrations",
+      "source_block_indices": [
+        3315,
+        3316,
+        3317,
+        3318,
+        3319,
+        3320,
+        3321,
+        3322,
+        3323
+      ],
+      "source_equation_ids": [
+        "P0R03318:guided_einselection_is_prediction",
+        "P0R03319:guided_einselection_is_prediction"
+      ],
+      "source_formulae": [
+        "P0R03318: Guided Einselection is Prediction:",
+        "P0R03319: The top-down signal from the generative model (the prediction) is physically instantiated as the selective pressure exerted by the Psi-field during einselection. The act of \"predicting\" a state is the act of biasing the quantum collapse towards that state. This is the most fundamental level of top-down causation."
+      ],
+      "source_ledger_ids": [
+        "P0R03315",
+        "P0R03316",
+        "P0R03317",
+        "P0R03318",
+        "P0R03319",
+        "P0R03320",
+        "P0R03321",
+        "P0R03322",
+        "P0R03323"
+      ],
+      "source_record_ids": [
+        "P0B03315",
+        "P0B03316",
+        "P0B03317",
+        "P0B03318",
+        "P0B03319",
+        "P0B03320",
+        "P0B03321",
+        "P0B03322",
+        "P0B03323"
+      ],
+      "test_protocols": [
+        "preserve Guided Einselection is Prediction: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03315.guided_einselection_is_prediction",
+      "validation_targets": [
+        "preserve records P0R03318-P0R03319"
+      ],
+      "variables": [
+        "guided_einselection_is_prediction"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'QSR is Error-Signal Amplification:' preserves Paper 0 records P0R03320-P0R03321 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03315 source-accounting bridge; not validation evidence",
+      "context_id": "qsr_is_error_signal_amplification",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03320-P0R03321"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03315.qsr_is_error_signal_amplification",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "qsr_is_error_signal_amplification must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "QSR is Error-Signal Amplification: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > Meta-Framework Integrations",
+      "source_block_indices": [
+        3315,
+        3316,
+        3317,
+        3318,
+        3319,
+        3320,
+        3321,
+        3322,
+        3323
+      ],
+      "source_equation_ids": [
+        "P0R03320:qsr_is_error_signal_amplification",
+        "P0R03321:qsr_is_error_signal_amplification"
+      ],
+      "source_formulae": [
+        "P0R03320: QSR is Error-Signal Amplification:",
+        "P0R03321: A prediction error is a mismatch between the prediction and the sensory data. In this model, the weak signal from the selected quantum state can be seen as a nascent error signal. QSR is the mechanism that determines if this error signal is \"important\" enough to be amplified and broadcast across the cortical hierarchy to force a model update. The quasicritical state ensures the system is maximally sensitive to these subtle but important error signals, allowing it to learn and adapt efficiently."
+      ],
+      "source_ledger_ids": [
+        "P0R03315",
+        "P0R03316",
+        "P0R03317",
+        "P0R03318",
+        "P0R03319",
+        "P0R03320",
+        "P0R03321",
+        "P0R03322",
+        "P0R03323"
+      ],
+      "source_record_ids": [
+        "P0B03315",
+        "P0B03316",
+        "P0B03317",
+        "P0B03318",
+        "P0B03319",
+        "P0B03320",
+        "P0B03321",
+        "P0B03322",
+        "P0B03323"
+      ],
+      "test_protocols": [
+        "preserve QSR is Error-Signal Amplification: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03315.qsr_is_error_signal_amplification",
+      "validation_targets": [
+        "preserve records P0R03320-P0R03321"
+      ],
+      "variables": [
+        "qsr_is_error_signal_amplification"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R03322-P0R03323 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r03315 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03322-P0R03323"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r03315.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > The Physical Mechanism of Downward Causation: Amplification of Intent > Meta-Framework Integrations",
+      "source_block_indices": [
+        3315,
+        3316,
+        3317,
+        3318,
+        3319,
+        3320,
+        3321,
+        3322,
+        3323
+      ],
+      "source_equation_ids": [
+        "P0R03322:psis_field_coupling_integration",
+        "P0R03323:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R03322: Psis Field Coupling Integration",
+        "P0R03323: This provides the most detailed, end-to-end description of how the interaction H_int = -lambda * Psis * sigma produces a macroscopic effect."
+      ],
+      "source_ledger_ids": [
+        "P0R03315",
+        "P0R03316",
+        "P0R03317",
+        "P0R03318",
+        "P0R03319",
+        "P0R03320",
+        "P0R03321",
+        "P0R03322",
+        "P0R03323"
+      ],
+      "source_record_ids": [
+        "P0B03315",
+        "P0B03316",
+        "P0B03317",
+        "P0B03318",
+        "P0B03319",
+        "P0B03320",
+        "P0B03321",
+        "P0B03322",
+        "P0B03323"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r03315.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R03322-P0R03323"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 3,
+      "mechanism": 2,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r03315 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03324",
+    "source_ledger_span": [
+      "P0R03315",
+      "P0R03323"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r03315.meta_framework_integrations",
+      "meta_framework_integrations_p0r03315.predictive_coding_integration",
+      "meta_framework_integrations_p0r03315.guided_einselection_is_prediction",
+      "meta_framework_integrations_p0r03315.qsr_is_error_signal_amplification",
+      "meta_framework_integrations_p0r03315.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

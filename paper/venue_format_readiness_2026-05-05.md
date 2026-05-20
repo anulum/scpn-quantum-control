@@ -4,8 +4,8 @@ Date: 2026-05-05
 
 ## Recommended submission split
 
-- JOSS: submit `paper/joss/software_framework_note/paper.md` with `paper/joss/software_framework_note/paper.bib`.
-- SoftwareX / arXiv / institutional review: use `paper/rust_vqe_methods/rust_vqe_methods.tex` and `paper/rust_vqe_methods/rust_vqe_methods.pdf` as the longer methods preprint.
+- JOSS: submit `paper/submissions_joss/submission_joss_001_software_framework_note/paper.md` with `paper/submissions_joss/submission_joss_001_software_framework_note/paper.bib`.
+- SoftwareX / arXiv / institutional review: use `paper/submissions/submission_003_rust_vqe_methods/rust_vqe_methods.tex` and `paper/submissions/submission_003_rust_vqe_methods/rust_vqe_methods.pdf` as the longer methods preprint.
 
 ## JOSS readiness
 
@@ -32,7 +32,7 @@ Before submission, still check:
 
 ## SoftwareX readiness
 
-The current `paper/rust_vqe_methods/rust_vqe_methods.tex` is a readable preprint, not yet an Elsevier production template. For SoftwareX, convert the same content into the current Elsevier/SoftwareX template and preserve:
+The current `paper/submissions/submission_003_rust_vqe_methods/rust_vqe_methods.tex` is a readable preprint, not yet an Elsevier production template. For SoftwareX, convert the same content into the current Elsevier/SoftwareX template and preserve:
 
 - Metadata and author affiliations.
 - Software motivation and impact.

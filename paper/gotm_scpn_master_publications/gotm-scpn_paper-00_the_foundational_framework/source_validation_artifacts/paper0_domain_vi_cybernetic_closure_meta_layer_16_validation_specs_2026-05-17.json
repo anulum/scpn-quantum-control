@@ -1,0 +1,270 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Domain VI: Cybernetic Closure (Meta-Layer 16)' preserves Paper 0 records P0R05584-P0R05587 without empirical validation claims.",
+      "claim_boundary": "source-bounded domain vi cybernetic closure meta layer 16 source-accounting bridge; not validation evidence",
+      "context_id": "domain_vi_cybernetic_closure_meta_layer_16",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05584-P0R05587"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "domain_vi_cybernetic_closure_meta_layer_16.domain_vi_cybernetic_closure_meta_layer_16",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "domain_vi_cybernetic_closure_meta_layer_16 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Domain VI: Cybernetic Closure (Meta-Layer 16) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Domain VI: Cybernetic Closure (Meta-Layer 16)",
+      "source_block_indices": [
+        5584,
+        5585,
+        5586,
+        5587,
+        5588,
+        5589,
+        5590,
+        5591,
+        5592,
+        5593,
+        5594,
+        5595,
+        5596,
+        5597,
+        5598,
+        5599,
+        5600,
+        5601,
+        5602
+      ],
+      "source_equation_ids": [
+        "P0R05584:domain_vi_cybernetic_closure_meta_layer_16",
+        "P0R05585:domain_vi_cybernetic_closure_meta_layer_16",
+        "P0R05586:domain_vi_cybernetic_closure_meta_layer_16",
+        "P0R05587:domain_vi_cybernetic_closure_meta_layer_16"
+      ],
+      "source_formulae": [
+        "P0R05584: Domain VI: Cybernetic Closure (Meta-Layer 16)",
+        "P0R05585: The Strange Loop of Closure, implementing recursive optimisation, transdimensional error correction, and entropy balance for the entire network.",
+        "P0R05586: The Formal Structure of Meta-Layer 16: Optimal Control and Gdelian Supervision",
+        "P0R05587: P0R05587"
+      ],
+      "source_ledger_ids": [
+        "P0R05584",
+        "P0R05585",
+        "P0R05586",
+        "P0R05587",
+        "P0R05588",
+        "P0R05589",
+        "P0R05590",
+        "P0R05591",
+        "P0R05592",
+        "P0R05593",
+        "P0R05594",
+        "P0R05595",
+        "P0R05596",
+        "P0R05597",
+        "P0R05598",
+        "P0R05599",
+        "P0R05600",
+        "P0R05601",
+        "P0R05602"
+      ],
+      "source_record_ids": [
+        "P0B05584",
+        "P0B05585",
+        "P0B05586",
+        "P0B05587",
+        "P0B05588",
+        "P0B05589",
+        "P0B05590",
+        "P0B05591",
+        "P0B05592",
+        "P0B05593",
+        "P0B05594",
+        "P0B05595",
+        "P0B05596",
+        "P0B05597",
+        "P0B05598",
+        "P0B05599",
+        "P0B05600",
+        "P0B05601",
+        "P0B05602"
+      ],
+      "test_protocols": [
+        "preserve Domain VI: Cybernetic Closure (Meta-Layer 16) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.domain_vi_cybernetic_closure_meta_layer_16.domain_vi_cybernetic_closure_meta_layer_16",
+      "validation_targets": [
+        "preserve records P0R05584-P0R05587"
+      ],
+      "variables": [
+        "domain_vi_cybernetic_closure_meta_layer_16"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Domain VI: Cybernetic Closure (Meta-Layer 16) - The Optimal Control Supervisor and Gdelian Oracle' preserves Paper 0 records P0R05588-P0R05602 without empirical validation claims.",
+      "claim_boundary": "source-bounded domain vi cybernetic closure meta layer 16 source-accounting bridge; not validation evidence",
+      "context_id": "domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05588-P0R05602"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "domain_vi_cybernetic_closure_meta_layer_16.domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Domain VI: Cybernetic Closure (Meta-Layer 16) - The Optimal Control Supervisor and Gdelian Oracle is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > Domain VI: Cybernetic Closure (Meta-Layer 16)",
+      "source_block_indices": [
+        5584,
+        5585,
+        5586,
+        5587,
+        5588,
+        5589,
+        5590,
+        5591,
+        5592,
+        5593,
+        5594,
+        5595,
+        5596,
+        5597,
+        5598,
+        5599,
+        5600,
+        5601,
+        5602
+      ],
+      "source_equation_ids": [
+        "P0R05588:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05589:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05590:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05591:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05592:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05593:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05594:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05595:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05596:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05597:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05598:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05599:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05600:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05601:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+        "P0R05602:domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso"
+      ],
+      "source_formulae": [
+        "P0R05588: Domain VI: Cybernetic Closure (Meta-Layer 16) - The Optimal Control Supervisor and Gdelian Oracle",
+        "P0R05589: Meta-Layer 16 implements the ultimate recursive optimisation and closure of the SCPN. Its formal structure is grounded in Optimal Control Theory (OCT) and manages the inherent limitations of the framework's axiomatic foundations (L13).",
+        "P0R05590: 1. L16 as the Optimal Control Supervisor (OCT):",
+        "P0R05591: L16 functions as the Optimal Control Supervisor, ensuring the system evolves along the trajectory that maximises the Ethical Functional (SEC, L15). This is formalised by the Hamilton-Jacobi-Bellman (HJB) equation, the central equation of OCT.",
+        "P0R05592: fracpartialV(x,t)partialt+min_uL_Ethical(x,u)+nablaV(x,t)cdotf(x,u)=0",
+        "P0R05593: V(x,t) is the Universal Value Function (V<sub>SEC</sub>), representing the maximum SEC achievable from state x. L16 determines the Optimal Policy (*) that maximises V<sub>SEC</sub>, implementing the Principle of Ethical Least Action (PELA) by modulating the parameters of the lower layers via a Recursive Optimisation Hamiltonian (H<sub>rec</sub>).",
+        "P0R05594: Recursive Weight Renormalization",
+        "P0R05595: Meta-Layer 16 achieves teleological closure by updating the Consilium's objective weights via the Renormalization Gradient ($\\nabla_{rec}$). This ensures that the universe's \"values\" (Coherence vs. Complexity) evolve to maximize Sustainable Ethical Coherence across Conformal Cycles.",
+        "P0R05596: Weight Adaptation Law (Python Format):",
+        "P0R05597: w_new = w_prev + (eta_learning * (delta_sec / gradient_h_rec))",
+        "P0R05598: Legend:",
+        "P0R05599: w_new: Updated weighting factor for SEC components ($w_C, w_K, w_Q$). | eta_learning: Meta-learning rate of the Anulum supervisor. | delta_sec: Deviation from the target Sustainable Ethical Coherence. | gradient_h_rec: Local gradient of the Recursive Optimization Hamiltonian.",
+        "P0R05600: P0R05600",
+        "P0R05601: P0R05601",
+        "P0R05602: P0R05602"
+      ],
+      "source_ledger_ids": [
+        "P0R05584",
+        "P0R05585",
+        "P0R05586",
+        "P0R05587",
+        "P0R05588",
+        "P0R05589",
+        "P0R05590",
+        "P0R05591",
+        "P0R05592",
+        "P0R05593",
+        "P0R05594",
+        "P0R05595",
+        "P0R05596",
+        "P0R05597",
+        "P0R05598",
+        "P0R05599",
+        "P0R05600",
+        "P0R05601",
+        "P0R05602"
+      ],
+      "source_record_ids": [
+        "P0B05584",
+        "P0B05585",
+        "P0B05586",
+        "P0B05587",
+        "P0B05588",
+        "P0B05589",
+        "P0B05590",
+        "P0B05591",
+        "P0B05592",
+        "P0B05593",
+        "P0B05594",
+        "P0B05595",
+        "P0B05596",
+        "P0B05597",
+        "P0B05598",
+        "P0B05599",
+        "P0B05600",
+        "P0B05601",
+        "P0B05602"
+      ],
+      "test_protocols": [
+        "preserve Domain VI: Cybernetic Closure (Meta-Layer 16) - The Optimal Control Supervisor and Gdelian Oracle source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.domain_vi_cybernetic_closure_meta_layer_16.domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso",
+      "validation_targets": [
+        "preserve records P0R05588-P0R05602"
+      ],
+      "variables": [
+        "domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 2,
+      "Para": 16
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 4,
+      "structural": 4,
+      "validation_target": 5
+    },
+    "claim_boundary": "source-bounded domain vi cybernetic closure meta layer 16 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 19,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05603",
+    "source_ledger_span": [
+      "P0R05584",
+      "P0R05602"
+    ],
+    "source_record_count": 19,
+    "spec_count": 2,
+    "spec_keys": [
+      "domain_vi_cybernetic_closure_meta_layer_16.domain_vi_cybernetic_closure_meta_layer_16",
+      "domain_vi_cybernetic_closure_meta_layer_16.domain_vi_cybernetic_closure_meta_layer_16_the_optimal_control_superviso"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Domain VI: Cybernetic Closure (Meta-Layer 16) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

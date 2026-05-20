@@ -1,0 +1,118 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'II. The Universal Dynamic Regime: Quasicriticality' preserves Paper 0 records P0R02513-P0R02520 without empirical validation claims.",
+      "claim_boundary": "source-bounded ii the universal dynamic regime quasicriticality source-accounting bridge; not validation evidence",
+      "context_id": "ii_the_universal_dynamic_regime_quasicriticality",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02513-P0R02520"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ii_the_universal_dynamic_regime_quasicriticality.ii_the_universal_dynamic_regime_quasicriticality",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ii_the_universal_dynamic_regime_quasicriticality must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "II. The Universal Dynamic Regime: Quasicriticality is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Overarching Dynamic Principles and the Mathematical Spine > II. The Universal Dynamic Regime: Quasicriticality",
+      "source_block_indices": [
+        2513,
+        2514,
+        2515,
+        2516,
+        2517,
+        2518,
+        2519,
+        2520
+      ],
+      "source_equation_ids": [
+        "P0R02513:ii_the_universal_dynamic_regime_quasicriticality",
+        "P0R02514:ii_the_universal_dynamic_regime_quasicriticality",
+        "P0R02515:ii_the_universal_dynamic_regime_quasicriticality",
+        "P0R02516:ii_the_universal_dynamic_regime_quasicriticality",
+        "P0R02517:ii_the_universal_dynamic_regime_quasicriticality",
+        "P0R02518:ii_the_universal_dynamic_regime_quasicriticality",
+        "P0R02519:ii_the_universal_dynamic_regime_quasicriticality",
+        "P0R02520:ii_the_universal_dynamic_regime_quasicriticality"
+      ],
+      "source_formulae": [
+        "P0R02513: II. The Universal Dynamic Regime: Quasicriticality",
+        "P0R02514: All 15 layers operate within a Quasicritical Regime. Poised between order and chaos, this state maximises information capacity and facilitates efficient communication across scales (Long-Range Temporal Correlations, LRTC). Quasicriticality provides scale-free dynamics (power-laws P(S)Stau) without fine-tuning.",
+        "P0R02515: The system maintains this state via self-organised criticality (SOC), adjusting the local branching parameter (sigmaL) towards unity:",
+        "P0R02516: $dtd\\sigma L = - \\kappa L(\\sigma L - 1) + \\eta L(t)$",
+        "P0R02517: All computationally active layers are posited to operate at the \"edge of chaos,\" a state that is mathematically robust (a Griffiths Phase) and computationally optimal, maximising information capacity and transmission.",
+        "P0R02518: This state is not achieved by fine-tuning but by layer-specific Self-Organised Criticality (SOC) mechanisms. In the brain (L4), this is not just an abstract controller. It is implemented by two coupled mechanisms:",
+        "P0R02519: Fast Tuning (Neurons): Homeostatic synaptic plasticity (e.g., STDP) provides the rapid, local, activity-dependent rule that drives the network towards the critical point ($\\sigma=1$).",
+        "P0R02520: Slow Control (Glia): The astrocyte network provides a \"slow control loop\" that integrates network activity over longer timescales. It releases gliotransmitters to modulate the neurochemical environment, acting as a global cybernetic governor that robustly stabilizes the network at the critical point, solving the fine-tuning problem."
+      ],
+      "source_ledger_ids": [
+        "P0R02513",
+        "P0R02514",
+        "P0R02515",
+        "P0R02516",
+        "P0R02517",
+        "P0R02518",
+        "P0R02519",
+        "P0R02520"
+      ],
+      "source_record_ids": [
+        "P0B02513",
+        "P0B02514",
+        "P0B02515",
+        "P0B02516",
+        "P0B02517",
+        "P0B02518",
+        "P0B02519",
+        "P0B02520"
+      ],
+      "test_protocols": [
+        "preserve II. The Universal Dynamic Regime: Quasicriticality source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ii_the_universal_dynamic_regime_quasicriticality.ii_the_universal_dynamic_regime_quasicriticality",
+      "validation_targets": [
+        "preserve records P0R02513-P0R02520"
+      ],
+      "variables": [
+        "ii_the_universal_dynamic_regime_quasicriticality"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 1,
+      "equation": 1,
+      "mechanism": 3,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded ii the universal dynamic regime quasicriticality source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0035"
+    ],
+    "next_source_boundary": "P0R02521",
+    "source_ledger_span": [
+      "P0R02513",
+      "P0R02520"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "ii_the_universal_dynamic_regime_quasicriticality.ii_the_universal_dynamic_regime_quasicriticality"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 II. The Universal Dynamic Regime: Quasicriticality Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

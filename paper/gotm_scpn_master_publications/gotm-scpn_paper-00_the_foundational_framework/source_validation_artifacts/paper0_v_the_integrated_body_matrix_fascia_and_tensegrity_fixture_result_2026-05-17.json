@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded v the integrated body matrix fascia and tensegrity source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "v_the_integrated_body_matrix_fascia_and_tensegrity": "v_the_integrated_body_matrix_fascia_and_tensegrity_source_boundary",
+    "vi_synthesis_the_holistic_pathology_of_the_scpn": "vi_synthesis_the_holistic_pathology_of_the_scpn_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "V. The Integrated Body Matrix (Fascia and Tensegrity)",
+    "component_2": "VI. Synthesis: The Holistic Pathology of the SCPN",
+    "component_count": "2",
+    "next_boundary": "P0R04956",
+    "section": "V. The Integrated Body Matrix (Fascia and Tensegrity)",
+    "source_span": "P0R04943-P0R04955"
+  },
+  "next_source_boundary": "P0R04956",
+  "null_controls": {
+    "v_the_integrated_body_matrix_fascia_and_tensegrity_is_not_empirical_validation_evidence": 1.0,
+    "vi_synthesis_the_holistic_pathology_of_the_scpn_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded v the integrated body matrix fascia and tensegrity source-accounting bridge; not validation evidence",
+    "protocol_state": "source_v_the_integrated_body_matrix_fascia_and_tensegrity_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04943",
+      "P0R04944",
+      "P0R04945",
+      "P0R04946",
+      "P0R04947",
+      "P0R04948",
+      "P0R04949",
+      "P0R04950",
+      "P0R04951",
+      "P0R04952",
+      "P0R04953",
+      "P0R04954",
+      "P0R04955"
+    ],
+    "source_ledger_span": [
+      "P0R04943",
+      "P0R04955"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04943",
+    "P0R04955"
+  ],
+  "source_record_count": 13
+}

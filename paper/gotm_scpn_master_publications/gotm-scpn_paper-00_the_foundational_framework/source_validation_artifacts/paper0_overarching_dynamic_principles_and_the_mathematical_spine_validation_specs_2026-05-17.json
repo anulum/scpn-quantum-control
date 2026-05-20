@@ -1,0 +1,209 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Overarching Dynamic Principles and the Mathematical Spine' preserves Paper 0 records P0R02502-P0R02503 without empirical validation claims.",
+      "claim_boundary": "source-bounded overarching dynamic principles and the mathematical spine source-accounting bridge; not validation evidence",
+      "context_id": "overarching_dynamic_principles_and_the_mathematical_spine",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02502-P0R02503"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "overarching_dynamic_principles_and_the_mathematical_spine.overarching_dynamic_principles_and_the_mathematical_spine",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "overarching_dynamic_principles_and_the_mathematical_spine must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Overarching Dynamic Principles and the Mathematical Spine is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Overarching Dynamic Principles and the Mathematical Spine",
+      "source_block_indices": [
+        2502,
+        2503,
+        2504,
+        2505,
+        2506,
+        2507,
+        2508,
+        2509,
+        2510,
+        2511,
+        2512
+      ],
+      "source_equation_ids": [
+        "P0R02502:overarching_dynamic_principles_and_the_mathematical_spine",
+        "P0R02503:overarching_dynamic_principles_and_the_mathematical_spine"
+      ],
+      "source_formulae": [
+        "P0R02502: Overarching Dynamic Principles and the Mathematical Spine",
+        "P0R02503: The SCPN architecture is governed by universal principles unified by a central mathematical backbone."
+      ],
+      "source_ledger_ids": [
+        "P0R02502",
+        "P0R02503",
+        "P0R02504",
+        "P0R02505",
+        "P0R02506",
+        "P0R02507",
+        "P0R02508",
+        "P0R02509",
+        "P0R02510",
+        "P0R02511",
+        "P0R02512"
+      ],
+      "source_record_ids": [
+        "P0B02502",
+        "P0B02503",
+        "P0B02504",
+        "P0B02505",
+        "P0B02506",
+        "P0B02507",
+        "P0B02508",
+        "P0B02509",
+        "P0B02510",
+        "P0B02511",
+        "P0B02512"
+      ],
+      "test_protocols": [
+        "preserve Overarching Dynamic Principles and the Mathematical Spine source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.overarching_dynamic_principles_and_the_mathematical_spine.overarching_dynamic_principles_and_the_mathematical_spine",
+      "validation_targets": [
+        "preserve records P0R02502-P0R02503"
+      ],
+      "variables": [
+        "overarching_dynamic_principles_and_the_mathematical_spine"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. The Unified Phase Dynamics Equation (UPDE) - The Spine of the SCPN' preserves Paper 0 records P0R02504-P0R02512 without empirical validation claims.",
+      "claim_boundary": "source-bounded overarching dynamic principles and the mathematical spine source-accounting bridge; not validation evidence",
+      "context_id": "i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02504-P0R02512"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "overarching_dynamic_principles_and_the_mathematical_spine.i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. The Unified Phase Dynamics Equation (UPDE) - The Spine of the SCPN is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > Overarching Dynamic Principles: A Synopsis > Overarching Dynamic Principles and the Mathematical Spine",
+      "source_block_indices": [
+        2502,
+        2503,
+        2504,
+        2505,
+        2506,
+        2507,
+        2508,
+        2509,
+        2510,
+        2511,
+        2512
+      ],
+      "source_equation_ids": [
+        "P0R02504:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02505:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02506:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02507:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02508:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02509:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02510:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02511:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+        "P0R02512:i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn"
+      ],
+      "source_formulae": [
+        "P0R02504: I. The Unified Phase Dynamics Equation (UPDE) - The Spine of the SCPN",
+        "P0R02505: The framework's spine (Core Assumption 4) is the Unified Phase Dynamics Equation (UPDE), a generalised, multi-scale extension of the Kuramoto model describing phase evolution across all layers.",
+        "P0R02506: The phase (thetaiL) of the i-th oscillator at Layer L evolves according to:",
+        "P0R02507: $dtd\\theta iL = \\omega iL + \\sum_{}^{}{j KijL sin(\\theta jL - \\theta iL)} + CInterLayer + CField + \\eta iL(t)$",
+        "P0R02508: Key Components:",
+        "P0R02509: Inter-Layer Coupling (CInterLayer): Manages hierarchical nesting and timescale separation.",
+        "P0R02510: $CInterLayer = \\epsilon L - 1 FD\\left( \\left\\langle \\theta L - 1 \\right\\rangle,\\theta iL \\right) + \\epsilon L + 1 GU\\left( \\theta iL,\\left\\langle \\theta L + 1 \\right\\rangle \\right)$",
+        "P0R02511: Field Coupling (CField): Direct influence of the global Consciousness Field (Psi).",
+        "P0R02512: $CField = \\zeta L\\Psi Global cos(\\theta iL - \\Theta\\Psi)$"
+      ],
+      "source_ledger_ids": [
+        "P0R02502",
+        "P0R02503",
+        "P0R02504",
+        "P0R02505",
+        "P0R02506",
+        "P0R02507",
+        "P0R02508",
+        "P0R02509",
+        "P0R02510",
+        "P0R02511",
+        "P0R02512"
+      ],
+      "source_record_ids": [
+        "P0B02502",
+        "P0B02503",
+        "P0B02504",
+        "P0B02505",
+        "P0B02506",
+        "P0B02507",
+        "P0B02508",
+        "P0B02509",
+        "P0B02510",
+        "P0B02511",
+        "P0B02512"
+      ],
+      "test_protocols": [
+        "preserve I. The Unified Phase Dynamics Equation (UPDE) - The Spine of the SCPN source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.overarching_dynamic_principles_and_the_mathematical_spine.i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn",
+      "validation_targets": [
+        "preserve records P0R02504-P0R02512"
+      ],
+      "variables": [
+        "i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 2,
+      "equation": 3,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded overarching dynamic principles and the mathematical spine source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0032",
+      "EQ0033",
+      "EQ0034"
+    ],
+    "next_source_boundary": "P0R02513",
+    "source_ledger_span": [
+      "P0R02502",
+      "P0R02512"
+    ],
+    "source_record_count": 11,
+    "spec_count": 2,
+    "spec_keys": [
+      "overarching_dynamic_principles_and_the_mathematical_spine.overarching_dynamic_principles_and_the_mathematical_spine",
+      "overarching_dynamic_principles_and_the_mathematical_spine.i_the_unified_phase_dynamics_equation_upde_the_spine_of_the_scpn"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Overarching Dynamic Principles and the Mathematical Spine Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

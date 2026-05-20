@@ -1,0 +1,47 @@
+{
+  "claim_boundary": "source-bounded components source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "components": "components_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Components:",
+    "component_count": "1",
+    "next_boundary": "P0R01792",
+    "section": "Components:",
+    "source_span": "P0R01779-P0R01791"
+  },
+  "next_source_boundary": "P0R01792",
+  "null_controls": {
+    "components_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded components source-accounting bridge; not validation evidence",
+    "protocol_state": "source_components_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01779",
+      "P0R01780",
+      "P0R01781",
+      "P0R01782",
+      "P0R01783",
+      "P0R01784",
+      "P0R01785",
+      "P0R01786",
+      "P0R01787",
+      "P0R01788",
+      "P0R01789",
+      "P0R01790",
+      "P0R01791"
+    ],
+    "source_ledger_span": [
+      "P0R01779",
+      "P0R01791"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01779",
+    "P0R01791"
+  ],
+  "source_record_count": 13
+}

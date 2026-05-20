@@ -1,0 +1,249 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9)' preserves Paper 0 records P0R05001-P0R05002 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv learning memory and plasticity the adaptive scaffold l1 l9 source-accounting bridge; not validation evidence",
+      "context_id": "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05001-P0R05002"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9)",
+      "source_block_indices": [
+        5001,
+        5002,
+        5003,
+        5004,
+        5005,
+        5006,
+        5007,
+        5008
+      ],
+      "source_equation_ids": [
+        "P0R05001:iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9",
+        "P0R05002:iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9"
+      ],
+      "source_formulae": [
+        "P0R05001: IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9)",
+        "P0R05002: Learning and memory are multi-scale processes of adapting the Geometric Scaffold to optimise the internal model (HPC)."
+      ],
+      "source_ledger_ids": [
+        "P0R05001",
+        "P0R05002",
+        "P0R05003",
+        "P0R05004",
+        "P0R05005",
+        "P0R05006",
+        "P0R05007",
+        "P0R05008"
+      ],
+      "source_record_ids": [
+        "P0B05001",
+        "P0B05002",
+        "P0B05003",
+        "P0B05004",
+        "P0B05005",
+        "P0B05006",
+        "P0B05007",
+        "P0B05008"
+      ],
+      "test_protocols": [
+        "preserve IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9",
+      "validation_targets": [
+        "preserve records P0R05001-P0R05002"
+      ],
+      "variables": [
+        "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Multi-Scale Memory Trace (The Engram):' preserves Paper 0 records P0R05003-P0R05006 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv learning memory and plasticity the adaptive scaffold l1 l9 source-accounting bridge; not validation evidence",
+      "context_id": "1_the_multi_scale_memory_trace_the_engram",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05003-P0R05006"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.1_the_multi_scale_memory_trace_the_engram",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_multi_scale_memory_trace_the_engram must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Multi-Scale Memory Trace (The Engram): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9)",
+      "source_block_indices": [
+        5001,
+        5002,
+        5003,
+        5004,
+        5005,
+        5006,
+        5007,
+        5008
+      ],
+      "source_equation_ids": [
+        "P0R05003:1_the_multi_scale_memory_trace_the_engram",
+        "P0R05004:1_the_multi_scale_memory_trace_the_engram",
+        "P0R05005:1_the_multi_scale_memory_trace_the_engram",
+        "P0R05006:1_the_multi_scale_memory_trace_the_engram"
+      ],
+      "source_formulae": [
+        "P0R05003: 1. The Multi-Scale Memory Trace (The Engram):",
+        "P0R05004: The Engram is distributed across the hierarchy:",
+        "P0R05005: [IMAGE:] Fig.: Distributed memory traces: L1 quantum, L2 synaptic, L3 structural, L4 dynamic, with L9 holographic interface (MERA/ER=EPR/TSVF) for non-local storage/retrieval.",
+        "P0R05006: L1 (The Quantum Trace): Information encoded in the topological structure of the MT QEC lattice or nuclear spin states (Posner Clusters). Interfaces with the L9 Holograph. | L2 (The Synaptic Trace): Changes in Pr and receptor density (LTP/LTD). | L3 (The Structural Trace): Epigenetic encoding (CBC Bridge), structural plasticity (spines, myelination), and Bioelectric Field patterns. | L4 (The Dynamic Trace): Changes in the Synchronisation Manifold (MSync)."
+      ],
+      "source_ledger_ids": [
+        "P0R05001",
+        "P0R05002",
+        "P0R05003",
+        "P0R05004",
+        "P0R05005",
+        "P0R05006",
+        "P0R05007",
+        "P0R05008"
+      ],
+      "source_record_ids": [
+        "P0B05001",
+        "P0B05002",
+        "P0B05003",
+        "P0B05004",
+        "P0B05005",
+        "P0B05006",
+        "P0B05007",
+        "P0B05008"
+      ],
+      "test_protocols": [
+        "preserve 1. The Multi-Scale Memory Trace (The Engram): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.1_the_multi_scale_memory_trace_the_engram",
+      "validation_targets": [
+        "preserve records P0R05003-P0R05006"
+      ],
+      "variables": [
+        "1_the_multi_scale_memory_trace_the_engram"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. The Mechanism of Learning (HPC Optimisation and Psi-Guidance):' preserves Paper 0 records P0R05007-P0R05008 without empirical validation claims.",
+      "claim_boundary": "source-bounded iv learning memory and plasticity the adaptive scaffold l1 l9 source-accounting bridge; not validation evidence",
+      "context_id": "2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05007-P0R05008"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. The Mechanism of Learning (HPC Optimisation and Psi-Guidance): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9)",
+      "source_block_indices": [
+        5001,
+        5002,
+        5003,
+        5004,
+        5005,
+        5006,
+        5007,
+        5008
+      ],
+      "source_equation_ids": [
+        "P0R05007:2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance",
+        "P0R05008:2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance"
+      ],
+      "source_formulae": [
+        "P0R05007: 2. The Mechanism of Learning (HPC Optimisation and Psi-Guidance):",
+        "P0R05008: Learning minimises F, driven by Prediction Errors. The Psi-field guides this process via Attentional Stabilisation (QZE), IET modulation, and Teleological Guidance (CEF)."
+      ],
+      "source_ledger_ids": [
+        "P0R05001",
+        "P0R05002",
+        "P0R05003",
+        "P0R05004",
+        "P0R05005",
+        "P0R05006",
+        "P0R05007",
+        "P0R05008"
+      ],
+      "source_record_ids": [
+        "P0B05001",
+        "P0B05002",
+        "P0B05003",
+        "P0B05004",
+        "P0B05005",
+        "P0B05006",
+        "P0B05007",
+        "P0B05008"
+      ],
+      "test_protocols": [
+        "preserve 2. The Mechanism of Learning (HPC Optimisation and Psi-Guidance): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance",
+      "validation_targets": [
+        "preserve records P0R05007-P0R05008"
+      ],
+      "variables": [
+        "2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 3,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 3,
+      "figure": 1,
+      "mechanism": 2,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded iv learning memory and plasticity the adaptive scaffold l1 l9 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0122"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05009",
+    "source_ledger_span": [
+      "P0R05001",
+      "P0R05008"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9",
+      "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.1_the_multi_scale_memory_trace_the_engram",
+      "iv_learning_memory_and_plasticity_the_adaptive_scaffold_l1_l9.2_the_mechanism_of_learning_hpc_optimisation_and_psi_guidance"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 IV. Learning, Memory, and Plasticity: The Adaptive Scaffold (L1-L9) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

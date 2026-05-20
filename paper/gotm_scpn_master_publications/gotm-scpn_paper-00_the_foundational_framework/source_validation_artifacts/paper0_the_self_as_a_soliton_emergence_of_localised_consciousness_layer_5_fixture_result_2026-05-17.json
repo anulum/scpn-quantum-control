@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded the self as a soliton emergence of localised consciousness layer 5 source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5": "the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The \"Self\" as a Soliton: Emergence of Localised Consciousness (Layer 5)",
+    "component_count": "1",
+    "next_boundary": "P0R01803",
+    "section": "The \"Self\" as a Soliton: Emergence of Localised Consciousness (Layer 5)",
+    "source_span": "P0R01792-P0R01802"
+  },
+  "next_source_boundary": "P0R01803",
+  "null_controls": {
+    "the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the self as a soliton emergence of localised consciousness layer 5 source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_self_as_a_soliton_emergence_of_localised_consciousness_layer_5_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01792",
+      "P0R01793",
+      "P0R01794",
+      "P0R01795",
+      "P0R01796",
+      "P0R01797",
+      "P0R01798",
+      "P0R01799",
+      "P0R01800",
+      "P0R01801",
+      "P0R01802"
+    ],
+    "source_ledger_span": [
+      "P0R01792",
+      "P0R01802"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01792",
+    "P0R01802"
+  ],
+  "source_record_count": 11
+}

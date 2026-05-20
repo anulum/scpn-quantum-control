@@ -1,0 +1,50 @@
+{
+  "claim_boundary": "source-bounded Layer 5 TDA/neurophenomenology simulator contract; not empirical evidence",
+  "config_thresholds": {
+    "correlation_threshold": 0.75
+  },
+  "correlation_score": 0.99419162560192,
+  "geometric_qualia_score": 12.0,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "mean_persistence_lifetime": 0.6,
+  "null_controls": {
+    "constant_report_rejection_label": 1.0,
+    "incomplete_protocol_rejection_label": 1.0,
+    "unsupported_empirical_qualia_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded Layer 5 TDA/neurophenomenology simulator contract; not empirical evidence",
+    "source_ledger_ids": [
+      "P0R06504",
+      "P0R06505",
+      "P0R06506",
+      "P0R06507",
+      "P0R06508",
+      "P0R06509",
+      "P0R06510",
+      "P0R06511",
+      "P0R06512",
+      "P0R06513",
+      "P0R06514",
+      "P0R06515",
+      "P0R06516",
+      "P0R06517",
+      "P0R06518"
+    ],
+    "source_ledger_span": [
+      "P0R06504",
+      "P0R06518"
+    ]
+  },
+  "protocol_completeness": 1.0,
+  "source_ledger_span": [
+    "P0R06504",
+    "P0R06518"
+  ],
+  "spec_keys": [
+    "l5_tda_neurophenomenology.geometric_qualia_hypothesis",
+    "l5_tda_neurophenomenology.neurophenomenology_protocol",
+    "l5_tda_neurophenomenology.persistent_homology_features",
+    "l5_tda_neurophenomenology.qualia_richness_regression"
+  ]
+}

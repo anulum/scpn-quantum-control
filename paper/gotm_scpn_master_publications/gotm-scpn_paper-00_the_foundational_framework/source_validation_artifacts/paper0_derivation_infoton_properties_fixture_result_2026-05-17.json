@@ -1,0 +1,56 @@
+{
+  "claim_boundary": "source-bounded infoton-properties derivation bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "lagrangian_and_potential": "u1_lagrangian_potential_derivation_boundary",
+    "mass_identification": "infoton_mass_identification_source_boundary",
+    "range_consequence": "short_range_informational_force_consequence_boundary",
+    "vev_and_goldstone_absorption": "vev_goldstone_absorption_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "lagrangian": "L = |D_mu Psi|^2 - V(|Psi|) - 1/4 F_mu_nu F^mu_nu",
+    "mass": "m_A = g v",
+    "next_boundary": "The Psi-Higgs Boson: A New Scalar Particle",
+    "potential": "V(|Psi|) = -mu^2 |Psi|^2 + lambda |Psi|^4",
+    "range": "lambda_range ~= hbar / (m_A c)",
+    "section": "Derivation of the Infoton's Properties"
+  },
+  "next_source_boundary": "P0R01638",
+  "null_controls": {
+    "force_range_relation_is_not_measured_force_profile": 1.0,
+    "goldstone_absorption_is_source_derivation_not_observed_event": 1.0,
+    "infoton_mass_relation_is_not_measured_mass": 1.0,
+    "lagrangian_derivation_is_not_detector_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded infoton-properties derivation bridge; not validation evidence",
+    "protocol_state": "source_derivation_infoton_properties_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R01623",
+      "P0R01624",
+      "P0R01625",
+      "P0R01626",
+      "P0R01627",
+      "P0R01628",
+      "P0R01629",
+      "P0R01630",
+      "P0R01631",
+      "P0R01632",
+      "P0R01633",
+      "P0R01634",
+      "P0R01635",
+      "P0R01636",
+      "P0R01637"
+    ],
+    "source_ledger_span": [
+      "P0R01623",
+      "P0R01637"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R01623",
+    "P0R01637"
+  ],
+  "source_record_count": 15
+}

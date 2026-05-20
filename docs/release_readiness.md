@@ -68,15 +68,9 @@ remain a release follow-up queue unless explicitly promoted to hard blockers
 with `--fail-on-file-gap`. The 100 percent coverage target remains a future
 improvement, not a blocker for tagging a bounded release.
 
-Reviewed release exclusions live in:
-
-```bash
-docs/coverage_justified_exclusions_2026-05-18.json
-```
-
-The current exclusions are limited to optional Julia-runtime wrappers and the
-generated Paper 0 source-accounting package. Hand-maintained source files remain
-under the normal coverage and behavioural-quality gates.
+Reviewed release-audit notes and local coverage exclusions are internal
+operational artefacts, not part of the public documentation site. Hand-maintained
+source files remain under the normal coverage and behavioural-quality gates.
 
 The same closed-set discipline applies to stable core contracts and backend
 capability artefacts. These artefacts are not only generated for runtime use;

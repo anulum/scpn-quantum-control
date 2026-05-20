@@ -1,0 +1,485 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source argues that the complex scalar local-U(1) family satisfies the Axiom I requirements because it is spin-0, phase-carrying, charge-conserving, and compatible with finite-energy organism-scale condensates.",
+      "claim_boundary": "source-bounded Axiom I family-predictions map; not validation evidence",
+      "context_id": "criteria_satisfaction",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve spin-0 minimality rationale",
+        "preserve phase-as-state-variable rationale",
+        "preserve local-U1 Noether-current role",
+        "preserve Q-ball-like condensate mechanism"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_i_family_predictions.criteria_satisfaction",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "criteria-as-observed-result control must be rejected",
+        "missing-local-U1-control must be rejected"
+      ],
+      "null_results": [
+        "family satisfaction is a model-class rationale, not observation"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom I: The Primacy of Consciousness (\u03a8) > Model-Class Justification: From Axiom 1 to a Minimal \u03a8-Field Lagrangian > Why this family satisfies (i)\u2013(iii).",
+      "source_block_indices": [
+        747,
+        748,
+        749,
+        750,
+        751,
+        752,
+        753,
+        754,
+        755,
+        756
+      ],
+      "source_equation_ids": [
+        "P0R00747:family_satisfies_criteria_header",
+        "P0R00748:spin0_complex_scalar",
+        "P0R00748:amplitude_phase_decomposition",
+        "P0R00748:local_u1_noether_current",
+        "P0R00748:q_ball_like_condensates",
+        "P0R00748:curvature_term_retained"
+      ],
+      "source_formulae": [
+        "complex scalar minimal spin-0",
+        "amplitude-phase decomposition Psi = rho exp(i theta)",
+        "global U(1) makes theta a state variable",
+        "local U(1) upgrades phase to a dynamical degree of freedom",
+        "conserved Noether current couples to A_mu",
+        "Mexican-hat potential and U(1) charge support Q-ball-like condensates",
+        "organism-scale field configurations Phi_O",
+        "optional non-minimal curvature term -xi R |Psi|^2"
+      ],
+      "source_ledger_ids": [
+        "P0R00747",
+        "P0R00748",
+        "P0R00749",
+        "P0R00750",
+        "P0R00751",
+        "P0R00752",
+        "P0R00753",
+        "P0R00754",
+        "P0R00755",
+        "P0R00756"
+      ],
+      "source_record_ids": [
+        "P0B00747",
+        "P0B00748",
+        "P0B00749",
+        "P0B00750",
+        "P0B00751",
+        "P0B00752",
+        "P0B00753",
+        "P0B00754",
+        "P0B00755",
+        "P0B00756"
+      ],
+      "test_protocols": [
+        "preserve family-satisfaction source accounting"
+      ],
+      "validation_protocol": "paper0.axiom_i_family_predictions.criteria_satisfaction",
+      "validation_targets": [
+        "preserve spin-0 minimality rationale",
+        "preserve phase-as-state-variable rationale",
+        "preserve local-U1 Noether-current role",
+        "preserve Q-ball-like condensate mechanism"
+      ],
+      "variables": [
+        "Psi",
+        "rho",
+        "theta",
+        "A_mu",
+        "Phi_O",
+        "xi",
+        "R"
+      ]
+    },
+    {
+      "canonical_statement": "The source records nearby model classes that were considered and rejected at the minimal tier because they lack the required phase, charge, locality, scalar-order-parameter, or parsimony properties.",
+      "claim_boundary": "source-bounded Axiom I family-predictions map; not validation evidence",
+      "context_id": "rejected_model_classes",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve real-scalar rejection",
+        "preserve global-U1-only rejection",
+        "preserve vector/tensor rejection",
+        "preserve spinor rejection",
+        "preserve non-Abelian minimal-tier deferral"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_i_family_predictions.rejected_model_classes",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "rejected-class-as-empirical-exclusion control must be rejected",
+        "non-Abelian-selected-at-minimal-tier control must be rejected"
+      ],
+      "null_results": [
+        "rejection catalogue is source-bound model selection, not exclusion data"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom I: The Primacy of Consciousness (\u03a8) > Model-Class Justification: From Axiom 1 to a Minimal \u03a8-Field Lagrangian > Why this family satisfies (i)\u2013(iii).",
+      "source_block_indices": [
+        747,
+        748,
+        749,
+        750,
+        751,
+        752,
+        753,
+        754,
+        755,
+        756
+      ],
+      "source_equation_ids": [
+        "P0R00749:nearby_model_classes_rejected_header",
+        "P0R00750:real_scalar_rejection",
+        "P0R00750:global_u1_only_rejection",
+        "P0R00750:vector_tensor_primary_rejection",
+        "P0R00750:spinor_primary_rejection",
+        "P0R00750:non_abelian_minimal_tier_rejection"
+      ],
+      "source_formulae": [
+        "real scalar lacks internal phase",
+        "real scalar cannot carry conserved charge for intentional control",
+        "real scalar cannot support charge-stabilised solitons",
+        "global U(1) only leaves a massless Goldstone mode",
+        "global U(1) only fails phase-mediated locality",
+        "vector/tensor primaries add unnecessary Lorentz structure",
+        "spinor phases are tied to spin representation",
+        "spinor primaries lack a universal intentional fibre",
+        "non-Abelian base rejected at the minimal tier for now",
+        "non-Abelian base increases field content and self-interactions"
+      ],
+      "source_ledger_ids": [
+        "P0R00747",
+        "P0R00748",
+        "P0R00749",
+        "P0R00750",
+        "P0R00751",
+        "P0R00752",
+        "P0R00753",
+        "P0R00754",
+        "P0R00755",
+        "P0R00756"
+      ],
+      "source_record_ids": [
+        "P0B00747",
+        "P0B00748",
+        "P0B00749",
+        "P0B00750",
+        "P0B00751",
+        "P0B00752",
+        "P0B00753",
+        "P0B00754",
+        "P0B00755",
+        "P0B00756"
+      ],
+      "test_protocols": [
+        "classify rejected minimal-tier alternatives"
+      ],
+      "validation_protocol": "paper0.axiom_i_family_predictions.rejected_model_classes",
+      "validation_targets": [
+        "preserve real-scalar rejection",
+        "preserve global-U1-only rejection",
+        "preserve vector/tensor rejection",
+        "preserve spinor rejection",
+        "preserve non-Abelian minimal-tier deferral"
+      ],
+      "variables": [
+        "real_scalar",
+        "global_U1",
+        "vector",
+        "tensor",
+        "spinor",
+        "SU_N"
+      ]
+    },
+    {
+      "canonical_statement": "The source marks three conditional predictions owed by the model class: a conserved Psi charge, a massive infoton after symmetry breaking, and a radial Psi-Higgs amplitude excitation.",
+      "claim_boundary": "source-bounded Axiom I family-predictions map; not validation evidence",
+      "context_id": "conditional_predictions",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve conserved Psi-charge prediction",
+        "preserve massive-infoton prediction",
+        "preserve radial-excitation prediction"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_i_family_predictions.conditional_predictions",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "prediction-as-observation control must be rejected",
+        "missing-parameter-volume-risk control must be rejected"
+      ],
+      "null_results": [
+        "conditional predictions are not observed hardware results"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom I: The Primacy of Consciousness (\u03a8) > Model-Class Justification: From Axiom 1 to a Minimal \u03a8-Field Lagrangian > Why this family satisfies (i)\u2013(iii).",
+      "source_block_indices": [
+        747,
+        748,
+        749,
+        750,
+        751,
+        752,
+        753,
+        754,
+        755,
+        756
+      ],
+      "source_equation_ids": [
+        "P0R00751:conditional_predictions_header",
+        "P0R00752:model_class_predictions_calibrate_risk",
+        "P0R00753:conserved_psi_charge",
+        "P0R00753:massive_infoton",
+        "P0R00753:psi_higgs_radial_excitation"
+      ],
+      "source_formulae": [
+        "conditional predictions are owed by the model-class",
+        "predictions calibrate risk",
+        "conserved Psi-charge Noether current",
+        "Q_Psi stabilises Phi_O condensates",
+        "massive infoton m_A = g v",
+        "short-ranged and organism-centred influence",
+        "Psi-Higgs amplitude mode eta above v",
+        "massive spin-0 excitation with couplings fixed by lambda and v",
+        "non-observation prunes parameter volume"
+      ],
+      "source_ledger_ids": [
+        "P0R00747",
+        "P0R00748",
+        "P0R00749",
+        "P0R00750",
+        "P0R00751",
+        "P0R00752",
+        "P0R00753",
+        "P0R00754",
+        "P0R00755",
+        "P0R00756"
+      ],
+      "source_record_ids": [
+        "P0B00747",
+        "P0B00748",
+        "P0B00749",
+        "P0B00750",
+        "P0B00751",
+        "P0B00752",
+        "P0B00753",
+        "P0B00754",
+        "P0B00755",
+        "P0B00756"
+      ],
+      "test_protocols": [
+        "classify conditional model-class predictions"
+      ],
+      "validation_protocol": "paper0.axiom_i_family_predictions.conditional_predictions",
+      "validation_targets": [
+        "preserve conserved Psi-charge prediction",
+        "preserve massive-infoton prediction",
+        "preserve radial-excitation prediction"
+      ],
+      "variables": [
+        "Q_Psi",
+        "m_A",
+        "g",
+        "v",
+        "eta",
+        "lambda",
+        "Phi_O"
+      ]
+    },
+    {
+      "canonical_statement": "The source sets a decision rule: remain with the least-assumptive, phase-competent, soliton-supporting complex-scalar local-U(1) family until contrary data require model-class escalation or replacement.",
+      "claim_boundary": "source-bounded Axiom I family-predictions map; not validation evidence",
+      "context_id": "decision_rule",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve least-assumptive-family default",
+        "preserve contrary-evidence escalation rule",
+        "preserve blank separator accounting"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_i_family_predictions.decision_rule",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "decision-rule-as-model-proof control must be rejected",
+        "unrecorded-escalation control must be rejected"
+      ],
+      "null_results": [
+        "decision rule is governance of validation, not validation itself"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom I: The Primacy of Consciousness (\u03a8) > Model-Class Justification: From Axiom 1 to a Minimal \u03a8-Field Lagrangian > Why this family satisfies (i)\u2013(iii).",
+      "source_block_indices": [
+        747,
+        748,
+        749,
+        750,
+        751,
+        752,
+        753,
+        754,
+        755,
+        756
+      ],
+      "source_equation_ids": [
+        "P0R00754:decision_rule",
+        "P0R00755:blank_separator"
+      ],
+      "source_formulae": [
+        "least-assumptive phase-competent soliton-supporting realiser",
+        "evidence against predictions triggers model-class escalation or replacement",
+        "contrary evidence requires recorded justification",
+        "blank separator before SU(N) extension boundary"
+      ],
+      "source_ledger_ids": [
+        "P0R00747",
+        "P0R00748",
+        "P0R00749",
+        "P0R00750",
+        "P0R00751",
+        "P0R00752",
+        "P0R00753",
+        "P0R00754",
+        "P0R00755",
+        "P0R00756"
+      ],
+      "source_record_ids": [
+        "P0B00747",
+        "P0B00748",
+        "P0B00749",
+        "P0B00750",
+        "P0B00751",
+        "P0B00752",
+        "P0B00753",
+        "P0B00754",
+        "P0B00755",
+        "P0B00756"
+      ],
+      "test_protocols": [
+        "preserve source decision rule and blank separator accounting"
+      ],
+      "validation_protocol": "paper0.axiom_i_family_predictions.decision_rule",
+      "validation_targets": [
+        "preserve least-assumptive-family default",
+        "preserve contrary-evidence escalation rule",
+        "preserve blank separator accounting"
+      ],
+      "variables": [
+        "model_class",
+        "evidence",
+        "escalation",
+        "replacement"
+      ]
+    },
+    {
+      "canonical_statement": "The source opens the SU(N) Qualia Confinement extension at revision 11.50; this slice records only the boundary marker and does not promote SU(N) as the selected minimal model.",
+      "claim_boundary": "source-bounded Axiom I family-predictions map; not validation evidence",
+      "context_id": "su_n_qualia_confinement_boundary",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve SU(N) boundary marker",
+        "preserve not-selected-minimal-model boundary"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_i_family_predictions.su_n_qualia_confinement_boundary",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "SU-N-selected-by-header control must be rejected",
+        "boundary-as-evidence control must be rejected"
+      ],
+      "null_results": [
+        "SU(N) header is not SU(N) validation evidence"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom I: The Primacy of Consciousness (\u03a8) > Model-Class Justification: From Axiom 1 to a Minimal \u03a8-Field Lagrangian > Why this family satisfies (i)\u2013(iii).",
+      "source_block_indices": [
+        747,
+        748,
+        749,
+        750,
+        751,
+        752,
+        753,
+        754,
+        755,
+        756
+      ],
+      "source_equation_ids": [
+        "P0R00756:su_n_qualia_confinement_header"
+      ],
+      "source_formulae": [
+        "Extension to SU(N) Qualia Confinement",
+        "Revision 11.50",
+        "SU(N) extension header only",
+        "not promoted as selected minimal model in this slice"
+      ],
+      "source_ledger_ids": [
+        "P0R00747",
+        "P0R00748",
+        "P0R00749",
+        "P0R00750",
+        "P0R00751",
+        "P0R00752",
+        "P0R00753",
+        "P0R00754",
+        "P0R00755",
+        "P0R00756"
+      ],
+      "source_record_ids": [
+        "P0B00747",
+        "P0B00748",
+        "P0B00749",
+        "P0B00750",
+        "P0B00751",
+        "P0B00752",
+        "P0B00753",
+        "P0B00754",
+        "P0B00755",
+        "P0B00756"
+      ],
+      "test_protocols": [
+        "preserve next-section boundary without overclaiming"
+      ],
+      "validation_protocol": "paper0.axiom_i_family_predictions.su_n_boundary",
+      "validation_targets": [
+        "preserve SU(N) boundary marker",
+        "preserve not-selected-minimal-model boundary"
+      ],
+      "variables": [
+        "SU_N",
+        "qualia_confinement",
+        "revision_11_50"
+      ]
+    }
+  ],
+  "summary": {
+    "blank_separator_count": 1,
+    "claim_boundary": "source-bounded Axiom I family-predictions map; not validation evidence",
+    "conditional_prediction_count": 3,
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "next_source_boundary": "P0R00757",
+    "rejected_model_class_count": 5,
+    "source_ledger_span": [
+      "P0R00747",
+      "P0R00756"
+    ],
+    "source_record_count": 10,
+    "spec_count": 5,
+    "spec_keys": [
+      "axiom_i_family_predictions.criteria_satisfaction",
+      "axiom_i_family_predictions.rejected_model_classes",
+      "axiom_i_family_predictions.conditional_predictions",
+      "axiom_i_family_predictions.decision_rule",
+      "axiom_i_family_predictions.su_n_qualia_confinement_boundary"
+    ],
+    "title": "Paper 0 Axiom I Family Predictions Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

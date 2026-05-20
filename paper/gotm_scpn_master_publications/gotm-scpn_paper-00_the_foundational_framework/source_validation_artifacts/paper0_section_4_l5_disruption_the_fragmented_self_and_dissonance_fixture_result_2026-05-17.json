@@ -1,0 +1,43 @@
+{
+  "claim_boundary": "source-bounded section 4 l5 disruption the fragmented self and dissonance source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "4_l5_disruption_the_fragmented_self_and_dissonance": "4_l5_disruption_the_fragmented_self_and_dissonance_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "4. L5 Disruption (The Fragmented Self and Dissonance):",
+    "component_count": "1",
+    "next_boundary": "P0R05075",
+    "section": "4. L5 Disruption (The Fragmented Self and Dissonance):",
+    "source_span": "P0R05066-P0R05074"
+  },
+  "next_source_boundary": "P0R05075",
+  "null_controls": {
+    "4_l5_disruption_the_fragmented_self_and_dissonance_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 4 l5 disruption the fragmented self and dissonance source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_4_l5_disruption_the_fragmented_self_and_dissonance_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05066",
+      "P0R05067",
+      "P0R05068",
+      "P0R05069",
+      "P0R05070",
+      "P0R05071",
+      "P0R05072",
+      "P0R05073",
+      "P0R05074"
+    ],
+    "source_ledger_span": [
+      "P0R05066",
+      "P0R05074"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05066",
+    "P0R05074"
+  ],
+  "source_record_count": 9
+}

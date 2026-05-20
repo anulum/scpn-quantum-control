@@ -1,0 +1,309 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R02950-P0R02951 without empirical validation claims.",
+      "claim_boundary": "source-bounded psis field coupling integration p0r02950 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02950-P0R02951"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psis_field_coupling_integration_p0r02950.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > \u03a8s Field Coupling Integration",
+      "source_block_indices": [
+        2950,
+        2951,
+        2952,
+        2953,
+        2954,
+        2955,
+        2956,
+        2957
+      ],
+      "source_equation_ids": [
+        "P0R02950:psis_field_coupling_integration",
+        "P0R02951:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R02950: Psis Field Coupling Integration",
+        "P0R02951: The two-timescale controller provides a sophisticated interface for the Psis field to guide the system's dynamic state. The H_int = -lambda * Psis * sigma interaction here is not about setting a static state, but about biasing a dynamic balance."
+      ],
+      "source_ledger_ids": [
+        "P0R02950",
+        "P0R02951",
+        "P0R02952",
+        "P0R02953",
+        "P0R02954",
+        "P0R02955",
+        "P0R02956",
+        "P0R02957"
+      ],
+      "source_record_ids": [
+        "P0B02950",
+        "P0B02951",
+        "P0B02952",
+        "P0B02953",
+        "P0B02954",
+        "P0B02955",
+        "P0B02956",
+        "P0B02957"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.psis_field_coupling_integration_p0r02950.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R02950-P0R02951"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Affective Field as the Coupling Interface:' preserves Paper 0 records P0R02952-P0R02953 without empirical validation claims.",
+      "claim_boundary": "source-bounded psis field coupling integration p0r02950 source-accounting bridge; not validation evidence",
+      "context_id": "the_affective_field_as_the_coupling_interface",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02952-P0R02953"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psis_field_coupling_integration_p0r02950.the_affective_field_as_the_coupling_interface",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_affective_field_as_the_coupling_interface must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Affective Field as the Coupling Interface: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > \u03a8s Field Coupling Integration",
+      "source_block_indices": [
+        2950,
+        2951,
+        2952,
+        2953,
+        2954,
+        2955,
+        2956,
+        2957
+      ],
+      "source_equation_ids": [
+        "P0R02952:the_affective_field_as_the_coupling_interface",
+        "P0R02953:the_affective_field_as_the_coupling_interface"
+      ],
+      "source_formulae": [
+        "P0R02952: The Affective Field as the Coupling Interface:",
+        "P0R02953: The Affective Field is the direct readout of the system's internal state of surprise and is therefore the ideal collective state variable (sigma) for this level of control. sigma = |A/sigma|."
+      ],
+      "source_ledger_ids": [
+        "P0R02950",
+        "P0R02951",
+        "P0R02952",
+        "P0R02953",
+        "P0R02954",
+        "P0R02955",
+        "P0R02956",
+        "P0R02957"
+      ],
+      "source_record_ids": [
+        "P0B02950",
+        "P0B02951",
+        "P0B02952",
+        "P0B02953",
+        "P0B02954",
+        "P0B02955",
+        "P0B02956",
+        "P0B02957"
+      ],
+      "test_protocols": [
+        "preserve The Affective Field as the Coupling Interface: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.psis_field_coupling_integration_p0r02950.the_affective_field_as_the_coupling_interface",
+      "validation_targets": [
+        "preserve records P0R02952-P0R02953"
+      ],
+      "variables": [
+        "the_affective_field_as_the_coupling_interface"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Psis Field as the Scheduler:' preserves Paper 0 records P0R02954-P0R02955 without empirical validation claims.",
+      "claim_boundary": "source-bounded psis field coupling integration p0r02950 source-accounting bridge; not validation evidence",
+      "context_id": "the_psis_field_as_the_scheduler",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02954-P0R02955"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psis_field_coupling_integration_p0r02950.the_psis_field_as_the_scheduler",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_psis_field_as_the_scheduler must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Psis Field as the Scheduler: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > \u03a8s Field Coupling Integration",
+      "source_block_indices": [
+        2950,
+        2951,
+        2952,
+        2953,
+        2954,
+        2955,
+        2956,
+        2957
+      ],
+      "source_equation_ids": [
+        "P0R02954:the_psis_field_as_the_scheduler",
+        "P0R02955:the_psis_field_as_the_scheduler"
+      ],
+      "source_formulae": [
+        "P0R02954: The Psis Field as the Scheduler:",
+        "P0R02955: The universal Psis field couples to this measure of affective salience. The H_int interaction can be viewed as providing a top-down, goal-directed signal that modulates the affective landscape. By subtly increasing or decreasing the \"affective cost\" of certain states, the Psis field can encourage the local controller to shift the balance between exploration and exploitation. For example, to promote novelty, the Psi-field could \"dampen\" the affective response to surprise, encouraging the Gs gain to increase. To promote stability, it could amplify the response, forcing Gf to dominate. This allows the highest levels of the SCPN (e.g., Layer 15) to guide the fundamental learning strategy of all the layers below it."
+      ],
+      "source_ledger_ids": [
+        "P0R02950",
+        "P0R02951",
+        "P0R02952",
+        "P0R02953",
+        "P0R02954",
+        "P0R02955",
+        "P0R02956",
+        "P0R02957"
+      ],
+      "source_record_ids": [
+        "P0B02950",
+        "P0B02951",
+        "P0B02952",
+        "P0B02953",
+        "P0B02954",
+        "P0B02955",
+        "P0B02956",
+        "P0B02957"
+      ],
+      "test_protocols": [
+        "preserve The Psis Field as the Scheduler: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.psis_field_coupling_integration_p0r02950.the_psis_field_as_the_scheduler",
+      "validation_targets": [
+        "preserve records P0R02954-P0R02955"
+      ],
+      "variables": [
+        "the_psis_field_as_the_scheduler"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Quasicriticality with MS-QEC: Two-Timescale Control and Certificates (revision 11.00)' preserves Paper 0 records P0R02956-P0R02957 without empirical validation claims.",
+      "claim_boundary": "source-bounded psis field coupling integration p0r02950 source-accounting bridge; not validation evidence",
+      "context_id": "quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02956-P0R02957"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "psis_field_coupling_integration_p0r02950.quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Quasicriticality with MS-QEC: Two-Timescale Control and Certificates (revision 11.00) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > The Impedance-Matching Operator and Causal Horizon > \u03a8s Field Coupling Integration",
+      "source_block_indices": [
+        2950,
+        2951,
+        2952,
+        2953,
+        2954,
+        2955,
+        2956,
+        2957
+      ],
+      "source_equation_ids": [
+        "P0R02956:quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi",
+        "P0R02957:quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi"
+      ],
+      "source_formulae": [
+        "P0R02956: Quasicriticality with MS-QEC: Two-Timescale Control and Certificates (revision 11.00)",
+        "P0R02957: Purpose. We now make explicit the control split that lets the system live near quasicriticality without falling apart. Fast stabilisers (MS-QEC and local feedback) keep coherence in check; slow exploratory drift lets the phase spine sample rich dynamics in the sigma1 band. The pair is certified for bounded-input bounded-output (BIBO) stability, and the torus surface flow acquires a Lyapunov-style certificate. Gain scheduling is driven by the Affective Field A = F via its sensitivity to sigma."
+      ],
+      "source_ledger_ids": [
+        "P0R02950",
+        "P0R02951",
+        "P0R02952",
+        "P0R02953",
+        "P0R02954",
+        "P0R02955",
+        "P0R02956",
+        "P0R02957"
+      ],
+      "source_record_ids": [
+        "P0B02950",
+        "P0B02951",
+        "P0B02952",
+        "P0B02953",
+        "P0B02954",
+        "P0B02955",
+        "P0B02956",
+        "P0B02957"
+      ],
+      "test_protocols": [
+        "preserve Quasicriticality with MS-QEC: Two-Timescale Control and Certificates (revision 11.00) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.psis_field_coupling_integration_p0r02950.quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi",
+      "validation_targets": [
+        "preserve records P0R02956-P0R02957"
+      ],
+      "variables": [
+        "quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 1,
+      "mechanism": 3,
+      "validation_target": 4
+    },
+    "claim_boundary": "source-bounded psis field coupling integration p0r02950 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02958",
+    "source_ledger_span": [
+      "P0R02950",
+      "P0R02957"
+    ],
+    "source_record_count": 8,
+    "spec_count": 4,
+    "spec_keys": [
+      "psis_field_coupling_integration_p0r02950.psis_field_coupling_integration",
+      "psis_field_coupling_integration_p0r02950.the_affective_field_as_the_coupling_interface",
+      "psis_field_coupling_integration_p0r02950.the_psis_field_as_the_scheduler",
+      "psis_field_coupling_integration_p0r02950.quasicriticality_with_ms_qec_two_timescale_control_and_certificates_revi"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Psis Field Coupling Integration Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

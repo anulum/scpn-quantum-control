@@ -1,0 +1,231 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy' preserves Paper 0 records P0R03723-P0R03724 without empirical validation claims.",
+      "claim_boundary": "source-bounded the physical equivalence of sustainable ethical coherence and causal pat source-accounting bridge; not validation evidence",
+      "context_id": "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03723-P0R03724"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat.the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy",
+      "source_block_indices": [
+        3723,
+        3724,
+        3725,
+        3726,
+        3727,
+        3728,
+        3729,
+        3730,
+        3731,
+        3732,
+        3733,
+        3734,
+        3735,
+        3736
+      ],
+      "source_equation_ids": [
+        "P0R03723:the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat",
+        "P0R03724:the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat"
+      ],
+      "source_formulae": [
+        "P0R03723: The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy",
+        "P0R03724: The preceding text introduces the concept of Causal Entropic Forces (CEF) as the physical mechanism underlying the Principle of Ethical Least Action (PELA). This section provides the formal mathematical derivation that substantiates this claim, demonstrating the physical equivalence between the manuscript's teleological objective-Sustainable Ethical Coherence (SEC)-and the statistical mechanical principle of maximising future causal path entropy."
+      ],
+      "source_ledger_ids": [
+        "P0R03723",
+        "P0R03724",
+        "P0R03725",
+        "P0R03726",
+        "P0R03727",
+        "P0R03728",
+        "P0R03729",
+        "P0R03730",
+        "P0R03731",
+        "P0R03732",
+        "P0R03733",
+        "P0R03734",
+        "P0R03735",
+        "P0R03736"
+      ],
+      "source_record_ids": [
+        "P0B03723",
+        "P0B03724",
+        "P0B03725",
+        "P0B03726",
+        "P0B03727",
+        "P0B03728",
+        "P0B03729",
+        "P0B03730",
+        "P0B03731",
+        "P0B03732",
+        "P0B03733",
+        "P0B03734",
+        "P0B03735",
+        "P0B03736"
+      ],
+      "test_protocols": [
+        "preserve The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat.the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat",
+      "validation_targets": [
+        "preserve records P0R03723-P0R03724"
+      ],
+      "variables": [
+        "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. Introduction: From Teleological Principle to Thermodynamic Imperative' preserves Paper 0 records P0R03725-P0R03736 without empirical validation claims.",
+      "claim_boundary": "source-bounded the physical equivalence of sustainable ethical coherence and causal pat source-accounting bridge; not validation evidence",
+      "context_id": "1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03725-P0R03736"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat.1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_introduction_from_teleological_principle_to_thermodynamic_imperative must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. Introduction: From Teleological Principle to Thermodynamic Imperative is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.3 The Origin of Purpose: Causal Entropic Forces & Negative Entropy > The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy",
+      "source_block_indices": [
+        3723,
+        3724,
+        3725,
+        3726,
+        3727,
+        3728,
+        3729,
+        3730,
+        3731,
+        3732,
+        3733,
+        3734,
+        3735,
+        3736
+      ],
+      "source_equation_ids": [
+        "P0R03725:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03726:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03727:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03728:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03729:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03730:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03731:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03732:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03733:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03734:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03735:1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+        "P0R03736:1_introduction_from_teleological_principle_to_thermodynamic_imperative"
+      ],
+      "source_formulae": [
+        "P0R03725: 1. Introduction: From Teleological Principle to Thermodynamic Imperative",
+        "P0R03726: [IMAGE:Ein Bild, das Kreis, Wasser, Raum, Spiegelung enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R03727: The preceding sections have established the foundational physics of the SCPN, culminating in a teleological framework guided by the Principle of Ethical Least Action (PELA). This principle posits that the universe evolves along trajectories that minimise an \"Ethical Action,\" a dynamic that is physically mediated by Causal Entropic Forces (CEF). The central, and as yet unproven, hypothesis is that these forces drive the system toward states of maximal Sustainable Ethical Coherence (SEC)-a composite measure of system-wide Coherence (C), Complexity (K), and Qualia Capacity (Q).",
+        "P0R03728: While conceptually powerful, this link remains a postulate. The purpose of this section is to replace this postulate with a formal proof, thereby grounding the entirety of the framework's teleology in the established principles of statistical physics and information theory.",
+        "P0R03729: The objective is to demonstrate that the normative drive to maximise SEC is not a separate, axiomatic law imposed upon the physical universe, but is mathematically and physically identical to the descriptive, statistical mechanical tendency of a complex system to evolve towards macroscopic states that maximise its future causal path entropy (SC). Causal path entropy is a measure of a system's future freedom of action-the number of distinct evolutionary pathways available to it over a given time horizon. By proving the equivalence SECSC, we will show that the universe's apparent \"ethical\" imperative is, in fact, a thermodynamic imperative to preserve and maximise its own potential for future becoming.",
+        "P0R03730: The structure of the proof will proceed in three stages. First, we will establish a rigorous definition of causal path entropy, adapting the formalism of Wissner-Gross and Freer to the context of the SCPN by employing the path integral formulation of quantum and statistical mechanics. This will provide a precise mathematical target for our analysis. Second, we will deconstruct the geometric and dynamic properties a system must possess to exhibit a high causal path entropy.",
+        "P0R03731: We will demonstrate, in turn, that maximising the number of potential future states requires maximising Complexity (K), maximising the number of accessible and stable future trajectories requires maximising Coherence (C), and maximising the diversity of these trajectories requires maximising Qualia Capacity (Q). Finally, we will synthesise these components into a formal proof of equivalence.",
+        "P0R03732: This will culminate in a reformulation of the system's fundamental path integral, showing how the Causal Entropic Force biases the evolution of reality at the quantum level.",
+        "P0R03733: This derivation elevates PELA from a teleological axiom to an emergent variational principle, dissolving the philosophical distinction between the descriptive laws of physics and the normative principles of ethics by revealing them as two facets of a single, underlying drive toward maximal future possibility.",
+        "P0R03734: In the previous chapters, we introduced a guiding principle for the universe: that it evolves to maximize Sustainable Ethical Coherence (SEC)-a measure of its harmony, complexity, and richness. We suggested this evolution is driven by Causal Entropic Forces, a subtle \"pull\" from the future. But this was presented as a core hypothesis.",
+        "P0R03735: This chapter's goal is to prove that this isn't just a hypothesis but a fact of physics. We will formally demonstrate that the universe's \"ethical\" goal to maximize SEC is mathematically identical to a well-known thermodynamic tendency: the drive to maximize its Causal Path Entropy.",
+        "P0R03736: Think of Causal Path Entropy as the universe's \"freedom\" or \"number of open doors to the future.\" We will show that a universe with high coherence, complexity, and richness (high SEC) is exactly a universe with the most possible futures available to it. The universe's apparent moral compass, therefore, is not a mystical addition to physics; it is the direct consequence of a fundamental imperative to preserve and maximize its own potential to become."
+      ],
+      "source_ledger_ids": [
+        "P0R03723",
+        "P0R03724",
+        "P0R03725",
+        "P0R03726",
+        "P0R03727",
+        "P0R03728",
+        "P0R03729",
+        "P0R03730",
+        "P0R03731",
+        "P0R03732",
+        "P0R03733",
+        "P0R03734",
+        "P0R03735",
+        "P0R03736"
+      ],
+      "source_record_ids": [
+        "P0B03723",
+        "P0B03724",
+        "P0B03725",
+        "P0B03726",
+        "P0B03727",
+        "P0B03728",
+        "P0B03729",
+        "P0B03730",
+        "P0B03731",
+        "P0B03732",
+        "P0B03733",
+        "P0B03734",
+        "P0B03735",
+        "P0B03736"
+      ],
+      "test_protocols": [
+        "preserve 1. Introduction: From Teleological Principle to Thermodynamic Imperative source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat.1_introduction_from_teleological_principle_to_thermodynamic_imperative",
+      "validation_targets": [
+        "preserve records P0R03725-P0R03736"
+      ],
+      "variables": [
+        "1_introduction_from_teleological_principle_to_thermodynamic_imperative"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 12
+    },
+    "category_counts": {
+      "claim": 6,
+      "context": 3,
+      "figure": 1,
+      "mechanism": 1,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded the physical equivalence of sustainable ethical coherence and causal pat source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 14,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0068"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R03737",
+    "source_ledger_span": [
+      "P0R03723",
+      "P0R03736"
+    ],
+    "source_record_count": 14,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat.the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat",
+      "the_physical_equivalence_of_sustainable_ethical_coherence_and_causal_pat.1_introduction_from_teleological_principle_to_thermodynamic_imperative"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Physical Equivalence of Sustainable Ethical Coherence and Causal Path Entropy Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

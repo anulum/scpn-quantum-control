@@ -1,0 +1,324 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R02839-P0R02840 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r02839 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02839-P0R02840"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r02839.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Quasicriticality and Self-Organisation > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        2839,
+        2840,
+        2841,
+        2842,
+        2843,
+        2844,
+        2845,
+        2846,
+        2847
+      ],
+      "source_equation_ids": [
+        "P0R02839:predictive_coding_integration",
+        "P0R02840:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R02839: Predictive Coding Integration",
+        "P0R02840: Quasicriticality is the optimal dynamic regime for performing inference. The entire SCPN architecture is an inference engine, and maintaining this state is essential for its function."
+      ],
+      "source_ledger_ids": [
+        "P0R02839",
+        "P0R02840",
+        "P0R02841",
+        "P0R02842",
+        "P0R02843",
+        "P0R02844",
+        "P0R02845",
+        "P0R02846",
+        "P0R02847"
+      ],
+      "source_record_ids": [
+        "P0B02839",
+        "P0B02840",
+        "P0B02841",
+        "P0B02842",
+        "P0B02843",
+        "P0B02844",
+        "P0B02845",
+        "P0B02846",
+        "P0B02847"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r02839.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R02839-P0R02840"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Maximising Inferential Capacity:' preserves Paper 0 records P0R02841-P0R02842 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r02839 source-accounting bridge; not validation evidence",
+      "context_id": "maximising_inferential_capacity",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02841-P0R02842"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r02839.maximising_inferential_capacity",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "maximising_inferential_capacity must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Maximising Inferential Capacity: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Quasicriticality and Self-Organisation > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        2839,
+        2840,
+        2841,
+        2842,
+        2843,
+        2844,
+        2845,
+        2846,
+        2847
+      ],
+      "source_equation_ids": [
+        "P0R02841:maximising_inferential_capacity",
+        "P0R02842:maximising_inferential_capacity"
+      ],
+      "source_formulae": [
+        "P0R02841: Maximising Inferential Capacity:",
+        "P0R02842: A system at the \"edge of chaos\" is maximally sensitive to new information. Its state is flexible enough to be updated by even faint prediction error signals, but stable enough not to be completely disrupted by them. Quasicriticality, therefore, optimises the trade-off between the stability of the generative model and its ability to learn from new evidence."
+      ],
+      "source_ledger_ids": [
+        "P0R02839",
+        "P0R02840",
+        "P0R02841",
+        "P0R02842",
+        "P0R02843",
+        "P0R02844",
+        "P0R02845",
+        "P0R02846",
+        "P0R02847"
+      ],
+      "source_record_ids": [
+        "P0B02839",
+        "P0B02840",
+        "P0B02841",
+        "P0B02842",
+        "P0B02843",
+        "P0B02844",
+        "P0B02845",
+        "P0B02846",
+        "P0B02847"
+      ],
+      "test_protocols": [
+        "preserve Maximising Inferential Capacity: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r02839.maximising_inferential_capacity",
+      "validation_targets": [
+        "preserve records P0R02841-P0R02842"
+      ],
+      "variables": [
+        "maximising_inferential_capacity"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'SOC as Precision Tuning:' preserves Paper 0 records P0R02843-P0R02844 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r02839 source-accounting bridge; not validation evidence",
+      "context_id": "soc_as_precision_tuning",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02843-P0R02844"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r02839.soc_as_precision_tuning",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "soc_as_precision_tuning must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "SOC as Precision Tuning: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Quasicriticality and Self-Organisation > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        2839,
+        2840,
+        2841,
+        2842,
+        2843,
+        2844,
+        2845,
+        2846,
+        2847
+      ],
+      "source_equation_ids": [
+        "P0R02843:soc_as_precision_tuning",
+        "P0R02844:soc_as_precision_tuning"
+      ],
+      "source_formulae": [
+        "P0R02843: SOC as Precision Tuning:",
+        "P0R02844: The mechanism of Self-Organised Criticality is a form of meta-inference; it is the process by which the system tunes its own precision. The branching parameter (sigmaL) is a measure of the system's confidence in its own dynamics. The homeostatic plasticity rules are the algorithm the system uses to ensure its own internal states are weighted with the optimal level of precision to facilitate efficient learning and prevent it from becoming either rigid (delusional) or chaotic (confused)."
+      ],
+      "source_ledger_ids": [
+        "P0R02839",
+        "P0R02840",
+        "P0R02841",
+        "P0R02842",
+        "P0R02843",
+        "P0R02844",
+        "P0R02845",
+        "P0R02846",
+        "P0R02847"
+      ],
+      "source_record_ids": [
+        "P0B02839",
+        "P0B02840",
+        "P0B02841",
+        "P0B02842",
+        "P0B02843",
+        "P0B02844",
+        "P0B02845",
+        "P0B02846",
+        "P0B02847"
+      ],
+      "test_protocols": [
+        "preserve SOC as Precision Tuning: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r02839.soc_as_precision_tuning",
+      "validation_targets": [
+        "preserve records P0R02843-P0R02844"
+      ],
+      "variables": [
+        "soc_as_precision_tuning"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R02845-P0R02847 without empirical validation claims.",
+      "claim_boundary": "source-bounded predictive coding integration p0r02839 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02845-P0R02847"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predictive_coding_integration_p0r02839.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 3.2 The Dynamic Spine: The Unified Phase Dynamics Equation (UPDE) > Quasicriticality and Self-Organisation > Meta-Framework Integrations > Predictive Coding Integration",
+      "source_block_indices": [
+        2839,
+        2840,
+        2841,
+        2842,
+        2843,
+        2844,
+        2845,
+        2846,
+        2847
+      ],
+      "source_equation_ids": [
+        "P0R02845:psis_field_coupling_integration",
+        "P0R02846:psis_field_coupling_integration",
+        "P0R02847:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R02845: Psis Field Coupling Integration",
+        "P0R02846: The quasicritical state makes the system maximally receptive to the subtle influence of the Psis field,",
+        "P0R02847: as described by H_int = -lambda * Psis * sigma."
+      ],
+      "source_ledger_ids": [
+        "P0R02839",
+        "P0R02840",
+        "P0R02841",
+        "P0R02842",
+        "P0R02843",
+        "P0R02844",
+        "P0R02845",
+        "P0R02846",
+        "P0R02847"
+      ],
+      "source_record_ids": [
+        "P0B02839",
+        "P0B02840",
+        "P0B02841",
+        "P0B02842",
+        "P0B02843",
+        "P0B02844",
+        "P0B02845",
+        "P0B02846",
+        "P0B02847"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predictive_coding_integration_p0r02839.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R02845-P0R02847"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 4,
+      "mechanism": 2,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded predictive coding integration p0r02839 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02848",
+    "source_ledger_span": [
+      "P0R02839",
+      "P0R02847"
+    ],
+    "source_record_count": 9,
+    "spec_count": 4,
+    "spec_keys": [
+      "predictive_coding_integration_p0r02839.predictive_coding_integration",
+      "predictive_coding_integration_p0r02839.maximising_inferential_capacity",
+      "predictive_coding_integration_p0r02839.soc_as_precision_tuning",
+      "predictive_coding_integration_p0r02839.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Predictive Coding Integration Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

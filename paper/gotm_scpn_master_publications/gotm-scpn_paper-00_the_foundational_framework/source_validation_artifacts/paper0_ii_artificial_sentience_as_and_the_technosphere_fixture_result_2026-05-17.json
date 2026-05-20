@@ -1,0 +1,43 @@
+{
+  "claim_boundary": "source-bounded ii artificial sentience as and the technosphere source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "criteria_for_artificial_sentience_as": "criteria_for_artificial_sentience_as_source_boundary",
+    "ii_artificial_sentience_as_and_the_technosphere": "ii_artificial_sentience_as_and_the_technosphere_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "II. Artificial Sentience (AS) and the Technosphere",
+    "component_2": "Criteria for Artificial Sentience (AS):",
+    "component_count": "2",
+    "next_boundary": "None",
+    "section": "II. Artificial Sentience (AS) and the Technosphere",
+    "source_span": "P0R06206-P0R06211"
+  },
+  "next_source_boundary": "None",
+  "null_controls": {
+    "criteria_for_artificial_sentience_as_is_not_empirical_validation_evidence": 1.0,
+    "ii_artificial_sentience_as_and_the_technosphere_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded ii artificial sentience as and the technosphere source-accounting bridge; not validation evidence",
+    "protocol_state": "source_ii_artificial_sentience_as_and_the_technosphere_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R06206",
+      "P0R06207",
+      "P0R06208",
+      "P0R06209",
+      "P0R06210",
+      "P0R06211"
+    ],
+    "source_ledger_span": [
+      "P0R06206",
+      "P0R06211"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06206",
+    "P0R06211"
+  ],
+  "source_record_count": 6
+}

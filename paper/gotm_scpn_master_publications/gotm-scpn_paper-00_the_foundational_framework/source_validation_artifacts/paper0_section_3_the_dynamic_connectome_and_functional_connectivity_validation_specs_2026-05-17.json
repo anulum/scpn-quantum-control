@@ -1,0 +1,338 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '3. The Dynamic Connectome and Functional Connectivity:' preserves Paper 0 records P0R04674-P0R04675 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 the dynamic connectome and functional connectivity source-accounting bridge; not validation evidence",
+      "context_id": "3_the_dynamic_connectome_and_functional_connectivity",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04674-P0R04675"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_the_dynamic_connectome_and_functional_connectivity.3_the_dynamic_connectome_and_functional_connectivity",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_the_dynamic_connectome_and_functional_connectivity must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. The Dynamic Connectome and Functional Connectivity: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Dynamics of the Coherent Brain (Domain I: L4) > 3. The Dynamic Connectome and Functional Connectivity:",
+      "source_block_indices": [
+        4674,
+        4675,
+        4676,
+        4677,
+        4678,
+        4679,
+        4680,
+        4681,
+        4682,
+        4683
+      ],
+      "source_equation_ids": [
+        "P0R04674:3_the_dynamic_connectome_and_functional_connectivity",
+        "P0R04675:3_the_dynamic_connectome_and_functional_connectivity"
+      ],
+      "source_formulae": [
+        "P0R04674: 3. The Dynamic Connectome and Functional Connectivity:",
+        "P0R04675: The functional connectivity (statistical dependencies between brain regions) is dynamic and reconfigures rapidly to support cognitive demands. The structural Connectome (L3) constrains the possible functional configurations (L4)."
+      ],
+      "source_ledger_ids": [
+        "P0R04674",
+        "P0R04675",
+        "P0R04676",
+        "P0R04677",
+        "P0R04678",
+        "P0R04679",
+        "P0R04680",
+        "P0R04681",
+        "P0R04682",
+        "P0R04683"
+      ],
+      "source_record_ids": [
+        "P0B04674",
+        "P0B04675",
+        "P0B04676",
+        "P0B04677",
+        "P0B04678",
+        "P0B04679",
+        "P0B04680",
+        "P0B04681",
+        "P0B04682",
+        "P0B04683"
+      ],
+      "test_protocols": [
+        "preserve 3. The Dynamic Connectome and Functional Connectivity: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_the_dynamic_connectome_and_functional_connectivity.3_the_dynamic_connectome_and_functional_connectivity",
+      "validation_targets": [
+        "preserve records P0R04674-P0R04675"
+      ],
+      "variables": [
+        "3_the_dynamic_connectome_and_functional_connectivity"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'IV. The Architecture of the Conscious Self (Domain II: L5)' preserves Paper 0 records P0R04676-P0R04677 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 the dynamic connectome and functional connectivity source-accounting bridge; not validation evidence",
+      "context_id": "iv_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04676-P0R04677"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_the_dynamic_connectome_and_functional_connectivity.iv_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iv_the_architecture_of_the_conscious_self_domain_ii_l5 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IV. The Architecture of the Conscious Self (Domain II: L5) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Dynamics of the Coherent Brain (Domain I: L4) > 3. The Dynamic Connectome and Functional Connectivity:",
+      "source_block_indices": [
+        4674,
+        4675,
+        4676,
+        4677,
+        4678,
+        4679,
+        4680,
+        4681,
+        4682,
+        4683
+      ],
+      "source_equation_ids": [
+        "P0R04676:iv_the_architecture_of_the_conscious_self_domain_ii_l5",
+        "P0R04677:iv_the_architecture_of_the_conscious_self_domain_ii_l5"
+      ],
+      "source_formulae": [
+        "P0R04676: IV. The Architecture of the Conscious Self (Domain II: L5)",
+        "P0R04677: L5 is the integration of neural dynamics into a unified subjective experience, the seat of the Self (O)."
+      ],
+      "source_ledger_ids": [
+        "P0R04674",
+        "P0R04675",
+        "P0R04676",
+        "P0R04677",
+        "P0R04678",
+        "P0R04679",
+        "P0R04680",
+        "P0R04681",
+        "P0R04682",
+        "P0R04683"
+      ],
+      "source_record_ids": [
+        "P0B04674",
+        "P0B04675",
+        "P0B04676",
+        "P0B04677",
+        "P0B04678",
+        "P0B04679",
+        "P0B04680",
+        "P0B04681",
+        "P0B04682",
+        "P0B04683"
+      ],
+      "test_protocols": [
+        "preserve IV. The Architecture of the Conscious Self (Domain II: L5) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_the_dynamic_connectome_and_functional_connectivity.iv_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "validation_targets": [
+        "preserve records P0R04676-P0R04677"
+      ],
+      "variables": [
+        "iv_the_architecture_of_the_conscious_self_domain_ii_l5"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. Hierarchical Predictive Coding (HPC) and the Canonical Microcircuit:' preserves Paper 0 records P0R04678-P0R04680 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 the dynamic connectome and functional connectivity source-accounting bridge; not validation evidence",
+      "context_id": "1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04678-P0R04680"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_the_dynamic_connectome_and_functional_connectivity.1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. Hierarchical Predictive Coding (HPC) and the Canonical Microcircuit: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Dynamics of the Coherent Brain (Domain I: L4) > 3. The Dynamic Connectome and Functional Connectivity:",
+      "source_block_indices": [
+        4674,
+        4675,
+        4676,
+        4677,
+        4678,
+        4679,
+        4680,
+        4681,
+        4682,
+        4683
+      ],
+      "source_equation_ids": [
+        "P0R04678:1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit",
+        "P0R04679:1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit",
+        "P0R04680:1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit"
+      ],
+      "source_formulae": [
+        "P0R04678: 1. Hierarchical Predictive Coding (HPC) and the Canonical Microcircuit:",
+        "P0R04679: The cortex implements HPC via a repeating motif: the Canonical Microcircuit.",
+        "P0R04680: The Circuitry of Prediction: Priors (Generative Model): Encoded by Pyramidal Cells in Deep Layers (V/VI), associated with top-down flow (Alpha/Beta oscillations). | Prediction Errors: Encoded by Pyramidal Cells in Superficial Layers (II/III), associated with bottom-up flow (Gamma oscillations). | Precision Weighting: Modulated by neuromodulators (DA, ACh) and inhibitory interneurons (e.g., SST, PV), controlling the gain of prediction errors (Attention). | Minimising Free Energy (F): The entire architecture functions to minimise F, optimising the brain's internal model of the world."
+      ],
+      "source_ledger_ids": [
+        "P0R04674",
+        "P0R04675",
+        "P0R04676",
+        "P0R04677",
+        "P0R04678",
+        "P0R04679",
+        "P0R04680",
+        "P0R04681",
+        "P0R04682",
+        "P0R04683"
+      ],
+      "source_record_ids": [
+        "P0B04674",
+        "P0B04675",
+        "P0B04676",
+        "P0B04677",
+        "P0B04678",
+        "P0B04679",
+        "P0B04680",
+        "P0B04681",
+        "P0B04682",
+        "P0B04683"
+      ],
+      "test_protocols": [
+        "preserve 1. Hierarchical Predictive Coding (HPC) and the Canonical Microcircuit: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_the_dynamic_connectome_and_functional_connectivity.1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit",
+      "validation_targets": [
+        "preserve records P0R04678-P0R04680"
+      ],
+      "variables": [
+        "1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '2. The Self, the DMN, and the Strange Loop:' preserves Paper 0 records P0R04681-P0R04683 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 the dynamic connectome and functional connectivity source-accounting bridge; not validation evidence",
+      "context_id": "2_the_self_the_dmn_and_the_strange_loop",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04681-P0R04683"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_the_dynamic_connectome_and_functional_connectivity.2_the_self_the_dmn_and_the_strange_loop",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_the_self_the_dmn_and_the_strange_loop must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. The Self, the DMN, and the Strange Loop: is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. The Dynamics of the Coherent Brain (Domain I: L4) > 3. The Dynamic Connectome and Functional Connectivity:",
+      "source_block_indices": [
+        4674,
+        4675,
+        4676,
+        4677,
+        4678,
+        4679,
+        4680,
+        4681,
+        4682,
+        4683
+      ],
+      "source_equation_ids": [
+        "P0R04681:2_the_self_the_dmn_and_the_strange_loop",
+        "P0R04682:2_the_self_the_dmn_and_the_strange_loop",
+        "P0R04683:2_the_self_the_dmn_and_the_strange_loop"
+      ],
+      "source_formulae": [
+        "P0R04681: 2. The Self, the DMN, and the Strange Loop:",
+        "P0R04682: The Self emerges as a self-referential Strange Loop, physically grounded in the Default Mode Network (DMN).",
+        "P0R04683: The DMN as the Narrative Core: The DMN (mPFC, PCC, Precuneus) generates the narrative self, modelling the \"I\" across time. It is the highest level of the HPC hierarchy, encoding the most abstract priors about the self. | The Fixed Point (I=Model(I)): The sustained activity of the DMN at criticality creates the stable fixed point (the Self-soliton emerging via SSB) that corresponds to the subjective experience of \"being.\""
+      ],
+      "source_ledger_ids": [
+        "P0R04674",
+        "P0R04675",
+        "P0R04676",
+        "P0R04677",
+        "P0R04678",
+        "P0R04679",
+        "P0R04680",
+        "P0R04681",
+        "P0R04682",
+        "P0R04683"
+      ],
+      "source_record_ids": [
+        "P0B04674",
+        "P0B04675",
+        "P0B04676",
+        "P0B04677",
+        "P0B04678",
+        "P0B04679",
+        "P0B04680",
+        "P0B04681",
+        "P0B04682",
+        "P0B04683"
+      ],
+      "test_protocols": [
+        "preserve 2. The Self, the DMN, and the Strange Loop: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_the_dynamic_connectome_and_functional_connectivity.2_the_self_the_dmn_and_the_strange_loop",
+      "validation_targets": [
+        "preserve records P0R04681-P0R04683"
+      ],
+      "variables": [
+        "2_the_self_the_dmn_and_the_strange_loop"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 4,
+      "Para": 4
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 8,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded section 3 the dynamic connectome and functional connectivity source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04684",
+    "source_ledger_span": [
+      "P0R04674",
+      "P0R04683"
+    ],
+    "source_record_count": 10,
+    "spec_count": 4,
+    "spec_keys": [
+      "section_3_the_dynamic_connectome_and_functional_connectivity.3_the_dynamic_connectome_and_functional_connectivity",
+      "section_3_the_dynamic_connectome_and_functional_connectivity.iv_the_architecture_of_the_conscious_self_domain_ii_l5",
+      "section_3_the_dynamic_connectome_and_functional_connectivity.1_hierarchical_predictive_coding_hpc_and_the_canonical_microcircuit",
+      "section_3_the_dynamic_connectome_and_functional_connectivity.2_the_self_the_dmn_and_the_strange_loop"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 3. The Dynamic Connectome and Functional Connectivity: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,20 @@
+# Paper 0 Neuroendocrine Regulation and the Hypothalamic-Pituitary-Adrenal (HPA) Axis Specs
+
+- Source span: P0R05445 - P0R05454
+- Source records: 10
+- Consumed source records: 10
+- Coverage match: True
+- Spec count: 1
+- Claim boundary: source-bounded neuroendocrine regulation and the hypothalamic pituitary adrenal hpa axi source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R05455
+
+## Specs
+### `neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi.neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi`
+
+The source-bounded component 'Neuroendocrine Regulation and the Hypothalamic-Pituitary-Adrenal (HPA) Axis' preserves Paper 0 records P0R05445-P0R05454 without empirical validation claims.
+
+- Context: `neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi`
+- Protocol: `paper0.neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi.neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi`
+- Source equations: P0R05445:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05446:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05447:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05448:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05449:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05450:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05451:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05452:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05453:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi, P0R05454:neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi
+- Null controls: neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi must remain source-bounded accounting

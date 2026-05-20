@@ -1,0 +1,111 @@
+{
+  "cyclic_operator": {
+    "cycle_closure_residual": 1.0778315928076987e-15,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "null_controls": {
+      "non_unitary_rejection_label": 1.0,
+      "wrong_period_residual": 1.949855824363647
+    },
+    "problem_metadata": {
+      "dimension": 4,
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_spec_key": "computational.cyclic_operator_boundary",
+      "paper0_validation_protocol": "paper0.computational.cyclic_operator.boundary_periodicity",
+      "period": 7,
+      "simulator_only_mechanism_evidence": true
+    },
+    "source_equation_ids": [
+      "EQ0115"
+    ],
+    "source_ledger_ids": [
+      "P0R05929",
+      "P0R05930",
+      "P0R05931",
+      "P0R05932",
+      "P0R05933",
+      "P0R05934",
+      "P0R05935"
+    ],
+    "spec_key": "computational.cyclic_operator_boundary",
+    "unitarity_error": 1.1102230246251565e-16,
+    "validation_protocol": "paper0.computational.cyclic_operator.boundary_periodicity"
+  },
+  "hardware_status": "simulator_only_no_provider_submission",
+  "information_thermodynamics": {
+    "gsl_margin": 0.08000000000000002,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "information_entropy_rate": 0.2,
+    "mutual_information_negentropy_error": 0.0,
+    "negentropy_rate": 0.12,
+    "null_controls": {
+      "finite_gsl_margin_label": 1.0,
+      "independent_channel_negentropy_abs": 0.0,
+      "landauer_violation_label": 1.0
+    },
+    "problem_metadata": {
+      "hardware_status": "simulator_only_no_provider_submission",
+      "landauer_cost_per_nat": 0.5,
+      "mutual_information_rate": 0.4,
+      "paper0_spec_key": "computational.info_thermodynamics",
+      "paper0_validation_protocol": "paper0.computational.info_thermodynamics.entropy_budget",
+      "proportionality": 0.3,
+      "simulator_only_mechanism_evidence": true,
+      "thermodynamic_entropy_rate": -0.12
+    },
+    "source_equation_ids": [
+      "EQ0117",
+      "EQ0118"
+    ],
+    "source_ledger_ids": [
+      "P0R05942",
+      "P0R05943",
+      "P0R05944",
+      "P0R05945",
+      "P0R05946",
+      "P0R05947",
+      "P0R05949",
+      "P0R05950",
+      "P0R05951",
+      "P0R05952",
+      "P0R05953"
+    ],
+    "spec_key": "computational.info_thermodynamics",
+    "total_entropy_rate": 0.08000000000000002,
+    "validation_protocol": "paper0.computational.info_thermodynamics.entropy_budget"
+  },
+  "runtime_ms": 5.963422998320311,
+  "tsvf_abl": {
+    "hardware_status": "simulator_only_no_provider_submission",
+    "null_controls": {
+      "born_rule_reduction_l1": 0.0,
+      "projector_resolution_error": 0.0,
+      "zero_denominator_rejection_label": 1.0
+    },
+    "probabilities": [
+      0.7777777777777779,
+      0.2222222222222222
+    ],
+    "probability_normalisation_error": 0.0,
+    "problem_metadata": {
+      "boundary_probability_rule": "Aharonov-Bergmann-Lebowitz",
+      "dimension": 2,
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_spec_key": "computational.tsvf_abl_boundary",
+      "paper0_validation_protocol": "paper0.computational.tsvf_abl.boundary_probability",
+      "projector_count": 2,
+      "simulator_only_mechanism_evidence": true
+    },
+    "source_equation_ids": [
+      "EQ0116"
+    ],
+    "source_ledger_ids": [
+      "P0R05936",
+      "P0R05937",
+      "P0R05938",
+      "P0R05939",
+      "P0R05940"
+    ],
+    "spec_key": "computational.tsvf_abl_boundary",
+    "validation_protocol": "paper0.computational.tsvf_abl.boundary_probability"
+  }
+}

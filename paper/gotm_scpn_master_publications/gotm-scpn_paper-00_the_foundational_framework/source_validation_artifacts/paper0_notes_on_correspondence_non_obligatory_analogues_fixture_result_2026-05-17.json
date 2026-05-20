@@ -1,0 +1,60 @@
+{
+  "claim_boundary": "source-bounded notes on correspondence non obligatory analogues source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "consequences": "consequences_source_boundary",
+    "notes_on_correspondence_non_obligatory_analogues": "notes_on_correspondence_non_obligatory_analogues_source_boundary",
+    "terminology_and_notation_effective_immediately_revision_11_00": "terminology_and_notation_effective_immediately_revision_11_00_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Notes on correspondence (non-obligatory analogues).",
+    "component_2": "Terminology and notation (effective immediately - revision 11.00).",
+    "component_3": "Consequences.",
+    "component_count": "3",
+    "next_boundary": "P0R04029",
+    "section": "Notes on correspondence (non-obligatory analogues).",
+    "source_span": "P0R04009-P0R04028"
+  },
+  "next_source_boundary": "P0R04029",
+  "null_controls": {
+    "consequences_is_not_empirical_validation_evidence": 1.0,
+    "notes_on_correspondence_non_obligatory_analogues_is_not_empirical_validation_evidence": 1.0,
+    "terminology_and_notation_effective_immediately_revision_11_00_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded notes on correspondence non obligatory analogues source-accounting bridge; not validation evidence",
+    "protocol_state": "source_notes_on_correspondence_non_obligatory_analogues_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04009",
+      "P0R04010",
+      "P0R04011",
+      "P0R04012",
+      "P0R04013",
+      "P0R04014",
+      "P0R04015",
+      "P0R04016",
+      "P0R04017",
+      "P0R04018",
+      "P0R04019",
+      "P0R04020",
+      "P0R04021",
+      "P0R04022",
+      "P0R04023",
+      "P0R04024",
+      "P0R04025",
+      "P0R04026",
+      "P0R04027",
+      "P0R04028"
+    ],
+    "source_ledger_span": [
+      "P0R04009",
+      "P0R04028"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04009",
+    "P0R04028"
+  ],
+  "source_record_count": 20
+}

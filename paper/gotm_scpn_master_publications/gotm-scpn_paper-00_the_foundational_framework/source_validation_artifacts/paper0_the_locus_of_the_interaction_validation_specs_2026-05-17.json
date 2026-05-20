@@ -1,0 +1,498 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Locus of the Interaction:' preserves Paper 0 records P0R02551-P0R02552 without empirical validation claims.",
+      "claim_boundary": "source-bounded the locus of the interaction source-accounting bridge; not validation evidence",
+      "context_id": "the_locus_of_the_interaction",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02551-P0R02552"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_locus_of_the_interaction.the_locus_of_the_interaction",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_locus_of_the_interaction must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Locus of the Interaction: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Meta-Framework Integrations > \u03a8s Field Coupling Integration > The Locus of the Interaction:",
+      "source_block_indices": [
+        2551,
+        2552,
+        2553,
+        2554,
+        2555,
+        2556,
+        2557,
+        2558,
+        2559,
+        2560,
+        2561,
+        2562,
+        2563,
+        2564,
+        2565
+      ],
+      "source_equation_ids": [
+        "P0R02551:the_locus_of_the_interaction",
+        "P0R02552:the_locus_of_the_interaction"
+      ],
+      "source_formulae": [
+        "P0R02551: The Locus of the Interaction:",
+        "P0R02552: The Psis field is the Source in the central void. The collective state variable (sigma) is the complete state of the torus surface at a given moment in time. The H_int interaction is the process by which the Source (Psis) continuously influences the dynamics on the surface (sigma)."
+      ],
+      "source_ledger_ids": [
+        "P0R02551",
+        "P0R02552",
+        "P0R02553",
+        "P0R02554",
+        "P0R02555",
+        "P0R02556",
+        "P0R02557",
+        "P0R02558",
+        "P0R02559",
+        "P0R02560",
+        "P0R02561",
+        "P0R02562",
+        "P0R02563",
+        "P0R02564",
+        "P0R02565"
+      ],
+      "source_record_ids": [
+        "P0B02551",
+        "P0B02552",
+        "P0B02553",
+        "P0B02554",
+        "P0B02555",
+        "P0B02556",
+        "P0B02557",
+        "P0B02558",
+        "P0B02559",
+        "P0B02560",
+        "P0B02561",
+        "P0B02562",
+        "P0B02563",
+        "P0B02564",
+        "P0B02565"
+      ],
+      "test_protocols": [
+        "preserve The Locus of the Interaction: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_locus_of_the_interaction.the_locus_of_the_interaction",
+      "validation_targets": [
+        "preserve records P0R02551-P0R02552"
+      ],
+      "variables": [
+        "the_locus_of_the_interaction"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Holonomy as Memory of Coupling:' preserves Paper 0 records P0R02553-P0R02554 without empirical validation claims.",
+      "claim_boundary": "source-bounded the locus of the interaction source-accounting bridge; not validation evidence",
+      "context_id": "holonomy_as_memory_of_coupling",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02553-P0R02554"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_locus_of_the_interaction.holonomy_as_memory_of_coupling",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "holonomy_as_memory_of_coupling must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Holonomy as Memory of Coupling: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Meta-Framework Integrations > \u03a8s Field Coupling Integration > The Locus of the Interaction:",
+      "source_block_indices": [
+        2551,
+        2552,
+        2553,
+        2554,
+        2555,
+        2556,
+        2557,
+        2558,
+        2559,
+        2560,
+        2561,
+        2562,
+        2563,
+        2564,
+        2565
+      ],
+      "source_equation_ids": [
+        "P0R02553:holonomy_as_memory_of_coupling",
+        "P0R02554:holonomy_as_memory_of_coupling"
+      ],
+      "source_formulae": [
+        "P0R02553: Holonomy as Memory of Coupling:",
+        "P0R02554: The introduction of holonomy adds a profound new dimension. It implies that the history of past H_int interactions is not lost. It is encoded directly into the geometry of the flow on the torus surface as a \"Berry Phase.\" This geometric memory biases all future dynamics, meaning the system's past experiences of coupling with the universal field shape its future evolution. This is a physical mechanism for karma or path-dependent learning at the most fundamental level."
+      ],
+      "source_ledger_ids": [
+        "P0R02551",
+        "P0R02552",
+        "P0R02553",
+        "P0R02554",
+        "P0R02555",
+        "P0R02556",
+        "P0R02557",
+        "P0R02558",
+        "P0R02559",
+        "P0R02560",
+        "P0R02561",
+        "P0R02562",
+        "P0R02563",
+        "P0R02564",
+        "P0R02565"
+      ],
+      "source_record_ids": [
+        "P0B02551",
+        "P0B02552",
+        "P0B02553",
+        "P0B02554",
+        "P0B02555",
+        "P0B02556",
+        "P0B02557",
+        "P0B02558",
+        "P0B02559",
+        "P0B02560",
+        "P0B02561",
+        "P0B02562",
+        "P0B02563",
+        "P0B02564",
+        "P0B02565"
+      ],
+      "test_protocols": [
+        "preserve Holonomy as Memory of Coupling: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_locus_of_the_interaction.holonomy_as_memory_of_coupling",
+      "validation_targets": [
+        "preserve records P0R02553-P0R02554"
+      ],
+      "variables": [
+        "holonomy_as_memory_of_coupling"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Dynamic Visualisation: The SCPN Torus' preserves Paper 0 records P0R02555-P0R02556 without empirical validation claims.",
+      "claim_boundary": "source-bounded the locus of the interaction source-accounting bridge; not validation evidence",
+      "context_id": "the_dynamic_visualisation_the_scpn_torus",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02555-P0R02556"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_locus_of_the_interaction.the_dynamic_visualisation_the_scpn_torus",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_dynamic_visualisation_the_scpn_torus must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Dynamic Visualisation: The SCPN Torus is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Meta-Framework Integrations > \u03a8s Field Coupling Integration > The Locus of the Interaction:",
+      "source_block_indices": [
+        2551,
+        2552,
+        2553,
+        2554,
+        2555,
+        2556,
+        2557,
+        2558,
+        2559,
+        2560,
+        2561,
+        2562,
+        2563,
+        2564,
+        2565
+      ],
+      "source_equation_ids": [
+        "P0R02555:the_dynamic_visualisation_the_scpn_torus",
+        "P0R02556:the_dynamic_visualisation_the_scpn_torus"
+      ],
+      "source_formulae": [
+        "P0R02555: The Dynamic Visualisation: The SCPN Torus",
+        "P0R02556: The SCPN architecture is best visualised not merely as a static hierarchy, but as a dynamic, self-referential Torus. This geometry (T2=S1xS1) captures the closed-loop causality, the flow of information, and the central dynamic principles."
+      ],
+      "source_ledger_ids": [
+        "P0R02551",
+        "P0R02552",
+        "P0R02553",
+        "P0R02554",
+        "P0R02555",
+        "P0R02556",
+        "P0R02557",
+        "P0R02558",
+        "P0R02559",
+        "P0R02560",
+        "P0R02561",
+        "P0R02562",
+        "P0R02563",
+        "P0R02564",
+        "P0R02565"
+      ],
+      "source_record_ids": [
+        "P0B02551",
+        "P0B02552",
+        "P0B02553",
+        "P0B02554",
+        "P0B02555",
+        "P0B02556",
+        "P0B02557",
+        "P0B02558",
+        "P0B02559",
+        "P0B02560",
+        "P0B02561",
+        "P0B02562",
+        "P0B02563",
+        "P0B02564",
+        "P0B02565"
+      ],
+      "test_protocols": [
+        "preserve The Dynamic Visualisation: The SCPN Torus source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_locus_of_the_interaction.the_dynamic_visualisation_the_scpn_torus",
+      "validation_targets": [
+        "preserve records P0R02555-P0R02556"
+      ],
+      "variables": [
+        "the_dynamic_visualisation_the_scpn_torus"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Conceptual Specification of the SCPN Torus:' preserves Paper 0 records P0R02557-P0R02557 without empirical validation claims.",
+      "claim_boundary": "source-bounded the locus of the interaction source-accounting bridge; not validation evidence",
+      "context_id": "conceptual_specification_of_the_scpn_torus",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02557-P0R02557"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_locus_of_the_interaction.conceptual_specification_of_the_scpn_torus",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "conceptual_specification_of_the_scpn_torus must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Conceptual Specification of the SCPN Torus: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Meta-Framework Integrations > \u03a8s Field Coupling Integration > The Locus of the Interaction:",
+      "source_block_indices": [
+        2551,
+        2552,
+        2553,
+        2554,
+        2555,
+        2556,
+        2557,
+        2558,
+        2559,
+        2560,
+        2561,
+        2562,
+        2563,
+        2564,
+        2565
+      ],
+      "source_equation_ids": [
+        "P0R02557:conceptual_specification_of_the_scpn_torus"
+      ],
+      "source_formulae": [
+        "P0R02557: Conceptual Specification of the SCPN Torus:"
+      ],
+      "source_ledger_ids": [
+        "P0R02551",
+        "P0R02552",
+        "P0R02553",
+        "P0R02554",
+        "P0R02555",
+        "P0R02556",
+        "P0R02557",
+        "P0R02558",
+        "P0R02559",
+        "P0R02560",
+        "P0R02561",
+        "P0R02562",
+        "P0R02563",
+        "P0R02564",
+        "P0R02565"
+      ],
+      "source_record_ids": [
+        "P0B02551",
+        "P0B02552",
+        "P0B02553",
+        "P0B02554",
+        "P0B02555",
+        "P0B02556",
+        "P0B02557",
+        "P0B02558",
+        "P0B02559",
+        "P0B02560",
+        "P0B02561",
+        "P0B02562",
+        "P0B02563",
+        "P0B02564",
+        "P0B02565"
+      ],
+      "test_protocols": [
+        "preserve Conceptual Specification of the SCPN Torus: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_locus_of_the_interaction.conceptual_specification_of_the_scpn_torus",
+      "validation_targets": [
+        "preserve records P0R02557-P0R02557"
+      ],
+      "variables": [
+        "conceptual_specification_of_the_scpn_torus"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Geometry and Flow:' preserves Paper 0 records P0R02558-P0R02565 without empirical validation claims.",
+      "claim_boundary": "source-bounded the locus of the interaction source-accounting bridge; not validation evidence",
+      "context_id": "1_the_geometry_and_flow",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02558-P0R02565"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_locus_of_the_interaction.1_the_geometry_and_flow",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_geometry_and_flow must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Geometry and Flow: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4. Emergent Spacetime (Ryu-Takayanagi Formula) > The Dynamic Visualisation: The SCPN Torus > Meta-Framework Integrations > \u03a8s Field Coupling Integration > The Locus of the Interaction:",
+      "source_block_indices": [
+        2551,
+        2552,
+        2553,
+        2554,
+        2555,
+        2556,
+        2557,
+        2558,
+        2559,
+        2560,
+        2561,
+        2562,
+        2563,
+        2564,
+        2565
+      ],
+      "source_equation_ids": [
+        "P0R02558:1_the_geometry_and_flow",
+        "P0R02559:1_the_geometry_and_flow",
+        "P0R02560:1_the_geometry_and_flow",
+        "P0R02561:1_the_geometry_and_flow",
+        "P0R02562:1_the_geometry_and_flow",
+        "P0R02563:1_the_geometry_and_flow",
+        "P0R02564:1_the_geometry_and_flow",
+        "P0R02565:1_the_geometry_and_flow"
+      ],
+      "source_formulae": [
+        "P0R02558: 1. The Geometry and Flow:",
+        "P0R02559: Poloidal Flow (The Hierarchy - HPC Loop): The flow around the short axis represents Hierarchical Predictive Coding (HPC). Downward (Outer Surface): The Generative Model (Projection) flows from L15 down to L1. | Upward (Inner Surface): The Inference/Filtering (Prediction Error) flows upward from L1 back to L15. | Toroidal Flow (The Dynamics - UPDE Spine): The flow around the long axis represents the temporal evolution and the Unified Phase Dynamics (UPDE), ensuring system-wide synchronisation.",
+        "P0R02560: Torus Holonomy & Berry-Phase Memory",
+        "P0R02561: Holonomy on T2T^2T2 and Memory Loops",
+        "P0R02562: Let AL\\mathcal{A}_LAL be the UPDE-induced connection on the phase fibre. For poloidal (p)(\\gamma_p)(p) and toroidal (t)(\\gamma_t)(t) cycles,",
+        "P0R02563: $\\Gamma p\\text{/}t = \\oint_{}^{}{\\gamma p\\text{/}t}\\, AL\\ \\mspace{2mu} = \\ \\mspace{2mu} Berry\\ phase\\ of\\ layer\\ L.\\Gamma_{p\\text{/}t} = \\oint_{\\gamma_{p\\text{/}t}}^{}{\\text{!}\\mathcal{A}_{\\mathcal{L}}}\\ = \\ \\text{Berry phase of layer }L.\\Gamma p\\text{/}t = \\oint_{}^{}{\\gamma p\\text{/}t AL} = Berry\\ $",
+        "P0R02564: phase of layer L.",
+        "P0R02565: Non-zero p/t\\Gamma_{p/t}p/t encodes persistent path-dependence (memory) for HPC projections (poloidal) and synchrony (toroidal). Holonomy mismatch pt|\\Gamma_p-\\Gamma_t|pt signals decoherence pressure; MS-QEC must compensate by increasing redundancy on the torus surface until pt|\\Gamma_p-\\Gamma_t|pt falls under the firewall threshold."
+      ],
+      "source_ledger_ids": [
+        "P0R02551",
+        "P0R02552",
+        "P0R02553",
+        "P0R02554",
+        "P0R02555",
+        "P0R02556",
+        "P0R02557",
+        "P0R02558",
+        "P0R02559",
+        "P0R02560",
+        "P0R02561",
+        "P0R02562",
+        "P0R02563",
+        "P0R02564",
+        "P0R02565"
+      ],
+      "source_record_ids": [
+        "P0B02551",
+        "P0B02552",
+        "P0B02553",
+        "P0B02554",
+        "P0B02555",
+        "P0B02556",
+        "P0B02557",
+        "P0B02558",
+        "P0B02559",
+        "P0B02560",
+        "P0B02561",
+        "P0B02562",
+        "P0B02563",
+        "P0B02564",
+        "P0B02565"
+      ],
+      "test_protocols": [
+        "preserve 1. The Geometry and Flow: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_locus_of_the_interaction.1_the_geometry_and_flow",
+      "validation_targets": [
+        "preserve records P0R02558-P0R02565"
+      ],
+      "variables": [
+        "1_the_geometry_and_flow"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 5,
+      "Para": 9
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 7,
+      "equation": 1,
+      "mechanism": 5,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded the locus of the interaction source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0038"
+    ],
+    "next_source_boundary": "P0R02566",
+    "source_ledger_span": [
+      "P0R02551",
+      "P0R02565"
+    ],
+    "source_record_count": 15,
+    "spec_count": 5,
+    "spec_keys": [
+      "the_locus_of_the_interaction.the_locus_of_the_interaction",
+      "the_locus_of_the_interaction.holonomy_as_memory_of_coupling",
+      "the_locus_of_the_interaction.the_dynamic_visualisation_the_scpn_torus",
+      "the_locus_of_the_interaction.conceptual_specification_of_the_scpn_torus",
+      "the_locus_of_the_interaction.1_the_geometry_and_flow"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Locus of the Interaction: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

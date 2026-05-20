@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded techno social systems source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "neurophenomenology_first_person_science": "neurophenomenology_first_person_science_source_boundary",
+    "techno_social_systems": "techno_social_systems_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Techno-Social Systems",
+    "component_2": "Neurophenomenology & First-Person Science",
+    "component_count": "2",
+    "next_boundary": "P0R05876",
+    "section": " Techno-Social Systems",
+    "source_span": "P0R05868-P0R05875"
+  },
+  "next_source_boundary": "P0R05876",
+  "null_controls": {
+    "neurophenomenology_first_person_science_is_not_empirical_validation_evidence": 1.0,
+    "techno_social_systems_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded techno social systems source-accounting bridge; not validation evidence",
+    "protocol_state": "source_techno_social_systems_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05868",
+      "P0R05869",
+      "P0R05870",
+      "P0R05871",
+      "P0R05872",
+      "P0R05873",
+      "P0R05874",
+      "P0R05875"
+    ],
+    "source_ledger_span": [
+      "P0R05868",
+      "P0R05875"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05868",
+    "P0R05875"
+  ],
+  "source_record_count": 8
+}

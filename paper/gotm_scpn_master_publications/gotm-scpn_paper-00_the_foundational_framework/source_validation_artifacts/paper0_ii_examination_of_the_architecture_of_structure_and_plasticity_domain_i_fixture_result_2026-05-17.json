@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "source-bounded ii examination of the architecture of structure and plasticity domain i source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i": "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_source_boundary",
+    "the_active_role_of_glia_the_slow_control_network": "the_active_role_of_glia_the_slow_control_network_source_boundary",
+    "the_optimised_connectome_the_geometric_scaffold_of_thought": "the_optimised_connectome_the_geometric_scaffold_of_thought_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "II. Examination of The Architecture of Structure and Plasticity (Domain I: L3)",
+    "component_2": "The Optimised Connectome: The Geometric Scaffold of Thought",
+    "component_3": "The Active Role of Glia: The Slow Control Network",
+    "component_count": "3",
+    "next_boundary": "P0R04572",
+    "section": "II. Examination of The Architecture of Structure and Plasticity (Domain I: L3)",
+    "source_span": "P0R04560-P0R04571"
+  },
+  "next_source_boundary": "P0R04572",
+  "null_controls": {
+    "ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_is_not_empirical_validation_evidence": 1.0,
+    "the_active_role_of_glia_the_slow_control_network_is_not_empirical_validation_evidence": 1.0,
+    "the_optimised_connectome_the_geometric_scaffold_of_thought_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded ii examination of the architecture of structure and plasticity domain i source-accounting bridge; not validation evidence",
+    "protocol_state": "source_ii_examination_of_the_architecture_of_structure_and_plasticity_domain_i_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04560",
+      "P0R04561",
+      "P0R04562",
+      "P0R04563",
+      "P0R04564",
+      "P0R04565",
+      "P0R04566",
+      "P0R04567",
+      "P0R04568",
+      "P0R04569",
+      "P0R04570",
+      "P0R04571"
+    ],
+    "source_ledger_span": [
+      "P0R04560",
+      "P0R04571"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04560",
+    "P0R04571"
+  ],
+  "source_record_count": 12
+}

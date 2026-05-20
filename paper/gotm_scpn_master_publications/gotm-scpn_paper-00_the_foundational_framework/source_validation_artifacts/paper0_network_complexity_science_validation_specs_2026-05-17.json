@@ -1,0 +1,177 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Network & Complexity Science' preserves Paper 0 records P0R05810-P0R05813 without empirical validation claims.",
+      "claim_boundary": "source-bounded network complexity science source-accounting bridge; not validation evidence",
+      "context_id": "network_complexity_science",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05810-P0R05813"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "network_complexity_science.network_complexity_science",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "network_complexity_science must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Network & Complexity Science is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Network & Complexity Science",
+      "source_block_indices": [
+        5810,
+        5811,
+        5812,
+        5813,
+        5814,
+        5815,
+        5816,
+        5817
+      ],
+      "source_equation_ids": [
+        "P0R05810:network_complexity_science",
+        "P0R05811:network_complexity_science",
+        "P0R05812:network_complexity_science",
+        "P0R05813:network_complexity_science"
+      ],
+      "source_formulae": [
+        "P0R05810: Network & Complexity Science",
+        "P0R05811: Small-world & scale-free networks (L4 synchrony, noosphere connectivity) -> Watts & Strogatz (1998), Barabsi & Albert (1999).",
+        "P0R05812: Critical transitions & tipping points (L6 biosphere hysteresis) -> Scheffer (2009, Critical Transitions in Nature and Society).",
+        "P0R05813: Complex adaptive systems theory -> Holland (1992)."
+      ],
+      "source_ledger_ids": [
+        "P0R05810",
+        "P0R05811",
+        "P0R05812",
+        "P0R05813",
+        "P0R05814",
+        "P0R05815",
+        "P0R05816",
+        "P0R05817"
+      ],
+      "source_record_ids": [
+        "P0B05810",
+        "P0B05811",
+        "P0B05812",
+        "P0B05813",
+        "P0B05814",
+        "P0B05815",
+        "P0B05816",
+        "P0B05817"
+      ],
+      "test_protocols": [
+        "preserve Network & Complexity Science source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.network_complexity_science.network_complexity_science",
+      "validation_targets": [
+        "preserve records P0R05810-P0R05813"
+      ],
+      "variables": [
+        "network_complexity_science"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Cognitive & Computational Foundations' preserves Paper 0 records P0R05814-P0R05817 without empirical validation claims.",
+      "claim_boundary": "source-bounded network complexity science source-accounting bridge; not validation evidence",
+      "context_id": "cognitive_computational_foundations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05814-P0R05817"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "network_complexity_science.cognitive_computational_foundations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "cognitive_computational_foundations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Cognitive & Computational Foundations is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Network & Complexity Science",
+      "source_block_indices": [
+        5810,
+        5811,
+        5812,
+        5813,
+        5814,
+        5815,
+        5816,
+        5817
+      ],
+      "source_equation_ids": [
+        "P0R05814:cognitive_computational_foundations",
+        "P0R05815:cognitive_computational_foundations",
+        "P0R05816:cognitive_computational_foundations",
+        "P0R05817:cognitive_computational_foundations"
+      ],
+      "source_formulae": [
+        "P0R05814: Cognitive & Computational Foundations",
+        "P0R05815: Global Workspace Theory (contrast to IIT/FEP) -> Baars (1988).",
+        "P0R05816: Predictive coding in brain models -> Rao & Ballard (1999).",
+        "P0R05817: Symbol grounding problem (L7 symbolic operators) -> Harnad (1990)."
+      ],
+      "source_ledger_ids": [
+        "P0R05810",
+        "P0R05811",
+        "P0R05812",
+        "P0R05813",
+        "P0R05814",
+        "P0R05815",
+        "P0R05816",
+        "P0R05817"
+      ],
+      "source_record_ids": [
+        "P0B05810",
+        "P0B05811",
+        "P0B05812",
+        "P0B05813",
+        "P0B05814",
+        "P0B05815",
+        "P0B05816",
+        "P0B05817"
+      ],
+      "test_protocols": [
+        "preserve Cognitive & Computational Foundations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.network_complexity_science.cognitive_computational_foundations",
+      "validation_targets": [
+        "preserve records P0R05814-P0R05817"
+      ],
+      "variables": [
+        "cognitive_computational_foundations"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 8
+    },
+    "claim_boundary": "source-bounded network complexity science source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05818",
+    "source_ledger_span": [
+      "P0R05810",
+      "P0R05817"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "network_complexity_science.network_complexity_science",
+      "network_complexity_science.cognitive_computational_foundations"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Network & Complexity Science Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

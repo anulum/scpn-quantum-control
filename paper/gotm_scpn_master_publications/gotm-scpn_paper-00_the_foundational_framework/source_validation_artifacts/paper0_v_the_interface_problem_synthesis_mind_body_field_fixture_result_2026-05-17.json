@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "source-bounded v the interface problem synthesis mind body field source-accounting bridge; not validation evidence",
+  "component_count": 4,
+  "components": {
+    "downward_causation_the_psi_field_biases_physical_dynamics_via_qze_stabil": "downward_causation_the_psi_field_biases_physical_dynamics_via_qze_stabil_source_boundary",
+    "upward_causation_the_physical_substrate_structures_the_psi_field_by_enco": "upward_causation_the_physical_substrate_structures_the_psi_field_by_enco_source_boundary",
+    "v_the_interface_problem_synthesis_mind_body_field": "v_the_interface_problem_synthesis_mind_body_field_source_boundary",
+    "vi_formalising_emergence_phase_transitions_and_ginzburg_landau_theory": "vi_formalising_emergence_phase_transitions_and_ginzburg_landau_theory_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "V. The Interface Problem Synthesis (Mind-Body-Field)",
+    "component_2": "Downward Causation: The Psi-field biases physical dynamics via QZE stabilisation (Attention) and guiding self-organisation at criticality.",
+    "component_3": "Upward Causation: The physical substrate structures the Psi-field by encoding information (Topological Defects) and constraining the field geometry (L5 Manifold).",
+    "component_4": "VI. Formalising Emergence: Phase Transitions and Ginzburg-Landau Theory",
+    "component_count": "4",
+    "next_boundary": "P0R03250",
+    "section": "V. The Interface Problem Synthesis (Mind-Body-Field)",
+    "source_span": "P0R03241-P0R03249"
+  },
+  "next_source_boundary": "P0R03250",
+  "null_controls": {
+    "downward_causation_the_psi_field_biases_physical_dynamics_via_qze_stabil_is_not_empirical_validation_evidence": 1.0,
+    "upward_causation_the_physical_substrate_structures_the_psi_field_by_enco_is_not_empirical_validation_evidence": 1.0,
+    "v_the_interface_problem_synthesis_mind_body_field_is_not_empirical_validation_evidence": 1.0,
+    "vi_formalising_emergence_phase_transitions_and_ginzburg_landau_theory_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded v the interface problem synthesis mind body field source-accounting bridge; not validation evidence",
+    "protocol_state": "source_v_the_interface_problem_synthesis_mind_body_field_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03241",
+      "P0R03242",
+      "P0R03243",
+      "P0R03244",
+      "P0R03245",
+      "P0R03246",
+      "P0R03247",
+      "P0R03248",
+      "P0R03249"
+    ],
+    "source_ledger_span": [
+      "P0R03241",
+      "P0R03249"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03241",
+    "P0R03249"
+  ],
+  "source_record_count": 9
+}

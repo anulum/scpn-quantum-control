@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded section 2 dendritic spines the loci of plasticity and iet source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "2_dendritic_spines_the_loci_of_plasticity_and_iet": "2_dendritic_spines_the_loci_of_plasticity_and_iet_source_boundary",
+    "3_the_axon_and_the_axon_initial_segment_ais_the_decision_point": "3_the_axon_and_the_axon_initial_segment_ais_the_decision_point_source_boundary",
+    "ii_the_chemical_milieu_and_the_primacy_of_water_l1_l2": "ii_the_chemical_milieu_and_the_primacy_of_water_l1_l2_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "2. Dendritic Spines: The Loci of Plasticity and IET",
+    "component_2": "3. The Axon and the Axon Initial Segment (AIS): The Decision Point",
+    "component_3": "II. The Chemical Milieu and the Primacy of Water (L1/L2)",
+    "component_count": "3",
+    "next_boundary": "P0R04711",
+    "section": "2. Dendritic Spines: The Loci of Plasticity and IET",
+    "source_span": "P0R04703-P0R04710"
+  },
+  "next_source_boundary": "P0R04711",
+  "null_controls": {
+    "2_dendritic_spines_the_loci_of_plasticity_and_iet_is_not_empirical_validation_evidence": 1.0,
+    "3_the_axon_and_the_axon_initial_segment_ais_the_decision_point_is_not_empirical_validation_evidence": 1.0,
+    "ii_the_chemical_milieu_and_the_primacy_of_water_l1_l2_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 2 dendritic spines the loci of plasticity and iet source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_2_dendritic_spines_the_loci_of_plasticity_and_iet_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04703",
+      "P0R04704",
+      "P0R04705",
+      "P0R04706",
+      "P0R04707",
+      "P0R04708",
+      "P0R04709",
+      "P0R04710"
+    ],
+    "source_ledger_span": [
+      "P0R04703",
+      "P0R04710"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04703",
+    "P0R04710"
+  ],
+  "source_record_count": 8
+}

@@ -1,0 +1,38 @@
+# Paper 0 2. The Geometry of Synchronisation (UPDE Manifolds): Specs
+
+- Source span: P0R04413 - P0R04432
+- Source records: 20
+- Consumed source records: 20
+- Coverage match: True
+- Spec count: 3
+- Claim boundary: source-bounded section 2 the geometry of synchronisation upde manifolds source-accounting bridge; not validation evidence
+- Hardware status: source_methodology_no_experiment
+- Next source boundary: P0R04433
+
+## Specs
+### `section_2_the_geometry_of_synchronisation_upde_manifolds.2_the_geometry_of_synchronisation_upde_manifolds`
+
+The source-bounded component '2. The Geometry of Synchronisation (UPDE Manifolds):' preserves Paper 0 records P0R04413-P0R04416 without empirical validation claims.
+
+- Context: `2_the_geometry_of_synchronisation_upde_manifolds`
+- Protocol: `paper0.section_2_the_geometry_of_synchronisation_upde_manifolds.2_the_geometry_of_synchronisation_upde_manifolds`
+- Source equations: P0R04413:2_the_geometry_of_synchronisation_upde_manifolds, P0R04414:2_the_geometry_of_synchronisation_upde_manifolds, P0R04415:2_the_geometry_of_synchronisation_upde_manifolds, P0R04416:2_the_geometry_of_synchronisation_upde_manifolds
+- Null controls: 2_the_geometry_of_synchronisation_upde_manifolds must remain source-bounded accounting
+
+### `section_2_the_geometry_of_synchronisation_upde_manifolds.v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7`
+
+The source-bounded component 'V. The Geometry of Subjectivity and Meaning (Domain II: L5/L7)' preserves Paper 0 records P0R04417-P0R04418 without empirical validation claims.
+
+- Context: `v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7`
+- Protocol: `paper0.section_2_the_geometry_of_synchronisation_upde_manifolds.v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7`
+- Source equations: P0R04417:v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7, P0R04418:v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7
+- Null controls: v_the_geometry_of_subjectivity_and_meaning_domain_ii_l5_l7 must remain source-bounded accounting
+
+### `section_2_the_geometry_of_synchronisation_upde_manifolds.1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia`
+
+The source-bounded component '1. The Consciousness Manifold (L5): The Intrinsic Geometry of Qualia' preserves Paper 0 records P0R04419-P0R04432 without empirical validation claims.
+
+- Context: `1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia`
+- Protocol: `paper0.section_2_the_geometry_of_synchronisation_upde_manifolds.1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia`
+- Source equations: P0R04419:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04420:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04421:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04422:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04423:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04424:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04425:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04426:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04427:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04428:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04429:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04430:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04431:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia, P0R04432:1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia
+- Null controls: 1_the_consciousness_manifold_l5_the_intrinsic_geometry_of_qualia must remain source-bounded accounting

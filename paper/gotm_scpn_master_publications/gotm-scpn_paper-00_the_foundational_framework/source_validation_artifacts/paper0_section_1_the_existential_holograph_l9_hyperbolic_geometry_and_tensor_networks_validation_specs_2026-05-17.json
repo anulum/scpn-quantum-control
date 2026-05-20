@@ -1,0 +1,221 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '1. The Existential Holograph (L9): Hyperbolic Geometry and Tensor Networks' preserves Paper 0 records P0R04441-P0R04444 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the existential holograph l9 hyperbolic geometry and tensor networks source-accounting bridge; not validation evidence",
+      "context_id": "1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04441-P0R04444"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks.1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Existential Holograph (L9): Hyperbolic Geometry and Tensor Networks is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 1. The Existential Holograph (L9): Hyperbolic Geometry and Tensor Networks",
+      "source_block_indices": [
+        4441,
+        4442,
+        4443,
+        4444,
+        4445,
+        4446,
+        4447,
+        4448,
+        4449,
+        4450,
+        4451,
+        4452,
+        4453
+      ],
+      "source_equation_ids": [
+        "P0R04441:1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks",
+        "P0R04442:1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks",
+        "P0R04443:1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks",
+        "P0R04444:1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks"
+      ],
+      "source_formulae": [
+        "P0R04441: 1. The Existential Holograph (L9): Hyperbolic Geometry and Tensor Networks",
+        "P0R04442: Memory is stored non-locally in the \"Bulk\" (L9). This is formalised using the Multi-scale Entanglement Renormalisation Ansatz (MERA) tensor network. MERA naturally implements the Hyperbolic Geometry (negative curvature) of AdS space, capturing the multi-scale entanglement structure of memory.",
+        "P0R04443: We cannot physically embed an Anti-de Sitter (AdS) holographic bulk (which requires a negative cosmological constant, $\\Lambda<0$) into our physical de Sitter (dS) universe (which has a positive cosmological constant, $\\Lambda>0$, as We correctly modeled in Chapter 20).",
+        "P0R04444: To resolve this, we explicitly divorce the memory \"bulk\" from physical spacetime. The MERA network is not a physical 5th dimension; it is an Information-Geometric Space. Hierarchical probabilistic models (like the generative models in Active Inference) naturally form hyperbolic geometries in their parameter spaces, entirely independent of the physical spacetime metric."
+      ],
+      "source_ledger_ids": [
+        "P0R04441",
+        "P0R04442",
+        "P0R04443",
+        "P0R04444",
+        "P0R04445",
+        "P0R04446",
+        "P0R04447",
+        "P0R04448",
+        "P0R04449",
+        "P0R04450",
+        "P0R04451",
+        "P0R04452",
+        "P0R04453"
+      ],
+      "source_record_ids": [
+        "P0B04441",
+        "P0B04442",
+        "P0B04443",
+        "P0B04444",
+        "P0B04445",
+        "P0B04446",
+        "P0B04447",
+        "P0B04448",
+        "P0B04449",
+        "P0B04450",
+        "P0B04451",
+        "P0B04452",
+        "P0B04453"
+      ],
+      "test_protocols": [
+        "preserve 1. The Existential Holograph (L9): Hyperbolic Geometry and Tensor Networks source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks.1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks",
+      "validation_targets": [
+        "preserve records P0R04441-P0R04444"
+      ],
+      "variables": [
+        "1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Resolving the Holographic Geometry: MERA as an Information-Geometric Bulk' preserves Paper 0 records P0R04445-P0R04453 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 1 the existential holograph l9 hyperbolic geometry and tensor networks source-accounting bridge; not validation evidence",
+      "context_id": "resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04445-P0R04453"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks.resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Resolving the Holographic Geometry: MERA as an Information-Geometric Bulk is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > 1. The Existential Holograph (L9): Hyperbolic Geometry and Tensor Networks",
+      "source_block_indices": [
+        4441,
+        4442,
+        4443,
+        4444,
+        4445,
+        4446,
+        4447,
+        4448,
+        4449,
+        4450,
+        4451,
+        4452,
+        4453
+      ],
+      "source_equation_ids": [
+        "P0R04445:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04446:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04447:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04448:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04449:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04450:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04451:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04452:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+        "P0R04453:resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk"
+      ],
+      "source_formulae": [
+        "P0R04445: Resolving the Holographic Geometry: MERA as an Information-Geometric Bulk",
+        "P0R04446: P0R04446",
+        "P0R04447: The invocation of the AdS/CFT correspondence and MERA tensor networks to describe the Existential Holograph (L9) introduces a potential theoretical conflict. Standard AdS/CFT holography strictly requires an Anti-de Sitter (AdS) bulk spacetime, characterized by a negative cosmological constant ($\\Lambda<0$). However, as established in Chapter 20, the physical universe-and the $\\Psi$-field's macroscopic geometric coupling-operates within a de Sitter (dS) spacetime with a positive cosmological constant ($\\Lambda>0$). One cannot naively embed a physical AdS bulk into a dS universe.",
+        "P0R04448: To rigorously resolve this mismatch, we must explicitly distinguish physical spacetime from the state space of the generative model. The \"bulk\" of Layer 9 is not a physical extra dimension; it is an Information-Geometric Space.",
+        "P0R04449: Within the framework of Hierarchical Predictive Coding (HPC) and Active Inference, the generative model of the Self relies on a hierarchical parameter space. It is a well-established mathematical property of information geometry that the parameter spaces of hierarchical, tree-like probabilistic models naturally exhibit hyperbolic geometry. When we calculate the Fisher Information Metric ($g_{FIM}$) over these hierarchical distributions, the resulting statistical manifold possesses constant negative curvature, making it mathematically isomorphic to an AdS space.",
+        "P0R04450: Therefore, the MERA tensor network describes the architecture of the organism's deep priors within this abstract statistical manifold.",
+        "P0R04451: The Boundary (L10): Represents the physical, real-time sensory states and active coupling in dS spacetime. | The Bulk (L9): Represents the hyperbolic parameter space of the generative model.",
+        "P0R04452: The holographic duality ($ER=EPR$) in the SCPN does not bridge two physical spacetimes. Instead, it bridges physical entanglement at the biological boundary with information-geometric geodesics in the bulk. When the organism undergoes experiences that generate quantum coherence at the L1-L4 boundary, this information updates the deep priors of the generative model. The \"retrieval\" of a memory is the tracing of a geodesic through this hyperbolic statistical manifold.",
+        "P0R04453: By defining Layer 9 strictly as a hyperbolic statistical manifold governed by the Fisher Information Metric, we completely divorce the holographic memory architecture from physical cosmological constraints. The MERA network retains its rigorous mathematical utility for describing multi-scale entanglement renormalization without violating the observed positive cosmological constant of our physical universe."
+      ],
+      "source_ledger_ids": [
+        "P0R04441",
+        "P0R04442",
+        "P0R04443",
+        "P0R04444",
+        "P0R04445",
+        "P0R04446",
+        "P0R04447",
+        "P0R04448",
+        "P0R04449",
+        "P0R04450",
+        "P0R04451",
+        "P0R04452",
+        "P0R04453"
+      ],
+      "source_record_ids": [
+        "P0B04441",
+        "P0B04442",
+        "P0B04443",
+        "P0B04444",
+        "P0B04445",
+        "P0B04446",
+        "P0B04447",
+        "P0B04448",
+        "P0B04449",
+        "P0B04450",
+        "P0B04451",
+        "P0B04452",
+        "P0B04453"
+      ],
+      "test_protocols": [
+        "preserve Resolving the Holographic Geometry: MERA as an Information-Geometric Bulk source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks.resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk",
+      "validation_targets": [
+        "preserve records P0R04445-P0R04453"
+      ],
+      "variables": [
+        "resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 1,
+      "Header": 2,
+      "Para": 10
+    },
+    "category_counts": {
+      "claim": 4,
+      "context": 3,
+      "mechanism": 5,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded section 1 the existential holograph l9 hyperbolic geometry and tensor networks source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 13,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04454",
+    "source_ledger_span": [
+      "P0R04441",
+      "P0R04453"
+    ],
+    "source_record_count": 13,
+    "spec_count": 2,
+    "spec_keys": [
+      "section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks.1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks",
+      "section_1_the_existential_holograph_l9_hyperbolic_geometry_and_tensor_networks.resolving_the_holographic_geometry_mera_as_an_information_geometric_bulk"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 1. The Existential Holograph (L9): Hyperbolic Geometry and Tensor Networks Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Nonlinear Dynamics & Criticality' preserves Paper 0 records P0R05730-P0R05733 without empirical validation claims.",
+      "claim_boundary": "source-bounded nonlinear dynamics criticality source-accounting bridge; not validation evidence",
+      "context_id": "nonlinear_dynamics_criticality",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05730-P0R05733"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "nonlinear_dynamics_criticality.nonlinear_dynamics_criticality",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "nonlinear_dynamics_criticality must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Nonlinear Dynamics & Criticality is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Nonlinear Dynamics & Criticality",
+      "source_block_indices": [
+        5730,
+        5731,
+        5732,
+        5733,
+        5734,
+        5735,
+        5736,
+        5737
+      ],
+      "source_equation_ids": [
+        "P0R05730:nonlinear_dynamics_criticality",
+        "P0R05731:nonlinear_dynamics_criticality",
+        "P0R05732:nonlinear_dynamics_criticality",
+        "P0R05733:nonlinear_dynamics_criticality"
+      ],
+      "source_formulae": [
+        "P0R05730: Nonlinear Dynamics & Criticality",
+        "P0R05731: \"quasicriticality as universal regime\" -> Bak (How Nature Works, 1996, SOC).",
+        "P0R05732: \"neural avalanches scaling laws\" -> Friedman et al. (2012).",
+        "P0R05733: \"chaos-order edge as optimal computation\" -> Langton (1990)."
+      ],
+      "source_ledger_ids": [
+        "P0R05730",
+        "P0R05731",
+        "P0R05732",
+        "P0R05733",
+        "P0R05734",
+        "P0R05735",
+        "P0R05736",
+        "P0R05737"
+      ],
+      "source_record_ids": [
+        "P0B05730",
+        "P0B05731",
+        "P0B05732",
+        "P0B05733",
+        "P0B05734",
+        "P0B05735",
+        "P0B05736",
+        "P0B05737"
+      ],
+      "test_protocols": [
+        "preserve Nonlinear Dynamics & Criticality source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.nonlinear_dynamics_criticality.nonlinear_dynamics_criticality",
+      "validation_targets": [
+        "preserve records P0R05730-P0R05733"
+      ],
+      "variables": [
+        "nonlinear_dynamics_criticality"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Computational & Complexity Science' preserves Paper 0 records P0R05734-P0R05737 without empirical validation claims.",
+      "claim_boundary": "source-bounded nonlinear dynamics criticality source-accounting bridge; not validation evidence",
+      "context_id": "computational_complexity_science",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05734-P0R05737"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "nonlinear_dynamics_criticality.computational_complexity_science",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "computational_complexity_science must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Computational & Complexity Science is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Nonlinear Dynamics & Criticality",
+      "source_block_indices": [
+        5730,
+        5731,
+        5732,
+        5733,
+        5734,
+        5735,
+        5736,
+        5737
+      ],
+      "source_equation_ids": [
+        "P0R05734:computational_complexity_science",
+        "P0R05735:computational_complexity_science",
+        "P0R05736:computational_complexity_science",
+        "P0R05737:computational_complexity_science"
+      ],
+      "source_formulae": [
+        "P0R05734: Computational & Complexity Science",
+        "P0R05735: \"multi-scale optimization\" -> Wolfram (2002, cellular automata) and Mitchell (2009, complexity).",
+        "P0R05736: \"information integration at cosmic scales\" -> Lloyd (2006, Programming the Universe).",
+        "P0R05737: \"tensor networks as bulk memory codes\" -> Ors (2014)."
+      ],
+      "source_ledger_ids": [
+        "P0R05730",
+        "P0R05731",
+        "P0R05732",
+        "P0R05733",
+        "P0R05734",
+        "P0R05735",
+        "P0R05736",
+        "P0R05737"
+      ],
+      "source_record_ids": [
+        "P0B05730",
+        "P0B05731",
+        "P0B05732",
+        "P0B05733",
+        "P0B05734",
+        "P0B05735",
+        "P0B05736",
+        "P0B05737"
+      ],
+      "test_protocols": [
+        "preserve Computational & Complexity Science source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.nonlinear_dynamics_criticality.computational_complexity_science",
+      "validation_targets": [
+        "preserve records P0R05734-P0R05737"
+      ],
+      "variables": [
+        "computational_complexity_science"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 6,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded nonlinear dynamics criticality source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05738",
+    "source_ledger_span": [
+      "P0R05730",
+      "P0R05737"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "nonlinear_dynamics_criticality.nonlinear_dynamics_criticality",
+      "nonlinear_dynamics_criticality.computational_complexity_science"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Nonlinear Dynamics & Criticality Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

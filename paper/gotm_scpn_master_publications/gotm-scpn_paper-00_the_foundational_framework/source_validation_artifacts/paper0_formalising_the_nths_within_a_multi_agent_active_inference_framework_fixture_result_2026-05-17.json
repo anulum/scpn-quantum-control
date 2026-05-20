@@ -1,0 +1,46 @@
+{
+  "claim_boundary": "source-bounded formalising the nths within a multi agent active inference framework source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "conceptual_mapping": "conceptual_mapping_source_boundary",
+    "formalising_the_nths_within_a_multi_agent_active_inference_framework": "formalising_the_nths_within_a_multi_agent_active_inference_framework_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Formalising the NTHS within a Multi-Agent Active Inference Framework",
+    "component_2": "Conceptual Mapping",
+    "component_count": "2",
+    "next_boundary": "P0R05245",
+    "section": "Formalising the NTHS within a Multi-Agent Active Inference Framework",
+    "source_span": "P0R05236-P0R05244"
+  },
+  "next_source_boundary": "P0R05245",
+  "null_controls": {
+    "conceptual_mapping_is_not_empirical_validation_evidence": 1.0,
+    "formalising_the_nths_within_a_multi_agent_active_inference_framework_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded formalising the nths within a multi agent active inference framework source-accounting bridge; not validation evidence",
+    "protocol_state": "source_formalising_the_nths_within_a_multi_agent_active_inference_framework_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05236",
+      "P0R05237",
+      "P0R05238",
+      "P0R05239",
+      "P0R05240",
+      "P0R05241",
+      "P0R05242",
+      "P0R05243",
+      "P0R05244"
+    ],
+    "source_ledger_span": [
+      "P0R05236",
+      "P0R05244"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05236",
+    "P0R05244"
+  ],
+  "source_record_count": 9
+}

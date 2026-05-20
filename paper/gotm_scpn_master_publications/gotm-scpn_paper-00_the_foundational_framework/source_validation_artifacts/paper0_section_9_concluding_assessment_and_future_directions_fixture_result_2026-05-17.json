@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded section 9 concluding assessment and future directions source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "domain_i_the_biological_substrate_layers_1_4": "domain_i_the_biological_substrate_layers_1_4_source_boundary",
+    "section_9_concluding_assessment_and_future_directions": "section_9_concluding_assessment_and_future_directions_source_boundary",
+    "structural_overview_by_domain": "structural_overview_by_domain_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Section 9: Concluding Assessment and Future Directions",
+    "component_2": "Structural Overview (by Domain)",
+    "component_3": "Domain I: The Biological Substrate (Layers 1-4)",
+    "component_count": "3",
+    "next_boundary": "P0R05293",
+    "section": "Section 9: Concluding Assessment and Future Directions",
+    "source_span": "P0R05285-P0R05292"
+  },
+  "next_source_boundary": "P0R05293",
+  "null_controls": {
+    "domain_i_the_biological_substrate_layers_1_4_is_not_empirical_validation_evidence": 1.0,
+    "section_9_concluding_assessment_and_future_directions_is_not_empirical_validation_evidence": 1.0,
+    "structural_overview_by_domain_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 9 concluding assessment and future directions source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_9_concluding_assessment_and_future_directions_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05285",
+      "P0R05286",
+      "P0R05287",
+      "P0R05288",
+      "P0R05289",
+      "P0R05290",
+      "P0R05291",
+      "P0R05292"
+    ],
+    "source_ledger_span": [
+      "P0R05285",
+      "P0R05292"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05285",
+    "P0R05292"
+  ],
+  "source_record_count": 8
+}

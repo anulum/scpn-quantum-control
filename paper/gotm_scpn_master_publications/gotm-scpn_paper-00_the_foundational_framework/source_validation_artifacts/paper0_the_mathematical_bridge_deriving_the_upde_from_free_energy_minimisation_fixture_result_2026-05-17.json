@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "source-bounded the mathematical bridge deriving the upde from free energy minimisation source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation": "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation",
+    "component_count": "1",
+    "next_boundary": "P0R06179",
+    "section": "The Mathematical Bridge: Deriving the UPDE from Free Energy Minimisation",
+    "source_span": "P0R06164-P0R06178"
+  },
+  "next_source_boundary": "P0R06179",
+  "null_controls": {
+    "the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the mathematical bridge deriving the upde from free energy minimisation source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_mathematical_bridge_deriving_the_upde_from_free_energy_minimisation_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R06164",
+      "P0R06165",
+      "P0R06166",
+      "P0R06167",
+      "P0R06168",
+      "P0R06169",
+      "P0R06170",
+      "P0R06171",
+      "P0R06172",
+      "P0R06173",
+      "P0R06174",
+      "P0R06175",
+      "P0R06176",
+      "P0R06177",
+      "P0R06178"
+    ],
+    "source_ledger_span": [
+      "P0R06164",
+      "P0R06178"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R06164",
+    "P0R06178"
+  ],
+  "source_record_count": 15
+}

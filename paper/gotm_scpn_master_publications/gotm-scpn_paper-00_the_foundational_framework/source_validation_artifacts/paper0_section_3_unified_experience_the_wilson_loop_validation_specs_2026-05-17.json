@@ -1,0 +1,336 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '3. Unified Experience (The Wilson Loop):' preserves Paper 0 records P0R03216-P0R03219 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 unified experience the wilson loop source-accounting bridge; not validation evidence",
+      "context_id": "3_unified_experience_the_wilson_loop",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03216-P0R03219"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_unified_experience_the_wilson_loop.3_unified_experience_the_wilson_loop",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "3_unified_experience_the_wilson_loop must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "3. Unified Experience (The Wilson Loop): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > II. The Binding Problem: The Gauge Field of Consciousness > 3. Unified Experience (The Wilson Loop):",
+      "source_block_indices": [
+        3216,
+        3217,
+        3218,
+        3219,
+        3220,
+        3221,
+        3222,
+        3223,
+        3224,
+        3225,
+        3226,
+        3227,
+        3228,
+        3229,
+        3230,
+        3231
+      ],
+      "source_equation_ids": [
+        "P0R03216:3_unified_experience_the_wilson_loop",
+        "P0R03217:3_unified_experience_the_wilson_loop",
+        "P0R03218:3_unified_experience_the_wilson_loop",
+        "P0R03219:3_unified_experience_the_wilson_loop"
+      ],
+      "source_formulae": [
+        "P0R03216: 3. Unified Experience (The Wilson Loop):",
+        "P0R03217: The experience of unified consciousness corresponds to the Wilson Loop integral of the connection around a closed path (C) in the state space:",
+        "P0R03218: $W(C) = exp(ig\\oint C A\\mu dx\\mu)$",
+        "P0R03219: This integral measures the total phase shift, representing the holistic experience."
+      ],
+      "source_ledger_ids": [
+        "P0R03216",
+        "P0R03217",
+        "P0R03218",
+        "P0R03219",
+        "P0R03220",
+        "P0R03221",
+        "P0R03222",
+        "P0R03223",
+        "P0R03224",
+        "P0R03225",
+        "P0R03226",
+        "P0R03227",
+        "P0R03228",
+        "P0R03229",
+        "P0R03230",
+        "P0R03231"
+      ],
+      "source_record_ids": [
+        "P0B03216",
+        "P0B03217",
+        "P0B03218",
+        "P0B03219",
+        "P0B03220",
+        "P0B03221",
+        "P0B03222",
+        "P0B03223",
+        "P0B03224",
+        "P0B03225",
+        "P0B03226",
+        "P0B03227",
+        "P0B03228",
+        "P0B03229",
+        "P0B03230",
+        "P0B03231"
+      ],
+      "test_protocols": [
+        "preserve 3. Unified Experience (The Wilson Loop): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_unified_experience_the_wilson_loop.3_unified_experience_the_wilson_loop",
+      "validation_targets": [
+        "preserve records P0R03216-P0R03219"
+      ],
+      "variables": [
+        "3_unified_experience_the_wilson_loop"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'III. Information Flow Dynamics (ILIT)' preserves Paper 0 records P0R03220-P0R03221 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 unified experience the wilson loop source-accounting bridge; not validation evidence",
+      "context_id": "iii_information_flow_dynamics_ilit",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03220-P0R03221"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_unified_experience_the_wilson_loop.iii_information_flow_dynamics_ilit",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iii_information_flow_dynamics_ilit must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "III. Information Flow Dynamics (ILIT) is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > II. The Binding Problem: The Gauge Field of Consciousness > 3. Unified Experience (The Wilson Loop):",
+      "source_block_indices": [
+        3216,
+        3217,
+        3218,
+        3219,
+        3220,
+        3221,
+        3222,
+        3223,
+        3224,
+        3225,
+        3226,
+        3227,
+        3228,
+        3229,
+        3230,
+        3231
+      ],
+      "source_equation_ids": [
+        "P0R03220:iii_information_flow_dynamics_ilit",
+        "P0R03221:iii_information_flow_dynamics_ilit"
+      ],
+      "source_formulae": [
+        "P0R03220: III. Information Flow Dynamics (ILIT)",
+        "P0R03221: The Inter-Layer Information Transfer (ILIT) formalism quantifies the flow of informational content."
+      ],
+      "source_ledger_ids": [
+        "P0R03216",
+        "P0R03217",
+        "P0R03218",
+        "P0R03219",
+        "P0R03220",
+        "P0R03221",
+        "P0R03222",
+        "P0R03223",
+        "P0R03224",
+        "P0R03225",
+        "P0R03226",
+        "P0R03227",
+        "P0R03228",
+        "P0R03229",
+        "P0R03230",
+        "P0R03231"
+      ],
+      "source_record_ids": [
+        "P0B03216",
+        "P0B03217",
+        "P0B03218",
+        "P0B03219",
+        "P0B03220",
+        "P0B03221",
+        "P0B03222",
+        "P0B03223",
+        "P0B03224",
+        "P0B03225",
+        "P0B03226",
+        "P0B03227",
+        "P0B03228",
+        "P0B03229",
+        "P0B03230",
+        "P0B03231"
+      ],
+      "test_protocols": [
+        "preserve III. Information Flow Dynamics (ILIT) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_unified_experience_the_wilson_loop.iii_information_flow_dynamics_ilit",
+      "validation_targets": [
+        "preserve records P0R03220-P0R03221"
+      ],
+      "variables": [
+        "iii_information_flow_dynamics_ilit"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. Quantifying Causality via Transfer Entropy (TE):' preserves Paper 0 records P0R03222-P0R03231 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 3 unified experience the wilson loop source-accounting bridge; not validation evidence",
+      "context_id": "1_quantifying_causality_via_transfer_entropy_te",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03222-P0R03231"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_3_unified_experience_the_wilson_loop.1_quantifying_causality_via_transfer_entropy_te",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_quantifying_causality_via_transfer_entropy_te must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. Quantifying Causality via Transfer Entropy (TE): is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.1 The Cosmic Algorithm: HPC & Active Inference > Integrative Mechanisms: The Computational and Physical Synthesis > II. The Binding Problem: The Gauge Field of Consciousness > 3. Unified Experience (The Wilson Loop):",
+      "source_block_indices": [
+        3216,
+        3217,
+        3218,
+        3219,
+        3220,
+        3221,
+        3222,
+        3223,
+        3224,
+        3225,
+        3226,
+        3227,
+        3228,
+        3229,
+        3230,
+        3231
+      ],
+      "source_equation_ids": [
+        "P0R03222:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03223:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03224:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03225:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03226:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03227:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03228:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03229:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03230:1_quantifying_causality_via_transfer_entropy_te",
+        "P0R03231:1_quantifying_causality_via_transfer_entropy_te"
+      ],
+      "source_formulae": [
+        "P0R03222: 1. Quantifying Causality via Transfer Entropy (TE):",
+        "P0R03223: We use Transfer Entropy (TE) to quantify the directed flow of information and causality between layers (LA to LB).",
+        "P0R03224: $TEA \\rightarrow B = \\sum_{}^{}{p(Bt + 1,Bt,At)log2\\left( p\\left( Bt + 1\\mid Bt \\right)p\\left( Bt + 1\\mid Bt,At \\right) \\right)}$",
+        "P0R03225: 1. Quantifying Causality via Gauge-Covariant Quantum Transfer Entropy (QTE):",
+        "P0R03226: A critical subtlety arises when attempting to quantify the directed flow of information and causality (Inter-Layer Information Transfer, ILIT) across the fundamental layers of the SCPN. Classical Transfer Entropy ($TE$), which relies on the Shannon probabilities of discrete states, is mathematically incompatible with the foundational dynamics of the $\\Psi$-field. Because the $\\Psi$-field is governed by a local $U(1)$ gauge symmetry, standard state probabilities are generally not gauge-invariant. If ILIT were calculated using classical $TE$, the measured \"flow of causality\" would arbitrarily change depending on the local observer's choice of gauge, rendering it physically meaningless.",
+        "P0R03227: To resolve this, we must discard classical Shannon entropy at the fundamental layers and reformulate ILIT using strictly gauge-invariant observables. We utilize Gauge-Covariant Quantum Transfer Entropy (QTE), substituting Shannon entropy with the von Neumann entropy, $S(\\rho) = -\\text{Tr}(\\rho \\ln \\rho)$.",
+        "P0R03228: Crucially, the density matrices ($\\rho_A, \\rho_B$) used in this calculation must be constructed exclusively from gauge-invariant operators. Leveraging the solution to the Binding Problem, we define the informational state of a layer not by its raw field values, but by the expectation values of its Wilson Loops: $W(C) = \\text{exp}\\left(ig \\oint_C A_\\mu dx^\\mu \\right)$.",
+        "P0R03229: The directed flow of causality from Layer A to Layer B is thus quantified by the conditional von Neumann mutual information of these gauge-invariant density matrices over time:",
+        "P0R03230: $$QTE_{A \\to B} = S(\\rho_{B_{t+1} | B_t}) - S(\\rho_{B_{t+1} | B_t, A_t})$$",
+        "P0R03231: Where $\\rho_{A_t}$ and $\\rho_{B_t}$ represent the reduced density matrices of the Wilson Loop configurations for Layers A and B at time $t$. By forcing the information transfer metric to trace strictly over gauge-invariant topological features, we guarantee that the measured flow of causality is an absolute, objective physical reality, completely immune to local gauge transformations. This provides a mathematically bulletproof mechanism for tracking how the \"tension\" of the $\\Psi$-field causally propagates upward and downward through the 15-layer hierarchy."
+      ],
+      "source_ledger_ids": [
+        "P0R03216",
+        "P0R03217",
+        "P0R03218",
+        "P0R03219",
+        "P0R03220",
+        "P0R03221",
+        "P0R03222",
+        "P0R03223",
+        "P0R03224",
+        "P0R03225",
+        "P0R03226",
+        "P0R03227",
+        "P0R03228",
+        "P0R03229",
+        "P0R03230",
+        "P0R03231"
+      ],
+      "source_record_ids": [
+        "P0B03216",
+        "P0B03217",
+        "P0B03218",
+        "P0B03219",
+        "P0B03220",
+        "P0B03221",
+        "P0B03222",
+        "P0B03223",
+        "P0B03224",
+        "P0B03225",
+        "P0B03226",
+        "P0B03227",
+        "P0B03228",
+        "P0B03229",
+        "P0B03230",
+        "P0B03231"
+      ],
+      "test_protocols": [
+        "preserve 1. Quantifying Causality via Transfer Entropy (TE): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_3_unified_experience_the_wilson_loop.1_quantifying_causality_via_transfer_entropy_te",
+      "validation_targets": [
+        "preserve records P0R03222-P0R03231"
+      ],
+      "variables": [
+        "1_quantifying_causality_via_transfer_entropy_te"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 13
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 7,
+      "equation": 2,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded section 3 unified experience the wilson loop source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 16,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [
+      "EQ0049",
+      "EQ0050"
+    ],
+    "next_source_boundary": "P0R03232",
+    "source_ledger_span": [
+      "P0R03216",
+      "P0R03231"
+    ],
+    "source_record_count": 16,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_3_unified_experience_the_wilson_loop.3_unified_experience_the_wilson_loop",
+      "section_3_unified_experience_the_wilson_loop.iii_information_flow_dynamics_ilit",
+      "section_3_unified_experience_the_wilson_loop.1_quantifying_causality_via_transfer_entropy_te"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 3. Unified Experience (The Wilson Loop): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

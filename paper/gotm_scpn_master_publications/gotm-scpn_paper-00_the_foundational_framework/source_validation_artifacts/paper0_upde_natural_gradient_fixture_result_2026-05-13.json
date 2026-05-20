@@ -1,0 +1,30 @@
+{
+  "euclidean_gradient_drift": [
+    -0.21275,
+    0.08676500000000001,
+    -0.11988
+  ],
+  "free_energy": 0.175945,
+  "gradient_error_linf": 4.081540661005079e-12,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "metric_condition_number": 2.07465066550813,
+  "natural_gradient_drift": [
+    -0.11916581198896373,
+    0.11387535649192597,
+    -0.08895864035817523
+  ],
+  "null_controls": {
+    "euclidean_vs_natural_l2": 0.10222084991284003,
+    "identity_fim_matches_euclidean_linf": 0.0,
+    "regularised_singular_metric_linf": 119880.0
+  },
+  "runtime_ms": 1.7767710087355226,
+  "source_equation_ids": [
+    "EQ0042"
+  ],
+  "source_ledger_ids": [
+    "P0R02642"
+  ],
+  "spec_key": "upde.natural_gradient",
+  "validation_protocol": "paper0.upde.natural_gradient.fim_free_energy"
+}

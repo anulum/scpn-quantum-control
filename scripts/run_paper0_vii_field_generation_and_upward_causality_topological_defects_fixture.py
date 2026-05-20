@@ -20,7 +20,13 @@ from scpn_quantum_control.paper0.vii_field_generation_and_upward_causality_topol
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "internal" / "paper0_foundational_extraction"
+DEFAULT_OUTPUT_DIR = (
+    REPO_ROOT
+    / "paper"
+    / "gotm_scpn_master_publications"
+    / "gotm-scpn_paper-00_the_foundational_framework"
+    / "source_validation_artifacts"
+)
 DEFAULT_OUTPUT_PATH = (
     DEFAULT_OUTPUT_DIR
     / "paper0_vii_field_generation_and_upward_causality_topological_defects_fixture_result_2026-05-17.json"

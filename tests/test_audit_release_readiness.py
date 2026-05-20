@@ -435,7 +435,7 @@ def test_release_readiness_requires_knm_measured_candidate_artifacts() -> None:
     assert "data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json" in required
     assert "data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json" in required
     assert "data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json" in required
-    assert "docs/paper0_knm_measured_coupling_evidence_checklist.md" in required
+    assert "docs/paper0/paper0_knm_measured_coupling_evidence_checklist.md" in required
 
 
 def test_release_readiness_requires_s7_logical_dla_roadmap_artifacts() -> None:

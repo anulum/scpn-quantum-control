@@ -1,0 +1,51 @@
+{
+  "claim_boundary": "source-bounded the dynamics and evolution of the embodied scpn source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "1_the_embodied_upde_the_symphony_of_the_self": "1_the_embodied_upde_the_symphony_of_the_self_source_boundary",
+    "i_the_dynamics_of_consciousness_in_the_brain_body_system": "i_the_dynamics_of_consciousness_in_the_brain_body_system_source_boundary",
+    "the_dynamics_and_evolution_of_the_embodied_scpn": "the_dynamics_and_evolution_of_the_embodied_scpn_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Dynamics and Evolution of the Embodied SCPN",
+    "component_2": "I. The Dynamics of Consciousness in the Brain-Body System",
+    "component_3": "1. The Embodied UPDE (The Symphony of the Self)",
+    "component_count": "3",
+    "next_boundary": "P0R04967",
+    "section": "The Dynamics and Evolution of the Embodied SCPN",
+    "source_span": "P0R04956-P0R04966"
+  },
+  "next_source_boundary": "P0R04967",
+  "null_controls": {
+    "1_the_embodied_upde_the_symphony_of_the_self_is_not_empirical_validation_evidence": 1.0,
+    "i_the_dynamics_of_consciousness_in_the_brain_body_system_is_not_empirical_validation_evidence": 1.0,
+    "the_dynamics_and_evolution_of_the_embodied_scpn_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the dynamics and evolution of the embodied scpn source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_dynamics_and_evolution_of_the_embodied_scpn_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04956",
+      "P0R04957",
+      "P0R04958",
+      "P0R04959",
+      "P0R04960",
+      "P0R04961",
+      "P0R04962",
+      "P0R04963",
+      "P0R04964",
+      "P0R04965",
+      "P0R04966"
+    ],
+    "source_ledger_span": [
+      "P0R04956",
+      "P0R04966"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04956",
+    "P0R04966"
+  ],
+  "source_record_count": 11
+}

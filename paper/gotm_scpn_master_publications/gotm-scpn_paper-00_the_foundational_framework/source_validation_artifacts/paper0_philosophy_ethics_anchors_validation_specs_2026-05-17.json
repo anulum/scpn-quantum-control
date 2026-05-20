@@ -1,0 +1,178 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Philosophy & Ethics Anchors' preserves Paper 0 records P0R05770-P0R05773 without empirical validation claims.",
+      "claim_boundary": "source-bounded philosophy ethics anchors source-accounting bridge; not validation evidence",
+      "context_id": "philosophy_ethics_anchors",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05770-P0R05773"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "philosophy_ethics_anchors.philosophy_ethics_anchors",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "philosophy_ethics_anchors must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Philosophy & Ethics Anchors is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Philosophy & Ethics Anchors",
+      "source_block_indices": [
+        5770,
+        5771,
+        5772,
+        5773,
+        5774,
+        5775,
+        5776,
+        5777
+      ],
+      "source_equation_ids": [
+        "P0R05770:philosophy_ethics_anchors",
+        "P0R05771:philosophy_ethics_anchors",
+        "P0R05772:philosophy_ethics_anchors",
+        "P0R05773:philosophy_ethics_anchors"
+      ],
+      "source_formulae": [
+        "P0R05770: Philosophy & Ethics Anchors",
+        "P0R05771: \"panpsychism and consciousness as fundamental\" -> (Strawson, 2006; Chalmers, 1996)",
+        "P0R05772: \"teleology and ethical naturalism\" -> (Jonas, 1966; Nagel, 2012)",
+        "P0R05773: \"second-order cybernetics and recursive closure\" -> (von Foerster, 1979; Hofstadter, 2007)"
+      ],
+      "source_ledger_ids": [
+        "P0R05770",
+        "P0R05771",
+        "P0R05772",
+        "P0R05773",
+        "P0R05774",
+        "P0R05775",
+        "P0R05776",
+        "P0R05777"
+      ],
+      "source_record_ids": [
+        "P0B05770",
+        "P0B05771",
+        "P0B05772",
+        "P0B05773",
+        "P0B05774",
+        "P0B05775",
+        "P0B05776",
+        "P0B05777"
+      ],
+      "test_protocols": [
+        "preserve Philosophy & Ethics Anchors source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.philosophy_ethics_anchors.philosophy_ethics_anchors",
+      "validation_targets": [
+        "preserve records P0R05770-P0R05773"
+      ],
+      "variables": [
+        "philosophy_ethics_anchors"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Philosophy of Science & Methodology' preserves Paper 0 records P0R05774-P0R05777 without empirical validation claims.",
+      "claim_boundary": "source-bounded philosophy ethics anchors source-accounting bridge; not validation evidence",
+      "context_id": "philosophy_of_science_methodology",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05774-P0R05777"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "philosophy_ethics_anchors.philosophy_of_science_methodology",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "philosophy_of_science_methodology must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Philosophy of Science & Methodology is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 Philosophy & Ethics Anchors",
+      "source_block_indices": [
+        5770,
+        5771,
+        5772,
+        5773,
+        5774,
+        5775,
+        5776,
+        5777
+      ],
+      "source_equation_ids": [
+        "P0R05774:philosophy_of_science_methodology",
+        "P0R05775:philosophy_of_science_methodology",
+        "P0R05776:philosophy_of_science_methodology",
+        "P0R05777:philosophy_of_science_methodology"
+      ],
+      "source_formulae": [
+        "P0R05774: Philosophy of Science & Methodology",
+        "P0R05775: \"axioms as generative hypothesis vs fact\" -> Popper (1959, falsifiability).",
+        "P0R05776: \"strange loop framing\" -> Hofstadter (Gdel, Escher, Bach, 1979).",
+        "P0R05777: \"second-order systems\" -> Bateson (Steps to an Ecology of Mind, 1972)."
+      ],
+      "source_ledger_ids": [
+        "P0R05770",
+        "P0R05771",
+        "P0R05772",
+        "P0R05773",
+        "P0R05774",
+        "P0R05775",
+        "P0R05776",
+        "P0R05777"
+      ],
+      "source_record_ids": [
+        "P0B05770",
+        "P0B05771",
+        "P0B05772",
+        "P0B05773",
+        "P0B05774",
+        "P0B05775",
+        "P0B05776",
+        "P0B05777"
+      ],
+      "test_protocols": [
+        "preserve Philosophy of Science & Methodology source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.philosophy_ethics_anchors.philosophy_of_science_methodology",
+      "validation_targets": [
+        "preserve records P0R05774-P0R05777"
+      ],
+      "variables": [
+        "philosophy_of_science_methodology"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 5,
+      "context": 3
+    },
+    "claim_boundary": "source-bounded philosophy ethics anchors source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05778",
+    "source_ledger_span": [
+      "P0R05770",
+      "P0R05777"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "philosophy_ethics_anchors.philosophy_ethics_anchors",
+      "philosophy_ethics_anchors.philosophy_of_science_methodology"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Philosophy & Ethics Anchors Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

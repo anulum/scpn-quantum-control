@@ -1,0 +1,246 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. Cytoarchitecture and the Canonical Microcircuit (L4):' preserves Paper 0 records P0R04832-P0R04834 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 cytoarchitecture and the canonical microcircuit l4 source-accounting bridge; not validation evidence",
+      "context_id": "2_cytoarchitecture_and_the_canonical_microcircuit_l4",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04832-P0R04834"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.2_cytoarchitecture_and_the_canonical_microcircuit_l4",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_cytoarchitecture_and_the_canonical_microcircuit_l4 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. Cytoarchitecture and the Canonical Microcircuit (L4): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. Meso-Scale Geometry: Circuits, Columns, and Fields (L3-L4) > 2. Cytoarchitecture and the Canonical Microcircuit (L4):",
+      "source_block_indices": [
+        4832,
+        4833,
+        4834,
+        4835,
+        4836,
+        4837,
+        4838,
+        4839
+      ],
+      "source_equation_ids": [
+        "P0R04832:2_cytoarchitecture_and_the_canonical_microcircuit_l4",
+        "P0R04833:2_cytoarchitecture_and_the_canonical_microcircuit_l4",
+        "P0R04834:2_cytoarchitecture_and_the_canonical_microcircuit_l4"
+      ],
+      "source_formulae": [
+        "P0R04832: 2. Cytoarchitecture and the Canonical Microcircuit (L4):",
+        "P0R04833: The geometric arrangement of neurons defines the computational structure. The cortex is organised into columns, repeating geometric units implementing Hierarchical Predictive Coding (HPC).",
+        "P0R04834: Laminar Geometry and HPC: The six-layered laminar structure of the cortex is crucial for computation. The geometric separation of cell types and connections defines the flow of information: Deep Layers (V/VI): Geometric locus of top-down Priors/Generative Model (Alpha/Beta oscillations). | Superficial Layers (II/III): Geometric locus of bottom-up Prediction Errors (Gamma oscillations)."
+      ],
+      "source_ledger_ids": [
+        "P0R04832",
+        "P0R04833",
+        "P0R04834",
+        "P0R04835",
+        "P0R04836",
+        "P0R04837",
+        "P0R04838",
+        "P0R04839"
+      ],
+      "source_record_ids": [
+        "P0B04832",
+        "P0B04833",
+        "P0B04834",
+        "P0B04835",
+        "P0B04836",
+        "P0B04837",
+        "P0B04838",
+        "P0B04839"
+      ],
+      "test_protocols": [
+        "preserve 2. Cytoarchitecture and the Canonical Microcircuit (L4): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.2_cytoarchitecture_and_the_canonical_microcircuit_l4",
+      "validation_targets": [
+        "preserve records P0R04832-P0R04834"
+      ],
+      "variables": [
+        "2_cytoarchitecture_and_the_canonical_microcircuit_l4"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'IV. Macro-Scale Geometry: Networks and Dynamics (L4)' preserves Paper 0 records P0R04835-P0R04836 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 cytoarchitecture and the canonical microcircuit l4 source-accounting bridge; not validation evidence",
+      "context_id": "iv_macro_scale_geometry_networks_and_dynamics_l4",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04835-P0R04836"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.iv_macro_scale_geometry_networks_and_dynamics_l4",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "iv_macro_scale_geometry_networks_and_dynamics_l4 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "IV. Macro-Scale Geometry: Networks and Dynamics (L4) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. Meso-Scale Geometry: Circuits, Columns, and Fields (L3-L4) > 2. Cytoarchitecture and the Canonical Microcircuit (L4):",
+      "source_block_indices": [
+        4832,
+        4833,
+        4834,
+        4835,
+        4836,
+        4837,
+        4838,
+        4839
+      ],
+      "source_equation_ids": [
+        "P0R04835:iv_macro_scale_geometry_networks_and_dynamics_l4",
+        "P0R04836:iv_macro_scale_geometry_networks_and_dynamics_l4"
+      ],
+      "source_formulae": [
+        "P0R04835: IV. Macro-Scale Geometry: Networks and Dynamics (L4)",
+        "P0R04836: The global organisation of the brain and the geometry of its activity patterns define the macro-scale scaffold."
+      ],
+      "source_ledger_ids": [
+        "P0R04832",
+        "P0R04833",
+        "P0R04834",
+        "P0R04835",
+        "P0R04836",
+        "P0R04837",
+        "P0R04838",
+        "P0R04839"
+      ],
+      "source_record_ids": [
+        "P0B04832",
+        "P0B04833",
+        "P0B04834",
+        "P0B04835",
+        "P0B04836",
+        "P0B04837",
+        "P0B04838",
+        "P0B04839"
+      ],
+      "test_protocols": [
+        "preserve IV. Macro-Scale Geometry: Networks and Dynamics (L4) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.iv_macro_scale_geometry_networks_and_dynamics_l4",
+      "validation_targets": [
+        "preserve records P0R04835-P0R04836"
+      ],
+      "variables": [
+        "iv_macro_scale_geometry_networks_and_dynamics_l4"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '1. The Connectome Topology (The Optimised Network Scaffold):' preserves Paper 0 records P0R04837-P0R04839 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 cytoarchitecture and the canonical microcircuit l4 source-accounting bridge; not validation evidence",
+      "context_id": "1_the_connectome_topology_the_optimised_network_scaffold",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04837-P0R04839"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.1_the_connectome_topology_the_optimised_network_scaffold",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "1_the_connectome_topology_the_optimised_network_scaffold must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "1. The Connectome Topology (The Optimised Network Scaffold): is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > III. Meso-Scale Geometry: Circuits, Columns, and Fields (L3-L4) > 2. Cytoarchitecture and the Canonical Microcircuit (L4):",
+      "source_block_indices": [
+        4832,
+        4833,
+        4834,
+        4835,
+        4836,
+        4837,
+        4838,
+        4839
+      ],
+      "source_equation_ids": [
+        "P0R04837:1_the_connectome_topology_the_optimised_network_scaffold",
+        "P0R04838:1_the_connectome_topology_the_optimised_network_scaffold",
+        "P0R04839:1_the_connectome_topology_the_optimised_network_scaffold"
+      ],
+      "source_formulae": [
+        "P0R04837: 1. The Connectome Topology (The Optimised Network Scaffold):",
+        "P0R04838: The structural Connectome possesses specific geometric properties optimised for high Integrated Information () and Quasicriticality.",
+        "P0R04839: Small-World Topology: A geometric configuration balancing high local clustering (segregation) and short global path length (integration). | Hierarchical Modularity: A fractal organisation of specialised modules. | The Rich Club (The Core): A dense geometric core of highly connected hubs (e.g., Precuneus, PFC). This structure forms the backbone for global integration and the Global Neuronal Workspace (L5). | Physical Geometry (Gyrification): The folding of the cortex (gyri and sulci) is a geometric solution to maximise cortical surface area while minimising axonal wiring length and conduction delays, optimising the efficiency of the UPDE synchronisation."
+      ],
+      "source_ledger_ids": [
+        "P0R04832",
+        "P0R04833",
+        "P0R04834",
+        "P0R04835",
+        "P0R04836",
+        "P0R04837",
+        "P0R04838",
+        "P0R04839"
+      ],
+      "source_record_ids": [
+        "P0B04832",
+        "P0B04833",
+        "P0B04834",
+        "P0B04835",
+        "P0B04836",
+        "P0B04837",
+        "P0B04838",
+        "P0B04839"
+      ],
+      "test_protocols": [
+        "preserve 1. The Connectome Topology (The Optimised Network Scaffold): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.1_the_connectome_topology_the_optimised_network_scaffold",
+      "validation_targets": [
+        "preserve records P0R04837-P0R04839"
+      ],
+      "variables": [
+        "1_the_connectome_topology_the_optimised_network_scaffold"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 3,
+      "Para": 3
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 4,
+      "mechanism": 1,
+      "validation_target": 1
+    },
+    "claim_boundary": "source-bounded section 2 cytoarchitecture and the canonical microcircuit l4 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04840",
+    "source_ledger_span": [
+      "P0R04832",
+      "P0R04839"
+    ],
+    "source_record_count": 8,
+    "spec_count": 3,
+    "spec_keys": [
+      "section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.2_cytoarchitecture_and_the_canonical_microcircuit_l4",
+      "section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.iv_macro_scale_geometry_networks_and_dynamics_l4",
+      "section_2_cytoarchitecture_and_the_canonical_microcircuit_l4.1_the_connectome_topology_the_optimised_network_scaffold"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. Cytoarchitecture and the Canonical Microcircuit (L4): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

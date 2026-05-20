@@ -9,11 +9,11 @@
     "units_and_normalisation": "blocked_primary_dimensionless_plv"
   },
   "inputs": {
-    "lane_registry": "docs/paper0_lane_registry.md",
+    "lane_registry": "docs/paper0/paper0_lane_registry.md",
     "negative_control": "data/public_application_benchmarks/ieee5bus_power_grid.json",
     "negative_measured_couplings": "data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
-    "pathway": "docs/paper0_experimental_pathway.md",
-    "preregistration": "docs/paper0_first_preregistered_downstream_experiment.md",
+    "pathway": "docs/paper0/paper0_experimental_pathway.md",
+    "preregistration": "docs/paper0/paper0_first_preregistered_downstream_experiment.md",
     "primary_candidate": "data/public_application_benchmarks/eeg_alpha_plv_8ch.json"
   },
   "negative_control": {

@@ -1,0 +1,215 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Protocol' preserves Paper 0 records P0R05191-P0R05196 without empirical validation claims.",
+      "claim_boundary": "source-bounded protocol source-accounting bridge; not validation evidence",
+      "context_id": "protocol",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05191-P0R05196"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "protocol.protocol",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "protocol must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Protocol is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction I: Information-Geometric Deviations in Quasicritical Systems > Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity > Protocol",
+      "source_block_indices": [
+        5191,
+        5192,
+        5193,
+        5194,
+        5195,
+        5196,
+        5197,
+        5198,
+        5199,
+        5200,
+        5201
+      ],
+      "source_equation_ids": [
+        "P0R05191:protocol",
+        "P0R05192:protocol",
+        "P0R05193:protocol",
+        "P0R05194:protocol",
+        "P0R05195:protocol",
+        "P0R05196:protocol"
+      ],
+      "source_formulae": [
+        "P0R05191: Protocol",
+        "P0R05192: Baseline Characterization: Characterize the NV center ensemble's intrinsic coherence times (T2) using standard Ramsey interferometry pulse sequences while the neuronal culture is in a quiescent state (induced by tetrodotoxin, TTX). This establishes the baseline decoherence rate, baseline=1/T2, in the absence of complex network activity. | Activity Modulation: Induce different states of network activity (e.g., synchronous bursting via the GABA$_A$ antagonist bicuculline) and continuously record both the neuronal spike trains from the MEA and the NV center's coherence time (T2) via repeated Ramsey measurements.",
+        "P0R05193: 2a. Isomorphic Activity Control Condition: To rigorously exclude the possibility that observed NV-center decoherence is due to classical EM fields rather than the hypothesized informational coupling, a crucial control condition must be implemented.",
+        "P0R05194: After recording a period of complex, critical activity (e.g., spontaneous avalanches), this exact spike train pattern will be \"replayed\" to the culture using the MEA's stimulation capabilities, while the culture itself is pharmacologically silenced (e.g., with TTX or CNQX/AP5).",
+        "P0R05195: This \"replay\" condition generates a nearly identical classical magnetic field signature at the NV-center location but possesses minimal intrinsic informational complexity (the FIM of a deterministic playback is near zero). The critical test is the comparison of the NV-center decoherence rate during spontaneous complex activity (_spontaneous) versus the decoherence rate during the isomorphic replay (_replay). The SCPN predicts a statistically significant difference, Delta = _spontaneous - _replay > 0, demonstrating an excess decoherence correlated with intrinsic complexity independent of the classical field strength.",
+        "P0R05196: Data Analysis: From the MEA spike train data, calculate the time-resolved magnetic field strength at the NV center's location using the Biot-Savart law to control for classical electromagnetic effects. | From the same spike train data, compute a time-resolved proxy for the informational complexity of the network activity. A direct, real-time calculation of the FIM is computationally prohibitive. A practical and robust proxy, such as the Lempel-Ziv complexity of the binarised network activity or the power-law exponent (tau) of the neuronal avalanche size distribution, will be used. A lower exponent tau indicates activity closer to criticality and thus higher complexity. | Perform a multiple regression analysis on the time-series data. The dependent variable is the anomalous decoherence rate, (t)=(1/T2(t))baseline. The independent variables are the calculated classical magnetic field strength and the informational complexity metric. The central test is for a statistically significant regression coefficient for the complexity metric, independent of the magnetic field."
+      ],
+      "source_ledger_ids": [
+        "P0R05191",
+        "P0R05192",
+        "P0R05193",
+        "P0R05194",
+        "P0R05195",
+        "P0R05196",
+        "P0R05197",
+        "P0R05198",
+        "P0R05199",
+        "P0R05200",
+        "P0R05201"
+      ],
+      "source_record_ids": [
+        "P0B05191",
+        "P0B05192",
+        "P0B05193",
+        "P0B05194",
+        "P0B05195",
+        "P0B05196",
+        "P0B05197",
+        "P0B05198",
+        "P0B05199",
+        "P0B05200",
+        "P0B05201"
+      ],
+      "test_protocols": [
+        "preserve Protocol source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.protocol.protocol",
+      "validation_targets": [
+        "preserve records P0R05191-P0R05196"
+      ],
+      "variables": [
+        "protocol"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Falsification Condition' preserves Paper 0 records P0R05197-P0R05201 without empirical validation claims.",
+      "claim_boundary": "source-bounded protocol source-accounting bridge; not validation evidence",
+      "context_id": "falsification_condition",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05197-P0R05201"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "protocol.falsification_condition",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "falsification_condition must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Falsification Condition is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction I: Information-Geometric Deviations in Quasicritical Systems > Proposed Experimental Protocol: NV-Center Quantum Sensing of Neuronal Culture Complexity > Protocol",
+      "source_block_indices": [
+        5191,
+        5192,
+        5193,
+        5194,
+        5195,
+        5196,
+        5197,
+        5198,
+        5199,
+        5200,
+        5201
+      ],
+      "source_equation_ids": [
+        "P0R05197:falsification_condition",
+        "P0R05198:falsification_condition",
+        "P0R05199:falsification_condition",
+        "P0R05200:falsification_condition",
+        "P0R05201:falsification_condition"
+      ],
+      "source_formulae": [
+        "P0R05197: Falsification Condition",
+        "P0R05198: The theory is falsified if no statistically significant correlation is found between the NV center's anomalous decoherence and the informational complexity of the neuronal culture, or if any observed correlation can be fully explained by classical electromagnetic effects that were not adequately controlled for.",
+        "P0R05199: Experimental Protocol Flowchart",
+        "P0R05200: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Zahl enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]Fig.: Replay-Control Test for Information-Geometric Coupling. This flowchart details the sequence of the experimental procedure, highlighting the critical \"Isomorphic Replay\" control condition that isolates the informational component of the interaction from classical electromagnetic effects. This protocol cleanly separates classical EM effects from information-geometric effects: if replay fails to reproduce spontaneous decoherence-and complexity significantly explains residuals-then the data favour the proposed Psi-FIM coupling.",
+        "P0R05201: 1) Baseline (TTX): Silence the culture and measure NV coherence $\\mathbf{T2}\\mathbf{*}\\mathbf{T}_{\\mathbf{2}}^{\\mathbf{*}}\\mathbf{T2}\\mathbf{*}\\mathbf{}$ via Ramsey to establish $\\Gamma baseline\\Gamma_{\\text{baseline}}\\Gamma baseline$. 2) Spontaneous (Bicuculline): $Record\\ Sspontaneous(t)S\\_\\{\"\\{ spontaneous\\}\\}(t)Sspontaneous(t\\mathbf{)}\\ and\\ simultaneous\\ NV\\ coherence\\ \\Gamma spontaneous(t)\\Gamma\\_\\{\"\\{ spontaneous\\}\\}(t)\\Gamma spontaneous(t$). 3) Isomorphic Replay Control (TTX): Re-silence, replay Sspontaneous(t)S_{\\text{spontaneous}}(t)Sspontaneous(t) via MEA stimulation, and measure $\\Gamma replay(t)\\Gamma_{\\text{replay}}(t)\\Gamma replay(t).$ 4) Analysis: Classical EM control: Compute the B-field at the NV from $Sspontaneous(t)S_{\\text{spontaneous}}(t)Sspontaneous(t)(Biot - Savart)$. Informational metric: Compute a proxy for Tr(gFIM)\\mathrm{Tr}(g_{\\mathrm{FIM}})Tr(gFIM) (e.g., Lempel-Ziv, avalanche exponent tau\\tautau). Hypothesis tests: Core $test - \\Delta\\Gamma = \\Gamma spontaneous - \\Gamma replay > 0\\Delta\\Gamma = \\Gamma_{\\text{spontaneous}} - \\Gamma_{\\text{replay}} > 0\\Delta\\Gamma = \\Gamma spontaneous - \\Gamma replay > 0.Regression - model\\delta\\Gamma(t) = \\Gamma spontaneous(t) - \\Gamma baseline(t)\\delta\\Gamma(t) = \\Gamma_{\\text{spontaneous}}(t) - \\Gamma_{\\text{baseline}}(t)\\delta\\Gamma(t) = \\Gamma spontaneous(t) - \\Gamma baseline(t)$ with regressors B-field(t) and Complexity(t); seek a significant positive coefficient on the complexity term. Falsification: If $\\Delta\\Gamma\\Delta\\Gamma\\Delta\\Gamma$ is not >0>0>0 or the complexity coefficient is not significant, the coupling hypothesis is disconfirmed."
+      ],
+      "source_ledger_ids": [
+        "P0R05191",
+        "P0R05192",
+        "P0R05193",
+        "P0R05194",
+        "P0R05195",
+        "P0R05196",
+        "P0R05197",
+        "P0R05198",
+        "P0R05199",
+        "P0R05200",
+        "P0R05201"
+      ],
+      "source_record_ids": [
+        "P0B05191",
+        "P0B05192",
+        "P0B05193",
+        "P0B05194",
+        "P0B05195",
+        "P0B05196",
+        "P0B05197",
+        "P0B05198",
+        "P0B05199",
+        "P0B05200",
+        "P0B05201"
+      ],
+      "test_protocols": [
+        "preserve Falsification Condition source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.protocol.falsification_condition",
+      "validation_targets": [
+        "preserve records P0R05197-P0R05201"
+      ],
+      "variables": [
+        "falsification_condition"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "OrderedList": 2,
+      "Para": 7
+    },
+    "category_counts": {
+      "context": 3,
+      "equation": 1,
+      "mechanism": 1,
+      "validation_target": 6
+    },
+    "claim_boundary": "source-bounded protocol source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0138"
+    ],
+    "math_ids": [
+      "EQ0095",
+      "EQ0096",
+      "EQ0097",
+      "EQ0098",
+      "EQ0099",
+      "EQ0100",
+      "EQ0101"
+    ],
+    "next_source_boundary": "P0R05202",
+    "source_ledger_span": [
+      "P0R05191",
+      "P0R05201"
+    ],
+    "source_record_count": 11,
+    "spec_count": 2,
+    "spec_keys": [
+      "protocol.protocol",
+      "protocol.falsification_condition"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Protocol Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

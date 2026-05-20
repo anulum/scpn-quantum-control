@@ -1,0 +1,177 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'AI, Noosphere & Tech' preserves Paper 0 records P0R05802-P0R05805 without empirical validation claims.",
+      "claim_boundary": "source-bounded ai noosphere tech source-accounting bridge; not validation evidence",
+      "context_id": "ai_noosphere_tech",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05802-P0R05805"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ai_noosphere_tech.ai_noosphere_tech",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ai_noosphere_tech must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "AI, Noosphere & Tech is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 AI, Noosphere & Tech",
+      "source_block_indices": [
+        5802,
+        5803,
+        5804,
+        5805,
+        5806,
+        5807,
+        5808,
+        5809
+      ],
+      "source_equation_ids": [
+        "P0R05802:ai_noosphere_tech",
+        "P0R05803:ai_noosphere_tech",
+        "P0R05804:ai_noosphere_tech",
+        "P0R05805:ai_noosphere_tech"
+      ],
+      "source_formulae": [
+        "P0R05802: AI, Noosphere & Tech",
+        "P0R05803: \"spin-glass models of polarization\" -> Mezard, Parisi & Virasoro (1987, Spin Glass Theory).",
+        "P0R05804: \"algorithmic culture & polarization\" -> Pariser (2011, Filter Bubble).",
+        "P0R05805: \"noosphere concept\" -> Teilhard de Chardin (1955)."
+      ],
+      "source_ledger_ids": [
+        "P0R05802",
+        "P0R05803",
+        "P0R05804",
+        "P0R05805",
+        "P0R05806",
+        "P0R05807",
+        "P0R05808",
+        "P0R05809"
+      ],
+      "source_record_ids": [
+        "P0B05802",
+        "P0B05803",
+        "P0B05804",
+        "P0B05805",
+        "P0B05806",
+        "P0B05807",
+        "P0B05808",
+        "P0B05809"
+      ],
+      "test_protocols": [
+        "preserve AI, Noosphere & Tech source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ai_noosphere_tech.ai_noosphere_tech",
+      "validation_targets": [
+        "preserve records P0R05802-P0R05805"
+      ],
+      "variables": [
+        "ai_noosphere_tech"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'AI, Culture, and Noosphere Dynamics' preserves Paper 0 records P0R05806-P0R05809 without empirical validation claims.",
+      "claim_boundary": "source-bounded ai noosphere tech source-accounting bridge; not validation evidence",
+      "context_id": "ai_culture_and_noosphere_dynamics",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05806-P0R05809"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "ai_noosphere_tech.ai_culture_and_noosphere_dynamics",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ai_culture_and_noosphere_dynamics must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "AI, Culture, and Noosphere Dynamics is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > The Genesis of Life - Abiogenesis as a Guided Phase Transition > \ud83d\udd39 AI, Noosphere & Tech",
+      "source_block_indices": [
+        5802,
+        5803,
+        5804,
+        5805,
+        5806,
+        5807,
+        5808,
+        5809
+      ],
+      "source_equation_ids": [
+        "P0R05806:ai_culture_and_noosphere_dynamics",
+        "P0R05807:ai_culture_and_noosphere_dynamics",
+        "P0R05808:ai_culture_and_noosphere_dynamics",
+        "P0R05809:ai_culture_and_noosphere_dynamics"
+      ],
+      "source_formulae": [
+        "P0R05806: AI, Culture, and Noosphere Dynamics",
+        "P0R05807: McLuhan (1964, Understanding Media) -> anchors your technosphere integration.",
+        "P0R05808: Heylighen (2007, The Global Brain) -> canonical reference for planetary-scale intelligence.",
+        "P0R05809: Kurzweil (2005, The Singularity Is Near) -> gives technological counterpoint (whether you endorse or critique)."
+      ],
+      "source_ledger_ids": [
+        "P0R05802",
+        "P0R05803",
+        "P0R05804",
+        "P0R05805",
+        "P0R05806",
+        "P0R05807",
+        "P0R05808",
+        "P0R05809"
+      ],
+      "source_record_ids": [
+        "P0B05802",
+        "P0B05803",
+        "P0B05804",
+        "P0B05805",
+        "P0B05806",
+        "P0B05807",
+        "P0B05808",
+        "P0B05809"
+      ],
+      "test_protocols": [
+        "preserve AI, Culture, and Noosphere Dynamics source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.ai_noosphere_tech.ai_culture_and_noosphere_dynamics",
+      "validation_targets": [
+        "preserve records P0R05806-P0R05809"
+      ],
+      "variables": [
+        "ai_culture_and_noosphere_dynamics"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "context": 8
+    },
+    "claim_boundary": "source-bounded ai noosphere tech source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05810",
+    "source_ledger_span": [
+      "P0R05802",
+      "P0R05809"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "ai_noosphere_tech.ai_noosphere_tech",
+      "ai_noosphere_tech.ai_culture_and_noosphere_dynamics"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  AI, Noosphere & Tech Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

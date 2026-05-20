@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded the glial neuronal coupling mechanism slow control of neuronal criticali source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali": "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality",
+    "component_count": "1",
+    "next_boundary": "P0R05380",
+    "section": "The Glial-Neuronal Coupling Mechanism: Slow Control of Neuronal Criticality",
+    "source_span": "P0R05366-P0R05379"
+  },
+  "next_source_boundary": "P0R05380",
+  "null_controls": {
+    "the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the glial neuronal coupling mechanism slow control of neuronal criticali source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_glial_neuronal_coupling_mechanism_slow_control_of_neuronal_criticali_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05366",
+      "P0R05367",
+      "P0R05368",
+      "P0R05369",
+      "P0R05370",
+      "P0R05371",
+      "P0R05372",
+      "P0R05373",
+      "P0R05374",
+      "P0R05375",
+      "P0R05376",
+      "P0R05377",
+      "P0R05378",
+      "P0R05379"
+    ],
+    "source_ledger_span": [
+      "P0R05366",
+      "P0R05379"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05366",
+    "P0R05379"
+  ],
+  "source_record_count": 14
+}

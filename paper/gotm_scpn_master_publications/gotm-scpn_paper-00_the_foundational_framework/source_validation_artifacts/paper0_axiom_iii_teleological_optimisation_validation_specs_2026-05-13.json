@@ -1,0 +1,430 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source opens Axiom III, names teleological optimisation, and records two formal-subsection pointers that are not expanded until the next source block.",
+      "claim_boundary": "source-bounded Axiom III teleological-optimisation map; not validation evidence",
+      "context_id": "opening_context",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve Axiom III drive heading",
+        "preserve tilde_N_t invariance-law subsection pointer",
+        "preserve SEC and tilde_N_t equals one equivalence pointer"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_teleological_optimisation.opening_context",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "ntilde-equation-as-promoted-here control must be rejected",
+        "missing-formal-law-pointer control must be rejected"
+      ],
+      "null_results": [
+        "tilde_N_t law heading is pointer, not equation in this slice"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation",
+      "source_block_indices": [
+        791,
+        792,
+        793,
+        794,
+        795,
+        796,
+        797,
+        798,
+        799
+      ],
+      "source_equation_ids": [
+        "P0R00791:axiom_iii_drive_heading",
+        "P0R00792:ntilde_invariance_law_pointer",
+        "P0R00793:sec_ntilde_equivalence_pointer"
+      ],
+      "source_formulae": [
+        "Axiom III: The Drive of Teleological Optimisation",
+        "Formal Physical Definition: the tilde_N_t Invariance Law",
+        "Equivalence of SEC and the tilde_N_t = 1 State"
+      ],
+      "source_ledger_ids": [
+        "P0R00791",
+        "P0R00792",
+        "P0R00793",
+        "P0R00794",
+        "P0R00795",
+        "P0R00796",
+        "P0R00797",
+        "P0R00798",
+        "P0R00799"
+      ],
+      "source_record_ids": [
+        "P0B00791",
+        "P0B00792",
+        "P0B00793",
+        "P0B00794",
+        "P0B00795",
+        "P0B00796",
+        "P0B00797",
+        "P0B00798",
+        "P0B00799"
+      ],
+      "test_protocols": [
+        "preserve Axiom III opening and formal-law pointers"
+      ],
+      "validation_protocol": "paper0.axiom_iii_teleological_optimisation.opening_context",
+      "validation_targets": [
+        "preserve Axiom III drive heading",
+        "preserve tilde_N_t invariance-law subsection pointer",
+        "preserve SEC and tilde_N_t equals one equivalence pointer"
+      ],
+      "variables": [
+        "SEC",
+        "tilde_N_t",
+        "teleological_optimisation"
+      ]
+    },
+    {
+      "canonical_statement": "The source material frames the universe as not random and as evolving towards maximal Sustainable Ethical Coherence, gathering references to inherent purpose or telos.",
+      "claim_boundary": "source-bounded Axiom III teleological-optimisation map; not validation evidence",
+      "context_id": "source_material_telos",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve not-random source claim",
+        "preserve maximal SEC target",
+        "preserve inherent-purpose/telos framing"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_teleological_optimisation.source_material_telos",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "telos-as-observed-result control must be rejected",
+        "random-undirected-source-control must be rejected"
+      ],
+      "null_results": [
+        "teleological postulate is source claim, not empirical evidence"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation",
+      "source_block_indices": [
+        791,
+        792,
+        793,
+        794,
+        795,
+        796,
+        797,
+        798,
+        799
+      ],
+      "source_equation_ids": [
+        "P0R00794:not_random_maximal_sec",
+        "P0R00794:inherent_purpose_telos"
+      ],
+      "source_formulae": [
+        "universe is not random but evolving towards maximal Sustainable Ethical Coherence",
+        "inherent purpose or telos"
+      ],
+      "source_ledger_ids": [
+        "P0R00791",
+        "P0R00792",
+        "P0R00793",
+        "P0R00794",
+        "P0R00795",
+        "P0R00796",
+        "P0R00797",
+        "P0R00798",
+        "P0R00799"
+      ],
+      "source_record_ids": [
+        "P0B00791",
+        "P0B00792",
+        "P0B00793",
+        "P0B00794",
+        "P0B00795",
+        "P0B00796",
+        "P0B00797",
+        "P0B00798",
+        "P0B00799"
+      ],
+      "test_protocols": [
+        "preserve source-material telos framing"
+      ],
+      "validation_protocol": "paper0.axiom_iii_teleological_optimisation.source_material_telos",
+      "validation_targets": [
+        "preserve not-random source claim",
+        "preserve maximal SEC target",
+        "preserve inherent-purpose/telos framing"
+      ],
+      "variables": [
+        "SEC",
+        "telos",
+        "purpose"
+      ]
+    },
+    {
+      "canonical_statement": "The source positions Axiom III as the purpose counterpart to Axiom I substance and Axiom II interaction language, with directed evolution towards SEC maximisation.",
+      "claim_boundary": "source-bounded Axiom III teleological-optimisation map; not validation evidence",
+      "context_id": "directional_purpose",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve Axiom I/Axiom II/Axiom III role contrast",
+        "preserve directed teleological evolution claim",
+        "preserve SEC maximisation claim"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_teleological_optimisation.directional_purpose",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "directionality-as-measured-result control must be rejected",
+        "purpose-without-SEC-target control must be rejected"
+      ],
+      "null_results": [
+        "purpose framing requires downstream operationalisation"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation",
+      "source_block_indices": [
+        791,
+        792,
+        793,
+        794,
+        795,
+        796,
+        797,
+        798,
+        799
+      ],
+      "source_equation_ids": [
+        "P0R00795:axiom_i_substance_axiom_ii_language_axiom_iii_purpose",
+        "P0R00796:axiom_of_evolution_teleological_optimisation",
+        "P0R00797:universe_maximises_sec"
+      ],
+      "source_formulae": [
+        "Axiom I defines substance and Axiom II defines language of interaction",
+        "Axiom III defines purpose",
+        "universe is teleological and its evolution is directional",
+        "Axiom III: The Axiom of Evolution Teleological Optimisation",
+        "universe evolves to maximise Sustainable Ethical Coherence SEC"
+      ],
+      "source_ledger_ids": [
+        "P0R00791",
+        "P0R00792",
+        "P0R00793",
+        "P0R00794",
+        "P0R00795",
+        "P0R00796",
+        "P0R00797",
+        "P0R00798",
+        "P0R00799"
+      ],
+      "source_record_ids": [
+        "P0B00791",
+        "P0B00792",
+        "P0B00793",
+        "P0B00794",
+        "P0B00795",
+        "P0B00796",
+        "P0B00797",
+        "P0B00798",
+        "P0B00799"
+      ],
+      "test_protocols": [
+        "preserve directional-purpose source claims"
+      ],
+      "validation_protocol": "paper0.axiom_iii_teleological_optimisation.directional_purpose",
+      "validation_targets": [
+        "preserve Axiom I/Axiom II/Axiom III role contrast",
+        "preserve directed teleological evolution claim",
+        "preserve SEC maximisation claim"
+      ],
+      "variables": [
+        "Psi_field",
+        "information_geometry",
+        "SEC",
+        "evolution"
+      ]
+    },
+    {
+      "canonical_statement": "The source states that Axiom III is a normative or teleological postulate, where Layer 15 Ethical Functionals guide temporal evolution as a prime directive and cosmic prior that biases Psi-field interactions towards coherence, complexity, and experiential depth.",
+      "claim_boundary": "source-bounded Axiom III teleological-optimisation map; not validation evidence",
+      "context_id": "ethical_functional_guidance",
+      "domain_review_status": "requires_domain_review_before_public_claim",
+      "executable_validation_targets": [
+        "preserve normative/teleological postulate framing",
+        "preserve Layer 15 ethical-functional guidance",
+        "preserve cosmic-prior/Psi-field bias claim",
+        "preserve coherence/complexity/experiential-depth directionality"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "implemented_source_accounting_fixture",
+      "key": "axiom_iii_teleological_optimisation.ethical_functional_guidance",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "ethical-functional-guidance-as-implemented-here control must be rejected",
+        "missing-layer15-guidance control must be rejected"
+      ],
+      "null_results": [
+        "L",
+        "a",
+        "y",
+        "e",
+        "r",
+        " ",
+        "1",
+        "5",
+        " ",
+        "e",
+        "t",
+        "h",
+        "i",
+        "c",
+        "a",
+        "l",
+        "-",
+        "f",
+        "u",
+        "n",
+        "c",
+        "t",
+        "i",
+        "o",
+        "n",
+        "a",
+        "l",
+        " ",
+        "g",
+        "u",
+        "i",
+        "d",
+        "a",
+        "n",
+        "c",
+        "e",
+        " ",
+        "r",
+        "e",
+        "q",
+        "u",
+        "i",
+        "r",
+        "e",
+        "s",
+        " ",
+        "d",
+        "o",
+        "w",
+        "n",
+        "s",
+        "t",
+        "r",
+        "e",
+        "a",
+        "m",
+        " ",
+        "o",
+        "p",
+        "e",
+        "r",
+        "a",
+        "t",
+        "i",
+        "o",
+        "n",
+        "a",
+        "l",
+        "i",
+        "s",
+        "a",
+        "t",
+        "i",
+        "o",
+        "n"
+      ],
+      "section_path": "Part I: The Foundational Bedrock (Philosophy & Axioms) > 1.3 The Logos: The Three Foundational Axioms of Reality > Axiom III: The Drive of Teleological Optimisation",
+      "source_block_indices": [
+        791,
+        792,
+        793,
+        794,
+        795,
+        796,
+        797,
+        798,
+        799
+      ],
+      "source_equation_ids": [
+        "P0R00798:normative_teleological_postulate",
+        "P0R00798:layer15_ethical_functionals",
+        "P0R00798:cosmic_prior_biases_psi_interactions",
+        "P0R00799:coherence_complexity_experiential_depth"
+      ],
+      "source_formulae": [
+        "normative or teleological postulate",
+        "Ethical Functionals computed at Layer 15 guide temporal evolution",
+        "prime directive ultimate prior for the cosmic generative model",
+        "overarching purpose biases fundamental physical interactions of the Psi-field",
+        "increasing coherence complexity and experiential depth"
+      ],
+      "source_ledger_ids": [
+        "P0R00791",
+        "P0R00792",
+        "P0R00793",
+        "P0R00794",
+        "P0R00795",
+        "P0R00796",
+        "P0R00797",
+        "P0R00798",
+        "P0R00799"
+      ],
+      "source_record_ids": [
+        "P0B00791",
+        "P0B00792",
+        "P0B00793",
+        "P0B00794",
+        "P0B00795",
+        "P0B00796",
+        "P0B00797",
+        "P0B00798",
+        "P0B00799"
+      ],
+      "test_protocols": [
+        "preserve Layer 15 ethical-functional guidance claim"
+      ],
+      "validation_protocol": "paper0.axiom_iii_teleological_optimisation.ethical_functional_guidance",
+      "validation_targets": [
+        "preserve normative/teleological postulate framing",
+        "preserve Layer 15 ethical-functional guidance",
+        "preserve cosmic-prior/Psi-field bias claim",
+        "preserve coherence/complexity/experiential-depth directionality"
+      ],
+      "variables": [
+        "Layer15",
+        "ethical_functionals",
+        "Psi_field",
+        "coherence"
+      ]
+    }
+  ],
+  "summary": {
+    "axiom_heading_count": 3,
+    "claim_boundary": "source-bounded Axiom III teleological-optimisation map; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "directionality_count": 2,
+    "hardware_status": "source_methodology_no_experiment",
+    "layer15_guidance_count": 1,
+    "next_source_boundary": "P0R00800",
+    "sec_maximisation_count": 2,
+    "source_ledger_span": [
+      "P0R00791",
+      "P0R00799"
+    ],
+    "source_record_count": 9,
+    "spec_count": 4,
+    "spec_keys": [
+      "axiom_iii_teleological_optimisation.opening_context",
+      "axiom_iii_teleological_optimisation.source_material_telos",
+      "axiom_iii_teleological_optimisation.directional_purpose",
+      "axiom_iii_teleological_optimisation.ethical_functional_guidance"
+    ],
+    "title": "Paper 0 Axiom III Teleological Optimisation Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

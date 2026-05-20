@@ -1,0 +1,48 @@
+{
+  "claim_boundary": "source-bounded section 2 the projective boundary l10 emergent spacetime and topological censors source-accounting bridge; not validation evidence",
+  "component_count": 3,
+  "components": {
+    "2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors": "2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_source_boundary",
+    "the_neurobiological_architecture_of_the_scpn": "the_neurobiological_architecture_of_the_scpn_source_boundary",
+    "vii_synthesis_the_scpn_torus": "vii_synthesis_the_scpn_torus_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "2. The Projective Boundary (L10): Emergent Spacetime and Topological Censorship",
+    "component_2": "VII. Synthesis: The SCPN Torus",
+    "component_3": "The Neurobiological Architecture of the SCPN",
+    "component_count": "3",
+    "next_boundary": "P0R04462",
+    "section": "2. The Projective Boundary (L10): Emergent Spacetime and Topological Censorship",
+    "source_span": "P0R04454-P0R04461"
+  },
+  "next_source_boundary": "P0R04462",
+  "null_controls": {
+    "2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_is_not_empirical_validation_evidence": 1.0,
+    "the_neurobiological_architecture_of_the_scpn_is_not_empirical_validation_evidence": 1.0,
+    "vii_synthesis_the_scpn_torus_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 2 the projective boundary l10 emergent spacetime and topological censors source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_2_the_projective_boundary_l10_emergent_spacetime_and_topological_censors_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04454",
+      "P0R04455",
+      "P0R04456",
+      "P0R04457",
+      "P0R04458",
+      "P0R04459",
+      "P0R04460",
+      "P0R04461"
+    ],
+    "source_ledger_span": [
+      "P0R04454",
+      "P0R04461"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04454",
+    "P0R04461"
+  ],
+  "source_record_count": 8
+}

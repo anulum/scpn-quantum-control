@@ -44,20 +44,20 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.7 |
-| Public API exports | 162 |
-| Python source modules | 720 |
-| Public Python classes | 1335 |
+| Public API exports | 257 |
+| Python source modules | 750 |
+| Public Python classes | 1402 |
 | Paper 0 validation modules | 466 |
-| Domain package families | 24 |
+| Domain package families | 27 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 48 |
 | Rust source modules | 24 |
 | Notebook files | 98 |
 | Example files | 22 |
-| Optional extras | 24 |
-| Python test files | 1807 |
-| Public documentation pages | 189 |
-| GitHub Actions workflows | 17 |
+| Optional extras | 39 |
+| Python test files | 1854 |
+| Public documentation pages | 212 |
+| GitHub Actions workflows | 18 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artifacts.
 <!-- capability-snapshot:end -->
@@ -96,7 +96,7 @@ Direct entry points:
   — start from arbitrary oscillator networks before SCPN-specific layers
 - [Stable Facades API](docs/stable_facades_api.md)
   — mkdocstrings reference for first-path public facades
-- [Paper 0 Validation Register](docs/paper0_validation_register.md)
+- [Paper 0 Validation Register](docs/paper0/paper0_validation_register.md)
   — source-accounting register status, claim boundary, and generated API
   contract for Paper 0 ingestion
 - [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)

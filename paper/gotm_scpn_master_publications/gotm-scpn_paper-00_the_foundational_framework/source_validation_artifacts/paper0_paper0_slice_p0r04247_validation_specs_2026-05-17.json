@@ -1,0 +1,267 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'P0R04247' preserves Paper 0 records P0R04247-P0R04247 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04247 source-accounting bridge; not validation evidence",
+      "context_id": "p0r04247",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04247-P0R04247"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04247.p0r04247",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "p0r04247 must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "P0R04247 is not empirical validation evidence"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        4247,
+        4248,
+        4249,
+        4250,
+        4251,
+        4252,
+        4253,
+        4254,
+        4255,
+        4256
+      ],
+      "source_equation_ids": [
+        "P0R04247:p0r04247"
+      ],
+      "source_formulae": [
+        "P0R04247: P0R04247"
+      ],
+      "source_ledger_ids": [
+        "P0R04247",
+        "P0R04248",
+        "P0R04249",
+        "P0R04250",
+        "P0R04251",
+        "P0R04252",
+        "P0R04253",
+        "P0R04254",
+        "P0R04255",
+        "P0R04256"
+      ],
+      "source_record_ids": [
+        "P0B04247",
+        "P0B04248",
+        "P0B04249",
+        "P0B04250",
+        "P0B04251",
+        "P0B04252",
+        "P0B04253",
+        "P0B04254",
+        "P0B04255",
+        "P0B04256"
+      ],
+      "test_protocols": [
+        "preserve P0R04247 source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04247.p0r04247",
+      "validation_targets": [
+        "preserve records P0R04247-P0R04247"
+      ],
+      "variables": [
+        "p0r04247"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component '5.1 The EM Interface: An ALP-Mediated Bridge' preserves Paper 0 records P0R04248-P0R04248 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04247 source-accounting bridge; not validation evidence",
+      "context_id": "5_1_the_em_interface_an_alp_mediated_bridge",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04248-P0R04248"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04247.5_1_the_em_interface_an_alp_mediated_bridge",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "5_1_the_em_interface_an_alp_mediated_bridge must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "5.1 The EM Interface: An ALP-Mediated Bridge is not empirical validation evidence"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        4247,
+        4248,
+        4249,
+        4250,
+        4251,
+        4252,
+        4253,
+        4254,
+        4255,
+        4256
+      ],
+      "source_equation_ids": [
+        "P0R04248:5_1_the_em_interface_an_alp_mediated_bridge"
+      ],
+      "source_formulae": [
+        "P0R04248: 5.1 The EM Interface: An ALP-Mediated Bridge"
+      ],
+      "source_ledger_ids": [
+        "P0R04247",
+        "P0R04248",
+        "P0R04249",
+        "P0R04250",
+        "P0R04251",
+        "P0R04252",
+        "P0R04253",
+        "P0R04254",
+        "P0R04255",
+        "P0R04256"
+      ],
+      "source_record_ids": [
+        "P0B04247",
+        "P0B04248",
+        "P0B04249",
+        "P0B04250",
+        "P0B04251",
+        "P0B04252",
+        "P0B04253",
+        "P0B04254",
+        "P0B04255",
+        "P0B04256"
+      ],
+      "test_protocols": [
+        "preserve 5.1 The EM Interface: An ALP-Mediated Bridge source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04247.5_1_the_em_interface_an_alp_mediated_bridge",
+      "validation_targets": [
+        "preserve records P0R04248-P0R04248"
+      ],
+      "variables": [
+        "5_1_the_em_interface_an_alp_mediated_bridge"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'An ALP-Mediated Bridge' preserves Paper 0 records P0R04249-P0R04256 without empirical validation claims.",
+      "claim_boundary": "source-bounded paper0 slice p0r04247 source-accounting bridge; not validation evidence",
+      "context_id": "an_alp_mediated_bridge",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04249-P0R04256"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "paper0_slice_p0r04247.an_alp_mediated_bridge",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "an_alp_mediated_bridge must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "An ALP-Mediated Bridge is not empirical validation evidence"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        4247,
+        4248,
+        4249,
+        4250,
+        4251,
+        4252,
+        4253,
+        4254,
+        4255,
+        4256
+      ],
+      "source_equation_ids": [
+        "P0R04249:an_alp_mediated_bridge",
+        "P0R04250:an_alp_mediated_bridge",
+        "P0R04251:an_alp_mediated_bridge",
+        "P0R04252:an_alp_mediated_bridge",
+        "P0R04253:an_alp_mediated_bridge",
+        "P0R04254:an_alp_mediated_bridge",
+        "P0R04255:an_alp_mediated_bridge",
+        "P0R04256:an_alp_mediated_bridge"
+      ],
+      "source_formulae": [
+        "P0R04249: An ALP-Mediated Bridge",
+        "P0R04250: This chapter details the proposed physical mechanism for the interface between the Psi-field and Standard Model electromagnetism, a critical link for explaining the field's influence on neural activity. The coupling is not direct but is mediated by an Axion-Like Particle (ALP). This arises naturally from the theory's core structure: the complex scalar Psi-field can be decomposed into a radial amplitude mode (the Psi-Higgs) and an angular phase mode. This phase component, theta, behaves mathematically as a pseudoscalar field, which is analogous to an axion (a).",
+        "P0R04251: The interface is governed by the well-established pseudoscalar-photon interaction Lagrangian,",
+        "P0R04252: Lint = (1/4) * ga * a * Fmu * Fmu,",
+        "P0R04253: which couples the ALP field (a) to the electromagnetic field (Fmu). This coupling enables the Primakoff effect: the interconversion of ALPs and photons (a ) in the presence of a background magnetic field. This provides a concrete, bidirectional transduction mechanism within neural tissue.",
+        "P0R04254: Downward Causation (Psi->EM): Coherent dynamics of the Psi-field's phase generate an ALP field. Endogenous magnetic fields, produced by synchronized neural currents (Layer 4), then catalyze the conversion of these ALPs into photons, which directly modulate the brain's measurable electromagnetic activity (e.g., EEG rhythms).",
+        "P0R04255: Upward Causation (EM->Psi): Conversely, coherent electromagnetic fields in the brain can interact with the same endogenous magnetic fields to produce ALPs via the inverse Primakoff effect. These ALPs then directly modulate the phase of the local Psi-field, closing the feedback loop.",
+        "P0R04256: The framework acknowledges the typically low probability of this conversion and proposes three concrete biological or bio-engineered strategies to amplify the effect by enhancing the conversion probability, P(a ) (ga * BT * Lcoh). These include boosting the local magnetic field (BT) with magnetite nanocrystals, enhancing the effective coupling (ga) via chiral structures (CISS), and increasing the interaction length (Lcoh) with dielectric waveguides like microtubules."
+      ],
+      "source_ledger_ids": [
+        "P0R04247",
+        "P0R04248",
+        "P0R04249",
+        "P0R04250",
+        "P0R04251",
+        "P0R04252",
+        "P0R04253",
+        "P0R04254",
+        "P0R04255",
+        "P0R04256"
+      ],
+      "source_record_ids": [
+        "P0B04247",
+        "P0B04248",
+        "P0B04249",
+        "P0B04250",
+        "P0B04251",
+        "P0B04252",
+        "P0B04253",
+        "P0B04254",
+        "P0B04255",
+        "P0B04256"
+      ],
+      "test_protocols": [
+        "preserve An ALP-Mediated Bridge source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.paper0_slice_p0r04247.an_alp_mediated_bridge",
+      "validation_targets": [
+        "preserve records P0R04249-P0R04256"
+      ],
+      "variables": [
+        "an_alp_mediated_bridge"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 2,
+      "mechanism": 6,
+      "structural": 1
+    },
+    "claim_boundary": "source-bounded paper0 slice p0r04247 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04257",
+    "source_ledger_span": [
+      "P0R04247",
+      "P0R04256"
+    ],
+    "source_record_count": 10,
+    "spec_count": 3,
+    "spec_keys": [
+      "paper0_slice_p0r04247.p0r04247",
+      "paper0_slice_p0r04247.5_1_the_em_interface_an_alp_mediated_bridge",
+      "paper0_slice_p0r04247.an_alp_mediated_bridge"
+    ],
+    "table_ids": [],
+    "title": "Paper 0  Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

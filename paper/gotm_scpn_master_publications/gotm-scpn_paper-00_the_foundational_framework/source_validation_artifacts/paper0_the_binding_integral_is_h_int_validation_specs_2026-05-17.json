@@ -1,0 +1,179 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Binding Integral is H_int:' preserves Paper 0 records P0R03410-P0R03415 without empirical validation claims.",
+      "claim_boundary": "source-bounded the binding integral is h int source-accounting bridge; not validation evidence",
+      "context_id": "the_binding_integral_is_h_int",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03410-P0R03415"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_binding_integral_is_h_int.the_binding_integral_is_h_int",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_binding_integral_is_h_int must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Binding Integral is H_int: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Confronting the Hard Problem: A Mathematical Resolution > \u03a8s Field Coupling Integration > The Binding Integral is H_int:",
+      "source_block_indices": [
+        3410,
+        3411,
+        3412,
+        3413,
+        3414,
+        3415,
+        3416,
+        3417
+      ],
+      "source_equation_ids": [
+        "P0R03410:the_binding_integral_is_h_int",
+        "P0R03411:the_binding_integral_is_h_int",
+        "P0R03412:the_binding_integral_is_h_int",
+        "P0R03413:the_binding_integral_is_h_int",
+        "P0R03414:the_binding_integral_is_h_int",
+        "P0R03415:the_binding_integral_is_h_int"
+      ],
+      "source_formulae": [
+        "P0R03410: The Binding Integral is H_int:",
+        "P0R03411: The proposed solution to the binding problem,",
+        "P0R03412: Experience = Psi x rho_neural dV,",
+        "P0R03413: is a specific, macroscopic form of the H_int interaction.",
+        "P0R03414: Psis is represented by Psi(x,y,z,t), the universal field.",
+        "P0R03415: The collective state variable sigma is the neural matter density, rho_neural(x,y,z,t)."
+      ],
+      "source_ledger_ids": [
+        "P0R03410",
+        "P0R03411",
+        "P0R03412",
+        "P0R03413",
+        "P0R03414",
+        "P0R03415",
+        "P0R03416",
+        "P0R03417"
+      ],
+      "source_record_ids": [
+        "P0B03410",
+        "P0B03411",
+        "P0B03412",
+        "P0B03413",
+        "P0B03414",
+        "P0B03415",
+        "P0B03416",
+        "P0B03417"
+      ],
+      "test_protocols": [
+        "preserve The Binding Integral is H_int: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_binding_integral_is_h_int.the_binding_integral_is_h_int",
+      "validation_targets": [
+        "preserve records P0R03410-P0R03415"
+      ],
+      "variables": [
+        "the_binding_integral_is_h_int"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Coupling Creates Experience:' preserves Paper 0 records P0R03416-P0R03417 without empirical validation claims.",
+      "claim_boundary": "source-bounded the binding integral is h int source-accounting bridge; not validation evidence",
+      "context_id": "the_coupling_creates_experience",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03416-P0R03417"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_binding_integral_is_h_int.the_coupling_creates_experience",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_coupling_creates_experience must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Coupling Creates Experience: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Confronting the Hard Problem: A Mathematical Resolution > \u03a8s Field Coupling Integration > The Binding Integral is H_int:",
+      "source_block_indices": [
+        3410,
+        3411,
+        3412,
+        3413,
+        3414,
+        3415,
+        3416,
+        3417
+      ],
+      "source_equation_ids": [
+        "P0R03416:the_coupling_creates_experience",
+        "P0R03417:the_coupling_creates_experience"
+      ],
+      "source_formulae": [
+        "P0R03416: The Coupling Creates Experience:",
+        "P0R03417: The central claim is that this interaction doesn't just transfer information or exert force; the interaction is the experience. The coupling of the universal field (Psis) to the specific, complex configuration of a brain (sigma) is what gives rise to a localised, subjective viewpoint. The unity of the Psi-field resolves the binding problem by providing a non-local medium that can simultaneously couple to all parts of the neural substrate, binding their disparate activities into a single, coherent, experiential whole. The \"Hard Problem\" is thus solved by positing that the fundamental interaction of the universe is experience itself."
+      ],
+      "source_ledger_ids": [
+        "P0R03410",
+        "P0R03411",
+        "P0R03412",
+        "P0R03413",
+        "P0R03414",
+        "P0R03415",
+        "P0R03416",
+        "P0R03417"
+      ],
+      "source_record_ids": [
+        "P0B03410",
+        "P0B03411",
+        "P0B03412",
+        "P0B03413",
+        "P0B03414",
+        "P0B03415",
+        "P0B03416",
+        "P0B03417"
+      ],
+      "test_protocols": [
+        "preserve The Coupling Creates Experience: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_binding_integral_is_h_int.the_coupling_creates_experience",
+      "validation_targets": [
+        "preserve records P0R03416-P0R03417"
+      ],
+      "variables": [
+        "the_coupling_creates_experience"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 6
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 5,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded the binding integral is h int source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03418",
+    "source_ledger_span": [
+      "P0R03410",
+      "P0R03417"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_binding_integral_is_h_int.the_binding_integral_is_h_int",
+      "the_binding_integral_is_h_int.the_coupling_creates_experience"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Binding Integral is H_int: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

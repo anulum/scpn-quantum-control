@@ -1,0 +1,47 @@
+{
+  "claim_boundary": "source-bounded i the ontological origin of ethics gauge theory derivation source-accounting bridge; not validation evidence",
+  "component_count": 1,
+  "components": {
+    "i_the_ontological_origin_of_ethics_gauge_theory_derivation": "i_the_ontological_origin_of_ethics_gauge_theory_derivation_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "I. The Ontological Origin of Ethics (Gauge Theory Derivation)",
+    "component_count": "1",
+    "next_boundary": "P0R03981",
+    "section": "I. The Ontological Origin of Ethics (Gauge Theory Derivation)",
+    "source_span": "P0R03968-P0R03980"
+  },
+  "next_source_boundary": "P0R03981",
+  "null_controls": {
+    "i_the_ontological_origin_of_ethics_gauge_theory_derivation_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded i the ontological origin of ethics gauge theory derivation source-accounting bridge; not validation evidence",
+    "protocol_state": "source_i_the_ontological_origin_of_ethics_gauge_theory_derivation_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R03968",
+      "P0R03969",
+      "P0R03970",
+      "P0R03971",
+      "P0R03972",
+      "P0R03973",
+      "P0R03974",
+      "P0R03975",
+      "P0R03976",
+      "P0R03977",
+      "P0R03978",
+      "P0R03979",
+      "P0R03980"
+    ],
+    "source_ledger_span": [
+      "P0R03968",
+      "P0R03980"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R03968",
+    "P0R03980"
+  ],
+  "source_record_count": 13
+}

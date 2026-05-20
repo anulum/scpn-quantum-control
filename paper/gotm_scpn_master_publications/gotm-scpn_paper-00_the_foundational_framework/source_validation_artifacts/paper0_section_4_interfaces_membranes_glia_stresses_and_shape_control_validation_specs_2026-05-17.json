@@ -1,0 +1,150 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '4. Interfaces, membranes, glia: stresses and shape control' preserves Paper 0 records P0R04754-P0R04768 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 4 interfaces membranes glia stresses and shape control source-accounting bridge; not validation evidence",
+      "context_id": "4_interfaces_membranes_glia_stresses_and_shape_control",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04754-P0R04768"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_4_interfaces_membranes_glia_stresses_and_shape_control.4_interfaces_membranes_glia_stresses_and_shape_control",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "4_interfaces_membranes_glia_stresses_and_shape_control must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "4. Interfaces, membranes, glia: stresses and shape control is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > I. The Neuronal Membrane: A Liquid Crystal Interface (L2/L3) > 4. Interfaces, membranes, glia: stresses and shape control",
+      "source_block_indices": [
+        4754,
+        4755,
+        4756,
+        4757,
+        4758,
+        4759,
+        4760,
+        4761,
+        4762,
+        4763,
+        4764,
+        4765,
+        4766,
+        4767,
+        4768
+      ],
+      "source_equation_ids": [
+        "P0R04754:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04755:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04756:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04757:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04758:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04759:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04760:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04761:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04762:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04763:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04764:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04765:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04766:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04767:4_interfaces_membranes_glia_stresses_and_shape_control",
+        "P0R04768:4_interfaces_membranes_glia_stresses_and_shape_control"
+      ],
+      "source_formulae": [
+        "P0R04754: 4. Interfaces, membranes, glia: stresses and shape control",
+        "P0R04755: Purpose. Provide a first-principles handle on when electromagnetic fields can modulate membrane/interface mechanics and thereby bias morphology, vesicle traffic, or perivascular transport. The treatment is conservative: Maxwell traction plus capillarity, with no exotic assumptions.",
+        "P0R04756: Field traction and capillarity. In linear media the Maxwell stress tensor is T_em = (EE E I) + mu(BB B I).",
+        "P0R04757: The normal field traction at an interface with unit normal n (pointing medium 1 -> 2) is P_em nT_emn = (E_n E_t) + mu (B_n B_t).",
+        "P0R04758: The static curvature balance is the Young-Laplace form with an EM correction, Deltap + DeltaP_em = ,where is twice the mean curvature and Delta denotes the jump 2 1 across . These relations supply the direct \"fields -> curvature/pressure\" bridge.",
+        "P0R04759: Canonical cases (use whichever matches the preparation). Case I: purely tangential fields (E_n = B_n = 0). Then P_em = ( E_t + mu B_t) and the jump is DeltaP_em = [Delta() E_t + Delta(mu) B_t].",
+        "P0R04760: Tangential fields therefore reduce the mechanical pressure needed to sustain curvature when > .",
+        "P0R04761: Case II: purely normal fields (E_t = B_t = 0). With D_n, B_n continuous across , DeltaP_em = ( E_n,2 E_n,1) + (mu mu) B_n.",
+        "P0R04762: Apparent vs intrinsic surface tension. Fields alter the normal-stress balance and can be re-expressed as Deltap = _eff with _eff DeltaP_em/ for a given geometry; the intrinsic is unchanged unless electrochemical work is performed (Lippmann relation d = sigma dV at true electrode interfaces). Biological membranes are typically non-faradaic in our use-cases, so treat DeltaP_em as a curvature-side correction, not a change of itself.",
+        "P0R04763: Ripple and vesicle windows. Linearising the normal-stress boundary condition gives a capillary-wave dispersion with an EM correction: (/rho_eff) k + (DeltaP_em/rho_eff) k. The k-term is the field-induced normal stress and sets a frequency-length window where small deformations are amplified or suppressed. This lets you predict whether a given field geometry biases budding, fusion, or tether formation in a specified size range.",
+        "P0R04764: Perivascular and glial contexts. In inhomogeneous media the bulk body-force density is f_em = T_em, which augments Navier-Stokes (rho(_t v + vv) = p + v + f_em). Use this to gauge whether field gradients can measurably steer perivascular flows or astrocytic end-foot shears; interfacial balances still reduce to Deltap + DeltaP_em = at boundaries.",
+        "P0R04765: Worked scale check (template). For water-air with E_t 1x10 V m and Delta 79 , DeltaP_em 3.5 Pa, which is ~2.4% of the Laplace pressure of a 1 mm droplet (2/R 144 Pa). Replace numbers with membrane-relevant -contrast and curvature to estimate effect sizes in your system.",
+        "P0R04766: Operational recipe (how to use this in practice).",
+        "P0R04767: Field decomposition at . From your PNP(+R)/electrotonic model or measurement, estimate E_n, E_t (and B if relevant) on each side of the membrane or interface. Use clean-interface boundary data [E_t] = 0, [B_t] = 0, [D_n] = sigma_s, [B_n] = 0. | Compute DeltaP_em. Choose Case I or II (or the mixed formula from P_em above) and evaluate DeltaP_em with your , mu. | Compare to curvature pressure. Form the ratio r |DeltaP_em|/( ||). If r 0.01 in your geometry, expect detectable bias in shape dynamics with modern imaging; if r 0.01, morphology is likely field-insensitive at that scale. (Use your system's , ; do not assume the droplet numbers.) | Choose the observable. For membranes/vesicles: curvature change, budding rate, tether force; for perivascular spaces: shape-mode amplitudes or flow-rate shifts. For electrodes or lipid monolayers, Lippmann electrocapillarity provides an independent cross-check. | Validate with shape metrology. Pendant-drop/bubble methods: (i) fit from Young-Laplace without field; (ii) apply field, compute DeltaP_em from the traction formulae; (iii) refit using Deltap + DeltaP_em = to separate geometry from field traction. For membranes, use flicker spectroscopy or micropipette aspiration analogues.",
+        "P0R04768: Tie-in to the affective field A = F. The affective field modulates coupling gains; this section defines the mechanical leg of that pathway. When A perturbs ionic distributions or transmembrane potentials, it moves E_n/E_t and thus DeltaP_em, which in turn alters curvature-dependent processes (vesicle release probability, end-foot geometry, perivascular aperture). The control-theoretic gains you introduced for sigma1 can be extended here by adding DeltaP_em-sensitive terms to the gain scheduling."
+      ],
+      "source_ledger_ids": [
+        "P0R04754",
+        "P0R04755",
+        "P0R04756",
+        "P0R04757",
+        "P0R04758",
+        "P0R04759",
+        "P0R04760",
+        "P0R04761",
+        "P0R04762",
+        "P0R04763",
+        "P0R04764",
+        "P0R04765",
+        "P0R04766",
+        "P0R04767",
+        "P0R04768"
+      ],
+      "source_record_ids": [
+        "P0B04754",
+        "P0B04755",
+        "P0B04756",
+        "P0B04757",
+        "P0B04758",
+        "P0B04759",
+        "P0B04760",
+        "P0B04761",
+        "P0B04762",
+        "P0B04763",
+        "P0B04764",
+        "P0B04765",
+        "P0B04766",
+        "P0B04767",
+        "P0B04768"
+      ],
+      "test_protocols": [
+        "preserve 4. Interfaces, membranes, glia: stresses and shape control source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_4_interfaces_membranes_glia_stresses_and_shape_control.4_interfaces_membranes_glia_stresses_and_shape_control",
+      "validation_targets": [
+        "preserve records P0R04754-P0R04768"
+      ],
+      "variables": [
+        "4_interfaces_membranes_glia_stresses_and_shape_control"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "OrderedList": 1,
+      "Para": 13
+    },
+    "category_counts": {
+      "claim": 10,
+      "context": 2,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded section 4 interfaces membranes glia stresses and shape control source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 15,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R04769",
+    "source_ledger_span": [
+      "P0R04754",
+      "P0R04768"
+    ],
+    "source_record_count": 15,
+    "spec_count": 1,
+    "spec_keys": [
+      "section_4_interfaces_membranes_glia_stresses_and_shape_control.4_interfaces_membranes_glia_stresses_and_shape_control"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 4. Interfaces, membranes, glia: stresses and shape control Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

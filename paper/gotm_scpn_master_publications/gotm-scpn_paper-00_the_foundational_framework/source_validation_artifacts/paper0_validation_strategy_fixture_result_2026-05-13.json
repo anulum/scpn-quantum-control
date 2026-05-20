@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "validation-roadmap contract; not empirical evidence",
+  "domain_count": 11,
+  "domains": [
+    "pathology",
+    "societal_phase_transitions_l11",
+    "ethical_governance_l15",
+    "alignment_objective",
+    "quasicriticality_universal",
+    "biological_quantum_interface_l1_l2",
+    "geometry_of_qualia_l5",
+    "upde_multi_scale_pac",
+    "hpc_transfer_entropy",
+    "gaian_coupling_l12",
+    "teleology_l15_l8"
+  ],
+  "hardware_status": "simulator_only_no_provider_submission",
+  "null_controls": {
+    "duplicate_domain_rejection_label": 1.0,
+    "missing_domain_rejection_label": 1.0,
+    "stage_order_valid_label": 1.0,
+    "unknown_stage_rejection_label": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "validation-roadmap contract; not empirical evidence",
+    "roadmap_only": true,
+    "source_ledger_ids": [
+      "P0R06221",
+      "P0R06222"
+    ]
+  },
+  "runtime_ms": 2.8725919837597758,
+  "spec_keys": [
+    "applied.validation_strategy.pathology_and_societal_phase_targets",
+    "applied.validation_strategy.ethical_governance_alignment_targets",
+    "applied.validation_strategy.stage_i_foundations",
+    "applied.validation_strategy.stage_ii_iii_mechanisms_and_high_level"
+  ],
+  "stage_count": 3,
+  "stage_order_valid": true,
+  "stages": [
+    "Stage I",
+    "Stage II",
+    "Stage III"
+  ],
+  "validation_protocols": [
+    "paper0.applied.validation_strategy.pathology_societal_targets",
+    "paper0.applied.validation_strategy.governance_alignment_targets",
+    "paper0.applied.validation_strategy.stage_i_foundations",
+    "paper0.applied.validation_strategy.stage_ii_iii"
+  ]
+}

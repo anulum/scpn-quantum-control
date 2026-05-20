@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded the coherent milieu csf and the glymphatic system as the brain s entropy source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "introduction_to_the_architecture_of_structure_and_plasticity_domain_i_l3": "introduction_to_the_architecture_of_structure_and_plasticity_domain_i_l3_source_boundary",
+    "the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy": "the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "The Coherent Milieu: CSF and the Glymphatic System as the Brain's Entropy Sink",
+    "component_2": "Introduction to The Architecture of Structure and Plasticity (Domain I: L3)",
+    "component_count": "2",
+    "next_boundary": "P0R04560",
+    "section": "The Coherent Milieu: CSF and the Glymphatic System as the Brain's Entropy Sink",
+    "source_span": "P0R04552-P0R04559"
+  },
+  "next_source_boundary": "P0R04560",
+  "null_controls": {
+    "introduction_to_the_architecture_of_structure_and_plasticity_domain_i_l3_is_not_empirical_validation_evidence": 1.0,
+    "the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded the coherent milieu csf and the glymphatic system as the brain s entropy source-accounting bridge; not validation evidence",
+    "protocol_state": "source_the_coherent_milieu_csf_and_the_glymphatic_system_as_the_brain_s_entropy_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R04552",
+      "P0R04553",
+      "P0R04554",
+      "P0R04555",
+      "P0R04556",
+      "P0R04557",
+      "P0R04558",
+      "P0R04559"
+    ],
+    "source_ledger_span": [
+      "P0R04552",
+      "P0R04559"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R04552",
+    "P0R04559"
+  ],
+  "source_record_count": 8
+}

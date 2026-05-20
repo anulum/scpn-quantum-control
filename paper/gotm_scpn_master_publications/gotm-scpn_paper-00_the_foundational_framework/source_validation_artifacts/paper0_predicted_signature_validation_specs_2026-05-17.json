@@ -1,0 +1,136 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Predicted Signature' preserves Paper 0 records P0R05171-P0R05181 without empirical validation claims.",
+      "claim_boundary": "source-bounded predicted signature source-accounting bridge; not validation evidence",
+      "context_id": "predicted_signature",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05171-P0R05181"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "predicted_signature.predicted_signature",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predicted_signature must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predicted Signature is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction I: Information-Geometric Deviations in Quasicritical Systems > Predicted Signature",
+      "source_block_indices": [
+        5171,
+        5172,
+        5173,
+        5174,
+        5175,
+        5176,
+        5177,
+        5178,
+        5179,
+        5180,
+        5181
+      ],
+      "source_equation_ids": [
+        "P0R05171:predicted_signature",
+        "P0R05172:predicted_signature",
+        "P0R05173:predicted_signature",
+        "P0R05174:predicted_signature",
+        "P0R05175:predicted_signature",
+        "P0R05176:predicted_signature",
+        "P0R05177:predicted_signature",
+        "P0R05178:predicted_signature",
+        "P0R05179:predicted_signature",
+        "P0R05180:predicted_signature",
+        "P0R05181:predicted_signature"
+      ],
+      "source_formulae": [
+        "P0R05171: Predicted Signature",
+        "P0R05172: The existence of an anomalous, information-dependent field that subtly modulates the quantum state evolution of nearby sensitive detectors is predicted. The specific signature is a correlation between a measure of the source system's informational complexity and the decoherence rate (or Larmor frequency) of a quantum sensor, after controlling for all classical electromagnetic and environmental effects.",
+        "P0R05173: The magnitude of this anomalous decoherence, , is hypothesised to be proportional to the trace of the FIM, Tr(gFIM), a scalar measure of the total informational volume of the source system's statistical manifold.",
+        "P0R05174: $\\delta\\Gamma \\propto Tr\\left( gFIM(\\theta) \\right) - Tr(gbaselineFIM)$",
+        "P0R05175: P0R05175",
+        "P0R05176: Theoretical Mechanism Diagram",
+        "P0R05177: [IMAGE:Ein Bild, das Text, Screenshot, Schrift, Display enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R05178: Fig.: Psi-Field on the Statistical Manifold (FIM->Decoherence). This diagram illustrates the core physical claim: the Psi-field's interaction is mediated by the informational geometry (Fisher Information Metric) of a source system, which in turn perturbs a nearby quantum sensor. This figure operationalises the information-geometric route: if the Psi-field couples to FIM geometry, decoherence shifts in a proximate quantum probe provide a direct, quantitative experimental handle on consciousness-linked modulation.",
+        "P0R05179: A neuronal culture defines a statistical manifold of firing-pattern distributions endowed with the Fisher information metric gFIMg_{\\text{FIM}}gFIM. In this proposal, the Psi-field couples not to spacetime directly but to this information geometry. The coupling perturbs a nearby quantum sensor (e.g., NV center), producing an anomalous decoherence \\delta\\Gamma. The testable hypothesis is a scaling law",
+        "P0R05180: Tr (gFIM),\\delta\\Gamma \\;\\propto\\; \\mathrm{Tr}\\!\\big(g_{\\text{FIM}}\\big),Tr(gFIM),",
+        "P0R05181: so manipulations that increase information-geometric curvature (e.g., structured bursting, controlled synchrony) should increase decoherence in the sensor, providing a quantitative bridge from neural statistics to quantum readouts."
+      ],
+      "source_ledger_ids": [
+        "P0R05171",
+        "P0R05172",
+        "P0R05173",
+        "P0R05174",
+        "P0R05175",
+        "P0R05176",
+        "P0R05177",
+        "P0R05178",
+        "P0R05179",
+        "P0R05180",
+        "P0R05181"
+      ],
+      "source_record_ids": [
+        "P0B05171",
+        "P0B05172",
+        "P0B05173",
+        "P0B05174",
+        "P0B05175",
+        "P0B05176",
+        "P0B05177",
+        "P0B05178",
+        "P0B05179",
+        "P0B05180",
+        "P0B05181"
+      ],
+      "test_protocols": [
+        "preserve Predicted Signature source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.predicted_signature.predicted_signature",
+      "validation_targets": [
+        "preserve records P0R05171-P0R05181"
+      ],
+      "variables": [
+        "predicted_signature"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 1,
+      "Para": 10
+    },
+    "category_counts": {
+      "context": 2,
+      "equation": 1,
+      "figure": 1,
+      "mechanism": 4,
+      "structural": 1,
+      "validation_target": 2
+    },
+    "claim_boundary": "source-bounded predicted signature source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 11,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0136"
+    ],
+    "math_ids": [
+      "EQ0094"
+    ],
+    "next_source_boundary": "P0R05182",
+    "source_ledger_span": [
+      "P0R05171",
+      "P0R05181"
+    ],
+    "source_record_count": 11,
+    "spec_count": 1,
+    "spec_keys": [
+      "predicted_signature.predicted_signature"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Predicted Signature Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

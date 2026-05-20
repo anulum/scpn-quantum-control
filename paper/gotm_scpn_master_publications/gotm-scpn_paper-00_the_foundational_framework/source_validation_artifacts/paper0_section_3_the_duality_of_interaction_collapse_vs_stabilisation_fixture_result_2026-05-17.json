@@ -1,0 +1,58 @@
+{
+  "claim_boundary": "source-bounded section 3 the duality of interaction collapse vs stabilisation source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "3_the_duality_of_interaction_collapse_vs_stabilisation": "3_the_duality_of_interaction_collapse_vs_stabilisation_source_boundary",
+    "the_frequency_physics_of_the_duality_linking_surprisal_to_measurement_ra": "the_frequency_physics_of_the_duality_linking_surprisal_to_measurement_ra_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "3. The Duality of Interaction: Collapse vs. Stabilisation",
+    "component_2": "The Frequency Physics of the Duality: Linking Surprisal to Measurement Rate",
+    "component_count": "2",
+    "next_boundary": "P0R06015",
+    "section": "3. The Duality of Interaction: Collapse vs. Stabilisation",
+    "source_span": "P0R05994-P0R06014"
+  },
+  "next_source_boundary": "P0R06015",
+  "null_controls": {
+    "3_the_duality_of_interaction_collapse_vs_stabilisation_is_not_empirical_validation_evidence": 1.0,
+    "the_frequency_physics_of_the_duality_linking_surprisal_to_measurement_ra_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded section 3 the duality of interaction collapse vs stabilisation source-accounting bridge; not validation evidence",
+    "protocol_state": "source_section_3_the_duality_of_interaction_collapse_vs_stabilisation_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05994",
+      "P0R05995",
+      "P0R05996",
+      "P0R05997",
+      "P0R05998",
+      "P0R05999",
+      "P0R06000",
+      "P0R06001",
+      "P0R06002",
+      "P0R06003",
+      "P0R06004",
+      "P0R06005",
+      "P0R06006",
+      "P0R06007",
+      "P0R06008",
+      "P0R06009",
+      "P0R06010",
+      "P0R06011",
+      "P0R06012",
+      "P0R06013",
+      "P0R06014"
+    ],
+    "source_ledger_span": [
+      "P0R05994",
+      "P0R06014"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05994",
+    "P0R06014"
+  ],
+  "source_record_count": 21
+}

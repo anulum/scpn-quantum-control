@@ -1,0 +1,119 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component '2. The Endocrine System and HPA Axis (Stress Response)' preserves Paper 0 records P0R04935-P0R04942 without empirical validation claims.",
+      "claim_boundary": "source-bounded section 2 the endocrine system and hpa axis stress response source-accounting bridge; not validation evidence",
+      "context_id": "2_the_endocrine_system_and_hpa_axis_stress_response",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R04935-P0R04942"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "section_2_the_endocrine_system_and_hpa_axis_stress_response.2_the_endocrine_system_and_hpa_axis_stress_response",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "2_the_endocrine_system_and_hpa_axis_stress_response must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "2. The Endocrine System and HPA Axis (Stress Response) is not empirical validation evidence"
+      ],
+      "section_path": " > 5.2 Embodied SCPN: Cellular, Neural, & Systemic Implementation > IV. The Neuro-Immuno-Endocrine (NIE) Super-System > 2. The Endocrine System and HPA Axis (Stress Response)",
+      "source_block_indices": [
+        4935,
+        4936,
+        4937,
+        4938,
+        4939,
+        4940,
+        4941,
+        4942
+      ],
+      "source_equation_ids": [
+        "P0R04935:2_the_endocrine_system_and_hpa_axis_stress_response",
+        "P0R04936:2_the_endocrine_system_and_hpa_axis_stress_response",
+        "P0R04937:2_the_endocrine_system_and_hpa_axis_stress_response",
+        "P0R04938:2_the_endocrine_system_and_hpa_axis_stress_response",
+        "P0R04939:2_the_endocrine_system_and_hpa_axis_stress_response",
+        "P0R04940:2_the_endocrine_system_and_hpa_axis_stress_response",
+        "P0R04941:2_the_endocrine_system_and_hpa_axis_stress_response",
+        "P0R04942:2_the_endocrine_system_and_hpa_axis_stress_response"
+      ],
+      "source_formulae": [
+        "P0R04935: 2. The Endocrine System and HPA Axis (Stress Response)",
+        "P0R04936: Hormones provide global modulation of the SCPN architecture.",
+        "P0R04937: HPA Axis (Cortisol): Manages the response to stress (L5, High F).",
+        "P0R04938: [IMAGE:]",
+        "P0R04939: Fig.: HPA cascade. L5 High F -> CRH (hypothalamus) -> ACTH (pituitary) -> cortisol (adrenal). Cortisol provides global modulation and negative feedback to hypothalamus/pituitary.",
+        "P0R04940: Chronic Stress and Allostatic Load: Chronic elevation of Cortisol leads to Allostatic Load-cumulative wear and tear. This remodels the brain (L3 atrophy), alters L2 sensitivity, impairs L5 integration, and promotes systemic inflammation.",
+        "P0R04941: [IMAGE:Ein Bild, das Text, Diagramm, Reihe, Schrift enthlt. KI-generierte Inhalte knnen fehlerhaft sein.]",
+        "P0R04942: Fig.: Cortisol dynamics (conceptual). Acute stress: transient spike with recovery. Chronic stress: elevated baseline (allostatic load), biasing toward L3 atrophy, L2 sensitivity shift, L5 integration , and inflammation ."
+      ],
+      "source_ledger_ids": [
+        "P0R04935",
+        "P0R04936",
+        "P0R04937",
+        "P0R04938",
+        "P0R04939",
+        "P0R04940",
+        "P0R04941",
+        "P0R04942"
+      ],
+      "source_record_ids": [
+        "P0B04935",
+        "P0B04936",
+        "P0B04937",
+        "P0B04938",
+        "P0B04939",
+        "P0B04940",
+        "P0B04941",
+        "P0B04942"
+      ],
+      "test_protocols": [
+        "preserve 2. The Endocrine System and HPA Axis (Stress Response) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.section_2_the_endocrine_system_and_hpa_axis_stress_response.2_the_endocrine_system_and_hpa_axis_stress_response",
+      "validation_targets": [
+        "preserve records P0R04935-P0R04942"
+      ],
+      "variables": [
+        "2_the_endocrine_system_and_hpa_axis_stress_response"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 1,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 3,
+      "figure": 2,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded section 2 the endocrine system and hpa axis stress response source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0112",
+      "IMG0113"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R04943",
+    "source_ledger_span": [
+      "P0R04935",
+      "P0R04942"
+    ],
+    "source_record_count": 8,
+    "spec_count": 1,
+    "spec_keys": [
+      "section_2_the_endocrine_system_and_hpa_axis_stress_response.2_the_endocrine_system_and_hpa_axis_stress_response"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 2. The Endocrine System and HPA Axis (Stress Response) Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

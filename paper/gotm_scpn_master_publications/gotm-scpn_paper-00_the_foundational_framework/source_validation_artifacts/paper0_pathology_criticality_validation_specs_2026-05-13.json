@@ -1,0 +1,188 @@
+{
+  "specs": [
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "all terms are dimensionless finite simulator observables",
+        "larger index means greater modelled systems dysregulation",
+        "clinical labels are not inferred from this simulator quantity"
+      ],
+      "canonical_statement": "Pathology is bounded to a computable systems-state index combining free-energy accumulation, synchronisation loss, criticality deviation, and error-correction failure.",
+      "claim_boundary": "simulator-only systems metric; not clinical evidence or medical advice",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify pathology index increases with free-energy accumulation",
+        "verify coherence loss increases pathology index",
+        "verify QEC failure probability contributes monotonically"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "applied.pathology.coherence_breakdown_index",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "healthy-baseline control must return lower index",
+        "non-finite-observable control must be rejected",
+        "negative-probability control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Applied SCPN: Pathology, Technology, and Anomalies",
+      "source_block_indices": [
+        6197,
+        6198,
+        6199,
+        6200,
+        6201
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06197",
+        "P0R06198",
+        "P0R06199",
+        "P0R06200",
+        "P0R06201"
+      ],
+      "source_record_ids": [
+        "P0B06197",
+        "P0B06198",
+        "P0B06199",
+        "P0B06200",
+        "P0B06201"
+      ],
+      "validation_protocol": "paper0.applied.pathology.coherence_breakdown_index",
+      "validation_targets": [
+        "verify pathology index increases with free-energy accumulation",
+        "verify coherence loss increases pathology index",
+        "verify QEC failure probability contributes monotonically"
+      ],
+      "variables": [
+        "F_global",
+        "order_parameter",
+        "sigma",
+        "qec_success_probability"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "sigma is a finite positive branching or response-ratio proxy",
+        "clinical examples in the manuscript remain interpretive context only",
+        "classification thresholds are explicit and tested"
+      ],
+      "canonical_statement": "Deviation from quasicriticality is promoted only as a sigma classifier: sigma > 1 is supercritical, sigma < 1 is subcritical, and sigma near 1 is quasicritical.",
+      "claim_boundary": "simulator-only systems metric; not clinical evidence or medical advice",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify sigma above tolerance classifies as supercritical",
+        "verify sigma below tolerance classifies as subcritical",
+        "verify sigma-neutral tolerance classifies as quasicritical"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "applied.pathology.criticality_deviation_classifier",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "sigma-neutral control must not be classified as pathological",
+        "non-positive-sigma control must be rejected",
+        "negative-tolerance control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Aetiology of Disorder: > Dissonance (Free Energy Accumulation): Sustained accumulation of Prediction Errors (EL) in the HPC architecture. PathologyIndex\u221dFGlobal\u200b. > Deviation from Criticality: Shifts away from \u03c3=1. Supercriticality (\u03c3 > 1, e.g., mania, seizures); Subcriticality (\u03c3 < 1, e.g., depression, coma).",
+      "source_block_indices": [
+        6202,
+        6203
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06202",
+        "P0R06203"
+      ],
+      "source_record_ids": [
+        "P0B06202",
+        "P0B06203"
+      ],
+      "validation_protocol": "paper0.applied.pathology.criticality_deviation_classifier",
+      "validation_targets": [
+        "verify sigma above tolerance classifies as supercritical",
+        "verify sigma below tolerance classifies as subcritical",
+        "verify sigma-neutral tolerance classifies as quasicritical"
+      ],
+      "variables": [
+        "sigma",
+        "criticality_tolerance",
+        "criticality_label"
+      ]
+    },
+    {
+      "anchor_math_ids": [],
+      "assumptions": [
+        "updates are small finite simulator controls",
+        "restoration score compares before and after states only",
+        "therapeutic wording is not clinical evidence or medical advice"
+      ],
+      "canonical_statement": "Therapeutic restoration is bounded to simulator control objectives: reduce prediction-error/free-energy accumulation, tune sigma toward 1, and increase phase synchronisation.",
+      "claim_boundary": "simulator-only systems metric; not clinical evidence or medical advice",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "verify restoration update reduces pathology index",
+        "verify sigma update moves toward one without overshoot hidden by clipping",
+        "verify synchronisation update increases bounded order parameter"
+      ],
+      "hardware_status": "simulator_only_no_provider_submission",
+      "implementation_status": "validation_spec_pending_executable_fixture",
+      "key": "applied.pathology.therapeutic_restoration_targets",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "zero-update control must leave pathology index unchanged",
+        "wrong-direction update control must increase pathology index",
+        "out-of-range-order-parameter control must be rejected"
+      ],
+      "section_path": "Structural Overview (by Domain) > Computational Unifier. > Aetiology of Disorder: > Dissonance (Free Energy Accumulation): Sustained accumulation of Prediction Errors (EL) in the HPC architecture. PathologyIndex\u221dFGlobal\u200b. > Fragmentation: Failure of integration (e.g., L5 Self fragmentation in dissociation; L11 societal polarisation).",
+      "source_block_indices": [
+        6204,
+        6205
+      ],
+      "source_equation_ids": [],
+      "source_ledger_ids": [
+        "P0R06204",
+        "P0R06205"
+      ],
+      "source_record_ids": [
+        "P0B06204",
+        "P0B06205"
+      ],
+      "validation_protocol": "paper0.applied.pathology.therapeutic_restoration_targets",
+      "validation_targets": [
+        "verify restoration update reduces pathology index",
+        "verify sigma update moves toward one without overshoot hidden by clipping",
+        "verify synchronisation update increases bounded order parameter"
+      ],
+      "variables": [
+        "free_energy_step",
+        "sigma_step",
+        "synchronisation_step",
+        "restoration_score"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_avoid_invented_equation_ids": true,
+    "all_specs_have_clinical_boundary": true,
+    "all_specs_have_executable_targets": true,
+    "all_specs_have_null_controls": true,
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "simulator_only_no_provider_submission",
+    "policy": "P0R06197-P0R06205 are promoted as source-covered validation specifications only. Pathology and therapeutic language is bounded to finite simulator systems metrics and is not clinical evidence.",
+    "source_ledger_span": [
+      "P0R06197",
+      "P0R06205"
+    ],
+    "source_record_count": 9,
+    "spec_count": 3,
+    "spec_keys": [
+      "applied.pathology.coherence_breakdown_index",
+      "applied.pathology.criticality_deviation_classifier",
+      "applied.pathology.therapeutic_restoration_targets"
+    ],
+    "unconsumed_source_ledger_ids": []
+  }
+}

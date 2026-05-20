@@ -1,0 +1,267 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Prediction I (NV-MEA) Tests the Informational Coupling (LInformational):' preserves Paper 0 records P0R05152-P0R05153 without empirical validation claims.",
+      "claim_boundary": "source-bounded prediction i nv mea tests the informational coupling linformational source-accounting bridge; not validation evidence",
+      "context_id": "prediction_i_nv_mea_tests_the_informational_coupling_linformational",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05152-P0R05153"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "prediction_i_nv_mea_tests_the_informational_coupling_linformational.prediction_i_nv_mea_tests_the_informational_coupling_linformational",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "prediction_i_nv_mea_tests_the_informational_coupling_linformational must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Prediction I (NV-MEA) Tests the Informational Coupling (LInformational): is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Prediction I (NV-MEA) Tests the Informational Coupling (LInformational):",
+      "source_block_indices": [
+        5152,
+        5153,
+        5154,
+        5155,
+        5156,
+        5157,
+        5158,
+        5159,
+        5160,
+        5161
+      ],
+      "source_equation_ids": [
+        "P0R05152:prediction_i_nv_mea_tests_the_informational_coupling_linformational",
+        "P0R05153:prediction_i_nv_mea_tests_the_informational_coupling_linformational"
+      ],
+      "source_formulae": [
+        "P0R05152: Prediction I (NV-MEA) Tests the Informational Coupling (LInformational):",
+        "P0R05153: This experiment is designed to isolate and measure the effect of the informational coupling. The hypothesis Tr(gFIM) is a direct, quantitative prediction about the H_int interaction. It posits that the coupling lambda is not constant, but is modulated by the geometry of the collective state variable sigma (where sigma's geometry is the FIM). It is a direct probe of the LInformational term."
+      ],
+      "source_ledger_ids": [
+        "P0R05152",
+        "P0R05153",
+        "P0R05154",
+        "P0R05155",
+        "P0R05156",
+        "P0R05157",
+        "P0R05158",
+        "P0R05159",
+        "P0R05160",
+        "P0R05161"
+      ],
+      "source_record_ids": [
+        "P0B05152",
+        "P0B05153",
+        "P0B05154",
+        "P0B05155",
+        "P0B05156",
+        "P0B05157",
+        "P0B05158",
+        "P0B05159",
+        "P0B05160",
+        "P0B05161"
+      ],
+      "test_protocols": [
+        "preserve Prediction I (NV-MEA) Tests the Informational Coupling (LInformational): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.prediction_i_nv_mea_tests_the_informational_coupling_linformational.prediction_i_nv_mea_tests_the_informational_coupling_linformational",
+      "validation_targets": [
+        "preserve records P0R05152-P0R05153"
+      ],
+      "variables": [
+        "prediction_i_nv_mea_tests_the_informational_coupling_linformational"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Prediction II (QRNG) Tests the Geometric Coupling (LGeometric):' preserves Paper 0 records P0R05154-P0R05155 without empirical validation claims.",
+      "claim_boundary": "source-bounded prediction i nv mea tests the informational coupling linformational source-accounting bridge; not validation evidence",
+      "context_id": "prediction_ii_qrng_tests_the_geometric_coupling_lgeometric",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05154-P0R05155"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "prediction_i_nv_mea_tests_the_informational_coupling_linformational.prediction_ii_qrng_tests_the_geometric_coupling_lgeometric",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "prediction_ii_qrng_tests_the_geometric_coupling_lgeometric must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Prediction II (QRNG) Tests the Geometric Coupling (LGeometric): is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Prediction I (NV-MEA) Tests the Informational Coupling (LInformational):",
+      "source_block_indices": [
+        5152,
+        5153,
+        5154,
+        5155,
+        5156,
+        5157,
+        5158,
+        5159,
+        5160,
+        5161
+      ],
+      "source_equation_ids": [
+        "P0R05154:prediction_ii_qrng_tests_the_geometric_coupling_lgeometric",
+        "P0R05155:prediction_ii_qrng_tests_the_geometric_coupling_lgeometric"
+      ],
+      "source_formulae": [
+        "P0R05154: Prediction II (QRNG) Tests the Geometric Coupling (LGeometric):",
+        "P0R05155: The CEF arises from the geometric coupling of the Psi-field to spacetime. A large, coherent group mind (sigma_group) creates a significant local TmuPsi via the geometric H_int. This curvature fluctuation, according to the theory, is what biases the quantum collapse in the QRNG. This experiment is therefore a macroscopic test of the CIGD mechanism and a direct probe of the LGeometric term's causal consequences."
+      ],
+      "source_ledger_ids": [
+        "P0R05152",
+        "P0R05153",
+        "P0R05154",
+        "P0R05155",
+        "P0R05156",
+        "P0R05157",
+        "P0R05158",
+        "P0R05159",
+        "P0R05160",
+        "P0R05161"
+      ],
+      "source_record_ids": [
+        "P0B05152",
+        "P0B05153",
+        "P0B05154",
+        "P0B05155",
+        "P0B05156",
+        "P0B05157",
+        "P0B05158",
+        "P0B05159",
+        "P0B05160",
+        "P0B05161"
+      ],
+      "test_protocols": [
+        "preserve Prediction II (QRNG) Tests the Geometric Coupling (LGeometric): source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.prediction_i_nv_mea_tests_the_informational_coupling_linformational.prediction_ii_qrng_tests_the_geometric_coupling_lgeometric",
+      "validation_targets": [
+        "preserve records P0R05154-P0R05155"
+      ],
+      "variables": [
+        "prediction_ii_qrng_tests_the_geometric_coupling_lgeometric"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Introduction' preserves Paper 0 records P0R05156-P0R05161 without empirical validation claims.",
+      "claim_boundary": "source-bounded prediction i nv mea tests the informational coupling linformational source-accounting bridge; not validation evidence",
+      "context_id": "introduction",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05156-P0R05161"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "prediction_i_nv_mea_tests_the_informational_coupling_linformational.introduction",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "introduction must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Introduction is not empirical validation evidence"
+      ],
+      "section_path": " >  > Prediction III: Topos-Theoretic Cognitive Hesitation (The $\\Omega$-State) > Meta-Framework Integrations > \u03a8s Field Coupling Integration > Prediction I (NV-MEA) Tests the Informational Coupling (LInformational):",
+      "source_block_indices": [
+        5152,
+        5153,
+        5154,
+        5155,
+        5156,
+        5157,
+        5158,
+        5159,
+        5160,
+        5161
+      ],
+      "source_equation_ids": [
+        "P0R05156:introduction",
+        "P0R05157:introduction",
+        "P0R05158:introduction",
+        "P0R05159:introduction",
+        "P0R05160:introduction",
+        "P0R05161:introduction"
+      ],
+      "source_formulae": [
+        "P0R05156: Introduction",
+        "P0R05157: The Sentient-Consciousness Projection Network (SCPN), as detailed in the preceding chapters, presents a comprehensive and internally consistent architecture of a consciousness-driven universe. Its foundations rest upon principles derived from gauge theory, information geometry, and non-equilibrium thermodynamics, unified by the dynamics of the fundamental Psi-field.",
+        "P0R05158: A theoretical edifice of this scope, however, derives its ultimate scientific value not from its internal elegance but from its capacity to generate non-obvious, empirically testable predictions that distinguish it from antecedent paradigms. This chapter serves as the critical bridge from formal architecture to falsifiable science.",
+        "P0R05159: Here, we move beyond the foundational prediction of the Psi-Higgs boson to develop a new generation of empirical tests. These proposals are derived directly from the most novel and consequential assertions of the framework: first, that the geometry of information itself governs the fundamental interactions of consciousness, and second, that the universe's evolution is subtly biased by a teleological drive toward coherence. We will formalise these principles into specific, measurable signatures in both biological and quantum systems.",
+        "P0R05160: Furthermore, we will translate the framework's high-level sociodynamic hypothesis-the emergence of a fragmented Noosphere-Technosphere Hybrid System (NTHS)-into a concrete, computationally verifiable model. By specifying a multi-agent active inference simulation, we provide a direct means to test the predicted phase transition induced by modern information technologies.",
+        "P0R05161: This chapter, therefore, outlines the initial empirical trajectories designed to confront the SCPN's most profound claims with the rigour of experimental and computational validation."
+      ],
+      "source_ledger_ids": [
+        "P0R05152",
+        "P0R05153",
+        "P0R05154",
+        "P0R05155",
+        "P0R05156",
+        "P0R05157",
+        "P0R05158",
+        "P0R05159",
+        "P0R05160",
+        "P0R05161"
+      ],
+      "source_record_ids": [
+        "P0B05152",
+        "P0B05153",
+        "P0B05154",
+        "P0B05155",
+        "P0B05156",
+        "P0B05157",
+        "P0B05158",
+        "P0B05159",
+        "P0B05160",
+        "P0B05161"
+      ],
+      "test_protocols": [
+        "preserve Introduction source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.prediction_i_nv_mea_tests_the_informational_coupling_linformational.introduction",
+      "validation_targets": [
+        "preserve records P0R05156-P0R05161"
+      ],
+      "variables": [
+        "introduction"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 3,
+      "Para": 7
+    },
+    "category_counts": {
+      "claim": 2,
+      "context": 1,
+      "mechanism": 1,
+      "validation_target": 6
+    },
+    "claim_boundary": "source-bounded prediction i nv mea tests the informational coupling linformational source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 10,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05162",
+    "source_ledger_span": [
+      "P0R05152",
+      "P0R05161"
+    ],
+    "source_record_count": 10,
+    "spec_count": 3,
+    "spec_keys": [
+      "prediction_i_nv_mea_tests_the_informational_coupling_linformational.prediction_i_nv_mea_tests_the_informational_coupling_linformational",
+      "prediction_i_nv_mea_tests_the_informational_coupling_linformational.prediction_ii_qrng_tests_the_geometric_coupling_lgeometric",
+      "prediction_i_nv_mea_tests_the_informational_coupling_linformational.introduction"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Prediction I (NV-MEA) Tests the Informational Coupling (LInformational): Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

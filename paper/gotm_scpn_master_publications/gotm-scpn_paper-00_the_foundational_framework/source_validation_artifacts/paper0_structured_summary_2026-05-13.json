@@ -1,0 +1,24 @@
+{
+  "source": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/01_MANUSCRIPTS/SCPN_PAPERS/Paper 0 - The Foundational Framework  -revision 11.31- 12.05.2026-11-46- (Refactored).docx",
+  "pandoc_blocks": 7129,
+  "headings": 1236,
+  "equations": 131,
+  "images": 166,
+  "tables": 20,
+  "mechanism_keyword_hits": 1621,
+  "ooxml_counts": {
+    "oMathPara": 97,
+    "oMath": 131,
+    "tables": 20,
+    "paragraphs": 11516,
+    "media_files": 166
+  },
+  "coverage_check": {
+    "pandoc_math_equals_ooxml_oMath": true,
+    "pandoc_tables_equals_ooxml_tables": true,
+    "pandoc_images_equals_media_files": true
+  },
+  "block_inventory_records": 6715,
+  "claim_candidate_records": 2836,
+  "claim_extraction_note": "Candidate register derived from every Pandoc block using claim-language and quantitative/symbolic detectors; requires human/canonical review before promotion."
+}

@@ -1,0 +1,45 @@
+{
+  "claim_boundary": "source-bounded collective cultural and evolutionary dynamics source-accounting bridge; not validation evidence",
+  "component_count": 2,
+  "components": {
+    "collective_cultural_and_evolutionary_dynamics": "collective_cultural_and_evolutionary_dynamics_source_boundary",
+    "consciousness_anomalous_data": "consciousness_anomalous_data_source_boundary"
+  },
+  "hardware_status": "source_methodology_no_experiment",
+  "labels": {
+    "component_1": "Collective, Cultural, and Evolutionary Dynamics",
+    "component_2": "Consciousness & Anomalous Data",
+    "component_count": "2",
+    "next_boundary": "P0R05826",
+    "section": " Collective, Cultural, and Evolutionary Dynamics",
+    "source_span": "P0R05818-P0R05825"
+  },
+  "next_source_boundary": "P0R05826",
+  "null_controls": {
+    "collective_cultural_and_evolutionary_dynamics_is_not_empirical_validation_evidence": 1.0,
+    "consciousness_anomalous_data_is_not_empirical_validation_evidence": 1.0
+  },
+  "problem_metadata": {
+    "claim_boundary": "source-bounded collective cultural and evolutionary dynamics source-accounting bridge; not validation evidence",
+    "protocol_state": "source_collective_cultural_and_evolutionary_dynamics_only_no_experiment",
+    "source_ledger_ids": [
+      "P0R05818",
+      "P0R05819",
+      "P0R05820",
+      "P0R05821",
+      "P0R05822",
+      "P0R05823",
+      "P0R05824",
+      "P0R05825"
+    ],
+    "source_ledger_span": [
+      "P0R05818",
+      "P0R05825"
+    ]
+  },
+  "source_ledger_span": [
+    "P0R05818",
+    "P0R05825"
+  ],
+  "source_record_count": 8
+}

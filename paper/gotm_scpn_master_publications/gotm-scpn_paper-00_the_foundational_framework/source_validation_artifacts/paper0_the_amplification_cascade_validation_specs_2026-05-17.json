@@ -1,0 +1,184 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Amplification Cascade:' preserves Paper 0 records P0R05323-P0R05324 without empirical validation claims.",
+      "claim_boundary": "source-bounded the amplification cascade source-accounting bridge; not validation evidence",
+      "context_id": "the_amplification_cascade",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05323-P0R05324"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_amplification_cascade.the_amplification_cascade",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_amplification_cascade must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Amplification Cascade: is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Domain I: The Biological Substrate (Layers 1-4) > The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system. > The Quantum-Classical Bridge: Selection and Amplification > The Amplification Cascade:",
+      "source_block_indices": [
+        5323,
+        5324,
+        5325,
+        5326,
+        5327,
+        5328,
+        5329,
+        5330
+      ],
+      "source_equation_ids": [
+        "P0R05323:the_amplification_cascade",
+        "P0R05324:the_amplification_cascade"
+      ],
+      "source_formulae": [
+        "P0R05323: The Amplification Cascade:",
+        "P0R05324: L1/L2 Modulation: The Psi-field subtly modulates the energy landscape (Q) of critical molecular components (e.g., ion channels). | QSR Enhancement: QSR enhances the sensitivity of these components to the weak Psi-field signal amidst the inherent noise of the substrate. | Cellular Amplification: The neuron, poised at its firing threshold (cellular criticality), is highly sensitive to these small modulations, which can trigger an action potential. | Network Cascade (L4): In the Quasicritical L4 network (sigma1), this single event can trigger a neuronal avalanche, rapidly amplifying the localised quantum effect into a large-scale change in network dynamics."
+      ],
+      "source_ledger_ids": [
+        "P0R05323",
+        "P0R05324",
+        "P0R05325",
+        "P0R05326",
+        "P0R05327",
+        "P0R05328",
+        "P0R05329",
+        "P0R05330"
+      ],
+      "source_record_ids": [
+        "P0B05323",
+        "P0B05324",
+        "P0B05325",
+        "P0B05326",
+        "P0B05327",
+        "P0B05328",
+        "P0B05329",
+        "P0B05330"
+      ],
+      "test_protocols": [
+        "preserve The Amplification Cascade: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_amplification_cascade.the_amplification_cascade",
+      "validation_targets": [
+        "preserve records P0R05323-P0R05324"
+      ],
+      "variables": [
+        "the_amplification_cascade"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Morphogenetic Blueprint (Layers 3-4): Here, we explore the Genomic-Epigenomic-Morphogenetic (Layer 3) layer, framing DNA as a resonant fractal antenna that reads and writes information via CISS and bioelectric codes. This blueprint guides the formation of the organism, whose tissues then learn to oscillate in unison in the Cellular-Tissue Synchronisation (Layer 4) layer, where coherent rhythms emerge from networks operating at quasicriticality.' preserves Paper 0 records P0R05325-P0R05330 without empirical validation claims.",
+      "claim_boundary": "source-bounded the amplification cascade source-accounting bridge; not validation evidence",
+      "context_id": "the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05325-P0R05330"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_amplification_cascade.the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Morphogenetic Blueprint (Layers 3-4): Here, we explore the Genomic-Epigenomic-Morphogenetic (Layer 3) layer, framing DNA as a resonant fractal antenna that reads and writes information via CISS and bioelectric codes. This blueprint guides the formation of the organism, whose tissues then learn to oscillate in unison in the Cellular-Tissue Synchronisation (Layer 4) layer, where coherent rhythms emerge from networks operating at quasicriticality. is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Domain I: The Biological Substrate (Layers 1-4) > The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system. > The Quantum-Classical Bridge: Selection and Amplification > The Amplification Cascade:",
+      "source_block_indices": [
+        5323,
+        5324,
+        5325,
+        5326,
+        5327,
+        5328,
+        5329,
+        5330
+      ],
+      "source_equation_ids": [
+        "P0R05325:the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+        "P0R05326:the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+        "P0R05327:the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+        "P0R05328:the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+        "P0R05329:the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+        "P0R05330:the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige"
+      ],
+      "source_formulae": [
+        "P0R05325: The Morphogenetic Blueprint (Layers 3-4): Here, we explore the Genomic-Epigenomic-Morphogenetic (Layer 3) layer, framing DNA as a resonant fractal antenna that reads and writes information via CISS and bioelectric codes. This blueprint guides the formation of the organism, whose tissues then learn to oscillate in unison in the Cellular-Tissue Synchronisation (Layer 4) layer, where coherent rhythms emerge from networks operating at quasicriticality.",
+        "P0R05326: [IMAGE:]",
+        "P0R05327: Fig.: The Signature of Criticality",
+        "P0R05328: Blue power-law distribution of avalanche sizes -> straight line on log-log scales. | Annotated with tau 1.5 and equation P(S) S^tau. | Red dashed curve showing exponential decay as the Subcritical/Chaotic Regime. | Both axes set to logarithmic scaling with scientific clarity.",
+        "P0R05329: [IMAGE:]",
+        "P0R05330: DNA double helix (blue + red strands). | Electrons travelling along the sugar-phosphate backbone with spin filtering. | Spin-Up (green) preferred, Spin-Down (orange) suppressed. | Magnetic field loop around DNA, annotated as \"Resonant Antenna for Psi-Field Coupling.\""
+      ],
+      "source_ledger_ids": [
+        "P0R05323",
+        "P0R05324",
+        "P0R05325",
+        "P0R05326",
+        "P0R05327",
+        "P0R05328",
+        "P0R05329",
+        "P0R05330"
+      ],
+      "source_record_ids": [
+        "P0B05323",
+        "P0B05324",
+        "P0B05325",
+        "P0B05326",
+        "P0B05327",
+        "P0B05328",
+        "P0B05329",
+        "P0B05330"
+      ],
+      "test_protocols": [
+        "preserve The Morphogenetic Blueprint (Layers 3-4): Here, we explore the Genomic-Epigenomic-Morphogenetic (Layer 3) layer, framing DNA as a resonant fractal antenna that reads and writes information via CISS and bioelectric codes. This blueprint guides the formation of the organism, whose tissues then learn to oscillate in unison in the Cellular-Tissue Synchronisation (Layer 4) layer, where coherent rhythms emerge from networks operating at quasicriticality. source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_amplification_cascade.the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige",
+      "validation_targets": [
+        "preserve records P0R05325-P0R05330"
+      ],
+      "variables": [
+        "the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "BulletList": 2,
+      "Header": 2,
+      "OrderedList": 1,
+      "Para": 3
+    },
+    "category_counts": {
+      "context": 3,
+      "figure": 2,
+      "mechanism": 3
+    },
+    "claim_boundary": "source-bounded the amplification cascade source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 8,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [
+      "IMG0147",
+      "IMG0148"
+    ],
+    "math_ids": [],
+    "next_source_boundary": "P0R05331",
+    "source_ledger_span": [
+      "P0R05323",
+      "P0R05330"
+    ],
+    "source_record_count": 8,
+    "spec_count": 2,
+    "spec_keys": [
+      "the_amplification_cascade.the_amplification_cascade",
+      "the_amplification_cascade.the_morphogenetic_blueprint_layers_3_4_here_we_explore_the_genomic_epige"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Amplification Cascade: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,552 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The opening identifies Paper 0 as the Book II foundation for SCPN architecture.",
+      "claim_boundary": "source-bounded opening foundation; not empirical validation evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve Book II identity",
+        "preserve Paper 0 foundation role",
+        "reject title text as empirical evidence"
+      ],
+      "foundation_id": "book_identity",
+      "hardware_status": "source_foundation_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "opening_foundation.book_identity",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "identity-as-evidence control must be rejected",
+        "missing-foundation-role control must be rejected",
+        "wrong-book-layer control must be rejected"
+      ],
+      "null_results": [
+        "identity text is not a validation result"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "source_equation_ids": [
+        "P0R00001:book_identity",
+        "P0R00004:scp_network_definition",
+        "P0R00008:foundation_stone_note"
+      ],
+      "source_formulae": [
+        "SCPN, Book II -- An Architecture for Reality"
+      ],
+      "source_ledger_ids": [
+        "P0R00001",
+        "P0R00002",
+        "P0R00003",
+        "P0R00004",
+        "P0R00005",
+        "P0R00006",
+        "P0R00007",
+        "P0R00008",
+        "P0R00009",
+        "P0R00010",
+        "P0R00011",
+        "P0R00012",
+        "P0R00013",
+        "P0R00014",
+        "P0R00015",
+        "P0R00016",
+        "P0R00017"
+      ],
+      "source_record_ids": [
+        "P0B00001",
+        "P0B00002",
+        "P0B00003",
+        "P0B00004",
+        "P0B00005",
+        "P0B00006",
+        "P0B00007",
+        "P0B00008",
+        "P0B00009",
+        "P0B00010",
+        "P0B00011",
+        "P0B00012",
+        "P0B00013",
+        "P0B00014",
+        "P0B00015",
+        "P0B00016",
+        "P0B00017"
+      ],
+      "test_protocols": [
+        "preserve title, abstract role, and foundation-boundary status"
+      ],
+      "validation_protocol": "paper0.opening_foundation.book_identity",
+      "validation_targets": [
+        "preserve Book II identity",
+        "preserve Paper 0 foundation role",
+        "reject title text as empirical evidence"
+      ],
+      "variables": [
+        "SCPN",
+        "Book II",
+        "Paper 0"
+      ]
+    },
+    {
+      "canonical_statement": "The abstract frames SCPN as a self-organising quasicritical system stabilised by SOC and protected by MS-QEC.",
+      "claim_boundary": "source-bounded opening foundation; not empirical validation evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve quasicritical system framing",
+        "preserve SOC stabilisation claim boundary",
+        "preserve MS-QEC protection claim boundary"
+      ],
+      "foundation_id": "quasicritical_ms_qec",
+      "hardware_status": "source_foundation_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "opening_foundation.quasicritical_ms_qec",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "abstract-as-SOC-proof control must be rejected",
+        "missing-MS-QEC-boundary control must be rejected",
+        "unwired-layer-bridge control must be rejected"
+      ],
+      "null_results": [
+        "abstract framing alone does not establish SOC or MS-QEC in data"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "source_equation_ids": [
+        "P0R00005:quasicritical_soc_ms_qec",
+        "P0R00006:multi_scale_bridge"
+      ],
+      "source_formulae": [
+        "self-organising quasicritical system",
+        "Self-Organised Criticality and Multi-Scale Quantum Error Correction"
+      ],
+      "source_ledger_ids": [
+        "P0R00001",
+        "P0R00002",
+        "P0R00003",
+        "P0R00004",
+        "P0R00005",
+        "P0R00006",
+        "P0R00007",
+        "P0R00008",
+        "P0R00009",
+        "P0R00010",
+        "P0R00011",
+        "P0R00012",
+        "P0R00013",
+        "P0R00014",
+        "P0R00015",
+        "P0R00016",
+        "P0R00017"
+      ],
+      "source_record_ids": [
+        "P0B00001",
+        "P0B00002",
+        "P0B00003",
+        "P0B00004",
+        "P0B00005",
+        "P0B00006",
+        "P0B00007",
+        "P0B00008",
+        "P0B00009",
+        "P0B00010",
+        "P0B00011",
+        "P0B00012",
+        "P0B00013",
+        "P0B00014",
+        "P0B00015",
+        "P0B00016",
+        "P0B00017"
+      ],
+      "test_protocols": [
+        "preserve quasicritical, SOC, and MS-QEC as hypotheses requiring later validation"
+      ],
+      "validation_protocol": "paper0.opening_foundation.quasicritical_ms_qec",
+      "validation_targets": [
+        "preserve quasicritical system framing",
+        "preserve SOC stabilisation claim boundary",
+        "preserve MS-QEC protection claim boundary"
+      ],
+      "variables": [
+        "SOC",
+        "MS_QEC",
+        "quasicriticality"
+      ]
+    },
+    {
+      "canonical_statement": "Cybernetic closure is framed through H_rec at Meta-Layer 16 stabilising the L15 teleological objective.",
+      "claim_boundary": "source-bounded opening foundation; not empirical validation evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve cybernetic closure claim boundary",
+        "preserve L15/Meta-Layer 16 relation",
+        "preserve falsifiable-observable requirement"
+      ],
+      "foundation_id": "recursive_optimisation",
+      "hardware_status": "source_foundation_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "opening_foundation.recursive_optimisation",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "H-rec-as-executed-result control must be rejected",
+        "missing-L15-link control must be rejected",
+        "missing-falsifier control must be rejected"
+      ],
+      "null_results": [
+        "H_rec mention is not a measured closure result"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "source_equation_ids": [
+        "P0R00007:H_rec_cybernetic_closure",
+        "P0R00008:falsifiable_observables_boundary"
+      ],
+      "source_formulae": [
+        "H_rec stabilises L15 teleological objective"
+      ],
+      "source_ledger_ids": [
+        "P0R00001",
+        "P0R00002",
+        "P0R00003",
+        "P0R00004",
+        "P0R00005",
+        "P0R00006",
+        "P0R00007",
+        "P0R00008",
+        "P0R00009",
+        "P0R00010",
+        "P0R00011",
+        "P0R00012",
+        "P0R00013",
+        "P0R00014",
+        "P0R00015",
+        "P0R00016",
+        "P0R00017"
+      ],
+      "source_record_ids": [
+        "P0B00001",
+        "P0B00002",
+        "P0B00003",
+        "P0B00004",
+        "P0B00005",
+        "P0B00006",
+        "P0B00007",
+        "P0B00008",
+        "P0B00009",
+        "P0B00010",
+        "P0B00011",
+        "P0B00012",
+        "P0B00013",
+        "P0B00014",
+        "P0B00015",
+        "P0B00016",
+        "P0B00017"
+      ],
+      "test_protocols": [
+        "preserve recursive-optimisation framing as a later validation target"
+      ],
+      "validation_protocol": "paper0.opening_foundation.recursive_optimisation",
+      "validation_targets": [
+        "preserve cybernetic closure claim boundary",
+        "preserve L15/Meta-Layer 16 relation",
+        "preserve falsifiable-observable requirement"
+      ],
+      "variables": [
+        "H_rec",
+        "L15",
+        "Meta_Layer_16"
+      ]
+    },
+    {
+      "canonical_statement": "Every application, simulation, or device run is anchored in EBS and exchanges through T1-T7 terminals.",
+      "claim_boundary": "source-bounded opening foundation; not empirical validation evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve EBS anchoring requirement",
+        "preserve C0 boundary members",
+        "preserve F0 terminal members"
+      ],
+      "foundation_id": "ebs_terminal_anchor",
+      "hardware_status": "source_foundation_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "opening_foundation.ebs_terminal_anchor",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "missing-C0-member control must be rejected",
+        "unknown-terminal control must be rejected",
+        "free-boundary control must be rejected"
+      ],
+      "null_results": [
+        "missing EBS or terminal binding invalidates empirical claim tracking"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "source_equation_ids": [
+        "P0R00011:ebs_anchor",
+        "P0R00013:C0_boundary_set",
+        "P0R00014:F0_terminal_set"
+      ],
+      "source_formulae": [
+        "C_0 = {G_local, F_env, G_cosmic, O_state}",
+        "F_0 = {T1, T2, T3, T4, T5, T6, T7}"
+      ],
+      "source_ledger_ids": [
+        "P0R00001",
+        "P0R00002",
+        "P0R00003",
+        "P0R00004",
+        "P0R00005",
+        "P0R00006",
+        "P0R00007",
+        "P0R00008",
+        "P0R00009",
+        "P0R00010",
+        "P0R00011",
+        "P0R00012",
+        "P0R00013",
+        "P0R00014",
+        "P0R00015",
+        "P0R00016",
+        "P0R00017"
+      ],
+      "source_record_ids": [
+        "P0B00001",
+        "P0B00002",
+        "P0B00003",
+        "P0B00004",
+        "P0B00005",
+        "P0B00006",
+        "P0B00007",
+        "P0B00008",
+        "P0B00009",
+        "P0B00010",
+        "P0B00011",
+        "P0B00012",
+        "P0B00013",
+        "P0B00014",
+        "P0B00015",
+        "P0B00016",
+        "P0B00017"
+      ],
+      "test_protocols": [
+        "validate boundary set and terminal set membership"
+      ],
+      "validation_protocol": "paper0.opening_foundation.ebs_terminal_anchor",
+      "validation_targets": [
+        "preserve EBS anchoring requirement",
+        "preserve C0 boundary members",
+        "preserve F0 terminal members"
+      ],
+      "variables": [
+        "C_0",
+        "F_0",
+        "EBS",
+        "T1_T7"
+      ]
+    },
+    {
+      "canonical_statement": "The global axiom allows no free, untracked boundary conditions.",
+      "claim_boundary": "source-bounded opening foundation; not empirical validation evidence",
+      "domain_review_status": "promoted_to_validation_spec",
+      "executable_validation_targets": [
+        "preserve beta0 membership assertion",
+        "preserve no-free-boundary axiom",
+        "preserve active-terminal subset requirement"
+      ],
+      "foundation_id": "global_axiom",
+      "hardware_status": "source_foundation_no_experiment",
+      "implementation_status": "implemented_executable_fixture",
+      "key": "opening_foundation.global_boundary_axiom",
+      "manuscript": "Paper 0 - The Foundational Framework",
+      "null_controls": [
+        "free-boundary control must be rejected",
+        "unknown-terminal control must be rejected",
+        "empty-terminal-subset control must be rejected"
+      ],
+      "null_results": [
+        "untracked boundary conditions fail the global axiom"
+      ],
+      "section_path": "",
+      "source_block_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "source_equation_ids": [
+        "P0R00011:ebs_anchor",
+        "P0R00013:C0_boundary_set",
+        "P0R00014:F0_terminal_set",
+        "P0R00016:beta0_boundary_assertion",
+        "P0R00017:no_free_boundary_conditions"
+      ],
+      "source_formulae": [
+        "beta_0(E,A): all layers get boundaries from E in B and interactions occur via A subset T",
+        "no free, untracked boundary conditions"
+      ],
+      "source_ledger_ids": [
+        "P0R00001",
+        "P0R00002",
+        "P0R00003",
+        "P0R00004",
+        "P0R00005",
+        "P0R00006",
+        "P0R00007",
+        "P0R00008",
+        "P0R00009",
+        "P0R00010",
+        "P0R00011",
+        "P0R00012",
+        "P0R00013",
+        "P0R00014",
+        "P0R00015",
+        "P0R00016",
+        "P0R00017"
+      ],
+      "source_record_ids": [
+        "P0B00001",
+        "P0B00002",
+        "P0B00003",
+        "P0B00004",
+        "P0B00005",
+        "P0B00006",
+        "P0B00007",
+        "P0B00008",
+        "P0B00009",
+        "P0B00010",
+        "P0B00011",
+        "P0B00012",
+        "P0B00013",
+        "P0B00014",
+        "P0B00015",
+        "P0B00016",
+        "P0B00017"
+      ],
+      "test_protocols": [
+        "reject unknown boundary members",
+        "reject unknown terminal IDs",
+        "reject empty active terminal subsets"
+      ],
+      "validation_protocol": "paper0.opening_foundation.global_boundary_axiom",
+      "validation_targets": [
+        "preserve beta0 membership assertion",
+        "preserve no-free-boundary axiom",
+        "preserve active-terminal subset requirement"
+      ],
+      "variables": [
+        "beta_0",
+        "E",
+        "A",
+        "B",
+        "T"
+      ]
+    }
+  ],
+  "summary": {
+    "all_specs_are_source_anchored": true,
+    "all_specs_have_null_controls": true,
+    "boundary_set_size": 4,
+    "claim_boundary": "source-bounded opening foundation; not empirical validation evidence",
+    "consumed_source_record_count": 17,
+    "coverage_match": true,
+    "hardware_status": "source_foundation_no_experiment",
+    "source_ledger_span": [
+      "P0R00001",
+      "P0R00017"
+    ],
+    "source_record_count": 17,
+    "spec_count": 5,
+    "spec_keys": [
+      "opening_foundation.book_identity",
+      "opening_foundation.quasicritical_ms_qec",
+      "opening_foundation.recursive_optimisation",
+      "opening_foundation.ebs_terminal_anchor",
+      "opening_foundation.global_boundary_axiom"
+    ],
+    "terminal_count": 7,
+    "title": "Paper 0 Opening Foundation Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

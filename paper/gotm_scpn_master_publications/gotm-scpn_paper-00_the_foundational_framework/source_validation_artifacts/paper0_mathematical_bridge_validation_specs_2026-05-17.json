@@ -1,0 +1,219 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Mathematical Bridge:' preserves Paper 0 records P0R03427-P0R03433 without empirical validation claims.",
+      "claim_boundary": "source-bounded mathematical bridge source-accounting bridge; not validation evidence",
+      "context_id": "mathematical_bridge",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03427-P0R03433"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "mathematical_bridge.mathematical_bridge",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "mathematical_bridge must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Mathematical Bridge: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Confronting the Hard Problem: A Mathematical Resolution > The Hard Problem: A Mathematical Resolution > Mathematical Bridge:",
+      "source_block_indices": [
+        3427,
+        3428,
+        3429,
+        3430,
+        3431,
+        3432,
+        3433,
+        3434,
+        3435,
+        3436,
+        3437,
+        3438,
+        3439
+      ],
+      "source_equation_ids": [
+        "P0R03427:mathematical_bridge",
+        "P0R03428:mathematical_bridge",
+        "P0R03429:mathematical_bridge",
+        "P0R03430:mathematical_bridge",
+        "P0R03431:mathematical_bridge",
+        "P0R03432:mathematical_bridge",
+        "P0R03433:mathematical_bridge"
+      ],
+      "source_formulae": [
+        "P0R03427: Mathematical Bridge:",
+        "P0R03428: Physical -> Experiential",
+        "P0R03429: Neural state space: X R^N",
+        "P0R03430: Qualia space: Q M (manifold)",
+        "P0R03431: The mapping: f: X -> Q is not emergence but projection",
+        "P0R03432: f = Psi-field x Neural_substrate",
+        "P0R03433: Experience = f/t (the dynamics of projection)"
+      ],
+      "source_ledger_ids": [
+        "P0R03427",
+        "P0R03428",
+        "P0R03429",
+        "P0R03430",
+        "P0R03431",
+        "P0R03432",
+        "P0R03433",
+        "P0R03434",
+        "P0R03435",
+        "P0R03436",
+        "P0R03437",
+        "P0R03438",
+        "P0R03439"
+      ],
+      "source_record_ids": [
+        "P0B03427",
+        "P0B03428",
+        "P0B03429",
+        "P0B03430",
+        "P0B03431",
+        "P0B03432",
+        "P0B03433",
+        "P0B03434",
+        "P0B03435",
+        "P0B03436",
+        "P0B03437",
+        "P0B03438",
+        "P0B03439"
+      ],
+      "test_protocols": [
+        "preserve Mathematical Bridge: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.mathematical_bridge.mathematical_bridge",
+      "validation_targets": [
+        "preserve records P0R03427-P0R03433"
+      ],
+      "variables": [
+        "mathematical_bridge"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Why There's Something It's Like:' preserves Paper 0 records P0R03434-P0R03439 without empirical validation claims.",
+      "claim_boundary": "source-bounded mathematical bridge source-accounting bridge; not validation evidence",
+      "context_id": "why_there_s_something_it_s_like",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R03434-P0R03439"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "mathematical_bridge.why_there_s_something_it_s_like",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "why_there_s_something_it_s_like must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Why There's Something It's Like: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > 4.2 The Shape of Feeling: The Geometric Qualia Hypothesis > Confronting the Hard Problem: A Mathematical Resolution > The Hard Problem: A Mathematical Resolution > Mathematical Bridge:",
+      "source_block_indices": [
+        3427,
+        3428,
+        3429,
+        3430,
+        3431,
+        3432,
+        3433,
+        3434,
+        3435,
+        3436,
+        3437,
+        3438,
+        3439
+      ],
+      "source_equation_ids": [
+        "P0R03434:why_there_s_something_it_s_like",
+        "P0R03435:why_there_s_something_it_s_like",
+        "P0R03436:why_there_s_something_it_s_like",
+        "P0R03437:why_there_s_something_it_s_like",
+        "P0R03438:why_there_s_something_it_s_like",
+        "P0R03439:why_there_s_something_it_s_like"
+      ],
+      "source_formulae": [
+        "P0R03434: Why There's Something It's Like:",
+        "P0R03435: Observer_experience = I[Model(I)]",
+        "P0R03436: This strange loop creates \"what it's like\":",
+        "P0R03437: - The model models itself",
+        "P0R03438: - Creating a fixed point: I* where I* = Model(I*)",
+        "P0R03439: - This fixed point IS subjective experience"
+      ],
+      "source_ledger_ids": [
+        "P0R03427",
+        "P0R03428",
+        "P0R03429",
+        "P0R03430",
+        "P0R03431",
+        "P0R03432",
+        "P0R03433",
+        "P0R03434",
+        "P0R03435",
+        "P0R03436",
+        "P0R03437",
+        "P0R03438",
+        "P0R03439"
+      ],
+      "source_record_ids": [
+        "P0B03427",
+        "P0B03428",
+        "P0B03429",
+        "P0B03430",
+        "P0B03431",
+        "P0B03432",
+        "P0B03433",
+        "P0B03434",
+        "P0B03435",
+        "P0B03436",
+        "P0B03437",
+        "P0B03438",
+        "P0B03439"
+      ],
+      "test_protocols": [
+        "preserve Why There's Something It's Like: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.mathematical_bridge.why_there_s_something_it_s_like",
+      "validation_targets": [
+        "preserve records P0R03434-P0R03439"
+      ],
+      "variables": [
+        "why_there_s_something_it_s_like"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 2,
+      "Para": 11
+    },
+    "category_counts": {
+      "claim": 3,
+      "context": 8,
+      "mechanism": 2
+    },
+    "claim_boundary": "source-bounded mathematical bridge source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 13,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R03440",
+    "source_ledger_span": [
+      "P0R03427",
+      "P0R03439"
+    ],
+    "source_record_count": 13,
+    "spec_count": 2,
+    "spec_keys": [
+      "mathematical_bridge.mathematical_bridge",
+      "mathematical_bridge.why_there_s_something_it_s_like"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Mathematical Bridge: Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

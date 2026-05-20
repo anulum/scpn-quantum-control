@@ -1,0 +1,55 @@
+{
+  "accelerated_sigma": 1.575,
+  "baseline_coupling_sum": 8.399999999999999,
+  "baseline_sigma": 0.9,
+  "claim_boundary": "simulator-only L11 boundary; not societal evidence",
+  "coherent_frustration": 0.0,
+  "effective_temperature_gain": 0.4,
+  "fragmented_frustration": 0.5,
+  "frustration_delta": 0.5,
+  "hardware_status": "simulator_only_no_provider_submission",
+  "hybrid_coupling_gain": 2.8000000000000007,
+  "hybrid_coupling_sum": 11.2,
+  "null_controls": {
+    "asymmetric_matrix_rejection_label": 1.0,
+    "baseline_supercritical_label": 0.0,
+    "coherent_spin_glass_risk_label": 0.0,
+    "non_finite_matrix_rejection_label": 1.0,
+    "non_positive_sigma_rejection_label": 1.0,
+    "non_symmetric_signed_graph_rejection_label": 1.0,
+    "shape_mismatch_rejection_label": 1.0,
+    "zero_gain_delta_abs": 0.0,
+    "zero_gain_sigma_delta_abs": 0.0
+  },
+  "problem_metadata": {
+    "fragmentation": {
+      "claim_boundary": "simulator-only L11 boundary; not societal evidence",
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_validation_protocol": "paper0.applied.l11_interface.fragmentation_spin_glass_risk",
+      "simulator_only_l11_boundary": true,
+      "spin_glass_risk_threshold": 0.25
+    },
+    "hybrid": {
+      "claim_boundary": "simulator-only L11 boundary; not societal evidence",
+      "hardware_status": "simulator_only_no_provider_submission",
+      "node_count": 4,
+      "paper0_validation_protocol": "paper0.applied.l11_interface.hybrid_collective_coupling",
+      "simulator_only_l11_boundary": true
+    },
+    "supercriticality": {
+      "claim_boundary": "simulator-only L11 boundary; not societal evidence",
+      "hardware_status": "simulator_only_no_provider_submission",
+      "paper0_validation_protocol": "paper0.applied.l11_interface.accelerated_supercriticality_boundary",
+      "simulator_only_l11_boundary": true,
+      "supercritical_threshold": 1.0
+    }
+  },
+  "runtime_ms": 5.138353997608647,
+  "spec_keys": [
+    "applied.l11_interface.hybrid_collective_coupling",
+    "applied.l11_interface.accelerated_supercriticality_boundary",
+    "applied.l11_interface.fragmentation_spin_glass_risk"
+  ],
+  "spin_glass_risk_label": true,
+  "supercritical_label": true
+}

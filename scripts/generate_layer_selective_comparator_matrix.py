@@ -9,7 +9,7 @@
 """Generate the no-submit layer-selective layout comparator matrix.
 
 This implements the missing offline prerequisite from
-``docs/layer_selective_qubit_assignment_prereg_2026-05-06.md``: default,
+``docs/campaigns/layer_selective_qubit_assignment_prereg_2026-05-06.md``: default,
 SABRE, and true layer-selective transpilation rows are generated from the
 same backend snapshot before any QPU hardware follow-up can be considered.
 The script opens a provider session only to inspect backend target/calibration

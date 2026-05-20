@@ -1,0 +1,323 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system.' preserves Paper 0 records P0R05314-P0R05314 without empirical validation claims.",
+      "claim_boundary": "source-bounded the quantum engine layers 1 2 we begin with the quantum biological layer source-accounting bridge; not validation evidence",
+      "context_id": "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05314-P0R05314"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system. is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Domain I: The Biological Substrate (Layers 1-4) > The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system.",
+      "source_block_indices": [
+        5314,
+        5315,
+        5316,
+        5317,
+        5318,
+        5319,
+        5320,
+        5321,
+        5322
+      ],
+      "source_equation_ids": [
+        "P0R05314:the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer"
+      ],
+      "source_formulae": [
+        "P0R05314: The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system."
+      ],
+      "source_ledger_ids": [
+        "P0R05314",
+        "P0R05315",
+        "P0R05316",
+        "P0R05317",
+        "P0R05318",
+        "P0R05319",
+        "P0R05320",
+        "P0R05321",
+        "P0R05322"
+      ],
+      "source_record_ids": [
+        "P0B05314",
+        "P0B05315",
+        "P0B05316",
+        "P0B05317",
+        "P0B05318",
+        "P0B05319",
+        "P0B05320",
+        "P0B05321",
+        "P0B05322"
+      ],
+      "test_protocols": [
+        "preserve The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system. source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer",
+      "validation_targets": [
+        "preserve records P0R05314-P0R05314"
+      ],
+      "variables": [
+        "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Quantum-Classical Bridge: Selection and Amplification' preserves Paper 0 records P0R05315-P0R05316 without empirical validation claims.",
+      "claim_boundary": "source-bounded the quantum engine layers 1 2 we begin with the quantum biological layer source-accounting bridge; not validation evidence",
+      "context_id": "the_quantum_classical_bridge_selection_and_amplification",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05315-P0R05316"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.the_quantum_classical_bridge_selection_and_amplification",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_quantum_classical_bridge_selection_and_amplification must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Quantum-Classical Bridge: Selection and Amplification is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Domain I: The Biological Substrate (Layers 1-4) > The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system.",
+      "source_block_indices": [
+        5314,
+        5315,
+        5316,
+        5317,
+        5318,
+        5319,
+        5320,
+        5321,
+        5322
+      ],
+      "source_equation_ids": [
+        "P0R05315:the_quantum_classical_bridge_selection_and_amplification",
+        "P0R05316:the_quantum_classical_bridge_selection_and_amplification"
+      ],
+      "source_formulae": [
+        "P0R05315: The Quantum-Classical Bridge: Selection and Amplification",
+        "P0R05316: The transition from the quantum potentiality of L1 to the classical dynamics of L4 requires two distinct mechanisms: Selection (the emergence of classical reality) and Amplification."
+      ],
+      "source_ledger_ids": [
+        "P0R05314",
+        "P0R05315",
+        "P0R05316",
+        "P0R05317",
+        "P0R05318",
+        "P0R05319",
+        "P0R05320",
+        "P0R05321",
+        "P0R05322"
+      ],
+      "source_record_ids": [
+        "P0B05314",
+        "P0B05315",
+        "P0B05316",
+        "P0B05317",
+        "P0B05318",
+        "P0B05319",
+        "P0B05320",
+        "P0B05321",
+        "P0B05322"
+      ],
+      "test_protocols": [
+        "preserve The Quantum-Classical Bridge: Selection and Amplification source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.the_quantum_classical_bridge_selection_and_amplification",
+      "validation_targets": [
+        "preserve records P0R05315-P0R05316"
+      ],
+      "variables": [
+        "the_quantum_classical_bridge_selection_and_amplification"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'I. Guided Einselection (The Emergence of Classicality)' preserves Paper 0 records P0R05317-P0R05319 without empirical validation claims.",
+      "claim_boundary": "source-bounded the quantum engine layers 1 2 we begin with the quantum biological layer source-accounting bridge; not validation evidence",
+      "context_id": "i_guided_einselection_the_emergence_of_classicality",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05317-P0R05319"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.i_guided_einselection_the_emergence_of_classicality",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "i_guided_einselection_the_emergence_of_classicality must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "I. Guided Einselection (The Emergence of Classicality) is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Domain I: The Biological Substrate (Layers 1-4) > The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system.",
+      "source_block_indices": [
+        5314,
+        5315,
+        5316,
+        5317,
+        5318,
+        5319,
+        5320,
+        5321,
+        5322
+      ],
+      "source_equation_ids": [
+        "P0R05317:i_guided_einselection_the_emergence_of_classicality",
+        "P0R05318:i_guided_einselection_the_emergence_of_classicality",
+        "P0R05319:i_guided_einselection_the_emergence_of_classicality"
+      ],
+      "source_formulae": [
+        "P0R05317: I. Guided Einselection (The Emergence of Classicality)",
+        "P0R05318: The transition from quantum superposition (L1) to stable classical states (L2) is formalised by Quantum Darwinism and Environment-Induced Superselection (Einselection). Classical reality emerges as the environment continuously \"measures\" the system, selecting stable \"pointer states.\"",
+        "P0R05319: Within the SCPN, the Psi-field acts as the primary \"environment\" (E). The interaction Hamiltonian (H_Int=L_IET) determines which states are selected. Crucially, the Psi-field, guided by the HPC generative model (L5 intent), actively selects the pointer basis. States aligned with the generative model are preferentially stabilised (Guided Einselection) via the Quantum Zeno Effect (QZE) and proliferated, while dissonant states decohere."
+      ],
+      "source_ledger_ids": [
+        "P0R05314",
+        "P0R05315",
+        "P0R05316",
+        "P0R05317",
+        "P0R05318",
+        "P0R05319",
+        "P0R05320",
+        "P0R05321",
+        "P0R05322"
+      ],
+      "source_record_ids": [
+        "P0B05314",
+        "P0B05315",
+        "P0B05316",
+        "P0B05317",
+        "P0B05318",
+        "P0B05319",
+        "P0B05320",
+        "P0B05321",
+        "P0B05322"
+      ],
+      "test_protocols": [
+        "preserve I. Guided Einselection (The Emergence of Classicality) source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.i_guided_einselection_the_emergence_of_classicality",
+      "validation_targets": [
+        "preserve records P0R05317-P0R05319"
+      ],
+      "variables": [
+        "i_guided_einselection_the_emergence_of_classicality"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'II. The Amplification Mechanism: Quantum Stochastic Resonance (QSR) at Criticality' preserves Paper 0 records P0R05320-P0R05322 without empirical validation claims.",
+      "claim_boundary": "source-bounded the quantum engine layers 1 2 we begin with the quantum biological layer source-accounting bridge; not validation evidence",
+      "context_id": "ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R05320-P0R05322"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "II. The Amplification Mechanism: Quantum Stochastic Resonance (QSR) at Criticality is not empirical validation evidence"
+      ],
+      "section_path": "Structural Overview (by Domain) > Domain I: The Biological Substrate (Layers 1-4) > The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system.",
+      "source_block_indices": [
+        5314,
+        5315,
+        5316,
+        5317,
+        5318,
+        5319,
+        5320,
+        5321,
+        5322
+      ],
+      "source_equation_ids": [
+        "P0R05320:ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti",
+        "P0R05321:ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti",
+        "P0R05322:ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti"
+      ],
+      "source_formulae": [
+        "P0R05320: II. The Amplification Mechanism: Quantum Stochastic Resonance (QSR) at Criticality",
+        "P0R05321: The mechanism to amplify localised quantum fluctuations into macroscopic effects (e.g., altering an action potential) is the interplay of Quantum Stochastic Resonance (QSR) and the Quasicritical state of the L4 network.",
+        "P0R05322: In QSR, an optimal level of noise enhances the detection of a weak signal in a non-linear system. Here, the \"weak signal\" is the coherent modulation of the Quantum Potential (Q) by the Psi-field via IET (L1/L2)."
+      ],
+      "source_ledger_ids": [
+        "P0R05314",
+        "P0R05315",
+        "P0R05316",
+        "P0R05317",
+        "P0R05318",
+        "P0R05319",
+        "P0R05320",
+        "P0R05321",
+        "P0R05322"
+      ],
+      "source_record_ids": [
+        "P0B05314",
+        "P0B05315",
+        "P0B05316",
+        "P0B05317",
+        "P0B05318",
+        "P0B05319",
+        "P0B05320",
+        "P0B05321",
+        "P0B05322"
+      ],
+      "test_protocols": [
+        "preserve II. The Amplification Mechanism: Quantum Stochastic Resonance (QSR) at Criticality source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti",
+      "validation_targets": [
+        "preserve records P0R05320-P0R05322"
+      ],
+      "variables": [
+        "ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 4,
+      "Para": 5
+    },
+    "category_counts": {
+      "claim": 1,
+      "context": 3,
+      "mechanism": 5
+    },
+    "claim_boundary": "source-bounded the quantum engine layers 1 2 we begin with the quantum biological layer source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R05323",
+    "source_ledger_span": [
+      "P0R05314",
+      "P0R05322"
+    ],
+    "source_record_count": 9,
+    "spec_count": 4,
+    "spec_keys": [
+      "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer",
+      "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.the_quantum_classical_bridge_selection_and_amplification",
+      "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.i_guided_einselection_the_emergence_of_classicality",
+      "the_quantum_engine_layers_1_2_we_begin_with_the_quantum_biological_layer.ii_the_amplification_mechanism_quantum_stochastic_resonance_qsr_at_criti"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 The Quantum Engine (Layers 1-2): We begin with the Quantum Biological (Layer 1) substrate, where biological systems create order from quantum potentiality, stabilised by mechanisms like QEC and neuroimmune quantum effects. This quantum information is then transduced by the Neurochemical-Neurological (Layer 2) layer, which acts as a dynamic filter, translating field intent into the biochemical language of the nervous system. Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}

@@ -1,0 +1,391 @@
+{
+  "specs": [
+    {
+      "canonical_statement": "The source-bounded component 'Meta-Framework Integrations' preserves Paper 0 records P0R02098-P0R02098 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02098 source-accounting bridge; not validation evidence",
+      "context_id": "meta_framework_integrations",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02098-P0R02098"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02098.meta_framework_integrations",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "meta_framework_integrations must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Meta-Framework Integrations is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Meta-Framework Integrations",
+      "source_block_indices": [
+        2098,
+        2099,
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106
+      ],
+      "source_equation_ids": [
+        "P0R02098:meta_framework_integrations"
+      ],
+      "source_formulae": [
+        "P0R02098: Meta-Framework Integrations"
+      ],
+      "source_ledger_ids": [
+        "P0R02098",
+        "P0R02099",
+        "P0R02100",
+        "P0R02101",
+        "P0R02102",
+        "P0R02103",
+        "P0R02104",
+        "P0R02105",
+        "P0R02106"
+      ],
+      "source_record_ids": [
+        "P0B02098",
+        "P0B02099",
+        "P0B02100",
+        "P0B02101",
+        "P0B02102",
+        "P0B02103",
+        "P0B02104",
+        "P0B02105",
+        "P0B02106"
+      ],
+      "test_protocols": [
+        "preserve Meta-Framework Integrations source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02098.meta_framework_integrations",
+      "validation_targets": [
+        "preserve records P0R02098-P0R02098"
+      ],
+      "variables": [
+        "meta_framework_integrations"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Predictive Coding Integration' preserves Paper 0 records P0R02099-P0R02100 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02098 source-accounting bridge; not validation evidence",
+      "context_id": "predictive_coding_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02099-P0R02100"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02098.predictive_coding_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "predictive_coding_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Predictive Coding Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Meta-Framework Integrations",
+      "source_block_indices": [
+        2098,
+        2099,
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106
+      ],
+      "source_equation_ids": [
+        "P0R02099:predictive_coding_integration",
+        "P0R02100:predictive_coding_integration"
+      ],
+      "source_formulae": [
+        "P0R02099: Predictive Coding Integration",
+        "P0R02100: The Layer 3 framework is a textbook example of active inference implemented at the morphogenetic scale. It describes the precise biophysical mechanisms that execute the predictions of a generative model."
+      ],
+      "source_ledger_ids": [
+        "P0R02098",
+        "P0R02099",
+        "P0R02100",
+        "P0R02101",
+        "P0R02102",
+        "P0R02103",
+        "P0R02104",
+        "P0R02105",
+        "P0R02106"
+      ],
+      "source_record_ids": [
+        "P0B02098",
+        "P0B02099",
+        "P0B02100",
+        "P0B02101",
+        "P0B02102",
+        "P0B02103",
+        "P0B02104",
+        "P0B02105",
+        "P0B02106"
+      ],
+      "test_protocols": [
+        "preserve Predictive Coding Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02098.predictive_coding_integration",
+      "validation_targets": [
+        "preserve records P0R02099-P0R02100"
+      ],
+      "variables": [
+        "predictive_coding_integration"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'The Generative Model and its Predictions:' preserves Paper 0 records P0R02101-P0R02102 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02098 source-accounting bridge; not validation evidence",
+      "context_id": "the_generative_model_and_its_predictions",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02101-P0R02102"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02098.the_generative_model_and_its_predictions",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "the_generative_model_and_its_predictions must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "The Generative Model and its Predictions: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Meta-Framework Integrations",
+      "source_block_indices": [
+        2098,
+        2099,
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106
+      ],
+      "source_equation_ids": [
+        "P0R02101:the_generative_model_and_its_predictions",
+        "P0R02102:the_generative_model_and_its_predictions"
+      ],
+      "source_formulae": [
+        "P0R02101: The Generative Model and its Predictions:",
+        "P0R02102: The Organismal Field is the generative model, holding a deep, hierarchical set of priors about the organism's target morphology (its final, healthy form). The large-scale bioelectric field is the first, high-level prediction sent down from this model-a spatial map of the expected outcome."
+      ],
+      "source_ledger_ids": [
+        "P0R02098",
+        "P0R02099",
+        "P0R02100",
+        "P0R02101",
+        "P0R02102",
+        "P0R02103",
+        "P0R02104",
+        "P0R02105",
+        "P0R02106"
+      ],
+      "source_record_ids": [
+        "P0B02098",
+        "P0B02099",
+        "P0B02100",
+        "P0B02101",
+        "P0B02102",
+        "P0B02103",
+        "P0B02104",
+        "P0B02105",
+        "P0B02106"
+      ],
+      "test_protocols": [
+        "preserve The Generative Model and its Predictions: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02098.the_generative_model_and_its_predictions",
+      "validation_targets": [
+        "preserve records P0R02101-P0R02102"
+      ],
+      "variables": [
+        "the_generative_model_and_its_predictions"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Prediction Error Calculation and Model Update:' preserves Paper 0 records P0R02103-P0R02104 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02098 source-accounting bridge; not validation evidence",
+      "context_id": "prediction_error_calculation_and_model_update",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02103-P0R02104"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02098.prediction_error_calculation_and_model_update",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "prediction_error_calculation_and_model_update must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Prediction Error Calculation and Model Update: is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Meta-Framework Integrations",
+      "source_block_indices": [
+        2098,
+        2099,
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106
+      ],
+      "source_equation_ids": [
+        "P0R02103:prediction_error_calculation_and_model_update",
+        "P0R02104:prediction_error_calculation_and_model_update"
+      ],
+      "source_formulae": [
+        "P0R02103: Prediction Error Calculation and Model Update:",
+        "P0R02104: The state of individual cells-their current gene expression and position-represents the sensory evidence. The CISS-epigenetic mechanism is the core of the prediction error minimisation machinery. When a cell's state does not match the bioelectric prediction, the resulting ionic and electromagnetic dissonance alters the spin chemistry via CISS, which in turn modifies the cell's epigenetic state. This epigenetic change updates the cell's gene expression, causing it to differentiate, migrate, or proliferate to better match the prediction. Morphogenesis, therefore, is the process of cells physically moving and changing to minimise the error between the bioelectric blueprint and their current state."
+      ],
+      "source_ledger_ids": [
+        "P0R02098",
+        "P0R02099",
+        "P0R02100",
+        "P0R02101",
+        "P0R02102",
+        "P0R02103",
+        "P0R02104",
+        "P0R02105",
+        "P0R02106"
+      ],
+      "source_record_ids": [
+        "P0B02098",
+        "P0B02099",
+        "P0B02100",
+        "P0B02101",
+        "P0B02102",
+        "P0B02103",
+        "P0B02104",
+        "P0B02105",
+        "P0B02106"
+      ],
+      "test_protocols": [
+        "preserve Prediction Error Calculation and Model Update: source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02098.prediction_error_calculation_and_model_update",
+      "validation_targets": [
+        "preserve records P0R02103-P0R02104"
+      ],
+      "variables": [
+        "prediction_error_calculation_and_model_update"
+      ]
+    },
+    {
+      "canonical_statement": "The source-bounded component 'Psis Field Coupling Integration' preserves Paper 0 records P0R02105-P0R02106 without empirical validation claims.",
+      "claim_boundary": "source-bounded meta framework integrations p0r02098 source-accounting bridge; not validation evidence",
+      "context_id": "psis_field_coupling_integration",
+      "domain_review_status": "source_bounded_no_empirical_validation",
+      "executable_validation_targets": [
+        "preserve records P0R02105-P0R02106"
+      ],
+      "hardware_status": "source_methodology_no_experiment",
+      "implementation_status": "promoted_source_accounting_fixture",
+      "key": "meta_framework_integrations_p0r02098.psis_field_coupling_integration",
+      "manuscript": "Paper 0 foundational extraction",
+      "null_controls": [
+        "psis_field_coupling_integration must remain source-bounded accounting"
+      ],
+      "null_results": [
+        "Psis Field Coupling Integration is not empirical validation evidence"
+      ],
+      "section_path": "15-Layer Summary Table > Case Study: The Layer 3 (Genomic-Morphogenetic) Transduction Pathway > Meta-Framework Integrations",
+      "source_block_indices": [
+        2098,
+        2099,
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106
+      ],
+      "source_equation_ids": [
+        "P0R02105:psis_field_coupling_integration",
+        "P0R02106:psis_field_coupling_integration"
+      ],
+      "source_formulae": [
+        "P0R02105: Psis Field Coupling Integration",
+        "P0R02106: This framework provides a remarkably detailed, multi-scale account of how the universal interaction Hamiltonian, H_int = -lambda * Psis * sigma, translates into biological reality. It identifies multiple, coupled collective state variables (sigma)."
+      ],
+      "source_ledger_ids": [
+        "P0R02098",
+        "P0R02099",
+        "P0R02100",
+        "P0R02101",
+        "P0R02102",
+        "P0R02103",
+        "P0R02104",
+        "P0R02105",
+        "P0R02106"
+      ],
+      "source_record_ids": [
+        "P0B02098",
+        "P0B02099",
+        "P0B02100",
+        "P0B02101",
+        "P0B02102",
+        "P0B02103",
+        "P0B02104",
+        "P0B02105",
+        "P0B02106"
+      ],
+      "test_protocols": [
+        "preserve Psis Field Coupling Integration source-accounting boundary"
+      ],
+      "validation_protocol": "paper0.meta_framework_integrations_p0r02098.psis_field_coupling_integration",
+      "validation_targets": [
+        "preserve records P0R02105-P0R02106"
+      ],
+      "variables": [
+        "psis_field_coupling_integration"
+      ]
+    }
+  ],
+  "summary": {
+    "block_type_counts": {
+      "Header": 5,
+      "Para": 4
+    },
+    "category_counts": {
+      "context": 3,
+      "mechanism": 3,
+      "validation_target": 3
+    },
+    "claim_boundary": "source-bounded meta framework integrations p0r02098 source-accounting bridge; not validation evidence",
+    "consumed_source_record_count": 9,
+    "coverage_match": true,
+    "hardware_status": "source_methodology_no_experiment",
+    "image_ids": [],
+    "math_ids": [],
+    "next_source_boundary": "P0R02107",
+    "source_ledger_span": [
+      "P0R02098",
+      "P0R02106"
+    ],
+    "source_record_count": 9,
+    "spec_count": 5,
+    "spec_keys": [
+      "meta_framework_integrations_p0r02098.meta_framework_integrations",
+      "meta_framework_integrations_p0r02098.predictive_coding_integration",
+      "meta_framework_integrations_p0r02098.the_generative_model_and_its_predictions",
+      "meta_framework_integrations_p0r02098.prediction_error_calculation_and_model_update",
+      "meta_framework_integrations_p0r02098.psis_field_coupling_integration"
+    ],
+    "table_ids": [],
+    "title": "Paper 0 Meta-Framework Integrations Specs",
+    "unconsumed_source_ledger_ids": []
+  }
+}
