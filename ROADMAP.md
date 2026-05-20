@@ -100,6 +100,16 @@ is copied here.
   IQM, Pasqal, OQC, D-Wave, qBraid IonQ, Quandela photonics, and local
   simulators, plus fail-closed cloud submission and explicit approval tokens
   before any injected adapter can submit live QPU or managed-simulator work.
+- [x] **Qiskit HAL adapter integration.** Implemented 2026-05-20:
+  `hardware.hal_qiskit` adds base64-QPY and OpenQASM 3 workload conversion,
+  a local `QiskitAerHALAdapter`, and an approval-gated
+  `QiskitRuntimeHALAdapter` for IBM Runtime Sampler execution through the
+  provider-neutral HAL contract.
+- [x] **AWS Braket HAL adapter integration.** Implemented 2026-05-20:
+  `hardware.hal_braket` adds OpenQASM 3 workload conversion for Braket circuits,
+  local SV/DM simulator execution, and approval-gated AWS Braket device/task
+  submission through the provider-neutral HAL contract. Optional cloud broker
+  extras now expose `braket`, `azure`, and `qbraid` install groups.
 - [x] **Stable-core release/repro gate.** Use
   `scpn-bench stable-core-release-gate` before release notes, API changes, or
   public stable-core documentation changes. The bundle runs stable-core

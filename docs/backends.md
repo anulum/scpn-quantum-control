@@ -311,9 +311,13 @@ provider adapter, not the HAL registry.
 
 ```python
 from scpn_quantum_control.hardware import (
+    BraketLocalHALAdapter,
     HardwareAbstractionLayer,
     LocalDeterministicSimulator,
+    QiskitAerHALAdapter,
     QuantumWorkload,
+    braket_circuit_to_workload,
+    qiskit_circuit_to_workload,
 )
 
 hal = HardwareAbstractionLayer.with_builtin_profiles()
@@ -335,6 +339,56 @@ result = hal.result(job)
 Injected adapters implement `QuantumBackend.submit`, `status`, `result`, and
 `cancel`. The HAL validates workload id, IR format, qubit limits, shot count,
 backend registration, and approval before delegating.
+
+The Qiskit adapter layer provides:
+
+- `QiskitAerHALAdapter` for local `qiskit-aer` execution through HAL.
+- `QiskitRuntimeHALAdapter` for IBM Runtime Sampler execution through HAL.
+- `qiskit_circuit_to_workload()` for base64 QPY payloads. This is the preferred
+  high-fidelity Qiskit transport because it preserves circuit structure without
+  requiring lossy text conversion.
+- `qiskit_circuit_to_qasm3_workload()` for OpenQASM 3 payloads when the
+  `qiskit-qasm3-import` optional importer is installed.
+
+```python
+from qiskit import QuantumCircuit
+
+qc = QuantumCircuit(1, 1)
+qc.h(0)
+qc.measure(0, 0)
+
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(QiskitAerHALAdapter(hal.profile("local_qiskit_aer")))
+result = hal.result(
+    hal.submit(
+        "local_qiskit_aer",
+        qiskit_circuit_to_workload(qc, workload_id="h_sample", shots=256),
+    )
+)
+```
+
+The Braket adapter layer provides:
+
+- `BraketLocalHALAdapter` for local Braket SV/DM simulator execution through
+  HAL.
+- `BraketAwsHALAdapter` for AWS Braket QPU or managed-simulator task
+  submission through HAL with explicit approval tokens.
+- `braket_circuit_to_workload()` for OpenQASM 3 payloads generated from
+  `braket.circuits.Circuit`.
+
+```python
+from braket.circuits import Circuit
+
+circuit = Circuit().h(0).cnot(0, 1)
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(BraketLocalHALAdapter(hal.profile("local_braket_sv")))
+result = hal.result(
+    hal.submit(
+        "local_braket_sv",
+        braket_circuit_to_workload(circuit, workload_id="bell", shots=256),
+    )
+)
+```
 
 ---
 

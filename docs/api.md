@@ -670,10 +670,14 @@ bool`. Discovery is lazy; one broken plugin never blocks the rest.
 ```python
 from scpn_quantum_control.hardware import (
     BackendProfile,
+    BraketLocalHALAdapter,
     HardwareAbstractionLayer,
+    QiskitAerHALAdapter,
     QuantumBackend,
     QuantumWorkload,
+    braket_circuit_to_workload,
     built_in_backend_profiles,
+    qiskit_circuit_to_workload,
 )
 
 profiles = built_in_backend_profiles()
@@ -684,6 +688,43 @@ hal = HardwareAbstractionLayer(profiles)
 accepted IR formats, cloud/submission policy, and capability limits. The HAL
 validates workload IR, qubit count, shots, backend registration, and explicit
 approval before delegating to an injected `QuantumBackend`.
+
+Qiskit adapters are concrete HAL implementations. `qiskit_circuit_to_workload`
+uses QPY encoded as base64 for high-fidelity Qiskit circuit transfer, while
+`qiskit_circuit_to_qasm3_workload` is available for OpenQASM 3 routes when
+`qiskit-qasm3-import` is installed.
+
+```python
+from qiskit import QuantumCircuit
+
+qc = QuantumCircuit(1, 1)
+qc.x(0)
+qc.measure(0, 0)
+
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(QiskitAerHALAdapter(hal.profile("local_qiskit_aer")))
+job = hal.submit("local_qiskit_aer", qiskit_circuit_to_workload(qc, workload_id="x", shots=128))
+counts = hal.result(job).counts
+```
+
+Braket adapters cover the local SDK simulators and AWS Braket device submission
+surface. `BraketLocalHALAdapter` runs local SV/DM simulators; `BraketAwsHALAdapter`
+requires an injected device or device ARN and still passes through HAL approval
+gating.
+
+```python
+from braket.circuits import Circuit
+
+circuit = Circuit().h(0).cnot(0, 1)
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(BraketLocalHALAdapter(hal.profile("local_braket_sv")))
+result = hal.result(
+    hal.submit(
+        "local_braket_sv",
+        braket_circuit_to_workload(circuit, workload_id="bell", shots=128),
+    )
+)
+```
 
 ### `async_runner.AsyncHardwareRunner`
 

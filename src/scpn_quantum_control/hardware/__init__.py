@@ -138,6 +138,17 @@ from .hal import (
     QuantumWorkload,
     built_in_backend_profiles,
 )
+from .hal_braket import (
+    BraketAwsHALAdapter,
+    BraketLocalHALAdapter,
+    braket_circuit_to_workload,
+)
+from .hal_qiskit import (
+    QiskitAerHALAdapter,
+    QiskitRuntimeHALAdapter,
+    qiskit_circuit_to_qasm3_workload,
+    qiskit_circuit_to_workload,
+)
 from .hybrid_digital_analog import (
     HybridCouplingAssignment,
     HybridCouplingPartition,
@@ -224,6 +235,9 @@ __all__ = [
     "build_ibm_runtime_dry_run",
     "build_openqasm3_gate_dry_run",
     "build_s1_feedback_dry_run_bundle",
+    "BraketAwsHALAdapter",
+    "BraketLocalHALAdapter",
+    "braket_circuit_to_workload",
     "BackendCapabilities",
     "BackendProfile",
     "HardwareAbstractionLayer",
@@ -233,6 +247,10 @@ __all__ = [
     "QuantumJobResult",
     "QuantumWorkload",
     "built_in_backend_profiles",
+    "QiskitAerHALAdapter",
+    "QiskitRuntimeHALAdapter",
+    "qiskit_circuit_to_qasm3_workload",
+    "qiskit_circuit_to_workload",
     "ApprovalGatedFeedbackHardwareScheduler",
     "HardwareApprovalRecord",
     "HardwareSubmissionRecord",

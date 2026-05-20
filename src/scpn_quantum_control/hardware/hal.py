@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
-_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.:-]+$")
+_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.:/-]+$")
 
 
 def _validate_token(value: str, field_name: str) -> None:
@@ -639,7 +639,7 @@ def built_in_backend_profiles() -> tuple[BackendProfile, ...]:
             broker="direct",
             modality="superconducting_gate_model",
             sdk_package="qiskit-ibm-runtime",
-            ir_formats=("openqasm3", "qiskit", "qir", "mlir"),
+            ir_formats=("qiskit_qpy", "openqasm3", "qiskit", "qir", "mlir"),
             max_qubits=None,
             is_cloud=True,
             supports_mid_circuit_measurement=True,
@@ -732,7 +732,7 @@ def built_in_backend_profiles() -> tuple[BackendProfile, ...]:
             broker="local",
             modality="simulator",
             sdk_package="qiskit-aer",
-            ir_formats=("qiskit", "openqasm3", "mlir"),
+            ir_formats=("qiskit_qpy", "qiskit", "openqasm3", "mlir"),
             max_qubits=None,
             is_cloud=False,
             supports_statevector=True,

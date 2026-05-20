@@ -42,6 +42,7 @@ keywords = [
 dependencies = [
     "qiskit>=2.2,<3.0",
     "qiskit-aer>=0.15,<1.0",
+    "qiskit-qasm3-import>=0.6,<1.0",
     "symengine>=0.14,<1.0",
     "numpy>=1.24,<3.0",
     "scipy>=1.10,<2.0",
@@ -64,6 +65,9 @@ rust = ["scpn-quantum-engine>=0.2.0"]
 dev = ["pytest>=7.0,<10.0", "pytest-cov>=4.0,<8.0", "ruff>=0.4,<1.0", "hypothesis>=6.0,<7.0", "pre-commit>=3.0,<5.0", "mypy>=1.0,<2.0", "bandit>=1.7,<2.0", "build>=1.0,<2.0", "tomli>=2.0,<3.0", "types-defusedxml>=0.7,<1.0"]
 docs = ["mkdocs>=1.6,<2.0", "mkdocs-material>=9.0,<10.0", "pymdown-extensions>=10.0,<11.0", "mkdocstrings[python]>=0.24,<2.0"]
 ibm = ["qiskit-ibm-runtime>=0.40,<1.0"]
+braket = ["amazon-braket-sdk>=1.117,<2.0"]
+azure = ["azure-quantum>=3.9,<4.0"]
+qbraid = ["qbraid>=0.12,<1.0"]
 tensor = ["quimb>=1.10,<2.0"]
 mitigation = ["mitiq>=0.30,<2.0"]
 topology = ["ripser>=0.6,<1.0"]
@@ -79,7 +83,7 @@ app-plasma = ["h5py>=3.10,<4.0", "pandas>=2.0,<3.0"]
 app-power-grid = ["pandapower>=2.14,<4.0"]
 app-fep = ["pydantic>=2.0,<3.0"]
 app-benchmarks = ["scpn-quantum-control[app-eeg,app-plasma,app-power-grid,app-fep]"]
-all = ["scpn-quantum-control[viz,ibm,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
+all = ["scpn-quantum-control[viz,ibm,braket,azure,qbraid,tensor,mitigation,topology,opensys,pennylane,xvalidate,config,logging,julia,dla-parity]"]
 accelerated = ["scpn-quantum-control[gpu,jax]"]
 
 [project.entry-points."scpn_quantum_control.backends"]
@@ -182,6 +186,18 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "qiskit_ibm_runtime.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "braket.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "azure.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "qbraid.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

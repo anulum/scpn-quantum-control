@@ -138,6 +138,14 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [BackendCapabilities, BackendProfile, QuantumWorkload, QuantumJobRef, QuantumJobResult, QuantumBackend, LocalDeterministicSimulator, HardwareAbstractionLayer, built_in_backend_profiles]
 
+::: scpn_quantum_control.hardware.hal_qiskit
+    options:
+      members: [QiskitAerHALAdapter, QiskitRuntimeHALAdapter, qiskit_circuit_to_workload, qiskit_circuit_to_qasm3_workload]
+
+::: scpn_quantum_control.hardware.hal_braket
+    options:
+      members: [BraketLocalHALAdapter, BraketAwsHALAdapter, braket_circuit_to_workload]
+
 ## Identity
 
 ::: scpn_quantum_control.identity.ground_state

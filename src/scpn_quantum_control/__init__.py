@@ -112,6 +112,17 @@ from .hardware.hal import (
     QuantumWorkload,
     built_in_backend_profiles,
 )
+from .hardware.hal_braket import (
+    BraketAwsHALAdapter,
+    BraketLocalHALAdapter,
+    braket_circuit_to_workload,
+)
+from .hardware.hal_qiskit import (
+    QiskitAerHALAdapter,
+    QiskitRuntimeHALAdapter,
+    qiskit_circuit_to_qasm3_workload,
+    qiskit_circuit_to_workload,
+)
 from .hardware.qubit_mapper import (
     ExecutionRegion,
     QubitMappingResult,
@@ -328,6 +339,9 @@ __all__ = [
     "CloudManifestBundle",
     "ContainerResources",
     "generate_cloud_manifests",
+    "BraketAwsHALAdapter",
+    "BraketLocalHALAdapter",
+    "braket_circuit_to_workload",
     "BackendCapabilities",
     "BackendProfile",
     "HardwareAbstractionLayer",
@@ -337,6 +351,10 @@ __all__ = [
     "QuantumJobResult",
     "QuantumWorkload",
     "built_in_backend_profiles",
+    "QiskitAerHALAdapter",
+    "QiskitRuntimeHALAdapter",
+    "qiskit_circuit_to_qasm3_workload",
+    "qiskit_circuit_to_workload",
     "VQLS_GradShafranov",
     "DifferentiableOptimizer",
     "GradientResult",
