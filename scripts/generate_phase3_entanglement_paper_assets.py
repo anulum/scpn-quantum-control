@@ -288,6 +288,7 @@ def write_manifest(
     source_rows: Path,
     outputs: Sequence[Path],
 ) -> None:
+    """Write the reproducibility manifest for generated paper assets."""
     lines = [
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
         "<!-- Commercial license available -->",
@@ -323,6 +324,7 @@ def write_manifest(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the Phase 3 paper asset generator."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rows", type=Path, default=DEFAULT_ROWS)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -343,6 +345,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Generate Phase 3 tables, figures, and manifest artefacts."""
     args = parse_args()
     rows = _read_rows(args.rows)
     label_summary = build_label_summary(rows)
