@@ -43,6 +43,7 @@ pip install -e ".[ibm]"
 # routes without credentials or live provider calls.
 pip install -e ".[providers]"
 scpn-provider-smoke --format table
+scpn-provider-smoke --format json --sdk-package qiskit-ibm-runtime --require-all
 
 # Provider-specific isolated extras. These are intentionally outside
 # [providers] because their current SDK dependency trees conflict with
@@ -50,6 +51,15 @@ scpn-provider-smoke --format table
 pip install -e ".[dwave]"   # D-Wave Leap; requires click >=8.2 via dwave-cloud-client
 pip install -e ".[iqm]"     # IQM direct client; Qiskit bridge remains isolated
 pip install -e ".[quera]"   # QuEra Bloqade; current Bloqade meta-package resolves separately
+
+# Generate the deterministic isolated-lane plan.
+scpn-provider-smoke --plan-isolated --format table
+
+# Run one isolated lane without touching the shared development environment.
+python -m venv .venv-provider-dwave
+.venv-provider-dwave/bin/python -m pip install -U pip
+.venv-provider-dwave/bin/python -m pip install -e ".[dwave]"
+.venv-provider-dwave/bin/scpn-provider-smoke --backend dwave_leap --require-all
 
 # Rust acceleration (158–5,401× faster Hamiltonian construction;
 # 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric

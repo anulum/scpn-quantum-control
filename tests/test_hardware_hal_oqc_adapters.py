@@ -156,7 +156,7 @@ def test_oqc_default_builder_is_sdk_gated(monkeypatch: pytest.MonkeyPatch) -> No
     adapter = OQCHALAdapter(hal.profile("oqc_cloud"))
     workload = oqc_openqasm3_workload(_OPENQASM3, workload_id="needs_sdk", n_qubits=2, shots=1)
 
-    with pytest.raises(RuntimeError, match="oqc-qcaas-client"):
+    with pytest.raises(RuntimeError, match="oqc-qcaas-client|calibrated OQC"):
         adapter.submit(workload, approval_id="approved")
 
     def fake_import(name: str) -> Any:

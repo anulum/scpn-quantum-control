@@ -543,6 +543,7 @@ preflight lanes, install `scpn-quantum-control[providers]` and run:
 
 ```bash
 scpn-provider-smoke --format table
+scpn-provider-smoke --format json --sdk-package qiskit-ibm-runtime --require-all
 ```
 
 The portable `providers` extra intentionally excludes the current D-Wave, IQM,
@@ -550,6 +551,20 @@ and QuEra direct SDK extras because their dependency trees are not compatible
 with the shared development/application environment as one aggregate install.
 Use `[dwave]`, `[iqm]`, or `[quera]` in isolated runner environments when those
 direct routes are being exercised.
+
+`isolated_provider_smoke_lanes()` and `scpn-provider-smoke --plan-isolated`
+emit deterministic runner commands for those conflict-prone SDK families. Each
+lane creates a provider-specific virtual environment, installs only the matching
+extra, and runs a filtered no-network smoke gate:
+
+```bash
+scpn-provider-smoke --plan-isolated --format table
+
+python -m venv .venv-provider-iqm
+.venv-provider-iqm/bin/python -m pip install -U pip
+.venv-provider-iqm/bin/python -m pip install -e ".[iqm]"
+.venv-provider-iqm/bin/scpn-provider-smoke --backend iqm_cloud --require-all
+```
 
 The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
 `quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`

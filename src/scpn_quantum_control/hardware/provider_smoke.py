@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import sys
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
@@ -37,6 +38,12 @@ _SDK_IMPORTS: dict[str, tuple[str, ...]] = {
     "requests": ("requests",),
 }
 
+_ISOLATED_PROVIDER_EXTRAS: dict[str, tuple[str, ...]] = {
+    "dwave": ("dwave_leap",),
+    "iqm": ("iqm_cloud",),
+    "quera": ("quera_bloqade",),
+}
+
 
 @dataclass(frozen=True)
 class ProviderOptionalDependencyRow:
@@ -49,6 +56,20 @@ class ProviderOptionalDependencyRow:
     import_names: tuple[str, ...]
     available: bool
     missing_imports: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class IsolatedProviderSmokeLane:
+    """Deterministic command lane for an SDK family isolated from ``[providers]``."""
+
+    extra: str
+    backend_ids: tuple[str, ...]
+    sdk_packages: tuple[str, ...]
+    venv_path: str
+    create_command: tuple[str, ...]
+    install_command: tuple[str, ...]
+    smoke_command: tuple[str, ...]
+    rationale: str
 
 
 def provider_optional_dependency_matrix() -> tuple[ProviderOptionalDependencyRow, ...]:
@@ -74,6 +95,56 @@ def provider_optional_dependency_matrix() -> tuple[ProviderOptionalDependencyRow
             )
         )
     return tuple(rows)
+
+
+def isolated_provider_smoke_lanes() -> tuple[IsolatedProviderSmokeLane, ...]:
+    """Return isolated smoke commands for provider SDKs excluded from ``[providers]``.
+
+    D-Wave, IQM, and QuEra SDK families are intentionally kept out of the
+    portable provider bundle because their current dependency trees can conflict
+    with shared development and application extras. These lanes are offline:
+    they only install one provider extra and run the metadata import probe.
+    """
+
+    rows_by_backend = {row.backend_id: row for row in provider_optional_dependency_matrix()}
+    lanes: list[IsolatedProviderSmokeLane] = []
+    for extra, backend_ids in _ISOLATED_PROVIDER_EXTRAS.items():
+        sdk_packages = tuple(
+            dict.fromkeys(rows_by_backend[backend_id].sdk_package for backend_id in backend_ids)
+        )
+        venv_path = f".venv-provider-{extra}"
+        smoke_command = _smoke_command(venv_path, backend_ids)
+        lanes.append(
+            IsolatedProviderSmokeLane(
+                extra=extra,
+                backend_ids=backend_ids,
+                sdk_packages=sdk_packages,
+                venv_path=venv_path,
+                create_command=("python", "-m", "venv", venv_path),
+                install_command=(
+                    f"{venv_path}/bin/python",
+                    "-m",
+                    "pip",
+                    "install",
+                    "-e",
+                    f".[{extra}]",
+                ),
+                smoke_command=smoke_command,
+                rationale=(
+                    "kept outside the portable providers extra because this SDK family "
+                    "currently requires an isolated resolver environment"
+                ),
+            )
+        )
+    return tuple(lanes)
+
+
+def _smoke_command(venv_path: str, backend_ids: Sequence[str]) -> tuple[str, ...]:
+    command: list[str] = [f"{venv_path}/bin/scpn-provider-smoke", "--format", "table"]
+    for backend_id in backend_ids:
+        command.extend(("--backend", backend_id))
+    command.append("--require-all")
+    return tuple(command)
 
 
 def _module_available(name: str) -> bool:
@@ -104,9 +175,41 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Return exit code 1 when any declared provider import is missing.",
     )
+    parser.add_argument(
+        "--backend",
+        action="append",
+        dest="backend_ids",
+        help="Restrict the matrix to one backend id. May be supplied more than once.",
+    )
+    parser.add_argument(
+        "--sdk-package",
+        action="append",
+        dest="sdk_packages",
+        help="Restrict the matrix to one SDK package. May be supplied more than once.",
+    )
+    parser.add_argument(
+        "--plan-isolated",
+        action="store_true",
+        help="Print isolated smoke lanes for SDK families excluded from [providers].",
+    )
     args = parser.parse_args(argv)
 
-    rows = provider_optional_dependency_matrix()
+    if args.plan_isolated:
+        lanes = isolated_provider_smoke_lanes()
+        if args.format == "json":
+            print(json.dumps([asdict(lane) for lane in lanes], sort_keys=True))
+        else:
+            print(_format_isolated_plan(lanes))
+        return 0
+
+    rows = _select_rows(
+        provider_optional_dependency_matrix(),
+        backend_ids=args.backend_ids or (),
+        sdk_packages=args.sdk_packages or (),
+    )
+    if not rows:
+        print("no provider smoke rows matched the requested filters", file=sys.stderr)
+        return 2
     if args.format == "json":
         print(json.dumps([asdict(row) for row in rows], sort_keys=True))
     else:
@@ -114,6 +217,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.require_all and any(not row.available for row in rows):
         return 1
     return 0
+
+
+def _select_rows(
+    rows: Sequence[ProviderOptionalDependencyRow],
+    *,
+    backend_ids: Sequence[str],
+    sdk_packages: Sequence[str],
+) -> tuple[ProviderOptionalDependencyRow, ...]:
+    selected = tuple(rows)
+    if backend_ids:
+        requested = set(backend_ids)
+        selected = tuple(row for row in selected if row.backend_id in requested)
+    if sdk_packages:
+        requested = set(sdk_packages)
+        selected = tuple(row for row in selected if row.sdk_package in requested)
+    return selected
 
 
 def _format_table(rows: Sequence[ProviderOptionalDependencyRow]) -> str:
@@ -133,4 +252,31 @@ def _format_table(rows: Sequence[ProviderOptionalDependencyRow]) -> str:
     return "\n".join(lines)
 
 
-__all__ = ["ProviderOptionalDependencyRow", "main", "provider_optional_dependency_matrix"]
+def _format_isolated_plan(rows: Sequence[IsolatedProviderSmokeLane]) -> str:
+    lines = [
+        "extra\tbackend_ids\tsdk_packages\tvenv_path\tcreate_command\tinstall_command\tsmoke_command"
+    ]
+    lines.extend(
+        "\t".join(
+            (
+                lane.extra,
+                ",".join(lane.backend_ids),
+                ",".join(lane.sdk_packages),
+                lane.venv_path,
+                " ".join(lane.create_command),
+                " ".join(lane.install_command),
+                " ".join(lane.smoke_command),
+            )
+        )
+        for lane in rows
+    )
+    return "\n".join(lines)
+
+
+__all__ = [
+    "IsolatedProviderSmokeLane",
+    "ProviderOptionalDependencyRow",
+    "isolated_provider_smoke_lanes",
+    "main",
+    "provider_optional_dependency_matrix",
+]

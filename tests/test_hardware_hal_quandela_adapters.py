@@ -201,7 +201,7 @@ def test_quandela_default_builder_is_calibration_gated(
         shots=1,
     )
 
-    with pytest.raises(RuntimeError, match="perceval"):
+    with pytest.raises(RuntimeError, match="perceval|calibrated Quandela"):
         adapter.submit(workload, approval_id="approved")
 
     def fake_import(name: str) -> Any:

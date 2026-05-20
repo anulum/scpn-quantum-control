@@ -23,10 +23,11 @@ else:
 from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
 from scpn_quantum_control.hardware.hal import built_in_backend_profiles
 from scpn_quantum_control.hardware.provider_smoke import (
-    main as provider_smoke_main,
+    isolated_provider_smoke_lanes,
+    provider_optional_dependency_matrix,
 )
 from scpn_quantum_control.hardware.provider_smoke import (
-    provider_optional_dependency_matrix,
+    main as provider_smoke_main,
 )
 
 
@@ -165,3 +166,65 @@ def test_provider_smoke_cli_emits_offline_json_matrix(capsys) -> None:  # type: 
         "available",
         "missing_imports",
     } <= set(row)
+
+
+def test_provider_smoke_cli_filters_to_one_backend(capsys) -> None:  # type: ignore[no-untyped-def]
+    exit_code = provider_smoke_main(["--format", "json", "--backend", "dwave_leap"])
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert [row["backend_id"] for row in payload] == ["dwave_leap"]
+    assert payload[0]["sdk_package"] == "dwave-cloud-client"
+
+
+def test_provider_smoke_cli_rejects_empty_filter(capsys) -> None:  # type: ignore[no-untyped-def]
+    exit_code = provider_smoke_main(["--format", "json", "--backend", "not_a_route"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert captured.out == ""
+    assert "no provider smoke rows matched" in captured.err
+
+
+def test_provider_smoke_cli_requires_only_selected_sdk(capsys) -> None:  # type: ignore[no-untyped-def]
+    exit_code = provider_smoke_main(
+        ["--format", "json", "--sdk-package", "requests", "--require-all"]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload
+    assert {row["sdk_package"] for row in payload} == {"requests"}
+
+
+def test_isolated_provider_smoke_lanes_cover_conflict_prone_extras() -> None:
+    lanes = isolated_provider_smoke_lanes()
+    by_extra = {lane.extra: lane for lane in lanes}
+
+    assert set(by_extra) == {"dwave", "iqm", "quera"}
+    assert by_extra["dwave"].backend_ids == ("dwave_leap",)
+    assert by_extra["iqm"].backend_ids == ("iqm_cloud",)
+    assert by_extra["quera"].backend_ids == ("quera_bloqade",)
+    assert by_extra["dwave"].sdk_packages == ("dwave-cloud-client",)
+    assert by_extra["iqm"].sdk_packages == ("iqm-client",)
+    assert by_extra["quera"].sdk_packages == ("bloqade",)
+
+    for lane in lanes:
+        assert lane.venv_path == f".venv-provider-{lane.extra}"
+        assert f".[${lane.extra}]" not in " ".join(lane.install_command)
+        assert f".[{lane.extra}]" in " ".join(lane.install_command)
+        assert "--require-all" in lane.smoke_command
+        for backend_id in lane.backend_ids:
+            assert backend_id in lane.smoke_command
+
+
+def test_provider_smoke_cli_emits_isolated_plan(capsys) -> None:  # type: ignore[no-untyped-def]
+    exit_code = provider_smoke_main(["--format", "json", "--plan-isolated"])
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert {row["extra"] for row in payload} == {"dwave", "iqm", "quera"}
+    assert all(row["install_command"] for row in payload)

@@ -835,6 +835,9 @@ The `scpn-provider-smoke` command exposes the same no-network matrix for
 operator preflight checks after installing provider extras. The portable
 `[providers]` extra covers routes whose SDKs resolve cleanly together; D-Wave,
 IQM, and QuEra remain dedicated extras for isolated runner environments.
+Use `--backend` or `--sdk-package` to turn the command into a narrow preflight
+gate, and use `--plan-isolated` to print deterministic virtual-environment
+lanes for `dwave_leap`, `iqm_cloud`, and `quera_bloqade`.
 
 The direct Quandela adapter layer provides `QuandelaPercevalHALAdapter` and
 `quandela_perceval_workload()`. It consumes `scpn.quandela.perceval.v1`

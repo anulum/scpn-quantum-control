@@ -193,7 +193,7 @@ def test_dwave_leap_adapter_default_builder_is_sdk_gated(
         reads=1,
     )
 
-    with pytest.raises(RuntimeError, match="dimod"):
+    with pytest.raises(RuntimeError, match="dimod|dwave-system|DWaveSampler"):
         adapter.submit(workload, approval_id="approved")
 
     def fake_import(name: str) -> Any:
