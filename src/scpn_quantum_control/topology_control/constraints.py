@@ -10,13 +10,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, cast
+from typing import Literal, TypeAlias, cast
 
 import networkx as nx
 import numpy as np
 from numpy.typing import NDArray
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 Edge = tuple[int, int]
 FrozenEdges = dict[Edge, float]
 SignPolicy = Literal["nonnegative", "signed", "fixed_sign"]

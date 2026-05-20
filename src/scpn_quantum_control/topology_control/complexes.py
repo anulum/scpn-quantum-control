@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, cast
+from typing import Protocol, TypeAlias, cast
 
 import networkx as nx
 import numpy as np
@@ -23,7 +23,7 @@ try:
 except ImportError:  # pragma: no cover - depends on optional topology extra.
     RIPSER_AVAILABLE = False
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 
 @dataclass(frozen=True)

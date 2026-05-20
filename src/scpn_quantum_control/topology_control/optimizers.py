@@ -10,14 +10,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import cast
+from typing import TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
 from .objectives import CouplingTopologyObjective, ObjectiveBreakdown
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 
 @dataclass(frozen=True)

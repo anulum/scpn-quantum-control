@@ -22,7 +22,7 @@ claims.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import cast
+from typing import TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -33,8 +33,8 @@ CLAIM_BOUNDARY = (
     "without measured biological data and preregistered validation"
 )
 
-FloatArray = NDArray[np.float64]
-IntArray = NDArray[np.int64]
+FloatArray: TypeAlias = NDArray[np.float64]
+IntArray: TypeAlias = NDArray[np.int64]
 
 
 def _as_finite_vector(

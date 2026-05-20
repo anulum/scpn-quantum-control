@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -18,7 +19,7 @@ from numpy.typing import NDArray
 from .complexes import H1Summary, PersistentHomologyBackend, build_coupling_distance_matrix
 from .constraints import TopologyConstraintLedger, algebraic_connectivity
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 
 
 class DegeneracyMode(Enum):
