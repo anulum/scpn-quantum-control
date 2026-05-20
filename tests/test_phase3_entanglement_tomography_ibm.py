@@ -30,6 +30,21 @@ def _load_module() -> ModuleType:
     return module
 
 
+def _load_hydrator_module() -> ModuleType:
+    script = (
+        Path(__file__).resolve().parents[1]
+        / "scripts"
+        / "hydrate_phase3_entanglement_async_ibm.py"
+    )
+    spec = importlib.util.spec_from_file_location("hydrate_phase3_entanglement_async_ibm", script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load entanglement/tomography hydrator script")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 class _Status:
     operational = True
     pending_jobs = 0
@@ -106,6 +121,53 @@ def test_pending_job_roles_preserve_main_and_readout_ids() -> None:
         "main": "job-main",
         "readout": "job-readout",
     }
+
+
+def test_async_hydrator_elapsed_seconds_from_runtime_timestamps() -> None:
+    module = _load_hydrator_module()
+
+    assert (
+        module._elapsed_seconds(
+            {
+                "timestamps": {
+                    "created": "2026-05-20T10:00:00Z",
+                    "finished": "2026-05-20T10:02:30Z",
+                }
+            }
+        )
+        == 150.0
+    )
+    assert module._elapsed_seconds({"timestamps": {"created": "bad"}}) is None
+
+
+def test_async_hydrator_rows_attach_counts_and_metadata_defaults() -> None:
+    module = _load_hydrator_module()
+
+    class _Pub:
+        metadata = {"custom": "value"}
+
+    rows = module._rows_from_result(
+        metas=[{"block": "main"}],
+        result=[_Pub()],
+        job_id="job-main",
+        extract_counts=lambda _pub: {"0000": 7},
+        metadata_note="metadata missing",
+    )
+
+    assert rows == [
+        {
+            "meta": {"block": "main"},
+            "counts": {"0000": 7},
+            "job_id": "job-main",
+            "metadata": {
+                "custom": "value",
+                "depth": None,
+                "total_gates": None,
+                "ecr_gates": None,
+                "recovery_note": "metadata missing",
+            },
+        }
+    ]
 
 
 def test_build_circuits_can_emit_full_readout_calibration() -> None:

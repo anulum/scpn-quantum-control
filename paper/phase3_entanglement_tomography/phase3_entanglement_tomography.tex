@@ -65,7 +65,9 @@ improves under ZNE, suggesting that the discrepancy is structured rather than
 simple monotone gate noise. A third-backend \texttt{ibm\_kingston} ZNE
 replication on qubits $[141,142,143,144]$ gives the same qualitative pattern:
 the four DLA transverse channels move farther from exact under linear ZNE,
-while the FIM control improves. The result is a mechanism-boundary measurement:
+while the FIM control improves. A same-layout Kingston statistical repeat
+preserves this DLA-worsens/FIM-improves separation. The result is a
+mechanism-boundary measurement:
 it shows structured reduced-Pauli distortions accompanying the small-system
 DLA/FIM hardware programme, but does not claim scalable tomography, quantum
 advantage, full-state reconstruction, or backend-general entanglement
@@ -153,9 +155,8 @@ $[141,142,143,144]$. The run used the same preregistered five channels, the
 same global unitary-folding scale factors $1,3,5$, the same three repetitions
 per channel and scale, 2048 main shots, and full 16-state readout calibration
 at 8192 shots. The completed jobs were \texttt{d86i8fas46sc73f70vg0} and
-\texttt{d86ijr9789is738vnh30}. A same-layout statistical repeat was submitted
-after this analysis as a drift-robustness check; it is not used in the present
-tables because it was still pending at manuscript update time.
+\texttt{d86ijr9789is738vnh30}. A same-layout statistical repeat used jobs
+\texttt{d86pul0p0eas73dla3dg} and \texttt{d86pul8p0eas73dla3eg}.
 
 \section{Analysis}
 
@@ -350,7 +351,12 @@ in the opposite direction, improving from scale-1 deviation 0.2490 to
 linear-ZNE deviation 0.1673 and quadratic-ZNE deviation 0.0490. This is not a
 backend-general dynamics claim, but it is a third-backend qualitative
 replication of the Fez stress-test pattern under the same five-channel
-protocol.
+protocol. The same-layout Kingston repeat preserves the pattern: scale-1 mean
+absolute deviation is 0.4656, linear ZNE gives 0.4816, and
+full-readout-mitigated linear ZNE gives 0.4893. In the repeat, all four DLA
+transverse channels again move farther from exact under linear ZNE, while the
+FIM control improves from scale-1 deviation 0.2564 to linear-ZNE deviation
+0.1941.
 
 \begin{table}[tb]
 \centering
@@ -456,9 +462,11 @@ a third accessible Heron backend, using a different physical layout from the
 \texttt{ibm\_fez} run. The channel amplitudes are not identical, as expected
 for finite shots, different calibration windows, and layout-dependent coherent
 error, but the sign of the ZNE stress-test conclusion is preserved. The
-same-layout Kingston repeat submitted after this reduction is reserved for a
-statistical drift check; the manuscript should use it only after both jobs are
-completed and reduced under the same preregistered criterion.
+same-layout Kingston repeat strengthens the statistical reading: under the
+same backend, physical qubits, channels, scales, and readout-calibration
+design, the DLA-worsens/FIM-improves separation recurs. This remains a
+same-layout drift-robustness statement, not an inference of backend-general
+entanglement dynamics.
 
 \subsection{Readout-sensitivity check}
 
@@ -547,8 +555,10 @@ The relevant commands are:
     \path{data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T030211Z.json};
   \item Kingston ZNE reducer summary:
     \path{data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne.json};
-  \item pending Kingston same-layout statistical repeat artefact:
+  \item completed Kingston same-layout statistical repeat artefact:
     \path{data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T114719Z.json};
+  \item Kingston same-layout repeat reducer summary:
+    \path{data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne_repeat.json};
   \item ZNE reducer:
     \path{scripts/analyse_phase3_entanglement_zne.py}.
 \end{itemize}
@@ -571,7 +581,7 @@ completed ZNE stress test adds a stronger falsifier: simple global-folding ZNE
 does not erase the four dominant DLA transverse deviations, even though the FIM
 control partially improves. A third-backend \texttt{ibm\_kingston} ZNE
 replication preserves the same qualitative channel separation, and a
-same-layout statistical repeat has been queued as a drift-robustness check.
+same-layout statistical repeat preserves it again as a drift-robustness check.
 The present paper therefore remains narrow but stronger: it reports structured
 mechanism-boundary evidence that survives readout replay, second-backend
 replication, pinned-layout repetition, third-backend ZNE replication, and a

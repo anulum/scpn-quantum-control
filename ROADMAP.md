@@ -1110,18 +1110,23 @@ explicit QPU-time estimate before submission.
   the four DLA transverse channels move farther from exact under linear ZNE,
   while the FIM control improves. Remaining paper work is manuscript/PDF
   integration from the committed Kingston artefacts.
-- [ ] **Entanglement tomography Kingston ZNE statistical repeat.** Submitted
+- [x] **Entanglement tomography Kingston ZNE statistical repeat.** Completed
   2026-05-20 as a same-backend, same-layout statistical repeat for the Phase 3
   paper. The repeat keeps `ibm_kingston`, physical qubits `[141,142,143,144]`,
   the preregistered five-channel ZNE subset, noise scales `1,3,5`, three
   repetitions per channel/scale, and full 16-state readout calibration fixed.
   Readiness passed with 45 main circuits, 16 readout circuits, max depth
   `1657`, and estimated QPU time `0.5592` minutes under the 25-minute ceiling.
-  Pending jobs: main `d86pul0p0eas73dla3dg`, readout
-  `d86pul8p0eas73dla3eg`. Canonical pending artefact:
+  Jobs completed: main `d86pul0p0eas73dla3dg`, readout
+  `d86pul8p0eas73dla3eg`. Canonical completed artefact:
   `data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T114719Z.json`.
-  The paper-use criterion is drift robustness: compare the repeat against the
-  completed Kingston ZNE result before strengthening statistical language.
+  Reducer outputs:
+  `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne_repeat.json`,
+  scale rows, channel summary, and
+  `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne_repeat.md`.
+  Result: the same-layout repeat preserves the completed Kingston pattern:
+  all four DLA transverse channels move farther from exact under linear ZNE,
+  while the FIM control improves.
 - [x] **Depth-optimal native decomposition preregistration.**
   Completed 2026-05-06:
   `docs/depth_optimal_native_decomposition_prereg_2026-05-06.md`

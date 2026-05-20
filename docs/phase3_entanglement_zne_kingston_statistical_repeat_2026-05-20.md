@@ -63,7 +63,7 @@ Readiness result:
 | Maximum transpiled depth | 1683 |
 | Maximum basis-expansion ratio | 4.836206896551724 |
 
-## Submission
+## Submission And Completion
 
 Approved async submission command:
 
@@ -102,12 +102,44 @@ Submission readiness snapshot:
 | Maximum transpiled depth | 1657 |
 | Maximum basis-expansion ratio | 4.735632183908046 |
 
+Both jobs completed and were hydrated into the canonical artefact.
+
+Reducer command:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/analyse_phase3_entanglement_zne.py \
+  data/phase3_entanglement_tomography/entanglement_tomography_live_ibm_kingston_2026-05-20T114719Z.json \
+  --result-tag 2026-05-20_ibm_kingston_zne_repeat
+```
+
+Reducer outputs:
+
+- `data/phase3_entanglement_tomography/entanglement_zne_summary_2026-05-20_ibm_kingston_zne_repeat.json`
+- `data/phase3_entanglement_tomography/entanglement_zne_scale_rows_2026-05-20_ibm_kingston_zne_repeat.csv`
+- `data/phase3_entanglement_tomography/entanglement_zne_channel_summary_2026-05-20_ibm_kingston_zne_repeat.csv`
+- `docs/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne_repeat.md`
+
+Result snapshot:
+
+| Field | Value |
+|---|---:|
+| Scale rows | 15 |
+| Channels | 5 |
+| Scale-1 mean absolute deviation | 0.4655910323155505 |
+| Linear ZNE mean absolute deviation | 0.48161750800999487 |
+| Readout-mitigated linear ZNE mean absolute deviation | 0.48931903445861447 |
+| Quadratic ZNE mean absolute deviation | 0.48251293904941395 |
+
+Channel-level result: all four DLA transverse channels again move farther from
+exact under linear ZNE, while the FIM control improves. This satisfies the
+paper-use criterion for same-layout drift robustness.
+
 ## Claim Boundary
 
-This is a statistical repeat for drift robustness of the already completed
-Kingston ZNE stress test. It does not expand the system size, does not add new
-channels, does not claim backend-general dynamics, and does not change the
-preregistered five-channel ZNE claim boundary.
+This is a completed statistical repeat for drift robustness of the already
+completed Kingston ZNE stress test. It does not expand the system size, does
+not add new channels, does not claim backend-general dynamics, and does not
+change the preregistered five-channel ZNE claim boundary.
 
 ## Recovery
 
@@ -141,7 +173,7 @@ for role, job_id in {
 PY
 ```
 
-After both jobs are `DONE`, hydrate the canonical artefact and run:
+The completed reduction command was:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python scripts/analyse_phase3_entanglement_zne.py \
@@ -151,8 +183,5 @@ PYTHONDONTWRITEBYTECODE=1 python scripts/analyse_phase3_entanglement_zne.py \
 
 Paper-use criterion:
 
-- If the repeat again shows all four DLA transverse channels worsening under
-  linear ZNE while the FIM control improves or behaves differently, the paper
-  may use stronger same-layout drift-robust language.
-- If the repeat weakens, reverses, or randomises the pattern, report it as a
-  calibration-drift sensitivity bound rather than suppressing it.
+- Satisfied: the repeat again shows all four DLA transverse channels worsening
+  under linear ZNE while the FIM control improves.
