@@ -42,6 +42,6 @@ def test_load_snapshot_from_metadata_json_and_build_decision(tmp_path) -> None:
     document = build_decision_document(snapshot)
 
     assert document["hardware_submission"] is False
-    assert document["credential_argument_supported"] is False
+    assert document["credential_string_argument_supported"] is False
     assert document["capability_decision"]["status"] == "ready"
     assert document["package_budget"]["circuits"] == 2

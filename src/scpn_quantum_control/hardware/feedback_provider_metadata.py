@@ -9,7 +9,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
+from contextlib import suppress
 from typing import Any
 
 from .feedback_capability_probe import BackendCapabilitySnapshot
@@ -64,11 +65,11 @@ def snapshot_from_qiskit_backend(
 def _infer_qiskit_dynamic_features(backend: Any, basis_gates: tuple[str, ...]) -> tuple[str, ...]:
     features = {"cross_shot_batches"}
     basis = set(basis_gates)
+    target = getattr(backend, "target", None)
     if "measure" in basis or hasattr(backend, "target"):
         features.add("mid_circuit_measurement")
-    if "reset" in basis:
+    if "reset" in basis or _target_has_operation(target, "reset"):
         features.add("conditional_reset")
-    target = getattr(backend, "target", None)
     if _target_has_control_flow(target) or getattr(backend, "dynamic_circuits", False):
         features.add("conditional_control")
     return tuple(sorted(features))
@@ -82,6 +83,16 @@ def _target_has_control_flow(target: Any) -> bool:
     except (AttributeError, TypeError):
         return False
     return bool(operation_names.intersection({"if_else", "while_loop", "for_loop", "switch_case"}))
+
+
+def _target_has_operation(target: Any, operation_name: str) -> bool:
+    if target is None:
+        return False
+    try:
+        operation_names = set(target.operation_names)
+    except (AttributeError, TypeError):
+        return False
+    return operation_name in operation_names
 
 
 def _backend_name(backend: Any) -> str:
@@ -106,18 +117,17 @@ def _backend_num_qubits(backend: Any) -> int:
 
 
 def _backend_basis_gates(backend: Any) -> tuple[str, ...]:
+    values: list[str] = []
     configuration = _optional_configuration(backend)
     if configuration is not None:
         basis = getattr(configuration, "basis_gates", None)
         if basis is not None:
-            return _string_tuple(basis)
+            values.extend(_string_tuple(basis))
     target = getattr(backend, "target", None)
     if target is not None:
-        try:
-            return _string_tuple(target.operation_names)
-        except (AttributeError, TypeError):
-            return ()
-    return ()
+        with suppress(AttributeError, TypeError):
+            values.extend(_string_tuple(target.operation_names))
+    return tuple(dict.fromkeys(values))
 
 
 def _backend_max_shots(backend: Any) -> int | None:
@@ -166,11 +176,11 @@ def _optional_int(value: Any, key: str) -> int | None:
 def _string_tuple(value: Any) -> tuple[str, ...]:
     if isinstance(value, str):
         return (value,)
-    if not isinstance(value, tuple | list | set | frozenset):
+    if not isinstance(value, Iterable):
         raise ValueError("expected a sequence of strings")
-    if any(not isinstance(item, str) for item in value):
-        raise ValueError("string sequences must contain only text entries")
     result = tuple(value)
+    if any(not isinstance(item, str) for item in result):
+        raise ValueError("string sequences must contain only text entries")
     if any(not item for item in result):
         raise ValueError("string sequences must not contain empty entries")
     return result

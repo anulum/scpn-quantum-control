@@ -161,6 +161,17 @@ decoherence tracking) all require sub-second feedback.
   benchmarked.
 * IBM credits allocation or paid Runtime window (this burns
   session minutes fast).
+* Paired feedback/open-loop IBM submitter plus live sampler-result to
+  preregistered `r_live` raw-count conversion.
+
+### Current IBM Readiness Snapshot
+
+As of 2026-05-20, the S1 no-QPU bundle is refreshed and `ibm_kingston`
+passes the live no-submit dynamic-circuit capability probe. The monitored
+payload transpiles on `ibm_kingston` with depth `720` and operation counts
+`cz=183`, `if_else=6`, `measure=6`, `rz=380`, `sx=363`, `x=2`.
+Hardware submission remains blocked until the paired-arm submitter, live
+result converter, and explicit approval record are implemented.
 
 ### Acceptance
 

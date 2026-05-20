@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 
@@ -12,7 +12,7 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** Draft scaffold, live IBM metadata and raw-count execution pending
+**Status:** Draft scaffold, live IBM metadata and transpilation captured; raw-count execution blocked pending submitter/converter
 **Target venue:** short communication / workshop submission candidate
 
 ---
@@ -96,20 +96,22 @@ Current preregistered artefacts:
 - `docs/s1_feedback_readiness_index_2026-05-06.md`
 
 The current package declares the IBM Heron dynamic-circuit backend class as a
-ready target under template capabilities, but a live IBM backend must still be
-probed without submission before any hardware claim is possible.
+ready target under template capabilities. A live no-submit probe on
+`ibm_kingston` now reports ready dynamic-circuit capability, and the monitored
+payload transpiles on the backend. Hardware execution remains blocked until the
+paired feedback/open-loop submitter, live-result-to-`r_live` converter, and
+explicit hardware approval record exist.
 
 ## 4. Pending IBM Gates
 
 No S1 IBM job should be submitted until all of the following are complete:
 
-1. live IBM backend metadata captured without QPU submission;
-2. capability probe against the selected backend reports `ready`;
-3. live transpilation records depth, operation counts, layout, and measurement
-   mapping;
-4. the feedback and open-loop arms remain matched after transpilation;
-5. raw-count archive path and SHA256 hashing plan exist;
-6. explicit hardware approval record matches the preregistration package hash
+1. paired feedback/open-loop IBM submitter exists behind approval gating;
+2. live IBM sampler-result conversion writes the preregistered raw-count
+   package with `r_live` records;
+3. the feedback and open-loop arms remain matched after transpilation;
+4. raw-count archive path and SHA256 hashing plan exist;
+5. explicit hardware approval record matches the preregistration package hash
    and QPU-second ceiling.
 
 ## 5. Analysis Plan

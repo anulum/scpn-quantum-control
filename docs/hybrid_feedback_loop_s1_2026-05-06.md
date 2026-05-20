@@ -262,8 +262,10 @@ PYTHONDONTWRITEBYTECODE=1 python scripts/probe_s1_ibm_metadata.py \
 ```
 
 The script does not accept credential strings, does not submit jobs, and writes
-`hardware_submission=false` into the output JSON. The `--backend` path only loads
-backend metadata through the user's existing Qiskit Runtime authentication.
+`hardware_submission=false` into the output JSON. The `--backend` path loads
+backend metadata through either saved Qiskit Runtime authentication or the local
+credentials vault path; secret values are not printed or written into the
+artefact.
 
 ## Generic Gate Metadata Probe Command
 

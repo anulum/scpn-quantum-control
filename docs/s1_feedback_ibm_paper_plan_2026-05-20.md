@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Commercial license available -->
-<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
-<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->
+<!-- © Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
+<!-- © Code 2020-2026 Miroslav Sotek. All rights reserved. -->
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- scpn-quantum-control -- S1 feedback IBM paper plan -->
@@ -68,13 +68,36 @@ The refresh regenerated:
 
 Pending before any IBM submission:
 
-- Capture live IBM backend metadata without submitting a job.
-- Run the S1 capability probe against the live metadata.
-- Live-transpile the dynamic-circuit payload without submission.
-- Record depth, operation counts, layout, and measurement mapping.
-- Create a live-readiness artefact with a QPU budget ceiling.
-- Create a matching hardware approval record.
-- Wire a provider submitter only after every gate above passes.
+- Wire a provider submitter for paired feedback and matched open-loop IBM arms.
+- Convert live IBM sampler results into the preregistered raw-count package
+  with `r_live` records.
+- Keep feedback and open-loop arms matched after live transpilation.
+- Create a matching hardware approval record for the package hash and
+  QPU-second ceiling.
+
+Fresh live no-submit IBM readiness on 2026-05-20:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/probe_s1_ibm_metadata.py --backend ibm_kingston
+PYTHONDONTWRITEBYTECODE=1 python scripts/prepare_s1_ibm_live_readiness.py --backend ibm_kingston
+```
+
+The live probe and transpilation artefacts are:
+
+- `data/s1_feedback_loop/s1_ibm_metadata_probe_ibm_kingston_2026-05-06.json`
+- `data/s1_feedback_loop/s1_ibm_live_readiness_ibm_kingston_2026-05-20.json`
+- `docs/s1_ibm_live_readiness_ibm_kingston_2026-05-20.md`
+
+Observed readiness:
+
+- backend capability status: `ready`;
+- backend availability: active with zero pending jobs at capture time;
+- transpiled monitored payload depth: `720`;
+- transpiled operation counts: `cz=183`, `if_else=6`, `measure=6`,
+  `rz=380`, `sx=363`, `x=2`;
+- hardware submission: `false`;
+- readiness status: `blocked` until the submitter, converter, and approval
+  record are implemented.
 
 ## Preregistered Job Shape
 
@@ -90,7 +113,7 @@ Pending before any IBM submission:
 | Shots per circuit | 1024 |
 | Repetitions | 12 |
 | Estimated execution seconds | 24.0 |
-| Hardware submission state | blocked until live gates and approval |
+| Hardware submission state | blocked until paired submitter, live-result converter, and approval |
 
 ## Primary Observable
 

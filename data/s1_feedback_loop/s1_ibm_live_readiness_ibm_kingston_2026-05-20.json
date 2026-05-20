@@ -1,0 +1,76 @@
+{
+  "date": "2026-05-20",
+  "preregistration_date": "2026-05-06",
+  "script": "scripts/prepare_s1_ibm_live_readiness.py",
+  "submission_state": "live_metadata_and_transpile_no_submission",
+  "hardware_submission": false,
+  "credential_string_argument_supported": false,
+  "selected_backend": "ibm_kingston",
+  "backend_status": {
+    "available": true,
+    "pending_jobs": 0,
+    "status_msg": "active"
+  },
+  "package_budget": {
+    "circuits": 2,
+    "shots_per_circuit": 1024,
+    "repetitions": 12,
+    "total_reserved_seconds": 24.0,
+    "qpu_seconds_ceiling": 120.0
+  },
+  "capability_decision": {
+    "provider": "ibm",
+    "backend_name": "ibm_kingston",
+    "status": "ready",
+    "reasons": [
+      "backend metadata satisfies S1 dynamic-circuit requirements"
+    ],
+    "required_features": [
+      "cross_shot_batches",
+      "mid_circuit_measurement",
+      "conditional_control",
+      "conditional_reset"
+    ],
+    "missing_features": [],
+    "n_qubits": 156,
+    "max_shots": 100000,
+    "max_circuits": 300,
+    "simulator": false
+  },
+  "transpilation": {
+    "source": {
+      "n_qubits": 4,
+      "n_clbits": 6,
+      "depth": 41,
+      "operation_counts": {
+        "cx": 18,
+        "ry": 12,
+        "measure": 6,
+        "if_else": 6,
+        "PauliEvolution": 3
+      }
+    },
+    "transpiled": {
+      "n_qubits": 156,
+      "n_clbits": 6,
+      "depth": 720,
+      "operation_counts": {
+        "rz": 380,
+        "sx": 363,
+        "cz": 183,
+        "measure": 6,
+        "if_else": 6,
+        "x": 2
+      },
+      "seed_transpiler": 20260520
+    },
+    "submission_performed": false
+  },
+  "readiness_status": "blocked",
+  "blockers": [
+    "provider submitter for paired feedback/control S1 arms is not implemented",
+    "live IBM sampler-result to preregistered r_live raw-count package conversion is not implemented",
+    "explicit hardware approval record for this package hash and QPU-second ceiling is not present"
+  ],
+  "claim_boundary": "This artefact captures live backend metadata and transpilation only. It does not submit IBM jobs and cannot support an S1 hardware-control claim."
+}

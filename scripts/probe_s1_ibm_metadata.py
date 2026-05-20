@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- S1 IBM metadata probe
@@ -34,6 +34,7 @@ from scpn_quantum_control.hardware.feedback_submission import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "s1_feedback_loop"
 DATE = "2026-05-06"
+DEFAULT_CREDENTIALS_VAULT = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -56,6 +57,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--instance",
         help="Optional Qiskit Runtime instance name. No credential string is accepted here.",
+    )
+    parser.add_argument(
+        "--credentials-vault",
+        type=Path,
+        default=DEFAULT_CREDENTIALS_VAULT,
+        help="Credential vault path used only for authenticated backend metadata lookup.",
     )
     parser.add_argument(
         "--out-dir",
@@ -101,16 +108,52 @@ def load_snapshot_from_metadata_json(path: Path):
     return snapshot_from_generic_metadata(metadata)
 
 
-def load_snapshot_from_authenticated_backend(backend_name: str, instance: str | None):
+def _parse_vault(path: Path) -> tuple[str | None, str | None]:
+    if not path.exists():
+        return None, None
+    phase1_path = REPO_ROOT / "scripts" / "phase1_mini_bench_ibm_kingston.py"
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("phase1_mini_bench_ibm_kingston", phase1_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {phase1_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    credential_value, vault_instance = module.parse_vault(path)
+    return credential_value, vault_instance
+
+
+def load_snapshot_from_authenticated_backend(
+    backend_name: str,
+    instance: str | None,
+    credentials_vault: Path | None = None,
+):
     """Load a capability snapshot from an already-authenticated Qiskit Runtime account."""
+    backend = load_authenticated_backend(backend_name, instance, credentials_vault)
+    return snapshot_from_qiskit_backend(backend, provider="ibm")
+
+
+def load_authenticated_backend(
+    backend_name: str,
+    instance: str | None,
+    credentials_vault: Path | None = None,
+):
+    """Load a Qiskit Runtime backend from saved auth or the local credentials vault."""
     try:
         from qiskit_ibm_runtime import QiskitRuntimeService
     except ImportError as exc:
         raise RuntimeError("qiskit-ibm-runtime is required for --backend probing") from exc
-    service_kwargs = {"instance": instance} if instance else {}
+    credential_value, vault_instance = (
+        _parse_vault(credentials_vault) if credentials_vault is not None else (None, None)
+    )
+    selected_instance = instance or vault_instance
+    service_kwargs = {"channel": "ibm_cloud"} if credential_value else {}
+    if credential_value:
+        service_kwargs["token"] = credential_value
+    if selected_instance:
+        service_kwargs["instance"] = selected_instance
     service = QiskitRuntimeService(**service_kwargs)
-    backend = service.backend(backend_name)
-    return snapshot_from_qiskit_backend(backend, provider="ibm")
+    return service.backend(backend_name)
 
 
 def build_decision_document(snapshot) -> dict[str, Any]:
@@ -122,7 +165,7 @@ def build_decision_document(snapshot) -> dict[str, Any]:
         "script": "scripts/probe_s1_ibm_metadata.py",
         "submission_state": "metadata_probe_no_submission",
         "hardware_submission": False,
-        "credential_argument_supported": False,
+        "credential_string_argument_supported": False,
         "experiment_id": package.experiment_id,
         "package_budget": {
             "circuits": package.budget.circuits,
@@ -140,7 +183,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.metadata_json is not None:
         snapshot = load_snapshot_from_metadata_json(args.metadata_json)
     else:
-        snapshot = load_snapshot_from_authenticated_backend(args.backend, args.instance)
+        snapshot = load_snapshot_from_authenticated_backend(
+            args.backend,
+            args.instance,
+            args.credentials_vault,
+        )
     document = build_decision_document(snapshot)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     backend_name = document["capability_decision"]["backend_name"]

@@ -71,6 +71,68 @@ def test_snapshot_from_qiskit_backend_infers_dynamic_features_without_submission
     assert "conditional_control" in snapshot.supported_features
 
 
+def test_snapshot_from_qiskit_backend_merges_configuration_and_target_operations() -> None:
+    class LegacyConfig:
+        num_qubits = 156
+        basis_gates = ["cz", "id", "rz", "sx", "x"]
+        max_shots = 100000
+        max_experiments = 300
+
+    class DynamicTarget:
+        operation_names = ["cz", "delay", "id", "if_else", "measure", "reset", "rz", "sx", "x"]
+
+    class HeronStyleBackend:
+        name = "ibm_target_dynamic"
+        num_qubits = 156
+        target = DynamicTarget()
+
+        def configuration(self) -> LegacyConfig:
+            return LegacyConfig()
+
+    snapshot = snapshot_from_qiskit_backend(HeronStyleBackend())
+
+    assert snapshot.basis_gates == (
+        "cz",
+        "id",
+        "rz",
+        "sx",
+        "x",
+        "delay",
+        "if_else",
+        "measure",
+        "reset",
+    )
+    assert "conditional_reset" in snapshot.supported_features
+    assert "conditional_control" in snapshot.supported_features
+    assert "mid_circuit_measurement" in snapshot.supported_features
+
+
+def test_snapshot_from_qiskit_backend_accepts_target_operation_view() -> None:
+    class Config:
+        num_qubits = 4
+        basis_gates = ["rz", "sx", "x", "cz"]
+
+    class OperationView:
+        def __iter__(self):
+            return iter(["measure", "reset", "if_else"])
+
+    class Target:
+        operation_names = OperationView()
+
+    class Backend:
+        name = "operation_view_backend"
+        target = Target()
+
+        def configuration(self) -> Config:
+            return Config()
+
+    snapshot = snapshot_from_qiskit_backend(Backend())
+
+    assert snapshot.basis_gates == ("rz", "sx", "x", "cz", "measure", "reset", "if_else")
+    assert "conditional_reset" in snapshot.supported_features
+    assert "conditional_control" in snapshot.supported_features
+
+
 def test_snapshot_from_generic_metadata_rejects_missing_required_fields() -> None:
     with pytest.raises(ValueError, match="provider"):
         snapshot_from_generic_metadata({"backend_name": "x", "n_qubits": 2})
