@@ -36,12 +36,14 @@ _SDK_IMPORTS: dict[str, tuple[str, ...]] = {
     "qiskit-ibm-runtime": ("qiskit", "qiskit_ibm_runtime"),
     "python": ("scpn_quantum_control",),
     "requests": ("requests",),
+    "strangeworks": ("strangeworks",),
 }
 
 _ISOLATED_PROVIDER_EXTRAS: dict[str, tuple[str, ...]] = {
     "dwave": ("dwave_leap",),
     "iqm": ("iqm_cloud",),
     "quera": ("quera_bloqade",),
+    "strangeworks": ("strangeworks_compute",),
 }
 
 

@@ -122,8 +122,10 @@ def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
         "pasqal_cloud",
         "oqc_cloud",
         "qbraid_ionq",
+        "qbraid_runtime",
         "quandela_cloud",
         "dwave_leap",
+        "strangeworks_compute",
         "local_statevector",
         "local_braket_ahs",
         "local_braket_dm",
@@ -140,6 +142,30 @@ def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
         profile.capabilities.max_qubits is None or profile.capabilities.max_qubits > 0
         for profile in profiles
     )
+
+
+def test_dynamic_aggregator_profiles_are_first_class_catalog_routes() -> None:
+    """Provider-agnostic aggregators should not collapse to one provider."""
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+
+    qbraid = hal.profile("qbraid_runtime")
+    assert qbraid.provider == "dynamic"
+    assert qbraid.broker == "qbraid"
+    assert qbraid.target_family == "dynamic_catalog"
+    assert "dynamic_catalog" in qbraid.notes
+    assert qbraid.submit_requires_approval is True
+    assert {"openqasm3", "qiskit", "cirq", "braket_ir", "pennylane", "tket", "mlir"} <= set(
+        qbraid.ir_formats
+    )
+
+    strangeworks = hal.profile("strangeworks_compute")
+    assert strangeworks.provider == "dynamic"
+    assert strangeworks.broker == "strangeworks"
+    assert strangeworks.target_family == "dynamic_catalog"
+    assert "dynamic_catalog" in strangeworks.notes
+    assert strangeworks.submit_requires_approval is True
+    assert {"openqasm3", "qiskit", "quil", "braket_ir", "mlir"} <= set(strangeworks.ir_formats)
 
 
 def test_hal_discovery_is_deterministic_and_does_not_require_sdk_imports() -> None:

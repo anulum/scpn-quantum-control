@@ -164,6 +164,10 @@ from .hal_quandela import QuandelaPercevalHALAdapter, quandela_perceval_workload
 from .hal_quantinuum import QuantinuumCloudHALAdapter, quantinuum_tket_workload
 from .hal_quera_bloqade import QuEraBloqadeHALAdapter, bloqade_ahs_workload
 from .hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
+from .hal_strangeworks import (
+    StrangeworksComputeHALAdapter,
+    strangeworks_program_to_workload,
+)
 from .hybrid_digital_analog import (
     HybridCouplingAssignment,
     HybridCouplingPartition,
@@ -273,6 +277,7 @@ __all__ = [
     "PennyLaneDeviceHALAdapter",
     "pennylane_gate_workload",
     "QbraidRuntimeHALAdapter",
+    "StrangeworksComputeHALAdapter",
     "QuandelaPercevalHALAdapter",
     "quandela_perceval_workload",
     "QuEraBloqadeHALAdapter",
@@ -282,6 +287,7 @@ __all__ = [
     "qbraid_program_to_workload",
     "quantinuum_tket_workload",
     "rigetti_quil_workload",
+    "strangeworks_program_to_workload",
     "BackendCapabilities",
     "BackendProfile",
     "HardwareAbstractionLayer",

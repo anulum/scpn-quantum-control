@@ -190,6 +190,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [QbraidRuntimeHALAdapter, qbraid_program_to_workload]
 
+::: scpn_quantum_control.hardware.hal_strangeworks
+    options:
+      members: [StrangeworksComputeHALAdapter, strangeworks_program_to_workload]
+
 ::: scpn_quantum_control.hardware.hal_quandela
     options:
       members: [QuandelaPercevalHALAdapter, quandela_perceval_workload]

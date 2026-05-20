@@ -136,6 +136,10 @@ from .hardware.hal_quandela import QuandelaPercevalHALAdapter, quandela_perceval
 from .hardware.hal_quantinuum import QuantinuumCloudHALAdapter, quantinuum_tket_workload
 from .hardware.hal_quera_bloqade import QuEraBloqadeHALAdapter, bloqade_ahs_workload
 from .hardware.hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
+from .hardware.hal_strangeworks import (
+    StrangeworksComputeHALAdapter,
+    strangeworks_program_to_workload,
+)
 from .hardware.provider_smoke import (
     ProviderOptionalDependencyRow,
     provider_optional_dependency_matrix,
@@ -378,6 +382,7 @@ __all__ = [
     "ProviderOptionalDependencyRow",
     "provider_optional_dependency_matrix",
     "QbraidRuntimeHALAdapter",
+    "StrangeworksComputeHALAdapter",
     "QuandelaPercevalHALAdapter",
     "quandela_perceval_workload",
     "QuEraBloqadeHALAdapter",
@@ -387,6 +392,7 @@ __all__ = [
     "qbraid_program_to_workload",
     "quantinuum_tket_workload",
     "rigetti_quil_workload",
+    "strangeworks_program_to_workload",
     "BackendCapabilities",
     "BackendProfile",
     "HardwareAbstractionLayer",

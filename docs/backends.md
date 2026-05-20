@@ -310,8 +310,10 @@ Built-in route families include:
 | `pasqal_cloud` | Pasqal | direct | neutral-atom analogue |
 | `oqc_cloud` | OQC | direct | superconducting gate model |
 | `qbraid_ionq` | IonQ | qBraid | trapped-ion gate model |
+| `qbraid_runtime` | dynamic catalog | qBraid | provider-agnostic runtime |
 | `quandela_cloud` | Quandela | direct | photonic gate model |
 | `dwave_leap` | D-Wave | direct | quantum annealing |
+| `strangeworks_compute` | dynamic catalog | Strangeworks | provider-agnostic compute |
 | `local_statevector` | SCPN | local | deterministic simulator |
 | `local_braket_sv` | AWS Braket SDK | local | statevector simulator |
 | `local_braket_dm` | AWS Braket SDK | local | density-matrix simulator |
@@ -566,7 +568,7 @@ python -m venv .venv-provider-iqm
 .venv-provider-iqm/bin/scpn-provider-smoke --backend iqm_cloud --require-all
 ```
 
-The same three isolated lanes are available as the manual GitHub Actions
+The same isolated lanes are available as the manual GitHub Actions
 workflow `Provider Isolated Smoke`. It is deliberately separate from the
 blocking CI gate and performs offline import checks only; it does not read
 credentials, authenticate, create provider clients, or submit jobs.
@@ -789,7 +791,9 @@ The qBraid adapter layer provides `QbraidRuntimeHALAdapter` and
 `qbraid_program_to_workload()`. It accepts injected qBraid runtime devices or
 providers, supports provider lookup by qBraid device id, forwards the exact HAL
 program payload to `device.run(...)`, and converts qBraid measurement counts
-back into `QuantumJobResult`. Cloud submission remains approval-gated by HAL.
+back into `QuantumJobResult`. Use `qbraid_ionq` for the named IonQ broker route
+or `qbraid_runtime` for qBraid's dynamic provider catalog. Cloud submission
+remains approval-gated by HAL.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()
@@ -801,6 +805,35 @@ job = hal.submit(
         workload_id="qbraid_x",
         ir_format="openqasm3",
         n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+The Strangeworks adapter layer provides `StrangeworksComputeHALAdapter` and
+`strangeworks_program_to_workload()`. It mirrors the qBraid dynamic-catalog
+pattern: production callers inject an authenticated Strangeworks backend,
+workspace, or factory; the adapter forwards the HAL program payload to the
+selected backend, records the resolved backend id, and normalises measurement
+counts into `QuantumJobResult`.
+
+```python
+hal = HardwareAbstractionLayer.with_builtin_profiles()
+hal.register_backend(
+    StrangeworksComputeHALAdapter(
+        hal.profile("strangeworks_compute"),
+        workspace=strangeworks_workspace,
+        backend_id="rigetti.qvm",
+    )
+)
+job = hal.submit(
+    "strangeworks_compute",
+    strangeworks_program_to_workload(
+        "DECLARE ro BIT[2]",
+        workload_id="sw_rigetti",
+        ir_format="quil",
+        n_qubits=2,
         shots=128,
     ),
     approval_id="approved-run",

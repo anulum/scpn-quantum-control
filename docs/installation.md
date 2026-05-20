@@ -51,6 +51,7 @@ scpn-provider-smoke --format json --sdk-package qiskit-ibm-runtime --require-all
 pip install -e ".[dwave]"   # D-Wave Leap; requires click >=8.2 via dwave-cloud-client
 pip install -e ".[iqm]"     # IQM direct client; Qiskit bridge remains isolated
 pip install -e ".[quera]"   # QuEra Bloqade; current Bloqade meta-package resolves separately
+pip install -e ".[strangeworks]"  # Strangeworks Compute; Python >=3.11 SDK lane
 
 # Generate the deterministic isolated-lane plan.
 scpn-provider-smoke --plan-isolated --format table
@@ -62,8 +63,8 @@ python -m venv .venv-provider-dwave
 .venv-provider-dwave/bin/scpn-provider-smoke --backend dwave_leap --require-all
 
 # The manual "Provider Isolated Smoke" GitHub Actions workflow runs
-# D-Wave, IQM, and QuEra lanes in separate virtual environments. It is
-# offline: no credentials, authentication, provider clients, or job submission.
+# D-Wave, IQM, QuEra, and Strangeworks lanes in separate virtual environments.
+# It is offline: no credentials, authentication, provider clients, or job submission.
 
 # Rust acceleration (158–5,401× faster Hamiltonian construction;
 # 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric

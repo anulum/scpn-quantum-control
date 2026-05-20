@@ -37,6 +37,10 @@ jobs:
             backend: quera_bloqade
             sdk_package: bloqade
             venv_path: .venv-provider-quera
+          - extra: strangeworks
+            backend: strangeworks_compute
+            sdk_package: strangeworks
+            venv_path: .venv-provider-strangeworks
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6

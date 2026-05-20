@@ -75,6 +75,7 @@ def test_every_dedicated_hal_adapter_has_focused_adapter_tests() -> None:
         "test_hardware_hal_pasqal_adapters.py",
         "test_hardware_hal_pennylane_adapters.py",
         "test_hardware_hal_qbraid_adapters.py",
+        "test_hardware_hal_strangeworks_adapters.py",
         "test_hardware_hal_qiskit_adapters.py",
         "test_hardware_hal_quandela_adapters.py",
         "test_hardware_hal_quantinuum_adapters.py",
@@ -109,7 +110,12 @@ def test_hal_sdk_packages_are_exposed_as_install_extras() -> None:
         for descriptor in list_hal_backend_descriptors()
         if descriptor.sdk_package != "python"
     }
-    isolated_provider_packages = {"bloqade", "dwave-cloud-client", "iqm-client"}
+    isolated_provider_packages = {
+        "bloqade",
+        "dwave-cloud-client",
+        "iqm-client",
+        "strangeworks",
+    }
     declared_packages = {
         _normalise_requirement(requirement)
         for requirements in extras.values()
@@ -128,7 +134,7 @@ def test_hal_sdk_packages_are_exposed_as_install_extras() -> None:
     assert isolated_provider_packages.isdisjoint(provider_extra_requirements)
     isolated_extra_packages = {
         _normalise_requirement(requirement)
-        for extra_name in ("dwave", "iqm", "quera")
+        for extra_name in ("dwave", "iqm", "quera", "strangeworks")
         for requirement in extras[extra_name]
         if not requirement.startswith("scpn-quantum-control[")
     }
@@ -203,13 +209,15 @@ def test_isolated_provider_smoke_lanes_cover_conflict_prone_extras() -> None:
     lanes = isolated_provider_smoke_lanes()
     by_extra = {lane.extra: lane for lane in lanes}
 
-    assert set(by_extra) == {"dwave", "iqm", "quera"}
+    assert set(by_extra) == {"dwave", "iqm", "quera", "strangeworks"}
     assert by_extra["dwave"].backend_ids == ("dwave_leap",)
     assert by_extra["iqm"].backend_ids == ("iqm_cloud",)
     assert by_extra["quera"].backend_ids == ("quera_bloqade",)
+    assert by_extra["strangeworks"].backend_ids == ("strangeworks_compute",)
     assert by_extra["dwave"].sdk_packages == ("dwave-cloud-client",)
     assert by_extra["iqm"].sdk_packages == ("iqm-client",)
     assert by_extra["quera"].sdk_packages == ("bloqade",)
+    assert by_extra["strangeworks"].sdk_packages == ("strangeworks",)
 
     for lane in lanes:
         assert lane.venv_path == f".venv-provider-{lane.extra}"
@@ -226,5 +234,5 @@ def test_provider_smoke_cli_emits_isolated_plan(capsys) -> None:  # type: ignore
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert exit_code == 0
-    assert {row["extra"] for row in payload} == {"dwave", "iqm", "quera"}
+    assert {row["extra"] for row in payload} == {"dwave", "iqm", "quera", "strangeworks"}
     assert all(row["install_command"] for row in payload)

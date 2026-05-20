@@ -151,7 +151,8 @@ submission time.
 Built-in route families cover IBM Quantum, IonQ direct, AWS Braket QPU and
 managed-simulator routes, Azure Quantum QPU, emulator, and private-preview
 routes, Quantinuum, Rigetti QCS, QuEra/Bloqade, IQM, Pasqal, OQC, D-Wave Leap,
-qBraid IonQ, Quandela photonics, and local simulator adapters.
+qBraid IonQ, qBraid dynamic runtime, Strangeworks Compute, Quandela photonics,
+and local simulator adapters.
 Provider-specific SDK credentials, queue selection, pricing, and region policy
 remain adapter responsibilities.
 
@@ -961,11 +962,12 @@ job = hal.submit(
 )
 ```
 
-PennyLane and qBraid adapters are concrete HAL routes, not registry aliases.
+PennyLane, qBraid, and Strangeworks adapters are concrete HAL routes, not registry aliases.
 `PennyLaneDeviceHALAdapter` executes strict native-gate payloads on a local
 PennyLane device and fails closed on unsupported gates. `QbraidRuntimeHALAdapter`
 uses injected qBraid devices or providers and still requires the HAL approval
-token for cloud submission.
+token for cloud submission. `StrangeworksComputeHALAdapter` follows the same
+dynamic-catalog contract for injected Strangeworks backends or workspaces.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()
@@ -988,6 +990,27 @@ qbraid_job = hal.submit(
     qbraid_program_to_workload(
         "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\nh q[0];",
         workload_id="qbraid_h",
+        ir_format="openqasm3",
+        n_qubits=1,
+        shots=128,
+    ),
+    approval_id="approved-run",
+)
+```
+
+```python
+hal.register_backend(
+    StrangeworksComputeHALAdapter(
+        hal.profile("strangeworks_compute"),
+        workspace=strangeworks_workspace,
+        backend_id="ionq.simulator",
+    )
+)
+sw_job = hal.submit(
+    "strangeworks_compute",
+    strangeworks_program_to_workload(
+        "OPENQASM 3.0;",
+        workload_id="sw_openqasm",
         ir_format="openqasm3",
         n_qubits=1,
         shots=128,
