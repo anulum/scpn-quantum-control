@@ -24,6 +24,47 @@ from scpn_quantum_control.hardware.hal import (
 )
 
 
+def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None:
+    """Every built-in HAL route should have offline selector metadata."""
+
+    from scpn_quantum_control.hardware import (
+        describe_hal_backend_profile as exported_describe_hal_backend_profile,
+    )
+    from scpn_quantum_control.hardware import (
+        list_hal_backend_descriptors as exported_list_hal_backend_descriptors,
+    )
+    from scpn_quantum_control.hardware.backends import (
+        describe_hal_backend_profile,
+        list_hal_backend_descriptors,
+    )
+
+    profiles = built_in_backend_profiles()
+    descriptors = list_hal_backend_descriptors()
+    by_name = {descriptor.name: descriptor for descriptor in descriptors}
+
+    assert set(by_name) == {profile.backend_id for profile in profiles}
+    assert [descriptor.name for descriptor in descriptors] == sorted(by_name)
+    assert exported_list_hal_backend_descriptors() == descriptors
+    assert exported_describe_hal_backend_profile("quera_bloqade").name == "quera_bloqade"
+
+    quera = describe_hal_backend_profile("quera_bloqade")
+    assert quera.provider == "quera"
+    assert quera.execution_mode == "cloud_neutral_atom_analog"
+    assert quera.adapter_module == "scpn_quantum_control.hardware.hal_quera_bloqade"
+    assert quera.can_submit is True
+    assert quera.submit_requires_approval is True
+    assert quera.capabilities == ("analog", "cancellation", "counts", "shots")
+    assert quera.workloads == ("bloqade", "braket_ahs", "mlir")
+
+    aer = describe_hal_backend_profile("local_qiskit_aer")
+    assert aer.execution_mode == "local_simulator"
+    assert aer.adapter_module == "scpn_quantum_control.hardware.hal_qiskit"
+    assert aer.can_simulate is True
+    assert aer.can_submit is False
+    assert aer.submit_requires_approval is False
+    assert "statevector" in aer.capabilities
+
+
 def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
     """Built-in profiles should cover the current major provider families."""
 

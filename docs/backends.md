@@ -212,7 +212,12 @@ or AWS work is attempted.
 ### Descriptor API
 
 ```python
-from scpn_quantum_control.hardware import describe_backend, list_quantum_backends
+from scpn_quantum_control.hardware import (
+    describe_backend,
+    describe_hal_backend_profile,
+    list_hal_backend_descriptors,
+    list_quantum_backends,
+)
 
 ibm = describe_backend("qiskit_ibm")
 assert ibm.provider == "ibm_quantum"
@@ -225,6 +230,13 @@ assert local.can_submit is False
 
 for descriptor in list_quantum_backends():
     print(descriptor.name, descriptor.execution_mode, descriptor.available)
+
+quera = describe_hal_backend_profile("quera_bloqade")
+assert quera.adapter_module == "scpn_quantum_control.hardware.hal_quera_bloqade"
+assert quera.submit_requires_approval is True
+
+for route in list_hal_backend_descriptors():
+    print(route.name, route.provider, route.workloads)
 ```
 
 Every descriptor records:
@@ -241,6 +253,13 @@ Every descriptor records:
 | `submit_requires_approval` | mandatory cloud-job approval flag |
 | `supports_*` | shot, statevector, mid-circuit, and pulse capability flags |
 | `capabilities` / `workloads` | stable machine-readable routing tags |
+
+`list_quantum_backends()` describes plugin-registry entries and may probe
+import-time availability through each backend's `is_available()` method.
+`list_hal_backend_descriptors()` describes every built-in HAL profile using
+static metadata only. It is the safer selector input when an application needs
+the complete IBM, Braket, Azure, IonQ, Rigetti, Quantinuum, QuEra, qBraid,
+simulator, and future-profile route matrix without importing provider SDKs.
 
 Legacy third-party plugins that only implement `name` and
 `is_available()` are still accepted. `describe_backend()` gives them a

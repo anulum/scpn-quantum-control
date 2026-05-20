@@ -134,6 +134,10 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ## Hardware Abstraction Layer
 
+::: scpn_quantum_control.hardware.backends
+    options:
+      members: [QuantumBackendDescriptor, describe_hal_backend_profile, list_hal_backend_descriptors, describe_backend, list_quantum_backends]
+
 ::: scpn_quantum_control.hardware.hal
     options:
       members: [BackendCapabilities, BackendProfile, QuantumWorkload, QuantumJobRef, QuantumJobResult, QuantumBackend, LocalDeterministicSimulator, HardwareAbstractionLayer, built_in_backend_profiles]

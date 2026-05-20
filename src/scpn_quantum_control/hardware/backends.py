@@ -48,6 +48,44 @@ ENTRY_POINT_GROUP = "scpn_quantum_control.backends"
 
 logger = logging.getLogger(__name__)
 
+_HAL_PROFILE_ADAPTER_MODULES: dict[str, str] = {
+    "aws_braket_aqt": "scpn_quantum_control.hardware.hal_braket",
+    "aws_braket_dm1": "scpn_quantum_control.hardware.hal_braket",
+    "aws_braket_ionq": "scpn_quantum_control.hardware.hal_braket",
+    "aws_braket_iqm": "scpn_quantum_control.hardware.hal_braket",
+    "aws_braket_quera": "scpn_quantum_control.hardware.hal_braket",
+    "aws_braket_rigetti": "scpn_quantum_control.hardware.hal_braket",
+    "aws_braket_sv1": "scpn_quantum_control.hardware.hal_braket",
+    "aws_braket_tn1": "scpn_quantum_control.hardware.hal_braket",
+    "azure_quantum_ionq": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_ionq_simulator": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_pasqal": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_pasqal_emulator": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_qci_preview": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_quantinuum": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_quantinuum_emulator": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_rigetti": "scpn_quantum_control.hardware.hal_azure",
+    "azure_quantum_rigetti_qvm": "scpn_quantum_control.hardware.hal_azure",
+    "dwave_leap": "scpn_quantum_control.hardware.hal",
+    "ibm_quantum": "scpn_quantum_control.hardware.hal_qiskit",
+    "ionq_cloud": "scpn_quantum_control.hardware.hal_ionq",
+    "iqm_cloud": "scpn_quantum_control.hardware.iqm_backend",
+    "local_braket_ahs": "scpn_quantum_control.hardware.hal_braket",
+    "local_braket_dm": "scpn_quantum_control.hardware.hal_braket",
+    "local_braket_sv": "scpn_quantum_control.hardware.hal_braket",
+    "local_cirq": "scpn_quantum_control.hardware.cirq_adapter",
+    "local_pennylane": "scpn_quantum_control.hardware.hal_pennylane",
+    "local_qiskit_aer": "scpn_quantum_control.hardware.hal_qiskit",
+    "local_statevector": "scpn_quantum_control.hardware.hal",
+    "oqc_cloud": "scpn_quantum_control.hardware.hal",
+    "pasqal_cloud": "scpn_quantum_control.hardware.hal",
+    "qbraid_ionq": "scpn_quantum_control.hardware.hal_qbraid",
+    "quandela_cloud": "scpn_quantum_control.hardware.hal",
+    "quantinuum_cloud": "scpn_quantum_control.hardware.hal_quantinuum",
+    "quera_bloqade": "scpn_quantum_control.hardware.hal_quera_bloqade",
+    "rigetti_qcs": "scpn_quantum_control.hardware.hal_rigetti",
+}
+
 
 @runtime_checkable
 class BackendProtocol(Protocol):
@@ -287,6 +325,120 @@ def list_quantum_backends(*, auto_discover: bool = True) -> list[QuantumBackendD
     if auto_discover:
         discover_backends()
     return sorted((describe_backend(name) for name in _registry.names()), key=lambda d: d.name)
+
+
+def describe_hal_backend_profile(backend_id: str) -> QuantumBackendDescriptor:
+    """Return selector metadata for one built-in HAL profile.
+
+    The descriptor is constructed from static HAL profile metadata only. It
+    does not import provider SDKs, authenticate, inspect queues, or create any
+    executable adapter. Runtime availability remains the responsibility of the
+    injected adapter route.
+    """
+
+    from .hal import built_in_backend_profiles
+
+    for profile in built_in_backend_profiles():
+        if profile.backend_id == backend_id:
+            return _hal_profile_descriptor(profile)
+    raise KeyError(f"unknown HAL backend profile: {backend_id}")
+
+
+def list_hal_backend_descriptors() -> list[QuantumBackendDescriptor]:
+    """Return selector metadata for all built-in HAL profiles."""
+
+    from .hal import built_in_backend_profiles
+
+    return sorted(
+        (_hal_profile_descriptor(profile) for profile in built_in_backend_profiles()),
+        key=lambda descriptor: descriptor.name,
+    )
+
+
+def _hal_profile_descriptor(profile: object) -> QuantumBackendDescriptor:
+    from .hal import BackendProfile
+
+    if not isinstance(profile, BackendProfile):
+        raise TypeError("profile must be a BackendProfile")
+    capabilities = _hal_profile_capability_tokens(profile)
+    return QuantumBackendDescriptor(
+        name=profile.backend_id,
+        provider=profile.provider,
+        execution_mode=_hal_profile_execution_mode(profile),
+        sdk_package=profile.sdk_package,
+        adapter_module=_HAL_PROFILE_ADAPTER_MODULES[profile.backend_id],
+        available=profile.sdk_package == "python",
+        can_simulate=_hal_profile_can_simulate(profile),
+        can_submit=profile.is_cloud,
+        submit_requires_approval=profile.submit_requires_approval,
+        supports_shots=profile.capabilities.supports_shots,
+        supports_statevector=profile.capabilities.supports_statevector,
+        supports_mid_circuit_measurement=profile.capabilities.supports_mid_circuit_measurement,
+        supports_pulse=profile.capabilities.supports_pulse,
+        max_qubits=profile.capabilities.max_qubits,
+        capabilities=capabilities,
+        workloads=tuple(profile.ir_formats),
+        notes=(
+            "Metadata-only HAL descriptor; runtime availability is checked by injected adapters.",
+            *profile.notes,
+        ),
+    )
+
+
+def _hal_profile_execution_mode(profile: object) -> str:
+    from .hal import BackendProfile
+
+    if not isinstance(profile, BackendProfile):
+        raise TypeError("profile must be a BackendProfile")
+    if not profile.is_cloud:
+        if "simulator" in profile.modality or "statevector" in profile.modality:
+            return "local_simulator"
+        return "local_adapter"
+    if profile.capabilities.supports_analog:
+        return "cloud_neutral_atom_analog"
+    if "simulator" in profile.modality or "emulator" in profile.modality:
+        return "cloud_managed_simulator"
+    if profile.modality == "quantum_annealing":
+        return "cloud_quantum_annealing"
+    return "cloud_qpu"
+
+
+def _hal_profile_can_simulate(profile: object) -> bool:
+    from .hal import BackendProfile
+
+    if not isinstance(profile, BackendProfile):
+        raise TypeError("profile must be a BackendProfile")
+    return (
+        not profile.is_cloud
+        or profile.capabilities.supports_statevector
+        or "simulator" in profile.modality
+        or "emulator" in profile.modality
+    )
+
+
+def _hal_profile_capability_tokens(profile: object) -> tuple[str, ...]:
+    from .hal import BackendProfile
+
+    if not isinstance(profile, BackendProfile):
+        raise TypeError("profile must be a BackendProfile")
+    capabilities: list[str] = []
+    if profile.capabilities.supports_analog:
+        capabilities.append("analog")
+    if profile.capabilities.supports_counts:
+        capabilities.append("counts")
+    if profile.capabilities.supports_mid_circuit_measurement:
+        capabilities.append("mid_circuit_measurement")
+    if profile.capabilities.supports_pulse:
+        capabilities.append("pulse")
+    if profile.capabilities.supports_shots:
+        capabilities.append("shots")
+    if profile.capabilities.supports_statevector:
+        capabilities.append("statevector")
+    if profile.capabilities.supports_cancellation:
+        capabilities.append("cancellation")
+    if profile.capabilities.supports_cost_estimate:
+        capabilities.append("cost_estimate")
+    return tuple(sorted(capabilities))
 
 
 # ---------------------------------------------------------------------------

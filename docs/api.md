@@ -641,7 +641,8 @@ environment variable otherwise.
 
 ```python
 from scpn_quantum_control.hardware import (
-    describe_backend, get_backend, list_backends, list_quantum_backends,
+    describe_backend, describe_hal_backend_profile, get_backend, list_backends,
+    list_hal_backend_descriptors, list_quantum_backends,
     register_backend, discover_backends,
 )
 
@@ -656,6 +657,11 @@ descriptor.can_submit                   # True
 descriptor.submit_requires_approval     # True
 list_quantum_backends()                 # sorted QuantumBackendDescriptor list
 
+hal_route = describe_hal_backend_profile("quera_bloqade")
+hal_route.execution_mode                # 'cloud_neutral_atom_analog'
+hal_route.adapter_module                # concrete HAL adapter owner
+list_hal_backend_descriptors()          # every built-in HAL route profile
+
 # Third-party plugin — register via entry_points in pyproject.toml
 # [project.entry-points."scpn_quantum_control.backends"]
 # acme_trapped_ion = "acme_plugin:AcmeBackend"
@@ -664,6 +670,8 @@ discover_backends()                     # scan entry_points group
 
 Every registered backend exposes `name: str` and `is_available() ->
 bool`. Discovery is lazy; one broken plugin never blocks the rest.
+The HAL descriptor helpers are metadata-only: they do not import provider
+SDKs, authenticate, inspect queues, or submit jobs.
 
 ### `hal` — provider-neutral execution contract
 
