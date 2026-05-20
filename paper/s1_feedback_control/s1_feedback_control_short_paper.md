@@ -12,7 +12,7 @@
 *Contact: protoscience@anulum.li*
 
 **Date:** 2026-05-20
-**Status:** IBM paired-arm execution complete; S1/S1b/S1c/S1d same-paper
+**Status:** IBM paired-arm execution complete; S1/S1b/S1c/S1d/S1e same-paper
 extensions are complete
 **Target venue:** short communication / workshop submission candidate
 
@@ -34,10 +34,11 @@ The observed feedback arm does not reduce binary-proxy target-order-parameter
 error relative to the matched open-loop control. Because that proxy is near
 saturation in both arms, we add same-paper direct-XY extensions: S1b measures
 final XY-sector Pauli correlators on the original body, S1c reduces depth and
-gain, and S1d sweeps correction direction and gain. The direct-XY extensions
-show channel-structured and policy-sensitive feedback/control differences. The
-claim is bounded to hardware-control interpretability, not quantum advantage
-or backend-general feedback.
+gain, S1d sweeps correction direction and gain, and S1e repeats the policy
+sweep at higher repetitions. The direct-XY extensions show channel-structured
+and policy-sensitive feedback/control differences. The claim is bounded to
+hardware-control interpretability, not quantum advantage or backend-general
+feedback.
 
 ## 1. Introduction
 
@@ -246,6 +247,29 @@ close to zero. The conservative interpretation is policy- and
 calibration-window sensitivity in the direct-XY sector, not robust feedback
 success.
 
+### 6.5 S1e confirmatory policy-sweep repeat
+
+S1e repeats the S1d policy-direction sweep at five repetitions per arm. Its
+purpose is to test whether the large positive `YYI` channel in
+`current_shallow_positive` reproduces, or whether it was a single calibration
+window fluctuation.
+
+The S1e readiness gate passed on `ibm_kingston` with maximum transpiled depth
+`237` and total estimated QPU budget `120.0` seconds under the `130.0` second
+ceiling. The 24 IBM jobs completed successfully.
+
+| Variant | `IXX` | `IYY` | `XXI` | `YYI` | Mean signed | Mean absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| `current_shallow_positive` | -0.0035156250 | 0.0082031250 | -0.0488281250 | 0.1824218750 | 0.0345703125 | 0.0607421875 |
+| `polarity_flipped` | -0.0429687500 | -0.0406250000 | -0.0281250000 | 0.0167968750 | -0.0237304688 | 0.0321289063 |
+| `weak_positive` | -0.0074218750 | 0.0042968750 | -0.0105468750 | -0.0406250000 | -0.0135742187 | 0.0157226563 |
+
+S1e confirms the S1d `YYI` response in `current_shallow_positive`: S1d measured
+`0.1848958333`, and S1e measured `0.1824218750`. The result remains
+channel-specific rather than a full-controller promotion, since `IXX` and
+`XXI` stay negative and the alternative policies do not reproduce the same
+mean-signed behaviour.
+
 ## 7. Claim Boundary
 
 Safe claims after successful analysis:
@@ -273,9 +297,10 @@ synchrony target. The S1b extension shows why that is not the whole story:
 direct XY-sector channels expose a small, non-uniform feedback/control
 response. The S1c shallow/lower-gain extension then moves negative across all
 four direct XY channels. S1d then shows that a same-day policy-direction sweep
-is sensitive to the policy and calibration window: the current shallow policy
-has one large favourable `YYI` channel, but the flipped and weak policies remain
-near zero. The paper should therefore be framed as a dynamic-circuit
-hardware-control boundary test: the specific policy is not promoted as a
-successful controller, but the paired-arm method and direct-observable
-extensions reveal where future policies should be redesigned and preregistered.
+is sensitive to policy choice, with one large favourable `YYI` channel in the
+current shallow policy. S1e repeats that `YYI` response at higher repetitions.
+The paper should therefore be framed as a dynamic-circuit hardware-control
+boundary test with a reproducible channel-specific policy sensitivity: the
+specific controller is not promoted as broadly successful, but the paired-arm
+method and direct-observable extensions expose a concrete mechanism target for
+future redesigned and preregistered policies.

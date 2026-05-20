@@ -194,6 +194,14 @@ depth `237`. The current shallow repeat had mean signed feedback-control delta
 weak-positive variants were close to zero. S1d therefore supports a
 policy-sensitivity and calibration-window boundary, not a robust controller
 promotion.
+S1e completed on `ibm_kingston` as the confirmatory repeat of the S1d
+policy-direction sweep, increasing repetitions from `3` to `5`. The current
+shallow positive policy again produced a large positive `YYI` response
+(`0.1824218750`, after S1d measured `0.1848958333`) and mean signed
+feedback-control delta `0.0345703125`. The result upgrades S1 from a simple
+negative-control note to a publishable boundary study with reproducible
+channel-specific policy sensitivity, while still blocking backend-general
+feedback-control claims.
 
 ### Acceptance
 

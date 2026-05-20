@@ -106,7 +106,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--n-rounds", type=int, default=DEFAULT_N_ROUNDS)
     parser.add_argument("--correction-angle", type=float, default=0.12)
     parser.add_argument("--base-gain", type=float, default=0.8)
-    parser.add_argument("--policy-sweep", choices=("none", "s1d"), default="none")
+    parser.add_argument("--policy-sweep", choices=("none", "s1d", "s1e"), default="none")
     parser.add_argument("--shots", type=int, default=DEFAULT_SHOTS)
     parser.add_argument("--repetitions", type=int, default=DEFAULT_REPETITIONS)
     parser.add_argument("--observables", nargs="+", default=list(DEFAULT_OBSERVABLES))
@@ -149,7 +149,7 @@ def _controller_from_policy(
 
 
 def _policy_variants(args: argparse.Namespace) -> tuple[dict[str, Any], ...]:
-    if args.policy_sweep == "s1d":
+    if _is_policy_sweep(args):
         return tuple(dict(variant) for variant in DEFAULT_S1D_POLICY_SWEEP)
     return (
         {
@@ -160,6 +160,10 @@ def _policy_variants(args: argparse.Namespace) -> tuple[dict[str, Any], ...]:
             "hypothesis": "single configured direct-XY policy lane",
         },
     )
+
+
+def _is_policy_sweep(args: argparse.Namespace) -> bool:
+    return str(args.policy_sweep) in {"s1d", "s1e"}
 
 
 def _timestamp() -> str:
@@ -572,7 +576,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         results.append(result)
         results_by_policy.setdefault(policy_variant, []).append(result)
 
-    if args.policy_sweep == "s1d":
+    if _is_policy_sweep(args):
         raw_package = _raw_count_package_from_policy_sweep_results(
             experiment_id=args.experiment_id,
             lane=args.lane,
@@ -592,9 +596,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             "backend": args.backend,
             "parent_experiment_id": args.parent_experiment_id,
             "lane": args.lane,
-            "n_rounds": args.n_rounds if args.policy_sweep == "none" else None,
-            "correction_angle": (args.correction_angle if args.policy_sweep == "none" else None),
-            "base_gain": args.base_gain if args.policy_sweep == "none" else None,
+            "n_rounds": args.n_rounds if not _is_policy_sweep(args) else None,
+            "correction_angle": (args.correction_angle if not _is_policy_sweep(args) else None),
+            "base_gain": args.base_gain if not _is_policy_sweep(args) else None,
             "policy_sweep": args.policy_sweep,
             "approval": {
                 "approval_id": approval.approval_id,

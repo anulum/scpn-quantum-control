@@ -223,6 +223,30 @@ S1d policy-direction sweep:
   It shows policy- and calibration-window sensitivity in the direct-XY sector;
   stronger feedback claims require a predeclared repeat or redesigned policy.
 
+S1e confirmatory policy-sweep repeat:
+
+- status: completed on `ibm_kingston`;
+- purpose: same-paper statistical repeat of S1d to test whether the large
+  `YYI` response in `current_shallow_positive` reproduces at higher
+  repetitions;
+- variants: same as S1d, with repetitions increased from `3` to `5`;
+- readiness artefact:
+  `data/s1_feedback_loop/s1e_xy_observable_readiness_ibm_kingston_20260520T140919Z.json`;
+- raw-count artefact:
+  `data/s1_feedback_loop/s1e_xy_observable_raw_counts_ibm_kingston_20260520T140919Z.json`;
+- analysis artefact:
+  `data/s1_feedback_loop/s1e_xy_observable_analysis_ibm_kingston_20260520T140919Z.json`;
+- maximum transpiled depth: `237`;
+- estimated QPU seconds: `120.0`;
+- jobs: 24 completed IBM jobs;
+- result: `current_shallow_positive` has mean signed feedback-control delta
+  `0.0345703125` and mean absolute separation `0.0607421875`; its `YYI`
+  response repeats at `0.1824218750` after S1d measured `0.1848958333`;
+- interpretation: S1e upgrades the S1d `YYI` channel from a one-run curiosity
+  to a reproducible channel-specific policy sensitivity. It still does not
+  promote backend-general feedback control because the favourable response is
+  not uniform across direct-XY channels or policy variants.
+
 ## Claim Boundary
 
 Safe after successful raw-count analysis:

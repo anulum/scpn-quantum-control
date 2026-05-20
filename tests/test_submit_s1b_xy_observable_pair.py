@@ -12,6 +12,7 @@ from __future__ import annotations
 from scripts.submit_s1b_ibm_xy_observable_pair import (
     _analysis_summary,
     _controller,
+    _is_policy_sweep,
     _parse_args,
     _policy_variants,
 )
@@ -82,6 +83,33 @@ def test_s1d_policy_sweep_expands_to_preregistered_variants() -> None:
     ]
     assert [variant["correction_angle"] for variant in variants] == [0.06, -0.06, 0.03]
     assert [variant["base_gain"] for variant in variants] == [0.4, 0.4, 0.2]
+    assert all(variant["n_rounds"] == 1 for variant in variants)
+
+
+def test_s1e_confirmatory_repeat_reuses_policy_sweep_with_five_repetitions() -> None:
+    args = _parse_args(
+        [
+            "--lane",
+            "s1e",
+            "--experiment-id",
+            "s1e_policy_sweep_confirmatory_repeat_2026-05-20",
+            "--policy-sweep",
+            "s1e",
+            "--repetitions",
+            "5",
+        ]
+    )
+
+    variants = _policy_variants(args)
+
+    assert args.policy_sweep == "s1e"
+    assert args.repetitions == 5
+    assert _is_policy_sweep(args)
+    assert [variant["policy_variant"] for variant in variants] == [
+        "current_shallow_positive",
+        "polarity_flipped",
+        "weak_positive",
+    ]
     assert all(variant["n_rounds"] == 1 for variant in variants)
 
 
