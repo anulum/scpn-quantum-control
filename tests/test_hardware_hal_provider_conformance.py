@@ -84,6 +84,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
         "direct/ibm_quantum",
         "direct/ionq",
         "direct/quantinuum",
+        "direct/rigetti",
         "azure_quantum/ionq",
         "azure_quantum/quantinuum",
         "azure_quantum/rigetti",
@@ -132,6 +133,7 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
     assert [route.route_id for route in aggregator_provider_routes_for(provider="rigetti")] == [
         "aws_braket/rigetti",
         "azure_quantum/rigetti",
+        "direct/rigetti",
         "qbraid/rigetti",
         "strangeworks/rigetti",
     ]
@@ -185,6 +187,15 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     assert quantinuum.route.route_id == "direct/quantinuum"
     assert quantinuum.route.backend_id == "quantinuum_cloud"
     assert quantinuum.profile.provider == "quantinuum"
+
+    rigetti = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="rigetti",
+        ir_format="quil",
+    )
+    assert rigetti.route.route_id == "direct/rigetti"
+    assert rigetti.route.backend_id == "rigetti_qcs"
+    assert rigetti.profile.provider == "rigetti"
 
     with pytest.raises(LookupError, match="unsupported IR"):
         resolve_aggregator_provider_route(
@@ -296,6 +307,14 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     assert direct_quantinuum.target_family == "quantinuum"
     assert "tket" in direct_quantinuum.ir_formats
     assert direct_quantinuum.submit_requires_approval is True
+
+    direct_rigetti = by_route["direct/rigetti"]
+    assert direct_rigetti.aggregator == "direct"
+    assert direct_rigetti.provider == "rigetti"
+    assert direct_rigetti.backend_id == "rigetti_qcs"
+    assert direct_rigetti.target_family == "rigetti"
+    assert "quil" in direct_rigetti.ir_formats
+    assert direct_rigetti.submit_requires_approval is True
 
     direct_ibm = by_route["direct/ibm_quantum"]
     assert direct_ibm.aggregator == "direct"

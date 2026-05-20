@@ -354,6 +354,80 @@ def snapshot_from_quantinuum_backend(
     )
 
 
+def snapshot_from_rigetti_qcs(
+    resolved: ResolvedAggregatorProviderRoute,
+    quantum_computer: Any,
+) -> ProviderCapabilitySnapshot:
+    """Build a no-submit capability snapshot from direct Rigetti QCS metadata."""
+
+    compiler = _first_available_attr(
+        quantum_computer,
+        names=("compiler", "quantum_processor_compiler", "qpu_compiler"),
+    )
+    return ProviderCapabilitySnapshot(
+        route_id=resolved.route.route_id,
+        aggregator=resolved.route.aggregator,
+        provider=resolved.route.provider,
+        backend_id=resolved.route.backend_id,
+        target_name=_first_text_attr(
+            quantum_computer,
+            names=(
+                "quantum_computer",
+                "quantum_computer_name",
+                "backend",
+                "backend_id",
+                "name",
+                "id",
+            ),
+            field_name="Rigetti QCS target name",
+        ),
+        n_qubits=_first_positive_int_attr(
+            quantum_computer,
+            names=("num_qubits", "n_qubits", "qubits", "qubit_count", "qubitCount"),
+            field_name="Rigetti QCS qubit count",
+        ),
+        supported_ir_formats=_rigetti_supported_ir_formats(resolved, quantum_computer),
+        basis_gates=_first_string_tuple_attr(
+            quantum_computer,
+            names=("basis_gates", "native_gates", "gates", "supported_operations"),
+        ),
+        native_features=_rigetti_native_features(quantum_computer),
+        online=_rigetti_online_state(quantum_computer),
+        simulator=_first_bool_attr(quantum_computer, names=("simulator", "is_simulator")) or False,
+        max_shots=_first_optional_int_attr(
+            quantum_computer,
+            names=("max_shots", "shots_limit", "maxShots", "max_execution_shots"),
+        ),
+        max_circuits=_first_optional_int_attr(
+            quantum_computer,
+            names=("max_circuits", "max_jobs", "max_experiments"),
+        ),
+        queue_depth=_first_optional_int_attr(
+            quantum_computer,
+            names=("queue_depth", "pending_jobs", "queue_size", "average_queue_time"),
+            minimum=0,
+        ),
+        calibration_timestamp=_first_optional_text_attr(
+            quantum_computer,
+            names=(
+                "last_calibration",
+                "calibration_timestamp",
+                "latest_calibration",
+                "last_updated",
+                "lastUpdated",
+            ),
+        ),
+        metadata={
+            "adapter": "rigetti_qcs_no_submit",
+            "quilc_version": _first_optional_text_attr(compiler, names=("quilc_version",)),
+            "qpu_compiler_version": _first_optional_text_attr(
+                compiler,
+                names=("qpu_compiler_version", "compiler_version"),
+            ),
+        },
+    )
+
+
 def snapshot_from_braket_device(
     resolved: ResolvedAggregatorProviderRoute,
     device: Any,
@@ -993,6 +1067,65 @@ def _quantinuum_online_state(*sources: Any) -> bool | None:
     return None
 
 
+def _rigetti_supported_ir_formats(
+    resolved: ResolvedAggregatorProviderRoute,
+    quantum_computer: Any,
+) -> tuple[str, ...]:
+    declared = _first_string_tuple_attr(
+        quantum_computer,
+        names=(
+            "supported_ir_formats",
+            "ir_formats",
+            "input_formats",
+            "input_data_formats",
+            "program_formats",
+        ),
+    )
+    if not declared:
+        return resolved.route.ir_formats
+    return tuple(_rigetti_ir_format_token(item) for item in declared)
+
+
+def _rigetti_ir_format_token(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_")
+    if normalized in {"quil", "rigetti.quil", "rigetti_quil", "pyquil"}:
+        return "quil"
+    if normalized in {"qasm.v3", "qasm3", "openqasm", "openqasm_3", "openqasm3"}:
+        return "openqasm3"
+    if normalized == "mlir":
+        return "mlir"
+    return normalized
+
+
+def _rigetti_native_features(quantum_computer: Any) -> tuple[str, ...]:
+    features = set(
+        _first_string_tuple_attr(quantum_computer, names=("native_features", "features"))
+    )
+    features.add("gate_model")
+    features.add("superconducting")
+    if _first_bool_attr(quantum_computer, names=("lattice_connectivity", "topology")) is not False:
+        features.add("lattice_connectivity")
+    return tuple(sorted(features))
+
+
+def _rigetti_online_state(quantum_computer: Any) -> bool | None:
+    explicit = _first_online_attr(quantum_computer)
+    if explicit is not None:
+        return explicit
+    text_status = _first_optional_text_attr(
+        quantum_computer,
+        names=("availability", "target_status", "status", "state"),
+    )
+    if text_status is None:
+        return None
+    normalized = text_status.strip().lower()
+    if normalized in {"available", "online", "ready", "active", "enabled"}:
+        return True
+    if normalized in {"unavailable", "offline", "disabled", "retired", "maintenance"}:
+        return False
+    return None
+
+
 def _braket_supported_ir_formats(
     resolved: ResolvedAggregatorProviderRoute,
     action: Any,
@@ -1227,5 +1360,6 @@ __all__ = [
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_quantinuum_backend",
+    "snapshot_from_rigetti_qcs",
     "snapshot_from_strangeworks_backend",
 ]

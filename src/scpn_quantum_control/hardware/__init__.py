@@ -208,6 +208,7 @@ from .provider_capability_discovery import (
     snapshot_from_qbraid_device,
     snapshot_from_qiskit_runtime_backend,
     snapshot_from_quantinuum_backend,
+    snapshot_from_rigetti_qcs,
     snapshot_from_strangeworks_backend,
 )
 from .provider_smoke import (
@@ -297,6 +298,7 @@ __all__ = [
     "snapshot_from_qiskit_runtime_backend",
     "snapshot_from_qbraid_device",
     "snapshot_from_quantinuum_backend",
+    "snapshot_from_rigetti_qcs",
     "snapshot_from_strangeworks_backend",
     "summarise_feedback_circuit",
     "FeedbackDryRunPayload",

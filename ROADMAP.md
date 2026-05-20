@@ -124,6 +124,13 @@ is copied here.
   translation, qubit count, native gate set, mid-circuit measurement feature
   inference, shot/batch limits, queue depth, online state, simulator flag,
   machine id, and calibration timestamp without circuit processing.
+- [x] **Direct Rigetti QCS no-submit capability snapshot.** Implemented
+  2026-05-20: `snapshot_from_rigetti_qcs` adds the direct `direct/rigetti`
+  route and metadata snapshot path for injected Rigetti QCS quantum-computer
+  objects or metadata JSON, including Quil/OpenQASM declaration translation,
+  qubit count, native gate set, shot limits, queue depth, online state,
+  simulator flag, compiler versions, and calibration timestamp without program
+  compilation or execution.
 - [x] **AWS Braket HAL adapter integration.** Implemented 2026-05-20:
   `hardware.hal_braket` adds OpenQASM 3 workload conversion for Braket circuits,
   local SV/DM simulator execution, and approval-gated AWS Braket device/task

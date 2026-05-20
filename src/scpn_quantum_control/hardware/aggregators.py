@@ -101,6 +101,13 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             ("tket", "openqasm3", "qir"),
         ),
         _route(
+            "direct/rigetti",
+            "direct",
+            "rigetti",
+            "rigetti_qcs",
+            ("quil", "openqasm3"),
+        ),
+        _route(
             "azure_quantum/ionq",
             "azure_quantum",
             "ionq",

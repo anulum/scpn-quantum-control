@@ -161,9 +161,10 @@ profiles through `built_in_aggregator_provider_routes()`. This keeps broad
 broker catalogues explicit without duplicating runtime adapters: direct Braket
 and Azure provider rows resolve to their specific HAL profiles, the direct IBM
 Quantum row resolves to `ibm_quantum`, the direct IonQ row resolves to
-`ionq_cloud`, the direct Quantinuum row resolves to `quantinuum_cloud`, while
-dynamic qBraid and Strangeworks rows resolve to `qbraid_runtime` and
-`strangeworks_compute` respectively. Use
+`ionq_cloud`, the direct Quantinuum row resolves to `quantinuum_cloud`, the
+direct Rigetti row resolves to `rigetti_qcs`, while dynamic qBraid and
+Strangeworks rows resolve to `qbraid_runtime` and `strangeworks_compute`
+respectively. Use
 `resolve_aggregator_provider_route()` when routing code needs a single
 validated row plus the executable HAL profile for a requested aggregator,
 provider, and IR format.
@@ -176,8 +177,9 @@ accepts only no-submit target snapshots, and returns ready/blocked/unknown
 readiness decisions before any submission path is considered.
 `snapshot_from_azure_target()`, `snapshot_from_braket_device()`,
 `snapshot_from_ionq_backend()`, `snapshot_from_qiskit_runtime_backend()`,
-`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`, and
-`snapshot_from_strangeworks_backend()` provide concrete no-submit adapters for
+`snapshot_from_qbraid_device()`, `snapshot_from_quantinuum_backend()`,
+`snapshot_from_rigetti_qcs()`, and `snapshot_from_strangeworks_backend()`
+provide concrete no-submit adapters for
 injected provider or broker SDK objects: they read declared target metadata,
 route-supported IR formats, queue, limit, online, simulator, calibration, and
 gate metadata without invoking submission APIs.
@@ -1112,6 +1114,11 @@ selected QCS quantum computer, run the compiled executable, and normalise the
 `ro` readout register into HAL counts. The route is still approval-gated by
 HAL, and direct execution accepts Quil workloads only; OpenQASM or MLIR must be
 translated before submission.
+`snapshot_from_rigetti_qcs()` provides the matching no-submit readiness path
+for injected Rigetti QCS `QuantumComputer` metadata or metadata JSON. It records
+target name, qubit count, declared Quil/OpenQASM support, native gate set, shot
+and queue limits, online state, simulator flag, compiler versions, and
+calibration timestamp without compiling or running a program.
 
 ```python
 rigetti_qc_name = "9q-square-qvm"
