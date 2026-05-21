@@ -229,6 +229,7 @@ def test_pasqal_status_normalisation_maps_completion_aliases() -> None:
     assert pasqal_mod._normalise_status("SUCCEEDED") == "completed"
     assert pasqal_mod._normalise_status("COMPLETE") == "completed"
     assert pasqal_mod._normalise_status("IN-PROGRESS") == "running"
+    assert pasqal_mod._normalise_status("INPROGRESS") == "running"
 
 
 def test_pasqal_provider_job_id_extraction_requires_identifier() -> None:
