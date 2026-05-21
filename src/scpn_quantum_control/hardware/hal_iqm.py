@@ -288,6 +288,7 @@ def _normalise_status(value: object) -> str:
         "cancelled": "cancelled",
         "canceled": "cancelled",
         "failed": "failed",
+        "error": "failed",
     }.get(text, "unknown")
 
 

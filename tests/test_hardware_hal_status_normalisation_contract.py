@@ -59,3 +59,42 @@ def test_status_normalisers_canonicalise_whitespace_and_spacing() -> None:
         assert hal_pasqal._normalise_status(token) == "completed"
         assert hal_oqc._normalise_status(token) == "completed"
         assert hal_iqm._normalise_status(token) == "completed"
+        assert hal_quera_bloqade._normalise_status(token) == "completed"
+        assert hal_quantinuum._normalise_status(token) == "completed"
+        assert hal_azure._normalise_status(token) == "completed"
+        assert hal_braket._normalise_status(token) == "completed"
+        assert hal_qbraid._normalise_status(token) == "completed"
+        assert hal_qiskit._normalise_status(token) == "completed"
+        assert hal_ionq._normalise_status(token) == "completed"
+        assert hal_strangeworks._normalise_status(token) == "completed"
+
+
+def test_status_normalisers_map_failure_and_cancellation_aliases() -> None:
+    failure_tokens = ("FAILED", "error")
+    cancellation_tokens = ("CANCELED", "cancelled")
+
+    for token in failure_tokens:
+        assert hal_pasqal._normalise_status(token) == "failed"
+        assert hal_oqc._normalise_status(token) == "failed"
+        assert hal_iqm._normalise_status(token) == "failed"
+        assert hal_quera_bloqade._normalise_status(token) == "failed"
+        assert hal_quantinuum._normalise_status(token) == "failed"
+        assert hal_azure._normalise_status(token) == "failed"
+        assert hal_braket._normalise_status(token) == "failed"
+        assert hal_qbraid._normalise_status(token) == "failed"
+        assert hal_qiskit._normalise_status(token) == "failed"
+        assert hal_ionq._normalise_status(token) == "failed"
+        assert hal_strangeworks._normalise_status(token) == "failed"
+
+    for token in cancellation_tokens:
+        assert hal_pasqal._normalise_status(token) == "cancelled"
+        assert hal_oqc._normalise_status(token) == "cancelled"
+        assert hal_iqm._normalise_status(token) == "cancelled"
+        assert hal_quera_bloqade._normalise_status(token) == "cancelled"
+        assert hal_quantinuum._normalise_status(token) == "cancelled"
+        assert hal_azure._normalise_status(token) == "cancelled"
+        assert hal_braket._normalise_status(token) == "cancelled"
+        assert hal_qbraid._normalise_status(token) == "cancelled"
+        assert hal_qiskit._normalise_status(token) == "cancelled"
+        assert hal_ionq._normalise_status(token) == "cancelled"
+        assert hal_strangeworks._normalise_status(token) == "cancelled"

@@ -347,7 +347,7 @@ def _provider_job_id(provider_job: Any, *, provider_name: str) -> str:
 
 
 def _normalise_status(value: object, *, default: str = "unknown") -> str:
-    text = str(value or default).strip().lower()
+    text = str(value or default).split(".")[-1].strip().lower().replace(" ", "_")
     return {
         "complete": "completed",
         "completed": "completed",

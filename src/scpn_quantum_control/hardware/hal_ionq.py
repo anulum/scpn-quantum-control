@@ -371,7 +371,7 @@ def _utc_now() -> str:
 
 
 def _normalise_status(value: object, *, default: str = "unknown") -> str:
-    text = str(value or default).strip().lower()
+    text = str(value or default).split(".")[-1].strip().lower().replace(" ", "_")
     return {
         "complete": "completed",
         "completed": "completed",
