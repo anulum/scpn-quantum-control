@@ -113,6 +113,7 @@ from .feedback_hardware_scheduler import (
 from .feedback_loop import (
     FeedbackCommand,
     FeedbackLoopConfig,
+    FeedbackLoopLatencySLA,
     FeedbackObserver,
     FeedbackResult,
     FeedbackRunner,
@@ -300,6 +301,7 @@ __all__ = [
     "HybridRoute",
     "FeedbackCommand",
     "FeedbackLoopConfig",
+    "FeedbackLoopLatencySLA",
     "FeedbackObserver",
     "FeedbackResult",
     "FeedbackRunner",

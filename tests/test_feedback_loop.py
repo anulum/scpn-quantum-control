@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pytest
@@ -21,6 +22,7 @@ from scpn_quantum_control.control.realtime_feedback import (
 from scpn_quantum_control.hardware.feedback_loop import (
     FeedbackCommand,
     FeedbackLoopConfig,
+    FeedbackLoopLatencySLA,
     FeedbackResult,
     FeedbackRunner,
     FeedbackStepRecord,
@@ -212,7 +214,7 @@ def test_feedback_loop_value_objects_reject_invalid_runtime_boundaries():
     with pytest.raises(ValueError, match="count"):
         FeedbackResult(counts={"0": -1})
     with pytest.raises(ValueError, match="metric"):
-        FeedbackResult(metrics={"r": "not numeric"})
+        FeedbackResult(metrics=cast(dict[str, float], {"r": "not numeric"}))
 
 
 def test_realtime_controller_scheduler_accepts_empty_payload_without_seed_provenance():
@@ -240,3 +242,87 @@ def test_proportional_observer_rejects_invalid_bounds() -> None:
             min_value=1.0,
             max_value=0.0,
         )
+
+
+def test_feedback_runner_latency_sla_accepts_sub_millisecond_profile(monkeypatch) -> None:
+    scheduler = DummyScheduler(metrics=[0.1, 0.2, 0.3])
+    observer = ProportionalMetricObserver(
+        initial_value=0.1,
+        metric_name="r",
+        target=0.3,
+        gain=0.5,
+        tolerance=0.01,
+    )
+    config = FeedbackLoopConfig(
+        max_steps=3,
+        max_qpu_seconds=0.0,
+        max_step_latency_s=0.01,
+        latency_sla=FeedbackLoopLatencySLA(
+            max_latency_s=0.001,
+            p95_latency_s=0.001,
+            p99_latency_s=0.001,
+        ),
+    )
+    runner = FeedbackRunner(scheduler, observer, config)
+
+    timeline = iter(
+        [
+            0.000000,
+            0.000450,
+            0.001000,
+            0.001700,
+            0.002500,
+            0.003250,
+        ]
+    )
+    monkeypatch.setattr(
+        "scpn_quantum_control.hardware.feedback_loop.time.monotonic",
+        lambda: next(timeline),
+    )
+
+    history = runner.run()
+
+    assert len(history) == 3
+    assert all(record.latency_s <= 0.001 for record in history)
+
+
+def test_feedback_runner_latency_sla_rejects_p99_breach(monkeypatch) -> None:
+    scheduler = DummyScheduler(metrics=[0.1, 0.2, 0.3, 0.4])
+    observer = ProportionalMetricObserver(
+        initial_value=0.1,
+        metric_name="r",
+        target=0.9,
+        gain=0.2,
+        tolerance=0.0,
+    )
+    config = FeedbackLoopConfig(
+        max_steps=4,
+        max_qpu_seconds=0.0,
+        max_step_latency_s=0.01,
+        latency_sla=FeedbackLoopLatencySLA(
+            max_latency_s=0.005,
+            p95_latency_s=0.005,
+            p99_latency_s=0.001,
+        ),
+    )
+    runner = FeedbackRunner(scheduler, observer, config)
+
+    timeline = iter(
+        [
+            0.000000,
+            0.000200,
+            0.001000,
+            0.001250,
+            0.002000,
+            0.002300,
+            0.003000,
+            0.004500,
+        ]
+    )
+    monkeypatch.setattr(
+        "scpn_quantum_control.hardware.feedback_loop.time.monotonic",
+        lambda: next(timeline),
+    )
+
+    with pytest.raises(RuntimeError, match="p99 latency"):
+        runner.run()

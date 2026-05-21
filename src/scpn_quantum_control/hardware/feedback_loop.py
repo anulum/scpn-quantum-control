@@ -35,6 +35,7 @@ class FeedbackLoopConfig:
     max_step_latency_s: float = 1.0
     max_qpu_seconds: float = 0.0
     require_hardware_approval: bool = True
+    latency_sla: FeedbackLoopLatencySLA | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.max_steps, int) or self.max_steps < 1:
@@ -42,6 +43,26 @@ class FeedbackLoopConfig:
         _require_non_negative(self.max_total_latency_s, "max_total_latency_s")
         _require_non_negative(self.max_step_latency_s, "max_step_latency_s")
         _require_non_negative(self.max_qpu_seconds, "max_qpu_seconds")
+        if self.latency_sla is not None and not isinstance(
+            self.latency_sla, FeedbackLoopLatencySLA
+        ):
+            raise TypeError("latency_sla must be a FeedbackLoopLatencySLA when provided")
+
+
+@dataclass(frozen=True)
+class FeedbackLoopLatencySLA:
+    """Latency SLA envelope for cross-shot feedback orchestration."""
+
+    max_latency_s: float
+    p95_latency_s: float | None = None
+    p99_latency_s: float | None = None
+
+    def __post_init__(self) -> None:
+        _require_non_negative(self.max_latency_s, "max_latency_s")
+        if self.p95_latency_s is not None:
+            _require_non_negative(self.p95_latency_s, "p95_latency_s")
+        if self.p99_latency_s is not None:
+            _require_non_negative(self.p99_latency_s, "p99_latency_s")
 
 
 @dataclass(frozen=True)
@@ -182,6 +203,8 @@ class FeedbackRunner:
             if next_command is None:
                 break
             command = next_command
+        if self.config.latency_sla is not None and history:
+            _enforce_latency_sla(history, self.config.latency_sla)
         return history
 
 
@@ -349,3 +372,42 @@ def _feedback_result_from_realtime_step(
             "command_label": command_label,
         },
     )
+
+
+def _enforce_latency_sla(
+    history: Sequence[FeedbackStepRecord],
+    sla: FeedbackLoopLatencySLA,
+) -> None:
+    latencies = sorted(float(record.latency_s) for record in history)
+    max_latency = latencies[-1]
+    if max_latency > sla.max_latency_s:
+        raise RuntimeError(
+            f"feedback loop latency SLA breach: max latency {max_latency:.9f}s "
+            f"> {sla.max_latency_s:.9f}s"
+        )
+    p95 = _linear_quantile(latencies, 0.95)
+    p99 = _linear_quantile(latencies, 0.99)
+    if sla.p95_latency_s is not None and p95 > sla.p95_latency_s:
+        raise RuntimeError(
+            f"feedback loop latency SLA breach: p95 latency {p95:.9f}s > {sla.p95_latency_s:.9f}s"
+        )
+    if sla.p99_latency_s is not None and p99 > sla.p99_latency_s:
+        raise RuntimeError(
+            f"feedback loop latency SLA breach: p99 latency {p99:.9f}s > {sla.p99_latency_s:.9f}s"
+        )
+
+
+def _linear_quantile(values: Sequence[float], q: float) -> float:
+    if not values:
+        raise ValueError("quantile values must not be empty")
+    if q <= 0.0:
+        return float(values[0])
+    if q >= 1.0:
+        return float(values[-1])
+    position = (len(values) - 1) * q
+    left = int(math.floor(position))
+    right = int(math.ceil(position))
+    if left == right:
+        return float(values[left])
+    weight = position - left
+    return float(values[left] * (1.0 - weight) + values[right] * weight)
