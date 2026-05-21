@@ -208,3 +208,29 @@ def test_azure_adapter_rejects_shot_mismatch() -> None:
     job = hal.submit("azure_quantum_ionq_simulator", workload, approval_id="approved-azure")
     with pytest.raises(ValueError, match="shot count mismatch"):
         hal.result(job)
+
+
+def test_azure_adapter_target_name_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile(
+        "azure_quantum_ionq_simulator"
+    )
+    with pytest.raises(ValueError, match="Azure target name"):
+        AzureQuantumHALAdapter(
+            profile,
+            workspace=object(),
+            target_name="ionq.\nbad",
+            target_factory=lambda workspace, target_name: (workspace, target_name),
+        )
+
+
+def test_azure_adapter_target_name_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile(
+        "azure_quantum_ionq_simulator"
+    )
+    adapter = AzureQuantumHALAdapter(
+        profile,
+        workspace=object(),
+        target_name="  ionq.qpu  ",
+        target_factory=lambda workspace, target_name: (workspace, target_name),
+    )
+    assert adapter._target_name == "ionq.qpu"

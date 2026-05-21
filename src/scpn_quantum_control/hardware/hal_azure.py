@@ -68,7 +68,11 @@ class AzureQuantumHALAdapter:
         self.backend_id = profile.backend_id
         self._target = target
         self._workspace = workspace
-        self._target_name = target_name
+        self._target_name = (
+            strict_provider_job_id(target_name, field_name="Azure target name")
+            if target_name is not None
+            else None
+        )
         self._target_factory = target_factory
         self._input_params_factory = input_params_factory
         self._submit_kwargs = dict(submit_kwargs or {})
