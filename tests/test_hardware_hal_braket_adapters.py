@@ -222,3 +222,23 @@ def test_braket_aws_adapter_rejects_shot_mismatch() -> None:
     job = hal.submit("aws_braket_ionq", workload, approval_id="approved-braket")
     with pytest.raises(ValueError, match="shot count mismatch"):
         hal.result(job)
+
+
+def test_braket_aws_device_arn_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("aws_braket_ionq")
+    with pytest.raises(ValueError, match="Braket device ARN"):
+        BraketAwsHALAdapter(
+            profile,
+            device_arn="arn:aws:braket:us-east-1::device/qpu/ionq/\naria-1",
+            device_factory=lambda arn: arn,
+        )
+
+
+def test_braket_aws_device_arn_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("aws_braket_ionq")
+    adapter = BraketAwsHALAdapter(
+        profile,
+        device_arn="  arn:aws:braket:us-east-1::device/qpu/ionq/aria-1  ",
+        device_factory=lambda arn: arn,
+    )
+    assert adapter._device_arn == "arn:aws:braket:us-east-1::device/qpu/ionq/aria-1"

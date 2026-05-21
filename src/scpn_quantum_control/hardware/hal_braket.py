@@ -147,7 +147,11 @@ class BraketAwsHALAdapter:
         self.profile = profile
         self.backend_id = profile.backend_id
         self._device = device
-        self._device_arn = device_arn
+        self._device_arn = (
+            strict_provider_job_id(device_arn, field_name="Braket device ARN")
+            if device_arn is not None
+            else None
+        )
         self._device_factory = device_factory
         self._tasks: dict[str, Any] = {}
         self._jobs: dict[str, QuantumJobRef] = {}
