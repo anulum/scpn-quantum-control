@@ -134,3 +134,45 @@ def test_braket_status_normalisation_maps_provider_tokens() -> None:
 
     assert braket_mod._normalise_status("FINISHED") == "completed"
     assert braket_mod._normalise_status("CANCELED") == "cancelled"
+
+
+def test_braket_aws_adapter_rejects_shot_mismatch() -> None:
+    """Braket adapter must fail closed when decoded counts diverge from requested shots."""
+
+    class FakeTaskResult:
+        measurement_counts = {"0": 4, "1": 2}
+
+    class FakeTask:
+        id = "arn:aws:braket:task/fake-mismatch-task"
+
+        def state(self) -> str:
+            return "COMPLETED"
+
+        def result(self) -> FakeTaskResult:
+            return FakeTaskResult()
+
+        def cancel(self) -> None:
+            self.cancelled = True
+
+    class FakeDevice:
+        name = "fake-braket-device"
+
+        def run(self, circuit, shots: int):
+            del circuit
+            assert shots == 7
+            return FakeTask()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        BraketAwsHALAdapter(
+            hal.profile("aws_braket_ionq"),
+            device=FakeDevice(),
+        )
+    )
+    workload = braket_circuit_to_workload(
+        _bell_circuit(), workload_id="aws_shot_mismatch", shots=7
+    )
+
+    job = hal.submit("aws_braket_ionq", workload, approval_id="approved-braket")
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)

@@ -122,3 +122,43 @@ def test_azure_adapter_normalises_provider_status_tokens() -> None:
 
     assert azure_mod._normalise_status("Succeeded") == "completed"
     assert azure_mod._normalise_status("CANCELED") == "cancelled"
+
+
+def test_azure_adapter_rejects_shot_mismatch() -> None:
+    """Azure adapter must fail closed when decoded counts diverge from requested shots."""
+
+    class FakeDetails:
+        status = "Succeeded"
+
+    class FakeJob:
+        id = "azure-job-shot-mismatch"
+        details = FakeDetails()
+
+        def get_results(self):
+            return {"histogram": {"00": 7, "11": 9}}
+
+    class FakeTarget:
+        name = "ionq.simulator"
+
+        def submit(self, input_data, name: str, shots: int, input_params=None, **kwargs):
+            del input_data, name, input_params, kwargs
+            assert shots == 20
+            return FakeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        AzureQuantumHALAdapter(
+            hal.profile("azure_quantum_ionq_simulator"),
+            target=FakeTarget(),
+        )
+    )
+    workload = azure_openqasm3_to_workload(
+        "OPENQASM 3.0;\nqubit[2] q;\nbit[2] c;\n",
+        workload_id="azure_shot_mismatch",
+        n_qubits=2,
+        shots=20,
+    )
+
+    job = hal.submit("azure_quantum_ionq_simulator", workload, approval_id="approved-azure")
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)
