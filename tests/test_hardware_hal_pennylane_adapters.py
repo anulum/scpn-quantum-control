@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import pytest
 
+from scpn_quantum_control.hardware import hal_pennylane as pennylane_mod
 from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer, QuantumWorkload
 from scpn_quantum_control.hardware.hal_pennylane import (
     PennyLaneDeviceHALAdapter,
@@ -81,3 +82,32 @@ def test_pennylane_local_lineage_is_unique_per_submission() -> None:
 
     assert first.job_id != second.job_id
     assert first.metadata["provider_job_id"] != second.metadata["provider_job_id"]
+
+
+def test_pennylane_adapter_rejects_shot_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """PennyLane adapter must fail closed when sampled counts diverge from expected shots."""
+
+    class _FakeQml:
+        @staticmethod
+        def device(*args: object, **kwargs: object) -> object:
+            del args, kwargs
+            return object()
+
+    monkeypatch.setattr(pennylane_mod, "_load_pennylane", lambda: _FakeQml())
+    monkeypatch.setattr(
+        pennylane_mod,
+        "_execute_native_gates",
+        lambda qml, device, instructions, n_qubits, shots: {"0" * n_qubits: max(shots - 1, 0)},
+    )
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(PennyLaneDeviceHALAdapter(hal.profile("local_pennylane")))
+    workload = pennylane_gate_workload(
+        [{"gate": "x", "wires": [0]}],
+        workload_id="pl_shot_mismatch",
+        n_qubits=1,
+        shots=4,
+    )
+
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.submit("local_pennylane", workload)

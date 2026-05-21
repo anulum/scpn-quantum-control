@@ -66,6 +66,15 @@ class _FakePasqalClient:
         return job
 
 
+class _FakePasqalShotMismatchClient(_FakePasqalClient):
+    def submit(self, *, sequence: dict[str, object], shots: int, job_name: str) -> _FakePasqalJob:
+        del sequence, shots, job_name
+        job = _FakePasqalJob()
+        job.result = lambda: {"counter": {"00": 1, "11": 1}}  # type: ignore[method-assign]
+        self.jobs.append(job)
+        return job
+
+
 def test_pasqal_hal_adapter_executes_injected_client_with_approval() -> None:
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     client = _FakePasqalClient()
@@ -232,3 +241,23 @@ def test_pasqal_provider_job_id_extraction_requires_identifier() -> None:
     )
     with pytest.raises(ValueError, match="provider job id"):
         pasqal_mod._provider_job_id(object())
+
+
+def test_pasqal_hal_adapter_rejects_shot_mismatch() -> None:
+    """Pasqal adapter must fail closed when decoded counts diverge from expected shots."""
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = PasqalPulserHALAdapter(
+        hal.profile("pasqal_cloud"),
+        client=_FakePasqalShotMismatchClient(),
+    )
+    hal.register_backend(adapter)
+    job = hal.submit(
+        "pasqal_cloud",
+        pulser_sequence_workload(
+            _PULSER_PLAN, workload_id="pasqal_shot_mismatch", n_qubits=2, shots=12
+        ),
+        approval_id="approved",
+    )
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)

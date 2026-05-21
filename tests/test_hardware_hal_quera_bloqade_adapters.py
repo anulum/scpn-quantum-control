@@ -105,6 +105,12 @@ class _FakeNoCancelRoutine:
         return self.batch
 
 
+class _FakeShotMismatchRoutine:
+    def run(self, *, shots: int, name: str) -> _FakeBloqadeBatch:
+        del shots, name
+        return _FakeBloqadeBatch(["00", "11"])
+
+
 def test_quera_bloqade_adapter_runs_injected_routine_and_approval_gate() -> None:
     """QuEra Bloqade adapter should run approved AHS workloads and normalise reports."""
 
@@ -467,3 +473,26 @@ def test_quera_bloqade_adapter_requires_execution_route() -> None:
 
     with pytest.raises(ValueError, match="routine"):
         QuEraBloqadeHALAdapter(profile)
+
+
+def test_quera_bloqade_adapter_rejects_shot_mismatch() -> None:
+    """QuEra adapter must fail closed when decoded counts diverge from expected shots."""
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        QuEraBloqadeHALAdapter(
+            hal.profile("quera_bloqade"),
+            routine=_FakeShotMismatchRoutine(),
+            routine_name="shot-mismatch",
+        )
+    )
+    job = hal.submit(
+        "quera_bloqade",
+        bloqade_ahs_workload(
+            _BLOQADE_PLAN, workload_id="quera_shot_mismatch", n_qubits=2, shots=3
+        ),
+        approval_id="approved-quera",
+    )
+
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)

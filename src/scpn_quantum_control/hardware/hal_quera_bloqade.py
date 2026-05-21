@@ -20,6 +20,7 @@ from ._count_integrity import (
     strict_integer_value,
     strict_non_negative_count,
     strict_provider_job_id,
+    strict_shot_conservation,
 )
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
@@ -127,11 +128,16 @@ class QuEraBloqadeHALAdapter:
             batch = batch.fetch()
             self._batches[job.job_id] = batch
         counts = _normalise_counts(_extract_bitstrings(batch))
+        expected_shots = strict_integer_value(
+            stored.metadata.get("shots"),
+            field_name="Bloqade expected shots",
+        )
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "execution_mode": QUERA_BLOQADE_EXECUTION_MODE,

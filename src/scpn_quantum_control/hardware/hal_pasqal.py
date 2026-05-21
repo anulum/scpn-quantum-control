@@ -21,6 +21,7 @@ from ._count_integrity import (
     strict_integer_value,
     strict_non_negative_count,
     strict_provider_job_id,
+    strict_shot_conservation,
 )
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
@@ -133,11 +134,16 @@ class PasqalPulserHALAdapter:
         if not callable(result_method):
             raise TypeError("Pasqal provider job does not provide result()")
         counts = _normalise_counts(_extract_counts(result_method()))
+        expected_shots = strict_integer_value(
+            stored.metadata.get("shots"),
+            field_name="Pasqal expected shots",
+        )
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "provider_job_id": stored.metadata.get("provider_job_id"),

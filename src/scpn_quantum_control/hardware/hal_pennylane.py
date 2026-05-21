@@ -18,6 +18,7 @@ from typing import Any, cast
 
 import numpy as np
 
+from ._count_integrity import strict_shot_conservation
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 _SUPPORTED_GATES = frozenset(
@@ -102,6 +103,7 @@ class PennyLaneDeviceHALAdapter:
         counts = _execute_native_gates(
             qml, device, instructions, workload.n_qubits, workload.shots
         )
+        observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         provider_job_id = _provider_job_id(workload)
         job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
@@ -120,7 +122,7 @@ class PennyLaneDeviceHALAdapter:
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "execution_mode": "pennylane_device",
                 "ir_format": workload.ir_format,
