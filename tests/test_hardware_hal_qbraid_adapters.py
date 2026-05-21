@@ -175,6 +175,7 @@ def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
 
     assert qbraid_mod._normalise_status("CANCELED") == "cancelled"
     assert qbraid_mod._normalise_status("FINISHED") == "completed"
+    assert qbraid_mod._normalise_status("IN-PROGRESS") == "running"
 
 
 def test_qbraid_provider_job_id_rejects_control_characters() -> None:
