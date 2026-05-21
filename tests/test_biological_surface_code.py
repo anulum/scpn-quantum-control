@@ -320,3 +320,30 @@ def test_rust_biological_decoder_matches_python_fallback():
     assert np.array_equal(
         code.x_syndrome_from_z_errors(residual_py), code.x_syndrome_from_z_errors(residual_rust)
     )
+
+
+def test_rust_limit_falls_back_to_python_decoder():
+    """Syndromes above Rust exact-MWPM defect limit must decode via Python path."""
+    rust_engine = pytest.importorskip("scpn_quantum_engine")
+    if not hasattr(rust_engine, "biological_decode_z_errors"):
+        pytest.skip("scpn_quantum_engine without biological_decode_z_errors export")
+
+    n = 28
+    K = np.zeros((n, n), dtype=float)
+    for i in range(n):
+        j = (i + 1) % n
+        K[i, j] = 1.0
+        K[j, i] = 1.0
+
+    code = BiologicalSurfaceCode(K, threshold=1e-8)
+    decoder = BiologicalMWPMDecoder(code)
+    decoder._rust_engine = rust_engine
+
+    syndrome = np.zeros(code.num_x_stabs, dtype=np.int8)
+    for idx in range(26):
+        syndrome[idx] = 1
+
+    correction = decoder.decode_z_errors(syndrome)
+    assert correction.shape == (code.num_data,)
+    assert correction.dtype == np.int8
+    assert np.all((correction == 0) | (correction == 1))

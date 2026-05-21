@@ -152,6 +152,7 @@ class BiologicalMWPMDecoder:
         self.code = code
         self.G = code.G
         self._rust_engine = optional_rust_engine()
+        self._rust_exact_mwpm_defect_limit = 24
 
     def decode_z_errors(self, syndrome_x: np.ndarray) -> np.ndarray:
         """Decode X-syndromes to find the optimal Z-error correction.
@@ -169,8 +170,9 @@ class BiologicalMWPMDecoder:
             raise ValueError("syndrome_x must be a binary vector with entries 0 or 1.")
 
         syndrome = syndrome.astype(np.int8, copy=False)
+        defects = np.where(syndrome == 1)[0]
 
-        if self._rust_engine is not None:
+        if self._rust_engine is not None and defects.size <= self._rust_exact_mwpm_defect_limit:
             rust_decode = getattr(self._rust_engine, "biological_decode_z_errors", None)
             if callable(rust_decode):
                 edge_u = np.fromiter((u for u, _ in self.code.edges), dtype=np.int64)
@@ -179,18 +181,21 @@ class BiologicalMWPMDecoder:
                     (float(self.G[u][v]["weight"]) for u, v in self.code.edges),
                     dtype=np.float64,
                 )
-                return np.asarray(
-                    rust_decode(
-                        edge_u,
-                        edge_v,
-                        edge_w,
-                        int(self.code.n_nodes),
-                        syndrome,
-                    ),
-                    dtype=np.int8,
-                )
+                try:
+                    return np.asarray(
+                        rust_decode(
+                            edge_u,
+                            edge_v,
+                            edge_w,
+                            int(self.code.n_nodes),
+                            syndrome,
+                        ),
+                        dtype=np.int8,
+                    )
+                except ValueError as exc:
+                    if "defect count exceeds exact-MWPM limit" not in str(exc):
+                        raise
 
-        defects = np.where(syndrome == 1)[0]
         correction = np.zeros(self.code.num_data, dtype=np.int8)
 
         if len(defects) == 0:
