@@ -248,6 +248,8 @@ def _normalise_status(value: object) -> str:
         "initializing": "submitted",
         "initialising": "submitted",
         "starting": "submitted",
+        "creating": "submitted",
+        "created": "submitted",
         "cancelled": "cancelled",
         "canceled": "cancelled",
         "failed": "failed",

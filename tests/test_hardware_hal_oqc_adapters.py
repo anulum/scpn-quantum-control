@@ -182,6 +182,7 @@ def test_oqc_status_normalisation_maps_completion_aliases() -> None:
     assert oqc_mod._normalise_status("INPROGRESS") == "running"
     assert oqc_mod._normalise_status("INITIALIZING") == "submitted"
     assert oqc_mod._normalise_status("STARTING") == "submitted"
+    assert oqc_mod._normalise_status("CREATING") == "submitted"
 
 
 def test_oqc_provider_job_id_extraction_requires_identifier() -> None:
