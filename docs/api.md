@@ -1270,6 +1270,21 @@ Biology-oriented diagnostics over the coupling graph used by the biological
 surface code. Reports weighted-degree and betweenness criticality, cycle-basis
 burden, community modularity, and optional inter-domain coupling aggregates.
 
+### `biological_pipeline.BiologicalQecExecution`
+
+```python
+run_biological_qec_execution(
+    K,
+    z_errors,
+    threshold=1e-5,
+    node_domains=None,
+    metadata=None,
+) -> BiologicalQecExecution
+```
+Campaign-facing end-to-end helper that constructs the biological code,
+computes diagnostics, executes decode/correction, and emits JSON-serialisable
+payloads via `BiologicalQecExecution.to_payload()`.
+
 ### `control_qec.ControlQEC`
 
 ```python

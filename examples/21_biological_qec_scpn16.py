@@ -17,6 +17,8 @@ topology, utilizing synaptic weights to optimize the decoding path.
 import numpy as np
 
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+from scpn_quantum_control.qec.biological_diagnostics import analyse_biological_surface_code
+from scpn_quantum_control.qec.biological_pipeline import run_biological_qec_execution
 from scpn_quantum_control.qec.biological_surface_code import (
     BiologicalMWPMDecoder,
     BiologicalSurfaceCode,
@@ -40,6 +42,9 @@ def main():
     print(f"  Z-Stabilisers (Graph Cycles): {summary['n_z_stabilisers']}")
     print(f"  Estimated Logical Qubits: {summary['n_logical_qubits_estimate']}")
     print(f"  Commutation Check: {'PASS' if summary['css_commutes'] else 'FAIL'}")
+    diagnostics = analyse_biological_surface_code(code)
+    print(f"  Communities: {diagnostics.n_communities}")
+    print(f"  Modularity: {diagnostics.modularity:.6f}")
 
     # 4. Error Correction Simulation
     decoder = BiologicalMWPMDecoder(code)
@@ -70,6 +75,10 @@ def main():
         print(
             "\n[RESULT] Biological QEC successfully mapped and corrected errors on the SCPN topology."
         )
+
+    e2e = run_biological_qec_execution(K, error_z, threshold=0.01, metadata={"example": "scpn16"})
+    print(f"  E2E backend: {e2e.decode_backend}")
+    print(f"  E2E payload keys: {sorted(e2e.to_payload().keys())}")
 
 
 if __name__ == "__main__":
