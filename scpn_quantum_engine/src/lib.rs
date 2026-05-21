@@ -49,6 +49,7 @@ pub mod otoc;
 pub mod pauli;
 pub mod pec;
 pub mod pulse_shaping;
+pub mod qpetri;
 pub mod sectors;
 pub mod symmetry_decay;
 pub mod validation;
@@ -184,6 +185,11 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         pulse_shaping::ici_three_level_evolution_batch,
         m
     )?)?;
+
+    // Quantum Petri superposition diagnostics
+    m.add_function(wrap_pyfunction!(qpetri::qpetri_transition_activity, m)?)?;
+    m.add_function(wrap_pyfunction!(qpetri::qpetri_state_metrics, m)?)?;
+    m.add_function(wrap_pyfunction!(qpetri::qpetri_sample_marking, m)?)?;
 
     Ok(())
 }

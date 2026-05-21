@@ -596,6 +596,9 @@ QuantumPetriNet(n_places, n_transitions, W_in, W_out, thresholds=None)
     .step(marking, shots=1000) -> np.ndarray  # new marking
     .run_campaign(markings) -> QuantumPetriCampaignReport
 ```
+Uses Rust kernels from `scpn_quantum_engine` for transition activity,
+state-metric evaluation, and finite-shot sampling when the extension is
+available; otherwise uses deterministic NumPy fallback paths.
 
 ### `q_disruption.QuantumDisruptionClassifier`
 

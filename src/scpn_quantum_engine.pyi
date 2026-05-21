@@ -261,6 +261,20 @@ def pec_sample_parallel(
     base_exp_z: float,
     seed: int,
 ) -> tuple[float, float, list[float]]: ...
+def qpetri_sample_marking(
+    probabilities: _F64Array,
+    shots: int,
+    seed: int,
+) -> _F64Array: ...
+def qpetri_state_metrics(probabilities: _F64Array) -> tuple[float, float]: ...
+def qpetri_transition_activity(
+    w_in_flat: _F64Array,
+    marking: _F64Array,
+    thresholds: _F64Array,
+    n_transitions: int,
+    n_places: int,
+    sparsity_eps: float,
+) -> _F64Array: ...
 def plaquette_action_batch(
     links: _F64Array,
     triangles: _I64Array,

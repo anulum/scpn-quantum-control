@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -18,6 +19,21 @@ from qiskit.quantum_info import Statevector
 
 from .._constants import WEIGHT_SPARSITY_EPS
 from ..bridge.sc_to_quantum import probability_to_angle
+
+_qpetri_sample_marking_rust: Any = None
+_qpetri_state_metrics_rust: Any = None
+_qpetri_transition_activity_rust: Any = None
+
+try:
+    from scpn_quantum_engine import (
+        qpetri_sample_marking as _qpetri_sample_marking_rust,
+    )
+    from scpn_quantum_engine import qpetri_state_metrics as _qpetri_state_metrics_rust
+    from scpn_quantum_engine import (
+        qpetri_transition_activity as _qpetri_transition_activity_rust,
+    )
+except Exception:
+    pass
 
 
 @dataclass(frozen=True)
@@ -143,6 +159,18 @@ class QuantumPetriNet:
 
     def _transition_activity(self, marking: np.ndarray) -> np.ndarray:
         clipped = np.clip(np.asarray(marking, dtype=np.float64), 0.0, 1.0)
+        if _qpetri_transition_activity_rust is not None:
+            return np.asarray(
+                _qpetri_transition_activity_rust(
+                    self.W_in.reshape(-1),
+                    clipped,
+                    self.thresholds,
+                    self.n_transitions,
+                    self.n_places,
+                    WEIGHT_SPARSITY_EPS,
+                ),
+                dtype=np.float64,
+            )
         activity = np.zeros(self.n_transitions, dtype=np.float64)
         for t in range(self.n_transitions):
             incoming = np.clip(np.abs(self.W_in[t]), 0.0, 1.0)
@@ -163,10 +191,15 @@ class QuantumPetriNet:
             self.apply_transition(qc, t)
         sv = Statevector.from_instruction(qc)
         output = self._statevector_marking(sv)
-        full_probs = sv.probabilities()
-        full_probs = full_probs[full_probs > 0.0]
-        entropy_bits = float(-np.sum(full_probs * np.log2(full_probs)))
-        purity = float(np.sum(np.square(sv.probabilities())))
+        full_probs = np.asarray(sv.probabilities(), dtype=np.float64)
+        if _qpetri_state_metrics_rust is not None:
+            entropy_bits, purity = _qpetri_state_metrics_rust(full_probs)
+            entropy_bits = float(entropy_bits)
+            purity = float(purity)
+        else:
+            non_zero_probs = full_probs[full_probs > 0.0]
+            entropy_bits = float(-np.sum(non_zero_probs * np.log2(non_zero_probs)))
+            purity = float(np.sum(np.square(full_probs)))
         return QuantumPetriStepReport(
             input_marking=np.asarray(marking, dtype=np.float64),
             output_marking=output,
@@ -186,6 +219,15 @@ class QuantumPetriNet:
             return report.output_marking
         if not isinstance(shots, int) or shots <= 0:
             raise ValueError(f"shots must be a positive integer, got {shots!r}")
+        if _qpetri_sample_marking_rust is not None:
+            return np.asarray(
+                _qpetri_sample_marking_rust(
+                    np.asarray(report.output_marking, dtype=np.float64),
+                    shots,
+                    123456789,
+                ),
+                dtype=np.float64,
+            )
         rng = np.random.default_rng(123456789)
         return np.array(
             [rng.binomial(shots, p) / shots for p in report.output_marking], dtype=np.float64
