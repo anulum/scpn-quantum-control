@@ -200,6 +200,29 @@ def test_qbraid_provider_job_id_trims_padding() -> None:
     assert qbraid_mod._job_id(PaddedJob()) == "qbraid-job-42"
 
 
+def test_qbraid_device_id_rejects_control_characters() -> None:
+    """qBraid device identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
+
+    class BadDevice:
+        id = "ionq_qpu.\naria-1"
+
+    with pytest.raises(ValueError, match="device id"):
+        qbraid_mod._device_id(BadDevice())
+
+
+def test_qbraid_device_id_trims_padding() -> None:
+    """qBraid device identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
+
+    class PaddedDevice:
+        id = "  ionq_qpu.aria-1  "
+
+    assert qbraid_mod._device_id(PaddedDevice()) == "ionq_qpu.aria-1"
+
+
 def test_qbraid_adapter_rejects_shot_mismatch() -> None:
     """qBraid adapter must fail closed when decoded counts diverge from requested shots."""
 

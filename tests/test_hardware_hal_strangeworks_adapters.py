@@ -193,6 +193,29 @@ def test_strangeworks_provider_job_id_trims_padding() -> None:
     assert sw_mod._job_id(PaddedJob()) == "sw-job-42"
 
 
+def test_strangeworks_backend_id_rejects_control_characters() -> None:
+    """Strangeworks backend identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
+
+    class BadBackend:
+        id = "rigetti.\nqvm"
+
+    with pytest.raises(ValueError, match="backend id"):
+        sw_mod._backend_id(BadBackend())
+
+
+def test_strangeworks_backend_id_trims_padding() -> None:
+    """Strangeworks backend identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
+
+    class PaddedBackend:
+        id = "  rigetti.qvm  "
+
+    assert sw_mod._backend_id(PaddedBackend()) == "rigetti.qvm"
+
+
 def test_strangeworks_adapter_rejects_shot_mismatch() -> None:
     """Strangeworks adapter must fail closed when decoded counts diverge from requested shots."""
 

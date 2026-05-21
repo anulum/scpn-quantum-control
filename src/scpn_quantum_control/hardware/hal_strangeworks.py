@@ -280,8 +280,8 @@ def _backend_id(backend: Any) -> str:
         if callable(value):
             value = value()
         if value:
-            return str(value)
-    return str(backend.__class__.__name__)
+            return strict_provider_job_id(value, field_name="Strangeworks backend id")
+    return strict_provider_job_id(backend.__class__.__name__, field_name="Strangeworks backend id")
 
 
 def _utc_now() -> str:

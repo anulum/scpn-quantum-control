@@ -258,8 +258,8 @@ def _device_id(device: Any) -> str:
         if callable(value):
             value = value()
         if value:
-            return str(value)
-    return str(device.__class__.__name__)
+            return strict_provider_job_id(value, field_name="qBraid device id")
+    return strict_provider_job_id(device.__class__.__name__, field_name="qBraid device id")
 
 
 def _utc_now() -> str:
