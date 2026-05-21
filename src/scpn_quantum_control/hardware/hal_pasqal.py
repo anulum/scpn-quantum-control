@@ -72,7 +72,7 @@ class PasqalPulserHALAdapter:
         self.backend_id = profile.backend_id
         self._client = client
         self._client_factory = client_factory
-        self._target = target or "injected"
+        self._target = strict_provider_job_id(target or "injected", field_name="Pasqal target")
         self._jobs: dict[str, QuantumJobRef] = {}
         self._provider_jobs: dict[str, Any] = {}
         self._results: dict[str, QuantumJobResult] = {}

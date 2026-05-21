@@ -266,6 +266,22 @@ def test_pasqal_provider_job_id_trims_padding() -> None:
     assert pasqal_mod._provider_job_id(PaddedJob()) == "pasqal-provider-2"
 
 
+def test_pasqal_target_rejects_control_characters() -> None:
+    """Pasqal targets must reject control-character payloads."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("pasqal_cloud")
+    with pytest.raises(ValueError, match="Pasqal target"):
+        PasqalPulserHALAdapter(profile, client=_FakePasqalClient(), target="pasqal-\nqpu")
+
+
+def test_pasqal_target_trims_padding() -> None:
+    """Pasqal targets should be canonicalised by trimming padding."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("pasqal_cloud")
+    adapter = PasqalPulserHALAdapter(profile, client=_FakePasqalClient(), target="  pasqal-qpu  ")
+    assert adapter._target == "pasqal-qpu"
+
+
 def test_pasqal_hal_adapter_rejects_shot_mismatch() -> None:
     """Pasqal adapter must fail closed when decoded counts diverge from expected shots."""
 
