@@ -169,6 +169,7 @@ def test_strangeworks_adapter_normalises_provider_status_tokens() -> None:
     assert sw_mod._normalise_status("CANCELED") == "cancelled"
     assert sw_mod._normalise_status("SUCCESS") == "completed"
     assert sw_mod._normalise_status("IN-PROGRESS") == "running"
+    assert sw_mod._normalise_status("INPROGRESS") == "running"
 
 
 def test_strangeworks_provider_job_id_rejects_control_characters() -> None:
