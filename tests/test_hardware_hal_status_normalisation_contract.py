@@ -98,3 +98,34 @@ def test_status_normalisers_map_failure_and_cancellation_aliases() -> None:
         assert hal_qiskit._normalise_status(token) == "cancelled"
         assert hal_ionq._normalise_status(token) == "cancelled"
         assert hal_strangeworks._normalise_status(token) == "cancelled"
+
+
+def test_status_normalisers_map_running_and_queue_aliases() -> None:
+    running_tokens = ("RUNNING", "running")
+    queued_tokens = ("QUEUED", "queued", "PENDING", "pending")
+
+    for token in running_tokens:
+        assert hal_pasqal._normalise_status(token) == "running"
+        assert hal_oqc._normalise_status(token) == "running"
+        assert hal_iqm._normalise_status(token) == "running"
+        assert hal_quera_bloqade._normalise_status(token) == "running"
+        assert hal_quantinuum._normalise_status(token) == "running"
+        assert hal_azure._normalise_status(token) == "running"
+        assert hal_braket._normalise_status(token) == "running"
+        assert hal_qbraid._normalise_status(token) == "running"
+        assert hal_qiskit._normalise_status(token) == "running"
+        assert hal_ionq._normalise_status(token) == "running"
+        assert hal_strangeworks._normalise_status(token) == "running"
+
+    for token in queued_tokens:
+        assert hal_pasqal._normalise_status(token) == "queued"
+        assert hal_oqc._normalise_status(token) == "queued"
+        assert hal_iqm._normalise_status(token) == "queued"
+        assert hal_quera_bloqade._normalise_status(token) == "queued"
+        assert hal_quantinuum._normalise_status(token) == "queued"
+        assert hal_azure._normalise_status(token) == "queued"
+        assert hal_braket._normalise_status(token) == "queued"
+        assert hal_qbraid._normalise_status(token) == "queued"
+        assert hal_qiskit._normalise_status(token) == "queued"
+        assert hal_ionq._normalise_status(token) == "queued"
+        assert hal_strangeworks._normalise_status(token) == "queued"
