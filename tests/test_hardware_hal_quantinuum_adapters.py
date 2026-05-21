@@ -514,6 +514,22 @@ def test_quantinuum_provider_job_id_trims_padding() -> None:
     assert quantinuum_mod._provider_job_id(PaddedHandle()) == "quantinuum-job-42"
 
 
+def test_quantinuum_machine_rejects_control_characters() -> None:
+    """Quantinuum machine identifiers must reject control-character payloads."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quantinuum_cloud")
+    with pytest.raises(ValueError, match="Quantinuum machine"):
+        QuantinuumCloudHALAdapter(profile, machine="H1-\n1E")
+
+
+def test_quantinuum_machine_trims_padding() -> None:
+    """Quantinuum machine identifiers should be canonicalised by trimming padding."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quantinuum_cloud")
+    adapter = QuantinuumCloudHALAdapter(profile, machine="  H1-1E  ")
+    assert adapter._machine == "H1-1E"
+
+
 def test_quantinuum_default_dependency_errors_are_actionable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

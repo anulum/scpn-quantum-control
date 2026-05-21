@@ -78,7 +78,9 @@ class QuantinuumCloudHALAdapter:
         self.profile = profile
         self.backend_id = profile.backend_id
         self._backend = backend
-        self._machine = machine or "injected"
+        self._machine = strict_provider_job_id(
+            machine or "injected", field_name="Quantinuum machine"
+        )
         self._backend_factory = backend_factory
         self._circuit_factory = circuit_factory
         self._compile_circuit = compile_circuit
