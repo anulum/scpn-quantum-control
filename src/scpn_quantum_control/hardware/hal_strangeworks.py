@@ -71,7 +71,11 @@ class StrangeworksComputeHALAdapter:
         self.backend_id = profile.backend_id
         self._backend = backend
         self._workspace = workspace
-        self._backend_route_id = backend_id
+        self._backend_route_id = (
+            strict_provider_job_id(backend_id, field_name="Strangeworks backend id")
+            if backend_id is not None
+            else None
+        )
         self._workspace_factory = workspace_factory
         self._program_factory = program_factory
         self._submit_kwargs = dict(submit_kwargs or {})

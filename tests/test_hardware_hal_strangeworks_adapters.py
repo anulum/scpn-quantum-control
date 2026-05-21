@@ -257,3 +257,25 @@ def test_strangeworks_adapter_rejects_shot_mismatch() -> None:
     job = hal.submit("strangeworks_compute", workload, approval_id="approved-sw")
     with pytest.raises(ValueError, match="shot count mismatch"):
         hal.result(job)
+
+
+def test_strangeworks_adapter_backend_id_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("strangeworks_compute")
+    with pytest.raises(ValueError, match="Strangeworks backend id"):
+        StrangeworksComputeHALAdapter(
+            profile,
+            workspace=object(),
+            backend_id="rigetti.\nqvm",
+            workspace_factory=lambda: object(),
+        )
+
+
+def test_strangeworks_adapter_backend_id_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("strangeworks_compute")
+    adapter = StrangeworksComputeHALAdapter(
+        profile,
+        workspace=object(),
+        backend_id="  rigetti.qvm  ",
+        workspace_factory=lambda: object(),
+    )
+    assert adapter._backend_route_id == "rigetti.qvm"
