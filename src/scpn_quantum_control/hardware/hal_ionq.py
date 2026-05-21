@@ -379,6 +379,7 @@ def _normalise_status(value: object, *, default: str = "unknown") -> str:
         "success": "completed",
         "running": "running",
         "in_progress": "running",
+        "in-progress": "running",
         "submitted": "submitted",
         "queued": "queued",
         "pending": "queued",

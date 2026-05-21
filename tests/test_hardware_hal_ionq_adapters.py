@@ -196,6 +196,7 @@ def test_ionq_direct_adapter_normalises_provider_status_tokens() -> None:
 
     assert ionq_mod._normalise_status("CANCELED") == "cancelled"
     assert ionq_mod._normalise_status("COMPLETE") == "completed"
+    assert ionq_mod._normalise_status("IN-PROGRESS") == "running"
 
 
 def test_ionq_direct_adapter_rejects_control_characters_in_provider_job_id() -> None:
