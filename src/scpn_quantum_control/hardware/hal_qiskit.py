@@ -86,8 +86,7 @@ class QiskitAerHALAdapter:
         compiled = transpile(circuit, backend)
         provider_job = backend.run(compiled, shots=workload.shots)
         counts = provider_job.result().get_counts()
-        raw_job_id = getattr(provider_job, "job_id", lambda: "")()
-        job_id = str(raw_job_id or f"aer-{workload.workload_id}")
+        job_id = _provider_job_id(provider_job, provider_name="qiskit_aer")
         job = QuantumJobRef(
             job_id=job_id,
             backend_id=self.backend_id,
@@ -177,7 +176,7 @@ class QiskitRuntimeHALAdapter:
         sampler = sampler_factory(mode=self._backend)
         sampler.options.default_shots = workload.shots
         provider_job = sampler.run([circuit])
-        job_id = str(provider_job.job_id())
+        job_id = _provider_job_id(provider_job, provider_name="qiskit_runtime")
         job = QuantumJobRef(
             job_id=job_id,
             backend_id=self.backend_id,
@@ -198,7 +197,7 @@ class QiskitRuntimeHALAdapter:
         """Return the current status for a submitted backend job."""
         provider_job = self._provider_job(job)
         status = provider_job.status()
-        return str(getattr(status, "name", status)).lower()
+        return _normalise_status(getattr(status, "name", status))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
@@ -209,7 +208,8 @@ class QiskitRuntimeHALAdapter:
         runtime_result = provider_job.result(timeout=self.timeout_s)
         counts: dict[str, int] = {}
         for pub_result in runtime_result:
-            counts.update(_normalise_counts(_extract_counts(pub_result)))
+            for bitstring, count in _normalise_counts(_extract_counts(pub_result)).items():
+                counts[bitstring] = counts.get(bitstring, 0) + count
         result = QuantumJobResult(
             job=job,
             status="completed",
@@ -320,6 +320,36 @@ def _backend_name(backend: Any) -> str:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _provider_job_id(provider_job: Any, *, provider_name: str) -> str:
+    job_id_attr = getattr(provider_job, "job_id", None)
+    raw_job_id = job_id_attr() if callable(job_id_attr) else job_id_attr
+    job_id = str(raw_job_id).strip() if raw_job_id is not None else ""
+    if not job_id:
+        raise ValueError(f"{provider_name} job object does not expose a provider job id")
+    return job_id
+
+
+def _normalise_status(value: object, *, default: str = "unknown") -> str:
+    text = str(value or default).strip().lower()
+    return {
+        "complete": "completed",
+        "completed": "completed",
+        "success": "completed",
+        "succeeded": "completed",
+        "done": "completed",
+        "finished": "completed",
+        "running": "running",
+        "in_progress": "running",
+        "submitted": "submitted",
+        "queued": "queued",
+        "pending": "queued",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, default)
 
 
 __all__ = [

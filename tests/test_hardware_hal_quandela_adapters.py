@@ -38,7 +38,7 @@ class _FakeSampler:
 
     def samples(self, *, count: int) -> dict[str, object]:
         self.calls.append({"count": count})
-        return {"results": {"10": 6, "01": 4}}
+        return {"id": "quandela-provider-job-1", "results": {"10": 6, "01": 4}}
 
 
 class _FakeProcessor:
@@ -47,7 +47,7 @@ class _FakeProcessor:
 
     def samples(self, count: int) -> dict[str, object]:
         self.samples_calls.append(count)
-        return {"counts": {"10": 3, "01": 1}}
+        return {"job_id": "quandela-provider-job-2", "counts": {"10": 3, "01": 1}}
 
 
 def test_quandela_adapter_executes_injected_sampler_with_approval() -> None:
@@ -87,7 +87,8 @@ def test_quandela_adapter_executes_injected_sampler_with_approval() -> None:
     cancelled = hal.cancel(job)
 
     assert job.status == "completed"
-    assert job.job_id == "quandela_cloud:quandela_pair"
+    assert job.job_id.startswith("quandela_cloud:quandela_pair:")
+    assert job.metadata["provider_job_id"] == "quandela-provider-job-1"
     assert job.metadata["execution_mode"] == "quandela_perceval"
     assert job.metadata["target"] == "ascella"
     assert result.counts == {"10": 6, "01": 4}
@@ -171,7 +172,7 @@ def test_quandela_adapter_validates_payload_shape_and_counts() -> None:
     class BadProcessor:
         def samples(self, count: int) -> dict[str, object]:
             del count
-            return {"counts": {"10": -1}}
+            return {"job_id": "quandela-provider-bad", "counts": {"10": -1}}
 
     adapter = QuandelaPercevalHALAdapter(
         HardwareAbstractionLayer.with_builtin_profiles().profile("quandela_cloud"),
@@ -182,6 +183,28 @@ def test_quandela_adapter_validates_payload_shape_and_counts() -> None:
             quandela_perceval_workload(
                 _PHOTONIC_PLAN,
                 workload_id="bad_counts",
+                n_modes=2,
+                shots=1,
+            ),
+            approval_id="approved",
+        )
+
+
+def test_quandela_provider_job_id_extraction_requires_identifier() -> None:
+    class MissingProviderIdProcessor:
+        def samples(self, count: int) -> dict[str, object]:
+            del count
+            return {"counts": {"10": 1}}
+
+    adapter = QuandelaPercevalHALAdapter(
+        HardwareAbstractionLayer.with_builtin_profiles().profile("quandela_cloud"),
+        processor=MissingProviderIdProcessor(),
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        adapter.submit(
+            quandela_perceval_workload(
+                _PHOTONIC_PLAN,
+                workload_id="missing_job_id",
                 n_modes=2,
                 shots=1,
             ),

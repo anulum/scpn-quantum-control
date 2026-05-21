@@ -47,6 +47,7 @@ class _FakeRawBloqadeReport:
 
 class _FakeBloqadeBatch:
     def __init__(self, bitstrings: list[str] | None = None, report: object | None = None) -> None:
+        self.id = "quera-provider-job-1"
         self._bitstrings = bitstrings
         self._report = report
         self.fetched = False
@@ -83,6 +84,7 @@ class _FakeStatusName:
 
 
 class _FakeNoCancelBatch:
+    id = "quera-provider-job-no-cancel"
     status = "finished"
 
     def report(self) -> dict[str, dict[str, int]]:
@@ -142,9 +144,10 @@ def test_quera_bloqade_adapter_runs_injected_routine_and_approval_gate() -> None
     assert routine.runs == [{"shots": 3, "name": "quera_rydberg_pair"}]
     assert routine.batch.fetched is True
     assert routine.batch.cancelled is True
+    assert job.job_id.startswith("quera_bloqade:quera_rydberg_pair:")
     assert job.metadata == {
         "approval_id": "approved-quera",
-        "provider_job_id": "quera_bloqade:quera_rydberg_pair",
+        "provider_job_id": "quera-provider-job-1",
         "execution_mode": "quera_bloqade",
         "routine_name": "aquila-local-emulator",
         "ir_format": "bloqade",
@@ -251,9 +254,27 @@ def test_quera_bloqade_adapter_accepts_mapping_reports_and_missing_cancel() -> N
         approval_id="approved-quera",
     )
 
-    assert hal.status(job) == "finished"
+    assert hal.status(job) == "completed"
     assert hal.result(job).counts == {"01": 2, "10": 1}
     assert hal.cancel(job).status == "cancelled"
+
+
+def test_quera_status_normalisation_maps_completion_aliases() -> None:
+    """QuEra status normaliser should map provider completion aliases canonically."""
+
+    assert quera_mod._normalise_status("FINISHED") == "completed"
+    assert quera_mod._normalise_status("SUCCEEDED") == "completed"
+
+
+def test_quera_provider_job_id_extraction_requires_identifier() -> None:
+    """QuEra provider job id extraction should fail closed when id is unavailable."""
+
+    assert (
+        quera_mod._provider_job_id(type("Batch", (), {"id": "quera-provider-2"})())
+        == "quera-provider-2"
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        quera_mod._provider_job_id(object())
 
 
 def test_quera_bloqade_adapter_rejects_unknown_jobs() -> None:

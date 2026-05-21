@@ -58,6 +58,7 @@ class PersistentHomologyBackend(Protocol):
     """Backend protocol for persistent-H1 summaries."""
 
     name: str
+    approximate: bool
 
     def compute(
         self, distance_matrix: np.ndarray, *, persistence_threshold: float = 0.1
@@ -146,6 +147,7 @@ class NetworkCycleBackend:
     """Deterministic graph-cycle H1 approximation for tests and no-extra installs."""
 
     name = "network_cycle"
+    approximate = True
 
     def __init__(self, threshold: float = 0.5) -> None:
         if threshold < 0.0:
@@ -189,6 +191,7 @@ class RipserPHBackend:
     """Ripser-backed Vietoris-Rips persistent-H1 backend."""
 
     name = "ripser"
+    approximate = False
 
     def __init__(self, maxdim: int = 1) -> None:
         if maxdim < 1:

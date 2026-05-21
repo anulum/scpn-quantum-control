@@ -13,6 +13,7 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
+from ._count_integrity import strict_non_negative_count
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 
@@ -91,7 +92,7 @@ class QbraidRuntimeHALAdapter:
             },
             **self._submit_kwargs,
         )
-        job_id = _job_id(provider_job, f"qbraid:{workload.workload_id}")
+        job_id = _job_id(provider_job)
         job = QuantumJobRef(
             job_id=job_id,
             backend_id=self.backend_id,
@@ -118,7 +119,7 @@ class QbraidRuntimeHALAdapter:
             if callable(status_method)
             else getattr(provider_job, "status", "unknown")
         )
-        return str(getattr(status, "name", status)).lower()
+        return _normalise_status(getattr(status, "name", status))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
@@ -216,17 +217,19 @@ def _normalise_counts(counts: Any) -> dict[str, int]:
         counts = counts[0]
     if not isinstance(counts, Mapping):
         raise ValueError("qBraid measurement counts must be a mapping")
-    return {str(bitstring): int(count) for bitstring, count in counts.items()}
+    return {
+        str(bitstring): strict_non_negative_count(count) for bitstring, count in counts.items()
+    }
 
 
-def _job_id(provider_job: Any, fallback: str) -> str:
+def _job_id(provider_job: Any) -> str:
     for attr in ("id", "job_id"):
         value = getattr(provider_job, attr, None)
         if callable(value):
             value = value()
         if value:
             return str(value)
-    return fallback
+    raise ValueError("qBraid device.run() returned a job object without an id")
 
 
 def _device_id(device: Any) -> str:
@@ -241,6 +244,26 @@ def _device_id(device: Any) -> str:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _normalise_status(value: object, *, default: str = "unknown") -> str:
+    text = str(value or default).strip().lower()
+    return {
+        "complete": "completed",
+        "completed": "completed",
+        "success": "completed",
+        "succeeded": "completed",
+        "finished": "completed",
+        "running": "running",
+        "in_progress": "running",
+        "submitted": "submitted",
+        "queued": "queued",
+        "pending": "queued",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, default)
 
 
 __all__ = [

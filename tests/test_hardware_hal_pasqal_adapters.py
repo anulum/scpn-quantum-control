@@ -43,6 +43,7 @@ _PULSER_PLAN = {
 
 class _FakePasqalJob:
     def __init__(self) -> None:
+        self.id = "pasqal-provider-job-1"
         self.status = "DONE"
         self.cancelled = False
 
@@ -83,10 +84,10 @@ def test_pasqal_hal_adapter_executes_injected_client_with_approval() -> None:
     cancelled = hal.cancel(job)
 
     assert isinstance(job, QuantumJobRef)
-    assert job.job_id == "pasqal_cloud:pasqal_pair"
+    assert job.job_id.startswith("pasqal_cloud:pasqal_pair:")
     assert job.metadata["approval_id"] == "approved-pasqal"
     assert job.metadata["execution_mode"] == "pasqal_pulser"
-    assert job.metadata["provider_job_id"] == "pasqal_cloud:pasqal_pair"
+    assert job.metadata["provider_job_id"] == "pasqal-provider-job-1"
     assert client.submissions == [
         {"sequence": _PULSER_PLAN, "shots": 12, "job_name": "pasqal_pair"}
     ]
@@ -209,3 +210,25 @@ def test_pasqal_hal_adapter_validates_payload_shape_and_counts() -> None:
     )
     with pytest.raises(ValueError, match="non-negative"):
         adapter.result(job)
+
+
+def test_pasqal_status_normalisation_maps_completion_aliases() -> None:
+    """Pasqal status normaliser should map provider completion aliases canonically."""
+
+    from scpn_quantum_control.hardware import hal_pasqal as pasqal_mod
+
+    assert pasqal_mod._normalise_status("SUCCEEDED") == "completed"
+    assert pasqal_mod._normalise_status("COMPLETE") == "completed"
+
+
+def test_pasqal_provider_job_id_extraction_requires_identifier() -> None:
+    """Pasqal provider job id extraction should fail closed when id is unavailable."""
+
+    from scpn_quantum_control.hardware import hal_pasqal as pasqal_mod
+
+    assert (
+        pasqal_mod._provider_job_id(type("Job", (), {"id": "pasqal-provider-2"})())
+        == "pasqal-provider-2"
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        pasqal_mod._provider_job_id(object())

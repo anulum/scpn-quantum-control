@@ -72,7 +72,7 @@ def test_azure_quantum_adapter_uses_injected_target_and_approval_gate() -> None:
     assert result.counts == {"00": 7, "11": 9}
     assert result.metadata["execution_mode"] == "azure_quantum"
     assert result.metadata["approval_id"] == "approved-azure"
-    assert hal.status(job) == "succeeded"
+    assert hal.status(job) == "completed"
 
 
 def test_azure_adapter_requires_target_or_factory() -> None:
@@ -82,3 +82,43 @@ def test_azure_adapter_requires_target_or_factory() -> None:
 
     with pytest.raises(ValueError, match="target"):
         AzureQuantumHALAdapter(profile)
+
+
+def test_azure_adapter_rejects_provider_job_without_id() -> None:
+    """Azure adapter should fail closed when submit() returns an id-less job object."""
+
+    class FakeJob:
+        details = type("FakeDetails", (), {"status": "Succeeded"})()
+
+        def get_results(self):
+            return {"histogram": {"0": 1}}
+
+    class FakeTarget:
+        def submit(self, input_data, name: str, shots: int, input_params=None, **kwargs):
+            del input_data, name, shots, input_params, kwargs
+            return FakeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        AzureQuantumHALAdapter(
+            hal.profile("azure_quantum_ionq_simulator"),
+            target=FakeTarget(),
+        )
+    )
+    workload = azure_openqasm3_to_workload(
+        "OPENQASM 3.0;\nqubit[1] q;\nbit[1] c;\n",
+        workload_id="azure_missing_job_id",
+        n_qubits=1,
+        shots=1,
+    )
+    with pytest.raises(ValueError, match="without an id"):
+        hal.submit("azure_quantum_ionq_simulator", workload, approval_id="approved-azure")
+
+
+def test_azure_adapter_normalises_provider_status_tokens() -> None:
+    """Azure status values should map to canonical HAL status values."""
+
+    from scpn_quantum_control.hardware import hal_azure as azure_mod
+
+    assert azure_mod._normalise_status("Succeeded") == "completed"
+    assert azure_mod._normalise_status("CANCELED") == "cancelled"

@@ -21,6 +21,7 @@ _OPENQASM3 = "OPENQASM 3.0;\nqubit[2] q;\nbit[2] c;\nh q[0];\ncx q[0], q[1];"
 
 class _FakeOQCJob:
     def __init__(self) -> None:
+        self.id = "oqc-provider-job-1"
         self.status = "COMPLETED"
         self.cancelled = False
 
@@ -74,9 +75,10 @@ def test_oqc_adapter_executes_injected_client_with_approval() -> None:
 
     assert job.status == "submitted"
     assert status == "completed"
-    assert job.job_id == "oqc_cloud:oqc_bell"
+    assert job.job_id.startswith("oqc_cloud:oqc_bell:")
     assert job.metadata["execution_mode"] == "oqc_qcaas_openqasm3"
     assert job.metadata["target"] == "Lucy"
+    assert job.metadata["provider_job_id"] == "oqc-provider-job-1"
     assert result.counts == {"00": 2, "11": 6}
     assert result.shots == 8
     assert cancelled.status == "cancelled"
@@ -167,3 +169,24 @@ def test_oqc_default_builder_is_sdk_gated(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setattr("scpn_quantum_control.hardware.hal_oqc.import_module", fake_import)
     with pytest.raises(RuntimeError, match="calibrated OQC"):
         adapter.submit(workload, approval_id="approved")
+
+
+def test_oqc_status_normalisation_maps_completion_aliases() -> None:
+    """OQC status normaliser should map provider completion aliases canonically."""
+
+    from scpn_quantum_control.hardware import hal_oqc as oqc_mod
+
+    assert oqc_mod._normalise_status("SUCCEEDED") == "completed"
+    assert oqc_mod._normalise_status("COMPLETE") == "completed"
+
+
+def test_oqc_provider_job_id_extraction_requires_identifier() -> None:
+    """OQC provider job id extraction should fail closed when id is unavailable."""
+
+    from scpn_quantum_control.hardware import hal_oqc as oqc_mod
+
+    assert (
+        oqc_mod._provider_job_id(type("Job", (), {"id": "oqc-provider-2"})()) == "oqc-provider-2"
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        oqc_mod._provider_job_id(object())

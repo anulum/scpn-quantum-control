@@ -17,6 +17,7 @@ from typing import Any
 
 from qiskit import QuantumCircuit, transpile
 
+from ._count_integrity import strict_non_negative_count
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 from .hal_qiskit import qiskit_circuit_to_workload
 
@@ -235,11 +236,9 @@ def _normalise_counts(raw: Any) -> dict[str, int]:
     counts: dict[str, int] = {}
     for bitstring, count in raw.items():
         key = str(bitstring)
-        value = int(count)
+        value = strict_non_negative_count(count)
         if not key:
             raise ValueError("counts keys must be non-empty bitstrings")
-        if value < 0:
-            raise ValueError("counts values must be non-negative integers")
         counts[key] = value
     return counts
 
@@ -259,7 +258,7 @@ def _job_id(job: Any) -> str:
         return str(job_id())
     if job_id:
         return str(job_id)
-    return "iqm_job_id_unavailable"
+    raise ValueError("IQM backend job does not expose a provider job id")
 
 
 def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
@@ -271,13 +270,17 @@ def _normalise_status(value: object) -> str:
     text = str(value).split(".")[-1].lower()
     return {
         "done": "completed",
+        "complete": "completed",
+        "completed": "completed",
+        "success": "completed",
+        "succeeded": "completed",
         "finished": "completed",
         "queued": "queued",
         "running": "running",
         "cancelled": "cancelled",
         "canceled": "cancelled",
         "failed": "failed",
-    }.get(text, text or "unknown")
+    }.get(text, "unknown")
 
 
 def _utc_now() -> str:

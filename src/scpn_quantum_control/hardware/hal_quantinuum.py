@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any
 
+from ._count_integrity import strict_non_negative_count
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 QUANTINUUM_EXECUTION_MODE = "quantinuum_pytket"
@@ -91,7 +92,7 @@ class QuantinuumCloudHALAdapter:
         circuit = self._build_circuit(workload)
         executable = self._compile(circuit)
         handle = self._backend_client().process_circuit(executable, n_shots=workload.shots)
-        provider_job_id = str(handle)
+        provider_job_id = _provider_job_id(handle)
         job = QuantumJobRef(
             job_id=_job_id(self.backend_id, workload.workload_id, provider_job_id),
             backend_id=self.backend_id,
@@ -208,9 +209,7 @@ def _default_circuit_factory(workload: QuantumWorkload) -> Any:
 def _normalise_counts(raw_counts: Mapping[Any, int]) -> dict[str, int]:
     counts: dict[str, int] = {}
     for raw_key, raw_count in raw_counts.items():
-        count = int(raw_count)
-        if count < 0:
-            raise ValueError("Quantinuum counts must be non-negative")
+        count = strict_non_negative_count(raw_count)
         bitstring = _normalise_bit_key(raw_key)
         counts[bitstring] = counts.get(bitstring, 0) + count
     if not counts:
@@ -238,8 +237,49 @@ def _normalise_status(status: Any) -> str:
     raw_status = getattr(status, "status", status)
     if hasattr(raw_status, "name"):
         raw_status = raw_status.name
-    text = str(raw_status).split(".")[-1].lower()
-    return text.replace(" ", "_")
+    text = str(raw_status).split(".")[-1].strip().lower().replace(" ", "_")
+    return {
+        "done": "completed",
+        "complete": "completed",
+        "completed": "completed",
+        "finished": "completed",
+        "success": "completed",
+        "succeeded": "completed",
+        "queued": "queued",
+        "pending": "queued",
+        "running": "running",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, "unknown")
+
+
+def _provider_job_id(handle: Any) -> str:
+    for attr in ("job_id", "id", "handle", "task_id"):
+        value = getattr(handle, attr, None)
+        if callable(value):
+            value = value()
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    if isinstance(handle, Mapping):
+        for key in ("job_id", "id", "handle", "task_id"):
+            value = handle.get(key)
+            if value is not None and str(value).strip():
+                return str(value).strip()
+
+    provider_job_id = str(handle).strip()
+    if (
+        not provider_job_id
+        or provider_job_id.lower() == "none"
+        or (
+            provider_job_id.startswith("<")
+            and provider_job_id.endswith(">")
+            and " object at 0x" in provider_job_id
+        )
+    ):
+        raise ValueError("Quantinuum backend process_circuit returned an invalid provider handle")
+    return provider_job_id
 
 
 def _job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:

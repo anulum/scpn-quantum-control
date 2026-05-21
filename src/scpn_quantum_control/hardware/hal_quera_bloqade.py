@@ -9,12 +9,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any, cast
 
+from ._count_integrity import strict_non_negative_count
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 BLOQADE_AHS_SCHEMA = "bloqade_ahs_plan_v1"
@@ -81,9 +83,10 @@ class QuEraBloqadeHALAdapter:
         _validate_bloqade_payload(_decode_payload(workload), workload.n_qubits)
         routine = self._routine_for(workload)
         batch = routine.run(shots=workload.shots, name=workload.workload_id)
-        provider_job_id = f"{self.backend_id}:{workload.workload_id}"
+        provider_job_id = _provider_job_id(batch)
+        hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
-            job_id=provider_job_id,
+            job_id=hal_job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="submitted",
@@ -259,9 +262,7 @@ def _normalise_counts(source: Sequence[Any] | Mapping[Any, int]) -> dict[str, in
     counts: dict[str, int] = {}
     for raw_bitstring, raw_count in items:
         bitstring = _normalise_bitstring(raw_bitstring)
-        count = int(raw_count)
-        if count < 0:
-            raise ValueError("Bloqade counts must be non-negative")
+        count = strict_non_negative_count(raw_count)
         counts[bitstring] = counts.get(bitstring, 0) + count
     if not counts:
         raise ValueError("Bloqade result did not contain shots")
@@ -282,7 +283,37 @@ def _normalise_bitstring(value: Any) -> str:
 
 def _normalise_status(status: object) -> str:
     raw_status = getattr(status, "name", status)
-    return str(raw_status).split(".")[-1].lower().replace(" ", "_")
+    text = str(raw_status).split(".")[-1].strip().lower().replace(" ", "_")
+    return {
+        "done": "completed",
+        "complete": "completed",
+        "completed": "completed",
+        "finished": "completed",
+        "success": "completed",
+        "succeeded": "completed",
+        "queued": "queued",
+        "pending": "queued",
+        "running": "running",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, "unknown")
+
+
+def _provider_job_id(batch: object) -> str:
+    for attr in ("id", "job_id", "handle", "task_id"):
+        value = getattr(batch, attr, None)
+        if callable(value):
+            value = value()
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    raise ValueError("Bloqade batch does not expose a provider job id")
+
+
+def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
+    digest = hashlib.sha256(provider_job_id.encode("utf-8")).hexdigest()[:12]
+    return f"{backend_id}:{workload_id}:{digest}"
 
 
 def _coerce_int(value: object, *, field_name: str) -> int:

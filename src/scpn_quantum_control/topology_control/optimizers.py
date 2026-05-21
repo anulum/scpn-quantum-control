@@ -134,7 +134,7 @@ class ProjectedSPSAOptimizer:
 
 
 class ProjectedScipyOptimizer:
-    """Small SLSQP wrapper for smooth surrogate objectives."""
+    """Projected COBYLA wrapper with auditable per-iterate trace."""
 
     def __init__(self, *, maxiter: int = 100) -> None:
         if maxiter <= 0:
@@ -165,19 +165,56 @@ class ProjectedScipyOptimizer:
             return objective.evaluate(unpack(values)).total
 
         x0 = np.array([initial[i, j] for i, j in upper], dtype=np.float64)
-        result = minimize(score, x0, method="COBYLA", options={"maxiter": self.maxiter})
-        final = unpack(np.asarray(result.x, dtype=np.float64))
-        breakdown = objective.evaluate(final)
-        step = TopologyOptimisationStep(
-            index=0,
-            matrix=final,
-            objective=breakdown,
-            gradient_norm=0.0,
-            step_size=0.0,
-            perturbation=0.0,
+        steps: list[TopologyOptimisationStep] = []
+
+        def on_step(values: np.ndarray) -> None:
+            matrix = unpack(np.asarray(values, dtype=np.float64))
+            steps.append(
+                TopologyOptimisationStep(
+                    index=len(steps),
+                    matrix=matrix.copy(),
+                    objective=objective.evaluate(matrix),
+                    gradient_norm=0.0,
+                    step_size=0.0,
+                    perturbation=0.0,
+                )
+            )
+
+        result = minimize(
+            score,
+            x0,
+            method="COBYLA",
+            callback=on_step,
+            options={"maxiter": self.maxiter},
         )
+        final = unpack(np.asarray(result.x, dtype=np.float64))
+        if not steps:
+            steps.append(
+                TopologyOptimisationStep(
+                    index=0,
+                    matrix=final.copy(),
+                    objective=objective.evaluate(final),
+                    gradient_norm=0.0,
+                    step_size=0.0,
+                    perturbation=0.0,
+                )
+            )
+        elif not np.allclose(steps[-1].matrix, final):
+            steps.append(
+                TopologyOptimisationStep(
+                    index=len(steps),
+                    matrix=final.copy(),
+                    objective=objective.evaluate(final),
+                    gradient_norm=0.0,
+                    step_size=0.0,
+                    perturbation=0.0,
+                )
+            )
         return TopologyOptimisationTrace(
-            initial_matrix=initial, final_matrix=final, steps=[step], seed=0
+            initial_matrix=initial,
+            final_matrix=final,
+            steps=steps,
+            seed=0,
         )
 
 

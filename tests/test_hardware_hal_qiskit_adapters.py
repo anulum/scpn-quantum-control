@@ -111,10 +111,81 @@ def test_qiskit_runtime_adapter_uses_injected_sampler_and_approval_gate() -> Non
 
     assert job.job_id == "runtime-job-1"
     assert job.status == "submitted"
+    assert hal.status(job) == "completed"
     assert result.status == "completed"
     assert result.counts == {"0": 3, "1": 5}
     assert result.metadata["execution_mode"] == "qiskit_runtime_sampler"
     assert result.metadata["approval_id"] == "approved-runtime"
+
+
+def test_qiskit_runtime_adapter_sums_overlapping_pub_results() -> None:
+    """Counts from multiple PUB results should be accumulated, not overwritten."""
+
+    class FakeBackend:
+        name = "ibm_fake"
+        num_qubits = 127
+
+    class FakeRegisterFirst:
+        def get_counts(self) -> dict[str, int]:
+            return {"0": 2, "1": 1}
+
+    class FakeRegisterSecond:
+        def get_counts(self) -> dict[str, int]:
+            return {"0": 5, "11": 3}
+
+    class FakeDataFirst:
+        c = FakeRegisterFirst()
+
+    class FakeDataSecond:
+        c = FakeRegisterSecond()
+
+    class FakePubResultFirst:
+        data = FakeDataFirst()
+
+    class FakePubResultSecond:
+        data = FakeDataSecond()
+
+    class FakeRuntimeResult:
+        def __iter__(self):
+            return iter((FakePubResultFirst(), FakePubResultSecond()))
+
+    class FakeRuntimeJob:
+        def job_id(self) -> str:
+            return "runtime-job-merge"
+
+        def status(self) -> str:
+            return "DONE"
+
+        def result(self, timeout: float | None = None) -> FakeRuntimeResult:
+            assert timeout == 600.0
+            return FakeRuntimeResult()
+
+        def cancel(self) -> None:
+            self.cancelled = True
+
+    class FakeSampler:
+        def __init__(self, mode):
+            assert mode is FakeBackend
+            self.options = type("Options", (), {})()
+
+        def run(self, circuits):
+            assert len(circuits) == 1
+            return FakeRuntimeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        QiskitRuntimeHALAdapter(
+            hal.profile("ibm_quantum"),
+            backend=FakeBackend,
+            sampler_factory=FakeSampler,
+        )
+    )
+    workload = qiskit_circuit_to_workload(_bell_circuit(), workload_id="runtime_merge", shots=11)
+    job = hal.submit("ibm_quantum", workload, approval_id="approved-runtime")
+    result = hal.result(job)
+
+    assert result.counts == {"0": 7, "1": 1, "11": 3}
+    assert result.shots == 11
 
 
 def test_qiskit_qasm3_workload_round_trips_when_importer_is_installed() -> None:
@@ -161,3 +232,12 @@ def test_qiskit_adapter_rejects_non_qiskit_workload_payload() -> None:
         assert "qiskit_qpy" in str(exc) or "OpenQASM" in str(exc)
     else:  # pragma: no cover - defensive assertion branch
         raise AssertionError("Qiskit adapter accepted a non-Qiskit payload")
+
+
+def test_qiskit_runtime_status_normalisation_maps_provider_tokens() -> None:
+    """Qiskit Runtime status values should map to canonical HAL status values."""
+
+    from scpn_quantum_control.hardware import hal_qiskit as qiskit_mod
+
+    assert qiskit_mod._normalise_status("DONE") == "completed"
+    assert qiskit_mod._normalise_status("CANCELED") == "cancelled"

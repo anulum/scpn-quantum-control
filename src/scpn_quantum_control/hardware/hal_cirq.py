@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from importlib import import_module
@@ -78,13 +79,16 @@ class CirqLocalHALAdapter:
         if not callable(run):
             raise TypeError("Cirq simulator object does not provide run()")
         raw_result = run(circuit, repetitions=workload.shots)
+        counts = _normalise_histogram_counts(raw_result, self._measurement_key, workload.n_qubits)
+        provider_job_id = _provider_job_id(raw_result)
+        hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
-            job_id=f"{self.backend_id}:{workload.workload_id}",
+            job_id=hal_job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
             metadata={
-                "provider_job_id": f"{self.backend_id}:{workload.workload_id}",
+                "provider_job_id": provider_job_id,
                 "execution_mode": CIRQ_EXECUTION_MODE,
                 "measurement_key": self._measurement_key,
                 "ir_format": workload.ir_format,
@@ -95,9 +99,7 @@ class CirqLocalHALAdapter:
         result = QuantumJobResult(
             job=job,
             status="completed",
-            counts=_normalise_histogram_counts(
-                raw_result, self._measurement_key, workload.n_qubits
-            ),
+            counts=counts,
             shots=workload.shots,
             metadata={
                 "execution_mode": CIRQ_EXECUTION_MODE,
@@ -213,6 +215,27 @@ def _coerce_int(value: object, *, field_name: str) -> int:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _provider_job_id(raw_result: object) -> str:
+    for attr in ("job_id", "id", "task_id"):
+        value = getattr(raw_result, attr, None)
+        if callable(value):
+            value = value()
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    metadata = getattr(raw_result, "metadata", None)
+    if isinstance(metadata, Mapping):
+        for key in ("job_id", "id", "task_id"):
+            value = metadata.get(key)
+            if value is not None and str(value).strip():
+                return str(value).strip()
+    raise ValueError("Cirq result does not expose a provider job id")
+
+
+def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
+    digest = hashlib.sha256(provider_job_id.encode("utf-8")).hexdigest()[:12]
+    return f"{backend_id}:{workload_id}:{digest}"
 
 
 __all__ = ["CIRQ_EXECUTION_MODE", "CirqLocalHALAdapter", "cirq_circuit_workload"]

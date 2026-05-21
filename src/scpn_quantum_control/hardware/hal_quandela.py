@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
@@ -82,14 +83,17 @@ class QuandelaPercevalHALAdapter:
         _validate_perceval_payload(plan, workload.n_qubits)
         processor = self._processor_for(plan)
         raw_result = self._sample(processor, workload.shots)
+        counts = _normalise_counts(_extract_counts(raw_result))
+        provider_job_id = _provider_job_id(raw_result)
+        hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
-            job_id=f"{self.backend_id}:{workload.workload_id}",
+            job_id=hal_job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
             metadata={
                 "approval_id": approval_id,
-                "provider_job_id": f"{self.backend_id}:{workload.workload_id}",
+                "provider_job_id": provider_job_id,
                 "execution_mode": QUANDELA_EXECUTION_MODE,
                 "target": self._target,
                 "ir_format": workload.ir_format,
@@ -100,7 +104,7 @@ class QuandelaPercevalHALAdapter:
         result = QuantumJobResult(
             job=job,
             status="completed",
-            counts=_normalise_counts(_extract_counts(raw_result)),
+            counts=counts,
             shots=workload.shots,
             metadata={
                 "approval_id": approval_id,
@@ -274,6 +278,26 @@ def _extract_counts(result: object) -> object:
     if isinstance(results, Mapping):
         return results
     raise RuntimeError("Could not extract Quandela counts from provider result")
+
+
+def _provider_job_id(result: object) -> str:
+    for attr in ("job_id", "id", "task_id"):
+        value = getattr(result, attr, None)
+        if callable(value):
+            value = value()
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    if isinstance(result, Mapping):
+        for key in ("job_id", "id", "task_id"):
+            value = result.get(key)
+            if value is not None and str(value).strip():
+                return str(value).strip()
+    raise ValueError("Quandela result does not expose a provider job id")
+
+
+def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
+    digest = hashlib.sha256(f"{backend_id}|{provider_job_id}".encode()).hexdigest()[:12]
+    return f"{backend_id}:{workload_id}:{digest}"
 
 
 def _normalise_counts(raw: object) -> dict[str, int]:

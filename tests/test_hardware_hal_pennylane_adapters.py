@@ -39,6 +39,8 @@ def test_pennylane_adapter_executes_native_gate_workload() -> None:
     result = hal.result(job)
 
     assert job.status == "completed"
+    assert job.job_id.startswith("local_pennylane:pl_bell:")
+    assert str(job.metadata["provider_job_id"]).startswith("pennylane-local:pl_bell:")
     assert result.status == "completed"
     assert sum(result.counts.values()) == 128
     assert set(result.counts) <= {"00", "11"}
@@ -61,3 +63,21 @@ def test_pennylane_adapter_fails_closed_on_unknown_gate() -> None:
 
     with pytest.raises(ValueError, match="unsupported PennyLane gate"):
         hal.submit("local_pennylane", workload)
+
+
+def test_pennylane_local_lineage_is_unique_per_submission() -> None:
+    pytest.importorskip("pennylane")
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(PennyLaneDeviceHALAdapter(hal.profile("local_pennylane")))
+    workload = pennylane_gate_workload(
+        [{"gate": "x", "wires": [0]}],
+        workload_id="pl_unique",
+        n_qubits=1,
+        shots=4,
+    )
+
+    first = hal.submit("local_pennylane", workload)
+    second = hal.submit("local_pennylane", workload)
+
+    assert first.job_id != second.job_id
+    assert first.metadata["provider_job_id"] != second.metadata["provider_job_id"]

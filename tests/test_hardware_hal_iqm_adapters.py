@@ -216,3 +216,41 @@ def test_iqm_hal_adapter_reports_unknown_jobs_and_bad_counts() -> None:
     )
     with pytest.raises(ValueError, match="non-negative"):
         bad.result(job)
+
+
+def test_iqm_hal_adapter_rejects_provider_job_without_id() -> None:
+    """IQM adapter should fail closed when backend job id is missing."""
+
+    class MissingIdJob:
+        def status(self) -> str:
+            return "DONE"
+
+        def result(self, timeout: float | None = None) -> _FakeIQMResult:
+            del timeout
+            return _FakeIQMResult({"0": 1})
+
+        def cancel(self) -> None:
+            self.cancelled = True
+
+    class MissingIdBackend(_FakeIQMBackend):
+        def run(self, circuits: list[QuantumCircuit], *, shots: int) -> MissingIdJob:
+            del circuits, shots
+            return MissingIdJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = IQMHALAdapter(hal.profile("iqm_cloud"), backend=MissingIdBackend())
+
+    with pytest.raises(ValueError, match="provider job id"):
+        adapter.submit(
+            iqm_qiskit_workload(_bell_circuit(), workload_id="missing_iqm_job_id", shots=4),
+            approval_id="approved",
+        )
+
+
+def test_iqm_status_normalisation_maps_provider_tokens() -> None:
+    """IQM status values should map to canonical HAL status values."""
+
+    from scpn_quantum_control.hardware import hal_iqm as iqm_mod
+
+    assert iqm_mod._normalise_status("SUCCEEDED") == "completed"
+    assert iqm_mod._normalise_status("CANCELED") == "cancelled"

@@ -100,7 +100,7 @@ def test_ionq_direct_adapter_submits_status_results_and_cancel() -> None:
     assert result.counts == {"00": 5, "11": 5}
     assert result.shots == 10
     assert result.metadata["execution_mode"] == "ionq_cloud_api_v0.4"
-    assert cancelled.status == "canceled"
+    assert cancelled.status == "cancelled"
     assert client.posts[0]["url"] == "https://api.ionq.co/v0.4/jobs"
     assert client.posts[0]["headers"]["Authorization"] == "apiKey test-key"
     assert client.posts[0]["json"] == {
@@ -147,3 +147,42 @@ def test_ionq_direct_adapter_requires_route_credentials() -> None:
 
     with pytest.raises(ValueError, match="api_key"):
         IonQCloudHALAdapter(profile, client=_FakeIonQClient())
+
+
+def test_ionq_direct_adapter_rejects_missing_n_qubits_metadata() -> None:
+    """IonQ result decoding should fail closed when job metadata is corrupted."""
+
+    client = _FakeIonQClient()
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = IonQCloudHALAdapter(
+        hal.profile("ionq_cloud"),
+        client=client,
+        api_key="test-key",
+    )
+    hal.register_backend(adapter)
+    workload = ionq_qis_workload(
+        [{"gate": "h", "target": 0}],
+        workload_id="ionq_missing_n_qubits",
+        n_qubits=1,
+        shots=10,
+    )
+    job = hal.submit("ionq_cloud", workload, approval_id="approved-ionq")
+    adapter._jobs[job.job_id] = adapter._jobs[job.job_id].__class__(
+        job_id=job.job_id,
+        backend_id=job.backend_id,
+        workload_id=job.workload_id,
+        status=job.status,
+        metadata={k: v for k, v in job.metadata.items() if k != "n_qubits"},
+    )
+
+    with pytest.raises(ValueError, match="n_qubits"):
+        hal.result(job)
+
+
+def test_ionq_direct_adapter_normalises_provider_status_tokens() -> None:
+    """IonQ status fields should map to canonical HAL status values."""
+
+    from scpn_quantum_control.hardware import hal_ionq as ionq_mod
+
+    assert ionq_mod._normalise_status("CANCELED") == "cancelled"
+    assert ionq_mod._normalise_status("COMPLETE") == "completed"

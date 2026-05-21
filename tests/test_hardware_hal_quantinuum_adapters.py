@@ -328,6 +328,103 @@ def test_quantinuum_adapter_rejects_unknown_jobs() -> None:
         adapter.cancel(unknown)
 
 
+def test_quantinuum_adapter_rejects_invalid_provider_handle() -> None:
+    """Quantinuum adapter should fail closed when provider handle is missing."""
+
+    class InvalidHandleBackend(_FakeQuantinuumBackend):
+        def process_circuit(self, circuit: Any, *, n_shots: int) -> str:
+            del circuit, n_shots
+            return None  # type: ignore[return-value]
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        QuantinuumCloudHALAdapter(
+            hal.profile("quantinuum_cloud"),
+            backend=InvalidHandleBackend(),
+            machine="H1-1E",
+            circuit_factory=lambda workload: workload.program,
+        )
+    )
+    workload = quantinuum_tket_workload(
+        {"name": "bad_handle", "qubits": 2, "ops": ["H 0"]},
+        workload_id="quantinuum_bad_handle",
+        n_qubits=2,
+        shots=1,
+    )
+
+    with pytest.raises(ValueError, match="invalid provider handle"):
+        hal.submit("quantinuum_cloud", workload, approval_id="approved-quantinuum")
+
+
+def test_quantinuum_adapter_rejects_opaque_provider_handle_objects() -> None:
+    """Opaque object repr handles must fail closed to preserve lineage quality."""
+
+    class OpaqueHandleBackend(_FakeQuantinuumBackend):
+        def process_circuit(self, circuit: Any, *, n_shots: int) -> object:
+            del circuit, n_shots
+            return object()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        QuantinuumCloudHALAdapter(
+            hal.profile("quantinuum_cloud"),
+            backend=OpaqueHandleBackend(),
+            machine="H1-1E",
+            circuit_factory=lambda workload: workload.program,
+        )
+    )
+    workload = quantinuum_tket_workload(
+        {"name": "opaque_handle", "qubits": 2, "ops": ["H 0"]},
+        workload_id="quantinuum_opaque_handle",
+        n_qubits=2,
+        shots=1,
+    )
+
+    with pytest.raises(ValueError, match="invalid provider handle"):
+        hal.submit("quantinuum_cloud", workload, approval_id="approved-quantinuum")
+
+
+def test_quantinuum_adapter_accepts_structured_handle_identifier() -> None:
+    """Structured provider handles should expose lineage via id attributes."""
+
+    class HandleWithId:
+        def __init__(self) -> None:
+            self.id = "quantinuum-structured-handle-1"
+
+    class StructuredHandleBackend(_FakeQuantinuumBackend):
+        def process_circuit(self, circuit: Any, *, n_shots: int) -> HandleWithId:
+            del circuit, n_shots
+            return HandleWithId()
+
+        def circuit_status(self, handle: HandleWithId) -> _FakeQuantinuumStatus:
+            assert handle.id == "quantinuum-structured-handle-1"
+            return _FakeQuantinuumStatus("COMPLETED")
+
+        def get_result(self, handle: HandleWithId) -> _FakeQuantinuumResult:
+            assert handle.id == "quantinuum-structured-handle-1"
+            return _FakeQuantinuumResult({(0,): 1})
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        QuantinuumCloudHALAdapter(
+            hal.profile("quantinuum_cloud"),
+            backend=StructuredHandleBackend(),
+            machine="H1-1E",
+            circuit_factory=lambda workload: workload.program,
+        )
+    )
+    workload = quantinuum_tket_workload(
+        {"name": "structured_handle", "qubits": 1, "ops": ["X 0"]},
+        workload_id="quantinuum_structured_handle",
+        n_qubits=1,
+        shots=1,
+    )
+
+    job = hal.submit("quantinuum_cloud", workload, approval_id="approved-quantinuum")
+    assert job.metadata["provider_job_id"] == "quantinuum-structured-handle-1"
+    assert job.job_id.startswith("quantinuum_cloud:quantinuum_structured_handle:")
+
+
 @pytest.mark.parametrize(
     ("raw_counts", "message"),
     [
@@ -359,6 +456,8 @@ def test_quantinuum_status_normalisation_accepts_enum_names() -> None:
     """Provider status objects should be reduced to HAL-safe status tokens."""
 
     assert quantinuum_mod._normalise_status(_FakeStatusName()) == "queued"
+    assert quantinuum_mod._normalise_status("SUCCEEDED") == "completed"
+    assert quantinuum_mod._normalise_status("CANCELED") == "cancelled"
 
 
 def test_quantinuum_default_dependency_errors_are_actionable(

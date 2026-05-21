@@ -58,6 +58,7 @@ class CouplingTopologyObjective:
     degeneracy_penalty: float = 1_000.0
     persistence_threshold: float = 0.1
     allow_degenerate: bool = False
+    allow_approximate_ph_backend: bool = False
     metadata: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -70,6 +71,15 @@ class CouplingTopologyObjective:
 
     def evaluate(self, matrix: np.ndarray) -> ObjectiveBreakdown:
         """Evaluate projected coupling matrix and return decomposed score."""
+
+        if (
+            bool(getattr(self.ph_backend, "approximate", False))
+            and not self.allow_approximate_ph_backend
+        ):
+            raise ValueError(
+                "approximate persistent-homology backend requires explicit "
+                "allow_approximate_ph_backend=True"
+            )
 
         projected = self.ledger.project(matrix)
         distance = build_coupling_distance_matrix(projected)
@@ -139,6 +149,7 @@ def objective_sha256_payload(objective: CouplingTopologyObjective) -> dict[str, 
         "degeneracy_penalty": objective.degeneracy_penalty,
         "persistence_threshold": objective.persistence_threshold,
         "allow_degenerate": objective.allow_degenerate,
+        "allow_approximate_ph_backend": objective.allow_approximate_ph_backend,
         "source_shape": source_shape,
         "metadata": dict(sorted(objective.metadata.items())),
     }

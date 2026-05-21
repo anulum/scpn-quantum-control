@@ -128,3 +128,43 @@ def test_strangeworks_adapter_requires_backend_route() -> None:
 
     with pytest.raises(ValueError, match="backend"):
         StrangeworksComputeHALAdapter(profile)
+
+
+def test_strangeworks_adapter_rejects_provider_job_without_id() -> None:
+    """Strangeworks adapter should fail closed when backend.run() omits job id."""
+
+    class FakeJob:
+        def result(self) -> dict[str, dict[str, int]]:
+            return {"counts": {"0": 1}}
+
+    class FakeBackend:
+        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+            del run_input, shots, name, metadata
+            return FakeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        StrangeworksComputeHALAdapter(
+            hal.profile("strangeworks_compute"),
+            backend=FakeBackend(),
+        )
+    )
+    workload = strangeworks_program_to_workload(
+        "OPENQASM 3.0;",
+        workload_id="sw_missing_job_id",
+        ir_format="openqasm3",
+        n_qubits=1,
+        shots=1,
+    )
+
+    with pytest.raises(ValueError, match="without an id"):
+        hal.submit("strangeworks_compute", workload, approval_id="approved-sw")
+
+
+def test_strangeworks_adapter_normalises_provider_status_tokens() -> None:
+    """Strangeworks status values should map to canonical HAL status values."""
+
+    from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
+
+    assert sw_mod._normalise_status("CANCELED") == "cancelled"
+    assert sw_mod._normalise_status("SUCCESS") == "completed"

@@ -130,3 +130,48 @@ def test_qbraid_adapter_requires_device_route() -> None:
 
     with pytest.raises(ValueError, match="device"):
         QbraidRuntimeHALAdapter(profile)
+
+
+def test_qbraid_adapter_rejects_provider_job_without_id() -> None:
+    """qBraid adapter should fail closed when device.run() omits job id."""
+
+    class FakeResultData:
+        def get_counts(self) -> dict[str, int]:
+            return {"0": 1}
+
+    class FakeResult:
+        data = FakeResultData()
+
+    class FakeJob:
+        def status(self) -> str:
+            return "COMPLETED"
+
+        def result(self) -> FakeResult:
+            return FakeResult()
+
+    class FakeDevice:
+        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+            del run_input, shots, name, metadata
+            return FakeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(QbraidRuntimeHALAdapter(hal.profile("qbraid_ionq"), device=FakeDevice()))
+    workload = qbraid_program_to_workload(
+        "OPENQASM 3.0;\nqubit[1] q;",
+        workload_id="qbraid_missing_job_id",
+        ir_format="openqasm3",
+        n_qubits=1,
+        shots=1,
+    )
+
+    with pytest.raises(ValueError, match="without an id"):
+        hal.submit("qbraid_ionq", workload, approval_id="approved-qbraid")
+
+
+def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
+    """qBraid status values should map to canonical HAL status values."""
+
+    from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
+
+    assert qbraid_mod._normalise_status("CANCELED") == "cancelled"
+    assert qbraid_mod._normalise_status("FINISHED") == "completed"

@@ -19,6 +19,7 @@ from scpn_quantum_control.hardware.hal_cirq import CirqLocalHALAdapter, cirq_cir
 
 class _FakeResult:
     def __init__(self, histogram: dict[int, int]) -> None:
+        self.id = "cirq-provider-job-1"
         self._histogram = histogram
 
     def histogram(self, *, key: str) -> dict[int, int]:
@@ -59,8 +60,9 @@ def test_cirq_hal_adapter_executes_injected_simulator_without_cloud_approval() -
     cancelled = hal.cancel(job)
 
     assert job.status == "completed"
-    assert job.job_id == "local_cirq:cirq_bell"
+    assert job.job_id.startswith("local_cirq:cirq_bell:")
     assert job.metadata["execution_mode"] == "local_cirq_simulator"
+    assert job.metadata["provider_job_id"] == "cirq-provider-job-1"
     assert result.counts == {"00": 3, "11": 5}
     assert result.shots == 8
     assert result.metadata["measurement_key"] == "m"
@@ -133,3 +135,16 @@ def test_cirq_hal_adapter_default_builder_is_sdk_gated(
     )
     with pytest.raises(RuntimeError, match="circuit_factory"):
         adapter.submit(workload)
+
+
+def test_cirq_provider_job_id_extraction_requires_identifier() -> None:
+    """Cirq provider job id extraction should fail closed when id is unavailable."""
+
+    from scpn_quantum_control.hardware import hal_cirq as cirq_mod
+
+    assert (
+        cirq_mod._provider_job_id(type("Result", (), {"id": "cirq-provider-2"})())
+        == "cirq-provider-2"
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        cirq_mod._provider_job_id(object())

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import pytest
 from braket.circuits import Circuit
 
 from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer
@@ -90,3 +91,46 @@ def test_braket_aws_adapter_uses_injected_device_and_approval_gate() -> None:
     assert result.counts == {"0": 4, "1": 2}
     assert result.metadata["execution_mode"] == "braket_aws"
     assert result.metadata["approval_id"] == "approved-braket"
+    assert hal.status(job) == "completed"
+
+
+def test_braket_aws_adapter_rejects_task_without_id() -> None:
+    """AWS Braket adapter should fail closed when provider task id is missing."""
+
+    class FakeTask:
+        def state(self) -> str:
+            return "COMPLETED"
+
+        def result(self):
+            return type("FakeTaskResult", (), {"measurement_counts": {"0": 1}})()
+
+        def cancel(self) -> None:
+            self.cancelled = True
+
+    class FakeDevice:
+        name = "fake-braket-device"
+
+        def run(self, circuit, shots: int):
+            del circuit, shots
+            return FakeTask()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        BraketAwsHALAdapter(
+            hal.profile("aws_braket_ionq"),
+            device=FakeDevice(),
+        )
+    )
+    workload = braket_circuit_to_workload(_bell_circuit(), workload_id="aws_missing_id", shots=1)
+
+    with pytest.raises(ValueError, match="task id"):
+        hal.submit("aws_braket_ionq", workload, approval_id="approved-braket")
+
+
+def test_braket_status_normalisation_maps_provider_tokens() -> None:
+    """Braket status values should map to canonical HAL status values."""
+
+    from scpn_quantum_control.hardware import hal_braket as braket_mod
+
+    assert braket_mod._normalise_status("FINISHED") == "completed"
+    assert braket_mod._normalise_status("CANCELED") == "cancelled"

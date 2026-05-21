@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from datetime import datetime, timezone
@@ -105,14 +106,16 @@ class DWaveLeapHALAdapter:
         if not callable(sample_method):
             raise TypeError("D-Wave sampler object does not provide sample()")
         sample_set = sample_method(bqm, num_reads=workload.shots, label=workload.workload_id)
+        provider_job_id = _provider_job_id(sample_set)
+        hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
-            job_id=f"{self.backend_id}:{workload.workload_id}",
+            job_id=hal_job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
             metadata={
                 "approval_id": approval_id,
-                "provider_job_id": f"{self.backend_id}:{workload.workload_id}",
+                "provider_job_id": provider_job_id,
                 "execution_mode": DWAVE_EXECUTION_MODE,
                 "solver": self._solver,
                 "ir_format": workload.ir_format,
@@ -270,6 +273,21 @@ def _normalise_sample_counts(sample_set: object, variables: Sequence[str]) -> di
     if not counts:
         raise ValueError("D-Wave sample set did not contain any samples")
     return counts
+
+
+def _provider_job_id(sample_set: object) -> str:
+    info = getattr(sample_set, "info", None)
+    if isinstance(info, Mapping):
+        for key in ("problem_id", "id", "task_id"):
+            value = info.get(key)
+            if value is not None and str(value).strip():
+                return str(value).strip()
+    raise ValueError("D-Wave sample set does not expose a provider job id")
+
+
+def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
+    digest = hashlib.sha256(provider_job_id.encode("utf-8")).hexdigest()[:12]
+    return f"{backend_id}:{workload_id}:{digest}"
 
 
 def _sample_rows(sample_set: object) -> Iterable[tuple[Mapping[str, object], object]]:

@@ -17,6 +17,7 @@ from scpn_quantum_control.topology_control import (
     CouplingTopologyObjective,
     DegeneracyMode,
     NetworkCycleBackend,
+    ProjectedScipyOptimizer,
     ProjectedSPSAOptimizer,
     TopologyConstraintLedger,
     build_coupling_distance_matrix,
@@ -104,6 +105,7 @@ def test_objective_penalises_degenerate_zero_graph() -> None:
         ),
         source_matrix=K0,
         source_distance_weight=0.25,
+        allow_approximate_ph_backend=True,
     )
 
     zero_breakdown = objective.evaluate(np.zeros_like(K0))
@@ -133,6 +135,7 @@ def test_projected_spsa_is_deterministic_and_respects_constraints() -> None:
         ),
         source_matrix=K0,
         source_distance_weight=0.1,
+        allow_approximate_ph_backend=True,
     )
 
     first = ProjectedSPSAOptimizer(seed=123, max_steps=5).optimise(K0, objective)
@@ -145,3 +148,61 @@ def test_projected_spsa_is_deterministic_and_respects_constraints() -> None:
     assert first.steps[-1].objective.total == pytest.approx(
         objective.evaluate(first.final_matrix).total
     )
+
+
+def test_objective_rejects_approximate_backend_without_explicit_opt_in() -> None:
+    K0 = np.array(
+        [
+            [0.0, 0.3, 0.0, 0.3],
+            [0.3, 0.0, 0.3, 0.0],
+            [0.0, 0.3, 0.0, 0.3],
+            [0.3, 0.0, 0.3, 0.0],
+        ]
+    )
+    objective = CouplingTopologyObjective(
+        ph_backend=NetworkCycleBackend(threshold=0.2),
+        ledger=TopologyConstraintLedger(),
+        source_matrix=K0,
+    )
+    with pytest.raises(ValueError, match="allow_approximate_ph_backend"):
+        objective.evaluate(K0)
+
+
+def test_projected_scipy_optimizer_records_callback_trace(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    K0 = np.array(
+        [
+            [0.0, 0.3, 0.0, 0.3],
+            [0.3, 0.0, 0.3, 0.0],
+            [0.0, 0.3, 0.0, 0.3],
+            [0.3, 0.0, 0.3, 0.0],
+        ]
+    )
+    objective = CouplingTopologyObjective(
+        ph_backend=NetworkCycleBackend(threshold=0.2),
+        ledger=TopologyConstraintLedger(),
+        source_matrix=K0,
+        allow_approximate_ph_backend=True,
+    )
+
+    class _FakeResult:
+        def __init__(self, x: np.ndarray) -> None:
+            self.x = x
+
+    def _fake_minimize(fun, x0, method, callback, options):  # type: ignore[no-untyped-def]
+        assert method == "COBYLA"
+        assert options == {"maxiter": 5}
+        x1 = np.asarray(x0, dtype=np.float64) * 0.95
+        x2 = np.asarray(x0, dtype=np.float64) * 0.90
+        callback(x1)
+        callback(x2)
+        _ = fun(x2)
+        return _FakeResult(x2)
+
+    monkeypatch.setattr("scipy.optimize.minimize", _fake_minimize)
+
+    trace = ProjectedScipyOptimizer(maxiter=5).optimise(K0, objective)
+
+    assert len(trace.steps) == 2
+    np.testing.assert_allclose(trace.final_matrix, trace.steps[-1].matrix)

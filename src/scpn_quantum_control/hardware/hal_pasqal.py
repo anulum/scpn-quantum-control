@@ -9,12 +9,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any, cast
 
+from ._count_integrity import strict_non_negative_count
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 PASQAL_PULSER_SCHEMA = "pulser_sequence_plan_v1"
@@ -85,9 +87,10 @@ class PasqalPulserHALAdapter:
             shots=workload.shots,
             job_name=workload.workload_id,
         )
-        provider_job_id = f"{self.backend_id}:{workload.workload_id}"
+        provider_job_id = _provider_job_id(provider_job)
+        hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
-            job_id=provider_job_id,
+            job_id=hal_job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="submitted",
@@ -294,11 +297,9 @@ def _normalise_counts(raw: object) -> dict[str, int]:
     counts: dict[str, int] = {}
     for bitstring, count in raw.items():
         key = str(bitstring)
-        value = int(count)
+        value = strict_non_negative_count(count)
         if not key:
             raise ValueError("counts keys must be non-empty bitstrings")
-        if value < 0:
-            raise ValueError("counts values must be non-negative integers")
         counts[key] = value
     return counts
 
@@ -307,9 +308,11 @@ def _normalise_status(value: object) -> str:
     text = str(value).split(".")[-1].lower()
     return {
         "done": "completed",
+        "complete": "completed",
         "completed": "completed",
         "finished": "completed",
         "success": "completed",
+        "succeeded": "completed",
         "queued": "queued",
         "pending": "queued",
         "running": "running",
@@ -317,7 +320,7 @@ def _normalise_status(value: object) -> str:
         "canceled": "cancelled",
         "failed": "failed",
         "error": "failed",
-    }.get(text, text or "unknown")
+    }.get(text, "unknown")
 
 
 def _coerce_int(value: object, *, field_name: str) -> int:
@@ -340,6 +343,21 @@ def _coerce_float(value: object, *, field_name: str) -> float:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _provider_job_id(provider_job: object) -> str:
+    for attr in ("id", "job_id", "handle"):
+        value = getattr(provider_job, attr, None)
+        if callable(value):
+            value = value()
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    raise ValueError("Pasqal provider job does not expose a provider job id")
+
+
+def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
+    digest = hashlib.sha256(provider_job_id.encode("utf-8")).hexdigest()[:12]
+    return f"{backend_id}:{workload_id}:{digest}"
 
 
 __all__ = [

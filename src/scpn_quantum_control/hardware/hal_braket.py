@@ -13,6 +13,7 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
+from ._count_integrity import strict_non_negative_count
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 
@@ -62,7 +63,7 @@ class BraketLocalHALAdapter:
         task = device.run(circuit, shots=workload.shots)
         task_result = task.result()
         counts = _extract_braket_counts(task_result)
-        task_id = str(getattr(task, "id", f"braket-local-{workload.workload_id}"))
+        task_id = _task_id(task)
         job = QuantumJobRef(
             job_id=task_id,
             backend_id=self.backend_id,
@@ -152,7 +153,7 @@ class BraketAwsHALAdapter:
         circuit = _workload_to_braket_circuit(workload)
         device = self._device or self._load_device()
         task = device.run(circuit, shots=workload.shots)
-        task_id = str(getattr(task, "id", f"braket-task-{workload.workload_id}"))
+        task_id = _task_id(task)
         job = QuantumJobRef(
             job_id=task_id,
             backend_id=self.backend_id,
@@ -174,7 +175,7 @@ class BraketAwsHALAdapter:
         """Return the current status for a submitted backend job."""
         task = self._task(job)
         state = task.state()
-        return str(getattr(state, "name", state)).lower()
+        return _normalise_status(getattr(state, "name", state))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
@@ -255,7 +256,36 @@ def _extract_braket_counts(task_result: Any) -> dict[str, int]:
     counts = getattr(task_result, "measurement_counts", None)
     if counts is None:
         raise ValueError("Braket task result does not contain measurement_counts")
-    return {str(bitstring): int(count) for bitstring, count in counts.items()}
+    return {
+        str(bitstring): strict_non_negative_count(count) for bitstring, count in counts.items()
+    }
+
+
+def _task_id(task: Any) -> str:
+    task_id = getattr(task, "id", None)
+    if task_id:
+        return str(task_id)
+    raise ValueError("Braket task object does not expose a provider task id")
+
+
+def _normalise_status(value: object, *, default: str = "unknown") -> str:
+    text = str(value or default).strip().lower()
+    return {
+        "complete": "completed",
+        "completed": "completed",
+        "success": "completed",
+        "succeeded": "completed",
+        "finished": "completed",
+        "running": "running",
+        "in_progress": "running",
+        "submitted": "submitted",
+        "queued": "queued",
+        "pending": "queued",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, default)
 
 
 def _device_name(device: Any) -> str:

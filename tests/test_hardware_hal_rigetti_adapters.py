@@ -20,6 +20,7 @@ from scpn_quantum_control.hardware.hal_rigetti import RigettiQCSHALAdapter, rige
 
 class _FakeRigettiResult:
     def __init__(self, rows: list[list[int]]) -> None:
+        self.job_id = "rigetti-provider-job-1"
         self._rows = rows
 
     def get_register_map(self) -> dict[str, list[list[int]]]:
@@ -28,6 +29,7 @@ class _FakeRigettiResult:
 
 class _FakeRigettiReadoutDataResult:
     def __init__(self, rows: list[list[int]]) -> None:
+        self.job_id = "rigetti-provider-job-2"
         self.readout_data = {"ro": rows}
 
 
@@ -121,9 +123,10 @@ def test_rigetti_qcs_adapter_runs_injected_quantum_computer_and_approval_gate() 
     assert cancelled.status == "cancelled"
     assert quantum_computer.compiled == [f"{workload.program}\nNUMSHOTS 3"]
     assert quantum_computer.ran == [f"compiled::{workload.program}\nNUMSHOTS 3"]
+    assert job.job_id.startswith("rigetti_qcs:rigetti_bell:")
     assert job.metadata == {
         "approval_id": "approved-rigetti",
-        "provider_job_id": "rigetti_qcs:rigetti_bell",
+        "provider_job_id": "rigetti-provider-job-1",
         "execution_mode": "rigetti_pyquil_qcs",
         "quantum_computer": "Ankaa-3",
         "ir_format": "quil",
@@ -377,3 +380,14 @@ def test_rigetti_qcs_adapter_requires_execution_route() -> None:
 
     with pytest.raises(ValueError, match="quantum_computer"):
         RigettiQCSHALAdapter(profile)
+
+
+def test_rigetti_provider_job_id_extraction_requires_identifier() -> None:
+    """Rigetti provider job id extraction should fail closed when id is unavailable."""
+
+    assert (
+        rigetti_mod._provider_job_id(type("Result", (), {"job_id": "rigetti-provider-3"})())
+        == "rigetti-provider-3"
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        rigetti_mod._provider_job_id(object())

@@ -49,6 +49,7 @@ def test_artifact_export_round_trips_with_stable_digest() -> None:
         ph_backend=NetworkCycleBackend(threshold=0.2),
         ledger=TopologyConstraintLedger(bounds=CouplingGraphBounds(0.0, 0.5)),
         source_matrix=K0,
+        allow_approximate_ph_backend=True,
     )
     trace = ProjectedSPSAOptimizer(seed=7, max_steps=2).optimise(K0, objective)
 
@@ -80,6 +81,7 @@ def test_topological_policy_projects_qsnn_recurrent_weights() -> None:
                 hardware_edges={(0, 1), (1, 2), (2, 3), (0, 3)},
             ),
             source_matrix=_square_coupling(),
+            allow_approximate_ph_backend=True,
         ),
         optimizer=ProjectedSPSAOptimizer(seed=5, max_steps=2),
     )
@@ -129,6 +131,23 @@ def test_hardware_manifest_accepts_provider_neutral_descriptor() -> None:
 
     assert validated.backend_name == "local_aer"
     assert validated.live_submission_allowed is False
+
+
+def test_hardware_manifest_rejects_live_submission_flag() -> None:
+    manifest = TopologyHardwareManifest(
+        backend_name="local_aer",
+        qubits=(0, 1, 2, 3),
+        coupling_edges=((0, 1), (1, 2), (2, 3)),
+        shots=1024,
+        qpu_minute_ceiling=0.0,
+        preregistration_id="no-qpu-smoke",
+        objective_sha256="b" * 64,
+        require_readout_calibration=False,
+        live_submission_allowed=True,
+    )
+
+    with pytest.raises(ValueError, match="live_submission_allowed"):
+        validate_topology_hardware_manifest(manifest)
 
 
 def test_legacy_wrapper_has_no_cross_repo_dependency() -> None:

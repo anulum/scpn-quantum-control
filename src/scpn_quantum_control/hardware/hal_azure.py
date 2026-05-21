@@ -13,6 +13,7 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
+from ._count_integrity import strict_non_negative_count
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 InputParamsFactory = Callable[[QuantumWorkload], Mapping[str, object] | None]
@@ -90,7 +91,7 @@ class AzureQuantumHALAdapter:
             input_params=input_params,
             **self._submit_kwargs,
         )
-        job_id = _job_id(provider_job, workload.workload_id)
+        job_id = _job_id(provider_job)
         job = QuantumJobRef(
             job_id=job_id,
             backend_id=self.backend_id,
@@ -117,12 +118,12 @@ class AzureQuantumHALAdapter:
         details = getattr(provider_job, "details", None)
         detail_status = getattr(details, "status", None)
         if detail_status is not None:
-            return str(detail_status).lower()
+            return _normalise_status(detail_status)
         status = getattr(provider_job, "status", None)
         if callable(status):
-            return str(status()).lower()
+            return _normalise_status(status())
         if status is not None:
-            return str(status).lower()
+            return _normalise_status(status)
         return self._jobs[job.job_id].status
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
@@ -178,14 +179,14 @@ class AzureQuantumHALAdapter:
         return provider_job
 
 
-def _job_id(provider_job: Any, fallback: str) -> str:
+def _job_id(provider_job: Any) -> str:
     for attr in ("id", "job_id", "name"):
         value = getattr(provider_job, attr, None)
         if callable(value):
             value = value()
         if value:
             return str(value)
-    return f"azure-job-{fallback}"
+    raise ValueError("Azure Quantum submit() returned a job object without an id")
 
 
 def _job_results(provider_job: Any) -> Any:
@@ -201,9 +202,15 @@ def _extract_counts(payload: Any) -> dict[str, int]:
         for key in ("counts", "histogram", "measurement_counts", "MeasurementCounts"):
             candidate = payload.get(key)
             if isinstance(candidate, Mapping):
-                return {str(bitstring): int(count) for bitstring, count in candidate.items()}
-        if all(isinstance(key, str) and isinstance(value, int) for key, value in payload.items()):
-            return {str(bitstring): int(count) for bitstring, count in payload.items()}
+                return {
+                    str(bitstring): strict_non_negative_count(count)
+                    for bitstring, count in candidate.items()
+                }
+        if all(isinstance(key, str) for key in payload):
+            return {
+                str(bitstring): strict_non_negative_count(count)
+                for bitstring, count in payload.items()
+            }
     raise ValueError("Azure Quantum result payload does not contain shot counts")
 
 
@@ -218,6 +225,26 @@ def _target_name(target: Any) -> str:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _normalise_status(value: object, *, default: str = "unknown") -> str:
+    text = str(value or default).strip().lower()
+    return {
+        "complete": "completed",
+        "completed": "completed",
+        "success": "completed",
+        "succeeded": "completed",
+        "finished": "completed",
+        "running": "running",
+        "in_progress": "running",
+        "submitted": "submitted",
+        "queued": "queued",
+        "pending": "queued",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, default)
 
 
 __all__ = [

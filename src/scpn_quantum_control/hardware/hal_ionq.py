@@ -93,7 +93,7 @@ class IonQCloudHALAdapter:
         job_id = str(response.get("id") or "")
         if not job_id:
             raise ValueError("IonQ job creation response did not contain an id")
-        status = str(response.get("status") or "submitted").lower()
+        status = _normalise_status(response.get("status"))
         job = QuantumJobRef(
             job_id=job_id,
             backend_id=self.backend_id,
@@ -115,7 +115,7 @@ class IonQCloudHALAdapter:
     def status(self, job: QuantumJobRef) -> str:
         """Return the current status for a submitted backend job."""
         payload = self._get_json(f"{self._base_url}/jobs/{job.job_id}")
-        return str(payload.get("status") or "unknown").lower()
+        return _normalise_status(payload.get("status"))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return the completed result for a submitted backend job."""
@@ -125,7 +125,7 @@ class IonQCloudHALAdapter:
         stored = self._job(job)
         probabilities = self._get_json(f"{self._base_url}/jobs/{job.job_id}/results/probabilities")
         shots = _int_metadata(stored.metadata.get("shots"), fallback=0) or _job_shots(stored)
-        n_qubits = _int_metadata(stored.metadata.get("n_qubits"), fallback=0)
+        n_qubits = _job_n_qubits(stored)
         counts = _probabilities_to_counts(probabilities, shots, n_qubits)
         result = QuantumJobResult(
             job=stored,
@@ -151,7 +151,7 @@ class IonQCloudHALAdapter:
             job_id=job.job_id,
             backend_id=job.backend_id,
             workload_id=job.workload_id,
-            status=str(payload.get("status") or "canceled").lower(),
+            status=_normalise_status(payload.get("status"), default="cancelled"),
             metadata=job.metadata,
         )
         self._jobs[job.job_id] = cancelled
@@ -325,6 +325,16 @@ def _job_shots(job: QuantumJobRef) -> int:
     return _coerce_int(shots, field_name="IonQ shots")
 
 
+def _job_n_qubits(job: QuantumJobRef) -> int:
+    n_qubits = job.metadata.get("n_qubits")
+    if n_qubits is None:
+        raise ValueError("IonQ job metadata does not contain n_qubits")
+    value = _coerce_int(n_qubits, field_name="IonQ n_qubits")
+    if value <= 0:
+        raise ValueError("IonQ n_qubits must be positive")
+    return value
+
+
 def _coerce_int(value: object, *, field_name: str) -> int:
     if isinstance(value, bool):
         raise ValueError(f"{field_name} must be an integer")
@@ -349,6 +359,25 @@ def _coerce_float(value: object, *, field_name: str) -> float:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _normalise_status(value: object, *, default: str = "unknown") -> str:
+    text = str(value or default).strip().lower()
+    return {
+        "complete": "completed",
+        "completed": "completed",
+        "succeeded": "completed",
+        "success": "completed",
+        "running": "running",
+        "in_progress": "running",
+        "submitted": "submitted",
+        "queued": "queued",
+        "pending": "queued",
+        "cancelled": "cancelled",
+        "canceled": "cancelled",
+        "failed": "failed",
+        "error": "failed",
+    }.get(text, default)
 
 
 __all__ = [

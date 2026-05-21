@@ -54,6 +54,10 @@ def validate_topology_hardware_manifest(
         errors.append("preregistration_id is required")
     if len(manifest.objective_sha256) != 64:
         errors.append("objective_sha256 must be a SHA-256 hex digest")
+    if manifest.live_submission_allowed:
+        errors.append(
+            "live_submission_allowed must remain False for no-submit topology manifest validation"
+        )
     if errors:
         raise ValueError("; ".join(errors))
 
@@ -77,7 +81,7 @@ def validate_topology_hardware_manifest(
         preregistration_id=manifest.preregistration_id,
         objective_sha256=manifest.objective_sha256,
         require_readout_calibration=manifest.require_readout_calibration,
-        live_submission_allowed=False,
+        live_submission_allowed=manifest.live_submission_allowed,
     )
 
 

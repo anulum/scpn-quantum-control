@@ -9,9 +9,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
+from time import time_ns
 from typing import Any, cast
 
 import numpy as np
@@ -100,13 +102,15 @@ class PennyLaneDeviceHALAdapter:
         counts = _execute_native_gates(
             qml, device, instructions, workload.n_qubits, workload.shots
         )
-        job_id = f"pennylane:{workload.workload_id}"
+        provider_job_id = _provider_job_id(workload)
+        job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
             job_id=job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
             metadata={
+                "provider_job_id": provider_job_id,
                 "execution_mode": "pennylane_device",
                 "ir_format": workload.ir_format,
                 "device_name": self.device_name,
@@ -276,6 +280,17 @@ def _require_params(gate: str, params: Sequence[float], expected: int) -> None:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _provider_job_id(workload: QuantumWorkload) -> str:
+    program_digest = hashlib.sha256(workload.program.encode("utf-8")).hexdigest()[:12]
+    submitted_ns = time_ns()
+    return f"pennylane-local:{workload.workload_id}:{program_digest}:{submitted_ns}"
+
+
+def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
+    digest = hashlib.sha256(f"{backend_id}|{provider_job_id}".encode()).hexdigest()[:12]
+    return f"{backend_id}:{workload_id}:{digest}"
 
 
 def _load_pennylane() -> Any:

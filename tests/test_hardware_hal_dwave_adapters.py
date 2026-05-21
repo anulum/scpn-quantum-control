@@ -28,6 +28,8 @@ class _FakeSampleRow:
 
 
 class _FakeSampleSet:
+    info = {"problem_id": "dwave-problem-1"}
+
     def data(self, fields: list[str]) -> list[_FakeSampleRow]:
         assert fields == ["sample", "num_occurrences"]
         return [
@@ -78,7 +80,8 @@ def test_dwave_leap_adapter_samples_injected_sampler_with_approval() -> None:
     cancelled = hal.cancel(job)
 
     assert job.status == "completed"
-    assert job.job_id == "dwave_leap:dwave_pair"
+    assert job.job_id.startswith("dwave_leap:dwave_pair:")
+    assert job.metadata["provider_job_id"] == "dwave-problem-1"
     assert job.metadata["execution_mode"] == "dwave_leap_bqm"
     assert job.metadata["solver"] == "Advantage_system_test"
     assert result.counts == {"01": 3, "10": 5}
@@ -154,6 +157,8 @@ def test_dwave_leap_adapter_validates_bqm_payload_and_counts() -> None:
         )
 
     class BadSampleSet:
+        info = {"problem_id": "dwave-bad-counts"}
+
         def data(self, fields: list[str]) -> list[_FakeSampleRow]:
             del fields
             return [_FakeSampleRow({"0": 0}, -1)]
@@ -212,3 +217,16 @@ def test_dwave_leap_adapter_default_builder_is_sdk_gated(
     monkeypatch.setattr("scpn_quantum_control.hardware.hal_dwave.import_module", fake_import)
     with pytest.raises(RuntimeError, match="DWaveSampler"):
         adapter.submit(workload, approval_id="approved")
+
+
+def test_dwave_provider_job_id_extraction_requires_identifier() -> None:
+    """D-Wave provider job id extraction should fail closed when id is unavailable."""
+
+    from scpn_quantum_control.hardware import hal_dwave as dwave_mod
+
+    assert (
+        dwave_mod._provider_job_id(type("SampleSet", (), {"info": {"problem_id": "dw-2"}})())
+        == "dw-2"
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        dwave_mod._provider_job_id(type("SampleSet", (), {"info": {}})())

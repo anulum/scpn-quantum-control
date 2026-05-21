@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
 from importlib import import_module
@@ -82,15 +83,17 @@ class RigettiQCSHALAdapter:
         program = self._build_program(workload)
         executable = self._compile(program)
         raw_result = self._qc().run(executable)
+        provider_job_id = _provider_job_id(raw_result)
+        hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         counts = _readout_counts(raw_result, self._readout_register, workload.n_qubits)
         job = QuantumJobRef(
-            job_id=f"{self.backend_id}:{workload.workload_id}",
+            job_id=hal_job_id,
             backend_id=self.backend_id,
             workload_id=workload.workload_id,
             status="completed",
             metadata={
                 "approval_id": approval_id,
-                "provider_job_id": f"{self.backend_id}:{workload.workload_id}",
+                "provider_job_id": provider_job_id,
                 "execution_mode": RIGETTI_EXECUTION_MODE,
                 "quantum_computer": self._quantum_computer_name,
                 "ir_format": workload.ir_format,
@@ -228,6 +231,27 @@ def _normalise_readout_row(row: Sequence[Any], n_qubits: int) -> str:
     if any(bit not in (0, 1) for bit in bits):
         raise ValueError("Rigetti readout rows must contain binary values")
     return "".join(str(bit) for bit in bits)
+
+
+def _provider_job_id(raw_result: object) -> str:
+    for attr in ("job_id", "id", "task_id"):
+        value = getattr(raw_result, attr, None)
+        if callable(value):
+            value = value()
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    metadata = getattr(raw_result, "metadata", None)
+    if isinstance(metadata, Mapping):
+        for key in ("job_id", "id", "task_id"):
+            value = metadata.get(key)
+            if value is not None and str(value).strip():
+                return str(value).strip()
+    raise ValueError("Rigetti result does not expose a provider job id")
+
+
+def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
+    digest = hashlib.sha256(provider_job_id.encode("utf-8")).hexdigest()[:12]
+    return f"{backend_id}:{workload_id}:{digest}"
 
 
 def _utc_now() -> str:
