@@ -190,3 +190,21 @@ def test_oqc_provider_job_id_extraction_requires_identifier() -> None:
     )
     with pytest.raises(ValueError, match="provider job id"):
         oqc_mod._provider_job_id(object())
+
+
+def test_oqc_adapter_rejects_shot_mismatch() -> None:
+    """OQC adapter must fail closed when decoded counts diverge from requested shots."""
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    client = _FakeOQCClient()
+    hal.register_backend(OQCHALAdapter(hal.profile("oqc_cloud"), client=client, target="Lucy"))
+    workload = oqc_openqasm3_workload(
+        _OPENQASM3,
+        workload_id="oqc_shot_mismatch",
+        n_qubits=2,
+        shots=7,
+    )
+
+    job = hal.submit("oqc_cloud", workload, approval_id="approved-oqc")
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)

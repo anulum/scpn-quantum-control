@@ -254,3 +254,21 @@ def test_iqm_status_normalisation_maps_provider_tokens() -> None:
 
     assert iqm_mod._normalise_status("SUCCEEDED") == "completed"
     assert iqm_mod._normalise_status("CANCELED") == "cancelled"
+
+
+def test_iqm_adapter_rejects_shot_mismatch() -> None:
+    """IQM adapter must fail closed when decoded counts diverge from requested shots."""
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    backend = _FakeIQMBackend()
+    adapter = IQMHALAdapter(hal.profile("iqm_cloud"), backend=backend, timeout_s=9.5)
+    hal.register_backend(adapter)
+    workload = iqm_qiskit_workload(
+        _bell_circuit(),
+        workload_id="iqm_shot_mismatch",
+        shots=15,
+    )
+
+    job = hal.submit("iqm_cloud", workload, approval_id="approved-iqm")
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)
