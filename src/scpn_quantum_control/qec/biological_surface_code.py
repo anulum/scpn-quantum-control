@@ -150,6 +150,11 @@ class BiologicalMWPMDecoder:
                     pass
 
         matching = nx.max_weight_matching(matching_graph, maxcardinality=True)
+        if len(matching) * 2 != len(defects):
+            raise ValueError(
+                "syndrome_x defects cannot be perfectly matched on the biological graph; "
+                "check connectivity, thresholding, or boundary model assumptions."
+            )
 
         for u, v in matching:
             path = paths[(u, v)]

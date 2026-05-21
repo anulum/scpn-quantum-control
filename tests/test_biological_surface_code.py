@@ -217,3 +217,28 @@ def test_surface_code_rejects_malformed_coupling_matrix(K, match):
     threshold = float("nan") if match == "threshold" else 1e-5
     with pytest.raises(ValueError, match=match):
         BiologicalSurfaceCode(K, threshold=threshold)
+
+
+def test_decoder_raises_when_perfect_matching_is_unavailable(monkeypatch):
+    """Decoder must reject incomplete MWPM results for non-empty defect sets."""
+    K = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=float)
+    code = BiologicalSurfaceCode(K)
+    decoder = BiologicalMWPMDecoder(code)
+    syn_x = np.array([1, 0, 1], dtype=np.int8)
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.qec.biological_surface_code.nx.max_weight_matching",
+        lambda graph, maxcardinality: set(),
+    )
+
+    with pytest.raises(ValueError, match="perfectly matched"):
+        decoder.decode_z_errors(syn_x)
+
+
+def test_qec_namespace_exports_biological_surface_code():
+    """Biological surface-code APIs must be available through qec package exports."""
+    from scpn_quantum_control.qec import BiologicalMWPMDecoder as ExportedDecoder
+    from scpn_quantum_control.qec import BiologicalSurfaceCode as ExportedCode
+
+    assert ExportedCode is BiologicalSurfaceCode
+    assert ExportedDecoder is BiologicalMWPMDecoder
