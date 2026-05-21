@@ -267,3 +267,15 @@ def test_ionq_direct_adapter_rejects_shot_mismatch() -> None:
 
     with pytest.raises(ValueError, match="shot count mismatch"):
         hal.result(job)
+
+
+def test_ionq_backend_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("ionq_cloud")
+    with pytest.raises(ValueError, match="IonQ backend"):
+        IonQCloudHALAdapter(profile, api_key="test-key", backend="qpu.\naria-1")
+
+
+def test_ionq_backend_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("ionq_cloud")
+    adapter = IonQCloudHALAdapter(profile, api_key="test-key", backend="  simulator  ")
+    assert adapter._backend == "simulator"

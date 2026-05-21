@@ -76,7 +76,7 @@ class IonQCloudHALAdapter:
         self.backend_id = profile.backend_id
         self._client = client
         self._api_key = resolved_api_key
-        self._backend = backend
+        self._backend = strict_provider_job_id(backend, field_name="IonQ backend")
         self._base_url = base_url.rstrip("/")
         self._settings = dict(settings or {})
         self.timeout_s = timeout_s
