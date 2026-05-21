@@ -266,3 +266,23 @@ def test_qbraid_adapter_rejects_shot_mismatch() -> None:
     job = hal.submit("qbraid_ionq", workload, approval_id="approved-qbraid")
     with pytest.raises(ValueError, match="shot count mismatch"):
         hal.result(job)
+
+
+def test_qbraid_adapter_device_id_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("qbraid_ionq")
+    with pytest.raises(ValueError, match="qBraid device id"):
+        QbraidRuntimeHALAdapter(
+            profile,
+            provider=object(),
+            device_id="ionq_qpu.\naria-1",
+        )
+
+
+def test_qbraid_adapter_device_id_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("qbraid_ionq")
+    adapter = QbraidRuntimeHALAdapter(
+        profile,
+        provider=object(),
+        device_id="  ionq_qpu.aria-1  ",
+    )
+    assert adapter._device_id == "ionq_qpu.aria-1"

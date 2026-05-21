@@ -70,7 +70,11 @@ class QbraidRuntimeHALAdapter:
         self.backend_id = profile.backend_id
         self._device = device
         self._provider = provider
-        self._device_id = device_id
+        self._device_id = (
+            strict_provider_job_id(device_id, field_name="qBraid device id")
+            if device_id is not None
+            else None
+        )
         self._provider_factory = provider_factory
         self._program_factory = program_factory
         self._submit_kwargs = dict(submit_kwargs or {})
