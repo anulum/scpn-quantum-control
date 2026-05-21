@@ -75,3 +75,15 @@ def test_provider_id_extractors_trim_padding_and_preserve_value() -> None:
     assert hal_strangeworks._job_id(padded) == "job-42"
     assert hal_cirq._provider_job_id(padded) == "job-42"
     assert hal_ionq._provider_job_id_from_response({"id": "  job-42  "}) == "job-42"
+    assert hal_dwave._provider_job_id(_WithAttr(info={"problem_id": "  job-42  "})) == "job-42"
+    assert hal_iqm._job_id(_WithAttr(job_id="  job-42  ")) == "job-42"
+    assert hal_oqc._provider_job_id(padded) == "job-42"
+    assert hal_pasqal._provider_job_id(padded) == "job-42"
+    assert hal_quandela._provider_job_id(padded) == "job-42"
+    assert hal_quera_bloqade._provider_job_id(padded) == "job-42"
+    assert hal_quantinuum._provider_job_id(padded) == "job-42"
+    assert hal_rigetti._provider_job_id(padded) == "job-42"
+    assert (
+        hal_qiskit._provider_job_id(_WithAttr(job_id="  job-42  "), provider_name="qiskit")
+        == "job-42"
+    )
