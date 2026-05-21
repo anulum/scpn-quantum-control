@@ -244,6 +244,7 @@ def _normalise_status(value: object) -> str:
         "running": "running",
         "in_progress": "running",
         "in-progress": "running",
+        "inprogress": "running",
         "cancelled": "cancelled",
         "canceled": "cancelled",
         "failed": "failed",
