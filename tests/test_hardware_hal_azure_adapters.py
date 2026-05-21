@@ -147,6 +147,29 @@ def test_azure_provider_job_id_trims_padding() -> None:
     assert azure_mod._job_id(PaddedJob()) == "azure-job-42"
 
 
+def test_azure_target_name_rejects_control_characters() -> None:
+    """Azure target names must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_azure as azure_mod
+
+    class BadTarget:
+        name = "ionq.\nsimulator"
+
+    with pytest.raises(ValueError, match="target name"):
+        azure_mod._target_name(BadTarget())
+
+
+def test_azure_target_name_trims_padding() -> None:
+    """Azure target names should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_azure as azure_mod
+
+    class PaddedTarget:
+        name = "  ionq.simulator  "
+
+    assert azure_mod._target_name(PaddedTarget()) == "ionq.simulator"
+
+
 def test_azure_adapter_rejects_shot_mismatch() -> None:
     """Azure adapter must fail closed when decoded counts diverge from requested shots."""
 

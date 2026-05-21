@@ -242,10 +242,10 @@ def _extract_counts(payload: Any, *, n_qubits: int) -> dict[str, int]:
 def _target_name(target: Any) -> str:
     name = getattr(target, "name", None)
     if callable(name):
-        return str(name())
+        return strict_provider_job_id(name(), field_name="Azure target name")
     if name is not None:
-        return str(name)
-    return str(target.__class__.__name__)
+        return strict_provider_job_id(name, field_name="Azure target name")
+    return strict_provider_job_id(target.__class__.__name__, field_name="Azure target name")
 
 
 def _utc_now() -> str:
