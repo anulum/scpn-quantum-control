@@ -285,3 +285,19 @@ def test_dwave_leap_adapter_rejects_shot_mismatch() -> None:
             ),
             approval_id="approved-dwave",
         )
+
+
+def test_dwave_solver_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("dwave_leap")
+    with pytest.raises(ValueError, match="D-Wave solver"):
+        DWaveLeapHALAdapter(profile, sampler=_FakeSampler(), solver="Advantage\nbad")
+
+
+def test_dwave_solver_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("dwave_leap")
+    adapter = DWaveLeapHALAdapter(
+        profile,
+        sampler=_FakeSampler(),
+        solver="  Advantage_system6.4  ",
+    )
+    assert adapter._solver == "Advantage_system6.4"

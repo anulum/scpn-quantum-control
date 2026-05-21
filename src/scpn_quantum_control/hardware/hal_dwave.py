@@ -92,7 +92,7 @@ class DWaveLeapHALAdapter:
         self._sampler = sampler
         self._sampler_factory = sampler_factory
         self._bqm_factory = bqm_factory
-        self._solver = solver or "default"
+        self._solver = strict_provider_job_id(solver or "default", field_name="D-Wave solver")
         self._jobs: dict[str, QuantumJobRef] = {}
         self._results: dict[str, QuantumJobResult] = {}
 
