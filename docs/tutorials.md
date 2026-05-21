@@ -661,7 +661,7 @@ in JSON alongside the QASM files.
 
 ## Examples
 
-21 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
+22 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
 
 | # | Script | What it demonstrates |
 |---|--------|---------------------|
@@ -686,3 +686,4 @@ in JSON alongside the QASM files.
 | 19 | `sync_witness_operator` | Synchronisation witness operator demo |
 | 20 | `quantum_persistent_homology` | Persistent homology analysis |
 | 21 | `biological_qec_scpn16` | Biological surface code on 16-layer SCPN |
+| 22 | `quantum_neuromorphic_bridge` | QSNN LIF, trace STDP, and dynamic coupling bridge |

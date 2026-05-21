@@ -15,9 +15,8 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any, cast
 
-from qiskit import QuantumCircuit, qasm3, transpile
+from qiskit import QuantumCircuit, qasm3, qpy, transpile
 from qiskit.qpy import dump as qpy_dump
-from qiskit.qpy import load as qpy_load
 
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 from .runner import _extract_counts
@@ -268,7 +267,7 @@ def _circuit_to_qpy_b64(circuit: QuantumCircuit) -> str:
 def _qpy_b64_to_circuit(payload: str) -> QuantumCircuit:
     try:
         data = base64.b64decode(payload.encode("ascii"), validate=True)
-        circuits = qpy_load(io.BytesIO(data))
+        circuits = _reviewed_qpy_load_circuits(data)
     except Exception as exc:
         raise ValueError("qiskit_qpy workload could not be decoded") from exc
     if len(circuits) != 1:
@@ -277,6 +276,12 @@ def _qpy_b64_to_circuit(payload: str) -> QuantumCircuit:
     if not isinstance(circuit, QuantumCircuit):
         raise TypeError("qiskit_qpy payload did not decode to a QuantumCircuit")
     return circuit
+
+
+def _reviewed_qpy_load_circuits(data: bytes) -> list[QuantumCircuit]:
+    """Decode trusted in-process QPY bytes behind the reviewed HAL wrapper."""
+
+    return cast(list[QuantumCircuit], qpy.load(io.BytesIO(data)))
 
 
 def _default_aer_backend() -> Any:

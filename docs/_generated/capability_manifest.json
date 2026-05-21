@@ -1,20 +1,20 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 27,
-    "example_files": 22,
+    "domain_package_families": 28,
+    "example_files": 23,
     "github_workflows": 18,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 39,
     "paper0_validation_modules": 466,
-    "public_api_exports": 257,
-    "public_documentation_pages": 212,
-    "python_model_classes": 1402,
-    "python_model_source_modules": 750,
+    "public_api_exports": 264,
+    "public_documentation_pages": 223,
+    "python_model_classes": 1427,
+    "python_model_source_modules": 758,
     "rust_pyo3_model_wrappers": 48,
     "rust_source_modules": 24,
-    "test_files": 1854
+    "test_files": 1860
   },
   "documentation": {
     "examples": [
@@ -39,6 +39,7 @@
       "examples/19_sync_witness_operator.py",
       "examples/20_quantum_persistent_homology.py",
       "examples/21_biological_qec_scpn16.py",
+      "examples/22_quantum_neuromorphic_bridge.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -180,6 +181,10 @@
       "docs/campaigns/ibm_phase2_preregistered_manifest_2026-05-05.md",
       "docs/campaigns/ibm_phase2_scaling_bc_manifest_2026-05-05.md",
       "docs/campaigns/ibm_popcount_control_manifest_2026-05-05.md",
+      "docs/campaigns/large_system_submission_extension_readiness_20260520T193857Z.md",
+      "docs/campaigns/large_system_submission_extension_readiness_20260520T193903Z.md",
+      "docs/campaigns/large_system_submission_extension_readiness_20260520T193909Z.md",
+      "docs/campaigns/large_system_submission_extension_runbook_2026-05-20.md",
       "docs/campaigns/layer_selective_qubit_assignment_prereg_2026-05-06.md",
       "docs/campaigns/multicircuit_qec_prereg_2026-05-06.md",
       "docs/campaigns/next_validation_protocols_2026-05-05.md",
@@ -196,6 +201,13 @@
       "docs/campaigns/phase3_entanglement_zne_manifest_2026-05-20_ibm_kingston_zne_repeat.md",
       "docs/campaigns/phase3_entanglement_zne_third_backend_kingston_2026-05-20.md",
       "docs/campaigns/phase3_guess_dla_manifest_2026-05-07.md",
+      "docs/campaigns/phase3_large_system_manifest_20260520T195233Z_ibm_fez_n6.md",
+      "docs/campaigns/phase3_large_system_manifest_20260520T195245Z_ibm_fez_n8.md",
+      "docs/campaigns/phase3_large_system_manifest_20260520T195300Z_ibm_marrakesh_n6.md",
+      "docs/campaigns/phase3_large_system_manifest_20260520T195312Z_ibm_marrakesh_n8.md",
+      "docs/campaigns/phase3_large_system_manifest_20260520T201613Z_ibm_kingston_n6.md",
+      "docs/campaigns/phase3_large_system_manifest_20260520T201657Z_ibm_marrakesh_n8.md",
+      "docs/campaigns/phase3_large_system_manifest_20260520T201817Z_ibm_kingston_n8.md",
       "docs/campaigns/phase3_layer_layout_comparator_matrix_2026-05-07.md",
       "docs/campaigns/phase3_layer_layout_readiness_2026-05-07.md",
       "docs/campaigns/phase3_multicircuit_qec_readiness_2026-05-07.md",
@@ -499,7 +511,7 @@
       {
         "package": "qsnn",
         "path": "src/scpn_quantum_control/qsnn",
-        "python_modules": 6
+        "python_modules": 7
       },
       {
         "package": "ssgf",
@@ -515,6 +527,11 @@
         "package": "thermodynamics",
         "path": "src/scpn_quantum_control/thermodynamics",
         "python_modules": 1
+      },
+      {
+        "package": "topology_control",
+        "path": "src/scpn_quantum_control/topology_control",
+        "python_modules": 7
       }
     ],
     "paper0_validation_modules": [
@@ -1727,6 +1744,10 @@
         "path": "src/scpn_quantum_control/paper0/consciousness_studies_cognitive_models_validation.py"
       },
       {
+        "name": "ConstraintViolation",
+        "path": "src/scpn_quantum_control/topology_control/constraints.py"
+      },
+      {
         "name": "ContainerResources",
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
@@ -1785,6 +1806,14 @@
       {
         "name": "CosmologyPhysicsExtensionsFixtureResult",
         "path": "src/scpn_quantum_control/paper0/cosmology_physics_extensions_validation.py"
+      },
+      {
+        "name": "CouplingGraphBounds",
+        "path": "src/scpn_quantum_control/topology_control/constraints.py"
+      },
+      {
+        "name": "CouplingTopologyObjective",
+        "path": "src/scpn_quantum_control/topology_control/objectives.py"
       },
       {
         "name": "CreatingAndProtectingACoherentSigmaConfig",
@@ -1897,6 +1926,10 @@
       {
         "name": "DecoherenceRegressionFit",
         "path": "src/scpn_quantum_control/paper0/nv_quantum_sensing_validation.py"
+      },
+      {
+        "name": "DegeneracyMode",
+        "path": "src/scpn_quantum_control/topology_control/objectives.py"
       },
       {
         "name": "DenseAllocationError",
@@ -2025,6 +2058,10 @@
       {
         "name": "DomainViOverviewCyberneticClosureMetaLayer16FixtureResult",
         "path": "src/scpn_quantum_control/paper0/domain_vi_overview_cybernetic_closure_meta_layer_16_validation.py"
+      },
+      {
+        "name": "DynamicCouplingConfig",
+        "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
       {
         "name": "DynamicCouplingEngine",
@@ -2507,6 +2544,10 @@
         "path": "src/scpn_quantum_control/analysis/h1_persistence.py"
       },
       {
+        "name": "H1Summary",
+        "path": "src/scpn_quantum_control/topology_control/complexes.py"
+      },
+      {
         "name": "HIntAsTheSelectionOperatorConfig",
         "path": "src/scpn_quantum_control/paper0/h_int_as_the_selection_operator_validation.py"
       },
@@ -2541,6 +2582,10 @@
       {
         "name": "HardwareApprovalRecord",
         "path": "src/scpn_quantum_control/hardware/feedback_hardware_scheduler.py"
+      },
+      {
+        "name": "HardwareEmbeddingConstraint",
+        "path": "src/scpn_quantum_control/topology_control/constraints.py"
       },
       {
         "name": "HardwareJobDossier",
@@ -3683,12 +3728,20 @@
         "path": "src/scpn_quantum_control/paper0/network_complexity_science_validation.py"
       },
       {
+        "name": "NetworkCycleBackend",
+        "path": "src/scpn_quantum_control/topology_control/complexes.py"
+      },
+      {
         "name": "NeuroendocrineRegulationAndTheHypothalamicPituitaryAdrenalHpaAxiConfig",
         "path": "src/scpn_quantum_control/paper0/neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation.py"
       },
       {
         "name": "NeuroendocrineRegulationAndTheHypothalamicPituitaryAdrenalHpaAxiFixtureResult",
         "path": "src/scpn_quantum_control/paper0/neuroendocrine_regulation_and_the_hypothalamic_pituitary_adrenal_hpa_axi_validation.py"
+      },
+      {
+        "name": "NeuromorphicStepResult",
+        "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
       {
         "name": "NeurovascularTrajectory",
@@ -3749,6 +3802,10 @@
       {
         "name": "OTOCSyncScanResult",
         "path": "src/scpn_quantum_control/analysis/otoc_sync_probe.py"
+      },
+      {
+        "name": "ObjectiveBreakdown",
+        "path": "src/scpn_quantum_control/topology_control/objectives.py"
       },
       {
         "name": "ObjectiveCoverContextConfig",
@@ -4023,8 +4080,16 @@
         "path": "src/scpn_quantum_control/analysis/entanglement_percolation.py"
       },
       {
+        "name": "PersistenceDiagram",
+        "path": "src/scpn_quantum_control/topology_control/complexes.py"
+      },
+      {
         "name": "PersistenceResult",
         "path": "src/scpn_quantum_control/analysis/persistent_homology.py"
+      },
+      {
+        "name": "PersistentHomologyBackend",
+        "path": "src/scpn_quantum_control/topology_control/complexes.py"
       },
       {
         "name": "PhaseBoundary",
@@ -4257,6 +4322,14 @@
       {
         "name": "Problem",
         "path": "src/scpn_quantum_control/stable_core.py"
+      },
+      {
+        "name": "ProjectedSPSAOptimizer",
+        "path": "src/scpn_quantum_control/topology_control/optimizers.py"
+      },
+      {
+        "name": "ProjectedScipyOptimizer",
+        "path": "src/scpn_quantum_control/topology_control/optimizers.py"
       },
       {
         "name": "ProportionalMetricObserver",
@@ -4563,8 +4636,16 @@
         "path": "src/scpn_quantum_control/phase/xy_kuramoto.py"
       },
       {
+        "name": "QuantumLIFConfig",
+        "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
+      },
+      {
         "name": "QuantumLIFNeuron",
         "path": "src/scpn_quantum_control/qsnn/qlif.py"
+      },
+      {
+        "name": "QuantumNeuromorphicBridge",
+        "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
       {
         "name": "QuantumPHResult",
@@ -4749,6 +4830,10 @@
       {
         "name": "RigettiQCSHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_rigetti.py"
+      },
+      {
+        "name": "RipserPHBackend",
+        "path": "src/scpn_quantum_control/topology_control/complexes.py"
       },
       {
         "name": "RobustnessCertificate",
@@ -6327,12 +6412,20 @@
         "path": "src/scpn_quantum_control/control/topological_optimizer.py"
       },
       {
+        "name": "TopologicalDynamicCouplingPolicy",
+        "path": "src/scpn_quantum_control/topology_control/qsnn_integration.py"
+      },
+      {
         "name": "TopologicalInvariantsBkDetermineTheStructureAndRichnessOfTheQuConfig",
         "path": "src/scpn_quantum_control/paper0/topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation.py"
       },
       {
         "name": "TopologicalInvariantsBkDetermineTheStructureAndRichnessOfTheQuFixtureResult",
         "path": "src/scpn_quantum_control/paper0/topological_invariants_bk_determine_the_structure_and_richness_of_the_qu_validation.py"
+      },
+      {
+        "name": "TopologyConstraintLedger",
+        "path": "src/scpn_quantum_control/topology_control/constraints.py"
       },
       {
         "name": "TopologyGeometryInConsciousnessModelsConfig",
@@ -6343,12 +6436,36 @@
         "path": "src/scpn_quantum_control/paper0/topology_geometry_in_consciousness_models_validation.py"
       },
       {
+        "name": "TopologyHardwareManifest",
+        "path": "src/scpn_quantum_control/topology_control/hardware_integration.py"
+      },
+      {
+        "name": "TopologyOptimisationArtifact",
+        "path": "src/scpn_quantum_control/topology_control/artefacts.py"
+      },
+      {
+        "name": "TopologyOptimisationStep",
+        "path": "src/scpn_quantum_control/topology_control/optimizers.py"
+      },
+      {
+        "name": "TopologyOptimisationTrace",
+        "path": "src/scpn_quantum_control/topology_control/optimizers.py"
+      },
+      {
         "name": "TorusSurfaceFlowLyapunovStyleCertificateConfig",
         "path": "src/scpn_quantum_control/paper0/torus_surface_flow_lyapunov_style_certificate_validation.py"
       },
       {
         "name": "TorusSurfaceFlowLyapunovStyleCertificateFixtureResult",
         "path": "src/scpn_quantum_control/paper0/torus_surface_flow_lyapunov_style_certificate_validation.py"
+      },
+      {
+        "name": "TraceSTDPConfig",
+        "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
+      },
+      {
+        "name": "TraceSTDPState",
+        "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
       {
         "name": "TransferResult",
@@ -7337,6 +7454,7 @@
       "src/scpn_quantum_control/qsnn/qlif.py",
       "src/scpn_quantum_control/qsnn/qstdp.py",
       "src/scpn_quantum_control/qsnn/qsynapse.py",
+      "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py",
       "src/scpn_quantum_control/qsnn/training.py",
       "src/scpn_quantum_control/ssgf/quantum_costs.py",
       "src/scpn_quantum_control/ssgf/quantum_gradient.py",
@@ -7345,7 +7463,14 @@
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
-      "src/scpn_quantum_control/thermodynamics/readiness.py"
+      "src/scpn_quantum_control/thermodynamics/readiness.py",
+      "src/scpn_quantum_control/topology_control/artefacts.py",
+      "src/scpn_quantum_control/topology_control/complexes.py",
+      "src/scpn_quantum_control/topology_control/constraints.py",
+      "src/scpn_quantum_control/topology_control/hardware_integration.py",
+      "src/scpn_quantum_control/topology_control/objectives.py",
+      "src/scpn_quantum_control/topology_control/optimizers.py",
+      "src/scpn_quantum_control/topology_control/qsnn_integration.py"
     ],
     "rust_pyo3_wrappers": [
       "all_xy_expectations",
@@ -7438,6 +7563,7 @@
     "BiologicalSurfaceCode",
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
+    "CLAIM_BOUNDARY",
     "CapabilityDecisionStatus",
     "CirqLocalHALAdapter",
     "ClassicalBaselineRun",
@@ -7448,6 +7574,7 @@
     "DWaveLeapHALAdapter",
     "DifferentiableOptimizer",
     "DisruptionBenchmark",
+    "DynamicCouplingConfig",
     "DynamicCouplingEngine",
     "ExecutionRegion",
     "Experiment",
@@ -7477,6 +7604,7 @@
     "MonitoredKuramotoSpec",
     "MonotonicRealtimeClock",
     "MultiscaleQECResult",
+    "NeuromorphicStepResult",
     "OMEGA_N_16",
     "OQCHALAdapter",
     "ORCHESTRATOR_MAPPING",
@@ -7508,7 +7636,9 @@
     "QuantumJobRef",
     "QuantumJobResult",
     "QuantumKuramotoSolver",
+    "QuantumLIFConfig",
     "QuantumLIFNeuron",
+    "QuantumNeuromorphicBridge",
     "QuantumPetriNet",
     "QuantumSTDP",
     "QuantumSynapse",
@@ -7531,6 +7661,8 @@
     "SynchronisationForecastBenchmarkResult",
     "SynchronisationForecastDataset",
     "TopologicalCouplingOptimizer",
+    "TraceSTDPConfig",
+    "TraceSTDPState",
     "TrotterEvolutionConfig",
     "UPDEPhaseArtifact",
     "VQLS_GradShafranov",
@@ -9006,6 +9138,7 @@
       "tests/test_pre_commit_documentation_surface_gate.py",
       "tests/test_preflight_tool.py",
       "tests/test_prepare_iqm_paper_replication.py",
+      "tests/test_prepare_large_system_submission_extensions.py",
       "tests/test_prepare_s1_ibm_live_readiness.py",
       "tests/test_probe_s1_generic_gate_metadata.py",
       "tests/test_probe_s1_ibm_metadata.py",
@@ -9049,6 +9182,7 @@
       "tests/test_quantum_kuramoto_boundary_review.py",
       "tests/test_quantum_kuramoto_split_audit.py",
       "tests/test_quantum_mpemba.py",
+      "tests/test_quantum_neuromorphic_bridge.py",
       "tests/test_quantum_outer_cycle.py",
       "tests/test_quantum_persistent_homology.py",
       "tests/test_quantum_phi.py",
@@ -9065,6 +9199,7 @@
       "tests/test_reconcile_paper0_validation_coverage.py",
       "tests/test_regression_baselines.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
+      "tests/test_retrieve_phase3_large_system_ibm.py",
       "tests/test_robustness_certificate.py",
       "tests/test_round4_8_coverage.py",
       "tests/test_run_dla_parity_suite_cli.py",
@@ -9571,6 +9706,7 @@
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
+      "tests/test_submit_phase3_large_system_ibm.py",
       "tests/test_submit_s1_ibm_feedback_pair.py",
       "tests/test_submit_s1_readout_zne_ibm.py",
       "tests/test_submit_s1b_xy_observable_pair.py",
@@ -9592,6 +9728,8 @@
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",
+      "tests/test_topology_control_core.py",
+      "tests/test_topology_control_integration.py",
       "tests/test_translation_symmetry.py",
       "tests/test_trapped_ion.py",
       "tests/test_trotter_error.py",

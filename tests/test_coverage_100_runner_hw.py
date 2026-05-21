@@ -24,11 +24,15 @@ from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 class _CountsRegister:
-    def __init__(self, counts):
+    def __init__(self, counts: dict[str, int]) -> None:
         self._counts = counts
 
-    def get_counts(self):
-        return self._counts
+    def get_counts(self) -> dict[str, int]:
+        return dict(self._counts)
+
+
+def _pub_result(counts: dict[str, int]) -> SimpleNamespace:
+    return SimpleNamespace(data=SimpleNamespace(meas=_CountsRegister(counts)))
 
 
 @pytest.fixture()
@@ -268,8 +272,7 @@ class TestHardwareRunSampler:
 
         mock_job = MagicMock()
         mock_job.job_id.return_value = "hw_job_001"
-        pub_result = MagicMock()
-        pub_result.data.meas.get_counts.return_value = {"00": 500, "11": 500}
+        pub_result = _pub_result({"00": 500, "11": 500})
         mock_job.result.return_value = [pub_result]
 
         mock_sampler_cls = MagicMock()

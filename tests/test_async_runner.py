@@ -42,9 +42,8 @@ class _StubSampler:
         self._last_circuits = circuits
         job = MagicMock()
         job.job_id.return_value = f"job_{id(circuits)}"
-        # pub_result with a register that has `get_counts`.
-        pub = MagicMock()
-        pub.data.meas.get_counts.return_value = {"0000": 1024}
+        # pub_result with a strict register that has `get_counts`.
+        pub = _pub_result({"0000": 1024})
         job.result.return_value = [pub] * len(circuits)
         return job
 
@@ -86,6 +85,18 @@ class _StubRunner:
 
 def _fake_circuits(n: int = 2) -> list[Any]:
     return [MagicMock(name=f"circ_{i}") for i in range(n)]
+
+
+class _CountsRegister:
+    def __init__(self, counts: dict[str, int]) -> None:
+        self._counts = counts
+
+    def get_counts(self) -> dict[str, int]:
+        return dict(self._counts)
+
+
+def _pub_result(counts: dict[str, int]) -> types.SimpleNamespace:
+    return types.SimpleNamespace(data=types.SimpleNamespace(meas=_CountsRegister(counts)))
 
 
 # ---------------------------------------------------------------------------
@@ -388,8 +399,7 @@ class TestSubmitCircuitBatchProvenance:
                 return self._job_id
 
             def result(self, *args: Any, **kwargs: Any) -> list[Any]:
-                pub = MagicMock()
-                pub.data.meas.get_counts.return_value = {"0000": 256}
+                pub = _pub_result({"0000": 256})
                 return [pub]
 
         class _FakeSampler:
@@ -518,8 +528,7 @@ class TestSubmitCircuitBatchProvenance:
                 return "job_1"
 
             def result(self, *args: Any, **kwargs: Any) -> list[Any]:
-                pub = MagicMock()
-                pub.data.meas.get_counts.return_value = {"0": 1}
+                pub = _pub_result({"0": 1})
                 return [pub]
 
         class _FakeSampler:
@@ -608,8 +617,7 @@ class TestSubmitCircuitBatchProvenance:
 
         class _FakeLocalJob:
             def result(self) -> list[Any]:
-                pub = MagicMock()
-                pub.data.meas.get_counts.return_value = {"0": 3, "1": 1}
+                pub = _pub_result({"0": 3, "1": 1})
                 return [pub]
 
         class _FakeStatevectorSampler:
@@ -845,8 +853,7 @@ class TestSubmitCircuitBatchProvenance:
 
         class _FakeLocalJob:
             def result(self) -> list[Any]:
-                pub = MagicMock()
-                pub.data.meas.get_counts.return_value = {"0": 2}
+                pub = _pub_result({"0": 2})
                 return [pub]
 
         class _FakeStatevectorSampler:

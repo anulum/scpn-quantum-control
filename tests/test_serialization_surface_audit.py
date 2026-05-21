@@ -38,6 +38,22 @@ def test_serialization_audit_flags_qpy_load() -> None:
     assert findings[0].symbol == "qiskit.qpy.load"
 
 
+def test_serialization_audit_allows_reviewed_qpy_wrapper_only() -> None:
+    reviewed_findings = scan_text(
+        Path("src/scpn_quantum_control/hardware/hal_qiskit.py"),
+        "from qiskit import qpy\n"
+        "def _reviewed_qpy_load_circuits(data):\n"
+        "    return qpy.load(data)\n",
+    )
+    unreviewed_findings = scan_text(
+        Path("src/scpn_quantum_control/hardware/hal_qiskit.py"),
+        "from qiskit import qpy\ndef _other_loader(data):\n    return qpy.load(data)\n",
+    )
+
+    assert reviewed_findings == ()
+    assert unreviewed_findings[0].symbol == "qiskit.qpy.load"
+
+
 def test_serialization_audit_flags_pickle_loads() -> None:
     findings = scan_text(
         Path("src/example.py"),

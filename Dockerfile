@@ -21,6 +21,9 @@ ENV PYTHONPATH=/app/src:/app
 ENV XDG_CACHE_HOME=/home/sqc/.cache
 ENV XDG_CONFIG_HOME=/home/sqc/.config
 ENV MPLCONFIGDIR=/home/sqc/.config/matplotlib
+# Amazon Braket imports its default simulator during adapter collection; Numba
+# cache locators can fail in copied container layers, so Docker CI disables JIT.
+ENV NUMBA_DISABLE_JIT=1
 
 RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt
 

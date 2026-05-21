@@ -30,6 +30,12 @@ UNSAFE_CALLS = {
     "qiskit.qpy.load",
     "qpy.load",
 }
+APPROVED_WRAPPER_FUNCTIONS = {
+    ("src/scpn_quantum_control/hardware/hal_qiskit.py", "_reviewed_qpy_load_circuits"): {
+        "qiskit.qpy.load",
+        "qpy.load",
+    },
+}
 DEFAULT_ROOTS = ("src", "scripts", "tools", "tests")
 EXCLUDED_PARTS = {".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "__pycache__"}
 
@@ -46,9 +52,11 @@ class SerializationFinding:
 
 
 class _Visitor(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, path: Path) -> None:
+        self.path = path.as_posix()
         self.findings: list[tuple[int, int, str, str]] = []
         self.import_aliases: dict[str, str] = {}
+        self._function_stack: list[str] = []
 
     def visit_Import(self, node: ast.Import) -> None:
         """Track import aliases introduced by ``import`` statements."""
@@ -68,7 +76,7 @@ class _Visitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         """Record calls to unsafe serialization APIs."""
         symbol = _call_name(node.func, self.import_aliases)
-        if symbol in UNSAFE_CALLS:
+        if symbol in UNSAFE_CALLS and not self._is_approved_wrapper_call(symbol):
             self.findings.append(
                 (
                     node.lineno,
@@ -87,6 +95,18 @@ class _Visitor(ast.NodeVisitor):
                 )
             )
         self.generic_visit(node)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """Track the enclosing function for reviewed wrapper allow-listing."""
+        self._function_stack.append(node.name)
+        self.generic_visit(node)
+        self._function_stack.pop()
+
+    def _is_approved_wrapper_call(self, symbol: str) -> bool:
+        if not self._function_stack:
+            return False
+        approved = APPROVED_WRAPPER_FUNCTIONS.get((self.path, self._function_stack[-1]))
+        return approved is not None and symbol in approved
 
 
 def _call_name(node: ast.AST, aliases: dict[str, str]) -> str:
@@ -146,7 +166,7 @@ def scan_text(path: Path, text: str) -> tuple[SerializationFinding, ...]:
                 reason=str(exc),
             ),
         )
-    visitor = _Visitor()
+    visitor = _Visitor(path)
     visitor.visit(tree)
     return tuple(
         SerializationFinding(
