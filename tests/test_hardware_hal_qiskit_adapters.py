@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import pytest
 from qiskit import QuantumCircuit
 
 from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer
@@ -116,6 +117,67 @@ def test_qiskit_runtime_adapter_uses_injected_sampler_and_approval_gate() -> Non
     assert result.counts == {"0": 3, "1": 5}
     assert result.metadata["execution_mode"] == "qiskit_runtime_sampler"
     assert result.metadata["approval_id"] == "approved-runtime"
+
+
+def test_qiskit_runtime_adapter_rejects_shot_mismatch() -> None:
+    """Runtime result decoding must fail closed on count/shot mismatch."""
+
+    class FakeBackend:
+        name = "ibm_fake"
+        num_qubits = 127
+
+    class FakeRegister:
+        def get_counts(self) -> dict[str, int]:
+            return {"0": 3, "1": 4}
+
+    class FakeData:
+        c = FakeRegister()
+
+    class FakePubResult:
+        data = FakeData()
+
+    class FakeRuntimeResult:
+        def __iter__(self):
+            return iter((FakePubResult(),))
+
+    class FakeRuntimeJob:
+        def job_id(self) -> str:
+            return "runtime-job-shot-mismatch"
+
+        def status(self) -> str:
+            return "DONE"
+
+        def result(self, timeout: float | None = None) -> FakeRuntimeResult:
+            assert timeout == 600.0
+            return FakeRuntimeResult()
+
+        def cancel(self) -> None:
+            self.cancelled = True
+
+    class FakeSampler:
+        def __init__(self, mode):
+            assert mode is FakeBackend
+            self.options = type("Options", (), {})()
+
+        def run(self, circuits):
+            assert len(circuits) == 1
+            return FakeRuntimeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        QiskitRuntimeHALAdapter(
+            hal.profile("ibm_quantum"),
+            backend=FakeBackend,
+            sampler_factory=FakeSampler,
+        )
+    )
+    workload = qiskit_circuit_to_workload(
+        _bell_circuit(), workload_id="runtime_bad_shots", shots=8
+    )
+    job = hal.submit("ibm_quantum", workload, approval_id="approved-runtime")
+
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)
 
 
 def test_qiskit_runtime_adapter_sums_overlapping_pub_results() -> None:

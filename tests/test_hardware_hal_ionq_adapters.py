@@ -62,6 +62,15 @@ class _FakeIonQClient:
         return _FakeResponse({"id": "617a1f8b-59d4-435d-aa33-695433d7155e", "status": "canceled"})
 
 
+class _FakeIonQShotMismatchClient(_FakeIonQClient):
+    def get(self, url: str, *, headers: dict[str, str], timeout: float) -> _FakeResponse:
+        del headers, timeout
+        self.gets.append(url)
+        if url.endswith("/results/probabilities"):
+            return _FakeResponse({"0": 0.75, "3": 0.75})
+        return _FakeResponse({"id": "617a1f8b-59d4-435d-aa33-695433d7155e", "status": "completed"})
+
+
 def test_ionq_direct_adapter_submits_status_results_and_cancel() -> None:
     """IonQ direct adapter should implement the v0.4 job lifecycle."""
 
@@ -226,4 +235,28 @@ def test_ionq_direct_adapter_rejects_non_positive_expected_shots() -> None:
     )
 
     with pytest.raises(ValueError, match="positive shot count"):
+        hal.result(job)
+
+
+def test_ionq_direct_adapter_rejects_shot_mismatch() -> None:
+    """IonQ result decoding must fail closed when counts overshoot expected shots."""
+
+    client = _FakeIonQShotMismatchClient()
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        IonQCloudHALAdapter(
+            hal.profile("ionq_cloud"),
+            client=client,
+            api_key="test-key",
+        )
+    )
+    workload = ionq_qis_workload(
+        [{"gate": "h", "target": 0}],
+        workload_id="ionq_shot_mismatch",
+        n_qubits=2,
+        shots=10,
+    )
+    job = hal.submit("ionq_cloud", workload, approval_id="approved-ionq")
+
+    with pytest.raises(ValueError, match="shot count mismatch"):
         hal.result(job)
