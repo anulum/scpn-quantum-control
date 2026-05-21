@@ -438,3 +438,19 @@ def test_rigetti_provider_job_id_trims_padding() -> None:
 
     PaddedResult = type("Result", (), {"job_id": "  rigetti-provider-3  "})
     assert rigetti_mod._provider_job_id(PaddedResult()) == "rigetti-provider-3"
+
+
+def test_rigetti_quantum_computer_name_rejects_control_characters() -> None:
+    """Rigetti quantum computer names must reject control-character payloads."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
+    with pytest.raises(ValueError, match="Rigetti quantum computer"):
+        RigettiQCSHALAdapter(profile, quantum_computer_name="Ankaa-\n3")
+
+
+def test_rigetti_quantum_computer_name_trims_padding() -> None:
+    """Rigetti quantum computer names should be canonicalised by trimming padding."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
+    adapter = RigettiQCSHALAdapter(profile, quantum_computer_name="  Ankaa-3  ")
+    assert adapter._quantum_computer_name == "Ankaa-3"

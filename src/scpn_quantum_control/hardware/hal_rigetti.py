@@ -63,7 +63,10 @@ class RigettiQCSHALAdapter:
         self.profile = profile
         self.backend_id = profile.backend_id
         self._quantum_computer = quantum_computer
-        self._quantum_computer_name = quantum_computer_name or "injected"
+        self._quantum_computer_name = strict_provider_job_id(
+            quantum_computer_name or "injected",
+            field_name="Rigetti quantum computer",
+        )
         self._quantum_computer_factory = quantum_computer_factory
         self._program_factory = program_factory
         self._shot_loop = shot_loop
