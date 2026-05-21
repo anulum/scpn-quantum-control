@@ -10,6 +10,7 @@
 import numpy as np
 import pytest
 
+import scpn_quantum_control.control.qpetri as qpetri_module
 from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
 
@@ -59,3 +60,38 @@ def test_campaign_report_aggregates():
     assert report.mean_output_marking.shape == (2,)
     assert report.mean_transition_activity.shape == (2,)
     assert payload["n_steps"] == 3
+
+
+def test_campaign_rust_aggregate_matches_numpy_fallback(monkeypatch: pytest.MonkeyPatch):
+    net = _build_net()
+    markings = np.array([[0.2, 0.7], [0.7, 0.3], [0.4, 0.4], [0.1, 0.9]], dtype=float)
+
+    rust_report = net.run_campaign(markings)
+
+    original = qpetri_module._qpetri_campaign_aggregate_rust
+    monkeypatch.setattr(qpetri_module, "_qpetri_campaign_aggregate_rust", None)
+    numpy_report = net.run_campaign(markings)
+    monkeypatch.setattr(qpetri_module, "_qpetri_campaign_aggregate_rust", original)
+
+    np.testing.assert_allclose(
+        rust_report.mean_output_marking,
+        numpy_report.mean_output_marking,
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        rust_report.mean_transition_activity,
+        numpy_report.mean_transition_activity,
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    assert rust_report.mean_statevector_entropy_bits == pytest.approx(
+        numpy_report.mean_statevector_entropy_bits,
+        rel=1e-12,
+        abs=1e-12,
+    )
+    assert rust_report.mean_statevector_purity == pytest.approx(
+        numpy_report.mean_statevector_purity,
+        rel=1e-12,
+        abs=1e-12,
+    )

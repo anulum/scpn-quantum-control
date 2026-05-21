@@ -190,6 +190,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(qpetri::qpetri_transition_activity, m)?)?;
     m.add_function(wrap_pyfunction!(qpetri::qpetri_state_metrics, m)?)?;
     m.add_function(wrap_pyfunction!(qpetri::qpetri_sample_marking, m)?)?;
+    m.add_function(wrap_pyfunction!(qpetri::qpetri_campaign_aggregate, m)?)?;
 
     Ok(())
 }

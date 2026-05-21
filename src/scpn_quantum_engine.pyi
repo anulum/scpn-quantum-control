@@ -266,6 +266,15 @@ def qpetri_sample_marking(
     shots: int,
     seed: int,
 ) -> _F64Array: ...
+def qpetri_campaign_aggregate(
+    output_markings_flat: _F64Array,
+    transition_activity_flat: _F64Array,
+    entropies: _F64Array,
+    purities: _F64Array,
+    n_steps: int,
+    n_places: int,
+    n_transitions: int,
+) -> tuple[_F64Array, _F64Array, float, float]: ...
 def qpetri_state_metrics(probabilities: _F64Array) -> tuple[float, float]: ...
 def qpetri_transition_activity(
     w_in_flat: _F64Array,

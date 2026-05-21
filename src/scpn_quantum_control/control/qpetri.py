@@ -23,8 +23,10 @@ from ..bridge.sc_to_quantum import probability_to_angle
 _qpetri_sample_marking_rust: Any = None
 _qpetri_state_metrics_rust: Any = None
 _qpetri_transition_activity_rust: Any = None
+_qpetri_campaign_aggregate_rust: Any = None
 
 try:
+    from scpn_quantum_engine import qpetri_campaign_aggregate as _qpetri_campaign_aggregate_rust
     from scpn_quantum_engine import (
         qpetri_sample_marking as _qpetri_sample_marking_rust,
     )
@@ -184,6 +186,20 @@ class QuantumPetriNet:
             )
         return activity
 
+    @staticmethod
+    def _campaign_aggregate_numpy(
+        output_stack: np.ndarray,
+        activity_stack: np.ndarray,
+        entropies: np.ndarray,
+        purities: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, float, float]:
+        return (
+            np.mean(output_stack, axis=0),
+            np.mean(activity_stack, axis=0),
+            float(np.mean(entropies)),
+            float(np.mean(purities)),
+        )
+
     def step_report(self, marking: np.ndarray) -> QuantumPetriStepReport:
         """Run one transition sweep and return superposition observables."""
         qc = self.encode_marking(marking)
@@ -244,14 +260,39 @@ class QuantumPetriNet:
         steps = [self.step_report(matrix[idx]) for idx in range(matrix.shape[0])]
         output_stack = np.vstack([s.output_marking for s in steps])
         activity_stack = np.vstack([s.transition_activity for s in steps])
+        entropies = np.array([s.statevector_entropy_bits for s in steps], dtype=np.float64)
+        purities = np.array([s.statevector_purity for s in steps], dtype=np.float64)
+
+        if _qpetri_campaign_aggregate_rust is not None:
+            mean_output, mean_activity, mean_entropy, mean_purity = (
+                _qpetri_campaign_aggregate_rust(
+                    output_stack.reshape(-1),
+                    activity_stack.reshape(-1),
+                    entropies,
+                    purities,
+                    matrix.shape[0],
+                    self.n_places,
+                    self.n_transitions,
+                )
+            )
+            mean_output_marking = np.asarray(mean_output, dtype=np.float64)
+            mean_transition_activity = np.asarray(mean_activity, dtype=np.float64)
+            mean_statevector_entropy_bits = float(mean_entropy)
+            mean_statevector_purity = float(mean_purity)
+        else:
+            (
+                mean_output_marking,
+                mean_transition_activity,
+                mean_statevector_entropy_bits,
+                mean_statevector_purity,
+            ) = self._campaign_aggregate_numpy(output_stack, activity_stack, entropies, purities)
+
         return QuantumPetriCampaignReport(
             steps=steps,
-            mean_output_marking=np.mean(output_stack, axis=0),
-            mean_transition_activity=np.mean(activity_stack, axis=0),
-            mean_statevector_entropy_bits=float(
-                np.mean([s.statevector_entropy_bits for s in steps])
-            ),
-            mean_statevector_purity=float(np.mean([s.statevector_purity for s in steps])),
+            mean_output_marking=mean_output_marking,
+            mean_transition_activity=mean_transition_activity,
+            mean_statevector_entropy_bits=mean_statevector_entropy_bits,
+            mean_statevector_purity=mean_statevector_purity,
         )
 
     @classmethod

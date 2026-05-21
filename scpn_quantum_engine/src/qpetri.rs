@@ -138,6 +138,102 @@ pub fn qpetri_sample_marking<'py>(
     Ok(PyArray1::from_vec(py, sampled))
 }
 
+#[pyfunction]
+pub fn qpetri_campaign_aggregate<'py>(
+    py: Python<'py>,
+    output_markings_flat: PyReadonlyArray1<'_, f64>,
+    transition_activity_flat: PyReadonlyArray1<'_, f64>,
+    entropies: PyReadonlyArray1<'_, f64>,
+    purities: PyReadonlyArray1<'_, f64>,
+    n_steps: usize,
+    n_places: usize,
+    n_transitions: usize,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    f64,
+    f64,
+)> {
+    if n_steps == 0 {
+        return Err(PyValueError::new_err("n_steps must be positive"));
+    }
+    if n_places == 0 {
+        return Err(PyValueError::new_err("n_places must be positive"));
+    }
+    if n_transitions == 0 {
+        return Err(PyValueError::new_err("n_transitions must be positive"));
+    }
+
+    let outputs = validate_contiguous_slice(&output_markings_flat, "output_markings_flat")?;
+    let activity = validate_contiguous_slice(&transition_activity_flat, "transition_activity_flat")?;
+    let entropy = validate_contiguous_slice(&entropies, "entropies")?;
+    let purity = validate_contiguous_slice(&purities, "purities")?;
+
+    validate_finite(outputs, "output_markings_flat")?;
+    validate_finite(activity, "transition_activity_flat")?;
+    validate_finite(entropy, "entropies")?;
+    validate_finite(purity, "purities")?;
+
+    if outputs.len() != n_steps * n_places {
+        return Err(PyValueError::new_err(format!(
+            "output_markings_flat length {} != n_steps*n_places {}",
+            outputs.len(),
+            n_steps * n_places
+        )));
+    }
+    if activity.len() != n_steps * n_transitions {
+        return Err(PyValueError::new_err(format!(
+            "transition_activity_flat length {} != n_steps*n_transitions {}",
+            activity.len(),
+            n_steps * n_transitions
+        )));
+    }
+    if entropy.len() != n_steps {
+        return Err(PyValueError::new_err(format!(
+            "entropies length {} != n_steps {n_steps}",
+            entropy.len()
+        )));
+    }
+    if purity.len() != n_steps {
+        return Err(PyValueError::new_err(format!(
+            "purities length {} != n_steps {n_steps}",
+            purity.len()
+        )));
+    }
+
+    let mut mean_output = vec![0.0f64; n_places];
+    for s in 0..n_steps {
+        let row = &outputs[s * n_places..(s + 1) * n_places];
+        for p in 0..n_places {
+            mean_output[p] += row[p];
+        }
+    }
+    for value in &mut mean_output {
+        *value /= n_steps as f64;
+    }
+
+    let mut mean_activity = vec![0.0f64; n_transitions];
+    for s in 0..n_steps {
+        let row = &activity[s * n_transitions..(s + 1) * n_transitions];
+        for t in 0..n_transitions {
+            mean_activity[t] += row[t];
+        }
+    }
+    for value in &mut mean_activity {
+        *value /= n_steps as f64;
+    }
+
+    let mean_entropy = entropy.iter().sum::<f64>() / (n_steps as f64);
+    let mean_purity = purity.iter().sum::<f64>() / (n_steps as f64);
+
+    Ok((
+        PyArray1::from_vec(py, mean_output),
+        PyArray1::from_vec(py, mean_activity),
+        mean_entropy,
+        mean_purity,
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
