@@ -242,3 +242,40 @@ def test_qec_namespace_exports_biological_surface_code():
 
     assert ExportedCode is BiologicalSurfaceCode
     assert ExportedDecoder is BiologicalMWPMDecoder
+
+
+def test_code_summary_contains_structural_parameters():
+    """Code summary must expose stable structural metadata."""
+    K = np.array(
+        [[0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [1.0, 0.0, 1.0, 0.0]]
+    )
+    code = BiologicalSurfaceCode(K)
+    summary = code.code_summary()
+    assert summary["n_data_qubits"] == 4
+    assert summary["n_x_stabilisers"] == 4
+    assert summary["n_z_stabilisers"] == 1
+    assert isinstance(summary["n_logical_qubits_estimate"], int)
+    assert summary["css_commutes"] is True
+
+
+def test_decode_and_apply_clears_residual_syndrome():
+    """decode_and_apply must return residual with zero X-syndrome."""
+    K = np.array([[0, 1, 0, 0], [1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0]], dtype=float)
+    code = BiologicalSurfaceCode(K)
+    decoder = BiologicalMWPMDecoder(code)
+    z_errors = np.zeros(code.num_data, dtype=np.int8)
+    z_errors[code.edge_to_idx[(1, 2)]] = 1
+    correction, residual = decoder.decode_and_apply(z_errors)
+    assert correction.shape == z_errors.shape
+    residual_syndrome = code.x_syndrome_from_z_errors(residual)
+    assert np.all(residual_syndrome == 0)
+
+
+def test_error_helpers_reject_non_binary_inputs():
+    """Syndrome and correction helpers require binary vectors."""
+    K = np.array([[0, 1], [1, 0]], dtype=float)
+    code = BiologicalSurfaceCode(K)
+    with pytest.raises(ValueError, match="binary"):
+        code.x_syndrome_from_z_errors(np.array([2], dtype=np.int8))
+    with pytest.raises(ValueError, match="correction must be binary"):
+        code.apply_z_correction(np.array([0], dtype=np.int8), np.array([2], dtype=np.int8))

@@ -94,6 +94,54 @@ class BiologicalSurfaceCode:
         comm_matrix = (self.Hx @ self.Hz.T) % 2
         return bool(np.all(comm_matrix == 0))
 
+    def estimate_logical_qubits(self) -> int:
+        """Estimate k from CSS rank relation: k = n - rank(Hx) - rank(Hz)."""
+        rank_hx = int(np.linalg.matrix_rank(self.Hx.astype(np.float64)))
+        rank_hz = int(np.linalg.matrix_rank(self.Hz.astype(np.float64)))
+        logical_qubits = self.num_data - rank_hx - rank_hz
+        return max(0, int(logical_qubits))
+
+    def code_summary(self) -> dict[str, int | bool]:
+        """Return structural code parameters and commutation status."""
+        return {
+            "n_data_qubits": self.num_data,
+            "n_x_stabilisers": self.num_x_stabs,
+            "n_z_stabilisers": self.num_z_stabs,
+            "n_logical_qubits_estimate": self.estimate_logical_qubits(),
+            "css_commutes": self.verify_css_commutation(),
+        }
+
+    def x_syndrome_from_z_errors(self, z_errors: np.ndarray) -> np.ndarray:
+        """Compute X stabiliser syndrome induced by edge-local Z errors."""
+        errors = np.asarray(z_errors)
+        if errors.ndim != 1 or errors.shape[0] != self.num_data:
+            raise ValueError(
+                f"z_errors length must equal number of data qubits ({self.num_data})."
+            )
+        if not np.all((errors == 0) | (errors == 1)):
+            raise ValueError("z_errors must be a binary vector with entries 0 or 1.")
+        return ((self.Hx @ errors.astype(np.int8, copy=False)) % 2).astype(np.int8)
+
+    def apply_z_correction(self, z_errors: np.ndarray, correction: np.ndarray) -> np.ndarray:
+        """Apply edge correction modulo 2 and return residual Z-error pattern."""
+        errors = np.asarray(z_errors)
+        corr = np.asarray(correction)
+        if errors.ndim != 1 or errors.shape[0] != self.num_data:
+            raise ValueError(
+                f"z_errors length must equal number of data qubits ({self.num_data})."
+            )
+        if corr.ndim != 1 or corr.shape[0] != self.num_data:
+            raise ValueError(
+                f"correction length must equal number of data qubits ({self.num_data})."
+            )
+        if not np.all((errors == 0) | (errors == 1)):
+            raise ValueError("z_errors must be binary.")
+        if not np.all((corr == 0) | (corr == 1)):
+            raise ValueError("correction must be binary.")
+        return (
+            (errors.astype(np.int8, copy=False) + corr.astype(np.int8, copy=False)) % 2
+        ).astype(np.int8)
+
 
 class BiologicalMWPMDecoder:
     """Minimum Weight Perfect Matching decoder for the Biological Surface Code."""
@@ -165,3 +213,10 @@ class BiologicalMWPMDecoder:
                 correction[idx] ^= 1
 
         return correction
+
+    def decode_and_apply(self, z_errors: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Decode from a Z-error pattern and return (correction, residual)."""
+        syndrome = self.code.x_syndrome_from_z_errors(z_errors)
+        correction = self.decode_z_errors(syndrome)
+        residual = self.code.apply_z_correction(z_errors, correction)
+        return correction, residual

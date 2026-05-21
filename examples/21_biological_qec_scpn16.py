@@ -34,13 +34,12 @@ def main():
     print("Constructing code from 16-layer topology...")
     code = BiologicalSurfaceCode(K, threshold=0.01)
 
-    print(f"  Data Qubits (Graph Edges): {code.num_data}")
-    print(f"  X-Stabilizers (Graph Nodes): {code.num_x_stabs}")
-    print(f"  Z-Stabilizers (Graph Cycles): {code.num_z_stabs}")
-
-    # 3. Verify CSS Commutation [Hx, Hz] = 0
-    is_valid = code.verify_css_commutation()
-    print(f"  Commutation Check: {'PASS' if is_valid else 'FAIL'}")
+    summary = code.code_summary()
+    print(f"  Data Qubits (Graph Edges): {summary['n_data_qubits']}")
+    print(f"  X-Stabilisers (Graph Nodes): {summary['n_x_stabilisers']}")
+    print(f"  Z-Stabilisers (Graph Cycles): {summary['n_z_stabilisers']}")
+    print(f"  Estimated Logical Qubits: {summary['n_logical_qubits_estimate']}")
+    print(f"  Commutation Check: {'PASS' if summary['css_commutes'] else 'FAIL'}")
 
     # 4. Error Correction Simulation
     decoder = BiologicalMWPMDecoder(code)
@@ -57,15 +56,12 @@ def main():
     error_z[edge_idx] = 1
 
     # Compute the syndrome measured by the hardware
-    syndrome_x = (code.Hx @ error_z) % 2
+    syndrome_x = code.x_syndrome_from_z_errors(error_z)
     active_detectors = np.where(syndrome_x == 1)[0]
     print(f"  Detected syndrome at nodes: {list(active_detectors)}")
 
-    # Run the Biological MWPM Decoder
-    correction = decoder.decode_z_errors(syndrome_x)
-
-    # Verify success
-    residual = (error_z + correction) % 2
+    # Run the Biological MWPM Decoder and apply correction
+    correction, residual = decoder.decode_and_apply(error_z)
     success = np.all(residual == 0)
 
     print(f"  Correction successful? {success}")
