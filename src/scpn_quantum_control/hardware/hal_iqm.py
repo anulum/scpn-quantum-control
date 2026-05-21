@@ -246,6 +246,8 @@ def _normalise_counts(raw: Any) -> dict[str, int]:
         key = strict_binary_bitstring_key(bitstring, field_name="IQM count key")
         value = strict_non_negative_count(count)
         counts[key] = value
+    if not counts:
+        raise ValueError("IQM result did not contain any counts")
     return counts
 
 

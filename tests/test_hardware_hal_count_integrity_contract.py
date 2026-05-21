@@ -96,3 +96,18 @@ def test_shot_conservation_guard_rejects_mismatched_totals() -> None:
         strict_shot_conservation({"00": 3, "11": 2}, expected_shots=4)
 
     assert strict_shot_conservation({"00": 3, "11": 2}, expected_shots=5) == 5
+
+
+def test_count_normalisers_reject_empty_count_maps() -> None:
+    with pytest.raises(ValueError, match="empty count map|did not contain any counts"):
+        hal_azure._extract_counts({"counts": {}}, n_qubits=1)
+    with pytest.raises(ValueError, match="empty count map"):
+        hal_braket._extract_braket_counts(type("R", (), {"measurement_counts": {}})(), n_qubits=1)
+    with pytest.raises(ValueError, match="empty count map"):
+        hal_qbraid._normalise_counts({}, n_qubits=1)
+    with pytest.raises(ValueError, match="empty count map"):
+        hal_strangeworks._normalise_counts({}, n_qubits=1)
+    with pytest.raises(ValueError, match="did not contain any counts"):
+        hal_pasqal._normalise_counts({})
+    with pytest.raises(ValueError, match="did not contain any counts"):
+        hal_iqm._normalise_counts({})

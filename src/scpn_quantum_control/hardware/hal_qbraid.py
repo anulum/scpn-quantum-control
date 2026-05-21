@@ -230,12 +230,15 @@ def _normalise_counts(counts: Any, *, n_qubits: int) -> dict[str, int]:
         counts = counts[0]
     if not isinstance(counts, Mapping):
         raise ValueError("qBraid measurement counts must be a mapping")
-    return {
+    normalised = {
         strict_fixed_width_bitstring_key(
             bitstring, width=n_qubits, field_name="qBraid count key"
         ): strict_non_negative_count(count)
         for bitstring, count in counts.items()
     }
+    if not normalised:
+        raise ValueError("qBraid result contains an empty count map")
+    return normalised
 
 
 def _job_id(provider_job: Any) -> str:

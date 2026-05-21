@@ -19,7 +19,9 @@ from qiskit import QuantumCircuit, qasm3, qpy, transpile
 from qiskit.qpy import dump as qpy_dump
 
 from ._count_integrity import (
+    strict_binary_bitstring_key,
     strict_integer_value,
+    strict_non_negative_count,
     strict_provider_job_id,
     strict_shot_conservation,
 )
@@ -314,7 +316,11 @@ def _runtime_sampler_factory() -> Callable[..., Any]:
 def _normalise_counts(counts: dict[Any, Any]) -> dict[str, int]:
     normalised: dict[str, int] = {}
     for key, value in counts.items():
-        normalised[str(key)] = int(value)
+        normalised[strict_binary_bitstring_key(key, field_name="Qiskit count key")] = (
+            strict_non_negative_count(value)
+        )
+    if not normalised:
+        raise ValueError("Qiskit result did not contain any counts")
     return normalised
 
 

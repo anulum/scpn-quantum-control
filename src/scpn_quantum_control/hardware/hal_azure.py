@@ -215,19 +215,25 @@ def _extract_counts(payload: Any, *, n_qubits: int) -> dict[str, int]:
         for key in ("counts", "histogram", "measurement_counts", "MeasurementCounts"):
             candidate = payload.get(key)
             if isinstance(candidate, Mapping):
-                return {
+                counts = {
                     strict_fixed_width_bitstring_key(
                         bitstring, width=n_qubits, field_name="Azure count key"
                     ): strict_non_negative_count(count)
                     for bitstring, count in candidate.items()
                 }
+                if not counts:
+                    raise ValueError("Azure Quantum result payload contains an empty count map")
+                return counts
         if all(isinstance(key, str) for key in payload):
-            return {
+            counts = {
                 strict_fixed_width_bitstring_key(
                     bitstring, width=n_qubits, field_name="Azure count key"
                 ): strict_non_negative_count(count)
                 for bitstring, count in payload.items()
             }
+            if not counts:
+                raise ValueError("Azure Quantum result payload contains an empty count map")
+            return counts
     raise ValueError("Azure Quantum result payload does not contain shot counts")
 
 

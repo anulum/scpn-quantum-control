@@ -304,6 +304,8 @@ def _normalise_counts(raw: object) -> dict[str, int]:
         key = strict_binary_bitstring_key(bitstring, field_name="Pasqal count key")
         value = strict_non_negative_count(count)
         counts[key] = value
+    if not counts:
+        raise ValueError("Pasqal result did not contain any counts")
     return counts
 
 
