@@ -110,6 +110,32 @@ def test_cirq_hal_adapter_validates_histogram_counts() -> None:
         )
 
 
+def test_cirq_hal_adapter_rejects_shot_mismatch() -> None:
+    """Cirq adapter must fail closed when decoded counts do not match requested shots."""
+
+    class MismatchResult:
+        id = "cirq-provider-job-mismatch"
+
+        def histogram(self, *, key: str) -> dict[int, int]:
+            del key
+            return {0: 3, 1: 1}
+
+    class MismatchSimulator:
+        def run(self, circuit: object, *, repetitions: int) -> MismatchResult:
+            del circuit, repetitions
+            return MismatchResult()
+
+    adapter = CirqLocalHALAdapter(
+        HardwareAbstractionLayer.with_builtin_profiles().profile("local_cirq"),
+        circuit_factory=lambda source: source,
+        simulator=MismatchSimulator(),
+    )
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        adapter.submit(
+            cirq_circuit_workload("CIRQ", workload_id="shot_mismatch", n_qubits=1, shots=5)
+        )
+
+
 def test_cirq_hal_adapter_default_builder_is_sdk_gated(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
