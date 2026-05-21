@@ -31,9 +31,12 @@ No-QPU software control-loop benchmark only. Results exclude provider queue, net
 
 | n | repeats_successful | p95 tick ms | p99 tick ms | max tick ms | rust policy path |
 |---:|---:|---:|---:|---:|:---:|
-| 2 | 10 | 5.867735 | 6.727862 | 7.224292 | true |
-| 3 | 12 | 7.757306 | 8.642055 | 8.975147 | true |
-| 4 | 10 | 9.618015 | 10.505181 | 10.715583 | true |
+| 2 | 11 | 9.474368 | 14.296871 | 17.103531 | true |
+| 3 | 12 | 10.574582 | 12.422564 | 13.376617 | true |
+| 4 | 10 | 14.378203 | 15.257738 | 16.461197 | true |
+| 2 | 12 | 0.000201 | 0.000426 | 0.001618 | true |
+| 3 | 12 | 0.000207 | 0.000338 | 0.001695 | true |
+| 4 | 12 | 0.000268 | 0.000393 | 0.001377 | true |
 
 ## Reproducibility
 

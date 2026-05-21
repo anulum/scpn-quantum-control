@@ -105,6 +105,17 @@ def feedback_policy_batch(
     base_gain: float,
     max_gain: float,
 ) -> tuple[_I32Array, _F64Array, _F64Array]: ...
+def run_realtime_feedback_loop(
+    theta0: _F64Array,
+    omega: _F64Array,
+    k: _F64Array,
+    target_r: float,
+    deadband: float,
+    base_gain: float,
+    max_gain: float,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array, _I32Array, _F64Array, _F64Array]: ...
 def fit_symmetry_decay(
     s_ideal: float,
     noisy_values: _F64Array,

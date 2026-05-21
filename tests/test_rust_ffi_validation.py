@@ -45,6 +45,35 @@ def test_feedback_policy_batch_accepts_contiguous_r_values() -> None:
     assert 0.0 < np.asarray(gains)[2] < 1.0
 
 
+def test_run_realtime_feedback_loop_rejects_non_contiguous_theta0() -> None:
+    theta0 = np.linspace(0.0, 0.3, 8, dtype=np.float64)[::2]
+    omega = np.ascontiguousarray(np.linspace(0.1, 0.4, 4, dtype=np.float64))
+    k = np.ascontiguousarray(np.eye(4, dtype=np.float64))
+    with pytest.raises(ValueError, match="theta0 must be a C-contiguous NumPy array"):
+        engine.run_realtime_feedback_loop(theta0, omega, k, 0.72, 0.03, 0.6, 2.0, 0.02, 4)
+
+
+def test_run_realtime_feedback_loop_accepts_contiguous_inputs() -> None:
+    theta0 = np.ascontiguousarray(np.linspace(0.0, 0.3, 4, dtype=np.float64))
+    omega = np.ascontiguousarray(np.linspace(0.1, 0.4, 4, dtype=np.float64))
+    k = np.ascontiguousarray(0.2 * np.ones((4, 4), dtype=np.float64))
+    np.fill_diagonal(k, 0.0)
+    out = engine.run_realtime_feedback_loop(theta0, omega, k, 0.72, 0.03, 0.6, 2.0, 0.02, 6)
+    assert len(out) == 7
+    times, r_values, applied, nxt, actions, errors, tick_ms = out
+    assert (
+        len(times)
+        == len(r_values)
+        == len(applied)
+        == len(nxt)
+        == len(actions)
+        == len(errors)
+        == len(tick_ms)
+        == 6
+    )
+    assert np.all(np.asarray(tick_ms) >= 0.0)
+
+
 def test_guess_extrapolate_batch_rejects_non_contiguous_symmetry_values() -> None:
     target = np.ascontiguousarray([0.5, 0.6, 0.7], dtype=np.float64)
     symmetry = np.linspace(4.0, 2.0, 6, dtype=np.float64)[::2]

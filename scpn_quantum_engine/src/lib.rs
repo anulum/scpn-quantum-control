@@ -134,6 +134,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Feedback control
     m.add_function(wrap_pyfunction!(feedback::feedback_policy_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(feedback::run_realtime_feedback_loop, m)?)?;
 
     // Analog backend compilation
     m.add_function(wrap_pyfunction!(analog::analog_coupling_terms, m)?)?;

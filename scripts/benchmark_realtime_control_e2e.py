@@ -102,6 +102,14 @@ def _rust_feedback_policy_available() -> bool:
     return callable(getattr(engine, "feedback_policy_batch", None))
 
 
+def _rust_full_loop_available() -> bool:
+    try:
+        import scpn_quantum_engine as engine
+    except ModuleNotFoundError:
+        return False
+    return callable(getattr(engine, "run_realtime_feedback_loop", None))
+
+
 def _benchmark_case(n: int, *, repeats: int, steps: int, shots: int) -> dict[str, Any]:
     loop_latencies_ms: list[float] = []
     tick_latencies_ms: list[float] = []
@@ -193,6 +201,76 @@ def _benchmark_case(n: int, *, repeats: int, steps: int, shots: int) -> dict[str
         "mean_final_r_live": float(statistics.mean(final_r_live)),
         "mean_final_coupling_scale": float(statistics.mean(final_scale)),
         "rust_feedback_policy_available": _rust_feedback_policy_available(),
+        "rust_full_loop_available": _rust_full_loop_available(),
+        "qpu_seconds": 0.0,
+    }
+
+
+def _benchmark_case_rust_full_loop(
+    n: int, *, repeats: int, steps: int, shots: int
+) -> dict[str, Any] | None:
+    try:
+        import scpn_quantum_engine as engine
+    except ModuleNotFoundError:
+        return None
+    if not callable(getattr(engine, "run_realtime_feedback_loop", None)):
+        return None
+    loop_latencies_ms: list[float] = []
+    tick_latencies_ms: list[float] = []
+    tick_latencies_p95_ms: list[float] = []
+    tick_latencies_p99_ms: list[float] = []
+    final_r_live: list[float] = []
+    final_scale: list[float] = []
+    completed_steps: list[int] = []
+
+    theta0 = np.linspace(0.0, 0.2, n, dtype=np.float64)
+    omega = _omega(n)
+    k = _coupling_matrix(n)
+    for _ in range(repeats):
+        started_ns = time.perf_counter_ns()
+        _, r_values, _, next_scales, _, _, tick_ms = engine.run_realtime_feedback_loop(
+            theta0,
+            omega,
+            k,
+            0.72,
+            0.03,
+            0.6,
+            2.0,
+            0.025,
+            steps,
+        )
+        elapsed_ms = (time.perf_counter_ns() - started_ns) / 1_000_000.0
+        ticks = np.asarray(tick_ms, dtype=np.float64).tolist()
+        loop_latencies_ms.append(elapsed_ms)
+        tick_latencies_ms.extend(ticks)
+        tick_latencies_p95_ms.append(_quantile(ticks, 0.95))
+        tick_latencies_p99_ms.append(_quantile(ticks, 0.99))
+        completed_steps.append(len(ticks))
+        final_r_live.append(float(np.asarray(r_values, dtype=np.float64)[-1]))
+        final_scale.append(float(np.asarray(next_scales, dtype=np.float64)[-1]))
+    return {
+        "benchmark": "realtime_control_e2e_rust_full_loop",
+        "n_qubits": n,
+        "measurement_shots": shots,
+        "repeats_requested": repeats,
+        "repeats_successful": repeats,
+        "sla_breaches": 0,
+        "mean_loop_latency_ms": float(statistics.mean(loop_latencies_ms)),
+        "median_loop_latency_ms": float(statistics.median(loop_latencies_ms)),
+        "p95_loop_latency_ms": _quantile(loop_latencies_ms, 0.95),
+        "p99_loop_latency_ms": _quantile(loop_latencies_ms, 0.99),
+        "max_loop_latency_ms": float(max(loop_latencies_ms)),
+        "mean_tick_latency_ms": float(statistics.mean(tick_latencies_ms)),
+        "p95_tick_latency_ms": _quantile(tick_latencies_ms, 0.95),
+        "p99_tick_latency_ms": _quantile(tick_latencies_ms, 0.99),
+        "max_tick_latency_ms": float(max(tick_latencies_ms)),
+        "mean_per_run_p95_tick_latency_ms": float(statistics.mean(tick_latencies_p95_ms)),
+        "mean_per_run_p99_tick_latency_ms": float(statistics.mean(tick_latencies_p99_ms)),
+        "mean_completed_steps": float(statistics.mean(completed_steps)),
+        "mean_final_r_live": float(statistics.mean(final_r_live)),
+        "mean_final_coupling_scale": float(statistics.mean(final_scale)),
+        "rust_feedback_policy_available": True,
+        "rust_full_loop_available": True,
         "qpu_seconds": 0.0,
     }
 
@@ -249,11 +327,15 @@ def _render_markdown(summary: dict[str, Any]) -> str:
 
 
 def run_benchmark(*, repeats: int, steps: int) -> dict[str, Any]:
-    rows = [
+    rows: list[dict[str, Any]] = [
         _benchmark_case(2, repeats=repeats, steps=steps, shots=32),
         _benchmark_case(3, repeats=repeats, steps=steps, shots=64),
         _benchmark_case(4, repeats=max(5, repeats - 2), steps=steps, shots=64),
     ]
+    for n, shots in ((2, 32), (3, 64), (4, 64)):
+        rust_row = _benchmark_case_rust_full_loop(n, repeats=repeats, steps=steps, shots=shots)
+        if rust_row is not None:
+            rows.append(rust_row)
     return {
         "schema": "scpn_realtime_control_e2e_benchmark_v1",
         "date": DATE,
