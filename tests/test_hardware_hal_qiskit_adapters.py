@@ -288,12 +288,8 @@ def test_qiskit_adapter_rejects_non_qiskit_workload_payload() -> None:
         shots=1,
     )
 
-    try:
+    with pytest.raises(ValueError, match="qiskit_qpy|OpenQASM"):
         hal.submit("local_qiskit_aer", workload)
-    except ValueError as exc:
-        assert "qiskit_qpy" in str(exc) or "OpenQASM" in str(exc)
-    else:  # pragma: no cover - defensive assertion branch
-        raise AssertionError("Qiskit adapter accepted a non-Qiskit payload")
 
 
 def test_qiskit_runtime_status_normalisation_maps_provider_tokens() -> None:
