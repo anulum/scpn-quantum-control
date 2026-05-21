@@ -327,10 +327,10 @@ def _normalise_counts(counts: dict[Any, Any]) -> dict[str, int]:
 def _backend_name(backend: Any) -> str:
     name = getattr(backend, "name", None)
     if callable(name):
-        return str(name())
+        return strict_provider_job_id(name(), field_name="Qiskit backend name")
     if name is not None:
-        return str(name)
-    return str(backend.__class__.__name__)
+        return strict_provider_job_id(name, field_name="Qiskit backend name")
+    return strict_provider_job_id(backend.__class__.__name__, field_name="Qiskit backend name")
 
 
 def _utc_now() -> str:

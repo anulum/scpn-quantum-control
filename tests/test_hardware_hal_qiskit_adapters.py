@@ -340,3 +340,26 @@ def test_qiskit_provider_job_id_trims_padding() -> None:
         qiskit_mod._provider_job_id(PaddedJobId(), provider_name="qiskit_runtime")
         == "runtime-job-42"
     )
+
+
+def test_qiskit_backend_name_rejects_control_characters() -> None:
+    """Qiskit backend names must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_qiskit as qiskit_mod
+
+    class BadBackend:
+        name = "ibm_\nbackend"
+
+    with pytest.raises(ValueError, match="backend name"):
+        qiskit_mod._backend_name(BadBackend())
+
+
+def test_qiskit_backend_name_trims_padding() -> None:
+    """Qiskit backend names should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_qiskit as qiskit_mod
+
+    class PaddedBackend:
+        name = "  ibm_backend  "
+
+    assert qiskit_mod._backend_name(PaddedBackend()) == "ibm_backend"
