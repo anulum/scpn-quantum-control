@@ -1,0 +1,59 @@
+{
+  "schema": "scpn_realtime_control_latency_consolidation_v1",
+  "timestamp_utc": "2026-05-21T23:26:06.364826+00:00",
+  "source_files": {
+    "local_summary": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/realtime_control_e2e_summary_2026-05-22.json",
+    "ibm_campaigns": [
+      "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T231917Z.json",
+      "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T232106Z.json"
+    ]
+  },
+  "local": {
+    "python_tick_ms": {
+      "mean": 4.271814582413451,
+      "std": 0.6684938262246655,
+      "p95": 4.929535015471629,
+      "count": 3.0
+    },
+    "rust_tick_ms": {
+      "mean": 0.0002640902777777778,
+      "std": 5.2995227868120176e-05,
+      "p95": 0.00031613333333333334,
+      "count": 3.0
+    }
+  },
+  "ibm": {
+    "s1_feedback_seconds": {
+      "mean": 8.59202000327059,
+      "std": 0.5223696141374669,
+      "p95": 9.058324395201634,
+      "count": 4.0
+    },
+    "s1_control_seconds": {
+      "mean": 7.794420659003663,
+      "std": 0.9259445494935628,
+      "p95": 8.884986254313844,
+      "count": 4.0
+    },
+    "capacity_seconds": {
+      "mean": 6.935821811493952,
+      "std": 0.5064306636583567,
+      "p95": 7.471578264393611,
+      "count": 4.0
+    }
+  },
+  "ibm_job_ids": [
+    "d87p5hgp0eas73dmgdig",
+    "d87p5jp789is73917l50",
+    "d87p5m9789is73917l7g",
+    "d87p5p0p0eas73dmgdqg",
+    "d87p5ris46sc73f8h040",
+    "d87p679789is73917lqg",
+    "d87p69p789is73917lt0",
+    "d87p6c5g7okc73emko00",
+    "d87p6eqs46sc73f8h0qg",
+    "d87p6hh789is73917m6g",
+    "d87p6k1789is73917mag",
+    "d87p6mdg7okc73emkod0"
+  ]
+}
