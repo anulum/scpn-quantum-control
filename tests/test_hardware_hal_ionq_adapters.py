@@ -186,3 +186,30 @@ def test_ionq_direct_adapter_normalises_provider_status_tokens() -> None:
 
     assert ionq_mod._normalise_status("CANCELED") == "cancelled"
     assert ionq_mod._normalise_status("COMPLETE") == "completed"
+
+
+def test_ionq_direct_adapter_rejects_non_positive_expected_shots() -> None:
+    """IonQ result decoding must fail closed without a positive expected shot count."""
+
+    client = _FakeIonQClient()
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = IonQCloudHALAdapter(
+        hal.profile("ionq_cloud"),
+        client=client,
+        api_key="test-key",
+    )
+    hal.register_backend(adapter)
+    workload = ionq_qis_workload(
+        [{"gate": "h", "target": 0}], workload_id="ionq_bad_shots", n_qubits=1, shots=10
+    )
+    job = hal.submit("ionq_cloud", workload, approval_id="approved-ionq")
+    adapter._jobs[job.job_id] = adapter._jobs[job.job_id].__class__(
+        job_id=job.job_id,
+        backend_id=job.backend_id,
+        workload_id=job.workload_id,
+        status=job.status,
+        metadata={**job.metadata, "shots": 0},
+    )
+
+    with pytest.raises(ValueError, match="positive shot count"):
+        hal.result(job)

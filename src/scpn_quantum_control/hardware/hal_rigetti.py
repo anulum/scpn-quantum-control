@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any, cast
 
-from ._count_integrity import strict_provider_job_id
+from ._count_integrity import strict_provider_job_id, strict_shot_conservation
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 RIGETTI_EXECUTION_MODE = "rigetti_pyquil_qcs"
@@ -87,6 +87,7 @@ class RigettiQCSHALAdapter:
         provider_job_id = _provider_job_id(raw_result)
         hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         counts = _readout_counts(raw_result, self._readout_register, workload.n_qubits)
+        observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         job = QuantumJobRef(
             job_id=hal_job_id,
             backend_id=self.backend_id,
@@ -106,7 +107,7 @@ class RigettiQCSHALAdapter:
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": approval_id,
                 "execution_mode": RIGETTI_EXECUTION_MODE,

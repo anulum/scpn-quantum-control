@@ -328,6 +328,37 @@ def test_quantinuum_adapter_rejects_unknown_jobs() -> None:
         adapter.cancel(unknown)
 
 
+def test_quantinuum_adapter_rejects_shot_mismatch() -> None:
+    """Quantinuum result decoding must fail closed when counts disagree with expected shots."""
+
+    backend = _FakeQuantinuumBackend()
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = QuantinuumCloudHALAdapter(
+        hal.profile("quantinuum_cloud"),
+        backend=backend,
+        machine="H1-1E",
+        circuit_factory=lambda workload: workload.program,
+    )
+    hal.register_backend(adapter)
+    workload = quantinuum_tket_workload(
+        {"name": "shot_mismatch", "qubits": 2},
+        workload_id="quantinuum_shot_mismatch",
+        n_qubits=2,
+        shots=3,
+    )
+    job = hal.submit("quantinuum_cloud", workload, approval_id="approved-quantinuum")
+    adapter._jobs[job.job_id] = adapter._jobs[job.job_id].__class__(
+        job_id=job.job_id,
+        backend_id=job.backend_id,
+        workload_id=job.workload_id,
+        status=job.status,
+        metadata={**job.metadata, "shots": 4},
+    )
+
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)
+
+
 def test_quantinuum_adapter_rejects_invalid_provider_handle() -> None:
     """Quantinuum adapter should fail closed when provider handle is missing."""
 

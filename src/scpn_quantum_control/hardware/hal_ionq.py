@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any
 
+from ._count_integrity import strict_shot_conservation
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 IONQ_API_V04_BASE_URL = "https://api.ionq.co/v0.4"
@@ -124,14 +125,17 @@ class IonQCloudHALAdapter:
             return cached
         stored = self._job(job)
         probabilities = self._get_json(f"{self._base_url}/jobs/{job.job_id}/results/probabilities")
-        shots = _int_metadata(stored.metadata.get("shots"), fallback=0) or _job_shots(stored)
+        expected_shots = _int_metadata(stored.metadata.get("shots"), fallback=0) or _job_shots(
+            stored
+        )
         n_qubits = _job_n_qubits(stored)
-        counts = _probabilities_to_counts(probabilities, shots, n_qubits)
+        counts = _probabilities_to_counts(probabilities, expected_shots, n_qubits)
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "execution_mode": "ionq_cloud_api_v0.4",

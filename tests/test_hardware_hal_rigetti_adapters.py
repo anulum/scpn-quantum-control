@@ -51,6 +51,15 @@ class _FakeRigettiQuantumComputer:
         return _FakeRigettiResult(rows)
 
 
+class _FakeRigettiShotMismatchQuantumComputer:
+    def compile(self, program: Any) -> str:
+        return f"compiled::{program}"
+
+    def run(self, executable: Any) -> _FakeRigettiResult:
+        del executable
+        return _FakeRigettiResult([[0, 0], [1, 1], [1, 1]])
+
+
 class _FakeNoCompileRigettiQuantumComputer:
     def __init__(self) -> None:
         self.ran: list[Any] = []
@@ -316,6 +325,29 @@ def test_rigetti_qcs_adapter_rejects_unknown_jobs() -> None:
         adapter.result(unknown)
     with pytest.raises(KeyError, match="unknown job_id"):
         adapter.cancel(unknown)
+
+
+def test_rigetti_qcs_adapter_rejects_shot_mismatch() -> None:
+    """Rigetti adapter must fail closed if observed readouts do not match requested shots."""
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        RigettiQCSHALAdapter(
+            hal.profile("rigetti_qcs"),
+            quantum_computer=_FakeRigettiShotMismatchQuantumComputer(),
+            program_factory=lambda workload: workload.program,
+            shot_loop=lambda program, shots: f"{program}\nNUMSHOTS {shots}",
+        )
+    )
+    workload = rigetti_quil_workload(
+        "DECLARE ro BIT[2]\nMEASURE 0 ro[0]\nMEASURE 1 ro[1]",
+        workload_id="rigetti_shot_mismatch",
+        n_qubits=2,
+        shots=2,
+    )
+
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.submit("rigetti_qcs", workload, approval_id="approved-rigetti")
 
 
 @pytest.mark.parametrize(

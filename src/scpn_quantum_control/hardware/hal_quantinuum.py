@@ -16,7 +16,12 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any
 
-from ._count_integrity import strict_non_negative_count, strict_provider_job_id
+from ._count_integrity import (
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 QUANTINUUM_EXECUTION_MODE = "quantinuum_pytket"
@@ -123,11 +128,13 @@ class QuantinuumCloudHALAdapter:
         handle = self._handle(job)
         result = self._backend_client().get_result(handle)
         counts = _normalise_counts(result.get_counts())
+        expected_shots = _int_metadata(stored.metadata.get("shots"), fallback=0)
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         return QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "execution_mode": QUANTINUUM_EXECUTION_MODE,
@@ -289,6 +296,14 @@ def _job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _int_metadata(value: object, *, fallback: int) -> int:
+    try:
+        integer = strict_integer_value(value, field_name="Quantinuum metadata")
+    except ValueError:
+        return fallback
+    return integer if integer > 0 else fallback
 
 
 __all__ = [
