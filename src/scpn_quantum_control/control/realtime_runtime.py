@@ -21,6 +21,8 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Protocol
 
+import numpy as np
+
 
 class RealtimeClock(Protocol):
     """Clock boundary used by the realtime runtime."""
@@ -117,6 +119,42 @@ class RealtimeRunResult:
     max_jitter_s: float
 
 
+@dataclass(frozen=True)
+class RealtimeSLAConfig:
+    """Service-level contract for realtime-loop latency and jitter."""
+
+    max_latency_s: float
+    max_jitter_s: float = 0.0
+    p95_latency_s: float | None = None
+    p99_latency_s: float | None = None
+    max_deadline_miss_rate: float = 0.0
+
+    def __post_init__(self) -> None:
+        _require_positive(self.max_latency_s, "max_latency_s")
+        _require_non_negative(self.max_jitter_s, "max_jitter_s")
+        if self.p95_latency_s is not None:
+            _require_positive(self.p95_latency_s, "p95_latency_s")
+        if self.p99_latency_s is not None:
+            _require_positive(self.p99_latency_s, "p99_latency_s")
+        _require_non_negative(self.max_deadline_miss_rate, "max_deadline_miss_rate")
+        if self.max_deadline_miss_rate > 1.0:
+            raise ValueError("max_deadline_miss_rate must be <= 1.0")
+
+
+@dataclass(frozen=True)
+class RealtimeSLAReport:
+    """Measured SLA verdict for one realtime run."""
+
+    compliant: bool
+    breach_reasons: tuple[str, ...]
+    observed_max_latency_s: float
+    observed_max_jitter_s: float
+    observed_p95_latency_s: float
+    observed_p99_latency_s: float
+    observed_deadline_miss_rate: float
+    n_ticks: int
+
+
 RealtimeStep = Callable[[int], Mapping[str, float]]
 
 
@@ -179,6 +217,61 @@ def run_realtime_control_loop(
     )
 
 
+def evaluate_realtime_sla(
+    result: RealtimeRunResult,
+    *,
+    sla: RealtimeSLAConfig,
+) -> RealtimeSLAReport:
+    """Evaluate a realtime run against a strict SLA contract."""
+
+    if not result.records:
+        raise ValueError("realtime result must contain at least one tick record")
+    latencies = np.asarray([record.latency_s for record in result.records], dtype=np.float64)
+    miss_rate = float(result.missed_deadlines) / float(len(result.records))
+    p95 = float(np.quantile(latencies, 0.95, method="linear"))
+    p99 = float(np.quantile(latencies, 0.99, method="linear"))
+    reasons: list[str] = []
+    if float(result.max_latency_s) > sla.max_latency_s:
+        reasons.append(
+            f"max latency {float(result.max_latency_s):.9f}s exceeds SLA {sla.max_latency_s:.9f}s"
+        )
+    if float(result.max_jitter_s) > sla.max_jitter_s:
+        reasons.append(
+            f"max jitter {float(result.max_jitter_s):.9f}s exceeds SLA {sla.max_jitter_s:.9f}s"
+        )
+    if sla.p95_latency_s is not None and p95 > sla.p95_latency_s:
+        reasons.append(f"p95 latency {p95:.9f}s exceeds SLA {sla.p95_latency_s:.9f}s")
+    if sla.p99_latency_s is not None and p99 > sla.p99_latency_s:
+        reasons.append(f"p99 latency {p99:.9f}s exceeds SLA {sla.p99_latency_s:.9f}s")
+    if miss_rate > sla.max_deadline_miss_rate:
+        reasons.append(
+            f"deadline miss rate {miss_rate:.6f} exceeds SLA {sla.max_deadline_miss_rate:.6f}"
+        )
+    return RealtimeSLAReport(
+        compliant=not reasons,
+        breach_reasons=tuple(reasons),
+        observed_max_latency_s=float(result.max_latency_s),
+        observed_max_jitter_s=float(result.max_jitter_s),
+        observed_p95_latency_s=p95,
+        observed_p99_latency_s=p99,
+        observed_deadline_miss_rate=miss_rate,
+        n_ticks=len(result.records),
+    )
+
+
+def enforce_realtime_sla(
+    result: RealtimeRunResult,
+    *,
+    sla: RealtimeSLAConfig,
+) -> RealtimeSLAReport:
+    """Fail closed when a realtime run violates the configured SLA."""
+
+    report = evaluate_realtime_sla(result, sla=sla)
+    if not report.compliant:
+        raise RuntimeError("; ".join(report.breach_reasons))
+    return report
+
+
 def _normalise_metrics(metrics: Mapping[str, float]) -> dict[str, float]:
     normalised: dict[str, float] = {}
     for key, value in metrics.items():
@@ -201,11 +294,15 @@ def _require_non_negative(value: float, name: str) -> None:
 
 
 __all__ = [
+    "RealtimeSLAConfig",
+    "RealtimeSLAReport",
     "MonotonicRealtimeClock",
     "RealtimeClock",
     "RealtimeRunResult",
     "RealtimeRuntimeConfig",
     "RealtimeTickRecord",
     "VirtualRealtimeClock",
+    "enforce_realtime_sla",
+    "evaluate_realtime_sla",
     "run_realtime_control_loop",
 ]
