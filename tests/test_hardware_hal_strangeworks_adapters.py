@@ -172,6 +172,7 @@ def test_strangeworks_adapter_normalises_provider_status_tokens() -> None:
     assert sw_mod._normalise_status("INPROGRESS") == "running"
     assert sw_mod._normalise_status("INITIALIZING") == "submitted"
     assert sw_mod._normalise_status("STARTING") == "submitted"
+    assert sw_mod._normalise_status("CREATING") == "submitted"
 
 
 def test_strangeworks_provider_job_id_rejects_control_characters() -> None:
