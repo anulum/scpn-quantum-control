@@ -13,8 +13,13 @@ import hashlib
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from importlib import import_module
-from typing import Any, cast
+from typing import Any
 
+from ._count_integrity import (
+    strict_integer_value,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 CIRQ_EXECUTION_MODE = "local_cirq_simulator"
@@ -80,6 +85,7 @@ class CirqLocalHALAdapter:
             raise TypeError("Cirq simulator object does not provide run()")
         raw_result = run(circuit, repetitions=workload.shots)
         counts = _normalise_histogram_counts(raw_result, self._measurement_key, workload.n_qubits)
+        observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         provider_job_id = _provider_job_id(raw_result)
         hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
@@ -100,7 +106,7 @@ class CirqLocalHALAdapter:
             job=job,
             status="completed",
             counts=counts,
-            shots=workload.shots,
+            shots=observed_shots,
             metadata={
                 "execution_mode": CIRQ_EXECUTION_MODE,
                 "measurement_key": self._measurement_key,
@@ -205,12 +211,7 @@ def _state_to_bitstring(state: object, n_qubits: int) -> str:
 
 
 def _coerce_int(value: object, *, field_name: str) -> int:
-    if isinstance(value, bool):
-        raise ValueError(f"{field_name} must be an integer")
-    try:
-        return int(cast(int | str, value))
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"{field_name} must be an integer") from exc
+    return strict_integer_value(value, field_name=field_name)
 
 
 def _utc_now() -> str:
@@ -223,13 +224,13 @@ def _provider_job_id(raw_result: object) -> str:
         if callable(value):
             value = value()
         if value is not None and str(value).strip():
-            return str(value).strip()
+            return strict_provider_job_id(value, field_name="Cirq provider job id")
     metadata = getattr(raw_result, "metadata", None)
     if isinstance(metadata, Mapping):
         for key in ("job_id", "id", "task_id"):
             value = metadata.get(key)
             if value is not None and str(value).strip():
-                return str(value).strip()
+                return strict_provider_job_id(value, field_name="Cirq provider job id")
     raise ValueError("Cirq result does not expose a provider job id")
 
 

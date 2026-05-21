@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any, cast
 
+from ._count_integrity import strict_provider_job_id
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 RIGETTI_EXECUTION_MODE = "rigetti_pyquil_qcs"
@@ -239,13 +240,13 @@ def _provider_job_id(raw_result: object) -> str:
         if callable(value):
             value = value()
         if value is not None and str(value).strip():
-            return str(value).strip()
+            return strict_provider_job_id(value, field_name="Rigetti provider job id")
     metadata = getattr(raw_result, "metadata", None)
     if isinstance(metadata, Mapping):
         for key in ("job_id", "id", "task_id"):
             value = metadata.get(key)
             if value is not None and str(value).strip():
-                return str(value).strip()
+                return strict_provider_job_id(value, field_name="Rigetti provider job id")
     raise ValueError("Rigetti result does not expose a provider job id")
 
 

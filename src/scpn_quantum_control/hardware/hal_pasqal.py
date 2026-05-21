@@ -14,9 +14,14 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
 from importlib import import_module
-from typing import Any, cast
+from typing import Any
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import (
+    strict_binary_bitstring_key,
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 PASQAL_PULSER_SCHEMA = "pulser_sequence_plan_v1"
@@ -296,10 +301,8 @@ def _normalise_counts(raw: object) -> dict[str, int]:
         raise TypeError("Pasqal counts must be a mapping")
     counts: dict[str, int] = {}
     for bitstring, count in raw.items():
-        key = str(bitstring)
+        key = strict_binary_bitstring_key(bitstring, field_name="Pasqal count key")
         value = strict_non_negative_count(count)
-        if not key:
-            raise ValueError("counts keys must be non-empty bitstrings")
         counts[key] = value
     return counts
 
@@ -324,12 +327,7 @@ def _normalise_status(value: object) -> str:
 
 
 def _coerce_int(value: object, *, field_name: str) -> int:
-    if isinstance(value, bool):
-        raise ValueError(f"{field_name} must be an integer")
-    try:
-        return int(cast(int | str, value))
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"{field_name} must be an integer") from exc
+    return strict_integer_value(value, field_name=field_name)
 
 
 def _coerce_float(value: object, *, field_name: str) -> float:
@@ -351,7 +349,7 @@ def _provider_job_id(provider_job: object) -> str:
         if callable(value):
             value = value()
         if value is not None and str(value).strip():
-            return str(value).strip()
+            return strict_provider_job_id(value, field_name="Pasqal provider job id")
     raise ValueError("Pasqal provider job does not expose a provider job id")
 
 

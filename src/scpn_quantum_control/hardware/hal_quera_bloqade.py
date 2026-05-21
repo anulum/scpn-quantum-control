@@ -16,7 +16,11 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any, cast
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import (
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 BLOQADE_AHS_SCHEMA = "bloqade_ahs_plan_v1"
@@ -307,7 +311,7 @@ def _provider_job_id(batch: object) -> str:
         if callable(value):
             value = value()
         if value is not None and str(value).strip():
-            return str(value).strip()
+            return strict_provider_job_id(value, field_name="Bloqade provider job id")
     raise ValueError("Bloqade batch does not expose a provider job id")
 
 
@@ -317,12 +321,7 @@ def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
 
 
 def _coerce_int(value: object, *, field_name: str) -> int:
-    if isinstance(value, int):
-        return value
-    try:
-        return int(str(value))
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"{field_name} must be an integer") from exc
+    return strict_integer_value(value, field_name=field_name)
 
 
 def _coerce_float(value: object, *, field_name: str) -> float:

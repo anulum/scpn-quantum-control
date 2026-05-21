@@ -14,8 +14,9 @@ import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
 from importlib import import_module
-from typing import Any, cast
+from typing import Any
 
+from ._count_integrity import strict_integer_value, strict_provider_job_id
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 QUANDELA_PERCEVAL_SCHEMA = "scpn.quandela.perceval.v1"
@@ -286,12 +287,12 @@ def _provider_job_id(result: object) -> str:
         if callable(value):
             value = value()
         if value is not None and str(value).strip():
-            return str(value).strip()
+            return strict_provider_job_id(value, field_name="Quandela provider job id")
     if isinstance(result, Mapping):
         for key in ("job_id", "id", "task_id"):
             value = result.get(key)
             if value is not None and str(value).strip():
-                return str(value).strip()
+                return strict_provider_job_id(value, field_name="Quandela provider job id")
     raise ValueError("Quandela result does not expose a provider job id")
 
 
@@ -318,12 +319,7 @@ def _normalise_counts(raw: object) -> dict[str, int]:
 
 
 def _coerce_int(value: object, *, field_name: str) -> int:
-    if isinstance(value, bool):
-        raise ValueError(f"{field_name} must be an integer")
-    try:
-        return int(cast(int | str, value))
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"{field_name} must be an integer") from exc
+    return strict_integer_value(value, field_name=field_name)
 
 
 def _coerce_float(value: object, *, field_name: str) -> float:

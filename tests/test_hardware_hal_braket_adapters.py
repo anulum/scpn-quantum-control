@@ -88,7 +88,7 @@ def test_braket_aws_adapter_uses_injected_device_and_approval_gate() -> None:
 
     assert job.status == "submitted"
     assert result.status == "completed"
-    assert result.counts == {"0": 4, "1": 2}
+    assert result.counts == {"00": 4, "01": 2}
     assert result.metadata["execution_mode"] == "braket_aws"
     assert result.metadata["approval_id"] == "approved-braket"
     assert hal.status(job) == "completed"

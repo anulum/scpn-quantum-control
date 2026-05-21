@@ -13,7 +13,13 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import (
+    strict_fixed_width_bitstring_key,
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 
@@ -104,6 +110,8 @@ class QbraidRuntimeHALAdapter:
                 "execution_mode": "qbraid_runtime",
                 "ir_format": workload.ir_format,
                 "device_id": _device_id(device),
+                "n_qubits": workload.n_qubits,
+                "shots": workload.shots,
             },
         )
         self._provider_jobs[job.job_id] = provider_job
@@ -128,12 +136,15 @@ class QbraidRuntimeHALAdapter:
             return cached
         provider_job = self._provider_job(job)
         provider_result = provider_job.result()
-        counts = _extract_counts(provider_result)
+        n_qubits = strict_integer_value(job.metadata.get("n_qubits", 0), field_name="n_qubits")
+        counts = _extract_counts(provider_result, n_qubits=n_qubits)
+        expected_shots = strict_integer_value(job.metadata.get("shots", 0), field_name="shots")
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": job.metadata.get("approval_id"),
                 "execution_mode": "qbraid_runtime",
@@ -188,29 +199,31 @@ def _default_qbraid_provider() -> Any:
         raise RuntimeError("qbraid is required for QbraidRuntimeHALAdapter") from exc
 
 
-def _extract_counts(provider_result: Any) -> dict[str, int]:
+def _extract_counts(provider_result: Any, *, n_qubits: int) -> dict[str, int]:
+    if n_qubits <= 0:
+        raise ValueError("qBraid result decoding requires a positive n_qubits")
     data = getattr(provider_result, "data", None)
     if data is not None:
         get_counts = getattr(data, "get_counts", None)
         if callable(get_counts):
-            return _normalise_counts(get_counts())
+            return _normalise_counts(get_counts(), n_qubits=n_qubits)
         measurement_counts = getattr(data, "measurement_counts", None)
         if measurement_counts is not None:
-            return _normalise_counts(measurement_counts)
+            return _normalise_counts(measurement_counts, n_qubits=n_qubits)
     get_counts = getattr(provider_result, "get_counts", None)
     if callable(get_counts):
-        return _normalise_counts(get_counts())
+        return _normalise_counts(get_counts(), n_qubits=n_qubits)
     measurement_counts_method = getattr(provider_result, "measurement_counts", None)
     if callable(measurement_counts_method):
-        return _normalise_counts(measurement_counts_method())
+        return _normalise_counts(measurement_counts_method(), n_qubits=n_qubits)
     if isinstance(provider_result, Mapping):
         for key in ("counts", "measurement_counts"):
             if key in provider_result:
-                return _normalise_counts(provider_result[key])
+                return _normalise_counts(provider_result[key], n_qubits=n_qubits)
     raise ValueError("qBraid result does not contain measurement counts")
 
 
-def _normalise_counts(counts: Any) -> dict[str, int]:
+def _normalise_counts(counts: Any, *, n_qubits: int) -> dict[str, int]:
     if isinstance(counts, list):
         if len(counts) != 1:
             raise ValueError("qBraid batch results must be split before HAL count extraction")
@@ -218,7 +231,10 @@ def _normalise_counts(counts: Any) -> dict[str, int]:
     if not isinstance(counts, Mapping):
         raise ValueError("qBraid measurement counts must be a mapping")
     return {
-        str(bitstring): strict_non_negative_count(count) for bitstring, count in counts.items()
+        strict_fixed_width_bitstring_key(
+            bitstring, width=n_qubits, field_name="qBraid count key"
+        ): strict_non_negative_count(count)
+        for bitstring, count in counts.items()
     }
 
 
@@ -228,7 +244,7 @@ def _job_id(provider_job: Any) -> str:
         if callable(value):
             value = value()
         if value:
-            return str(value)
+            return strict_provider_job_id(value, field_name="qBraid provider job id")
     raise ValueError("qBraid device.run() returned a job object without an id")
 
 

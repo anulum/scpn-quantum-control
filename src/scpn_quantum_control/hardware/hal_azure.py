@@ -13,7 +13,13 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import (
+    strict_fixed_width_bitstring_key,
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 InputParamsFactory = Callable[[QuantumWorkload], Mapping[str, object] | None]
@@ -103,6 +109,8 @@ class AzureQuantumHALAdapter:
                 "execution_mode": "azure_quantum",
                 "ir_format": workload.ir_format,
                 "target_name": _target_name(target),
+                "n_qubits": workload.n_qubits,
+                "shots": workload.shots,
             },
         )
         self._jobs[job.job_id] = job
@@ -133,12 +141,15 @@ class AzureQuantumHALAdapter:
             return cached
         provider_job = self._provider_job(job)
         payload = _job_results(provider_job)
-        counts = _extract_counts(payload)
+        n_qubits = strict_integer_value(job.metadata.get("n_qubits", 0), field_name="n_qubits")
+        counts = _extract_counts(payload, n_qubits=n_qubits)
+        expected_shots = strict_integer_value(job.metadata.get("shots", 0), field_name="shots")
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": job.metadata.get("approval_id"),
                 "execution_mode": "azure_quantum",
@@ -185,7 +196,7 @@ def _job_id(provider_job: Any) -> str:
         if callable(value):
             value = value()
         if value:
-            return str(value)
+            return strict_provider_job_id(value, field_name="Azure provider job id")
     raise ValueError("Azure Quantum submit() returned a job object without an id")
 
 
@@ -197,18 +208,24 @@ def _job_results(provider_job: Any) -> Any:
     raise ValueError("Azure Quantum job object does not expose results")
 
 
-def _extract_counts(payload: Any) -> dict[str, int]:
+def _extract_counts(payload: Any, *, n_qubits: int) -> dict[str, int]:
+    if n_qubits <= 0:
+        raise ValueError("Azure Quantum result decoding requires a positive n_qubits")
     if isinstance(payload, Mapping):
         for key in ("counts", "histogram", "measurement_counts", "MeasurementCounts"):
             candidate = payload.get(key)
             if isinstance(candidate, Mapping):
                 return {
-                    str(bitstring): strict_non_negative_count(count)
+                    strict_fixed_width_bitstring_key(
+                        bitstring, width=n_qubits, field_name="Azure count key"
+                    ): strict_non_negative_count(count)
                     for bitstring, count in candidate.items()
                 }
         if all(isinstance(key, str) for key in payload):
             return {
-                str(bitstring): strict_non_negative_count(count)
+                strict_fixed_width_bitstring_key(
+                    bitstring, width=n_qubits, field_name="Azure count key"
+                ): strict_non_negative_count(count)
                 for bitstring, count in payload.items()
             }
     raise ValueError("Azure Quantum result payload does not contain shot counts")

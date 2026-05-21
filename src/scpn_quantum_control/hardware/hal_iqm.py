@@ -17,7 +17,13 @@ from typing import Any
 
 from qiskit import QuantumCircuit, transpile
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import (
+    strict_binary_bitstring_key,
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 from .hal_qiskit import qiskit_circuit_to_workload
 
@@ -129,11 +135,13 @@ class IQMHALAdapter:
             raise TypeError("IQM provider job does not provide result()")
         provider_result = result_method(timeout=self.timeout_s)
         counts = _extract_counts(provider_result)
+        expected_shots = strict_integer_value(stored.metadata.get("shots", 0), field_name="shots")
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "provider_job_id": stored.metadata.get("provider_job_id"),
@@ -235,10 +243,8 @@ def _normalise_counts(raw: Any) -> dict[str, int]:
         raise TypeError("IQM counts must be a mapping")
     counts: dict[str, int] = {}
     for bitstring, count in raw.items():
-        key = str(bitstring)
+        key = strict_binary_bitstring_key(bitstring, field_name="IQM count key")
         value = strict_non_negative_count(count)
-        if not key:
-            raise ValueError("counts keys must be non-empty bitstrings")
         counts[key] = value
     return counts
 
@@ -255,9 +261,9 @@ def _backend_name(backend: Any) -> str:
 def _job_id(job: Any) -> str:
     job_id = getattr(job, "job_id", None)
     if callable(job_id):
-        return str(job_id())
+        return strict_provider_job_id(job_id(), field_name="IQM provider job id")
     if job_id:
-        return str(job_id)
+        return strict_provider_job_id(job_id, field_name="IQM provider job id")
     raise ValueError("IQM backend job does not expose a provider job id")
 
 

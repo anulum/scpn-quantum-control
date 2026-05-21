@@ -14,7 +14,13 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import (
+    strict_fixed_width_bitstring_key,
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 
@@ -106,6 +112,8 @@ class StrangeworksComputeHALAdapter:
                 "execution_mode": "strangeworks_compute",
                 "ir_format": workload.ir_format,
                 "backend_id": _backend_id(backend),
+                "n_qubits": workload.n_qubits,
+                "shots": workload.shots,
             },
         )
         self._provider_jobs[job.job_id] = provider_job
@@ -133,12 +141,15 @@ class StrangeworksComputeHALAdapter:
         if not callable(result_method):
             raise TypeError("Strangeworks provider job does not provide result()")
         provider_result = result_method()
-        counts = _extract_counts(provider_result)
+        n_qubits = strict_integer_value(job.metadata.get("n_qubits", 0), field_name="n_qubits")
+        counts = _extract_counts(provider_result, n_qubits=n_qubits)
+        expected_shots = strict_integer_value(job.metadata.get("shots", 0), field_name="shots")
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": job.metadata.get("approval_id"),
                 "execution_mode": "strangeworks_compute",
@@ -208,29 +219,31 @@ def _default_strangeworks_workspace() -> Any:
     )
 
 
-def _extract_counts(provider_result: Any) -> dict[str, int]:
+def _extract_counts(provider_result: Any, *, n_qubits: int) -> dict[str, int]:
+    if n_qubits <= 0:
+        raise ValueError("Strangeworks result decoding requires a positive n_qubits")
     data = getattr(provider_result, "data", None)
     if data is not None:
         for attr in ("get_counts", "measurement_counts"):
             value = getattr(data, attr, None)
             if callable(value):
-                return _normalise_counts(value())
+                return _normalise_counts(value(), n_qubits=n_qubits)
             if value is not None:
-                return _normalise_counts(value)
+                return _normalise_counts(value, n_qubits=n_qubits)
     for attr in ("get_counts", "measurement_counts", "counts"):
         value = getattr(provider_result, attr, None)
         if callable(value):
-            return _normalise_counts(value())
+            return _normalise_counts(value(), n_qubits=n_qubits)
         if value is not None:
-            return _normalise_counts(value)
+            return _normalise_counts(value, n_qubits=n_qubits)
     if isinstance(provider_result, Mapping):
         for key in ("counts", "measurement_counts"):
             if key in provider_result:
-                return _normalise_counts(provider_result[key])
+                return _normalise_counts(provider_result[key], n_qubits=n_qubits)
     raise ValueError("Strangeworks result does not contain measurement counts")
 
 
-def _normalise_counts(counts: Any) -> dict[str, int]:
+def _normalise_counts(counts: Any, *, n_qubits: int) -> dict[str, int]:
     if isinstance(counts, list):
         if len(counts) != 1:
             raise ValueError(
@@ -240,7 +253,10 @@ def _normalise_counts(counts: Any) -> dict[str, int]:
     if not isinstance(counts, Mapping):
         raise ValueError("Strangeworks measurement counts must be a mapping")
     return {
-        str(bitstring): strict_non_negative_count(count) for bitstring, count in counts.items()
+        strict_fixed_width_bitstring_key(
+            bitstring, width=n_qubits, field_name="Strangeworks count key"
+        ): strict_non_negative_count(count)
+        for bitstring, count in counts.items()
     }
 
 
@@ -250,7 +266,7 @@ def _job_id(provider_job: Any) -> str:
         if callable(value):
             value = value()
         if value:
-            return str(value)
+            return strict_provider_job_id(value, field_name="Strangeworks provider job id")
     raise ValueError("Strangeworks backend.run() returned a job object without an id")
 
 

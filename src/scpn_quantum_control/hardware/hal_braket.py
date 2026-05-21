@@ -13,7 +13,12 @@ from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from typing import Any
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import (
+    strict_fixed_width_bitstring_key,
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 
@@ -62,7 +67,7 @@ class BraketLocalHALAdapter:
         device = self._device or _default_local_device(self.profile.backend_id)
         task = device.run(circuit, shots=workload.shots)
         task_result = task.result()
-        counts = _extract_braket_counts(task_result)
+        counts = _extract_braket_counts(task_result, n_qubits=workload.n_qubits)
         task_id = _task_id(task)
         job = QuantumJobRef(
             job_id=task_id,
@@ -73,13 +78,16 @@ class BraketLocalHALAdapter:
                 "provider_task_id": task_id,
                 "execution_mode": "braket_local",
                 "ir_format": workload.ir_format,
+                "n_qubits": workload.n_qubits,
+                "shots": workload.shots,
             },
         )
+        observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         result = QuantumJobResult(
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "execution_mode": "braket_local",
                 "ir_format": workload.ir_format,
@@ -165,6 +173,8 @@ class BraketAwsHALAdapter:
                 "execution_mode": "braket_aws",
                 "ir_format": workload.ir_format,
                 "device_name": _device_name(device),
+                "n_qubits": workload.n_qubits,
+                "shots": workload.shots,
             },
         )
         self._tasks[job.job_id] = task
@@ -183,12 +193,15 @@ class BraketAwsHALAdapter:
         if cached is not None:
             return cached
         task = self._task(job)
-        counts = _extract_braket_counts(task.result())
+        n_qubits = strict_integer_value(job.metadata.get("n_qubits", 0), field_name="n_qubits")
+        counts = _extract_braket_counts(task.result(), n_qubits=n_qubits)
+        expected_shots = strict_integer_value(job.metadata.get("shots", 0), field_name="shots")
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": job.metadata.get("approval_id"),
                 "execution_mode": "braket_aws",
@@ -252,12 +265,17 @@ def _default_local_device(backend_id: str) -> Any:
         raise RuntimeError("amazon-braket-sdk is required for BraketLocalHALAdapter") from exc
 
 
-def _extract_braket_counts(task_result: Any) -> dict[str, int]:
+def _extract_braket_counts(task_result: Any, *, n_qubits: int) -> dict[str, int]:
+    if n_qubits <= 0:
+        raise ValueError("Braket result decoding requires a positive n_qubits")
     counts = getattr(task_result, "measurement_counts", None)
     if counts is None:
         raise ValueError("Braket task result does not contain measurement_counts")
     return {
-        str(bitstring): strict_non_negative_count(count) for bitstring, count in counts.items()
+        strict_fixed_width_bitstring_key(
+            bitstring, width=n_qubits, field_name="Braket count key"
+        ): strict_non_negative_count(count)
+        for bitstring, count in counts.items()
     }
 
 

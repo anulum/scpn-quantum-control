@@ -18,6 +18,11 @@ from typing import Any, cast
 from qiskit import QuantumCircuit, qasm3, qpy, transpile
 from qiskit.qpy import dump as qpy_dump
 
+from ._count_integrity import (
+    strict_integer_value,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 from .runner import _extract_counts
 
@@ -85,7 +90,8 @@ class QiskitAerHALAdapter:
         backend = self._backend or _default_aer_backend()
         compiled = transpile(circuit, backend)
         provider_job = backend.run(compiled, shots=workload.shots)
-        counts = provider_job.result().get_counts()
+        counts = _normalise_counts(provider_job.result().get_counts())
+        observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         job_id = _provider_job_id(provider_job, provider_name="qiskit_aer")
         job = QuantumJobRef(
             job_id=job_id,
@@ -101,8 +107,8 @@ class QiskitAerHALAdapter:
         result = QuantumJobResult(
             job=job,
             status="completed",
-            counts=_normalise_counts(counts),
-            shots=workload.shots,
+            counts=counts,
+            shots=observed_shots,
             metadata={
                 "execution_mode": "qiskit_aer",
                 "ir_format": workload.ir_format,
@@ -187,6 +193,7 @@ class QiskitRuntimeHALAdapter:
                 "execution_mode": "qiskit_runtime_sampler",
                 "backend_name": _backend_name(self._backend),
                 "ir_format": workload.ir_format,
+                "shots": workload.shots,
             },
         )
         self._provider_jobs[job.job_id] = provider_job
@@ -210,11 +217,13 @@ class QiskitRuntimeHALAdapter:
         for pub_result in runtime_result:
             for bitstring, count in _normalise_counts(_extract_counts(pub_result)).items():
                 counts[bitstring] = counts.get(bitstring, 0) + count
+        expected_shots = strict_integer_value(job.metadata.get("shots", 0), field_name="shots")
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=job,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": job.metadata.get("approval_id"),
                 "execution_mode": "qiskit_runtime_sampler",
@@ -328,7 +337,7 @@ def _provider_job_id(provider_job: Any, *, provider_name: str) -> str:
     job_id = str(raw_job_id).strip() if raw_job_id is not None else ""
     if not job_id:
         raise ValueError(f"{provider_name} job object does not expose a provider job id")
-    return job_id
+    return strict_provider_job_id(job_id, field_name=f"{provider_name} provider job id")
 
 
 def _normalise_status(value: object, *, default: str = "unknown") -> str:

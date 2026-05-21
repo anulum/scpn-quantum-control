@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any
 
-from ._count_integrity import strict_non_negative_count
+from ._count_integrity import strict_non_negative_count, strict_provider_job_id
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 QUANTINUUM_EXECUTION_MODE = "quantinuum_pytket"
@@ -261,12 +261,12 @@ def _provider_job_id(handle: Any) -> str:
         if callable(value):
             value = value()
         if value is not None and str(value).strip():
-            return str(value).strip()
+            return strict_provider_job_id(value, field_name="Quantinuum provider job id")
     if isinstance(handle, Mapping):
         for key in ("job_id", "id", "handle", "task_id"):
             value = handle.get(key)
             if value is not None and str(value).strip():
-                return str(value).strip()
+                return strict_provider_job_id(value, field_name="Quantinuum provider job id")
 
     provider_job_id = str(handle).strip()
     if (
@@ -279,7 +279,7 @@ def _provider_job_id(handle: Any) -> str:
         )
     ):
         raise ValueError("Quantinuum backend process_circuit returned an invalid provider handle")
-    return provider_job_id
+    return strict_provider_job_id(provider_job_id, field_name="Quantinuum provider job id")
 
 
 def _job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:

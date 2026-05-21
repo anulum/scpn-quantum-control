@@ -13,8 +13,15 @@ import hashlib
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from importlib import import_module
-from typing import Any, cast
+from typing import Any
 
+from ._count_integrity import (
+    strict_binary_bitstring_key,
+    strict_integer_value,
+    strict_non_negative_count,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 OQC_EXECUTION_MODE = "oqc_qcaas_openqasm3"
@@ -121,11 +128,13 @@ class OQCHALAdapter:
         if not callable(result_method):
             raise TypeError("OQC provider job does not provide result()")
         counts = _normalise_counts(_extract_counts(result_method()))
+        expected_shots = strict_integer_value(stored.metadata.get("shots", 0), field_name="shots")
+        observed_shots = strict_shot_conservation(counts, expected_shots=expected_shots)
         result = QuantumJobResult(
             job=stored,
             status="completed",
             counts=counts,
-            shots=sum(counts.values()),
+            shots=observed_shots,
             metadata={
                 "approval_id": stored.metadata.get("approval_id"),
                 "execution_mode": OQC_EXECUTION_MODE,
@@ -213,12 +222,8 @@ def _normalise_counts(raw: object) -> dict[str, int]:
         raise TypeError("OQC counts must be a mapping")
     counts: dict[str, int] = {}
     for bitstring, count in raw.items():
-        key = str(bitstring)
-        value = _coerce_int(count, field_name="count")
-        if not key:
-            raise ValueError("counts keys must be non-empty bitstrings")
-        if value < 0:
-            raise ValueError("counts values must be non-negative integers")
+        key = strict_binary_bitstring_key(bitstring, field_name="OQC count key")
+        value = strict_non_negative_count(count)
         counts[key] = value
     if not counts:
         raise ValueError("OQC result did not contain any counts")
@@ -245,12 +250,7 @@ def _normalise_status(value: object) -> str:
 
 
 def _coerce_int(value: object, *, field_name: str) -> int:
-    if isinstance(value, bool):
-        raise ValueError(f"{field_name} must be an integer")
-    try:
-        return int(cast(int | str, value))
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"{field_name} must be an integer") from exc
+    return strict_integer_value(value, field_name=field_name)
 
 
 def _utc_now() -> str:
@@ -263,7 +263,7 @@ def _provider_job_id(provider_job: object) -> str:
         if callable(value):
             value = value()
         if value is not None and str(value).strip():
-            return str(value).strip()
+            return strict_provider_job_id(value, field_name="OQC provider job id")
     raise ValueError("OQC provider job does not expose a provider job id")
 
 
