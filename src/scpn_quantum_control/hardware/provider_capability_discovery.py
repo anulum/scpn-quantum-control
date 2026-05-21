@@ -9,8 +9,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Literal
 
 from .aggregators import ResolvedAggregatorProviderRoute, resolve_aggregator_provider_route
@@ -1062,6 +1063,15 @@ def snapshot_from_qiskit_runtime_backend(
         backend,
         names=("basis_gates", "operation_names", "operations", "native_gates", "gates"),
     )
+    openpulse_profile = _qiskit_openpulse_profile(configuration, target, backend)
+    native_features = set(_qiskit_native_features(backend, target, basis_gates))
+    if openpulse_profile["supports_pulse_control"]:
+        native_features.add("pulse_control")
+    if openpulse_profile["supports_drive_channel_access"]:
+        native_features.add("drive_channel_access")
+    if openpulse_profile["supports_measure_channel_access"]:
+        native_features.add("measure_channel_access")
+
     return ProviderCapabilitySnapshot(
         route_id=resolved.route.route_id,
         aggregator=resolved.route.aggregator,
@@ -1082,7 +1092,7 @@ def snapshot_from_qiskit_runtime_backend(
         ),
         supported_ir_formats=_qiskit_supported_ir_formats(resolved, backend, configuration),
         basis_gates=basis_gates,
-        native_features=_qiskit_native_features(backend, target, basis_gates),
+        native_features=tuple(sorted(native_features)),
         online=_qiskit_online_state(backend, status),
         simulator=_first_bool_attr(
             backend,
@@ -1110,6 +1120,7 @@ def snapshot_from_qiskit_runtime_backend(
         metadata={
             "adapter": "qiskit_runtime_backend_no_submit",
             "metadata_calls": ("configuration", "status", "properties"),
+            "openpulse_profile": openpulse_profile,
         },
     )
 
@@ -2330,15 +2341,103 @@ def _qiskit_calibration_timestamp(*sources: Any) -> str | None:
         *sources,
         names=("last_update_date", "calibration_timestamp", "last_calibration", "calibrated_at"),
     ):
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-        isoformat = _optional_attr(value, "isoformat")
-        if callable(isoformat):
-            try:
-                return str(isoformat())
-            except Exception:
-                return None
+        normalized = normalize_calibration_timestamp(value)
+        if normalized is not None:
+            return normalized
     return None
+
+
+def normalize_calibration_timestamp(value: Any) -> str | None:
+    """Normalise provider calibration timestamp metadata to RFC3339 UTC where possible."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        stripped = value.strip()
+        return stripped if stripped else None
+    if isinstance(value, datetime):
+        dt = (
+            value.astimezone(timezone.utc)
+            if value.tzinfo is not None
+            else value.replace(tzinfo=timezone.utc)
+        )
+        return dt.isoformat().replace("+00:00", "Z")
+    isoformat = _optional_attr(value, "isoformat")
+    if callable(isoformat):
+        try:
+            iso = isoformat()
+        except Exception:
+            return None
+        if isinstance(iso, str):
+            stripped = iso.strip()
+            return stripped if stripped else None
+    return None
+
+
+def _qiskit_openpulse_profile(*sources: Any) -> dict[str, Any]:
+    n_qubits = _first_optional_int_attr(*sources, names=("num_qubits", "n_qubits", "qubits"))
+    coupling_map = _first_coupling_map(*sources)
+    n_control_channels = _first_optional_int_attr(
+        *sources, names=("n_uchannels", "num_u_channels", "n_control_channels")
+    )
+    supports_drive = bool(n_qubits and n_qubits > 0)
+    supports_measure = bool(_first_optional_attr(*sources, names=("meas_map", "measure_map")))
+    supports_control = bool((n_control_channels and n_control_channels > 0) or coupling_map)
+
+    channel_map: dict[str, dict[str, Any]] = {}
+    if n_qubits and n_qubits > 0:
+        for qubit in range(n_qubits):
+            neighbours = sorted(
+                {
+                    edge[1]
+                    for edge in coupling_map
+                    if len(edge) == 2 and edge[0] == qubit and isinstance(edge[1], int)
+                }
+            )
+            channel_map[f"q{qubit}"] = {
+                "drive": f"d{qubit}",
+                "measure": f"m{qubit}" if supports_measure else None,
+                "control_neighbours": neighbours,
+            }
+
+    return {
+        "supports_pulse_control": supports_drive or supports_control,
+        "supports_drive_channel_access": supports_drive,
+        "supports_measure_channel_access": supports_measure,
+        "supports_control_channel_access": supports_control,
+        "n_control_channels": int(n_control_channels or 0),
+        "channel_map": channel_map,
+    }
+
+
+def _first_optional_attr(*sources: Any, names: tuple[str, ...]) -> Any:
+    for value in _attr_candidates(*sources, names=names):
+        if value is not None:
+            return value
+    return None
+
+
+def _first_coupling_map(*sources: Any) -> tuple[tuple[int, int], ...]:
+    raw = _first_optional_attr(
+        *sources,
+        names=("coupling_map", "couplingMap", "edge_list"),
+    )
+    if raw is None:
+        return ()
+    pairs: list[tuple[int, int]] = []
+    if isinstance(raw, Mapping):
+        iterator = raw.keys()
+    else:
+        iterator = raw
+    try:
+        for item in iterator:
+            if isinstance(item, Sequence) and len(item) == 2:
+                a = item[0]
+                b = item[1]
+                if isinstance(a, int) and isinstance(b, int):
+                    pairs.append((a, b))
+    except TypeError:
+        return ()
+    return tuple(pairs)
 
 
 def _declared_ir_formats(
@@ -2396,6 +2495,7 @@ __all__ = [
     "assess_provider_capability_snapshot",
     "build_openpulse_control_readiness",
     "probe_aggregator_provider_capability",
+    "normalize_calibration_timestamp",
     "snapshot_from_azure_target",
     "snapshot_from_braket_device",
     "snapshot_from_dwave_solver",

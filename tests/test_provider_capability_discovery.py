@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import pytest
 
 from scpn_quantum_control.hardware.aggregators import ResolvedAggregatorProviderRoute
@@ -17,6 +19,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     ProviderCapabilitySnapshot,
     assess_provider_capability_snapshot,
     build_openpulse_control_readiness,
+    normalize_calibration_timestamp,
     probe_aggregator_provider_capability,
     snapshot_from_azure_target,
     snapshot_from_braket_device,
@@ -1192,12 +1195,15 @@ def test_qiskit_runtime_snapshot_reads_backend_metadata_without_submission() -> 
         basis_gates = ("rz", "sx", "x", "cx", "measure", "reset")
         max_shots = 8192
         max_experiments = 75
+        coupling_map = ((0, 1), (1, 2))
+        n_uchannels = 2
 
     class Target:
         operation_names = ("rz", "sx", "cx", "measure", "reset", "if_else")
+        meas_map = ([0], [1], [2])
 
     class Properties:
-        last_update_date = "2026-05-20T08:00:00Z"
+        last_update_date = datetime(2026, 5, 20, 8, 0, tzinfo=timezone.utc)
 
     class Backend:
         name = "ibm_marrakesh"
@@ -1247,6 +1253,22 @@ def test_qiskit_runtime_snapshot_reads_backend_metadata_without_submission() -> 
     assert decision.snapshot.queue_depth == 4
     assert decision.snapshot.calibration_timestamp == "2026-05-20T08:00:00Z"
     assert decision.snapshot.metadata["adapter"] == "qiskit_runtime_backend_no_submit"
+    openpulse = decision.snapshot.metadata["openpulse_profile"]
+    assert openpulse["supports_pulse_control"] is True
+    assert openpulse["supports_drive_channel_access"] is True
+    assert openpulse["supports_measure_channel_access"] is True
+    assert openpulse["n_control_channels"] == 2
+    assert openpulse["channel_map"]["q0"]["drive"] == "d0"
+    assert openpulse["channel_map"]["q0"]["measure"] == "m0"
+    assert openpulse["channel_map"]["q1"]["control_neighbours"] == [2]
+    assert "pulse_control" in decision.snapshot.native_features
+    assert "drive_channel_access" in decision.snapshot.native_features
+
+
+def test_normalize_calibration_timestamp_handles_datetime_and_string() -> None:
+    dt = datetime(2026, 5, 22, 10, 5, 0, tzinfo=timezone.utc)
+    assert normalize_calibration_timestamp(dt) == "2026-05-22T10:05:00Z"
+    assert normalize_calibration_timestamp(" 2026-05-22T10:05:00Z ") == "2026-05-22T10:05:00Z"
 
 
 def test_qiskit_runtime_snapshot_blocks_offline_backend_without_submission() -> None:

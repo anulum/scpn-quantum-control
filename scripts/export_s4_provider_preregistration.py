@@ -16,6 +16,10 @@ from pathlib import Path
 from typing import Any
 
 from scpn_quantum_control.hardware.job_dossier import HardwareJobDossier
+from scpn_quantum_control.hardware.provider_capability_discovery import (
+    ProviderCapabilitySnapshot,
+    build_openpulse_control_readiness,
+)
 
 DATE = "2026-05-06"
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +56,9 @@ def build_ibm_pulse_dossier(payload: dict[str, Any] | None = None) -> HardwareJo
     plan = _provider_plan(readiness)
     summary = plan["programme_summary"]
     export = plan["export"]
+    pulse_readiness = _openpulse_readiness_from_plan(plan)
+    pulse_readiness_payload = pulse_readiness.to_dict()
+    pulse_status = "ready" if pulse_readiness.ready else "blocked"
     return HardwareJobDossier(
         job_id="s4_ibm_pulse_calibration_review",
         title="S4 IBM pulse-level Kuramoto-XY calibration-review preregistration",
@@ -87,6 +94,9 @@ def build_ibm_pulse_dossier(payload: dict[str, Any] | None = None) -> HardwareJo
             "duration": summary["duration"],
             "sdk_module": export["sdk_module"],
             "sdk_available": export["sdk_available"],
+            "openpulse_readiness_status": pulse_status,
+            "openpulse_blockers": list(pulse_readiness.blockers),
+            "openpulse_warnings": list(pulse_readiness.warnings),
         },
         qpu_budget={
             "status": "not_requested",
@@ -98,6 +108,7 @@ def build_ibm_pulse_dossier(payload: dict[str, Any] | None = None) -> HardwareJo
         },
         platform_fit={
             "ibm_pulse": plan["readiness"],
+            "ibm_openpulse_readiness": pulse_status,
             "gate_based_comparator": "required_before_execution",
             "neutral_atom": "separate_S4_route",
         },
@@ -135,6 +146,7 @@ def build_ibm_pulse_dossier(payload: dict[str, Any] | None = None) -> HardwareJo
             "preregistration_script": "scripts/export_s4_provider_preregistration.py",
             "bench_command": "scpn-bench s4-provider-preregistration",
             "readiness_doc": f"docs/campaigns/s4_multi_hardware_readiness_{DATE}.md",
+            "openpulse_readiness": json.dumps(pulse_readiness_payload, sort_keys=True),
         },
         prerequisites=(
             "select a concrete IBM backend that exposes compatible pulse metadata",
@@ -142,6 +154,54 @@ def build_ibm_pulse_dossier(payload: dict[str, Any] | None = None) -> HardwareJo
             "record channel map, duration unit, amplitude bounds, and timing granularity",
             "estimate QPU time after the review and before any hardware approval",
         ),
+    )
+
+
+def _openpulse_readiness_from_plan(plan: dict[str, Any]) -> Any:
+    summary = plan["programme_summary"]
+    export = plan["export"]
+    payload = export.get("payload", {})
+    mode_frequencies = payload.get("mode_frequencies", [])
+    n_qubits = int(summary["n_oscillators"])
+    calibration_timestamp = payload.get("calibration_timestamp")
+
+    ir_formats = (
+        ("openqasm3", "qiskit_qpy", "qiskit") if bool(export["sdk_available"]) else ("openqasm3",)
+    )
+    native_features = (
+        ("pulse_control", "drive_channel_access", "measure_channel_access", "dynamic_circuits")
+        if bool(export["sdk_available"])
+        else ("dynamic_circuits",)
+    )
+    snapshot = ProviderCapabilitySnapshot(
+        route_id="direct/ibm_quantum",
+        aggregator="direct",
+        provider="ibm_quantum",
+        backend_id="ibm_quantum",
+        target_name="ibm_pulse_design_track",
+        n_qubits=n_qubits,
+        supported_ir_formats=ir_formats,
+        basis_gates=("rz", "sx", "x", "cx", "measure", "reset"),
+        native_features=native_features,
+        online=None,
+        simulator=False,
+        no_submit=True,
+        calibration_timestamp=calibration_timestamp
+        if isinstance(calibration_timestamp, str)
+        else None,
+        metadata={
+            "adapter": "s4_ibm_design_readiness",
+            "mode_frequency_count": len(mode_frequencies)
+            if isinstance(mode_frequencies, list)
+            else 0,
+        },
+    )
+    return build_openpulse_control_readiness(
+        snapshot,
+        qubit=0,
+        dt=2.22e-10,
+        amplitude_grid=(0.1, 0.2, 0.3, 0.4, 0.5),
+        shots=4096,
     )
 
 
