@@ -300,6 +300,7 @@ def test_qiskit_runtime_status_normalisation_maps_provider_tokens() -> None:
     assert qiskit_mod._normalise_status("DONE") == "completed"
     assert qiskit_mod._normalise_status("CANCELED") == "cancelled"
     assert qiskit_mod._normalise_status("IN-PROGRESS") == "running"
+    assert qiskit_mod._normalise_status("INPROGRESS") == "running"
 
 
 def test_qiskit_provider_job_id_extraction_requires_identifier() -> None:
