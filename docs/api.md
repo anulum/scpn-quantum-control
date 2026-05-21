@@ -499,6 +499,37 @@ hpulse = build_hypergeometric_pulse(t_total=1.0, omega_0=10.0, alpha=0.5, beta=0
 schedule = build_trotter_pulse_schedule(n_qubits=4, k_matrix=K, t_step=0.1)
 ```
 
+### `hardware.openpulse_control` (added May 2026)
+
+OpenPulse schedule and calibration workflow surfaces for IBM pulse-level lanes.
+
+```python
+from scpn_quantum_control.hardware.openpulse_control import (
+    compile_hypergeometric_openpulse_schedule,
+    build_rabi_amplitude_calibration_workflow,
+    estimate_rabi_pi_amplitude,
+)
+
+openpulse_schedule = compile_hypergeometric_openpulse_schedule(
+    hpulse,
+    qubit=1,
+    dt=2.22e-10,
+)
+workflow = build_rabi_amplitude_calibration_workflow(
+    backend_name="ibm_fez",
+    qubit=1,
+    amplitude_grid=[0.1, 0.2, 0.3, 0.4, 0.5],
+    shots=4096,
+    dt=2.22e-10,
+)
+fit = estimate_rabi_pi_amplitude(
+    amplitudes=[0.1, 0.2, 0.3, 0.4, 0.5],
+    excited_population=[0.05, 0.23, 0.61, 0.92, 0.71],
+)
+```
+These routines are calibration-gated and no-submit by design; they create
+reviewable pulse/control artefacts without contacting provider endpoints.
+
 ## hardware
 
 ### `qubit_mapper.dynq_initial_layout` (added April 2026)

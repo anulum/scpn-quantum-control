@@ -195,6 +195,18 @@ from .iqm_backend import (
 )
 from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
 from .noise_model import heron_r2_noise_model
+from .openpulse_control import (
+    OpenPulseCalibrationWorkflow,
+    OpenPulseInstruction,
+    OpenPulseSchedule,
+    OpenPulseWaveform,
+    RabiCalibrationPoint,
+    RabiPiCalibrationEstimate,
+    build_rabi_amplitude_calibration_workflow,
+    compile_hypergeometric_openpulse_schedule,
+    estimate_rabi_pi_amplitude,
+    schedule_to_qiskit_pulse,
+)
 from .provider_capability_discovery import (
     CapabilityDecisionStatus,
     ProviderCapabilityDecision,
@@ -357,6 +369,16 @@ __all__ = [
     "QuEraBloqadeHALAdapter",
     "QuantinuumCloudHALAdapter",
     "RigettiQCSHALAdapter",
+    "OpenPulseWaveform",
+    "OpenPulseInstruction",
+    "OpenPulseSchedule",
+    "OpenPulseCalibrationWorkflow",
+    "RabiCalibrationPoint",
+    "RabiPiCalibrationEstimate",
+    "compile_hypergeometric_openpulse_schedule",
+    "build_rabi_amplitude_calibration_workflow",
+    "estimate_rabi_pi_amplitude",
+    "schedule_to_qiskit_pulse",
     "bloqade_ahs_workload",
     "qbraid_program_to_workload",
     "quantinuum_tket_workload",

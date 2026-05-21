@@ -291,6 +291,10 @@ def plaquette_action_batch(
     n_triangles: int,
     beta: float,
 ) -> tuple[float, float]: ...
+def rabi_pi_amplitude_fit(
+    amplitudes: _F64Array,
+    excited_population: _F64Array,
+) -> tuple[float, float, float]: ...
 def score_regions_batch(
     gate_errors_flat: _F64Array,
     n_qubits: int,

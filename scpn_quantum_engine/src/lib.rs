@@ -185,6 +185,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         pulse_shaping::ici_three_level_evolution_batch,
         m
     )?)?;
+    m.add_function(wrap_pyfunction!(pulse_shaping::rabi_pi_amplitude_fit, m)?)?;
 
     // Quantum Petri superposition diagnostics
     m.add_function(wrap_pyfunction!(qpetri::qpetri_transition_activity, m)?)?;

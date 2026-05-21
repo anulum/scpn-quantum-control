@@ -44,6 +44,15 @@ fn validate_non_negative_scalar(value: f64, name: &str) -> PyResult<()> {
     Ok(())
 }
 
+fn validate_unit_interval(value: f64, name: &str) -> PyResult<()> {
+    if !value.is_finite() || !(0.0..=1.0).contains(&value) {
+        return Err(PyValueError::new_err(format!(
+            "{name} must be finite and in [0, 1], got {value}"
+        )));
+    }
+    Ok(())
+}
+
 #[inline]
 fn rho_idx(row: usize, col: usize) -> usize {
     row * 3 + col
@@ -337,6 +346,88 @@ pub fn ici_three_level_evolution_batch<'py>(
     }
 
     Ok(PyArray1::from_vec(py, populations))
+}
+
+/// Estimate a pi-pulse amplitude from a sampled Rabi sweep.
+///
+/// Uses the maximum excited-state population index with optional quadratic
+/// interpolation against adjacent samples for sub-grid refinement.
+#[pyfunction]
+pub fn rabi_pi_amplitude_fit(
+    amplitudes: PyReadonlyArray1<'_, f64>,
+    excited_population: PyReadonlyArray1<'_, f64>,
+) -> PyResult<(f64, f64, f64)> {
+    let amps = validate_contiguous_slice(&amplitudes, "amplitudes")?;
+    let pops = validate_contiguous_slice(&excited_population, "excited_population")?;
+    validate_finite(amps, "amplitudes")?;
+    validate_finite(pops, "excited_population")?;
+    if amps.len() != pops.len() {
+        return Err(PyValueError::new_err(format!(
+            "amplitudes length {} != excited_population length {}",
+            amps.len(),
+            pops.len()
+        )));
+    }
+    if amps.len() < 3 {
+        return Err(PyValueError::new_err(
+            "amplitudes/excited_population must contain at least 3 points",
+        ));
+    }
+
+    for index in 1..amps.len() {
+        if amps[index] <= amps[index - 1] {
+            return Err(PyValueError::new_err(
+                "amplitudes must be strictly increasing for Rabi fit",
+            ));
+        }
+    }
+    for &pop in pops {
+        validate_unit_interval(pop, "excited_population entry")?;
+    }
+
+    let mut peak_index = 0usize;
+    let mut peak_population = pops[0];
+    for (index, &pop) in pops.iter().enumerate().skip(1) {
+        if pop > peak_population {
+            peak_population = pop;
+            peak_index = index;
+        }
+    }
+
+    let mut pi_amplitude = amps[peak_index];
+    if peak_index > 0 && peak_index + 1 < amps.len() {
+        let x0 = amps[peak_index - 1];
+        let x1 = amps[peak_index];
+        let x2 = amps[peak_index + 1];
+        let y0 = pops[peak_index - 1];
+        let y1 = pops[peak_index];
+        let y2 = pops[peak_index + 1];
+
+        let h0 = x0 - x1;
+        let h2 = x2 - x1;
+        let denom = (h0 * h2) * (h0 - h2);
+        if denom.abs() > 1e-15 {
+            let a = (h2 * (y0 - y1) - h0 * (y2 - y1)) / denom;
+            let b = (h2.powi(2) * (y1 - y0) + h0.powi(2) * (y2 - y1)) / denom;
+            if a.abs() > 1e-15 {
+                let vertex = x1 - b / (2.0 * a);
+                if vertex >= x0 && vertex <= x2 {
+                    pi_amplitude = vertex;
+                }
+            }
+        }
+    }
+
+    // Contrast score: how strongly the peak dominates edges (0..1+).
+    let edge_mean = 0.5 * (pops[0] + pops[pops.len() - 1]);
+    let contrast = (peak_population - edge_mean).max(0.0);
+    let confidence = if peak_population > 1e-12 {
+        (contrast / peak_population).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+
+    Ok((pi_amplitude, peak_population, confidence))
 }
 
 #[cfg(test)]
