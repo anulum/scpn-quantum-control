@@ -243,6 +243,29 @@ def test_pasqal_provider_job_id_extraction_requires_identifier() -> None:
         pasqal_mod._provider_job_id(object())
 
 
+def test_pasqal_provider_job_id_rejects_control_characters() -> None:
+    """Pasqal provider identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_pasqal as pasqal_mod
+
+    class BadJob:
+        id = "pasqal-provider-\n2"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        pasqal_mod._provider_job_id(BadJob())
+
+
+def test_pasqal_provider_job_id_trims_padding() -> None:
+    """Pasqal provider identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_pasqal as pasqal_mod
+
+    class PaddedJob:
+        id = "  pasqal-provider-2  "
+
+    assert pasqal_mod._provider_job_id(PaddedJob()) == "pasqal-provider-2"
+
+
 def test_pasqal_hal_adapter_rejects_shot_mismatch() -> None:
     """Pasqal adapter must fail closed when decoded counts diverge from expected shots."""
 

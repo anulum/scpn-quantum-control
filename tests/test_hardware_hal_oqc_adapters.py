@@ -192,6 +192,29 @@ def test_oqc_provider_job_id_extraction_requires_identifier() -> None:
         oqc_mod._provider_job_id(object())
 
 
+def test_oqc_provider_job_id_rejects_control_characters() -> None:
+    """OQC provider identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_oqc as oqc_mod
+
+    class BadJob:
+        id = "oqc-provider-\n2"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        oqc_mod._provider_job_id(BadJob())
+
+
+def test_oqc_provider_job_id_trims_padding() -> None:
+    """OQC provider identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_oqc as oqc_mod
+
+    class PaddedJob:
+        id = "  oqc-provider-2  "
+
+    assert oqc_mod._provider_job_id(PaddedJob()) == "oqc-provider-2"
+
+
 def test_oqc_adapter_rejects_shot_mismatch() -> None:
     """OQC adapter must fail closed when decoded counts diverge from requested shots."""
 
