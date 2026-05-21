@@ -454,3 +454,23 @@ def test_rigetti_quantum_computer_name_trims_padding() -> None:
     profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
     adapter = RigettiQCSHALAdapter(profile, quantum_computer_name="  Ankaa-3  ")
     assert adapter._quantum_computer_name == "Ankaa-3"
+
+
+def test_rigetti_readout_register_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
+    with pytest.raises(ValueError, match="Rigetti readout register"):
+        RigettiQCSHALAdapter(
+            profile,
+            quantum_computer_name="Ankaa-3",
+            readout_register="ro\nbad",
+        )
+
+
+def test_rigetti_readout_register_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("rigetti_qcs")
+    adapter = RigettiQCSHALAdapter(
+        profile,
+        quantum_computer_name="Ankaa-3",
+        readout_register="  ro  ",
+    )
+    assert adapter._readout_register == "ro"

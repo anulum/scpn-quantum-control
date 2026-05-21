@@ -70,7 +70,9 @@ class RigettiQCSHALAdapter:
         self._quantum_computer_factory = quantum_computer_factory
         self._program_factory = program_factory
         self._shot_loop = shot_loop
-        self._readout_register = readout_register
+        self._readout_register = strict_provider_job_id(
+            readout_register, field_name="Rigetti readout register"
+        )
         self._compile_program = compile_program
         self._jobs: dict[str, QuantumJobRef] = {}
         self._results: dict[str, QuantumJobResult] = {}
