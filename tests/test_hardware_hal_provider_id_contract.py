@@ -87,3 +87,41 @@ def test_provider_id_extractors_trim_padding_and_preserve_value() -> None:
         hal_qiskit._provider_job_id(_WithAttr(job_id="  job-42  "), provider_name="qiskit")
         == "job-42"
     )
+
+
+def test_provider_id_extractors_reject_object_repr_placeholders() -> None:
+    placeholder = _WithAttr(id="<ProviderJob object at 0xDEADBEEF>")
+
+    with pytest.raises(ValueError):
+        hal_azure._job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_qbraid._job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_strangeworks._job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_iqm._job_id(_WithAttr(job_id="<ProviderJob object at 0xDEADBEEF>"))
+    with pytest.raises(ValueError):
+        hal_cirq._provider_job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_oqc._provider_job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_pasqal._provider_job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_quandela._provider_job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_quera_bloqade._provider_job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_quantinuum._provider_job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_rigetti._provider_job_id(placeholder)
+    with pytest.raises(ValueError):
+        hal_qiskit._provider_job_id(
+            _WithAttr(job_id="<ProviderJob object at 0xDEADBEEF>"),
+            provider_name="qiskit",
+        )
+    with pytest.raises(ValueError):
+        hal_ionq._provider_job_id_from_response({"id": "<ProviderJob object at 0xDEADBEEF>"})
+    with pytest.raises(ValueError):
+        hal_dwave._provider_job_id(
+            _WithAttr(info={"problem_id": "<ProviderJob object at 0xDEADBEEF>"})
+        )

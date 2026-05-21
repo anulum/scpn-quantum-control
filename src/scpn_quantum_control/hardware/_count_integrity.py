@@ -101,6 +101,9 @@ def strict_provider_job_id(value: object, *, field_name: str = "provider job id"
         raise ValueError(f"{field_name} must not include control whitespace")
     if any(ord(char) < 32 for char in text):
         raise ValueError(f"{field_name} must not include control characters")
+    # Object repr placeholders are not stable provider job identifiers.
+    if text.startswith("<") and text.endswith(">") and " object at 0x" in text:
+        raise ValueError(f"{field_name} must not be an object representation")
     return text
 
 
