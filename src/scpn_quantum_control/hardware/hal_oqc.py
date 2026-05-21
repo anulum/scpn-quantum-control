@@ -231,7 +231,7 @@ def _normalise_counts(raw: object) -> dict[str, int]:
 
 
 def _normalise_status(value: object) -> str:
-    text = str(value).split(".")[-1].lower()
+    text = str(value).split(".")[-1].strip().lower().replace(" ", "_")
     return {
         "done": "completed",
         "complete": "completed",

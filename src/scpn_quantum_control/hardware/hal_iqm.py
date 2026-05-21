@@ -275,7 +275,7 @@ def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
 
 
 def _normalise_status(value: object) -> str:
-    text = str(value).split(".")[-1].lower()
+    text = str(value).split(".")[-1].strip().lower().replace(" ", "_")
     return {
         "done": "completed",
         "complete": "completed",

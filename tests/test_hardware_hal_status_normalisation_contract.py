@@ -50,3 +50,12 @@ def test_status_normalisers_honour_explicit_default_overrides() -> None:
     assert hal_qiskit._normalise_status(unknown_token, default="queued") == "queued"
     assert hal_ionq._normalise_status(unknown_token, default="queued") == "queued"
     assert hal_strangeworks._normalise_status(unknown_token, default="queued") == "queued"
+
+
+def test_status_normalisers_canonicalise_whitespace_and_spacing() -> None:
+    completion_tokens = ("  COMPLETED  ", "job status.completed")
+
+    for token in completion_tokens:
+        assert hal_pasqal._normalise_status(token) == "completed"
+        assert hal_oqc._normalise_status(token) == "completed"
+        assert hal_iqm._normalise_status(token) == "completed"
