@@ -490,6 +490,7 @@ def test_quantinuum_status_normalisation_accepts_enum_names() -> None:
     assert quantinuum_mod._normalise_status("SUCCEEDED") == "completed"
     assert quantinuum_mod._normalise_status("CANCELED") == "cancelled"
     assert quantinuum_mod._normalise_status("IN-PROGRESS") == "running"
+    assert quantinuum_mod._normalise_status("INPROGRESS") == "running"
 
 
 def test_quantinuum_provider_job_id_rejects_control_characters() -> None:
