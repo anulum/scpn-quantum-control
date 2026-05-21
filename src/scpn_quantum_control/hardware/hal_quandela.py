@@ -72,7 +72,7 @@ class QuandelaPercevalHALAdapter:
         self._processor = processor
         self._processor_factory = processor_factory
         self._sampler_factory = sampler_factory
-        self._target = target or "injected"
+        self._target = strict_provider_job_id(target or "injected", field_name="Quandela target")
         self._jobs: dict[str, QuantumJobRef] = {}
         self._results: dict[str, QuantumJobResult] = {}
 

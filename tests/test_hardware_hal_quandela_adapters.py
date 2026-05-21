@@ -260,6 +260,22 @@ def test_quandela_provider_job_id_trims_padding() -> None:
     assert job.metadata["provider_job_id"] == "quandela-provider-2"
 
 
+def test_quandela_target_rejects_control_characters() -> None:
+    """Quandela targets must reject control-character payloads."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quandela_cloud")
+    with pytest.raises(ValueError, match="Quandela target"):
+        QuandelaPercevalHALAdapter(profile, processor=object(), target="quandela-\nqpu")
+
+
+def test_quandela_target_trims_padding() -> None:
+    """Quandela targets should be canonicalised by trimming padding."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quandela_cloud")
+    adapter = QuandelaPercevalHALAdapter(profile, processor=object(), target="  quandela-qpu  ")
+    assert adapter._target == "quandela-qpu"
+
+
 def test_quandela_default_builder_is_calibration_gated(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
