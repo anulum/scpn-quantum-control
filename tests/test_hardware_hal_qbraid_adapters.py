@@ -179,6 +179,7 @@ def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
     assert qbraid_mod._normalise_status("INPROGRESS") == "running"
     assert qbraid_mod._normalise_status("INITIALIZING") == "submitted"
     assert qbraid_mod._normalise_status("STARTING") == "submitted"
+    assert qbraid_mod._normalise_status("CREATING") == "submitted"
 
 
 def test_qbraid_provider_job_id_rejects_control_characters() -> None:
