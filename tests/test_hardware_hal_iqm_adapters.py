@@ -305,6 +305,8 @@ def test_iqm_status_normalisation_maps_provider_tokens() -> None:
     assert iqm_mod._normalise_status("INITIALIZING") == "submitted"
     assert iqm_mod._normalise_status("STARTING") == "submitted"
     assert iqm_mod._normalise_status("CREATING") == "submitted"
+    assert iqm_mod._normalise_status("ABORTING") == "cancelled"
+    assert iqm_mod._normalise_status("CANCELLING") == "cancelled"
 
 
 def test_iqm_adapter_rejects_shot_mismatch() -> None:
