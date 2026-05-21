@@ -315,10 +315,10 @@ def _normalise_status(value: object, *, default: str = "unknown") -> str:
 def _device_name(device: Any) -> str:
     name = getattr(device, "name", None)
     if callable(name):
-        return str(name())
+        return strict_provider_job_id(name(), field_name="Braket device name")
     if name is not None:
-        return str(name)
-    return str(device.__class__.__name__)
+        return strict_provider_job_id(name, field_name="Braket device name")
+    return strict_provider_job_id(device.__class__.__name__, field_name="Braket device name")
 
 
 def _utc_now() -> str:
