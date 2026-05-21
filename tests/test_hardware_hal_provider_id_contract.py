@@ -15,6 +15,7 @@ from scpn_quantum_control.hardware import (
     hal_azure,
     hal_cirq,
     hal_dwave,
+    hal_ionq,
     hal_iqm,
     hal_oqc,
     hal_pasqal,
@@ -63,6 +64,8 @@ def test_provider_id_extractors_reject_control_characters() -> None:
         hal_rigetti._provider_job_id(_WithAttr(id="job-\n42"))
     with pytest.raises(ValueError):
         hal_qiskit._provider_job_id(_WithAttr(job_id="job-\n42"), provider_name="qiskit")
+    with pytest.raises(ValueError):
+        hal_ionq._provider_job_id_from_response({"id": "job-\n42"})
 
 
 def test_provider_id_extractors_trim_padding_and_preserve_value() -> None:
@@ -71,3 +74,4 @@ def test_provider_id_extractors_trim_padding_and_preserve_value() -> None:
     assert hal_qbraid._job_id(padded) == "job-42"
     assert hal_strangeworks._job_id(padded) == "job-42"
     assert hal_cirq._provider_job_id(padded) == "job-42"
+    assert hal_ionq._provider_job_id_from_response({"id": "  job-42  "}) == "job-42"

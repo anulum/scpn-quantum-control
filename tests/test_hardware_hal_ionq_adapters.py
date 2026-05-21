@@ -13,6 +13,7 @@ from typing import Any
 
 import pytest
 
+from scpn_quantum_control.hardware import hal_ionq as ionq_mod
 from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer
 from scpn_quantum_control.hardware.hal_ionq import (
     IonQCloudHALAdapter,
@@ -186,6 +187,19 @@ def test_ionq_direct_adapter_normalises_provider_status_tokens() -> None:
 
     assert ionq_mod._normalise_status("CANCELED") == "cancelled"
     assert ionq_mod._normalise_status("COMPLETE") == "completed"
+
+
+def test_ionq_direct_adapter_rejects_control_characters_in_provider_job_id() -> None:
+    """IonQ job creation response ids must pass strict provider-id validation."""
+
+    with pytest.raises(ValueError, match="provider job id"):
+        ionq_mod._provider_job_id_from_response({"id": "job-\n42"})
+
+
+def test_ionq_direct_adapter_trims_provider_job_id_padding() -> None:
+    """IonQ provider ids should be trimmed to canonical form."""
+
+    assert ionq_mod._provider_job_id_from_response({"id": "  ionq-job-42  "}) == "ionq-job-42"
 
 
 def test_ionq_direct_adapter_rejects_non_positive_expected_shots() -> None:

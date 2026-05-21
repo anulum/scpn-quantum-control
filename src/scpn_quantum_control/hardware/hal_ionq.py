@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any
 
-from ._count_integrity import strict_shot_conservation
+from ._count_integrity import strict_provider_job_id, strict_shot_conservation
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 IONQ_API_V04_BASE_URL = "https://api.ionq.co/v0.4"
@@ -91,9 +91,7 @@ class IonQCloudHALAdapter:
             raise PermissionError("approval_id is required for IonQ submission")
         payload = self._build_job_payload(workload, approval_id)
         response = self._post_json(f"{self._base_url}/jobs", payload)
-        job_id = str(response.get("id") or "")
-        if not job_id:
-            raise ValueError("IonQ job creation response did not contain an id")
+        job_id = _provider_job_id_from_response(response)
         status = _normalise_status(response.get("status"))
         job = QuantumJobRef(
             job_id=job_id,
@@ -314,6 +312,13 @@ def _json_mapping(value: object) -> dict[str, object]:
     if not isinstance(value, Mapping):
         raise ValueError("IonQ API response must be a JSON object")
     return dict(value)
+
+
+def _provider_job_id_from_response(response: Mapping[str, object]) -> str:
+    value = response.get("id")
+    if value is None:
+        raise ValueError("IonQ job creation response did not contain an id")
+    return strict_provider_job_id(value, field_name="IonQ provider job id")
 
 
 def _int_metadata(value: object, *, fallback: int) -> int:
