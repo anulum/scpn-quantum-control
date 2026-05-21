@@ -215,25 +215,27 @@ def _extract_counts(payload: Any, *, n_qubits: int) -> dict[str, int]:
         for key in ("counts", "histogram", "measurement_counts", "MeasurementCounts"):
             candidate = payload.get(key)
             if isinstance(candidate, Mapping):
-                counts = {
-                    strict_fixed_width_bitstring_key(
+                counts: dict[str, int] = {}
+                for bitstring, count in candidate.items():
+                    normalised_key = strict_fixed_width_bitstring_key(
                         bitstring, width=n_qubits, field_name="Azure count key"
-                    ): strict_non_negative_count(count)
-                    for bitstring, count in candidate.items()
-                }
+                    )
+                    value = strict_non_negative_count(count)
+                    counts[normalised_key] = counts.get(normalised_key, 0) + value
                 if not counts:
                     raise ValueError("Azure Quantum result payload contains an empty count map")
                 return counts
         if all(isinstance(key, str) for key in payload):
-            counts = {
-                strict_fixed_width_bitstring_key(
+            payload_counts: dict[str, int] = {}
+            for bitstring, count in payload.items():
+                normalised_key = strict_fixed_width_bitstring_key(
                     bitstring, width=n_qubits, field_name="Azure count key"
-                ): strict_non_negative_count(count)
-                for bitstring, count in payload.items()
-            }
-            if not counts:
+                )
+                value = strict_non_negative_count(count)
+                payload_counts[normalised_key] = payload_counts.get(normalised_key, 0) + value
+            if not payload_counts:
                 raise ValueError("Azure Quantum result payload contains an empty count map")
-            return counts
+            return payload_counts
     raise ValueError("Azure Quantum result payload does not contain shot counts")
 
 

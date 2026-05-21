@@ -146,3 +146,14 @@ def test_qbraid_and_strangeworks_normalisers_accumulate_canonical_collisions() -
 
     strangeworks_counts = hal_strangeworks._normalise_counts({"1": 2, "01": 3}, n_qubits=2)
     assert strangeworks_counts == {"01": 5}
+
+
+def test_azure_and_braket_normalisers_accumulate_canonical_collisions() -> None:
+    azure_counts = hal_azure._extract_counts({"counts": {"1": 2, "01": 3}}, n_qubits=2)
+    assert azure_counts == {"01": 5}
+
+    braket_counts = hal_braket._extract_braket_counts(
+        type("R", (), {"measurement_counts": {"1": 2, "01": 3}})(),
+        n_qubits=2,
+    )
+    assert braket_counts == {"01": 5}

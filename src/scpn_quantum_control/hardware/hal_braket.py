@@ -271,12 +271,14 @@ def _extract_braket_counts(task_result: Any, *, n_qubits: int) -> dict[str, int]
     counts = getattr(task_result, "measurement_counts", None)
     if counts is None:
         raise ValueError("Braket task result does not contain measurement_counts")
-    counts = {
-        strict_fixed_width_bitstring_key(
+    normalised: dict[str, int] = {}
+    for bitstring, count in counts.items():
+        key = strict_fixed_width_bitstring_key(
             bitstring, width=n_qubits, field_name="Braket count key"
-        ): strict_non_negative_count(count)
-        for bitstring, count in counts.items()
-    }
+        )
+        value = strict_non_negative_count(count)
+        normalised[key] = normalised.get(key, 0) + value
+    counts = normalised
     if not counts:
         raise ValueError("Braket task result contains an empty count map")
     return counts
