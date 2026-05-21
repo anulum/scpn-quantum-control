@@ -347,3 +347,17 @@ def test_rust_limit_falls_back_to_python_decoder():
     assert correction.shape == (code.num_data,)
     assert correction.dtype == np.int8
     assert np.all((correction == 0) | (correction == 1))
+    assert decoder.last_decoder_backend == "python_fallback_high_defect"
+
+
+def test_decoder_backend_marker_updates():
+    """Decoder exposes backend marker for campaign-level observability."""
+    K = np.array(
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]]
+    )
+    code = BiologicalSurfaceCode(K)
+    decoder = BiologicalMWPMDecoder(code)
+    decoder._rust_engine = None
+    syndrome = np.zeros(code.num_x_stabs, dtype=np.int8)
+    _ = decoder.decode_z_errors(syndrome)
+    assert decoder.last_decoder_backend == "python_mwpm"

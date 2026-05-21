@@ -153,6 +153,12 @@ class BiologicalMWPMDecoder:
         self.G = code.G
         self._rust_engine = optional_rust_engine()
         self._rust_exact_mwpm_defect_limit = 24
+        self._last_decoder_backend = "uninitialised"
+
+    @property
+    def last_decoder_backend(self) -> str:
+        """Return backend used by most recent decode call."""
+        return self._last_decoder_backend
 
     def decode_z_errors(self, syndrome_x: np.ndarray) -> np.ndarray:
         """Decode X-syndromes to find the optimal Z-error correction.
@@ -182,7 +188,7 @@ class BiologicalMWPMDecoder:
                     dtype=np.float64,
                 )
                 try:
-                    return np.asarray(
+                    correction = np.asarray(
                         rust_decode(
                             edge_u,
                             edge_v,
@@ -192,9 +198,16 @@ class BiologicalMWPMDecoder:
                         ),
                         dtype=np.int8,
                     )
+                    self._last_decoder_backend = "rust_exact_mwpm"
+                    return correction
                 except ValueError as exc:
                     if "defect count exceeds exact-MWPM limit" not in str(exc):
                         raise
+
+        if defects.size > self._rust_exact_mwpm_defect_limit:
+            self._last_decoder_backend = "python_fallback_high_defect"
+        else:
+            self._last_decoder_backend = "python_mwpm"
 
         correction = np.zeros(self.code.num_data, dtype=np.int8)
 

@@ -1247,6 +1247,7 @@ Native topological error correction code mapped directly to the hierarchical SCP
 BiologicalMWPMDecoder(code)
     .decode_z_errors(syndrome_x) -> np.ndarray
     .decode_and_apply(z_errors) -> tuple[np.ndarray, np.ndarray]
+    .last_decoder_backend -> str
 ```
 Minimum Weight Perfect Matching decoder using biological coupling strengths as distance metrics.
 `syndrome_x` must be a one-dimensional binary vector with length equal
@@ -1254,6 +1255,10 @@ to the number of X stabilizers. Because this graph decoder does not
 model rough boundaries, every connected component must have even
 syndrome parity; odd component parity raises `ValueError` instead of
 silently discarding an unmatched defect.
+When Rust acceleration is installed, exact MWPM is used for defect sets
+up to the current exact solver limit; larger defect sets automatically
+fallback to the Python NetworkX decoder and expose the selected path via
+`last_decoder_backend`.
 
 ### `control_qec.ControlQEC`
 
