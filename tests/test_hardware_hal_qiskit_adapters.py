@@ -303,3 +303,44 @@ def test_qiskit_runtime_status_normalisation_maps_provider_tokens() -> None:
 
     assert qiskit_mod._normalise_status("DONE") == "completed"
     assert qiskit_mod._normalise_status("CANCELED") == "cancelled"
+
+
+def test_qiskit_provider_job_id_extraction_requires_identifier() -> None:
+    """Qiskit provider job id extraction should fail closed when id is unavailable."""
+
+    from scpn_quantum_control.hardware import hal_qiskit as qiskit_mod
+
+    class MissingJobId:
+        def job_id(self) -> str:
+            return "   "
+
+    with pytest.raises(ValueError, match="provider job id"):
+        qiskit_mod._provider_job_id(MissingJobId(), provider_name="qiskit_runtime")
+
+
+def test_qiskit_provider_job_id_rejects_control_characters() -> None:
+    """Qiskit provider job ids must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_qiskit as qiskit_mod
+
+    class BadJobId:
+        def job_id(self) -> str:
+            return "runtime-job-\n1"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        qiskit_mod._provider_job_id(BadJobId(), provider_name="qiskit_runtime")
+
+
+def test_qiskit_provider_job_id_trims_padding() -> None:
+    """Qiskit provider job ids should be trimmed to canonical form."""
+
+    from scpn_quantum_control.hardware import hal_qiskit as qiskit_mod
+
+    class PaddedJobId:
+        def job_id(self) -> str:
+            return "  runtime-job-42  "
+
+    assert (
+        qiskit_mod._provider_job_id(PaddedJobId(), provider_name="qiskit_runtime")
+        == "runtime-job-42"
+    )
