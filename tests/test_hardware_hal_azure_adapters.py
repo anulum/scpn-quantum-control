@@ -122,6 +122,7 @@ def test_azure_adapter_normalises_provider_status_tokens() -> None:
 
     assert azure_mod._normalise_status("Succeeded") == "completed"
     assert azure_mod._normalise_status("CANCELED") == "cancelled"
+    assert azure_mod._normalise_status("IN-PROGRESS") == "running"
 
 
 def test_azure_provider_job_id_rejects_control_characters() -> None:
