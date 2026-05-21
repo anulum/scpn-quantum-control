@@ -119,6 +119,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
     ),
     Harness("s1-feedback-loop", "scripts/benchmark_s1_feedback_loop.py", frozenset({"s1"})),
     Harness(
+        "s1-realtime-e2e",
+        "scripts/benchmark_s1_realtime_e2e.py",
+        frozenset({"s1-e2e"}),
+    ),
+    Harness(
         "s1-feedback-readiness",
         "scripts/reproduce_s1_feedback_readiness.py",
         frozenset({"s1-ready"}),
@@ -422,6 +427,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the complete no-QPU S1 readiness bundle.",
     )
     _add_run_options(s1_ready, default_group="s1-ready")
+
+    s1_e2e = subparsers.add_parser(
+        "s1-realtime-e2e",
+        help="Regenerate no-QPU S1 end-to-end realtime control-loop artefacts.",
+    )
+    _add_run_options(s1_e2e, default_group="s1-e2e")
 
     s2 = subparsers.add_parser(
         "s2-scaling-lite",

@@ -90,6 +90,18 @@ def test_s1_feedback_ready_selection_is_bundle_harness() -> None:
     ]
 
 
+def test_s1_realtime_e2e_selection_is_no_qpu_e2e_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s1-e2e", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s1-realtime-e2e",
+            "scripts/benchmark_s1_realtime_e2e.py",
+            frozenset({"s1-e2e"}),
+        )
+    ]
+
+
 def test_s2_scaling_lite_selection_includes_protocol_and_lite_rows() -> None:
     harnesses = bench_cli._selected_harnesses("s2", include_gpu=False)
 
@@ -387,6 +399,18 @@ def test_stable_core_capability_matrix_dry_run_selects_matrix_harness(
     assert "selected harnesses" in captured.out
     assert "stable-core-capability-matrix" in captured.out
     assert "scripts/export_stable_core_capability_matrix.py" in captured.out
+
+
+def test_s1_realtime_e2e_dry_run_selects_e2e_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["s1-realtime-e2e", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "selected harnesses" in captured.out
+    assert "s1-realtime-e2e" in captured.out
+    assert "scripts/benchmark_s1_realtime_e2e.py" in captured.out
 
 
 def test_stable_core_capability_gate_dry_run_selects_gate_harness(
