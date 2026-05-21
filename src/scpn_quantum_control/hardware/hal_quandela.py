@@ -311,7 +311,7 @@ def _normalise_counts(raw: object) -> dict[str, int]:
         raise TypeError("Quandela counts must be a mapping")
     counts: dict[str, int] = {}
     for state, count in raw.items():
-        key = str(state)
+        key = str(state).strip()
         value = _coerce_int(count, field_name="count")
         if not key:
             raise ValueError("counts keys must be non-empty photonic states")

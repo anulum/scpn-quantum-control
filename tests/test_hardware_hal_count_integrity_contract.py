@@ -133,3 +133,8 @@ def test_iqm_oqc_pasqal_count_normalisers_accumulate_equivalent_bitstring_keys()
 def test_quandela_count_normaliser_accumulates_canonical_state_collisions() -> None:
     counts = hal_quandela._normalise_counts({"1": 2, 1: 3})
     assert counts == {"1": 5}
+
+
+def test_quandela_count_normaliser_trims_state_key_padding() -> None:
+    counts = hal_quandela._normalise_counts({" 10 ": 2, "10": 3})
+    assert counts == {"10": 5}
