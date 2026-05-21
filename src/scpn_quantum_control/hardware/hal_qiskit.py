@@ -316,9 +316,9 @@ def _runtime_sampler_factory() -> Callable[..., Any]:
 def _normalise_counts(counts: dict[Any, Any]) -> dict[str, int]:
     normalised: dict[str, int] = {}
     for key, value in counts.items():
-        normalised[strict_binary_bitstring_key(key, field_name="Qiskit count key")] = (
-            strict_non_negative_count(value)
-        )
+        bitstring = strict_binary_bitstring_key(key, field_name="Qiskit count key")
+        count = strict_non_negative_count(value)
+        normalised[bitstring] = normalised.get(bitstring, 0) + count
     if not normalised:
         raise ValueError("Qiskit result did not contain any counts")
     return normalised

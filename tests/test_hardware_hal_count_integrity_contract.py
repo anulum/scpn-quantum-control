@@ -20,6 +20,7 @@ from scpn_quantum_control.hardware import (
     hal_oqc,
     hal_pasqal,
     hal_qbraid,
+    hal_qiskit,
     hal_quandela,
     hal_quantinuum,
     hal_quera_bloqade,
@@ -111,3 +112,8 @@ def test_count_normalisers_reject_empty_count_maps() -> None:
         hal_pasqal._normalise_counts({})
     with pytest.raises(ValueError, match="did not contain any counts"):
         hal_iqm._normalise_counts({})
+
+
+def test_qiskit_count_normaliser_accumulates_equivalent_bitstring_keys() -> None:
+    counts = hal_qiskit._normalise_counts({"01": 2, (0, 1): 3})
+    assert counts == {"01": 5}
