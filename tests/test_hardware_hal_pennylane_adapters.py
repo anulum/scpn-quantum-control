@@ -111,3 +111,47 @@ def test_pennylane_adapter_rejects_shot_mismatch(monkeypatch: pytest.MonkeyPatch
 
     with pytest.raises(ValueError, match="shot count mismatch"):
         hal.submit("local_pennylane", workload)
+
+
+def test_pennylane_provider_job_id_uses_strict_validator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """PennyLane lineage IDs must pass through strict provider-id validation."""
+
+    seen: dict[str, str] = {}
+
+    def _fake_strict_provider_job_id(value: object, *, field_name: str) -> str:
+        seen["value"] = str(value)
+        seen["field_name"] = field_name
+        raise ValueError("provider job id sentinel")
+
+    monkeypatch.setattr(pennylane_mod, "strict_provider_job_id", _fake_strict_provider_job_id)
+
+    with pytest.raises(ValueError, match="provider job id sentinel"):
+        pennylane_mod._provider_job_id(
+            QuantumWorkload(
+                workload_id="pl_bad_id",
+                ir_format="pennylane",
+                program='{"schema":"scpn.pennylane.native_gates.v1","instructions":[]}',
+                n_qubits=1,
+                shots=1,
+            )
+        )
+
+    assert seen["field_name"] == "PennyLane provider job id"
+    assert seen["value"].startswith("pennylane-local:pl_bad_id:")
+
+
+def test_pennylane_provider_job_id_trims_padding() -> None:
+    """PennyLane lineage IDs should remain canonical without surrounding whitespace."""
+
+    provider_job_id = pennylane_mod._provider_job_id(
+        QuantumWorkload(
+            workload_id="pl_trim",
+            ir_format="pennylane",
+            program='{"schema":"scpn.pennylane.native_gates.v1","instructions":[]}',
+            n_qubits=1,
+            shots=1,
+        )
+    )
+    assert provider_job_id == provider_job_id.strip()

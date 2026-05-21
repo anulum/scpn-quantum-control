@@ -18,7 +18,7 @@ from typing import Any, cast
 
 import numpy as np
 
-from ._count_integrity import strict_shot_conservation
+from ._count_integrity import strict_provider_job_id, strict_shot_conservation
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 _SUPPORTED_GATES = frozenset(
@@ -287,7 +287,8 @@ def _utc_now() -> str:
 def _provider_job_id(workload: QuantumWorkload) -> str:
     program_digest = hashlib.sha256(workload.program.encode("utf-8")).hexdigest()[:12]
     submitted_ns = time_ns()
-    return f"pennylane-local:{workload.workload_id}:{program_digest}:{submitted_ns}"
+    raw_provider_job_id = f"pennylane-local:{workload.workload_id}:{program_digest}:{submitted_ns}"
+    return strict_provider_job_id(raw_provider_job_id, field_name="PennyLane provider job id")
 
 
 def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
