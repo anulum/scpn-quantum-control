@@ -180,6 +180,8 @@ def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
     assert qbraid_mod._normalise_status("INITIALIZING") == "submitted"
     assert qbraid_mod._normalise_status("STARTING") == "submitted"
     assert qbraid_mod._normalise_status("CREATING") == "submitted"
+    assert qbraid_mod._normalise_status("ABORTING") == "cancelled"
+    assert qbraid_mod._normalise_status("CANCELLING") == "cancelled"
 
 
 def test_qbraid_provider_job_id_rejects_control_characters() -> None:
