@@ -175,3 +175,48 @@ def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
 
     assert qbraid_mod._normalise_status("CANCELED") == "cancelled"
     assert qbraid_mod._normalise_status("FINISHED") == "completed"
+
+
+def test_qbraid_adapter_rejects_shot_mismatch() -> None:
+    """qBraid adapter must fail closed when decoded counts diverge from requested shots."""
+
+    class FakeResultData:
+        def get_counts(self) -> dict[str, int]:
+            return {"00": 5, "11": 7}
+
+    class FakeResult:
+        data = FakeResultData()
+
+    class FakeJob:
+        id = "qbraid-job-shot-mismatch"
+
+        def status(self) -> str:
+            return "COMPLETED"
+
+        def result(self) -> FakeResult:
+            return FakeResult()
+
+        def cancel(self) -> None:
+            self.cancelled = True
+
+    class FakeDevice:
+        id = "ionq_qpu.aria-1"
+
+        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+            del run_input, name, metadata
+            assert shots == 13
+            return FakeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(QbraidRuntimeHALAdapter(hal.profile("qbraid_ionq"), device=FakeDevice()))
+    workload = qbraid_program_to_workload(
+        "OPENQASM 3.0;\nqubit[2] q;\nbit[2] c;\n",
+        workload_id="qbraid_shot_mismatch",
+        ir_format="openqasm3",
+        n_qubits=2,
+        shots=13,
+    )
+
+    job = hal.submit("qbraid_ionq", workload, approval_id="approved-qbraid")
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)

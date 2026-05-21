@@ -168,3 +168,46 @@ def test_strangeworks_adapter_normalises_provider_status_tokens() -> None:
 
     assert sw_mod._normalise_status("CANCELED") == "cancelled"
     assert sw_mod._normalise_status("SUCCESS") == "completed"
+
+
+def test_strangeworks_adapter_rejects_shot_mismatch() -> None:
+    """Strangeworks adapter must fail closed when decoded counts diverge from requested shots."""
+
+    class FakeJob:
+        id = "sw-job-shot-mismatch"
+
+        def status(self) -> str:
+            return "COMPLETED"
+
+        def result(self) -> dict[str, dict[str, int]]:
+            return {"counts": {"00": 4, "11": 6}}
+
+        def cancel(self) -> None:
+            self.cancelled = True
+
+    class FakeBackend:
+        id = "rigetti.qvm"
+
+        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+            del run_input, name, metadata
+            assert shots == 11
+            return FakeJob()
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(
+        StrangeworksComputeHALAdapter(
+            hal.profile("strangeworks_compute"),
+            backend=FakeBackend(),
+        )
+    )
+    workload = strangeworks_program_to_workload(
+        "DECLARE ro BIT[2]",
+        workload_id="sw_shot_mismatch",
+        ir_format="quil",
+        n_qubits=2,
+        shots=11,
+    )
+
+    job = hal.submit("strangeworks_compute", workload, approval_id="approved-sw")
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        hal.result(job)
