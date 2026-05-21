@@ -13,8 +13,10 @@ import pytest
 
 from scpn_quantum_control.hardware.aggregators import ResolvedAggregatorProviderRoute
 from scpn_quantum_control.hardware.provider_capability_discovery import (
+    OpenPulseControlReadiness,
     ProviderCapabilitySnapshot,
     assess_provider_capability_snapshot,
+    build_openpulse_control_readiness,
     probe_aggregator_provider_capability,
     snapshot_from_azure_target,
     snapshot_from_braket_device,
@@ -151,6 +153,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     """The generic capability probe should be available from the HAL facade."""
 
     from scpn_quantum_control.hardware import (
+        OpenPulseControlReadiness as ExportedOpenPulseReadiness,
+    )
+    from scpn_quantum_control.hardware import (
         ProviderCapabilityDecision,
     )  # noqa: PLC0415
     from scpn_quantum_control.hardware import (
@@ -158,6 +163,9 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     )
     from scpn_quantum_control.hardware import (
         assess_provider_capability_snapshot as exported_assess,
+    )
+    from scpn_quantum_control.hardware import (
+        build_openpulse_control_readiness as exported_openpulse_readiness,
     )
     from scpn_quantum_control.hardware import (
         probe_aggregator_provider_capability as exported_probe,
@@ -200,8 +208,10 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     )
 
     assert ExportedSnapshot is ProviderCapabilitySnapshot
+    assert ExportedOpenPulseReadiness is OpenPulseControlReadiness
     assert ProviderCapabilityDecision.__name__ == "ProviderCapabilityDecision"
     assert exported_assess is assess_provider_capability_snapshot
+    assert exported_openpulse_readiness is build_openpulse_control_readiness
     assert exported_probe is probe_aggregator_provider_capability
     assert exported_azure_snapshot is snapshot_from_azure_target
     assert exported_braket_snapshot is snapshot_from_braket_device
@@ -215,6 +225,64 @@ def test_provider_capability_contract_is_exported_from_hardware_package() -> Non
     assert exported_quantinuum_snapshot is snapshot_from_quantinuum_backend
     assert exported_quera_snapshot is snapshot_from_quera_bloqade
     assert exported_rigetti_snapshot is snapshot_from_rigetti_qcs
+
+
+def test_openpulse_readiness_builds_calibration_workflow_for_pulse_ready_snapshot() -> None:
+    snapshot = ProviderCapabilitySnapshot(
+        route_id="direct/ibm",
+        aggregator="direct",
+        provider="ibm",
+        backend_id="ibm_quantum",
+        target_name="ibm_fez",
+        n_qubits=156,
+        supported_ir_formats=("openqasm3", "qiskit_qpy", "qiskit"),
+        native_features=("pulse_control", "drive_channel_access", "dynamic_circuits"),
+        online=True,
+        no_submit=True,
+    )
+
+    readiness = build_openpulse_control_readiness(
+        snapshot,
+        qubit=3,
+        dt=2.22e-10,
+        amplitude_grid=(0.1, 0.2, 0.3, 0.4, 0.5),
+        shots=2048,
+    )
+
+    payload = readiness.to_dict()
+    assert readiness.ready is True
+    assert readiness.blockers == ()
+    assert readiness.workflow is not None
+    assert payload["workflow"]["hardware_submission"] is False
+    assert payload["workflow"]["qubit"] == 3
+    assert payload["workflow"]["points"][0]["shots"] == 2048
+
+
+def test_openpulse_readiness_blocks_missing_ir_and_native_features() -> None:
+    snapshot = ProviderCapabilitySnapshot(
+        route_id="direct/ibm",
+        aggregator="direct",
+        provider="ibm",
+        backend_id="ibm_quantum",
+        target_name="ibm_stub",
+        n_qubits=4,
+        supported_ir_formats=("openqasm2",),
+        native_features=("dynamic_circuits",),
+        online=False,
+        no_submit=True,
+    )
+
+    readiness = build_openpulse_control_readiness(
+        snapshot,
+        qubit=2,
+        dt=2.22e-10,
+    )
+
+    assert readiness.ready is False
+    assert readiness.workflow is None
+    assert any("offline" in blocker for blocker in readiness.blockers)
+    assert any("OpenPulse-compatible IR route" in blocker for blocker in readiness.blockers)
+    assert any("missing pulse native features" in blocker for blocker in readiness.blockers)
 
 
 def test_direct_ionq_snapshot_reads_backend_json_without_submission() -> None:

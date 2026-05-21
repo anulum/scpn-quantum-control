@@ -189,6 +189,10 @@ provide concrete no-submit adapters for
 injected provider or broker SDK objects: they read declared target metadata,
 route-supported IR formats, queue, limit, online, simulator, calibration, and
 gate metadata without invoking submission APIs.
+`build_openpulse_control_readiness()` extends this no-submit surface for
+pulse-level control lanes by verifying OpenPulse-compatible IR and native
+feature availability, then producing a calibration workflow dossier only when
+the target metadata passes readiness gates.
 
 ## Advanced Module Reference
 

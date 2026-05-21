@@ -14,6 +14,10 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from .aggregators import ResolvedAggregatorProviderRoute, resolve_aggregator_provider_route
+from .openpulse_control import (
+    OpenPulseCalibrationWorkflow,
+    build_rabi_amplitude_calibration_workflow,
+)
 
 CapabilityDecisionStatus = Literal["ready", "blocked", "unknown"]
 ProviderMetadataProbe = Callable[[ResolvedAggregatorProviderRoute], "ProviderCapabilitySnapshot"]
@@ -106,6 +110,104 @@ class ProviderCapabilityDecision:
                 "metadata": dict(self.snapshot.metadata),
             },
         }
+
+
+@dataclass(frozen=True)
+class OpenPulseControlReadiness:
+    """No-submit readiness surface for pulse-level OpenPulse calibration lanes."""
+
+    snapshot: ProviderCapabilitySnapshot
+    ready: bool
+    blockers: tuple[str, ...]
+    warnings: tuple[str, ...]
+    workflow: OpenPulseCalibrationWorkflow | None
+    required_ir_formats: tuple[str, ...]
+    required_native_features: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialise the OpenPulse readiness decision."""
+        return {
+            "ready": self.ready,
+            "blockers": list(self.blockers),
+            "warnings": list(self.warnings),
+            "required_ir_formats": list(self.required_ir_formats),
+            "required_native_features": list(self.required_native_features),
+            "snapshot": {
+                "route_id": self.snapshot.route_id,
+                "provider": self.snapshot.provider,
+                "backend_id": self.snapshot.backend_id,
+                "target_name": self.snapshot.target_name,
+                "supported_ir_formats": list(self.snapshot.supported_ir_formats),
+                "native_features": list(self.snapshot.native_features),
+                "n_qubits": self.snapshot.n_qubits,
+                "online": self.snapshot.online,
+                "simulator": self.snapshot.simulator,
+                "calibration_timestamp": self.snapshot.calibration_timestamp,
+            },
+            "workflow": self.workflow.to_payload() if self.workflow is not None else None,
+            "hardware_submission": False,
+        }
+
+
+def build_openpulse_control_readiness(
+    snapshot: ProviderCapabilitySnapshot,
+    *,
+    qubit: int,
+    dt: float,
+    amplitude_grid: tuple[float, ...] = (0.1, 0.2, 0.3, 0.4, 0.5),
+    shots: int = 4096,
+) -> OpenPulseControlReadiness:
+    """Build no-submit readiness for OpenPulse control and calibration workflows."""
+
+    blockers: list[str] = []
+    warnings: list[str] = []
+    required_ir_formats = ("openpulse", "qiskit_qpy", "qiskit")
+    required_native_features = ("pulse_control", "drive_channel_access")
+
+    if snapshot.online is False:
+        blockers.append("target is offline")
+    if snapshot.online is None:
+        warnings.append("target online status is unknown")
+    if snapshot.n_qubits <= qubit:
+        blockers.append(
+            f"target exposes {snapshot.n_qubits} qubits, requested qubit index {qubit}"
+        )
+    if not any(fmt in snapshot.supported_ir_formats for fmt in required_ir_formats):
+        blockers.append(
+            "target does not advertise an OpenPulse-compatible IR route "
+            f"(required one of: {', '.join(required_ir_formats)})"
+        )
+
+    feature_set = set(snapshot.native_features)
+    if "dynamic_circuits" not in feature_set:
+        warnings.append("target does not advertise dynamic_circuits")
+    missing_features = [
+        feature for feature in required_native_features if feature not in feature_set
+    ]
+    if missing_features:
+        blockers.append(
+            "target is missing pulse native features: " + ", ".join(sorted(missing_features))
+        )
+
+    workflow: OpenPulseCalibrationWorkflow | None = None
+    if not blockers:
+        workflow = build_rabi_amplitude_calibration_workflow(
+            backend_name=snapshot.target_name,
+            qubit=qubit,
+            amplitude_grid=amplitude_grid,
+            shots=shots,
+            dt=dt,
+        )
+
+    return OpenPulseControlReadiness(
+        snapshot=snapshot,
+        ready=not blockers,
+        blockers=tuple(blockers),
+        warnings=tuple(warnings),
+        workflow=workflow,
+        required_ir_formats=required_ir_formats,
+        required_native_features=required_native_features,
+    )
 
 
 def probe_aggregator_provider_capability(
@@ -2287,10 +2389,12 @@ def _program_spec_name(value: Any) -> str | None:
 
 __all__ = [
     "CapabilityDecisionStatus",
+    "OpenPulseControlReadiness",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
     "ProviderMetadataProbe",
     "assess_provider_capability_snapshot",
+    "build_openpulse_control_readiness",
     "probe_aggregator_provider_capability",
     "snapshot_from_azure_target",
     "snapshot_from_braket_device",
