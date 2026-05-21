@@ -235,3 +235,25 @@ def test_quandela_default_builder_is_calibration_gated(
     monkeypatch.setattr("scpn_quantum_control.hardware.hal_quandela.import_module", fake_import)
     with pytest.raises(RuntimeError, match="calibrated Quandela"):
         adapter.submit(workload, approval_id="approved")
+
+
+def test_quandela_adapter_rejects_shot_mismatch() -> None:
+    class ShotMismatchProcessor:
+        def samples(self, count: int) -> dict[str, object]:
+            del count
+            return {"job_id": "quandela-provider-shot-mismatch", "counts": {"10": 3, "01": 1}}
+
+    adapter = QuandelaPercevalHALAdapter(
+        HardwareAbstractionLayer.with_builtin_profiles().profile("quandela_cloud"),
+        processor=ShotMismatchProcessor(),
+    )
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        adapter.submit(
+            quandela_perceval_workload(
+                _PHOTONIC_PLAN,
+                workload_id="quandela_shot_mismatch",
+                n_modes=2,
+                shots=10,
+            ),
+            approval_id="approved",
+        )

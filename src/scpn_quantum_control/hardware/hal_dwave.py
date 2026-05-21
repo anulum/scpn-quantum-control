@@ -16,7 +16,11 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any, cast
 
-from ._count_integrity import strict_integer_value, strict_provider_job_id
+from ._count_integrity import (
+    strict_integer_value,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 DWAVE_BQM_SCHEMA = "scpn.dwave.bqm.v1"
@@ -107,6 +111,8 @@ class DWaveLeapHALAdapter:
         if not callable(sample_method):
             raise TypeError("D-Wave sampler object does not provide sample()")
         sample_set = sample_method(bqm, num_reads=workload.shots, label=workload.workload_id)
+        counts = _normalise_sample_counts(sample_set, cast(Sequence[str], payload["variables"]))
+        observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         provider_job_id = _provider_job_id(sample_set)
         hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
@@ -128,8 +134,8 @@ class DWaveLeapHALAdapter:
         result = QuantumJobResult(
             job=job,
             status="completed",
-            counts=_normalise_sample_counts(sample_set, cast(Sequence[str], payload["variables"])),
-            shots=workload.shots,
+            counts=counts,
+            shots=observed_shots,
             metadata={
                 "approval_id": approval_id,
                 "execution_mode": DWAVE_EXECUTION_MODE,

@@ -47,6 +47,22 @@ class _FakeSampler:
         return _FakeSampleSet()
 
 
+class _FakeShotMismatchSampleSet:
+    info = {"problem_id": "dwave-problem-shot-mismatch"}
+
+    def data(self, fields: list[str]) -> list[_FakeSampleRow]:
+        assert fields == ["sample", "num_occurrences"]
+        return [_FakeSampleRow({"0": 0, "1": 1}, 3)]
+
+
+class _FakeShotMismatchSampler:
+    def sample(
+        self, bqm: dict[str, Any], *, num_reads: int, label: str
+    ) -> _FakeShotMismatchSampleSet:
+        del bqm, num_reads, label
+        return _FakeShotMismatchSampleSet()
+
+
 def _bqm_factory(payload: dict[str, object]) -> dict[str, object]:
     return {"factory_payload": payload}
 
@@ -230,3 +246,23 @@ def test_dwave_provider_job_id_extraction_requires_identifier() -> None:
     )
     with pytest.raises(ValueError, match="provider job id"):
         dwave_mod._provider_job_id(type("SampleSet", (), {"info": {}})())
+
+
+def test_dwave_leap_adapter_rejects_shot_mismatch() -> None:
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = DWaveLeapHALAdapter(
+        hal.profile("dwave_leap"),
+        sampler=_FakeShotMismatchSampler(),
+        bqm_factory=_bqm_factory,
+    )
+    with pytest.raises(ValueError, match="shot count mismatch"):
+        adapter.submit(
+            dwave_bqm_workload(
+                linear={"0": -1.0, "1": 0.5},
+                quadratic={("0", "1"): -0.25},
+                workload_id="dwave_shot_mismatch",
+                n_variables=2,
+                reads=8,
+            ),
+            approval_id="approved-dwave",
+        )

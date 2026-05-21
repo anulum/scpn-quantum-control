@@ -16,7 +16,11 @@ from datetime import datetime, timezone
 from importlib import import_module
 from typing import Any
 
-from ._count_integrity import strict_integer_value, strict_provider_job_id
+from ._count_integrity import (
+    strict_integer_value,
+    strict_provider_job_id,
+    strict_shot_conservation,
+)
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
 
 QUANDELA_PERCEVAL_SCHEMA = "scpn.quandela.perceval.v1"
@@ -85,6 +89,7 @@ class QuandelaPercevalHALAdapter:
         processor = self._processor_for(plan)
         raw_result = self._sample(processor, workload.shots)
         counts = _normalise_counts(_extract_counts(raw_result))
+        observed_shots = strict_shot_conservation(counts, expected_shots=workload.shots)
         provider_job_id = _provider_job_id(raw_result)
         hal_job_id = _hal_job_id(self.backend_id, workload.workload_id, provider_job_id)
         job = QuantumJobRef(
@@ -106,7 +111,7 @@ class QuandelaPercevalHALAdapter:
             job=job,
             status="completed",
             counts=counts,
-            shots=workload.shots,
+            shots=observed_shots,
             metadata={
                 "approval_id": approval_id,
                 "execution_mode": QUANDELA_EXECUTION_MODE,
