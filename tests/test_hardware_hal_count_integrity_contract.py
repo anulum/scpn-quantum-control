@@ -117,3 +117,19 @@ def test_count_normalisers_reject_empty_count_maps() -> None:
 def test_qiskit_count_normaliser_accumulates_equivalent_bitstring_keys() -> None:
     counts = hal_qiskit._normalise_counts({"01": 2, (0, 1): 3})
     assert counts == {"01": 5}
+
+
+def test_iqm_oqc_pasqal_count_normalisers_accumulate_equivalent_bitstring_keys() -> None:
+    iqm_counts = hal_iqm._normalise_counts({"01": 2, (0, 1): 3})
+    assert iqm_counts == {"01": 5}
+
+    oqc_counts = hal_oqc._normalise_counts({"01": 2, (0, 1): 3})
+    assert oqc_counts == {"01": 5}
+
+    pasqal_counts = hal_pasqal._normalise_counts({"01": 2, (0, 1): 3})
+    assert pasqal_counts == {"01": 5}
+
+
+def test_quandela_count_normaliser_accumulates_canonical_state_collisions() -> None:
+    counts = hal_quandela._normalise_counts({"1": 2, 1: 3})
+    assert counts == {"1": 5}

@@ -312,7 +312,7 @@ def _normalise_counts(raw: object) -> dict[str, int]:
             raise ValueError("counts keys must be non-empty photonic states")
         if value < 0:
             raise ValueError("counts values must be non-negative integers")
-        counts[key] = value
+        counts[key] = counts.get(key, 0) + value
     if not counts:
         raise ValueError("Quandela result did not contain any counts")
     return counts

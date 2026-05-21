@@ -224,7 +224,7 @@ def _normalise_counts(raw: object) -> dict[str, int]:
     for bitstring, count in raw.items():
         key = strict_binary_bitstring_key(bitstring, field_name="OQC count key")
         value = strict_non_negative_count(count)
-        counts[key] = value
+        counts[key] = counts.get(key, 0) + value
     if not counts:
         raise ValueError("OQC result did not contain any counts")
     return counts
