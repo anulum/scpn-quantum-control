@@ -1260,6 +1260,16 @@ up to the current exact solver limit; larger defect sets automatically
 fallback to the Python NetworkX decoder and expose the selected path via
 `last_decoder_backend`.
 
+### `biological_diagnostics.BiologicalSurfaceDiagnostics`
+
+```python
+analyse_biological_surface_code(code, node_domains=None, metadata=None)
+    -> BiologicalSurfaceDiagnostics
+```
+Biology-oriented diagnostics over the coupling graph used by the biological
+surface code. Reports weighted-degree and betweenness criticality, cycle-basis
+burden, community modularity, and optional inter-domain coupling aggregates.
+
 ### `control_qec.ControlQEC`
 
 ```python

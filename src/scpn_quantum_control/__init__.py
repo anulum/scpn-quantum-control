@@ -229,6 +229,10 @@ from .phase.phase_vqe import PhaseVQE
 from .phase.structured_ansatz import build_structured_ansatz
 from .phase.trotter_upde import QuantumUPDESolver
 from .phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
+from .qec.biological_diagnostics import (
+    BiologicalSurfaceDiagnostics,
+    analyse_biological_surface_code,
+)
 from .qec.biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
 from .qec.control_qec import ControlQEC
 from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
@@ -342,6 +346,8 @@ __all__ = [
     "build_structured_ansatz",
     "BiologicalSurfaceCode",
     "BiologicalMWPMDecoder",
+    "BiologicalSurfaceDiagnostics",
+    "analyse_biological_surface_code",
     "DynamicCouplingEngine",
     "OMEGA_N_16",
     "build_knm_paper27",

@@ -9,6 +9,10 @@
 fault-tolerant UPDE, and repetition code logical qubits.
 """
 
+from .biological_diagnostics import (
+    BiologicalSurfaceDiagnostics,
+    analyse_biological_surface_code,
+)
 from .biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
 from .control_qec import ControlQEC, MWPMDecoder, SurfaceCode
 from .dla_protected_scar import (
@@ -68,6 +72,8 @@ __all__ = [
     "MWPMDecoder",
     "BiologicalSurfaceCode",
     "BiologicalMWPMDecoder",
+    "BiologicalSurfaceDiagnostics",
+    "analyse_biological_surface_code",
     "DLAProtectedLogicalSyncWitness",
     "DLAProtectedMemoryPrototype",
     "DLAProtectedSubspaceSpec",
