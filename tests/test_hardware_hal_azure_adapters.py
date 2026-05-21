@@ -126,6 +126,7 @@ def test_azure_adapter_normalises_provider_status_tokens() -> None:
     assert azure_mod._normalise_status("INPROGRESS") == "running"
     assert azure_mod._normalise_status("INITIALIZING") == "submitted"
     assert azure_mod._normalise_status("STARTING") == "submitted"
+    assert azure_mod._normalise_status("CREATING") == "submitted"
 
 
 def test_azure_provider_job_id_rejects_control_characters() -> None:
