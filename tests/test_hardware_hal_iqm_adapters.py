@@ -247,6 +247,29 @@ def test_iqm_hal_adapter_rejects_provider_job_without_id() -> None:
         )
 
 
+def test_iqm_provider_job_id_rejects_control_characters() -> None:
+    """IQM provider identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_iqm as iqm_mod
+
+    class BadJob:
+        job_id = "iqm-provider-\n2"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        iqm_mod._job_id(BadJob())
+
+
+def test_iqm_provider_job_id_trims_padding() -> None:
+    """IQM provider identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_iqm as iqm_mod
+
+    class PaddedJob:
+        job_id = "  iqm-provider-2  "
+
+    assert iqm_mod._job_id(PaddedJob()) == "iqm-provider-2"
+
+
 def test_iqm_status_normalisation_maps_provider_tokens() -> None:
     """IQM status values should map to canonical HAL status values."""
 
