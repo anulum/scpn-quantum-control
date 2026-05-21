@@ -4,13 +4,13 @@
 <!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
-<!-- scpn-quantum-control -- S1 realtime control E2E benchmark -->
+<!-- scpn-quantum-control -- realtime control E2E benchmark -->
 
-# S1 Realtime Control E2E Benchmark
+# Realtime Control E2E Benchmark
 
 Date: `2026-05-22`
 
-Command: `PYTHONDONTWRITEBYTECODE=1 python scripts/benchmark_s1_realtime_e2e.py --repeats 12 --steps 8`
+Command: `PYTHONDONTWRITEBYTECODE=1 python scripts/benchmark_realtime_control_e2e.py --repeats 12 --steps 8`
 
 ## Claim Boundary
 
@@ -31,9 +31,9 @@ No-QPU software control-loop benchmark only. Results exclude provider queue, net
 
 | n | repeats_successful | p95 tick ms | p99 tick ms | max tick ms | rust policy path |
 |---:|---:|---:|---:|---:|:---:|
-| 2 | 12 | 7.164925 | 8.813148 | 8.885775 | true |
-| 3 | 11 | 7.918765 | 8.858728 | 11.742847 | true |
-| 4 | 10 | 8.134091 | 11.172245 | 12.095661 | true |
+| 2 | 10 | 5.867735 | 6.727862 | 7.224292 | true |
+| 3 | 12 | 7.757306 | 8.642055 | 8.975147 | true |
+| 4 | 10 | 9.618015 | 10.505181 | 10.715583 | true |
 
 ## Reproducibility
 

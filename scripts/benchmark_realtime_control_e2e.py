@@ -5,8 +5,8 @@
 # (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- S1 realtime control E2E benchmark
-"""Regenerate reproducible end-to-end S1 realtime control benchmark artefacts.
+# scpn-quantum-control -- realtime control E2E benchmark
+"""Regenerate reproducible end-to-end realtime control benchmark artefacts.
 
 This harness benchmarks the software control loop path end-to-end:
 FeedbackRunner -> RealtimeControllerScheduler -> RealtimeSyncFeedbackController.
@@ -43,7 +43,7 @@ from scpn_quantum_control.hardware.feedback_loop import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATE = "2026-05-22"
 DEFAULT_OUT_DIR = REPO_ROOT / "data" / "s1_feedback_loop"
-DEFAULT_DOC_PATH = REPO_ROOT / "docs" / "campaigns" / f"s1_realtime_e2e_benchmark_{DATE}.md"
+DEFAULT_DOC_PATH = REPO_ROOT / "docs" / "campaigns" / f"realtime_control_e2e_benchmark_{DATE}.md"
 
 
 def _parse_args() -> argparse.Namespace:
@@ -172,7 +172,7 @@ def _benchmark_case(n: int, *, repeats: int, steps: int, shots: int) -> dict[str
     if successful == 0:
         raise RuntimeError(f"all repeats breached SLA for n={n}")
     return {
-        "benchmark": "s1_realtime_control_e2e",
+        "benchmark": "realtime_control_e2e",
         "n_qubits": n,
         "measurement_shots": shots,
         "repeats_requested": repeats,
@@ -206,9 +206,9 @@ def _render_markdown(summary: dict[str, Any]) -> str:
         "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",
         "<!-- ORCID: 0009-0009-3560-0851 -->",
         "<!-- Contact: www.anulum.li | protoscience@anulum.li -->",
-        "<!-- scpn-quantum-control -- S1 realtime control E2E benchmark -->",
+        "<!-- scpn-quantum-control -- realtime control E2E benchmark -->",
         "",
-        "# S1 Realtime Control E2E Benchmark",
+        "# Realtime Control E2E Benchmark",
         "",
         f"Date: `{summary['date']}`",
         "",
@@ -255,10 +255,10 @@ def run_benchmark(*, repeats: int, steps: int) -> dict[str, Any]:
         _benchmark_case(4, repeats=max(5, repeats - 2), steps=steps, shots=64),
     ]
     return {
-        "schema": "scpn_s1_realtime_control_e2e_benchmark_v1",
+        "schema": "scpn_realtime_control_e2e_benchmark_v1",
         "date": DATE,
         "command": (
-            "PYTHONDONTWRITEBYTECODE=1 python scripts/benchmark_s1_realtime_e2e.py "
+            "PYTHONDONTWRITEBYTECODE=1 python scripts/benchmark_realtime_control_e2e.py "
             f"--repeats {repeats} --steps {steps}"
         ),
         "environment": {
@@ -286,8 +286,8 @@ def main() -> int:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     args.doc_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path = args.out_dir / f"s1_realtime_control_e2e_summary_{DATE}.json"
-    csv_path = args.out_dir / f"s1_realtime_control_e2e_rows_{DATE}.csv"
+    json_path = args.out_dir / f"realtime_control_e2e_summary_{DATE}.json"
+    csv_path = args.out_dir / f"realtime_control_e2e_rows_{DATE}.csv"
     json_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
         fieldnames = sorted({key for row in summary["rows"] for key in row})
