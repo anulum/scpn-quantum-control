@@ -142,8 +142,31 @@ def test_pennylane_provider_job_id_uses_strict_validator(
     assert seen["value"].startswith("pennylane-local:pl_bad_id:")
 
 
+def test_pennylane_provider_job_id_rejects_control_characters(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """PennyLane provider identifiers must reject control-character payloads."""
+
+    class _FakeDigest:
+        def hexdigest(self) -> str:
+            return "bad\nhash"
+
+    monkeypatch.setattr(pennylane_mod.hashlib, "sha256", lambda *_args, **_kwargs: _FakeDigest())
+
+    with pytest.raises(ValueError, match="provider job id"):
+        pennylane_mod._provider_job_id(
+            QuantumWorkload(
+                workload_id="pl_ctrl",
+                ir_format="pennylane",
+                program='{"schema":"scpn.pennylane.native_gates.v1","instructions":[]}',
+                n_qubits=1,
+                shots=1,
+            )
+        )
+
+
 def test_pennylane_provider_job_id_trims_padding() -> None:
-    """PennyLane lineage IDs should remain canonical without surrounding whitespace."""
+    """PennyLane provider identifiers should be canonicalised by trimming padding."""
 
     provider_job_id = pennylane_mod._provider_job_id(
         QuantumWorkload(

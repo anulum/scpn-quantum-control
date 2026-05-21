@@ -205,6 +205,13 @@ def test_ionq_direct_adapter_rejects_control_characters_in_provider_job_id() -> 
         ionq_mod._provider_job_id_from_response({"id": "job-\n42"})
 
 
+def test_ionq_provider_job_id_rejects_control_characters() -> None:
+    """IonQ provider identifiers must reject control-character payloads."""
+
+    with pytest.raises(ValueError, match="provider job id"):
+        ionq_mod._provider_job_id_from_response({"id": "ionq-provider-\n2"})
+
+
 def test_ionq_direct_adapter_trims_provider_job_id_padding() -> None:
     """IonQ provider ids should be trimmed to canonical form."""
 
