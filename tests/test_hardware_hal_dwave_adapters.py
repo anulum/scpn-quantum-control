@@ -248,6 +248,25 @@ def test_dwave_provider_job_id_extraction_requires_identifier() -> None:
         dwave_mod._provider_job_id(type("SampleSet", (), {"info": {}})())
 
 
+def test_dwave_provider_job_id_rejects_control_characters() -> None:
+    """D-Wave provider identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_dwave as dwave_mod
+
+    SampleSet = type("SampleSet", (), {"info": {"problem_id": "dw-\n2"}})
+    with pytest.raises(ValueError, match="provider job id"):
+        dwave_mod._provider_job_id(SampleSet())
+
+
+def test_dwave_provider_job_id_trims_padding() -> None:
+    """D-Wave provider identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_dwave as dwave_mod
+
+    SampleSet = type("SampleSet", (), {"info": {"problem_id": "  dw-2  "}})
+    assert dwave_mod._provider_job_id(SampleSet()) == "dw-2"
+
+
 def test_dwave_leap_adapter_rejects_shot_mismatch() -> None:
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     adapter = DWaveLeapHALAdapter(

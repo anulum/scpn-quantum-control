@@ -212,6 +212,54 @@ def test_quandela_provider_job_id_extraction_requires_identifier() -> None:
         )
 
 
+def test_quandela_provider_job_id_rejects_control_characters() -> None:
+    """Quandela provider identifiers must reject control-character payloads."""
+
+    class BadProviderIdProcessor:
+        def samples(self, count: int) -> dict[str, object]:
+            del count
+            return {"job_id": "quandela-provider-\n2", "counts": {"10": 1}}
+
+    adapter = QuandelaPercevalHALAdapter(
+        HardwareAbstractionLayer.with_builtin_profiles().profile("quandela_cloud"),
+        processor=BadProviderIdProcessor(),
+    )
+    with pytest.raises(ValueError, match="provider job id"):
+        adapter.submit(
+            quandela_perceval_workload(
+                _PHOTONIC_PLAN,
+                workload_id="bad_provider_id",
+                n_modes=2,
+                shots=1,
+            ),
+            approval_id="approved",
+        )
+
+
+def test_quandela_provider_job_id_trims_padding() -> None:
+    """Quandela provider identifiers should be canonicalised by trimming padding."""
+
+    class PaddedProviderIdProcessor:
+        def samples(self, count: int) -> dict[str, object]:
+            del count
+            return {"job_id": "  quandela-provider-2  ", "counts": {"10": 1}}
+
+    adapter = QuandelaPercevalHALAdapter(
+        HardwareAbstractionLayer.with_builtin_profiles().profile("quandela_cloud"),
+        processor=PaddedProviderIdProcessor(),
+    )
+    job = adapter.submit(
+        quandela_perceval_workload(
+            _PHOTONIC_PLAN,
+            workload_id="padded_provider_id",
+            n_modes=2,
+            shots=1,
+        ),
+        approval_id="approved",
+    )
+    assert job.metadata["provider_job_id"] == "quandela-provider-2"
+
+
 def test_quandela_default_builder_is_calibration_gated(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -423,3 +423,18 @@ def test_rigetti_provider_job_id_extraction_requires_identifier() -> None:
     )
     with pytest.raises(ValueError, match="provider job id"):
         rigetti_mod._provider_job_id(object())
+
+
+def test_rigetti_provider_job_id_rejects_control_characters() -> None:
+    """Rigetti provider identifiers must reject control-character payloads."""
+
+    BadResult = type("Result", (), {"job_id": "rigetti-provider-\n3"})
+    with pytest.raises(ValueError, match="provider job id"):
+        rigetti_mod._provider_job_id(BadResult())
+
+
+def test_rigetti_provider_job_id_trims_padding() -> None:
+    """Rigetti provider identifiers should be canonicalised by trimming padding."""
+
+    PaddedResult = type("Result", (), {"job_id": "  rigetti-provider-3  "})
+    assert rigetti_mod._provider_job_id(PaddedResult()) == "rigetti-provider-3"

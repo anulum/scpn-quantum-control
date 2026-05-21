@@ -174,3 +174,26 @@ def test_cirq_provider_job_id_extraction_requires_identifier() -> None:
     )
     with pytest.raises(ValueError, match="provider job id"):
         cirq_mod._provider_job_id(object())
+
+
+def test_cirq_provider_job_id_rejects_control_characters() -> None:
+    """Cirq provider identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_cirq as cirq_mod
+
+    class BadResult:
+        id = "cirq-provider-\n2"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        cirq_mod._provider_job_id(BadResult())
+
+
+def test_cirq_provider_job_id_trims_padding() -> None:
+    """Cirq provider identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_cirq as cirq_mod
+
+    class PaddedResult:
+        id = "  cirq-provider-2  "
+
+    assert cirq_mod._provider_job_id(PaddedResult()) == "cirq-provider-2"
