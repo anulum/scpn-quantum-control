@@ -233,6 +233,8 @@ def test_pasqal_status_normalisation_maps_completion_aliases() -> None:
     assert pasqal_mod._normalise_status("INITIALIZING") == "submitted"
     assert pasqal_mod._normalise_status("STARTING") == "submitted"
     assert pasqal_mod._normalise_status("CREATING") == "submitted"
+    assert pasqal_mod._normalise_status("ABORTING") == "cancelled"
+    assert pasqal_mod._normalise_status("CANCELLING") == "cancelled"
 
 
 def test_pasqal_provider_job_id_extraction_requires_identifier() -> None:
