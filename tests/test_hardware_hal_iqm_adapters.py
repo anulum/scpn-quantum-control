@@ -318,3 +318,19 @@ def test_iqm_adapter_rejects_shot_mismatch() -> None:
     job = hal.submit("iqm_cloud", workload, approval_id="approved-iqm")
     with pytest.raises(ValueError, match="shot count mismatch"):
         hal.result(job)
+
+
+def test_iqm_quantum_computer_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("iqm_cloud")
+    with pytest.raises(ValueError, match="IQM quantum computer"):
+        IQMHALAdapter(profile, backend=_FakeIQMBackend(), quantum_computer="garnet\nbad")
+
+
+def test_iqm_quantum_computer_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("iqm_cloud")
+    adapter = IQMHALAdapter(
+        profile,
+        backend=_FakeIQMBackend(),
+        quantum_computer="  garnet  ",
+    )
+    assert adapter._quantum_computer == "garnet"

@@ -72,7 +72,11 @@ class IQMHALAdapter:
         self.backend_id = profile.backend_id
         self._backend = backend
         self._server_url = server_url
-        self._quantum_computer = quantum_computer
+        self._quantum_computer = (
+            strict_provider_job_id(quantum_computer, field_name="IQM quantum computer")
+            if quantum_computer is not None
+            else None
+        )
         self._import_module = import_module
         self.timeout_s = timeout_s
         self.optimisation_level = optimisation_level
