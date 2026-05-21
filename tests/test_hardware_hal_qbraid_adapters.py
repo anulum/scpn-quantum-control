@@ -177,6 +177,29 @@ def test_qbraid_adapter_normalises_provider_status_tokens() -> None:
     assert qbraid_mod._normalise_status("FINISHED") == "completed"
 
 
+def test_qbraid_provider_job_id_rejects_control_characters() -> None:
+    """qBraid provider job identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
+
+    class BadJob:
+        id = "qbraid-job-\n1"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        qbraid_mod._job_id(BadJob())
+
+
+def test_qbraid_provider_job_id_trims_padding() -> None:
+    """qBraid provider job identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_qbraid as qbraid_mod
+
+    class PaddedJob:
+        id = "  qbraid-job-42  "
+
+    assert qbraid_mod._job_id(PaddedJob()) == "qbraid-job-42"
+
+
 def test_qbraid_adapter_rejects_shot_mismatch() -> None:
     """qBraid adapter must fail closed when decoded counts diverge from requested shots."""
 
