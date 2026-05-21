@@ -270,6 +270,29 @@ def test_iqm_provider_job_id_trims_padding() -> None:
     assert iqm_mod._job_id(PaddedJob()) == "iqm-provider-2"
 
 
+def test_iqm_backend_name_rejects_control_characters() -> None:
+    """IQM backend names must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_iqm as iqm_mod
+
+    class BadBackend:
+        name = "iqm-\nbackend"
+
+    with pytest.raises(ValueError, match="backend name"):
+        iqm_mod._backend_name(BadBackend())
+
+
+def test_iqm_backend_name_trims_padding() -> None:
+    """IQM backend names should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_iqm as iqm_mod
+
+    class PaddedBackend:
+        name = "  iqm-backend  "
+
+    assert iqm_mod._backend_name(PaddedBackend()) == "iqm-backend"
+
+
 def test_iqm_status_normalisation_maps_provider_tokens() -> None:
     """IQM status values should map to canonical HAL status values."""
 

@@ -254,10 +254,10 @@ def _normalise_counts(raw: Any) -> dict[str, int]:
 def _backend_name(backend: Any) -> str:
     name = getattr(backend, "name", None)
     if callable(name):
-        return str(name())
+        return strict_provider_job_id(name(), field_name="IQM backend name")
     if name:
-        return str(name)
-    return type(backend).__name__
+        return strict_provider_job_id(name, field_name="IQM backend name")
+    return strict_provider_job_id(type(backend).__name__, field_name="IQM backend name")
 
 
 def _job_id(job: Any) -> str:
