@@ -300,6 +300,7 @@ def test_iqm_status_normalisation_maps_provider_tokens() -> None:
 
     assert iqm_mod._normalise_status("SUCCEEDED") == "completed"
     assert iqm_mod._normalise_status("CANCELED") == "cancelled"
+    assert iqm_mod._normalise_status("IN-PROGRESS") == "running"
 
 
 def test_iqm_adapter_rejects_shot_mismatch() -> None:
