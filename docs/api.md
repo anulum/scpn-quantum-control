@@ -592,7 +592,9 @@ VQLS_GradShafranov(grid_size=4, source_profile=None)
 ```python
 QuantumPetriNet(n_places, n_transitions, W_in, W_out, thresholds=None)
     .encode_marking(marking) -> QuantumCircuit
+    .step_report(marking) -> QuantumPetriStepReport
     .step(marking, shots=1000) -> np.ndarray  # new marking
+    .run_campaign(markings) -> QuantumPetriCampaignReport
 ```
 
 ### `q_disruption.QuantumDisruptionClassifier`

@@ -28,7 +28,7 @@ from .q_disruption_iter import (
     normalize_iter_features,
 )
 from .qaoa_mpc import QAOA_MPC
-from .qpetri import QuantumPetriNet
+from .qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
 from .realtime_feedback import (
     FeedbackStep,
     RealtimeFeedbackConfig,
@@ -44,6 +44,8 @@ __all__ = [
     "QAOA_MPC",
     "VQLS_GradShafranov",
     "QuantumPetriNet",
+    "QuantumPetriStepReport",
+    "QuantumPetriCampaignReport",
     "QuantumDisruptionClassifier",
     "AdaptiveBranchDecision",
     "AdaptiveBranchingConfig",

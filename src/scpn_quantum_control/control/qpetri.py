@@ -4,15 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Qpetri
-"""Quantum Petri net: superposition tokens on places.
-
-Classical SPN tokens are probabilities in [0,1] per place.  Quantum Petri net
-encodes tokens as qubit amplitudes -- a transition fires on all branches in
-superposition.  Measurement collapses to a single control decision.
-"""
+# SCPN Quantum Control — Quantum Petri Nets
+"""Quantum Petri nets with superposition-token dynamics for control systems."""
 
 from __future__ import annotations
+
+from dataclasses import dataclass
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -23,12 +20,49 @@ from .._constants import WEIGHT_SPARSITY_EPS
 from ..bridge.sc_to_quantum import probability_to_angle
 
 
-class QuantumPetriNet:
-    """Quantum Petri net with amplitude-encoded token state.
+@dataclass(frozen=True)
+class QuantumPetriStepReport:
+    """Structured report for one superposition-token transition sweep."""
 
-    Each place is one qubit.  Token density p maps to Ry(2*arcsin(sqrt(p))).
-    Transitions apply controlled rotations based on arc weights.
-    """
+    input_marking: np.ndarray
+    output_marking: np.ndarray
+    transition_activity: np.ndarray
+    statevector_purity: float
+    statevector_entropy_bits: float
+
+    def to_payload(self) -> dict[str, object]:
+        return {
+            "input_marking": self.input_marking.astype(float).tolist(),
+            "output_marking": self.output_marking.astype(float).tolist(),
+            "transition_activity": self.transition_activity.astype(float).tolist(),
+            "statevector_purity": float(self.statevector_purity),
+            "statevector_entropy_bits": float(self.statevector_entropy_bits),
+        }
+
+
+@dataclass(frozen=True)
+class QuantumPetriCampaignReport:
+    """Aggregate campaign report over many markings."""
+
+    steps: list[QuantumPetriStepReport]
+    mean_output_marking: np.ndarray
+    mean_transition_activity: np.ndarray
+    mean_statevector_entropy_bits: float
+    mean_statevector_purity: float
+
+    def to_payload(self) -> dict[str, object]:
+        return {
+            "steps": [step.to_payload() for step in self.steps],
+            "mean_output_marking": self.mean_output_marking.astype(float).tolist(),
+            "mean_transition_activity": self.mean_transition_activity.astype(float).tolist(),
+            "mean_statevector_entropy_bits": float(self.mean_statevector_entropy_bits),
+            "mean_statevector_purity": float(self.mean_statevector_purity),
+            "n_steps": len(self.steps),
+        }
+
+
+class QuantumPetriNet:
+    """Quantum Petri net with amplitude-encoded token state."""
 
     def __init__(
         self,
@@ -38,46 +72,46 @@ class QuantumPetriNet:
         W_out: np.ndarray,
         thresholds: np.ndarray,
     ):
-        """W_in: (n_transitions, n_places), W_out: (n_places, n_transitions)."""
         if n_places <= 0 or n_transitions <= 0:
             raise ValueError(
                 f"n_places ({n_places}) and n_transitions ({n_transitions}) must be positive"
             )
-        W_in = np.asarray(W_in, dtype=np.float64)
-        W_out = np.asarray(W_out, dtype=np.float64)
-        thresholds = np.asarray(thresholds, dtype=np.float64)
-        if W_in.shape != (n_transitions, n_places):
-            raise ValueError(f"W_in shape {W_in.shape} != expected ({n_transitions}, {n_places})")
-        if W_out.shape != (n_places, n_transitions):
+        W_in_arr = np.asarray(W_in, dtype=np.float64)
+        W_out_arr = np.asarray(W_out, dtype=np.float64)
+        thresholds_arr = np.asarray(thresholds, dtype=np.float64)
+        if W_in_arr.shape != (n_transitions, n_places):
             raise ValueError(
-                f"W_out shape {W_out.shape} != expected ({n_places}, {n_transitions})"
+                f"W_in shape {W_in_arr.shape} != expected ({n_transitions}, {n_places})"
             )
-        if len(thresholds) != n_transitions:
+        if W_out_arr.shape != (n_places, n_transitions):
             raise ValueError(
-                f"thresholds length {len(thresholds)} != n_transitions {n_transitions}"
+                f"W_out shape {W_out_arr.shape} != expected ({n_places}, {n_transitions})"
+            )
+        if len(thresholds_arr) != n_transitions:
+            raise ValueError(
+                f"thresholds length {len(thresholds_arr)} != n_transitions {n_transitions}"
             )
         self.n_places = n_places
         self.n_transitions = n_transitions
-        self.W_in = W_in
-        self.W_out = W_out
-        self.thresholds = thresholds
+        self.W_in = W_in_arr
+        self.W_out = W_out_arr
+        self.thresholds = thresholds_arr
 
     def encode_marking(self, marking: np.ndarray) -> QuantumCircuit:
         """Amplitude-encode token state: p_i -> Ry(theta_i)|0>."""
+        marking_arr = np.asarray(marking, dtype=np.float64)
+        if marking_arr.ndim != 1 or marking_arr.shape[0] != self.n_places:
+            raise ValueError(
+                f"marking must be one-dimensional with length {self.n_places}, got {marking_arr.shape}"
+            )
         qc = QuantumCircuit(self.n_places)
-        for i, m in enumerate(marking):
+        for i, m in enumerate(marking_arr):
             theta = probability_to_angle(float(np.clip(m, 0.0, 1.0)))
             qc.ry(theta, i)
         return qc
 
     def apply_transition(self, circuit: QuantumCircuit, t_idx: int):
-        """Apply transition t_idx as controlled rotations.
-
-        Input arcs: consume tokens (negative rotation on input places).
-        Output arcs: produce tokens controlled by ALL input places (AND gating).
-        All input-place qubits must be |1> for the output rotation to fire,
-        matching conjunctive Petri net semantics.
-        """
+        """Apply transition t_idx as controlled rotations."""
         input_places = [
             p for p in range(self.n_places) if abs(self.W_in[t_idx, p]) > WEIGHT_SPARSITY_EPS
         ]
@@ -100,18 +134,83 @@ class QuantumPetriNet:
                 gate = RYGate(theta).control(len(controls))
                 circuit.append(gate, controls + [p_out])
 
-    def step(self, marking: np.ndarray) -> np.ndarray:
-        """Full step: encode marking, apply all transitions, measure -> new marking."""
+    def _statevector_marking(self, sv: Statevector) -> np.ndarray:
+        out = np.zeros(self.n_places, dtype=np.float64)
+        for p in range(self.n_places):
+            probs = sv.probabilities([p])
+            out[p] = probs[1]
+        return out
+
+    def _transition_activity(self, marking: np.ndarray) -> np.ndarray:
+        clipped = np.clip(np.asarray(marking, dtype=np.float64), 0.0, 1.0)
+        activity = np.zeros(self.n_transitions, dtype=np.float64)
+        for t in range(self.n_transitions):
+            incoming = np.clip(np.abs(self.W_in[t]), 0.0, 1.0)
+            if float(np.sum(incoming)) <= WEIGHT_SPARSITY_EPS:
+                activity[t] = 0.0
+                continue
+            weighted_token = float(np.dot(incoming, clipped))
+            normaliser = float(np.sum(incoming))
+            activity[t] = float(
+                np.clip((weighted_token / normaliser) * self.thresholds[t], 0.0, 1.0)
+            )
+        return activity
+
+    def step_report(self, marking: np.ndarray) -> QuantumPetriStepReport:
+        """Run one transition sweep and return superposition observables."""
         qc = self.encode_marking(marking)
         for t in range(self.n_transitions):
             self.apply_transition(qc, t)
-
         sv = Statevector.from_instruction(qc)
-        new_marking: np.ndarray = np.zeros(self.n_places)
-        for p in range(self.n_places):
-            probs = sv.probabilities([p])
-            new_marking[p] = probs[1]  # P(|1>) = token density
-        return new_marking
+        output = self._statevector_marking(sv)
+        full_probs = sv.probabilities()
+        full_probs = full_probs[full_probs > 0.0]
+        entropy_bits = float(-np.sum(full_probs * np.log2(full_probs)))
+        purity = float(np.sum(np.square(sv.probabilities())))
+        return QuantumPetriStepReport(
+            input_marking=np.asarray(marking, dtype=np.float64),
+            output_marking=output,
+            transition_activity=self._transition_activity(marking),
+            statevector_purity=purity,
+            statevector_entropy_bits=entropy_bits,
+        )
+
+    def step(self, marking: np.ndarray, shots: int | None = None) -> np.ndarray:
+        """Return output marking after one sweep.
+
+        If ``shots`` is supplied, output is a sampled estimate from Bernoulli
+        marginals, matching hardware-like finite-shot observation.
+        """
+        report = self.step_report(marking)
+        if shots is None:
+            return report.output_marking
+        if not isinstance(shots, int) or shots <= 0:
+            raise ValueError(f"shots must be a positive integer, got {shots!r}")
+        rng = np.random.default_rng(123456789)
+        return np.array(
+            [rng.binomial(shots, p) / shots for p in report.output_marking], dtype=np.float64
+        )
+
+    def run_campaign(self, markings: np.ndarray) -> QuantumPetriCampaignReport:
+        """Execute many markings and return aggregate campaign metrics."""
+        matrix = np.asarray(markings, dtype=np.float64)
+        if matrix.ndim != 2 or matrix.shape[1] != self.n_places:
+            raise ValueError(
+                "markings must be a 2D array with shape (n_samples, n_places). "
+                f"Expected second dimension {self.n_places}, got {matrix.shape}."
+            )
+        steps = [self.step_report(matrix[idx]) for idx in range(matrix.shape[0])]
+        output_stack = np.vstack([s.output_marking for s in steps])
+        activity_stack = np.vstack([s.transition_activity for s in steps])
+        return QuantumPetriCampaignReport(
+            steps=steps,
+            mean_output_marking=np.mean(output_stack, axis=0),
+            mean_transition_activity=np.mean(activity_stack, axis=0),
+            mean_statevector_entropy_bits=float(
+                np.mean([s.statevector_entropy_bits for s in steps])
+            ),
+            mean_statevector_purity=float(np.mean([s.statevector_purity for s in steps])),
+        )
 
     @classmethod
     def from_matrices(
@@ -120,6 +219,13 @@ class QuantumPetriNet:
         W_out: np.ndarray,
         thresholds: np.ndarray,
     ) -> QuantumPetriNet:
-        """Construct from arc weight matrices, inferring n_places and n_transitions."""
+        """Construct from arc-weight matrices, inferring shape."""
         n_t, n_p = W_in.shape
         return cls(n_p, n_t, W_in, W_out, thresholds)
+
+
+__all__ = [
+    "QuantumPetriNet",
+    "QuantumPetriStepReport",
+    "QuantumPetriCampaignReport",
+]

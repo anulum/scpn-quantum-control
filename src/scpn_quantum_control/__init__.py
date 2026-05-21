@@ -63,7 +63,7 @@ from .control.q_disruption_iter import (
     normalize_iter_features,
 )
 from .control.qaoa_mpc import QAOA_MPC
-from .control.qpetri import QuantumPetriNet
+from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
 from .control.realtime_runtime import (
     MonotonicRealtimeClock,
     RealtimeRunResult,
@@ -403,6 +403,8 @@ __all__ = [
     "normalize_iter_features",
     "QAOA_MPC",
     "QuantumPetriNet",
+    "QuantumPetriStepReport",
+    "QuantumPetriCampaignReport",
     "MLIRCompileConfig",
     "MLIRModule",
     "compile_kuramoto_to_mlir",
