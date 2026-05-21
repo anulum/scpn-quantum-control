@@ -210,6 +210,22 @@ def test_quera_bloqade_adapter_rejects_wrong_profile() -> None:
         QuEraBloqadeHALAdapter(profile, routine=_FakeBloqadeRoutine())
 
 
+def test_quera_bloqade_routine_name_rejects_control_characters() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quera_bloqade")
+    with pytest.raises(ValueError, match="QuEra routine name"):
+        QuEraBloqadeHALAdapter(profile, routine=_FakeBloqadeRoutine(), routine_name="aquila\nbad")
+
+
+def test_quera_bloqade_routine_name_trims_padding() -> None:
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("quera_bloqade")
+    adapter = QuEraBloqadeHALAdapter(
+        profile,
+        routine=_FakeBloqadeRoutine(),
+        routine_name="  aquila-local-emulator  ",
+    )
+    assert adapter._routine_name == "aquila-local-emulator"
+
+
 def test_quera_bloqade_adapter_uses_lazy_routine_factory_and_caches_results() -> None:
     """Lazy construction should occur once and completed results should be cached."""
 

@@ -71,7 +71,9 @@ class QuEraBloqadeHALAdapter:
         self.profile = profile
         self.backend_id = profile.backend_id
         self._routine = routine
-        self._routine_name = routine_name or "injected"
+        self._routine_name = strict_provider_job_id(
+            routine_name or "injected", field_name="QuEra routine name"
+        )
         self._routine_factory = routine_factory
         self._jobs: dict[str, QuantumJobRef] = {}
         self._batches: dict[str, Any] = {}
