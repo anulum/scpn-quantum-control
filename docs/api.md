@@ -1285,6 +1285,11 @@ Campaign-facing end-to-end helper that constructs the biological code,
 computes diagnostics, executes decode/correction, and emits JSON-serialisable
 payloads via `BiologicalQecExecution.to_payload()`.
 
+CLI entry point:
+```bash
+scpn-biological-qec-report --k K.npy --z-errors z.npy --output report.json
+```
+
 ### `control_qec.ControlQEC`
 
 ```python

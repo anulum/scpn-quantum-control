@@ -57,6 +57,7 @@ scpn-bench = "scpn_quantum_control.bench_cli:main"
 scpn-verify-hardware-packs = "scpn_quantum_control.hardware_result_packs:main"
 scpn-generate-hardware-pack-evidence = "scpn_quantum_control.hardware_result_pack_evidence:main"
 scpn-provider-smoke = "scpn_quantum_control.hardware.provider_smoke:main"
+scpn-biological-qec-report = "scpn_quantum_control.qec.biological_cli:main"
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
