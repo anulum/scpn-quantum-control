@@ -21,6 +21,7 @@
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
+use scpn_quantum_engine::biological_qec::biological_decode_inner;
 use scpn_quantum_engine::dla::{commutator_dense, is_independent_fast};
 use scpn_quantum_engine::knm::build_knm_inner;
 use scpn_quantum_engine::kuramoto::order_parameter_inner;
@@ -73,15 +74,52 @@ fn bench_is_independent_fast(c: &mut Criterion) {
                     .collect()
             })
             .collect();
-        let new_op: Vec<f64> = (0..dim * dim)
-            .map(|i| ((i as f64) * 0.53).cos())
-            .collect();
+        let new_op: Vec<f64> = (0..dim * dim).map(|i| ((i as f64) * 0.53).cos()).collect();
         group.bench_function(format!("dim={} basis=16", dim), |bench| {
             bench.iter(|| {
-                is_independent_fast(
-                    black_box(&new_op),
-                    black_box(&basis),
-                    black_box(1e-9),
+                is_independent_fast(black_box(&new_op), black_box(&basis), black_box(1e-9))
+            });
+        });
+    }
+    group.finish();
+}
+
+fn bench_biological_decode_inner(c: &mut Criterion) {
+    let mut group = c.benchmark_group("biological_decode_inner");
+    for &n in &[8usize, 12, 16] {
+        let mut edge_u = Vec::new();
+        let mut edge_v = Vec::new();
+        let mut edge_w = Vec::new();
+
+        // Ring
+        for i in 0..n {
+            let j = (i + 1) % n;
+            edge_u.push(i as i64);
+            edge_v.push(j as i64);
+            edge_w.push(1.0);
+        }
+        // Chords for alternative shortest paths
+        for i in 0..(n / 2) {
+            let j = (i + 2) % n;
+            edge_u.push(i as i64);
+            edge_v.push(j as i64);
+            edge_w.push(1.5);
+        }
+
+        let mut syndrome = vec![0i8; n];
+        syndrome[1] = 1;
+        syndrome[n / 2] = 1;
+        syndrome[(n / 2) + 1] = 1;
+        syndrome[n - 1] = 1;
+
+        group.bench_function(format!("n={}", n), |bench| {
+            bench.iter(|| {
+                biological_decode_inner(
+                    black_box(&edge_u),
+                    black_box(&edge_v),
+                    black_box(&edge_w),
+                    black_box(n),
+                    black_box(&syndrome),
                 )
             });
         });
@@ -94,6 +132,7 @@ criterion_group!(
     bench_build_knm,
     bench_order_parameter,
     bench_commutator_dense,
-    bench_is_independent_fast
+    bench_is_independent_fast,
+    bench_biological_decode_inner
 );
 criterion_main!(hot_paths);

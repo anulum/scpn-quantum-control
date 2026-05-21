@@ -18,7 +18,10 @@ ROOT = Path(__file__).resolve().parent.parent
 RUST_MODULE = ROOT / "scpn_quantum_engine" / "src" / "lib.rs"
 PYI_MODULE = ROOT / "src" / "scpn_quantum_engine.pyi"
 
-WRAP_RE = re.compile(r"wrap_pyfunction!\((?P<path>[a-zA-Z0-9_:]+),\s*m\)")
+WRAP_RE = re.compile(
+    r"wrap_pyfunction!\(\s*(?P<path>[a-zA-Z0-9_:]+)\s*,\s*m\s*\)",
+    re.DOTALL,
+)
 
 
 def rust_exports() -> set[str]:

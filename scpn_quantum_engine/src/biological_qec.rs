@@ -261,26 +261,35 @@ pub fn biological_decode_z_errors<'py>(
         return Err(PyValueError::new_err("syndrome_x must be binary (0/1)."));
     }
 
-    let adj = build_adjacency(n_nodes, u, v, w)?;
-    let defects: Vec<usize> = syndrome
+    let correction =
+        biological_decode_inner(u, v, w, n_nodes, syndrome).map_err(PyValueError::new_err)?;
+    Ok(PyArray1::from_vec(py, correction))
+}
+
+/// Pure-Rust biological surface-code decoder used by wrapper and benchmarks.
+pub fn biological_decode_inner(
+    edge_u: &[i64],
+    edge_v: &[i64],
+    edge_weight: &[f64],
+    n_nodes: usize,
+    syndrome_x: &[i8],
+) -> Result<Vec<i8>, String> {
+    let adj = build_adjacency(n_nodes, edge_u, edge_v, edge_weight).map_err(|e| e.to_string())?;
+    let defects: Vec<usize> = syndrome_x
         .iter()
         .enumerate()
         .filter_map(|(idx, &val)| if val == 1 { Some(idx) } else { None })
         .collect();
 
-    let mut correction = vec![0i8; u.len()];
+    let mut correction = vec![0i8; edge_u.len()];
     if defects.is_empty() {
-        return Ok(PyArray1::from_vec(py, correction));
+        return Ok(correction);
     }
     if defects.len() % 2 != 0 {
-        return Err(PyValueError::new_err(
-            "syndrome_x contains odd number of defects.",
-        ));
+        return Err("syndrome_x contains odd number of defects.".to_owned());
     }
     if !defect_components_have_even_parity(&defects, &adj) {
-        return Err(PyValueError::new_err(
-            "syndrome_x has odd syndrome parity in a connected component.",
-        ));
+        return Err("syndrome_x has odd syndrome parity in a connected component.".to_owned());
     }
 
     let dijkstra_per_defect: Vec<DijkstraResult> = defects
@@ -300,30 +309,25 @@ pub fn biological_decode_z_errors<'py>(
     }
 
     let pairs = mwpm_exact(&dist_mat).ok_or_else(|| {
-        PyValueError::new_err(
-            "defects cannot be perfectly matched with finite shortest paths ".to_owned()
-                + "(or defect count exceeds exact-MWPM limit).",
-        )
+        "defects cannot be perfectly matched with finite shortest paths (or defect count exceeds exact-MWPM limit)."
+            .to_owned()
     })?;
 
     for (i, j) in pairs {
         let source = defects[i];
         let target = defects[j];
         let path_edges = reconstruct_path_edges(source, target, &dijkstra_per_defect[i])
-            .ok_or_else(|| {
-                PyValueError::new_err("failed to reconstruct shortest path for matched pair.")
-            })?;
+            .ok_or_else(|| "failed to reconstruct shortest path for matched pair.".to_owned())?;
         for edge_idx in path_edges {
             correction[edge_idx] ^= 1;
         }
     }
-
-    Ok(PyArray1::from_vec(py, correction))
+    Ok(correction)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::mwpm_exact;
+    use super::{biological_decode_inner, mwpm_exact};
 
     #[test]
     fn test_mwpm_exact_simple_square() {
@@ -335,5 +339,17 @@ mod tests {
         ];
         let pairs = mwpm_exact(&dist).expect("must match");
         assert_eq!(pairs.len(), 2);
+    }
+
+    #[test]
+    fn test_biological_decode_inner_chain_single_error() {
+        let edge_u = vec![0, 1, 2];
+        let edge_v = vec![1, 2, 3];
+        let edge_w = vec![1.0, 1.0, 1.0];
+        let syndrome = vec![0, 1, 1, 0];
+        let correction = biological_decode_inner(&edge_u, &edge_v, &edge_w, 4, &syndrome)
+            .expect("decoder must succeed");
+        assert_eq!(correction.len(), 3);
+        assert_eq!(correction[1], 1);
     }
 }

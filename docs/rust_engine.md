@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (47)
+## Functions (49)
 
-The Rust crate exports 47 functions across 21 source files. They are organised
+The Rust crate exports 49 functions across 22 source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -104,6 +104,12 @@ avoiding 2n individual calls to `expectation_pauli_fast`.
 | `dla_protected_memory_mask(n_logical, code_distance, target_parity)` | Dense fixed-parity repetition-code memory mask | O(2^(n_logical·code_distance)) |
 | `dla_protected_memory_metrics(probabilities, n_logical, code_distance, target_parity)` | Protected, code, target-parity, opposite-parity, and total probability weights | O(2^(n_logical·code_distance)) |
 | `dla_protected_trajectory_metrics(probabilities, n_logical, code_distance, target_parity)` | Batch protected-memory metrics for scar and memory trajectories | O(T·2^(n_logical·code_distance)) |
+
+### Biological Surface Code
+
+| Function | Description | Complexity |
+|----------|-------------|------------|
+| `biological_decode_z_errors(edge_u, edge_v, edge_weight, n_nodes, syndrome_x)` | Weighted shortest-path + exact MWPM correction on biological coupling graph edges | O(D·(E log V) + D²2^D), D = number of defects |
 
 ### Monte Carlo
 
