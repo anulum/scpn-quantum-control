@@ -279,3 +279,44 @@ def test_error_helpers_reject_non_binary_inputs():
         code.x_syndrome_from_z_errors(np.array([2], dtype=np.int8))
     with pytest.raises(ValueError, match="correction must be binary"):
         code.apply_z_correction(np.array([0], dtype=np.int8), np.array([2], dtype=np.int8))
+
+
+def test_rust_biological_decoder_matches_python_fallback():
+    """Rust biological decoder must preserve correction parity with Python path."""
+    rust_engine = pytest.importorskip("scpn_quantum_engine")
+    if not hasattr(rust_engine, "biological_decode_z_errors"):
+        pytest.skip("scpn_quantum_engine without biological_decode_z_errors export")
+
+    K = np.array(
+        [
+            [0.0, 1.0, 0.0, 0.0, 0.5],
+            [1.0, 0.0, 1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0, 1.0],
+            [0.5, 0.0, 0.0, 1.0, 0.0],
+        ],
+        dtype=float,
+    )
+    code = BiologicalSurfaceCode(K, threshold=1e-8)
+
+    decoder_py = BiologicalMWPMDecoder(code)
+    decoder_py._rust_engine = None
+    decoder_rust = BiologicalMWPMDecoder(code)
+    decoder_rust._rust_engine = rust_engine
+
+    z_errors = np.zeros(code.num_data, dtype=np.int8)
+    z_errors[code.edge_to_idx[(0, 1)]] = 1
+    z_errors[code.edge_to_idx[(2, 3)]] = 1
+    syndrome = code.x_syndrome_from_z_errors(z_errors)
+
+    corr_py = decoder_py.decode_z_errors(syndrome)
+    corr_rust = decoder_rust.decode_z_errors(syndrome)
+
+    residual_py = code.apply_z_correction(z_errors, corr_py)
+    residual_rust = code.apply_z_correction(z_errors, corr_rust)
+
+    assert np.all(code.x_syndrome_from_z_errors(residual_py) == 0)
+    assert np.all(code.x_syndrome_from_z_errors(residual_rust) == 0)
+    assert np.array_equal(
+        code.x_syndrome_from_z_errors(residual_py), code.x_syndrome_from_z_errors(residual_rust)
+    )

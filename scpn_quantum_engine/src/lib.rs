@@ -29,11 +29,10 @@
 use pyo3::prelude::*;
 
 pub mod analog;
+pub mod biological_qec;
 pub mod community;
 pub mod complex_utils;
-pub mod validation;
 pub mod concat_qec;
-pub mod symmetry_decay;
 pub mod dla;
 pub mod feedback;
 pub mod fep;
@@ -51,6 +50,8 @@ pub mod pauli;
 pub mod pec;
 pub mod pulse_shaping;
 pub mod sectors;
+pub mod symmetry_decay;
+pub mod validation;
 
 #[pymodule]
 fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -65,27 +66,52 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_euler, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::order_parameter, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_trajectory, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::higher_order_kuramoto_trajectory, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::monitored_kuramoto_trajectory, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::pt_symmetric_kuramoto_trajectory, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::kuramoto_witness_candidate_features, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto::higher_order_kuramoto_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto::monitored_kuramoto_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto::pt_symmetric_kuramoto_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto::kuramoto_witness_candidate_features,
+        m
+    )?)?;
 
     // Koopman
     m.add_function(wrap_pyfunction!(koopman::koopman_generator, m)?)?;
 
     // Concatenated QEC
-    m.add_function(wrap_pyfunction!(concat_qec::concatenated_logical_rate_rust, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        concat_qec::concatenated_logical_rate_rust,
+        m
+    )?)?;
     m.add_function(wrap_pyfunction!(concat_qec::knm_domain_coupling, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        biological_qec::biological_decode_z_errors,
+        m
+    )?)?;
 
     // FEP
     m.add_function(wrap_pyfunction!(fep::free_energy_gradient_rust, m)?)?;
-    m.add_function(wrap_pyfunction!(fep::hierarchical_prediction_error_rust, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        fep::hierarchical_prediction_error_rust,
+        m
+    )?)?;
     m.add_function(wrap_pyfunction!(fep::variational_free_energy_rust, m)?)?;
 
     // Gauge lattice
     m.add_function(wrap_pyfunction!(gauge_lattice::plaquette_action_batch, m)?)?;
     m.add_function(wrap_pyfunction!(gauge_lattice::gauge_force_batch, m)?)?;
-    m.add_function(wrap_pyfunction!(gauge_lattice::gauge_covariant_kinetic_rust, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        gauge_lattice::gauge_covariant_kinetic_rust,
+        m
+    )?)?;
     m.add_function(wrap_pyfunction!(gauge_lattice::topological_charge_rust, m)?)?;
 
     // DLA
@@ -119,8 +145,14 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(otoc::otoc_from_eigendecomp, m)?)?;
 
     // Hamiltonian
-    m.add_function(wrap_pyfunction!(hamiltonian::build_xy_hamiltonian_dense, m)?)?;
-    m.add_function(wrap_pyfunction!(hamiltonian::build_sparse_xy_hamiltonian, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        hamiltonian::build_xy_hamiltonian_dense,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        hamiltonian::build_sparse_xy_hamiltonian,
+        m
+    )?)?;
 
     // Lindblad
     m.add_function(wrap_pyfunction!(lindblad::lindblad_jump_ops_coo, m)?)?;
@@ -133,16 +165,25 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sectors::parity_filter_mask, m)?)?;
 
     // Symmetry decay (GUESS)
-    m.add_function(wrap_pyfunction!(symmetry_decay::guess_extrapolate_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        symmetry_decay::guess_extrapolate_batch,
+        m
+    )?)?;
     m.add_function(wrap_pyfunction!(symmetry_decay::fit_symmetry_decay, m)?)?;
 
     // Community scoring (DynQ)
     m.add_function(wrap_pyfunction!(community::score_regions_batch, m)?)?;
 
     // Pulse shaping (hypergeometric + ICI)
-    m.add_function(wrap_pyfunction!(pulse_shaping::hypergeometric_envelope_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        pulse_shaping::hypergeometric_envelope_batch,
+        m
+    )?)?;
     m.add_function(wrap_pyfunction!(pulse_shaping::ici_mixing_angle_batch, m)?)?;
-    m.add_function(wrap_pyfunction!(pulse_shaping::ici_three_level_evolution_batch, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        pulse_shaping::ici_three_level_evolution_batch,
+        m
+    )?)?;
 
     Ok(())
 }

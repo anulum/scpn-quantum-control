@@ -39,6 +39,13 @@ def all_xy_expectations(
     psi_im: _F64Array,
     n_osc: int,
 ) -> tuple[_F64Array, _F64Array]: ...
+def biological_decode_z_errors(
+    edge_u: _I64Array,
+    edge_v: _I64Array,
+    edge_weight: _F64Array,
+    n_nodes: int,
+    syndrome_x: NDArray[np.int8],
+) -> NDArray[np.int8]: ...
 def brute_mpc(
     b_flat: _F64Array,
     target: _F64Array,
