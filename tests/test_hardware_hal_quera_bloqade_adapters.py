@@ -283,6 +283,29 @@ def test_quera_provider_job_id_extraction_requires_identifier() -> None:
         quera_mod._provider_job_id(object())
 
 
+def test_quera_provider_job_id_rejects_control_characters() -> None:
+    """QuEra provider identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_quera_bloqade as quera_mod
+
+    class BadBatch:
+        id = "quera-job-\n1"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        quera_mod._provider_job_id(BadBatch())
+
+
+def test_quera_provider_job_id_trims_padding() -> None:
+    """QuEra provider identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_quera_bloqade as quera_mod
+
+    class PaddedBatch:
+        id = "  quera-job-42  "
+
+    assert quera_mod._provider_job_id(PaddedBatch()) == "quera-job-42"
+
+
 def test_quera_bloqade_adapter_rejects_unknown_jobs() -> None:
     """Unknown job handles should not fabricate provider state."""
 

@@ -491,6 +491,29 @@ def test_quantinuum_status_normalisation_accepts_enum_names() -> None:
     assert quantinuum_mod._normalise_status("CANCELED") == "cancelled"
 
 
+def test_quantinuum_provider_job_id_rejects_control_characters() -> None:
+    """Quantinuum provider identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_quantinuum as quantinuum_mod
+
+    class BadHandle:
+        job_id = "quantinuum-job-\n1"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        quantinuum_mod._provider_job_id(BadHandle())
+
+
+def test_quantinuum_provider_job_id_trims_padding() -> None:
+    """Quantinuum provider identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_quantinuum as quantinuum_mod
+
+    class PaddedHandle:
+        job_id = "  quantinuum-job-42  "
+
+    assert quantinuum_mod._provider_job_id(PaddedHandle()) == "quantinuum-job-42"
+
+
 def test_quantinuum_default_dependency_errors_are_actionable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
