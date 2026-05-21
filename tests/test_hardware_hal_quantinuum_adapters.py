@@ -494,6 +494,8 @@ def test_quantinuum_status_normalisation_accepts_enum_names() -> None:
     assert quantinuum_mod._normalise_status("INITIALIZING") == "submitted"
     assert quantinuum_mod._normalise_status("STARTING") == "submitted"
     assert quantinuum_mod._normalise_status("CREATING") == "submitted"
+    assert quantinuum_mod._normalise_status("ABORTING") == "cancelled"
+    assert quantinuum_mod._normalise_status("CANCELLING") == "cancelled"
 
 
 def test_quantinuum_provider_job_id_rejects_control_characters() -> None:

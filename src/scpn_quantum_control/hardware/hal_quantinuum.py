@@ -267,6 +267,9 @@ def _normalise_status(status: Any) -> str:
         "created": "submitted",
         "cancelled": "cancelled",
         "canceled": "cancelled",
+        "aborting": "cancelled",
+        "cancelling": "cancelled",
+        "canceling": "cancelled",
         "failed": "failed",
         "error": "failed",
     }.get(text, "unknown")
