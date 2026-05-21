@@ -182,6 +182,8 @@ def test_braket_status_normalisation_maps_provider_tokens() -> None:
     assert braket_mod._normalise_status("CANCELED") == "cancelled"
     assert braket_mod._normalise_status("IN-PROGRESS") == "running"
     assert braket_mod._normalise_status("INPROGRESS") == "running"
+    assert braket_mod._normalise_status("INITIALIZING") == "submitted"
+    assert braket_mod._normalise_status("STARTING") == "submitted"
 
 
 def test_braket_aws_adapter_rejects_shot_mismatch() -> None:
