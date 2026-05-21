@@ -127,6 +127,29 @@ def test_braket_aws_adapter_rejects_task_without_id() -> None:
         hal.submit("aws_braket_ionq", workload, approval_id="approved-braket")
 
 
+def test_braket_provider_task_id_rejects_control_characters() -> None:
+    """Braket provider task identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_braket as braket_mod
+
+    class BadTask:
+        id = "arn:aws:braket:task/fake-\njob"
+
+    with pytest.raises(ValueError, match="provider task id"):
+        braket_mod._task_id(BadTask())
+
+
+def test_braket_provider_task_id_trims_padding() -> None:
+    """Braket provider task identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_braket as braket_mod
+
+    class PaddedTask:
+        id = "  arn:aws:braket:task/fake-task  "
+
+    assert braket_mod._task_id(PaddedTask()) == "arn:aws:braket:task/fake-task"
+
+
 def test_braket_status_normalisation_maps_provider_tokens() -> None:
     """Braket status values should map to canonical HAL status values."""
 

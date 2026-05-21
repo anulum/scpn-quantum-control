@@ -17,6 +17,7 @@ from ._count_integrity import (
     strict_fixed_width_bitstring_key,
     strict_integer_value,
     strict_non_negative_count,
+    strict_provider_job_id,
     strict_shot_conservation,
 )
 from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
@@ -287,7 +288,7 @@ def _extract_braket_counts(task_result: Any, *, n_qubits: int) -> dict[str, int]
 def _task_id(task: Any) -> str:
     task_id = getattr(task, "id", None)
     if task_id:
-        return str(task_id)
+        return strict_provider_job_id(task_id, field_name="Braket provider task id")
     raise ValueError("Braket task object does not expose a provider task id")
 
 
