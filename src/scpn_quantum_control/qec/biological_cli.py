@@ -16,7 +16,10 @@ from typing import Any
 
 import numpy as np
 
-from .biological_pipeline import run_biological_qec_execution
+from .biological_pipeline import (
+    run_biological_qec_batch_execution,
+    run_biological_qec_execution,
+)
 
 
 def _load_matrix(path: Path) -> np.ndarray:
@@ -30,7 +33,7 @@ def _load_matrix(path: Path) -> np.ndarray:
     return np.asarray(matrix, dtype=float)
 
 
-def _load_vector(path: Path) -> np.ndarray:
+def _load_array(path: Path) -> np.ndarray:
     suffix = path.suffix.lower()
     if suffix == ".npy":
         vector = np.load(path)
@@ -38,10 +41,7 @@ def _load_vector(path: Path) -> np.ndarray:
         vector = np.loadtxt(path, delimiter=",")
     else:
         raise ValueError("z_errors input must be .npy, .csv, or .txt")
-    arr = np.asarray(vector, dtype=np.int8)
-    if arr.ndim != 1:
-        raise ValueError("z_errors must be a one-dimensional vector.")
-    return arr
+    return np.asarray(vector, dtype=np.int8)
 
 
 def _load_domains(path: Path | None) -> dict[int, str] | None:
@@ -89,21 +89,31 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     K = _load_matrix(args.k)
-    z_errors = _load_vector(args.z_errors)
+    z_errors = _load_array(args.z_errors)
     node_domains = _load_domains(args.domains)
     metadata: dict[str, Any] | None = None
     if args.metadata is not None:
         with args.metadata.open("r", encoding="utf-8") as handle:
             metadata = json.load(handle)
 
-    result = run_biological_qec_execution(
-        K,
-        z_errors,
-        threshold=float(args.threshold),
-        node_domains=node_domains,
-        metadata=metadata,
-    )
-    payload = result.to_payload()
+    if z_errors.ndim == 1:
+        payload = run_biological_qec_execution(
+            K,
+            z_errors,
+            threshold=float(args.threshold),
+            node_domains=node_domains,
+            metadata=metadata,
+        ).to_payload()
+    elif z_errors.ndim == 2:
+        payload = run_biological_qec_batch_execution(
+            K,
+            z_errors,
+            threshold=float(args.threshold),
+            node_domains=node_domains,
+            metadata=metadata,
+        ).to_payload()
+    else:
+        raise ValueError("z_errors input must be either a vector (1D) or matrix (2D).")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8") as handle:

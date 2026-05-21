@@ -55,6 +55,35 @@ class BiologicalQecExecution:
         }
 
 
+@dataclass(frozen=True)
+class BiologicalQecBatchExecution:
+    """Structured result of a biological QEC campaign with many error patterns."""
+
+    runs: list[BiologicalQecExecution]
+    n_runs: int
+    n_success: int
+    success_rate: float
+    decode_backend_counts: dict[str, int]
+    mean_syndrome_weight: float
+    mean_correction_weight: float
+    mean_residual_syndrome_weight: float
+    metadata: dict[str, Any]
+
+    def to_payload(self) -> dict[str, Any]:
+        """Return JSON-serialisable payload."""
+        return {
+            "runs": [run.to_payload() for run in self.runs],
+            "n_runs": int(self.n_runs),
+            "n_success": int(self.n_success),
+            "success_rate": float(self.success_rate),
+            "decode_backend_counts": dict(self.decode_backend_counts),
+            "mean_syndrome_weight": float(self.mean_syndrome_weight),
+            "mean_correction_weight": float(self.mean_correction_weight),
+            "mean_residual_syndrome_weight": float(self.mean_residual_syndrome_weight),
+            "metadata": dict(self.metadata),
+        }
+
+
 def run_biological_qec_execution(
     K: np.ndarray,
     z_errors: np.ndarray,
@@ -88,7 +117,64 @@ def run_biological_qec_execution(
     )
 
 
+def run_biological_qec_batch_execution(
+    K: np.ndarray,
+    z_error_matrix: np.ndarray,
+    *,
+    threshold: float = 1e-5,
+    node_domains: dict[int, str] | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> BiologicalQecBatchExecution:
+    """Run biological QEC execution over many error patterns."""
+    matrix = np.asarray(z_error_matrix, dtype=np.int8)
+    if matrix.ndim != 2:
+        raise ValueError("z_error_matrix must be a two-dimensional array.")
+
+    runs: list[BiologicalQecExecution] = []
+    for row_idx in range(matrix.shape[0]):
+        row_metadata = dict(metadata or {})
+        row_metadata["row_index"] = int(row_idx)
+        runs.append(
+            run_biological_qec_execution(
+                K,
+                matrix[row_idx],
+                threshold=threshold,
+                node_domains=node_domains,
+                metadata=row_metadata,
+            )
+        )
+
+    n_runs = len(runs)
+    if n_runs == 0:
+        raise ValueError("z_error_matrix must contain at least one row.")
+
+    n_success = sum(1 for run in runs if run.success)
+    backend_counts: dict[str, int] = {}
+    syndrome_weights = []
+    correction_weights = []
+    residual_weights = []
+    for run in runs:
+        backend_counts[run.decode_backend] = backend_counts.get(run.decode_backend, 0) + 1
+        syndrome_weights.append(run.syndrome_weight)
+        correction_weights.append(run.correction_weight)
+        residual_weights.append(run.residual_syndrome_weight)
+
+    return BiologicalQecBatchExecution(
+        runs=runs,
+        n_runs=n_runs,
+        n_success=n_success,
+        success_rate=float(n_success / n_runs),
+        decode_backend_counts=backend_counts,
+        mean_syndrome_weight=float(np.mean(syndrome_weights)),
+        mean_correction_weight=float(np.mean(correction_weights)),
+        mean_residual_syndrome_weight=float(np.mean(residual_weights)),
+        metadata=dict(metadata or {}),
+    )
+
+
 __all__ = [
     "BiologicalQecExecution",
+    "BiologicalQecBatchExecution",
     "run_biological_qec_execution",
+    "run_biological_qec_batch_execution",
 ]

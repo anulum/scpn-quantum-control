@@ -1285,10 +1285,25 @@ Campaign-facing end-to-end helper that constructs the biological code,
 computes diagnostics, executes decode/correction, and emits JSON-serialisable
 payloads via `BiologicalQecExecution.to_payload()`.
 
+Batch lane:
+```python
+run_biological_qec_batch_execution(
+    K,
+    z_error_matrix,
+    threshold=1e-5,
+    node_domains=None,
+    metadata=None,
+) -> BiologicalQecBatchExecution
+```
+Aggregates multi-pattern campaign runs with decode-backend counts, success
+rate, and mean syndrome/correction/residual metrics.
+
 CLI entry point:
 ```bash
 scpn-biological-qec-report --k K.npy --z-errors z.npy --output report.json
 ```
+`--z-errors` accepts either a one-dimensional vector (single run) or a
+two-dimensional matrix (batch campaign).
 
 ### `control_qec.ControlQEC`
 

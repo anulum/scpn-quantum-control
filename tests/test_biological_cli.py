@@ -54,3 +54,34 @@ def test_biological_qec_cli_generates_json_report(tmp_path):
     assert payload["success"] is True
     assert payload["metadata"]["campaign"] == "cli"
     assert payload["diagnostics"]["n_nodes"] == 4
+
+
+def test_biological_qec_cli_generates_batch_report(tmp_path):
+    """CLI accepts 2D z-error matrix and emits aggregate batch payload."""
+    k_path = tmp_path / "K.npy"
+    z_path = tmp_path / "z_batch.npy"
+    out_path = tmp_path / "result_batch.json"
+
+    K = np.array(
+        [[0.0, 1.0, 0.0, 0.0], [1.0, 0.0, 1.0, 0.0], [0.0, 1.0, 0.0, 1.0], [0.0, 0.0, 1.0, 0.0]],
+        dtype=float,
+    )
+    z_batch = np.array([[0, 1, 0], [1, 0, 1]], dtype=np.int8)
+    np.save(k_path, K)
+    np.save(z_path, z_batch)
+
+    rc = main(
+        [
+            "--k",
+            str(k_path),
+            "--z-errors",
+            str(z_path),
+            "--output",
+            str(out_path),
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
+    assert payload["n_runs"] == 2
+    assert len(payload["runs"]) == 2
+    assert 0.0 <= payload["success_rate"] <= 1.0

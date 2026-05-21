@@ -13,7 +13,12 @@ from .biological_diagnostics import (
     BiologicalSurfaceDiagnostics,
     analyse_biological_surface_code,
 )
-from .biological_pipeline import BiologicalQecExecution, run_biological_qec_execution
+from .biological_pipeline import (
+    BiologicalQecBatchExecution,
+    BiologicalQecExecution,
+    run_biological_qec_batch_execution,
+    run_biological_qec_execution,
+)
 from .biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
 from .control_qec import ControlQEC, MWPMDecoder, SurfaceCode
 from .dla_protected_scar import (
@@ -76,7 +81,9 @@ __all__ = [
     "BiologicalSurfaceDiagnostics",
     "analyse_biological_surface_code",
     "BiologicalQecExecution",
+    "BiologicalQecBatchExecution",
     "run_biological_qec_execution",
+    "run_biological_qec_batch_execution",
     "DLAProtectedLogicalSyncWitness",
     "DLAProtectedMemoryPrototype",
     "DLAProtectedSubspaceSpec",

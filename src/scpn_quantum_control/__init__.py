@@ -233,7 +233,12 @@ from .qec.biological_diagnostics import (
     BiologicalSurfaceDiagnostics,
     analyse_biological_surface_code,
 )
-from .qec.biological_pipeline import BiologicalQecExecution, run_biological_qec_execution
+from .qec.biological_pipeline import (
+    BiologicalQecBatchExecution,
+    BiologicalQecExecution,
+    run_biological_qec_batch_execution,
+    run_biological_qec_execution,
+)
 from .qec.biological_surface_code import BiologicalMWPMDecoder, BiologicalSurfaceCode
 from .qec.control_qec import ControlQEC
 from .qec.fault_tolerant import FaultTolerantUPDE, LogicalQubit
@@ -350,7 +355,9 @@ __all__ = [
     "BiologicalSurfaceDiagnostics",
     "analyse_biological_surface_code",
     "BiologicalQecExecution",
+    "BiologicalQecBatchExecution",
     "run_biological_qec_execution",
+    "run_biological_qec_batch_execution",
     "DynamicCouplingEngine",
     "OMEGA_N_16",
     "build_knm_paper27",
