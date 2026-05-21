@@ -124,6 +124,29 @@ def test_azure_adapter_normalises_provider_status_tokens() -> None:
     assert azure_mod._normalise_status("CANCELED") == "cancelled"
 
 
+def test_azure_provider_job_id_rejects_control_characters() -> None:
+    """Azure provider job identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_azure as azure_mod
+
+    class BadJob:
+        id = "azure-job-\n1"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        azure_mod._job_id(BadJob())
+
+
+def test_azure_provider_job_id_trims_padding() -> None:
+    """Azure provider job identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_azure as azure_mod
+
+    class PaddedJob:
+        id = "  azure-job-42  "
+
+    assert azure_mod._job_id(PaddedJob()) == "azure-job-42"
+
+
 def test_azure_adapter_rejects_shot_mismatch() -> None:
     """Azure adapter must fail closed when decoded counts diverge from requested shots."""
 
