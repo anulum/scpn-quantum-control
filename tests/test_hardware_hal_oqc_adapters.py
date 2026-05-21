@@ -215,6 +215,22 @@ def test_oqc_provider_job_id_trims_padding() -> None:
     assert oqc_mod._provider_job_id(PaddedJob()) == "oqc-provider-2"
 
 
+def test_oqc_target_rejects_control_characters() -> None:
+    """OQC targets must reject control-character payloads."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("oqc_cloud")
+    with pytest.raises(ValueError, match="OQC target"):
+        OQCHALAdapter(profile, client=_FakeOQCClient(), target="Luc\ny")
+
+
+def test_oqc_target_trims_padding() -> None:
+    """OQC targets should be canonicalised by trimming padding."""
+
+    profile = HardwareAbstractionLayer.with_builtin_profiles().profile("oqc_cloud")
+    adapter = OQCHALAdapter(profile, client=_FakeOQCClient(), target="  Lucy  ")
+    assert adapter._target == "Lucy"
+
+
 def test_oqc_adapter_rejects_shot_mismatch() -> None:
     """OQC adapter must fail closed when decoded counts diverge from requested shots."""
 

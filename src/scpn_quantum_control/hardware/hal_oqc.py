@@ -65,7 +65,7 @@ class OQCHALAdapter:
         self.backend_id = profile.backend_id
         self._client = client
         self._client_factory = client_factory
-        self._target = target
+        self._target = strict_provider_job_id(target, field_name="OQC target")
         self._jobs: dict[str, QuantumJobRef] = {}
         self._provider_jobs: dict[str, Any] = {}
         self._results: dict[str, QuantumJobResult] = {}
