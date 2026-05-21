@@ -138,3 +138,11 @@ def test_quandela_count_normaliser_accumulates_canonical_state_collisions() -> N
 def test_quandela_count_normaliser_trims_state_key_padding() -> None:
     counts = hal_quandela._normalise_counts({" 10 ": 2, "10": 3})
     assert counts == {"10": 5}
+
+
+def test_qbraid_and_strangeworks_normalisers_accumulate_canonical_collisions() -> None:
+    qbraid_counts = hal_qbraid._normalise_counts({"1": 2, "01": 3}, n_qubits=2)
+    assert qbraid_counts == {"01": 5}
+
+    strangeworks_counts = hal_strangeworks._normalise_counts({"1": 2, "01": 3}, n_qubits=2)
+    assert strangeworks_counts == {"01": 5}

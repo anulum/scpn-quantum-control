@@ -252,12 +252,13 @@ def _normalise_counts(counts: Any, *, n_qubits: int) -> dict[str, int]:
         counts = counts[0]
     if not isinstance(counts, Mapping):
         raise ValueError("Strangeworks measurement counts must be a mapping")
-    normalised = {
-        strict_fixed_width_bitstring_key(
+    normalised: dict[str, int] = {}
+    for bitstring, count in counts.items():
+        key = strict_fixed_width_bitstring_key(
             bitstring, width=n_qubits, field_name="Strangeworks count key"
-        ): strict_non_negative_count(count)
-        for bitstring, count in counts.items()
-    }
+        )
+        value = strict_non_negative_count(count)
+        normalised[key] = normalised.get(key, 0) + value
     if not normalised:
         raise ValueError("Strangeworks result contains an empty count map")
     return normalised
