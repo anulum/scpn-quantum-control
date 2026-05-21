@@ -1231,6 +1231,10 @@ Records git commit + branch + dirty flag, Python / package /
 ```python
 BiologicalSurfaceCode(K, threshold=1e-5)
     .verify_css_commutation() -> bool
+    .estimate_logical_qubits() -> int
+    .code_summary() -> dict[str, int | bool]
+    .x_syndrome_from_z_errors(z_errors) -> np.ndarray
+    .apply_z_correction(z_errors, correction) -> np.ndarray
 ```
 Native topological error correction code mapped directly to the hierarchical SCPN coupling graph.
 `K` must be a finite square symmetric zero-diagonal coupling matrix.
@@ -1242,6 +1246,7 @@ Native topological error correction code mapped directly to the hierarchical SCP
 ```python
 BiologicalMWPMDecoder(code)
     .decode_z_errors(syndrome_x) -> np.ndarray
+    .decode_and_apply(z_errors) -> tuple[np.ndarray, np.ndarray]
 ```
 Minimum Weight Perfect Matching decoder using biological coupling strengths as distance metrics.
 `syndrome_x` must be a one-dimensional binary vector with length equal
