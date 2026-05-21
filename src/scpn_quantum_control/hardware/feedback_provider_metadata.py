@@ -48,7 +48,14 @@ def snapshot_from_qiskit_backend(
     max_shots = _backend_max_shots(backend)
     max_circuits = _backend_max_circuits(backend)
     simulator = bool(getattr(backend, "simulator", False))
-    supported_features = _infer_qiskit_dynamic_features(backend, basis_gates)
+    configuration = _optional_configuration(backend)
+    target = getattr(backend, "target", None)
+    openpulse_profile = _infer_openpulse_profile(configuration, target, backend)
+    supported_features = _infer_qiskit_dynamic_features(
+        backend,
+        basis_gates,
+        openpulse_profile,
+    )
     return BackendCapabilitySnapshot(
         provider=provider,
         backend_name=name,
@@ -58,11 +65,18 @@ def snapshot_from_qiskit_backend(
         max_shots=max_shots,
         max_circuits=max_circuits,
         simulator=simulator,
-        metadata={"adapter": "qiskit_backend_no_submit"},
+        metadata={
+            "adapter": "qiskit_backend_no_submit",
+            "openpulse_profile": openpulse_profile,
+        },
     )
 
 
-def _infer_qiskit_dynamic_features(backend: Any, basis_gates: tuple[str, ...]) -> tuple[str, ...]:
+def _infer_qiskit_dynamic_features(
+    backend: Any,
+    basis_gates: tuple[str, ...],
+    openpulse_profile: Mapping[str, Any],
+) -> tuple[str, ...]:
     features = {"cross_shot_batches"}
     basis = set(basis_gates)
     target = getattr(backend, "target", None)
@@ -72,7 +86,27 @@ def _infer_qiskit_dynamic_features(backend: Any, basis_gates: tuple[str, ...]) -
         features.add("conditional_reset")
     if _target_has_control_flow(target) or getattr(backend, "dynamic_circuits", False):
         features.add("conditional_control")
+    if bool(openpulse_profile.get("supports_pulse_control")):
+        features.add("pulse_control")
+    if bool(openpulse_profile.get("supports_drive_channel_access")):
+        features.add("drive_channel_access")
+    if bool(openpulse_profile.get("supports_measure_channel_access")):
+        features.add("measure_channel_access")
     return tuple(sorted(features))
+
+
+def _infer_openpulse_profile(configuration: Any, target: Any, backend: Any) -> dict[str, Any]:
+    drive_present = _has_any_attrs(configuration, target, backend, names=("dt", "dtm"))
+    measure_present = _has_any_attrs(target, backend, names=("meas_map",))
+    control_channels = _first_optional_int(configuration, target, backend, names=("n_uchannels",))
+    has_control = bool(control_channels and control_channels > 0)
+    return {
+        "supports_pulse_control": drive_present or has_control,
+        "supports_drive_channel_access": drive_present,
+        "supports_measure_channel_access": measure_present,
+        "supports_control_channel_access": has_control,
+        "n_control_channels": int(control_channels or 0),
+    }
 
 
 def _target_has_control_flow(target: Any) -> bool:
@@ -149,6 +183,27 @@ def _optional_configuration(backend: Any) -> Any:
     if callable(configuration):
         return configuration()
     return configuration
+
+
+def _has_any_attrs(*sources: Any, names: tuple[str, ...]) -> bool:
+    for source in sources:
+        if source is None:
+            continue
+        for name in names:
+            if hasattr(source, name):
+                return True
+    return False
+
+
+def _first_optional_int(*sources: Any, names: tuple[str, ...]) -> int | None:
+    for source in sources:
+        if source is None:
+            continue
+        for name in names:
+            value = getattr(source, name, None)
+            if isinstance(value, int) and value >= 0:
+                return value
+    return None
 
 
 def _required_text(metadata: Mapping[str, Any], key: str) -> str:

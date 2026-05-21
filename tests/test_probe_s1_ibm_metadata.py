@@ -30,9 +30,20 @@ def test_load_snapshot_from_metadata_json_and_build_decision(tmp_path) -> None:
                     "mid_circuit_measurement",
                     "conditional_control",
                     "conditional_reset",
+                    "pulse_control",
+                    "drive_channel_access",
                 ],
                 "max_shots": 4096,
                 "max_circuits": 16,
+                "metadata": {
+                    "openpulse_profile": {
+                        "supports_pulse_control": True,
+                        "supports_drive_channel_access": True,
+                        "supports_measure_channel_access": False,
+                        "supports_control_channel_access": False,
+                        "n_control_channels": 0,
+                    }
+                },
             }
         ),
         encoding="utf-8",
@@ -45,3 +56,7 @@ def test_load_snapshot_from_metadata_json_and_build_decision(tmp_path) -> None:
     assert document["credential_string_argument_supported"] is False
     assert document["capability_decision"]["status"] == "ready"
     assert document["package_budget"]["circuits"] == 2
+    assert document["openpulse_readiness_status"] == "ready"
+    assert document["openpulse_blockers"] == []
+    assert document["openpulse_readiness"]["ready"] is True
+    assert document["openpulse_readiness"]["hardware_submission"] is False

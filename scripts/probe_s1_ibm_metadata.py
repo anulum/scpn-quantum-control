@@ -30,6 +30,10 @@ from scpn_quantum_control.hardware.feedback_provider_metadata import (
 from scpn_quantum_control.hardware.feedback_submission import (
     build_s1_feedback_submission_package,
 )
+from scpn_quantum_control.hardware.provider_capability_discovery import (
+    ProviderCapabilitySnapshot,
+    build_openpulse_control_readiness,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "s1_feedback_loop"
@@ -160,6 +164,9 @@ def build_decision_document(snapshot) -> dict[str, Any]:
     """Build the no-submit capability decision document."""
     package = _package()
     decision = assess_feedback_backend_capability(snapshot, package)
+    openpulse_readiness = _openpulse_readiness_from_feedback_snapshot(snapshot)
+    openpulse_payload = openpulse_readiness.to_dict()
+    openpulse_status = "ready" if openpulse_readiness.ready else "blocked"
     return {
         "date": DATE,
         "script": "scripts/probe_s1_ibm_metadata.py",
@@ -173,8 +180,51 @@ def build_decision_document(snapshot) -> dict[str, Any]:
             "repetitions": package.budget.repetitions,
             "total_reserved_seconds": package.budget.total_reserved_seconds,
         },
+        "openpulse_readiness_status": openpulse_status,
+        "openpulse_blockers": list(openpulse_readiness.blockers),
+        "openpulse_warnings": list(openpulse_readiness.warnings),
+        "openpulse_readiness": openpulse_payload,
         "capability_decision": decision.to_dict(),
     }
+
+
+def _openpulse_readiness_from_feedback_snapshot(snapshot: Any) -> Any:
+    metadata = snapshot.metadata if isinstance(snapshot.metadata, Mapping) else {}
+    provider_snapshot = ProviderCapabilitySnapshot(
+        route_id="ibm_runtime::ibm",
+        aggregator="ibm_runtime",
+        provider=snapshot.provider,
+        backend_id=snapshot.backend_name,
+        target_name=snapshot.backend_name,
+        n_qubits=snapshot.n_qubits,
+        supported_ir_formats=("qiskit", "qiskit_qpy"),
+        basis_gates=tuple(snapshot.basis_gates),
+        native_features=tuple(snapshot.supported_features),
+        online=True,
+        simulator=bool(snapshot.simulator),
+        no_submit=True,
+        max_shots=snapshot.max_shots,
+        max_circuits=snapshot.max_circuits,
+        calibration_timestamp=None,
+        metadata=metadata,
+    )
+    profile = metadata.get("openpulse_profile")
+    if isinstance(profile, Mapping):
+        n_control = profile.get("n_control_channels")
+        if (isinstance(n_control, int) and n_control > 0) or bool(
+            profile.get("supports_drive_channel_access")
+        ):
+            dt = 2.222e-10
+        else:
+            dt = 1.0
+    else:
+        dt = 1.0
+    return build_openpulse_control_readiness(
+        provider_snapshot,
+        qubit=0,
+        dt=dt,
+        shots=1024,
+    )
 
 
 def main(argv: Sequence[str] | None = None) -> int:

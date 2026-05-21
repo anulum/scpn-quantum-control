@@ -22,10 +22,14 @@ class DummyConfig:
     basis_gates = ["rz", "sx", "x", "cx", "measure", "reset"]
     max_shots = 4096
     max_experiments = 16
+    dt = 2.222e-10
+    dtm = 1.111e-9
+    n_uchannels = 2
 
 
 class DummyTarget:
     operation_names = {"rz", "sx", "cx", "measure", "reset", "if_else"}
+    meas_map = [[0], [1], [2], [3], [4], [5], [6], [7]]
 
 
 class DummyBackend:
@@ -69,6 +73,15 @@ def test_snapshot_from_qiskit_backend_infers_dynamic_features_without_submission
     assert "mid_circuit_measurement" in snapshot.supported_features
     assert "conditional_reset" in snapshot.supported_features
     assert "conditional_control" in snapshot.supported_features
+    assert "pulse_control" in snapshot.supported_features
+    assert "drive_channel_access" in snapshot.supported_features
+    assert "measure_channel_access" in snapshot.supported_features
+    openpulse = snapshot.metadata["openpulse_profile"]
+    assert openpulse["supports_pulse_control"] is True
+    assert openpulse["supports_drive_channel_access"] is True
+    assert openpulse["supports_measure_channel_access"] is True
+    assert openpulse["supports_control_channel_access"] is True
+    assert openpulse["n_control_channels"] == 2
 
 
 def test_snapshot_from_qiskit_backend_merges_configuration_and_target_operations() -> None:
@@ -164,7 +177,14 @@ def test_snapshot_from_qiskit_backend_preserves_no_submit_provenance_for_callabl
     assert snapshot.backend_name == "callable_backend"
     assert snapshot.simulator is True
     assert snapshot.supported_features == ("cross_shot_batches",)
-    assert snapshot.metadata == {"adapter": "qiskit_backend_no_submit"}
+    assert snapshot.metadata["adapter"] == "qiskit_backend_no_submit"
+    assert snapshot.metadata["openpulse_profile"] == {
+        "supports_pulse_control": False,
+        "supports_drive_channel_access": False,
+        "supports_measure_channel_access": False,
+        "supports_control_channel_access": False,
+        "n_control_channels": 0,
+    }
 
 
 def test_snapshot_from_qiskit_backend_uses_configuration_qubits_and_limits() -> None:
