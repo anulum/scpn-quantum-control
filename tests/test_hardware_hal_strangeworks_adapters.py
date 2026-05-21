@@ -170,6 +170,29 @@ def test_strangeworks_adapter_normalises_provider_status_tokens() -> None:
     assert sw_mod._normalise_status("SUCCESS") == "completed"
 
 
+def test_strangeworks_provider_job_id_rejects_control_characters() -> None:
+    """Strangeworks provider job identifiers must reject control-character payloads."""
+
+    from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
+
+    class BadJob:
+        id = "sw-job-\n1"
+
+    with pytest.raises(ValueError, match="provider job id"):
+        sw_mod._job_id(BadJob())
+
+
+def test_strangeworks_provider_job_id_trims_padding() -> None:
+    """Strangeworks provider job identifiers should be canonicalised by trimming padding."""
+
+    from scpn_quantum_control.hardware import hal_strangeworks as sw_mod
+
+    class PaddedJob:
+        id = "  sw-job-42  "
+
+    assert sw_mod._job_id(PaddedJob()) == "sw-job-42"
+
+
 def test_strangeworks_adapter_rejects_shot_mismatch() -> None:
     """Strangeworks adapter must fail closed when decoded counts diverge from requested shots."""
 
