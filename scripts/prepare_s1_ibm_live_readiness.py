@@ -28,6 +28,10 @@ from scpn_quantum_control.hardware.feedback_provider_metadata import snapshot_fr
 from scpn_quantum_control.hardware.feedback_submission import (
     build_s1_feedback_submission_package,
 )
+from scpn_quantum_control.hardware.provider_capability_discovery import (
+    ProviderCapabilitySnapshot,
+    build_openpulse_control_readiness,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATE = "2026-05-06"
@@ -187,10 +191,14 @@ def build_live_readiness_document(backend: Any) -> dict[str, Any]:
     package = _package()
     snapshot = snapshot_from_qiskit_backend(backend, provider="ibm")
     decision = assess_feedback_backend_capability(snapshot, package)
+    openpulse_readiness = _openpulse_readiness_from_feedback_snapshot(snapshot)
+    openpulse_status = "ready" if openpulse_readiness.ready else "blocked"
     transpilation = _transpile_summary(backend, package.circuit.n_rounds)
     blockers: list[str] = []
     if decision.status != "ready":
         blockers.append("live backend capability decision is not ready")
+    if not openpulse_readiness.ready:
+        blockers.append("openpulse readiness is blocked")
     readiness_status = "blocked" if blockers else "ready_for_pair_runner"
     return {
         "date": CAPTURE_DATE,
@@ -209,6 +217,10 @@ def build_live_readiness_document(backend: Any) -> dict[str, Any]:
             "qpu_seconds_ceiling": QPU_SECONDS_CEILING,
         },
         "capability_decision": decision.to_dict(),
+        "openpulse_readiness_status": openpulse_status,
+        "openpulse_blockers": list(openpulse_readiness.blockers),
+        "openpulse_warnings": list(openpulse_readiness.warnings),
+        "openpulse_readiness": openpulse_readiness.to_dict(),
         "transpilation": transpilation,
         "readiness_status": readiness_status,
         "blockers": blockers,
@@ -219,12 +231,56 @@ def build_live_readiness_document(backend: Any) -> dict[str, Any]:
     }
 
 
+def _openpulse_readiness_from_feedback_snapshot(snapshot: Any) -> Any:
+    metadata = snapshot.metadata if isinstance(snapshot.metadata, Mapping) else {}
+    provider_snapshot = ProviderCapabilitySnapshot(
+        route_id="ibm_runtime::ibm",
+        aggregator="ibm_runtime",
+        provider=snapshot.provider,
+        backend_id=snapshot.backend_name,
+        target_name=snapshot.backend_name,
+        n_qubits=snapshot.n_qubits,
+        supported_ir_formats=("qiskit", "qiskit_qpy"),
+        basis_gates=tuple(snapshot.basis_gates),
+        native_features=tuple(snapshot.supported_features),
+        online=True,
+        simulator=bool(snapshot.simulator),
+        no_submit=True,
+        max_shots=snapshot.max_shots,
+        max_circuits=snapshot.max_circuits,
+        calibration_timestamp=None,
+        metadata=metadata,
+    )
+    profile = metadata.get("openpulse_profile")
+    if isinstance(profile, Mapping):
+        n_control = profile.get("n_control_channels")
+        if (isinstance(n_control, int) and n_control > 0) or bool(
+            profile.get("supports_drive_channel_access")
+        ):
+            dt = 2.222e-10
+        else:
+            dt = 1.0
+    else:
+        dt = 1.0
+    return build_openpulse_control_readiness(
+        provider_snapshot,
+        qubit=0,
+        dt=dt,
+        shots=1024,
+    )
+
+
 def write_readiness_markdown(document: Mapping[str, Any], path: Path) -> None:
     """Write a concise Markdown readiness note."""
     capability = document["capability_decision"]
     transpiled = document["transpilation"]["transpiled"]
     budget = document["package_budget"]
     blockers = "\n".join(f"- {item}" for item in document["blockers"]) or "- none"
+    openpulse_status = document.get("openpulse_readiness_status", "unknown")
+    openpulse_blockers = document.get("openpulse_blockers", [])
+    openpulse_blocker_text = (
+        "\n".join(f"- {item}" for item in openpulse_blockers) if openpulse_blockers else "- none"
+    )
     text = f"""<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Commercial license available -->
 <!-- © Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->
@@ -246,6 +302,8 @@ Submission state: `{document["submission_state"]}`
 Hardware submission: `{str(document["hardware_submission"]).lower()}`
 
 Capability status: `{capability["status"]}`
+
+OpenPulse readiness status: `{openpulse_status}`
 
 Readiness status: `{document["readiness_status"]}`
 
@@ -270,6 +328,10 @@ Operation counts:
 ## Remaining Blockers
 
 {blockers}
+
+## OpenPulse Blockers
+
+{openpulse_blocker_text}
 
 ## Claim Boundary
 

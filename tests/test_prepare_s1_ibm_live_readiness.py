@@ -19,10 +19,14 @@ class _Config:
     basis_gates = ["cz", "id", "rz", "sx", "x"]
     max_shots = 100000
     max_experiments = 300
+    dt = 2.222e-10
+    dtm = 1.111e-9
+    n_uchannels = 2
 
 
 class _Target:
     operation_names = ["cz", "delay", "id", "if_else", "measure", "reset", "rz", "sx", "x"]
+    meas_map = [[0], [1], [2], [3]]
 
 
 class _Status:
@@ -71,6 +75,9 @@ def test_build_live_readiness_document_is_no_submit_and_ready_for_pair_runner(
     assert document["hardware_submission"] is False
     assert document["credential_string_argument_supported"] is False
     assert document["capability_decision"]["status"] == "ready"
+    assert document["openpulse_readiness_status"] == "ready"
+    assert document["openpulse_blockers"] == []
+    assert document["openpulse_readiness"]["ready"] is True
     assert document["readiness_status"] == "ready_for_pair_runner"
     assert document["backend_status"]["pending_jobs"] == 7
     assert document["transpilation"]["submission_performed"] is False
@@ -85,6 +92,8 @@ def test_write_readiness_markdown_preserves_no_submission_boundary(tmp_path) -> 
         "submission_state": "live_metadata_and_transpile_no_submission",
         "hardware_submission": False,
         "capability_decision": {"status": "ready"},
+        "openpulse_readiness_status": "blocked",
+        "openpulse_blockers": ["target is missing pulse native features: drive_channel_access"],
         "readiness_status": "blocked",
         "package_budget": {
             "shots_per_circuit": 1024,
@@ -109,4 +118,6 @@ def test_write_readiness_markdown_preserves_no_submission_boundary(tmp_path) -> 
     text = path.read_text(encoding="utf-8")
     assert "Hardware submission: `false`" in text
     assert "provider submitter is not implemented" in text
+    assert "OpenPulse readiness status: `blocked`" in text
+    assert "target is missing pulse native features: drive_channel_access" in text
     assert json.dumps({"cz": 189, "measure": 6}, indent=2, sort_keys=True) in text
