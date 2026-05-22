@@ -186,6 +186,7 @@ def _render_markdown(summary: dict[str, Any]) -> str:
 
 
 def main() -> int:
+    """Generate consolidated realtime-control latency benchmark artefacts."""
     args = _parse_args()
     local_summary = _load_json(args.local_summary)
     ibm_paths = [Path(path) for path in sorted(glob.glob(args.ibm_pattern))]

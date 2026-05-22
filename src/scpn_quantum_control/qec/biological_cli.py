@@ -56,6 +56,7 @@ def _load_domains(path: Path | None) -> dict[int, str] | None:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Create the command-line parser for biological-QEC report generation."""
     parser = argparse.ArgumentParser(
         prog="scpn-biological-qec-report",
         description="Generate biological surface-code execution artefact payload.",
@@ -87,6 +88,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the biological-QEC CLI and persist the generated JSON report."""
     args = build_parser().parse_args(argv)
     K = _load_matrix(args.k)
     z_errors = _load_array(args.z_errors)

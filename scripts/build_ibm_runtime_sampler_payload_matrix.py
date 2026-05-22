@@ -121,6 +121,7 @@ def _timestamp() -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Build and persist a Rust-consumable IBM sampler payload matrix."""
     args = _parse_args(argv)
     backend = load_authenticated_backend(args.backend, args.instance, args.credentials_vault)
     backend_name = str(getattr(backend, "name", args.backend))

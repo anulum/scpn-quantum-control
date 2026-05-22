@@ -327,6 +327,7 @@ def _render_markdown(summary: dict[str, Any]) -> str:
 
 
 def run_benchmark(*, repeats: int, steps: int) -> dict[str, Any]:
+    """Run local no-QPU realtime-loop benchmarks for Python and Rust lanes."""
     rows: list[dict[str, Any]] = [
         _benchmark_case(2, repeats=repeats, steps=steps, shots=32),
         _benchmark_case(3, repeats=repeats, steps=steps, shots=64),
@@ -359,6 +360,7 @@ def run_benchmark(*, repeats: int, steps: int) -> dict[str, Any]:
 
 
 def main() -> int:
+    """CLI entrypoint for realtime control local benchmark generation."""
     args = _parse_args()
     if args.repeats < 3:
         raise ValueError("repeats must be >= 3")

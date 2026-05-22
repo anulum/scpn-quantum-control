@@ -186,6 +186,7 @@ def _capacity_widths(backend_qubits: int, fractions: Sequence[float]) -> list[in
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Execute the IBM runtime latency matrix and persist campaign artefacts."""
     args = _parse_args(argv)
     if args.submit and not args.confirm_qpu:
         print("ERROR: --submit requires --confirm-qpu")

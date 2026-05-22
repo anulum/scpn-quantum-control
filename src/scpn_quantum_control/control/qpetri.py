@@ -49,6 +49,7 @@ class QuantumPetriStepReport:
     statevector_entropy_bits: float
 
     def to_payload(self) -> dict[str, object]:
+        """Return a JSON-serialisable representation of one Petri-net step."""
         return {
             "input_marking": self.input_marking.astype(float).tolist(),
             "output_marking": self.output_marking.astype(float).tolist(),
@@ -69,6 +70,7 @@ class QuantumPetriCampaignReport:
     mean_statevector_purity: float
 
     def to_payload(self) -> dict[str, object]:
+        """Return a JSON-serialisable representation of a Petri campaign."""
         return {
             "steps": [step.to_payload() for step in self.steps],
             "mean_output_marking": self.mean_output_marking.astype(float).tolist(),
