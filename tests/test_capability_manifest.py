@@ -93,6 +93,15 @@ def test_readme_capability_snapshot_matches_generated_markdown() -> None:
     )
 
 
+def test_public_docs_do_not_reintroduce_known_stale_inventory_claims() -> None:
+    """Reject hand-maintained public inventory counts known to drift."""
+
+    tool = _load_tool()
+    findings = tool.public_inventory_claim_findings(_repo_root())
+
+    assert not findings, "\n".join(findings)
+
+
 def test_capability_manifest_cli_writes_review_artifacts() -> None:
     tool_path = _repo_root() / "tools" / "capability_manifest.py"
     with tempfile.TemporaryDirectory() as directory:

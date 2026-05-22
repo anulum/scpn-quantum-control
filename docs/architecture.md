@@ -12,16 +12,16 @@
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 209 |
-| Rust crate | 1 (PyO3 0.25, **37 functions**, 21 source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Python modules | 765 |
+| Rust crate | 1 (PyO3 0.25, **55 bindings**, 27 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
 | Tests | CI-gated suite (97%+ coverage) |
 | Lines of code | ~30,000 |
-| Subpackages | 20 |
-| Research gems | 35 (≈ 5 novel, ≈ 10 first-application, including GUESS symmetry-decay ZNE and DynQ topology-agnostic placement) |
-| Examples | 21 |
-| Notebooks | 47 (`notebooks/`) + 51 (`notebooks/colab/`) |
-| Doc pages | 50+ |
+| Subpackages | 28 domain package families |
+| Research gems | See generated capability inventory and module-level docs |
+| Examples | 23 |
+| Notebooks | 98 tracked notebooks |
+| Doc pages | 235 public Markdown pages |
 
 ## Subpackage Dependency Graph
 
@@ -33,15 +33,15 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (13)\nK_nm → quantum objects"]
-    paper0["paper0/ (470)\nSource-accounting validation"]
+    paper0["paper0/ (471)\nSource-accounting validation"]
     phase["phase/ (28)\nTime evolution"]
-    analysis["analysis/ (57)\nSync probes"]
-    control["control/ (8)\nQuantum control"]
+    analysis["analysis/ (58)\nSync probes"]
+    control["control/ (11)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (7)\nIdentity analysis"]
-    hardware["hardware/ (37)\nBackends + registry + async + provenance"]
-    mitigation["mitigation/ (9)\nError mitigation"]
-    qec["qec/ (8)\nError correction"]
+    hardware["hardware/ (63)\nBackends + registry + async + provenance"]
+    mitigation["mitigation/ (12)\nError mitigation"]
+    qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]
     apps["applications/ (12)\nBenchmarks"]
     crypto["crypto/ (7)\nQKD"]

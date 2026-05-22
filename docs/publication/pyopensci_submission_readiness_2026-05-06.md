@@ -46,7 +46,7 @@ Unsupported claims:
 | Field | Current value |
 |-------|---------------|
 | Package name | `scpn-quantum-control` |
-| Version | `0.9.6` |
+| Version | `0.9.7` source metadata; package release artefacts may lag until the next tagged release |
 | Repository | `https://github.com/anulum/scpn-quantum-control` |
 | Documentation | `https://anulum.github.io/scpn-quantum-control` |
 | Issue tracker | `https://github.com/anulum/scpn-quantum-control/issues` |

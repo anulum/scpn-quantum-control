@@ -46,7 +46,8 @@ The Qiskit Ecosystem repository states that candidate projects must:
 - depends on `qiskit>=2.2,<3.0`;
 - uses Qiskit for circuit construction, transpilation, IBM Runtime execution
   packaging, and post-processing of raw-count artefacts;
-- is published as version `0.9.6` on PyPI;
+- has source metadata at version `0.9.7`; PyPI release artefacts may lag the
+  source tree until the next tagged package release;
 - uses the OSI-approved `AGPL-3.0-or-later` licence;
 - has current repository activity and public documentation.
 

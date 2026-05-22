@@ -86,6 +86,8 @@ class CapabilityManifestConfig:
     rust_sources: Path
     exclude_doc_parts: tuple[str, ...]
     labels: dict[str, str]
+    guard_paths: tuple[Path, ...]
+    stale_inventory_patterns: tuple[str, ...]
     source_path: Path | None
 
 
@@ -119,6 +121,7 @@ def load_config(repo: Path, config_path: Path | None = None) -> CapabilityManife
     readme = raw.get("readme", {})
     labels = _default_labels()
     labels.update({str(key): str(value) for key, value in raw.get("labels", {}).items()})
+    guard = raw.get("public_inventory_guard", {})
     return CapabilityManifestConfig(
         project_label=str(raw.get("project_label", "SC-NeuroCore")),
         schema_version=str(raw.get("schema_version", CAPABILITY_MANIFEST_SCHEMA_VERSION)),
@@ -141,6 +144,52 @@ def load_config(repo: Path, config_path: Path | None = None) -> CapabilityManife
             str(part) for part in raw.get("exclude_doc_parts", ["internal", "_generated"])
         ),
         labels=labels,
+        guard_paths=tuple(
+            Path(path)
+            for path in guard.get(
+                "paths",
+                [
+                    "README.md",
+                    "docs/architecture.md",
+                    "docs/index.md",
+                    "docs/installation.md",
+                    "docs/notebooks.md",
+                    "docs/rust_engine.md",
+                    "docs/test_infrastructure.md",
+                ],
+            )
+        ),
+        stale_inventory_patterns=tuple(
+            str(pattern)
+            for pattern in guard.get(
+                "stale_patterns",
+                [
+                    r"\b201\s+Python\b",
+                    r"\b201\s+Modules\b",
+                    r"\b36\s+Rust\s+Functions\b",
+                    r"\b37\s+Rust\s+Functions\b",
+                    r"\b4,771\s+Tests\b",
+                    r"\b47\s+Notebooks\b",
+                    r"\b47\s+Jupyter\b",
+                    r"\b21\s+Examples\b",
+                    r"\bVersion:\s*0\.9\.5\b",
+                    r"\bVersion:\s*0\.9\.6\b",
+                    r"\b37\s+functions\b",
+                    r"\b47\s+functions\b",
+                    r"\b49\s+functions\b",
+                    r"\b49\s+exported\b",
+                    r"Python modules\s*\|\s*20[0-9]\b",
+                    r"analysis/\s*\(57\)",
+                    r"hardware/\s*\(37\)",
+                    r"control/\s*\([89]\)",
+                    r"mitigation/\s*\(9\)",
+                    r"qec/\s*\([89]\)",
+                    r"paper0/\s*\(470\)",
+                    r"repository is private",
+                    r"GitHub repository is private",
+                ],
+            )
+        ),
         source_path=_relative_config_path(path, repo) if path.exists() else None,
     )
 
@@ -454,8 +503,28 @@ def assert_outputs_current(
         readme_path = repo / config.readme_path
         if not _readme_block_matches(readme_path, expected_markdown, config=config):
             errors.append(f"stale README capability block: {config.readme_path}")
+    stale_claims = public_inventory_claim_findings(repo, config=config)
+    errors.extend(stale_claims)
     if errors:
         raise RuntimeError("; ".join(errors))
+
+
+def public_inventory_claim_findings(
+    repo: Path, *, config: CapabilityManifestConfig | None = None
+) -> list[str]:
+    """Return public documentation inventory claims known to be stale."""
+
+    config = config or load_config(repo)
+    findings: list[str] = []
+    for relative_path in config.guard_paths:
+        path = repo / relative_path
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for pattern in config.stale_inventory_patterns:
+            if re.search(pattern, text, flags=re.IGNORECASE):
+                findings.append(f"stale public inventory claim: {relative_path} matches {pattern}")
+    return findings
 
 
 def _check_count(
@@ -525,7 +594,7 @@ def _rust_pyo3_wrapper_names(path: Path) -> list[str]:
     text = path.read_text(encoding="utf-8")
     macro_names = re.findall(r'py_neuron_default!\("([^"]+)"', text)
     explicit_names = re.findall(r'#\[pyclass\(\s*name\s*=\s*"([^"]+)"', text, flags=re.S)
-    wrapped_functions = re.findall(r"wrap_pyfunction!\(([^,\s]+)", text)
+    wrapped_functions = re.findall(r"wrap_pyfunction!\(\s*([^,\s)]+)", text, flags=re.S)
     function_names = [name.split("::")[-1] for name in wrapped_functions]
     return sorted(set(macro_names + explicit_names + function_names))
 

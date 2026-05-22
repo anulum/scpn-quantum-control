@@ -659,7 +659,7 @@ print(f"Speedup: {result['speedup']}×")
 
 ---
 
-# Rust Engine Expansion (37 functions)
+# Rust Engine Expansion
 
 3 new PyO3 functions added to `scpn_quantum_engine`, bringing the total to 18.
 All wired into Python modules as automatic fast paths with Python fallback.
@@ -719,7 +719,7 @@ R = eng.order_param_from_statevector(psi.real, psi.imag, n)
 
 ---
 
-## Complete Rust Engine (37 functions)
+## Complete Rust Engine
 
 | Function | Category | Speedup |
 |----------|----------|--------:|

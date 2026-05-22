@@ -8,7 +8,7 @@
 
 # Interactive Notebooks
 
-*47 Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+*98 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
 (2026-03-29) with 19 findings (6 negative) including hardware-artifact

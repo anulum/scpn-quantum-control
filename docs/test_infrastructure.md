@@ -22,7 +22,7 @@ tests/
   test_pipeline_wiring_performance.py  # 155 tests — every __all__ export verified functional
                                        # (now includes TestGUESSPipeline, TestDynQPipeline,
                                        # TestPulseShapingPipeline)
-  test_rust_path_benchmarks.py         # 68 tests — all 37 Rust functions benchmarked
+  test_rust_path_benchmarks.py         # Rust path parity and benchmark coverage
   test_symmetry_decay.py               # 20 multi-angle tests — GUESS (April 2026)
   test_qubit_mapper.py                 # 17 multi-angle tests — DynQ (April 2026)
   test_pulse_shaping.py                # 25 multi-angle tests — ICI + (α,β)-hypergeometric (April 2026)
@@ -88,7 +88,9 @@ class TestTopLevelExports:
 
 ### 2. Rust Path Benchmarks (`test_rust_path_benchmarks.py`)
 
-68 tests covering all 37 functions in `scpn_quantum_engine` (PyO3 + rayon).
+Rust path tests cover parity and benchmark surfaces in `scpn_quantum_engine`
+(PyO3 + rayon). The current exported binding count is generated in
+`docs/_generated/capability_snapshot.md`.
 
 Each Rust function is tested for:
 - **Correctness:** Output shape, dtype, physical bounds

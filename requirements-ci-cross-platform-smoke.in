@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control -- Cross-platform CI smoke dependency input
+numpy==2.2.6
+networkx==3.4.2
+pytest==9.0.3
+hypothesis==6.152.4

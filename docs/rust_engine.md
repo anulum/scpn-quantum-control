@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (49)
+## Functions (55)
 
-The Rust crate exports 49 functions across 22 source files. They are organised
+The Rust crate exports 55 PyO3 bindings across 27 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto

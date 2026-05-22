@@ -33,7 +33,7 @@
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
 **Version:** 0.9.7
-**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | 49 exported Rust `#[pyfunction]` bindings | 98 tracked notebooks | 22 example files | 97%+ coverage | IBM Heron r2 evidence ledgered
+**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | generated capability inventory below | 97%+ coverage | IBM Heron r2 evidence ledgered
 
 <!-- capability-snapshot:start -->
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
@@ -50,7 +50,7 @@
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 42 |
+| Rust PyO3 function bindings | 55 |
 | Rust source modules | 27 |
 | Notebook files | 98 |
 | Example files | 23 |
@@ -358,24 +358,24 @@ scientific validation evidence.
 graph TD
     subgraph Foundation
         bridge["bridge/ (13)\nK_nm → Hamiltonian\ncross-repo adapters"]
-        paper0["paper0/ (470)\nsource-accounting validation\nregister fixtures"]
+        paper0["paper0/ (471)\nsource-accounting validation\nregister fixtures"]
     end
 
     subgraph "Core Physics"
         phase["phase/ (28)\nTrotter, VQE, ADAPT-VQE\nVarQITE, Floquet DTC"]
-        analysis["analysis/ (57)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
+        analysis["analysis/ (58)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
     end
 
     subgraph "Applications"
-        control["control/ (9)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
+        control["control/ (11)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
         qsnn["qsnn/ (6)\nQuantum spiking\nneural networks"]
         apps["applications/ (13)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
 
     subgraph "Hardware & QEC"
-        hw["hardware/ (37)\nIBM runner, backends\nGPU offload, cutting"]
-        mit["mitigation/ (9)\nZNE, PEC, DD\nZ2 post-selection"]
-        qec["qec/ (9)\nToric code, surface code\nrep code, error budget"]
+        hw["hardware/ (63)\nIBM runner, backends\nGPU offload, cutting"]
+        mit["mitigation/ (12)\nZNE, PEC, DD\nZ2 post-selection"]
+        qec["qec/ (13)\nToric code, surface code\nrep code, error budget"]
     end
 
     subgraph "Field Theory"
@@ -530,8 +530,8 @@ All examples run on statevector simulation (no QPU needed).
 
 ## Notebooks
 
-47 Jupyter notebooks in [`notebooks/`](notebooks/) — 13 core tutorials
-plus 34 FIM investigation notebooks (NB14–47). Core notebooks:
+98 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
+core tutorials and retained investigation notebooks. Core notebooks:
 
 | # | Notebook | Level | Key Output |
 |:-:|----------|:-----:|------------|
@@ -555,15 +555,15 @@ All run on local AerSimulator. No IBM credentials needed.
 
 ```
 scpn_quantum_control/
-├── paper0/        470 modules — source-accounting validation register
-├── analysis/       57 modules — synchronisation probes
-├── hardware/       37 modules — IBM runner, backends, GPU, cutting, provenance
+├── paper0/        471 modules — source-accounting validation register
+├── analysis/       58 modules — synchronisation probes
+├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          28 modules — time evolution + variational + Lindblad
 ├── bridge/         13 modules — K_nm → quantum objects + cross-repo
 ├── applications/   13 modules — physical system benchmarks
-├── control/         9 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
-├── mitigation/      9 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
-├── qec/             9 modules — error correction + biological surface code
+├── control/        11 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
+├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
+├── qec/            13 modules — error correction + biological surface code
 ├── benchmarks/      7 modules — performance baselines
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
@@ -573,7 +573,7 @@ scpn_quantum_control/
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 49 exported #[pyfunction] bindings)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 55 exported PyO3 bindings)
 ```
 
 ## Dependencies

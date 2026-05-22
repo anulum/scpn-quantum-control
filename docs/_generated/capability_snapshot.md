@@ -12,7 +12,7 @@
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 42 |
+| Rust PyO3 function bindings | 55 |
 | Rust source modules | 27 |
 | Notebook files | 98 |
 | Example files | 23 |
