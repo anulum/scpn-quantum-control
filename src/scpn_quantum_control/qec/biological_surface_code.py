@@ -99,7 +99,10 @@ class BiologicalSurfaceCode:
     def estimate_logical_qubits(self) -> int:
         """Estimate k from CSS rank relation: k = n - rank(Hx) - rank(Hz)."""
         rank_hx = int(np.linalg.matrix_rank(self.Hx.astype(np.float64)))
-        rank_hz = int(np.linalg.matrix_rank(self.Hz.astype(np.float64)))
+        if self.Hz.size == 0:
+            rank_hz = 0
+        else:
+            rank_hz = int(np.linalg.matrix_rank(self.Hz.astype(np.float64)))
         logical_qubits = self.num_data - rank_hx - rank_hz
         return max(0, int(logical_qubits))
 

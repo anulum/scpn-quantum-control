@@ -2602,7 +2602,8 @@ structlog==25.5.0 \
     # via -r requirements-dev.txt
 symengine==0.14.1 \
     --hash=sha256:2a55b8f78541d57a28beda6971bed0a7ddbd585148bb030221f7ca3a0c8e2517 \
-    --hash=sha256:5091ce86728022d2c7e0e864ab23070494c1f24fb430ab3437d46806e854651e
+    --hash=sha256:5091ce86728022d2c7e0e864ab23070494c1f24fb430ab3437d46806e854651e \
+    --hash=sha256:9789c62a8ade18f368241525e910dae745fdde1f3b8bb782e5ac8bbfad505e92
     # via -r requirements.txt
 sympy==1.14.0 \
     --hash=sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517 \

@@ -10,9 +10,8 @@
 #
 #    pip-compile --allow-unsafe --generate-hashes --output-file=requirements-ci-py310-linux.txt requirements-dev.txt
 #
-amazon-braket-default-simulator==1.39.3 \
-    --hash=sha256:4fc1f3c97b6746d71ac62da1deee8d10d09546285e319ada02713b255591283d \
-    --hash=sha256:8b0ceccc9144a205ca1625ab2790639c4030533fbca607001000a0f0f1140f57
+amazon-braket-default-simulator==1.33.0 \
+    --hash=sha256:7fa115cdc284e12a4894dd7ef452352b9742340c87842aee37ac44d51ca1e200
     # via amazon-braket-sdk
 amazon-braket-schemas==1.29.1 \
     --hash=sha256:f1969f690400e1139e3d3f778f3f5fde03845bb23dd87300fc7be8cdf2e13341 \
