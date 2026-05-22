@@ -12,7 +12,7 @@
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 765 |
+| Python modules | 766 |
 | Rust crate | 1 (PyO3 0.25, **55 bindings**, 27 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
 | Tests | CI-gated suite (97%+ coverage) |
@@ -34,25 +34,25 @@ preparation and `bridge/` for Hamiltonian access.
 graph TD
     bridge["bridge/ (13)\nK_nm → quantum objects"]
     paper0["paper0/ (471)\nSource-accounting validation"]
-    phase["phase/ (28)\nTime evolution"]
+    phase["phase/ (29)\nTime evolution"]
     analysis["analysis/ (58)\nSync probes"]
     control["control/ (11)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
-    identity["identity/ (7)\nIdentity analysis"]
+    identity["identity/ (6)\nIdentity analysis"]
     hardware["hardware/ (63)\nBackends + registry + async + provenance"]
     mitigation["mitigation/ (12)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
-    gauge["gauge/ (6)\nGauge theory"]
-    apps["applications/ (12)\nBenchmarks"]
-    crypto["crypto/ (7)\nQKD"]
-    benchmarks["benchmarks/ (5)\nPerformance"]
-    ssgf["ssgf/ (5)\nGeometry"]
-    psi_field["psi_field/ (5)\nU(1) lattice gauge"]
+    gauge["gauge/ (5)\nGauge theory"]
+    apps["applications/ (13)\nBenchmarks"]
+    crypto["crypto/ (6)\nQKD"]
+    benchmarks["benchmarks/ (7)\nPerformance"]
+    ssgf["ssgf/ (4)\nGeometry"]
+    psi_field["psi_field/ (4)\nU(1) lattice gauge"]
     accel["accel/ (3)\nRust → Julia → Python dispatcher"]
-    fep["fep/ (3)\nFree Energy Principle"]
-    tcbo["tcbo/ (2)\nTCBO observer"]
-    pgbo["pgbo/ (2)\nPGBO bridge"]
-    l16["l16/ (2)\nLayer 16 director"]
+    fep["fep/ (2)\nFree Energy Principle"]
+    tcbo["tcbo/ (1)\nTCBO observer"]
+    pgbo["pgbo/ (1)\nPGBO bridge"]
+    l16["l16/ (1)\nLayer 16 director"]
 
     bridge --> phase
     bridge --> analysis

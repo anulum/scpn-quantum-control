@@ -41,6 +41,7 @@ from .pulse_shaping import (
     infidelity_bound,
 )
 from .qsvt_evolution import QSVTResourceEstimate
+from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
 from .trotter_error import trotter_error_norm, trotter_error_sweep
 from .trotter_upde import QuantumUPDESolver
@@ -50,6 +51,7 @@ from .xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 __all__ = [
     "QuantumKuramotoSolver",
     "TrotterEvolutionConfig",
+    "TrajectoryResult",
     "QuantumUPDESolver",
     "PhaseVQE",
     "trotter_error_norm",

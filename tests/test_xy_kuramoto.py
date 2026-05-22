@@ -15,6 +15,7 @@ import pytest
 import scpn_quantum_control.phase.xy_kuramoto as xy_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
+from scpn_quantum_control.phase import TrajectoryResult
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 
 SIZES = [2, 3, 4]
@@ -102,7 +103,11 @@ def test_trotter_config_sets_default_public_surface():
     assert solver.evolution_config == config
     assert solver.evolve(0.2).num_qubits == 2
     result = solver.run(t_max=0.1, dt=0.1)
+    assert isinstance(result, TrajectoryResult)
     assert len(result["R"]) == 2
+    assert result.R.shape == result.times.shape
+    assert result.metadata["backend"] == "statevector"
+    assert result["R"] is result.R
 
 
 def test_legacy_trotter_order_overrides_config_order_only():

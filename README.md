@@ -44,9 +44,9 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.7 |
-| Public API exports | 276 |
-| Python source modules | 765 |
-| Public Python classes | 1443 |
+| Public API exports | 277 |
+| Python source modules | 766 |
+| Public Python classes | 1444 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -362,13 +362,13 @@ graph TD
     end
 
     subgraph "Core Physics"
-        phase["phase/ (28)\nTrotter, VQE, ADAPT-VQE\nVarQITE, Floquet DTC"]
+        phase["phase/ (29)\nTrotter, VQE, ADAPT-VQE\nVarQITE, Floquet DTC"]
         analysis["analysis/ (58)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
     end
 
     subgraph "Applications"
         control["control/ (11)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
-        qsnn["qsnn/ (6)\nQuantum spiking\nneural networks"]
+        qsnn["qsnn/ (7)\nQuantum spiking\nneural networks"]
         apps["applications/ (13)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
 
@@ -402,15 +402,15 @@ graph TD
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `paper0` | 470 | Source-accounting validation modules and fixtures for processed Paper 0 records |
-| `analysis` | 57 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `hardware` | 37 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
-| `phase` | 28 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
+| `paper0` | 471 | Source-accounting validation modules and fixtures for processed Paper 0 records |
+| `analysis` | 58 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
+| `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
 | `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `control` | 9 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
-| `mitigation` | 9 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
-| `qec` | 9 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
+| `control` | 11 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
+| `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
+| `qec` | 13 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
 | `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
 | `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
@@ -422,7 +422,7 @@ graph TD
 | `dla_parity` | 4 | DLA parity helpers and campaign analysis support |
 | `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
 | `forecasting` | 1 | Held-out synchronisation forecasting over hardware traces and source-backed topology replays |
-| `benchmark_harness` | 1 | Reproducible benchmark harness entry point |
+| `benchmark_harness` | 4 | Reproducible benchmark harness entry points |
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
 | `l16` | 1 | Layer 16 quantum director |
@@ -558,7 +558,7 @@ scpn_quantum_control/
 ├── paper0/        471 modules — source-accounting validation register
 ├── analysis/       58 modules — synchronisation probes
 ├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
-├── phase/          28 modules — time evolution + variational + Lindblad
+├── phase/          29 modules — time evolution + variational + Lindblad
 ├── bridge/         13 modules — K_nm → quantum objects + cross-repo
 ├── applications/   13 modules — physical system benchmarks
 ├── control/        11 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological

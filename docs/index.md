@@ -78,7 +78,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware evidence | Legacy ibm_fez artifact rows + 342-circuit ibm_kingston Phase 1 DLA-parity raw-count dataset |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6, reproduced from `data/phase1_dla_parity/` |
 | Test suite | CI-gated suite, 97%+ coverage |
-| Python modules | 765 Python source modules + 1 Rust crate (55 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 766 Python source modules + 1 Rust crate (55 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -87,25 +87,25 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `paper0` | 471 | Source-accounting validation modules and fixtures for processed Paper 0 records |
 | `analysis` | 58 | Synchronisation probes: witnesses, witness discovery, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
-| `phase` | 28 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants |
+| `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants |
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 14 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, application benchmark plugins |
+| `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, application benchmark plugins |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 13 | Toric code, repetition code UPDE, surface code, biological surface code, DLA-protected memory/scar prototypes, error budget, multi-scale, syndrome flow |
 | `control` | 11 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
-| `identity` | 7 | VQE attractor, coherence budget, entanglement witness, fingerprint |
+| `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
 | `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
-| `crypto` | 7 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
-| `gauge` | 6 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `ssgf` | 5 | SSGF quantum integration |
-| `benchmarks` | 5 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
-| `psi_field` | 5 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
-| `forecasting` | 2 | Held-out synchronisation forecasting over hardware traces and source-backed topology replays |
+| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
+| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
+| `ssgf` | 4 | SSGF quantum integration |
+| `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
+| `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
+| `forecasting` | 1 | Held-out synchronisation forecasting over hardware traces and source-backed topology replays |
 | `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
-| `fep` | 3 | Friston Free Energy Principle: variational free energy, predictive coding |
-| `tcbo` | 2 | TCBO quantum observer |
-| `pgbo` | 2 | PGBO quantum bridge |
-| `l16` | 2 | Layer 16 quantum director |
+| `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
+| `tcbo` | 1 | TCBO quantum observer |
+| `pgbo` | 1 | PGBO quantum bridge |
+| `l16` | 1 | Layer 16 quantum director |
 
 ## Quick example
 

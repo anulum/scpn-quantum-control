@@ -21,10 +21,6 @@ from audit_test_behaviour import audit_test_tree, evaluate_quality_gate
 
 VERSION_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("pyproject.toml", re.compile(r'^version\s*=\s*"([^"]+)"', re.MULTILINE)),
-    (
-        "src/scpn_quantum_control/__init__.py",
-        re.compile(r'^__version__\s*=\s*"([^"]+)"', re.MULTILINE),
-    ),
     ("CITATION.cff", re.compile(r'^version:\s*"([^"]+)"', re.MULTILINE)),
     (".zenodo.json", re.compile(r'"version":\s*"([^"]+)"')),
 )

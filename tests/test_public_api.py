@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 
 
@@ -26,6 +28,17 @@ def test_top_level_version():
         # Fallback for development environments where package is not installed
         assert isinstance(scpn_quantum_control.__version__, str)
         assert len(scpn_quantum_control.__version__.split(".")) >= 3
+
+
+def test_top_level_version_is_not_hardcoded_carrier():
+    """Runtime version is resolved from package metadata, not duplicated by hand."""
+
+    init_source = (
+        Path(__file__).resolve().parents[1] / "src" / "scpn_quantum_control" / "__init__.py"
+    ).read_text(encoding="utf-8")
+
+    assert '__version__ = "0.9.' not in init_source
+    assert 'version("scpn-quantum-control")' in init_source
 
 
 def _check_exports(submod: str) -> int:

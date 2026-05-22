@@ -41,12 +41,13 @@ main = _audit_release_readiness.main
 
 
 def _write_version_carriers(root: Path, version: str = "0.9.7") -> None:
-    (root / "src" / "scpn_quantum_control").mkdir(parents=True)
-    (root / "pyproject.toml").write_text(f'version = "{version}"\n', encoding="utf-8")
-    (root / "src" / "scpn_quantum_control" / "__init__.py").write_text(
-        f'__version__ = "{version}"\n',
+    package_root = root / "src" / "scpn_quantum_control"
+    package_root.mkdir(parents=True)
+    (package_root / "__init__.py").write_text(
+        "from importlib.metadata import version\n__version__ = version('scpn-quantum-control')\n",
         encoding="utf-8",
     )
+    (root / "pyproject.toml").write_text(f'version = "{version}"\n', encoding="utf-8")
     (root / "CITATION.cff").write_text(f'version: "{version}"\n', encoding="utf-8")
     (root / ".zenodo.json").write_text(f'{{"version": "{version}"}}\n', encoding="utf-8")
 
@@ -146,10 +147,7 @@ def test_release_readiness_blocks_missing_coverage_report(tmp_path: Path):
 
 def test_release_readiness_reports_version_and_artifact_blockers(tmp_path: Path):
     _write_version_carriers(tmp_path, version="0.9.7")
-    (tmp_path / "src" / "scpn_quantum_control" / "__init__.py").write_text(
-        '__version__ = "0.9.8"\n',
-        encoding="utf-8",
-    )
+    (tmp_path / "CITATION.cff").write_text('version: "0.9.8"\n', encoding="utf-8")
 
     version_check = check_versions(tmp_path)
     artifact_check = check_required_artifacts(tmp_path)

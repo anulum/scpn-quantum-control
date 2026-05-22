@@ -46,6 +46,7 @@ def test_problem_copies_inputs_and_exports_serialisable_metadata() -> None:
     omega[0] = 99.0
 
     assert problem.n_oscillators == 2
+    assert problem.K is problem.K_nm
     assert problem.K_nm[0, 0] == 0.0
     assert problem.K_nm[0, 1] == 0.25
     assert problem.omega[0] == 0.1
@@ -59,6 +60,7 @@ def test_problem_copies_inputs_and_exports_serialisable_metadata() -> None:
         problem.K_nm[0, 1] = 0.5
     with pytest.raises(TypeError):
         problem.metadata["new"] = "blocked"
+    assert problem.validate() is None
 
 
 def test_problem_rejects_invalid_inputs_and_metadata() -> None:

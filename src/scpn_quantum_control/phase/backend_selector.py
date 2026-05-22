@@ -263,5 +263,5 @@ def auto_solve(
     from ..phase.xy_kuramoto import QuantumKuramotoSolver
 
     qk_solver = QuantumKuramotoSolver(n, K, omega)
-    result = qk_solver.run(t_max=t_max, dt=dt, max_statevector_gib=max_dense_gib)
-    return {"backend_used": "statevector", "result": result, "recommendation": rec}
+    trajectory = qk_solver.run(t_max=t_max, dt=dt, max_statevector_gib=max_dense_gib)
+    return {"backend_used": "statevector", "result": trajectory, "recommendation": rec}

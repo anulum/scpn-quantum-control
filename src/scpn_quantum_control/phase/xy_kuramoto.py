@@ -27,6 +27,7 @@ from qiskit.synthesis import LieTrotter, SuzukiTrotter
 from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
+from .results import TrajectoryResult
 
 
 @dataclass(frozen=True)
@@ -169,7 +170,7 @@ class QuantumKuramotoSolver:
         trotter_per_step: int | None = None,
         *,
         max_statevector_gib: float | None = None,
-    ) -> dict:
+    ) -> TrajectoryResult:
         """Time-stepped evolution returning R(t) and per-qubit expectations.
 
         This local simulator path stores an exact dense statevector. Use
@@ -225,7 +226,15 @@ class QuantumKuramotoSolver:
             sv = sv.evolve(evo_qc)
             R_history[step], _ = self.measure_order_parameter(sv)
 
-        return {"times": times, "R": R_history}
+        return TrajectoryResult(
+            times=times,
+            R=R_history,
+            metadata={
+                "backend": "statevector",
+                "trotter_per_step": trotter_per_step,
+                "trotter_order": self.trotter_order,
+            },
+        )
 
     def energy_expectation(self, sv: Statevector) -> float:
         """Compute <H> for a given statevector."""

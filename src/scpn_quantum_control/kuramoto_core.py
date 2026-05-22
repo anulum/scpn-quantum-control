@@ -57,6 +57,17 @@ class KuramotoProblem:
         """Number of oscillators/qubits represented by the problem."""
         return int(self.omega.shape[0])
 
+    @property
+    def K(self) -> np.ndarray:
+        """Alias for the validated coupling matrix."""
+
+        return self.K_nm
+
+    def validate(self) -> None:
+        """Re-run the public validation contract for this problem."""
+
+        validate_kuramoto_inputs(self.K_nm, self.omega)
+
     def to_metadata(self) -> dict[str, Any]:
         """Return serialisable metadata for result artifacts."""
         return {

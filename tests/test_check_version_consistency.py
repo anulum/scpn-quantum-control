@@ -36,13 +36,10 @@ _check_version_consistency = _load_script_module(
 def _write_version_files(tmp_path: Path, versions: dict[str, str]) -> dict[str, Path]:
     files = {
         "pyproject": tmp_path / "pyproject.toml",
-        "init": tmp_path / "src" / "scpn_quantum_control" / "__init__.py",
         "citation": tmp_path / "CITATION.cff",
         "zenodo": tmp_path / ".zenodo.json",
     }
-    files["init"].parent.mkdir(parents=True)
     files["pyproject"].write_text(f'version = "{versions["pyproject"]}"\n', encoding="utf-8")
-    files["init"].write_text(f'__version__ = "{versions["init"]}"\n', encoding="utf-8")
     files["citation"].write_text(f'version: "{versions["citation"]}"\n', encoding="utf-8")
     files["zenodo"].write_text(f'{{"version": "{versions["zenodo"]}"}}\n', encoding="utf-8")
     return files
@@ -55,7 +52,6 @@ def _patch_contract_paths(monkeypatch, tmp_path: Path, files: dict[str, Path]) -
         "PATTERNS",
         {
             files["pyproject"]: re.compile(r'^version\s*=\s*"([^"]+)"', re.MULTILINE),
-            files["init"]: re.compile(r'^__version__\s*=\s*"([^"]+)"', re.MULTILINE),
             files["citation"]: re.compile(r'^version:\s*"([^"]+)"', re.MULTILINE),
             files["zenodo"]: re.compile(r'"version":\s*"([^"]+)"'),
         },
@@ -67,7 +63,6 @@ def test_version_consistency_returns_zero_when_all_carriers_match(tmp_path: Path
         tmp_path,
         {
             "pyproject": "0.9.6",
-            "init": "0.9.6",
             "citation": "0.9.6",
             "zenodo": "0.9.6",
         },
@@ -82,8 +77,7 @@ def test_version_consistency_reports_mismatched_carrier(tmp_path: Path, monkeypa
         tmp_path,
         {
             "pyproject": "0.9.6",
-            "init": "0.9.7",
-            "citation": "0.9.6",
+            "citation": "0.9.7",
             "zenodo": "0.9.6",
         },
     )
@@ -92,7 +86,7 @@ def test_version_consistency_reports_mismatched_carrier(tmp_path: Path, monkeypa
     assert _check_version_consistency.main() == 1
     output = capsys.readouterr().out.replace("\\", "/")
     assert "Version mismatch (canonical: 0.9.6)" in output
-    assert "src/scpn_quantum_control/__init__.py: 0.9.7 (expected 0.9.6)" in output
+    assert "CITATION.cff: 0.9.7 (expected 0.9.6)" in output
 
 
 def test_version_consistency_reports_missing_and_unmatched_files(
@@ -102,7 +96,6 @@ def test_version_consistency_reports_missing_and_unmatched_files(
         tmp_path,
         {
             "pyproject": "0.9.6",
-            "init": "0.9.6",
             "citation": "0.9.6",
             "zenodo": "0.9.6",
         },

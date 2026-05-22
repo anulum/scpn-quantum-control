@@ -8,10 +8,10 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 276,
+    "public_api_exports": 277,
     "public_documentation_pages": 235,
-    "python_model_classes": 1443,
-    "python_model_source_modules": 765,
+    "python_model_classes": 1444,
+    "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
     "test_files": 1870
@@ -508,7 +508,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 28
+        "python_modules": 29
       },
       {
         "package": "psi_field",
@@ -6544,6 +6544,10 @@
         "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
       {
+        "name": "TrajectoryResult",
+        "path": "src/scpn_quantum_control/phase/results.py"
+      },
+      {
         "name": "TransferResult",
         "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
       },
@@ -7505,6 +7509,7 @@
       "src/scpn_quantum_control/phase/phase_vqe.py",
       "src/scpn_quantum_control/phase/pulse_shaping.py",
       "src/scpn_quantum_control/phase/qsvt_evolution.py",
+      "src/scpn_quantum_control/phase/results.py",
       "src/scpn_quantum_control/phase/structured_ansatz.py",
       "src/scpn_quantum_control/phase/tensor_jump.py",
       "src/scpn_quantum_control/phase/trotter_error.py",
@@ -7763,6 +7768,7 @@
     "TopologicalCouplingOptimizer",
     "TraceSTDPConfig",
     "TraceSTDPState",
+    "TrajectoryResult",
     "TrotterEvolutionConfig",
     "UPDEPhaseArtifact",
     "VQLS_GradShafranov",

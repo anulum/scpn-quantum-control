@@ -7,6 +7,8 @@
 # SCPN Quantum Control — NISQ Quantum Simulation of Coupled Oscillator Networks
 """NISQ quantum simulation of coupled Kuramoto oscillator networks via XY Hamiltonian mapping."""
 
+from importlib.metadata import PackageNotFoundError, version
+
 # Subpackage-level access for new modules
 from . import analysis, applications, fep, forecasting, gauge, l16, pgbo, psi_field, ssgf, tcbo
 from .applications.eeg_classification import eeg_plv_to_vqe, eeg_quantum_kernel
@@ -230,6 +232,7 @@ from .phase.kuramoto_variants import (
 )
 from .phase.lindblad_engine import LindbladSyncEngine
 from .phase.phase_vqe import PhaseVQE
+from .phase.results import TrajectoryResult
 from .phase.structured_ansatz import build_structured_ansatz
 from .phase.trotter_upde import QuantumUPDESolver
 from .phase.xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
@@ -300,7 +303,10 @@ from .stable_core_preflight import (
     stable_core_preflight_fixtures_payload,
 )
 
-__version__ = "0.9.7"
+try:
+    __version__ = version("scpn-quantum-control")
+except PackageNotFoundError:
+    __version__ = "0.0.0+local"
 
 __all__ = [
     "eeg_plv_to_vqe",
@@ -385,6 +391,7 @@ __all__ = [
     "ssgf_state_to_quantum",
     "quantum_to_ssgf_state",
     "QuantumKuramotoSolver",
+    "TrajectoryResult",
     "TrotterEvolutionConfig",
     "QuantumUPDESolver",
     "PhaseVQE",

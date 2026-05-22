@@ -8,7 +8,8 @@
 """Pre-commit hook: verify version strings match across all carrier files.
 
 Canonical source: pyproject.toml `version = "X.Y.Z"`
-Must match: __init__.py, CITATION.cff, .zenodo.json, README.md badge.
+Must match: CITATION.cff and .zenodo.json. Runtime __version__ is resolved from
+installed package metadata and is intentionally not a static carrier.
 """
 
 from __future__ import annotations
@@ -20,14 +21,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 PYPROJECT = ROOT / "pyproject.toml"
-INIT = ROOT / "src" / "scpn_quantum_control" / "__init__.py"
 CITATION = ROOT / "CITATION.cff"
 ZENODO = ROOT / ".zenodo.json"
 README = ROOT / "README.md"
 
 PATTERNS: dict[Path, re.Pattern[str]] = {
     PYPROJECT: re.compile(r'^version\s*=\s*"([^"]+)"', re.MULTILINE),
-    INIT: re.compile(r'^__version__\s*=\s*"([^"]+)"', re.MULTILINE),
     CITATION: re.compile(r'^version:\s*"([^"]+)"', re.MULTILINE),
     ZENODO: re.compile(r'"version":\s*"([^"]+)"'),
     # README uses dynamic PyPI badge — no static version to check
