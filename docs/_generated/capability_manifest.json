@@ -6,15 +6,15 @@
     "github_workflows": 18,
     "model_documentation_pages": 0,
     "notebook_files": 98,
-    "optional_extras": 39,
+    "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 264,
-    "public_documentation_pages": 223,
-    "python_model_classes": 1427,
-    "python_model_source_modules": 758,
-    "rust_pyo3_model_wrappers": 48,
-    "rust_source_modules": 24,
-    "test_files": 1860
+    "public_api_exports": 276,
+    "public_documentation_pages": 235,
+    "python_model_classes": 1443,
+    "python_model_source_modules": 765,
+    "rust_pyo3_model_wrappers": 42,
+    "rust_source_modules": 27,
+    "test_files": 1870
   },
   "documentation": {
     "examples": [
@@ -219,6 +219,17 @@
       "docs/campaigns/quantum_kuramoto_boundary_review_2026-05-07.md",
       "docs/campaigns/readout_full_basis_calibration_prereg_2026-05-06.md",
       "docs/campaigns/readout_full_basis_manifest_2026-05-06.md",
+      "docs/campaigns/realtime_control_e2e_benchmark_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_consolidated_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_dedicated_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_budgetextra1_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_budgetextra2_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_budgetfinal_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_ibm_fez_budgetextra3_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_ibm_fez_budgetextra4_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_ibm_kingston_budgetextra3_2026-05-22.md",
+      "docs/campaigns/realtime_control_latency_rust_vs_python_ibm_kingston_budgetextra4_2026-05-22.md",
       "docs/campaigns/s1_feedback_ibm_paper_plan_2026-05-20.md",
       "docs/campaigns/s1_feedback_readiness_index_2026-05-06.md",
       "docs/campaigns/s1_ibm_feedback_pair_result_2026-05-20.md",
@@ -350,6 +361,7 @@
       "docs/stable_core_contract_fixtures.md",
       "docs/stable_core_preflight_fixtures.md",
       "docs/stable_facades_api.md",
+      "docs/status_normalisation_policy.md",
       "docs/strategic_roadmap.md",
       "docs/symmetry.md",
       "docs/symmetry_decay_guess.md",
@@ -466,7 +478,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 59
+        "python_modules": 63
       },
       {
         "package": "identity",
@@ -506,7 +518,7 @@
       {
         "package": "qec",
         "path": "src/scpn_quantum_control/qec",
-        "python_modules": 10
+        "python_modules": 13
       },
       {
         "package": "qsnn",
@@ -1492,6 +1504,14 @@
         "path": "src/scpn_quantum_control/qec/biological_surface_code.py"
       },
       {
+        "name": "BiologicalQecBatchExecution",
+        "path": "src/scpn_quantum_control/qec/biological_pipeline.py"
+      },
+      {
+        "name": "BiologicalQecExecution",
+        "path": "src/scpn_quantum_control/qec/biological_pipeline.py"
+      },
+      {
         "name": "BiologicalQecL14Config",
         "path": "src/scpn_quantum_control/paper0/biological_qec_l1_4_validation.py"
       },
@@ -1502,6 +1522,10 @@
       {
         "name": "BiologicalSurfaceCode",
         "path": "src/scpn_quantum_control/qec/biological_surface_code.py"
+      },
+      {
+        "name": "BiologicalSurfaceDiagnostics",
+        "path": "src/scpn_quantum_control/qec/biological_diagnostics.py"
       },
       {
         "name": "BiophysicsQuantumBiologyConfig",
@@ -2281,6 +2305,10 @@
       },
       {
         "name": "FeedbackLoopConfig",
+        "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
+      },
+      {
+        "name": "FeedbackLoopLatencySLA",
         "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
       },
       {
@@ -3832,6 +3860,26 @@
         "path": "src/scpn_quantum_control/paper0/one_spine_many_couplings_upde_scope_constraint_validation.py"
       },
       {
+        "name": "OpenPulseCalibrationWorkflow",
+        "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
+      },
+      {
+        "name": "OpenPulseControlReadiness",
+        "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py"
+      },
+      {
+        "name": "OpenPulseInstruction",
+        "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
+      },
+      {
+        "name": "OpenPulseSchedule",
+        "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
+      },
+      {
+        "name": "OpenPulseWaveform",
+        "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
+      },
+      {
         "name": "OpeningFoundationConfig",
         "path": "src/scpn_quantum_control/paper0/opening_foundation_validation.py"
       },
@@ -4652,7 +4700,15 @@
         "path": "src/scpn_quantum_control/analysis/quantum_persistent_homology.py"
       },
       {
+        "name": "QuantumPetriCampaignReport",
+        "path": "src/scpn_quantum_control/control/qpetri.py"
+      },
+      {
         "name": "QuantumPetriNet",
+        "path": "src/scpn_quantum_control/control/qpetri.py"
+      },
+      {
+        "name": "QuantumPetriStepReport",
         "path": "src/scpn_quantum_control/control/qpetri.py"
       },
       {
@@ -4724,6 +4780,14 @@
         "path": "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py"
       },
       {
+        "name": "RabiCalibrationPoint",
+        "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
+      },
+      {
+        "name": "RabiPiCalibrationEstimate",
+        "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
+      },
+      {
         "name": "ReadoutConfusionMatrix",
         "path": "src/scpn_quantum_control/mitigation/readout_matrix.py"
       },
@@ -4740,11 +4804,23 @@
         "path": "src/scpn_quantum_control/control/realtime_feedback.py"
       },
       {
+        "name": "RealtimeLatencyScenario",
+        "path": "src/scpn_quantum_control/hardware/realtime_latency_scenarios.py"
+      },
+      {
         "name": "RealtimeRunResult",
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
         "name": "RealtimeRuntimeConfig",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
+        "name": "RealtimeSLAConfig",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
+        "name": "RealtimeSLAReport",
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
@@ -6850,6 +6926,7 @@
       "src/scpn_quantum_control/gauge/universality.py",
       "src/scpn_quantum_control/gauge/vortex_detector.py",
       "src/scpn_quantum_control/gauge/wilson_loop.py",
+      "src/scpn_quantum_control/hardware/_count_integrity.py",
       "src/scpn_quantum_control/hardware/_experiment_helpers.py",
       "src/scpn_quantum_control/hardware/aggregators.py",
       "src/scpn_quantum_control/hardware/analog_kuramoto.py",
@@ -6892,10 +6969,12 @@
       "src/scpn_quantum_control/hardware/hal_rigetti.py",
       "src/scpn_quantum_control/hardware/hal_strangeworks.py",
       "src/scpn_quantum_control/hardware/hybrid_digital_analog.py",
+      "src/scpn_quantum_control/hardware/ibm_latency_probe.py",
       "src/scpn_quantum_control/hardware/iqm_backend.py",
       "src/scpn_quantum_control/hardware/jax_accel.py",
       "src/scpn_quantum_control/hardware/job_dossier.py",
       "src/scpn_quantum_control/hardware/noise_model.py",
+      "src/scpn_quantum_control/hardware/openpulse_control.py",
       "src/scpn_quantum_control/hardware/pennylane_adapter.py",
       "src/scpn_quantum_control/hardware/plugin_registry.py",
       "src/scpn_quantum_control/hardware/provenance.py",
@@ -6906,6 +6985,7 @@
       "src/scpn_quantum_control/hardware/qcvv.py",
       "src/scpn_quantum_control/hardware/qiskit_compat.py",
       "src/scpn_quantum_control/hardware/qubit_mapper.py",
+      "src/scpn_quantum_control/hardware/realtime_latency_scenarios.py",
       "src/scpn_quantum_control/hardware/runner.py",
       "src/scpn_quantum_control/hardware/s1_feedback_ibm.py",
       "src/scpn_quantum_control/hardware/trapped_ion.py",
@@ -7436,6 +7516,9 @@
       "src/scpn_quantum_control/psi_field/lattice.py",
       "src/scpn_quantum_control/psi_field/observables.py",
       "src/scpn_quantum_control/psi_field/scpn_mapping.py",
+      "src/scpn_quantum_control/qec/biological_cli.py",
+      "src/scpn_quantum_control/qec/biological_diagnostics.py",
+      "src/scpn_quantum_control/qec/biological_pipeline.py",
       "src/scpn_quantum_control/qec/biological_surface_code.py",
       "src/scpn_quantum_control/qec/control_qec.py",
       "src/scpn_quantum_control/qec/dla_protected_scar.py",
@@ -7477,9 +7560,6 @@
       "analog_coupling_terms",
       "brute_mpc",
       "build_knm",
-      "build_sparse_xy_hamiltonian",
-      "build_xy_hamiltonian_dense",
-      "concatenated_logical_rate_rust",
       "correlation_matrix_xy",
       "dla_dimension",
       "dla_protected_memory_mask",
@@ -7489,26 +7569,18 @@
       "feedback_policy_batch",
       "fit_symmetry_decay",
       "free_energy_gradient_rust",
-      "gauge_covariant_kinetic_rust",
       "gauge_force_batch",
-      "guess_extrapolate_batch",
-      "hierarchical_prediction_error_rust",
-      "higher_order_kuramoto_trajectory",
       "hybrid_coupling_partition",
-      "hypergeometric_envelope_batch",
       "ici_mixing_angle_batch",
-      "ici_three_level_evolution_batch",
       "knm_domain_coupling",
       "koopman_generator",
       "kuramoto_euler",
       "kuramoto_trajectory",
-      "kuramoto_witness_candidate_features",
       "lanczos_b_coefficients",
       "lindblad_anti_hermitian_diag",
       "lindblad_jump_ops_coo",
       "magnetisation_labels",
       "mc_xy_simulate",
-      "monitored_kuramoto_trajectory",
       "order_param_from_statevector",
       "order_parameter",
       "otoc_from_eigendecomp",
@@ -7516,7 +7588,12 @@
       "pec_coefficients",
       "pec_sample_parallel",
       "plaquette_action_batch",
-      "pt_symmetric_kuramoto_trajectory",
+      "qpetri_campaign_aggregate",
+      "qpetri_sample_marking",
+      "qpetri_state_metrics",
+      "qpetri_transition_activity",
+      "rabi_pi_amplitude_fit",
+      "run_realtime_feedback_loop",
       "score_regions_batch",
       "state_order_param_sparse",
       "topological_charge_rust",
@@ -7524,6 +7601,8 @@
     ],
     "rust_source_modules": [
       "scpn_quantum_engine/src/analog.rs",
+      "scpn_quantum_engine/src/bin/ibm_runtime_latency_runner.rs",
+      "scpn_quantum_engine/src/biological_qec.rs",
       "scpn_quantum_engine/src/community.rs",
       "scpn_quantum_engine/src/complex_utils.rs",
       "scpn_quantum_engine/src/concat_qec.rs",
@@ -7544,6 +7623,7 @@
       "scpn_quantum_engine/src/pauli.rs",
       "scpn_quantum_engine/src/pec.rs",
       "scpn_quantum_engine/src/pulse_shaping.rs",
+      "scpn_quantum_engine/src/qpetri.rs",
       "scpn_quantum_engine/src/sectors.rs",
       "scpn_quantum_engine/src/symmetry_decay.rs",
       "scpn_quantum_engine/src/validation.rs"
@@ -7560,7 +7640,10 @@
     "BackendCapabilities",
     "BackendProfile",
     "BiologicalMWPMDecoder",
+    "BiologicalQecBatchExecution",
+    "BiologicalQecExecution",
     "BiologicalSurfaceCode",
+    "BiologicalSurfaceDiagnostics",
     "BraketAwsHALAdapter",
     "BraketLocalHALAdapter",
     "CLAIM_BOUNDARY",
@@ -7639,7 +7722,9 @@
     "QuantumLIFConfig",
     "QuantumLIFNeuron",
     "QuantumNeuromorphicBridge",
+    "QuantumPetriCampaignReport",
     "QuantumPetriNet",
+    "QuantumPetriStepReport",
     "QuantumSTDP",
     "QuantumSynapse",
     "QuantumUPDESolver",
@@ -7647,6 +7732,8 @@
     "QubitMappingResult",
     "RealtimeRunResult",
     "RealtimeRuntimeConfig",
+    "RealtimeSLAConfig",
+    "RealtimeSLAReport",
     "RealtimeTickRecord",
     "ResolvedAggregatorProviderRoute",
     "Result",
@@ -7670,6 +7757,7 @@
     "ZNEResult",
     "aggregator_provider_optional_dependency_matrix",
     "aggregator_provider_routes_for",
+    "analyse_biological_surface_code",
     "analysis",
     "applications",
     "assess_provider_capability_snapshot",
@@ -7711,7 +7799,9 @@
     "dynq_initial_layout",
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
+    "enforce_realtime_sla",
     "estimate_crossover",
+    "evaluate_realtime_sla",
     "fast_sparse_evolution",
     "fep",
     "fidelity_at_depth",
@@ -7768,6 +7858,8 @@
     "qutip_lindblad_baseline",
     "resolve_aggregator_provider_route",
     "rigetti_quil_workload",
+    "run_biological_qec_batch_execution",
+    "run_biological_qec_execution",
     "run_documented_classical_baselines",
     "run_real_data_sync_forecast_benchmark",
     "run_real_data_sync_forecast_suite",
@@ -7825,6 +7917,7 @@
       "app-plasma",
       "app-power-grid",
       "azure",
+      "biology",
       "braket",
       "cirq",
       "config",
@@ -7932,6 +8025,9 @@
       "tests/test_benchmark_harness_registry.py",
       "tests/test_berry_phase.py",
       "tests/test_binding_spec.py",
+      "tests/test_biological_cli.py",
+      "tests/test_biological_diagnostics.py",
+      "tests/test_biological_pipeline.py",
       "tests/test_biological_surface_code.py",
       "tests/test_bkt_analysis.py",
       "tests/test_bkt_universals.py",
@@ -8545,6 +8641,7 @@
       "tests/test_hardware_hal_azure_adapters.py",
       "tests/test_hardware_hal_braket_adapters.py",
       "tests/test_hardware_hal_cirq_adapters.py",
+      "tests/test_hardware_hal_count_integrity_contract.py",
       "tests/test_hardware_hal_dwave_adapters.py",
       "tests/test_hardware_hal_ionq_adapters.py",
       "tests/test_hardware_hal_iqm_adapters.py",
@@ -8552,12 +8649,14 @@
       "tests/test_hardware_hal_pasqal_adapters.py",
       "tests/test_hardware_hal_pennylane_adapters.py",
       "tests/test_hardware_hal_provider_conformance.py",
+      "tests/test_hardware_hal_provider_id_contract.py",
       "tests/test_hardware_hal_qbraid_adapters.py",
       "tests/test_hardware_hal_qiskit_adapters.py",
       "tests/test_hardware_hal_quandela_adapters.py",
       "tests/test_hardware_hal_quantinuum_adapters.py",
       "tests/test_hardware_hal_quera_bloqade_adapters.py",
       "tests/test_hardware_hal_rigetti_adapters.py",
+      "tests/test_hardware_hal_status_normalisation_contract.py",
       "tests/test_hardware_hal_strangeworks_adapters.py",
       "tests/test_hardware_optional_imports.py",
       "tests/test_hardware_result_pack_evidence.py",
@@ -8566,6 +8665,7 @@
       "tests/test_hardware_topological_optimizer.py",
       "tests/test_hybrid_digital_analog.py",
       "tests/test_hypothesis_properties.py",
+      "tests/test_ibm_latency_probe.py",
       "tests/test_ibm_public_artifact_anonymizer.py",
       "tests/test_ibm_public_artifact_audit.py",
       "tests/test_ibm_retrieval_scripts.py",
@@ -8620,6 +8720,7 @@
       "tests/test_notebook_workflows.py",
       "tests/test_nqs_ansatz.py",
       "tests/test_observables.py",
+      "tests/test_openpulse_control.py",
       "tests/test_orchestrator_adapter.py",
       "tests/test_orchestrator_adapter_errors.py",
       "tests/test_orchestrator_adapter_helpers.py",
@@ -9164,6 +9265,7 @@
       "tests/test_qlayer.py",
       "tests/test_qlif.py",
       "tests/test_qpetri.py",
+      "tests/test_qpetri_superposition.py",
       "tests/test_qpu_compute.py",
       "tests/test_qpu_data_artifact.py",
       "tests/test_qrc_phase_detector.py",
@@ -9196,6 +9298,7 @@
       "tests/test_real_data_sync_forecasting.py",
       "tests/test_real_eeg_plv_validation_dataset.py",
       "tests/test_realtime_feedback.py",
+      "tests/test_realtime_latency_scenarios.py",
       "tests/test_reconcile_paper0_validation_coverage.py",
       "tests/test_regression_baselines.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
