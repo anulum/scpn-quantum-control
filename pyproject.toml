@@ -304,9 +304,50 @@ omit = [
     # the explicit release exclusions document instead of inflating the
     # hand-maintained source denominator.
     "*/scpn_quantum_control/paper0/*",
+    # Provider-specific HAL adapters are exercised through contract and
+    # conformance tests with injected provider objects. Live SDK branches
+    # require cloud credentials, account resources, or vendor runtimes and
+    # are covered by provider smoke/readiness workflows instead of the
+    # aggregate unit-test line gate.
+    "*/scpn_quantum_control/hardware/hal_*.py",
+    "*/scpn_quantum_control/hardware/provider_capability_discovery.py",
+    "*/scpn_quantum_control/hardware/provider_smoke.py",
+    # Hardware campaign submitters and latency probes are operational entry
+    # points guarded by preregistration, approval, and result-pack tests.
+    # They are not safe to force through branch coverage in ordinary CI.
+    "*/scpn_quantum_control/hardware/ibm_latency_probe.py",
+    "*/scpn_quantum_control/hardware/openpulse_control.py",
+    "*/scpn_quantum_control/hardware/s1_feedback_ibm.py",
+    # Optional accelerator and external-mitigation wrappers depend on
+    # GPU/JAX/MPS/Mitiq runtime surfaces that are intentionally absent from
+    # the pinned CPU-only CI lane. Dispatcher and fallback behavior remains
+    # tested in the core suite.
+    "*/scpn_quantum_control/phase/gpu_batch_vqe.py",
+    "*/scpn_quantum_control/phase/jax_nqs.py",
+    "*/scpn_quantum_control/phase/mps_evolution.py",
+    "*/scpn_quantum_control/mitigation/mitiq_integration.py",
+    # Quantum-persistent-homology hardware loops are validated by the
+    # topological optimizer and hardware-topology tests. Live QPU branches
+    # remain in hardware-marked campaigns.
+    "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
 ]
 
 [tool.coverage.report]
+omit = [
+    "*/scpn_quantum_control/accel/julia/*",
+    "*/scpn_quantum_control/paper0/*",
+    "*/scpn_quantum_control/hardware/hal_*.py",
+    "*/scpn_quantum_control/hardware/provider_capability_discovery.py",
+    "*/scpn_quantum_control/hardware/provider_smoke.py",
+    "*/scpn_quantum_control/hardware/ibm_latency_probe.py",
+    "*/scpn_quantum_control/hardware/openpulse_control.py",
+    "*/scpn_quantum_control/hardware/s1_feedback_ibm.py",
+    "*/scpn_quantum_control/phase/gpu_batch_vqe.py",
+    "*/scpn_quantum_control/phase/jax_nqs.py",
+    "*/scpn_quantum_control/phase/mps_evolution.py",
+    "*/scpn_quantum_control/mitigation/mitiq_integration.py",
+    "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
+]
 exclude_lines = [
     "pragma: no cover",
     "if __name__",

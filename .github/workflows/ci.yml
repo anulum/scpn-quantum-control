@@ -89,15 +89,14 @@ jobs:
           files: coverage.xml
           fail_ci_if_error: false
 
-  # Non-blocking cross-platform probe. Runs Python 3.12 on
-  # windows-latest and macos-latest so drift between platforms is
-  # visible. Failures here do NOT gate main — they are tracked
-  # externally (audit item A3) until a release cycle proves the
-  # surface is stable, at which point these move into `test`.
+  # Cross-platform package smoke. The full scientific artefact and
+  # documentation corpus is validated on Linux with the pinned Linux
+  # lock above; this job verifies that the install/import/core-QEC
+  # surface also works on macOS and Windows without pretending a
+  # Linux wheel-hash lock is portable across operating systems.
   test-extra-platforms:
     needs: lint
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -112,9 +111,7 @@ jobs:
             scripts
             tools
             pyproject.toml
-            requirements-ci-py312-linux.txt
             requirements.txt
-            requirements-dev.txt
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
         with:
           python-version: "3.12"
@@ -128,9 +125,19 @@ jobs:
             echo "PYTHONPATH=$GITHUB_WORKSPACE/src:$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
           fi
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
-      - name: Run tests (non-slow, non-hardware)
-        run: pytest tests/ -v --tb=short -m "not slow and not hardware and not internal_corpus and not performance"
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest
+      - name: Run cross-platform smoke tests
+        run: >
+          pytest
+          tests/test_biological_surface_code.py
+          tests/test_biological_pipeline.py
+          tests/test_biological_cli.py
+          tests/test_qec_properties.py
+          tests/test_backend_selector.py
+          -v --tb=short
 
   type-check:
     needs: lint
@@ -259,7 +266,7 @@ jobs:
         run: pytest tests/test_arcane_neuron_e2e.py tests/test_cross_repo_wiring.py -v --tb=short
 
   ci-gate:
-    needs: [lint, test, type-check, wheel-check, install-smoke, security, rust-audit]
+    needs: [lint, test, test-extra-platforms, type-check, wheel-check, install-smoke, security, rust-audit]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -267,6 +274,7 @@ jobs:
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
+             [[ "${{ needs.test-extra-platforms.result }}" != "success" ]] || \
              [[ "${{ needs.type-check.result }}" != "success" ]] || \
              [[ "${{ needs.wheel-check.result }}" != "success" ]] || \
              [[ "${{ needs.install-smoke.result }}" != "success" ]] || \
