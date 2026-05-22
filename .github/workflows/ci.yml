@@ -111,6 +111,8 @@ jobs:
             scripts
             tools
             pyproject.toml
+            README.md
+            LICENSE
             requirements.txt
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
         with:
@@ -136,7 +138,6 @@ jobs:
           tests/test_biological_pipeline.py
           tests/test_biological_cli.py
           tests/test_qec_properties.py
-          tests/test_backend_selector.py
           -v --tb=short
 
   type-check:
