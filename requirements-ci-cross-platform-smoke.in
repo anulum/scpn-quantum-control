@@ -6,5 +6,6 @@
 # scpn-quantum-control -- Cross-platform CI smoke dependency input
 numpy==2.2.6
 networkx==3.4.2
+qiskit==2.4.0
 pytest==9.0.3
 hypothesis==6.152.4
