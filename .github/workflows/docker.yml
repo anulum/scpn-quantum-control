@@ -15,6 +15,7 @@ on:
     branches: [main]
     paths:
       - ".dockerignore"
+      - ".pre-commit-config.yaml"
       - ".github/workflows/docker.yml"
       - "Dockerfile"
       - "pyproject.toml"

@@ -14,7 +14,7 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 RUN useradd --create-home sqc
 WORKDIR /app
 
-COPY pyproject.toml requirements.txt requirements-dev.txt requirements-ci-py312-linux.txt README.md LICENSE ./
+COPY .pre-commit-config.yaml pyproject.toml requirements.txt requirements-dev.txt requirements-ci-py312-linux.txt README.md LICENSE ./
 COPY src/ src/
 
 ENV PYTHONPATH=/app/src:/app
