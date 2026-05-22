@@ -1,0 +1,39 @@
+{
+  "schema": "scpn_ibm_runtime_rust_latency_run_v1",
+  "backend": "ibm_kingston",
+  "runner": "scpn_quantum_engine::ibm_runtime_latency_runner",
+  "rows": [
+    {
+      "lane": "s1_feedback_dynamic",
+      "scenario": "shots=2048|repetitions=1",
+      "job_id": "d87pv0gp0eas73dmhdtg",
+      "submit_overhead_seconds": 0.473304383,
+      "submit_to_done_seconds": 7.6598653169999995,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "s1_control_open_loop",
+      "scenario": "shots=2048|repetitions=1",
+      "job_id": "d87pv2lg7okc73emlmf0",
+      "submit_overhead_seconds": 0.619156396,
+      "submit_to_done_seconds": 7.60484821,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=20|trial=0",
+      "job_id": "d87pv49789is73918lng",
+      "submit_overhead_seconds": 0.277781615,
+      "submit_to_done_seconds": 7.099030874,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=0",
+      "job_id": "d87pv60p0eas73dmhe50",
+      "submit_overhead_seconds": 0.277727243,
+      "submit_to_done_seconds": 6.989505362,
+      "final_status": "Completed"
+    }
+  ]
+}

@@ -38,6 +38,11 @@ def _parse_args() -> argparse.Namespace:
         "--ibm-pattern",
         default=str(DATA_DIR / "ibm_runtime_latency_campaign_ibm_kingston_*.json"),
     )
+    parser.add_argument(
+        "--rust-ibm-run",
+        type=Path,
+        default=DATA_DIR / f"ibm_runtime_rust_latency_run_{DATE}.json",
+    )
     parser.add_argument("--out-dir", type=Path, default=DATA_DIR)
     parser.add_argument(
         "--doc-path",
@@ -117,6 +122,16 @@ def _collect_ibm_rows(paths: list[Path]) -> dict[str, Any]:
     }
 
 
+def _collect_rust_ibm_rows(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {"path": None, "submit_to_done_seconds": [], "job_ids": []}
+    payload = _load_json(path)
+    rows = payload.get("rows", [])
+    durations = [float(row["submit_to_done_seconds"]) for row in rows]
+    job_ids = sorted({str(row["job_id"]) for row in rows if row.get("job_id")})
+    return {"path": str(path), "submit_to_done_seconds": durations, "job_ids": job_ids}
+
+
 def _render_markdown(summary: dict[str, Any]) -> str:
     lines = [
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
@@ -147,6 +162,10 @@ def _render_markdown(summary: dict[str, Any]) -> str:
         f"- Control open-loop mean: `{summary['ibm']['s1_control_seconds']['mean']:.3f}` s, std: `{summary['ibm']['s1_control_seconds']['std']:.3f}`, n={int(summary['ibm']['s1_control_seconds']['count'])}",
         f"- Capacity sweep mean: `{summary['ibm']['capacity_seconds']['mean']:.3f}` s, std: `{summary['ibm']['capacity_seconds']['std']:.3f}`, n={int(summary['ibm']['capacity_seconds']['count'])}",
         "",
+        "## IBM Runtime Rust Orchestrator (s submit-to-done)",
+        "",
+        f"- Rust submit-to-done mean: `{summary['ibm_rust']['submit_to_done_seconds']['mean']:.3f}` s, std: `{summary['ibm_rust']['submit_to_done_seconds']['std']:.3f}`, n={int(summary['ibm_rust']['submit_to_done_seconds']['count'])}",
+        "",
         "## Sources",
         "",
         f"- Local summary: `{summary['source_files']['local_summary']}`",
@@ -154,8 +173,13 @@ def _render_markdown(summary: dict[str, Any]) -> str:
     ]
     for path in summary["source_files"]["ibm_campaigns"]:
         lines.append(f"  - `{path}`")
+    if summary["source_files"].get("ibm_rust_run"):
+        lines.append(f"- IBM Rust run: `{summary['source_files']['ibm_rust_run']}`")
     lines.extend(["", "## Job IDs"])
     for job_id in summary["ibm_job_ids"]:
+        lines.append(f"- `{job_id}`")
+    lines.extend(["", "## Rust Job IDs"])
+    for job_id in summary["ibm_rust_job_ids"]:
         lines.append(f"- `{job_id}`")
     lines.append("")
     return "\n".join(lines)
@@ -167,14 +191,18 @@ def main() -> int:
     ibm_paths = [Path(path) for path in sorted(glob.glob(args.ibm_pattern))]
     local = _collect_local_rows(local_summary)
     ibm = _collect_ibm_rows(ibm_paths)
+    rust_ibm = _collect_rust_ibm_rows(args.rust_ibm_run)
     if not ibm["s1_feedback_seconds"] or not ibm["s1_control_seconds"]:
         raise RuntimeError("no submitted IBM latency campaigns found for consolidation")
+    if not rust_ibm["submit_to_done_seconds"]:
+        raise RuntimeError("no Rust IBM latency run found for consolidation")
     consolidated = {
         "schema": "scpn_realtime_control_latency_consolidation_v1",
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "source_files": {
             "local_summary": str(args.local_summary),
             "ibm_campaigns": ibm["paths"],
+            "ibm_rust_run": rust_ibm["path"],
         },
         "local": {
             "python_tick_ms": _mean_std(local["python_tick_ms"]),
@@ -185,7 +213,11 @@ def main() -> int:
             "s1_control_seconds": _mean_std(ibm["s1_control_seconds"]),
             "capacity_seconds": _mean_std(ibm["capacity_seconds"]),
         },
+        "ibm_rust": {
+            "submit_to_done_seconds": _mean_std(rust_ibm["submit_to_done_seconds"]),
+        },
         "ibm_job_ids": ibm["job_ids"],
+        "ibm_rust_job_ids": rust_ibm["job_ids"],
     }
 
     args.out_dir.mkdir(parents=True, exist_ok=True)

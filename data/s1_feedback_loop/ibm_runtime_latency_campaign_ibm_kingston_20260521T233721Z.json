@@ -1,0 +1,863 @@
+{
+  "schema": "scpn_ibm_runtime_latency_campaign_v1",
+  "timestamp_utc": "2026-05-21T23:33:16.596286+00:00",
+  "backend": "ibm_kingston",
+  "hardware_submission": true,
+  "claim_boundary": "Measures externally visible IBM runtime latency windows. Does not directly measure intra-shot control-electronics feedforward latency.",
+  "backend_qubits": 156,
+  "scenario_matrix": {
+    "s1_shots_grid": [
+      2048,
+      4096
+    ],
+    "s1_repetitions_grid": [
+      1,
+      2
+    ],
+    "capacity_widths": [
+      20,
+      39,
+      78,
+      156
+    ],
+    "capacity_depth": 2,
+    "capacity_trials": 2
+  },
+  "status": "submitted_and_completed",
+  "s1_matrix": [
+    {
+      "shots": 2048,
+      "repetitions": 1,
+      "feedback_depth": 717,
+      "control_depth": 684,
+      "feedback_two_qubit_ops": 186,
+      "control_two_qubit_ops": 174,
+      "runtime": {
+        "feedback_dynamic": {
+          "job_id": "d87pcggp0eas73dmgn8g",
+          "submit_overhead_seconds": 1.4722350959782489,
+          "submit_to_result_seconds": 11.121636000985745,
+          "result_wait_seconds": 9.64940083399415,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pcggp0eas73dmgn8g",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:33:22.615113+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:33:22.615113Z",
+                "finished": "2026-05-21T23:33:31.464215Z",
+                "running": "2026-05-21T23:33:24.494365Z"
+              },
+              "bss": {
+                "seconds": 3
+              },
+              "usage": {
+                "quantum_seconds": 3,
+                "seconds": 3,
+                "status": "complete"
+              }
+            },
+            "usage": 3,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f7716c3b4d0>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 3,
+              "seconds": 3,
+              "status": "complete"
+            }
+          }
+        },
+        "control_open_loop": {
+          "job_id": "d87pcjqs46sc73f8h9h0",
+          "submit_overhead_seconds": 1.1565504460013472,
+          "submit_to_result_seconds": 7.594043562014122,
+          "result_wait_seconds": 6.437493024975993,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pcjqs46sc73f8h9h0",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:33:35.303042+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:33:35.303042Z",
+                "finished": "2026-05-21T23:33:41.187573Z",
+                "running": "2026-05-21T23:33:36.960173Z"
+              },
+              "bss": {
+                "seconds": 3
+              },
+              "usage": {
+                "quantum_seconds": 3,
+                "seconds": 3,
+                "status": "complete"
+              }
+            },
+            "usage": 3,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f7716911a90>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 3,
+              "seconds": 3,
+              "status": "complete"
+            }
+          }
+        }
+      }
+    },
+    {
+      "shots": 2048,
+      "repetitions": 2,
+      "feedback_depth": 717,
+      "control_depth": 684,
+      "feedback_two_qubit_ops": 186,
+      "control_two_qubit_ops": 174,
+      "runtime": {
+        "feedback_dynamic": {
+          "job_id": "d87pcm1789is73917umg",
+          "submit_overhead_seconds": 0.9615109930164181,
+          "submit_to_result_seconds": 7.580055994039867,
+          "result_wait_seconds": 6.618544948054478,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pcm1789is73917umg",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:33:44.733267+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:33:44.733267Z",
+                "finished": "2026-05-21T23:33:50.616874Z",
+                "running": "2026-05-21T23:33:45.619059Z"
+              },
+              "bss": {
+                "seconds": 3
+              },
+              "usage": {
+                "quantum_seconds": 3,
+                "seconds": 3,
+                "status": "complete"
+              }
+            },
+            "usage": 3,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f77169ace90>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 3,
+              "seconds": 3,
+              "status": "complete"
+            }
+          }
+        },
+        "control_open_loop": {
+          "job_id": "d87pcoas46sc73f8h9n0",
+          "submit_overhead_seconds": 0.9901287520187907,
+          "submit_to_result_seconds": 41.519386720028706,
+          "result_wait_seconds": 40.529257911024615,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pcoas46sc73f8h9n0",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:33:54.103200+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:33:54.1032Z",
+                "finished": "2026-05-21T23:34:33.751334Z",
+                "running": "2026-05-21T23:33:55.409528Z"
+              },
+              "bss": {
+                "seconds": 3
+              },
+              "usage": {
+                "quantum_seconds": 3,
+                "seconds": 3,
+                "status": "complete"
+              }
+            },
+            "usage": 3,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f77169af490>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 3,
+              "seconds": 3,
+              "status": "complete"
+            }
+          }
+        }
+      }
+    },
+    {
+      "shots": 4096,
+      "repetitions": 1,
+      "feedback_depth": 717,
+      "control_depth": 684,
+      "feedback_two_qubit_ops": 186,
+      "control_two_qubit_ops": 174,
+      "runtime": {
+        "feedback_dynamic": {
+          "job_id": "d87pd3as46sc73f8ha40",
+          "submit_overhead_seconds": 0.9937456769985147,
+          "submit_to_result_seconds": 52.259945952973794,
+          "result_wait_seconds": 51.26620021997951,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pd3as46sc73f8ha40",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:34:37.306205+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:34:37.306205Z",
+                "finished": "2026-05-21T23:35:28.166994Z",
+                "running": "2026-05-21T23:34:38.809366Z"
+              },
+              "bss": {
+                "seconds": 3
+              },
+              "usage": {
+                "quantum_seconds": 3,
+                "seconds": 3,
+                "status": "complete"
+              }
+            },
+            "usage": 3,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f770f84ee70>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 3,
+              "seconds": 3,
+              "status": "complete"
+            }
+          }
+        },
+        "control_open_loop": {
+          "job_id": "d87pdgqs46sc73f8hajg",
+          "submit_overhead_seconds": 1.0341868779505603,
+          "submit_to_result_seconds": 7.558758292987477,
+          "result_wait_seconds": 6.524571262998506,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pdgqs46sc73f8hajg",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:35:31.304762+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:35:31.304762Z",
+                "finished": "2026-05-21T23:35:37.352095Z",
+                "running": "2026-05-21T23:35:32.251991Z"
+              },
+              "bss": {
+                "seconds": 3
+              },
+              "usage": {
+                "quantum_seconds": 3,
+                "seconds": 3,
+                "status": "complete"
+              }
+            },
+            "usage": 3,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f770f350270>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 3,
+              "seconds": 3,
+              "status": "complete"
+            }
+          }
+        }
+      }
+    },
+    {
+      "shots": 4096,
+      "repetitions": 2,
+      "feedback_depth": 717,
+      "control_depth": 684,
+      "feedback_two_qubit_ops": 186,
+      "control_two_qubit_ops": 174,
+      "runtime": {
+        "feedback_dynamic": {
+          "job_id": "d87pdj2s46sc73f8ham0",
+          "submit_overhead_seconds": 0.9270851439796388,
+          "submit_to_result_seconds": 9.427511407993734,
+          "result_wait_seconds": 8.500426196027547,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pdj2s46sc73f8ham0",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:35:40.806426+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:35:40.806426Z",
+                "finished": "2026-05-21T23:35:48.595619Z",
+                "running": "2026-05-21T23:35:42.144569Z"
+              },
+              "bss": {
+                "seconds": 5
+              },
+              "usage": {
+                "quantum_seconds": 5,
+                "seconds": 5,
+                "status": "complete"
+              }
+            },
+            "usage": 5,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f77166cf790>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 5,
+              "seconds": 5,
+              "status": "complete"
+            }
+          }
+        },
+        "control_open_loop": {
+          "job_id": "d87pdm1789is73917vrg",
+          "submit_overhead_seconds": 1.0159580369945616,
+          "submit_to_result_seconds": 9.45450792601332,
+          "result_wait_seconds": 8.438549745013006,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pdm1789is73917vrg",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:35:52.210876+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:35:52.210876Z",
+                "finished": "2026-05-21T23:35:59.909654Z",
+                "running": "2026-05-21T23:35:53.444321Z"
+              },
+              "bss": {
+                "seconds": 4
+              },
+              "usage": {
+                "quantum_seconds": 4,
+                "seconds": 4,
+                "status": "complete"
+              }
+            },
+            "usage": 4,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f771699f850>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 4,
+              "seconds": 4,
+              "status": "complete"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "capacity_sweep": [
+    {
+      "width": 20,
+      "depth": 2,
+      "shots": 256,
+      "trials": 2,
+      "transpiled_depth": 89,
+      "two_qubit_ops": 38,
+      "measurements": [
+        {
+          "job_id": "d87pdotg7okc73eml1dg",
+          "submit_overhead_seconds": 0.9280701200477779,
+          "submit_to_result_seconds": 6.730596329027321,
+          "result_wait_seconds": 5.802526129002217,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pdotg7okc73eml1dg",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:36:03.207201+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:36:03.207201Z",
+                "finished": "2026-05-21T23:36:08.290832Z",
+                "running": "2026-05-21T23:36:04.318043Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f77166e7450>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        },
+        {
+          "job_id": "d87pdqop0eas73dmgomg",
+          "submit_overhead_seconds": 1.0702460989705287,
+          "submit_to_result_seconds": 7.506273100967519,
+          "result_wait_seconds": 6.436026939016301,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pdqop0eas73dmgomg",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:36:11.880809+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:36:11.880809Z",
+                "finished": "2026-05-21T23:36:17.981111Z",
+                "running": "2026-05-21T23:36:13.498995Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f7716cf17c0>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        }
+      ],
+      "summary": {
+        "count": 2,
+        "submit_to_result_mean_s": 7.11843471499742,
+        "submit_to_result_std_s": 0.548486305447805,
+        "submit_to_result_p95_s": 7.467489262370509,
+        "result_wait_mean_s": 6.119276534009259,
+        "submit_overhead_mean_s": 0.9991581095091533,
+        "job_ids": [
+          "d87pdotg7okc73eml1dg",
+          "d87pdqop0eas73dmgomg"
+        ]
+      }
+    },
+    {
+      "width": 39,
+      "depth": 2,
+      "shots": 256,
+      "trials": 2,
+      "transpiled_depth": 165,
+      "two_qubit_ops": 76,
+      "measurements": [
+        {
+          "job_id": "d87pdt2s46sc73f8hb1g",
+          "submit_overhead_seconds": 1.0097854439518414,
+          "submit_to_result_seconds": 8.845262552960776,
+          "result_wait_seconds": 7.835477032989729,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pdt2s46sc73f8hb1g",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:36:21.105971+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:36:21.105971Z",
+                "finished": "2026-05-21T23:36:28.208629Z",
+                "running": "2026-05-21T23:36:22.815974Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f77167dde50>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        },
+        {
+          "job_id": "d87pdvqs46sc73f8hb40",
+          "submit_overhead_seconds": 0.9357538409531116,
+          "submit_to_result_seconds": 6.119751083955634,
+          "result_wait_seconds": 5.183997106971219,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pdvqs46sc73f8hb40",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:36:31.958383+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:36:31.958383Z",
+                "finished": "2026-05-21T23:36:36.6775Z",
+                "running": "2026-05-21T23:36:32.954025Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f77145d0830>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        }
+      ],
+      "summary": {
+        "count": 2,
+        "submit_to_result_mean_s": 7.482506818458205,
+        "submit_to_result_std_s": 1.9272276419352443,
+        "submit_to_result_p95_s": 8.708986979510518,
+        "result_wait_mean_s": 6.509737069980474,
+        "submit_overhead_mean_s": 0.9727696424524765,
+        "job_ids": [
+          "d87pdt2s46sc73f8hb1g",
+          "d87pdvqs46sc73f8hb40"
+        ]
+      }
+    },
+    {
+      "width": 78,
+      "depth": 2,
+      "shots": 256,
+      "trials": 2,
+      "transpiled_depth": 321,
+      "two_qubit_ops": 154,
+      "measurements": [
+        {
+          "job_id": "d87pe20p0eas73dmgoug",
+          "submit_overhead_seconds": 0.9881852940306999,
+          "submit_to_result_seconds": 11.484336544992402,
+          "result_wait_seconds": 10.496151189960074,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pe20p0eas73dmgoug",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:36:40.126597+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:36:40.126597Z",
+                "finished": "2026-05-21T23:36:49.888612Z",
+                "running": "2026-05-21T23:36:41.413392Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f770ed9eeb0>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        },
+        {
+          "job_id": "d87pe59789is739180dg",
+          "submit_overhead_seconds": 0.8834545989520848,
+          "submit_to_result_seconds": 6.637291983992327,
+          "result_wait_seconds": 5.753837212047074,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pe59789is739180dg",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:36:53.092119+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:36:53.092119Z",
+                "finished": "2026-05-21T23:36:58.070118Z",
+                "running": "2026-05-21T23:36:54.235954Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f770f6d36c0>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        }
+      ],
+      "summary": {
+        "count": 2,
+        "submit_to_result_mean_s": 9.060814264492365,
+        "submit_to_result_std_s": 3.4273780777965253,
+        "submit_to_result_p95_s": 11.241984316942398,
+        "result_wait_mean_s": 8.124994201003574,
+        "submit_overhead_mean_s": 0.9358199464913923,
+        "job_ids": [
+          "d87pe20p0eas73dmgoug",
+          "d87pe59789is739180dg"
+        ]
+      }
+    },
+    {
+      "width": 156,
+      "depth": 2,
+      "shots": 256,
+      "trials": 2,
+      "transpiled_depth": 1439,
+      "two_qubit_ops": 1186,
+      "measurements": [
+        {
+          "job_id": "d87pe7dg7okc73eml1u0",
+          "submit_overhead_seconds": 0.9643418019986711,
+          "submit_to_result_seconds": 10.828257262008265,
+          "result_wait_seconds": 9.863915389985777,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87pe7dg7okc73eml1u0",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:37:01.646876+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:37:01.646876Z",
+                "finished": "2026-05-21T23:37:11.151695Z",
+                "running": "2026-05-21T23:37:03.04263Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f770f7f3e90>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        },
+        {
+          "job_id": "d87peais46sc73f8hbig",
+          "submit_overhead_seconds": 1.0003344119759277,
+          "submit_to_result_seconds": 6.785419501014985,
+          "result_wait_seconds": 5.785084985021967,
+          "provider_windows": {
+            "provider_queue_seconds": null,
+            "provider_run_seconds": null,
+            "provider_total_seconds": null
+          },
+          "telemetry": {
+            "job_id": "d87peais46sc73f8hbig",
+            "session_id": null,
+            "program_id": null,
+            "primitive_id": "sampler",
+            "creation_date": "2026-05-21T23:37:14.356895+00:00",
+            "running": false,
+            "metrics": {
+              "caller": "qiskit_ibm_runtime~sampler.py",
+              "qiskit_version": "qiskit_ibm_runtime-0.47.0,qiskit-2.4.1*,qiskit_aer-0.17.2*",
+              "timestamps": {
+                "created": "2026-05-21T23:37:14.356895Z",
+                "finished": "2026-05-21T23:37:19.796941Z",
+                "running": "2026-05-21T23:37:15.91717Z"
+              },
+              "bss": {
+                "seconds": 2
+              },
+              "usage": {
+                "quantum_seconds": 2,
+                "seconds": 2,
+                "status": "complete"
+              }
+            },
+            "usage": 2,
+            "properties": "<qiskit_ibm_runtime.models.backend_properties.BackendProperties object at 0x7f7716779b50>",
+            "status": "DONE",
+            "metrics_usage": {
+              "quantum_seconds": 2,
+              "seconds": 2,
+              "status": "complete"
+            }
+          }
+        }
+      ],
+      "summary": {
+        "count": 2,
+        "submit_to_result_mean_s": 8.806838381511625,
+        "submit_to_result_std_s": 2.8587179960353866,
+        "submit_to_result_p95_s": 10.626115373958601,
+        "result_wait_mean_s": 7.824500187503872,
+        "submit_overhead_mean_s": 0.9823381069872994,
+        "job_ids": [
+          "d87pe7dg7okc73eml1u0",
+          "d87peais46sc73f8hbig"
+        ]
+      }
+    }
+  ]
+}

@@ -10,7 +10,7 @@
 
 Date: `2026-05-22`
 
-Command: `PYTHONDONTWRITEBYTECODE=1 python scripts/benchmark_realtime_control_e2e.py --repeats 12 --steps 8`
+Command: `PYTHONDONTWRITEBYTECODE=1 python scripts/benchmark_realtime_control_e2e.py --repeats 15 --steps 64`
 
 ## Claim Boundary
 
@@ -31,12 +31,12 @@ No-QPU software control-loop benchmark only. Results exclude provider queue, net
 
 | n | repeats_successful | p95 tick ms | p99 tick ms | max tick ms | rust policy path |
 |---:|---:|---:|---:|---:|:---:|
-| 2 | 10 | 5.648401 | 6.141578 | 6.715363 | true |
-| 3 | 12 | 6.268513 | 6.965508 | 8.554773 | true |
-| 4 | 10 | 6.748360 | 9.103593 | 10.990356 | true |
-| 2 | 12 | 0.000429 | 0.000901 | 0.004548 | true |
-| 3 | 12 | 0.000493 | 0.000835 | 0.002398 | true |
-| 4 | 12 | 0.000404 | 0.001697 | 0.002690 | true |
+| 2 | 15 | 4.267569 | 5.157374 | 18.401380 | true |
+| 3 | 15 | 4.994387 | 6.156117 | 9.210675 | true |
+| 4 | 12 | 6.919108 | 8.895908 | 13.749520 | true |
+| 2 | 15 | 0.000128 | 0.000174 | 0.001220 | true |
+| 3 | 15 | 0.000152 | 0.000184 | 0.000530 | true |
+| 4 | 15 | 0.000190 | 0.000230 | 0.000977 | true |
 
 ## Reproducibility
 
