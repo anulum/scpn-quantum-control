@@ -1,0 +1,56 @@
+{
+  "schema": "scpn_ibm_runtime_python_realtime_latency_run_v1",
+  "backend": "ibm_kingston",
+  "runner": "python_ibm_runtime_program_run",
+  "source_matrix": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T005305Z.json",
+  "rows": [
+    {
+      "lane": "rt_adaptive_dense_dynamic",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qhv1789is73919cd0",
+      "submit_overhead_seconds": 0.48148162895813584,
+      "submit_to_done_seconds": 21.290230712969787,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_dense_open_loop",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qi4as46sc73f8iobg",
+      "submit_overhead_seconds": 0.2788780909613706,
+      "submit_to_done_seconds": 7.024094310996588,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_dynamic",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qi61789is73919cmg",
+      "submit_overhead_seconds": 0.30149485002039,
+      "submit_to_done_seconds": 13.5109595709946,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_open_loop",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qi9is46sc73f8iohg",
+      "submit_overhead_seconds": 0.48231744702206925,
+      "submit_to_done_seconds": 7.205035769031383,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=39|trial=0",
+      "job_id": "d87qibas46sc73f8iok0",
+      "submit_overhead_seconds": 0.2514178230194375,
+      "submit_to_done_seconds": 13.484208862995729,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=0",
+      "job_id": "d87qieis46sc73f8ioo0",
+      "submit_overhead_seconds": 0.2740206440212205,
+      "submit_to_done_seconds": 6.958178397035226,
+      "final_status": "Completed"
+    }
+  ]
+}

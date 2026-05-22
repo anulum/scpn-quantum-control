@@ -1,0 +1,56 @@
+{
+  "schema": "scpn_ibm_runtime_python_realtime_latency_run_v1",
+  "backend": "ibm_fez",
+  "runner": "python_ibm_runtime_program_run",
+  "source_matrix": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_fez_20260522T011029Z.json",
+  "rows": [
+    {
+      "lane": "rt_adaptive_dense_dynamic",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qq2lg7okc73emmntg",
+      "submit_overhead_seconds": 0.2915823729708791,
+      "submit_to_done_seconds": 7.739433002017904,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_dense_open_loop",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qq4gp0eas73dmig4g",
+      "submit_overhead_seconds": 0.2532864550012164,
+      "submit_to_done_seconds": 6.944610600010492,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_dynamic",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qq68p0eas73dmig8g",
+      "submit_overhead_seconds": 0.2802094329963438,
+      "submit_to_done_seconds": 6.960247213020921,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_open_loop",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qq80p0eas73dmigd0",
+      "submit_overhead_seconds": 0.26777111197588965,
+      "submit_to_done_seconds": 7.189576464006677,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=39|trial=0",
+      "job_id": "d87qq9op0eas73dmigg0",
+      "submit_overhead_seconds": 0.24588529003085569,
+      "submit_to_done_seconds": 6.937027084000874,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=0",
+      "job_id": "d87qqbgp0eas73dmigig",
+      "submit_overhead_seconds": 0.28990188403986394,
+      "submit_to_done_seconds": 6.985416271025315,
+      "final_status": "Completed"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "scpn_realtime_latency_python_rust_comparison_v1",
+  "sources": {
+    "rust": "data/realtime_control_latency/ibm_runtime_realtime_rust_latency_run_budgetfinal_2026-05-22.json",
+    "python": "data/realtime_control_latency/ibm_runtime_realtime_python_latency_run_budgetfinal_2026-05-22.json"
+  },
+  "overall": {
+    "rust_mean_s": 9.019361979,
+    "python_mean_s": 11.578784604003886,
+    "rust_std_s": 4.194140197751524,
+    "python_std_s": 5.210582364983858,
+    "delta_python_minus_rust_s": 2.5594226250038865,
+    "rust_n": 6.0,
+    "python_n": 6.0
+  },
+  "per_lane": {
+    "rust": {
+      "capacity_sweep": {
+        "mean_s": 7.084427032,
+        "std_s": 0.13776012699999995,
+        "n": 2.0
+      },
+      "rt_adaptive_dense_dynamic": {
+        "mean_s": 7.558377835,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_dense_open_loop": {
+        "mean_s": 18.386288717,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_dynamic": {
+        "mean_s": 6.990435656,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_open_loop": {
+        "mean_s": 7.012215602,
+        "std_s": 0.0,
+        "n": 1.0
+      }
+    },
+    "python": {
+      "capacity_sweep": {
+        "mean_s": 10.221193630015478,
+        "std_s": 3.2630152329802513,
+        "n": 2.0
+      },
+      "rt_adaptive_dense_dynamic": {
+        "mean_s": 21.290230712969787,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_dense_open_loop": {
+        "mean_s": 7.024094310996588,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_dynamic": {
+        "mean_s": 13.5109595709946,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_open_loop": {
+        "mean_s": 7.205035769031383,
+        "std_s": 0.0,
+        "n": 1.0
+      }
+    }
+  },
+  "job_ids": {
+    "rust": [
+      "d87qijgp0eas73dmi5jg",
+      "d87qilis46sc73f8ip0g",
+      "d87qiq2s46sc73f8ip60",
+      "d87qirop0eas73dmi5u0",
+      "d87qitis46sc73f8ipb0",
+      "d87qivas46sc73f8ipd0"
+    ],
+    "python": [
+      "d87qhv1789is73919cd0",
+      "d87qi4as46sc73f8iobg",
+      "d87qi61789is73919cmg",
+      "d87qi9is46sc73f8iohg",
+      "d87qibas46sc73f8iok0",
+      "d87qieis46sc73f8ioo0"
+    ]
+  }
+}

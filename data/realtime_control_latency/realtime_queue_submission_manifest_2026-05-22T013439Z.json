@@ -1,0 +1,228 @@
+{
+  "schema": "scpn_realtime_queue_submission_manifest_v1",
+  "timestamp_utc": "2026-05-22T01:33:49.929451+00:00",
+  "backend_rounds": [
+    {
+      "backend": "ibm_kingston",
+      "round_tag": "budgetextra3",
+      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T013355Z.json",
+      "jobs": [
+        {
+          "lane": "rt_adaptive_dense_dynamic",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r519789is7391a4v0"
+        },
+        {
+          "lane": "rt_adaptive_dense_open_loop",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r518p0eas73dmitr0"
+        },
+        {
+          "lane": "rt_adaptive_sparse_dynamic",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r518p0eas73dmits0"
+        },
+        {
+          "lane": "rt_adaptive_sparse_open_loop",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r51lg7okc73emn5cg"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=39|trial=0",
+          "job_id": "d87r51gp0eas73dmitsg"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=156|trial=0",
+          "job_id": "d87r51h789is7391a510"
+        }
+      ]
+    },
+    {
+      "backend": "ibm_kingston",
+      "round_tag": "budgetextra4",
+      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T013405Z.json",
+      "jobs": [
+        {
+          "lane": "rt_adaptive_dense_dynamic",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r53lg7okc73emn5fg"
+        },
+        {
+          "lane": "rt_adaptive_dense_open_loop",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r53h789is7391a53g"
+        },
+        {
+          "lane": "rt_adaptive_sparse_dynamic",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r53is46sc73f8jhlg"
+        },
+        {
+          "lane": "rt_adaptive_sparse_open_loop",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r53tg7okc73emn5g0"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=39|trial=0",
+          "job_id": "d87r53op0eas73dmiu10"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=156|trial=0",
+          "job_id": "d87r53qs46sc73f8jhn0"
+        }
+      ]
+    },
+    {
+      "backend": "ibm_fez",
+      "round_tag": "budgetextra3",
+      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_fez_20260522T013414Z.json",
+      "jobs": [
+        {
+          "lane": "rt_adaptive_dense_dynamic",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r55is46sc73f8jhq0"
+        },
+        {
+          "lane": "rt_adaptive_dense_open_loop",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r55h789is7391a570"
+        },
+        {
+          "lane": "rt_adaptive_sparse_dynamic",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r55op0eas73dmiu40"
+        },
+        {
+          "lane": "rt_adaptive_sparse_open_loop",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r55p789is7391a58g"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=39|trial=0",
+          "job_id": "d87r565g7okc73emn5j0"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=156|trial=0",
+          "job_id": "d87r562s46sc73f8jhrg"
+        }
+      ]
+    },
+    {
+      "backend": "ibm_fez",
+      "round_tag": "budgetextra4",
+      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_fez_20260522T013422Z.json",
+      "jobs": [
+        {
+          "lane": "rt_adaptive_dense_dynamic",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r57lg7okc73emn5lg"
+        },
+        {
+          "lane": "rt_adaptive_dense_open_loop",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r57tg7okc73emn5m0"
+        },
+        {
+          "lane": "rt_adaptive_sparse_dynamic",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r57op0eas73dmiu6g"
+        },
+        {
+          "lane": "rt_adaptive_sparse_open_loop",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r57qs46sc73f8jhv0"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=39|trial=0",
+          "job_id": "d87r57tg7okc73emn5n0"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=156|trial=0",
+          "job_id": "d87r581789is7391a5c0"
+        }
+      ]
+    },
+    {
+      "backend": "ibm_marrakesh",
+      "round_tag": "budgetextra3",
+      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_marrakesh_20260522T013430Z.json",
+      "jobs": [
+        {
+          "lane": "rt_adaptive_dense_dynamic",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r59lg7okc73emn5s0"
+        },
+        {
+          "lane": "rt_adaptive_dense_open_loop",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r59tg7okc73emn5sg"
+        },
+        {
+          "lane": "rt_adaptive_sparse_dynamic",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r59qs46sc73f8ji2g"
+        },
+        {
+          "lane": "rt_adaptive_sparse_open_loop",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r59tg7okc73emn5tg"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=39|trial=0",
+          "job_id": "d87r5a2s46sc73f8ji30"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=156|trial=0",
+          "job_id": "d87r5a1789is7391a5gg"
+        }
+      ]
+    },
+    {
+      "backend": "ibm_marrakesh",
+      "round_tag": "budgetextra4",
+      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_marrakesh_20260522T013437Z.json",
+      "jobs": [
+        {
+          "lane": "rt_adaptive_dense_dynamic",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r5bis46sc73f8ji60"
+        },
+        {
+          "lane": "rt_adaptive_dense_open_loop",
+          "scenario": "rounds=3|dense=True",
+          "job_id": "d87r5bis46sc73f8ji70"
+        },
+        {
+          "lane": "rt_adaptive_sparse_dynamic",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r5blg7okc73emn610"
+        },
+        {
+          "lane": "rt_adaptive_sparse_open_loop",
+          "scenario": "rounds=3|dense=False",
+          "job_id": "d87r5btg7okc73emn620"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=39|trial=0",
+          "job_id": "d87r5bop0eas73dmiud0"
+        },
+        {
+          "lane": "capacity_sweep",
+          "scenario": "width=156|trial=0",
+          "job_id": "d87r5btg7okc73emn63g"
+        }
+      ]
+    }
+  ]
+}

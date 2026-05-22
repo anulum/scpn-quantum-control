@@ -1,0 +1,56 @@
+{
+  "schema": "scpn_ibm_runtime_python_realtime_latency_run_v1",
+  "backend": "ibm_kingston",
+  "runner": "python_ibm_runtime_program_run",
+  "source_matrix": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T010054Z.json",
+  "rows": [
+    {
+      "lane": "rt_adaptive_dense_dynamic",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qlip789is73919gd0",
+      "submit_overhead_seconds": 0.29188233194872737,
+      "submit_to_done_seconds": 5.237468385952525,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_dense_open_loop",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qlk0p0eas73dmi990",
+      "submit_overhead_seconds": 0.23439706297358498,
+      "submit_to_done_seconds": 7.195799396955408,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_dynamic",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qlm1789is73919ghg",
+      "submit_overhead_seconds": 0.31730901898117736,
+      "submit_to_done_seconds": 5.064706543984357,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_open_loop",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qlnas46sc73f8iskg",
+      "submit_overhead_seconds": 0.29243254399625584,
+      "submit_to_done_seconds": 6.991330550983548,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=39|trial=0",
+      "job_id": "d87qlp2s46sc73f8isng",
+      "submit_overhead_seconds": 0.2440896790358238,
+      "submit_to_done_seconds": 6.968361666018609,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=0",
+      "job_id": "d87qlqqs46sc73f8isq0",
+      "submit_overhead_seconds": 0.2790312260040082,
+      "submit_to_done_seconds": 7.002097454038449,
+      "final_status": "Completed"
+    }
+  ]
+}

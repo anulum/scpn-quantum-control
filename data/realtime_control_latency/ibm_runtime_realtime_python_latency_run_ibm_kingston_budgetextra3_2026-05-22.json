@@ -1,0 +1,56 @@
+{
+  "schema": "scpn_ibm_runtime_python_realtime_latency_run_v1",
+  "backend": "ibm_kingston",
+  "runner": "python_ibm_runtime_program_run",
+  "source_matrix": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T010647Z.json",
+  "rows": [
+    {
+      "lane": "rt_adaptive_dense_dynamic",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qob0p0eas73dmid80",
+      "submit_overhead_seconds": 0.4169561250018887,
+      "submit_to_done_seconds": 7.711961370019708,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_dense_open_loop",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qocp789is73919kbg",
+      "submit_overhead_seconds": 0.24964393000118434,
+      "submit_to_done_seconds": 7.361421983980108,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_dynamic",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qoeop0eas73dmidl0",
+      "submit_overhead_seconds": 0.3086937660118565,
+      "submit_to_done_seconds": 7.049235807964578,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_open_loop",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qogis46sc73f8j0qg",
+      "submit_overhead_seconds": 0.2855354879866354,
+      "submit_to_done_seconds": 7.006087702000514,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=39|trial=0",
+      "job_id": "d87qoias46sc73f8j0u0",
+      "submit_overhead_seconds": 0.29669258097419515,
+      "submit_to_done_seconds": 6.991773093002848,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=0",
+      "job_id": "d87qok2s46sc73f8j10g",
+      "submit_overhead_seconds": 0.27192023303359747,
+      "submit_to_done_seconds": 6.962448918027803,
+      "final_status": "Completed"
+    }
+  ]
+}

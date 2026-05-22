@@ -1,0 +1,90 @@
+{
+  "schema": "scpn_realtime_latency_python_rust_comparison_v1",
+  "sources": {
+    "rust": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_rust_latency_run_ibm_fez_budgetextra3_2026-05-22.json",
+    "python": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_python_latency_run_ibm_fez_budgetextra3_2026-05-22.json"
+  },
+  "overall": {
+    "rust_mean_s": 6.928690510833333,
+    "python_mean_s": 7.12605177234703,
+    "rust_std_s": 0.3063516138864798,
+    "python_std_s": 0.28757394623283733,
+    "delta_python_minus_rust_s": 0.19736126151369682,
+    "rust_n": 6.0,
+    "python_n": 6.0
+  },
+  "per_lane": {
+    "rust": {
+      "capacity_sweep": {
+        "mean_s": 6.968363526999999,
+        "std_s": 0.0036347370000000545,
+        "n": 2.0
+      },
+      "rt_adaptive_dense_dynamic": {
+        "mean_s": 6.279035969,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_dense_open_loop": {
+        "mean_s": 7.150256724,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_dynamic": {
+        "mean_s": 7.221341716,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_open_loop": {
+        "mean_s": 6.984781602,
+        "std_s": 0.0,
+        "n": 1.0
+      }
+    },
+    "python": {
+      "capacity_sweep": {
+        "mean_s": 6.961221677513095,
+        "std_s": 0.024194593512220308,
+        "n": 2.0
+      },
+      "rt_adaptive_dense_dynamic": {
+        "mean_s": 7.739433002017904,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_dense_open_loop": {
+        "mean_s": 6.944610600010492,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_dynamic": {
+        "mean_s": 6.960247213020921,
+        "std_s": 0.0,
+        "n": 1.0
+      },
+      "rt_adaptive_sparse_open_loop": {
+        "mean_s": 7.189576464006677,
+        "std_s": 0.0,
+        "n": 1.0
+      }
+    }
+  },
+  "job_ids": {
+    "rust": [
+      "d87qqdis46sc73f8j44g",
+      "d87qqf5g7okc73emmoeg",
+      "d87qqgp789is73919nt0",
+      "d87qqiis46sc73f8j4bg",
+      "d87qqk9789is73919o1g",
+      "d87qqm1789is73919o3g"
+    ],
+    "python": [
+      "d87qq2lg7okc73emmntg",
+      "d87qq4gp0eas73dmig4g",
+      "d87qq68p0eas73dmig8g",
+      "d87qq80p0eas73dmigd0",
+      "d87qq9op0eas73dmigg0",
+      "d87qqbgp0eas73dmigig"
+    ]
+  }
+}

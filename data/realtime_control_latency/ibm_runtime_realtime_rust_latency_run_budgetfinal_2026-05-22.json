@@ -1,0 +1,55 @@
+{
+  "schema": "scpn_ibm_runtime_rust_latency_run_v1",
+  "backend": "ibm_kingston",
+  "runner": "scpn_quantum_engine::ibm_runtime_latency_runner",
+  "rows": [
+    {
+      "lane": "rt_adaptive_dense_dynamic",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qijgp0eas73dmi5jg",
+      "submit_overhead_seconds": 0.494363297,
+      "submit_to_done_seconds": 7.558377835,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_dense_open_loop",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87qilis46sc73f8ip0g",
+      "submit_overhead_seconds": 0.558761565,
+      "submit_to_done_seconds": 18.386288717,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_dynamic",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qiq2s46sc73f8ip60",
+      "submit_overhead_seconds": 0.257633196,
+      "submit_to_done_seconds": 6.990435656,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_open_loop",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87qirop0eas73dmi5u0",
+      "submit_overhead_seconds": 0.284386285,
+      "submit_to_done_seconds": 7.012215602,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=39|trial=0",
+      "job_id": "d87qitis46sc73f8ipb0",
+      "submit_overhead_seconds": 0.260947095,
+      "submit_to_done_seconds": 7.222187159,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=0",
+      "job_id": "d87qivas46sc73f8ipd0",
+      "submit_overhead_seconds": 0.256123059,
+      "submit_to_done_seconds": 6.946666905,
+      "final_status": "Completed"
+    }
+  ]
+}
