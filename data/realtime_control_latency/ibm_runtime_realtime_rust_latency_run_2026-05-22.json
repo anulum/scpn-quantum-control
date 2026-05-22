@@ -1,0 +1,103 @@
+{
+  "schema": "scpn_ibm_runtime_rust_latency_run_v1",
+  "backend": "ibm_kingston",
+  "runner": "scpn_quantum_engine::ibm_runtime_latency_runner",
+  "rows": [
+    {
+      "lane": "rt_adaptive_dense_dynamic",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87q88p789is73918vfg",
+      "submit_overhead_seconds": 0.50946656,
+      "submit_to_done_seconds": 7.817875375,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_dense_open_loop",
+      "scenario": "rounds=3|dense=True",
+      "job_id": "d87q8alg7okc73emm0d0",
+      "submit_overhead_seconds": 0.259765344,
+      "submit_to_done_seconds": 6.991503628,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_dynamic",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87q8c9789is73918vj0",
+      "submit_overhead_seconds": 0.241040368,
+      "submit_to_done_seconds": 7.356090931,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "rt_adaptive_sparse_open_loop",
+      "scenario": "rounds=3|dense=False",
+      "job_id": "d87q8e8p0eas73dmho40",
+      "submit_overhead_seconds": 0.265021915,
+      "submit_to_done_seconds": 6.960108974,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=20|trial=0",
+      "job_id": "d87q8fqs46sc73f8ias0",
+      "submit_overhead_seconds": 0.311653923,
+      "submit_to_done_seconds": 7.182035076,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=20|trial=1",
+      "job_id": "d87q8hp789is73918vo0",
+      "submit_overhead_seconds": 0.245867623,
+      "submit_to_done_seconds": 6.979849678,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=39|trial=0",
+      "job_id": "d87q8jis46sc73f8ib00",
+      "submit_overhead_seconds": 0.348770766,
+      "submit_to_done_seconds": 7.050515607,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=39|trial=1",
+      "job_id": "d87q8l8p0eas73dmhocg",
+      "submit_overhead_seconds": 0.271088154,
+      "submit_to_done_seconds": 6.936445702,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=78|trial=0",
+      "job_id": "d87q8n0p0eas73dmhoe0",
+      "submit_overhead_seconds": 0.281552394,
+      "submit_to_done_seconds": 6.982619792,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=78|trial=1",
+      "job_id": "d87q8otg7okc73emm0r0",
+      "submit_overhead_seconds": 0.374964049,
+      "submit_to_done_seconds": 7.132049865,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=0",
+      "job_id": "d87q8qis46sc73f8ib80",
+      "submit_overhead_seconds": 0.303900865,
+      "submit_to_done_seconds": 7.07306004,
+      "final_status": "Completed"
+    },
+    {
+      "lane": "capacity_sweep",
+      "scenario": "width=156|trial=1",
+      "job_id": "d87q8sas46sc73f8ibb0",
+      "submit_overhead_seconds": 0.490553434,
+      "submit_to_done_seconds": 7.269199926,
+      "final_status": "Completed"
+    }
+  ]
+}

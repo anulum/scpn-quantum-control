@@ -194,7 +194,9 @@ fn main() -> Result<()> {
     )
     .context("failed to decode payload matrix")?;
 
-    if matrix.schema != "scpn_ibm_runtime_sampler_payload_matrix_v1" {
+    if matrix.schema != "scpn_ibm_runtime_sampler_payload_matrix_v1"
+        && matrix.schema != "scpn_ibm_runtime_realtime_payload_matrix_v1"
+    {
         bail!("unexpected payload matrix schema: {}", matrix.schema);
     }
 
