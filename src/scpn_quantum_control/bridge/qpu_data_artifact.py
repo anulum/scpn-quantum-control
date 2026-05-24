@@ -289,6 +289,7 @@ class QPUDataArtifact:
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> QPUDataArtifact:
         """Load and validate an artifact from a mapping."""
+        data = _require_mapping("artifact payload", data)
         if data.get("schema_version") != SCHEMA_VERSION:
             raise ValueError("unsupported QPU data artifact schema version")
         artifact = cls(

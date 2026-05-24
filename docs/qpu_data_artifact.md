@@ -114,6 +114,8 @@ Required identity fields (`domain`, `source_name`, `source_mode`,
 contract: no implicit `str(...)` coercion, and whitespace is normalised before
 hashing. The same contract is enforced for loader input; `from_dict()` does not
 coerce non-string identity fields into publication artifact identity strings.
+Top-level loader input must be a mapping before schema validation; list or
+pair-list payloads are rejected with artifact-contract errors.
 
 ## Matrix invariants
 
@@ -238,6 +240,7 @@ The tests cover:
 - provenance identifier type, blank-value, and whitespace normalisation checks
 - required identity-field type and whitespace normalisation checks
 - loader rejection for non-string required identity fields
+- loader rejection for non-mapping top-level payloads
 - constructor and loader rejection for non-mapping metadata/hash containers
 - layer-assignment rejection for scalar strings, non-string entries, and blanks
 

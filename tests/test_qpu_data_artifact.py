@@ -329,6 +329,11 @@ def test_json_loader_rejects_wrong_schema():
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))
 
 
+def test_loader_rejects_non_mapping_payloads_with_contract_error():
+    with pytest.raises(ValueError, match="artifact payload must be a mapping"):
+        QPUDataArtifact.from_dict([("schema_version", "wrong")])
+
+
 def test_loader_rejects_stale_array_hashes():
     artifact = artifact_from_arrays(
         domain="connectome",
