@@ -388,6 +388,8 @@ class QPUDataArtifact:
         source_project = _required_text(
             "source_project", payload.get("source_project", "sc-neurocore")
         )
+        canonical_K_nm = _finite_float_array("K_nm", K_nm, ndim=2).tolist()
+        canonical_omega = _finite_float_array("omega", omega, ndim=1).tolist()
         canonical_payload = dict(payload)
         canonical_payload["source_project"] = source_project
         canonical_payload["dt_s"] = dt_s
@@ -395,6 +397,8 @@ class QPUDataArtifact:
         canonical_payload["n_layers"] = n_layers
         canonical_payload["seed"] = seed
         canonical_payload["layer_ids"] = list(canonical_layer_ids)
+        canonical_payload["knm"] = canonical_K_nm
+        canonical_payload["omega_rad_s"] = canonical_omega
         metadata = {
             "source_project": source_project,
             "dt_s": dt_s,

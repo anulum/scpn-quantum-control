@@ -223,6 +223,9 @@ payload snapshot so equivalent whitespace variants do not produce distinct
 provenance fingerprints.
 Layer labels are canonicalized before payload fingerprinting and before binding
 to oscillator rows.
+Validated numeric containers are canonicalized to `float64` JSON lists for the
+datastream fingerprint so integer and float spellings of the same physics do
+not produce distinct provenance hashes.
 It routes `knm` and `omega_rad_s` through the same numeric payload validator as
 all other artifact constructors; string, boolean, complex, and ragged numeric
 coercions are not accepted. `layer_ids` are routed through the same
@@ -253,6 +256,7 @@ The tests cover:
 - SC-NeuroCore datastream non-empty `source_project` rejection
 - SC-NeuroCore datastream canonical payload fingerprinting
 - SC-NeuroCore datastream canonical layer-label fingerprinting
+- SC-NeuroCore datastream canonical numeric-container fingerprinting
 - SC-NeuroCore datastream publication-safe source-mode rejection
 - SC-NeuroCore datastream adapter identity-override validation
 - SC-NeuroCore datastream numeric payload coercion rejection

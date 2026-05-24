@@ -474,6 +474,28 @@ def test_scpn_datastream_adapter_hashes_canonical_layer_ids():
     assert padded.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
 
 
+def test_scpn_datastream_adapter_hashes_canonical_numeric_containers():
+    base_payload = {
+        "schema_version": "sc-neurocore.scpn.datastream.v1",
+        "source_project": "sc-neurocore",
+        "seed": 11,
+        "dt_s": 0.01,
+        "n_steps": 3,
+        "n_layers": 2,
+        "layer_ids": ["l1", "l2"],
+        "omega_rad_s": [1.0, 2.0],
+        "knm": [[0.0, 1.0], [1.0, 0.0]],
+    }
+    integer_payload = dict(base_payload)
+    integer_payload["omega_rad_s"] = [1, 2]
+    integer_payload["knm"] = [[0, 1], [1, 0]]
+
+    baseline = QPUDataArtifact.from_scpn_datastream_payload(base_payload)
+    integer_variant = QPUDataArtifact.from_scpn_datastream_payload(integer_payload)
+
+    assert integer_variant.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
+
+
 def test_scpn_datastream_adapter_rejects_publication_safe_source_mode():
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
