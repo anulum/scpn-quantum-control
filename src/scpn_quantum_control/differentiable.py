@@ -2026,6 +2026,143 @@ def batch_value_and_complex_step_grad(
     )
 
 
+def value_and_grad(
+    objective: Callable[[Any], Any],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "parameter_shift",
+    rule: ParameterShiftRule | None = None,
+    step: float | None = None,
+) -> GradientResult:
+    """Evaluate a scalar objective and gradient through a canonical transform API."""
+
+    if method == "parameter_shift":
+        return value_and_parameter_shift_grad(
+            cast(ScalarObjective, objective),
+            values,
+            parameters=parameters,
+            rule=rule,
+        )
+    if method == "finite_difference":
+        return value_and_finite_difference_grad(
+            cast(ScalarObjective, objective),
+            values,
+            parameters=parameters,
+            step=1.0e-6 if step is None else step,
+        )
+    if method == "complex_step":
+        return value_and_complex_step_grad(
+            cast(ComplexStepObjective, objective),
+            values,
+            parameters=parameters,
+            step=1.0e-30 if step is None else step,
+        )
+    raise ValueError(
+        "gradient method must be one of: parameter_shift, finite_difference, complex_step"
+    )
+
+
+def grad(
+    objective: Callable[[Any], Any],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "parameter_shift",
+    rule: ParameterShiftRule | None = None,
+    step: float | None = None,
+) -> NDArray[np.float64]:
+    """Return a scalar-objective gradient through the canonical transform API."""
+
+    result = value_and_grad(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+        rule=rule,
+        step=step,
+    )
+    return result.gradient
+
+
+def value_and_jacobian(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> JacobianResult:
+    """Evaluate a vector objective and Jacobian through the canonical transform API."""
+
+    if method != "finite_difference":
+        raise ValueError("Jacobian method must be finite_difference")
+    return value_and_finite_difference_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+
+
+def jacobian(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a vector-objective Jacobian through the canonical transform API."""
+
+    return value_and_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+        step=step,
+    ).jacobian
+
+
+def value_and_hessian(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-4,
+) -> HessianResult:
+    """Evaluate a scalar objective and Hessian through the canonical transform API."""
+
+    if method != "finite_difference":
+        raise ValueError("Hessian method must be finite_difference")
+    return value_and_finite_difference_hessian(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+
+
+def hessian(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-4,
+) -> NDArray[np.float64]:
+    """Return a scalar-objective Hessian through the canonical transform API."""
+
+    return value_and_hessian(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+        step=step,
+    ).hessian
+
+
 def batch_value_and_finite_difference_grad(
     objectives: Sequence[ScalarObjective],
     values: ArrayLike,
@@ -3317,8 +3454,11 @@ __all__ = [
     "finite_difference_jvp",
     "finite_difference_vjp",
     "gauss_newton_gradient",
+    "grad",
     "huber_residual_weights",
+    "hessian",
     "is_jax_autodiff_available",
+    "jacobian",
     "jax_value_and_grad",
     "least_squares_covariance",
     "levenberg_marquardt_step",
@@ -3326,6 +3466,7 @@ __all__ = [
     "soft_l1_residual_weights",
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",
+    "value_and_grad",
     "parameter_shift_gradient",
     "value_and_complex_step_grad",
     "value_and_finite_difference_grad",
@@ -3333,6 +3474,8 @@ __all__ = [
     "value_and_finite_difference_hvp",
     "value_and_finite_difference_jacobian",
     "value_and_finite_difference_jvp",
+    "value_and_hessian",
+    "value_and_jacobian",
     "value_and_parameter_shift_grad",
     "vector_jacobian_product",
 ]

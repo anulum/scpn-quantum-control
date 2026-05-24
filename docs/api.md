@@ -411,7 +411,10 @@ from scpn_quantum_control import (
     finite_difference_jvp,
     finite_difference_vjp,
     gauss_newton_gradient,
+    grad,
+    hessian,
     huber_residual_weights,
+    jacobian,
     least_squares_covariance,
     levenberg_marquardt_step,
     parameter_shift_gradient,
@@ -423,6 +426,9 @@ from scpn_quantum_control import (
     value_and_finite_difference_hvp,
     value_and_finite_difference_jacobian,
     value_and_finite_difference_jvp,
+    value_and_grad,
+    value_and_hessian,
+    value_and_jacobian,
     value_and_parameter_shift_grad,
     vector_jacobian_product,
 )
@@ -502,6 +508,8 @@ WeightedGradientResult(value, gradient, components, weights, method, evaluations
 armijo_backtracking_line_search(objective, values, gradient_result, direction, bounds=None, initial_step=1.0, contraction=0.5, sufficient_decrease=1e-4, max_steps=20) -> ArmijoLineSearchResult
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
+grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> np.ndarray
+value_and_grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
 batch_value_and_parameter_shift_grad(objectives, values, parameters=None, rule=None) -> tuple[GradientResult, ...]
 finite_difference_gradient(objective, values, parameters=None, step=1e-6) -> np.ndarray
@@ -513,6 +521,8 @@ batch_complex_step_gradient(objectives, values, parameters=None, step=1e-30) -> 
 batch_value_and_complex_step_grad(objectives, values, parameters=None, step=1e-30) -> tuple[GradientResult, ...]
 finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
+jacobian(objective, values, parameters=None, method="finite_difference", step=1e-6) -> np.ndarray
+value_and_jacobian(objective, values, parameters=None, method="finite_difference", step=1e-6) -> JacobianResult
 finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> JVPResult
 batch_finite_difference_jvp(objective, values, tangents, parameters=None, step=1e-6) -> np.ndarray
@@ -524,6 +534,8 @@ batch_vector_jacobian_product(jacobian, cotangents) -> tuple[VJPResult, ...]
 vector_jacobian_product(jacobian, cotangent) -> VJPResult
 finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
+hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> np.ndarray
+value_and_hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> HessianResult
 finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
 value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
 batch_finite_difference_hvp(objective, values, tangents, parameters=None, step=1e-5) -> np.ndarray
@@ -590,6 +602,11 @@ rules can be validated before being used in training loops.
 The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.
+The canonical transform helpers `grad()`, `value_and_grad()`, `jacobian()`, and
+`hessian()` provide stable user-facing names with explicit method dispatch. This
+keeps today's parameter-shift, finite-difference, and complex-step backends
+compatible while leaving room for future reverse-mode, forward-mode, sparse, and
+implicit-differentiation implementations behind the same public contract.
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.

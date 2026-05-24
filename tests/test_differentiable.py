@@ -66,8 +66,11 @@ from scpn_quantum_control.differentiable import (
     finite_difference_jvp,
     finite_difference_vjp,
     gauss_newton_gradient,
+    grad,
+    hessian,
     huber_residual_weights,
     is_jax_autodiff_available,
+    jacobian,
     jax_value_and_grad,
     least_squares_covariance,
     levenberg_marquardt_step,
@@ -81,6 +84,9 @@ from scpn_quantum_control.differentiable import (
     value_and_finite_difference_hvp,
     value_and_finite_difference_jacobian,
     value_and_finite_difference_jvp,
+    value_and_grad,
+    value_and_hessian,
+    value_and_jacobian,
     value_and_parameter_shift_grad,
     vector_jacobian_product,
     weighted_gradient_sum,
@@ -281,6 +287,84 @@ def test_batch_complex_step_gradient_matches_analytic_derivatives() -> None:
     )
     with pytest.raises(ValueError, match="objectives"):
         batch_complex_step_gradient([], [0.25])
+
+
+def test_canonical_gradient_transform_dispatches_supported_methods() -> None:
+    """Canonical grad transforms should provide a stable method-selected API."""
+
+    parameter_shift = value_and_grad(
+        lambda values: np.sin(values[0]),
+        [0.25],
+        parameters=[Parameter("theta")],
+    )
+    finite_difference = value_and_grad(
+        lambda values: values[0] ** 2,
+        [0.25],
+        method="finite_difference",
+        step=1.0e-6,
+    )
+    complex_step = value_and_grad(
+        lambda values: np.exp(values[0]),
+        [0.25],
+        method="complex_step",
+    )
+
+    assert parameter_shift.method == "parameter_shift"
+    assert finite_difference.method == "finite_difference_central"
+    assert complex_step.method == "complex_step"
+    np.testing.assert_allclose(grad(lambda values: np.sin(values[0]), [0.25]), [math.cos(0.25)])
+    np.testing.assert_allclose(finite_difference.gradient, [0.5], rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        complex_step.gradient,
+        [math.exp(0.25)],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+
+    with pytest.raises(ValueError, match="gradient method"):
+        value_and_grad(lambda values: values[0], [0.25], method="reverse")
+
+
+def test_canonical_jacobian_and_hessian_transforms() -> None:
+    """Canonical second-order transform names should dispatch with provenance."""
+
+    jacobian_result = value_and_jacobian(
+        lambda values: np.array([values[0] ** 2, values[0] + 3.0 * values[1]]),
+        [2.0, -1.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+        step=1.0e-6,
+    )
+    hessian_result = value_and_hessian(
+        lambda values: values[0] ** 2 + values[0] * values[1],
+        [2.0, -1.0],
+        step=1.0e-4,
+    )
+
+    assert isinstance(jacobian_result, JacobianResult)
+    assert isinstance(hessian_result, HessianResult)
+    np.testing.assert_allclose(jacobian_result.jacobian, [[4.0, 0.0], [1.0, 0.0]], atol=1.0e-6)
+    np.testing.assert_allclose(
+        jacobian(lambda values: np.array([values[0] + values[1]]), [2.0, -1.0]),
+        [[1.0, 1.0]],
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        hessian_result.hessian,
+        [[2.0, 1.0], [1.0, 0.0]],
+        rtol=1.0e-5,
+        atol=1.0e-5,
+    )
+    np.testing.assert_allclose(
+        hessian(lambda values: values[0] ** 2, [2.0]),
+        [[2.0]],
+        rtol=1.0e-5,
+        atol=1.0e-5,
+    )
+
+    with pytest.raises(ValueError, match="Jacobian method"):
+        value_and_jacobian(lambda values: np.array([values[0]]), [0.25], method="reverse")
+    with pytest.raises(ValueError, match="Hessian method"):
+        value_and_hessian(lambda values: values[0] ** 2, [0.25], method="reverse")
 
 
 def test_weighted_gradient_sum_preserves_component_provenance() -> None:
@@ -2145,7 +2229,10 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.finite_difference_jvp is finite_difference_jvp
     assert scpn.finite_difference_vjp is finite_difference_vjp
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
+    assert scpn.grad is grad
+    assert scpn.hessian is hessian
     assert scpn.huber_residual_weights is huber_residual_weights
+    assert scpn.jacobian is jacobian
     assert scpn.least_squares_covariance is least_squares_covariance
     assert scpn.levenberg_marquardt_step is levenberg_marquardt_step
     assert scpn.natural_gradient is natural_gradient
@@ -2161,6 +2248,9 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.batch_vector_jacobian_product is batch_vector_jacobian_product
     assert scpn.value_and_finite_difference_hvp is value_and_finite_difference_hvp
     assert scpn.value_and_finite_difference_jvp is value_and_finite_difference_jvp
+    assert scpn.value_and_grad is value_and_grad
+    assert scpn.value_and_hessian is value_and_hessian
+    assert scpn.value_and_jacobian is value_and_jacobian
     assert scpn.vector_jacobian_product is vector_jacobian_product
 
 
