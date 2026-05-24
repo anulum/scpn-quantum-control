@@ -144,6 +144,19 @@ def test_rejects_invalid_knm_invariants():
             replay_id="r",
         )
 
+    K_directed_large_scale = np.array([[0.0, 1.0e9], [1.0e9 + 1.0e3, 0.0]])
+    with pytest.raises(ValueError, match="symmetric"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=K_directed_large_scale,
+            omega=[1.0, 2.0],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
 
 def test_rejects_shape_mismatch_and_missing_metadata():
     with pytest.raises(ValueError, match="omega shape"):
