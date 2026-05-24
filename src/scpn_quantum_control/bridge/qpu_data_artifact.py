@@ -342,6 +342,8 @@ class QPUDataArtifact:
         payload = _require_mapping("SC-NeuroCore datastream payload", payload)
         if payload.get("schema_version") != SC_NEUROCORE_STREAM_SCHEMA:
             raise ValueError("unsupported SC-NeuroCore datastream schema version")
+        if payload.get("seed") is None:
+            raise ValueError("seed is required for SC-NeuroCore replay identity")
         K_nm = payload["knm"]
         omega = payload["omega_rad_s"]
         layer_ids = payload.get("layer_ids", [])
@@ -362,7 +364,7 @@ class QPUDataArtifact:
             layer_assignments=layer_ids,
             normalization=normalization,
             extraction_method=extraction_method,
-            replay_id=f"seed:{payload.get('seed')}",
+            replay_id=f"seed:{payload['seed']}",
             metadata=metadata,
         )
 
