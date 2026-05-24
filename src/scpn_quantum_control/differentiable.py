@@ -1981,6 +1981,51 @@ def complex_step_gradient(
     return result.gradient
 
 
+def batch_complex_step_gradient(
+    objectives: Sequence[ComplexStepObjective],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-30,
+) -> NDArray[np.float64]:
+    """Return stacked complex-step gradients for real-analytic objectives."""
+
+    if not objectives:
+        raise ValueError("objectives must contain at least one scalar objective")
+    rows = [
+        complex_step_gradient(
+            objective,
+            values,
+            parameters=parameters,
+            step=step,
+        )
+        for objective in objectives
+    ]
+    return np.vstack(rows)
+
+
+def batch_value_and_complex_step_grad(
+    objectives: Sequence[ComplexStepObjective],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-30,
+) -> tuple[GradientResult, ...]:
+    """Return full complex-step results for multiple scalar objectives."""
+
+    if not objectives:
+        raise ValueError("objectives must contain at least one scalar objective")
+    return tuple(
+        value_and_complex_step_grad(
+            objective,
+            values,
+            parameters=parameters,
+            step=step,
+        )
+        for objective in objectives
+    )
+
+
 def batch_value_and_finite_difference_grad(
     objectives: Sequence[ScalarObjective],
     values: ArrayLike,
@@ -3250,7 +3295,9 @@ __all__ = [
     "batch_finite_difference_hvp",
     "batch_finite_difference_jvp",
     "batch_finite_difference_vjp",
+    "batch_complex_step_gradient",
     "batch_parameter_shift_gradient",
+    "batch_value_and_complex_step_grad",
     "batch_value_and_finite_difference_grad",
     "batch_value_and_finite_difference_hvp",
     "batch_value_and_finite_difference_jvp",

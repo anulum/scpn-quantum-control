@@ -389,6 +389,7 @@ from scpn_quantum_control import (
     ParameterShiftRule,
     VJPResult,
     armijo_backtracking_line_search,
+    batch_complex_step_gradient,
     batch_finite_difference_hvp,
     batch_finite_difference_jvp,
     batch_finite_difference_vjp,
@@ -396,6 +397,7 @@ from scpn_quantum_control import (
     batch_value_and_finite_difference_hvp,
     batch_value_and_finite_difference_jvp,
     batch_value_and_finite_difference_vjp,
+    batch_value_and_complex_step_grad,
     batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     complex_step_gradient,
@@ -507,6 +509,8 @@ value_and_finite_difference_grad(objective, values, parameters=None, step=1e-6) 
 batch_value_and_finite_difference_grad(objectives, values, parameters=None, step=1e-6) -> tuple[GradientResult, ...]
 complex_step_gradient(objective, values, parameters=None, step=1e-30) -> np.ndarray
 value_and_complex_step_grad(objective, values, parameters=None, step=1e-30) -> GradientResult
+batch_complex_step_gradient(objectives, values, parameters=None, step=1e-30) -> np.ndarray
+batch_value_and_complex_step_grad(objectives, values, parameters=None, step=1e-30) -> tuple[GradientResult, ...]
 finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
 finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> np.ndarray
@@ -576,7 +580,10 @@ using `parameter_shift_gradient()` when the generator rule is known.
 `complex_step_gradient()` provides high-accuracy first derivatives for
 real-analytic scalar objectives that can safely propagate infinitesimal complex
 perturbations; the public parameter boundary remains real-valued, and objective
-outputs must still be scalar and finite.
+outputs must still be scalar and finite. The batched complex-step helpers mirror
+the parameter-shift and finite-difference batch contracts so multi-objective
+calibration workflows retain per-objective value, metadata, and evaluation
+provenance.
 `check_parameter_shift_consistency()` compares a parameter-shift candidate
 against central finite differences and returns explicit error metrics, so custom
 rules can be validated before being used in training loops.

@@ -41,10 +41,12 @@ from scpn_quantum_control.differentiable import (
     VJPResult,
     WeightedGradientResult,
     armijo_backtracking_line_search,
+    batch_complex_step_gradient,
     batch_finite_difference_hvp,
     batch_finite_difference_jvp,
     batch_finite_difference_vjp,
     batch_parameter_shift_gradient,
+    batch_value_and_complex_step_grad,
     batch_value_and_finite_difference_grad,
     batch_value_and_finite_difference_hvp,
     batch_value_and_finite_difference_jvp,
@@ -217,10 +219,20 @@ def test_batch_value_gradient_results_preserve_metadata() -> None:
         [0.25],
         parameters=[Parameter("theta")],
     )
+    complex_step_results = batch_value_and_complex_step_grad(
+        [
+            lambda values: np.sin(values[0]),
+            lambda values: values[0] ** 3,
+        ],
+        [0.25],
+        parameters=[Parameter("theta")],
+    )
 
     assert len(parameter_shift_results) == 2
+    assert len(complex_step_results) == 2
     assert parameter_shift_results[0].parameter_names == ("theta",)
     assert parameter_shift_results[0].method == "parameter_shift"
+    assert complex_step_results[0].method == "complex_step"
     assert finite_difference_results[0].method == "finite_difference_central"
     np.testing.assert_allclose(
         [result.value for result in parameter_shift_results],
@@ -229,6 +241,12 @@ def test_batch_value_gradient_results_preserve_metadata() -> None:
     )
     np.testing.assert_allclose(finite_difference_results[0].gradient, [0.5], atol=1.0e-6)
     np.testing.assert_allclose(finite_difference_results[1].gradient, [3.0], atol=1.0e-6)
+    np.testing.assert_allclose(
+        [result.gradient[0] for result in complex_step_results],
+        [math.cos(0.25), 3.0 * 0.25**2],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
 
 
 def test_batch_value_gradient_results_reject_empty_objectives() -> None:
@@ -238,6 +256,31 @@ def test_batch_value_gradient_results_reject_empty_objectives() -> None:
         batch_value_and_parameter_shift_grad([], [0.25])
     with pytest.raises(ValueError, match="objectives"):
         batch_value_and_finite_difference_grad([], [0.25])
+    with pytest.raises(ValueError, match="objectives"):
+        batch_value_and_complex_step_grad([], [0.25])
+
+
+def test_batch_complex_step_gradient_matches_analytic_derivatives() -> None:
+    """Batched complex-step gradients should stack analytic scalar results."""
+
+    gradients = batch_complex_step_gradient(
+        [
+            lambda values: np.sin(values[0]) + values[1] ** 2,
+            lambda values: values[0] * values[1],
+        ],
+        [0.25, -0.5],
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+    )
+
+    assert gradients.shape == (2, 2)
+    np.testing.assert_allclose(
+        gradients,
+        [[math.cos(0.25), 0.0], [-0.5, 0.0]],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+    with pytest.raises(ValueError, match="objectives"):
+        batch_complex_step_gradient([], [0.25])
 
 
 def test_weighted_gradient_sum_preserves_component_provenance() -> None:
@@ -2068,6 +2111,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.ParameterBounds is ParameterBounds
     assert scpn.WeightedGradientResult is WeightedGradientResult
     assert scpn.VJPResult is VJPResult
+    assert scpn.batch_complex_step_gradient is batch_complex_step_gradient
+    assert scpn.batch_value_and_complex_step_grad is batch_value_and_complex_step_grad
     assert scpn.complex_step_gradient is complex_step_gradient
     assert scpn.value_and_complex_step_grad is value_and_complex_step_grad
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
