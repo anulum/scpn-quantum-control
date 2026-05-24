@@ -143,7 +143,17 @@ def _validate_sha256_hex(name: str, value: Any) -> str:
     return value
 
 
+def _reject_implicit_numeric_coercion(name: str, value: Any) -> None:
+    array = np.asarray(value, dtype=object)
+    for item in array.flat:
+        if isinstance(item, bool | np.bool_ | str | bytes | np.str_ | np.bytes_):
+            raise ValueError(f"{name} entries must be numeric")
+        if isinstance(item, complex | np.complexfloating):
+            raise ValueError(f"{name} entries must be real numeric")
+
+
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
+    _reject_implicit_numeric_coercion(name, value)
     array = np.array(value, dtype=np.float64, copy=True)
     if array.ndim != ndim:
         raise ValueError(f"{name} must be {ndim}-D, got shape {array.shape}")
@@ -166,9 +176,9 @@ class QPUDataArtifact:
     domain: str
     source_name: str
     source_mode: str
-    K_nm: NDArray[np.float64]
-    omega: NDArray[np.float64]
-    theta0: NDArray[np.float64] | None = None
+    K_nm: Any
+    omega: Any
+    theta0: Any | None = None
     layer_assignments: Sequence[str] = ()
     normalization: str = ""
     extraction_method: str = ""
@@ -282,13 +292,9 @@ class QPUDataArtifact:
             domain=data["domain"],
             source_name=data["source_name"],
             source_mode=data["source_mode"],
-            K_nm=np.asarray(data["K_nm"], dtype=np.float64),
-            omega=np.asarray(data["omega"], dtype=np.float64),
-            theta0=(
-                None
-                if data.get("theta0") is None
-                else np.asarray(data["theta0"], dtype=np.float64)
-            ),
+            K_nm=data["K_nm"],
+            omega=data["omega"],
+            theta0=data.get("theta0"),
             layer_assignments=data.get("layer_assignments", []),
             normalization=data["normalization"],
             extraction_method=data["extraction_method"],
@@ -400,15 +406,15 @@ def artifact_from_arrays(
         domain=domain,
         source_name=source_name,
         source_mode=source_mode,
-        K_nm=np.asarray(K_nm, dtype=np.float64),
-        omega=np.asarray(omega, dtype=np.float64),
-        theta0=None if theta0 is None else np.asarray(theta0, dtype=np.float64),
-        layer_assignments=list(layer_assignments),
+        K_nm=K_nm,
+        omega=omega,
+        theta0=theta0,
+        layer_assignments=layer_assignments,
         normalization=normalization,
         extraction_method=extraction_method,
         source_timestamp=source_timestamp,
         replay_id=replay_id,
-        metadata=dict(metadata or {}),
+        metadata={} if metadata is None else metadata,
     )
 
 

@@ -134,6 +134,9 @@ Diagonal and symmetry checks use absolute tolerance only (`atol=1e-12`,
 relative tolerance. Lag, directionality, hypergraph terms, and non-reciprocal couplings
 belong in metadata or a future specialised schema. They must not be
 silently forced into this symmetric Kuramoto-XY contract.
+Numerical payloads must be real numeric values before conversion to `float64`;
+strings, bytes, booleans, and complex values are rejected instead of being
+implicitly coerced into coupling, frequency, or phase values.
 
 ## Publication gate
 
@@ -207,6 +210,7 @@ The tests cover:
 - large-scale directed `K_nm` rejection without relative-tolerance masking
 - empty zero-oscillator `K_nm` rejection
 - shape and metadata rejection
+- numeric payload rejection for string, boolean, and complex coercion
 - SC-NeuroCore datastream adaptation
 - schema-version rejection
 - defensive-copy/read-only array immutability
