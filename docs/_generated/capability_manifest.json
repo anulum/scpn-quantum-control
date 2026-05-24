@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 345,
+    "public_api_exports": 352,
     "public_documentation_pages": 235,
-    "python_model_classes": 1466,
+    "python_model_classes": 1467,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -2086,6 +2086,10 @@
       {
         "name": "DomainViOverviewCyberneticClosureMetaLayer16FixtureResult",
         "path": "src/scpn_quantum_control/paper0/domain_vi_overview_cybernetic_closure_meta_layer_16_validation.py"
+      },
+      {
+        "name": "DualNumber",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "DynamicCouplingConfig",
@@ -7764,6 +7768,7 @@
     "DWaveLeapHALAdapter",
     "DifferentiableOptimizer",
     "DisruptionBenchmark",
+    "DualNumber",
     "DynamicCouplingConfig",
     "DynamicCouplingEngine",
     "ExecutionRegion",
@@ -7938,6 +7943,10 @@
     "compound_mitigate_pipeline",
     "concatenated_logical_rate",
     "disposition_entanglement_map",
+    "dual_cos",
+    "dual_exp",
+    "dual_log",
+    "dual_sin",
     "dwave_bqm_workload",
     "dynq_initial_layout",
     "eeg_plv_to_vqe",
@@ -7959,6 +7968,7 @@
     "finite_difference_jvp",
     "finite_difference_vjp",
     "forecasting",
+    "forward_mode_gradient",
     "from_fusion_core_shot",
     "gate_fold_circuit",
     "gauge",
@@ -8072,6 +8082,7 @@
     "value_and_finite_difference_hvp",
     "value_and_finite_difference_jacobian",
     "value_and_finite_difference_jvp",
+    "value_and_forward_mode_grad",
     "value_and_grad",
     "value_and_hessian",
     "value_and_jacobian",

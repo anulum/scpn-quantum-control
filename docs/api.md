@@ -368,6 +368,7 @@ those extras are installed.
 from scpn_quantum_control import (
     ArmijoLineSearchResult,
     DifferentiableOptimizer,
+    DualNumber,
     FisherConjugateGradientResult,
     FisherVectorProductResult,
     GradientCheckResult,
@@ -402,6 +403,10 @@ from scpn_quantum_control import (
     batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    dual_cos,
+    dual_exp,
+    dual_log,
+    dual_sin,
     empirical_fisher_conjugate_gradient,
     empirical_fisher_vector_product,
     evaluate_levenberg_marquardt_step,
@@ -411,6 +416,7 @@ from scpn_quantum_control import (
     finite_difference_jacobian,
     finite_difference_jvp,
     finite_difference_vjp,
+    forward_mode_gradient,
     gauss_newton_gradient,
     grad,
     hessian,
@@ -428,6 +434,7 @@ from scpn_quantum_control import (
     value_and_finite_difference_hvp,
     value_and_finite_difference_jacobian,
     value_and_finite_difference_jvp,
+    value_and_forward_mode_grad,
     value_and_grad,
     value_and_hessian,
     value_and_jacobian,
@@ -485,6 +492,7 @@ Available primitives:
 
 ```python
 ArmijoLineSearchResult(values, value, step_size, direction, directional_derivative, accepted, evaluations, value_history, reason, parameter_names, trainable)
+DualNumber(primal, tangent=0.0)
 Parameter(name: str, trainable: bool = True)
 ParameterBounds(lower=None, upper=None, periodic=False)
 ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
@@ -512,6 +520,12 @@ armijo_backtracking_line_search(objective, values, gradient_result, direction, b
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
 parameter_shift_gradient_with_uncertainty(plus_values, minus_values, plus_variances, minus_variances, plus_shots, minus_shots=None, value=0.0, parameters=None, rule=None, confidence_level=0.95, confidence_z=1.959963984540054) -> StochasticGradientResult
+forward_mode_gradient(objective, values, parameters=None) -> np.ndarray
+value_and_forward_mode_grad(objective, values, parameters=None) -> GradientResult
+dual_sin(value) -> DualNumber
+dual_cos(value) -> DualNumber
+dual_exp(value) -> DualNumber
+dual_log(value) -> DualNumber
 grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> np.ndarray
 value_and_grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
@@ -597,6 +611,11 @@ using `parameter_shift_gradient()` when the generator rule is known.
 shot variances into gradient standard errors, diagonal covariance, and
 confidence radii. This keeps hardware-calibration gradients honest when finite
 shot budgets dominate deterministic numerical error.
+`forward_mode_gradient()` and `value_and_forward_mode_grad()` provide true
+dual-number forward-mode automatic differentiation for scalar objectives written
+against the `DualNumber` arithmetic contract and supported elementary
+primitives. The canonical `grad(..., method="forward_mode")` dispatches through
+this exact tangent-propagation path instead of finite differences.
 `complex_step_gradient()` provides high-accuracy first derivatives for
 real-analytic scalar objectives that can safely propagate infinitesimal complex
 perturbations; the public parameter boundary remains real-valued, and objective

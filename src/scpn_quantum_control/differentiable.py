@@ -110,6 +110,115 @@ class ParameterShiftRule:
 
 
 @dataclass(frozen=True)
+class DualNumber:
+    """Forward-mode automatic differentiation scalar with one tangent lane."""
+
+    primal: float
+    tangent: float = 0.0
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "primal", _as_real_scalar("dual primal", self.primal))
+        object.__setattr__(self, "tangent", _as_real_scalar("dual tangent", self.tangent))
+
+    @staticmethod
+    def coerce(value: object) -> DualNumber:
+        """Return a dual number, treating real scalars as zero-tangent constants."""
+
+        if isinstance(value, DualNumber):
+            return value
+        return DualNumber(_as_real_scalar("dual operand", value), 0.0)
+
+    def __add__(self, other: object) -> DualNumber:
+        rhs = DualNumber.coerce(other)
+        return DualNumber(self.primal + rhs.primal, self.tangent + rhs.tangent)
+
+    def __radd__(self, other: object) -> DualNumber:
+        return self.__add__(other)
+
+    def __sub__(self, other: object) -> DualNumber:
+        rhs = DualNumber.coerce(other)
+        return DualNumber(self.primal - rhs.primal, self.tangent - rhs.tangent)
+
+    def __rsub__(self, other: object) -> DualNumber:
+        lhs = DualNumber.coerce(other)
+        return lhs.__sub__(self)
+
+    def __mul__(self, other: object) -> DualNumber:
+        rhs = DualNumber.coerce(other)
+        return DualNumber(
+            self.primal * rhs.primal,
+            self.tangent * rhs.primal + self.primal * rhs.tangent,
+        )
+
+    def __rmul__(self, other: object) -> DualNumber:
+        return self.__mul__(other)
+
+    def __truediv__(self, other: object) -> DualNumber:
+        rhs = DualNumber.coerce(other)
+        if rhs.primal == 0.0:
+            raise ValueError("dual division denominator must be non-zero")
+        return DualNumber(
+            self.primal / rhs.primal,
+            (self.tangent * rhs.primal - self.primal * rhs.tangent) / rhs.primal**2,
+        )
+
+    def __rtruediv__(self, other: object) -> DualNumber:
+        lhs = DualNumber.coerce(other)
+        return lhs.__truediv__(self)
+
+    def __neg__(self) -> DualNumber:
+        return DualNumber(-self.primal, -self.tangent)
+
+    def __pow__(self, other: object) -> DualNumber:
+        rhs = DualNumber.coerce(other)
+        if self.primal <= 0.0 and rhs.tangent != 0.0:
+            raise ValueError("dual variable exponent requires positive base")
+        primal = self.primal**rhs.primal
+        if rhs.tangent == 0.0:
+            tangent = rhs.primal * self.primal ** (rhs.primal - 1.0) * self.tangent
+        else:
+            tangent = primal * (
+                rhs.tangent * float(np.log(self.primal)) + rhs.primal * self.tangent / self.primal
+            )
+        return DualNumber(primal, tangent)
+
+    def __rpow__(self, other: object) -> DualNumber:
+        lhs = DualNumber.coerce(other)
+        return lhs.__pow__(self)
+
+
+def dual_sin(value: object) -> DualNumber:
+    """Forward-mode sine primitive."""
+
+    arg = DualNumber.coerce(value)
+    return DualNumber(float(np.sin(arg.primal)), float(np.cos(arg.primal)) * arg.tangent)
+
+
+def dual_cos(value: object) -> DualNumber:
+    """Forward-mode cosine primitive."""
+
+    arg = DualNumber.coerce(value)
+    return DualNumber(float(np.cos(arg.primal)), -float(np.sin(arg.primal)) * arg.tangent)
+
+
+def dual_exp(value: object) -> DualNumber:
+    """Forward-mode exponential primitive."""
+
+    arg = DualNumber.coerce(value)
+    primal = float(np.exp(arg.primal))
+    return DualNumber(primal, primal * arg.tangent)
+
+
+def dual_log(value: object) -> DualNumber:
+    """Forward-mode natural-log primitive."""
+
+    arg = DualNumber.coerce(value)
+    if arg.primal <= 0.0:
+        raise ValueError("dual log input must be positive")
+    return DualNumber(float(np.log(arg.primal)), arg.tangent / arg.primal)
+
+
+@dataclass(frozen=True)
 class GradientResult:
     """Value, gradient, and provenance returned by a differentiable backend."""
 
@@ -1820,6 +1929,19 @@ def _as_scalar(value: float | int | np.floating[Any] | NDArray[np.float64]) -> f
     return scalar
 
 
+def _as_forward_mode_scalar(value: object) -> DualNumber:
+    """Return a scalar dual objective value."""
+
+    if isinstance(value, DualNumber):
+        return value
+    try:
+        return DualNumber(_as_real_scalar("forward-mode objective", value), 0.0)
+    except ValueError as exc:
+        if "scalar" in str(exc):
+            raise ValueError("forward-mode objective must return a scalar") from exc
+        raise
+
+
 def _as_complex_step_scalar(value: object) -> complex:
     """Return a scalar objective value that may carry a complex-step signal."""
 
@@ -2174,6 +2296,58 @@ def batch_value_and_complex_step_grad(
     )
 
 
+def value_and_forward_mode_grad(
+    objective: Callable[[tuple[DualNumber, ...]], object],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> GradientResult:
+    """Evaluate a scalar objective and exact forward-mode dual gradient."""
+
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    base_duals = tuple(DualNumber(float(value), 0.0) for value in parameter_values)
+    base_value = _as_forward_mode_scalar(objective(base_duals)).primal
+    gradient = np.zeros_like(parameter_values)
+    evaluations = 1
+
+    for index, parameter in enumerate(parameter_meta):
+        if not parameter.trainable:
+            continue
+        dual_values = tuple(
+            DualNumber(float(value), 1.0 if basis_index == index else 0.0)
+            for basis_index, value in enumerate(parameter_values)
+        )
+        gradient[index] = _as_forward_mode_scalar(objective(dual_values)).tangent
+        evaluations += 1
+
+    return GradientResult(
+        value=base_value,
+        gradient=gradient,
+        method="forward_mode_dual",
+        shift=None,
+        coefficient=None,
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
+def forward_mode_gradient(
+    objective: Callable[[tuple[DualNumber, ...]], object],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> NDArray[np.float64]:
+    """Return an exact forward-mode dual gradient for scalar objectives."""
+
+    return value_and_forward_mode_grad(
+        objective,
+        values,
+        parameters=parameters,
+    ).gradient
+
+
 def value_and_grad(
     objective: Callable[[Any], Any],
     values: ArrayLike,
@@ -2206,8 +2380,15 @@ def value_and_grad(
             parameters=parameters,
             step=1.0e-30 if step is None else step,
         )
+    if method == "forward_mode":
+        return value_and_forward_mode_grad(
+            cast(Callable[[tuple[DualNumber, ...]], object], objective),
+            values,
+            parameters=parameters,
+        )
     raise ValueError(
-        "gradient method must be one of: parameter_shift, finite_difference, complex_step"
+        "gradient method must be one of: parameter_shift, finite_difference, complex_step, "
+        "forward_mode"
     )
 
 
@@ -3553,6 +3734,7 @@ def jax_value_and_grad(
 __all__ = [
     "ArmijoLineSearchResult",
     "DifferentiableOptimizer",
+    "DualNumber",
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
     "GradientCheckResult",
@@ -3592,6 +3774,10 @@ __all__ = [
     "batch_vector_jacobian_product",
     "check_parameter_shift_consistency",
     "complex_step_gradient",
+    "dual_cos",
+    "dual_exp",
+    "dual_log",
+    "dual_sin",
     "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",
@@ -3602,6 +3788,7 @@ __all__ = [
     "finite_difference_jacobian",
     "finite_difference_jvp",
     "finite_difference_vjp",
+    "forward_mode_gradient",
     "gauss_newton_gradient",
     "grad",
     "huber_residual_weights",
@@ -3624,6 +3811,7 @@ __all__ = [
     "value_and_finite_difference_hvp",
     "value_and_finite_difference_jacobian",
     "value_and_finite_difference_jvp",
+    "value_and_forward_mode_grad",
     "value_and_hessian",
     "value_and_jacobian",
     "value_and_parameter_shift_grad",

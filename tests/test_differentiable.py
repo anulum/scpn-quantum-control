@@ -17,6 +17,7 @@ import pytest
 from scpn_quantum_control.differentiable import (
     ArmijoLineSearchResult,
     DifferentiableOptimizer,
+    DualNumber,
     FisherConjugateGradientResult,
     FisherVectorProductResult,
     GradientCheckResult,
@@ -56,6 +57,10 @@ from scpn_quantum_control.differentiable import (
     batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    dual_cos,
+    dual_exp,
+    dual_log,
+    dual_sin,
     empirical_fisher_conjugate_gradient,
     empirical_fisher_metric,
     empirical_fisher_vector_product,
@@ -66,6 +71,7 @@ from scpn_quantum_control.differentiable import (
     finite_difference_jacobian,
     finite_difference_jvp,
     finite_difference_vjp,
+    forward_mode_gradient,
     gauss_newton_gradient,
     grad,
     hessian,
@@ -86,6 +92,7 @@ from scpn_quantum_control.differentiable import (
     value_and_finite_difference_hvp,
     value_and_finite_difference_jacobian,
     value_and_finite_difference_jvp,
+    value_and_forward_mode_grad,
     value_and_grad,
     value_and_hessian,
     value_and_jacobian,
@@ -367,6 +374,68 @@ def test_canonical_jacobian_and_hessian_transforms() -> None:
         value_and_jacobian(lambda values: np.array([values[0]]), [0.25], method="reverse")
     with pytest.raises(ValueError, match="Hessian method"):
         value_and_hessian(lambda values: values[0] ** 2, [0.25], method="reverse")
+
+
+def test_forward_mode_dual_gradient_matches_analytic_derivative() -> None:
+    """Forward-mode dual numbers should propagate exact first-order tangents."""
+
+    def objective(values: tuple[DualNumber, ...]) -> DualNumber:
+        return dual_sin(values[0]) + values[0] * values[1] + values[1] ** 2
+
+    result = value_and_forward_mode_grad(
+        objective,
+        [0.25, -0.5],
+        parameters=[Parameter("theta"), Parameter("bias")],
+    )
+
+    assert result.method == "forward_mode_dual"
+    assert result.evaluations == 3
+    assert result.parameter_names == ("theta", "bias")
+    np.testing.assert_allclose(
+        result.gradient,
+        [math.cos(0.25) - 0.5, 0.25 - 1.0],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+    np.testing.assert_allclose(
+        forward_mode_gradient(lambda values: dual_exp(values[0]) + dual_log(values[0]), [2.0]),
+        [math.exp(2.0) + 0.5],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+    np.testing.assert_allclose(
+        grad(lambda values: dual_cos(values[0]), [0.25], method="forward_mode"),
+        [-math.sin(0.25)],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+
+
+def test_forward_mode_dual_gradient_respects_frozen_parameters() -> None:
+    """Forward-mode gradients should keep frozen tangent lanes zeroed."""
+
+    result = value_and_forward_mode_grad(
+        lambda values: values[0] ** 2 + values[0] * values[1],
+        [3.0, 5.0],
+        parameters=[Parameter("active"), Parameter("frozen", trainable=False)],
+    )
+
+    assert result.trainable == (True, False)
+    assert result.evaluations == 2
+    np.testing.assert_allclose(result.gradient, [11.0, 0.0])
+
+
+def test_forward_mode_dual_rejects_invalid_contracts() -> None:
+    """Forward-mode AD should fail closed on invalid scalar/domain contracts."""
+
+    with pytest.raises(ValueError, match="forward-mode objective must return a scalar"):
+        forward_mode_gradient(lambda _values: np.array([1.0, 2.0]), [1.0])
+    with pytest.raises(ValueError, match="dual log input must be positive"):
+        forward_mode_gradient(lambda values: dual_log(values[0]), [-1.0])
+    with pytest.raises(ValueError, match="dual division denominator"):
+        forward_mode_gradient(lambda values: values[0] / (values[0] - 1.0), [1.0])
+    with pytest.raises(ValueError, match="dual variable exponent"):
+        forward_mode_gradient(lambda values: (-1.0) ** values[0], [2.0])
 
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
@@ -2247,6 +2316,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
 
     assert scpn.ArmijoLineSearchResult is ArmijoLineSearchResult
     assert scpn.armijo_backtracking_line_search is armijo_backtracking_line_search
+    assert scpn.DualNumber is DualNumber
     assert scpn.FisherConjugateGradientResult is FisherConjugateGradientResult
     assert scpn.FisherVectorProductResult is FisherVectorProductResult
     assert scpn.ParameterShiftRule is ParameterShiftRule
@@ -2257,6 +2327,10 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.batch_complex_step_gradient is batch_complex_step_gradient
     assert scpn.batch_value_and_complex_step_grad is batch_value_and_complex_step_grad
     assert scpn.complex_step_gradient is complex_step_gradient
+    assert scpn.dual_cos is dual_cos
+    assert scpn.dual_exp is dual_exp
+    assert scpn.dual_log is dual_log
+    assert scpn.dual_sin is dual_sin
     assert scpn.value_and_complex_step_grad is value_and_complex_step_grad
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.batch_finite_difference_hvp is batch_finite_difference_hvp
@@ -2287,6 +2361,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.finite_difference_jvp is finite_difference_jvp
     assert scpn.finite_difference_vjp is finite_difference_vjp
+    assert scpn.forward_mode_gradient is forward_mode_gradient
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
     assert scpn.grad is grad
     assert scpn.hessian is hessian
@@ -2310,6 +2385,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.batch_vector_jacobian_product is batch_vector_jacobian_product
     assert scpn.value_and_finite_difference_hvp is value_and_finite_difference_hvp
     assert scpn.value_and_finite_difference_jvp is value_and_finite_difference_jvp
+    assert scpn.value_and_forward_mode_grad is value_and_forward_mode_grad
     assert scpn.value_and_grad is value_and_grad
     assert scpn.value_and_hessian is value_and_hessian
     assert scpn.value_and_jacobian is value_and_jacobian
