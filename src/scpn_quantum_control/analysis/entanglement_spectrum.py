@@ -107,16 +107,30 @@ def fit_cft_central_charge(
         S(l) = (c/3) log((n/π) sin(πl/n)) + const
     (Calabrese & Cardy 2004)
     """
-    if len(subsystem_sizes) < 3:
+    sizes = np.asarray(subsystem_sizes, dtype=np.float64)
+    entropy_values = np.asarray(entropies, dtype=np.float64)
+    if sizes.ndim != 1 or entropy_values.ndim != 1:
+        raise ValueError("subsystem_sizes and entropies must be one-dimensional arrays")
+    if sizes.shape[0] != entropy_values.shape[0]:
+        raise ValueError("subsystem_sizes and entropies must have the same length")
+    if not isinstance(n_total, int) or n_total < 2:
+        raise ValueError("n_total must be an integer at least 2")
+    if len(sizes) < 3:
         return None
+    if not np.all(np.isfinite(sizes)) or not np.all(np.isfinite(entropy_values)):
+        raise ValueError("subsystem_sizes and entropies must contain only finite values")
+    if np.any(sizes <= 0):
+        raise ValueError("subsystem_sizes must be positive")
+    if np.any(sizes >= n_total):
+        raise ValueError("subsystem_sizes must lie inside the chain")
 
     # Chord length: x(l) = (n/π) sin(πl/n)
-    x = (n_total / np.pi) * np.sin(np.pi * subsystem_sizes / n_total)
-    log_x = np.log(np.maximum(x, 1e-15))
+    x = (n_total / np.pi) * np.sin(np.pi * sizes / n_total)
+    log_x = np.log(x)
 
     # Linear fit: S = (c/3) × log(x) + const
     A = np.vstack([log_x, np.ones_like(log_x)]).T
-    result = np.linalg.lstsq(A, entropies, rcond=None)
+    result = np.linalg.lstsq(A, entropy_values, rcond=None)
     slope = result[0][0]
     c = 3.0 * slope
     return float(c)

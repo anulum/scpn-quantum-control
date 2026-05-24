@@ -101,6 +101,21 @@ class TestFitCFTCentralCharge:
         c = fit_cft_central_charge(sizes, entropies, 8)
         assert isinstance(c, float)
 
+    @pytest.mark.parametrize(
+        ("sizes", "entropies", "n_total", "match"),
+        [
+            (np.array([1.0, 2.0, 3.0]), np.array([0.1, 0.2]), 8, "same length"),
+            (np.array([1.0, 2.0, np.nan]), np.array([0.1, 0.2, 0.3]), 8, "finite"),
+            (np.array([1.0, 2.0, 3.0]), np.array([0.1, np.inf, 0.3]), 8, "finite"),
+            (np.array([0.0, 1.0, 2.0]), np.array([0.1, 0.2, 0.3]), 8, "positive"),
+            (np.array([1.0, 2.0, 8.0]), np.array([0.1, 0.2, 0.3]), 8, "inside the chain"),
+            (np.array([1.0, 2.0, 3.0]), np.array([0.1, 0.2, 0.3]), 1, "n_total"),
+        ],
+    )
+    def test_rejects_invalid_scaling_inputs(self, sizes, entropies, n_total, match):
+        with pytest.raises(ValueError, match=match):
+            fit_cft_central_charge(sizes, entropies, n_total)
+
 
 class TestEntanglementAnalysis:
     def test_returns_result(self):
