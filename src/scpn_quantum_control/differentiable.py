@@ -1165,6 +1165,31 @@ def empirical_fisher_metric(
     return cast(NDArray[np.float64], metric)
 
 
+def huber_residual_weights(
+    residuals: ArrayLike,
+    *,
+    delta: float = 1.0,
+    min_weight: float = 0.0,
+) -> NDArray[np.float64]:
+    """Return Huber IRLS weights for robust residual-map least squares."""
+
+    residual_arr = _as_vector_output(residuals)
+    delta_value = _as_real_scalar("Huber delta", delta)
+    if delta_value <= 0.0:
+        raise ValueError("Huber delta must be finite and positive")
+    min_weight_value = _as_real_scalar("Huber min_weight", min_weight)
+    if min_weight_value < 0.0 or min_weight_value > 1.0:
+        raise ValueError("Huber min_weight must be finite and in [0, 1]")
+
+    magnitudes = np.abs(residual_arr)
+    weights = np.ones_like(residual_arr, dtype=np.float64)
+    outliers = magnitudes > delta_value
+    weights[outliers] = delta_value / magnitudes[outliers]
+    if min_weight_value > 0.0:
+        weights = np.maximum(weights, min_weight_value)
+    return cast(NDArray[np.float64], weights)
+
+
 def gauss_newton_gradient(
     jacobian: JacobianResult,
     *,
@@ -1521,6 +1546,7 @@ __all__ = [
     "finite_difference_hessian",
     "finite_difference_jacobian",
     "gauss_newton_gradient",
+    "huber_residual_weights",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "levenberg_marquardt_step",

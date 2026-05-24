@@ -39,6 +39,7 @@ from scpn_quantum_control.differentiable import (
     finite_difference_hessian,
     finite_difference_jacobian,
     gauss_newton_gradient,
+    huber_residual_weights,
     is_jax_autodiff_available,
     jax_value_and_grad,
     levenberg_marquardt_step,
@@ -464,6 +465,51 @@ def test_gauss_newton_gradient_rejects_invalid_inputs() -> None:
         gauss_newton_gradient(jacobian_result, weights=np.array([1.0]))
     with pytest.raises(ValueError, match="non-negative"):
         gauss_newton_gradient(jacobian_result, weights=np.array([1.0, -1.0]))
+
+
+def test_huber_residual_weights_downweight_outliers_for_residual_maps() -> None:
+    """Huber IRLS weights should preserve inliers and bound outlier influence."""
+
+    weights = huber_residual_weights(np.array([0.0, 0.5, -2.0, 10.0]), delta=1.0)
+
+    np.testing.assert_allclose(weights, [1.0, 1.0, 0.5, 0.1])
+
+
+def test_huber_residual_weights_support_floor_for_conditioning() -> None:
+    """A positive floor prevents outlier weights from collapsing to zero."""
+
+    weights = huber_residual_weights(np.array([1.0, 100.0]), delta=1.0, min_weight=0.05)
+
+    np.testing.assert_allclose(weights, [1.0, 0.05])
+
+
+def test_huber_residual_weights_reject_invalid_controls() -> None:
+    """Robust residual weighting must reject invalid residual and policy inputs."""
+
+    with pytest.raises(ValueError, match="one-dimensional"):
+        huber_residual_weights(np.array([[1.0]]))
+    with pytest.raises(ValueError, match="Huber delta"):
+        huber_residual_weights(np.array([1.0]), delta=0.0)
+    with pytest.raises(ValueError, match="Huber min_weight"):
+        huber_residual_weights(np.array([1.0]), min_weight=-0.1)
+    with pytest.raises(ValueError, match="Huber min_weight"):
+        huber_residual_weights(np.array([1.0]), min_weight=1.1)
+
+
+def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
+    """Robust weights should plug directly into Gauss-Newton residual solves."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] - 1.0, 10.0 * (values[1] - 1.0)]),
+        [3.0, 2.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    weights = huber_residual_weights(jacobian_result.value, delta=2.0)
+    result = gauss_newton_gradient(jacobian_result, weights=weights, damping=0.5)
+
+    np.testing.assert_allclose(weights, [1.0, 0.2], atol=1.0e-6)
+    np.testing.assert_allclose(result.base_gradient.gradient, [2.0, 20.0], atol=1.0e-6)
+    assert result.condition_number > 1.0
 
 
 def test_levenberg_marquardt_step_builds_bounded_candidate() -> None:
@@ -1236,6 +1282,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
+    assert scpn.huber_residual_weights is huber_residual_weights
     assert scpn.levenberg_marquardt_step is levenberg_marquardt_step
     assert scpn.natural_gradient is natural_gradient
     assert scpn.update_levenberg_marquardt_damping is update_levenberg_marquardt_damping

@@ -384,6 +384,7 @@ from scpn_quantum_control import (
     finite_difference_hessian,
     finite_difference_jacobian,
     gauss_newton_gradient,
+    huber_residual_weights,
     levenberg_marquardt_step,
     parameter_shift_gradient,
     update_levenberg_marquardt_damping,
@@ -459,6 +460,7 @@ value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
 evaluate_levenberg_marquardt_step(objective, step_result, weights=None, acceptance_threshold=1e-4) -> LevenbergMarquardtTrial
 gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
+huber_residual_weights(residuals, delta=1.0, min_weight=0.0) -> np.ndarray
 levenberg_marquardt_step(jacobian, values, weights=None, damping=1e-3, bounds=None, max_step_norm=None, rcond=1e-12) -> LevenbergMarquardtStep
 update_levenberg_marquardt_damping(trial, decrease_factor=1/3, increase_factor=2.0, min_damping=1e-12, max_damping=1e12, high_quality_ratio=0.75) -> LevenbergMarquardtDampingUpdate
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
@@ -517,6 +519,9 @@ for natural-gradient preconditioning.
 least-squares gradient ``J.T @ W @ r`` and solves the damped Gauss-Newton
 metric system on trainable parameters; subtract the returned
 `natural_gradient` component from parameters for a residual-minimising update.
+`huber_residual_weights()` computes robust IRLS weights for residual maps,
+preserving quadratic behaviour near zero residuals while downweighting outliers
+before they enter Fisher, Gauss-Newton, or Levenberg-Marquardt solves.
 `levenberg_marquardt_step()` turns that preconditioned residual solve into a
 bounded candidate update with optional physical bounds, trainable-step norm
 limiting, and predicted quadratic-model reduction for accept/reject policies.
