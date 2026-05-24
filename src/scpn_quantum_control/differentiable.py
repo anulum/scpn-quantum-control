@@ -357,6 +357,46 @@ class NaturalGradientResult:
 
 
 @dataclass(frozen=True)
+class WeightedGradientResult:
+    """Weighted scalarisation of multiple scalar gradient results."""
+
+    value: float
+    gradient: NDArray[np.float64]
+    components: tuple[GradientResult, ...]
+    weights: NDArray[np.float64]
+    method: str
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        if not self.components:
+            raise ValueError("weighted gradient components must be non-empty")
+        value = _as_real_scalar("weighted gradient value", self.value)
+        gradient = _as_real_numeric_array("weighted gradient", self.gradient)
+        weights = _as_real_numeric_array("weighted gradient weights", self.weights)
+        if gradient.ndim != 1:
+            raise ValueError("weighted gradient must be a one-dimensional array")
+        if weights.ndim != 1 or weights.size != len(self.components):
+            raise ValueError("weights length must match weighted gradient components")
+        if not np.all(np.isfinite(gradient)):
+            raise ValueError("weighted gradient must contain only finite values")
+        if not np.all(np.isfinite(weights)):
+            raise ValueError("weights must contain only finite values")
+        if not self.method:
+            raise ValueError("weighted gradient method must be non-empty")
+        if self.evaluations < 0:
+            raise ValueError("weighted gradient evaluations must be non-negative")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("trainable mask length must match gradient length")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "weights", weights)
+
+
+@dataclass(frozen=True)
 class DifferentiableOptimizer:
     """Small native gradient-descent optimizer for differentiable SCPN parameters."""
 
@@ -754,6 +794,55 @@ def batch_value_and_finite_difference_grad(
     )
 
 
+def weighted_gradient_sum(
+    components: Sequence[GradientResult],
+    weights: ArrayLike,
+    *,
+    method: str = "weighted_sum",
+) -> WeightedGradientResult:
+    """Combine compatible scalar gradient results by an explicit weight vector."""
+
+    component_tuple = tuple(components)
+    if not component_tuple:
+        raise ValueError("components must contain at least one GradientResult")
+    if any(not isinstance(component, GradientResult) for component in component_tuple):
+        raise ValueError("components must contain GradientResult instances")
+    weight_arr = _as_real_numeric_array("weights", weights)
+    if weight_arr.ndim != 1 or weight_arr.size != len(component_tuple):
+        raise ValueError("weights length must match components length")
+    if not np.all(np.isfinite(weight_arr)):
+        raise ValueError("weights must contain only finite values")
+    reference = component_tuple[0]
+    for component in component_tuple[1:]:
+        if component.gradient.shape != reference.gradient.shape:
+            raise ValueError("all component gradients must have matching shapes")
+        if component.parameter_names != reference.parameter_names:
+            raise ValueError("all component parameter_names must match")
+        if component.trainable != reference.trainable:
+            raise ValueError("all component trainable masks must match")
+    value = float(
+        sum(
+            float(weight) * component.value
+            for weight, component in zip(weight_arr, component_tuple)
+        )
+    )
+    gradient = np.zeros_like(reference.gradient)
+    evaluations = 0
+    for weight, component in zip(weight_arr, component_tuple):
+        gradient += float(weight) * component.gradient
+        evaluations += component.evaluations
+    return WeightedGradientResult(
+        value=value,
+        gradient=gradient,
+        components=component_tuple,
+        weights=weight_arr,
+        method=method,
+        evaluations=evaluations,
+        parameter_names=reference.parameter_names,
+        trainable=reference.trainable,
+    )
+
+
 def value_and_finite_difference_grad(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -1125,6 +1214,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "WeightedGradientResult",
     "batch_parameter_shift_gradient",
     "batch_value_and_finite_difference_grad",
     "batch_value_and_parameter_shift_grad",
@@ -1136,6 +1226,7 @@ __all__ = [
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "natural_gradient",
+    "weighted_gradient_sum",
     "parameter_shift_gradient",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",

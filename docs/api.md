@@ -434,6 +434,7 @@ GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, 
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
+WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
@@ -452,6 +453,7 @@ DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None
 is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
+weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGradientResult
 ```
 
 All native and optional-adapter inputs are fail-closed real-numeric boundaries:
@@ -497,6 +499,9 @@ number guarding for Fisher/Fubini-Study style preconditioners.
 `empirical_fisher_metric()` builds a validated weighted ``J.T @ W @ J`` metric
 from `JacobianResult` or raw Jacobian arrays, with optional non-negative damping
 for natural-gradient preconditioning.
+`weighted_gradient_sum()` combines compatible `GradientResult` components into a
+single scalarised multi-objective gradient while preserving component
+provenance, weights, evaluation counts, trainable masks, and parameter names.
 
 PennyLane VQE bridge:
 

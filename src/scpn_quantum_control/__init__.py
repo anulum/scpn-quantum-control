@@ -97,6 +97,7 @@ from .differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    WeightedGradientResult,
     batch_parameter_shift_gradient,
     batch_value_and_finite_difference_grad,
     batch_value_and_parameter_shift_grad,
@@ -113,6 +114,7 @@ from .differentiable import (
     value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
     value_and_parameter_shift_grad,
+    weighted_gradient_sum,
 )
 from .forecasting import (
     ForecastModelRun,
@@ -534,6 +536,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "WeightedGradientResult",
     "batch_parameter_shift_gradient",
     "batch_value_and_finite_difference_grad",
     "batch_value_and_parameter_shift_grad",
@@ -545,6 +548,7 @@ __all__ = [
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "natural_gradient",
+    "weighted_gradient_sum",
     "parameter_shift_gradient",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",

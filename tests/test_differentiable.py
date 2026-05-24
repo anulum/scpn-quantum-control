@@ -25,6 +25,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    WeightedGradientResult,
     batch_parameter_shift_gradient,
     batch_value_and_finite_difference_grad,
     batch_value_and_parameter_shift_grad,
@@ -41,6 +42,7 @@ from scpn_quantum_control.differentiable import (
     value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
     value_and_parameter_shift_grad,
+    weighted_gradient_sum,
 )
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 from scpn_quantum_control.qsnn.training import QSNNTrainer
@@ -197,6 +199,50 @@ def test_batch_value_gradient_results_reject_empty_objectives() -> None:
         batch_value_and_parameter_shift_grad([], [0.25])
     with pytest.raises(ValueError, match="objectives"):
         batch_value_and_finite_difference_grad([], [0.25])
+
+
+def test_weighted_gradient_sum_preserves_component_provenance() -> None:
+    """Weighted multi-objective aggregation should keep component metadata."""
+
+    components = batch_value_and_parameter_shift_grad(
+        [
+            lambda values: math.sin(values[0]),
+            lambda values: math.cos(values[0]),
+        ],
+        [0.25],
+        parameters=[Parameter("theta")],
+    )
+    result = weighted_gradient_sum(components, np.array([0.75, 0.25]))
+
+    assert isinstance(result, WeightedGradientResult)
+    assert result.components == components
+    assert result.evaluations == sum(component.evaluations for component in components)
+    assert result.parameter_names == ("theta",)
+    assert result.value == pytest.approx(0.75 * math.sin(0.25) + 0.25 * math.cos(0.25))
+    np.testing.assert_allclose(
+        result.gradient,
+        [0.75 * math.cos(0.25) - 0.25 * math.sin(0.25)],
+    )
+
+
+def test_weighted_gradient_sum_rejects_incompatible_components() -> None:
+    """Weighted aggregation must fail closed on metadata mismatches."""
+
+    first = value_and_parameter_shift_grad(
+        lambda values: math.sin(values[0]),
+        [0.1],
+        parameters=[Parameter("theta")],
+    )
+    second = value_and_parameter_shift_grad(
+        lambda values: math.sin(values[0]),
+        [0.1],
+        parameters=[Parameter("phi")],
+    )
+
+    with pytest.raises(ValueError, match="weights length"):
+        weighted_gradient_sum([first], np.array([1.0, 2.0]))
+    with pytest.raises(ValueError, match="parameter_names"):
+        weighted_gradient_sum([first, second], np.array([0.5, 0.5]))
 
 
 def test_finite_difference_gradient_matches_quadratic_derivative() -> None:
@@ -848,6 +894,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
 
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
+    assert scpn.WeightedGradientResult is WeightedGradientResult
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
@@ -859,6 +906,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.natural_gradient is natural_gradient
+    assert scpn.weighted_gradient_sum is weighted_gradient_sum
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
     assert scpn.batch_value_and_finite_difference_grad is batch_value_and_finite_difference_grad
