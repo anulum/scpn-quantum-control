@@ -318,6 +318,45 @@ class HessianResult:
 
 
 @dataclass(frozen=True)
+class NaturalGradientResult:
+    """Metric-preconditioned gradient with solve provenance."""
+
+    base_gradient: GradientResult
+    metric: NDArray[np.float64]
+    natural_gradient: NDArray[np.float64]
+    damping: float
+    condition_number: float
+
+    def __post_init__(self) -> None:
+        metric = _as_real_numeric_array("natural-gradient metric", self.metric)
+        natural_gradient = _as_real_numeric_array("natural_gradient", self.natural_gradient)
+        if metric.ndim != 2 or metric.shape[0] != metric.shape[1]:
+            raise ValueError("natural-gradient metric must be a square matrix")
+        if metric.shape[0] != self.base_gradient.gradient.size:
+            raise ValueError("natural-gradient metric dimension must match gradient length")
+        if natural_gradient.shape != self.base_gradient.gradient.shape:
+            raise ValueError("natural_gradient shape must match gradient shape")
+        if not np.all(np.isfinite(metric)):
+            raise ValueError("natural-gradient metric must contain only finite values")
+        if not np.all(np.isfinite(natural_gradient)):
+            raise ValueError("natural_gradient must contain only finite values")
+        if not np.allclose(metric, metric.T, atol=1.0e-10, rtol=1.0e-10):
+            raise ValueError("natural-gradient metric must be symmetric")
+        damping = _as_real_scalar("natural-gradient damping", self.damping)
+        if damping < 0.0:
+            raise ValueError("natural-gradient damping must be finite and non-negative")
+        condition_number = _as_real_scalar(
+            "natural-gradient condition_number", self.condition_number
+        )
+        if condition_number < 1.0:
+            raise ValueError("natural-gradient condition_number must be at least 1")
+        object.__setattr__(self, "metric", metric)
+        object.__setattr__(self, "natural_gradient", natural_gradient)
+        object.__setattr__(self, "damping", damping)
+        object.__setattr__(self, "condition_number", condition_number)
+
+
+@dataclass(frozen=True)
 class DifferentiableOptimizer:
     """Small native gradient-descent optimizer for differentiable SCPN parameters."""
 
@@ -901,6 +940,66 @@ def value_and_finite_difference_hessian(
     )
 
 
+def natural_gradient(
+    gradient_result: GradientResult,
+    metric: ArrayLike,
+    *,
+    damping: float = 0.0,
+    rcond: float = 1.0e-12,
+) -> NaturalGradientResult:
+    """Solve ``metric @ natural_gradient = gradient`` on trainable parameters."""
+
+    metric_arr = _as_real_numeric_array("natural-gradient metric", metric)
+    if metric_arr.ndim != 2 or metric_arr.shape != (
+        gradient_result.gradient.size,
+        gradient_result.gradient.size,
+    ):
+        raise ValueError("natural-gradient metric must have shape (n_parameters, n_parameters)")
+    if not np.all(np.isfinite(metric_arr)):
+        raise ValueError("natural-gradient metric must contain only finite values")
+    if not np.allclose(metric_arr, metric_arr.T, atol=1.0e-10, rtol=1.0e-10):
+        raise ValueError("natural-gradient metric must be symmetric")
+    damping_value = _as_real_scalar("natural-gradient damping", damping)
+    if damping_value < 0.0:
+        raise ValueError("natural-gradient damping must be finite and non-negative")
+    rcond_value = _as_real_scalar("natural-gradient rcond", rcond)
+    if rcond_value <= 0.0:
+        raise ValueError("natural-gradient rcond must be finite and positive")
+
+    trainable = np.asarray(gradient_result.trainable, dtype=bool)
+    result = np.zeros_like(gradient_result.gradient)
+    if not np.any(trainable):
+        return NaturalGradientResult(
+            base_gradient=gradient_result,
+            metric=metric_arr,
+            natural_gradient=result,
+            damping=damping_value,
+            condition_number=1.0,
+        )
+
+    active_metric = metric_arr[np.ix_(trainable, trainable)].copy()
+    if damping_value > 0.0:
+        active_metric += damping_value * np.eye(active_metric.shape[0], dtype=np.float64)
+    eigenvalues = np.linalg.eigvalsh(active_metric)
+    min_eigenvalue = float(np.min(eigenvalues))
+    max_eigenvalue = float(np.max(eigenvalues))
+    if min_eigenvalue <= 0.0:
+        raise ValueError(
+            "natural-gradient metric must be positive definite on trainable parameters"
+        )
+    condition_number = max_eigenvalue / min_eigenvalue
+    if condition_number > 1.0 / rcond_value:
+        raise ValueError("natural-gradient metric is ill-conditioned")
+    result[trainable] = np.linalg.solve(active_metric, gradient_result.gradient[trainable])
+    return NaturalGradientResult(
+        base_gradient=gradient_result,
+        metric=metric_arr,
+        natural_gradient=result,
+        damping=damping_value,
+        condition_number=condition_number,
+    )
+
+
 def check_parameter_shift_consistency(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -986,6 +1085,7 @@ __all__ = [
     "GradientResult",
     "HessianResult",
     "JacobianResult",
+    "NaturalGradientResult",
     "OptimizationResult",
     "Parameter",
     "ParameterBounds",
@@ -999,6 +1099,7 @@ __all__ = [
     "finite_difference_jacobian",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
+    "natural_gradient",
     "parameter_shift_gradient",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",

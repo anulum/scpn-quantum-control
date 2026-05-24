@@ -20,6 +20,7 @@ from scpn_quantum_control.differentiable import (
     GradientResult,
     HessianResult,
     JacobianResult,
+    NaturalGradientResult,
     OptimizationResult,
     Parameter,
     ParameterBounds,
@@ -33,6 +34,7 @@ from scpn_quantum_control.differentiable import (
     finite_difference_jacobian,
     is_jax_autodiff_available,
     jax_value_and_grad,
+    natural_gradient,
     parameter_shift_gradient,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
@@ -308,6 +310,66 @@ def test_finite_difference_hessian_rejects_invalid_step() -> None:
         finite_difference_hessian(lambda values: values[0] ** 2, [1.0], step="1e-4")
     with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
         finite_difference_hessian(lambda values: values[0] ** 2, [1.0], step=0.0)
+
+
+def test_natural_gradient_solves_trainable_metric_system() -> None:
+    """Natural gradient should precondition only trainable parameters."""
+
+    gradient = GradientResult(
+        value=1.0,
+        gradient=np.array([2.0, 4.0, 9.0]),
+        method="finite_difference_central",
+        shift=1.0e-6,
+        coefficient=5.0e5,
+        evaluations=7,
+        parameter_names=("x", "y", "frozen"),
+        trainable=(True, True, False),
+    )
+    result = natural_gradient(gradient, np.diag([2.0, 4.0, 99.0]))
+
+    assert isinstance(result, NaturalGradientResult)
+    np.testing.assert_allclose(result.natural_gradient, [1.0, 1.0, 0.0])
+    assert result.condition_number == pytest.approx(2.0)
+
+
+def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
+    """Damping should make semidefinite trainable metrics solvable."""
+
+    gradient = GradientResult(
+        value=1.0,
+        gradient=np.array([2.0]),
+        method="finite_difference_central",
+        shift=1.0e-6,
+        coefficient=5.0e5,
+        evaluations=3,
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+    result = natural_gradient(gradient, np.array([[0.0]]), damping=0.5)
+
+    np.testing.assert_allclose(result.natural_gradient, [4.0])
+
+
+def test_natural_gradient_rejects_invalid_metric() -> None:
+    """Natural-gradient metrics must be symmetric positive definite."""
+
+    gradient = GradientResult(
+        value=1.0,
+        gradient=np.array([1.0, 2.0]),
+        method="finite_difference_central",
+        shift=1.0e-6,
+        coefficient=5.0e5,
+        evaluations=5,
+        parameter_names=("x", "y"),
+        trainable=(True, True),
+    )
+
+    with pytest.raises(ValueError, match="symmetric"):
+        natural_gradient(gradient, np.array([[1.0, 2.0], [0.0, 1.0]]))
+    with pytest.raises(ValueError, match="positive definite"):
+        natural_gradient(gradient, np.diag([1.0, 0.0]))
+    with pytest.raises(ValueError, match="rcond"):
+        natural_gradient(gradient, np.eye(2), rcond=0.0)
 
 
 def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
@@ -763,9 +825,11 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.HessianResult is HessianResult
     assert scpn.JacobianResult is JacobianResult
+    assert scpn.NaturalGradientResult is NaturalGradientResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
     assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
+    assert scpn.natural_gradient is natural_gradient
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
     assert scpn.batch_value_and_finite_difference_grad is batch_value_and_finite_difference_grad

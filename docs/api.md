@@ -433,6 +433,7 @@ OptimizationResult(values, final_gradient, value_history, steps, converged, reas
 GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, tolerance, passed)
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
+NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
@@ -449,6 +450,7 @@ DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
 is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
+natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 ```
 
 All native and optional-adapter inputs are fail-closed real-numeric boundaries:
@@ -488,6 +490,9 @@ requiring stable one-dimensional finite outputs across all perturbations.
 `finite_difference_hessian()` and `value_and_finite_difference_hessian()`
 provide central-difference second-order curvature diagnostics for scalar losses;
 non-trainable parameters produce zero Hessian rows and columns.
+`natural_gradient()` solves a symmetric positive-definite metric system on the
+trainable parameter subspace, with optional non-negative damping and condition
+number guarding for Fisher/Fubini-Study style preconditioners.
 
 PennyLane VQE bridge:
 
