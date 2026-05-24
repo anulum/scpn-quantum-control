@@ -19,7 +19,10 @@ Covers:
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
+import pytest
 from qiskit import QuantumCircuit
 
 from scpn_quantum_control.phase.ancilla_lindblad import (
@@ -33,6 +36,10 @@ def _system(n: int = 3):
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
     return K, omega
+
+
+def _cry_angles(qc: QuantumCircuit) -> list[float]:
+    return [float(inst.operation.params[0]) for inst in qc.data if inst.operation.name == "cry"]
 
 
 class TestBuildCircuit:
@@ -91,6 +98,58 @@ class TestBuildCircuit:
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega, gamma=10.0, t=1.0)
         assert isinstance(qc, QuantumCircuit)
+
+    def test_dissipation_angle_uses_exact_finite_time_decay_probability(self):
+        """The repeated-interaction angle must encode p=1-exp(-gamma*dt)."""
+        K, omega = _system(2)
+        gamma = 0.8
+        t = 0.6
+        n_dissipation_steps = 3
+
+        qc = build_ancilla_lindblad_circuit(
+            K,
+            omega,
+            gamma=gamma,
+            t=t,
+            n_dissipation_steps=n_dissipation_steps,
+        )
+
+        expected_probability = 1.0 - np.exp(-gamma * (t / n_dissipation_steps))
+        expected_angle = 2.0 * np.arcsin(np.sqrt(expected_probability))
+        assert _cry_angles(qc)
+        np.testing.assert_allclose(_cry_angles(qc), expected_angle, rtol=1e-12, atol=1e-12)
+
+    def test_large_gamma_time_product_remains_finite_without_runtime_warning(self):
+        """Large rates are valid finite-time damping, not a source of NaN angles."""
+        K, omega = _system(2)
+
+        with warnings.catch_warnings(record=True) as recorded:
+            warnings.simplefilter("always")
+            qc = build_ancilla_lindblad_circuit(
+                K,
+                omega,
+                gamma=10.0,
+                t=1.0,
+                n_dissipation_steps=1,
+            )
+
+        assert not recorded
+        assert all(np.isfinite(angle) for angle in _cry_angles(qc))
+
+    @pytest.mark.parametrize(
+        ("kwargs", "message"),
+        [
+            ({"gamma": -0.1}, "gamma must be non-negative"),
+            ({"t": -0.1}, "t must be non-negative"),
+            ({"trotter_reps": 0}, "trotter_reps must be positive"),
+            ({"n_dissipation_steps": 0}, "n_dissipation_steps must be positive"),
+        ],
+    )
+    def test_invalid_physical_parameters_are_rejected(self, kwargs, message):
+        K, omega = _system(2)
+
+        with pytest.raises(ValueError, match=message):
+            build_ancilla_lindblad_circuit(K, omega, **kwargs)
 
     def test_single_dissipation_step(self):
         K, omega = _system(3)

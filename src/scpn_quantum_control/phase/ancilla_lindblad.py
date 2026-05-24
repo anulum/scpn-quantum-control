@@ -28,6 +28,30 @@ import numpy as np
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
 
 
+def _validate_parameters(
+    t: float, trotter_reps: int, gamma: float, n_dissipation_steps: int
+) -> None:
+    if not np.isfinite(t):
+        raise ValueError("t must be finite")
+    if t < 0.0:
+        raise ValueError("t must be non-negative")
+    if trotter_reps <= 0:
+        raise ValueError("trotter_reps must be positive")
+    if not np.isfinite(gamma):
+        raise ValueError("gamma must be finite")
+    if gamma < 0.0:
+        raise ValueError("gamma must be non-negative")
+    if n_dissipation_steps <= 0:
+        raise ValueError("n_dissipation_steps must be positive")
+
+
+def _amplitude_damping_angle(gamma: float, dt: float) -> float:
+    """Return the finite-time single-qubit amplitude-damping rotation angle."""
+    decay_probability = -np.expm1(-gamma * dt)
+    decay_probability = min(max(float(decay_probability), 0.0), 1.0)
+    return float(2.0 * np.arcsin(np.sqrt(decay_probability)))
+
+
 def build_ancilla_lindblad_circuit(
     K: np.ndarray,
     omega: np.ndarray,
@@ -58,6 +82,7 @@ def build_ancilla_lindblad_circuit(
     QuantumCircuit
         Circuit with n system qubits + 1 ancilla qubit.
     """
+    _validate_parameters(t, trotter_reps, gamma, n_dissipation_steps)
     n = K.shape[0]
     sys_reg = QuantumRegister(n, "sys")
     anc_reg = QuantumRegister(1, "anc")
@@ -86,9 +111,10 @@ def build_ancilla_lindblad_circuit(
                         qc.rx(2 * K[i, j] * dt_trotter, sys_reg[j])
                         qc.cx(sys_reg[i], sys_reg[j])
 
-        # Dissipation: interact each system qubit with ancilla
-        angle = 2 * np.arcsin(np.sqrt(gamma * dt_coherent))
-        angle = min(angle, np.pi)  # clamp
+        # Dissipation: interact each system qubit with ancilla.  The finite-time
+        # amplitude-damping probability is p = 1 - exp(-gamma * dt), so the
+        # controlled rotation angle is 2 asin(sqrt(p)).
+        angle = _amplitude_damping_angle(gamma, dt_coherent)
 
         for i in range(n):
             qc.cry(angle, sys_reg[i], anc_reg[0])
@@ -115,6 +141,7 @@ def ancilla_circuit_stats(
     dict with: n_qubits, n_system, n_ancilla, estimated_depth, n_cx_gates,
                n_resets, total_gates
     """
+    _validate_parameters(t, trotter_reps, gamma, n_dissipation_steps)
     n = K.shape[0]
     n_couplings = sum(1 for i in range(n) for j in range(i + 1, n) if abs(K[i, j]) > 1e-15)
 
