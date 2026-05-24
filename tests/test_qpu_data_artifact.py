@@ -427,6 +427,36 @@ def test_hashes_reject_malformed_sha256_values():
         )
 
 
+def test_metadata_rejects_non_mapping_containers():
+    with pytest.raises(ValueError, match="metadata must be a mapping"):
+        QPUDataArtifact(
+            domain="connectome",
+            source_name="metadata-container-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            metadata=[("operator", "pair-list")],
+        )
+
+
+def test_hashes_reject_non_mapping_containers():
+    with pytest.raises(ValueError, match="hashes must be a mapping"):
+        QPUDataArtifact(
+            domain="connectome",
+            source_name="hash-container-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            hashes=[("K_nm_sha256", "0" * 64)],
+        )
+
+
 def test_source_timestamp_rejects_non_string_values():
     with pytest.raises(ValueError, match="source_timestamp must be a string"):
         QPUDataArtifact(
@@ -523,4 +553,23 @@ def test_loader_rejects_non_string_required_identity_fields():
     payload.pop("artifact_sha256")
 
     with pytest.raises(ValueError, match="domain must be a string"):
+        QPUDataArtifact.from_dict(payload)
+
+
+def test_loader_rejects_non_mapping_metadata():
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="loader-metadata-container-validation",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+    )
+    payload = artifact.to_dict()
+    payload["metadata"] = [("operator", "pair-list")]
+    payload.pop("artifact_sha256")
+
+    with pytest.raises(ValueError, match="metadata must be a mapping"):
         QPUDataArtifact.from_dict(payload)

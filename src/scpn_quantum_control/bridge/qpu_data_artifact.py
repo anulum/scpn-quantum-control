@@ -59,6 +59,12 @@ def _optional_text(name: str, value: Any) -> str | None:
     return stripped
 
 
+def _require_mapping(name: str, value: Any) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{name} must be a mapping")
+    return value
+
+
 def _freeze_json_value(value: Any) -> Any:
     if isinstance(value, Mapping):
         frozen: dict[str, Any] = {}
@@ -106,7 +112,7 @@ def _verify_or_set_array_hash(
 
 def _validate_hash_map(hashes: Mapping[str, Any]) -> dict[str, str]:
     validated: dict[str, str] = {}
-    for key, value in hashes.items():
+    for key, value in _require_mapping("hashes", hashes).items():
         if key not in ARRAY_HASH_KEYS:
             raise ValueError(f"unknown hash key: {key}")
         validated[key] = _validate_sha256_hex(key, value)
@@ -171,7 +177,7 @@ class QPUDataArtifact:
             None if self.theta0 is None else _finite_float_array("theta0", self.theta0, ndim=1)
         )
         layer_assignments = tuple(str(item) for item in self.layer_assignments)
-        metadata = dict(self.metadata)
+        metadata = dict(_require_mapping("metadata", self.metadata))
         hashes = _validate_hash_map(self.hashes)
 
         if source_mode not in ALL_SOURCE_MODES:
@@ -272,8 +278,8 @@ class QPUDataArtifact:
             extraction_method=data["extraction_method"],
             source_timestamp=data.get("source_timestamp"),
             replay_id=data.get("replay_id"),
-            metadata=dict(data.get("metadata", {})),
-            hashes=dict(data.get("hashes", {})),
+            metadata=data.get("metadata", {}),
+            hashes=data.get("hashes", {}),
         )
         supplied_artifact_sha256 = data.get("artifact_sha256")
         if supplied_artifact_sha256 is not None:

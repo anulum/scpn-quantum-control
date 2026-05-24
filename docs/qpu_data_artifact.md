@@ -100,7 +100,9 @@ mutate a validated artifact in-place and silently invalidate its hashes.
 Metadata is frozen recursively; serialisation thaws immutable containers back to
 JSON-native dictionaries and lists. Metadata must use string keys and
 JSON-compatible scalar/list/object values; non-finite floats and opaque Python
-objects are rejected before artifact hashing.
+objects are rejected before artifact hashing. `metadata` and `hashes` must be
+mapping objects at both direct-constructor and loader boundaries; pair-list
+coercion is rejected.
 
 `source_timestamp` and `replay_id`, when supplied, must be non-empty strings.
 They are trimmed before the whole-artifact digest is computed so equivalent
@@ -210,6 +212,7 @@ The tests cover:
 - provenance identifier type, blank-value, and whitespace normalisation checks
 - required identity-field type and whitespace normalisation checks
 - loader rejection for non-string required identity fields
+- constructor and loader rejection for non-mapping metadata/hash containers
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly
