@@ -355,7 +355,9 @@ def test_optimizer_minimize_converges_for_shift_compatible_quadratic() -> None:
     assert result.reason == "gradient_tolerance"
     assert result.steps <= 80
     assert result.value_history[-1] <= result.value_history[0]
+    assert result.best_value == pytest.approx(min(result.value_history))
     np.testing.assert_allclose(result.values, [0.0], atol=1.0e-6)
+    np.testing.assert_allclose(result.best_values, result.values)
 
 
 def test_optimizer_minimize_respects_frozen_parameters() -> None:
@@ -422,6 +424,62 @@ def test_optimizer_minimize_accepts_gradient_clipping() -> None:
 
     assert not result.converged
     np.testing.assert_allclose(result.values, [9.5], atol=1.0e-5)
+
+
+def test_optimizer_result_tracks_best_iterate_when_final_worsens() -> None:
+    """OptimizationResult should preserve the best observed iterate."""
+
+    gradient = GradientResult(
+        value=3.0,
+        gradient=np.array([1.0]),
+        method="parameter_shift",
+        shift=math.pi / 2,
+        coefficient=0.5,
+        evaluations=3,
+        parameter_names=("theta",),
+        trainable=(True,),
+    )
+
+    result = OptimizationResult(
+        values=np.array([2.0]),
+        final_gradient=gradient,
+        value_history=(1.0, 3.0),
+        steps=1,
+        converged=False,
+        reason="max_steps",
+        best_values=np.array([0.0]),
+        best_value=1.0,
+    )
+
+    assert result.best_value == pytest.approx(1.0)
+    np.testing.assert_allclose(result.best_values, [0.0])
+
+
+def test_optimizer_result_rejects_inconsistent_best_value() -> None:
+    """Best-iterate provenance must agree with the reported value history."""
+
+    gradient = GradientResult(
+        value=1.0,
+        gradient=np.array([1.0]),
+        method="parameter_shift",
+        shift=math.pi / 2,
+        coefficient=0.5,
+        evaluations=3,
+        parameter_names=("theta",),
+        trainable=(True,),
+    )
+
+    with pytest.raises(ValueError, match="best_value"):
+        OptimizationResult(
+            values=np.array([0.0]),
+            final_gradient=gradient,
+            value_history=(1.0, 0.5),
+            steps=1,
+            converged=False,
+            reason="max_steps",
+            best_values=np.array([0.0]),
+            best_value=1.0,
+        )
 
 
 def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:

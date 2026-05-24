@@ -155,6 +155,8 @@ class OptimizationResult:
     steps: int
     converged: bool
     reason: str
+    best_values: NDArray[np.float64] | None = None
+    best_value: float | None = None
 
     def __post_init__(self) -> None:
         values = _as_parameter_array(self.values)
@@ -169,8 +171,20 @@ class OptimizationResult:
             raise ValueError("optimization converged flag must be a boolean")
         if not isinstance(self.reason, str) or not self.reason:
             raise ValueError("optimization reason must be non-empty")
+        best_values = values if self.best_values is None else _as_parameter_array(self.best_values)
+        if best_values.size != values.size:
+            raise ValueError("best_values length must match optimized values length")
+        best_value = (
+            min(history)
+            if self.best_value is None
+            else _as_real_scalar("best_value", self.best_value)
+        )
+        if best_value > min(history) + 1.0e-12:
+            raise ValueError("best_value must not exceed the minimum value_history entry")
         object.__setattr__(self, "values", values)
         object.__setattr__(self, "value_history", history)
+        object.__setattr__(self, "best_values", best_values)
+        object.__setattr__(self, "best_value", best_value)
 
 
 @dataclass(frozen=True)
@@ -288,6 +302,8 @@ class DifferentiableOptimizer:
         bounds_meta = _normalise_bounds(values, bounds)
         values = _project_bounds(values, bounds_meta)
         history: list[float] = []
+        best_values = values.copy()
+        best_value = float("inf")
         previous_value: float | None = None
 
         for step_index in range(max_steps + 1):
@@ -306,6 +322,9 @@ class DifferentiableOptimizer:
                     rule=rule,
                 )
             history.append(gradient_result.value)
+            if gradient_result.value < best_value:
+                best_value = gradient_result.value
+                best_values = values.copy()
             trainable = np.asarray(gradient_result.trainable, dtype=bool)
             gradient_norm = float(np.linalg.norm(gradient_result.gradient[trainable], ord=2))
             if gradient_norm <= gradient_tolerance_value:
@@ -316,6 +335,8 @@ class DifferentiableOptimizer:
                     steps=step_index,
                     converged=True,
                     reason="gradient_tolerance",
+                    best_values=best_values,
+                    best_value=best_value,
                 )
             if (
                 value_tolerance_value is not None
@@ -329,6 +350,8 @@ class DifferentiableOptimizer:
                     steps=step_index,
                     converged=True,
                     reason="value_tolerance",
+                    best_values=best_values,
+                    best_value=best_value,
                 )
             if step_index == max_steps:
                 return OptimizationResult(
@@ -338,6 +361,8 @@ class DifferentiableOptimizer:
                     steps=step_index,
                     converged=False,
                     reason="max_steps",
+                    best_values=best_values,
+                    best_value=best_value,
                 )
             previous_value = gradient_result.value
             values = self.step(
