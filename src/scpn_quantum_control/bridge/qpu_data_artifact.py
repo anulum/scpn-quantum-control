@@ -380,13 +380,19 @@ class QPUDataArtifact:
         source_project = _required_text(
             "source_project", payload.get("source_project", "sc-neurocore")
         )
+        canonical_payload = dict(payload)
+        canonical_payload["source_project"] = source_project
+        canonical_payload["dt_s"] = dt_s
+        canonical_payload["n_steps"] = n_steps
+        canonical_payload["n_layers"] = n_layers
+        canonical_payload["seed"] = seed
         metadata = {
             "source_project": source_project,
             "dt_s": dt_s,
             "seed": seed,
             "n_steps": n_steps,
             "n_layers": n_layers,
-            "payload_sha256": _json_sha256(payload),
+            "payload_sha256": _json_sha256(canonical_payload),
         }
         return cls(
             domain=domain,

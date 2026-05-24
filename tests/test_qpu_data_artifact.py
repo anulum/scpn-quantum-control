@@ -430,6 +430,28 @@ def test_scpn_datastream_adapter_rejects_blank_source_project():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
+def test_scpn_datastream_adapter_hashes_canonical_source_project():
+    base_payload = {
+        "schema_version": "sc-neurocore.scpn.datastream.v1",
+        "source_project": "sc-neurocore",
+        "seed": 11,
+        "dt_s": 0.01,
+        "n_steps": 3,
+        "n_layers": 2,
+        "layer_ids": ["l1", "l2"],
+        "omega_rad_s": [0.1, 0.2],
+        "knm": [[0.0, 0.2], [0.2, 0.0]],
+    }
+    padded_payload = dict(base_payload)
+    padded_payload["source_project"] = "  sc-neurocore  "
+
+    baseline = QPUDataArtifact.from_scpn_datastream_payload(base_payload)
+    padded = QPUDataArtifact.from_scpn_datastream_payload(padded_payload)
+
+    assert padded.metadata["source_project"] == "sc-neurocore"
+    assert padded.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
+
+
 def test_json_loader_rejects_wrong_schema():
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))
