@@ -129,11 +129,12 @@ Current Kuramoto-XY circuits require:
 - `theta0`, if present, is finite and has shape `(N,)`.
 - `layer_assignments`, if present, has length `N`.
 
-Diagonal and symmetry checks use absolute tolerance only (`atol=1e-12`,
-`rtol=0.0`) so large coupling magnitudes cannot hide directed terms behind
-relative tolerance. Lag, directionality, hypergraph terms, and non-reciprocal couplings
-belong in metadata or a future specialised schema. They must not be
-silently forced into this symmetric Kuramoto-XY contract.
+Diagonal self-couplings must be exactly zero in the stored artifact. Symmetry
+checks use absolute tolerance only (`atol=1e-12`, `rtol=0.0`) so large coupling
+magnitudes cannot hide directed terms behind relative tolerance. Lag,
+directionality, hypergraph terms, and non-reciprocal couplings belong in
+metadata or a future specialised schema. They must not be silently forced into
+this symmetric Kuramoto-XY contract.
 Negative couplings are rejected exactly; preprocessing must not rely on
 validator tolerance to carry signed coupling semantics into a non-negative
 Kuramoto-XY artifact.
@@ -212,6 +213,7 @@ The tests cover:
 - synthetic artifact rejection by the publication gate
 - missing timestamp/replay rejection
 - invalid diagonal, negative, or directed `K_nm`
+- sub-tolerance non-zero diagonal `K_nm` rejection
 - sub-tolerance negative `K_nm` rejection
 - large-scale directed `K_nm` rejection without relative-tolerance masking
 - empty zero-oscillator `K_nm` rejection

@@ -219,7 +219,7 @@ class QPUDataArtifact:
             raise ValueError(f"theta0 shape must match omega shape, got {theta0.shape}")
         if layer_assignments and len(layer_assignments) != K_nm.shape[0]:
             raise ValueError("layer_assignments length must match K_nm dimension")
-        if not np.allclose(np.diag(K_nm), 0.0, atol=1e-12, rtol=0.0):
+        if np.any(np.diag(K_nm) != 0.0):
             raise ValueError("K_nm diagonal must be zero")
         if np.any(K_nm < 0.0):
             raise ValueError("K_nm must be non-negative; encode lag in alpha metadata")

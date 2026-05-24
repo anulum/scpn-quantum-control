@@ -116,6 +116,20 @@ def test_rejects_invalid_knm_invariants():
             replay_id="r",
         )
 
+    K_tiny_diagonal = _valid_knm(2)
+    K_tiny_diagonal[0, 0] = 5.0e-13
+    with pytest.raises(ValueError, match="diagonal"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=K_tiny_diagonal,
+            omega=[1.0, 2.0],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
     K_negative = _valid_knm(2)
     K_negative[0, 1] = -0.1
     K_negative[1, 0] = -0.1
