@@ -198,6 +198,20 @@ def test_rejects_implicit_numeric_string_coercion():
         )
 
 
+def test_rejects_ragged_knm_payloads_with_contract_error():
+    with pytest.raises(ValueError, match="K_nm must be a rectangular numeric array"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=[[0.0, 0.2], [0.2]],
+            omega=[1.0, 2.0],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
+
 def test_rejects_boolean_frequency_payloads():
     with pytest.raises(ValueError, match="omega entries must be numeric"):
         artifact_from_arrays(

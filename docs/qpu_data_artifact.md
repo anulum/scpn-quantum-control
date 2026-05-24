@@ -137,6 +137,8 @@ silently forced into this symmetric Kuramoto-XY contract.
 Numerical payloads must be real numeric values before conversion to `float64`;
 strings, bytes, booleans, and complex values are rejected instead of being
 implicitly coerced into coupling, frequency, or phase values.
+Ragged or otherwise non-rectangular numeric containers are rejected with an
+artifact-contract error before they can leak backend conversion messages.
 
 ## Publication gate
 
@@ -211,6 +213,7 @@ The tests cover:
 - empty zero-oscillator `K_nm` rejection
 - shape and metadata rejection
 - numeric payload rejection for string, boolean, and complex coercion
+- ragged numeric payload rejection with artifact-contract errors
 - SC-NeuroCore datastream adaptation
 - schema-version rejection
 - defensive-copy/read-only array immutability

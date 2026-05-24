@@ -154,7 +154,10 @@ def _reject_implicit_numeric_coercion(name: str, value: Any) -> None:
 
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
     _reject_implicit_numeric_coercion(name, value)
-    array = np.array(value, dtype=np.float64, copy=True)
+    try:
+        array = np.array(value, dtype=np.float64, copy=True)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be a rectangular numeric array") from exc
     if array.ndim != ndim:
         raise ValueError(f"{name} must be {ndim}-D, got shape {array.shape}")
     if not np.all(np.isfinite(array)):
