@@ -54,7 +54,13 @@ def counts_to_probabilities(
 ) -> NDArray[np.float64]:
     """Convert a count dictionary into a probability vector over ``labels``."""
 
-    total = float(sum(int(value) for value in counts.values()))
+    total_count = 0
+    for value in counts.values():
+        count = int(value)
+        if count < 0:
+            raise ValueError("counts must be non-negative")
+        total_count += count
+    total = float(total_count)
     if total <= 0.0:
         raise ValueError("empty count dictionary")
     probabilities = np.zeros(len(labels), dtype=np.float64)
@@ -110,6 +116,14 @@ def mitigate_probabilities(
 
     if observed_probabilities.shape != (len(confusion_matrix.labels),):
         raise ValueError("observed probability vector has incompatible shape")
+    observed_total = float(np.sum(observed_probabilities))
+    if (
+        not np.all(np.isfinite(observed_probabilities))
+        or np.any(observed_probabilities < 0.0)
+        or observed_total <= 0.0
+        or not np.isclose(observed_total, 1.0, rtol=1e-9, atol=1e-12)
+    ):
+        raise ValueError("observed probabilities must be finite, non-negative, and sum to one")
     raw = np.linalg.pinv(confusion_matrix.matrix, rcond=rcond) @ observed_probabilities
     clipped = np.clip(raw, 0.0, None)
     total = float(clipped.sum())

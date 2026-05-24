@@ -75,6 +75,8 @@ def test_counts_to_probabilities_rejects_unknown_labels_and_empty_counts() -> No
         counts_to_probabilities({"00": 1, "20": 1}, labels)
     with pytest.raises(ValueError, match="empty count dictionary"):
         counts_to_probabilities({}, labels)
+    with pytest.raises(ValueError, match="counts must be non-negative"):
+        counts_to_probabilities({"00": 2, "01": -1}, labels)
 
 
 def test_bitstring_index_accepts_spaced_labels_and_rejects_unknown_label() -> None:
@@ -100,6 +102,26 @@ def test_pseudo_inverse_recovers_known_distribution() -> None:
     np.testing.assert_allclose(mitigated, true, atol=1e-12)
     assert mitigated_from_counts.shape == (2,)
     assert float(mitigated_from_counts.sum()) == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize(
+    "observed",
+    [
+        np.array([1.1, -0.1]),
+        np.array([np.nan, 1.0]),
+        np.array([np.inf, 1.0]),
+        np.array([0.0, 0.0]),
+    ],
+)
+def test_mitigation_rejects_invalid_observed_probability_vectors(observed) -> None:
+    calibrations = {
+        "0": {"0": 100},
+        "1": {"1": 100},
+    }
+    matrix = build_readout_confusion_matrix(calibrations, 1)
+
+    with pytest.raises(ValueError, match="observed probabilities"):
+        mitigate_probabilities(observed, matrix)
 
 
 def test_probability_observables_use_target_bitstring() -> None:
