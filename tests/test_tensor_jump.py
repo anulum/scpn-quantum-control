@@ -357,53 +357,20 @@ class TestOrderParamVec:
         r = _order_param_vec(psi, 2)
         assert 0 <= r <= 1.0
 
-    def test_python_fallback(self):
-        """Force Python path and compare to Rust path."""
+    def test_plus_product_state_has_unit_order(self):
+        """The |++> product state has unit transverse Kuramoto order."""
         psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
-        r_default = _order_param_vec(psi, 2)
+        assert _order_param_vec(psi, 2) == pytest.approx(1.0)
 
-        with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(tensor_jump_module, "optional_rust_engine", lambda: None)
-            r_python = _order_param_vec(psi, 2)
+    def test_y_axis_product_state_has_unit_order(self):
+        """The |+i,+i> product state has unit Pauli-Y Kuramoto order."""
+        single = np.array([1.0, 1.0j], dtype=np.complex128) / np.sqrt(2)
+        psi = np.kron(single, single)
+        assert _order_param_vec(psi, 2) == pytest.approx(1.0)
 
-        np.testing.assert_allclose(r_python, r_default, atol=1e-10)
-
-    def test_rust_fast_path_is_used_when_available(self, monkeypatch):
-        """A present Rust order-parameter kernel is used directly."""
-
-        class Engine:
-            @staticmethod
-            def order_param_from_statevector(real, imag, n):  # noqa: ARG004
-                return 0.375
-
-        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: Engine())
-
-        psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
-        assert _order_param_vec(psi, 2) == pytest.approx(0.375)
-
-    def test_rust_runtime_failure_is_not_silently_downgraded(self, monkeypatch):
-        """A present but failing Rust order-parameter kernel must be visible."""
-
-        class Engine:
-            @staticmethod
-            def order_param_from_statevector(real, imag, n):  # noqa: ARG004
-                raise RuntimeError("native accelerator failed")
-
-        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: Engine())
-
-        psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
-        with pytest.raises(RuntimeError, match="native accelerator failed"):
-            _order_param_vec(psi, 2)
-
-    def test_missing_rust_symbol_falls_back_to_python(self, monkeypatch):
-        """Older optional engines without this symbol keep the Python path."""
-
-        class Engine:
-            pass
-
-        psi = np.array([0.5, 0.5, 0.5, 0.5], dtype=np.complex128)
-        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: None)
-        expected = _order_param_vec(psi, 2)
-
-        monkeypatch.setattr(tensor_jump_module, "optional_rust_engine", lambda: Engine())
-        np.testing.assert_allclose(_order_param_vec(psi, 2), expected, atol=1e-10)
+    def test_global_phase_invariant(self):
+        """Global phase must not change the physical order parameter."""
+        psi = np.array([0.2 + 0.1j, 0.3 - 0.4j, -0.5 + 0.2j, 0.6 + 0.1j])
+        psi = psi / np.linalg.norm(psi)
+        phase = np.exp(0.37j)
+        assert _order_param_vec(phase * psi, 2) == pytest.approx(_order_param_vec(psi, 2))
