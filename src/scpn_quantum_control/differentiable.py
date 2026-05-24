@@ -1113,6 +1113,85 @@ class ImplicitSensitivityResult:
 
 
 @dataclass(frozen=True)
+class FixedPointSensitivityResult:
+    """Implicit sensitivity for a converged fixed-point map."""
+
+    sensitivity: NDArray[np.float64]
+    state_jacobian: NDArray[np.float64]
+    parameter_jacobian: NDArray[np.float64]
+    system_matrix: NDArray[np.float64]
+    damping: float
+    condition_number: float
+    method: str
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+    hyperparameter_names: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        sensitivity = _as_real_numeric_array("fixed-point sensitivity", self.sensitivity)
+        state_jacobian = _as_real_numeric_array("fixed-point state_jacobian", self.state_jacobian)
+        parameter_jacobian = _as_real_numeric_array(
+            "fixed-point parameter_jacobian",
+            self.parameter_jacobian,
+        )
+        system_matrix = _as_real_numeric_array("fixed-point system_matrix", self.system_matrix)
+        if (
+            sensitivity.ndim != 2
+            or state_jacobian.ndim != 2
+            or parameter_jacobian.ndim != 2
+            or system_matrix.ndim != 2
+        ):
+            raise ValueError("fixed-point sensitivity operands must be two-dimensional")
+        if state_jacobian.shape[0] != state_jacobian.shape[1]:
+            raise ValueError("fixed-point state_jacobian must be square")
+        if system_matrix.shape != state_jacobian.shape:
+            raise ValueError("fixed-point system_matrix shape must match state_jacobian")
+        if sensitivity.shape != parameter_jacobian.shape:
+            raise ValueError("fixed-point sensitivity shape must match parameter_jacobian")
+        if sensitivity.shape[0] != state_jacobian.shape[0]:
+            raise ValueError("fixed-point sensitivity row count must match state dimension")
+        if not np.all(np.isfinite(sensitivity)):
+            raise ValueError("fixed-point sensitivity must contain only finite values")
+        if (
+            not np.all(np.isfinite(state_jacobian))
+            or not np.all(np.isfinite(parameter_jacobian))
+            or not np.all(np.isfinite(system_matrix))
+        ):
+            raise ValueError("fixed-point operands must contain only finite values")
+        damping = _as_real_scalar("fixed-point damping", self.damping)
+        if damping < 0.0:
+            raise ValueError("fixed-point damping must be finite and non-negative")
+        condition_number = _as_real_scalar(
+            "fixed-point condition_number",
+            self.condition_number,
+        )
+        if condition_number < 1.0:
+            raise ValueError("fixed-point condition_number must be at least 1")
+        if not self.method:
+            raise ValueError("fixed-point method must be non-empty")
+        if len(self.parameter_names) != state_jacobian.shape[0]:
+            raise ValueError("parameter_names length must match fixed-point state dimension")
+        if len(self.trainable) != state_jacobian.shape[0]:
+            raise ValueError("trainable mask length must match fixed-point state dimension")
+        if len(self.hyperparameter_names) != parameter_jacobian.shape[1]:
+            raise ValueError(
+                "hyperparameter_names length must match fixed-point parameter_jacobian columns"
+            )
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(name, str) or not name for name in self.hyperparameter_names):
+            raise ValueError("hyperparameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "sensitivity", sensitivity)
+        object.__setattr__(self, "state_jacobian", state_jacobian)
+        object.__setattr__(self, "parameter_jacobian", parameter_jacobian)
+        object.__setattr__(self, "system_matrix", system_matrix)
+        object.__setattr__(self, "damping", damping)
+        object.__setattr__(self, "condition_number", condition_number)
+
+
+@dataclass(frozen=True)
 class LevenbergMarquardtStep:
     """Bounded Levenberg-Marquardt candidate step with model diagnostics."""
 
@@ -4285,6 +4364,72 @@ def implicit_stationary_sensitivity(
     )
 
 
+def implicit_fixed_point_sensitivity(
+    state_jacobian: ArrayLike,
+    parameter_jacobian: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    hyperparameter_names: Sequence[str] | None = None,
+    damping: float = 0.0,
+    rcond: float = 1.0e-12,
+) -> FixedPointSensitivityResult:
+    """Return ``dx*/dalpha`` for ``x* = T(x*, alpha)`` fixed-point maps."""
+
+    state = _as_real_numeric_array("fixed-point state_jacobian", state_jacobian)
+    parameter = _as_real_numeric_array("fixed-point parameter_jacobian", parameter_jacobian)
+    if state.ndim != 2 or state.shape[0] != state.shape[1]:
+        raise ValueError("fixed-point state_jacobian must be a square matrix")
+    if parameter.ndim == 1:
+        parameter = parameter.reshape((-1, 1))
+    if parameter.ndim != 2 or parameter.shape[0] != state.shape[0]:
+        raise ValueError("fixed-point parameter_jacobian row count must match state dimension")
+    if not np.all(np.isfinite(state)) or not np.all(np.isfinite(parameter)):
+        raise ValueError("fixed-point operands must contain only finite values")
+    damping_value = _as_real_scalar("fixed-point damping", damping)
+    if damping_value < 0.0:
+        raise ValueError("fixed-point damping must be finite and non-negative")
+    rcond_value = _as_real_scalar("fixed-point rcond", rcond)
+    if rcond_value <= 0.0:
+        raise ValueError("fixed-point rcond must be finite and positive")
+    parameter_values = np.zeros(state.shape[0], dtype=np.float64)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    hyper_names = (
+        tuple(f"alpha{index}" for index in range(parameter.shape[1]))
+        if hyperparameter_names is None
+        else tuple(hyperparameter_names)
+    )
+    if len(hyper_names) != parameter.shape[1]:
+        raise ValueError(
+            "hyperparameter_names length must match fixed-point parameter_jacobian columns"
+        )
+    system_matrix = np.eye(state.shape[0], dtype=np.float64) - state
+    if damping_value > 0.0:
+        system_matrix = system_matrix + damping_value * np.eye(state.shape[0], dtype=np.float64)
+    trainable = np.asarray(
+        [parameter_info.trainable for parameter_info in parameter_meta], dtype=bool
+    )
+    sensitivity = np.zeros_like(parameter)
+    condition_number = 1.0
+    if np.any(trainable):
+        active_system = system_matrix[np.ix_(trainable, trainable)]
+        condition_number = float(np.linalg.cond(active_system))
+        if not np.isfinite(condition_number) or condition_number > 1.0 / rcond_value:
+            raise ValueError("fixed-point system is ill-conditioned")
+        sensitivity[trainable, :] = np.linalg.solve(active_system, parameter[trainable, :])
+    return FixedPointSensitivityResult(
+        sensitivity=sensitivity,
+        state_jacobian=state,
+        parameter_jacobian=parameter,
+        system_matrix=system_matrix,
+        damping=damping_value,
+        condition_number=condition_number,
+        method="implicit_fixed_point_sensitivity",
+        parameter_names=tuple(parameter_info.name for parameter_info in parameter_meta),
+        trainable=tuple(parameter_info.trainable for parameter_info in parameter_meta),
+        hyperparameter_names=hyper_names,
+    )
+
+
 def check_parameter_shift_consistency(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -4368,6 +4513,7 @@ __all__ = [
     "ArmijoLineSearchResult",
     "DifferentiableOptimizer",
     "DualNumber",
+    "FixedPointSensitivityResult",
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
     "GradientCheckResult",
@@ -4432,6 +4578,7 @@ __all__ = [
     "grad",
     "huber_residual_weights",
     "hessian",
+    "implicit_fixed_point_sensitivity",
     "implicit_stationary_sensitivity",
     "is_jax_autodiff_available",
     "jacobian",

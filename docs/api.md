@@ -369,6 +369,7 @@ from scpn_quantum_control import (
     ArmijoLineSearchResult,
     DifferentiableOptimizer,
     DualNumber,
+    FixedPointSensitivityResult,
     FisherConjugateGradientResult,
     FisherVectorProductResult,
     GradientCheckResult,
@@ -427,6 +428,7 @@ from scpn_quantum_control import (
     grad,
     hessian,
     huber_residual_weights,
+    implicit_fixed_point_sensitivity,
     implicit_stationary_sensitivity,
     jacobian,
     least_squares_covariance,
@@ -526,6 +528,7 @@ JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trai
 JVPResult(value, jvp, tangent, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 ImplicitSensitivityResult(sensitivity, hessian, cross_derivative, damping, condition_number, method, parameter_names, trainable, hyperparameter_names)
+FixedPointSensitivityResult(sensitivity, state_jacobian, parameter_jacobian, system_matrix, damping, condition_number, method, parameter_names, trainable, hyperparameter_names)
 LeastSquaresCovarianceResult(covariance, standard_errors, residual_variance, degrees_of_freedom, condition_number, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
 LevenbergMarquardtDampingUpdate(trial, next_damping, action)
@@ -586,6 +589,7 @@ value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-
 hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> np.ndarray
 value_and_hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> HessianResult
 implicit_stationary_sensitivity(hessian, cross_derivative, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> ImplicitSensitivityResult
+implicit_fixed_point_sensitivity(state_jacobian, parameter_jacobian, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> FixedPointSensitivityResult
 finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
 value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
 batch_finite_difference_hvp(objective, values, tangents, parameters=None, step=1e-5) -> np.ndarray
@@ -679,6 +683,11 @@ implicit-differentiation implementations behind the same public contract.
 stationary systems by solving `dx*/dalpha = -H^-1 B` on the trainable
 subspace. It validates symmetric positive-definite Hessians, supports damping,
 tracks condition number, and preserves hyperparameter provenance.
+`implicit_fixed_point_sensitivity()` differentiates converged fixed-point maps
+`x* = T(x*, alpha)` by solving `(I - dT/dx) dx*/dalpha = dT/dalpha` on the
+trainable subspace. It keeps the nonsymmetric fixed-point operator explicit,
+supports damping, rejects singular or ill-conditioned maps, and preserves state
+and hyperparameter provenance.
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.

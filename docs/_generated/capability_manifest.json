@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 368,
+    "public_api_exports": 370,
     "public_documentation_pages": 235,
-    "python_model_classes": 1471,
+    "python_model_classes": 1472,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -2397,6 +2397,10 @@
       },
       {
         "name": "FisherVectorProductResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "FixedPointSensitivityResult",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -7792,6 +7796,7 @@
     "FaultTolerantUPDE",
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
+    "FixedPointSensitivityResult",
     "ForecastModelRun",
     "GUESSResult",
     "GradientCheckResult",
@@ -8003,6 +8008,7 @@
     "hessian",
     "huber_residual_weights",
     "identity_fingerprint",
+    "implicit_fixed_point_sensitivity",
     "implicit_stationary_sensitivity",
     "ionq_qis_workload",
     "iqm_qiskit_workload",
