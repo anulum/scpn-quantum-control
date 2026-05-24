@@ -121,6 +121,23 @@ class TestMpembaExperiment:
                 max_dense_gib=1e-6,
             )
 
+    @pytest.mark.parametrize(
+        ("omega", "topology", "kwargs", "match"),
+        [
+            (np.ones(2), np.ones((2, 3)), {}, "K_topology"),
+            (np.ones(3), np.eye(2), {}, "omega"),
+            (np.array([1.0, np.nan]), np.eye(2), {}, "finite"),
+            (np.ones(2), np.eye(2), {"K_base": np.nan}, "K_base"),
+            (np.ones(2), np.eye(2), {"gamma": -0.1}, "gamma"),
+            (np.ones(2), np.eye(2), {"t_max": -0.1}, "t_max"),
+            (np.ones(2), np.eye(2), {"n_steps": 0}, "n_steps"),
+        ],
+    )
+    def test_invalid_physical_inputs_are_rejected(self, omega, topology, kwargs, match):
+        k_base = kwargs.pop("K_base", 1.0)
+        with pytest.raises(ValueError, match=match):
+            mpemba_experiment(omega, topology, K_base=k_base, **kwargs)
+
 
 def test_mpemba_result_fields():
     n = 2

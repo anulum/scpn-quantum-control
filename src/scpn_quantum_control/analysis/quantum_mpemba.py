@@ -58,6 +58,37 @@ class MpembaResult:
     crossing_time: float | None  # time when far overtakes near
 
 
+def _validate_mpemba_inputs(
+    omega: np.ndarray,
+    K_topology: np.ndarray,
+    K_base: float,
+    gamma: float,
+    t_max: float,
+    n_steps: int,
+) -> tuple[np.ndarray, np.ndarray, float, float, float, int]:
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    topology_arr = np.asarray(K_topology, dtype=np.float64)
+    if omega_arr.ndim != 1:
+        raise ValueError("omega must be a one-dimensional vector")
+    if topology_arr.ndim != 2 or topology_arr.shape[0] != topology_arr.shape[1]:
+        raise ValueError("K_topology must be a square two-dimensional matrix")
+    if topology_arr.shape[0] != omega_arr.shape[0]:
+        raise ValueError("omega length must match K_topology dimension")
+    if not np.all(np.isfinite(omega_arr)) or not np.all(np.isfinite(topology_arr)):
+        raise ValueError("omega and K_topology must contain only finite values")
+    if not np.allclose(topology_arr, topology_arr.T, atol=1e-12, rtol=1e-12):
+        raise ValueError("K_topology must be symmetric")
+    if not np.isfinite(K_base):
+        raise ValueError("K_base must be finite")
+    if not np.isfinite(gamma) or gamma < 0.0:
+        raise ValueError("gamma must be finite and non-negative")
+    if not np.isfinite(t_max) or t_max < 0.0:
+        raise ValueError("t_max must be finite and non-negative")
+    if isinstance(n_steps, bool) or not isinstance(n_steps, int) or n_steps < 1:
+        raise ValueError("n_steps must be a positive integer")
+    return omega_arr, topology_arr, float(K_base), float(gamma), float(t_max), n_steps
+
+
 def _lindblad_superoperator(H: np.ndarray, gamma: float, n_qubits: int) -> np.ndarray:
     """Build the Lindblad superoperator L such that dvec(ρ)/dt = L vec(ρ).
 
@@ -155,6 +186,14 @@ def mpemba_experiment(
     ``(4**n, 4**n)``. ``max_dense_gib`` gates that rank-4 allocation before any
     dense Hamiltonian is built.
     """
+    omega, K_topology, K_base, gamma, t_max, n_steps = _validate_mpemba_inputs(
+        omega,
+        K_topology,
+        K_base,
+        gamma,
+        t_max,
+        n_steps,
+    )
     n = len(omega)
     require_dense_allocation(
         n,
