@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 305,
+    "public_api_exports": 307,
     "public_documentation_pages": 235,
-    "python_model_classes": 1454,
+    "python_model_classes": 1456,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -3273,6 +3273,14 @@
       },
       {
         "name": "LevenbergMarquardtDampingUpdate",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "LevenbergMarquardtOptimizer",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "LevenbergMarquardtResult",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -7740,6 +7748,8 @@
     "KuramotoVariantResult",
     "LayerStateArtifact",
     "LevenbergMarquardtDampingUpdate",
+    "LevenbergMarquardtOptimizer",
+    "LevenbergMarquardtResult",
     "LevenbergMarquardtStep",
     "LevenbergMarquardtTrial",
     "LindbladSyncEngine",

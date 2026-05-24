@@ -371,6 +371,8 @@ from scpn_quantum_control import (
     HessianResult,
     JacobianResult,
     LevenbergMarquardtDampingUpdate,
+    LevenbergMarquardtOptimizer,
+    LevenbergMarquardtResult,
     LevenbergMarquardtStep,
     LevenbergMarquardtTrial,
     OptimizationResult,
@@ -429,6 +431,16 @@ opt_result = DifferentiableOptimizer(learning_rate=0.05).minimize(
 )
 opt_result.reason            # "gradient_tolerance", "value_tolerance", or "max_steps"
 opt_result.best_value        # lowest objective value observed
+
+lm_result = LevenbergMarquardtOptimizer(damping=1e-3, max_steps=50).minimize(
+    lambda theta: np.array([theta[0] - 1.0, 2.0 * (theta[1] + 0.5)]),
+    [3.0, 1.5],
+    bounds=[ParameterBounds(), ParameterBounds()],
+    weight_fn=lambda residuals: soft_l1_residual_weights(residuals, scale=2.0),
+)
+lm_result.values             # final accepted parameter vector
+lm_result.best_value         # lowest weighted residual objective observed
+lm_result.accepted_history   # per-step LM trust-region acceptance flags
 ```
 
 Available primitives:
@@ -444,6 +456,7 @@ JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trai
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
 LevenbergMarquardtDampingUpdate(trial, next_damping, action)
+LevenbergMarquardtResult(values, residual, value_history, damping_history, accepted_history, steps, converged, reason, best_values, best_value)
 LevenbergMarquardtStep(gauss_newton, step, candidate_values, damping, predicted_reduction)
 LevenbergMarquardtTrial(step_result, candidate_residual, candidate_value, actual_reduction, reduction_ratio, accepted)
 WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
@@ -468,6 +481,7 @@ update_levenberg_marquardt_damping(trial, decrease_factor=1/3, increase_factor=2
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
+LevenbergMarquardtOptimizer(...).minimize(objective, initial_values, parameters=None, bounds=None, weight_fn=None, rcond=1e-12) -> LevenbergMarquardtResult
 is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
@@ -526,6 +540,12 @@ preserving quadratic behaviour near zero residuals while downweighting outliers
 before they enter Fisher, Gauss-Newton, or Levenberg-Marquardt solves.
 `soft_l1_residual_weights()` provides a smooth differentiable-friendly robust
 weighting curve for residual maps, avoiding the Huber kink while retaining
+bounded influence for outliers before empirical-Fisher, Gauss-Newton, or
+Levenberg-Marquardt solves.
+`LevenbergMarquardtOptimizer.minimize()` composes finite-difference residual
+Jacobians, optional IRLS residual weights, box or periodic bounds, bounded
+adaptive damping, trust-region acceptance, and explicit convergence provenance
+into a complete residual-map optimization loop.
 outlier influence control for weighted Gauss-Newton and LM solves.
 `levenberg_marquardt_step()` turns that preconditioned residual solve into a
 bounded candidate update with optional physical bounds, trainable-step norm

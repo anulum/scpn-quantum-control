@@ -458,6 +458,70 @@ class LevenbergMarquardtDampingUpdate:
 
 
 @dataclass(frozen=True)
+class LevenbergMarquardtResult:
+    """Traceable result from a bounded Levenberg-Marquardt optimization run."""
+
+    values: NDArray[np.float64]
+    residual: NDArray[np.float64]
+    value_history: tuple[float, ...]
+    damping_history: tuple[float, ...]
+    accepted_history: tuple[bool, ...]
+    steps: int
+    converged: bool
+    reason: str
+    best_values: NDArray[np.float64]
+    best_value: float
+
+    def __post_init__(self) -> None:
+        values = _as_parameter_array(self.values)
+        residual = _as_vector_output(self.residual)
+        best_values = _as_parameter_array(self.best_values)
+        if best_values.shape != values.shape:
+            raise ValueError("LM best values must match result values shape")
+        if not self.value_history:
+            raise ValueError("LM value history must contain the initial objective")
+        value_history = tuple(
+            _as_real_scalar("LM objective history value", value) for value in self.value_history
+        )
+        damping_history = tuple(
+            _as_real_scalar("LM damping history value", value) for value in self.damping_history
+        )
+        accepted_history = tuple(bool(value) for value in self.accepted_history)
+        steps = int(self.steps)
+        if steps < 0:
+            raise ValueError("LM result steps must be non-negative")
+        if any(value < 0.0 for value in damping_history):
+            raise ValueError("LM damping history must contain finite non-negative values")
+        if len(accepted_history) != steps:
+            raise ValueError("LM accepted history length must match executed steps")
+        if len(damping_history) != steps + 1:
+            raise ValueError(
+                "LM damping history must include initial damping plus one entry per step"
+            )
+        if len(value_history) != steps + 1:
+            raise ValueError("LM value history must include initial value plus one entry per step")
+        best_value = _as_real_scalar("LM best objective", self.best_value)
+        if best_value > min(value_history) + 1.0e-12:
+            raise ValueError("LM best objective must be no larger than the recorded minimum")
+        if self.reason not in {
+            "residual_tolerance",
+            "step_tolerance",
+            "value_tolerance",
+            "max_steps",
+        }:
+            raise ValueError("LM result reason must be a known convergence status")
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "residual", residual)
+        object.__setattr__(self, "value_history", value_history)
+        object.__setattr__(self, "damping_history", damping_history)
+        object.__setattr__(self, "accepted_history", accepted_history)
+        object.__setattr__(self, "steps", steps)
+        object.__setattr__(self, "converged", bool(self.converged))
+        object.__setattr__(self, "best_values", best_values)
+        object.__setattr__(self, "best_value", best_value)
+
+
+@dataclass(frozen=True)
 class WeightedGradientResult:
     """Weighted scalarisation of multiple scalar gradient results."""
 
@@ -648,6 +712,247 @@ class DifferentiableOptimizer:
             )
 
         raise RuntimeError("unreachable optimizer state")
+
+
+@dataclass(frozen=True)
+class LevenbergMarquardtOptimizer:
+    """Bounded Levenberg-Marquardt optimizer for residual-map objectives."""
+
+    damping: float = 1.0e-3
+    max_steps: int = 100
+    residual_tolerance: float = 1.0e-8
+    step_tolerance: float = 1.0e-8
+    value_tolerance: float | None = None
+    acceptance_threshold: float = 1.0e-4
+    decrease_factor: float = 1.0 / 3.0
+    increase_factor: float = 2.0
+    min_damping: float = 1.0e-12
+    max_damping: float = 1.0e12
+    high_quality_ratio: float = 0.75
+    finite_difference_step: float = 1.0e-6
+    max_step_norm: float | None = None
+
+    def __post_init__(self) -> None:
+        damping = _as_real_scalar("Levenberg-Marquardt damping", self.damping)
+        if damping < 0.0:
+            raise ValueError("Levenberg-Marquardt damping must be finite and non-negative")
+        max_steps = int(self.max_steps)
+        if max_steps < 1:
+            raise ValueError("Levenberg-Marquardt max_steps must be positive")
+        residual_tolerance = _as_real_scalar(
+            "Levenberg-Marquardt residual_tolerance",
+            self.residual_tolerance,
+        )
+        step_tolerance = _as_real_scalar(
+            "Levenberg-Marquardt step_tolerance",
+            self.step_tolerance,
+        )
+        if residual_tolerance < 0.0 or step_tolerance < 0.0:
+            raise ValueError("Levenberg-Marquardt tolerances must be finite and non-negative")
+        value_tolerance = (
+            None
+            if self.value_tolerance is None
+            else _as_real_scalar("Levenberg-Marquardt value_tolerance", self.value_tolerance)
+        )
+        if value_tolerance is not None and value_tolerance < 0.0:
+            raise ValueError("Levenberg-Marquardt value_tolerance must be finite and non-negative")
+        acceptance_threshold = _as_real_scalar(
+            "Levenberg-Marquardt acceptance_threshold",
+            self.acceptance_threshold,
+        )
+        if acceptance_threshold < 0.0:
+            raise ValueError("Levenberg-Marquardt acceptance_threshold must be non-negative")
+        decrease_factor = _as_real_scalar(
+            "Levenberg-Marquardt decrease_factor",
+            self.decrease_factor,
+        )
+        increase_factor = _as_real_scalar(
+            "Levenberg-Marquardt increase_factor",
+            self.increase_factor,
+        )
+        min_damping = _as_real_scalar("Levenberg-Marquardt min_damping", self.min_damping)
+        max_damping = _as_real_scalar("Levenberg-Marquardt max_damping", self.max_damping)
+        high_quality_ratio = _as_real_scalar(
+            "Levenberg-Marquardt high_quality_ratio",
+            self.high_quality_ratio,
+        )
+        finite_difference_step = _as_real_scalar(
+            "Levenberg-Marquardt finite_difference_step",
+            self.finite_difference_step,
+        )
+        if not 0.0 < decrease_factor < 1.0:
+            raise ValueError("decrease_factor must be finite and between 0 and 1")
+        if increase_factor <= 1.0:
+            raise ValueError("increase_factor must be finite and greater than 1")
+        if min_damping < 0.0 or max_damping < min_damping:
+            raise ValueError("LM damping bounds must be finite and ordered")
+        if high_quality_ratio < 0.0:
+            raise ValueError("high_quality_ratio must be finite and non-negative")
+        if finite_difference_step <= 0.0:
+            raise ValueError("finite_difference_step must be finite and positive")
+        max_step_norm = (
+            None
+            if self.max_step_norm is None
+            else _as_real_scalar("Levenberg-Marquardt max_step_norm", self.max_step_norm)
+        )
+        if max_step_norm is not None and max_step_norm <= 0.0:
+            raise ValueError("max_step_norm must be finite and positive")
+        object.__setattr__(self, "damping", min(max_damping, max(min_damping, damping)))
+        object.__setattr__(self, "max_steps", max_steps)
+        object.__setattr__(self, "residual_tolerance", residual_tolerance)
+        object.__setattr__(self, "step_tolerance", step_tolerance)
+        object.__setattr__(self, "value_tolerance", value_tolerance)
+        object.__setattr__(self, "acceptance_threshold", acceptance_threshold)
+        object.__setattr__(self, "decrease_factor", decrease_factor)
+        object.__setattr__(self, "increase_factor", increase_factor)
+        object.__setattr__(self, "min_damping", min_damping)
+        object.__setattr__(self, "max_damping", max_damping)
+        object.__setattr__(self, "high_quality_ratio", high_quality_ratio)
+        object.__setattr__(self, "finite_difference_step", finite_difference_step)
+        object.__setattr__(self, "max_step_norm", max_step_norm)
+
+    def minimize(
+        self,
+        objective: VectorObjective,
+        initial_values: ArrayLike,
+        *,
+        parameters: Sequence[Parameter] | None = None,
+        bounds: Sequence[ParameterBounds] | None = None,
+        weight_fn: Callable[[NDArray[np.float64]], ArrayLike] | None = None,
+        rcond: float = 1.0e-12,
+    ) -> LevenbergMarquardtResult:
+        """Minimize a vector residual objective with adaptive bounded LM steps."""
+
+        values = _as_parameter_array(initial_values)
+        bounds_meta = _normalise_bounds(values, bounds)
+        values = _project_bounds(values, bounds_meta)
+        damping = self.damping
+        jacobian_result = value_and_finite_difference_jacobian(
+            objective,
+            values,
+            parameters=parameters,
+            step=self.finite_difference_step,
+        )
+        weights = self._weights_for(jacobian_result.value, weight_fn)
+        current_value = self._weighted_value(jacobian_result.value, weights)
+        current_residual = jacobian_result.value
+        best_values = values.copy()
+        best_value = current_value
+        value_history: list[float] = [current_value]
+        damping_history: list[float] = [damping]
+        accepted_history: list[bool] = []
+        reason = "max_steps"
+        converged = False
+
+        if float(np.linalg.norm(current_residual, ord=2)) <= self.residual_tolerance:
+            return LevenbergMarquardtResult(
+                values=values,
+                residual=current_residual,
+                value_history=tuple(value_history),
+                damping_history=tuple(damping_history),
+                accepted_history=(),
+                steps=0,
+                converged=True,
+                reason="residual_tolerance",
+                best_values=best_values,
+                best_value=best_value,
+            )
+
+        for _ in range(self.max_steps):
+            step_result = levenberg_marquardt_step(
+                jacobian_result,
+                values,
+                weights=weights,
+                damping=damping,
+                bounds=bounds_meta,
+                max_step_norm=self.max_step_norm,
+                rcond=rcond,
+            )
+            trial = evaluate_levenberg_marquardt_step(
+                objective,
+                step_result,
+                weights=weights,
+                acceptance_threshold=self.acceptance_threshold,
+            )
+            update = update_levenberg_marquardt_damping(
+                trial,
+                decrease_factor=self.decrease_factor,
+                increase_factor=self.increase_factor,
+                min_damping=self.min_damping,
+                max_damping=self.max_damping,
+                high_quality_ratio=self.high_quality_ratio,
+            )
+            accepted_history.append(trial.accepted)
+            trainable = np.asarray(jacobian_result.trainable, dtype=bool)
+            step_norm = float(np.linalg.norm(step_result.step[trainable], ord=2))
+            if trial.accepted:
+                values = step_result.candidate_values
+                current_residual = trial.candidate_residual
+                current_value = trial.candidate_value
+                if current_value < best_value:
+                    best_value = current_value
+                    best_values = values.copy()
+                if float(np.linalg.norm(current_residual, ord=2)) <= self.residual_tolerance:
+                    reason = "residual_tolerance"
+                    converged = True
+                elif step_norm <= self.step_tolerance:
+                    reason = "step_tolerance"
+                    converged = True
+                elif (
+                    self.value_tolerance is not None
+                    and abs(trial.actual_reduction) <= self.value_tolerance
+                ):
+                    reason = "value_tolerance"
+                    converged = True
+            damping = update.next_damping
+            value_history.append(current_value)
+            damping_history.append(damping)
+            if converged:
+                break
+            if trial.accepted:
+                jacobian_result = value_and_finite_difference_jacobian(
+                    objective,
+                    values,
+                    parameters=parameters,
+                    step=self.finite_difference_step,
+                )
+                weights = self._weights_for(jacobian_result.value, weight_fn)
+
+        return LevenbergMarquardtResult(
+            values=values,
+            residual=current_residual,
+            value_history=tuple(value_history),
+            damping_history=tuple(damping_history),
+            accepted_history=tuple(accepted_history),
+            steps=len(accepted_history),
+            converged=converged,
+            reason=reason,
+            best_values=best_values,
+            best_value=best_value,
+        )
+
+    @staticmethod
+    def _weighted_value(
+        residual: NDArray[np.float64],
+        weights: NDArray[np.float64] | None,
+    ) -> float:
+        if weights is None:
+            return 0.5 * float(residual @ residual)
+        return 0.5 * float(residual @ (residual * weights))
+
+    @staticmethod
+    def _weights_for(
+        residual: NDArray[np.float64],
+        weight_fn: Callable[[NDArray[np.float64]], ArrayLike] | None,
+    ) -> NDArray[np.float64] | None:
+        if weight_fn is None:
+            return None
+        weights = _as_real_numeric_array("LM weights", weight_fn(residual.copy()))
+        if weights.ndim != 1 or weights.shape[0] != residual.size:
+            raise ValueError("LM weights must be a one-dimensional array matching residual rows")
+        if not np.all(np.isfinite(weights)) or np.any(weights < 0.0):
+            raise ValueError("LM weights must contain only finite non-negative values")
+        return weights
 
 
 def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
@@ -1551,6 +1856,8 @@ __all__ = [
     "HessianResult",
     "JacobianResult",
     "LevenbergMarquardtDampingUpdate",
+    "LevenbergMarquardtOptimizer",
+    "LevenbergMarquardtResult",
     "LevenbergMarquardtStep",
     "LevenbergMarquardtTrial",
     "NaturalGradientResult",

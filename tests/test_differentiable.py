@@ -21,6 +21,8 @@ from scpn_quantum_control.differentiable import (
     HessianResult,
     JacobianResult,
     LevenbergMarquardtDampingUpdate,
+    LevenbergMarquardtOptimizer,
+    LevenbergMarquardtResult,
     LevenbergMarquardtStep,
     LevenbergMarquardtTrial,
     NaturalGradientResult,
@@ -832,6 +834,75 @@ def test_update_levenberg_marquardt_damping_rejects_invalid_policy() -> None:
         update_levenberg_marquardt_damping(trial, high_quality_ratio=-1.0)
 
 
+def test_levenberg_marquardt_optimizer_converges_for_residual_map() -> None:
+    """The full LM optimizer should solve a trainable residual map with provenance."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] - 1.0, 2.0 * (values[1] + 0.5)])
+
+    optimizer = LevenbergMarquardtOptimizer(damping=0.1, max_steps=20, residual_tolerance=1e-7)
+    result = optimizer.minimize(
+        objective,
+        [3.0, 1.5],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+
+    assert isinstance(result, LevenbergMarquardtResult)
+    assert result.converged
+    assert result.reason in {"residual_tolerance", "step_tolerance", "value_tolerance"}
+    assert any(result.accepted_history)
+    assert len(result.value_history) == result.steps + 1
+    assert len(result.damping_history) == result.steps + 1
+    assert result.best_value <= result.value_history[0]
+    np.testing.assert_allclose(result.values, [1.0, -0.5], atol=1.0e-5)
+
+
+def test_levenberg_marquardt_optimizer_respects_bounds_and_weights() -> None:
+    """Bounded weighted LM runs should stay inside the declared parameter domain."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] - 2.0, 8.0 * (values[1] - 3.0)])
+
+    optimizer = LevenbergMarquardtOptimizer(
+        damping=0.2,
+        max_steps=30,
+        residual_tolerance=1.0e-7,
+        max_step_norm=1.0,
+    )
+    result = optimizer.minimize(
+        objective,
+        [0.0, 0.0],
+        bounds=[ParameterBounds(lower=-0.5, upper=1.0), ParameterBounds(lower=-1.0, upper=1.5)],
+        weight_fn=lambda residuals: soft_l1_residual_weights(
+            residuals, scale=2.0, min_weight=0.05
+        ),
+    )
+
+    assert result.converged or result.reason == "max_steps"
+    assert np.all(result.values <= np.array([1.0, 1.5]))
+    assert np.all(result.values >= np.array([-0.5, -1.0]))
+    np.testing.assert_allclose(result.best_values, [1.0, 1.5], atol=1.0e-6)
+
+
+def test_levenberg_marquardt_optimizer_rejects_invalid_controls() -> None:
+    """Full LM optimization controls and IRLS weights must fail closed."""
+
+    with pytest.raises(ValueError, match="max_steps"):
+        LevenbergMarquardtOptimizer(max_steps=0)
+    with pytest.raises(ValueError, match="tolerances"):
+        LevenbergMarquardtOptimizer(residual_tolerance=-1.0)
+    with pytest.raises(ValueError, match="finite_difference_step"):
+        LevenbergMarquardtOptimizer(finite_difference_step=0.0)
+
+    optimizer = LevenbergMarquardtOptimizer(max_steps=1)
+    with pytest.raises(ValueError, match="LM weights"):
+        optimizer.minimize(lambda values: np.array([values[0]]), [1.0], weight_fn=lambda _: [-1.0])
+    with pytest.raises(ValueError, match="LM weights"):
+        optimizer.minimize(
+            lambda values: np.array([values[0]]), [1.0], weight_fn=lambda _: [1.0, 1.0]
+        )
+
+
 def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
     """Damping should make semidefinite trainable metrics solvable."""
 
@@ -1327,6 +1398,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.HessianResult is HessianResult
     assert scpn.JacobianResult is JacobianResult
     assert scpn.LevenbergMarquardtDampingUpdate is LevenbergMarquardtDampingUpdate
+    assert scpn.LevenbergMarquardtOptimizer is LevenbergMarquardtOptimizer
+    assert scpn.LevenbergMarquardtResult is LevenbergMarquardtResult
     assert scpn.LevenbergMarquardtStep is LevenbergMarquardtStep
     assert scpn.LevenbergMarquardtTrial is LevenbergMarquardtTrial
     assert scpn.NaturalGradientResult is NaturalGradientResult
