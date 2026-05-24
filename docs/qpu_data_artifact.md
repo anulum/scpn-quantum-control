@@ -105,6 +105,10 @@ objects are rejected before artifact hashing.
 `source_timestamp` and `replay_id`, when supplied, must be non-empty strings.
 They are trimmed before the whole-artifact digest is computed so equivalent
 provenance identifiers do not produce whitespace-dependent artifact identities.
+Required identity fields (`domain`, `source_name`, `source_mode`,
+`normalization`, and `extraction_method`) follow the same fail-closed string
+contract: no implicit `str(...)` coercion, and whitespace is normalised before
+hashing.
 
 ## Matrix invariants
 
@@ -203,6 +207,7 @@ The tests cover:
 - hash-map rejection for unknown keys and malformed digest strings
 - top-level artifact-hash syntax rejection before payload comparison
 - provenance identifier type, blank-value, and whitespace normalisation checks
+- required identity-field type and whitespace normalisation checks
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly

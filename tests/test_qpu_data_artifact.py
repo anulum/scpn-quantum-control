@@ -472,3 +472,36 @@ def test_provenance_identifiers_are_trimmed_before_hashing():
     assert artifact.replay_id == "source-run-1"
     assert artifact.to_dict()["source_timestamp"] == "2026-05-24T00:00:00Z"
     assert artifact.to_dict()["replay_id"] == "source-run-1"
+
+
+def test_required_text_fields_reject_non_string_values():
+    with pytest.raises(ValueError, match="domain must be a string"):
+        QPUDataArtifact(
+            domain=123,
+            source_name="required-text-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+        )
+
+
+def test_required_text_fields_are_trimmed_before_hashing():
+    artifact = QPUDataArtifact(
+        domain="  connectome  ",
+        source_name="  required-text-normalization  ",
+        source_mode="  recorded  ",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="  documented  ",
+        extraction_method="  unit-test  ",
+        replay_id="source-run-1",
+    )
+
+    assert artifact.domain == "connectome"
+    assert artifact.source_name == "required-text-normalization"
+    assert artifact.source_mode == "recorded"
+    assert artifact.normalization == "documented"
+    assert artifact.extraction_method == "unit-test"

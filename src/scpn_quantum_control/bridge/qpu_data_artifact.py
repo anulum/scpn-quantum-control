@@ -39,6 +39,15 @@ def _json_sha256(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _required_text(name: str, value: Any) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{name} must be a string")
+    stripped = value.strip()
+    if not stripped:
+        raise ValueError(f"{name} must be non-empty")
+    return stripped
+
+
 def _optional_text(name: str, value: Any) -> str | None:
     if value is None:
         return None
@@ -149,11 +158,11 @@ class QPUDataArtifact:
     hashes: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        domain = str(self.domain).strip()
-        source_name = str(self.source_name).strip()
-        source_mode = str(self.source_mode).strip()
-        normalization = str(self.normalization).strip()
-        extraction_method = str(self.extraction_method).strip()
+        domain = _required_text("domain", self.domain)
+        source_name = _required_text("source_name", self.source_name)
+        source_mode = _required_text("source_mode", self.source_mode)
+        normalization = _required_text("normalization", self.normalization)
+        extraction_method = _required_text("extraction_method", self.extraction_method)
         source_timestamp = _optional_text("source_timestamp", self.source_timestamp)
         replay_id = _optional_text("replay_id", self.replay_id)
         K_nm = _finite_float_array("K_nm", self.K_nm, ndim=2)
@@ -165,16 +174,8 @@ class QPUDataArtifact:
         metadata = dict(self.metadata)
         hashes = _validate_hash_map(self.hashes)
 
-        if not domain:
-            raise ValueError("domain must be non-empty")
-        if not source_name:
-            raise ValueError("source_name must be non-empty")
         if source_mode not in ALL_SOURCE_MODES:
             raise ValueError(f"source_mode must be one of {sorted(ALL_SOURCE_MODES)}")
-        if not normalization:
-            raise ValueError("normalization must be non-empty")
-        if not extraction_method:
-            raise ValueError("extraction_method must be non-empty")
         if K_nm.shape[0] != K_nm.shape[1]:
             raise ValueError("K_nm must be square")
         if omega.shape != (K_nm.shape[0],):
