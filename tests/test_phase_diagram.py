@@ -48,6 +48,26 @@ class TestCriticalCoupling:
         k_c_high = critical_coupling_finite_graph(omega, fiedler=2.0)
         assert k_c_low > k_c_high
 
+    def test_disconnected_finite_graph_has_no_finite_synchronization_threshold(self):
+        omega = np.array([0.5, 1.0, 1.5])
+
+        k_c = critical_coupling_finite_graph(omega, fiedler=0.0)
+
+        assert np.isinf(k_c)
+
+    def test_disconnected_identical_frequency_graph_has_zero_threshold(self):
+        omega = np.ones(4)
+
+        k_c = critical_coupling_finite_graph(omega, fiedler=0.0)
+
+        assert k_c == 0.0
+
+    def test_negative_fiedler_is_rejected(self):
+        omega = np.array([0.5, 1.0, 1.5])
+
+        with pytest.raises(ValueError, match="fiedler must be non-negative"):
+            critical_coupling_finite_graph(omega, fiedler=-1e-6)
+
     def test_mean_field_positive(self):
         k_c = critical_coupling_mean_field(OMEGA_N_16)
         assert k_c > 0
@@ -75,6 +95,19 @@ class TestDecoherenceTemperature:
         t_long = decoherence_temperature(t1=200.0, t2=100.0)
         t_short = decoherence_temperature(t1=200.0, t2=10.0)
         assert t_short > t_long
+
+    @pytest.mark.parametrize(
+        ("t1", "t2", "message"),
+        [
+            (0.0, 100.0, "t1 must be positive"),
+            (-1.0, 100.0, "t1 must be positive"),
+            (100.0, 0.0, "t2 must be positive"),
+            (100.0, -1.0, "t2 must be positive"),
+        ],
+    )
+    def test_non_positive_decoherence_times_are_rejected(self, t1, t2, message):
+        with pytest.raises(ValueError, match=message):
+            decoherence_temperature(t1, t2)
 
 
 class TestEffectiveTemperature:

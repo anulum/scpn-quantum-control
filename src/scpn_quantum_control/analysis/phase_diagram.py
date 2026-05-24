@@ -67,8 +67,16 @@ def critical_coupling_finite_graph(
 
     K_c = Δω / λ_2 where Δω = max(ω) - min(ω) and λ_2 is the Fiedler value.
     """
+    if not np.isfinite(fiedler):
+        raise ValueError("fiedler must be finite")
+    if fiedler < 0.0:
+        raise ValueError("fiedler must be non-negative")
     delta_omega = float(np.max(omega) - np.min(omega))
-    return delta_omega / max(fiedler, 1e-15)
+    if delta_omega <= 1e-15:
+        return 0.0
+    if fiedler <= 1e-15:
+        return float("inf")
+    return delta_omega / fiedler
 
 
 def critical_coupling_mean_field(omega: np.ndarray) -> float:
@@ -98,8 +106,16 @@ def decoherence_temperature(t1: float, t2: float) -> float:
     Maps T1/T2 decoherence rates to an effective thermal noise scale.
     T_decoherence ~ ħ / (k_B · T2) in natural units → 1/T2.
     """
-    gamma_1 = 1.0 / max(t1, 1e-15)
-    gamma_2 = 1.0 / max(t2, 1e-15)
+    if np.isnan(t1):
+        raise ValueError("t1 must be finite or infinite")
+    if np.isnan(t2):
+        raise ValueError("t2 must be finite or infinite")
+    if t1 <= 0.0:
+        raise ValueError("t1 must be positive")
+    if t2 <= 0.0:
+        raise ValueError("t2 must be positive")
+    gamma_1 = 0.0 if np.isinf(t1) else 1.0 / t1
+    gamma_2 = 0.0 if np.isinf(t2) else 1.0 / t2
     return float(gamma_1 + gamma_2) / 2.0
 
 
