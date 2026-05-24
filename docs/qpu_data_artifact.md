@@ -83,6 +83,13 @@ when `require_publication_safe=True`.
 | `hashes` | SHA-256 hashes for numerical arrays. |
 | `artifact_sha256` | SHA-256 hash of the serialised payload. |
 
+Loaders treat the hash fields as integrity assertions, not decorative
+metadata. If a payload supplies `K_nm_sha256`, `omega_sha256`,
+`theta0_sha256`, or `artifact_sha256`, Quantum Control recomputes the
+corresponding digest and rejects stale values before the artifact can be
+compiled into a circuit. Omitted array digests are filled deterministically for
+new in-memory artifacts.
+
 ## Matrix invariants
 
 Current Kuramoto-XY circuits require:
@@ -165,6 +172,7 @@ The artifact contract is tested in `tests/test_qpu_data_artifact.py`.
 The tests cover:
 
 - real artifact round-trip and hashes
+- stale array-hash and artifact-hash tamper rejection
 - synthetic artifact rejection by the publication gate
 - missing timestamp/replay rejection
 - invalid diagonal, negative, or directed `K_nm`

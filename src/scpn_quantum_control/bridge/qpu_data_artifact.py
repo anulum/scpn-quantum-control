@@ -36,6 +36,22 @@ def _json_sha256(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _verify_or_set_array_hash(
+    hashes: dict[str, str],
+    key: str,
+    array: NDArray[np.float64] | None,
+) -> None:
+    if array is None:
+        if key in hashes:
+            raise ValueError(f"{key} is present but the corresponding array is absent")
+        return
+    digest = _array_sha256(array)
+    supplied = hashes.get(key)
+    if supplied is not None and supplied != digest:
+        raise ValueError(f"{key} does not match the artifact array payload")
+    hashes.setdefault(key, digest)
+
+
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
     array = np.asarray(value, dtype=np.float64)
     if array.ndim != ndim:
@@ -109,10 +125,9 @@ class QPUDataArtifact:
         if not np.allclose(K_nm, K_nm.T, atol=1e-12):
             raise ValueError("K_nm must be symmetric for current Kuramoto-XY circuits")
 
-        hashes.setdefault("K_nm_sha256", _array_sha256(K_nm))
-        hashes.setdefault("omega_sha256", _array_sha256(omega))
-        if theta0 is not None:
-            hashes.setdefault("theta0_sha256", _array_sha256(theta0))
+        _verify_or_set_array_hash(hashes, "K_nm_sha256", K_nm)
+        _verify_or_set_array_hash(hashes, "omega_sha256", omega)
+        _verify_or_set_array_hash(hashes, "theta0_sha256", theta0)
 
         object.__setattr__(self, "domain", domain)
         object.__setattr__(self, "source_name", source_name)
@@ -173,7 +188,7 @@ class QPUDataArtifact:
         """Load and validate an artifact from a mapping."""
         if data.get("schema_version") != SCHEMA_VERSION:
             raise ValueError("unsupported QPU data artifact schema version")
-        return cls(
+        artifact = cls(
             domain=str(data["domain"]),
             source_name=str(data["source_name"]),
             source_mode=str(data["source_mode"]),
@@ -192,6 +207,12 @@ class QPUDataArtifact:
             metadata=dict(data.get("metadata", {})),
             hashes=dict(data.get("hashes", {})),
         )
+        supplied_artifact_sha256 = data.get("artifact_sha256")
+        if supplied_artifact_sha256 is not None:
+            computed_artifact_sha256 = artifact.to_dict()["artifact_sha256"]
+            if supplied_artifact_sha256 != computed_artifact_sha256:
+                raise ValueError("artifact_sha256 does not match the artifact payload")
+        return artifact
 
     @classmethod
     def from_json(cls, payload: str) -> QPUDataArtifact:

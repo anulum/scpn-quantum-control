@@ -182,3 +182,41 @@ def test_from_scpn_datastream_payload_defaults_to_synthetic():
 def test_json_loader_rejects_wrong_schema():
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))
+
+
+def test_loader_rejects_stale_array_hashes():
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="tamper-check",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=[0.1, 0.2, 0.3],
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+    )
+    payload = artifact.to_dict()
+    payload["K_nm"][0][1] = 0.9
+    payload["K_nm"][1][0] = 0.9
+
+    with pytest.raises(ValueError, match="K_nm_sha256"):
+        QPUDataArtifact.from_dict(payload)
+
+
+def test_loader_rejects_stale_artifact_hash_after_metadata_tamper():
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="tamper-check",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=[0.1, 0.2, 0.3],
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+        metadata={"acquisition": "locked"},
+    )
+    payload = artifact.to_dict()
+    payload["metadata"]["acquisition"] = "changed-after-hash"
+
+    with pytest.raises(ValueError, match="artifact_sha256"):
+        QPUDataArtifact.from_dict(payload)
