@@ -166,6 +166,12 @@ def _positive_finite_float(name: str, value: Any) -> float:
     return scalar
 
 
+def _positive_int(name: str, value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError(f"{name} must be a positive integer")
+    return int(value)
+
+
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
     _reject_implicit_numeric_coercion(name, value)
     try:
@@ -370,11 +376,12 @@ class QPUDataArtifact:
         if n_layers != len(layer_ids):
             raise ValueError("n_layers must match layer_ids length")
         dt_s = _positive_finite_float("dt_s", payload.get("dt_s"))
+        n_steps = _positive_int("n_steps", payload.get("n_steps"))
         metadata = {
             "source_project": payload.get("source_project", "sc-neurocore"),
             "dt_s": dt_s,
             "seed": seed,
-            "n_steps": payload.get("n_steps"),
+            "n_steps": n_steps,
             "n_layers": n_layers,
             "payload_sha256": _json_sha256(payload),
         }

@@ -396,6 +396,23 @@ def test_scpn_datastream_adapter_rejects_invalid_dt_s():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
+def test_scpn_datastream_adapter_rejects_invalid_n_steps():
+    payload = {
+        "schema_version": "sc-neurocore.scpn.datastream.v1",
+        "source_project": "sc-neurocore",
+        "seed": 11,
+        "dt_s": 0.01,
+        "n_steps": 0,
+        "n_layers": 2,
+        "layer_ids": ["l1", "l2"],
+        "omega_rad_s": [0.1, 0.2],
+        "knm": [[0.0, 0.2], [0.2, 0.0]],
+    }
+
+    with pytest.raises(ValueError, match="n_steps must be a positive integer"):
+        QPUDataArtifact.from_scpn_datastream_payload(payload)
+
+
 def test_json_loader_rejects_wrong_schema():
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))
