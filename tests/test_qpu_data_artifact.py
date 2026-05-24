@@ -505,3 +505,22 @@ def test_required_text_fields_are_trimmed_before_hashing():
     assert artifact.source_mode == "recorded"
     assert artifact.normalization == "documented"
     assert artifact.extraction_method == "unit-test"
+
+
+def test_loader_rejects_non_string_required_identity_fields():
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="loader-required-text-validation",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+    )
+    payload = artifact.to_dict()
+    payload["domain"] = 123
+    payload.pop("artifact_sha256")
+
+    with pytest.raises(ValueError, match="domain must be a string"):
+        QPUDataArtifact.from_dict(payload)

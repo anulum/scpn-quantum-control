@@ -108,7 +108,8 @@ provenance identifiers do not produce whitespace-dependent artifact identities.
 Required identity fields (`domain`, `source_name`, `source_mode`,
 `normalization`, and `extraction_method`) follow the same fail-closed string
 contract: no implicit `str(...)` coercion, and whitespace is normalised before
-hashing.
+hashing. The same contract is enforced for loader input; `from_dict()` does not
+coerce non-string identity fields into publication artifact identity strings.
 
 ## Matrix invariants
 
@@ -208,6 +209,7 @@ The tests cover:
 - top-level artifact-hash syntax rejection before payload comparison
 - provenance identifier type, blank-value, and whitespace normalisation checks
 - required identity-field type and whitespace normalisation checks
+- loader rejection for non-string required identity fields
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly

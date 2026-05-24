@@ -257,9 +257,9 @@ class QPUDataArtifact:
         if data.get("schema_version") != SCHEMA_VERSION:
             raise ValueError("unsupported QPU data artifact schema version")
         artifact = cls(
-            domain=str(data["domain"]),
-            source_name=str(data["source_name"]),
-            source_mode=str(data["source_mode"]),
+            domain=data["domain"],
+            source_name=data["source_name"],
+            source_mode=data["source_mode"],
             K_nm=np.asarray(data["K_nm"], dtype=np.float64),
             omega=np.asarray(data["omega"], dtype=np.float64),
             theta0=(
@@ -268,8 +268,8 @@ class QPUDataArtifact:
                 else np.asarray(data["theta0"], dtype=np.float64)
             ),
             layer_assignments=list(data.get("layer_assignments", [])),
-            normalization=str(data["normalization"]),
-            extraction_method=str(data["extraction_method"]),
+            normalization=data["normalization"],
+            extraction_method=data["extraction_method"],
             source_timestamp=data.get("source_timestamp"),
             replay_id=data.get("replay_id"),
             metadata=dict(data.get("metadata", {})),
