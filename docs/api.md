@@ -389,7 +389,14 @@ from scpn_quantum_control import (
     ParameterShiftRule,
     VJPResult,
     armijo_backtracking_line_search,
+    batch_finite_difference_hvp,
+    batch_finite_difference_jvp,
+    batch_finite_difference_vjp,
     batch_value_and_parameter_shift_grad,
+    batch_value_and_finite_difference_hvp,
+    batch_value_and_finite_difference_jvp,
+    batch_value_and_finite_difference_vjp,
+    batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     empirical_fisher_conjugate_gradient,
     empirical_fisher_vector_product,
@@ -500,12 +507,19 @@ finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
 finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> JVPResult
+batch_finite_difference_jvp(objective, values, tangents, parameters=None, step=1e-6) -> np.ndarray
+batch_value_and_finite_difference_jvp(objective, values, tangents, parameters=None, step=1e-6) -> tuple[JVPResult, ...]
 finite_difference_vjp(objective, values, cotangent, parameters=None, step=1e-6) -> VJPResult
+batch_finite_difference_vjp(objective, values, cotangents, parameters=None, step=1e-6) -> np.ndarray
+batch_value_and_finite_difference_vjp(objective, values, cotangents, parameters=None, step=1e-6) -> tuple[VJPResult, ...]
+batch_vector_jacobian_product(jacobian, cotangents) -> tuple[VJPResult, ...]
 vector_jacobian_product(jacobian, cotangent) -> VJPResult
 finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
 finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
 value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
+batch_finite_difference_hvp(objective, values, tangents, parameters=None, step=1e-5) -> np.ndarray
+batch_value_and_finite_difference_hvp(objective, values, tangents, parameters=None, step=1e-5) -> tuple[HVPResult, ...]
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
 empirical_fisher_conjugate_gradient(jacobian, rhs, weights=None, damping=1e-8, tolerance=1e-10, max_iterations=None) -> FisherConjugateGradientResult
 empirical_fisher_vector_product(jacobian, tangent, weights=None, damping=0.0) -> FisherVectorProductResult
@@ -568,6 +582,9 @@ requiring stable one-dimensional finite outputs across all perturbations.
 without materialising a full Jacobian; `vector_jacobian_product()` and
 `finite_difference_vjp()` expose reverse-mode cotangent contractions with the
 same trainable-parameter masking used by gradients and solvers.
+Batched JVP, VJP, and HVP helpers require explicit two-dimensional tangent or
+cotangent batches, returning either stacked numeric products or one provenance
+object per row for transform-style workflows.
 `finite_difference_hessian()` and `value_and_finite_difference_hessian()`
 provide central-difference second-order curvature diagnostics for scalar losses;
 non-trainable parameters produce zero Hessian rows and columns.

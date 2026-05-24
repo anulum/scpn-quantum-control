@@ -1699,6 +1699,40 @@ def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
     return array
 
 
+def _as_batch_parameter_array(
+    name: str,
+    values: ArrayLike,
+    parameter_count: int,
+) -> NDArray[np.float64]:
+    array = _as_real_numeric_array(name, values)
+    if array.ndim != 2:
+        raise ValueError(f"{name} must be a two-dimensional batch")
+    if array.shape[0] < 1:
+        raise ValueError(f"{name} must contain at least one row")
+    if array.shape[1] != parameter_count:
+        raise ValueError(f"{name} row length must match parameter length")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values")
+    return array
+
+
+def _as_batch_vector_array(
+    name: str,
+    values: ArrayLike,
+    vector_count: int,
+) -> NDArray[np.float64]:
+    array = _as_real_numeric_array(name, values)
+    if array.ndim != 2:
+        raise ValueError(f"{name} must be a two-dimensional batch")
+    if array.shape[0] < 1:
+        raise ValueError(f"{name} must contain at least one row")
+    if array.shape[1] != vector_count:
+        raise ValueError(f"{name} row length must match vector length")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values")
+    return array
+
+
 def _as_scalar(value: float | int | np.floating[Any] | NDArray[np.float64]) -> float:
     try:
         scalar = _as_real_scalar("differentiable objective", value)
@@ -2151,6 +2185,50 @@ def value_and_finite_difference_jvp(
     )
 
 
+def batch_finite_difference_jvp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    tangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return stacked finite-difference JVPs for a batch of tangents."""
+
+    results = batch_value_and_finite_difference_jvp(
+        objective,
+        values,
+        tangents,
+        parameters=parameters,
+        step=step,
+    )
+    return cast(NDArray[np.float64], np.vstack([result.jvp for result in results]))
+
+
+def batch_value_and_finite_difference_jvp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    tangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> tuple[JVPResult, ...]:
+    """Return one finite-difference JVP result per tangent row."""
+
+    parameter_values = _as_parameter_array(values)
+    tangent_batch = _as_batch_parameter_array("JVP tangents", tangents, parameter_values.size)
+    return tuple(
+        value_and_finite_difference_jvp(
+            objective,
+            parameter_values,
+            tangent,
+            parameters=parameters,
+            step=step,
+        )
+        for tangent in tangent_batch
+    )
+
+
 def vector_jacobian_product(
     jacobian: JacobianResult,
     cotangent: ArrayLike,
@@ -2194,6 +2272,57 @@ def finite_difference_vjp(
         step=step,
     )
     return vector_jacobian_product(jacobian, cotangent)
+
+
+def batch_vector_jacobian_product(
+    jacobian: JacobianResult,
+    cotangents: ArrayLike,
+) -> tuple[VJPResult, ...]:
+    """Return one vector-Jacobian product per cotangent row."""
+
+    if not isinstance(jacobian, JacobianResult):
+        raise ValueError("batch_vector_jacobian_product requires a JacobianResult")
+    cotangent_batch = _as_batch_vector_array("VJP cotangents", cotangents, jacobian.value.size)
+    return tuple(vector_jacobian_product(jacobian, cotangent) for cotangent in cotangent_batch)
+
+
+def batch_finite_difference_vjp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    cotangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return stacked finite-difference VJPs for a batch of cotangents."""
+
+    results = batch_value_and_finite_difference_vjp(
+        objective,
+        values,
+        cotangents,
+        parameters=parameters,
+        step=step,
+    )
+    return cast(NDArray[np.float64], np.vstack([result.vjp for result in results]))
+
+
+def batch_value_and_finite_difference_vjp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    cotangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> tuple[VJPResult, ...]:
+    """Return one finite-difference VJP result per cotangent row."""
+
+    jacobian = value_and_finite_difference_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+    return batch_vector_jacobian_product(jacobian, cotangents)
 
 
 def finite_difference_hessian(
@@ -2351,6 +2480,50 @@ def value_and_finite_difference_hvp(
         evaluations=evaluations,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
+def batch_finite_difference_hvp(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    tangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-5,
+) -> NDArray[np.float64]:
+    """Return stacked finite-difference HVPs for a batch of tangents."""
+
+    results = batch_value_and_finite_difference_hvp(
+        objective,
+        values,
+        tangents,
+        parameters=parameters,
+        step=step,
+    )
+    return cast(NDArray[np.float64], np.vstack([result.hvp for result in results]))
+
+
+def batch_value_and_finite_difference_hvp(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    tangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-5,
+) -> tuple[HVPResult, ...]:
+    """Return one finite-difference HVP result per tangent row."""
+
+    parameter_values = _as_parameter_array(values)
+    tangent_batch = _as_batch_parameter_array("HVP tangents", tangents, parameter_values.size)
+    return tuple(
+        value_and_finite_difference_hvp(
+            objective,
+            parameter_values,
+            tangent,
+            parameters=parameters,
+            step=step,
+        )
+        for tangent in tangent_batch
     )
 
 
@@ -2998,9 +3171,16 @@ __all__ = [
     "VJPResult",
     "WeightedGradientResult",
     "armijo_backtracking_line_search",
+    "batch_finite_difference_hvp",
+    "batch_finite_difference_jvp",
+    "batch_finite_difference_vjp",
     "batch_parameter_shift_gradient",
     "batch_value_and_finite_difference_grad",
+    "batch_value_and_finite_difference_hvp",
+    "batch_value_and_finite_difference_jvp",
+    "batch_value_and_finite_difference_vjp",
     "batch_value_and_parameter_shift_grad",
+    "batch_vector_jacobian_product",
     "check_parameter_shift_consistency",
     "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",

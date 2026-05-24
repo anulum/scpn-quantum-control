@@ -41,9 +41,16 @@ from scpn_quantum_control.differentiable import (
     VJPResult,
     WeightedGradientResult,
     armijo_backtracking_line_search,
+    batch_finite_difference_hvp,
+    batch_finite_difference_jvp,
+    batch_finite_difference_vjp,
     batch_parameter_shift_gradient,
     batch_value_and_finite_difference_grad,
+    batch_value_and_finite_difference_hvp,
+    batch_value_and_finite_difference_jvp,
+    batch_value_and_finite_difference_vjp,
     batch_value_and_parameter_shift_grad,
+    batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     empirical_fisher_conjugate_gradient,
     empirical_fisher_metric,
@@ -445,6 +452,86 @@ def test_vector_jacobian_product_respects_frozen_parameters_and_validation() -> 
         vector_jacobian_product(np.eye(2), [1.0, 2.0])  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="cotangent shape"):
         vector_jacobian_product(jacobian_result, [1.0])
+
+
+def test_batch_finite_difference_jvp_returns_stacked_products_and_results() -> None:
+    """Batched JVP helpers should preserve one result per tangent row."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] ** 2 + values[1], values[0] * values[1]])
+
+    tangents = np.array([[1.0, 0.0], [0.0, 1.0]])
+    results = batch_value_and_finite_difference_jvp(objective, [2.0, 3.0], tangents)
+    stacked = batch_finite_difference_jvp(objective, [2.0, 3.0], tangents)
+
+    assert len(results) == 2
+    assert all(isinstance(result, JVPResult) for result in results)
+    np.testing.assert_allclose(stacked, [[4.0, 3.0], [1.0, 2.0]], atol=1.0e-6)
+    np.testing.assert_allclose(np.vstack([result.jvp for result in results]), stacked)
+
+
+def test_batch_finite_difference_vjp_reuses_single_jacobian() -> None:
+    """Batched VJP helpers should contract multiple cotangent rows."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] ** 2, values[0] + 2.0 * values[1]])
+
+    cotangents = np.array([[1.0, 0.0], [0.0, 1.0]])
+    results = batch_value_and_finite_difference_vjp(objective, [3.0, -1.0], cotangents)
+    stacked = batch_finite_difference_vjp(objective, [3.0, -1.0], cotangents)
+
+    assert len(results) == 2
+    assert all(isinstance(result, VJPResult) for result in results)
+    np.testing.assert_allclose(stacked, [[6.0, 0.0], [1.0, 2.0]], atol=1.0e-6)
+
+
+def test_batch_vector_jacobian_product_contracts_existing_jacobian() -> None:
+    """Batched VJP contraction should work from an existing validated Jacobian."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] ** 2, values[0] + 2.0 * values[1]]),
+        [3.0, -1.0],
+    )
+    results = batch_vector_jacobian_product(jacobian_result, np.array([[1.0, 0.0], [0.0, 1.0]]))
+
+    assert len(results) == 2
+    np.testing.assert_allclose(
+        [result.vjp for result in results], [[6.0, 0.0], [1.0, 2.0]], atol=1.0e-6
+    )
+
+
+def test_batch_finite_difference_hvp_returns_stacked_products_and_results() -> None:
+    """Batched HVP helpers should preserve one result per tangent row."""
+
+    def objective(values: np.ndarray) -> float:
+        return float(values[0] ** 2 + 3.0 * values[0] * values[1] + 2.0 * values[1] ** 2)
+
+    tangents = np.array([[1.0, 0.0], [0.0, 1.0]])
+    results = batch_value_and_finite_difference_hvp(objective, [1.0, -1.0], tangents)
+    stacked = batch_finite_difference_hvp(objective, [1.0, -1.0], tangents)
+
+    assert len(results) == 2
+    assert all(isinstance(result, HVPResult) for result in results)
+    np.testing.assert_allclose(stacked, [[2.0, 3.0], [3.0, 4.0]], atol=1.0e-4)
+
+
+def test_batch_transform_helpers_reject_malformed_batches() -> None:
+    """Batched transform helpers should require explicit two-dimensional batches."""
+
+    with pytest.raises(ValueError, match="two-dimensional batch"):
+        batch_finite_difference_jvp(lambda values: np.array([values[0]]), [1.0], [1.0])
+    with pytest.raises(ValueError, match="row length"):
+        batch_finite_difference_jvp(lambda values: np.array([values[0]]), [1.0], [[1.0, 2.0]])
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], values[1]]),
+        [1.0, 2.0],
+    )
+    with pytest.raises(ValueError, match="two-dimensional batch"):
+        batch_vector_jacobian_product(jacobian_result, [1.0, 2.0])
+    with pytest.raises(ValueError, match="row length"):
+        batch_vector_jacobian_product(jacobian_result, [[1.0]])
+    with pytest.raises(ValueError, match="two-dimensional batch"):
+        batch_finite_difference_hvp(lambda values: float(values[0] ** 2), [1.0], [1.0])
 
 
 def test_finite_difference_hessian_matches_quadratic_curvature() -> None:
@@ -1924,6 +2011,9 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.WeightedGradientResult is WeightedGradientResult
     assert scpn.VJPResult is VJPResult
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
+    assert scpn.batch_finite_difference_hvp is batch_finite_difference_hvp
+    assert scpn.batch_finite_difference_jvp is batch_finite_difference_jvp
+    assert scpn.batch_finite_difference_vjp is batch_finite_difference_vjp
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.HVPResult is HVPResult
@@ -1960,6 +2050,10 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
     assert scpn.batch_value_and_finite_difference_grad is batch_value_and_finite_difference_grad
+    assert scpn.batch_value_and_finite_difference_hvp is batch_value_and_finite_difference_hvp
+    assert scpn.batch_value_and_finite_difference_jvp is batch_value_and_finite_difference_jvp
+    assert scpn.batch_value_and_finite_difference_vjp is batch_value_and_finite_difference_vjp
+    assert scpn.batch_vector_jacobian_product is batch_vector_jacobian_product
     assert scpn.value_and_finite_difference_hvp is value_and_finite_difference_hvp
     assert scpn.value_and_finite_difference_jvp is value_and_finite_difference_jvp
     assert scpn.vector_jacobian_product is vector_jacobian_product
