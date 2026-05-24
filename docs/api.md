@@ -368,6 +368,7 @@ those extras are installed.
 from scpn_quantum_control import (
     DifferentiableOptimizer,
     GradientCheckResult,
+    HessianResult,
     JacobianResult,
     OptimizationResult,
     Parameter,
@@ -376,9 +377,11 @@ from scpn_quantum_control import (
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     finite_difference_gradient,
+    finite_difference_hessian,
     finite_difference_jacobian,
     parameter_shift_gradient,
     value_and_finite_difference_grad,
+    value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
     value_and_parameter_shift_grad,
 )
@@ -429,6 +432,7 @@ GradientResult(value, gradient, method, shift, coefficient, evaluations, paramet
 OptimizationResult(values, final_gradient, value_history, steps, converged, reason, best_values=None, best_value=None)
 GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, tolerance, passed)
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
+HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
@@ -438,6 +442,8 @@ value_and_finite_difference_grad(objective, values, parameters=None, step=1e-6) 
 batch_value_and_finite_difference_grad(objectives, values, parameters=None, step=1e-6) -> tuple[GradientResult, ...]
 finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
+finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
+value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
@@ -479,6 +485,9 @@ masks, and evaluation counts instead of only a stacked gradient matrix.
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.
+`finite_difference_hessian()` and `value_and_finite_difference_hessian()`
+provide central-difference second-order curvature diagnostics for scalar losses;
+non-trainable parameters produce zero Hessian rows and columns.
 
 PennyLane VQE bridge:
 

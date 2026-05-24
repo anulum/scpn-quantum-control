@@ -277,6 +277,47 @@ class JacobianResult:
 
 
 @dataclass(frozen=True)
+class HessianResult:
+    """Value, Hessian, and provenance for a scalar objective."""
+
+    value: float
+    hessian: NDArray[np.float64]
+    method: str
+    step: float
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_scalar("hessian value", self.value)
+        hessian = _as_real_numeric_array("hessian", self.hessian)
+        if hessian.ndim != 2 or hessian.shape[0] != hessian.shape[1]:
+            raise ValueError("hessian must be a square two-dimensional array")
+        if not np.all(np.isfinite(hessian)):
+            raise ValueError("hessian must contain only finite values")
+        if not self.method:
+            raise ValueError("hessian method must be non-empty")
+        step = _as_real_scalar("hessian step", self.step)
+        if step <= 0.0:
+            raise ValueError("hessian step must be finite and positive")
+        if self.evaluations < 0:
+            raise ValueError("hessian evaluations must be non-negative")
+        if len(self.parameter_names) != hessian.shape[1]:
+            raise ValueError("parameter_names length must match hessian dimension")
+        if len(self.trainable) != hessian.shape[1]:
+            raise ValueError("trainable mask length must match hessian dimension")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        if not np.allclose(hessian, hessian.T, atol=1.0e-8, rtol=1.0e-8):
+            raise ValueError("hessian must be symmetric")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "hessian", hessian)
+        object.__setattr__(self, "step", step)
+
+
+@dataclass(frozen=True)
 class DifferentiableOptimizer:
     """Small native gradient-descent optimizer for differentiable SCPN parameters."""
 
@@ -776,6 +817,90 @@ def value_and_finite_difference_jacobian(
     )
 
 
+def finite_difference_hessian(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-4,
+) -> NDArray[np.float64]:
+    """Return a central finite-difference Hessian for scalar objectives."""
+
+    return value_and_finite_difference_hessian(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    ).hessian
+
+
+def value_and_finite_difference_hessian(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-4,
+) -> HessianResult:
+    """Evaluate a scalar objective and central finite-difference Hessian."""
+
+    step_value = _as_real_scalar("finite difference step", step)
+    if step_value <= 0.0:
+        raise ValueError("finite difference step must be finite and positive")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    base_value = _as_scalar(objective(parameter_values.copy()))
+    hessian = np.zeros((parameter_values.size, parameter_values.size), dtype=np.float64)
+    evaluations = 1
+
+    for row in range(parameter_values.size):
+        if not trainable[row]:
+            continue
+        plus = parameter_values.copy()
+        minus = parameter_values.copy()
+        plus[row] += step_value
+        minus[row] -= step_value
+        plus_value = _as_scalar(objective(plus))
+        minus_value = _as_scalar(objective(minus))
+        evaluations += 2
+        hessian[row, row] = (plus_value - 2.0 * base_value + minus_value) / (step_value**2)
+
+        for column in range(row + 1, parameter_values.size):
+            if not trainable[column]:
+                continue
+            plus_plus = parameter_values.copy()
+            plus_minus = parameter_values.copy()
+            minus_plus = parameter_values.copy()
+            minus_minus = parameter_values.copy()
+            plus_plus[row] += step_value
+            plus_plus[column] += step_value
+            plus_minus[row] += step_value
+            plus_minus[column] -= step_value
+            minus_plus[row] -= step_value
+            minus_plus[column] += step_value
+            minus_minus[row] -= step_value
+            minus_minus[column] -= step_value
+            mixed = (
+                _as_scalar(objective(plus_plus))
+                - _as_scalar(objective(plus_minus))
+                - _as_scalar(objective(minus_plus))
+                + _as_scalar(objective(minus_minus))
+            ) / (4.0 * step_value**2)
+            evaluations += 4
+            hessian[row, column] = mixed
+            hessian[column, row] = mixed
+
+    return HessianResult(
+        value=base_value,
+        hessian=hessian,
+        method="finite_difference_central",
+        step=step_value,
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
 def check_parameter_shift_consistency(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -859,6 +984,7 @@ __all__ = [
     "DifferentiableOptimizer",
     "GradientCheckResult",
     "GradientResult",
+    "HessianResult",
     "JacobianResult",
     "OptimizationResult",
     "Parameter",
@@ -869,11 +995,13 @@ __all__ = [
     "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
     "finite_difference_gradient",
+    "finite_difference_hessian",
     "finite_difference_jacobian",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "parameter_shift_gradient",
     "value_and_finite_difference_grad",
+    "value_and_finite_difference_hessian",
     "value_and_finite_difference_jacobian",
     "value_and_parameter_shift_grad",
 ]

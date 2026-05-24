@@ -18,6 +18,7 @@ from scpn_quantum_control.differentiable import (
     DifferentiableOptimizer,
     GradientCheckResult,
     GradientResult,
+    HessianResult,
     JacobianResult,
     OptimizationResult,
     Parameter,
@@ -28,11 +29,13 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     finite_difference_gradient,
+    finite_difference_hessian,
     finite_difference_jacobian,
     is_jax_autodiff_available,
     jax_value_and_grad,
     parameter_shift_gradient,
     value_and_finite_difference_grad,
+    value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
     value_and_parameter_shift_grad,
 )
@@ -264,6 +267,47 @@ def test_finite_difference_jacobian_rejects_non_vector_output() -> None:
         value_and_finite_difference_jacobian(lambda _values: np.array([[1.0]]), [0.0])
     with pytest.raises(ValueError, match="real numeric"):
         value_and_finite_difference_jacobian(lambda _values: np.array(["1.0"]), [0.0])
+
+
+def test_finite_difference_hessian_matches_quadratic_curvature() -> None:
+    """Scalar differentiable diagnostics should expose second-order curvature."""
+
+    result = value_and_finite_difference_hessian(
+        lambda values: values[0] ** 2 + 3.0 * values[0] * values[1] + 2.0 * values[1] ** 2,
+        [1.0, -1.0],
+        step=1.0e-4,
+    )
+
+    assert isinstance(result, HessianResult)
+    assert result.method == "finite_difference_central"
+    np.testing.assert_allclose(result.hessian, [[2.0, 3.0], [3.0, 4.0]], atol=1.0e-5)
+    np.testing.assert_allclose(
+        finite_difference_hessian(lambda values: values[0] ** 2, [1.0]),
+        [[2.0]],
+        atol=1.0e-5,
+    )
+
+
+def test_finite_difference_hessian_respects_frozen_parameters() -> None:
+    """Frozen parameters should have zero Hessian rows and columns."""
+
+    result = value_and_finite_difference_hessian(
+        lambda values: values[0] ** 2 + values[1] ** 2,
+        [1.0, 2.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+
+    np.testing.assert_allclose(result.hessian[:, 1], [0.0, 0.0])
+    np.testing.assert_allclose(result.hessian[1, :], [0.0, 0.0])
+
+
+def test_finite_difference_hessian_rejects_invalid_step() -> None:
+    """Hessian step size must be explicit finite positive real data."""
+
+    with pytest.raises(ValueError, match="finite difference step must be a real numeric scalar"):
+        finite_difference_hessian(lambda values: values[0] ** 2, [1.0], step="1e-4")
+    with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
+        finite_difference_hessian(lambda values: values[0] ** 2, [1.0], step=0.0)
 
 
 def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
@@ -717,8 +761,10 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
+    assert scpn.HessianResult is HessianResult
     assert scpn.JacobianResult is JacobianResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
+    assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
