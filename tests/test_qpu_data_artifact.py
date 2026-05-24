@@ -362,6 +362,23 @@ def test_scpn_datastream_adapter_rejects_non_integer_seed():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
+def test_scpn_datastream_adapter_rejects_n_layers_mismatch():
+    payload = {
+        "schema_version": "sc-neurocore.scpn.datastream.v1",
+        "source_project": "sc-neurocore",
+        "seed": 11,
+        "dt_s": 0.01,
+        "n_steps": 3,
+        "n_layers": 3,
+        "layer_ids": ["l1", "l2"],
+        "omega_rad_s": [0.1, 0.2],
+        "knm": [[0.0, 0.2], [0.2, 0.0]],
+    }
+
+    with pytest.raises(ValueError, match="n_layers must match layer_ids length"):
+        QPUDataArtifact.from_scpn_datastream_payload(payload)
+
+
 def test_json_loader_rejects_wrong_schema():
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))

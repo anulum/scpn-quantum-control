@@ -350,12 +350,17 @@ class QPUDataArtifact:
         K_nm = payload["knm"]
         omega = payload["omega_rad_s"]
         layer_ids = payload.get("layer_ids", [])
+        n_layers = payload.get("n_layers")
+        if isinstance(n_layers, bool) or not isinstance(n_layers, int):
+            raise ValueError("n_layers must be an integer")
+        if n_layers != len(layer_ids):
+            raise ValueError("n_layers must match layer_ids length")
         metadata = {
             "source_project": payload.get("source_project", "sc-neurocore"),
             "dt_s": payload.get("dt_s"),
             "seed": seed,
             "n_steps": payload.get("n_steps"),
-            "n_layers": payload.get("n_layers"),
+            "n_layers": n_layers,
             "payload_sha256": _json_sha256(payload),
         }
         return cls(

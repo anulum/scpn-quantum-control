@@ -207,6 +207,8 @@ datastream is deterministic smoke data, not a recorded source artifact.
 The top-level datastream payload must be a mapping before schema inspection.
 `seed` is required and must be an integer because it becomes the replay
 identity for deterministic smoke payloads.
+`n_layers` must be an integer and must match the `layer_ids` count before
+layer labels are bound to oscillator rows.
 It routes `knm` and `omega_rad_s` through the same numeric payload validator as
 all other artifact constructors; string, boolean, complex, and ragged numeric
 coercions are not accepted. `layer_ids` are routed through the same
@@ -231,6 +233,7 @@ The tests cover:
 - SC-NeuroCore datastream top-level mapping rejection
 - SC-NeuroCore datastream missing-seed replay identity rejection
 - SC-NeuroCore datastream non-integer seed rejection
+- SC-NeuroCore datastream `n_layers` consistency rejection
 - SC-NeuroCore datastream numeric payload coercion rejection
 - SC-NeuroCore datastream layer-label coercion rejection
 - ragged numeric payload rejection with artifact-contract errors
