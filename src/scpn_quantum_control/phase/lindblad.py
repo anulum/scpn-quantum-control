@@ -25,6 +25,37 @@ from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
 
+def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+    """Return a real numeric array without implicit string/bool/object coercion."""
+    try:
+        raw = np.asarray(values)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a rectangular numeric array.") from exc
+
+    if raw.dtype.kind in {"b", "O", "S", "U"}:
+        raise ValueError(f"{name} must contain real numeric scalars.")
+    if raw.dtype.kind == "c":
+        raise ValueError(f"{name} must contain real numeric scalars.")
+    try:
+        return np.asarray(raw, dtype=np.float64)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must contain real numeric scalars.") from exc
+
+
+def _as_nonnegative_rate(name: str, value: object) -> float:
+    """Return a finite non-negative scalar rate without implicit coercion."""
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a finite non-negative real scalar.")
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must be a finite non-negative real scalar.")
+
+    rate = float(raw)
+    if not np.isfinite(rate) or rate < 0.0:
+        raise ValueError(f"{name} must be finite and non-negative.")
+    return rate
+
+
 def _validate_lindblad_inputs(
     n_oscillators: int,
     K_coupling: np.ndarray,
@@ -37,8 +68,8 @@ def _validate_lindblad_inputs(
     if n_oscillators < 1:
         raise ValueError("n_oscillators must be at least 1.")
 
-    K = np.asarray(K_coupling, dtype=np.float64)
-    omega = np.asarray(omega_natural, dtype=np.float64)
+    K = _as_real_numeric_array("K_coupling", K_coupling)
+    omega = _as_real_numeric_array("omega_natural", omega_natural)
     if K.ndim != 2 or K.shape != (n_oscillators, n_oscillators):
         raise ValueError(
             f"K_coupling must have shape ({n_oscillators}, {n_oscillators}); got {K.shape}."
@@ -50,12 +81,8 @@ def _validate_lindblad_inputs(
     if not np.allclose(K, K.T, atol=1e-12, rtol=1e-12):
         raise ValueError("K_coupling must be symmetric for the Kuramoto-XY mapping.")
 
-    gamma_amp_value = float(gamma_amp)
-    gamma_deph_value = float(gamma_deph)
-    if not np.isfinite(gamma_amp_value) or gamma_amp_value < 0.0:
-        raise ValueError("gamma_amp must be finite and non-negative.")
-    if not np.isfinite(gamma_deph_value) or gamma_deph_value < 0.0:
-        raise ValueError("gamma_deph must be finite and non-negative.")
+    gamma_amp_value = _as_nonnegative_rate("gamma_amp", gamma_amp)
+    gamma_deph_value = _as_nonnegative_rate("gamma_deph", gamma_deph)
 
     K = np.array(K, dtype=np.float64, copy=True)
     np.fill_diagonal(K, 0.0)

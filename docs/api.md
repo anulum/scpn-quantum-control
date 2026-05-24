@@ -433,6 +433,10 @@ LindbladSyncEngine(K, omega, gamma=0.1)
     .evolve(t_max, n_steps=100, method="trajectory", initial_state=None, n_traj=20, observables=None) -> dict
 ```
 Open quantum system solver. Supports memory-efficient Monte Carlo Wavefunction (MCWF) trajectory path for N=16 simulation.
+Lower-level Lindblad Kuramoto solver inputs use the same strict numeric boundary
+as the gate-model XY path: coupling, frequency, and damping-rate values must be
+explicit real numeric values, not strings, booleans, objects, or complex values
+that NumPy could silently coerce before validation.
 
 ### `xy_kuramoto.QuantumKuramotoSolver`
 

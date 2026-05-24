@@ -194,6 +194,20 @@ class TestDensityMatrixInvariants:
         with pytest.raises(ValueError, match=match):
             LindbladKuramotoSolver(n, K, omega, **kwargs)
 
+    def test_constructor_rejects_string_coupling_coercion(self):
+        K = [["0.0", "0.5"], ["0.5", "0.0"]]
+        omega = np.array([1.0, 1.2])
+
+        with pytest.raises(ValueError, match="K_coupling must contain real numeric scalars"):
+            LindbladKuramotoSolver(2, K, omega)
+
+    def test_constructor_rejects_boolean_damping_rate_coercion(self):
+        K = np.eye(2)
+        omega = np.array([1.0, 1.2])
+
+        with pytest.raises(ValueError, match="gamma_amp must be a finite non-negative"):
+            LindbladKuramotoSolver(2, K, omega, gamma_amp=True)
+
     @pytest.mark.parametrize(
         ("t_max", "dt", "match"),
         [
