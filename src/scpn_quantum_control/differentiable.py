@@ -3197,7 +3197,8 @@ def value_and_complex_step_grad(
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
     gradient = np.zeros_like(parameter_values)
-    base_scalar = _as_complex_step_scalar(objective(parameter_values.copy()))
+    base_values = cast(NDArray[np.complex128], parameter_values.astype(np.complex128))
+    base_scalar = _as_complex_step_scalar(objective(base_values))
     if base_scalar.imag != 0.0:
         raise ValueError("complex-step objective returned a non-real base scalar")
     base_value = float(base_scalar.real)
