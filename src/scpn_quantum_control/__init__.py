@@ -93,9 +93,11 @@ from .differentiable import (
     Parameter,
     ParameterShiftRule,
     batch_parameter_shift_gradient,
+    finite_difference_gradient,
     is_jax_autodiff_available,
     jax_value_and_grad,
     parameter_shift_gradient,
+    value_and_finite_difference_grad,
     value_and_parameter_shift_grad,
 )
 from .forecasting import (
@@ -514,9 +516,11 @@ __all__ = [
     "Parameter",
     "ParameterShiftRule",
     "batch_parameter_shift_gradient",
+    "finite_difference_gradient",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "parameter_shift_gradient",
+    "value_and_finite_difference_grad",
     "value_and_parameter_shift_grad",
     "ControlQEC",
     "FaultTolerantUPDE",

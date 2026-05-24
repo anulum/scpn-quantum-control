@@ -21,9 +21,11 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterShiftRule,
     batch_parameter_shift_gradient,
+    finite_difference_gradient,
     is_jax_autodiff_available,
     jax_value_and_grad,
     parameter_shift_gradient,
+    value_and_finite_difference_grad,
     value_and_parameter_shift_grad,
 )
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
@@ -139,6 +141,36 @@ def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:
     )
 
     np.testing.assert_allclose(gradients[:, 0], [math.cos(0.25), -math.sin(0.25)])
+
+
+def test_finite_difference_gradient_matches_quadratic_derivative() -> None:
+    """Finite-difference backend should support non-parameter-shift diagnostics."""
+
+    result = value_and_finite_difference_grad(
+        lambda values: values[0] ** 2 + 3.0 * values[1],
+        [2.0, -1.0],
+        parameters=[Parameter("x"), Parameter("bias", trainable=False)],
+        step=1.0e-6,
+    )
+
+    assert result.method == "finite_difference_central"
+    assert result.evaluations == 3
+    np.testing.assert_allclose(result.gradient, [4.0, 0.0], rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        finite_difference_gradient(lambda values: values[0] ** 2, [1.5]),
+        [3.0],
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+
+
+def test_finite_difference_gradient_rejects_invalid_step() -> None:
+    """Finite-difference step size must be explicit finite positive real data."""
+
+    with pytest.raises(ValueError, match="finite difference step must be a real numeric scalar"):
+        finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step="1e-6")
+    with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
+        finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step=0.0)
 
 
 def test_gradient_descent_step_respects_trainable_mask() -> None:
@@ -317,6 +349,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
+    assert scpn.finite_difference_gradient is finite_difference_gradient
 
 
 @pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or broken")

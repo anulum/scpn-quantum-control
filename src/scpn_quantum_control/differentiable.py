@@ -379,6 +379,66 @@ def value_and_parameter_shift_grad(
     )
 
 
+def finite_difference_gradient(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a central finite-difference gradient for scalar diagnostics."""
+
+    result = value_and_finite_difference_grad(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+    return result.gradient
+
+
+def value_and_finite_difference_grad(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> GradientResult:
+    """Evaluate a scalar objective and central finite-difference gradient."""
+
+    step_value = _as_real_scalar("finite difference step", step)
+    if step_value <= 0.0:
+        raise ValueError("finite difference step must be finite and positive")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    gradient = np.zeros_like(parameter_values)
+    base_value = _as_scalar(objective(parameter_values.copy()))
+    evaluations = 1
+
+    for index, parameter in enumerate(parameter_meta):
+        if not parameter.trainable:
+            continue
+        plus = parameter_values.copy()
+        minus = parameter_values.copy()
+        plus[index] += step_value
+        minus[index] -= step_value
+        plus_value = _as_scalar(objective(plus))
+        minus_value = _as_scalar(objective(minus))
+        evaluations += 2
+        gradient[index] = (plus_value - minus_value) / (2.0 * step_value)
+
+    return GradientResult(
+        value=base_value,
+        gradient=gradient,
+        method="finite_difference_central",
+        shift=step_value,
+        coefficient=1.0 / (2.0 * step_value),
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
 def is_jax_autodiff_available() -> bool:
     """Return whether JAX autodiff can be imported in the active environment."""
 
@@ -424,8 +484,10 @@ __all__ = [
     "Parameter",
     "ParameterShiftRule",
     "batch_parameter_shift_gradient",
+    "finite_difference_gradient",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "parameter_shift_gradient",
+    "value_and_finite_difference_grad",
     "value_and_parameter_shift_grad",
 ]
