@@ -79,11 +79,33 @@ def test_parameter_shift_rejects_non_scalar_objective() -> None:
         parameter_shift_gradient(lambda _values: np.array([1.0, 2.0]), [0.1])
 
 
+def test_parameter_shift_rejects_implicit_parameter_coercion() -> None:
+    """Differentiable parameters must be explicit real numeric values."""
+
+    with pytest.raises(ValueError, match="parameters must contain real numeric scalars"):
+        parameter_shift_gradient(lambda values: math.sin(values[0]), ["0.1"])
+
+    with pytest.raises(ValueError, match="parameters must contain real numeric scalars"):
+        parameter_shift_gradient(lambda values: math.sin(values[0]), [True])
+
+
+def test_parameter_shift_rejects_non_real_objective_scalar() -> None:
+    """Objective return values must be explicit finite real scalars."""
+
+    with pytest.raises(ValueError, match="differentiable objective must return a scalar"):
+        parameter_shift_gradient(lambda _values: "1.0", [0.1])
+
+    with pytest.raises(ValueError, match="differentiable objective must return a scalar"):
+        parameter_shift_gradient(lambda _values: 1.0 + 0.0j, [0.1])
+
+
 def test_parameter_metadata_validation_and_custom_rule() -> None:
     """Parameter metadata and custom rules should fail closed."""
 
     with pytest.raises(ValueError, match="non-empty"):
         Parameter("")
+    with pytest.raises(ValueError, match="boolean"):
+        Parameter("theta", trainable=np.bool_(True))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="unique"):
         value_and_parameter_shift_grad(
             lambda values: math.sin(values[0]) + math.sin(values[1]),
@@ -92,6 +114,8 @@ def test_parameter_metadata_validation_and_custom_rule() -> None:
         )
     with pytest.raises(ValueError, match="positive"):
         ParameterShiftRule(shift=0.0)
+    with pytest.raises(ValueError, match="coefficient must be a real numeric scalar"):
+        ParameterShiftRule(coefficient="0.5")  # type: ignore[arg-type]
 
     result = value_and_parameter_shift_grad(
         lambda values: math.sin(2.0 * values[0]),
@@ -161,6 +185,28 @@ def test_gradient_result_rejects_malformed_metadata() -> None:
             parameter_names=("a",),
             trainable=(True,),
         )
+    with pytest.raises(ValueError, match="gradient must contain real numeric scalars"):
+        GradientResult(
+            value=1.0,
+            gradient=np.array(["1.0"]),
+            method="parameter_shift",
+            shift=math.pi / 2,
+            coefficient=0.5,
+            evaluations=3,
+            parameter_names=("a",),
+            trainable=(True,),
+        )
+    with pytest.raises(ValueError, match="trainable mask must contain booleans"):
+        GradientResult(
+            value=1.0,
+            gradient=np.array([1.0]),
+            method="parameter_shift",
+            shift=math.pi / 2,
+            coefficient=0.5,
+            evaluations=3,
+            parameter_names=("a",),
+            trainable=(np.bool_(True),),  # type: ignore[arg-type]
+        )
 
 
 def test_jax_value_and_grad_matches_quadratic_when_available() -> None:
@@ -174,6 +220,13 @@ def test_jax_value_and_grad_matches_quadratic_when_available() -> None:
     value, gradient = jax_value_and_grad(lambda values: values[0] ** 2, [2.0])
     assert value == pytest.approx(4.0)
     np.testing.assert_allclose(gradient, [4.0], rtol=1e-6, atol=1e-6)
+
+
+def test_jax_value_and_grad_rejects_implicit_parameter_coercion() -> None:
+    """JAX bridge input validation should match the native differentiable path."""
+
+    with pytest.raises(ValueError, match="parameters must contain real numeric scalars"):
+        jax_value_and_grad(lambda values: values[0] ** 2, ["2.0"])
 
 
 def test_qsnn_trainer_uses_native_parameter_shift(monkeypatch: pytest.MonkeyPatch) -> None:

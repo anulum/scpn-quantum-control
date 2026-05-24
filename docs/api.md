@@ -402,6 +402,12 @@ is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 ```
 
+All native and optional-adapter inputs are fail-closed real-numeric boundaries:
+parameter arrays, objective return values, optimiser learning rates,
+parameter-shift rules, JAX objective values, and gradients reject strings,
+booleans, object arrays, complex values, shape mismatches, and non-finite
+numbers before training or hardware-adapter code consumes them.
+
 PennyLane VQE bridge:
 
 ```python

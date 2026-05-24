@@ -24,6 +24,35 @@ from numpy.typing import ArrayLike, NDArray
 ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]]
 
 
+def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
+    """Return a real numeric vector without implicit string/bool/object coercion."""
+    try:
+        raw = np.asarray(values)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a rectangular numeric array") from exc
+
+    if raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must contain real numeric scalars")
+    try:
+        array = np.asarray(raw, dtype=np.float64)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must contain real numeric scalars") from exc
+    return cast(NDArray[np.float64], array)
+
+
+def _as_real_scalar(name: str, value: object) -> float:
+    """Return an explicit real numeric scalar without implicit coercion."""
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a real numeric scalar")
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must be a real numeric scalar")
+    scalar = float(raw)
+    if not np.isfinite(scalar):
+        raise ValueError(f"{name} must be finite")
+    return scalar
+
+
 @dataclass(frozen=True)
 class Parameter:
     """One differentiable scalar parameter in an SCPN objective."""
@@ -32,8 +61,10 @@ class Parameter:
     trainable: bool = True
 
     def __post_init__(self) -> None:
-        if not self.name:
+        if not isinstance(self.name, str) or not self.name:
             raise ValueError("parameter name must be non-empty")
+        if not isinstance(self.trainable, bool):
+            raise ValueError("parameter trainable flag must be a boolean")
 
 
 @dataclass(frozen=True)
@@ -44,10 +75,12 @@ class ParameterShiftRule:
     coefficient: float = 0.5
 
     def __post_init__(self) -> None:
-        if not np.isfinite(self.shift) or self.shift <= 0.0:
+        shift = _as_real_scalar("shift", self.shift)
+        coefficient = _as_real_scalar("coefficient", self.coefficient)
+        if shift <= 0.0:
             raise ValueError("shift must be finite and positive")
-        if not np.isfinite(self.coefficient):
-            raise ValueError("coefficient must be finite")
+        object.__setattr__(self, "shift", shift)
+        object.__setattr__(self, "coefficient", coefficient)
 
 
 @dataclass(frozen=True)
@@ -64,26 +97,36 @@ class GradientResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
-        if not np.isfinite(self.value):
-            raise ValueError("gradient result value must be finite")
-        gradient = np.asarray(self.gradient, dtype=np.float64)
+        value = _as_real_scalar("gradient result value", self.value)
+        gradient = _as_real_numeric_array("gradient", self.gradient)
         if gradient.ndim != 1:
             raise ValueError("gradient must be a one-dimensional array")
         if not np.all(np.isfinite(gradient)):
             raise ValueError("gradient must contain only finite values")
         if not self.method:
             raise ValueError("gradient method must be non-empty")
-        if self.shift is not None and (not np.isfinite(self.shift) or self.shift <= 0.0):
+        shift = None if self.shift is None else _as_real_scalar("gradient shift", self.shift)
+        coefficient = (
+            None
+            if self.coefficient is None
+            else _as_real_scalar("gradient coefficient", self.coefficient)
+        )
+        if shift is not None and shift <= 0.0:
             raise ValueError("gradient shift must be finite and positive")
-        if self.coefficient is not None and not np.isfinite(self.coefficient):
-            raise ValueError("gradient coefficient must be finite")
         if self.evaluations < 0:
             raise ValueError("gradient evaluations must be non-negative")
         if len(self.parameter_names) != gradient.size:
             raise ValueError("parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
             raise ValueError("trainable mask length must match gradient length")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
         object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "shift", shift)
+        object.__setattr__(self, "coefficient", coefficient)
 
 
 @dataclass(frozen=True)
@@ -93,8 +136,10 @@ class DifferentiableOptimizer:
     learning_rate: float = 0.01
 
     def __post_init__(self) -> None:
-        if not np.isfinite(self.learning_rate) or self.learning_rate < 0.0:
+        learning_rate = _as_real_scalar("learning_rate", self.learning_rate)
+        if learning_rate < 0.0:
             raise ValueError("learning_rate must be finite and non-negative")
+        object.__setattr__(self, "learning_rate", learning_rate)
 
     def step(
         self,
@@ -115,7 +160,7 @@ class DifferentiableOptimizer:
 
 
 def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
-    array: NDArray[np.float64] = np.asarray(values, dtype=np.float64)
+    array = _as_real_numeric_array("parameters", values)
     if array.ndim != 1:
         raise ValueError("parameters must be a one-dimensional sequence")
     if not np.all(np.isfinite(array)):
@@ -124,10 +169,12 @@ def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
 
 
 def _as_scalar(value: float | int | np.floating[Any] | NDArray[np.float64]) -> float:
-    array = np.asarray(value)
-    if array.shape != ():
-        raise ValueError("differentiable objective must return a scalar")
-    scalar = float(array)
+    try:
+        scalar = _as_real_scalar("differentiable objective", value)
+    except ValueError as exc:
+        if "scalar" in str(exc):
+            raise ValueError("differentiable objective must return a scalar") from exc
+        raise
     if not np.isfinite(scalar):
         raise ValueError("differentiable objective returned a non-finite scalar")
     return scalar
@@ -245,19 +292,25 @@ def jax_value_and_grad(
 ) -> tuple[float, NDArray[np.float64]]:
     """Evaluate a JAX scalar objective and return ``(value, gradient)``."""
 
+    parameter_values = _as_parameter_array(values)
+
     try:
         import jax
         import jax.numpy as jnp
     except ImportError as exc:
         raise ImportError("JAX autodiff is unavailable; install the [jax] extra") from exc
 
-    parameter_values = _as_parameter_array(values)
-
     def wrapped(raw_values: Any) -> Any:
         return objective(raw_values)
 
     value, gradient = jax.value_and_grad(wrapped)(jnp.asarray(parameter_values))
-    return float(value), np.asarray(gradient, dtype=np.float64)
+    result_value = _as_real_scalar("JAX objective value", value)
+    result_gradient = _as_real_numeric_array("JAX gradient", gradient)
+    if result_gradient.shape != parameter_values.shape:
+        raise ValueError("JAX gradient shape must match parameter shape")
+    if not np.all(np.isfinite(result_gradient)):
+        raise ValueError("JAX gradient must contain only finite values")
+    return result_value, result_gradient
 
 
 __all__ = [
