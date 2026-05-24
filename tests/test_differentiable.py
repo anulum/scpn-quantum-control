@@ -19,6 +19,7 @@ from scpn_quantum_control.differentiable import (
     GradientCheckResult,
     GradientResult,
     HessianResult,
+    HVPResult,
     JacobianResult,
     JVPResult,
     LeastSquaresCovarianceResult,
@@ -42,6 +43,7 @@ from scpn_quantum_control.differentiable import (
     evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
     finite_difference_hessian,
+    finite_difference_hvp,
     finite_difference_jacobian,
     finite_difference_jvp,
     finite_difference_vjp,
@@ -57,6 +59,7 @@ from scpn_quantum_control.differentiable import (
     update_levenberg_marquardt_damping,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
+    value_and_finite_difference_hvp,
     value_and_finite_difference_jacobian,
     value_and_finite_difference_jvp,
     value_and_parameter_shift_grad,
@@ -475,6 +478,53 @@ def test_finite_difference_hessian_rejects_invalid_step() -> None:
         finite_difference_hessian(lambda values: values[0] ** 2, [1.0], step="1e-4")
     with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
         finite_difference_hessian(lambda values: values[0] ** 2, [1.0], step=0.0)
+
+
+def test_finite_difference_hvp_matches_quadratic_curvature_product() -> None:
+    """Hessian-vector products should match full Hessian multiplication."""
+
+    def objective(values: np.ndarray) -> float:
+        return float(values[0] ** 2 + 3.0 * values[0] * values[1] + 2.0 * values[1] ** 2)
+
+    result = value_and_finite_difference_hvp(objective, [1.0, -1.0], [0.5, -2.0])
+
+    assert isinstance(result, HVPResult)
+    assert result.method == "finite_difference_hvp"
+    assert result.value == pytest.approx(0.0)
+    np.testing.assert_allclose(result.tangent, [0.5, -2.0])
+    np.testing.assert_allclose(result.hvp, [-5.0, -6.5], atol=1.0e-4)
+    np.testing.assert_allclose(
+        finite_difference_hvp(objective, [1.0, -1.0], [0.5, -2.0]),
+        [-5.0, -6.5],
+        atol=1.0e-4,
+    )
+
+
+def test_finite_difference_hvp_respects_frozen_parameters() -> None:
+    """Frozen parameters should not contribute to HVP tangents or products."""
+
+    result = value_and_finite_difference_hvp(
+        lambda values: float(values[0] ** 2 + 100.0 * values[1] ** 2),
+        [1.0, 2.0],
+        [3.0, 999.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+
+    np.testing.assert_allclose(result.tangent, [3.0, 0.0])
+    np.testing.assert_allclose(result.hvp, [6.0, 0.0], atol=1.0e-4)
+
+
+def test_finite_difference_hvp_rejects_invalid_inputs() -> None:
+    """HVP tangents and controls must be finite, real, and shape-consistent."""
+
+    with pytest.raises(ValueError, match="HVP tangent length"):
+        value_and_finite_difference_hvp(lambda values: float(values[0] ** 2), [1.0], [1.0, 2.0])
+    with pytest.raises(ValueError, match="real numeric"):
+        value_and_finite_difference_hvp(lambda values: float(values[0] ** 2), [1.0], ["1.0"])
+    with pytest.raises(ValueError, match="finite difference step"):
+        value_and_finite_difference_hvp(
+            lambda values: float(values[0] ** 2), [1.0], [1.0], step=0.0
+        )
 
 
 def test_natural_gradient_solves_trainable_metric_system() -> None:
@@ -1569,6 +1619,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
+    assert scpn.HVPResult is HVPResult
     assert scpn.HessianResult is HessianResult
     assert scpn.JVPResult is JVPResult
     assert scpn.JacobianResult is JacobianResult
@@ -1583,6 +1634,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.empirical_fisher_metric is empirical_fisher_metric
     assert scpn.evaluate_levenberg_marquardt_step is evaluate_levenberg_marquardt_step
     assert scpn.finite_difference_hessian is finite_difference_hessian
+    assert scpn.finite_difference_hvp is finite_difference_hvp
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.finite_difference_jvp is finite_difference_jvp
     assert scpn.finite_difference_vjp is finite_difference_vjp
@@ -1597,6 +1649,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
     assert scpn.batch_value_and_finite_difference_grad is batch_value_and_finite_difference_grad
+    assert scpn.value_and_finite_difference_hvp is value_and_finite_difference_hvp
     assert scpn.value_and_finite_difference_jvp is value_and_finite_difference_jvp
     assert scpn.vector_jacobian_product is vector_jacobian_product
 

@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 315,
+    "public_api_exports": 318,
     "public_documentation_pages": 235,
-    "python_model_classes": 1459,
+    "python_model_classes": 1460,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -2594,6 +2594,10 @@
       {
         "name": "HPCUPDEDerivationFixtureResult",
         "path": "src/scpn_quantum_control/paper0/hpc_upde_derivation_validation.py"
+      },
+      {
+        "name": "HVPResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "HamiltonianIndexConfig",
@@ -7744,6 +7748,7 @@
     "GUESSResult",
     "GradientCheckResult",
     "GradientResult",
+    "HVPResult",
     "HardwareAbstractionLayer",
     "HardwareRunner",
     "HardwareTopologicalOptimizer",
@@ -7906,6 +7911,7 @@
     "fidelity_at_depth",
     "finite_difference_gradient",
     "finite_difference_hessian",
+    "finite_difference_hvp",
     "finite_difference_jacobian",
     "finite_difference_jvp",
     "finite_difference_vjp",
@@ -8015,6 +8021,7 @@
     "validate_kuramoto_inputs",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",
+    "value_and_finite_difference_hvp",
     "value_and_finite_difference_jacobian",
     "value_and_finite_difference_jvp",
     "value_and_parameter_shift_grad",

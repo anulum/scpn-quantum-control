@@ -414,6 +414,50 @@ class HessianResult:
 
 
 @dataclass(frozen=True)
+class HVPResult:
+    """Hessian-vector product with nested finite-difference provenance."""
+
+    value: float
+    hvp: NDArray[np.float64]
+    tangent: NDArray[np.float64]
+    method: str
+    step: float
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_scalar("HVP value", self.value)
+        hvp = _as_real_numeric_array("HVP", self.hvp)
+        tangent = _as_real_numeric_array("HVP tangent", self.tangent)
+        if hvp.ndim != 1:
+            raise ValueError("HVP must be one-dimensional")
+        if tangent.shape != hvp.shape:
+            raise ValueError("HVP tangent shape must match HVP shape")
+        if not np.all(np.isfinite(hvp)) or not np.all(np.isfinite(tangent)):
+            raise ValueError("HVP and tangent must contain only finite values")
+        if not self.method:
+            raise ValueError("HVP method must be non-empty")
+        step = _as_real_scalar("HVP step", self.step)
+        if step <= 0.0:
+            raise ValueError("HVP step must be finite and positive")
+        if self.evaluations < 0:
+            raise ValueError("HVP evaluations must be non-negative")
+        if len(self.parameter_names) != hvp.size:
+            raise ValueError("parameter_names length must match HVP length")
+        if len(self.trainable) != hvp.size:
+            raise ValueError("trainable mask length must match HVP length")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "hvp", hvp)
+        object.__setattr__(self, "tangent", tangent)
+        object.__setattr__(self, "step", step)
+
+
+@dataclass(frozen=True)
 class NaturalGradientResult:
     """Metric-preconditioned gradient with solve provenance."""
 
@@ -1695,6 +1739,80 @@ def value_and_finite_difference_hessian(
     )
 
 
+def finite_difference_hvp(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-5,
+) -> NDArray[np.float64]:
+    """Return a central finite-difference Hessian-vector product."""
+
+    return value_and_finite_difference_hvp(
+        objective,
+        values,
+        tangent,
+        parameters=parameters,
+        step=step,
+    ).hvp
+
+
+def value_and_finite_difference_hvp(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-5,
+) -> HVPResult:
+    """Evaluate a scalar objective and a directional Hessian-vector product."""
+
+    step_value = _as_real_scalar("finite difference step", step)
+    if step_value <= 0.0:
+        raise ValueError("finite difference step must be finite and positive")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    tangent_values = _as_parameter_array(tangent)
+    if tangent_values.shape != parameter_values.shape:
+        raise ValueError("HVP tangent length must match parameter length")
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    masked_tangent = tangent_values.copy()
+    masked_tangent[~trainable] = 0.0
+    base_value = _as_scalar(objective(parameter_values.copy()))
+    if not np.any(masked_tangent):
+        hvp = np.zeros_like(parameter_values)
+        evaluations = 1
+    else:
+        plus = parameter_values + step_value * masked_tangent
+        minus = parameter_values - step_value * masked_tangent
+        plus_gradient = value_and_finite_difference_grad(
+            objective,
+            plus,
+            parameters=parameter_meta,
+            step=step_value,
+        )
+        minus_gradient = value_and_finite_difference_grad(
+            objective,
+            minus,
+            parameters=parameter_meta,
+            step=step_value,
+        )
+        hvp = (plus_gradient.gradient - minus_gradient.gradient) / (2.0 * step_value)
+        hvp[~trainable] = 0.0
+        evaluations = 1 + plus_gradient.evaluations + minus_gradient.evaluations
+    return HVPResult(
+        value=base_value,
+        hvp=hvp,
+        tangent=masked_tangent,
+        method="finite_difference_hvp",
+        step=step_value,
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
 def empirical_fisher_metric(
     jacobian: JacobianResult | ArrayLike,
     *,
@@ -2174,6 +2292,7 @@ __all__ = [
     "DifferentiableOptimizer",
     "GradientCheckResult",
     "GradientResult",
+    "HVPResult",
     "HessianResult",
     "JVPResult",
     "JacobianResult",
@@ -2198,6 +2317,7 @@ __all__ = [
     "evaluate_levenberg_marquardt_step",
     "finite_difference_gradient",
     "finite_difference_hessian",
+    "finite_difference_hvp",
     "finite_difference_jacobian",
     "finite_difference_jvp",
     "finite_difference_vjp",
@@ -2214,6 +2334,7 @@ __all__ = [
     "parameter_shift_gradient",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",
+    "value_and_finite_difference_hvp",
     "value_and_finite_difference_jacobian",
     "value_and_finite_difference_jvp",
     "value_and_parameter_shift_grad",

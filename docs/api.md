@@ -368,6 +368,7 @@ those extras are installed.
 from scpn_quantum_control import (
     DifferentiableOptimizer,
     GradientCheckResult,
+    HVPResult,
     HessianResult,
     JVPResult,
     JacobianResult,
@@ -387,6 +388,7 @@ from scpn_quantum_control import (
     evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
     finite_difference_hessian,
+    finite_difference_hvp,
     finite_difference_jacobian,
     finite_difference_jvp,
     finite_difference_vjp,
@@ -399,6 +401,7 @@ from scpn_quantum_control import (
     update_levenberg_marquardt_damping,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
+    value_and_finite_difference_hvp,
     value_and_finite_difference_jacobian,
     value_and_finite_difference_jvp,
     value_and_parameter_shift_grad,
@@ -460,6 +463,7 @@ ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
 GradientResult(value, gradient, method, shift, coefficient, evaluations, parameter_names, trainable)
 OptimizationResult(values, final_gradient, value_history, steps, converged, reason, best_values=None, best_value=None)
 GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, tolerance, passed)
+HVPResult(value, hvp, tangent, method, step, evaluations, parameter_names, trainable)
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 JVPResult(value, jvp, tangent, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
@@ -486,6 +490,8 @@ finite_difference_vjp(objective, values, cotangent, parameters=None, step=1e-6) 
 vector_jacobian_product(jacobian, cotangent) -> VJPResult
 finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
+finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
+value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
 evaluate_levenberg_marquardt_step(objective, step_result, weights=None, acceptance_threshold=1e-4) -> LevenbergMarquardtTrial
 gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
@@ -545,6 +551,10 @@ same trainable-parameter masking used by gradients and solvers.
 `finite_difference_hessian()` and `value_and_finite_difference_hessian()`
 provide central-difference second-order curvature diagnostics for scalar losses;
 non-trainable parameters produce zero Hessian rows and columns.
+`value_and_finite_difference_hvp()` computes scalar-objective Hessian-vector
+products by differentiating finite-difference gradients along a masked tangent,
+which supports Newton-CG and trust-region diagnostics without materialising a
+full Hessian.
 `natural_gradient()` solves a symmetric positive-definite metric system on the
 trainable parameter subspace, with optional non-negative damping and condition
 number guarding for Fisher/Fubini-Study style preconditioners.
