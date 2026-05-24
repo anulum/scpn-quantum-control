@@ -16,6 +16,7 @@ import pytest
 
 from scpn_quantum_control.differentiable import (
     DifferentiableOptimizer,
+    FisherConjugateGradientResult,
     FisherVectorProductResult,
     GradientCheckResult,
     GradientResult,
@@ -40,6 +41,7 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_finite_difference_grad,
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
+    empirical_fisher_conjugate_gradient,
     empirical_fisher_metric,
     empirical_fisher_vector_product,
     evaluate_levenberg_marquardt_step,
@@ -633,6 +635,77 @@ def test_empirical_fisher_vector_product_rejects_invalid_inputs() -> None:
         empirical_fisher_vector_product(jacobian_result, [1.0, 2.0], weights=[1.0, -1.0])
     with pytest.raises(ValueError, match="damping"):
         empirical_fisher_vector_product(jacobian_result, [1.0, 2.0], damping=-1.0)
+
+
+def test_empirical_fisher_conjugate_gradient_matches_direct_solve() -> None:
+    """Matrix-free Fisher CG should solve the same system as a direct metric solve."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] + values[1], 2.0 * values[1]]),
+        [1.0, -2.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    weights = np.array([0.5, 2.0])
+    rhs = np.array([1.0, -3.0])
+    result = empirical_fisher_conjugate_gradient(
+        jacobian_result,
+        rhs,
+        weights=weights,
+        damping=0.25,
+        tolerance=1.0e-12,
+        max_iterations=10,
+    )
+    metric = empirical_fisher_metric(jacobian_result, weights=weights, damping=0.25)
+
+    assert isinstance(result, FisherConjugateGradientResult)
+    assert result.converged
+    assert result.iterations <= 2
+    assert result.residual_norm_history[-1] <= 1.0e-10
+    np.testing.assert_allclose(result.solution, np.linalg.solve(metric, rhs), atol=1.0e-8)
+
+
+def test_empirical_fisher_conjugate_gradient_respects_frozen_parameters() -> None:
+    """Frozen parameters should receive zero matrix-free Fisher-CG solution components."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] + 10.0 * values[1], values[1] ** 2]),
+        [1.0, 2.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+    result = empirical_fisher_conjugate_gradient(
+        jacobian_result,
+        [2.0, 999.0],
+        damping=1.0,
+    )
+
+    assert result.converged
+    np.testing.assert_allclose(result.solution, [1.0, 0.0], atol=1.0e-8)
+
+
+def test_empirical_fisher_conjugate_gradient_rejects_invalid_inputs() -> None:
+    """Fisher CG must fail closed on malformed controls and indefinite systems."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], values[1]]),
+        [1.0, 2.0],
+    )
+    with pytest.raises(ValueError, match="JacobianResult"):
+        empirical_fisher_conjugate_gradient(np.eye(2), [1.0, 2.0])  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="rhs length"):
+        empirical_fisher_conjugate_gradient(jacobian_result, [1.0])
+    with pytest.raises(ValueError, match="damping"):
+        empirical_fisher_conjugate_gradient(jacobian_result, [1.0, 2.0], damping=-1.0)
+    with pytest.raises(ValueError, match="tolerance"):
+        empirical_fisher_conjugate_gradient(jacobian_result, [1.0, 2.0], tolerance=-1.0)
+    with pytest.raises(ValueError, match="max_iterations"):
+        empirical_fisher_conjugate_gradient(jacobian_result, [1.0, 2.0], max_iterations=0)
+    singular = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] + values[1]]),
+        [1.0, 2.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    with pytest.raises(ValueError, match="positive definite"):
+        empirical_fisher_conjugate_gradient(singular, [1.0, -1.0], damping=0.0)
 
 
 def test_gauss_newton_gradient_solves_weighted_least_squares_residual() -> None:
@@ -1673,6 +1746,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
 
     import scpn_quantum_control as scpn
 
+    assert scpn.FisherConjugateGradientResult is FisherConjugateGradientResult
     assert scpn.FisherVectorProductResult is FisherVectorProductResult
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
@@ -1693,6 +1767,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.LevenbergMarquardtTrial is LevenbergMarquardtTrial
     assert scpn.NaturalGradientResult is NaturalGradientResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
+    assert scpn.empirical_fisher_conjugate_gradient is empirical_fisher_conjugate_gradient
     assert scpn.empirical_fisher_vector_product is empirical_fisher_vector_product
     assert scpn.empirical_fisher_metric is empirical_fisher_metric
     assert scpn.evaluate_levenberg_marquardt_step is evaluate_levenberg_marquardt_step

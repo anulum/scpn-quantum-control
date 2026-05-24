@@ -770,6 +770,60 @@ class FisherVectorProductResult:
 
 
 @dataclass(frozen=True)
+class FisherConjugateGradientResult:
+    """Matrix-free empirical-Fisher conjugate-gradient solve result."""
+
+    solution: NDArray[np.float64]
+    residual_norm_history: tuple[float, ...]
+    iterations: int
+    converged: bool
+    tolerance: float
+    damping: float
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        solution = _as_real_numeric_array("Fisher-CG solution", self.solution)
+        if solution.ndim != 1:
+            raise ValueError("Fisher-CG solution must be one-dimensional")
+        if not np.all(np.isfinite(solution)):
+            raise ValueError("Fisher-CG solution must contain only finite values")
+        if not self.residual_norm_history:
+            raise ValueError("Fisher-CG residual history must be non-empty")
+        residual_history = tuple(
+            _as_real_scalar("Fisher-CG residual norm", value)
+            for value in self.residual_norm_history
+        )
+        if any(value < 0.0 for value in residual_history):
+            raise ValueError("Fisher-CG residual norms must be finite and non-negative")
+        iterations = int(self.iterations)
+        if iterations < 0:
+            raise ValueError("Fisher-CG iterations must be non-negative")
+        if len(residual_history) != iterations + 1:
+            raise ValueError("Fisher-CG residual history must include initial residual")
+        tolerance = _as_real_scalar("Fisher-CG tolerance", self.tolerance)
+        damping = _as_real_scalar("Fisher-CG damping", self.damping)
+        if tolerance < 0.0:
+            raise ValueError("Fisher-CG tolerance must be finite and non-negative")
+        if damping < 0.0:
+            raise ValueError("Fisher-CG damping must be finite and non-negative")
+        if len(self.parameter_names) != solution.size:
+            raise ValueError("parameter_names length must match Fisher-CG dimension")
+        if len(self.trainable) != solution.size:
+            raise ValueError("trainable mask length must match Fisher-CG dimension")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "solution", solution)
+        object.__setattr__(self, "residual_norm_history", residual_history)
+        object.__setattr__(self, "iterations", iterations)
+        object.__setattr__(self, "converged", bool(self.converged))
+        object.__setattr__(self, "tolerance", tolerance)
+        object.__setattr__(self, "damping", damping)
+
+
+@dataclass(frozen=True)
 class WeightedGradientResult:
     """Weighted scalarisation of multiple scalar gradient results."""
 
@@ -1949,6 +2003,101 @@ def empirical_fisher_vector_product(
     )
 
 
+def empirical_fisher_conjugate_gradient(
+    jacobian: JacobianResult,
+    rhs: ArrayLike,
+    *,
+    weights: ArrayLike | None = None,
+    damping: float = 1.0e-8,
+    tolerance: float = 1.0e-10,
+    max_iterations: int | None = None,
+) -> FisherConjugateGradientResult:
+    """Solve an empirical-Fisher linear system with matrix-free conjugate gradients."""
+
+    if not isinstance(jacobian, JacobianResult):
+        raise ValueError("empirical_fisher_conjugate_gradient requires a JacobianResult")
+    rhs_values = _as_parameter_array(rhs)
+    if rhs_values.shape[0] != jacobian.jacobian.shape[1]:
+        raise ValueError("Fisher-CG rhs length must match Jacobian parameter dimension")
+    damping_value = _as_real_scalar("Fisher-CG damping", damping)
+    if damping_value < 0.0:
+        raise ValueError("Fisher-CG damping must be finite and non-negative")
+    tolerance_value = _as_real_scalar("Fisher-CG tolerance", tolerance)
+    if tolerance_value < 0.0:
+        raise ValueError("Fisher-CG tolerance must be finite and non-negative")
+    trainable = np.asarray(jacobian.trainable, dtype=bool)
+    if max_iterations is None:
+        max_iter = max(1, int(np.count_nonzero(trainable)) * 10)
+    else:
+        if (
+            isinstance(max_iterations, bool)
+            or not isinstance(max_iterations, int)
+            or max_iterations < 1
+        ):
+            raise ValueError("Fisher-CG max_iterations must be a positive integer")
+        max_iter = max_iterations
+    solution = np.zeros_like(rhs_values)
+    masked_rhs = rhs_values.copy()
+    masked_rhs[~trainable] = 0.0
+    residual = masked_rhs.copy()
+    residual_norm = float(np.linalg.norm(residual[trainable], ord=2))
+    residual_history: list[float] = [residual_norm]
+    if residual_norm <= tolerance_value or not np.any(trainable):
+        return FisherConjugateGradientResult(
+            solution=solution,
+            residual_norm_history=tuple(residual_history),
+            iterations=0,
+            converged=True,
+            tolerance=tolerance_value,
+            damping=damping_value,
+            parameter_names=jacobian.parameter_names,
+            trainable=jacobian.trainable,
+        )
+
+    direction = residual.copy()
+    residual_sq = float(residual[trainable] @ residual[trainable])
+    converged = False
+    iterations = 0
+    for iteration in range(1, max_iter + 1):
+        product_result = empirical_fisher_vector_product(
+            jacobian,
+            direction,
+            weights=weights,
+            damping=damping_value,
+        )
+        product = product_result.product
+        denom = float(direction[trainable] @ product[trainable])
+        if denom <= 0.0 or not np.isfinite(denom):
+            raise ValueError(
+                "Fisher-CG operator must be positive definite on trainable parameters"
+            )
+        alpha = residual_sq / denom
+        solution[trainable] += alpha * direction[trainable]
+        residual[trainable] -= alpha * product[trainable]
+        new_residual_sq = float(residual[trainable] @ residual[trainable])
+        residual_norm = float(np.sqrt(max(new_residual_sq, 0.0)))
+        residual_history.append(residual_norm)
+        iterations = iteration
+        if residual_norm <= tolerance_value:
+            converged = True
+            break
+        beta = new_residual_sq / residual_sq
+        direction[trainable] = residual[trainable] + beta * direction[trainable]
+        direction[~trainable] = 0.0
+        residual_sq = new_residual_sq
+    solution[~trainable] = 0.0
+    return FisherConjugateGradientResult(
+        solution=solution,
+        residual_norm_history=tuple(residual_history),
+        iterations=iterations,
+        converged=converged,
+        tolerance=tolerance_value,
+        damping=damping_value,
+        parameter_names=jacobian.parameter_names,
+        trainable=jacobian.trainable,
+    )
+
+
 def least_squares_covariance(
     jacobian: JacobianResult,
     *,
@@ -2391,6 +2540,7 @@ def jax_value_and_grad(
 
 __all__ = [
     "DifferentiableOptimizer",
+    "FisherConjugateGradientResult",
     "FisherVectorProductResult",
     "GradientCheckResult",
     "GradientResult",
@@ -2415,6 +2565,7 @@ __all__ = [
     "batch_value_and_finite_difference_grad",
     "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
+    "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",
     "evaluate_levenberg_marquardt_step",

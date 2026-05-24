@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 320,
+    "public_api_exports": 322,
     "public_documentation_pages": 235,
-    "python_model_classes": 1461,
+    "python_model_classes": 1462,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -2378,6 +2378,10 @@
       {
         "name": "FiniteSizeResult",
         "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py"
+      },
+      {
+        "name": "FisherConjugateGradientResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "FisherResult",
@@ -7748,6 +7752,7 @@
     "ExecutionRegion",
     "Experiment",
     "FaultTolerantUPDE",
+    "FisherConjugateGradientResult",
     "FisherVectorProductResult",
     "ForecastModelRun",
     "GUESSResult",
@@ -7906,6 +7911,7 @@
     "dynq_initial_layout",
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
+    "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",
     "enforce_realtime_sla",

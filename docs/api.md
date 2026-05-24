@@ -367,6 +367,7 @@ those extras are installed.
 ```python
 from scpn_quantum_control import (
     DifferentiableOptimizer,
+    FisherConjugateGradientResult,
     FisherVectorProductResult,
     GradientCheckResult,
     HVPResult,
@@ -386,6 +387,7 @@ from scpn_quantum_control import (
     VJPResult,
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
+    empirical_fisher_conjugate_gradient,
     empirical_fisher_vector_product,
     evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
@@ -462,6 +464,7 @@ Available primitives:
 Parameter(name: str, trainable: bool = True)
 ParameterBounds(lower=None, upper=None, periodic=False)
 ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
+FisherConjugateGradientResult(solution, residual_norm_history, iterations, converged, tolerance, damping, parameter_names, trainable)
 FisherVectorProductResult(value, tangent, product, residual_projection, damping, method, evaluations, parameter_names, trainable)
 GradientResult(value, gradient, method, shift, coefficient, evaluations, parameter_names, trainable)
 OptimizationResult(values, final_gradient, value_history, steps, converged, reason, best_values=None, best_value=None)
@@ -496,6 +499,7 @@ value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-
 finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
 value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
+empirical_fisher_conjugate_gradient(jacobian, rhs, weights=None, damping=1e-8, tolerance=1e-10, max_iterations=None) -> FisherConjugateGradientResult
 empirical_fisher_vector_product(jacobian, tangent, weights=None, damping=0.0) -> FisherVectorProductResult
 evaluate_levenberg_marquardt_step(objective, step_result, weights=None, acceptance_threshold=1e-4) -> LevenbergMarquardtTrial
 gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
@@ -569,6 +573,10 @@ for natural-gradient preconditioning.
 Gauss-Newton metric action matrix-free, applies trainable-parameter masking,
 and records the residual-space projection used by conjugate-gradient or
 trust-region solvers.
+`empirical_fisher_conjugate_gradient()` solves trainable empirical-Fisher linear
+systems with matrix-free conjugate gradients, retaining residual-norm history
+and explicit convergence provenance for large natural-gradient or
+Gauss-Newton solves.
 `least_squares_covariance()` inverts the trainable empirical-Fisher block to
 estimate residual-fit parameter covariance, standard errors, residual variance,
 degrees of freedom, and condition number while zeroing frozen-parameter
