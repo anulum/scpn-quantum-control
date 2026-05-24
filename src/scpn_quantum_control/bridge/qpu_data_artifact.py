@@ -152,6 +152,20 @@ def _reject_implicit_numeric_coercion(name: str, value: Any) -> None:
             raise ValueError(f"{name} entries must be real numeric")
 
 
+def _positive_finite_float(name: str, value: Any) -> float:
+    if isinstance(value, bool | np.bool_ | str | bytes | np.str_ | np.bytes_):
+        raise ValueError(f"{name} must be positive finite")
+    if isinstance(value, complex | np.complexfloating):
+        raise ValueError(f"{name} must be positive finite")
+    try:
+        scalar = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be positive finite") from exc
+    if not np.isfinite(scalar) or scalar <= 0.0:
+        raise ValueError(f"{name} must be positive finite")
+    return scalar
+
+
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
     _reject_implicit_numeric_coercion(name, value)
     try:
@@ -355,9 +369,10 @@ class QPUDataArtifact:
             raise ValueError("n_layers must be an integer")
         if n_layers != len(layer_ids):
             raise ValueError("n_layers must match layer_ids length")
+        dt_s = _positive_finite_float("dt_s", payload.get("dt_s"))
         metadata = {
             "source_project": payload.get("source_project", "sc-neurocore"),
-            "dt_s": payload.get("dt_s"),
+            "dt_s": dt_s,
             "seed": seed,
             "n_steps": payload.get("n_steps"),
             "n_layers": n_layers,
