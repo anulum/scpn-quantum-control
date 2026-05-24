@@ -474,6 +474,25 @@ def test_scpn_datastream_adapter_hashes_canonical_layer_ids():
     assert padded.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
 
 
+def test_scpn_datastream_adapter_rejects_publication_safe_source_mode():
+    payload = {
+        "schema_version": "sc-neurocore.scpn.datastream.v1",
+        "source_project": "sc-neurocore",
+        "seed": 11,
+        "dt_s": 0.01,
+        "n_steps": 3,
+        "n_layers": 2,
+        "layer_ids": ["l1", "l2"],
+        "omega_rad_s": [0.1, 0.2],
+        "knm": [[0.0, 0.2], [0.2, 0.0]],
+    }
+
+    with pytest.raises(
+        ValueError, match="SC-NeuroCore datastream artifacts must be smoke-test modes"
+    ):
+        QPUDataArtifact.from_scpn_datastream_payload(payload, source_mode="recorded")
+
+
 def test_json_loader_rejects_wrong_schema():
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))

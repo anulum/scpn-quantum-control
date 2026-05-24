@@ -204,6 +204,8 @@ assert artifact.is_synthetic
 
 That adapter defaults to `source_mode="synthetic"` because the current
 datastream is deterministic smoke data, not a recorded source artifact.
+It accepts only smoke-test source modes (`synthetic`, `simulation`, `fixture`)
+and cannot be promoted to a publication-safe mode through adapter parameters.
 The top-level datastream payload must be a mapping before schema inspection.
 `seed` is required and must be an integer because it becomes the replay
 identity for deterministic smoke payloads.
@@ -248,6 +250,7 @@ The tests cover:
 - SC-NeuroCore datastream non-empty `source_project` rejection
 - SC-NeuroCore datastream canonical payload fingerprinting
 - SC-NeuroCore datastream canonical layer-label fingerprinting
+- SC-NeuroCore datastream publication-safe source-mode rejection
 - SC-NeuroCore datastream numeric payload coercion rejection
 - SC-NeuroCore datastream layer-label coercion rejection
 - ragged numeric payload rejection with artifact-contract errors

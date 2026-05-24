@@ -362,6 +362,8 @@ class QPUDataArtifact:
         payload = _require_mapping("SC-NeuroCore datastream payload", payload)
         if payload.get("schema_version") != SC_NEUROCORE_STREAM_SCHEMA:
             raise ValueError("unsupported SC-NeuroCore datastream schema version")
+        if source_mode not in SYNTHETIC_SOURCE_MODES:
+            raise ValueError("SC-NeuroCore datastream artifacts must be smoke-test modes")
         seed = payload.get("seed")
         if seed is None:
             raise ValueError("seed is required for SC-NeuroCore replay identity")
