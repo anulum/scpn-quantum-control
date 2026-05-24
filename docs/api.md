@@ -380,6 +380,8 @@ from scpn_quantum_control import (
     LevenbergMarquardtResult,
     LevenbergMarquardtStep,
     LevenbergMarquardtTrial,
+    NaturalGradientOptimizationResult,
+    NaturalGradientOptimizer,
     OptimizationResult,
     Parameter,
     ParameterBounds,
@@ -479,6 +481,8 @@ LevenbergMarquardtDampingUpdate(trial, next_damping, action)
 LevenbergMarquardtResult(values, residual, value_history, damping_history, accepted_history, steps, converged, reason, best_values, best_value)
 LevenbergMarquardtStep(gauss_newton, step, candidate_values, damping, predicted_reduction)
 LevenbergMarquardtTrial(step_result, candidate_residual, candidate_value, actual_reduction, reduction_ratio, accepted)
+NaturalGradientOptimizationResult(values, final_gradient, final_natural_gradient, value_history, gradient_norm_history, natural_step_norm_history, steps, converged, reason, best_values, best_value)
+NaturalGradientOptimizer(learning_rate=0.01, damping=0.0, rcond=1e-12, max_step_norm=None)
 VJPResult(value, cotangent, vjp, method, step, evaluations, parameter_names, trainable)
 WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
@@ -511,6 +515,7 @@ update_levenberg_marquardt_damping(trial, decrease_factor=1/3, increase_factor=2
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
+NaturalGradientOptimizer(...).minimize(objective, initial_values, metric_fn, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_steps=100, gradient_tolerance=1e-8, step_tolerance=1e-8, value_tolerance=None) -> NaturalGradientOptimizationResult
 LevenbergMarquardtOptimizer(...).minimize(objective, initial_values, parameters=None, bounds=None, weight_fn=None, rcond=1e-12) -> LevenbergMarquardtResult
 is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
@@ -566,6 +571,9 @@ full Hessian.
 `natural_gradient()` solves a symmetric positive-definite metric system on the
 trainable parameter subspace, with optional non-negative damping and condition
 number guarding for Fisher/Fubini-Study style preconditioners.
+`NaturalGradientOptimizer.minimize()` composes scalar gradients with an explicit
+metric callback into a bounded optimization loop, preserving trainable masks,
+box or periodic bounds, natural-step clipping, and convergence provenance.
 `empirical_fisher_metric()` builds a validated weighted ``J.T @ W @ J`` metric
 from `JacobianResult` or raw Jacobian arrays, with optional non-negative damping
 for natural-gradient preconditioning.

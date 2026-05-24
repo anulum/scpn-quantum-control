@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 322,
+    "public_api_exports": 324,
     "public_documentation_pages": 235,
-    "python_model_classes": 1462,
+    "python_model_classes": 1464,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -3794,6 +3794,14 @@
       {
         "name": "NaturalGradientConfig",
         "path": "src/scpn_quantum_control/paper0/upde_natural_gradient_validation.py"
+      },
+      {
+        "name": "NaturalGradientOptimizationResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "NaturalGradientOptimizer",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "NaturalGradientResult",
@@ -7790,6 +7798,8 @@
     "MonitoredKuramotoSpec",
     "MonotonicRealtimeClock",
     "MultiscaleQECResult",
+    "NaturalGradientOptimizationResult",
+    "NaturalGradientOptimizer",
     "NaturalGradientResult",
     "NeuromorphicStepResult",
     "OMEGA_N_16",
