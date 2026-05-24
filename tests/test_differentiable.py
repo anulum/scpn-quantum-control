@@ -41,10 +41,12 @@ from scpn_quantum_control.differentiable import (
     ParameterBounds,
     ParameterShiftRule,
     ReverseNode,
+    ShotAllocationResult,
     SparseMatrixResult,
     StochasticGradientResult,
     VJPResult,
     WeightedGradientResult,
+    allocate_parameter_shift_shots,
     armijo_backtracking_line_search,
     batch_complex_step_gradient,
     batch_finite_difference_hvp,
@@ -706,6 +708,69 @@ def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> N
             [0.1],
             [10],
             confidence_z=0.0,
+        )
+
+
+def test_allocate_parameter_shift_shots_meets_target_standard_error() -> None:
+    """Shot allocation should conservatively meet target gradient uncertainty."""
+
+    allocation = allocate_parameter_shift_shots(
+        plus_variances=[0.36, 0.25],
+        minus_variances=[0.16, 0.09],
+        target_standard_error=0.02,
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+    )
+
+    assert isinstance(allocation, ShotAllocationResult)
+    assert allocation.method == "parameter_shift_target_se"
+    assert allocation.parameter_names == ("theta", "frozen")
+    assert allocation.trainable == (True, False)
+    assert allocation.shots.shape == (2, 2)
+    assert allocation.shots[0, 0] >= 1.0
+    assert allocation.shots[1, 0] >= 1.0
+    assert allocation.shots[0, 1] == 1.0
+    assert allocation.shots[1, 1] == 1.0
+    assert allocation.predicted_standard_error[0] <= 0.02
+    assert allocation.predicted_standard_error[1] == pytest.approx(0.0)
+    assert allocation.total_shots == int(np.sum(allocation.shots))
+    np.testing.assert_allclose(
+        allocation.covariance, np.diag(allocation.predicted_standard_error**2)
+    )
+
+
+def test_allocate_parameter_shift_shots_respects_caps() -> None:
+    """Shot allocation should report capped uncertainty when budgets are bounded."""
+
+    allocation = allocate_parameter_shift_shots(
+        plus_variances=[1.0],
+        minus_variances=[1.0],
+        target_standard_error=1.0e-3,
+        min_shots=4,
+        max_shots_per_evaluation=10,
+    )
+
+    np.testing.assert_allclose(allocation.shots, [[10.0], [10.0]])
+    assert allocation.predicted_standard_error[0] > allocation.target_standard_error
+
+
+def test_allocate_parameter_shift_shots_rejects_invalid_inputs() -> None:
+    """Shot allocation must fail closed on impossible planning contracts."""
+
+    with pytest.raises(ValueError, match="minus_variances shape"):
+        allocate_parameter_shift_shots([0.1], [0.1, 0.2], target_standard_error=0.1)
+    with pytest.raises(ValueError, match="shot variances"):
+        allocate_parameter_shift_shots([-0.1], [0.1], target_standard_error=0.1)
+    with pytest.raises(ValueError, match="target_standard_error"):
+        allocate_parameter_shift_shots([0.1], [0.1], target_standard_error=0.0)
+    with pytest.raises(ValueError, match="min_shots"):
+        allocate_parameter_shift_shots([0.1], [0.1], target_standard_error=0.1, min_shots=0)
+    with pytest.raises(ValueError, match="max_shots_per_evaluation"):
+        allocate_parameter_shift_shots(
+            [0.1],
+            [0.1],
+            target_standard_error=0.1,
+            min_shots=10,
+            max_shots_per_evaluation=5,
         )
 
 
@@ -2537,9 +2602,11 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
     assert scpn.ReverseNode is ReverseNode
+    assert scpn.ShotAllocationResult is ShotAllocationResult
     assert scpn.SparseMatrixResult is SparseMatrixResult
     assert scpn.StochasticGradientResult is StochasticGradientResult
     assert scpn.WeightedGradientResult is WeightedGradientResult
+    assert scpn.allocate_parameter_shift_shots is allocate_parameter_shift_shots
     assert scpn.VJPResult is VJPResult
     assert scpn.batch_complex_step_gradient is batch_complex_step_gradient
     assert scpn.batch_value_and_complex_step_grad is batch_value_and_complex_step_grad

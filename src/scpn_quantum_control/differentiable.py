@@ -463,6 +463,61 @@ class StochasticGradientResult:
 
 
 @dataclass(frozen=True)
+class ShotAllocationResult:
+    """Per-parameter shot allocation for stochastic parameter-shift gradients."""
+
+    shots: NDArray[np.float64]
+    predicted_standard_error: NDArray[np.float64]
+    covariance: NDArray[np.float64]
+    target_standard_error: float
+    total_shots: int
+    method: str
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        shots = _as_real_numeric_array("shot allocation shots", self.shots)
+        standard_error = _as_parameter_array(self.predicted_standard_error)
+        covariance = _as_real_numeric_array("shot allocation covariance", self.covariance)
+        target = _as_real_scalar(
+            "shot allocation target_standard_error",
+            self.target_standard_error,
+        )
+        if shots.ndim != 2 or shots.shape[0] != 2:
+            raise ValueError("shot allocation shots must have shape (2, n_parameters)")
+        if standard_error.shape != (shots.shape[1],):
+            raise ValueError("predicted_standard_error length must match shot columns")
+        if covariance.shape != (shots.shape[1], shots.shape[1]):
+            raise ValueError("shot allocation covariance shape must be n_parameters squared")
+        if not np.all(shots > 0.0) or not np.allclose(shots, np.round(shots)):
+            raise ValueError("shot allocation shots must contain positive integer counts")
+        if not np.all(np.isfinite(standard_error)) or np.any(standard_error < 0.0):
+            raise ValueError("predicted_standard_error must contain finite non-negative values")
+        if not np.all(np.isfinite(covariance)):
+            raise ValueError("shot allocation covariance must contain only finite values")
+        if target <= 0.0:
+            raise ValueError("target_standard_error must be finite and positive")
+        total_shots = int(self.total_shots)
+        if total_shots != int(np.sum(shots)):
+            raise ValueError("total_shots must equal allocated shot sum")
+        if not self.method:
+            raise ValueError("shot allocation method must be non-empty")
+        if len(self.parameter_names) != shots.shape[1]:
+            raise ValueError("parameter_names length must match shot columns")
+        if len(self.trainable) != shots.shape[1]:
+            raise ValueError("trainable mask length must match shot columns")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "shots", shots)
+        object.__setattr__(self, "predicted_standard_error", standard_error)
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "target_standard_error", target)
+        object.__setattr__(self, "total_shots", total_shots)
+
+
+@dataclass(frozen=True)
 class OptimizationResult:
     """Bounded gradient-descent result with convergence provenance."""
 
@@ -2496,6 +2551,76 @@ def parameter_shift_gradient_with_uncertainty(
     )
 
 
+def allocate_parameter_shift_shots(
+    plus_variances: ArrayLike,
+    minus_variances: ArrayLike,
+    *,
+    target_standard_error: float,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+    min_shots: int = 1,
+    max_shots_per_evaluation: int | None = None,
+) -> ShotAllocationResult:
+    """Plan plus/minus shots to meet a target parameter-shift standard error."""
+
+    plus_var = _as_parameter_array(plus_variances)
+    minus_var = _as_parameter_array(minus_variances)
+    if minus_var.shape != plus_var.shape:
+        raise ValueError("minus_variances shape must match plus_variances shape")
+    if np.any(plus_var < 0.0) or np.any(minus_var < 0.0):
+        raise ValueError("shot variances must be finite non-negative values")
+    target = _as_real_scalar("target_standard_error", target_standard_error)
+    if target <= 0.0:
+        raise ValueError("target_standard_error must be finite and positive")
+    if isinstance(min_shots, bool) or not isinstance(min_shots, int) or min_shots < 1:
+        raise ValueError("min_shots must be a positive integer")
+    if max_shots_per_evaluation is not None and (
+        isinstance(max_shots_per_evaluation, bool)
+        or not isinstance(max_shots_per_evaluation, int)
+        or max_shots_per_evaluation < min_shots
+    ):
+        raise ValueError("max_shots_per_evaluation must be an integer >= min_shots")
+    parameter_meta = _normalise_parameters(plus_var, parameters)
+    shift_rule = rule or ParameterShiftRule()
+    shot_plan = np.full((2, plus_var.size), float(min_shots), dtype=np.float64)
+    variance = np.zeros_like(plus_var)
+    target_variance = target**2
+    coefficient_squared = shift_rule.coefficient**2
+
+    for index, parameter in enumerate(parameter_meta):
+        if not parameter.trainable:
+            continue
+        plus_noise = coefficient_squared * plus_var[index]
+        minus_noise = coefficient_squared * minus_var[index]
+        root_sum = float(np.sqrt(plus_noise) + np.sqrt(minus_noise))
+        if root_sum > 0.0:
+            plus_required = np.sqrt(plus_noise) * root_sum / target_variance
+            minus_required = np.sqrt(minus_noise) * root_sum / target_variance
+        else:
+            plus_required = float(min_shots)
+            minus_required = float(min_shots)
+        shot_plan[0, index] = max(float(min_shots), float(np.ceil(plus_required)))
+        shot_plan[1, index] = max(float(min_shots), float(np.ceil(minus_required)))
+        if max_shots_per_evaluation is not None:
+            shot_plan[0, index] = min(shot_plan[0, index], float(max_shots_per_evaluation))
+            shot_plan[1, index] = min(shot_plan[1, index], float(max_shots_per_evaluation))
+        variance[index] = coefficient_squared * (
+            plus_var[index] / shot_plan[0, index] + minus_var[index] / shot_plan[1, index]
+        )
+
+    standard_error = np.sqrt(variance)
+    return ShotAllocationResult(
+        shots=shot_plan,
+        predicted_standard_error=standard_error,
+        covariance=np.diag(variance),
+        target_standard_error=target,
+        total_shots=int(np.sum(shot_plan)),
+        method="parameter_shift_target_se",
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
 def finite_difference_gradient(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -4266,11 +4391,13 @@ __all__ = [
     "ParameterBounds",
     "ParameterShiftRule",
     "ReverseNode",
+    "ShotAllocationResult",
     "SparseMatrixResult",
     "StochasticGradientResult",
     "VJPResult",
     "WeightedGradientResult",
     "armijo_backtracking_line_search",
+    "allocate_parameter_shift_shots",
     "batch_finite_difference_hvp",
     "batch_finite_difference_jvp",
     "batch_finite_difference_vjp",

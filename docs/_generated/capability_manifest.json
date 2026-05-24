@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 366,
+    "public_api_exports": 368,
     "public_documentation_pages": 235,
-    "python_model_classes": 1470,
+    "python_model_classes": 1471,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -5776,6 +5776,10 @@
         "path": "src/scpn_quantum_control/analysis/shadow_tomography.py"
       },
       {
+        "name": "ShotAllocationResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "SigmaIsTheQBallSolitonConfig",
         "path": "src/scpn_quantum_control/paper0/sigma_is_the_q_ball_soliton_validation.py"
       },
@@ -7884,6 +7888,7 @@
     "RigettiQCSHALAdapter",
     "SNNQuantumBridge",
     "SSGFQuantumLoop",
+    "ShotAllocationResult",
     "SparseMatrixResult",
     "StableCorePreflightResult",
     "StochasticGradientResult",
@@ -7906,6 +7911,7 @@
     "ZNEResult",
     "aggregator_provider_optional_dependency_matrix",
     "aggregator_provider_routes_for",
+    "allocate_parameter_shift_shots",
     "analyse_biological_surface_code",
     "analysis",
     "applications",
