@@ -45,6 +45,7 @@ from scpn_quantum_control.differentiable import (
     levenberg_marquardt_step,
     natural_gradient,
     parameter_shift_gradient,
+    soft_l1_residual_weights,
     update_levenberg_marquardt_damping,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
@@ -510,6 +511,59 @@ def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
     np.testing.assert_allclose(weights, [1.0, 0.2], atol=1.0e-6)
     np.testing.assert_allclose(result.base_gradient.gradient, [2.0, 20.0], atol=1.0e-6)
     assert result.condition_number > 1.0
+
+
+def test_soft_l1_residual_weights_smoothly_downweight_outliers() -> None:
+    """Soft-L1 weights should provide a smooth influence curve for residuals."""
+
+    weights = soft_l1_residual_weights(np.array([0.0, 1.0, 3.0]), scale=1.0)
+
+    np.testing.assert_allclose(weights, [1.0, 1.0 / np.sqrt(2.0), 1.0 / np.sqrt(10.0)])
+
+
+def test_soft_l1_residual_weights_support_conditioning_floor() -> None:
+    """A positive floor keeps Soft-L1 weights usable in ill-scaled residual maps."""
+
+    weights = soft_l1_residual_weights(np.array([0.0, 100.0]), scale=1.0, min_weight=0.05)
+
+    np.testing.assert_allclose(weights, [1.0, 0.05])
+
+
+def test_soft_l1_residual_weights_reject_invalid_controls() -> None:
+    """Soft-L1 residual weighting must fail closed on invalid policy inputs."""
+
+    with pytest.raises(ValueError, match="one-dimensional"):
+        soft_l1_residual_weights(np.array([[1.0]]))
+    with pytest.raises(ValueError, match="Soft-L1 scale"):
+        soft_l1_residual_weights(np.array([1.0]), scale=0.0)
+    with pytest.raises(ValueError, match="Soft-L1 min_weight"):
+        soft_l1_residual_weights(np.array([1.0]), min_weight=-0.1)
+    with pytest.raises(ValueError, match="Soft-L1 min_weight"):
+        soft_l1_residual_weights(np.array([1.0]), min_weight=1.1)
+
+
+def test_soft_l1_residual_weights_feed_levenberg_marquardt_trial() -> None:
+    """Soft-L1 weights should plug into the weighted LM step and trial path."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] - 1.0, 20.0 * (values[1] - 1.0)])
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        objective,
+        [3.0, 2.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    weights = soft_l1_residual_weights(jacobian_result.value, scale=2.0, min_weight=0.1)
+    step_result = levenberg_marquardt_step(
+        jacobian_result,
+        [3.0, 2.0],
+        weights=weights,
+        damping=1.0,
+    )
+    trial = evaluate_levenberg_marquardt_step(objective, step_result, weights=weights)
+
+    assert weights[0] > weights[1]
+    assert trial.candidate_value < step_result.gauss_newton.base_gradient.value
 
 
 def test_levenberg_marquardt_step_builds_bounded_candidate() -> None:
@@ -1285,6 +1339,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.huber_residual_weights is huber_residual_weights
     assert scpn.levenberg_marquardt_step is levenberg_marquardt_step
     assert scpn.natural_gradient is natural_gradient
+    assert scpn.soft_l1_residual_weights is soft_l1_residual_weights
     assert scpn.update_levenberg_marquardt_damping is update_levenberg_marquardt_damping
     assert scpn.weighted_gradient_sum is weighted_gradient_sum
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency

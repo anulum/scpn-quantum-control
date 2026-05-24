@@ -1190,6 +1190,29 @@ def huber_residual_weights(
     return cast(NDArray[np.float64], weights)
 
 
+def soft_l1_residual_weights(
+    residuals: ArrayLike,
+    *,
+    scale: float = 1.0,
+    min_weight: float = 0.0,
+) -> NDArray[np.float64]:
+    """Return smooth Soft-L1 IRLS weights for residual-map least squares."""
+
+    residual_arr = _as_vector_output(residuals)
+    scale_value = _as_real_scalar("Soft-L1 scale", scale)
+    if scale_value <= 0.0:
+        raise ValueError("Soft-L1 scale must be finite and positive")
+    min_weight_value = _as_real_scalar("Soft-L1 min_weight", min_weight)
+    if min_weight_value < 0.0 or min_weight_value > 1.0:
+        raise ValueError("Soft-L1 min_weight must be finite and in [0, 1]")
+
+    scaled = residual_arr / scale_value
+    weights = 1.0 / np.sqrt(1.0 + scaled * scaled)
+    if min_weight_value > 0.0:
+        weights = np.maximum(weights, min_weight_value)
+    return cast(NDArray[np.float64], weights)
+
+
 def gauss_newton_gradient(
     jacobian: JacobianResult,
     *,
@@ -1551,6 +1574,7 @@ __all__ = [
     "jax_value_and_grad",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "soft_l1_residual_weights",
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",
     "parameter_shift_gradient",
