@@ -68,6 +68,22 @@ class Parameter:
 
 
 @dataclass(frozen=True)
+class ParameterBounds:
+    """Closed interval constraint for one differentiable scalar parameter."""
+
+    lower: float | None = None
+    upper: float | None = None
+
+    def __post_init__(self) -> None:
+        lower = None if self.lower is None else _as_real_scalar("lower bound", self.lower)
+        upper = None if self.upper is None else _as_real_scalar("upper bound", self.upper)
+        if lower is not None and upper is not None and lower > upper:
+            raise ValueError("lower bound must be less than or equal to upper bound")
+        object.__setattr__(self, "lower", lower)
+        object.__setattr__(self, "upper", upper)
+
+
+@dataclass(frozen=True)
 class ParameterShiftRule:
     """Two-point parameter-shift rule for one-generator rotation parameters."""
 
@@ -208,10 +224,13 @@ class DifferentiableOptimizer:
         self,
         values: ArrayLike,
         gradient_result: GradientResult,
+        *,
+        bounds: Sequence[ParameterBounds] | None = None,
     ) -> NDArray[np.float64]:
         """Return one gradient-descent update respecting the trainable mask."""
 
         parameter_values = _as_parameter_array(values)
+        bounds_meta = _normalise_bounds(parameter_values, bounds)
         if parameter_values.size != gradient_result.gradient.size:
             raise ValueError("values length must match gradient length")
         trainable = np.asarray(gradient_result.trainable, dtype=bool)
@@ -219,7 +238,7 @@ class DifferentiableOptimizer:
             raise ValueError("trainable mask length must match values length")
         updated: NDArray[np.float64] = parameter_values.copy()
         updated[trainable] -= self.learning_rate * gradient_result.gradient[trainable]
-        return cast(NDArray[np.float64], updated)
+        return _project_bounds(updated, bounds_meta)
 
     def minimize(
         self,
@@ -230,6 +249,7 @@ class DifferentiableOptimizer:
         rule: ParameterShiftRule | None = None,
         gradient_method: str = "parameter_shift",
         finite_difference_step: float = 1.0e-6,
+        bounds: Sequence[ParameterBounds] | None = None,
         max_steps: int = 100,
         gradient_tolerance: float = 1.0e-8,
         value_tolerance: float | None = None,
@@ -257,6 +277,8 @@ class DifferentiableOptimizer:
             raise ValueError("value_tolerance must be finite and non-negative")
 
         values = _as_parameter_array(initial_values).copy()
+        bounds_meta = _normalise_bounds(values, bounds)
+        values = _project_bounds(values, bounds_meta)
         history: list[float] = []
         previous_value: float | None = None
 
@@ -310,7 +332,7 @@ class DifferentiableOptimizer:
                     reason="max_steps",
                 )
             previous_value = gradient_result.value
-            values = self.step(values, gradient_result)
+            values = self.step(values, gradient_result, bounds=bounds_meta)
 
         raise RuntimeError("unreachable optimizer state")
 
@@ -348,6 +370,33 @@ def _normalise_parameters(
     if len({parameter.name for parameter in normalised}) != len(normalised):
         raise ValueError("parameter names must be unique")
     return normalised
+
+
+def _normalise_bounds(
+    values: NDArray[np.float64],
+    bounds: Sequence[ParameterBounds] | None,
+) -> tuple[ParameterBounds, ...]:
+    if bounds is None:
+        return tuple(ParameterBounds() for _ in range(values.size))
+    normalised = tuple(bounds)
+    if len(normalised) != values.size:
+        raise ValueError("bounds length must match values length")
+    if any(not isinstance(item, ParameterBounds) for item in normalised):
+        raise ValueError("bounds must contain ParameterBounds instances")
+    return normalised
+
+
+def _project_bounds(
+    values: NDArray[np.float64],
+    bounds: Sequence[ParameterBounds],
+) -> NDArray[np.float64]:
+    projected = values.copy()
+    for index, bound in enumerate(bounds):
+        if bound.lower is not None and projected[index] < bound.lower:
+            projected[index] = bound.lower
+        if bound.upper is not None and projected[index] > bound.upper:
+            projected[index] = bound.upper
+    return cast(NDArray[np.float64], projected)
 
 
 def parameter_shift_gradient(
@@ -620,6 +669,7 @@ __all__ = [
     "GradientResult",
     "OptimizationResult",
     "Parameter",
+    "ParameterBounds",
     "ParameterShiftRule",
     "batch_parameter_shift_gradient",
     "batch_value_and_finite_difference_grad",

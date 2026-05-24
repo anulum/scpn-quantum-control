@@ -20,6 +20,7 @@ from scpn_quantum_control.differentiable import (
     GradientResult,
     OptimizationResult,
     Parameter,
+    ParameterBounds,
     ParameterShiftRule,
     batch_parameter_shift_gradient,
     batch_value_and_finite_difference_grad,
@@ -285,6 +286,39 @@ def test_gradient_descent_step_respects_trainable_mask() -> None:
     np.testing.assert_allclose(updated, [0.8, 5.0])
 
 
+def test_gradient_descent_step_projects_box_bounds() -> None:
+    """Optimizer updates should respect explicit parameter box constraints."""
+
+    result = GradientResult(
+        value=1.0,
+        gradient=np.array([10.0, -10.0]),
+        method="parameter_shift",
+        shift=math.pi / 2,
+        coefficient=0.5,
+        evaluations=5,
+        parameter_names=("a", "b"),
+        trainable=(True, True),
+    )
+    optimizer = DifferentiableOptimizer(learning_rate=0.2)
+
+    updated = optimizer.step(
+        [0.0, 0.0],
+        result,
+        bounds=[ParameterBounds(lower=-0.5, upper=0.5), ParameterBounds(lower=-0.25, upper=0.25)],
+    )
+
+    np.testing.assert_allclose(updated, [-0.5, 0.25])
+
+
+def test_parameter_bounds_reject_invalid_intervals() -> None:
+    """Box constraints must be explicit finite ordered real intervals."""
+
+    with pytest.raises(ValueError, match="lower bound must be a real numeric scalar"):
+        ParameterBounds(lower="0.0")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="less than or equal"):
+        ParameterBounds(lower=1.0, upper=0.0)
+
+
 def test_optimizer_minimize_converges_for_shift_compatible_quadratic() -> None:
     """Bounded optimizer should return convergence metadata and final values."""
 
@@ -337,6 +371,23 @@ def test_optimizer_minimize_supports_finite_difference_backend() -> None:
     np.testing.assert_allclose(result.values, [0.0], atol=1.0e-5)
 
 
+def test_optimizer_minimize_projects_initial_and_updated_bounds() -> None:
+    """Bounded minimize should project initial values and subsequent steps."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=0.5)
+    result = optimizer.minimize(
+        lambda values: values[0] ** 2,
+        [2.0],
+        gradient_method="finite_difference",
+        bounds=[ParameterBounds(lower=-0.25, upper=0.25)],
+        max_steps=10,
+        gradient_tolerance=1.0e-7,
+    )
+
+    assert result.values[0] <= 0.25
+    assert result.value_history[0] == pytest.approx(0.25**2)
+
+
 def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
     """Optimizer loop controls must fail closed before objective evaluation."""
 
@@ -356,6 +407,12 @@ def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
         optimizer.minimize(lambda values: math.sin(values[0]), [0.1], gradient_tolerance="1e-3")
     with pytest.raises(ValueError, match="value_tolerance"):
         optimizer.minimize(lambda values: math.sin(values[0]), [0.1], value_tolerance=-1.0)
+    with pytest.raises(ValueError, match="bounds length"):
+        optimizer.minimize(
+            lambda values: math.sin(values[0]),
+            [0.1],
+            bounds=[ParameterBounds(), ParameterBounds()],
+        )
 
 
 def test_gradient_result_rejects_malformed_metadata() -> None:
@@ -465,6 +522,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.ParameterShiftRule is ParameterShiftRule
+    assert scpn.ParameterBounds is ParameterBounds
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
