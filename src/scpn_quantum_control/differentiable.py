@@ -228,12 +228,21 @@ class DifferentiableOptimizer:
         *,
         parameters: Sequence[Parameter] | None = None,
         rule: ParameterShiftRule | None = None,
+        gradient_method: str = "parameter_shift",
+        finite_difference_step: float = 1.0e-6,
         max_steps: int = 100,
         gradient_tolerance: float = 1.0e-8,
         value_tolerance: float | None = None,
     ) -> OptimizationResult:
         """Run bounded gradient descent with parameter-shift gradients."""
 
+        if gradient_method not in {"parameter_shift", "finite_difference"}:
+            raise ValueError("gradient_method must be 'parameter_shift' or 'finite_difference'")
+        finite_difference_step_value = _as_real_scalar(
+            "finite_difference_step", finite_difference_step
+        )
+        if finite_difference_step_value <= 0.0:
+            raise ValueError("finite_difference_step must be finite and positive")
         if isinstance(max_steps, bool) or not isinstance(max_steps, int) or max_steps < 0:
             raise ValueError("max_steps must be a non-negative integer")
         gradient_tolerance_value = _as_real_scalar("gradient_tolerance", gradient_tolerance)
@@ -252,12 +261,20 @@ class DifferentiableOptimizer:
         previous_value: float | None = None
 
         for step_index in range(max_steps + 1):
-            gradient_result = value_and_parameter_shift_grad(
-                objective,
-                values,
-                parameters=parameters,
-                rule=rule,
-            )
+            if gradient_method == "finite_difference":
+                gradient_result = value_and_finite_difference_grad(
+                    objective,
+                    values,
+                    parameters=parameters,
+                    step=finite_difference_step_value,
+                )
+            else:
+                gradient_result = value_and_parameter_shift_grad(
+                    objective,
+                    values,
+                    parameters=parameters,
+                    rule=rule,
+                )
             history.append(gradient_result.value)
             trainable = np.asarray(gradient_result.trainable, dtype=bool)
             gradient_norm = float(np.linalg.norm(gradient_result.gradient[trainable], ord=2))

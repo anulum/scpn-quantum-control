@@ -275,10 +275,37 @@ def test_optimizer_minimize_respects_frozen_parameters() -> None:
     assert result.final_gradient.trainable == (True, False)
 
 
+def test_optimizer_minimize_supports_finite_difference_backend() -> None:
+    """Optimizer should support smooth non-parameter-shift objectives explicitly."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=0.2)
+    result = optimizer.minimize(
+        lambda values: values[0] ** 2,
+        [0.5],
+        gradient_method="finite_difference",
+        finite_difference_step=1.0e-6,
+        max_steps=80,
+        gradient_tolerance=1.0e-7,
+    )
+
+    assert result.converged
+    assert result.final_gradient.method == "finite_difference_central"
+    np.testing.assert_allclose(result.values, [0.0], atol=1.0e-5)
+
+
 def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
     """Optimizer loop controls must fail closed before objective evaluation."""
 
     optimizer = DifferentiableOptimizer(learning_rate=0.1)
+    with pytest.raises(ValueError, match="gradient_method"):
+        optimizer.minimize(lambda values: math.sin(values[0]), [0.1], gradient_method="bogus")
+    with pytest.raises(ValueError, match="finite_difference_step"):
+        optimizer.minimize(
+            lambda values: math.sin(values[0]),
+            [0.1],
+            gradient_method="finite_difference",
+            finite_difference_step=0.0,
+        )
     with pytest.raises(ValueError, match="max_steps"):
         optimizer.minimize(lambda values: math.sin(values[0]), [0.1], max_steps=True)
     with pytest.raises(ValueError, match="gradient_tolerance"):
