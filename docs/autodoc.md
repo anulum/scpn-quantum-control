@@ -112,7 +112,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.differentiable
     options:
-      members: [Parameter, ParameterBounds, ParameterShiftRule, GradientResult, OptimizationResult, GradientCheckResult, JacobianResult, HessianResult, NaturalGradientResult, WeightedGradientResult, DifferentiableOptimizer, parameter_shift_gradient, value_and_parameter_shift_grad, batch_parameter_shift_gradient, batch_value_and_parameter_shift_grad, finite_difference_gradient, value_and_finite_difference_grad, batch_value_and_finite_difference_grad, finite_difference_jacobian, value_and_finite_difference_jacobian, finite_difference_hessian, value_and_finite_difference_hessian, empirical_fisher_metric, natural_gradient, weighted_gradient_sum, check_parameter_shift_consistency, is_jax_autodiff_available, jax_value_and_grad]
+      members: [Parameter, ParameterBounds, ParameterShiftRule, GradientResult, OptimizationResult, GradientCheckResult, JacobianResult, HessianResult, NaturalGradientResult, WeightedGradientResult, DifferentiableOptimizer, parameter_shift_gradient, value_and_parameter_shift_grad, batch_parameter_shift_gradient, batch_value_and_parameter_shift_grad, finite_difference_gradient, value_and_finite_difference_grad, batch_value_and_finite_difference_grad, finite_difference_jacobian, value_and_finite_difference_jacobian, finite_difference_hessian, value_and_finite_difference_hessian, empirical_fisher_metric, gauss_newton_gradient, natural_gradient, weighted_gradient_sum, check_parameter_shift_consistency, is_jax_autodiff_available, jax_value_and_grad]
 
 ## MLIR Compiler
 

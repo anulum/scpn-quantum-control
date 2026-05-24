@@ -379,6 +379,7 @@ from scpn_quantum_control import (
     finite_difference_gradient,
     finite_difference_hessian,
     finite_difference_jacobian,
+    gauss_newton_gradient,
     parameter_shift_gradient,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
@@ -447,6 +448,7 @@ value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e
 finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
+gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
@@ -499,6 +501,10 @@ number guarding for Fisher/Fubini-Study style preconditioners.
 `empirical_fisher_metric()` builds a validated weighted ``J.T @ W @ J`` metric
 from `JacobianResult` or raw Jacobian arrays, with optional non-negative damping
 for natural-gradient preconditioning.
+`gauss_newton_gradient()` converts a residual-map `JacobianResult` into the
+least-squares gradient ``J.T @ W @ r`` and solves the damped Gauss-Newton
+metric system on trainable parameters; subtract the returned
+`natural_gradient` component from parameters for a residual-minimising update.
 `weighted_gradient_sum()` combines compatible `GradientResult` components into a
 single scalarised multi-objective gradient while preserving component
 provenance, weights, evaluation counts, trainable masks, and parameter names.

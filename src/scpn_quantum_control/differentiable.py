@@ -1064,6 +1064,52 @@ def empirical_fisher_metric(
     return cast(NDArray[np.float64], metric)
 
 
+def gauss_newton_gradient(
+    jacobian: JacobianResult,
+    *,
+    weights: ArrayLike | None = None,
+    damping: float = 0.0,
+    rcond: float = 1.0e-12,
+) -> NaturalGradientResult:
+    """Return the Gauss-Newton-preconditioned least-squares gradient.
+
+    The residual map is read from ``jacobian.value`` and the scalar loss is
+    ``0.5 * residual.T @ W @ residual``. The returned ``natural_gradient`` is
+    the trainable-subspace solution of ``(J.T @ W @ J + damping * I) @ x =
+    J.T @ W @ residual``; subtract it from parameters for a Gauss-Newton
+    descent update.
+    """
+
+    if not isinstance(jacobian, JacobianResult):
+        raise ValueError("gauss-newton gradient requires a JacobianResult")
+    jacobian_arr = jacobian.jacobian
+    residual = jacobian.value
+    if weights is None:
+        weighted_residual = residual
+    else:
+        weight_arr = _as_real_numeric_array("weights", weights)
+        if weight_arr.ndim != 1 or weight_arr.shape[0] != residual.size:
+            raise ValueError("weights must be a one-dimensional array matching residual rows")
+        if not np.all(np.isfinite(weight_arr)) or np.any(weight_arr < 0.0):
+            raise ValueError("weights must contain only finite non-negative values")
+        weighted_residual = residual * weight_arr
+
+    loss_value = 0.5 * float(residual @ weighted_residual)
+    gradient = cast(NDArray[np.float64], jacobian_arr.T @ weighted_residual)
+    base_gradient = GradientResult(
+        value=loss_value,
+        gradient=gradient,
+        method=f"gauss_newton:{jacobian.method}",
+        shift=None,
+        coefficient=None,
+        evaluations=jacobian.evaluations,
+        parameter_names=jacobian.parameter_names,
+        trainable=jacobian.trainable,
+    )
+    metric = empirical_fisher_metric(jacobian, weights=weights, damping=damping)
+    return natural_gradient(base_gradient, metric, damping=0.0, rcond=rcond)
+
+
 def natural_gradient(
     gradient_result: GradientResult,
     metric: ArrayLike,
@@ -1223,6 +1269,7 @@ __all__ = [
     "finite_difference_gradient",
     "finite_difference_hessian",
     "finite_difference_jacobian",
+    "gauss_newton_gradient",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "natural_gradient",
