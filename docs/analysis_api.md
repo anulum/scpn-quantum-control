@@ -217,6 +217,9 @@ from scpn_quantum_control.phase.adiabatic_preparation import (
 `adiabatic_ramp(omega, K_topology, K_target, T_total=10.0, n_steps=50, *, max_dense_gib=None)` →
 `AdiabaticResult` with: `times`, `K_schedule`, `fidelity`, `gap`,
 `final_fidelity`, `min_gap`, `min_gap_K`.
+All numeric inputs must already be real numeric scalars or arrays; string,
+boolean, object, and complex values are rejected before dense Hamiltonian
+construction or fidelity/gap diagnostics.
 
 ---
 

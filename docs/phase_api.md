@@ -328,6 +328,9 @@ The adiabatic theorem guarantees convergence if the spectral gap never closes al
 the path. At the BKT transition ($K \approx K_c$), the gap closes exponentially (Gem 23),
 making adiabatic preparation exponentially slow. This module is most useful for
 $K \neq K_c$, where the gap remains open and adiabatic preparation is efficient.
+Inputs are accepted only as explicit real numeric values: `omega`,
+`K_topology`, `K_target`, `T_total`, and optional scan grids must not rely on
+string, boolean, object, or complex coercion before validation.
 
 **Rust acceleration:** Hamiltonian construction at each adiabatic step via
 `build_xy_hamiltonian_dense` (Qiskit-free).

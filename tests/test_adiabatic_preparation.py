@@ -126,6 +126,20 @@ class TestAdiabaticRamp:
         with pytest.raises(ValueError, match=match):
             adiabatic_ramp(omega, topology, **call_kwargs)
 
+    def test_rejects_string_topology_coercion(self):
+        omega = OMEGA_N_16[:2]
+        topology = [["0.0", "1.0"], ["1.0", "0.0"]]
+
+        with pytest.raises(ValueError, match="K_topology must contain real numeric scalars"):
+            adiabatic_ramp(omega, topology, K_target=2.0, T_total=5.0, n_steps=10)
+
+    def test_rejects_boolean_schedule_coercion(self):
+        omega = OMEGA_N_16[:2]
+        topology = _ring_topology(2)
+
+        with pytest.raises(ValueError, match="T_total must be a real numeric scalar"):
+            adiabatic_ramp(omega, topology, K_target=2.0, T_total=True, n_steps=10)
+
 
 class TestAdiabaticTimeScaling:
     def test_returns_dict(self):
@@ -189,6 +203,19 @@ class TestAdiabaticTimeScaling:
                 K_target=2.0,
                 T_values=T_values,
                 n_steps_per_T=n_steps_per_T,
+            )
+
+    def test_time_scaling_rejects_string_time_grid_coercion(self):
+        T = _ring_topology(2)
+        omega = OMEGA_N_16[:2]
+
+        with pytest.raises(ValueError, match="T_values must contain real numeric scalars"):
+            adiabatic_time_scaling(
+                omega,
+                T,
+                K_target=2.0,
+                T_values=["1.0", "2.0"],
+                n_steps_per_T=10,
             )
 
 

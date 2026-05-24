@@ -31,6 +31,31 @@ from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
 
+def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+    """Return a real numeric array without implicit string/bool/object coercion."""
+    try:
+        raw = np.asarray(values)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a rectangular numeric array.") from exc
+
+    if raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must contain real numeric scalars.")
+    try:
+        return np.asarray(raw, dtype=np.float64)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must contain real numeric scalars.") from exc
+
+
+def _as_real_scalar(name: str, value: object) -> float:
+    """Return an explicit real numeric scalar without string/bool coercion."""
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a real numeric scalar.")
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must be a real numeric scalar.")
+    return float(raw)
+
+
 def _validate_adiabatic_inputs(
     omega: np.ndarray,
     K_topology: np.ndarray,
@@ -38,8 +63,8 @@ def _validate_adiabatic_inputs(
     T_total: float,
     n_steps: int,
 ) -> tuple[np.ndarray, np.ndarray, float, float, int]:
-    omega_arr = np.asarray(omega, dtype=np.float64)
-    K_arr = np.asarray(K_topology, dtype=np.float64)
+    omega_arr = _as_real_numeric_array("omega", omega)
+    K_arr = _as_real_numeric_array("K_topology", K_topology)
     if omega_arr.ndim != 1:
         raise ValueError("omega must be a one-dimensional vector.")
     n = omega_arr.shape[0]
@@ -52,8 +77,8 @@ def _validate_adiabatic_inputs(
     if not np.allclose(K_arr, K_arr.T, atol=1e-12, rtol=1e-12):
         raise ValueError("K_topology must be symmetric for the Kuramoto-XY mapping.")
 
-    K_target_value = float(K_target)
-    T_total_value = float(T_total)
+    K_target_value = _as_real_scalar("K_target", K_target)
+    T_total_value = _as_real_scalar("T_total", T_total)
     if not np.isfinite(K_target_value):
         raise ValueError("K_target must be finite.")
     if not np.isfinite(T_total_value) or T_total_value <= 0.0:
@@ -70,7 +95,7 @@ def _validate_time_scaling_inputs(
     T_values: np.ndarray,
     n_steps_per_T: int,
 ) -> tuple[np.ndarray, int]:
-    T_arr = np.asarray(T_values, dtype=np.float64)
+    T_arr = _as_real_numeric_array("T_values", T_values)
     if T_arr.ndim != 1 or T_arr.size == 0:
         raise ValueError("T_values must be a non-empty one-dimensional array.")
     if not np.all(np.isfinite(T_arr)) or np.any(T_arr <= 0.0):
