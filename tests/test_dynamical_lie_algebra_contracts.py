@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Coverage tests for dynamical_lie_algebra.py
-"""Tests for DLA module using small system sizes (statevector-only, fast)."""
+# SCPN Quantum Control — Dynamical Lie algebra contract tests
+"""Contract tests for DLA closure, independence checks, generator builders, and optional Rust acceleration fallbacks."""
 
 from __future__ import annotations
 
@@ -108,7 +108,7 @@ def test_compute_dla_polynomial_degree_estimation():
 
 
 def test_compute_dla_cap_classification_branch():
-    """Dimension cap branch classifies a saturated one-qubit algebra."""
+    """Dimension cap behaviour classifies a saturated one-qubit algebra."""
     from scpn_quantum_control.analysis.dynamical_lie_algebra import compute_dla
 
     gens = [SparsePauliOp("X"), SparsePauliOp("Y"), SparsePauliOp("Z")]

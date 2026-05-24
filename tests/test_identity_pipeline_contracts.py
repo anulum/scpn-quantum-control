@@ -4,12 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for Coverage 100 Identity
-"""Multi-angle tests for identity/ subpackage: coherence_budget, robustness.
-
-Covers: error conditions, zero-gap edge cases, parametrised coupling,
-physical bounds, output structure, noise scan.
-"""
+# SCPN Quantum Control — Identity pipeline contract tests
+"""Contract tests for coherence budget, robustness, and identity-pipeline behaviours."""
 
 from __future__ import annotations
 
@@ -19,9 +15,6 @@ import pytest
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
 
-# =====================================================================
-# Coherence Budget
-# =====================================================================
 class TestCoherenceBudget:
     def test_invalid_qubits_raises(self):
         from scpn_quantum_control.identity.coherence_budget import coherence_budget
@@ -37,9 +30,6 @@ class TestCoherenceBudget:
             coherence_budget(n_qubits=0)
 
 
-# =====================================================================
-# Robustness Certificate
-# =====================================================================
 class TestRobustness:
     def test_zero_gap_transition(self):
         from scpn_quantum_control.identity.robustness import (
@@ -110,11 +100,6 @@ class TestRobustness:
         delta_K = K * 0.01  # 1% perturbation
         fid = perturbation_fidelity(K, omega, delta_K)
         assert np.isfinite(fid)
-
-
-# =====================================================================
-# Pipeline: Knm → robustness certificate → wired
-# =====================================================================
 
 
 class TestIdentityPipeline:

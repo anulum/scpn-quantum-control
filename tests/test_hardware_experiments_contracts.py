@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Hardware Experiments Coverage Tests
-"""Coverage tests for hardware.experiments — all 20 experiments on AerSimulator."""
+# SCPN Quantum Control — Hardware experiments contract tests
+"""Contract tests for hardware experiment builders, result parsers, simulator paths, and experiment registry entries."""
 
 from __future__ import annotations
 
@@ -145,9 +145,6 @@ def mock_runner(tmp_path_factory):
     return _MockRunner(str(tmp_path_factory.mktemp("mock_results")))
 
 
-# --- Helper function tests ---
-
-
 class TestBuildEvoBase:
     def test_returns_circuit(self):
         K = build_knm_paper27(L=2)
@@ -265,9 +262,6 @@ class TestRunVQE:
         assert "energy_gap" in result
         assert "energy_history" in result
         assert len(result["energy_history"]) > 0
-
-
-# --- Experiment function tests (all 20, minimal params) ---
 
 
 class TestKuramoto4Osc:
@@ -477,9 +471,6 @@ class TestQKDQBER4Q:
         assert "qber_x_hw" in result
         assert isinstance(result["secure_hw"], bool)
         assert "key_rate_hw" in result
-
-
-# --- ALL_EXPERIMENTS registry ---
 
 
 class TestAllExperimentsRegistry:

@@ -65,6 +65,8 @@ jobs:
         run: python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
       - name: Run tests
         run: pytest tests/ -v --tb=short -x -m "not slow and not hardware and not internal_corpus and not performance"
+      - name: Audit test quality
+        run: python tools/audit_test_quality.py
       - name: Run tests with coverage (3.12 only)
         if: matrix.python-version == '3.12'
         run: |

@@ -181,7 +181,7 @@ class TestToNumpyEdgeCases:
         assert result is arr
 
 
-# ── Mocked JAX/torch paths for coverage ──────────────────────────────
+# ── JAX and torch dispatch fallback paths ──────────────────────────────
 
 
 class TestMockedJaxPath:

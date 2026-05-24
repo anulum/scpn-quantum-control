@@ -4,12 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for Coverage 100 Crypto
-"""Multi-angle tests for crypto/ subpackage: noise_analysis, percolation.
-
-Covers: concurrence bounds, key rate computation, robustness analysis,
-entanglement path finding, parametrised system sizes, edge cases.
-"""
+# SCPN Quantum Control — Crypto network contract tests
+"""Contract tests for quantum crypto noise, percolation, topology authentication, and key-rate boundaries."""
 
 from __future__ import annotations
 
@@ -19,9 +15,6 @@ import pytest
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
 
-# =====================================================================
-# Noise Analysis — Concurrence
-# =====================================================================
 class TestNoiseAnalysis:
     def test_concurrence_bounded_01(self):
         from scpn_quantum_control.crypto.noise_analysis import _concurrence_2qubit
@@ -63,9 +56,6 @@ class TestNoiseAnalysis:
         assert 0.0 - 1e-10 <= c <= 1.0 + 1e-10
 
 
-# =====================================================================
-# Percolation — Key Rate, Robustness, Routing
-# =====================================================================
 class TestPercolation:
     def test_key_rate_shape(self):
         from scpn_quantum_control.crypto.percolation import (
@@ -134,7 +124,7 @@ class TestPercolation:
         assert len(result) > 0
 
     def test_key_rate_entropy_clamped(self):
-        """Cover line 129: h_e = 0.0 when concurrence just above eps → e ≈ 0."""
+        """Verifies 129: h_e = 0.0 when concurrence just above eps → e ≈ 0."""
         from scpn_quantum_control.crypto.percolation import key_rate_per_channel
 
         # C = 1e-9 (above CONCURRENCE_EPS=1e-10) → e ≈ C^2/4 ≈ 2.5e-19 < ENTROPY_CLAMP_EPS
@@ -145,7 +135,7 @@ class TestPercolation:
         assert rates[0, 1] > 0.99
 
     def test_targeted_removal_no_edges(self):
-        """Cover line 205: no edges → loop body never executes → fallback return."""
+        """Verifies 205: no edges → loop body never executes → fallback return."""
         from scpn_quantum_control.crypto.percolation import robustness_targeted_removal
 
         # Single node → no edges
@@ -155,7 +145,7 @@ class TestPercolation:
         assert result["fraction"] == 1.0
 
     def test_routing_invalid_source(self):
-        """Cover line 231: source out of range raises ValueError."""
+        """Verifies 231: source out of range raises ValueError."""
         from scpn_quantum_control.crypto.percolation import best_entanglement_path
 
         K = build_knm_paper27(L=3)
@@ -163,7 +153,7 @@ class TestPercolation:
             best_entanglement_path(K, source=10, target=0)
 
     def test_routing_invalid_target(self):
-        """Cover line 231: target out of range raises ValueError."""
+        """Verifies 231: target out of range raises ValueError."""
         from scpn_quantum_control.crypto.percolation import best_entanglement_path
 
         K = build_knm_paper27(L=3)
@@ -171,11 +161,11 @@ class TestPercolation:
             best_entanglement_path(K, source=0, target=-1)
 
     def test_routing_dijkstra_revisit(self):
-        """Cover line 245: Dijkstra skip already-visited node.
+        """Verifies 245: Dijkstra skip already-visited node.
 
         Graph designed so node 2 is pushed twice: first from 0 (bw=0.5),
         then from 1 (bw=0.9, better). The stale entry (-0.5, 2) is popped
-        after the fresh entry visits 2, triggering continue on line 245.
+        after the fresh entry visits 2, triggering continue.
         Stale pops before target 3 because -0.5 < -0.1 in min-heap.
         """
         from scpn_quantum_control.crypto.percolation import best_entanglement_path
@@ -191,14 +181,11 @@ class TestPercolation:
         assert result["bottleneck"] == pytest.approx(0.1)
 
 
-# =====================================================================
-# Noise Analysis — Concurrence warning path
-# =====================================================================
 class TestPercolationEdgeCases:
-    """Cover remaining edge cases in percolation.py."""
+    """Verify remaining edge cases in percolation.py."""
 
     def test_percolation_threshold_no_edges(self):
-        """Cover line 83: graph with no edges → return inf."""
+        """Verifies 83: graph with no edges → return inf."""
         from scpn_quantum_control.crypto.percolation import percolation_threshold
 
         K = np.zeros((3, 3))
@@ -206,7 +193,7 @@ class TestPercolationEdgeCases:
         assert result == float("inf")
 
     def test_random_removal_no_edges(self):
-        """Cover line 153: graph with no edges → zero resilience."""
+        """Verifies 153: graph with no edges → zero resilience."""
         from scpn_quantum_control.crypto.percolation import robustness_random_removal
 
         K = np.zeros((3, 3))
@@ -215,7 +202,7 @@ class TestPercolationEdgeCases:
         assert result["n_edges"] == 0
 
     def test_routing_unreachable_target(self):
-        """Cover line 263: disconnected graph → empty path."""
+        """Verifies 263: disconnected graph → empty path."""
         from scpn_quantum_control.crypto.percolation import best_entanglement_path
 
         # Two disconnected components: {0,1} and {2}
@@ -226,7 +213,7 @@ class TestPercolationEdgeCases:
         assert result["bottleneck"] == 0.0
 
     def test_percolation_threshold_always_disconnected(self):
-        """Cover line 97: no threshold keeps graph connected.
+        """Verifies 97: no threshold keeps graph connected.
 
         Two disconnected components {0,1} and {2,3}: no threshold
         gives a connected graph → for loop exhausts → returns sorted_vals[0].
@@ -242,7 +229,7 @@ class TestPercolationEdgeCases:
 
 class TestNoiseAnalysisEdge:
     def test_concurrence_imaginary_eigenvalues(self, caplog):
-        """Cover line 87: warning when eigenvalues have imaginary part."""
+        """Verifies 87: warning when eigenvalues have imaginary part."""
         import logging
 
         from scpn_quantum_control.crypto.noise_analysis import _concurrence_2qubit
@@ -263,17 +250,30 @@ class TestNoiseAnalysisEdge:
         assert isinstance(c, float)
 
 
-# =====================================================================
-# Topology Auth — zero positive eigenvalues
-# =====================================================================
 class TestTopologyAuthEdge:
     def test_spectral_entropy_single_positive(self):
-        """topology_auth line 90 is dead code: normalized Laplacian L_sym = I - D^{-1/2}KD^{-1/2}
-        always has at least one eigenvalue > 0 (1.0 for isolated nodes, positive for connected).
-        Verify with edge case: single node → eigenvalue 1.0, entropy=0 from scipy_entropy([1])."""
+        """Verify isolated-node normalised Laplacian entropy remains well-defined."""
         from scpn_quantum_control.crypto.topology_auth import normalized_laplacian_fingerprint
 
         K = np.zeros((1, 1))
         result = normalized_laplacian_fingerprint(K)
-        # scipy_entropy([1.0]) = 0.0, but via line 88 not line 90
+        # scipy_entropy([1.0]) = 0.0 for the isolated-node spectrum.
         assert result["spectral_entropy_norm"] == 0.0
+
+
+class TestCryptoPercolationEdge:
+    def test_concurrence_map(self):
+        from scpn_quantum_control.crypto.percolation import concurrence_map
+
+        K = np.array([[0, 0.5, 0], [0.5, 0, 0.3], [0, 0.3, 0]])
+        omega = np.array([1.0, 2.0, 3.0])
+        result = concurrence_map(K, omega, maxiter=20)
+        assert result.shape == (3, 3)
+
+    def test_robustness_random_removal(self):
+        from scpn_quantum_control.crypto.percolation import robustness_random_removal
+
+        K = np.array([[0, 1, 0.5], [1, 0, 0.8], [0.5, 0.8, 0]])
+        result = robustness_random_removal(K, n_trials=5)
+        assert isinstance(result, dict)
+        assert "mean_resilience" in result

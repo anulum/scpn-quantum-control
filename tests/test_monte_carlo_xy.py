@@ -82,7 +82,7 @@ class TestExtractAHP:
 
 
 class TestMCPythonFallback:
-    """Force the Python MC path to exercise uncovered lines."""
+    """Force the Python MC path to validate fallback sampling behaviour."""
 
     def test_python_mc_sweep(self):
         import numpy as np

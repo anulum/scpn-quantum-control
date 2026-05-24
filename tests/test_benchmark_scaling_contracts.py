@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for Coverage Final
-"""Tests targeting remaining uncovered lines for 100% coverage."""
+# SCPN Quantum Control — Benchmark scaling contract tests
+"""Contract tests for GPU, MPS, and quantum-advantage benchmark scaling surfaces."""
 
 from __future__ import annotations
 
@@ -15,24 +15,130 @@ import numpy as np
 import pytest
 
 
-class TestClassicalPythonFallback:
-    """Exercise the Python Euler ODE path when Rust engine is unavailable."""
+class TestGPUBaseline:
+    def test_crossover_n_at_least_4(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import gpu_baseline_comparison
 
-    def test_kuramoto_python_fallback(self):
-        with patch.dict("sys.modules", {"scpn_quantum_engine": None}):
-            from importlib import reload
+        result = gpu_baseline_comparison(n=4)
+        assert result.crossover_n >= 4
 
-            import scpn_quantum_control.hardware.classical as classical_mod
+    @pytest.mark.parametrize("n", [4, 8, 12])
+    def test_comparison_returns_valid_result(self, n):
+        from scpn_quantum_control.benchmarks.gpu_baseline import gpu_baseline_comparison
 
-            reload(classical_mod)
-            result = classical_mod.classical_kuramoto_reference(4, 0.2, 0.1)
-            assert result["theta"].shape == (3, 4)
-            assert result["R"].shape == (3,)
-            assert all(0 <= r <= 1 for r in result["R"])
+        result = gpu_baseline_comparison(n=n)
+        assert hasattr(result, "crossover_n")
+        assert hasattr(result, "estimated_gpu_time_s")
+        assert np.isfinite(result.estimated_gpu_time_s)
+
+    def test_scaling_comparison_shape(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import scaling_comparison
+
+        result = scaling_comparison(n_values=[4, 8])
+        assert len(result["n"]) == 2
+        assert all(np.isfinite(result["gpu_time_s"]))
+
+    def test_memory_increases_with_n(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import statevector_memory_gb
+
+        m4 = statevector_memory_gb(4)
+        m8 = statevector_memory_gb(8)
+        m12 = statevector_memory_gb(12)
+        assert m4 < m8 < m12
+
+    def test_flops_positive(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import statevector_flops
+
+        f4 = statevector_flops(n=4, n_gates=100)
+        assert f4 > 0
+
+    def test_gate_count_positive(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import gate_count_xy_trotter
+
+        for n in [4, 8, 12]:
+            g = gate_count_xy_trotter(n)
+            assert g > 0
+
+    def test_memory_gb_positive(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import statevector_memory_gb
+
+        mem = statevector_memory_gb(8)
+        assert mem > 0
+
+
+class TestMPSBaseline:
+    def test_low_entropy_returns_1000(self):
+        from scpn_quantum_control.benchmarks.mps_baseline import quantum_advantage_n
+
+        n = quantum_advantage_n(entropy_per_qubit=0.0)
+        assert n == 1000
+
+    @pytest.mark.parametrize("entropy", [0.0, 0.1, 0.5, 1.0])
+    def test_advantage_n_positive(self, entropy):
+        from scpn_quantum_control.benchmarks.mps_baseline import quantum_advantage_n
+
+        n = quantum_advantage_n(entropy_per_qubit=entropy)
+        assert n > 0
+
+    def test_mps_memory_positive(self):
+        from scpn_quantum_control.benchmarks.mps_baseline import mps_memory
+
+        for n in [8, 12, 16]:
+            m = mps_memory(n, chi=32)
+            assert m > 0
+
+    def test_exact_memory_positive(self):
+        from scpn_quantum_control.benchmarks.mps_baseline import exact_memory
+
+        for n in [4, 8, 12]:
+            m = exact_memory(n)
+            assert m > 0
+
+
+class TestQuantumAdvantage:
+    def test_run_scaling_single_size(self):
+        from scpn_quantum_control.benchmarks.quantum_advantage import (
+            run_scaling_benchmark,
+        )
+
+        results = run_scaling_benchmark(sizes=[4])
+        assert len(results) == 1
+        assert results[0].n_qubits == 4
+
+    def test_scaling_results_structure(self):
+        from scpn_quantum_control.benchmarks.quantum_advantage import (
+            run_scaling_benchmark,
+        )
+
+        results = run_scaling_benchmark(sizes=[4])
+        r = results[0]
+        assert hasattr(r, "n_qubits")
+        assert r.n_qubits == 4
+
+
+class TestBenchmarkEdgeCases:
+    def test_quantum_advantage_scaling(self):
+        from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchmark
+
+        result = run_scaling_benchmark(sizes=[2, 3])
+        assert len(result) == 2
+
+    def test_gpu_baseline_comparison(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import gpu_baseline_comparison
+
+        result = gpu_baseline_comparison(n=3)
+        assert hasattr(result, "estimated_gpu_time_s")
+
+    def test_gpu_baseline_scaling(self):
+        from scpn_quantum_control.benchmarks.gpu_baseline import scaling_comparison
+
+        results = scaling_comparison(n_values=[2, 3])
+        assert "n" in results
+        assert len(results["n"]) == 2
 
 
 class TestQuantumAdvantageEdgeCases:
-    """Cover branches in benchmarks/quantum_advantage.py."""
+    """Verify behaviours in benchmarks/quantum_advantage.py."""
 
     def test_classical_benchmark_infeasible(self):
         from scpn_quantum_control.benchmarks.quantum_advantage import classical_benchmark
@@ -73,44 +179,8 @@ class TestQuantumAdvantageEdgeCases:
         assert results[0].crossover_predicted is None  # < 3 results
 
 
-class TestPECEdgeCases:
-    def test_pec_zero_error(self):
-        from scpn_quantum_control.mitigation.pec import pauli_twirl_decompose
-
-        coeffs = pauli_twirl_decompose(0.0)
-        assert coeffs[0] == 1.0
-        assert all(c == 0.0 for c in coeffs[1:])
-
-    def test_pec_sample_single_gate(self):
-        from qiskit import QuantumCircuit
-
-        from scpn_quantum_control.mitigation.pec import pec_sample
-
-        qc = QuantumCircuit(1)
-        qc.ry(0.5, 0)
-        result = pec_sample(qc, 0.01, 100, rng=np.random.default_rng(42))
-        assert result.n_samples == 100
-
-
-class TestSNNImportError:
-    def test_arcane_neuron_import_error(self):
-        with patch.dict(
-            "sys.modules",
-            {
-                "sc_neurocore": None,
-                "sc_neurocore.neurons": None,
-                "sc_neurocore.neurons.models": None,
-            },
-        ):
-            from scpn_quantum_control.bridge.snn_adapter import ArcaneNeuronBridge
-
-            with pytest.raises(ImportError, match="sc-neurocore"):
-                ArcaneNeuronBridge(2, 3)
-
-
 class TestQuantumAdvantageMoreEdges:
     def test_estimate_crossover_curve_fit_fails(self):
-        from unittest.mock import patch
 
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             AdvantageResult,
@@ -158,7 +228,6 @@ class TestQuantumAdvantageMoreEdges:
         assert result["t_total_ms"] == float("inf")
 
     def test_estimate_crossover_negative_ratio(self):
-        from unittest.mock import patch
 
         from scpn_quantum_control.benchmarks.quantum_advantage import (
             AdvantageResult,
@@ -228,48 +297,3 @@ class TestQuantumAdvantageMoreEdges:
 
         assert len(results) == 1
         assert results[0].n_qubits == 24
-
-
-class TestPECPauliBranches:
-    def test_pec_y_branch(self):
-        from qiskit import QuantumCircuit
-
-        from scpn_quantum_control.mitigation.pec import pec_sample
-
-        qc = QuantumCircuit(1)
-        qc.ry(1.0, 0)
-        result = pec_sample(qc, 0.3, 5000, rng=np.random.default_rng(42))
-        assert result.n_samples == 5000
-
-    def test_pec_default_rng(self):
-        from qiskit import QuantumCircuit
-
-        from scpn_quantum_control.mitigation.pec import pec_sample
-
-        qc = QuantumCircuit(1)
-        qc.ry(0.5, 0)
-        result = pec_sample(qc, 0.01, 50)  # no rng arg — uses default
-        assert result.n_samples == 50
-
-
-class TestMiscEdgeCases:
-    def test_coherence_budget_zero_depth(self):
-        from scpn_quantum_control.identity.coherence_budget import fidelity_at_depth
-
-        f = fidelity_at_depth(0, n_qubits=4)
-        assert f == pytest.approx(1.0, abs=0.01)
-
-    def test_qpetri_single_transition(self):
-        from scpn_quantum_control.control.qpetri import QuantumPetriNet
-
-        W_in = np.array([[1]])
-        W_out = np.array([[1]])
-        net = QuantumPetriNet(1, 1, W_in, W_out, thresholds=np.array([1]))
-        marking = net.step(np.array([1]))
-        assert marking.shape == (1,)
-
-    def test_noise_analysis_zero_qber(self):
-        from scpn_quantum_control.crypto.noise_analysis import devetak_winter_rate
-
-        rate = devetak_winter_rate(0.0)
-        assert rate == pytest.approx(1.0, abs=0.01)

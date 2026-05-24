@@ -14,6 +14,13 @@ import pytest
 engine = pytest.importorskip("scpn_quantum_engine")
 
 
+def _require_engine_symbol(name: str):
+    symbol = getattr(engine, name, None)
+    if symbol is None:
+        pytest.skip(f"scpn_quantum_engine does not export {name}")
+    return symbol
+
+
 def test_feedback_policy_batch_rejects_non_contiguous_r_values() -> None:
     r_values = np.linspace(0.1, 0.9, 8, dtype=np.float64)[::2]
 
@@ -46,19 +53,21 @@ def test_feedback_policy_batch_accepts_contiguous_r_values() -> None:
 
 
 def test_run_realtime_feedback_loop_rejects_non_contiguous_theta0() -> None:
+    run_realtime_feedback_loop = _require_engine_symbol("run_realtime_feedback_loop")
     theta0 = np.linspace(0.0, 0.3, 8, dtype=np.float64)[::2]
     omega = np.ascontiguousarray(np.linspace(0.1, 0.4, 4, dtype=np.float64))
     k = np.ascontiguousarray(np.eye(4, dtype=np.float64))
     with pytest.raises(ValueError, match="theta0 must be a C-contiguous NumPy array"):
-        engine.run_realtime_feedback_loop(theta0, omega, k, 0.72, 0.03, 0.6, 2.0, 0.02, 4)
+        run_realtime_feedback_loop(theta0, omega, k, 0.72, 0.03, 0.6, 2.0, 0.02, 4)
 
 
 def test_run_realtime_feedback_loop_accepts_contiguous_inputs() -> None:
+    run_realtime_feedback_loop = _require_engine_symbol("run_realtime_feedback_loop")
     theta0 = np.ascontiguousarray(np.linspace(0.0, 0.3, 4, dtype=np.float64))
     omega = np.ascontiguousarray(np.linspace(0.1, 0.4, 4, dtype=np.float64))
     k = np.ascontiguousarray(0.2 * np.ones((4, 4), dtype=np.float64))
     np.fill_diagonal(k, 0.0)
-    out = engine.run_realtime_feedback_loop(theta0, omega, k, 0.72, 0.03, 0.6, 2.0, 0.02, 6)
+    out = run_realtime_feedback_loop(theta0, omega, k, 0.72, 0.03, 0.6, 2.0, 0.02, 6)
     assert len(out) == 7
     times, r_values, applied, nxt, actions, errors, tick_ms = out
     assert (

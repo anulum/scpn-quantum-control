@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — JAX Accel Mock Tests
-"""Mock-based tests for JAX acceleration covering all code paths."""
+# SCPN Quantum Control — JAX accelerator contract tests
+"""Contract tests for JAX availability, device metadata, Hamiltonian construction, and dense-budget guards."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.hardware import jax_accel as jax_mod
 
@@ -228,11 +229,6 @@ def test_entanglement_scan_jax_rejects_dense_batch_budget(mock_jax, monkeypatch)
         )
 
 
-# ---------------------------------------------------------------------------
-# JAX accel physics: Hamiltonian structure
-# ---------------------------------------------------------------------------
-
-
 def test_jax_hamiltonian_hermitian(mock_jax):
     """JAX-built H must be Hermitian (real symmetric for XY model)."""
     K = _FakeJnpArray(np.array([[0, 0.3, 0.1], [0.3, 0, 0.2], [0.1, 0.2, 0]]))
@@ -249,13 +245,34 @@ def test_jax_hamiltonian_traceless(mock_jax):
     assert abs(np.trace(H)) < 1e-8
 
 
-# ---------------------------------------------------------------------------
-# Pipeline: JAX fallback behaviour
-# ---------------------------------------------------------------------------
-
-
 def test_jax_unavailable_fallback(monkeypatch):
     """When JAX unavailable, is_jax_available returns False."""
     monkeypatch.setattr(jax_mod, "_JAX_AVAILABLE", False)
     assert jax_mod.is_jax_available() is False
     assert jax_mod.is_jax_gpu_available() is False
+
+
+class TestJaxAccelFallback:
+    def test_jax_not_available(self) -> None:
+        from scpn_quantum_control.hardware.jax_accel import is_jax_available, is_jax_gpu_available
+
+        # These should not crash regardless of JAX availability
+        assert isinstance(is_jax_available(), bool)
+        assert isinstance(is_jax_gpu_available(), bool)
+
+    def test_jax_device_name(self) -> None:
+        from scpn_quantum_control.hardware.jax_accel import jax_device_name
+
+        name = jax_device_name()
+        assert isinstance(name, str)
+
+    def test_entanglement_scan_no_jax_gpu(self) -> None:
+        """entanglement_vs_coupling should work without JAX GPU."""
+        from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
+
+        K = build_knm_paper27(L=3)
+        K_norm = K / np.max(K)
+        omega = OMEGA_N_16[:3]
+        result = entanglement_vs_coupling(omega, K_norm, np.linspace(1.0, 3.0, 5))
+        assert len(result.entropy) == 5
+        assert all(np.isfinite(result.entropy))

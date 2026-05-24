@@ -4,13 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for Coverage 100 Gauge
-"""Multi-angle tests for gauge/ subpackage: confinement, universality,
-vortex_detector, wilson_loop.
-
-Covers: Wilson loop averaging, string tension extraction, BKT universality,
-vortex density, parametrised coupling, edge cases, physical bounds.
-"""
+# SCPN Quantum Control — Gauge topology contract tests
+"""Contract tests for confinement, universality, vortex, Wilson-loop, and topological entropy surfaces."""
 
 from __future__ import annotations
 
@@ -19,9 +14,6 @@ import numpy as np
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
 
-# =====================================================================
-# Confinement
-# =====================================================================
 class TestConfinement:
     def test_no_loops_returns_zero(self):
         from scpn_quantum_control.gauge.confinement import _average_wilson_by_length
@@ -74,9 +66,6 @@ class TestConfinement:
         assert isinstance(result.is_confined, bool)
 
 
-# =====================================================================
-# Universality (BKT)
-# =====================================================================
 class TestUniversality:
     def test_zero_tbkt_ratio(self):
         from scpn_quantum_control.gauge.universality import check_nelson_kosterlitz
@@ -108,9 +97,6 @@ class TestUniversality:
         assert hasattr(result, "eta_exponent")
 
 
-# =====================================================================
-# Vortex Detector
-# =====================================================================
 class TestVortexDetector:
     def test_density_scan_default(self):
         from scpn_quantum_control.gauge.vortex_detector import vortex_density_vs_coupling
@@ -137,9 +123,6 @@ class TestVortexDetector:
         assert result.vortex_density >= 0.0
 
 
-# =====================================================================
-# Wilson Loop
-# =====================================================================
 class TestWilsonLoop:
     def test_compute_returns_list(self):
         from scpn_quantum_control.gauge.wilson_loop import compute_wilson_loops
@@ -172,3 +155,22 @@ class TestWilsonLoop:
             assert hasattr(r, "expectation_value")
             assert hasattr(r, "magnitude")
             assert hasattr(r, "phase_angle")
+
+
+class TestQSVTLargeN:
+    def test_hamiltonian_spectral_norm(self):
+        from scpn_quantum_control.phase.qsvt_evolution import hamiltonian_spectral_norm
+
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        norm = hamiltonian_spectral_norm(K, omega)
+        assert norm > 0
+
+
+def test_topological_entropy_small():
+    """Verifies 79: _topological_entropy returns 0.0 for n < 4."""
+    from scpn_quantum_control.tcbo.quantum_observer import _topological_entanglement_entropy
+
+    psi = np.array([1, 0, 0, 0], dtype=complex)
+    result = _topological_entanglement_entropy(psi, 2)
+    assert result == 0.0

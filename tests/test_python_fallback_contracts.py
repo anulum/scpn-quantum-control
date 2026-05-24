@@ -4,13 +4,14 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Python Fallback Coverage Tests
-"""Force Python fallback paths when Rust engine is hidden."""
+# SCPN Quantum Control — Python fallback contract tests
+"""Contract tests for Python fallback reference paths when optional Rust acceleration is unavailable."""
 
 from __future__ import annotations
 
 import json
 import sys
+import time
 from unittest.mock import patch
 
 import numpy as np
@@ -24,6 +25,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
 
 def _hide_engine():
     """Context manager to hide scpn_quantum_engine from imports."""
+
     return patch.dict(sys.modules, {"scpn_quantum_engine": None})
 
 
@@ -155,11 +157,6 @@ class TestClassicalPythonFallback:
             classical_kuramoto_reference(2, t_max=-1.0, dt=0.1)
 
 
-# ---------------------------------------------------------------------------
-# Fallback physics: Python path produces same invariants as Rust
-# ---------------------------------------------------------------------------
-
-
 class TestFallbackPhysics:
     def test_python_R_bounded(self):
         """Python fallback R must be in [0, 1]."""
@@ -182,17 +179,11 @@ class TestFallbackPhysics:
         np.testing.assert_allclose(z, 1.0, atol=1e-10)
 
 
-# ---------------------------------------------------------------------------
-# Pipeline: fallback path → full computation → wired
-# ---------------------------------------------------------------------------
-
-
 class TestFallbackPipeline:
     def test_pipeline_python_fallback_kuramoto(self):
         """Full pipeline: Python Kuramoto → R trajectory (no Rust).
         Verifies Python fallback is wired end-to-end.
         """
-        import time
 
         from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 

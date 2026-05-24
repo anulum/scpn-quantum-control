@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Crypto Edge Cases
-"""Edge-case tests to cover remaining uncovered branches in crypto modules."""
+"""Edge-case tests for crypto module validation and failure paths."""
 
 from __future__ import annotations
 

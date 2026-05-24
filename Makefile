@@ -25,6 +25,7 @@ fmt:
 check:
 	ruff check src/ tests/ examples/
 	ruff format --check src/ tests/ examples/
+	python tools/audit_test_quality.py
 	mypy
 
 docs:
@@ -36,6 +37,7 @@ docs-serve:
 preflight:
 	ruff check src/ tests/ examples/
 	ruff format --check src/ tests/ examples/
+	python tools/audit_test_quality.py
 	mypy
 	bandit -r src/ scripts/ -ll -q
 	pytest tests/ -v --tb=short -x --ignore=tests/test_hardware_runner.py

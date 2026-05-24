@@ -8,10 +8,9 @@
 """Cross-vendor backend tests for the PennyLane adapter.
 
 The docstring of ``pennylane_adapter`` advertises IBM, IonQ, Rigetti,
-Quantinuum, Braket, Cirq and Xanadu (photonic). The existing
-``test_coverage_100_pennylane_mock`` only exercises ``default.qubit``;
-``test_pennylane_adapter`` is skipped when PennyLane is absent and only
-hits ``default.qubit`` when present.
+Quantinuum, Braket, Cirq and Xanadu (photonic). Baseline PennyLane
+adapter checks exercise ``default.qubit``; this module verifies the
+advertised vendor-device contract directly.
 
 This module closes audit item B13: for each advertised vendor string we
 verify that the adapter:

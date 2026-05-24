@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — PennyLane Adapter Mock Tests
-"""Mock-based tests for PennyLane adapter covering all code paths."""
+# SCPN Quantum Control — PennyLane adapter contract tests
+"""Contract tests for PennyLane adapter availability, Hamiltonian construction, runner execution, and pipeline output boundaries."""
 
 from __future__ import annotations
 
@@ -208,11 +208,6 @@ def test_runner_3qubit(mock_pl):
     assert result.n_qubits == 3
 
 
-# ---------------------------------------------------------------------------
-# PennyLane adapter physics: result structure invariants
-# ---------------------------------------------------------------------------
-
-
 def test_result_energy_type(mock_pl):
     """Energy from Trotter must be a float, not complex or None."""
     K = np.array([[0, 0.5], [0.5, 0]])
@@ -254,11 +249,6 @@ def test_vqe_order_parameter_is_measured_from_ansatz(mock_pl):
     assert result.order_parameter != 0.0
     assert [op for op, _payload in mock_pl.operations].count("paulix") >= runner.n
     assert [op for op, _payload in mock_pl.operations].count("pauliy") >= runner.n
-
-
-# ---------------------------------------------------------------------------
-# Pipeline: Knm → PennyLane mock → result → wired
-# ---------------------------------------------------------------------------
 
 
 def test_pipeline_knm_to_pennylane(mock_pl):
