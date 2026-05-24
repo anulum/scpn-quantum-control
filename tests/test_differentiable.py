@@ -21,6 +21,7 @@ from scpn_quantum_control.differentiable import (
     HessianResult,
     JacobianResult,
     LevenbergMarquardtStep,
+    LevenbergMarquardtTrial,
     NaturalGradientResult,
     OptimizationResult,
     Parameter,
@@ -32,6 +33,7 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     empirical_fisher_metric,
+    evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
     finite_difference_hessian,
     finite_difference_jacobian,
@@ -518,6 +520,96 @@ def test_levenberg_marquardt_step_rejects_invalid_controls() -> None:
         levenberg_marquardt_step(jacobian_result, [1.0, 2.0], damping=-1.0)
     with pytest.raises(ValueError, match="max_step_norm"):
         levenberg_marquardt_step(jacobian_result, [1.0, 2.0], max_step_norm=0.0)
+
+
+def test_evaluate_levenberg_marquardt_step_accepts_improving_candidate() -> None:
+    """LM acceptance should compare actual and predicted residual reduction."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] - 1.0, 2.0 * (values[1] + 0.5)])
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        objective,
+        [3.0, 1.5],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    step_result = levenberg_marquardt_step(
+        jacobian_result,
+        [3.0, 1.5],
+        weights=np.array([1.0, 0.25]),
+        damping=0.5,
+    )
+    trial = evaluate_levenberg_marquardt_step(
+        objective,
+        step_result,
+        weights=np.array([1.0, 0.25]),
+        acceptance_threshold=0.1,
+    )
+
+    assert isinstance(trial, LevenbergMarquardtTrial)
+    assert trial.accepted is True
+    assert trial.candidate_value == pytest.approx(4.0 / 9.0, abs=1.0e-6)
+    assert trial.actual_reduction == pytest.approx(32.0 / 9.0, abs=1.0e-6)
+    assert trial.reduction_ratio == pytest.approx(4.0 / 3.0, abs=1.0e-6)
+
+
+def test_evaluate_levenberg_marquardt_step_rejects_poor_candidate() -> None:
+    """A residual-increasing candidate must not be accepted."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] - 1.0])
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        objective,
+        [3.0],
+        parameters=[Parameter("x")],
+    )
+    step_result = LevenbergMarquardtStep(
+        gauss_newton=gauss_newton_gradient(jacobian_result, damping=0.5),
+        step=np.array([2.0]),
+        candidate_values=np.array([5.0]),
+        damping=0.5,
+        predicted_reduction=0.5,
+    )
+    trial = evaluate_levenberg_marquardt_step(objective, step_result)
+
+    assert trial.accepted is False
+    assert trial.actual_reduction < 0.0
+    assert trial.reduction_ratio < 0.0
+
+
+def test_evaluate_levenberg_marquardt_step_rejects_invalid_controls() -> None:
+    """LM acceptance diagnostics must fail closed on invalid policy inputs."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], values[1]]),
+        [1.0, 2.0],
+    )
+    step_result = levenberg_marquardt_step(jacobian_result, [1.0, 2.0], damping=0.5)
+
+    with pytest.raises(ValueError, match="acceptance_threshold"):
+        evaluate_levenberg_marquardt_step(
+            lambda values: np.array([values[0], values[1]]),
+            step_result,
+            acceptance_threshold=-1.0,
+        )
+    with pytest.raises(ValueError, match="weights"):
+        evaluate_levenberg_marquardt_step(
+            lambda values: np.array([values[0], values[1]]),
+            step_result,
+            weights=np.array([1.0]),
+        )
+    with pytest.raises(ValueError, match="non-negative"):
+        evaluate_levenberg_marquardt_step(
+            lambda values: np.array([values[0], values[1]]),
+            step_result,
+            weights=np.array([1.0, -1.0]),
+        )
+    with pytest.raises(ValueError, match="one-dimensional"):
+        evaluate_levenberg_marquardt_step(
+            lambda _values: np.array([[1.0]]),
+            step_result,
+        )
 
 
 def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
@@ -1015,9 +1107,11 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.HessianResult is HessianResult
     assert scpn.JacobianResult is JacobianResult
     assert scpn.LevenbergMarquardtStep is LevenbergMarquardtStep
+    assert scpn.LevenbergMarquardtTrial is LevenbergMarquardtTrial
     assert scpn.NaturalGradientResult is NaturalGradientResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
     assert scpn.empirical_fisher_metric is empirical_fisher_metric
+    assert scpn.evaluate_levenberg_marquardt_step is evaluate_levenberg_marquardt_step
     assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.gauss_newton_gradient is gauss_newton_gradient

@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 299,
+    "public_api_exports": 301,
     "public_documentation_pages": 235,
-    "python_model_classes": 1452,
+    "python_model_classes": 1453,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -3273,6 +3273,10 @@
       },
       {
         "name": "LevenbergMarquardtStep",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "LevenbergMarquardtTrial",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -7732,6 +7736,7 @@
     "KuramotoVariantResult",
     "LayerStateArtifact",
     "LevenbergMarquardtStep",
+    "LevenbergMarquardtTrial",
     "LindbladSyncEngine",
     "LocalDeterministicSimulator",
     "LockSignatureArtifact",
@@ -7864,6 +7869,7 @@
     "empirical_fisher_metric",
     "enforce_realtime_sla",
     "estimate_crossover",
+    "evaluate_levenberg_marquardt_step",
     "evaluate_realtime_sla",
     "fast_sparse_evolution",
     "fep",

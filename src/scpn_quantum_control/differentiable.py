@@ -398,6 +398,46 @@ class LevenbergMarquardtStep:
 
 
 @dataclass(frozen=True)
+class LevenbergMarquardtTrial:
+    """Actual-vs-predicted Levenberg-Marquardt acceptance diagnostic."""
+
+    step_result: LevenbergMarquardtStep
+    candidate_residual: NDArray[np.float64]
+    candidate_value: float
+    actual_reduction: float
+    reduction_ratio: float
+    accepted: bool
+
+    def __post_init__(self) -> None:
+        candidate_residual = _as_real_numeric_array(
+            "Levenberg-Marquardt candidate_residual",
+            self.candidate_residual,
+        )
+        if candidate_residual.ndim != 1:
+            raise ValueError("candidate_residual must be one-dimensional")
+        if not np.all(np.isfinite(candidate_residual)):
+            raise ValueError("candidate_residual must contain only finite values")
+        candidate_value = _as_real_scalar(
+            "Levenberg-Marquardt candidate_value",
+            self.candidate_value,
+        )
+        actual_reduction = _as_real_scalar(
+            "Levenberg-Marquardt actual_reduction",
+            self.actual_reduction,
+        )
+        reduction_ratio = _as_real_scalar(
+            "Levenberg-Marquardt reduction_ratio",
+            self.reduction_ratio,
+        )
+        if not isinstance(self.accepted, bool):
+            raise ValueError("accepted flag must be a boolean")
+        object.__setattr__(self, "candidate_residual", candidate_residual)
+        object.__setattr__(self, "candidate_value", candidate_value)
+        object.__setattr__(self, "actual_reduction", actual_reduction)
+        object.__setattr__(self, "reduction_ratio", reduction_ratio)
+
+
+@dataclass(frozen=True)
 class WeightedGradientResult:
     """Weighted scalarisation of multiple scalar gradient results."""
 
@@ -1208,6 +1248,43 @@ def levenberg_marquardt_step(
     )
 
 
+def evaluate_levenberg_marquardt_step(
+    objective: VectorObjective,
+    step_result: LevenbergMarquardtStep,
+    *,
+    weights: ArrayLike | None = None,
+    acceptance_threshold: float = 1.0e-4,
+) -> LevenbergMarquardtTrial:
+    """Evaluate actual residual reduction for a Levenberg-Marquardt candidate."""
+
+    threshold = _as_real_scalar("Levenberg-Marquardt acceptance_threshold", acceptance_threshold)
+    if threshold < 0.0:
+        raise ValueError("Levenberg-Marquardt acceptance_threshold must be non-negative")
+    candidate_residual = _as_vector_output(objective(step_result.candidate_values.copy()))
+    reference_residual = step_result.gauss_newton.base_gradient.value
+    if weights is None:
+        candidate_value = 0.5 * float(candidate_residual @ candidate_residual)
+    else:
+        weight_arr = _as_real_numeric_array("weights", weights)
+        if weight_arr.ndim != 1 or weight_arr.shape[0] != candidate_residual.size:
+            raise ValueError("weights must be a one-dimensional array matching residual rows")
+        if not np.all(np.isfinite(weight_arr)) or np.any(weight_arr < 0.0):
+            raise ValueError("weights must contain only finite non-negative values")
+        candidate_value = 0.5 * float(candidate_residual @ (candidate_residual * weight_arr))
+    actual_reduction = reference_residual - candidate_value
+    predicted = step_result.predicted_reduction
+    reduction_ratio = actual_reduction / predicted if predicted > 0.0 else 0.0
+    accepted = predicted > 0.0 and reduction_ratio >= threshold
+    return LevenbergMarquardtTrial(
+        step_result=step_result,
+        candidate_residual=candidate_residual,
+        candidate_value=candidate_value,
+        actual_reduction=actual_reduction,
+        reduction_ratio=reduction_ratio,
+        accepted=accepted,
+    )
+
+
 def natural_gradient(
     gradient_result: GradientResult,
     metric: ArrayLike,
@@ -1354,6 +1431,7 @@ __all__ = [
     "HessianResult",
     "JacobianResult",
     "LevenbergMarquardtStep",
+    "LevenbergMarquardtTrial",
     "NaturalGradientResult",
     "OptimizationResult",
     "Parameter",
@@ -1365,6 +1443,7 @@ __all__ = [
     "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
     "empirical_fisher_metric",
+    "evaluate_levenberg_marquardt_step",
     "finite_difference_gradient",
     "finite_difference_hessian",
     "finite_difference_jacobian",

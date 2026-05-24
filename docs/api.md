@@ -371,12 +371,14 @@ from scpn_quantum_control import (
     HessianResult,
     JacobianResult,
     LevenbergMarquardtStep,
+    LevenbergMarquardtTrial,
     OptimizationResult,
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
+    evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
     finite_difference_hessian,
     finite_difference_jacobian,
@@ -438,6 +440,7 @@ JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trai
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
 LevenbergMarquardtStep(gauss_newton, step, candidate_values, damping, predicted_reduction)
+LevenbergMarquardtTrial(step_result, candidate_residual, candidate_value, actual_reduction, reduction_ratio, accepted)
 WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
@@ -451,6 +454,7 @@ value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e
 finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
+evaluate_levenberg_marquardt_step(objective, step_result, weights=None, acceptance_threshold=1e-4) -> LevenbergMarquardtTrial
 gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 levenberg_marquardt_step(jacobian, values, weights=None, damping=1e-3, bounds=None, max_step_norm=None, rcond=1e-12) -> LevenbergMarquardtStep
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
@@ -512,6 +516,9 @@ metric system on trainable parameters; subtract the returned
 `levenberg_marquardt_step()` turns that preconditioned residual solve into a
 bounded candidate update with optional physical bounds, trainable-step norm
 limiting, and predicted quadratic-model reduction for accept/reject policies.
+`evaluate_levenberg_marquardt_step()` evaluates the candidate residual map,
+computes actual weighted residual reduction, and reports the actual/predicted
+reduction ratio used by Levenberg-Marquardt trust-region damping policies.
 `weighted_gradient_sum()` combines compatible `GradientResult` components into a
 single scalarised multi-objective gradient while preserving component
 provenance, weights, evaluation counts, trainable masks, and parameter names.
