@@ -3068,7 +3068,7 @@ def dense_to_sparse_matrix(
         row_indices=cast(NDArray[np.int64], row_indices.astype(np.int64)),
         column_indices=cast(NDArray[np.int64], column_indices.astype(np.int64)),
         values=cast(NDArray[np.float64], values.astype(np.float64)),
-        shape=matrix_arr.shape,
+        shape=(int(matrix_arr.shape[0]), int(matrix_arr.shape[1])),
         method=method,
         parameter_names=names,
         trainable=trainable_mask,
@@ -3206,7 +3206,7 @@ def value_and_complex_step_grad(
     for index, parameter in enumerate(parameter_meta):
         if not parameter.trainable:
             continue
-        perturbed = parameter_values.astype(np.complex128)
+        perturbed = cast(NDArray[np.complex128], parameter_values.astype(np.complex128))
         perturbed[index] += 1j * step_value
         perturbed_value = _as_complex_step_scalar(objective(perturbed))
         evaluations += 1
