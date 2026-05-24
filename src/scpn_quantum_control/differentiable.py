@@ -158,6 +158,41 @@ class OptimizationResult:
 
 
 @dataclass(frozen=True)
+class GradientCheckResult:
+    """Consistency check between two differentiable gradient estimators."""
+
+    reference: GradientResult
+    candidate: GradientResult
+    max_abs_error: float
+    l2_error: float
+    value_delta: float
+    tolerance: float
+    passed: bool
+
+    def __post_init__(self) -> None:
+        if self.reference.gradient.shape != self.candidate.gradient.shape:
+            raise ValueError("gradient check operands must have matching shapes")
+        max_abs_error = _as_real_scalar("max_abs_error", self.max_abs_error)
+        l2_error = _as_real_scalar("l2_error", self.l2_error)
+        value_delta = _as_real_scalar("value_delta", self.value_delta)
+        tolerance = _as_real_scalar("tolerance", self.tolerance)
+        if max_abs_error < 0.0:
+            raise ValueError("max_abs_error must be non-negative")
+        if l2_error < 0.0:
+            raise ValueError("l2_error must be non-negative")
+        if value_delta < 0.0:
+            raise ValueError("value_delta must be non-negative")
+        if tolerance < 0.0:
+            raise ValueError("tolerance must be non-negative")
+        if not isinstance(self.passed, bool):
+            raise ValueError("gradient check passed flag must be a boolean")
+        object.__setattr__(self, "max_abs_error", max_abs_error)
+        object.__setattr__(self, "l2_error", l2_error)
+        object.__setattr__(self, "value_delta", value_delta)
+        object.__setattr__(self, "tolerance", tolerance)
+
+
+@dataclass(frozen=True)
 class DifferentiableOptimizer:
     """Small native gradient-descent optimizer for differentiable SCPN parameters."""
 
@@ -439,6 +474,47 @@ def value_and_finite_difference_grad(
     )
 
 
+def check_parameter_shift_consistency(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+    finite_difference_step: float = 1.0e-6,
+    tolerance: float = 1.0e-5,
+) -> GradientCheckResult:
+    """Compare parameter-shift gradients against central finite differences."""
+
+    tolerance_value = _as_real_scalar("gradient check tolerance", tolerance)
+    if tolerance_value < 0.0:
+        raise ValueError("gradient check tolerance must be finite and non-negative")
+    candidate = value_and_parameter_shift_grad(
+        objective,
+        values,
+        parameters=parameters,
+        rule=rule,
+    )
+    reference = value_and_finite_difference_grad(
+        objective,
+        values,
+        parameters=parameters,
+        step=finite_difference_step,
+    )
+    delta = candidate.gradient - reference.gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta, ord=2))
+    value_delta = float(abs(candidate.value - reference.value))
+    return GradientCheckResult(
+        reference=reference,
+        candidate=candidate,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        value_delta=value_delta,
+        tolerance=tolerance_value,
+        passed=max_abs_error <= tolerance_value,
+    )
+
+
 def is_jax_autodiff_available() -> bool:
     """Return whether JAX autodiff can be imported in the active environment."""
 
@@ -479,11 +555,13 @@ def jax_value_and_grad(
 
 __all__ = [
     "DifferentiableOptimizer",
+    "GradientCheckResult",
     "GradientResult",
     "OptimizationResult",
     "Parameter",
     "ParameterShiftRule",
     "batch_parameter_shift_gradient",
+    "check_parameter_shift_consistency",
     "finite_difference_gradient",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
