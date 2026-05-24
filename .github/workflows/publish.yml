@@ -12,7 +12,7 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
@@ -42,3 +42,10 @@ jobs:
           inputs: >-
             ./dist/*.tar.gz
             ./dist/*.whl
+      - uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v2.1.0
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.whl
+            dist/*.sigstore.json
