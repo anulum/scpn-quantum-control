@@ -156,6 +156,80 @@ class GradientResult:
 
 
 @dataclass(frozen=True)
+class StochasticGradientResult:
+    """Parameter-shift gradient with independent shot-noise uncertainty."""
+
+    value: float
+    gradient: NDArray[np.float64]
+    standard_error: NDArray[np.float64]
+    covariance: NDArray[np.float64]
+    confidence_radius: NDArray[np.float64]
+    shots: NDArray[np.float64]
+    confidence_level: float
+    method: str
+    shift: float
+    coefficient: float
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_scalar("stochastic gradient value", self.value)
+        gradient = _as_parameter_array(self.gradient)
+        standard_error = _as_parameter_array(self.standard_error)
+        confidence_radius = _as_parameter_array(self.confidence_radius)
+        covariance = _as_real_numeric_array("stochastic gradient covariance", self.covariance)
+        shots = _as_real_numeric_array("stochastic gradient shots", self.shots)
+        confidence_level = _as_real_scalar(
+            "stochastic gradient confidence_level",
+            self.confidence_level,
+        )
+        shift = _as_real_scalar("stochastic gradient shift", self.shift)
+        coefficient = _as_real_scalar("stochastic gradient coefficient", self.coefficient)
+        if standard_error.shape != gradient.shape:
+            raise ValueError("standard_error shape must match gradient shape")
+        if confidence_radius.shape != gradient.shape:
+            raise ValueError("confidence_radius shape must match gradient shape")
+        if covariance.shape != (gradient.size, gradient.size):
+            raise ValueError("covariance shape must be gradient length squared")
+        if shots.shape != (2, gradient.size):
+            raise ValueError("shots shape must be (2, gradient length)")
+        if not np.all(shots > 0.0) or not np.allclose(shots, np.round(shots)):
+            raise ValueError("shots must contain positive integer counts")
+        if not np.all(np.isfinite(standard_error)) or np.any(standard_error < 0.0):
+            raise ValueError("standard_error must contain finite non-negative values")
+        if not np.all(np.isfinite(confidence_radius)) or np.any(confidence_radius < 0.0):
+            raise ValueError("confidence_radius must contain finite non-negative values")
+        if not np.all(np.isfinite(covariance)):
+            raise ValueError("covariance must contain only finite values")
+        if confidence_level <= 0.0 or confidence_level >= 1.0:
+            raise ValueError("confidence_level must be between zero and one")
+        if shift <= 0.0:
+            raise ValueError("stochastic gradient shift must be finite and positive")
+        if coefficient <= 0.0:
+            raise ValueError("stochastic gradient coefficient must be finite and positive")
+        if self.evaluations < 0:
+            raise ValueError("stochastic gradient evaluations must be non-negative")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("trainable mask length must match gradient length")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "standard_error", standard_error)
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "confidence_radius", confidence_radius)
+        object.__setattr__(self, "shots", shots)
+        object.__setattr__(self, "confidence_level", confidence_level)
+        object.__setattr__(self, "shift", shift)
+        object.__setattr__(self, "coefficient", coefficient)
+
+
+@dataclass(frozen=True)
 class OptimizationResult:
     """Bounded gradient-descent result with convergence provenance."""
 
@@ -1945,6 +2019,80 @@ def value_and_parameter_shift_grad(
     )
 
 
+def parameter_shift_gradient_with_uncertainty(
+    plus_values: ArrayLike,
+    minus_values: ArrayLike,
+    plus_variances: ArrayLike,
+    minus_variances: ArrayLike,
+    plus_shots: ArrayLike,
+    minus_shots: ArrayLike | None = None,
+    *,
+    value: float = 0.0,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+    confidence_level: float = 0.95,
+    confidence_z: float = 1.959963984540054,
+) -> StochasticGradientResult:
+    """Propagate independent shot noise through parameter-shift gradients."""
+
+    plus = _as_parameter_array(plus_values)
+    minus = _as_parameter_array(minus_values)
+    plus_var = _as_parameter_array(plus_variances)
+    minus_var = _as_parameter_array(minus_variances)
+    plus_count = _as_parameter_array(plus_shots)
+    minus_count = plus_count.copy() if minus_shots is None else _as_parameter_array(minus_shots)
+    if minus.shape != plus.shape:
+        raise ValueError("minus_values shape must match plus_values shape")
+    if plus_var.shape != plus.shape or minus_var.shape != plus.shape:
+        raise ValueError("variance shapes must match plus_values shape")
+    if plus_count.shape != plus.shape or minus_count.shape != plus.shape:
+        raise ValueError("shot-count shapes must match plus_values shape")
+    if np.any(plus_var < 0.0) or np.any(minus_var < 0.0):
+        raise ValueError("shot variances must be finite non-negative values")
+    if (
+        not np.all(plus_count > 0.0)
+        or not np.all(minus_count > 0.0)
+        or not np.allclose(plus_count, np.round(plus_count))
+        or not np.allclose(minus_count, np.round(minus_count))
+    ):
+        raise ValueError("shot counts must contain positive integers")
+    confidence = _as_real_scalar("confidence_level", confidence_level)
+    z_value = _as_real_scalar("confidence_z", confidence_z)
+    if confidence <= 0.0 or confidence >= 1.0:
+        raise ValueError("confidence_level must be between zero and one")
+    if z_value <= 0.0:
+        raise ValueError("confidence_z must be finite and positive")
+
+    parameter_meta = _normalise_parameters(plus, parameters)
+    shift_rule = rule or ParameterShiftRule()
+    gradient = np.zeros_like(plus)
+    variance = np.zeros_like(plus)
+    for index, parameter in enumerate(parameter_meta):
+        if not parameter.trainable:
+            continue
+        gradient[index] = shift_rule.coefficient * (plus[index] - minus[index])
+        variance[index] = shift_rule.coefficient**2 * (
+            plus_var[index] / plus_count[index] + minus_var[index] / minus_count[index]
+        )
+    standard_error = np.sqrt(variance)
+    covariance = np.diag(variance)
+    return StochasticGradientResult(
+        value=value,
+        gradient=gradient,
+        standard_error=standard_error,
+        covariance=covariance,
+        confidence_radius=z_value * standard_error,
+        shots=np.vstack([plus_count, minus_count]),
+        confidence_level=confidence,
+        method="parameter_shift_shot_noise",
+        shift=shift_rule.shift,
+        coefficient=shift_rule.coefficient,
+        evaluations=2 * sum(parameter.trainable for parameter in parameter_meta),
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
 def finite_difference_gradient(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -3426,6 +3574,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "StochasticGradientResult",
     "VJPResult",
     "WeightedGradientResult",
     "armijo_backtracking_line_search",
@@ -3464,6 +3613,7 @@ __all__ = [
     "levenberg_marquardt_step",
     "natural_gradient",
     "soft_l1_residual_weights",
+    "parameter_shift_gradient_with_uncertainty",
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",
     "value_and_grad",

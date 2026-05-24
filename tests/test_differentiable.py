@@ -38,6 +38,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    StochasticGradientResult,
     VJPResult,
     WeightedGradientResult,
     armijo_backtracking_line_search,
@@ -76,6 +77,7 @@ from scpn_quantum_control.differentiable import (
     levenberg_marquardt_step,
     natural_gradient,
     parameter_shift_gradient,
+    parameter_shift_gradient_with_uncertainty,
     soft_l1_residual_weights,
     update_levenberg_marquardt_damping,
     value_and_complex_step_grad,
@@ -365,6 +367,62 @@ def test_canonical_jacobian_and_hessian_transforms() -> None:
         value_and_jacobian(lambda values: np.array([values[0]]), [0.25], method="reverse")
     with pytest.raises(ValueError, match="Hessian method"):
         value_and_hessian(lambda values: values[0] ** 2, [0.25], method="reverse")
+
+
+def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
+    """Independent plus/minus shot noise should propagate into gradient variance."""
+
+    result = parameter_shift_gradient_with_uncertainty(
+        plus_values=[0.8, 0.1],
+        minus_values=[0.2, -0.3],
+        plus_variances=[0.36, 0.25],
+        minus_variances=[0.16, 0.09],
+        plus_shots=[900, 400],
+        minus_shots=[400, 100],
+        value=0.5,
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+    )
+
+    assert isinstance(result, StochasticGradientResult)
+    assert result.method == "parameter_shift_shot_noise"
+    assert result.evaluations == 2
+    assert result.parameter_names == ("theta", "frozen")
+    assert result.trainable == (True, False)
+    np.testing.assert_allclose(result.gradient, [0.3, 0.0])
+    expected_variance = 0.5**2 * (0.36 / 900.0 + 0.16 / 400.0)
+    np.testing.assert_allclose(result.standard_error, [math.sqrt(expected_variance), 0.0])
+    np.testing.assert_allclose(result.covariance, np.diag([expected_variance, 0.0]))
+    np.testing.assert_allclose(result.confidence_radius, 1.959963984540054 * result.standard_error)
+    np.testing.assert_allclose(result.shots, [[900.0, 400.0], [400.0, 100.0]])
+
+
+def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> None:
+    """Shot-noise gradients must fail closed on impossible measurement contracts."""
+
+    with pytest.raises(ValueError, match="variance shapes"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0], [0.1, 0.2], [0.1], [10])
+    with pytest.raises(ValueError, match="shot variances"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0], [-0.1], [0.1], [10])
+    with pytest.raises(ValueError, match="shot counts"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0], [0.1], [0.1], [0])
+    with pytest.raises(ValueError, match="confidence_level"):
+        parameter_shift_gradient_with_uncertainty(
+            [1.0],
+            [0.0],
+            [0.1],
+            [0.1],
+            [10],
+            confidence_level=1.0,
+        )
+    with pytest.raises(ValueError, match="confidence_z"):
+        parameter_shift_gradient_with_uncertainty(
+            [1.0],
+            [0.0],
+            [0.1],
+            [0.1],
+            [10],
+            confidence_z=0.0,
+        )
 
 
 def test_weighted_gradient_sum_preserves_component_provenance() -> None:
@@ -2193,6 +2251,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.FisherVectorProductResult is FisherVectorProductResult
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
+    assert scpn.StochasticGradientResult is StochasticGradientResult
     assert scpn.WeightedGradientResult is WeightedGradientResult
     assert scpn.VJPResult is VJPResult
     assert scpn.batch_complex_step_gradient is batch_complex_step_gradient
@@ -2236,6 +2295,9 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.least_squares_covariance is least_squares_covariance
     assert scpn.levenberg_marquardt_step is levenberg_marquardt_step
     assert scpn.natural_gradient is natural_gradient
+    assert (
+        scpn.parameter_shift_gradient_with_uncertainty is parameter_shift_gradient_with_uncertainty
+    )
     assert scpn.soft_l1_residual_weights is soft_l1_residual_weights
     assert scpn.update_levenberg_marquardt_damping is update_levenberg_marquardt_damping
     assert scpn.weighted_gradient_sum is weighted_gradient_sum
