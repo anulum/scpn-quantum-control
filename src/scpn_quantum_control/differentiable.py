@@ -226,6 +226,7 @@ class DifferentiableOptimizer:
         gradient_result: GradientResult,
         *,
         bounds: Sequence[ParameterBounds] | None = None,
+        max_gradient_norm: float | None = None,
     ) -> NDArray[np.float64]:
         """Return one gradient-descent update respecting the trainable mask."""
 
@@ -236,8 +237,13 @@ class DifferentiableOptimizer:
         trainable = np.asarray(gradient_result.trainable, dtype=bool)
         if trainable.size != parameter_values.size:
             raise ValueError("trainable mask length must match values length")
+        gradient = _clip_gradient(
+            gradient_result.gradient,
+            trainable,
+            max_gradient_norm=max_gradient_norm,
+        )
         updated: NDArray[np.float64] = parameter_values.copy()
-        updated[trainable] -= self.learning_rate * gradient_result.gradient[trainable]
+        updated[trainable] -= self.learning_rate * gradient[trainable]
         return _project_bounds(updated, bounds_meta)
 
     def minimize(
@@ -250,6 +256,7 @@ class DifferentiableOptimizer:
         gradient_method: str = "parameter_shift",
         finite_difference_step: float = 1.0e-6,
         bounds: Sequence[ParameterBounds] | None = None,
+        max_gradient_norm: float | None = None,
         max_steps: int = 100,
         gradient_tolerance: float = 1.0e-8,
         value_tolerance: float | None = None,
@@ -263,6 +270,7 @@ class DifferentiableOptimizer:
         )
         if finite_difference_step_value <= 0.0:
             raise ValueError("finite_difference_step must be finite and positive")
+        _validate_max_gradient_norm(max_gradient_norm)
         if isinstance(max_steps, bool) or not isinstance(max_steps, int) or max_steps < 0:
             raise ValueError("max_steps must be a non-negative integer")
         gradient_tolerance_value = _as_real_scalar("gradient_tolerance", gradient_tolerance)
@@ -332,7 +340,12 @@ class DifferentiableOptimizer:
                     reason="max_steps",
                 )
             previous_value = gradient_result.value
-            values = self.step(values, gradient_result, bounds=bounds_meta)
+            values = self.step(
+                values,
+                gradient_result,
+                bounds=bounds_meta,
+                max_gradient_norm=max_gradient_norm,
+            )
 
         raise RuntimeError("unreachable optimizer state")
 
@@ -397,6 +410,31 @@ def _project_bounds(
         if bound.upper is not None and projected[index] > bound.upper:
             projected[index] = bound.upper
     return cast(NDArray[np.float64], projected)
+
+
+def _validate_max_gradient_norm(max_gradient_norm: float | None) -> float | None:
+    if max_gradient_norm is None:
+        return None
+    max_norm = _as_real_scalar("max_gradient_norm", max_gradient_norm)
+    if max_norm <= 0.0:
+        raise ValueError("max_gradient_norm must be finite and positive")
+    return max_norm
+
+
+def _clip_gradient(
+    gradient: NDArray[np.float64],
+    trainable: NDArray[np.bool_],
+    *,
+    max_gradient_norm: float | None,
+) -> NDArray[np.float64]:
+    max_norm = _validate_max_gradient_norm(max_gradient_norm)
+    clipped = gradient.copy()
+    if max_norm is None or not np.any(trainable):
+        return cast(NDArray[np.float64], clipped)
+    trainable_norm = float(np.linalg.norm(clipped[trainable], ord=2))
+    if trainable_norm > max_norm:
+        clipped[trainable] *= max_norm / trainable_norm
+    return cast(NDArray[np.float64], clipped)
 
 
 def parameter_shift_gradient(

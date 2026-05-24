@@ -310,6 +310,26 @@ def test_gradient_descent_step_projects_box_bounds() -> None:
     np.testing.assert_allclose(updated, [-0.5, 0.25])
 
 
+def test_gradient_descent_step_clips_trainable_gradient_norm() -> None:
+    """Optimizer steps should optionally clip trainable gradient norm."""
+
+    result = GradientResult(
+        value=1.0,
+        gradient=np.array([3.0, 4.0, 100.0]),
+        method="parameter_shift",
+        shift=math.pi / 2,
+        coefficient=0.5,
+        evaluations=7,
+        parameter_names=("a", "b", "frozen"),
+        trainable=(True, True, False),
+    )
+    optimizer = DifferentiableOptimizer(learning_rate=1.0)
+
+    updated = optimizer.step([0.0, 0.0, 0.0], result, max_gradient_norm=1.0)
+
+    np.testing.assert_allclose(updated, [-0.6, -0.8, 0.0], atol=1.0e-12)
+
+
 def test_parameter_bounds_reject_invalid_intervals() -> None:
     """Box constraints must be explicit finite ordered real intervals."""
 
@@ -388,6 +408,22 @@ def test_optimizer_minimize_projects_initial_and_updated_bounds() -> None:
     assert result.value_history[0] == pytest.approx(0.25**2)
 
 
+def test_optimizer_minimize_accepts_gradient_clipping() -> None:
+    """Bounded optimizer should route clipping through multi-step minimization."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=1.0)
+    result = optimizer.minimize(
+        lambda values: values[0] ** 2,
+        [10.0],
+        gradient_method="finite_difference",
+        max_gradient_norm=0.5,
+        max_steps=1,
+    )
+
+    assert not result.converged
+    np.testing.assert_allclose(result.values, [9.5], atol=1.0e-5)
+
+
 def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
     """Optimizer loop controls must fail closed before objective evaluation."""
 
@@ -400,6 +436,12 @@ def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
             [0.1],
             gradient_method="finite_difference",
             finite_difference_step=0.0,
+        )
+    with pytest.raises(ValueError, match="max_gradient_norm"):
+        optimizer.minimize(
+            lambda values: math.sin(values[0]),
+            [0.1],
+            max_gradient_norm=0.0,
         )
     with pytest.raises(ValueError, match="max_steps"):
         optimizer.minimize(lambda values: math.sin(values[0]), [0.1], max_steps=True)
