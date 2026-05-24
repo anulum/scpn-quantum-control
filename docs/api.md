@@ -371,6 +371,7 @@ from scpn_quantum_control import (
     OptimizationResult,
     Parameter,
     ParameterShiftRule,
+    batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     finite_difference_gradient,
     parameter_shift_gradient,
@@ -420,8 +421,10 @@ GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, 
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
+batch_value_and_parameter_shift_grad(objectives, values, parameters=None, rule=None) -> tuple[GradientResult, ...]
 finite_difference_gradient(objective, values, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_grad(objective, values, parameters=None, step=1e-6) -> GradientResult
+batch_value_and_finite_difference_grad(objectives, values, parameters=None, step=1e-6) -> tuple[GradientResult, ...]
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
@@ -447,6 +450,9 @@ using `parameter_shift_gradient()` when the generator rule is known.
 `check_parameter_shift_consistency()` compares a parameter-shift candidate
 against central finite differences and returns explicit error metrics, so custom
 rules can be validated before being used in training loops.
+The `batch_value_*` helpers return one `GradientResult` per scalar objective so
+multi-objective workflows keep objective values, gradient metadata, trainable
+masks, and evaluation counts instead of only a stacked gradient matrix.
 
 PennyLane VQE bridge:
 

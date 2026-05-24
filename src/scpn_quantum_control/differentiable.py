@@ -391,6 +391,28 @@ def batch_parameter_shift_gradient(
     return np.vstack(rows)
 
 
+def batch_value_and_parameter_shift_grad(
+    objectives: Sequence[ScalarObjective],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> tuple[GradientResult, ...]:
+    """Return full parameter-shift results for multiple scalar objectives."""
+
+    if not objectives:
+        raise ValueError("objectives must contain at least one scalar objective")
+    return tuple(
+        value_and_parameter_shift_grad(
+            objective,
+            values,
+            parameters=parameters,
+            rule=rule,
+        )
+        for objective in objectives
+    )
+
+
 def value_and_parameter_shift_grad(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -447,6 +469,28 @@ def finite_difference_gradient(
         step=step,
     )
     return result.gradient
+
+
+def batch_value_and_finite_difference_grad(
+    objectives: Sequence[ScalarObjective],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> tuple[GradientResult, ...]:
+    """Return full finite-difference results for multiple scalar objectives."""
+
+    if not objectives:
+        raise ValueError("objectives must contain at least one scalar objective")
+    return tuple(
+        value_and_finite_difference_grad(
+            objective,
+            values,
+            parameters=parameters,
+            step=step,
+        )
+        for objective in objectives
+    )
 
 
 def value_and_finite_difference_grad(
@@ -578,6 +622,8 @@ __all__ = [
     "Parameter",
     "ParameterShiftRule",
     "batch_parameter_shift_gradient",
+    "batch_value_and_finite_difference_grad",
+    "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
     "finite_difference_gradient",
     "is_jax_autodiff_available",

@@ -22,6 +22,8 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterShiftRule,
     batch_parameter_shift_gradient,
+    batch_value_and_finite_difference_grad,
+    batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     finite_difference_gradient,
     is_jax_autodiff_available,
@@ -143,6 +145,48 @@ def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:
     )
 
     np.testing.assert_allclose(gradients[:, 0], [math.cos(0.25), -math.sin(0.25)])
+
+
+def test_batch_value_gradient_results_preserve_metadata() -> None:
+    """Batch value APIs should preserve objective values and provenance."""
+
+    parameter_shift_results = batch_value_and_parameter_shift_grad(
+        [
+            lambda values: math.sin(values[0]),
+            lambda values: math.cos(values[0]),
+        ],
+        [0.25],
+        parameters=[Parameter("theta")],
+    )
+    finite_difference_results = batch_value_and_finite_difference_grad(
+        [
+            lambda values: values[0] ** 2,
+            lambda values: 3.0 * values[0],
+        ],
+        [0.25],
+        parameters=[Parameter("theta")],
+    )
+
+    assert len(parameter_shift_results) == 2
+    assert parameter_shift_results[0].parameter_names == ("theta",)
+    assert parameter_shift_results[0].method == "parameter_shift"
+    assert finite_difference_results[0].method == "finite_difference_central"
+    np.testing.assert_allclose(
+        [result.value for result in parameter_shift_results],
+        [math.sin(0.25), math.cos(0.25)],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(finite_difference_results[0].gradient, [0.5], atol=1.0e-6)
+    np.testing.assert_allclose(finite_difference_results[1].gradient, [3.0], atol=1.0e-6)
+
+
+def test_batch_value_gradient_results_reject_empty_objectives() -> None:
+    """Batch value APIs must fail closed on empty objective lists."""
+
+    with pytest.raises(ValueError, match="objectives"):
+        batch_value_and_parameter_shift_grad([], [0.25])
+    with pytest.raises(ValueError, match="objectives"):
+        batch_value_and_finite_difference_grad([], [0.25])
 
 
 def test_finite_difference_gradient_matches_quadratic_derivative() -> None:
@@ -426,6 +470,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
+    assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
+    assert scpn.batch_value_and_finite_difference_grad is batch_value_and_finite_difference_grad
 
 
 @pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or broken")

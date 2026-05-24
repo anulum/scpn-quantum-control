@@ -112,7 +112,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.differentiable
     options:
-      members: [Parameter, ParameterShiftRule, GradientResult, OptimizationResult, GradientCheckResult, DifferentiableOptimizer, parameter_shift_gradient, value_and_parameter_shift_grad, batch_parameter_shift_gradient, finite_difference_gradient, value_and_finite_difference_grad, check_parameter_shift_consistency, is_jax_autodiff_available, jax_value_and_grad]
+      members: [Parameter, ParameterShiftRule, GradientResult, OptimizationResult, GradientCheckResult, DifferentiableOptimizer, parameter_shift_gradient, value_and_parameter_shift_grad, batch_parameter_shift_gradient, batch_value_and_parameter_shift_grad, finite_difference_gradient, value_and_finite_difference_grad, batch_value_and_finite_difference_grad, check_parameter_shift_consistency, is_jax_autodiff_available, jax_value_and_grad]
 
 ## MLIR Compiler
 
