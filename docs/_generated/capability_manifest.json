@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 307,
+    "public_api_exports": 309,
     "public_documentation_pages": 235,
-    "python_model_classes": 1456,
+    "python_model_classes": 1457,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -3270,6 +3270,10 @@
       {
         "name": "LayerStateArtifact",
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
+      },
+      {
+        "name": "LeastSquaresCovarianceResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "LevenbergMarquardtDampingUpdate",
@@ -7747,6 +7751,7 @@
     "KuramotoVariant",
     "KuramotoVariantResult",
     "LayerStateArtifact",
+    "LeastSquaresCovarianceResult",
     "LevenbergMarquardtDampingUpdate",
     "LevenbergMarquardtOptimizer",
     "LevenbergMarquardtResult",
@@ -7911,6 +7916,7 @@
     "knm_to_hamiltonian",
     "l16",
     "learn_symmetry_decay",
+    "least_squares_covariance",
     "levenberg_marquardt_step",
     "load_hardware_kuramoto_4osc_trace",
     "load_ieee5bus_sync_forecast_case",

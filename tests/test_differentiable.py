@@ -20,6 +20,7 @@ from scpn_quantum_control.differentiable import (
     GradientResult,
     HessianResult,
     JacobianResult,
+    LeastSquaresCovarianceResult,
     LevenbergMarquardtDampingUpdate,
     LevenbergMarquardtOptimizer,
     LevenbergMarquardtResult,
@@ -44,6 +45,7 @@ from scpn_quantum_control.differentiable import (
     huber_residual_weights,
     is_jax_autodiff_available,
     jax_value_and_grad,
+    least_squares_covariance,
     levenberg_marquardt_step,
     natural_gradient,
     parameter_shift_gradient,
@@ -468,6 +470,72 @@ def test_gauss_newton_gradient_rejects_invalid_inputs() -> None:
         gauss_newton_gradient(jacobian_result, weights=np.array([1.0]))
     with pytest.raises(ValueError, match="non-negative"):
         gauss_newton_gradient(jacobian_result, weights=np.array([1.0, -1.0]))
+
+
+def test_least_squares_covariance_estimates_fisher_uncertainty() -> None:
+    """Residual-map covariance should invert the trainable empirical Fisher metric."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0], 2.0 * values[1], values[0] + values[1]])
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        objective,
+        [1.0, 1.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    result = least_squares_covariance(jacobian_result)
+
+    assert isinstance(result, LeastSquaresCovarianceResult)
+    assert result.degrees_of_freedom == 1
+    assert result.residual_variance == pytest.approx(9.0)
+    assert result.condition_number > 1.0
+    np.testing.assert_allclose(result.covariance, [[5.0, -1.0], [-1.0, 2.0]], atol=1.0e-5)
+    np.testing.assert_allclose(result.standard_errors, [np.sqrt(5.0), np.sqrt(2.0)], atol=1.0e-5)
+
+
+def test_least_squares_covariance_respects_trainable_mask_and_variance() -> None:
+    """Non-trainable parameters should receive zero covariance and standard error."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], values[1], values[0] + values[1]]),
+        [1.0, 2.0],
+        parameters=[Parameter("x"), Parameter("y", trainable=False)],
+    )
+    result = least_squares_covariance(
+        jacobian_result,
+        weights=np.array([1.0, 0.25, 1.0]),
+        residual_variance=0.5,
+    )
+
+    np.testing.assert_allclose(result.covariance, [[0.25, 0.0], [0.0, 0.0]], atol=1.0e-6)
+    np.testing.assert_allclose(result.standard_errors, [0.5, 0.0], atol=1.0e-6)
+    assert result.parameter_names == ("x", "y")
+    assert result.trainable == (True, False)
+
+
+def test_least_squares_covariance_rejects_invalid_inputs() -> None:
+    """Covariance estimation should fail closed for singular or malformed solves."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], 2.0 * values[0]]),
+        [1.0],
+        parameters=[Parameter("x")],
+    )
+    with pytest.raises(ValueError, match="JacobianResult"):
+        least_squares_covariance(np.eye(1))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="residual_variance"):
+        least_squares_covariance(jacobian_result, residual_variance=-1.0)
+    with pytest.raises(ValueError, match="weights"):
+        least_squares_covariance(jacobian_result, weights=np.array([1.0]))
+    with pytest.raises(ValueError, match="rcond"):
+        least_squares_covariance(jacobian_result, rcond=1.0)
+    singular = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] + values[1]]),
+        [1.0, 2.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    with pytest.raises(ValueError, match="positive definite"):
+        least_squares_covariance(singular)
 
 
 def test_huber_residual_weights_downweight_outliers_for_residual_maps() -> None:
@@ -1397,6 +1465,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.HessianResult is HessianResult
     assert scpn.JacobianResult is JacobianResult
+    assert scpn.LeastSquaresCovarianceResult is LeastSquaresCovarianceResult
     assert scpn.LevenbergMarquardtDampingUpdate is LevenbergMarquardtDampingUpdate
     assert scpn.LevenbergMarquardtOptimizer is LevenbergMarquardtOptimizer
     assert scpn.LevenbergMarquardtResult is LevenbergMarquardtResult
@@ -1410,6 +1479,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
     assert scpn.huber_residual_weights is huber_residual_weights
+    assert scpn.least_squares_covariance is least_squares_covariance
     assert scpn.levenberg_marquardt_step is levenberg_marquardt_step
     assert scpn.natural_gradient is natural_gradient
     assert scpn.soft_l1_residual_weights is soft_l1_residual_weights

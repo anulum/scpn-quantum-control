@@ -522,6 +522,60 @@ class LevenbergMarquardtResult:
 
 
 @dataclass(frozen=True)
+class LeastSquaresCovarianceResult:
+    """Parameter uncertainty estimate from a residual-map Fisher metric."""
+
+    covariance: NDArray[np.float64]
+    standard_errors: NDArray[np.float64]
+    residual_variance: float
+    degrees_of_freedom: int
+    condition_number: float
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        covariance = _as_real_numeric_array("least-squares covariance", self.covariance)
+        standard_errors = _as_real_numeric_array(
+            "least-squares standard errors",
+            self.standard_errors,
+        )
+        if covariance.ndim != 2 or covariance.shape[0] != covariance.shape[1]:
+            raise ValueError("least-squares covariance must be a square matrix")
+        if standard_errors.ndim != 1 or standard_errors.shape[0] != covariance.shape[0]:
+            raise ValueError("standard_errors length must match covariance dimension")
+        if not np.all(np.isfinite(covariance)):
+            raise ValueError("least-squares covariance must contain only finite values")
+        if not np.allclose(covariance, covariance.T, atol=1.0e-10):
+            raise ValueError("least-squares covariance must be symmetric")
+        if not np.all(np.isfinite(standard_errors)) or np.any(standard_errors < 0.0):
+            raise ValueError("standard_errors must contain finite non-negative values")
+        residual_variance = _as_real_scalar(
+            "least-squares residual_variance",
+            self.residual_variance,
+        )
+        if residual_variance < 0.0:
+            raise ValueError("residual_variance must be finite and non-negative")
+        degrees_of_freedom = int(self.degrees_of_freedom)
+        if degrees_of_freedom < 1:
+            raise ValueError("degrees_of_freedom must be positive")
+        condition_number = _as_real_scalar(
+            "least-squares condition_number",
+            self.condition_number,
+        )
+        if condition_number < 1.0:
+            raise ValueError("condition_number must be at least one")
+        if len(self.parameter_names) != covariance.shape[0]:
+            raise ValueError("parameter_names length must match covariance dimension")
+        if len(self.trainable) != covariance.shape[0]:
+            raise ValueError("trainable mask length must match covariance dimension")
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "standard_errors", standard_errors)
+        object.__setattr__(self, "residual_variance", residual_variance)
+        object.__setattr__(self, "degrees_of_freedom", degrees_of_freedom)
+        object.__setattr__(self, "condition_number", condition_number)
+
+
+@dataclass(frozen=True)
 class WeightedGradientResult:
     """Weighted scalarisation of multiple scalar gradient results."""
 
@@ -1470,6 +1524,67 @@ def empirical_fisher_metric(
     return cast(NDArray[np.float64], metric)
 
 
+def least_squares_covariance(
+    jacobian: JacobianResult,
+    *,
+    weights: ArrayLike | None = None,
+    residual_variance: float | None = None,
+    damping: float = 0.0,
+    rcond: float = 1.0e-12,
+) -> LeastSquaresCovarianceResult:
+    """Estimate parameter covariance from a residual-map Fisher metric."""
+
+    if not isinstance(jacobian, JacobianResult):
+        raise ValueError("least_squares_covariance requires a JacobianResult")
+    residual = jacobian.value
+    trainable = np.asarray(jacobian.trainable, dtype=bool)
+    active_count = int(np.count_nonzero(trainable))
+    if active_count == 0:
+        raise ValueError("least_squares_covariance requires at least one trainable parameter")
+    metric = empirical_fisher_metric(jacobian, weights=weights, damping=damping)
+    active_metric = metric[np.ix_(trainable, trainable)]
+    eigenvalues = np.linalg.eigvalsh(active_metric)
+    min_eigenvalue = float(np.min(eigenvalues))
+    max_eigenvalue = float(np.max(eigenvalues))
+    rcond_value = _as_real_scalar("least-squares rcond", rcond)
+    if not 0.0 < rcond_value < 1.0:
+        raise ValueError("rcond must be finite and between 0 and 1")
+    if min_eigenvalue <= 0.0:
+        raise ValueError("least-squares Fisher metric must be positive definite")
+    condition_number = max_eigenvalue / min_eigenvalue
+    if condition_number > 1.0 / rcond_value:
+        raise ValueError("least-squares Fisher metric is ill-conditioned")
+    degrees_of_freedom = max(1, residual.size - active_count)
+    if residual_variance is None:
+        if weights is None:
+            weighted_residual = residual
+        else:
+            weight_arr = _as_real_numeric_array("weights", weights)
+            if weight_arr.ndim != 1 or weight_arr.shape[0] != residual.size:
+                raise ValueError("weights must be a one-dimensional array matching residual rows")
+            if not np.all(np.isfinite(weight_arr)) or np.any(weight_arr < 0.0):
+                raise ValueError("weights must contain only finite non-negative values")
+            weighted_residual = residual * weight_arr
+        variance = float(residual @ weighted_residual) / degrees_of_freedom
+    else:
+        variance = _as_real_scalar("least-squares residual_variance", residual_variance)
+        if variance < 0.0:
+            raise ValueError("residual_variance must be finite and non-negative")
+    active_covariance = np.linalg.inv(active_metric) * variance
+    covariance = np.zeros_like(metric)
+    covariance[np.ix_(trainable, trainable)] = active_covariance
+    standard_errors = np.sqrt(np.maximum(np.diag(covariance), 0.0))
+    return LeastSquaresCovarianceResult(
+        covariance=covariance,
+        standard_errors=standard_errors,
+        residual_variance=variance,
+        degrees_of_freedom=degrees_of_freedom,
+        condition_number=condition_number,
+        parameter_names=jacobian.parameter_names,
+        trainable=jacobian.trainable,
+    )
+
+
 def huber_residual_weights(
     residuals: ArrayLike,
     *,
@@ -1855,6 +1970,7 @@ __all__ = [
     "GradientResult",
     "HessianResult",
     "JacobianResult",
+    "LeastSquaresCovarianceResult",
     "LevenbergMarquardtDampingUpdate",
     "LevenbergMarquardtOptimizer",
     "LevenbergMarquardtResult",
@@ -1879,6 +1995,7 @@ __all__ = [
     "huber_residual_weights",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
+    "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
     "soft_l1_residual_weights",

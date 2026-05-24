@@ -370,6 +370,7 @@ from scpn_quantum_control import (
     GradientCheckResult,
     HessianResult,
     JacobianResult,
+    LeastSquaresCovarianceResult,
     LevenbergMarquardtDampingUpdate,
     LevenbergMarquardtOptimizer,
     LevenbergMarquardtResult,
@@ -387,6 +388,7 @@ from scpn_quantum_control import (
     finite_difference_jacobian,
     gauss_newton_gradient,
     huber_residual_weights,
+    least_squares_covariance,
     levenberg_marquardt_step,
     parameter_shift_gradient,
     soft_l1_residual_weights,
@@ -454,6 +456,7 @@ OptimizationResult(values, final_gradient, value_history, steps, converged, reas
 GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, tolerance, passed)
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
+LeastSquaresCovarianceResult(covariance, standard_errors, residual_variance, degrees_of_freedom, condition_number, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
 LevenbergMarquardtDampingUpdate(trial, next_damping, action)
 LevenbergMarquardtResult(values, residual, value_history, damping_history, accepted_history, steps, converged, reason, best_values, best_value)
@@ -475,6 +478,7 @@ empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
 evaluate_levenberg_marquardt_step(objective, step_result, weights=None, acceptance_threshold=1e-4) -> LevenbergMarquardtTrial
 gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 huber_residual_weights(residuals, delta=1.0, min_weight=0.0) -> np.ndarray
+least_squares_covariance(jacobian, weights=None, residual_variance=None, damping=0.0, rcond=1e-12) -> LeastSquaresCovarianceResult
 levenberg_marquardt_step(jacobian, values, weights=None, damping=1e-3, bounds=None, max_step_norm=None, rcond=1e-12) -> LevenbergMarquardtStep
 soft_l1_residual_weights(residuals, scale=1.0, min_weight=0.0) -> np.ndarray
 update_levenberg_marquardt_damping(trial, decrease_factor=1/3, increase_factor=2.0, min_damping=1e-12, max_damping=1e12, high_quality_ratio=0.75) -> LevenbergMarquardtDampingUpdate
@@ -531,6 +535,10 @@ number guarding for Fisher/Fubini-Study style preconditioners.
 `empirical_fisher_metric()` builds a validated weighted ``J.T @ W @ J`` metric
 from `JacobianResult` or raw Jacobian arrays, with optional non-negative damping
 for natural-gradient preconditioning.
+`least_squares_covariance()` inverts the trainable empirical-Fisher block to
+estimate residual-fit parameter covariance, standard errors, residual variance,
+degrees of freedom, and condition number while zeroing frozen-parameter
+uncertainty.
 `gauss_newton_gradient()` converts a residual-map `JacobianResult` into the
 least-squares gradient ``J.T @ W @ r`` and solves the damped Gauss-Newton
 metric system on trainable parameters; subtract the returned
