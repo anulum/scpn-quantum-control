@@ -342,7 +342,7 @@ class QPUDataArtifact:
             raise ValueError("unsupported SC-NeuroCore datastream schema version")
         K_nm = payload["knm"]
         omega = payload["omega_rad_s"]
-        layer_ids = [str(item) for item in payload.get("layer_ids", [])]
+        layer_ids = payload.get("layer_ids", [])
         metadata = {
             "source_project": payload.get("source_project", "sc-neurocore"),
             "dt_s": payload.get("dt_s"),

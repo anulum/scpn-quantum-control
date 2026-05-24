@@ -204,7 +204,8 @@ That adapter defaults to `source_mode="synthetic"` because the current
 datastream is deterministic smoke data, not a recorded source artifact.
 It routes `knm` and `omega_rad_s` through the same numeric payload validator as
 all other artifact constructors; string, boolean, complex, and ragged numeric
-coercions are not accepted.
+coercions are not accepted. `layer_ids` are routed through the same
+layer-assignment validator; non-string or blank layer labels are rejected.
 
 ## Test coverage
 
@@ -223,6 +224,7 @@ The tests cover:
 - shape and metadata rejection
 - numeric payload rejection for string, boolean, and complex coercion
 - SC-NeuroCore datastream numeric payload coercion rejection
+- SC-NeuroCore datastream layer-label coercion rejection
 - ragged numeric payload rejection with artifact-contract errors
 - SC-NeuroCore datastream adaptation
 - schema-version rejection
