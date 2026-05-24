@@ -212,6 +212,7 @@ layer labels are bound to oscillator rows.
 `dt_s` must be a positive finite numeric scalar before it is recorded as
 sampling metadata.
 `n_steps` must be a positive integer.
+`source_project` must be a non-empty string and is normalized before hashing.
 It routes `knm` and `omega_rad_s` through the same numeric payload validator as
 all other artifact constructors; string, boolean, complex, and ragged numeric
 coercions are not accepted. `layer_ids` are routed through the same
@@ -239,6 +240,7 @@ The tests cover:
 - SC-NeuroCore datastream `n_layers` consistency rejection
 - SC-NeuroCore datastream positive finite `dt_s` rejection
 - SC-NeuroCore datastream positive integer `n_steps` rejection
+- SC-NeuroCore datastream non-empty `source_project` rejection
 - SC-NeuroCore datastream numeric payload coercion rejection
 - SC-NeuroCore datastream layer-label coercion rejection
 - ragged numeric payload rejection with artifact-contract errors

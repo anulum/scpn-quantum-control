@@ -377,8 +377,11 @@ class QPUDataArtifact:
             raise ValueError("n_layers must match layer_ids length")
         dt_s = _positive_finite_float("dt_s", payload.get("dt_s"))
         n_steps = _positive_int("n_steps", payload.get("n_steps"))
+        source_project = _required_text(
+            "source_project", payload.get("source_project", "sc-neurocore")
+        )
         metadata = {
-            "source_project": payload.get("source_project", "sc-neurocore"),
+            "source_project": source_project,
             "dt_s": dt_s,
             "seed": seed,
             "n_steps": n_steps,
