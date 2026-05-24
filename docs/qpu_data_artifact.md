@@ -202,6 +202,9 @@ assert artifact.is_synthetic
 
 That adapter defaults to `source_mode="synthetic"` because the current
 datastream is deterministic smoke data, not a recorded source artifact.
+It routes `knm` and `omega_rad_s` through the same numeric payload validator as
+all other artifact constructors; string, boolean, complex, and ragged numeric
+coercions are not accepted.
 
 ## Test coverage
 
@@ -219,6 +222,7 @@ The tests cover:
 - empty zero-oscillator `K_nm` rejection
 - shape and metadata rejection
 - numeric payload rejection for string, boolean, and complex coercion
+- SC-NeuroCore datastream numeric payload coercion rejection
 - ragged numeric payload rejection with artifact-contract errors
 - SC-NeuroCore datastream adaptation
 - schema-version rejection
