@@ -39,6 +39,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    ReverseNode,
     SparseMatrixResult,
     StochasticGradientResult,
     VJPResult,
@@ -86,6 +87,11 @@ from scpn_quantum_control.differentiable import (
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    reverse_cos,
+    reverse_exp,
+    reverse_log,
+    reverse_mode_gradient,
+    reverse_sin,
     soft_l1_residual_weights,
     sparse_empirical_fisher_metric,
     sparse_hessian,
@@ -102,6 +108,7 @@ from scpn_quantum_control.differentiable import (
     value_and_hessian,
     value_and_jacobian,
     value_and_parameter_shift_grad,
+    value_and_reverse_mode_grad,
     vector_jacobian_product,
     weighted_gradient_sum,
 )
@@ -441,6 +448,70 @@ def test_forward_mode_dual_rejects_invalid_contracts() -> None:
         forward_mode_gradient(lambda values: values[0] / (values[0] - 1.0), [1.0])
     with pytest.raises(ValueError, match="dual variable exponent"):
         forward_mode_gradient(lambda values: (-1.0) ** values[0], [2.0])
+
+
+def test_reverse_mode_tape_gradient_matches_analytic_derivative() -> None:
+    """Reverse-mode tape gradients should backpropagate exact adjoints."""
+
+    def objective(values: tuple[ReverseNode, ...]) -> ReverseNode:
+        return reverse_sin(values[0]) + values[0] * values[1] + values[1] ** 2
+
+    result = value_and_reverse_mode_grad(
+        objective,
+        [0.25, -0.5],
+        parameters=[Parameter("theta"), Parameter("bias")],
+    )
+
+    assert result.method == "reverse_mode_tape"
+    assert result.evaluations == 1
+    assert result.parameter_names == ("theta", "bias")
+    np.testing.assert_allclose(
+        result.gradient,
+        [math.cos(0.25) - 0.5, 0.25 - 1.0],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+    np.testing.assert_allclose(
+        reverse_mode_gradient(
+            lambda values: reverse_exp(values[0]) + reverse_log(values[0]), [2.0]
+        ),
+        [math.exp(2.0) + 0.5],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+    np.testing.assert_allclose(
+        grad(lambda values: reverse_cos(values[0]), [0.25], method="reverse_mode"),
+        [-math.sin(0.25)],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+
+
+def test_reverse_mode_tape_gradient_respects_frozen_parameters() -> None:
+    """Reverse-mode gradients should backpropagate once and mask frozen outputs."""
+
+    result = value_and_reverse_mode_grad(
+        lambda values: values[0] ** 2 + values[0] * values[1],
+        [3.0, 5.0],
+        parameters=[Parameter("active"), Parameter("frozen", trainable=False)],
+    )
+
+    assert result.trainable == (True, False)
+    assert result.evaluations == 1
+    np.testing.assert_allclose(result.gradient, [11.0, 0.0])
+
+
+def test_reverse_mode_tape_rejects_invalid_contracts() -> None:
+    """Reverse-mode AD should fail closed on invalid scalar/domain contracts."""
+
+    with pytest.raises(ValueError, match="reverse-mode objective must return a scalar"):
+        reverse_mode_gradient(lambda _values: np.array([1.0, 2.0]), [1.0])
+    with pytest.raises(ValueError, match="reverse log input must be positive"):
+        reverse_mode_gradient(lambda values: reverse_log(values[0]), [-1.0])
+    with pytest.raises(ValueError, match="reverse division denominator"):
+        reverse_mode_gradient(lambda values: values[0] / (values[0] - 1.0), [1.0])
+    with pytest.raises(ValueError, match="reverse variable exponent"):
+        reverse_mode_gradient(lambda values: (-1.0) ** values[0], [2.0])
 
 
 def test_sparse_matrix_result_round_trips_dense_derivatives() -> None:
@@ -2410,6 +2481,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.FisherVectorProductResult is FisherVectorProductResult
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
+    assert scpn.ReverseNode is ReverseNode
     assert scpn.SparseMatrixResult is SparseMatrixResult
     assert scpn.StochasticGradientResult is StochasticGradientResult
     assert scpn.WeightedGradientResult is WeightedGradientResult
@@ -2464,6 +2536,11 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert (
         scpn.parameter_shift_gradient_with_uncertainty is parameter_shift_gradient_with_uncertainty
     )
+    assert scpn.reverse_cos is reverse_cos
+    assert scpn.reverse_exp is reverse_exp
+    assert scpn.reverse_log is reverse_log
+    assert scpn.reverse_mode_gradient is reverse_mode_gradient
+    assert scpn.reverse_sin is reverse_sin
     assert scpn.soft_l1_residual_weights is soft_l1_residual_weights
     assert scpn.sparse_empirical_fisher_metric is sparse_empirical_fisher_metric
     assert scpn.sparse_hessian is sparse_hessian
@@ -2483,6 +2560,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.value_and_grad is value_and_grad
     assert scpn.value_and_hessian is value_and_hessian
     assert scpn.value_and_jacobian is value_and_jacobian
+    assert scpn.value_and_reverse_mode_grad is value_and_reverse_mode_grad
     assert scpn.vector_jacobian_product is vector_jacobian_product
 
 

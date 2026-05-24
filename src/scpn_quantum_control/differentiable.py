@@ -232,6 +232,116 @@ def dual_log(value: object) -> DualNumber:
     return DualNumber(float(np.log(arg.primal)), arg.tangent / arg.primal)
 
 
+class ReverseNode:
+    """Reverse-mode automatic differentiation scalar with local pullbacks."""
+
+    __slots__ = ("adjoint", "parents", "primal")
+
+    def __init__(
+        self,
+        primal: float,
+        parents: tuple[tuple[ReverseNode, float], ...] = (),
+    ) -> None:
+        self.primal = _as_real_scalar("reverse primal", primal)
+        self.parents = parents
+        self.adjoint = 0.0
+
+    @staticmethod
+    def coerce(value: object) -> ReverseNode:
+        """Return a reverse node, treating real scalars as constants."""
+
+        if isinstance(value, ReverseNode):
+            return value
+        return ReverseNode(_as_real_scalar("reverse operand", value))
+
+    def __add__(self, other: object) -> ReverseNode:
+        rhs = ReverseNode.coerce(other)
+        return ReverseNode(self.primal + rhs.primal, ((self, 1.0), (rhs, 1.0)))
+
+    def __radd__(self, other: object) -> ReverseNode:
+        return self.__add__(other)
+
+    def __sub__(self, other: object) -> ReverseNode:
+        rhs = ReverseNode.coerce(other)
+        return ReverseNode(self.primal - rhs.primal, ((self, 1.0), (rhs, -1.0)))
+
+    def __rsub__(self, other: object) -> ReverseNode:
+        lhs = ReverseNode.coerce(other)
+        return lhs.__sub__(self)
+
+    def __mul__(self, other: object) -> ReverseNode:
+        rhs = ReverseNode.coerce(other)
+        return ReverseNode(
+            self.primal * rhs.primal,
+            ((self, rhs.primal), (rhs, self.primal)),
+        )
+
+    def __rmul__(self, other: object) -> ReverseNode:
+        return self.__mul__(other)
+
+    def __truediv__(self, other: object) -> ReverseNode:
+        rhs = ReverseNode.coerce(other)
+        if rhs.primal == 0.0:
+            raise ValueError("reverse division denominator must be non-zero")
+        return ReverseNode(
+            self.primal / rhs.primal,
+            ((self, 1.0 / rhs.primal), (rhs, -self.primal / rhs.primal**2)),
+        )
+
+    def __rtruediv__(self, other: object) -> ReverseNode:
+        lhs = ReverseNode.coerce(other)
+        return lhs.__truediv__(self)
+
+    def __neg__(self) -> ReverseNode:
+        return ReverseNode(-self.primal, ((self, -1.0),))
+
+    def __pow__(self, other: object) -> ReverseNode:
+        rhs = ReverseNode.coerce(other)
+        if self.primal <= 0.0 and isinstance(other, ReverseNode):
+            raise ValueError("reverse variable exponent requires positive base")
+        primal = self.primal**rhs.primal
+        parents: list[tuple[ReverseNode, float]] = []
+        parents.append((self, rhs.primal * self.primal ** (rhs.primal - 1.0)))
+        if rhs.parents:
+            parents.append((rhs, primal * float(np.log(self.primal))))
+        return ReverseNode(primal, tuple(parents))
+
+    def __rpow__(self, other: object) -> ReverseNode:
+        lhs = ReverseNode.coerce(other)
+        return lhs.__pow__(self)
+
+
+def reverse_sin(value: object) -> ReverseNode:
+    """Reverse-mode sine primitive."""
+
+    arg = ReverseNode.coerce(value)
+    return ReverseNode(float(np.sin(arg.primal)), ((arg, float(np.cos(arg.primal))),))
+
+
+def reverse_cos(value: object) -> ReverseNode:
+    """Reverse-mode cosine primitive."""
+
+    arg = ReverseNode.coerce(value)
+    return ReverseNode(float(np.cos(arg.primal)), ((arg, -float(np.sin(arg.primal))),))
+
+
+def reverse_exp(value: object) -> ReverseNode:
+    """Reverse-mode exponential primitive."""
+
+    arg = ReverseNode.coerce(value)
+    primal = float(np.exp(arg.primal))
+    return ReverseNode(primal, ((arg, primal),))
+
+
+def reverse_log(value: object) -> ReverseNode:
+    """Reverse-mode natural-log primitive."""
+
+    arg = ReverseNode.coerce(value)
+    if arg.primal <= 0.0:
+        raise ValueError("reverse log input must be positive")
+    return ReverseNode(float(np.log(arg.primal)), ((arg, 1.0 / arg.primal),))
+
+
 @dataclass(frozen=True)
 class GradientResult:
     """Value, gradient, and provenance returned by a differentiable backend."""
@@ -2019,6 +2129,38 @@ def _as_forward_mode_scalar(value: object) -> DualNumber:
         raise
 
 
+def _as_reverse_mode_scalar(value: object) -> ReverseNode:
+    """Return a scalar reverse-mode objective value."""
+
+    if isinstance(value, ReverseNode):
+        return value
+    try:
+        return ReverseNode(_as_real_scalar("reverse-mode objective", value))
+    except ValueError as exc:
+        if "scalar" in str(exc):
+            raise ValueError("reverse-mode objective must return a scalar") from exc
+        raise
+
+
+def _reverse_topological_order(root: ReverseNode) -> tuple[ReverseNode, ...]:
+    """Return reverse-mode tape nodes in parent-before-child order."""
+
+    ordered: list[ReverseNode] = []
+    seen: set[int] = set()
+
+    def visit(node: ReverseNode) -> None:
+        node_id = id(node)
+        if node_id in seen:
+            return
+        seen.add(node_id)
+        for parent, _local_derivative in node.parents:
+            visit(parent)
+        ordered.append(node)
+
+    visit(root)
+    return tuple(ordered)
+
+
 def _as_complex_step_scalar(value: object) -> complex:
     """Return a scalar objective value that may carry a complex-step signal."""
 
@@ -2425,6 +2567,59 @@ def forward_mode_gradient(
     ).gradient
 
 
+def value_and_reverse_mode_grad(
+    objective: Callable[[tuple[ReverseNode, ...]], object],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> GradientResult:
+    """Evaluate a scalar objective and exact reverse-mode tape gradient."""
+
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    reverse_values = tuple(ReverseNode(float(value)) for value in parameter_values)
+    output = _as_reverse_mode_scalar(objective(reverse_values))
+    tape = _reverse_topological_order(output)
+    for node in tape:
+        node.adjoint = 0.0
+    output.adjoint = 1.0
+    for node in reversed(tape):
+        for parent, local_derivative in node.parents:
+            parent.adjoint += node.adjoint * local_derivative
+    gradient = np.array(
+        [
+            node.adjoint if parameter.trainable else 0.0
+            for node, parameter in zip(reverse_values, parameter_meta)
+        ],
+        dtype=np.float64,
+    )
+    return GradientResult(
+        value=output.primal,
+        gradient=gradient,
+        method="reverse_mode_tape",
+        shift=None,
+        coefficient=None,
+        evaluations=1,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
+def reverse_mode_gradient(
+    objective: Callable[[tuple[ReverseNode, ...]], object],
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> NDArray[np.float64]:
+    """Return an exact reverse-mode tape gradient for scalar objectives."""
+
+    return value_and_reverse_mode_grad(
+        objective,
+        values,
+        parameters=parameters,
+    ).gradient
+
+
 def value_and_grad(
     objective: Callable[[Any], Any],
     values: ArrayLike,
@@ -2463,9 +2658,15 @@ def value_and_grad(
             values,
             parameters=parameters,
         )
+    if method == "reverse_mode":
+        return value_and_reverse_mode_grad(
+            cast(Callable[[tuple[ReverseNode, ...]], object], objective),
+            values,
+            parameters=parameters,
+        )
     raise ValueError(
         "gradient method must be one of: parameter_shift, finite_difference, complex_step, "
-        "forward_mode"
+        "forward_mode, reverse_mode"
     )
 
 
@@ -3934,6 +4135,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "ReverseNode",
     "SparseMatrixResult",
     "StochasticGradientResult",
     "VJPResult",
@@ -3979,6 +4181,11 @@ __all__ = [
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "reverse_cos",
+    "reverse_exp",
+    "reverse_log",
+    "reverse_mode_gradient",
+    "reverse_sin",
     "soft_l1_residual_weights",
     "sparse_empirical_fisher_metric",
     "sparse_hessian",
@@ -3998,5 +4205,6 @@ __all__ = [
     "value_and_hessian",
     "value_and_jacobian",
     "value_and_parameter_shift_grad",
+    "value_and_reverse_mode_grad",
     "vector_jacobian_product",
 ]

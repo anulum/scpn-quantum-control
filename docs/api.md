@@ -388,6 +388,7 @@ from scpn_quantum_control import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    ReverseNode,
     SparseMatrixResult,
     StochasticGradientResult,
     VJPResult,
@@ -428,6 +429,11 @@ from scpn_quantum_control import (
     levenberg_marquardt_step,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    reverse_cos,
+    reverse_exp,
+    reverse_log,
+    reverse_mode_gradient,
+    reverse_sin,
     soft_l1_residual_weights,
     sparse_empirical_fisher_metric,
     sparse_hessian,
@@ -444,6 +450,7 @@ from scpn_quantum_control import (
     value_and_hessian,
     value_and_jacobian,
     value_and_parameter_shift_grad,
+    value_and_reverse_mode_grad,
     vector_jacobian_product,
 )
 
@@ -498,6 +505,7 @@ Available primitives:
 ```python
 ArmijoLineSearchResult(values, value, step_size, direction, directional_derivative, accepted, evaluations, value_history, reason, parameter_names, trainable)
 DualNumber(primal, tangent=0.0)
+ReverseNode(primal)
 Parameter(name: str, trainable: bool = True)
 ParameterBounds(lower=None, upper=None, periodic=False)
 ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
@@ -528,10 +536,16 @@ value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) ->
 parameter_shift_gradient_with_uncertainty(plus_values, minus_values, plus_variances, minus_variances, plus_shots, minus_shots=None, value=0.0, parameters=None, rule=None, confidence_level=0.95, confidence_z=1.959963984540054) -> StochasticGradientResult
 forward_mode_gradient(objective, values, parameters=None) -> np.ndarray
 value_and_forward_mode_grad(objective, values, parameters=None) -> GradientResult
+reverse_mode_gradient(objective, values, parameters=None) -> np.ndarray
+value_and_reverse_mode_grad(objective, values, parameters=None) -> GradientResult
 dual_sin(value) -> DualNumber
 dual_cos(value) -> DualNumber
 dual_exp(value) -> DualNumber
 dual_log(value) -> DualNumber
+reverse_sin(value) -> ReverseNode
+reverse_cos(value) -> ReverseNode
+reverse_exp(value) -> ReverseNode
+reverse_log(value) -> ReverseNode
 grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> np.ndarray
 value_and_grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
@@ -626,6 +640,11 @@ dual-number forward-mode automatic differentiation for scalar objectives written
 against the `DualNumber` arithmetic contract and supported elementary
 primitives. The canonical `grad(..., method="forward_mode")` dispatches through
 this exact tangent-propagation path instead of finite differences.
+`reverse_mode_gradient()` and `value_and_reverse_mode_grad()` provide
+dependency-free tape backpropagation for scalar objectives written against the
+`ReverseNode` arithmetic contract and supported elementary primitives. The
+canonical `grad(..., method="reverse_mode")` dispatches through this exact
+adjoint-propagation path and evaluates the objective once.
 `complex_step_gradient()` provides high-accuracy first derivatives for
 real-analytic scalar objectives that can safely propagate infinitesimal complex
 perturbations; the public parameter boundary remains real-valued, and objective

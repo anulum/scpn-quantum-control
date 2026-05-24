@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 357,
+    "public_api_exports": 364,
     "public_documentation_pages": 235,
-    "python_model_classes": 1468,
+    "python_model_classes": 1469,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -4984,6 +4984,10 @@
         "path": "src/scpn_quantum_control/stable_core.py"
       },
       {
+        "name": "ReverseNode",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "RigettiQCSHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_rigetti.py"
       },
@@ -7871,6 +7875,7 @@
     "RealtimeTickRecord",
     "ResolvedAggregatorProviderRoute",
     "Result",
+    "ReverseNode",
     "RigettiQCSHALAdapter",
     "SNNQuantumBridge",
     "SSGFQuantumLoop",
@@ -8035,6 +8040,11 @@
     "qutip_backend",
     "qutip_lindblad_baseline",
     "resolve_aggregator_provider_route",
+    "reverse_cos",
+    "reverse_exp",
+    "reverse_log",
+    "reverse_mode_gradient",
+    "reverse_sin",
     "rigetti_quil_workload",
     "run_biological_qec_batch_execution",
     "run_biological_qec_execution",
@@ -8096,6 +8106,7 @@
     "value_and_hessian",
     "value_and_jacobian",
     "value_and_parameter_shift_grad",
+    "value_and_reverse_mode_grad",
     "vector_jacobian_product",
     "verify_identity",
     "weighted_gradient_sum",
