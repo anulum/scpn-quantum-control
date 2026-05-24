@@ -940,6 +940,41 @@ def value_and_finite_difference_hessian(
     )
 
 
+def empirical_fisher_metric(
+    jacobian: JacobianResult | ArrayLike,
+    *,
+    weights: ArrayLike | None = None,
+    damping: float = 0.0,
+) -> NDArray[np.float64]:
+    """Return ``J.T @ W @ J + damping * I`` for differentiable residual maps."""
+
+    jacobian_arr = (
+        jacobian.jacobian
+        if isinstance(jacobian, JacobianResult)
+        else _as_real_numeric_array("jacobian", jacobian)
+    )
+    if jacobian_arr.ndim != 2:
+        raise ValueError("jacobian must be a two-dimensional array")
+    if not np.all(np.isfinite(jacobian_arr)):
+        raise ValueError("jacobian must contain only finite values")
+    if weights is None:
+        weighted = jacobian_arr
+    else:
+        weight_arr = _as_real_numeric_array("weights", weights)
+        if weight_arr.ndim != 1 or weight_arr.shape[0] != jacobian_arr.shape[0]:
+            raise ValueError("weights must be a one-dimensional array matching jacobian rows")
+        if not np.all(np.isfinite(weight_arr)) or np.any(weight_arr < 0.0):
+            raise ValueError("weights must contain only finite non-negative values")
+        weighted = jacobian_arr * weight_arr[:, None]
+    damping_value = _as_real_scalar("fisher damping", damping)
+    if damping_value < 0.0:
+        raise ValueError("fisher damping must be finite and non-negative")
+    metric = jacobian_arr.T @ weighted
+    if damping_value > 0.0:
+        metric = metric + damping_value * np.eye(metric.shape[0], dtype=np.float64)
+    return cast(NDArray[np.float64], metric)
+
+
 def natural_gradient(
     gradient_result: GradientResult,
     metric: ArrayLike,
@@ -1094,6 +1129,7 @@ __all__ = [
     "batch_value_and_finite_difference_grad",
     "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
+    "empirical_fisher_metric",
     "finite_difference_gradient",
     "finite_difference_hessian",
     "finite_difference_jacobian",

@@ -445,6 +445,7 @@ finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
 finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
+empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
@@ -493,6 +494,9 @@ non-trainable parameters produce zero Hessian rows and columns.
 `natural_gradient()` solves a symmetric positive-definite metric system on the
 trainable parameter subspace, with optional non-negative damping and condition
 number guarding for Fisher/Fubini-Study style preconditioners.
+`empirical_fisher_metric()` builds a validated weighted ``J.T @ W @ J`` metric
+from `JacobianResult` or raw Jacobian arrays, with optional non-negative damping
+for natural-gradient preconditioning.
 
 PennyLane VQE bridge:
 

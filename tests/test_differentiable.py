@@ -29,6 +29,7 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_finite_difference_grad,
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
+    empirical_fisher_metric,
     finite_difference_gradient,
     finite_difference_hessian,
     finite_difference_jacobian,
@@ -330,6 +331,33 @@ def test_natural_gradient_solves_trainable_metric_system() -> None:
     assert isinstance(result, NaturalGradientResult)
     np.testing.assert_allclose(result.natural_gradient, [1.0, 1.0, 0.0])
     assert result.condition_number == pytest.approx(2.0)
+
+
+def test_empirical_fisher_metric_from_jacobian_result() -> None:
+    """Fisher/Gauss-Newton metrics should be constructible from Jacobians."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], 2.0 * values[1]]),
+        [1.0, 2.0],
+    )
+    metric = empirical_fisher_metric(
+        jacobian_result,
+        weights=np.array([1.0, 0.5]),
+        damping=0.25,
+    )
+
+    np.testing.assert_allclose(metric, [[1.25, 0.0], [0.0, 2.25]], atol=1.0e-6)
+
+
+def test_empirical_fisher_metric_rejects_invalid_weights() -> None:
+    """Fisher metric weights must match residual rows and stay non-negative."""
+
+    with pytest.raises(ValueError, match="weights"):
+        empirical_fisher_metric(np.eye(2), weights=np.array([1.0]))
+    with pytest.raises(ValueError, match="non-negative"):
+        empirical_fisher_metric(np.eye(2), weights=np.array([1.0, -1.0]))
+    with pytest.raises(ValueError, match="fisher damping"):
+        empirical_fisher_metric(np.eye(2), damping=-1.0)
 
 
 def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
@@ -827,6 +855,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.JacobianResult is JacobianResult
     assert scpn.NaturalGradientResult is NaturalGradientResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
+    assert scpn.empirical_fisher_metric is empirical_fisher_metric
     assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.natural_gradient is natural_gradient
