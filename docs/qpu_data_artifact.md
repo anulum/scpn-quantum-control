@@ -94,7 +94,9 @@ Numerical arrays, layer assignments, metadata, and hash maps are
 defensive-copied and marked read-only after validation, so callers cannot
 mutate a validated artifact in-place and silently invalidate its hashes.
 Metadata is frozen recursively; serialisation thaws immutable containers back to
-JSON-native dictionaries and lists.
+JSON-native dictionaries and lists. Metadata must use string keys and
+JSON-compatible scalar/list/object values; non-finite floats and opaque Python
+objects are rejected before artifact hashing.
 
 ## Matrix invariants
 
@@ -189,6 +191,7 @@ The tests cover:
 - defensive-copy/read-only layer-assignment immutability
 - defensive-copy/read-only metadata and hash-map immutability
 - recursive metadata freezing with JSON-native serialisation
+- metadata rejection for non-string keys, non-finite floats, and opaque values
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly

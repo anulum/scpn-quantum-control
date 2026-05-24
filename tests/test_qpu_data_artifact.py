@@ -333,3 +333,48 @@ def test_layer_assignments_are_defensive_copies_and_read_only():
     with pytest.raises(AttributeError):
         artifact.layer_assignments.append("blocked")
     assert artifact.to_dict()["layer_assignments"] == ["cortex", "thalamus", "brainstem"]
+
+
+def test_metadata_rejects_non_string_keys():
+    with pytest.raises(ValueError, match="metadata keys must be strings"):
+        artifact_from_arrays(
+            domain="connectome",
+            source_name="metadata-key-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            metadata={1: "not-a-json-object-key"},
+        )
+
+
+def test_metadata_rejects_non_finite_floats():
+    with pytest.raises(ValueError, match="metadata floats must be finite"):
+        artifact_from_arrays(
+            domain="connectome",
+            source_name="metadata-float-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            metadata={"calibration_gain": float("nan")},
+        )
+
+
+def test_metadata_rejects_non_json_values():
+    with pytest.raises(ValueError, match="metadata values must be JSON-compatible"):
+        artifact_from_arrays(
+            domain="connectome",
+            source_name="metadata-value-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            metadata={"opaque": object()},
+        )

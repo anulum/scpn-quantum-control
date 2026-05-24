@@ -39,12 +39,23 @@ def _json_sha256(payload: Mapping[str, Any]) -> str:
 
 def _freeze_json_value(value: Any) -> Any:
     if isinstance(value, Mapping):
-        return MappingProxyType(
-            {str(key): _freeze_json_value(item) for key, item in value.items()}
-        )
+        frozen: dict[str, Any] = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise ValueError("metadata keys must be strings")
+            frozen[key] = _freeze_json_value(item)
+        return MappingProxyType(frozen)
     if isinstance(value, list | tuple):
         return tuple(_freeze_json_value(item) for item in value)
-    return value
+    if isinstance(value, bool | str) or value is None:
+        return value
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        if not np.isfinite(value):
+            raise ValueError("metadata floats must be finite")
+        return value
+    raise ValueError("metadata values must be JSON-compatible")
 
 
 def _thaw_json_value(value: Any) -> Any:
