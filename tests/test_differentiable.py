@@ -20,6 +20,7 @@ from scpn_quantum_control.differentiable import (
     GradientResult,
     HessianResult,
     JacobianResult,
+    LevenbergMarquardtDampingUpdate,
     LevenbergMarquardtStep,
     LevenbergMarquardtTrial,
     NaturalGradientResult,
@@ -43,6 +44,7 @@ from scpn_quantum_control.differentiable import (
     levenberg_marquardt_step,
     natural_gradient,
     parameter_shift_gradient,
+    update_levenberg_marquardt_damping,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
@@ -612,6 +614,124 @@ def test_evaluate_levenberg_marquardt_step_rejects_invalid_controls() -> None:
         )
 
 
+def test_update_levenberg_marquardt_damping_decreases_high_quality_acceptance() -> None:
+    """High-quality accepted LM trials should reduce damping toward Gauss-Newton."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] - 1.0])
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        objective,
+        [3.0],
+        parameters=[Parameter("x")],
+    )
+    step_result = levenberg_marquardt_step(jacobian_result, [3.0], damping=0.9)
+    trial = evaluate_levenberg_marquardt_step(objective, step_result)
+    update = update_levenberg_marquardt_damping(
+        trial,
+        decrease_factor=0.5,
+        high_quality_ratio=0.5,
+    )
+
+    assert isinstance(update, LevenbergMarquardtDampingUpdate)
+    assert update.action == "accept_decrease"
+    assert update.next_damping == pytest.approx(0.45)
+
+
+def test_update_levenberg_marquardt_damping_keeps_marginal_acceptance() -> None:
+    """Accepted but marginal LM trials should keep damping unchanged."""
+
+    step_result = LevenbergMarquardtStep(
+        gauss_newton=gauss_newton_gradient(
+            value_and_finite_difference_jacobian(lambda values: np.array([values[0]]), [1.0]),
+            damping=1.0,
+        ),
+        step=np.array([-0.25]),
+        candidate_values=np.array([0.75]),
+        damping=1.0,
+        predicted_reduction=1.0,
+    )
+    trial = LevenbergMarquardtTrial(
+        step_result=step_result,
+        candidate_residual=np.array([0.75]),
+        candidate_value=0.25,
+        actual_reduction=0.25,
+        reduction_ratio=0.25,
+        accepted=True,
+    )
+    update = update_levenberg_marquardt_damping(trial, high_quality_ratio=0.75)
+
+    assert update.action == "accept_keep"
+    assert update.next_damping == pytest.approx(1.0)
+
+
+def test_update_levenberg_marquardt_damping_increases_rejected_trial() -> None:
+    """Rejected LM trials should increase damping for a smaller retry step."""
+
+    step_result = LevenbergMarquardtStep(
+        gauss_newton=gauss_newton_gradient(
+            value_and_finite_difference_jacobian(lambda values: np.array([values[0]]), [1.0]),
+            damping=0.5,
+        ),
+        step=np.array([1.0]),
+        candidate_values=np.array([2.0]),
+        damping=0.5,
+        predicted_reduction=0.25,
+    )
+    trial = LevenbergMarquardtTrial(
+        step_result=step_result,
+        candidate_residual=np.array([2.0]),
+        candidate_value=2.0,
+        actual_reduction=-1.5,
+        reduction_ratio=-6.0,
+        accepted=False,
+    )
+    update = update_levenberg_marquardt_damping(
+        trial,
+        increase_factor=4.0,
+        max_damping=1.5,
+    )
+
+    assert update.action == "reject_increase"
+    assert update.next_damping == pytest.approx(1.5)
+
+
+def test_update_levenberg_marquardt_damping_rejects_invalid_policy() -> None:
+    """Damping policy factors and bounds must fail closed."""
+
+    step_result = LevenbergMarquardtStep(
+        gauss_newton=gauss_newton_gradient(
+            value_and_finite_difference_jacobian(lambda values: np.array([values[0]]), [1.0]),
+            damping=0.5,
+        ),
+        step=np.array([-0.5]),
+        candidate_values=np.array([0.5]),
+        damping=0.5,
+        predicted_reduction=0.25,
+    )
+    trial = LevenbergMarquardtTrial(
+        step_result=step_result,
+        candidate_residual=np.array([0.5]),
+        candidate_value=0.125,
+        actual_reduction=0.375,
+        reduction_ratio=1.5,
+        accepted=True,
+    )
+
+    with pytest.raises(ValueError, match="LevenbergMarquardtTrial"):
+        update_levenberg_marquardt_damping(step_result)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="decrease_factor"):
+        update_levenberg_marquardt_damping(trial, decrease_factor=1.0)
+    with pytest.raises(ValueError, match="increase_factor"):
+        update_levenberg_marquardt_damping(trial, increase_factor=1.0)
+    with pytest.raises(ValueError, match="min_damping"):
+        update_levenberg_marquardt_damping(trial, min_damping=-1.0)
+    with pytest.raises(ValueError, match="max_damping"):
+        update_levenberg_marquardt_damping(trial, min_damping=2.0, max_damping=1.0)
+    with pytest.raises(ValueError, match="high_quality_ratio"):
+        update_levenberg_marquardt_damping(trial, high_quality_ratio=-1.0)
+
+
 def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
     """Damping should make semidefinite trainable metrics solvable."""
 
@@ -1106,6 +1226,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.HessianResult is HessianResult
     assert scpn.JacobianResult is JacobianResult
+    assert scpn.LevenbergMarquardtDampingUpdate is LevenbergMarquardtDampingUpdate
     assert scpn.LevenbergMarquardtStep is LevenbergMarquardtStep
     assert scpn.LevenbergMarquardtTrial is LevenbergMarquardtTrial
     assert scpn.NaturalGradientResult is NaturalGradientResult
@@ -1117,6 +1238,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
     assert scpn.levenberg_marquardt_step is levenberg_marquardt_step
     assert scpn.natural_gradient is natural_gradient
+    assert scpn.update_levenberg_marquardt_damping is update_levenberg_marquardt_damping
     assert scpn.weighted_gradient_sum is weighted_gradient_sum
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad

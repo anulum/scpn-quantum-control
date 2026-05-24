@@ -438,6 +438,26 @@ class LevenbergMarquardtTrial:
 
 
 @dataclass(frozen=True)
+class LevenbergMarquardtDampingUpdate:
+    """Deterministic damping update for Levenberg-Marquardt trust regions."""
+
+    trial: LevenbergMarquardtTrial
+    next_damping: float
+    action: str
+
+    def __post_init__(self) -> None:
+        next_damping = _as_real_scalar(
+            "Levenberg-Marquardt next_damping",
+            self.next_damping,
+        )
+        if next_damping < 0.0:
+            raise ValueError("next_damping must be finite and non-negative")
+        if self.action not in {"accept_decrease", "accept_keep", "reject_increase"}:
+            raise ValueError("damping action must be a known Levenberg-Marquardt action")
+        object.__setattr__(self, "next_damping", next_damping)
+
+
+@dataclass(frozen=True)
 class WeightedGradientResult:
     """Weighted scalarisation of multiple scalar gradient results."""
 
@@ -1285,6 +1305,58 @@ def evaluate_levenberg_marquardt_step(
     )
 
 
+def update_levenberg_marquardt_damping(
+    trial: LevenbergMarquardtTrial,
+    *,
+    decrease_factor: float = 1.0 / 3.0,
+    increase_factor: float = 2.0,
+    min_damping: float = 1.0e-12,
+    max_damping: float = 1.0e12,
+    high_quality_ratio: float = 0.75,
+) -> LevenbergMarquardtDampingUpdate:
+    """Return a bounded trust-region damping update for an LM trial."""
+
+    if not isinstance(trial, LevenbergMarquardtTrial):
+        raise ValueError("damping update requires a LevenbergMarquardtTrial")
+    decrease = _as_real_scalar("Levenberg-Marquardt decrease_factor", decrease_factor)
+    increase = _as_real_scalar("Levenberg-Marquardt increase_factor", increase_factor)
+    min_value = _as_real_scalar("Levenberg-Marquardt min_damping", min_damping)
+    max_value = _as_real_scalar("Levenberg-Marquardt max_damping", max_damping)
+    high_quality = _as_real_scalar(
+        "Levenberg-Marquardt high_quality_ratio",
+        high_quality_ratio,
+    )
+    if not 0.0 < decrease < 1.0:
+        raise ValueError("decrease_factor must be finite and between 0 and 1")
+    if increase <= 1.0:
+        raise ValueError("increase_factor must be finite and greater than 1")
+    if min_value < 0.0:
+        raise ValueError("min_damping must be finite and non-negative")
+    if max_value < min_value:
+        raise ValueError("max_damping must be greater than or equal to min_damping")
+    if high_quality < 0.0:
+        raise ValueError("high_quality_ratio must be finite and non-negative")
+
+    current = trial.step_result.damping
+    if not trial.accepted:
+        return LevenbergMarquardtDampingUpdate(
+            trial=trial,
+            next_damping=min(max_value, max(min_value, current * increase)),
+            action="reject_increase",
+        )
+    if trial.reduction_ratio >= high_quality:
+        return LevenbergMarquardtDampingUpdate(
+            trial=trial,
+            next_damping=min(max_value, max(min_value, current * decrease)),
+            action="accept_decrease",
+        )
+    return LevenbergMarquardtDampingUpdate(
+        trial=trial,
+        next_damping=min(max_value, max(min_value, current)),
+        action="accept_keep",
+    )
+
+
 def natural_gradient(
     gradient_result: GradientResult,
     metric: ArrayLike,
@@ -1430,6 +1502,7 @@ __all__ = [
     "GradientResult",
     "HessianResult",
     "JacobianResult",
+    "LevenbergMarquardtDampingUpdate",
     "LevenbergMarquardtStep",
     "LevenbergMarquardtTrial",
     "NaturalGradientResult",
@@ -1452,6 +1525,7 @@ __all__ = [
     "jax_value_and_grad",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",
     "parameter_shift_gradient",
     "value_and_finite_difference_grad",

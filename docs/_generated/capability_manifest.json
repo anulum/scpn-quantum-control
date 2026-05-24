@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 301,
+    "public_api_exports": 303,
     "public_documentation_pages": 235,
-    "python_model_classes": 1453,
+    "python_model_classes": 1454,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -3270,6 +3270,10 @@
       {
         "name": "LayerStateArtifact",
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
+      },
+      {
+        "name": "LevenbergMarquardtDampingUpdate",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "LevenbergMarquardtStep",
@@ -7735,6 +7739,7 @@
     "KuramotoVariant",
     "KuramotoVariantResult",
     "LayerStateArtifact",
+    "LevenbergMarquardtDampingUpdate",
     "LevenbergMarquardtStep",
     "LevenbergMarquardtTrial",
     "LindbladSyncEngine",
@@ -7976,6 +7981,7 @@
     "tcbo",
     "transpile_for_trapped_ion",
     "trapped_ion_noise_model",
+    "update_levenberg_marquardt_damping",
     "validate_kuramoto_inputs",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",

@@ -370,6 +370,7 @@ from scpn_quantum_control import (
     GradientCheckResult,
     HessianResult,
     JacobianResult,
+    LevenbergMarquardtDampingUpdate,
     LevenbergMarquardtStep,
     LevenbergMarquardtTrial,
     OptimizationResult,
@@ -385,6 +386,7 @@ from scpn_quantum_control import (
     gauss_newton_gradient,
     levenberg_marquardt_step,
     parameter_shift_gradient,
+    update_levenberg_marquardt_damping,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
@@ -439,6 +441,7 @@ GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, 
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
+LevenbergMarquardtDampingUpdate(trial, next_damping, action)
 LevenbergMarquardtStep(gauss_newton, step, candidate_values, damping, predicted_reduction)
 LevenbergMarquardtTrial(step_result, candidate_residual, candidate_value, actual_reduction, reduction_ratio, accepted)
 WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
@@ -457,6 +460,7 @@ empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
 evaluate_levenberg_marquardt_step(objective, step_result, weights=None, acceptance_threshold=1e-4) -> LevenbergMarquardtTrial
 gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 levenberg_marquardt_step(jacobian, values, weights=None, damping=1e-3, bounds=None, max_step_norm=None, rcond=1e-12) -> LevenbergMarquardtStep
+update_levenberg_marquardt_damping(trial, decrease_factor=1/3, increase_factor=2.0, min_damping=1e-12, max_damping=1e12, high_quality_ratio=0.75) -> LevenbergMarquardtDampingUpdate
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
@@ -519,6 +523,9 @@ limiting, and predicted quadratic-model reduction for accept/reject policies.
 `evaluate_levenberg_marquardt_step()` evaluates the candidate residual map,
 computes actual weighted residual reduction, and reports the actual/predicted
 reduction ratio used by Levenberg-Marquardt trust-region damping policies.
+`update_levenberg_marquardt_damping()` converts an LM trial into a bounded
+deterministic damping decision: high-quality accepted steps reduce damping,
+marginal accepted steps keep it, and rejected steps increase damping for retry.
 `weighted_gradient_sum()` combines compatible `GradientResult` components into a
 single scalarised multi-objective gradient while preserving component
 provenance, weights, evaluation counts, trainable masks, and parameter names.
