@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 277,
+    "public_api_exports": 299,
     "public_documentation_pages": 235,
-    "python_model_classes": 1444,
+    "python_model_classes": 1452,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -2552,6 +2552,10 @@
         "path": "src/scpn_quantum_control/paper0/gaian_safety_validation.py"
       },
       {
+        "name": "GradientCheckResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "GradientResult",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -2638,6 +2642,10 @@
       {
         "name": "HeatDissipationRate",
         "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
+      },
+      {
+        "name": "HessianResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "HigherOrderKuramotoSpec",
@@ -3120,6 +3128,10 @@
         "path": "src/scpn_quantum_control/paper0/ix_the_participatory_universe_observation_as_construction_validation.py"
       },
       {
+        "name": "JacobianResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "JobResult",
         "path": "src/scpn_quantum_control/hardware/runner.py"
       },
@@ -3258,6 +3270,10 @@
       {
         "name": "LayerStateArtifact",
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
+      },
+      {
+        "name": "LevenbergMarquardtStep",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "LindbladKuramotoSolver",
@@ -3744,6 +3760,10 @@
         "path": "src/scpn_quantum_control/paper0/upde_natural_gradient_validation.py"
       },
       {
+        "name": "NaturalGradientResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "NaturalGradientValidationResult",
         "path": "src/scpn_quantum_control/paper0/upde_natural_gradient_validation.py"
       },
@@ -3898,6 +3918,10 @@
       {
         "name": "OperatorIndexEntry",
         "path": "src/scpn_quantum_control/paper0/hamiltonian_index_validation.py"
+      },
+      {
+        "name": "OptimizationResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "OrchestratorFeedback",
@@ -4077,6 +4101,10 @@
       },
       {
         "name": "Parameter",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ParameterBounds",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -6744,6 +6772,10 @@
         "path": "src/scpn_quantum_control/paper0/anomalous_boundary_validation.py"
       },
       {
+        "name": "WeightedGradientResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "WilsonLoopResult",
         "path": "src/scpn_quantum_control/gauge/wilson_loop.py"
       },
@@ -7682,20 +7714,24 @@
     "FaultTolerantUPDE",
     "ForecastModelRun",
     "GUESSResult",
+    "GradientCheckResult",
     "GradientResult",
     "HardwareAbstractionLayer",
     "HardwareRunner",
     "HardwareTopologicalOptimizer",
+    "HessianResult",
     "HigherOrderKuramotoSpec",
     "IQMHALAdapter",
     "ITERFeatureSpec",
     "IdentityAttractor",
     "IonQCloudHALAdapter",
+    "JacobianResult",
     "JobResult",
     "KuramotoProblem",
     "KuramotoVariant",
     "KuramotoVariantResult",
     "LayerStateArtifact",
+    "LevenbergMarquardtStep",
     "LindbladSyncEngine",
     "LocalDeterministicSimulator",
     "LockSignatureArtifact",
@@ -7705,13 +7741,16 @@
     "MonitoredKuramotoSpec",
     "MonotonicRealtimeClock",
     "MultiscaleQECResult",
+    "NaturalGradientResult",
     "NeuromorphicStepResult",
     "OMEGA_N_16",
     "OQCHALAdapter",
     "ORCHESTRATOR_MAPPING",
+    "OptimizationResult",
     "PECResult",
     "PTSymmetricKuramotoSpec",
     "Parameter",
+    "ParameterBounds",
     "ParameterShiftRule",
     "PasqalPulserHALAdapter",
     "PennyLaneDeviceHALAdapter",
@@ -7773,6 +7812,7 @@
     "UPDEPhaseArtifact",
     "VQLS_GradShafranov",
     "VirtualRealtimeClock",
+    "WeightedGradientResult",
     "ZNEResult",
     "aggregator_provider_optional_dependency_matrix",
     "aggregator_provider_routes_for",
@@ -7784,6 +7824,8 @@
     "azure_openqasm3_to_workload",
     "backend_capability_matrix",
     "batch_parameter_shift_gradient",
+    "batch_value_and_finite_difference_grad",
+    "batch_value_and_parameter_shift_grad",
     "bloqade_ahs_workload",
     "braket_circuit_to_workload",
     "build_backend",
@@ -7802,6 +7844,7 @@
     "build_triadic_ring_terms",
     "built_in_aggregator_provider_routes",
     "built_in_backend_profiles",
+    "check_parameter_shift_consistency",
     "chsh_from_statevector",
     "cirq_circuit_workload",
     "classical_benchmark",
@@ -7818,16 +7861,21 @@
     "dynq_initial_layout",
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
+    "empirical_fisher_metric",
     "enforce_realtime_sla",
     "estimate_crossover",
     "evaluate_realtime_sla",
     "fast_sparse_evolution",
     "fep",
     "fidelity_at_depth",
+    "finite_difference_gradient",
+    "finite_difference_hessian",
+    "finite_difference_jacobian",
     "forecasting",
     "from_fusion_core_shot",
     "gate_fold_circuit",
     "gauge",
+    "gauss_newton_gradient",
     "generate_cloud_manifests",
     "generate_synthetic_iter_data",
     "guess_extrapolate",
@@ -7841,10 +7889,12 @@
     "knm_to_hamiltonian",
     "l16",
     "learn_symmetry_decay",
+    "levenberg_marquardt_step",
     "load_hardware_kuramoto_4osc_trace",
     "load_ieee5bus_sync_forecast_case",
     "measure_order_parameter",
     "mps_tebd_baseline",
+    "natural_gradient",
     "normalize_iter_features",
     "oqc_openqasm3_workload",
     "orchestrator_to_quantum_phases",
@@ -7921,8 +7971,12 @@
     "transpile_for_trapped_ion",
     "trapped_ion_noise_model",
     "validate_kuramoto_inputs",
+    "value_and_finite_difference_grad",
+    "value_and_finite_difference_hessian",
+    "value_and_finite_difference_jacobian",
     "value_and_parameter_shift_grad",
     "verify_identity",
+    "weighted_gradient_sum",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
   ],
