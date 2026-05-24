@@ -53,11 +53,12 @@ def _verify_or_set_array_hash(
 
 
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
-    array = np.asarray(value, dtype=np.float64)
+    array = np.array(value, dtype=np.float64, copy=True)
     if array.ndim != ndim:
         raise ValueError(f"{name} must be {ndim}-D, got shape {array.shape}")
     if not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must contain only finite values")
+    array.setflags(write=False)
     return array
 
 

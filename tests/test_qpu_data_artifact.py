@@ -220,3 +220,34 @@ def test_loader_rejects_stale_artifact_hash_after_metadata_tamper():
 
     with pytest.raises(ValueError, match="artifact_sha256"):
         QPUDataArtifact.from_dict(payload)
+
+
+def test_artifact_arrays_are_defensive_copies_and_read_only():
+    K_nm = _valid_knm(3)
+    omega = np.array([0.1, 0.2, 0.3], dtype=np.float64)
+    theta0 = np.array([0.0, 0.1, 0.2], dtype=np.float64)
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="immutability-check",
+        source_mode="recorded",
+        K_nm=K_nm,
+        omega=omega,
+        theta0=theta0,
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+    )
+
+    K_nm[0, 1] = 0.9
+    omega[0] = 99.0
+    theta0[0] = 99.0
+
+    assert artifact.K_nm[0, 1] == pytest.approx(0.2)
+    assert artifact.omega[0] == pytest.approx(0.1)
+    assert artifact.theta0 is not None
+    assert artifact.theta0[0] == pytest.approx(0.0)
+    assert artifact.K_nm.flags.writeable is False
+    assert artifact.omega.flags.writeable is False
+    assert artifact.theta0.flags.writeable is False
+    with pytest.raises(ValueError, match="read-only"):
+        artifact.K_nm[0, 1] = 0.7

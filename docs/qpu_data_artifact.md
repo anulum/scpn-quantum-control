@@ -90,6 +90,10 @@ corresponding digest and rejects stale values before the artifact can be
 compiled into a circuit. Omitted array digests are filled deterministically for
 new in-memory artifacts.
 
+Numerical arrays are defensive-copied and marked read-only after validation, so
+callers cannot mutate a validated artifact in-place and silently invalidate its
+hashes.
+
 ## Matrix invariants
 
 Current Kuramoto-XY circuits require:
@@ -179,6 +183,7 @@ The tests cover:
 - shape and metadata rejection
 - SC-NeuroCore datastream adaptation
 - schema-version rejection
+- defensive-copy/read-only array immutability
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly
