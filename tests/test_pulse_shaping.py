@@ -59,15 +59,15 @@ class TestEmptyNull:
 
 class TestErrorHandling:
     def test_ici_negative_duration(self) -> None:
-        with pytest.raises(ValueError, match="t_total must be positive"):
+        with pytest.raises(ValueError, match="t_total must be finite and positive"):
             build_ici_pulse(t_total=-1.0, omega_0=10.0, gamma_decay=0.1)
 
     def test_ici_zero_omega(self) -> None:
-        with pytest.raises(ValueError, match="omega_0 must be positive"):
+        with pytest.raises(ValueError, match="omega_0 must be finite and positive"):
             build_ici_pulse(t_total=1.0, omega_0=0.0, gamma_decay=0.1)
 
     def test_ici_negative_gamma(self) -> None:
-        with pytest.raises(ValueError, match="gamma_decay must be non-negative"):
+        with pytest.raises(ValueError, match="gamma_decay must be finite and non-negative"):
             build_ici_pulse(t_total=1.0, omega_0=10.0, gamma_decay=-0.1)
 
     def test_ici_bad_theta_jump(self) -> None:
@@ -79,12 +79,44 @@ class TestErrorHandling:
             build_hypergeometric_pulse(t_total=1.0, omega_0=10.0, alpha=-0.5, beta=0.5)
 
     def test_hypergeometric_zero_gamma(self) -> None:
-        with pytest.raises(ValueError, match="gamma_width must be positive"):
+        with pytest.raises(ValueError, match="gamma_width must be finite and positive"):
             hypergeometric_envelope(np.array([0.0]), alpha=0.5, beta=0.5, gamma_width=0.0)
 
     def test_hypergeometric_negative_duration(self) -> None:
-        with pytest.raises(ValueError, match="t_total must be positive"):
+        with pytest.raises(ValueError, match="t_total must be finite and positive"):
             build_hypergeometric_pulse(t_total=0.0, omega_0=10.0)
+
+    @pytest.mark.parametrize(
+        ("kwargs", "match"),
+        [
+            ({"t_total": np.inf}, "t_total must be finite and positive"),
+            ({"omega_0": np.nan}, "omega_0 must be finite and positive"),
+            ({"gamma_decay": np.nan}, "gamma_decay must be finite and non-negative"),
+            ({"n_points": 1}, "n_points must be at least 2"),
+        ],
+    )
+    def test_ici_rejects_nonphysical_grid_and_rate_parameters(self, kwargs, match) -> None:
+        params = {"t_total": 1.0, "omega_0": 10.0, "gamma_decay": 0.1}
+        params.update(kwargs)
+        with pytest.raises(ValueError, match=match):
+            build_ici_pulse(**params)
+
+    @pytest.mark.parametrize(
+        ("kwargs", "match"),
+        [
+            ({"t_total": np.inf}, "t_total must be finite and positive"),
+            ({"omega_0": np.nan}, "omega_0 must be finite and positive"),
+            ({"gamma_width": np.nan}, "gamma_width must be finite and positive"),
+            ({"n_points": 1}, "n_points must be at least 2"),
+        ],
+    )
+    def test_hypergeometric_rejects_nonphysical_grid_and_rate_parameters(
+        self, kwargs, match
+    ) -> None:
+        params = {"t_total": 1.0, "omega_0": 10.0}
+        params.update(kwargs)
+        with pytest.raises(ValueError, match=match):
+            build_hypergeometric_pulse(**params)
 
 
 # ===== 3. Negative Cases =====

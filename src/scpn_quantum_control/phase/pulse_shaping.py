@@ -36,6 +36,14 @@ _envelope_rust = getattr(_engine, "hypergeometric_envelope_batch", None)
 _ici_mixing_rust = getattr(_engine, "ici_mixing_angle_batch", None)
 _ici_evol_rust = getattr(_engine, "ici_three_level_evolution_batch", None)
 
+
+def _validate_grid_points(n_points: int) -> None:
+    if isinstance(n_points, bool) or not isinstance(n_points, int):
+        raise ValueError("n_points must be an integer")
+    if n_points < 2:
+        raise ValueError("n_points must be at least 2")
+
+
 # ============================================================
 # Data structures
 # ============================================================
@@ -150,12 +158,13 @@ def build_ici_pulse(
         n_points: time grid resolution
         theta_jump: ICI jump angle (0 → π/4 range)
     """
-    if t_total <= 0:
-        raise ValueError("t_total must be positive")
-    if omega_0 <= 0:
-        raise ValueError("omega_0 must be positive")
-    if gamma_decay < 0:
-        raise ValueError("gamma_decay must be non-negative")
+    if not np.isfinite(t_total) or t_total <= 0:
+        raise ValueError("t_total must be finite and positive")
+    if not np.isfinite(omega_0) or omega_0 <= 0:
+        raise ValueError("omega_0 must be finite and positive")
+    if not np.isfinite(gamma_decay) or gamma_decay < 0:
+        raise ValueError("gamma_decay must be finite and non-negative")
+    _validate_grid_points(n_points)
     if not 0 < theta_jump < np.pi / 4:
         raise ValueError(f"theta_jump must be in (0, π/4), got {theta_jump}")
 
@@ -284,8 +293,10 @@ def hypergeometric_envelope(
         beta: second hypergeometric parameter
         gamma_width: pulse width parameter γ (MHz)
     """
-    if gamma_width <= 0:
-        raise ValueError("gamma_width must be positive")
+    if not np.all(np.isfinite(t)):
+        raise ValueError("t must contain only finite values")
+    if not np.isfinite(gamma_width) or gamma_width <= 0:
+        raise ValueError("gamma_width must be finite and positive")
     if alpha < 0 or beta < 0:
         raise ValueError(f"alpha, beta must be >= 0, got ({alpha}, {beta})")
 
@@ -324,13 +335,16 @@ def build_hypergeometric_pulse(
         gamma_width: pulse width (default: 3/t_total for ~3σ coverage)
         n_points: time grid resolution
     """
-    if t_total <= 0:
-        raise ValueError("t_total must be positive")
-    if omega_0 <= 0:
-        raise ValueError("omega_0 must be positive")
+    if not np.isfinite(t_total) or t_total <= 0:
+        raise ValueError("t_total must be finite and positive")
+    if not np.isfinite(omega_0) or omega_0 <= 0:
+        raise ValueError("omega_0 must be finite and positive")
+    _validate_grid_points(n_points)
 
     if gamma_width is None:
         gamma_width = 6.0 / t_total  # ≈3σ on each side
+    elif not np.isfinite(gamma_width) or gamma_width <= 0:
+        raise ValueError("gamma_width must be finite and positive")
 
     times = np.linspace(-t_total / 2, t_total / 2, n_points)
     envelope = hypergeometric_envelope(times, alpha, beta, gamma_width)
