@@ -20,6 +20,7 @@ from scpn_quantum_control.differentiable import (
     GradientResult,
     HessianResult,
     JacobianResult,
+    JVPResult,
     LeastSquaresCovarianceResult,
     LevenbergMarquardtDampingUpdate,
     LevenbergMarquardtOptimizer,
@@ -31,6 +32,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    VJPResult,
     WeightedGradientResult,
     batch_parameter_shift_gradient,
     batch_value_and_finite_difference_grad,
@@ -41,6 +43,8 @@ from scpn_quantum_control.differentiable import (
     finite_difference_gradient,
     finite_difference_hessian,
     finite_difference_jacobian,
+    finite_difference_jvp,
+    finite_difference_vjp,
     gauss_newton_gradient,
     huber_residual_weights,
     is_jax_autodiff_available,
@@ -54,7 +58,9 @@ from scpn_quantum_control.differentiable import (
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
+    value_and_finite_difference_jvp,
     value_and_parameter_shift_grad,
+    vector_jacobian_product,
     weighted_gradient_sum,
 )
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
@@ -329,6 +335,105 @@ def test_finite_difference_jacobian_rejects_non_vector_output() -> None:
         value_and_finite_difference_jacobian(lambda _values: np.array([[1.0]]), [0.0])
     with pytest.raises(ValueError, match="real numeric"):
         value_and_finite_difference_jacobian(lambda _values: np.array(["1.0"]), [0.0])
+
+
+def test_finite_difference_jvp_matches_jacobian_directional_product() -> None:
+    """Directional finite differences should expose native forward-mode JVPs."""
+
+    def objective(values: np.ndarray) -> np.ndarray:
+        return np.array([values[0] ** 2 + values[1], values[0] * values[1]])
+
+    result = value_and_finite_difference_jvp(
+        objective,
+        [2.0, 3.0],
+        [0.5, -1.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+
+    assert isinstance(result, JVPResult)
+    assert result.method == "finite_difference_directional"
+    assert result.evaluations == 3
+    np.testing.assert_allclose(result.value, [7.0, 6.0])
+    np.testing.assert_allclose(result.tangent, [0.5, -1.0])
+    np.testing.assert_allclose(result.jvp, [1.0, -0.5], atol=1.0e-6)
+    np.testing.assert_allclose(
+        finite_difference_jvp(objective, [2.0, 3.0], [0.5, -1.0]), [1.0, -0.5], atol=1.0e-6
+    )
+
+
+def test_finite_difference_jvp_respects_frozen_parameters() -> None:
+    """Frozen parameters must be removed from directional tangents."""
+
+    result = value_and_finite_difference_jvp(
+        lambda values: np.array([values[0] + 10.0 * values[1]]),
+        [1.0, 2.0],
+        [0.25, 100.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+
+    assert result.evaluations == 3
+    np.testing.assert_allclose(result.tangent, [0.25, 0.0])
+    np.testing.assert_allclose(result.jvp, [0.25], atol=1.0e-6)
+
+
+def test_finite_difference_jvp_rejects_invalid_inputs() -> None:
+    """JVP tangents and vector outputs must be finite and shape-stable."""
+
+    with pytest.raises(ValueError, match="JVP tangent length"):
+        value_and_finite_difference_jvp(lambda values: np.array([values[0]]), [1.0], [1.0, 2.0])
+    with pytest.raises(ValueError, match="real numeric"):
+        value_and_finite_difference_jvp(lambda values: np.array([values[0]]), [1.0], ["1.0"])
+
+    def unstable(values: np.ndarray) -> np.ndarray:
+        if values[0] > 0.0:
+            return np.array([values[0], values[0] ** 2])
+        return np.array([values[0]])
+
+    with pytest.raises(ValueError, match="shape must remain stable"):
+        value_and_finite_difference_jvp(unstable, [0.0], [1.0])
+
+
+def test_vector_jacobian_product_contracts_cotangent() -> None:
+    """Reverse-mode VJP should contract cotangents against validated Jacobians."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] ** 2, values[0] + 2.0 * values[1]]),
+        [3.0, -1.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    result = vector_jacobian_product(jacobian_result, [0.5, -2.0])
+
+    assert isinstance(result, VJPResult)
+    assert result.method == "vjp:finite_difference_central"
+    np.testing.assert_allclose(result.value, [9.0, 1.0])
+    np.testing.assert_allclose(result.cotangent, [0.5, -2.0])
+    np.testing.assert_allclose(result.vjp, [1.0, -4.0], atol=1.0e-6)
+    np.testing.assert_allclose(
+        finite_difference_vjp(
+            lambda values: np.array([values[0] ** 2, values[0] + 2.0 * values[1]]),
+            [3.0, -1.0],
+            [0.5, -2.0],
+        ).vjp,
+        [1.0, -4.0],
+        atol=1.0e-6,
+    )
+
+
+def test_vector_jacobian_product_respects_frozen_parameters_and_validation() -> None:
+    """VJP products should zero frozen columns and reject malformed cotangents."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] + values[1], values[1] ** 2]),
+        [1.0, 2.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+    result = vector_jacobian_product(jacobian_result, [1.0, 10.0])
+
+    np.testing.assert_allclose(result.vjp, [1.0, 0.0], atol=1.0e-6)
+    with pytest.raises(ValueError, match="JacobianResult"):
+        vector_jacobian_product(np.eye(2), [1.0, 2.0])  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="cotangent shape"):
+        vector_jacobian_product(jacobian_result, [1.0])
 
 
 def test_finite_difference_hessian_matches_quadratic_curvature() -> None:
@@ -1460,10 +1565,12 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
     assert scpn.WeightedGradientResult is WeightedGradientResult
+    assert scpn.VJPResult is VJPResult
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.HessianResult is HessianResult
+    assert scpn.JVPResult is JVPResult
     assert scpn.JacobianResult is JacobianResult
     assert scpn.LeastSquaresCovarianceResult is LeastSquaresCovarianceResult
     assert scpn.LevenbergMarquardtDampingUpdate is LevenbergMarquardtDampingUpdate
@@ -1477,6 +1584,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.evaluate_levenberg_marquardt_step is evaluate_levenberg_marquardt_step
     assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
+    assert scpn.finite_difference_jvp is finite_difference_jvp
+    assert scpn.finite_difference_vjp is finite_difference_vjp
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
     assert scpn.huber_residual_weights is huber_residual_weights
     assert scpn.least_squares_covariance is least_squares_covariance
@@ -1488,6 +1597,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
     assert scpn.batch_value_and_finite_difference_grad is batch_value_and_finite_difference_grad
+    assert scpn.value_and_finite_difference_jvp is value_and_finite_difference_jvp
+    assert scpn.vector_jacobian_product is vector_jacobian_product
 
 
 @pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or broken")

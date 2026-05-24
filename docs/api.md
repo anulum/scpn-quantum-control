@@ -369,6 +369,7 @@ from scpn_quantum_control import (
     DifferentiableOptimizer,
     GradientCheckResult,
     HessianResult,
+    JVPResult,
     JacobianResult,
     LeastSquaresCovarianceResult,
     LevenbergMarquardtDampingUpdate,
@@ -380,12 +381,15 @@ from scpn_quantum_control import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    VJPResult,
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
     finite_difference_hessian,
     finite_difference_jacobian,
+    finite_difference_jvp,
+    finite_difference_vjp,
     gauss_newton_gradient,
     huber_residual_weights,
     least_squares_covariance,
@@ -396,7 +400,9 @@ from scpn_quantum_control import (
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_jacobian,
+    value_and_finite_difference_jvp,
     value_and_parameter_shift_grad,
+    vector_jacobian_product,
 )
 
 result = value_and_parameter_shift_grad(
@@ -455,6 +461,7 @@ GradientResult(value, gradient, method, shift, coefficient, evaluations, paramet
 OptimizationResult(values, final_gradient, value_history, steps, converged, reason, best_values=None, best_value=None)
 GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, tolerance, passed)
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
+JVPResult(value, jvp, tangent, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 LeastSquaresCovarianceResult(covariance, standard_errors, residual_variance, degrees_of_freedom, condition_number, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
@@ -462,6 +469,7 @@ LevenbergMarquardtDampingUpdate(trial, next_damping, action)
 LevenbergMarquardtResult(values, residual, value_history, damping_history, accepted_history, steps, converged, reason, best_values, best_value)
 LevenbergMarquardtStep(gauss_newton, step, candidate_values, damping, predicted_reduction)
 LevenbergMarquardtTrial(step_result, candidate_residual, candidate_value, actual_reduction, reduction_ratio, accepted)
+VJPResult(value, cotangent, vjp, method, step, evaluations, parameter_names, trainable)
 WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
@@ -472,6 +480,10 @@ value_and_finite_difference_grad(objective, values, parameters=None, step=1e-6) 
 batch_value_and_finite_difference_grad(objectives, values, parameters=None, step=1e-6) -> tuple[GradientResult, ...]
 finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
+finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> np.ndarray
+value_and_finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> JVPResult
+finite_difference_vjp(objective, values, cotangent, parameters=None, step=1e-6) -> VJPResult
+vector_jacobian_product(jacobian, cotangent) -> VJPResult
 finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.ndarray
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
@@ -526,6 +538,10 @@ masks, and evaluation counts instead of only a stacked gradient matrix.
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.
+`value_and_finite_difference_jvp()` computes directional forward-mode products
+without materialising a full Jacobian; `vector_jacobian_product()` and
+`finite_difference_vjp()` expose reverse-mode cotangent contractions with the
+same trainable-parameter masking used by gradients and solvers.
 `finite_difference_hessian()` and `value_and_finite_difference_hessian()`
 provide central-difference second-order curvature diagnostics for scalar losses;
 non-trainable parameters produce zero Hessian rows and columns.

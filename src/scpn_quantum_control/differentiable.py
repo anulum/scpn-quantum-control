@@ -277,6 +277,102 @@ class JacobianResult:
 
 
 @dataclass(frozen=True)
+class JVPResult:
+    """Jacobian-vector product with directional finite-difference provenance."""
+
+    value: NDArray[np.float64]
+    jvp: NDArray[np.float64]
+    tangent: NDArray[np.float64]
+    method: str
+    step: float
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_numeric_array("JVP value", self.value)
+        jvp = _as_real_numeric_array("JVP", self.jvp)
+        tangent = _as_real_numeric_array("JVP tangent", self.tangent)
+        if value.ndim != 1:
+            raise ValueError("JVP value must be a one-dimensional array")
+        if jvp.shape != value.shape:
+            raise ValueError("JVP shape must match value shape")
+        if tangent.ndim != 1:
+            raise ValueError("JVP tangent must be one-dimensional")
+        if not np.all(np.isfinite(value)) or not np.all(np.isfinite(jvp)):
+            raise ValueError("JVP value and product must contain only finite values")
+        if not np.all(np.isfinite(tangent)):
+            raise ValueError("JVP tangent must contain only finite values")
+        if not self.method:
+            raise ValueError("JVP method must be non-empty")
+        step = _as_real_scalar("JVP step", self.step)
+        if step <= 0.0:
+            raise ValueError("JVP step must be finite and positive")
+        if self.evaluations < 0:
+            raise ValueError("JVP evaluations must be non-negative")
+        if len(self.parameter_names) != tangent.size:
+            raise ValueError("parameter_names length must match tangent length")
+        if len(self.trainable) != tangent.size:
+            raise ValueError("trainable mask length must match tangent length")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "jvp", jvp)
+        object.__setattr__(self, "tangent", tangent)
+        object.__setattr__(self, "step", step)
+
+
+@dataclass(frozen=True)
+class VJPResult:
+    """Vector-Jacobian product with cotangent provenance."""
+
+    value: NDArray[np.float64]
+    cotangent: NDArray[np.float64]
+    vjp: NDArray[np.float64]
+    method: str
+    step: float
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_numeric_array("VJP value", self.value)
+        cotangent = _as_real_numeric_array("VJP cotangent", self.cotangent)
+        vjp = _as_real_numeric_array("VJP", self.vjp)
+        if value.ndim != 1:
+            raise ValueError("VJP value must be a one-dimensional array")
+        if cotangent.shape != value.shape:
+            raise ValueError("VJP cotangent shape must match value shape")
+        if vjp.ndim != 1:
+            raise ValueError("VJP must be one-dimensional")
+        if not np.all(np.isfinite(value)) or not np.all(np.isfinite(cotangent)):
+            raise ValueError("VJP value and cotangent must contain only finite values")
+        if not np.all(np.isfinite(vjp)):
+            raise ValueError("VJP must contain only finite values")
+        if not self.method:
+            raise ValueError("VJP method must be non-empty")
+        step = _as_real_scalar("VJP step", self.step)
+        if step <= 0.0:
+            raise ValueError("VJP step must be finite and positive")
+        if self.evaluations < 0:
+            raise ValueError("VJP evaluations must be non-negative")
+        if len(self.parameter_names) != vjp.size:
+            raise ValueError("parameter_names length must match VJP length")
+        if len(self.trainable) != vjp.size:
+            raise ValueError("trainable mask length must match VJP length")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "cotangent", cotangent)
+        object.__setattr__(self, "vjp", vjp)
+        object.__setattr__(self, "step", step)
+
+
+@dataclass(frozen=True)
 class HessianResult:
     """Value, Hessian, and provenance for a scalar objective."""
 
@@ -1405,6 +1501,116 @@ def value_and_finite_difference_jacobian(
     )
 
 
+def finite_difference_jvp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a central finite-difference Jacobian-vector product."""
+
+    return value_and_finite_difference_jvp(
+        objective,
+        values,
+        tangent,
+        parameters=parameters,
+        step=step,
+    ).jvp
+
+
+def value_and_finite_difference_jvp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> JVPResult:
+    """Evaluate a vector objective and a directional finite-difference JVP."""
+
+    step_value = _as_real_scalar("finite difference step", step)
+    if step_value <= 0.0:
+        raise ValueError("finite difference step must be finite and positive")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    tangent_values = _as_parameter_array(tangent)
+    if tangent_values.shape != parameter_values.shape:
+        raise ValueError("JVP tangent length must match parameter length")
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    masked_tangent = tangent_values.copy()
+    masked_tangent[~trainable] = 0.0
+    base_value = _as_vector_output(objective(parameter_values.copy()))
+    if not np.any(masked_tangent):
+        jvp = np.zeros_like(base_value)
+        evaluations = 1
+    else:
+        plus = parameter_values + step_value * masked_tangent
+        minus = parameter_values - step_value * masked_tangent
+        plus_value = _as_vector_output(objective(plus))
+        minus_value = _as_vector_output(objective(minus))
+        if plus_value.shape != base_value.shape or minus_value.shape != base_value.shape:
+            raise ValueError("vector objective output shape must remain stable")
+        jvp = (plus_value - minus_value) / (2.0 * step_value)
+        evaluations = 3
+    return JVPResult(
+        value=base_value,
+        jvp=jvp,
+        tangent=masked_tangent,
+        method="finite_difference_directional",
+        step=step_value,
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
+def vector_jacobian_product(
+    jacobian: JacobianResult,
+    cotangent: ArrayLike,
+) -> VJPResult:
+    """Contract a validated cotangent with a vector-objective Jacobian."""
+
+    if not isinstance(jacobian, JacobianResult):
+        raise ValueError("vector_jacobian_product requires a JacobianResult")
+    cotangent_values = _as_vector_output(cotangent)
+    if cotangent_values.shape != jacobian.value.shape:
+        raise ValueError("VJP cotangent shape must match Jacobian value shape")
+    vjp = cast(NDArray[np.float64], jacobian.jacobian.T @ cotangent_values)
+    trainable = np.asarray(jacobian.trainable, dtype=bool)
+    vjp[~trainable] = 0.0
+    return VJPResult(
+        value=jacobian.value,
+        cotangent=cotangent_values,
+        vjp=vjp,
+        method=f"vjp:{jacobian.method}",
+        step=jacobian.step,
+        evaluations=jacobian.evaluations,
+        parameter_names=jacobian.parameter_names,
+        trainable=jacobian.trainable,
+    )
+
+
+def finite_difference_vjp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> VJPResult:
+    """Return a finite-difference vector-Jacobian product for a vector objective."""
+
+    jacobian = value_and_finite_difference_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+    return vector_jacobian_product(jacobian, cotangent)
+
+
 def finite_difference_hessian(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -1969,6 +2175,7 @@ __all__ = [
     "GradientCheckResult",
     "GradientResult",
     "HessianResult",
+    "JVPResult",
     "JacobianResult",
     "LeastSquaresCovarianceResult",
     "LevenbergMarquardtDampingUpdate",
@@ -1981,6 +2188,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "VJPResult",
     "WeightedGradientResult",
     "batch_parameter_shift_gradient",
     "batch_value_and_finite_difference_grad",
@@ -1991,6 +2199,8 @@ __all__ = [
     "finite_difference_gradient",
     "finite_difference_hessian",
     "finite_difference_jacobian",
+    "finite_difference_jvp",
+    "finite_difference_vjp",
     "gauss_newton_gradient",
     "huber_residual_weights",
     "is_jax_autodiff_available",
@@ -2005,5 +2215,7 @@ __all__ = [
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",
     "value_and_finite_difference_jacobian",
+    "value_and_finite_difference_jvp",
     "value_and_parameter_shift_grad",
+    "vector_jacobian_product",
 ]
