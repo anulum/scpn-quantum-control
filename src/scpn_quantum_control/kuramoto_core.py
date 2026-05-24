@@ -30,6 +30,23 @@ if TYPE_CHECKING:
 JsonScalar = str | int | float | bool | None
 
 
+def _as_real_numeric_array(name: str, values: Any) -> np.ndarray:
+    """Return a real numeric array without implicit string/bool/object coercion."""
+    try:
+        raw = np.asarray(values)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a rectangular numeric array") from exc
+
+    if raw.dtype.kind in {"b", "O", "S", "U"}:
+        raise ValueError(f"{name} must contain real numeric scalars")
+    if raw.dtype.kind == "c":
+        raise ValueError(f"{name} must contain real numeric scalars")
+    try:
+        return np.array(raw, dtype=np.float64, copy=True)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must contain real numeric scalars") from exc
+
+
 @dataclass(frozen=True)
 class KuramotoProblem:
     """Validated coupling matrix, frequencies, and serialisable metadata."""
@@ -80,12 +97,14 @@ class KuramotoProblem:
 
 def validate_kuramoto_inputs(K_nm: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Validate and copy a symmetric Kuramoto coupling problem."""
-    K_arr = np.array(K_nm, dtype=np.float64, copy=True)
-    omega_arr = np.array(omega, dtype=np.float64, copy=True)
+    K_arr = _as_real_numeric_array("K_nm", K_nm)
+    omega_arr = _as_real_numeric_array("omega", omega)
 
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
         raise ValueError(f"K_nm must be a square matrix, got shape {K_arr.shape}")
     n_oscillators = K_arr.shape[0]
+    if n_oscillators == 0:
+        raise ValueError("K_nm must contain at least one oscillator")
     if omega_arr.shape != (n_oscillators,):
         raise ValueError(f"omega must have shape ({n_oscillators},), got {omega_arr.shape}")
     if not np.all(np.isfinite(K_arr)):

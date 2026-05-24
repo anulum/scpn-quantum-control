@@ -64,7 +64,10 @@ R, psi = measure_order_parameter(problem, Statevector.from_instruction(initial))
 `build_kuramoto_problem()` fails loudly if:
 
 - `K_nm` is not square;
+- `K_nm` is empty;
 - `omega` does not have shape `(N,)`;
+- either array would require implicit string, boolean, object, or complex
+  coercion before it can be interpreted as real numeric data;
 - either array contains non-finite values;
 - `K_nm` is asymmetric;
 - metadata cannot be JSON-serialised.

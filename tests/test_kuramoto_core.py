@@ -66,6 +66,8 @@ def test_problem_copies_inputs_and_exports_serialisable_metadata() -> None:
 def test_problem_rejects_invalid_inputs_and_metadata() -> None:
     with pytest.raises(ValueError, match="K_nm must be a square matrix"):
         build_kuramoto_problem(np.zeros((2, 3)), np.zeros(2))
+    with pytest.raises(ValueError, match="K_nm must contain at least one oscillator"):
+        build_kuramoto_problem(np.zeros((0, 0)), np.zeros(0))
     with pytest.raises(ValueError, match="omega must have shape"):
         build_kuramoto_problem(np.zeros((3, 3)), np.zeros(2))
     with pytest.raises(ValueError, match="K_nm must be symmetric"):
@@ -74,6 +76,16 @@ def test_problem_rejects_invalid_inputs_and_metadata() -> None:
         build_kuramoto_problem(np.zeros((2, 2)), np.array([0.0, np.nan]))
     with pytest.raises(TypeError, match="metadata must be JSON-serialisable"):
         build_kuramoto_problem(np.zeros((2, 2)), np.zeros(2), metadata={"bad": object()})
+
+
+def test_problem_rejects_implicit_numeric_string_coercion() -> None:
+    with pytest.raises(ValueError, match="K_nm must contain real numeric scalars"):
+        build_kuramoto_problem([["0.0", "0.25"], ["0.25", "0.0"]], [0.1, -0.2])
+
+
+def test_problem_rejects_boolean_frequency_coercion() -> None:
+    with pytest.raises(ValueError, match="omega must contain real numeric scalars"):
+        build_kuramoto_problem([[0.0, 0.25], [0.25, 0.0]], [True, False])
 
 
 def test_facade_compiles_hamiltonians_and_circuit_for_arbitrary_problem() -> None:
