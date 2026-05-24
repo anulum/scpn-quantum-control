@@ -311,3 +311,25 @@ def test_artifact_metadata_is_deep_frozen_and_serializes_as_json_lists():
 
     serialized = artifact.to_dict()
     assert serialized["metadata"]["calibration"]["window"] == [0.0, 1.0]
+
+
+def test_layer_assignments_are_defensive_copies_and_read_only():
+    layer_assignments = ["cortex", "thalamus", "brainstem"]
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="layer-immutability-check",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+        layer_assignments=layer_assignments,
+    )
+
+    layer_assignments[0] = "mutated-after-validation"
+
+    assert artifact.layer_assignments == ("cortex", "thalamus", "brainstem")
+    with pytest.raises(AttributeError):
+        artifact.layer_assignments.append("blocked")
+    assert artifact.to_dict()["layer_assignments"] == ["cortex", "thalamus", "brainstem"]

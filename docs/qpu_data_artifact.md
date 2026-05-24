@@ -90,10 +90,11 @@ corresponding digest and rejects stale values before the artifact can be
 compiled into a circuit. Omitted array digests are filled deterministically for
 new in-memory artifacts.
 
-Numerical arrays, metadata, and hash maps are defensive-copied and marked
-read-only after validation, so callers cannot mutate a validated artifact
-in-place and silently invalidate its hashes. Metadata is frozen recursively;
-serialisation thaws it back to JSON-native dictionaries and lists.
+Numerical arrays, layer assignments, metadata, and hash maps are
+defensive-copied and marked read-only after validation, so callers cannot
+mutate a validated artifact in-place and silently invalidate its hashes.
+Metadata is frozen recursively; serialisation thaws immutable containers back to
+JSON-native dictionaries and lists.
 
 ## Matrix invariants
 
@@ -185,6 +186,7 @@ The tests cover:
 - SC-NeuroCore datastream adaptation
 - schema-version rejection
 - defensive-copy/read-only array immutability
+- defensive-copy/read-only layer-assignment immutability
 - defensive-copy/read-only metadata and hash-map immutability
 - recursive metadata freezing with JSON-native serialisation
 

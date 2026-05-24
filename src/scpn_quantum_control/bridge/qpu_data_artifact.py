@@ -97,7 +97,7 @@ class QPUDataArtifact:
     K_nm: NDArray[np.float64]
     omega: NDArray[np.float64]
     theta0: NDArray[np.float64] | None = None
-    layer_assignments: list[str] = field(default_factory=list)
+    layer_assignments: Sequence[str] = ()
     normalization: str = ""
     extraction_method: str = ""
     source_timestamp: str | None = None
@@ -116,7 +116,7 @@ class QPUDataArtifact:
         theta0 = (
             None if self.theta0 is None else _finite_float_array("theta0", self.theta0, ndim=1)
         )
-        layer_assignments = [str(item) for item in self.layer_assignments]
+        layer_assignments = tuple(str(item) for item in self.layer_assignments)
         metadata = dict(self.metadata)
         hashes = dict(self.hashes)
 
