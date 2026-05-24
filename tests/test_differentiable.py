@@ -24,6 +24,7 @@ from scpn_quantum_control.differentiable import (
     GradientResult,
     HessianResult,
     HVPResult,
+    ImplicitSensitivityResult,
     JacobianResult,
     JVPResult,
     LeastSquaresCovarianceResult,
@@ -79,6 +80,7 @@ from scpn_quantum_control.differentiable import (
     grad,
     hessian,
     huber_residual_weights,
+    implicit_stationary_sensitivity,
     is_jax_autodiff_available,
     jacobian,
     jax_value_and_grad,
@@ -596,6 +598,59 @@ def test_sparse_matrix_result_rejects_invalid_contracts() -> None:
         dense_to_sparse_matrix(np.eye(2), parameter_names=("x",))
     with pytest.raises(ValueError, match="sparse tolerance"):
         dense_to_sparse_matrix(np.eye(2), tolerance=-1.0)
+
+
+def test_implicit_stationary_sensitivity_solves_trainable_system() -> None:
+    """Implicit stationary sensitivities should solve -H^{-1}B on trainable parameters."""
+
+    result = implicit_stationary_sensitivity(
+        hessian=np.diag([2.0, 4.0, 9.0]),
+        cross_derivative=np.array([[4.0, -2.0], [8.0, 4.0], [9.0, 9.0]]),
+        parameters=[Parameter("x"), Parameter("y", trainable=False), Parameter("z")],
+        hyperparameter_names=("alpha", "beta"),
+    )
+
+    assert isinstance(result, ImplicitSensitivityResult)
+    assert result.method == "implicit_stationary_sensitivity"
+    assert result.parameter_names == ("x", "y", "z")
+    assert result.hyperparameter_names == ("alpha", "beta")
+    assert result.trainable == (True, False, True)
+    np.testing.assert_allclose(
+        result.sensitivity,
+        [[-2.0, 1.0], [0.0, 0.0], [-1.0, -1.0]],
+    )
+    assert result.condition_number == pytest.approx(9.0 / 2.0)
+
+
+def test_implicit_stationary_sensitivity_applies_damping() -> None:
+    """Implicit sensitivity should expose damped positive-definite solves."""
+
+    result = implicit_stationary_sensitivity(
+        hessian=np.diag([1.0, 3.0]),
+        cross_derivative=[2.0, 6.0],
+        damping=1.0,
+    )
+
+    np.testing.assert_allclose(result.sensitivity, [[-1.0], [-1.5]])
+    assert result.damping == pytest.approx(1.0)
+    assert result.hyperparameter_names == ("alpha0",)
+
+
+def test_implicit_stationary_sensitivity_rejects_invalid_contracts() -> None:
+    """Implicit solves must fail closed on invalid stationary systems."""
+
+    with pytest.raises(ValueError, match="square"):
+        implicit_stationary_sensitivity([[1.0, 0.0]], [[1.0]])
+    with pytest.raises(ValueError, match="row count"):
+        implicit_stationary_sensitivity(np.eye(2), [[1.0, 2.0, 3.0]])
+    with pytest.raises(ValueError, match="symmetric"):
+        implicit_stationary_sensitivity([[1.0, 2.0], [0.0, 1.0]], [[1.0], [1.0]])
+    with pytest.raises(ValueError, match="positive definite"):
+        implicit_stationary_sensitivity([[0.0]], [[1.0]])
+    with pytest.raises(ValueError, match="hyperparameter_names"):
+        implicit_stationary_sensitivity(np.eye(2), np.ones((2, 2)), hyperparameter_names=("a",))
+    with pytest.raises(ValueError, match="implicit rcond"):
+        implicit_stationary_sensitivity(np.eye(1), [[1.0]], rcond=0.0)
 
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
@@ -2503,6 +2558,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.HVPResult is HVPResult
     assert scpn.HessianResult is HessianResult
+    assert scpn.ImplicitSensitivityResult is ImplicitSensitivityResult
     assert scpn.JVPResult is JVPResult
     assert scpn.JacobianResult is JacobianResult
     assert scpn.LeastSquaresCovarianceResult is LeastSquaresCovarianceResult
@@ -2529,6 +2585,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.grad is grad
     assert scpn.hessian is hessian
     assert scpn.huber_residual_weights is huber_residual_weights
+    assert scpn.implicit_stationary_sensitivity is implicit_stationary_sensitivity
     assert scpn.jacobian is jacobian
     assert scpn.least_squares_covariance is least_squares_covariance
     assert scpn.levenberg_marquardt_step is levenberg_marquardt_step

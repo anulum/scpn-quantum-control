@@ -996,6 +996,68 @@ class NaturalGradientOptimizationResult:
 
 
 @dataclass(frozen=True)
+class ImplicitSensitivityResult:
+    """Implicit-function sensitivity for a stationary differentiable system."""
+
+    sensitivity: NDArray[np.float64]
+    hessian: NDArray[np.float64]
+    cross_derivative: NDArray[np.float64]
+    damping: float
+    condition_number: float
+    method: str
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+    hyperparameter_names: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        sensitivity = _as_real_numeric_array("implicit sensitivity", self.sensitivity)
+        hessian = _as_real_numeric_array("implicit hessian", self.hessian)
+        cross = _as_real_numeric_array("implicit cross_derivative", self.cross_derivative)
+        if sensitivity.ndim != 2 or hessian.ndim != 2 or cross.ndim != 2:
+            raise ValueError("implicit sensitivity operands must be two-dimensional")
+        if hessian.shape[0] != hessian.shape[1]:
+            raise ValueError("implicit hessian must be square")
+        if sensitivity.shape != cross.shape:
+            raise ValueError("implicit sensitivity shape must match cross_derivative shape")
+        if sensitivity.shape[0] != hessian.shape[0]:
+            raise ValueError("implicit sensitivity row count must match hessian dimension")
+        if not np.all(np.isfinite(sensitivity)):
+            raise ValueError("implicit sensitivity must contain only finite values")
+        if not np.all(np.isfinite(hessian)) or not np.all(np.isfinite(cross)):
+            raise ValueError("implicit operands must contain only finite values")
+        if not np.allclose(hessian, hessian.T, atol=1.0e-10, rtol=1.0e-10):
+            raise ValueError("implicit hessian must be symmetric")
+        damping = _as_real_scalar("implicit damping", self.damping)
+        if damping < 0.0:
+            raise ValueError("implicit damping must be finite and non-negative")
+        condition_number = _as_real_scalar(
+            "implicit condition_number",
+            self.condition_number,
+        )
+        if condition_number < 1.0:
+            raise ValueError("implicit condition_number must be at least 1")
+        if not self.method:
+            raise ValueError("implicit method must be non-empty")
+        if len(self.parameter_names) != hessian.shape[0]:
+            raise ValueError("parameter_names length must match implicit hessian dimension")
+        if len(self.trainable) != hessian.shape[0]:
+            raise ValueError("trainable mask length must match implicit hessian dimension")
+        if len(self.hyperparameter_names) != cross.shape[1]:
+            raise ValueError("hyperparameter_names length must match cross_derivative columns")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(name, str) or not name for name in self.hyperparameter_names):
+            raise ValueError("hyperparameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "sensitivity", sensitivity)
+        object.__setattr__(self, "hessian", hessian)
+        object.__setattr__(self, "cross_derivative", cross)
+        object.__setattr__(self, "damping", damping)
+        object.__setattr__(self, "condition_number", condition_number)
+
+
+@dataclass(frozen=True)
 class LevenbergMarquardtStep:
     """Bounded Levenberg-Marquardt candidate step with model diagnostics."""
 
@@ -4031,6 +4093,73 @@ def natural_gradient(
     )
 
 
+def implicit_stationary_sensitivity(
+    hessian: ArrayLike,
+    cross_derivative: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    hyperparameter_names: Sequence[str] | None = None,
+    damping: float = 0.0,
+    rcond: float = 1.0e-12,
+) -> ImplicitSensitivityResult:
+    """Return ``dx*/dalpha = -H^-1 B`` for an implicit stationary system."""
+
+    hessian_arr = _as_real_numeric_array("implicit hessian", hessian)
+    cross = _as_real_numeric_array("implicit cross_derivative", cross_derivative)
+    if hessian_arr.ndim != 2 or hessian_arr.shape[0] != hessian_arr.shape[1]:
+        raise ValueError("implicit hessian must be a square matrix")
+    if cross.ndim == 1:
+        cross = cross.reshape((-1, 1))
+    if cross.ndim != 2 or cross.shape[0] != hessian_arr.shape[0]:
+        raise ValueError("implicit cross_derivative row count must match hessian dimension")
+    if not np.all(np.isfinite(hessian_arr)) or not np.all(np.isfinite(cross)):
+        raise ValueError("implicit operands must contain only finite values")
+    if not np.allclose(hessian_arr, hessian_arr.T, atol=1.0e-10, rtol=1.0e-10):
+        raise ValueError("implicit hessian must be symmetric")
+    damping_value = _as_real_scalar("implicit damping", damping)
+    if damping_value < 0.0:
+        raise ValueError("implicit damping must be finite and non-negative")
+    rcond_value = _as_real_scalar("implicit rcond", rcond)
+    if rcond_value <= 0.0:
+        raise ValueError("implicit rcond must be finite and positive")
+    parameter_values = np.zeros(hessian_arr.shape[0], dtype=np.float64)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    hyper_names = (
+        tuple(f"alpha{index}" for index in range(cross.shape[1]))
+        if hyperparameter_names is None
+        else tuple(hyperparameter_names)
+    )
+    if len(hyper_names) != cross.shape[1]:
+        raise ValueError("hyperparameter_names length must match cross_derivative columns")
+    trainable = np.asarray([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    sensitivity = np.zeros_like(cross)
+    condition_number = 1.0
+    if np.any(trainable):
+        active_hessian = hessian_arr[np.ix_(trainable, trainable)].copy()
+        if damping_value > 0.0:
+            active_hessian += damping_value * np.eye(active_hessian.shape[0], dtype=np.float64)
+        eigenvalues = np.linalg.eigvalsh(active_hessian)
+        min_eigenvalue = float(np.min(eigenvalues))
+        max_eigenvalue = float(np.max(eigenvalues))
+        if min_eigenvalue <= 0.0:
+            raise ValueError("implicit hessian must be positive definite on trainable parameters")
+        condition_number = max_eigenvalue / min_eigenvalue
+        if condition_number > 1.0 / rcond_value:
+            raise ValueError("implicit hessian is ill-conditioned")
+        sensitivity[trainable, :] = -np.linalg.solve(active_hessian, cross[trainable, :])
+    return ImplicitSensitivityResult(
+        sensitivity=sensitivity,
+        hessian=hessian_arr,
+        cross_derivative=cross,
+        damping=damping_value,
+        condition_number=condition_number,
+        method="implicit_stationary_sensitivity",
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        hyperparameter_names=hyper_names,
+    )
+
+
 def check_parameter_shift_consistency(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -4120,6 +4249,7 @@ __all__ = [
     "GradientResult",
     "HVPResult",
     "HessianResult",
+    "ImplicitSensitivityResult",
     "JVPResult",
     "JacobianResult",
     "LeastSquaresCovarianceResult",
@@ -4175,6 +4305,7 @@ __all__ = [
     "grad",
     "huber_residual_weights",
     "hessian",
+    "implicit_stationary_sensitivity",
     "is_jax_autodiff_available",
     "jacobian",
     "jax_value_and_grad",

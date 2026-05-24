@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 364,
+    "public_api_exports": 366,
     "public_documentation_pages": 235,
-    "python_model_classes": 1469,
+    "python_model_classes": 1470,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -2966,6 +2966,10 @@
       {
         "name": "IiiTheScpnMeasurementPostulateIitOrAndQzeFixtureResult",
         "path": "src/scpn_quantum_control/paper0/iii_the_scpn_measurement_postulate_iit_or_and_qze_validation.py"
+      },
+      {
+        "name": "ImplicitSensitivityResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "InfitonField",
@@ -7797,6 +7801,7 @@
     "IQMHALAdapter",
     "ITERFeatureSpec",
     "IdentityAttractor",
+    "ImplicitSensitivityResult",
     "IonQCloudHALAdapter",
     "JVPResult",
     "JacobianResult",
@@ -7992,6 +7997,7 @@
     "hessian",
     "huber_residual_weights",
     "identity_fingerprint",
+    "implicit_stationary_sensitivity",
     "ionq_qis_workload",
     "iqm_qiskit_workload",
     "is_jax_autodiff_available",

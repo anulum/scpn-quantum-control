@@ -374,6 +374,7 @@ from scpn_quantum_control import (
     GradientCheckResult,
     HVPResult,
     HessianResult,
+    ImplicitSensitivityResult,
     JVPResult,
     JacobianResult,
     LeastSquaresCovarianceResult,
@@ -424,6 +425,7 @@ from scpn_quantum_control import (
     grad,
     hessian,
     huber_residual_weights,
+    implicit_stationary_sensitivity,
     jacobian,
     least_squares_covariance,
     levenberg_marquardt_step,
@@ -520,6 +522,7 @@ HVPResult(value, hvp, tangent, method, step, evaluations, parameter_names, train
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 JVPResult(value, jvp, tangent, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
+ImplicitSensitivityResult(sensitivity, hessian, cross_derivative, damping, condition_number, method, parameter_names, trainable, hyperparameter_names)
 LeastSquaresCovarianceResult(covariance, standard_errors, residual_variance, degrees_of_freedom, condition_number, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
 LevenbergMarquardtDampingUpdate(trial, next_damping, action)
@@ -578,6 +581,7 @@ finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.n
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
 hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> np.ndarray
 value_and_hessian(objective, values, parameters=None, method="finite_difference", step=1e-4) -> HessianResult
+implicit_stationary_sensitivity(hessian, cross_derivative, parameters=None, hyperparameter_names=None, damping=0.0, rcond=1e-12) -> ImplicitSensitivityResult
 finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> np.ndarray
 value_and_finite_difference_hvp(objective, values, tangent, parameters=None, step=1e-5) -> HVPResult
 batch_finite_difference_hvp(objective, values, tangents, parameters=None, step=1e-5) -> np.ndarray
@@ -663,6 +667,10 @@ The canonical transform helpers `grad()`, `value_and_grad()`, `jacobian()`, and
 keeps today's parameter-shift, finite-difference, and complex-step backends
 compatible while leaving room for future reverse-mode, forward-mode, sparse, and
 implicit-differentiation implementations behind the same public contract.
+`implicit_stationary_sensitivity()` implements the implicit-function theorem for
+stationary systems by solving `dx*/dalpha = -H^-1 B` on the trainable
+subspace. It validates symmetric positive-definite Hessians, supports damping,
+tracks condition number, and preserves hyperparameter provenance.
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.
