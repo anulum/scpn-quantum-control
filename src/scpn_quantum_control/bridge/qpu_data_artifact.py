@@ -359,6 +359,11 @@ class QPUDataArtifact:
         and useful for interface tests, but it is not a recorded source artifact.
         It therefore defaults to ``source_mode='synthetic'``.
         """
+        domain = _required_text("domain", domain)
+        source_name = _required_text("source_name", source_name)
+        source_mode = _required_text("source_mode", source_mode)
+        normalization = _required_text("normalization", normalization)
+        extraction_method = _required_text("extraction_method", extraction_method)
         payload = _require_mapping("SC-NeuroCore datastream payload", payload)
         if payload.get("schema_version") != SC_NEUROCORE_STREAM_SCHEMA:
             raise ValueError("unsupported SC-NeuroCore datastream schema version")

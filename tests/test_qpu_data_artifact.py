@@ -493,6 +493,14 @@ def test_scpn_datastream_adapter_rejects_publication_safe_source_mode():
         QPUDataArtifact.from_scpn_datastream_payload(payload, source_mode="recorded")
 
 
+def test_scpn_datastream_adapter_rejects_invalid_identity_overrides_before_payload_work():
+    with pytest.raises(ValueError, match="domain must be a string"):
+        QPUDataArtifact.from_scpn_datastream_payload(
+            [("schema_version", "wrong")],
+            domain=123,
+        )
+
+
 def test_json_loader_rejects_wrong_schema():
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))
