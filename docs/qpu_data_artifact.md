@@ -88,7 +88,9 @@ metadata. If a payload supplies `K_nm_sha256`, `omega_sha256`,
 `theta0_sha256`, or `artifact_sha256`, Quantum Control recomputes the
 corresponding digest and rejects stale values before the artifact can be
 compiled into a circuit. Omitted array digests are filled deterministically for
-new in-memory artifacts.
+new in-memory artifacts. The `hashes` map is reserved for recognized numerical
+payload digests only; unknown keys and malformed SHA-256 values are rejected.
+Operator notes and non-digest annotations belong in `metadata`.
 
 Numerical arrays, layer assignments, metadata, and hash maps are
 defensive-copied and marked read-only after validation, so callers cannot
@@ -192,6 +194,7 @@ The tests cover:
 - defensive-copy/read-only metadata and hash-map immutability
 - recursive metadata freezing with JSON-native serialisation
 - metadata rejection for non-string keys, non-finite floats, and opaque values
+- hash-map rejection for unknown keys and malformed digest strings
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly

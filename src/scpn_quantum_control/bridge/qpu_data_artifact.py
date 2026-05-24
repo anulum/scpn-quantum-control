@@ -25,6 +25,8 @@ SC_NEUROCORE_STREAM_SCHEMA = "sc-neurocore.scpn.datastream.v1"
 REAL_SOURCE_MODES = frozenset({"recorded", "replay", "curated", "derived"})
 SYNTHETIC_SOURCE_MODES = frozenset({"synthetic", "simulation", "fixture"})
 ALL_SOURCE_MODES = REAL_SOURCE_MODES | SYNTHETIC_SOURCE_MODES
+ARRAY_HASH_KEYS = frozenset({"K_nm_sha256", "omega_sha256", "theta0_sha256"})
+SHA256_HEX_CHARS = frozenset("0123456789abcdef")
 
 
 def _array_sha256(array: NDArray[np.float64]) -> str:
@@ -82,6 +84,21 @@ def _verify_or_set_array_hash(
     hashes.setdefault(key, digest)
 
 
+def _validate_hash_map(hashes: Mapping[str, Any]) -> dict[str, str]:
+    validated: dict[str, str] = {}
+    for key, value in hashes.items():
+        if key not in ARRAY_HASH_KEYS:
+            raise ValueError(f"unknown hash key: {key}")
+        if (
+            not isinstance(value, str)
+            or len(value) != 64
+            or any(char not in SHA256_HEX_CHARS for char in value)
+        ):
+            raise ValueError(f"{key} must be lowercase SHA-256 hex")
+        validated[key] = value
+    return validated
+
+
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
     array = np.array(value, dtype=np.float64, copy=True)
     if array.ndim != ndim:
@@ -129,7 +146,7 @@ class QPUDataArtifact:
         )
         layer_assignments = tuple(str(item) for item in self.layer_assignments)
         metadata = dict(self.metadata)
-        hashes = dict(self.hashes)
+        hashes = _validate_hash_map(self.hashes)
 
         if not domain:
             raise ValueError("domain must be non-empty")

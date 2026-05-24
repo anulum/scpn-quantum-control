@@ -255,7 +255,6 @@ def test_artifact_arrays_are_defensive_copies_and_read_only():
 
 def test_artifact_mappings_are_defensive_copies_and_read_only():
     metadata = {"acquisition": "original"}
-    hashes = {"operator_note": "external-note"}
     artifact = QPUDataArtifact(
         domain="connectome",
         source_name="mapping-immutability-check",
@@ -266,18 +265,17 @@ def test_artifact_mappings_are_defensive_copies_and_read_only():
         extraction_method="unit-test",
         replay_id="source-run-1",
         metadata=metadata,
-        hashes=hashes,
     )
+    original_k_nm_hash = artifact.hashes["K_nm_sha256"]
 
     metadata["acquisition"] = "mutated-after-validation"
-    hashes["operator_note"] = "mutated-after-validation"
 
     assert artifact.metadata["acquisition"] == "original"
-    assert artifact.hashes["operator_note"] == "external-note"
+    assert artifact.hashes["K_nm_sha256"] == original_k_nm_hash
     with pytest.raises(TypeError):
         artifact.metadata["acquisition"] = "blocked"
     with pytest.raises(TypeError):
-        artifact.hashes["operator_note"] = "blocked"
+        artifact.hashes["K_nm_sha256"] = "blocked"
 
 
 def test_artifact_metadata_is_deep_frozen_and_serializes_as_json_lists():
@@ -377,4 +375,34 @@ def test_metadata_rejects_non_json_values():
             extraction_method="unit-test",
             replay_id="source-run-1",
             metadata={"opaque": object()},
+        )
+
+
+def test_hashes_reject_unknown_keys():
+    with pytest.raises(ValueError, match="unknown hash key"):
+        QPUDataArtifact(
+            domain="connectome",
+            source_name="hash-key-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            hashes={"operator_note": "belongs-in-metadata"},
+        )
+
+
+def test_hashes_reject_malformed_sha256_values():
+    with pytest.raises(ValueError, match="K_nm_sha256 must be lowercase SHA-256 hex"):
+        QPUDataArtifact(
+            domain="connectome",
+            source_name="hash-value-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            hashes={"K_nm_sha256": "not-a-sha256"},
         )
