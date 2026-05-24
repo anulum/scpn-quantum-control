@@ -69,9 +69,34 @@ class QSVTResourceEstimate:
     n_ancilla_qsvt: int  # ancilla qubits for block encoding
 
 
+def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+    """Return a real numeric array without implicit string/bool/object coercion."""
+    try:
+        raw = np.asarray(values)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a rectangular numeric array.") from exc
+
+    if raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must contain real numeric scalars.")
+    try:
+        return np.asarray(raw, dtype=np.float64)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must contain real numeric scalars.") from exc
+
+
+def _as_real_scalar(name: str, value: object) -> float:
+    """Return an explicit real numeric scalar without string/bool coercion."""
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a real numeric scalar.")
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must be a real numeric scalar.")
+    return float(raw)
+
+
 def _validate_problem_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    K_arr = np.asarray(K, dtype=np.float64)
-    omega_arr = np.asarray(omega, dtype=np.float64)
+    K_arr = _as_real_numeric_array("K", K)
+    omega_arr = _as_real_numeric_array("omega", omega)
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
         raise ValueError("K must be a square two-dimensional coupling matrix.")
     if omega_arr.ndim != 1:
@@ -88,9 +113,9 @@ def _validate_problem_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarr
 def _validate_resource_budget(
     alpha: float, t: float, epsilon: float
 ) -> tuple[float, float, float]:
-    alpha_value = float(alpha)
-    time_value = float(t)
-    epsilon_value = float(epsilon)
+    alpha_value = _as_real_scalar("alpha", alpha)
+    time_value = _as_real_scalar("simulation time", t)
+    epsilon_value = _as_real_scalar("epsilon", epsilon)
     if not np.isfinite(alpha_value) or alpha_value <= 0.0:
         raise ValueError("alpha must be finite and strictly positive.")
     if not np.isfinite(time_value) or time_value < 0.0:

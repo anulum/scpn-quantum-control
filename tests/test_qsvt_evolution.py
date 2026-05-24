@@ -147,6 +147,14 @@ class TestQueryCounts:
         with pytest.raises(ValueError, match="simulation time"):
             trotter2_step_count(1.0, time, 0.01)
 
+    def test_query_counts_reject_string_alpha_coercion(self):
+        with pytest.raises(ValueError, match="alpha must be a real numeric scalar"):
+            qsvt_query_count("1.0", 1.0, 0.01)
+
+    def test_query_counts_reject_boolean_time_coercion(self):
+        with pytest.raises(ValueError, match="simulation time must be a real numeric scalar"):
+            trotter1_step_count(1.0, True, 0.01)
+
 
 class TestQSVTResourceEstimate:
     def test_returns_result(self):
@@ -200,6 +208,20 @@ class TestQSVTResourceEstimate:
     )
     def test_resource_estimate_rejects_invalid_problem_shapes_and_values(self, K, omega, match):
         with pytest.raises(ValueError, match=match):
+            qsvt_resource_estimate(K, omega)
+
+    def test_resource_estimate_rejects_string_coupling_coercion(self):
+        K = [["0.0", "0.25"], ["0.25", "0.0"]]
+        omega = np.array([0.1, 0.2])
+
+        with pytest.raises(ValueError, match="K must contain real numeric scalars"):
+            qsvt_resource_estimate(K, omega)
+
+    def test_resource_estimate_rejects_boolean_frequency_coercion(self):
+        K = np.zeros((2, 2))
+        omega = [True, False]
+
+        with pytest.raises(ValueError, match="omega must contain real numeric scalars"):
             qsvt_resource_estimate(K, omega)
 
     @pytest.mark.parametrize(

@@ -295,10 +295,12 @@ from scpn_quantum_control.phase.qsvt_evolution import (
 
 Inputs are validated before any Hamiltonian construction or resource-claim
 calculation: `K` must be a finite square symmetric coupling matrix, `omega`
-must be a finite vector with matching dimension, simulation time must be finite
-and non-negative, and `epsilon` must satisfy `0 < epsilon < 1`. The lower-level
-query-count helpers apply the same finite positive `alpha`, time, and
-error-budget checks so invalid budgets cannot be silently clamped.
+must be a finite vector with matching dimension, and both must already contain
+real numeric scalar values rather than strings, booleans, objects, or complex
+values that NumPy could silently coerce. Simulation time must be finite and
+non-negative, and `epsilon` must satisfy `0 < epsilon < 1`. The lower-level
+query-count helpers apply the same explicit real-scalar `alpha`, time, and
+error-budget checks so invalid budgets cannot be silently clamped or coerced.
 
 This module provides resource estimates, not executable circuits. QSVT circuits require
 block encoding of the Hamiltonian, which demands ancilla qubits and multi-controlled
