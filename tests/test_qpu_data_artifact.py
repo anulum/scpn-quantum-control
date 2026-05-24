@@ -278,3 +278,36 @@ def test_artifact_mappings_are_defensive_copies_and_read_only():
         artifact.metadata["acquisition"] = "blocked"
     with pytest.raises(TypeError):
         artifact.hashes["operator_note"] = "blocked"
+
+
+def test_artifact_metadata_is_deep_frozen_and_serializes_as_json_lists():
+    nested_metadata = {
+        "calibration": {
+            "operator": "source-a",
+            "window": [0.0, 1.0],
+        }
+    }
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="nested-metadata-immutability-check",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+        metadata=nested_metadata,
+    )
+
+    nested_metadata["calibration"]["operator"] = "mutated-after-validation"
+    nested_metadata["calibration"]["window"].append(2.0)
+
+    assert artifact.metadata["calibration"]["operator"] == "source-a"
+    assert artifact.metadata["calibration"]["window"] == (0.0, 1.0)
+    with pytest.raises(TypeError):
+        artifact.metadata["calibration"]["operator"] = "blocked"
+    with pytest.raises(AttributeError):
+        artifact.metadata["calibration"]["window"].append(2.0)
+
+    serialized = artifact.to_dict()
+    assert serialized["metadata"]["calibration"]["window"] == [0.0, 1.0]

@@ -37,6 +37,24 @@ def _json_sha256(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _freeze_json_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return MappingProxyType(
+            {str(key): _freeze_json_value(item) for key, item in value.items()}
+        )
+    if isinstance(value, list | tuple):
+        return tuple(_freeze_json_value(item) for item in value)
+    return value
+
+
+def _thaw_json_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _thaw_json_value(item) for key, item in value.items()}
+    if isinstance(value, tuple | list):
+        return [_thaw_json_value(item) for item in value]
+    return value
+
+
 def _verify_or_set_array_hash(
     hashes: dict[str, str],
     key: str,
@@ -140,7 +158,7 @@ class QPUDataArtifact:
         object.__setattr__(self, "layer_assignments", layer_assignments)
         object.__setattr__(self, "normalization", normalization)
         object.__setattr__(self, "extraction_method", extraction_method)
-        object.__setattr__(self, "metadata", MappingProxyType(metadata))
+        object.__setattr__(self, "metadata", _freeze_json_value(metadata))
         object.__setattr__(self, "hashes", MappingProxyType(hashes))
 
     @property
@@ -175,7 +193,7 @@ class QPUDataArtifact:
             "extraction_method": self.extraction_method,
             "source_timestamp": self.source_timestamp,
             "replay_id": self.replay_id,
-            "metadata": dict(self.metadata),
+            "metadata": _thaw_json_value(self.metadata),
             "hashes": dict(self.hashes),
         }
         payload["artifact_sha256"] = _json_sha256(payload)

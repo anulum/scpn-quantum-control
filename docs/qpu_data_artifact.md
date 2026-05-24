@@ -92,7 +92,8 @@ new in-memory artifacts.
 
 Numerical arrays, metadata, and hash maps are defensive-copied and marked
 read-only after validation, so callers cannot mutate a validated artifact
-in-place and silently invalidate its hashes.
+in-place and silently invalidate its hashes. Metadata is frozen recursively;
+serialisation thaws it back to JSON-native dictionaries and lists.
 
 ## Matrix invariants
 
@@ -185,6 +186,7 @@ The tests cover:
 - schema-version rejection
 - defensive-copy/read-only array immutability
 - defensive-copy/read-only metadata and hash-map immutability
+- recursive metadata freezing with JSON-native serialisation
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly
