@@ -371,9 +371,10 @@ class QPUDataArtifact:
         omega = payload["omega_rad_s"]
         layer_ids = payload.get("layer_ids", [])
         n_layers = payload.get("n_layers")
+        canonical_layer_ids = _layer_assignment_tuple(layer_ids)
         if isinstance(n_layers, bool) or not isinstance(n_layers, int):
             raise ValueError("n_layers must be an integer")
-        if n_layers != len(layer_ids):
+        if n_layers != len(canonical_layer_ids):
             raise ValueError("n_layers must match layer_ids length")
         dt_s = _positive_finite_float("dt_s", payload.get("dt_s"))
         n_steps = _positive_int("n_steps", payload.get("n_steps"))
@@ -386,6 +387,7 @@ class QPUDataArtifact:
         canonical_payload["n_steps"] = n_steps
         canonical_payload["n_layers"] = n_layers
         canonical_payload["seed"] = seed
+        canonical_payload["layer_ids"] = list(canonical_layer_ids)
         metadata = {
             "source_project": source_project,
             "dt_s": dt_s,
@@ -400,7 +402,7 @@ class QPUDataArtifact:
             source_mode=source_mode,
             K_nm=K_nm,
             omega=omega,
-            layer_assignments=layer_ids,
+            layer_assignments=canonical_layer_ids,
             normalization=normalization,
             extraction_method=extraction_method,
             replay_id=f"seed:{seed}",
