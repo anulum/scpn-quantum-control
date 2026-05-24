@@ -370,6 +370,7 @@ from scpn_quantum_control import (
     GradientCheckResult,
     HessianResult,
     JacobianResult,
+    LevenbergMarquardtStep,
     OptimizationResult,
     Parameter,
     ParameterBounds,
@@ -380,6 +381,7 @@ from scpn_quantum_control import (
     finite_difference_hessian,
     finite_difference_jacobian,
     gauss_newton_gradient,
+    levenberg_marquardt_step,
     parameter_shift_gradient,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
@@ -435,6 +437,7 @@ GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, 
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 HessianResult(value, hessian, method, step, evaluations, parameter_names, trainable)
 NaturalGradientResult(base_gradient, metric, natural_gradient, damping, condition_number)
+LevenbergMarquardtStep(gauss_newton, step, candidate_values, damping, predicted_reduction)
 WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
@@ -449,6 +452,7 @@ finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> np.n
 value_and_finite_difference_hessian(objective, values, parameters=None, step=1e-4) -> HessianResult
 empirical_fisher_metric(jacobian, weights=None, damping=0.0) -> np.ndarray
 gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
+levenberg_marquardt_step(jacobian, values, weights=None, damping=1e-3, bounds=None, max_step_norm=None, rcond=1e-12) -> LevenbergMarquardtStep
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
@@ -505,6 +509,9 @@ for natural-gradient preconditioning.
 least-squares gradient ``J.T @ W @ r`` and solves the damped Gauss-Newton
 metric system on trainable parameters; subtract the returned
 `natural_gradient` component from parameters for a residual-minimising update.
+`levenberg_marquardt_step()` turns that preconditioned residual solve into a
+bounded candidate update with optional physical bounds, trainable-step norm
+limiting, and predicted quadratic-model reduction for accept/reject policies.
 `weighted_gradient_sum()` combines compatible `GradientResult` components into a
 single scalarised multi-objective gradient while preserving component
 provenance, weights, evaluation counts, trainable masks, and parameter names.

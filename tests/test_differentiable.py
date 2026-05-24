@@ -20,6 +20,7 @@ from scpn_quantum_control.differentiable import (
     GradientResult,
     HessianResult,
     JacobianResult,
+    LevenbergMarquardtStep,
     NaturalGradientResult,
     OptimizationResult,
     Parameter,
@@ -37,6 +38,7 @@ from scpn_quantum_control.differentiable import (
     gauss_newton_gradient,
     is_jax_autodiff_available,
     jax_value_and_grad,
+    levenberg_marquardt_step,
     natural_gradient,
     parameter_shift_gradient,
     value_and_finite_difference_grad,
@@ -458,6 +460,64 @@ def test_gauss_newton_gradient_rejects_invalid_inputs() -> None:
         gauss_newton_gradient(jacobian_result, weights=np.array([1.0]))
     with pytest.raises(ValueError, match="non-negative"):
         gauss_newton_gradient(jacobian_result, weights=np.array([1.0, -1.0]))
+
+
+def test_levenberg_marquardt_step_builds_bounded_candidate() -> None:
+    """Levenberg-Marquardt should expose a bounded residual descent candidate."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] - 1.0, 2.0 * (values[1] + 0.5)]),
+        [3.0, 1.5],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    result = levenberg_marquardt_step(
+        jacobian_result,
+        [3.0, 1.5],
+        weights=np.array([1.0, 0.25]),
+        damping=0.5,
+    )
+
+    assert isinstance(result, LevenbergMarquardtStep)
+    np.testing.assert_allclose(result.step, [-4.0 / 3.0, -4.0 / 3.0], atol=1.0e-6)
+    np.testing.assert_allclose(result.candidate_values, [5.0 / 3.0, 1.0 / 6.0], atol=1e-6)
+    assert result.predicted_reduction == pytest.approx(8.0 / 3.0, abs=1.0e-6)
+    assert result.damping == pytest.approx(0.5)
+
+
+def test_levenberg_marquardt_step_caps_trainable_norm_and_projects_bounds() -> None:
+    """LM candidates must respect update caps, bounds, and frozen parameters."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] - 1.0, values[1] - 2.0]),
+        [3.0, 5.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+    result = levenberg_marquardt_step(
+        jacobian_result,
+        [3.0, 5.0],
+        damping=0.0,
+        bounds=[ParameterBounds(lower=2.25, upper=3.0), ParameterBounds()],
+        max_step_norm=0.5,
+    )
+
+    np.testing.assert_allclose(result.step, [-0.5, 0.0], atol=1.0e-6)
+    np.testing.assert_allclose(result.candidate_values, [2.5, 5.0], atol=1.0e-6)
+    assert result.predicted_reduction == pytest.approx(0.875)
+
+
+def test_levenberg_marquardt_step_rejects_invalid_controls() -> None:
+    """LM controls must be finite, dimensionally consistent, and physical."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], values[1]]),
+        [1.0, 2.0],
+    )
+    with pytest.raises(ValueError, match="values length"):
+        levenberg_marquardt_step(jacobian_result, [1.0])
+    with pytest.raises(ValueError, match="damping"):
+        levenberg_marquardt_step(jacobian_result, [1.0, 2.0], damping=-1.0)
+    with pytest.raises(ValueError, match="max_step_norm"):
+        levenberg_marquardt_step(jacobian_result, [1.0, 2.0], max_step_norm=0.0)
 
 
 def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
@@ -954,12 +1014,14 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.OptimizationResult is OptimizationResult
     assert scpn.HessianResult is HessianResult
     assert scpn.JacobianResult is JacobianResult
+    assert scpn.LevenbergMarquardtStep is LevenbergMarquardtStep
     assert scpn.NaturalGradientResult is NaturalGradientResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
     assert scpn.empirical_fisher_metric is empirical_fisher_metric
     assert scpn.finite_difference_hessian is finite_difference_hessian
     assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
+    assert scpn.levenberg_marquardt_step is levenberg_marquardt_step
     assert scpn.natural_gradient is natural_gradient
     assert scpn.weighted_gradient_sum is weighted_gradient_sum
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency

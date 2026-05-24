@@ -357,6 +357,47 @@ class NaturalGradientResult:
 
 
 @dataclass(frozen=True)
+class LevenbergMarquardtStep:
+    """Bounded Levenberg-Marquardt candidate step with model diagnostics."""
+
+    gauss_newton: NaturalGradientResult
+    step: NDArray[np.float64]
+    candidate_values: NDArray[np.float64]
+    damping: float
+    predicted_reduction: float
+
+    def __post_init__(self) -> None:
+        step = _as_real_numeric_array("Levenberg-Marquardt step", self.step)
+        candidate_values = _as_real_numeric_array(
+            "Levenberg-Marquardt candidate_values",
+            self.candidate_values,
+        )
+        if step.ndim != 1:
+            raise ValueError("Levenberg-Marquardt step must be one-dimensional")
+        if candidate_values.shape != step.shape:
+            raise ValueError("candidate_values shape must match step shape")
+        if step.shape != self.gauss_newton.base_gradient.gradient.shape:
+            raise ValueError("step shape must match Gauss-Newton gradient shape")
+        if not np.all(np.isfinite(step)):
+            raise ValueError("Levenberg-Marquardt step must contain only finite values")
+        if not np.all(np.isfinite(candidate_values)):
+            raise ValueError("candidate_values must contain only finite values")
+        damping = _as_real_scalar("Levenberg-Marquardt damping", self.damping)
+        if damping < 0.0:
+            raise ValueError("Levenberg-Marquardt damping must be finite and non-negative")
+        predicted_reduction = _as_real_scalar(
+            "Levenberg-Marquardt predicted_reduction",
+            self.predicted_reduction,
+        )
+        if predicted_reduction < -1.0e-12:
+            raise ValueError("predicted_reduction must be non-negative")
+        object.__setattr__(self, "step", step)
+        object.__setattr__(self, "candidate_values", candidate_values)
+        object.__setattr__(self, "damping", damping)
+        object.__setattr__(self, "predicted_reduction", max(0.0, predicted_reduction))
+
+
+@dataclass(frozen=True)
 class WeightedGradientResult:
     """Weighted scalarisation of multiple scalar gradient results."""
 
@@ -1110,6 +1151,63 @@ def gauss_newton_gradient(
     return natural_gradient(base_gradient, metric, damping=0.0, rcond=rcond)
 
 
+def levenberg_marquardt_step(
+    jacobian: JacobianResult,
+    values: ArrayLike,
+    *,
+    weights: ArrayLike | None = None,
+    damping: float = 1.0e-3,
+    bounds: Sequence[ParameterBounds] | None = None,
+    max_step_norm: float | None = None,
+    rcond: float = 1.0e-12,
+) -> LevenbergMarquardtStep:
+    """Return a bounded Levenberg-Marquardt candidate for residual objectives."""
+
+    current_values = _as_parameter_array(values)
+    if current_values.size != jacobian.jacobian.shape[1]:
+        raise ValueError("values length must match Jacobian parameter dimension")
+    damping_value = _as_real_scalar("Levenberg-Marquardt damping", damping)
+    if damping_value < 0.0:
+        raise ValueError("Levenberg-Marquardt damping must be finite and non-negative")
+    max_step_norm_value = (
+        None
+        if max_step_norm is None
+        else _as_real_scalar("Levenberg-Marquardt max_step_norm", max_step_norm)
+    )
+    if max_step_norm_value is not None and max_step_norm_value <= 0.0:
+        raise ValueError("Levenberg-Marquardt max_step_norm must be finite and positive")
+
+    gauss_newton = gauss_newton_gradient(
+        jacobian,
+        weights=weights,
+        damping=damping_value,
+        rcond=rcond,
+    )
+    step = -gauss_newton.natural_gradient.copy()
+    trainable = np.asarray(jacobian.trainable, dtype=bool)
+    if max_step_norm_value is not None and np.any(trainable):
+        norm = float(np.linalg.norm(step[trainable], ord=2))
+        if norm > max_step_norm_value:
+            step[trainable] *= max_step_norm_value / norm
+
+    candidate_values = current_values + step
+    if bounds is not None:
+        candidate_values = _project_bounds(
+            candidate_values, _normalise_bounds(current_values, bounds)
+        )
+        step = candidate_values - current_values
+
+    model_gradient = gauss_newton.base_gradient.gradient
+    predicted_reduction = -float(model_gradient @ step + 0.5 * step @ gauss_newton.metric @ step)
+    return LevenbergMarquardtStep(
+        gauss_newton=gauss_newton,
+        step=step,
+        candidate_values=candidate_values,
+        damping=damping_value,
+        predicted_reduction=predicted_reduction,
+    )
+
+
 def natural_gradient(
     gradient_result: GradientResult,
     metric: ArrayLike,
@@ -1255,6 +1353,7 @@ __all__ = [
     "GradientResult",
     "HessianResult",
     "JacobianResult",
+    "LevenbergMarquardtStep",
     "NaturalGradientResult",
     "OptimizationResult",
     "Parameter",
@@ -1272,6 +1371,7 @@ __all__ = [
     "gauss_newton_gradient",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
+    "levenberg_marquardt_step",
     "natural_gradient",
     "weighted_gradient_sum",
     "parameter_shift_gradient",
