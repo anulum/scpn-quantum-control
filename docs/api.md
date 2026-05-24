@@ -399,7 +399,7 @@ check.passed                # True when parameter shift matches finite differenc
 updated = DifferentiableOptimizer(learning_rate=0.01).step(
     [0.1, -0.2],
     result,
-    bounds=[ParameterBounds(lower=-np.pi, upper=np.pi), ParameterBounds()],
+    bounds=[ParameterBounds(lower=-np.pi, upper=np.pi, periodic=True), ParameterBounds()],
     max_gradient_norm=10.0,
 )
 
@@ -407,7 +407,7 @@ opt_result = DifferentiableOptimizer(learning_rate=0.05).minimize(
     lambda theta: 1.0 - np.cos(theta[0]),
     [0.3],
     gradient_method="parameter_shift",
-    bounds=[ParameterBounds(lower=-np.pi, upper=np.pi)],
+    bounds=[ParameterBounds(lower=-np.pi, upper=np.pi, periodic=True)],
     max_gradient_norm=10.0,
     max_steps=100,
     gradient_tolerance=1e-8,
@@ -420,7 +420,7 @@ Available primitives:
 
 ```python
 Parameter(name: str, trainable: bool = True)
-ParameterBounds(lower=None, upper=None)
+ParameterBounds(lower=None, upper=None, periodic=False)
 ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
 GradientResult(value, gradient, method, shift, coefficient, evaluations, parameter_names, trainable)
 OptimizationResult(values, final_gradient, value_history, steps, converged, reason, best_values=None, best_value=None)
@@ -453,6 +453,8 @@ objectives that are not parameter-shift compatible.
 `ParameterBounds` applies closed-interval projection to optimizer updates and
 initial values, allowing angular, hardware-calibration, or physically admissible
 parameter domains to be enforced at the differentiable layer.
+For quantum rotation angles, set `periodic=True` with finite `lower` and `upper`
+to wrap values into the half-open interval `[lower, upper)` instead of clipping.
 `max_gradient_norm` clips only trainable-gradient components before an optimizer
 step, which prevents unstable updates while preserving frozen parameters.
 `OptimizationResult` also records `best_values` and `best_value`, so callers can

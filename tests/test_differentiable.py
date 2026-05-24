@@ -310,6 +310,30 @@ def test_gradient_descent_step_projects_box_bounds() -> None:
     np.testing.assert_allclose(updated, [-0.5, 0.25])
 
 
+def test_gradient_descent_step_wraps_periodic_bounds() -> None:
+    """Periodic quantum-angle domains should wrap instead of clip."""
+
+    result = GradientResult(
+        value=1.0,
+        gradient=np.array([-4.0 * math.pi]),
+        method="parameter_shift",
+        shift=math.pi / 2,
+        coefficient=0.5,
+        evaluations=3,
+        parameter_names=("angle",),
+        trainable=(True,),
+    )
+    optimizer = DifferentiableOptimizer(learning_rate=1.0)
+
+    updated = optimizer.step(
+        [0.25],
+        result,
+        bounds=[ParameterBounds(lower=-math.pi, upper=math.pi, periodic=True)],
+    )
+
+    np.testing.assert_allclose(updated, [0.25], atol=1.0e-12)
+
+
 def test_gradient_descent_step_clips_trainable_gradient_norm() -> None:
     """Optimizer steps should optionally clip trainable gradient norm."""
 
@@ -337,6 +361,12 @@ def test_parameter_bounds_reject_invalid_intervals() -> None:
         ParameterBounds(lower="0.0")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="less than or equal"):
         ParameterBounds(lower=1.0, upper=0.0)
+    with pytest.raises(ValueError, match="periodic flag"):
+        ParameterBounds(lower=-math.pi, upper=math.pi, periodic=np.bool_(True))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="periodic bounds require finite"):
+        ParameterBounds(lower=-math.pi, periodic=True)
+    with pytest.raises(ValueError, match="periodic bounds require lower < upper"):
+        ParameterBounds(lower=1.0, upper=1.0, periodic=True)
 
 
 def test_optimizer_minimize_converges_for_shift_compatible_quadratic() -> None:
@@ -408,6 +438,21 @@ def test_optimizer_minimize_projects_initial_and_updated_bounds() -> None:
 
     assert result.values[0] <= 0.25
     assert result.value_history[0] == pytest.approx(0.25**2)
+
+
+def test_optimizer_minimize_wraps_initial_periodic_bounds() -> None:
+    """Periodic bounds should canonicalize initial angles before evaluation."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=0.1)
+    result = optimizer.minimize(
+        lambda values: 1.0 - math.cos(values[0]),
+        [3.0 * math.pi],
+        bounds=[ParameterBounds(lower=-math.pi, upper=math.pi, periodic=True)],
+        max_steps=0,
+    )
+
+    assert result.values[0] == pytest.approx(-math.pi)
+    assert result.value_history[0] == pytest.approx(2.0)
 
 
 def test_optimizer_minimize_accepts_gradient_clipping() -> None:

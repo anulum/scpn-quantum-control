@@ -73,12 +73,20 @@ class ParameterBounds:
 
     lower: float | None = None
     upper: float | None = None
+    periodic: bool = False
 
     def __post_init__(self) -> None:
+        if not isinstance(self.periodic, bool):
+            raise ValueError("periodic flag must be a boolean")
         lower = None if self.lower is None else _as_real_scalar("lower bound", self.lower)
         upper = None if self.upper is None else _as_real_scalar("upper bound", self.upper)
         if lower is not None and upper is not None and lower > upper:
             raise ValueError("lower bound must be less than or equal to upper bound")
+        if self.periodic:
+            if lower is None or upper is None:
+                raise ValueError("periodic bounds require finite lower and upper bounds")
+            if lower == upper:
+                raise ValueError("periodic bounds require lower < upper")
         object.__setattr__(self, "lower", lower)
         object.__setattr__(self, "upper", upper)
 
@@ -430,6 +438,12 @@ def _project_bounds(
 ) -> NDArray[np.float64]:
     projected = values.copy()
     for index, bound in enumerate(bounds):
+        if bound.periodic:
+            lower = cast(float, bound.lower)
+            upper = cast(float, bound.upper)
+            width = upper - lower
+            projected[index] = ((projected[index] - lower) % width) + lower
+            continue
         if bound.lower is not None and projected[index] < bound.lower:
             projected[index] = bound.lower
         if bound.upper is not None and projected[index] > bound.upper:
