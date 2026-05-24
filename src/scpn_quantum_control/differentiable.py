@@ -23,6 +23,7 @@ from numpy.typing import ArrayLike, NDArray
 
 ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]]
 VectorObjective = Callable[[NDArray[np.float64]], ArrayLike]
+ComplexStepObjective = Callable[[NDArray[np.complex128]], object]
 
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
@@ -1745,6 +1746,21 @@ def _as_scalar(value: float | int | np.floating[Any] | NDArray[np.float64]) -> f
     return scalar
 
 
+def _as_complex_step_scalar(value: object) -> complex:
+    """Return a scalar objective value that may carry a complex-step signal."""
+
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U"}:
+        raise ValueError("complex-step objective must return a scalar")
+    try:
+        scalar = complex(raw.item())
+    except (TypeError, ValueError) as exc:
+        raise ValueError("complex-step objective must return a numeric scalar") from exc
+    if not np.isfinite(scalar.real) or not np.isfinite(scalar.imag):
+        raise ValueError("complex-step objective returned a non-finite scalar")
+    return scalar
+
+
 def _as_vector_output(value: ArrayLike) -> NDArray[np.float64]:
     vector = _as_real_numeric_array("differentiable vector objective", value)
     if vector.ndim != 1:
@@ -1947,6 +1963,24 @@ def finite_difference_gradient(
     return result.gradient
 
 
+def complex_step_gradient(
+    objective: ComplexStepObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-30,
+) -> NDArray[np.float64]:
+    """Return a complex-step gradient for real-analytic scalar objectives."""
+
+    result = value_and_complex_step_grad(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+    return result.gradient
+
+
 def batch_value_and_finite_difference_grad(
     objectives: Sequence[ScalarObjective],
     values: ArrayLike,
@@ -2015,6 +2049,48 @@ def weighted_gradient_sum(
         evaluations=evaluations,
         parameter_names=reference.parameter_names,
         trainable=reference.trainable,
+    )
+
+
+def value_and_complex_step_grad(
+    objective: ComplexStepObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-30,
+) -> GradientResult:
+    """Evaluate a real-analytic scalar objective and complex-step gradient."""
+
+    step_value = _as_real_scalar("complex-step step", step)
+    if step_value <= 0.0:
+        raise ValueError("complex-step step must be finite and positive")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    gradient = np.zeros_like(parameter_values)
+    base_scalar = _as_complex_step_scalar(objective(parameter_values.copy()))
+    if base_scalar.imag != 0.0:
+        raise ValueError("complex-step objective returned a non-real base scalar")
+    base_value = float(base_scalar.real)
+    evaluations = 1
+
+    for index, parameter in enumerate(parameter_meta):
+        if not parameter.trainable:
+            continue
+        perturbed = parameter_values.astype(np.complex128)
+        perturbed[index] += 1j * step_value
+        perturbed_value = _as_complex_step_scalar(objective(perturbed))
+        evaluations += 1
+        gradient[index] = perturbed_value.imag / step_value
+
+    return GradientResult(
+        value=base_value,
+        gradient=gradient,
+        method="complex_step",
+        shift=step_value,
+        coefficient=1.0 / step_value,
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
     )
 
 
@@ -3182,6 +3258,7 @@ __all__ = [
     "batch_value_and_parameter_shift_grad",
     "batch_vector_jacobian_product",
     "check_parameter_shift_consistency",
+    "complex_step_gradient",
     "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",
@@ -3203,6 +3280,7 @@ __all__ = [
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",
     "parameter_shift_gradient",
+    "value_and_complex_step_grad",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",
     "value_and_finite_difference_hvp",

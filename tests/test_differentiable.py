@@ -52,6 +52,7 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_parameter_shift_grad,
     batch_vector_jacobian_product,
     check_parameter_shift_consistency,
+    complex_step_gradient,
     empirical_fisher_conjugate_gradient,
     empirical_fisher_metric,
     empirical_fisher_vector_product,
@@ -72,6 +73,7 @@ from scpn_quantum_control.differentiable import (
     parameter_shift_gradient,
     soft_l1_residual_weights,
     update_levenberg_marquardt_damping,
+    value_and_complex_step_grad,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_hvp,
@@ -310,6 +312,62 @@ def test_finite_difference_gradient_rejects_invalid_step() -> None:
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step="1e-6")
     with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step=0.0)
+
+
+def test_complex_step_gradient_matches_analytic_derivative() -> None:
+    """Complex-step gradients should avoid finite-difference cancellation."""
+
+    result = value_and_complex_step_grad(
+        lambda values: np.sin(values[0]) + values[1] ** 3,
+        [0.4, -0.2],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+
+    assert isinstance(result, GradientResult)
+    assert result.method == "complex_step"
+    assert result.evaluations == 3
+    assert result.parameter_names == ("x", "y")
+    np.testing.assert_allclose(
+        result.gradient,
+        [np.cos(0.4), 3.0 * (-0.2) ** 2],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+    np.testing.assert_allclose(
+        complex_step_gradient(lambda values: values[0] ** 2, [3.0]),
+        [6.0],
+        rtol=1.0e-14,
+        atol=1.0e-14,
+    )
+
+
+def test_complex_step_gradient_respects_frozen_parameters() -> None:
+    """Complex-step gradients must preserve trainable masks exactly."""
+
+    result = value_and_complex_step_grad(
+        lambda values: values[0] ** 2 + np.exp(values[1]),
+        [2.0, 0.5],
+        parameters=[Parameter("active"), Parameter("frozen", trainable=False)],
+    )
+
+    assert result.evaluations == 2
+    assert result.trainable == (True, False)
+    np.testing.assert_allclose(result.gradient, [4.0, 0.0], rtol=1.0e-14, atol=1.0e-14)
+
+
+def test_complex_step_gradient_rejects_invalid_inputs() -> None:
+    """Complex-step gradients should fail closed on invalid scalar contracts."""
+
+    with pytest.raises(ValueError, match="complex-step step must be a real numeric scalar"):
+        complex_step_gradient(lambda values: values[0] ** 2, [1.0], step="1e-30")
+    with pytest.raises(ValueError, match="complex-step step must be finite and positive"):
+        complex_step_gradient(lambda values: values[0] ** 2, [1.0], step=0.0)
+    with pytest.raises(ValueError, match="complex-step objective must return a scalar"):
+        complex_step_gradient(lambda values: np.array([values[0], values[0]]), [1.0])
+    with pytest.raises(ValueError, match="complex-step objective must return a scalar"):
+        complex_step_gradient(lambda values: "not numeric", [1.0])
+    with pytest.raises(ValueError, match="complex-step objective returned a non-finite scalar"):
+        complex_step_gradient(lambda values: values[0] * complex(np.nan, 1.0), [1.0])
 
 
 def test_finite_difference_jacobian_matches_vector_objective() -> None:
@@ -2010,6 +2068,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.ParameterBounds is ParameterBounds
     assert scpn.WeightedGradientResult is WeightedGradientResult
     assert scpn.VJPResult is VJPResult
+    assert scpn.complex_step_gradient is complex_step_gradient
+    assert scpn.value_and_complex_step_grad is value_and_complex_step_grad
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.batch_finite_difference_hvp is batch_finite_difference_hvp
     assert scpn.batch_finite_difference_jvp is batch_finite_difference_jvp
