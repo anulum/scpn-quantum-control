@@ -390,15 +390,17 @@ class QPUDataArtifact:
         )
         canonical_K_nm = _finite_float_array("K_nm", K_nm, ndim=2).tolist()
         canonical_omega = _finite_float_array("omega", omega, ndim=1).tolist()
-        canonical_payload = dict(payload)
-        canonical_payload["source_project"] = source_project
-        canonical_payload["dt_s"] = dt_s
-        canonical_payload["n_steps"] = n_steps
-        canonical_payload["n_layers"] = n_layers
-        canonical_payload["seed"] = seed
-        canonical_payload["layer_ids"] = list(canonical_layer_ids)
-        canonical_payload["knm"] = canonical_K_nm
-        canonical_payload["omega_rad_s"] = canonical_omega
+        canonical_payload = {
+            "schema_version": SC_NEUROCORE_STREAM_SCHEMA,
+            "source_project": source_project,
+            "seed": seed,
+            "dt_s": dt_s,
+            "n_steps": n_steps,
+            "n_layers": n_layers,
+            "layer_ids": list(canonical_layer_ids),
+            "knm": canonical_K_nm,
+            "omega_rad_s": canonical_omega,
+        }
         metadata = {
             "source_project": source_project,
             "dt_s": dt_s,

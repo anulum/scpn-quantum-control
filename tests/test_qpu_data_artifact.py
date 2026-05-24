@@ -496,6 +496,27 @@ def test_scpn_datastream_adapter_hashes_canonical_numeric_containers():
     assert integer_variant.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
 
 
+def test_scpn_datastream_adapter_ignores_extra_keys_in_payload_fingerprint():
+    base_payload = {
+        "schema_version": "sc-neurocore.scpn.datastream.v1",
+        "source_project": "sc-neurocore",
+        "seed": 11,
+        "dt_s": 0.01,
+        "n_steps": 3,
+        "n_layers": 2,
+        "layer_ids": ["l1", "l2"],
+        "omega_rad_s": [0.1, 0.2],
+        "knm": [[0.0, 0.2], [0.2, 0.0]],
+    }
+    annotated_payload = dict(base_payload)
+    annotated_payload["operator_note"] = "not part of canonical physics payload"
+
+    baseline = QPUDataArtifact.from_scpn_datastream_payload(base_payload)
+    annotated = QPUDataArtifact.from_scpn_datastream_payload(annotated_payload)
+
+    assert annotated.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
+
+
 def test_scpn_datastream_adapter_rejects_publication_safe_source_mode():
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
