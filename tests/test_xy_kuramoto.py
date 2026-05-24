@@ -58,6 +58,20 @@ def test_rejects_non_finite_inputs():
         QuantumKuramotoSolver(2, np.zeros((2, 2)), np.array([0.0, np.nan]))
 
 
+def test_rejects_string_coupling_coercion():
+    K = [["0.0", "1.0"], ["1.0", "0.0"]]
+    omega = np.zeros(2)
+    with pytest.raises(ValueError, match="K_coupling must contain real numeric scalars"):
+        QuantumKuramotoSolver(2, K, omega)
+
+
+def test_rejects_boolean_frequency_coercion():
+    K = np.zeros((2, 2))
+    omega = [True, False]
+    with pytest.raises(ValueError, match="omega_natural must contain real numeric scalars"):
+        QuantumKuramotoSolver(2, K, omega)
+
+
 def test_rejects_asymmetric_coupling_matrix():
     K = np.array([[0.0, 1.0], [0.5, 0.0]])
     omega = np.zeros(2)

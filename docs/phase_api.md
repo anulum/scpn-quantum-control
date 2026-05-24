@@ -50,7 +50,9 @@ second-order Suzuki-Trotter variant or the QSVT-based evolution (see below).
 Input validation is intentionally strict for this gate-model XY solver:
 `K_coupling` must be finite, square, symmetric, and shaped
 `(n_oscillators, n_oscillators)`; `omega_natural` must be finite and shaped
-`(n_oscillators,)`; `trotter_order` is limited to 1 or 2. Directed or
+`(n_oscillators,)`; both numeric inputs must already be real numeric arrays or
+array-like numeric sequences rather than strings, booleans, objects, or complex
+values that NumPy could coerce silently; `trotter_order` is limited to 1 or 2. Directed or
 non-reciprocal Kuramoto variants should use a dedicated model rather than being
 silently coerced into this symmetric XY mapping.
 

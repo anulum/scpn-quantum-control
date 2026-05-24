@@ -30,6 +30,23 @@ from ..dense_budget import require_dense_allocation
 from .results import TrajectoryResult
 
 
+def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+    """Return a real numeric array without implicit string/bool/object coercion."""
+    try:
+        raw = np.asarray(values)
+    except ValueError as exc:
+        raise ValueError(f"{name} must be a rectangular numeric array") from exc
+
+    if raw.dtype.kind in {"b", "O", "S", "U"}:
+        raise ValueError(f"{name} must contain real numeric scalars")
+    if raw.dtype.kind == "c":
+        raise ValueError(f"{name} must contain real numeric scalars")
+    try:
+        return np.array(raw, dtype=np.float64, copy=True)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must contain real numeric scalars") from exc
+
+
 @dataclass(frozen=True)
 class TrotterEvolutionConfig:
     """Typed defaults for Kuramoto-XY Trotter evolution.
@@ -72,8 +89,8 @@ class QuantumKuramotoSolver:
     ):
         """K_coupling: (n,n) coupling matrix, omega_natural: (n,) frequencies."""
         self.n = self._validate_n_oscillators(n_oscillators)
-        self.K = np.array(K_coupling, dtype=np.float64, copy=True)
-        self.omega = np.array(omega_natural, dtype=np.float64, copy=True)
+        self.K = _as_real_numeric_array("K_coupling", K_coupling)
+        self.omega = _as_real_numeric_array("omega_natural", omega_natural)
         self._validate_coupling_inputs(self.n, self.K, self.omega)
         np.fill_diagonal(self.K, 0.0)
         config = evolution_config or TrotterEvolutionConfig()
