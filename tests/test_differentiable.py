@@ -39,6 +39,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    SparseMatrixResult,
     StochasticGradientResult,
     VJPResult,
     WeightedGradientResult,
@@ -57,6 +58,7 @@ from scpn_quantum_control.differentiable import (
     batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    dense_to_sparse_matrix,
     dual_cos,
     dual_exp,
     dual_log,
@@ -85,6 +87,9 @@ from scpn_quantum_control.differentiable import (
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
     soft_l1_residual_weights,
+    sparse_empirical_fisher_metric,
+    sparse_hessian,
+    sparse_jacobian,
     update_levenberg_marquardt_damping,
     value_and_complex_step_grad,
     value_and_finite_difference_grad,
@@ -436,6 +441,90 @@ def test_forward_mode_dual_rejects_invalid_contracts() -> None:
         forward_mode_gradient(lambda values: values[0] / (values[0] - 1.0), [1.0])
     with pytest.raises(ValueError, match="dual variable exponent"):
         forward_mode_gradient(lambda values: (-1.0) ** values[0], [2.0])
+
+
+def test_sparse_matrix_result_round_trips_dense_derivatives() -> None:
+    """Sparse coordinate derivatives should preserve dense values and metadata."""
+
+    dense = np.array([[1.0, 0.0, 2.0e-8], [0.0, -3.0, 0.0]])
+    sparse = dense_to_sparse_matrix(
+        dense,
+        parameter_names=("a", "b", "c"),
+        trainable=(True, False, True),
+        tolerance=1.0e-7,
+    )
+
+    assert isinstance(sparse, SparseMatrixResult)
+    assert sparse.nnz == 2
+    assert sparse.shape == dense.shape
+    assert sparse.parameter_names == ("a", "b", "c")
+    assert sparse.trainable == (True, False, True)
+    np.testing.assert_allclose(sparse.to_dense(), [[1.0, 0.0, 0.0], [0.0, -3.0, 0.0]])
+
+
+def test_sparse_jacobian_hessian_and_fisher_preserve_provenance() -> None:
+    """Sparse helpers should convert derivative result objects without metadata loss."""
+
+    jacobian_result = JacobianResult(
+        value=np.array([1.0, -2.0]),
+        jacobian=np.array([[1.0, 0.0], [0.0, 2.0]]),
+        method="analytic",
+        step=1.0,
+        evaluations=1,
+        parameter_names=("x", "y"),
+        trainable=(True, False),
+    )
+    hessian_result = HessianResult(
+        value=1.0,
+        hessian=np.array([[2.0, 0.0], [0.0, 0.0]]),
+        method="analytic",
+        step=1.0,
+        evaluations=1,
+        parameter_names=("x", "y"),
+        trainable=(True, False),
+    )
+
+    sparse_j = sparse_jacobian(jacobian_result)
+    sparse_h = sparse_hessian(hessian_result)
+    sparse_fisher = sparse_empirical_fisher_metric(jacobian_result)
+
+    assert sparse_j.method == "sparse:analytic"
+    assert sparse_h.method == "sparse:analytic"
+    assert sparse_fisher.method == "sparse:empirical_fisher"
+    assert sparse_j.parameter_names == ("x", "y")
+    assert sparse_h.trainable == (True, False)
+    np.testing.assert_allclose(sparse_j.to_dense(), jacobian_result.jacobian)
+    np.testing.assert_allclose(sparse_h.to_dense(), hessian_result.hessian)
+    np.testing.assert_allclose(sparse_fisher.to_dense(), [[1.0, 0.0], [0.0, 4.0]])
+
+
+def test_sparse_matrix_result_rejects_invalid_contracts() -> None:
+    """Sparse derivative containers must fail closed on malformed coordinates."""
+
+    with pytest.raises(ValueError, match="duplicate"):
+        SparseMatrixResult(
+            row_indices=np.array([0, 0]),
+            column_indices=np.array([1, 1]),
+            values=np.array([1.0, 2.0]),
+            shape=(2, 2),
+            method="bad",
+            parameter_names=("x", "y"),
+            trainable=(True, True),
+        )
+    with pytest.raises(ValueError, match="inside matrix shape"):
+        SparseMatrixResult(
+            row_indices=np.array([2]),
+            column_indices=np.array([0]),
+            values=np.array([1.0]),
+            shape=(2, 2),
+            method="bad",
+            parameter_names=("x", "y"),
+            trainable=(True, True),
+        )
+    with pytest.raises(ValueError, match="parameter_names"):
+        dense_to_sparse_matrix(np.eye(2), parameter_names=("x",))
+    with pytest.raises(ValueError, match="sparse tolerance"):
+        dense_to_sparse_matrix(np.eye(2), tolerance=-1.0)
 
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
@@ -2321,6 +2410,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.FisherVectorProductResult is FisherVectorProductResult
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
+    assert scpn.SparseMatrixResult is SparseMatrixResult
     assert scpn.StochasticGradientResult is StochasticGradientResult
     assert scpn.WeightedGradientResult is WeightedGradientResult
     assert scpn.VJPResult is VJPResult
@@ -2331,6 +2421,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.dual_exp is dual_exp
     assert scpn.dual_log is dual_log
     assert scpn.dual_sin is dual_sin
+    assert scpn.dense_to_sparse_matrix is dense_to_sparse_matrix
     assert scpn.value_and_complex_step_grad is value_and_complex_step_grad
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.batch_finite_difference_hvp is batch_finite_difference_hvp
@@ -2374,6 +2465,9 @@ def test_differentiable_api_exported_from_package_root() -> None:
         scpn.parameter_shift_gradient_with_uncertainty is parameter_shift_gradient_with_uncertainty
     )
     assert scpn.soft_l1_residual_weights is soft_l1_residual_weights
+    assert scpn.sparse_empirical_fisher_metric is sparse_empirical_fisher_metric
+    assert scpn.sparse_hessian is sparse_hessian
+    assert scpn.sparse_jacobian is sparse_jacobian
     assert scpn.update_levenberg_marquardt_damping is update_levenberg_marquardt_damping
     assert scpn.weighted_gradient_sum is weighted_gradient_sum
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency

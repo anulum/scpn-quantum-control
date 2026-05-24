@@ -55,6 +55,20 @@ def _as_real_scalar(name: str, value: object) -> float:
     return scalar
 
 
+def _as_index_vector(name: str, values: object) -> NDArray[np.int64]:
+    """Return a one-dimensional non-negative integer index vector."""
+
+    raw = np.asarray(values)
+    if raw.dtype.kind not in {"i", "u"}:
+        raise ValueError(f"{name} must contain integer indices")
+    array = np.asarray(raw, dtype=np.int64)
+    if array.ndim != 1:
+        raise ValueError(f"{name} must be one-dimensional")
+    if np.any(array < 0):
+        raise ValueError(f"{name} must contain non-negative indices")
+    return cast(NDArray[np.int64], array)
+
+
 @dataclass(frozen=True)
 class Parameter:
     """One differentiable scalar parameter in an SCPN objective."""
@@ -651,6 +665,69 @@ class HessianResult:
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "hessian", hessian)
         object.__setattr__(self, "step", step)
+
+
+@dataclass(frozen=True)
+class SparseMatrixResult:
+    """Coordinate sparse derivative matrix with parameter provenance."""
+
+    row_indices: NDArray[np.int64]
+    column_indices: NDArray[np.int64]
+    values: NDArray[np.float64]
+    shape: tuple[int, int]
+    method: str
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        rows = _as_index_vector("sparse row_indices", self.row_indices)
+        columns = _as_index_vector("sparse column_indices", self.column_indices)
+        values = _as_real_numeric_array("sparse values", self.values)
+        if values.ndim != 1:
+            raise ValueError("sparse values must be one-dimensional")
+        if rows.size != columns.size or rows.size != values.size:
+            raise ValueError("sparse row, column, and value lengths must match")
+        if (
+            len(self.shape) != 2
+            or any(isinstance(item, bool) or not isinstance(item, int) for item in self.shape)
+            or self.shape[0] < 1
+            or self.shape[1] < 1
+        ):
+            raise ValueError("sparse shape must contain two positive integer dimensions")
+        if rows.size:
+            if int(rows.max()) >= self.shape[0] or int(columns.max()) >= self.shape[1]:
+                raise ValueError("sparse indices must be inside matrix shape")
+            coordinates = set(zip(rows.tolist(), columns.tolist()))
+            if len(coordinates) != rows.size:
+                raise ValueError("sparse indices must not contain duplicate coordinates")
+        if not np.all(np.isfinite(values)):
+            raise ValueError("sparse values must contain only finite values")
+        if not self.method:
+            raise ValueError("sparse method must be non-empty")
+        if len(self.parameter_names) != self.shape[1]:
+            raise ValueError("parameter_names length must match sparse column count")
+        if len(self.trainable) != self.shape[1]:
+            raise ValueError("trainable mask length must match sparse column count")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "row_indices", rows)
+        object.__setattr__(self, "column_indices", columns)
+        object.__setattr__(self, "values", values)
+
+    @property
+    def nnz(self) -> int:
+        """Number of explicitly stored non-zero entries."""
+
+        return int(self.values.size)
+
+    def to_dense(self) -> NDArray[np.float64]:
+        """Materialise the sparse coordinate matrix as a dense array."""
+
+        dense = np.zeros(self.shape, dtype=np.float64)
+        dense[self.row_indices, self.column_indices] = self.values
+        return cast(NDArray[np.float64], dense)
 
 
 @dataclass(frozen=True)
@@ -2492,6 +2569,81 @@ def hessian(
     ).hessian
 
 
+def dense_to_sparse_matrix(
+    matrix: ArrayLike,
+    *,
+    parameter_names: Sequence[str] | None = None,
+    trainable: Sequence[bool] | None = None,
+    method: str = "dense_to_sparse",
+    tolerance: float = 0.0,
+) -> SparseMatrixResult:
+    """Convert a dense derivative matrix to a validated coordinate sparse form."""
+
+    matrix_arr = _as_real_numeric_array("sparse source matrix", matrix)
+    if matrix_arr.ndim != 2:
+        raise ValueError("sparse source matrix must be two-dimensional")
+    if not np.all(np.isfinite(matrix_arr)):
+        raise ValueError("sparse source matrix must contain only finite values")
+    tolerance_value = _as_real_scalar("sparse tolerance", tolerance)
+    if tolerance_value < 0.0:
+        raise ValueError("sparse tolerance must be finite and non-negative")
+    names = (
+        tuple(f"p{index}" for index in range(matrix_arr.shape[1]))
+        if parameter_names is None
+        else tuple(parameter_names)
+    )
+    trainable_mask = (
+        tuple(True for _ in range(matrix_arr.shape[1])) if trainable is None else tuple(trainable)
+    )
+    row_indices, column_indices = np.nonzero(np.abs(matrix_arr) > tolerance_value)
+    values = matrix_arr[row_indices, column_indices]
+    return SparseMatrixResult(
+        row_indices=cast(NDArray[np.int64], row_indices.astype(np.int64)),
+        column_indices=cast(NDArray[np.int64], column_indices.astype(np.int64)),
+        values=cast(NDArray[np.float64], values.astype(np.float64)),
+        shape=matrix_arr.shape,
+        method=method,
+        parameter_names=names,
+        trainable=trainable_mask,
+    )
+
+
+def sparse_jacobian(
+    jacobian_result: JacobianResult,
+    *,
+    tolerance: float = 0.0,
+) -> SparseMatrixResult:
+    """Return a coordinate sparse representation of a Jacobian result."""
+
+    if not isinstance(jacobian_result, JacobianResult):
+        raise ValueError("sparse_jacobian requires a JacobianResult")
+    return dense_to_sparse_matrix(
+        jacobian_result.jacobian,
+        parameter_names=jacobian_result.parameter_names,
+        trainable=jacobian_result.trainable,
+        method=f"sparse:{jacobian_result.method}",
+        tolerance=tolerance,
+    )
+
+
+def sparse_hessian(
+    hessian_result: HessianResult,
+    *,
+    tolerance: float = 0.0,
+) -> SparseMatrixResult:
+    """Return a coordinate sparse representation of a Hessian result."""
+
+    if not isinstance(hessian_result, HessianResult):
+        raise ValueError("sparse_hessian requires a HessianResult")
+    return dense_to_sparse_matrix(
+        hessian_result.hessian,
+        parameter_names=hessian_result.parameter_names,
+        trainable=hessian_result.trainable,
+        method=f"sparse:{hessian_result.method}",
+        tolerance=tolerance,
+    )
+
+
 def batch_value_and_finite_difference_grad(
     objectives: Sequence[ScalarObjective],
     values: ArrayLike,
@@ -3149,6 +3301,32 @@ def empirical_fisher_metric(
     return cast(NDArray[np.float64], metric)
 
 
+def sparse_empirical_fisher_metric(
+    jacobian: JacobianResult | ArrayLike,
+    *,
+    weights: ArrayLike | None = None,
+    damping: float = 0.0,
+    tolerance: float = 0.0,
+) -> SparseMatrixResult:
+    """Return a sparse coordinate empirical-Fisher metric."""
+
+    metric = empirical_fisher_metric(jacobian, weights=weights, damping=damping)
+    if isinstance(jacobian, JacobianResult):
+        parameter_names = jacobian.parameter_names
+        trainable = jacobian.trainable
+    else:
+        parameter_count = metric.shape[1]
+        parameter_names = tuple(f"p{index}" for index in range(parameter_count))
+        trainable = tuple(True for _ in range(parameter_count))
+    return dense_to_sparse_matrix(
+        metric,
+        parameter_names=parameter_names,
+        trainable=trainable,
+        method="sparse:empirical_fisher",
+        tolerance=tolerance,
+    )
+
+
 def empirical_fisher_vector_product(
     jacobian: JacobianResult,
     tangent: ArrayLike,
@@ -3756,6 +3934,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "SparseMatrixResult",
     "StochasticGradientResult",
     "VJPResult",
     "WeightedGradientResult",
@@ -3778,6 +3957,7 @@ __all__ = [
     "dual_exp",
     "dual_log",
     "dual_sin",
+    "dense_to_sparse_matrix",
     "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",
@@ -3800,6 +3980,9 @@ __all__ = [
     "levenberg_marquardt_step",
     "natural_gradient",
     "soft_l1_residual_weights",
+    "sparse_empirical_fisher_metric",
+    "sparse_hessian",
+    "sparse_jacobian",
     "parameter_shift_gradient_with_uncertainty",
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",

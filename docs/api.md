@@ -388,6 +388,7 @@ from scpn_quantum_control import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    SparseMatrixResult,
     StochasticGradientResult,
     VJPResult,
     armijo_backtracking_line_search,
@@ -407,6 +408,7 @@ from scpn_quantum_control import (
     dual_exp,
     dual_log,
     dual_sin,
+    dense_to_sparse_matrix,
     empirical_fisher_conjugate_gradient,
     empirical_fisher_vector_product,
     evaluate_levenberg_marquardt_step,
@@ -427,6 +429,9 @@ from scpn_quantum_control import (
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
     soft_l1_residual_weights,
+    sparse_empirical_fisher_metric,
+    sparse_hessian,
+    sparse_jacobian,
     update_levenberg_marquardt_damping,
     value_and_complex_step_grad,
     value_and_finite_difference_grad,
@@ -496,6 +501,7 @@ DualNumber(primal, tangent=0.0)
 Parameter(name: str, trainable: bool = True)
 ParameterBounds(lower=None, upper=None, periodic=False)
 ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
+SparseMatrixResult(row_indices, column_indices, values, shape, method, parameter_names, trainable)
 FisherConjugateGradientResult(solution, residual_norm_history, iterations, converged, tolerance, damping, parameter_names, trainable)
 FisherVectorProductResult(value, tangent, product, residual_projection, damping, method, evaluations, parameter_names, trainable)
 GradientResult(value, gradient, method, shift, coefficient, evaluations, parameter_names, trainable)
@@ -541,6 +547,10 @@ finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
 jacobian(objective, values, parameters=None, method="finite_difference", step=1e-6) -> np.ndarray
 value_and_jacobian(objective, values, parameters=None, method="finite_difference", step=1e-6) -> JacobianResult
+dense_to_sparse_matrix(matrix, parameter_names=None, trainable=None, method="dense_to_sparse", tolerance=0.0) -> SparseMatrixResult
+sparse_jacobian(jacobian_result, tolerance=0.0) -> SparseMatrixResult
+sparse_hessian(hessian_result, tolerance=0.0) -> SparseMatrixResult
+sparse_empirical_fisher_metric(jacobian, weights=None, damping=0.0, tolerance=0.0) -> SparseMatrixResult
 finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jvp(objective, values, tangent, parameters=None, step=1e-6) -> JVPResult
 batch_finite_difference_jvp(objective, values, tangents, parameters=None, step=1e-6) -> np.ndarray
@@ -637,6 +647,11 @@ implicit-differentiation implementations behind the same public contract.
 `finite_difference_jacobian()` and `value_and_finite_difference_jacobian()`
 support vector-valued diagnostics such as multi-observable residual maps while
 requiring stable one-dimensional finite outputs across all perturbations.
+`SparseMatrixResult` and the `sparse_*` helpers provide dependency-free
+coordinate sparse representations for Jacobians, Hessians, and empirical Fisher
+metrics. Sparse conversion validates shapes, duplicate coordinates, trainable
+masks, and finite values so large structured derivatives can be stored or passed
+between control layers without silently corrupting dense semantics.
 `value_and_finite_difference_jvp()` computes directional forward-mode products
 without materialising a full Jacobian; `vector_jacobian_product()` and
 `finite_difference_vjp()` expose reverse-mode cotangent contractions with the

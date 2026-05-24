@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 352,
+    "public_api_exports": 357,
     "public_documentation_pages": 235,
-    "python_model_classes": 1467,
+    "python_model_classes": 1468,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -5796,6 +5796,10 @@
         "path": "src/scpn_quantum_control/paper0/slow_control_layer_neuroendocrine_integration_validation.py"
       },
       {
+        "name": "SparseMatrixResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "SpectralBridgeResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_spectral.py"
       },
@@ -7870,6 +7874,7 @@
     "RigettiQCSHALAdapter",
     "SNNQuantumBridge",
     "SSGFQuantumLoop",
+    "SparseMatrixResult",
     "StableCorePreflightResult",
     "StochasticGradientResult",
     "StrangeworksComputeHALAdapter",
@@ -7942,6 +7947,7 @@
     "complex_step_gradient",
     "compound_mitigate_pipeline",
     "concatenated_logical_rate",
+    "dense_to_sparse_matrix",
     "disposition_entanglement_map",
     "dual_cos",
     "dual_exp",
@@ -8059,6 +8065,9 @@
     "snapshot_from_strangeworks_backend",
     "soft_l1_residual_weights",
     "solve_identity",
+    "sparse_empirical_fisher_metric",
+    "sparse_hessian",
+    "sparse_jacobian",
     "spike_train_to_rotations",
     "ssgf",
     "ssgf_state_to_quantum",
