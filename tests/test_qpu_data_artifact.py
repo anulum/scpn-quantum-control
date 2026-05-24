@@ -222,6 +222,25 @@ def test_loader_rejects_stale_artifact_hash_after_metadata_tamper():
         QPUDataArtifact.from_dict(payload)
 
 
+def test_loader_rejects_malformed_artifact_hash():
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="hash-syntax-check",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+        metadata={"acquisition": "baseline"},
+    )
+    payload = artifact.to_dict()
+    payload["artifact_sha256"] = "not-a-sha256"
+
+    with pytest.raises(ValueError, match="artifact_sha256 must be lowercase SHA-256 hex"):
+        QPUDataArtifact.from_dict(payload)
+
+
 def test_artifact_arrays_are_defensive_copies_and_read_only():
     K_nm = _valid_knm(3)
     omega = np.array([0.1, 0.2, 0.3], dtype=np.float64)

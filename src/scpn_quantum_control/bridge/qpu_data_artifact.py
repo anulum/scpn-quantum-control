@@ -100,14 +100,18 @@ def _validate_hash_map(hashes: Mapping[str, Any]) -> dict[str, str]:
     for key, value in hashes.items():
         if key not in ARRAY_HASH_KEYS:
             raise ValueError(f"unknown hash key: {key}")
-        if (
-            not isinstance(value, str)
-            or len(value) != 64
-            or any(char not in SHA256_HEX_CHARS for char in value)
-        ):
-            raise ValueError(f"{key} must be lowercase SHA-256 hex")
-        validated[key] = value
+        validated[key] = _validate_sha256_hex(key, value)
     return validated
+
+
+def _validate_sha256_hex(name: str, value: Any) -> str:
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or any(char not in SHA256_HEX_CHARS for char in value)
+    ):
+        raise ValueError(f"{name} must be lowercase SHA-256 hex")
+    return value
 
 
 def _finite_float_array(name: str, value: Any, *, ndim: int) -> NDArray[np.float64]:
@@ -272,6 +276,9 @@ class QPUDataArtifact:
         )
         supplied_artifact_sha256 = data.get("artifact_sha256")
         if supplied_artifact_sha256 is not None:
+            supplied_artifact_sha256 = _validate_sha256_hex(
+                "artifact_sha256", supplied_artifact_sha256
+            )
             computed_artifact_sha256 = artifact.to_dict()["artifact_sha256"]
             if supplied_artifact_sha256 != computed_artifact_sha256:
                 raise ValueError("artifact_sha256 does not match the artifact payload")
