@@ -67,6 +67,13 @@ def _validate_expected_parity(expected_parity: int) -> None:
         raise ValueError(f"expected_parity must be 0 or 1, got {expected_parity!r}")
 
 
+def _validate_count(count: int) -> int:
+    count_value = int(count)
+    if count_value < 0:
+        raise ValueError("counts must be non-negative")
+    return count_value
+
+
 def bitstring_parity(bitstring: str) -> int:
     """Compute Z₂ parity of a measurement bitstring.
 
@@ -106,14 +113,16 @@ def parity_postselect(
         SymmetryVerificationResult with verified and rejected counts.
     """
     _validate_expected_parity(expected_parity)
-    for bitstring in counts:
+    clean_counts: dict[str, int] = {}
+    for bitstring, count in counts.items():
         _clean_bitstring(bitstring)
+        clean_counts[bitstring] = _validate_count(count)
     verified: dict[str, int] = {}
     rejected: dict[str, int] = {}
 
-    if _HAS_RUST and counts:  # pragma: no cover
-        keys = list(counts.keys())
-        vals = [counts[k] for k in keys]
+    if _HAS_RUST and clean_counts:  # pragma: no cover
+        keys = list(clean_counts.keys())
+        vals = [clean_counts[k] for k in keys]
         bs_ints = np.array([int(k.replace(" ", ""), 2) for k in keys], dtype=np.uint64)
         mask = np.array(_engine.parity_filter_mask(bs_ints, expected_parity))
         for i, k in enumerate(keys):
@@ -122,19 +131,19 @@ def parity_postselect(
             else:
                 rejected[k] = vals[i]
     else:
-        for bitstring, count in counts.items():
+        for bitstring, count in clean_counts.items():
             if bitstring_parity(bitstring) == expected_parity:
                 verified[bitstring] = count
             else:
                 rejected[bitstring] = count
 
-    raw_shots = sum(counts.values())
+    raw_shots = sum(clean_counts.values())
     verified_shots = sum(verified.values())
     rejected_shots = sum(rejected.values())
     rejection_rate = rejected_shots / raw_shots if raw_shots > 0 else 0.0
 
     return SymmetryVerificationResult(
-        raw_counts=counts,
+        raw_counts=clean_counts,
         verified_counts=verified,
         rejected_counts=rejected,
         raw_shots=raw_shots,
@@ -166,6 +175,7 @@ def symmetry_expand(
 
     for bitstring, count in counts.items():
         clean = _clean_bitstring(bitstring)
+        count = _validate_count(count)
         if bitstring_parity(clean) == expected_parity:
             expanded[clean] = expanded.get(clean, 0) + count
         else:

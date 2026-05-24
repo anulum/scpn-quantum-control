@@ -135,6 +135,10 @@ class TestParityPostselect:
         with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
             parity_postselect({"0a": 100}, expected_parity=0)
 
+    def test_rejects_negative_counts(self):
+        with pytest.raises(ValueError, match="counts must be non-negative"):
+            parity_postselect({"00": 100, "01": -1}, expected_parity=0)
+
 
 class TestSymmetryExpand:
     def test_correct_parity_unchanged(self):
@@ -172,6 +176,10 @@ class TestSymmetryExpand:
     def test_rejects_invalid_count_labels(self):
         with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
             symmetry_expand({"0x": 100}, expected_parity=0)
+
+    def test_rejects_negative_counts(self):
+        with pytest.raises(ValueError, match="counts must be non-negative"):
+            symmetry_expand({"00": 100, "01": -1}, expected_parity=0)
 
 
 class TestParityVerifiedExpectation:
