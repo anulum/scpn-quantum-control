@@ -100,14 +100,17 @@ def audit_test_paths(paths: Iterable[Path]) -> list[TestQualityFinding]:
 def repository_test_paths(root: Path) -> list[Path]:
     """Return tracked and worktree pytest modules below ``tests``."""
 
-    proc = subprocess.run(
-        ["git", "ls-files", "tests/*.py"],
-        check=True,
-        cwd=root,
-        text=True,
-        capture_output=True,
-    )
-    tracked = {Path(line) for line in proc.stdout.splitlines() if line}
+    try:
+        proc = subprocess.run(
+            ["git", "ls-files", "tests/*.py"],
+            check=True,
+            cwd=root,
+            text=True,
+            capture_output=True,
+        )
+        tracked = {Path(line) for line in proc.stdout.splitlines() if line}
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        tracked = set()
     worktree = {path.relative_to(root) for path in (root / "tests").glob("*.py")}
     return sorted(tracked | worktree, key=lambda item: item.as_posix())
 

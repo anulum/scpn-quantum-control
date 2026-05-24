@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import importlib.util
-import subprocess
 import sys
 from pathlib import Path
 
@@ -49,17 +48,21 @@ def test_forbidden_test_names_are_reported_with_policy_reasons() -> None:
 
 def test_repository_tests_do_not_use_forbidden_coverage_bucket_names() -> None:
     tool = _load_tool_module()
-    repository_paths = subprocess.run(
-        ["git", "ls-files", "tests/*.py"],
-        check=True,
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-    ).stdout.splitlines()
-    repository_paths.extend(
-        path.relative_to(ROOT).as_posix() for path in (ROOT / "tests").glob("*.py")
-    )
 
-    findings = tool.audit_test_paths(Path(path) for path in repository_paths)
+    findings = tool.audit_test_paths(tool.repository_test_paths(ROOT))
 
     assert findings == []
+
+
+def test_repository_test_paths_falls_back_without_git(tmp_path, monkeypatch) -> None:
+    tool = _load_tool_module()
+    tests_dir = tmp_path / "tests"
+    tests_dir.mkdir()
+    (tests_dir / "test_domain_contract.py").write_text("", encoding="utf-8")
+
+    def missing_git(*args, **kwargs):  # noqa: ARG001
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(tool.subprocess, "run", missing_git)
+
+    assert tool.repository_test_paths(tmp_path) == [Path("tests/test_domain_contract.py")]
