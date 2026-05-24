@@ -82,6 +82,8 @@ class TestComputeQSL:
             compute_qsl(K, omega, t_target=0.2, max_dense_gib=1e-12)
 
     def test_mt_arccos_branch_for_nonstationary_initial_state(self, monkeypatch):
+        import scpn_quantum_control.analysis.entanglement_enhanced_sync as sync_mod
+
         def fake_hamiltonian(K, omega):
             del K, omega
             return None
@@ -98,18 +100,70 @@ class TestComputeQSL:
         monkeypatch.setattr(qsl_mod, "knm_to_hamiltonian", fake_hamiltonian)
         monkeypatch.setattr(qsl_mod, "knm_to_dense_matrix", fake_dense_matrix)
         monkeypatch.setattr(qsl_mod, "classical_exact_diag", fake_exact_diag)
+        monkeypatch.setattr(sync_mod, "_state_order_parameter", lambda psi, n: 0.0)
 
         result = compute_qsl(
             np.zeros((1, 1)),
             np.zeros(1),
             t_target=0.2,
             dt=0.1,
-            R_threshold=2.0,
+            R_threshold=1.0,
         )
 
         assert result.overlap < 1.0
         assert result.delta_E == 1.0
         np.testing.assert_allclose(result.tau_MT, 0.2, atol=1e-12)
+
+    def test_non_integer_time_grid_evolves_to_reported_target_time(self, monkeypatch):
+        """If the threshold is not reached, the target state must be at t_target."""
+        import scpn_quantum_control.analysis.entanglement_enhanced_sync as sync_mod
+
+        def fake_hamiltonian(K, omega):
+            del K, omega
+            return None
+
+        def fake_dense_matrix(K, omega, **kwargs):
+            del K, omega
+            assert kwargs == {"max_dense_gib": None}
+            return np.array([[0.0, 1.0], [1.0, 0.0]])
+
+        def fake_exact_diag(n, *, K, omega):
+            del n, K, omega
+            return {"ground_energy": -1.0}
+
+        monkeypatch.setattr(qsl_mod, "knm_to_hamiltonian", fake_hamiltonian)
+        monkeypatch.setattr(qsl_mod, "knm_to_dense_matrix", fake_dense_matrix)
+        monkeypatch.setattr(qsl_mod, "classical_exact_diag", fake_exact_diag)
+        monkeypatch.setattr(sync_mod, "_state_order_parameter", lambda psi, n: 0.0)
+
+        result = compute_qsl(
+            np.zeros((1, 1)),
+            np.zeros(1),
+            t_target=0.25,
+            dt=0.1,
+            R_threshold=1.0,
+        )
+
+        assert result.tau_actual == pytest.approx(0.25)
+        np.testing.assert_allclose(result.overlap, np.cos(0.25), atol=1e-12)
+        np.testing.assert_allclose(result.tau_MT, 0.25, atol=1e-12)
+
+    @pytest.mark.parametrize(
+        ("kwargs", "message"),
+        [
+            ({"t_target": -0.1}, "t_target must be non-negative"),
+            ({"dt": 0.0}, "dt must be positive"),
+            ({"dt": -0.1}, "dt must be positive"),
+            ({"R_threshold": -0.1}, "R_threshold must be in \\[0, 1\\]"),
+            ({"R_threshold": 1.1}, "R_threshold must be in \\[0, 1\\]"),
+        ],
+    )
+    def test_invalid_qsl_time_grid_parameters_are_rejected(self, kwargs, message):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+
+        with pytest.raises(ValueError, match=message):
+            compute_qsl(K, omega, **kwargs)
 
 
 class TestQSLvsCoupling:

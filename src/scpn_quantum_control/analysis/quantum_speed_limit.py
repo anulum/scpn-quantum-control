@@ -66,6 +66,21 @@ class QSLResult:
     n_qubits: int
 
 
+def _validate_qsl_parameters(t_target: float, dt: float, R_threshold: float) -> None:
+    if not np.isfinite(t_target):
+        raise ValueError("t_target must be finite")
+    if t_target < 0.0:
+        raise ValueError("t_target must be non-negative")
+    if not np.isfinite(dt):
+        raise ValueError("dt must be finite")
+    if dt <= 0.0:
+        raise ValueError("dt must be positive")
+    if not np.isfinite(R_threshold):
+        raise ValueError("R_threshold must be finite")
+    if not 0.0 <= R_threshold <= 1.0:
+        raise ValueError("R_threshold must be in [0, 1]")
+
+
 def compute_qsl(
     K: np.ndarray,
     omega: np.ndarray,
@@ -80,6 +95,7 @@ def compute_qsl(
     Evolves |0...0⟩ under H_XY and finds the first time R > R_threshold.
     Computes both Mandelstam-Tamm and Margolus-Levitin bounds.
     """
+    _validate_qsl_parameters(t_target, dt, R_threshold)
     n = K.shape[0]
     require_dense_allocation(
         n,
@@ -112,20 +128,25 @@ def compute_qsl(
     mean_E2 = float(np.real(psi_0.conj() @ H_mat @ H_mat @ psi_0))
     delta_E = np.sqrt(max(mean_E2 - mean_E**2, 0.0))
 
-    # Time evolution: find when R first exceeds threshold
-    n_steps = int(t_target / dt)
+    # Time evolution: find when R first exceeds threshold.  The final partial
+    # step is evolved exactly so the target state and reported time agree even
+    # when t_target is not an integer multiple of dt.
     U_dt = expm(-1j * H_mat * dt)
 
     psi = psi_0.copy()
     tau_actual = t_target  # default: didn't reach threshold
+    current_time = 0.0
 
     from .entanglement_enhanced_sync import _state_order_parameter
 
-    for step in range(1, n_steps + 1):
-        psi = U_dt @ psi
+    while current_time < t_target - 1e-15:
+        step_dt = min(dt, t_target - current_time)
+        U_step = U_dt if abs(step_dt - dt) <= 1e-15 else expm(-1j * H_mat * step_dt)
+        psi = U_step @ psi
+        current_time += step_dt
         R = _state_order_parameter(psi, n)
         if R_threshold <= R:
-            tau_actual = step * dt
+            tau_actual = current_time
             break
 
     # Target state = state at time tau_actual
