@@ -22,6 +22,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]]
+VectorObjective = Callable[[NDArray[np.float64]], ArrayLike]
 
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
@@ -231,6 +232,51 @@ class GradientCheckResult:
 
 
 @dataclass(frozen=True)
+class JacobianResult:
+    """Value, Jacobian, and provenance for a vector-valued objective."""
+
+    value: NDArray[np.float64]
+    jacobian: NDArray[np.float64]
+    method: str
+    step: float
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_numeric_array("jacobian value", self.value)
+        jacobian = _as_real_numeric_array("jacobian", self.jacobian)
+        if value.ndim != 1:
+            raise ValueError("jacobian value must be a one-dimensional array")
+        if jacobian.ndim != 2:
+            raise ValueError("jacobian must be a two-dimensional array")
+        if jacobian.shape[0] != value.size:
+            raise ValueError("jacobian row count must match value length")
+        if not np.all(np.isfinite(value)):
+            raise ValueError("jacobian value must contain only finite values")
+        if not np.all(np.isfinite(jacobian)):
+            raise ValueError("jacobian must contain only finite values")
+        if not self.method:
+            raise ValueError("jacobian method must be non-empty")
+        step = _as_real_scalar("jacobian step", self.step)
+        if step <= 0.0:
+            raise ValueError("jacobian step must be finite and positive")
+        if self.evaluations < 0:
+            raise ValueError("jacobian evaluations must be non-negative")
+        if len(self.parameter_names) != jacobian.shape[1]:
+            raise ValueError("parameter_names length must match jacobian column count")
+        if len(self.trainable) != jacobian.shape[1]:
+            raise ValueError("trainable mask length must match jacobian column count")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "jacobian", jacobian)
+        object.__setattr__(self, "step", step)
+
+
+@dataclass(frozen=True)
 class DifferentiableOptimizer:
     """Small native gradient-descent optimizer for differentiable SCPN parameters."""
 
@@ -402,6 +448,15 @@ def _as_scalar(value: float | int | np.floating[Any] | NDArray[np.float64]) -> f
     if not np.isfinite(scalar):
         raise ValueError("differentiable objective returned a non-finite scalar")
     return scalar
+
+
+def _as_vector_output(value: ArrayLike) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("differentiable vector objective", value)
+    if vector.ndim != 1:
+        raise ValueError("differentiable vector objective must return a one-dimensional array")
+    if not np.all(np.isfinite(vector)):
+        raise ValueError("differentiable vector objective returned non-finite values")
+    return vector
 
 
 def _normalise_parameters(
@@ -661,6 +716,66 @@ def value_and_finite_difference_grad(
     )
 
 
+def finite_difference_jacobian(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a central finite-difference Jacobian for vector objectives."""
+
+    return value_and_finite_difference_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    ).jacobian
+
+
+def value_and_finite_difference_jacobian(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> JacobianResult:
+    """Evaluate a vector objective and its central finite-difference Jacobian."""
+
+    step_value = _as_real_scalar("finite difference step", step)
+    if step_value <= 0.0:
+        raise ValueError("finite difference step must be finite and positive")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    base_value = _as_vector_output(objective(parameter_values.copy()))
+    jacobian = np.zeros((base_value.size, parameter_values.size), dtype=np.float64)
+    evaluations = 1
+
+    for index, parameter in enumerate(parameter_meta):
+        if not parameter.trainable:
+            continue
+        plus = parameter_values.copy()
+        minus = parameter_values.copy()
+        plus[index] += step_value
+        minus[index] -= step_value
+        plus_value = _as_vector_output(objective(plus))
+        minus_value = _as_vector_output(objective(minus))
+        if plus_value.shape != base_value.shape or minus_value.shape != base_value.shape:
+            raise ValueError("vector objective output shape must remain stable")
+        evaluations += 2
+        jacobian[:, index] = (plus_value - minus_value) / (2.0 * step_value)
+
+    return JacobianResult(
+        value=base_value,
+        jacobian=jacobian,
+        method="finite_difference_central",
+        step=step_value,
+        evaluations=evaluations,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
 def check_parameter_shift_consistency(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -744,6 +859,7 @@ __all__ = [
     "DifferentiableOptimizer",
     "GradientCheckResult",
     "GradientResult",
+    "JacobianResult",
     "OptimizationResult",
     "Parameter",
     "ParameterBounds",
@@ -753,9 +869,11 @@ __all__ = [
     "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
     "finite_difference_gradient",
+    "finite_difference_jacobian",
     "is_jax_autodiff_available",
     "jax_value_and_grad",
     "parameter_shift_gradient",
     "value_and_finite_difference_grad",
+    "value_and_finite_difference_jacobian",
     "value_and_parameter_shift_grad",
 ]

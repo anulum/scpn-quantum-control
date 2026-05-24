@@ -18,6 +18,7 @@ from scpn_quantum_control.differentiable import (
     DifferentiableOptimizer,
     GradientCheckResult,
     GradientResult,
+    JacobianResult,
     OptimizationResult,
     Parameter,
     ParameterBounds,
@@ -27,10 +28,12 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     finite_difference_gradient,
+    finite_difference_jacobian,
     is_jax_autodiff_available,
     jax_value_and_grad,
     parameter_shift_gradient,
     value_and_finite_difference_grad,
+    value_and_finite_difference_jacobian,
     value_and_parameter_shift_grad,
 )
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
@@ -218,6 +221,49 @@ def test_finite_difference_gradient_rejects_invalid_step() -> None:
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step="1e-6")
     with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step=0.0)
+
+
+def test_finite_difference_jacobian_matches_vector_objective() -> None:
+    """Vector-valued differentiable diagnostics should expose Jacobians."""
+
+    result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] ** 2, values[0] + 2.0 * values[1]]),
+        [3.0, -1.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+        step=1.0e-6,
+    )
+
+    assert isinstance(result, JacobianResult)
+    assert result.method == "finite_difference_central"
+    assert result.evaluations == 3
+    np.testing.assert_allclose(result.value, [9.0, 1.0])
+    np.testing.assert_allclose(result.jacobian, [[6.0, 0.0], [1.0, 0.0]], atol=1.0e-6)
+    np.testing.assert_allclose(
+        finite_difference_jacobian(lambda values: np.array([values[0] ** 2]), [2.0]),
+        [[4.0]],
+        atol=1.0e-6,
+    )
+
+
+def test_finite_difference_jacobian_rejects_unstable_vector_shape() -> None:
+    """Vector objectives must keep output shape stable across perturbations."""
+
+    def unstable(values: np.ndarray) -> np.ndarray:
+        if values[0] > 0.0:
+            return np.array([values[0], values[0] ** 2])
+        return np.array([values[0]])
+
+    with pytest.raises(ValueError, match="shape must remain stable"):
+        value_and_finite_difference_jacobian(unstable, [0.0])
+
+
+def test_finite_difference_jacobian_rejects_non_vector_output() -> None:
+    """Jacobian objectives must return explicit finite one-dimensional arrays."""
+
+    with pytest.raises(ValueError, match="one-dimensional"):
+        value_and_finite_difference_jacobian(lambda _values: np.array([[1.0]]), [0.0])
+    with pytest.raises(ValueError, match="real numeric"):
+        value_and_finite_difference_jacobian(lambda _values: np.array(["1.0"]), [0.0])
 
 
 def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
@@ -671,7 +717,9 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
     assert scpn.OptimizationResult is OptimizationResult
+    assert scpn.JacobianResult is JacobianResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
+    assert scpn.finite_difference_jacobian is finite_difference_jacobian
     assert scpn.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert scpn.batch_value_and_parameter_shift_grad is batch_value_and_parameter_shift_grad
     assert scpn.batch_value_and_finite_difference_grad is batch_value_and_finite_difference_grad
