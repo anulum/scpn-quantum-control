@@ -97,6 +97,8 @@ payload comparison. Operator notes and non-digest annotations belong in
 Numerical arrays, layer assignments, metadata, and hash maps are
 defensive-copied and marked read-only after validation, so callers cannot
 mutate a validated artifact in-place and silently invalidate its hashes.
+Layer assignments must be supplied as a sequence of non-empty strings; scalar
+strings and implicit per-label coercion are rejected before hashing.
 Metadata is frozen recursively; serialisation thaws immutable containers back to
 JSON-native dictionaries and lists. Metadata must use string keys and
 JSON-compatible scalar/list/object values; non-finite floats and opaque Python
@@ -213,6 +215,7 @@ The tests cover:
 - required identity-field type and whitespace normalisation checks
 - loader rejection for non-string required identity fields
 - constructor and loader rejection for non-mapping metadata/hash containers
+- layer-assignment rejection for scalar strings, non-string entries, and blanks
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly

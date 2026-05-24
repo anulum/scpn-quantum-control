@@ -65,6 +65,20 @@ def _require_mapping(name: str, value: Any) -> Mapping[str, Any]:
     return value
 
 
+def _layer_assignment_tuple(value: Any) -> tuple[str, ...]:
+    if isinstance(value, str) or not isinstance(value, Sequence):
+        raise ValueError("layer_assignments must be a sequence of strings")
+    labels: list[str] = []
+    for item in value:
+        if not isinstance(item, str):
+            raise ValueError("layer_assignments entries must be strings")
+        label = item.strip()
+        if not label:
+            raise ValueError("layer_assignments entries must be non-empty")
+        labels.append(label)
+    return tuple(labels)
+
+
 def _freeze_json_value(value: Any) -> Any:
     if isinstance(value, Mapping):
         frozen: dict[str, Any] = {}
@@ -176,7 +190,7 @@ class QPUDataArtifact:
         theta0 = (
             None if self.theta0 is None else _finite_float_array("theta0", self.theta0, ndim=1)
         )
-        layer_assignments = tuple(str(item) for item in self.layer_assignments)
+        layer_assignments = _layer_assignment_tuple(self.layer_assignments)
         metadata = dict(_require_mapping("metadata", self.metadata))
         hashes = _validate_hash_map(self.hashes)
 
@@ -273,7 +287,7 @@ class QPUDataArtifact:
                 if data.get("theta0") is None
                 else np.asarray(data["theta0"], dtype=np.float64)
             ),
-            layer_assignments=list(data.get("layer_assignments", [])),
+            layer_assignments=data.get("layer_assignments", []),
             normalization=data["normalization"],
             extraction_method=data["extraction_method"],
             source_timestamp=data.get("source_timestamp"),

@@ -352,6 +352,36 @@ def test_layer_assignments_are_defensive_copies_and_read_only():
     assert artifact.to_dict()["layer_assignments"] == ["cortex", "thalamus", "brainstem"]
 
 
+def test_layer_assignments_reject_non_string_labels():
+    with pytest.raises(ValueError, match="layer_assignments entries must be strings"):
+        artifact_from_arrays(
+            domain="connectome",
+            source_name="layer-label-type-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            layer_assignments=["cortex", 2, "brainstem"],
+        )
+
+
+def test_layer_assignments_reject_blank_labels():
+    with pytest.raises(ValueError, match="layer_assignments entries must be non-empty"):
+        artifact_from_arrays(
+            domain="connectome",
+            source_name="layer-label-blank-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="source-run-1",
+            layer_assignments=["cortex", "   ", "brainstem"],
+        )
+
+
 def test_metadata_rejects_non_string_keys():
     with pytest.raises(ValueError, match="metadata keys must be strings"):
         artifact_from_arrays(
@@ -572,4 +602,23 @@ def test_loader_rejects_non_mapping_metadata():
     payload.pop("artifact_sha256")
 
     with pytest.raises(ValueError, match="metadata must be a mapping"):
+        QPUDataArtifact.from_dict(payload)
+
+
+def test_loader_rejects_string_layer_assignment_container():
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="loader-layer-container-validation",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+    )
+    payload = artifact.to_dict()
+    payload["layer_assignments"] = "abc"
+    payload.pop("artifact_sha256")
+
+    with pytest.raises(ValueError, match="layer_assignments must be a sequence of strings"):
         QPUDataArtifact.from_dict(payload)
