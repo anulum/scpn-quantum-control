@@ -14,6 +14,8 @@ quantum error mitigation", IEEE QCE 2020.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from operator import index
+from typing import Any
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -75,8 +77,19 @@ def zne_extrapolate(
 
     ``order`` controls polynomial degree: 1=linear, 2=quadratic.
     """
+    order = _validate_order(order)
     x = np.array(noise_scales, dtype=float)
     y = np.array(expectation_values, dtype=float)
+    if x.ndim != 1 or y.ndim != 1:
+        raise ValueError("noise_scales and expectation_values must be one-dimensional")
+    if len(x) != len(y):
+        raise ValueError("noise_scales and expectation_values must have the same length")
+    if not np.all(np.isfinite(x)) or not np.all(np.isfinite(y)):
+        raise ValueError("noise_scales and expectation_values must be finite")
+    if any(scale < 1 or int(scale) != scale or int(scale) % 2 == 0 for scale in x):
+        raise ValueError("noise_scales must be odd positive integers")
+    if len(set(int(scale) for scale in x)) != len(x):
+        raise ValueError("noise_scales must be distinct")
     if len(x) < order + 1:
         raise ValueError(f"Need >= {order + 1} data points for order-{order} fit, got {len(x)}")
 
@@ -91,3 +104,15 @@ def zne_extrapolate(
         zero_noise_estimate=zero_est,
         fit_residual=residual,
     )
+
+
+def _validate_order(order: Any) -> int:
+    if isinstance(order, bool):
+        raise ValueError("order must be a non-negative integer")
+    try:
+        order_value = index(order)
+    except TypeError as exc:
+        raise ValueError("order must be a non-negative integer") from exc
+    if order_value < 0:
+        raise ValueError("order must be a non-negative integer")
+    return int(order_value)

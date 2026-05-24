@@ -125,6 +125,21 @@ def test_zne_insufficient_data_points():
         zne_extrapolate([1, 3], [0.9, 0.7], order=2)
 
 
+@pytest.mark.parametrize(
+    ("scales", "values", "order", "match"),
+    [
+        ([1, 3, 5], [0.9, 0.7], 1, "same length"),
+        ([1, 3, 5], [0.9, np.nan, 0.5], 1, "finite"),
+        ([1, 3, 3], [0.9, 0.7, 0.7], 1, "distinct"),
+        ([1, 2, 5], [0.9, 0.7, 0.5], 1, "odd positive"),
+        ([1, 3, 5], [0.9, 0.7, 0.5], -1, "order"),
+    ],
+)
+def test_zne_extrapolate_rejects_invalid_fit_inputs(scales, values, order, match):
+    with pytest.raises(ValueError, match=match):
+        zne_extrapolate(scales, values, order=order)
+
+
 def test_noisy_sim_zne_pipeline_returns_finite_estimate(tmp_path):
     """ZNE on a noisy simulator returns finite sampled and extrapolated values.
 
