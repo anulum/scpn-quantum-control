@@ -251,3 +251,30 @@ def test_artifact_arrays_are_defensive_copies_and_read_only():
     assert artifact.theta0.flags.writeable is False
     with pytest.raises(ValueError, match="read-only"):
         artifact.K_nm[0, 1] = 0.7
+
+
+def test_artifact_mappings_are_defensive_copies_and_read_only():
+    metadata = {"acquisition": "original"}
+    hashes = {"operator_note": "external-note"}
+    artifact = QPUDataArtifact(
+        domain="connectome",
+        source_name="mapping-immutability-check",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+        metadata=metadata,
+        hashes=hashes,
+    )
+
+    metadata["acquisition"] = "mutated-after-validation"
+    hashes["operator_note"] = "mutated-after-validation"
+
+    assert artifact.metadata["acquisition"] == "original"
+    assert artifact.hashes["operator_note"] == "external-note"
+    with pytest.raises(TypeError):
+        artifact.metadata["acquisition"] = "blocked"
+    with pytest.raises(TypeError):
+        artifact.hashes["operator_note"] = "blocked"

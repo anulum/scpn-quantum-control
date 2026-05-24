@@ -14,6 +14,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 import numpy as np
@@ -83,8 +84,8 @@ class QPUDataArtifact:
     extraction_method: str = ""
     source_timestamp: str | None = None
     replay_id: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
-    hashes: dict[str, str] = field(default_factory=dict)
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+    hashes: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         domain = str(self.domain).strip()
@@ -139,8 +140,8 @@ class QPUDataArtifact:
         object.__setattr__(self, "layer_assignments", layer_assignments)
         object.__setattr__(self, "normalization", normalization)
         object.__setattr__(self, "extraction_method", extraction_method)
-        object.__setattr__(self, "metadata", metadata)
-        object.__setattr__(self, "hashes", hashes)
+        object.__setattr__(self, "metadata", MappingProxyType(metadata))
+        object.__setattr__(self, "hashes", MappingProxyType(hashes))
 
     @property
     def n_oscillators(self) -> int:

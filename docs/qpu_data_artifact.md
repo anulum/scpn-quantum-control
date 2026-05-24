@@ -90,9 +90,9 @@ corresponding digest and rejects stale values before the artifact can be
 compiled into a circuit. Omitted array digests are filled deterministically for
 new in-memory artifacts.
 
-Numerical arrays are defensive-copied and marked read-only after validation, so
-callers cannot mutate a validated artifact in-place and silently invalidate its
-hashes.
+Numerical arrays, metadata, and hash maps are defensive-copied and marked
+read-only after validation, so callers cannot mutate a validated artifact
+in-place and silently invalidate its hashes.
 
 ## Matrix invariants
 
@@ -184,6 +184,7 @@ The tests cover:
 - SC-NeuroCore datastream adaptation
 - schema-version rejection
 - defensive-copy/read-only array immutability
+- defensive-copy/read-only metadata and hash-map immutability
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly
