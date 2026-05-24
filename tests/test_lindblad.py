@@ -223,6 +223,16 @@ class TestDensityMatrixInvariants:
         assert result["purity"].shape == (1,)
         np.testing.assert_allclose(np.trace(result["rho_final"]), 1.0, atol=1e-12)
 
+    def test_time_grid_respects_requested_maximum_step(self):
+        """Returned density samples must not be spaced farther apart than dt."""
+        solver = LindbladKuramotoSolver(self.n, self.K, self.omega)
+
+        result = solver.run(t_max=0.25, dt=0.1)
+
+        assert result["times"][0] == pytest.approx(0.0)
+        assert result["times"][-1] == pytest.approx(0.25)
+        assert np.max(np.diff(result["times"])) <= 0.1 + 1e-12
+
     def test_run_raises_on_integrator_failure(self, monkeypatch):
         class FailedSolution:
             success = False

@@ -215,7 +215,7 @@ class LindbladKuramotoSolver:
         if self._H is None:
             self.build(max_dense_gib=budget_gib)
 
-        n_steps = max(1, int(t_max / dt))
+        n_steps = max(1, int(np.ceil(t_max / dt)))
         times = np.linspace(0, t_max, n_steps + 1)
 
         rho0 = self._initial_density_matrix()
