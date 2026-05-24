@@ -17,6 +17,7 @@ import pytest
 from scpn_quantum_control.differentiable import (
     DifferentiableOptimizer,
     GradientResult,
+    OptimizationResult,
     Parameter,
     ParameterShiftRule,
     batch_parameter_shift_gradient,
@@ -160,6 +161,52 @@ def test_gradient_descent_step_respects_trainable_mask() -> None:
     np.testing.assert_allclose(updated, [0.8, 5.0])
 
 
+def test_optimizer_minimize_converges_for_shift_compatible_quadratic() -> None:
+    """Bounded optimizer should return convergence metadata and final values."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=0.25)
+    result = optimizer.minimize(
+        lambda values: 1.0 - math.cos(values[0]),
+        [0.4],
+        max_steps=80,
+        gradient_tolerance=1.0e-8,
+    )
+
+    assert isinstance(result, OptimizationResult)
+    assert result.converged
+    assert result.reason == "gradient_tolerance"
+    assert result.steps <= 80
+    assert result.value_history[-1] <= result.value_history[0]
+    np.testing.assert_allclose(result.values, [0.0], atol=1.0e-6)
+
+
+def test_optimizer_minimize_respects_frozen_parameters() -> None:
+    """Non-trainable parameters must not move during multi-step optimization."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=0.2)
+    result = optimizer.minimize(
+        lambda values: 1.0 - math.cos(values[0]) + 1.0 - math.cos(values[1]),
+        [0.3, 0.4],
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+        max_steps=5,
+    )
+
+    assert result.values[1] == pytest.approx(0.4)
+    assert result.final_gradient.trainable == (True, False)
+
+
+def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
+    """Optimizer loop controls must fail closed before objective evaluation."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=0.1)
+    with pytest.raises(ValueError, match="max_steps"):
+        optimizer.minimize(lambda values: math.sin(values[0]), [0.1], max_steps=True)
+    with pytest.raises(ValueError, match="gradient_tolerance"):
+        optimizer.minimize(lambda values: math.sin(values[0]), [0.1], gradient_tolerance="1e-3")
+    with pytest.raises(ValueError, match="value_tolerance"):
+        optimizer.minimize(lambda values: math.sin(values[0]), [0.1], value_tolerance=-1.0)
+
+
 def test_gradient_result_rejects_malformed_metadata() -> None:
     """Gradient provenance should not allow silently inconsistent payloads."""
 
@@ -269,6 +316,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.DifferentiableOptimizer is DifferentiableOptimizer
+    assert scpn.OptimizationResult is OptimizationResult
 
 
 @pytest.mark.skipif(not _PL_OK, reason="PennyLane not available or broken")

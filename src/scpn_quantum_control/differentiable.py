@@ -130,6 +130,34 @@ class GradientResult:
 
 
 @dataclass(frozen=True)
+class OptimizationResult:
+    """Bounded gradient-descent result with convergence provenance."""
+
+    values: NDArray[np.float64]
+    final_gradient: GradientResult
+    value_history: tuple[float, ...]
+    steps: int
+    converged: bool
+    reason: str
+
+    def __post_init__(self) -> None:
+        values = _as_parameter_array(self.values)
+        if values.size != self.final_gradient.gradient.size:
+            raise ValueError("optimized values length must match gradient length")
+        if not self.value_history:
+            raise ValueError("value_history must contain at least one value")
+        history = tuple(_as_real_scalar("value_history item", item) for item in self.value_history)
+        if isinstance(self.steps, bool) or not isinstance(self.steps, int) or self.steps < 0:
+            raise ValueError("optimization steps must be a non-negative integer")
+        if not isinstance(self.converged, bool):
+            raise ValueError("optimization converged flag must be a boolean")
+        if not isinstance(self.reason, str) or not self.reason:
+            raise ValueError("optimization reason must be non-empty")
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "value_history", history)
+
+
+@dataclass(frozen=True)
 class DifferentiableOptimizer:
     """Small native gradient-descent optimizer for differentiable SCPN parameters."""
 
@@ -157,6 +185,82 @@ class DifferentiableOptimizer:
         updated: NDArray[np.float64] = parameter_values.copy()
         updated[trainable] -= self.learning_rate * gradient_result.gradient[trainable]
         return cast(NDArray[np.float64], updated)
+
+    def minimize(
+        self,
+        objective: ScalarObjective,
+        initial_values: ArrayLike,
+        *,
+        parameters: Sequence[Parameter] | None = None,
+        rule: ParameterShiftRule | None = None,
+        max_steps: int = 100,
+        gradient_tolerance: float = 1.0e-8,
+        value_tolerance: float | None = None,
+    ) -> OptimizationResult:
+        """Run bounded gradient descent with parameter-shift gradients."""
+
+        if isinstance(max_steps, bool) or not isinstance(max_steps, int) or max_steps < 0:
+            raise ValueError("max_steps must be a non-negative integer")
+        gradient_tolerance_value = _as_real_scalar("gradient_tolerance", gradient_tolerance)
+        if gradient_tolerance_value < 0.0:
+            raise ValueError("gradient_tolerance must be finite and non-negative")
+        value_tolerance_value = (
+            None
+            if value_tolerance is None
+            else _as_real_scalar("value_tolerance", value_tolerance)
+        )
+        if value_tolerance_value is not None and value_tolerance_value < 0.0:
+            raise ValueError("value_tolerance must be finite and non-negative")
+
+        values = _as_parameter_array(initial_values).copy()
+        history: list[float] = []
+        previous_value: float | None = None
+
+        for step_index in range(max_steps + 1):
+            gradient_result = value_and_parameter_shift_grad(
+                objective,
+                values,
+                parameters=parameters,
+                rule=rule,
+            )
+            history.append(gradient_result.value)
+            trainable = np.asarray(gradient_result.trainable, dtype=bool)
+            gradient_norm = float(np.linalg.norm(gradient_result.gradient[trainable], ord=2))
+            if gradient_norm <= gradient_tolerance_value:
+                return OptimizationResult(
+                    values=values,
+                    final_gradient=gradient_result,
+                    value_history=tuple(history),
+                    steps=step_index,
+                    converged=True,
+                    reason="gradient_tolerance",
+                )
+            if (
+                value_tolerance_value is not None
+                and previous_value is not None
+                and abs(previous_value - gradient_result.value) <= value_tolerance_value
+            ):
+                return OptimizationResult(
+                    values=values,
+                    final_gradient=gradient_result,
+                    value_history=tuple(history),
+                    steps=step_index,
+                    converged=True,
+                    reason="value_tolerance",
+                )
+            if step_index == max_steps:
+                return OptimizationResult(
+                    values=values,
+                    final_gradient=gradient_result,
+                    value_history=tuple(history),
+                    steps=step_index,
+                    converged=False,
+                    reason="max_steps",
+                )
+            previous_value = gradient_result.value
+            values = self.step(values, gradient_result)
+
+        raise RuntimeError("unreachable optimizer state")
 
 
 def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
@@ -316,6 +420,7 @@ def jax_value_and_grad(
 __all__ = [
     "DifferentiableOptimizer",
     "GradientResult",
+    "OptimizationResult",
     "Parameter",
     "ParameterShiftRule",
     "batch_parameter_shift_gradient",

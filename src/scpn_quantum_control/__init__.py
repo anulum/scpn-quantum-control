@@ -89,6 +89,7 @@ from .deployment.cloud_native import (
 from .differentiable import (
     DifferentiableOptimizer,
     GradientResult,
+    OptimizationResult,
     Parameter,
     ParameterShiftRule,
     batch_parameter_shift_gradient,
@@ -509,6 +510,7 @@ __all__ = [
     "VQLS_GradShafranov",
     "DifferentiableOptimizer",
     "GradientResult",
+    "OptimizationResult",
     "Parameter",
     "ParameterShiftRule",
     "batch_parameter_shift_gradient",

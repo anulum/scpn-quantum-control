@@ -367,6 +367,7 @@ those extras are installed.
 ```python
 from scpn_quantum_control import (
     DifferentiableOptimizer,
+    OptimizationResult,
     Parameter,
     ParameterShiftRule,
     parameter_shift_gradient,
@@ -386,6 +387,14 @@ updated = DifferentiableOptimizer(learning_rate=0.01).step(
     [0.1, -0.2],
     result,
 )
+
+opt_result = DifferentiableOptimizer(learning_rate=0.05).minimize(
+    lambda theta: 1.0 - np.cos(theta[0]),
+    [0.3],
+    max_steps=100,
+    gradient_tolerance=1e-8,
+)
+opt_result.reason            # "gradient_tolerance", "value_tolerance", or "max_steps"
 ```
 
 Available primitives:
@@ -394,10 +403,12 @@ Available primitives:
 Parameter(name: str, trainable: bool = True)
 ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
 GradientResult(value, gradient, method, shift, coefficient, evaluations, parameter_names, trainable)
+OptimizationResult(values, final_gradient, value_history, steps, converged, reason)
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result) -> np.ndarray
+DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
 is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 ```
@@ -407,6 +418,9 @@ parameter arrays, objective return values, optimiser learning rates,
 parameter-shift rules, JAX objective values, and gradients reject strings,
 booleans, object arrays, complex values, shape mismatches, and non-finite
 numbers before training or hardware-adapter code consumes them.
+`DifferentiableOptimizer.minimize()` is deliberately bounded: it records scalar
+objective history, preserves non-trainable parameters, and exits only through
+explicit gradient tolerance, optional value tolerance, or `max_steps`.
 
 PennyLane VQE bridge:
 
