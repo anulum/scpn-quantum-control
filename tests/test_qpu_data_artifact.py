@@ -406,3 +406,50 @@ def test_hashes_reject_malformed_sha256_values():
             replay_id="source-run-1",
             hashes={"K_nm_sha256": "not-a-sha256"},
         )
+
+
+def test_source_timestamp_rejects_non_string_values():
+    with pytest.raises(ValueError, match="source_timestamp must be a string"):
+        QPUDataArtifact(
+            domain="connectome",
+            source_name="timestamp-type-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            source_timestamp=123,
+        )
+
+
+def test_replay_id_rejects_blank_values():
+    with pytest.raises(ValueError, match="replay_id must be non-empty"):
+        artifact_from_arrays(
+            domain="connectome",
+            source_name="replay-id-validation",
+            source_mode="recorded",
+            K_nm=_valid_knm(3),
+            omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+            normalization="documented",
+            extraction_method="unit-test",
+            replay_id="   ",
+        )
+
+
+def test_provenance_identifiers_are_trimmed_before_hashing():
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="provenance-normalization",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
+        normalization="documented",
+        extraction_method="unit-test",
+        source_timestamp="  2026-05-24T00:00:00Z  ",
+        replay_id="  source-run-1  ",
+    )
+
+    assert artifact.source_timestamp == "2026-05-24T00:00:00Z"
+    assert artifact.replay_id == "source-run-1"
+    assert artifact.to_dict()["source_timestamp"] == "2026-05-24T00:00:00Z"
+    assert artifact.to_dict()["replay_id"] == "source-run-1"

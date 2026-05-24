@@ -39,6 +39,17 @@ def _json_sha256(payload: Mapping[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _optional_text(name: str, value: Any) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError(f"{name} must be a string")
+    stripped = value.strip()
+    if not stripped:
+        raise ValueError(f"{name} must be non-empty")
+    return stripped
+
+
 def _freeze_json_value(value: Any) -> Any:
     if isinstance(value, Mapping):
         frozen: dict[str, Any] = {}
@@ -139,6 +150,8 @@ class QPUDataArtifact:
         source_mode = str(self.source_mode).strip()
         normalization = str(self.normalization).strip()
         extraction_method = str(self.extraction_method).strip()
+        source_timestamp = _optional_text("source_timestamp", self.source_timestamp)
+        replay_id = _optional_text("replay_id", self.replay_id)
         K_nm = _finite_float_array("K_nm", self.K_nm, ndim=2)
         omega = _finite_float_array("omega", self.omega, ndim=1)
         theta0 = (
@@ -186,6 +199,8 @@ class QPUDataArtifact:
         object.__setattr__(self, "layer_assignments", layer_assignments)
         object.__setattr__(self, "normalization", normalization)
         object.__setattr__(self, "extraction_method", extraction_method)
+        object.__setattr__(self, "source_timestamp", source_timestamp)
+        object.__setattr__(self, "replay_id", replay_id)
         object.__setattr__(self, "metadata", _freeze_json_value(metadata))
         object.__setattr__(self, "hashes", MappingProxyType(hashes))
 

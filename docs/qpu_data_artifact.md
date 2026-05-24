@@ -100,6 +100,10 @@ JSON-native dictionaries and lists. Metadata must use string keys and
 JSON-compatible scalar/list/object values; non-finite floats and opaque Python
 objects are rejected before artifact hashing.
 
+`source_timestamp` and `replay_id`, when supplied, must be non-empty strings.
+They are trimmed before the whole-artifact digest is computed so equivalent
+provenance identifiers do not produce whitespace-dependent artifact identities.
+
 ## Matrix invariants
 
 Current Kuramoto-XY circuits require:
@@ -195,6 +199,7 @@ The tests cover:
 - recursive metadata freezing with JSON-native serialisation
 - metadata rejection for non-string keys, non-finite floats, and opaque values
 - hash-map rejection for unknown keys and malformed digest strings
+- provenance identifier type, blank-value, and whitespace normalisation checks
 
 Frontier interfaces that are not implemented yet are guarded in
 `tests/test_frontier_interface_guards.py`; those paths fail loudly
