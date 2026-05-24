@@ -29,7 +29,6 @@ import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import expm_multiply
 
-from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_sparse_matrix
 from ..dense_budget import require_dense_allocation
 
@@ -179,11 +178,11 @@ def mcwf_trajectory(
     R_history = np.zeros(n_steps + 1)
     R_history[0] = _order_param_vec(psi, n)
 
-    step_generator = -1j * H_eff * dt
-
     n_jumps = 0
     for step in range(1, n_steps + 1):
         # Evolve under H_eff
+        step_dt = float(times[step] - times[step - 1])
+        step_generator = -1j * H_eff * step_dt
         psi_new = expm_multiply(step_generator, psi)
         norm_sq = float(np.real(np.dot(psi_new.conj(), psi_new)))
 
@@ -270,30 +269,20 @@ def mcwf_ensemble(
 
 
 def _order_param_vec(psi: np.ndarray, n: int) -> float:
-    """Order parameter R from state vector. Uses Rust (851×) when available."""
-    # Rust fast path
-    eng = optional_rust_engine()
-    if eng is not None:
-        order_param_from_statevector = getattr(eng, "order_param_from_statevector", None)
-        if order_param_from_statevector is not None:
-            return float(
-                order_param_from_statevector(
-                    np.ascontiguousarray(psi.real),
-                    np.ascontiguousarray(psi.imag),
-                    n,
-                )
-            )
-
+    """Order parameter R from state vector in project Kronecker qubit order."""
     z = 0.0 + 0.0j
     dim = 2**n
     for i in range(n):
-        # <X_i> = Re(Σ_k ψ*_k ψ_{k^(1<<i)}) * 2 for single-qubit X
+        bit = 1 << (n - 1 - i)
         exp_x = 0.0
         exp_y = 0.0
         for k in range(dim):
-            k_flip = k ^ (1 << i)
-            exp_x += float(np.real(psi[k].conj() * psi[k_flip]))
-            exp_y += float(np.imag(psi[k_flip].conj() * psi[k]))
+            if k & bit:
+                continue
+            k_flip = k ^ bit
+            coherence = psi[k].conj() * psi[k_flip]
+            exp_x += 2.0 * float(np.real(coherence))
+            exp_y += 2.0 * float(np.imag(coherence))
         z += exp_x + 1j * exp_y
     z /= n
     return float(abs(z))

@@ -132,6 +132,53 @@ class TestMCWFTrajectory:
         assert np.max(np.diff(result["times"])) <= 0.1 + 1e-12
         assert result["R"].shape == result["times"].shape
 
+    def test_propagation_steps_match_reported_time_grid(self, monkeypatch):
+        from scpn_quantum_control.phase import tensor_jump as module
+
+        K = np.zeros((1, 1))
+        omega = np.zeros(1)
+        step_durations: list[float] = []
+
+        monkeypatch.setattr(
+            module,
+            "knm_to_sparse_matrix",
+            lambda K, omega: module.sparse.identity(2, dtype=np.complex128, format="csr"),
+        )
+
+        def record_step_duration(generator, psi):
+            step_durations.append(float(np.real(generator[0, 0] / -1j)))
+            return psi
+
+        monkeypatch.setattr(module, "expm_multiply", record_step_duration)
+
+        result = module.mcwf_trajectory(
+            K,
+            omega,
+            gamma_amp=0.0,
+            gamma_deph=0.0,
+            t_max=0.25,
+            dt=0.1,
+            seed=42,
+        )
+
+        np.testing.assert_allclose(step_durations, np.diff(result["times"]), atol=1e-15)
+        assert sum(step_durations) == pytest.approx(0.25)
+        assert max(step_durations) <= 0.1 + 1e-12
+
+    def test_order_parameter_uses_kron_qubit_ordering(self):
+        from scpn_quantum_control.phase.lindblad import _sigma
+
+        psi = np.array([0.2 + 0.1j, 0.3 - 0.4j, -0.5 + 0.2j, 0.6 + 0.1j])
+        psi = psi / np.linalg.norm(psi)
+        rho = np.outer(psi, psi.conj())
+        z = 0.0 + 0.0j
+        for qubit in range(2):
+            z += np.trace(_sigma("X", qubit, 2) @ rho)
+            z += 1j * np.trace(_sigma("Y", qubit, 2) @ rho)
+        expected = abs(z / 2)
+
+        assert _order_param_vec(psi, 2) == pytest.approx(expected)
+
     def test_zero_horizon_returns_initial_state_without_propagation(self, monkeypatch):
         K, omega = _system(2)
 

@@ -207,14 +207,14 @@ class TestHypergeometricEnvelopePythonFallback:
 
 class TestBuildHypergeometricPulseValidators:
     def test_rejects_nonpositive_omega_0(self) -> None:
-        with pytest.raises(ValueError, match="omega_0 must be positive"):
+        with pytest.raises(ValueError, match="omega_0 must be finite and positive"):
             pulse_shaping.build_hypergeometric_pulse(
                 t_total=1.0,
                 omega_0=0.0,
             )
 
     def test_rejects_negative_omega_0(self) -> None:
-        with pytest.raises(ValueError, match="omega_0 must be positive"):
+        with pytest.raises(ValueError, match="omega_0 must be finite and positive"):
             pulse_shaping.build_hypergeometric_pulse(
                 t_total=1.0,
                 omega_0=-3.0,
