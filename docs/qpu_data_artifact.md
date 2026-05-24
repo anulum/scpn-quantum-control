@@ -120,6 +120,7 @@ coerce non-string identity fields into publication artifact identity strings.
 Current Kuramoto-XY circuits require:
 
 - `K_nm` is square.
+- `K_nm` describes at least one oscillator.
 - `K_nm` is finite.
 - `K_nm` has zero diagonal.
 - `K_nm` is symmetric.
@@ -201,6 +202,7 @@ The tests cover:
 - synthetic artifact rejection by the publication gate
 - missing timestamp/replay rejection
 - invalid diagonal, negative, or directed `K_nm`
+- empty zero-oscillator `K_nm` rejection
 - shape and metadata rejection
 - SC-NeuroCore datastream adaptation
 - schema-version rejection

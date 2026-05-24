@@ -92,6 +92,18 @@ def test_publication_gate_requires_timestamp_or_replay_id():
 
 
 def test_rejects_invalid_knm_invariants():
+    with pytest.raises(ValueError, match="at least one oscillator"):
+        artifact_from_arrays(
+            domain="x",
+            source_name="x",
+            source_mode="recorded",
+            K_nm=np.zeros((0, 0), dtype=np.float64),
+            omega=[],
+            normalization="n",
+            extraction_method="e",
+            replay_id="r",
+        )
+
     with pytest.raises(ValueError, match="diagonal"):
         artifact_from_arrays(
             domain="x",

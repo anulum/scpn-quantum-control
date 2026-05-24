@@ -198,6 +198,8 @@ class QPUDataArtifact:
             raise ValueError(f"source_mode must be one of {sorted(ALL_SOURCE_MODES)}")
         if K_nm.shape[0] != K_nm.shape[1]:
             raise ValueError("K_nm must be square")
+        if K_nm.shape[0] == 0:
+            raise ValueError("K_nm must describe at least one oscillator")
         if omega.shape != (K_nm.shape[0],):
             raise ValueError(f"omega shape must be ({K_nm.shape[0]},), got {omega.shape}")
         if theta0 is not None and theta0.shape != omega.shape:
