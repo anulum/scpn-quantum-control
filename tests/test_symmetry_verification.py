@@ -83,6 +83,11 @@ class TestInitialStateParity:
         omega = np.array([np.pi, np.pi, np.pi, 0.0])
         assert initial_state_parity(omega) == 1
 
+    @pytest.mark.parametrize("omega", [np.array([]), np.array([0.0, np.nan])])
+    def test_rejects_invalid_frequency_vectors(self, omega):
+        with pytest.raises(ValueError, match="omega"):
+            initial_state_parity(omega)
+
 
 class TestParityPostselect:
     def test_all_even_parity(self):

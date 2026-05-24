@@ -91,7 +91,10 @@ def initial_state_parity(omega: np.ndarray) -> int:
 
     For small angles (ω_i ≪ π), the state is near |00...0⟩ → even parity.
     """
-    p_ones = np.sin(np.asarray(omega, dtype=float) / 2.0) ** 2
+    omega_arr = np.asarray(omega, dtype=float)
+    if omega_arr.ndim != 1 or omega_arr.size == 0 or not np.all(np.isfinite(omega_arr)):
+        raise ValueError("omega must be a non-empty finite one-dimensional vector")
+    p_ones = np.sin(omega_arr / 2.0) ** 2
     expected_ones: float = float(np.sum(p_ones))
     return int(round(expected_ones)) % 2
 
