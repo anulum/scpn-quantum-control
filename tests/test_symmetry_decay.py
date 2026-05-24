@@ -75,6 +75,21 @@ class TestErrorHandling:
         with pytest.raises(ValueError, match="too close to zero"):
             learn_symmetry_decay(0.0, [0.0, 0.0], [1, 3])
 
+    @pytest.mark.parametrize(
+        "noisy_values",
+        [
+            [4.0, 0.0],
+            [4.0, -3.0],
+            [4.0, np.nan],
+            [4.0, np.inf],
+        ],
+    )
+    def test_nonphysical_symmetry_decay_observations_are_rejected(self, noisy_values) -> None:
+        with pytest.raises(
+            ValueError, match="noisy_symmetry_values must be finite and sign-consistent"
+        ):
+            learn_symmetry_decay(4.0, noisy_values, [1, 3])
+
     def test_invalid_initial_state(self) -> None:
         with pytest.raises(ValueError, match="Unknown initial state"):
             xy_magnetisation_ideal(4, "invalid")

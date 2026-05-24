@@ -73,18 +73,26 @@ def learn_symmetry_decay(
     if abs(ideal_symmetry_value) < 1e-15:
         raise ValueError("ideal_symmetry_value too close to zero")
 
+    noisy_arr = np.array(noisy_symmetry_values, dtype=np.float64)
+    scales_arr = np.array(noise_scales, dtype=np.float64)
+    ratios = noisy_arr / ideal_symmetry_value
+    if (
+        not np.all(np.isfinite(noisy_arr))
+        or not np.all(np.isfinite(scales_arr))
+        or np.any(ratios <= 0.0)
+    ):
+        raise ValueError("noisy_symmetry_values must be finite and sign-consistent")
+
     if _fit_rust is not None:
         alpha, residual = _fit_rust(
             ideal_symmetry_value,
-            np.array(noisy_symmetry_values, dtype=np.float64),
-            np.array(noise_scales, dtype=np.float64),
+            noisy_arr,
+            scales_arr,
         )
     else:
         # log(⟨S⟩_g / ⟨S⟩_ideal) = -α × (g - 1)
-        ratios = np.array(noisy_symmetry_values) / ideal_symmetry_value
-        ratios = np.clip(ratios, 1e-15, None)
         log_ratios = np.log(ratios)
-        g_shifted = np.array(noise_scales, dtype=float) - 1.0
+        g_shifted = scales_arr - 1.0
 
         if np.std(g_shifted) < 1e-15:
             alpha = 0.0
