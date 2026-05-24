@@ -366,6 +366,7 @@ those extras are installed.
 
 ```python
 from scpn_quantum_control import (
+    ArmijoLineSearchResult,
     DifferentiableOptimizer,
     FisherConjugateGradientResult,
     FisherVectorProductResult,
@@ -387,6 +388,7 @@ from scpn_quantum_control import (
     ParameterBounds,
     ParameterShiftRule,
     VJPResult,
+    armijo_backtracking_line_search,
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     empirical_fisher_conjugate_gradient,
@@ -463,6 +465,7 @@ lm_result.accepted_history   # per-step LM trust-region acceptance flags
 Available primitives:
 
 ```python
+ArmijoLineSearchResult(values, value, step_size, direction, directional_derivative, accepted, evaluations, value_history, reason, parameter_names, trainable)
 Parameter(name: str, trainable: bool = True)
 ParameterBounds(lower=None, upper=None, periodic=False)
 ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
@@ -485,6 +488,7 @@ NaturalGradientOptimizationResult(values, final_gradient, final_natural_gradient
 NaturalGradientOptimizer(learning_rate=0.01, damping=0.0, rcond=1e-12, max_step_norm=None)
 VJPResult(value, cotangent, vjp, method, step, evaluations, parameter_names, trainable)
 WeightedGradientResult(value, gradient, components, weights, method, evaluations, parameter_names, trainable)
+armijo_backtracking_line_search(objective, values, gradient_result, direction, bounds=None, initial_step=1.0, contraction=0.5, sufficient_decrease=1e-4, max_steps=20) -> ArmijoLineSearchResult
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
@@ -531,6 +535,9 @@ numbers before training or hardware-adapter code consumes them.
 `DifferentiableOptimizer.minimize()` is deliberately bounded: it records scalar
 objective history, preserves non-trainable parameters, and exits only through
 explicit gradient tolerance, optional value tolerance, or `max_steps`.
+`armijo_backtracking_line_search()` provides a fail-closed sufficient-decrease
+step selector for scalar objectives, masking frozen directions, projecting
+declared bounds, and returning accepted/rejected provenance plus trial values.
 The optimizer accepts `gradient_method="parameter_shift"` for gate-generator
 objectives and `gradient_method="finite_difference"` for smooth diagnostic
 objectives that are not parameter-shift compatible.

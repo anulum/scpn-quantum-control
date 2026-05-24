@@ -197,6 +197,62 @@ class OptimizationResult:
 
 
 @dataclass(frozen=True)
+class ArmijoLineSearchResult:
+    """Backtracking line-search result with sufficient-decrease provenance."""
+
+    values: NDArray[np.float64]
+    value: float
+    step_size: float
+    direction: NDArray[np.float64]
+    directional_derivative: float
+    accepted: bool
+    evaluations: int
+    value_history: tuple[float, ...]
+    reason: str
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        values = _as_parameter_array(self.values)
+        direction = _as_parameter_array(self.direction)
+        if direction.shape != values.shape:
+            raise ValueError("line-search direction shape must match values shape")
+        value = _as_real_scalar("line-search value", self.value)
+        step_size = _as_real_scalar("line-search step_size", self.step_size)
+        if step_size < 0.0:
+            raise ValueError("line-search step_size must be finite and non-negative")
+        directional_derivative = _as_real_scalar(
+            "line-search directional_derivative",
+            self.directional_derivative,
+        )
+        if not isinstance(self.accepted, bool):
+            raise ValueError("line-search accepted flag must be a boolean")
+        if self.evaluations < 0:
+            raise ValueError("line-search evaluations must be non-negative")
+        if not self.value_history:
+            raise ValueError("line-search value_history must be non-empty")
+        value_history = tuple(
+            _as_real_scalar("line-search value history", item) for item in self.value_history
+        )
+        if self.reason not in {"accepted", "non_descent_direction", "max_steps"}:
+            raise ValueError("line-search reason must be a known status")
+        if len(self.parameter_names) != values.size:
+            raise ValueError("parameter_names length must match line-search values")
+        if len(self.trainable) != values.size:
+            raise ValueError("trainable mask length must match line-search values")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "step_size", step_size)
+        object.__setattr__(self, "direction", direction)
+        object.__setattr__(self, "directional_derivative", directional_derivative)
+        object.__setattr__(self, "value_history", value_history)
+
+
+@dataclass(frozen=True)
 class GradientCheckResult:
     """Consistency check between two differentiable gradient estimators."""
 
@@ -1538,6 +1594,102 @@ class NaturalGradientOptimizer:
         )
 
 
+def armijo_backtracking_line_search(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    gradient_result: GradientResult,
+    direction: ArrayLike,
+    *,
+    bounds: Sequence[ParameterBounds] | None = None,
+    initial_step: float = 1.0,
+    contraction: float = 0.5,
+    sufficient_decrease: float = 1.0e-4,
+    max_steps: int = 20,
+) -> ArmijoLineSearchResult:
+    """Return a bounded Armijo backtracking step for a scalar objective."""
+
+    if not isinstance(gradient_result, GradientResult):
+        raise ValueError("line search requires a GradientResult")
+    parameter_values = _as_parameter_array(values)
+    if parameter_values.size != gradient_result.gradient.size:
+        raise ValueError("line-search values length must match gradient length")
+    direction_values = _as_parameter_array(direction)
+    if direction_values.shape != parameter_values.shape:
+        raise ValueError("line-search direction length must match values length")
+    initial_step_value = _as_real_scalar("line-search initial_step", initial_step)
+    contraction_value = _as_real_scalar("line-search contraction", contraction)
+    sufficient_decrease_value = _as_real_scalar(
+        "line-search sufficient_decrease",
+        sufficient_decrease,
+    )
+    if initial_step_value <= 0.0:
+        raise ValueError("line-search initial_step must be finite and positive")
+    if not 0.0 < contraction_value < 1.0:
+        raise ValueError("line-search contraction must be finite and between 0 and 1")
+    if not 0.0 < sufficient_decrease_value < 1.0:
+        raise ValueError("line-search sufficient_decrease must be finite and between 0 and 1")
+    if isinstance(max_steps, bool) or not isinstance(max_steps, int) or max_steps < 1:
+        raise ValueError("line-search max_steps must be a positive integer")
+    trainable = np.asarray(gradient_result.trainable, dtype=bool)
+    bounds_meta = _normalise_bounds(parameter_values, bounds)
+    masked_direction = direction_values.copy()
+    masked_direction[~trainable] = 0.0
+    directional_derivative = float(gradient_result.gradient @ masked_direction)
+    start_value = _as_scalar(objective(parameter_values.copy()))
+    evaluations = 1
+    history: list[float] = [start_value]
+    if directional_derivative >= 0.0 or not np.any(masked_direction[trainable]):
+        return ArmijoLineSearchResult(
+            values=parameter_values,
+            value=start_value,
+            step_size=0.0,
+            direction=masked_direction,
+            directional_derivative=directional_derivative,
+            accepted=False,
+            evaluations=evaluations,
+            value_history=tuple(history),
+            reason="non_descent_direction",
+            parameter_names=gradient_result.parameter_names,
+            trainable=gradient_result.trainable,
+        )
+    step_size = initial_step_value
+    for _ in range(max_steps):
+        candidate = _project_bounds(parameter_values + step_size * masked_direction, bounds_meta)
+        actual_step = candidate - parameter_values
+        actual_derivative = float(gradient_result.gradient @ actual_step)
+        candidate_value = _as_scalar(objective(candidate.copy()))
+        evaluations += 1
+        history.append(candidate_value)
+        if candidate_value <= start_value + sufficient_decrease_value * actual_derivative:
+            return ArmijoLineSearchResult(
+                values=candidate,
+                value=candidate_value,
+                step_size=step_size,
+                direction=masked_direction,
+                directional_derivative=directional_derivative,
+                accepted=True,
+                evaluations=evaluations,
+                value_history=tuple(history),
+                reason="accepted",
+                parameter_names=gradient_result.parameter_names,
+                trainable=gradient_result.trainable,
+            )
+        step_size *= contraction_value
+    return ArmijoLineSearchResult(
+        values=parameter_values,
+        value=start_value,
+        step_size=0.0,
+        direction=masked_direction,
+        directional_derivative=directional_derivative,
+        accepted=False,
+        evaluations=evaluations,
+        value_history=tuple(history),
+        reason="max_steps",
+        parameter_names=gradient_result.parameter_names,
+        trainable=gradient_result.trainable,
+    )
+
+
 def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
     array = _as_real_numeric_array("parameters", values)
     if array.ndim != 1:
@@ -2820,6 +2972,7 @@ def jax_value_and_grad(
 
 
 __all__ = [
+    "ArmijoLineSearchResult",
     "DifferentiableOptimizer",
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
@@ -2844,6 +2997,7 @@ __all__ = [
     "ParameterShiftRule",
     "VJPResult",
     "WeightedGradientResult",
+    "armijo_backtracking_line_search",
     "batch_parameter_shift_gradient",
     "batch_value_and_finite_difference_grad",
     "batch_value_and_parameter_shift_grad",

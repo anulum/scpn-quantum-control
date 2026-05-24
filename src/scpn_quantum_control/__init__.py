@@ -87,6 +87,7 @@ from .deployment.cloud_native import (
     generate_cloud_manifests,
 )
 from .differentiable import (
+    ArmijoLineSearchResult,
     DifferentiableOptimizer,
     FisherConjugateGradientResult,
     FisherVectorProductResult,
@@ -111,6 +112,7 @@ from .differentiable import (
     ParameterShiftRule,
     VJPResult,
     WeightedGradientResult,
+    armijo_backtracking_line_search,
     batch_parameter_shift_gradient,
     batch_value_and_finite_difference_grad,
     batch_value_and_parameter_shift_grad,
@@ -554,6 +556,7 @@ __all__ = [
     "qiskit_circuit_to_qasm3_workload",
     "qiskit_circuit_to_workload",
     "VQLS_GradShafranov",
+    "ArmijoLineSearchResult",
     "DifferentiableOptimizer",
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
@@ -578,6 +581,7 @@ __all__ = [
     "ParameterShiftRule",
     "VJPResult",
     "WeightedGradientResult",
+    "armijo_backtracking_line_search",
     "batch_parameter_shift_gradient",
     "batch_value_and_finite_difference_grad",
     "batch_value_and_parameter_shift_grad",

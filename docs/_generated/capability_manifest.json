@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 324,
+    "public_api_exports": 326,
     "public_documentation_pages": 235,
-    "python_model_classes": 1464,
+    "python_model_classes": 1465,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -1258,6 +1258,10 @@
       {
         "name": "ArcaneNeuronBridge",
         "path": "src/scpn_quantum_control/bridge/snn_adapter.py"
+      },
+      {
+        "name": "ArmijoLineSearchResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "ArtificialSentienceConfig",
@@ -7733,6 +7737,7 @@
     "AggregatorProviderOptionalDependencyRow",
     "AggregatorProviderRoute",
     "ArcaneNeuronBridge",
+    "ArmijoLineSearchResult",
     "AzureQuantumHALAdapter",
     "Backend",
     "BackendCapabilities",
@@ -7879,6 +7884,7 @@
     "analyse_biological_surface_code",
     "analysis",
     "applications",
+    "armijo_backtracking_line_search",
     "assess_provider_capability_snapshot",
     "available_baselines",
     "azure_openqasm3_to_workload",

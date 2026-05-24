@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.differentiable import (
+    ArmijoLineSearchResult,
     DifferentiableOptimizer,
     FisherConjugateGradientResult,
     FisherVectorProductResult,
@@ -39,6 +40,7 @@ from scpn_quantum_control.differentiable import (
     ParameterShiftRule,
     VJPResult,
     WeightedGradientResult,
+    armijo_backtracking_line_search,
     batch_parameter_shift_gradient,
     batch_value_and_finite_difference_grad,
     batch_value_and_parameter_shift_grad,
@@ -622,6 +624,100 @@ def test_natural_gradient_optimizer_rejects_invalid_controls() -> None:
             gradient_method="finite_difference",
             max_steps=1,
         )
+
+
+def test_armijo_backtracking_line_search_accepts_sufficient_decrease() -> None:
+    """Armijo search should accept a descent step with explicit provenance."""
+
+    gradient = value_and_finite_difference_grad(lambda values: float(values[0] ** 2), [2.0])
+    result = armijo_backtracking_line_search(
+        lambda values: float(values[0] ** 2),
+        [2.0],
+        gradient,
+        -gradient.gradient,
+        initial_step=1.0,
+        contraction=0.5,
+    )
+
+    assert isinstance(result, ArmijoLineSearchResult)
+    assert result.accepted
+    assert result.reason == "accepted"
+    assert result.step_size == pytest.approx(0.5)
+    assert result.value < gradient.value
+    assert result.value_history[0] == pytest.approx(4.0)
+    np.testing.assert_allclose(result.values, [0.0], atol=1.0e-10)
+
+
+def test_armijo_backtracking_line_search_respects_bounds_and_frozen_parameters() -> None:
+    """Line search should project bounds and remove frozen direction components."""
+
+    gradient = value_and_finite_difference_grad(
+        lambda values: float(values[0] ** 2 + values[1] ** 2),
+        [2.0, 10.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+    result = armijo_backtracking_line_search(
+        lambda values: float(values[0] ** 2 + values[1] ** 2),
+        [2.0, 10.0],
+        gradient,
+        [-10.0, -999.0],
+        bounds=[ParameterBounds(lower=-1.0, upper=1.0), ParameterBounds()],
+    )
+
+    assert result.accepted
+    np.testing.assert_allclose(result.direction, [-10.0, 0.0])
+    np.testing.assert_allclose(result.values, [-1.0, 10.0])
+
+
+def test_armijo_backtracking_line_search_rejects_invalid_controls() -> None:
+    """Line-search controls and directions must fail closed."""
+
+    gradient = value_and_finite_difference_grad(lambda values: float(values[0] ** 2), [2.0])
+    with pytest.raises(ValueError, match="GradientResult"):
+        armijo_backtracking_line_search(
+            lambda values: float(values[0] ** 2),
+            [2.0],
+            gradient.gradient,  # type: ignore[arg-type]
+            [-1.0],
+        )
+    with pytest.raises(ValueError, match="direction length"):
+        armijo_backtracking_line_search(
+            lambda values: float(values[0] ** 2), [2.0], gradient, [-1.0, 0.0]
+        )
+    with pytest.raises(ValueError, match="initial_step"):
+        armijo_backtracking_line_search(
+            lambda values: float(values[0] ** 2), [2.0], gradient, [-1.0], initial_step=0.0
+        )
+    with pytest.raises(ValueError, match="contraction"):
+        armijo_backtracking_line_search(
+            lambda values: float(values[0] ** 2), [2.0], gradient, [-1.0], contraction=1.0
+        )
+    with pytest.raises(ValueError, match="sufficient_decrease"):
+        armijo_backtracking_line_search(
+            lambda values: float(values[0] ** 2), [2.0], gradient, [-1.0], sufficient_decrease=0.0
+        )
+    with pytest.raises(ValueError, match="max_steps"):
+        armijo_backtracking_line_search(
+            lambda values: float(values[0] ** 2), [2.0], gradient, [-1.0], max_steps=0
+        )
+
+
+def test_armijo_backtracking_line_search_rejects_non_descent_direction() -> None:
+    """Non-descent directions should return a rejected result without trials."""
+
+    gradient = value_and_finite_difference_grad(lambda values: float(values[0] ** 2), [2.0])
+    result = armijo_backtracking_line_search(
+        lambda values: float(values[0] ** 2),
+        [2.0],
+        gradient,
+        gradient.gradient,
+    )
+
+    assert result.accepted is False
+    assert result.reason == "non_descent_direction"
+    assert result.step_size == pytest.approx(0.0)
+    assert result.evaluations == 1
+    np.testing.assert_allclose(result.values, [2.0])
 
 
 def test_empirical_fisher_metric_from_jacobian_result() -> None:
@@ -1819,6 +1915,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
 
     import scpn_quantum_control as scpn
 
+    assert scpn.ArmijoLineSearchResult is ArmijoLineSearchResult
+    assert scpn.armijo_backtracking_line_search is armijo_backtracking_line_search
     assert scpn.FisherConjugateGradientResult is FisherConjugateGradientResult
     assert scpn.FisherVectorProductResult is FisherVectorProductResult
     assert scpn.ParameterShiftRule is ParameterShiftRule
