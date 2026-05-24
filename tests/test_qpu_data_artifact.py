@@ -324,6 +324,11 @@ def test_scpn_datastream_adapter_rejects_non_string_layer_ids():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
+def test_scpn_datastream_adapter_rejects_non_mapping_payloads():
+    with pytest.raises(ValueError, match="SC-NeuroCore datastream payload must be a mapping"):
+        QPUDataArtifact.from_scpn_datastream_payload([("schema_version", "wrong")])
+
+
 def test_json_loader_rejects_wrong_schema():
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))

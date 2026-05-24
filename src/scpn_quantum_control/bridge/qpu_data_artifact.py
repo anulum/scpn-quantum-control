@@ -339,6 +339,7 @@ class QPUDataArtifact:
         and useful for interface tests, but it is not a recorded source artifact.
         It therefore defaults to ``source_mode='synthetic'``.
         """
+        payload = _require_mapping("SC-NeuroCore datastream payload", payload)
         if payload.get("schema_version") != SC_NEUROCORE_STREAM_SCHEMA:
             raise ValueError("unsupported SC-NeuroCore datastream schema version")
         K_nm = payload["knm"]
