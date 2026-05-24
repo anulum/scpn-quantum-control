@@ -88,6 +88,7 @@ from .deployment.cloud_native import (
 )
 from .differentiable import (
     DifferentiableOptimizer,
+    FisherVectorProductResult,
     GradientCheckResult,
     GradientResult,
     HessianResult,
@@ -112,6 +113,7 @@ from .differentiable import (
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     empirical_fisher_metric,
+    empirical_fisher_vector_product,
     evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
     finite_difference_hessian,
@@ -549,6 +551,7 @@ __all__ = [
     "qiskit_circuit_to_workload",
     "VQLS_GradShafranov",
     "DifferentiableOptimizer",
+    "FisherVectorProductResult",
     "GradientCheckResult",
     "GradientResult",
     "HVPResult",
@@ -573,6 +576,7 @@ __all__ = [
     "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
     "empirical_fisher_metric",
+    "empirical_fisher_vector_product",
     "evaluate_levenberg_marquardt_step",
     "finite_difference_gradient",
     "finite_difference_hessian",

@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 318,
+    "public_api_exports": 320,
     "public_documentation_pages": 235,
-    "python_model_classes": 1460,
+    "python_model_classes": 1461,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -2382,6 +2382,10 @@
       {
         "name": "FisherResult",
         "path": "src/scpn_quantum_control/dla_parity/reproduce.py"
+      },
+      {
+        "name": "FisherVectorProductResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "FloquetResult",
@@ -7744,6 +7748,7 @@
     "ExecutionRegion",
     "Experiment",
     "FaultTolerantUPDE",
+    "FisherVectorProductResult",
     "ForecastModelRun",
     "GUESSResult",
     "GradientCheckResult",
@@ -7902,6 +7907,7 @@
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
     "empirical_fisher_metric",
+    "empirical_fisher_vector_product",
     "enforce_realtime_sla",
     "estimate_crossover",
     "evaluate_levenberg_marquardt_step",

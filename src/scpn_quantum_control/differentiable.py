@@ -716,6 +716,60 @@ class LeastSquaresCovarianceResult:
 
 
 @dataclass(frozen=True)
+class FisherVectorProductResult:
+    """Matrix-free empirical-Fisher vector product with provenance."""
+
+    value: NDArray[np.float64]
+    tangent: NDArray[np.float64]
+    product: NDArray[np.float64]
+    residual_projection: NDArray[np.float64]
+    damping: float
+    method: str
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_numeric_array("Fisher-vector value", self.value)
+        tangent = _as_real_numeric_array("Fisher-vector tangent", self.tangent)
+        product = _as_real_numeric_array("Fisher-vector product", self.product)
+        projection = _as_real_numeric_array(
+            "Fisher-vector residual_projection",
+            self.residual_projection,
+        )
+        if value.ndim != 1:
+            raise ValueError("Fisher-vector value must be one-dimensional")
+        if tangent.ndim != 1 or product.shape != tangent.shape:
+            raise ValueError("Fisher-vector tangent and product must be one-dimensional matches")
+        if projection.shape != value.shape:
+            raise ValueError("residual_projection shape must match value shape")
+        if not np.all(np.isfinite(value)) or not np.all(np.isfinite(projection)):
+            raise ValueError("Fisher-vector value and projection must contain only finite values")
+        if not np.all(np.isfinite(tangent)) or not np.all(np.isfinite(product)):
+            raise ValueError("Fisher-vector tangent and product must contain only finite values")
+        damping = _as_real_scalar("Fisher-vector damping", self.damping)
+        if damping < 0.0:
+            raise ValueError("Fisher-vector damping must be finite and non-negative")
+        if not self.method:
+            raise ValueError("Fisher-vector method must be non-empty")
+        if self.evaluations < 0:
+            raise ValueError("Fisher-vector evaluations must be non-negative")
+        if len(self.parameter_names) != tangent.size:
+            raise ValueError("parameter_names length must match Fisher-vector dimension")
+        if len(self.trainable) != tangent.size:
+            raise ValueError("trainable mask length must match Fisher-vector dimension")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "tangent", tangent)
+        object.__setattr__(self, "product", product)
+        object.__setattr__(self, "residual_projection", projection)
+        object.__setattr__(self, "damping", damping)
+
+
+@dataclass(frozen=True)
 class WeightedGradientResult:
     """Weighted scalarisation of multiple scalar gradient results."""
 
@@ -1848,6 +1902,53 @@ def empirical_fisher_metric(
     return cast(NDArray[np.float64], metric)
 
 
+def empirical_fisher_vector_product(
+    jacobian: JacobianResult,
+    tangent: ArrayLike,
+    *,
+    weights: ArrayLike | None = None,
+    damping: float = 0.0,
+) -> FisherVectorProductResult:
+    """Return matrix-free ``(J.T @ W @ J + damping I) @ tangent``."""
+
+    if not isinstance(jacobian, JacobianResult):
+        raise ValueError("empirical_fisher_vector_product requires a JacobianResult")
+    tangent_values = _as_parameter_array(tangent)
+    if tangent_values.shape[0] != jacobian.jacobian.shape[1]:
+        raise ValueError("Fisher-vector tangent length must match Jacobian parameter dimension")
+    trainable = np.asarray(jacobian.trainable, dtype=bool)
+    masked_tangent = tangent_values.copy()
+    masked_tangent[~trainable] = 0.0
+    damping_value = _as_real_scalar("Fisher-vector damping", damping)
+    if damping_value < 0.0:
+        raise ValueError("Fisher-vector damping must be finite and non-negative")
+    projection = cast(NDArray[np.float64], jacobian.jacobian @ masked_tangent)
+    if weights is None:
+        weighted_projection = projection
+    else:
+        weight_arr = _as_real_numeric_array("weights", weights)
+        if weight_arr.ndim != 1 or weight_arr.shape[0] != projection.size:
+            raise ValueError("weights must be a one-dimensional array matching residual rows")
+        if not np.all(np.isfinite(weight_arr)) or np.any(weight_arr < 0.0):
+            raise ValueError("weights must contain only finite non-negative values")
+        weighted_projection = projection * weight_arr
+    product = cast(NDArray[np.float64], jacobian.jacobian.T @ weighted_projection)
+    if damping_value > 0.0:
+        product[trainable] += damping_value * masked_tangent[trainable]
+    product[~trainable] = 0.0
+    return FisherVectorProductResult(
+        value=jacobian.value,
+        tangent=masked_tangent,
+        product=product,
+        residual_projection=projection,
+        damping=damping_value,
+        method=f"fisher_vector_product:{jacobian.method}",
+        evaluations=jacobian.evaluations,
+        parameter_names=jacobian.parameter_names,
+        trainable=jacobian.trainable,
+    )
+
+
 def least_squares_covariance(
     jacobian: JacobianResult,
     *,
@@ -2290,6 +2391,7 @@ def jax_value_and_grad(
 
 __all__ = [
     "DifferentiableOptimizer",
+    "FisherVectorProductResult",
     "GradientCheckResult",
     "GradientResult",
     "HVPResult",
@@ -2314,6 +2416,7 @@ __all__ = [
     "batch_value_and_parameter_shift_grad",
     "check_parameter_shift_consistency",
     "empirical_fisher_metric",
+    "empirical_fisher_vector_product",
     "evaluate_levenberg_marquardt_step",
     "finite_difference_gradient",
     "finite_difference_hessian",

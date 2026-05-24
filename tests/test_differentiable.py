@@ -16,6 +16,7 @@ import pytest
 
 from scpn_quantum_control.differentiable import (
     DifferentiableOptimizer,
+    FisherVectorProductResult,
     GradientCheckResult,
     GradientResult,
     HessianResult,
@@ -40,6 +41,7 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_parameter_shift_grad,
     check_parameter_shift_consistency,
     empirical_fisher_metric,
+    empirical_fisher_vector_product,
     evaluate_levenberg_marquardt_step,
     finite_difference_gradient,
     finite_difference_hessian,
@@ -572,6 +574,65 @@ def test_empirical_fisher_metric_rejects_invalid_weights() -> None:
         empirical_fisher_metric(np.eye(2), weights=np.array([1.0, -1.0]))
     with pytest.raises(ValueError, match="fisher damping"):
         empirical_fisher_metric(np.eye(2), damping=-1.0)
+
+
+def test_empirical_fisher_vector_product_matches_materialised_metric() -> None:
+    """Matrix-free Fisher products should match explicit metric multiplication."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] + values[1], 2.0 * values[1]]),
+        [1.0, -2.0],
+        parameters=[Parameter("x"), Parameter("y")],
+    )
+    weights = np.array([0.5, 2.0])
+    tangent = np.array([3.0, -1.0])
+    result = empirical_fisher_vector_product(
+        jacobian_result,
+        tangent,
+        weights=weights,
+        damping=0.25,
+    )
+    metric = empirical_fisher_metric(jacobian_result, weights=weights, damping=0.25)
+
+    assert isinstance(result, FisherVectorProductResult)
+    assert result.method == "fisher_vector_product:finite_difference_central"
+    np.testing.assert_allclose(result.residual_projection, [2.0, -2.0], atol=1.0e-6)
+    np.testing.assert_allclose(result.product, metric @ tangent, atol=1.0e-6)
+    np.testing.assert_allclose(result.tangent, tangent)
+
+
+def test_empirical_fisher_vector_product_respects_frozen_parameters() -> None:
+    """Frozen parameters should be removed from Fisher-vector products."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0] + 10.0 * values[1], values[1] ** 2]),
+        [1.0, 2.0],
+        parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
+    )
+    result = empirical_fisher_vector_product(jacobian_result, [0.5, 100.0], damping=1.0)
+
+    np.testing.assert_allclose(result.tangent, [0.5, 0.0])
+    np.testing.assert_allclose(result.residual_projection, [0.5, 0.0], atol=1.0e-6)
+    np.testing.assert_allclose(result.product, [1.0, 0.0], atol=1.0e-6)
+
+
+def test_empirical_fisher_vector_product_rejects_invalid_inputs() -> None:
+    """Fisher-vector products should fail closed for malformed tangents and weights."""
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], values[1]]),
+        [1.0, 2.0],
+    )
+    with pytest.raises(ValueError, match="JacobianResult"):
+        empirical_fisher_vector_product(np.eye(2), [1.0, 2.0])  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="tangent length"):
+        empirical_fisher_vector_product(jacobian_result, [1.0])
+    with pytest.raises(ValueError, match="weights"):
+        empirical_fisher_vector_product(jacobian_result, [1.0, 2.0], weights=[1.0])
+    with pytest.raises(ValueError, match="non-negative"):
+        empirical_fisher_vector_product(jacobian_result, [1.0, 2.0], weights=[1.0, -1.0])
+    with pytest.raises(ValueError, match="damping"):
+        empirical_fisher_vector_product(jacobian_result, [1.0, 2.0], damping=-1.0)
 
 
 def test_gauss_newton_gradient_solves_weighted_least_squares_residual() -> None:
@@ -1612,6 +1673,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
 
     import scpn_quantum_control as scpn
 
+    assert scpn.FisherVectorProductResult is FisherVectorProductResult
     assert scpn.ParameterShiftRule is ParameterShiftRule
     assert scpn.ParameterBounds is ParameterBounds
     assert scpn.WeightedGradientResult is WeightedGradientResult
@@ -1631,6 +1693,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.LevenbergMarquardtTrial is LevenbergMarquardtTrial
     assert scpn.NaturalGradientResult is NaturalGradientResult
     assert scpn.finite_difference_gradient is finite_difference_gradient
+    assert scpn.empirical_fisher_vector_product is empirical_fisher_vector_product
     assert scpn.empirical_fisher_metric is empirical_fisher_metric
     assert scpn.evaluate_levenberg_marquardt_step is evaluate_levenberg_marquardt_step
     assert scpn.finite_difference_hessian is finite_difference_hessian
