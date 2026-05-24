@@ -122,6 +122,16 @@ class TestMCWFTrajectory:
         result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.05, dt=0.05, seed=42)
         assert len(result["times"]) == 2
 
+    def test_time_grid_respects_requested_maximum_step(self):
+        K, omega = _system(2)
+
+        result = mcwf_trajectory(K, omega, gamma_amp=0.05, t_max=0.25, dt=0.1, seed=42)
+
+        assert result["times"][0] == pytest.approx(0.0)
+        assert result["times"][-1] == pytest.approx(0.25)
+        assert np.max(np.diff(result["times"])) <= 0.1 + 1e-12
+        assert result["R"].shape == result["times"].shape
+
     def test_zero_horizon_returns_initial_state_without_propagation(self, monkeypatch):
         K, omega = _system(2)
 
@@ -240,6 +250,18 @@ class TestMCWFEnsemble:
             K, omega, gamma_amp=0.05, t_max=0.2, dt=0.1, n_trajectories=3, seed=42
         )
         assert result["R_trajectories"].shape[0] == 3
+
+    def test_ensemble_time_grid_matches_trajectory_resolution(self):
+        K, omega = _system(2)
+
+        result = mcwf_ensemble(
+            K, omega, gamma_amp=0.05, t_max=0.25, dt=0.1, n_trajectories=3, seed=42
+        )
+
+        assert result["times"][0] == pytest.approx(0.0)
+        assert result["times"][-1] == pytest.approx(0.25)
+        assert np.max(np.diff(result["times"])) <= 0.1 + 1e-12
+        assert result["R_trajectories"].shape[1] == result["times"].shape[0]
 
     def test_total_jumps_nonneg(self):
         K, omega = _system(2)

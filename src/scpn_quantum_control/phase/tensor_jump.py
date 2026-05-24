@@ -72,6 +72,10 @@ def _validate_mcwf_inputs(
     return K_arr, omega_arr
 
 
+def _time_step_count(t_max: float, dt: float) -> int:
+    return max(1, int(np.ceil(t_max / dt)))
+
+
 def _single_qubit_sparse(pauli: str, qubit: int, n: int) -> sparse.csr_matrix:
     matrices = {
         "X": sparse.csr_matrix(np.array([[0, 1], [1, 0]], dtype=np.complex128)),
@@ -170,7 +174,7 @@ def mcwf_trajectory(
     # Initial state: product of Ry-rotated qubits
     psi = _initial_product_state(omega)
 
-    n_steps = max(1, int(t_max / dt))
+    n_steps = _time_step_count(t_max, dt)
     times = np.linspace(0, t_max, n_steps + 1)
     R_history = np.zeros(n_steps + 1)
     R_history[0] = _order_param_vec(psi, n)
@@ -256,7 +260,7 @@ def mcwf_ensemble(
 
     R_array = np.array(all_R)
     return {
-        "times": np.linspace(0, t_max, max(1, int(t_max / dt)) + 1),
+        "times": np.linspace(0, t_max, _time_step_count(t_max, dt) + 1),
         "R_mean": np.mean(R_array, axis=0),
         "R_std": np.std(R_array, axis=0),
         "R_trajectories": R_array,
