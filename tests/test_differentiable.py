@@ -4603,10 +4603,7 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
         assert contract.lowering_metadata["mlir"] == "blocked_until_executable_linalg_lowering"
         assert contract.batching_rule is not None
         assert contract.dtype_rule is not None
-        assert contract.dtype_rule(()) == "float64"
         assert contract.shape_rule is not None
-        with pytest.raises(ValueError, match="shape is resolved by trace execution"):
-            contract.shape_rule(())
         with pytest.raises(ValueError, match="incomplete primitive contract"):
             primitive_complete_contract_for(identity)
 
@@ -4621,6 +4618,43 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+
+
+def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None:
+    """Supported linalg primitive contracts should expose concrete shape and dtype rules."""
+
+    matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
+    rhs_vector = np.array([1.0, -0.25], dtype=np.float64)
+    rhs_matrix = np.array([[1.0, -0.25], [0.5, 1.5]], dtype=np.float64)
+    right = np.array([[0.25, 1.0, -0.5], [1.5, -0.25, 0.75]], dtype=np.float64)
+
+    contracts = {
+        name: primitive_contract_for(PrimitiveIdentity("scpn.program_ad.linalg", name, "1"))
+        for name in ("det", "inv", "solve", "matrix_power", "multi_dot")
+    }
+    assert contracts["det"].shape_rule is not None
+    assert contracts["inv"].shape_rule is not None
+    assert contracts["solve"].shape_rule is not None
+    assert contracts["matrix_power"].shape_rule is not None
+    assert contracts["multi_dot"].shape_rule is not None
+    assert contracts["det"].dtype_rule is not None
+
+    assert contracts["det"].shape_rule((matrix,)) == ()
+    assert contracts["inv"].shape_rule((matrix,)) == (2, 2)
+    assert contracts["solve"].shape_rule((matrix, rhs_vector)) == (2,)
+    assert contracts["solve"].shape_rule((matrix, rhs_matrix)) == (2, 2)
+    assert contracts["matrix_power"].shape_rule((matrix, 3)) == (2, 2)
+    assert contracts["multi_dot"].shape_rule(((rhs_vector, matrix, right),)) == (3,)
+    assert contracts["det"].dtype_rule((matrix,)) == "float64"
+
+    with pytest.raises(ValueError, match="requires a square matrix"):
+        contracts["det"].shape_rule((np.reshape(np.arange(6.0), (2, 3)),))
+    with pytest.raises(ValueError, match="vector length must match matrix"):
+        contracts["solve"].shape_rule((matrix, np.arange(3.0)))
+    with pytest.raises(ValueError, match="static integer power"):
+        contracts["matrix_power"].shape_rule((matrix, 1.5))
+    with pytest.raises(ValueError, match="dimensions must align"):
+        contracts["multi_dot"].shape_rule(((rhs_vector, np.ones((3, 2), dtype=np.float64)),))
 
 
 def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:

@@ -5428,12 +5428,130 @@ def _program_ad_linalg_direct_jvp(
     )
 
 
-def _program_ad_linalg_runtime_shape(_args: tuple[object, ...]) -> tuple[int, ...]:
-    raise ValueError("program AD linalg primitive shape is resolved by trace execution")
+def _program_ad_linalg_shape_of(value: object) -> tuple[int, ...]:
+    if isinstance(value, TraceADArray):
+        return value.shape
+    return tuple(int(dim) for dim in np.asarray(value).shape)
 
 
-def _program_ad_linalg_runtime_dtype(_args: tuple[object, ...]) -> str:
-    return "float64"
+def _program_ad_linalg_require_matrix_shape(name: str, value: object) -> tuple[int, int]:
+    shape = _program_ad_linalg_shape_of(value)
+    if len(shape) != 2:
+        raise ValueError(f"program AD linalg {name} shape rule requires a rank-2 matrix")
+    rows, cols = shape
+    if rows != cols:
+        raise ValueError(f"program AD linalg {name} shape rule requires a square matrix")
+    return rows, cols
+
+
+def _program_ad_linalg_det_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg det shape rule requires one matrix")
+    _program_ad_linalg_require_matrix_shape("det", args[0])
+    return ()
+
+
+def _program_ad_linalg_inv_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg inv shape rule requires one matrix")
+    return _program_ad_linalg_require_matrix_shape("inv", args[0])
+
+
+def _program_ad_linalg_solve_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD linalg solve shape rule requires matrix and right-hand side")
+    rows, _cols = _program_ad_linalg_require_matrix_shape("solve", args[0])
+    rhs_shape = _program_ad_linalg_shape_of(args[1])
+    if len(rhs_shape) == 1:
+        if rhs_shape[0] != rows:
+            raise ValueError("program AD linalg solve shape rule vector length must match matrix")
+        return rhs_shape
+    if len(rhs_shape) == 2:
+        if rhs_shape[0] != rows:
+            raise ValueError("program AD linalg solve shape rule rhs rows must match matrix")
+        return rhs_shape
+    raise ValueError("program AD linalg solve shape rule requires rank-1 or rank-2 rhs")
+
+
+def _program_ad_linalg_matrix_power_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD linalg matrix_power shape rule requires matrix and power")
+    if isinstance(args[1], bool) or not isinstance(args[1], (int, np.integer)):
+        raise ValueError(
+            "program AD linalg matrix_power shape rule requires a static integer power"
+        )
+    return _program_ad_linalg_require_matrix_shape("matrix_power", args[0])
+
+
+def _program_ad_linalg_multi_dot_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg multi_dot shape rule requires one operand sequence")
+    operands = args[0]
+    if isinstance(operands, (TraceADArray, np.ndarray)) or not isinstance(operands, Sequence):
+        raise ValueError(
+            "program AD linalg multi_dot shape rule requires a static operand sequence"
+        )
+    shapes = tuple(_program_ad_linalg_shape_of(operand) for operand in operands)
+    if len(shapes) < 2:
+        raise ValueError("program AD linalg multi_dot shape rule requires at least two operands")
+    for index, shape in enumerate(shapes):
+        if len(shape) not in {1, 2}:
+            raise ValueError("program AD linalg multi_dot shape rule supports rank-1/rank-2")
+        if 0 < index < len(shapes) - 1 and len(shape) != 2:
+            raise ValueError(
+                "program AD linalg multi_dot shape rule middle operands must be rank-2"
+            )
+
+    result_shape = shapes[0]
+    for next_shape in shapes[1:]:
+        if len(result_shape) == 1 and len(next_shape) == 1:
+            if result_shape[0] != next_shape[0]:
+                raise ValueError("program AD linalg multi_dot shape rule dimensions must align")
+            result_shape = ()
+        elif len(result_shape) == 1 and len(next_shape) == 2:
+            if result_shape[0] != next_shape[0]:
+                raise ValueError("program AD linalg multi_dot shape rule dimensions must align")
+            result_shape = (next_shape[1],)
+        elif len(result_shape) == 2 and len(next_shape) == 1:
+            if result_shape[1] != next_shape[0]:
+                raise ValueError("program AD linalg multi_dot shape rule dimensions must align")
+            result_shape = (result_shape[0],)
+        elif len(result_shape) == 2 and len(next_shape) == 2:
+            if result_shape[1] != next_shape[0]:
+                raise ValueError("program AD linalg multi_dot shape rule dimensions must align")
+            result_shape = (result_shape[0], next_shape[1])
+        else:
+            raise ValueError(
+                "program AD linalg multi_dot shape rule encountered scalar intermediate"
+            )
+    return result_shape
+
+
+def _program_ad_linalg_dtype_rule(args: tuple[object, ...]) -> str:
+    arrays: list[NDArray[np.float64]] = []
+    for arg in args:
+        if isinstance(arg, Sequence) and not isinstance(
+            arg, (str, bytes, TraceADArray, np.ndarray)
+        ):
+            arrays.extend(
+                _as_real_numeric_array("program AD linalg dtype operand", item) for item in arg
+            )
+        elif isinstance(arg, (int, np.integer)) and not isinstance(arg, bool):
+            continue
+        else:
+            arrays.append(_as_real_numeric_array("program AD linalg dtype operand", arg))
+    if not arrays:
+        return "float64"
+    return str(np.result_type(*(array.dtype for array in arrays)))
+
+
+_PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "det": _program_ad_linalg_det_shape,
+    "inv": _program_ad_linalg_inv_shape,
+    "solve": _program_ad_linalg_solve_shape,
+    "matrix_power": _program_ad_linalg_matrix_power_shape,
+    "multi_dot": _program_ad_linalg_multi_dot_shape,
+}
 
 
 def _program_ad_linalg_batching_rule(
@@ -5500,8 +5618,8 @@ def _register_program_ad_linalg_primitive_contracts() -> None:
                     "llvm": "blocked_until_executable_linalg_lowering",
                     "rust": "blocked_until_polyglot_linalg_ad",
                 },
-                shape_rule=_program_ad_linalg_runtime_shape,
-                dtype_rule=_program_ad_linalg_runtime_dtype,
+                shape_rule=_PROGRAM_AD_LINALG_SHAPE_RULES[name],
+                dtype_rule=_program_ad_linalg_dtype_rule,
                 nondifferentiable_policy=_PROGRAM_AD_LINALG_POLICY,
                 effect="pure",
             )
