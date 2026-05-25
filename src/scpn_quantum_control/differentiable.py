@@ -1437,6 +1437,15 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.multi_dot supports one operand sequence")
             return _trace_multi_dot(args[0], self.context)
+        if func in {
+            np.linalg.eig,
+            np.linalg.eigh,
+            np.linalg.eigvals,
+            np.linalg.eigvalsh,
+            np.linalg.svd,
+            np.linalg.pinv,
+        }:
+            _raise_spectral_linalg_boundary(func.__name__)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
         if func is np.sort or func is np.argsort:
@@ -2460,6 +2469,14 @@ def _raise_index_selection_boundary() -> NoReturn:
     raise ValueError(
         "program AD argmax/argmin index selection semantics require an explicit "
         "nondifferentiable primitive policy"
+    )
+
+
+def _raise_spectral_linalg_boundary(function_name: str) -> NoReturn:
+    raise ValueError(
+        f"program AD np.linalg.{function_name} spectral semantics require an explicit "
+        "differentiable primitive rule for eigenvalue degeneracy, singular-value "
+        "multiplicity, and nondifferentiable selection policy"
     )
 
 

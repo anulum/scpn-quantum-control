@@ -4567,6 +4567,29 @@ def test_program_ad_linalg_multi_dot_fails_closed_invalid_contracts() -> None:
         )
 
 
+def test_program_ad_linalg_spectral_operations_fail_closed_policy_boundary() -> None:
+    """Program AD spectral linalg should require explicit primitive policies."""
+
+    values = np.array([2.0, -0.5, -0.5, 1.5], dtype=np.float64)
+    spectral_objectives = (
+        lambda matrix: np.sum(np.linalg.eig(matrix)[0]),
+        lambda matrix: np.sum(np.linalg.eigh(matrix)[0]),
+        lambda matrix: np.sum(np.linalg.eigvals(matrix)),
+        lambda matrix: np.sum(np.linalg.eigvalsh(matrix)),
+        lambda matrix: np.sum(np.linalg.svd(matrix, compute_uv=False)),
+        lambda matrix: np.sum(np.linalg.pinv(matrix)),
+    )
+
+    for objective in spectral_objectives:
+        with pytest.raises(ValueError, match="spectral semantics require an explicit"):
+            whole_program_value_and_grad(
+                lambda flat_values, objective=objective: objective(
+                    np.reshape(flat_values, (2, 2))
+                ),
+                values,
+            )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 
