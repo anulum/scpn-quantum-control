@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 427,
+    "public_api_exports": 428,
     "public_documentation_pages": 235,
-    "python_model_classes": 1490,
+    "python_model_classes": 1491,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -6684,6 +6684,10 @@
         "path": "src/scpn_quantum_control/paper0/torus_surface_flow_lyapunov_style_certificate_validation.py"
       },
       {
+        "name": "TraceADArray",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "TraceADScalar",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -7990,6 +7994,7 @@
     "SynchronisationForecastBenchmarkResult",
     "SynchronisationForecastDataset",
     "TopologicalCouplingOptimizer",
+    "TraceADArray",
     "TraceADScalar",
     "TraceSTDPConfig",
     "TraceSTDPState",

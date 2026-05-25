@@ -54,6 +54,7 @@ from scpn_quantum_control.differentiable import (
     ShotAllocationResult,
     SparseMatrixResult,
     StochasticGradientResult,
+    TraceADArray,
     TraceADScalar,
     VJPResult,
     WeightedGradientResult,
@@ -3312,6 +3313,35 @@ def test_whole_program_ad_captures_bytecode_source_alias_mutation_and_loop_seman
     np.testing.assert_allclose(result.gradient, [math.cos(0.5) + 1.0, 1.0], atol=1.0e-12)
 
 
+def test_whole_program_ad_handles_vector_numpy_reductions_dot_and_array_mutation() -> None:
+    """Whole-program AD should execute vector NumPy semantics with derivative-carrying arrays."""
+
+    def objective(values: np.ndarray) -> object:
+        working = values.copy()
+        working[1] = working[1] + values[0] * 2.0
+        vector_term = np.sum(np.sin(working) + working**2)
+        mean_term = np.mean(working)
+        dot_term = np.dot(working, np.array([1.0, -2.0, 0.5], dtype=np.float64))
+        return vector_term + mean_term + dot_term
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.2, -0.4, 0.7], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+    )
+
+    working = np.array([0.2, 0.0, 0.7], dtype=np.float64)
+    base_grad = np.cos(working) + 2.0 * working + np.array([1.0, -2.0, 0.5]) + (1.0 / 3.0)
+    expected = np.array(
+        [base_grad[0] + 2.0 * base_grad[1], base_grad[1], base_grad[2]],
+        dtype=np.float64,
+    )
+    assert result.method == "whole_program_ad"
+    assert any(node.op == "mutation:setitem" for node in result.ir_nodes)
+    assert any(node.op == "sin" for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 
@@ -3330,6 +3360,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
 
     import scpn_quantum_control as scpn
 
+    assert scpn.TraceADArray is TraceADArray
     assert scpn.WholeProgramADResult is WholeProgramADResult
     assert scpn.WholeProgramBytecodeInstruction is WholeProgramBytecodeInstruction
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
@@ -3538,8 +3569,10 @@ def test_whole_program_ad_operator_surface_and_fail_closed_paths() -> None:
         whole_program_value_and_grad(lambda values: np.log(values[0]), [-1.0])
     with pytest.raises(ValueError, match="unsupported whole-program AD NumPy ufunc"):
         whole_program_value_and_grad(lambda values: np.tan(values[0]), [1.0])
-    with pytest.raises(ValueError, match="unary NumPy ufuncs"):
-        whole_program_value_and_grad(lambda values: np.add(values[0], values[0]), [1.0])
+    np.testing.assert_allclose(
+        whole_program_grad(lambda values: np.add(values[0], values[0]), [1.0]),
+        [2.0],
+    )
     with pytest.raises(ValueError, match="direct NumPy scalar ufunc"):
         whole_program_value_and_grad(
             lambda values: values[0].__array_ufunc__(np.sin, "reduce", values[0]), [1.0]

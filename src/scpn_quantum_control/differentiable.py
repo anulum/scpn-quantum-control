@@ -226,7 +226,7 @@ class WholeProgramADResult:
 
 
 def whole_program_value_and_grad(
-    objective: Callable[[NDArray[Any]], object],
+    objective: Callable[[Any], object],
     values: ArrayLike,
     parameters: Sequence[Parameter] | None = None,
     *,
@@ -253,7 +253,11 @@ def whole_program_value_and_grad(
         if parameter.trainable:
             tangent[index] = 1.0
         traced_values.append(context.make("parameter", (parameter.name,), float(value), tangent))
-    raw = objective(np.array(traced_values, dtype=object))
+    raw = objective(TraceADArray(tuple(traced_values), (len(traced_values),), context))
+    if isinstance(raw, TraceADArray):
+        if raw.shape != ():
+            raise ValueError("whole-program objective must return a whole-program AD scalar")
+        raw = raw.item()
     if not isinstance(raw, TraceADScalar):
         raise ValueError("whole-program objective must return a whole-program AD scalar")
     source = _objective_source(objective)
@@ -483,40 +487,337 @@ class TraceADScalar:
     ) -> TraceADScalar:
         if method != "__call__" or kwargs:
             raise ValueError("whole-program AD supports only direct NumPy scalar ufunc calls")
-        args = [
-            self._coerce(item) if not isinstance(item, TraceADScalar) else item for item in inputs
-        ]
-        if len(args) != 1:
-            raise ValueError("whole-program AD supports unary NumPy ufuncs only")
-        arg = args[0]
-        if ufunc is np.sin:
-            return self.context.make(
-                "sin",
-                (arg.name,),
-                float(np.sin(arg.primal)),
-                float(np.cos(arg.primal)) * arg.tangent,
+        result = _apply_trace_ufunc(ufunc, tuple(inputs), self.context)
+        if not isinstance(result, TraceADScalar):
+            raise ValueError("whole-program AD scalar ufunc returned a non-scalar result")
+        return result
+
+
+class TraceADArray:
+    """Derivative-carrying one-dimensional array for whole-program AD."""
+
+    __array_priority__ = 1000.0
+
+    def __init__(
+        self,
+        items: tuple[TraceADScalar, ...],
+        shape: tuple[int, ...],
+        context: _WholeProgramTraceContext,
+    ) -> None:
+        if not shape:
+            if len(items) != 1:
+                raise ValueError("scalar TraceADArray requires exactly one item")
+        elif int(np.prod(shape)) != len(items):
+            raise ValueError("TraceADArray shape must match item count")
+        if any(item.context is not context for item in items):
+            raise ValueError("TraceADArray items must belong to the same trace")
+        self._items = list(items)
+        self.shape = shape
+        self.context = context
+
+    @property
+    def ndim(self) -> int:
+        return len(self.shape)
+
+    @property
+    def size(self) -> int:
+        return len(self._items)
+
+    def __len__(self) -> int:
+        if not self.shape:
+            raise TypeError("scalar TraceADArray has no len()")
+        return self.shape[0]
+
+    def __iter__(self) -> object:
+        if self.ndim != 1:
+            raise ValueError("whole-program AD array iteration supports one-dimensional arrays")
+        return iter(self._items)
+
+    def __array__(self, dtype: object = None) -> object:
+        del dtype
+        raise ValueError(
+            "whole-program AD array cannot be converted to a NumPy ndarray without losing derivatives"
+        )
+
+    def item(self) -> TraceADScalar:
+        if self.size != 1:
+            raise ValueError("TraceADArray.item requires exactly one element")
+        return self._items[0]
+
+    def copy(self) -> TraceADArray:
+        return TraceADArray(tuple(self._items), self.shape, self.context)
+
+    def reshape(self, *shape: int | tuple[int, ...]) -> TraceADArray:
+        if len(shape) == 1 and isinstance(shape[0], tuple):
+            target = shape[0]
+        else:
+            target = cast(tuple[int, ...], shape)
+        if int(np.prod(target)) != self.size:
+            raise ValueError("TraceADArray reshape must preserve size")
+        return TraceADArray(tuple(self._items), tuple(int(item) for item in target), self.context)
+
+    def sum(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        return _trace_array_sum(self, axis=axis)
+
+    def mean(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        result = _trace_array_sum(self, axis=axis)
+        divisor = (
+            self.size if axis is None else self.shape[_normalise_axis("axis", axis, self.ndim)]
+        )
+        return (
+            result / float(divisor)
+            if isinstance(result, TraceADScalar)
+            else result / float(divisor)
+        )
+
+    def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
+        if self.ndim != 1:
+            raise ValueError("whole-program AD array indexing supports one-dimensional arrays")
+        if isinstance(index, tuple):
+            if len(index) != 1:
+                raise ValueError("whole-program AD array supports one-dimensional indices")
+            index = index[0]
+        if isinstance(index, slice):
+            sliced = tuple(self._items[index])
+            return TraceADArray(sliced, (len(sliced),), self.context)
+        if isinstance(index, (int, np.integer)):
+            return self._items[int(index)]
+        raise ValueError("whole-program AD array indices must be integers or slices")
+
+    def __setitem__(self, index: object, value: object) -> None:
+        if self.ndim != 1:
+            raise ValueError("whole-program AD array mutation supports one-dimensional arrays")
+        if not isinstance(index, (int, np.integer)):
+            raise ValueError("whole-program AD array mutation supports integer indices")
+        scalar = _coerce_trace_scalar(value, self.context)
+        self.context.make(
+            "mutation:setitem",
+            (f"%array[{int(index)}]", scalar.name),
+            scalar.primal,
+            scalar.tangent,
+        )
+        self._items[int(index)] = scalar
+
+    def __array_ufunc__(
+        self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
+    ) -> TraceADScalar | TraceADArray:
+        if method != "__call__" or kwargs:
+            raise ValueError("whole-program AD supports only direct NumPy array ufunc calls")
+        return _apply_trace_ufunc(ufunc, tuple(inputs), self.context)
+
+    def __array_function__(
+        self,
+        func: Callable[..., object],
+        types: tuple[type, ...],
+        args: tuple[object, ...],
+        kwargs: dict[str, object],
+    ) -> TraceADScalar | TraceADArray:
+        del types
+        if func is np.sum:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("whole-program AD np.sum supports one array and optional axis")
+            return _trace_array_sum(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | None, kwargs.get("axis")),
             )
-        if ufunc is np.cos:
-            return self.context.make(
-                "cos",
-                (arg.name,),
-                float(np.cos(arg.primal)),
-                -float(np.sin(arg.primal)) * arg.tangent,
+        if func is np.mean:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("whole-program AD np.mean supports one array and optional axis")
+            return _coerce_trace_array(args[0], self.context).mean(
+                axis=cast(int | None, kwargs.get("axis"))
             )
-        if ufunc is np.exp:
-            primal = float(np.exp(arg.primal))
-            return self.context.make("exp", (arg.name,), primal, primal * arg.tangent)
-        if ufunc is np.log:
-            if arg.primal <= 0.0:
-                raise ValueError("whole-program AD log input must be positive")
-            return self.context.make(
-                "log", (arg.name,), float(np.log(arg.primal)), arg.tangent / arg.primal
-            )
-        raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
+        if func is np.dot:
+            if len(args) != 2 or kwargs:
+                raise ValueError("whole-program AD np.dot supports two one-dimensional operands")
+            return _trace_dot(args[0], args[1], self.context)
+        raise ValueError(f"unsupported whole-program AD NumPy function {func.__name__}")
+
+    def _binary(self, other: object, op: np.ufunc) -> TraceADScalar | TraceADArray:
+        return _apply_trace_ufunc(op, (self, other), self.context)
+
+    def __add__(self, other: object) -> TraceADScalar | TraceADArray:
+        return self._binary(other, np.add)
+
+    def __radd__(self, other: object) -> TraceADScalar | TraceADArray:
+        return self._binary(other, np.add)
+
+    def __sub__(self, other: object) -> TraceADScalar | TraceADArray:
+        return self._binary(other, np.subtract)
+
+    def __rsub__(self, other: object) -> TraceADScalar | TraceADArray:
+        return _apply_trace_ufunc(np.subtract, (other, self), self.context)
+
+    def __mul__(self, other: object) -> TraceADScalar | TraceADArray:
+        return self._binary(other, np.multiply)
+
+    def __rmul__(self, other: object) -> TraceADScalar | TraceADArray:
+        return self._binary(other, np.multiply)
+
+    def __truediv__(self, other: object) -> TraceADScalar | TraceADArray:
+        return self._binary(other, np.divide)
+
+    def __rtruediv__(self, other: object) -> TraceADScalar | TraceADArray:
+        return _apply_trace_ufunc(np.divide, (other, self), self.context)
+
+    def __pow__(self, other: object) -> TraceADScalar | TraceADArray:
+        return self._binary(other, np.power)
+
+    def __rpow__(self, other: object) -> TraceADScalar | TraceADArray:
+        return _apply_trace_ufunc(np.power, (other, self), self.context)
+
+    def __neg__(self) -> TraceADScalar | TraceADArray:
+        return _apply_trace_ufunc(np.negative, (self,), self.context)
+
+
+def _coerce_trace_scalar(value: object, context: _WholeProgramTraceContext) -> TraceADScalar:
+    if isinstance(value, TraceADScalar):
+        if value.context is not context:
+            raise ValueError("whole-program AD scalars belong to different traces")
+        return value
+    if isinstance(value, TraceADArray):
+        if value.context is not context:
+            raise ValueError("whole-program AD arrays belong to different traces")
+        return value.item()
+    tangent = np.zeros(context.parameter_count, dtype=np.float64)
+    return TraceADScalar(
+        _as_real_scalar("whole-program AD constant", value), tangent, context, repr(value)
+    )
+
+
+def _coerce_trace_array(value: object, context: _WholeProgramTraceContext) -> TraceADArray:
+    if isinstance(value, TraceADArray):
+        if value.context is not context:
+            raise ValueError("whole-program AD arrays belong to different traces")
+        return value
+    if isinstance(value, TraceADScalar):
+        if value.context is not context:
+            raise ValueError("whole-program AD scalars belong to different traces")
+        return TraceADArray((value,), (), context)
+    raw = np.asarray(value)
+    if raw.dtype.kind in {"O", "S", "U", "c"}:
+        raise ValueError("whole-program AD array operands must be real numeric")
+    array = np.asarray(raw, dtype=np.float64)
+    if not np.all(np.isfinite(array)):
+        raise ValueError("whole-program AD array operands must be finite")
+    tangent = np.zeros(context.parameter_count, dtype=np.float64)
+    items = tuple(
+        TraceADScalar(float(item), tangent.copy(), context, repr(float(item)))
+        for item in array.reshape(-1)
+    )
+    return TraceADArray(items, tuple(array.shape), context)
+
+
+def _broadcast_trace_array(
+    value: object, shape: tuple[int, ...], context: _WholeProgramTraceContext
+) -> TraceADArray:
+    array = _coerce_trace_array(value, context)
+    if array.shape == shape:
+        return array
+    if array.shape == ():
+        return TraceADArray(
+            tuple(array.item() for _ in range(int(np.prod(shape)))), shape, context
+        )
+    raise ValueError(
+        "whole-program AD array operands must have matching shapes or scalar broadcast"
+    )
+
+
+def _apply_trace_ufunc(
+    ufunc: np.ufunc,
+    inputs: tuple[object, ...],
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    if ufunc is np.negative and len(inputs) == 1:
+        operand = _coerce_trace_array(inputs[0], context)
+        items = tuple(-item for item in operand._items)
+        return items[0] if operand.shape == () else TraceADArray(items, operand.shape, context)
+    if ufunc in {np.sin, np.cos, np.exp, np.log} and len(inputs) == 1:
+        operand = _coerce_trace_array(inputs[0], context)
+        items = tuple(_apply_unary_trace_ufunc(ufunc, item) for item in operand._items)
+        return items[0] if operand.shape == () else TraceADArray(items, operand.shape, context)
+    if ufunc in {np.add, np.subtract, np.multiply, np.divide, np.power} and len(inputs) == 2:
+        left = _coerce_trace_array(inputs[0], context)
+        right = _coerce_trace_array(inputs[1], context)
+        shape = left.shape if left.shape != () else right.shape
+        left = _broadcast_trace_array(left, shape, context)
+        right = _broadcast_trace_array(right, shape, context)
+        items = tuple(
+            _apply_binary_trace_ufunc(ufunc, lhs, rhs)
+            for lhs, rhs in zip(left._items, right._items, strict=True)
+        )
+        return items[0] if shape == () else TraceADArray(items, shape, context)
+    raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
+
+
+def _apply_unary_trace_ufunc(ufunc: np.ufunc, arg: TraceADScalar) -> TraceADScalar:
+    if ufunc is np.sin:
+        return arg.context.make(
+            "sin", (arg.name,), float(np.sin(arg.primal)), float(np.cos(arg.primal)) * arg.tangent
+        )
+    if ufunc is np.cos:
+        return arg.context.make(
+            "cos", (arg.name,), float(np.cos(arg.primal)), -float(np.sin(arg.primal)) * arg.tangent
+        )
+    if ufunc is np.exp:
+        primal = float(np.exp(arg.primal))
+        return arg.context.make("exp", (arg.name,), primal, primal * arg.tangent)
+    if ufunc is np.log:
+        if arg.primal <= 0.0:
+            raise ValueError("whole-program AD log input must be positive")
+        return arg.context.make(
+            "log", (arg.name,), float(np.log(arg.primal)), arg.tangent / arg.primal
+        )
+    raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
+
+
+def _apply_binary_trace_ufunc(
+    ufunc: np.ufunc,
+    left: TraceADScalar,
+    right: TraceADScalar,
+) -> TraceADScalar:
+    if ufunc is np.add:
+        return left + right
+    if ufunc is np.subtract:
+        return left - right
+    if ufunc is np.multiply:
+        return left * right
+    if ufunc is np.divide:
+        return left / right
+    if ufunc is np.power:
+        return left**right
+    raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
+
+
+def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADScalar | TraceADArray:
+    if axis is not None:
+        axis = _normalise_axis("axis", axis, array.ndim)
+        if array.ndim != 1 or axis != 0:
+            raise ValueError("whole-program AD array reductions support one-dimensional arrays")
+    if not array._items:
+        raise ValueError("whole-program AD array reductions require at least one element")
+    total = array._items[0]
+    for item in array._items[1:]:
+        total = total + item
+    return total
+
+
+def _trace_dot(
+    left: object,
+    right: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar:
+    lhs = _coerce_trace_array(left, context)
+    rhs = _coerce_trace_array(right, context)
+    if lhs.ndim != 1 or rhs.ndim != 1 or lhs.shape != rhs.shape:
+        raise ValueError("whole-program AD np.dot supports matching one-dimensional operands")
+    total = lhs._items[0] * rhs._items[0]
+    for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
+        total = total + left_item * right_item
+    return total
 
 
 def whole_program_grad(
-    objective: Callable[[NDArray[Any]], object],
+    objective: Callable[[Any], object],
     values: ArrayLike,
     parameters: Sequence[Parameter] | None = None,
     *,
@@ -6490,6 +6791,7 @@ __all__ = [
     "value_and_grad",
     "whole_program_grad",
     "whole_program_value_and_grad",
+    "TraceADArray",
     "TraceADScalar",
     "WholeProgramADResult",
     "WholeProgramBytecodeInstruction",
