@@ -367,6 +367,7 @@ those extras are installed.
 ```python
 from scpn_quantum_control import (
     ArmijoLineSearchResult,
+    CustomDerivativeCheckResult,
     CustomDerivativeRule,
     DifferentiableOptimizer,
     DualNumber,
@@ -408,6 +409,7 @@ from scpn_quantum_control import (
     batch_value_and_finite_difference_vjp,
     batch_value_and_complex_step_grad,
     batch_vector_jacobian_product,
+    check_custom_derivative_consistency,
     check_parameter_shift_consistency,
     complex_step_gradient,
     custom_jvp,
@@ -528,6 +530,7 @@ GradientResult(value, gradient, method, shift, coefficient, evaluations, paramet
 StochasticGradientResult(value, gradient, standard_error, covariance, confidence_radius, shots, confidence_level, method, shift, coefficient, evaluations, parameter_names, trainable)
 OptimizationResult(values, final_gradient, value_history, steps, converged, reason, best_values=None, best_value=None)
 GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, tolerance, passed)
+CustomDerivativeCheckResult(custom_jvp, custom_vjp, reference_jvp, reference_vjp, adjoint_inner_error, jvp_l2_error, vjp_l2_error, tolerance, passed)
 CustomDerivativeRule(name, value_fn, jvp_rule=None, vjp_rule=None, parameter_names=(), trainable=())
 HVPResult(value, hvp, tangent, method, step, evaluations, parameter_names, trainable)
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
@@ -615,6 +618,7 @@ levenberg_marquardt_step(jacobian, values, weights=None, damping=1e-3, bounds=No
 soft_l1_residual_weights(residuals, scale=1.0, min_weight=0.0) -> np.ndarray
 update_levenberg_marquardt_damping(trial, decrease_factor=1/3, increase_factor=2.0, min_damping=1e-12, max_damping=1e12, high_quality_ratio=0.75) -> LevenbergMarquardtDampingUpdate
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
+check_custom_derivative_consistency(rule, values, tangent, cotangent, parameters=None, finite_difference_step=1e-6, tolerance=1e-5) -> CustomDerivativeCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
 NaturalGradientOptimizer(...).minimize(objective, initial_values, metric_fn, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_steps=100, gradient_tolerance=1e-8, step_tolerance=1e-8, value_tolerance=None) -> NaturalGradientOptimizationResult
@@ -682,6 +686,7 @@ provenance.
 against central finite differences and returns explicit error metrics, so custom
 rules can be validated before being used in training loops.
 `CustomDerivativeRule`, `custom_jvp()`, and `custom_vjp()` provide an exact-rule boundary for primitives with known physics derivatives. Custom rules evaluate the primitive once, enforce trainable masks, reject shape drift, and preserve JVP/VJP provenance without falling back to finite-difference steps.
+`check_custom_derivative_consistency()` audits an exact rule pair against the adjoint identity `<J t, c> = <t, J^T c>` and finite-difference JVP/VJP references before the rule is trusted in production control paths.
 The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.

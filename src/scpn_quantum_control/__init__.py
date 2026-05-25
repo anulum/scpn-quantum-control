@@ -88,6 +88,7 @@ from .deployment.cloud_native import (
 )
 from .differentiable import (
     ArmijoLineSearchResult,
+    CustomDerivativeCheckResult,
     CustomDerivativeRule,
     DifferentiableOptimizer,
     DualNumber,
@@ -134,6 +135,7 @@ from .differentiable import (
     batch_value_and_finite_difference_vjp,
     batch_value_and_parameter_shift_grad,
     batch_vector_jacobian_product,
+    check_custom_derivative_consistency,
     check_parameter_shift_consistency,
     complex_step_gradient,
     custom_jvp,
@@ -606,6 +608,7 @@ __all__ = [
     "qiskit_circuit_to_workload",
     "VQLS_GradShafranov",
     "ArmijoLineSearchResult",
+    "CustomDerivativeCheckResult",
     "CustomDerivativeRule",
     "DifferentiableOptimizer",
     "FixedPointSensitivityResult",
@@ -652,6 +655,7 @@ __all__ = [
     "batch_value_and_complex_step_grad",
     "batch_value_and_parameter_shift_grad",
     "batch_vector_jacobian_product",
+    "check_custom_derivative_consistency",
     "check_parameter_shift_consistency",
     "complex_step_gradient",
     "custom_jvp",

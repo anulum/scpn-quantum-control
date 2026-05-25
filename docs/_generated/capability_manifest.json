@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 375,
+    "public_api_exports": 377,
     "public_documentation_pages": 235,
-    "python_model_classes": 1473,
+    "python_model_classes": 1474,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -1862,6 +1862,10 @@
       {
         "name": "CrossDomainResult",
         "path": "src/scpn_quantum_control/applications/cross_domain.py"
+      },
+      {
+        "name": "CustomDerivativeCheckResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "CustomDerivativeRule",
@@ -7789,6 +7793,7 @@
     "CloudManifestBundle",
     "ContainerResources",
     "ControlQEC",
+    "CustomDerivativeCheckResult",
     "CustomDerivativeRule",
     "DWaveLeapHALAdapter",
     "DifferentiableOptimizer",
@@ -7960,6 +7965,7 @@
     "build_triadic_ring_terms",
     "built_in_aggregator_provider_routes",
     "built_in_backend_profiles",
+    "check_custom_derivative_consistency",
     "check_parameter_shift_consistency",
     "chsh_from_statevector",
     "cirq_circuit_workload",

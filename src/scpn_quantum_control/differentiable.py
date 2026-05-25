@@ -653,6 +653,56 @@ class GradientCheckResult:
 
 
 @dataclass(frozen=True)
+class CustomDerivativeCheckResult:
+    """Consistency audit for exact custom JVP/VJP derivative rules."""
+
+    custom_jvp: JVPResult
+    custom_vjp: VJPResult
+    reference_jvp: JVPResult
+    reference_vjp: VJPResult
+    adjoint_inner_error: float
+    jvp_l2_error: float
+    vjp_l2_error: float
+    tolerance: float
+    passed: bool
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.custom_jvp, JVPResult):
+            raise ValueError("custom_jvp must be a JVPResult")
+        if not isinstance(self.custom_vjp, VJPResult):
+            raise ValueError("custom_vjp must be a VJPResult")
+        if not isinstance(self.reference_jvp, JVPResult):
+            raise ValueError("reference_jvp must be a JVPResult")
+        if not isinstance(self.reference_vjp, VJPResult):
+            raise ValueError("reference_vjp must be a VJPResult")
+        if self.custom_jvp.value.shape != self.reference_jvp.value.shape:
+            raise ValueError("custom and reference JVP values must have matching shapes")
+        if self.custom_vjp.value.shape != self.reference_vjp.value.shape:
+            raise ValueError("custom and reference VJP values must have matching shapes")
+        if self.custom_jvp.jvp.shape != self.reference_jvp.jvp.shape:
+            raise ValueError("custom and reference JVP outputs must have matching shapes")
+        if self.custom_vjp.vjp.shape != self.reference_vjp.vjp.shape:
+            raise ValueError("custom and reference VJP outputs must have matching shapes")
+        adjoint_inner_error = _as_real_scalar(
+            "custom derivative adjoint error",
+            self.adjoint_inner_error,
+        )
+        jvp_l2_error = _as_real_scalar("custom derivative JVP l2 error", self.jvp_l2_error)
+        vjp_l2_error = _as_real_scalar("custom derivative VJP l2 error", self.vjp_l2_error)
+        tolerance = _as_real_scalar("custom derivative tolerance", self.tolerance)
+        if adjoint_inner_error < 0.0 or jvp_l2_error < 0.0 or vjp_l2_error < 0.0:
+            raise ValueError("custom derivative errors must be non-negative")
+        if tolerance < 0.0:
+            raise ValueError("custom derivative tolerance must be finite and non-negative")
+        if not isinstance(self.passed, bool):
+            raise ValueError("custom derivative passed flag must be a boolean")
+        object.__setattr__(self, "adjoint_inner_error", adjoint_inner_error)
+        object.__setattr__(self, "jvp_l2_error", jvp_l2_error)
+        object.__setattr__(self, "vjp_l2_error", vjp_l2_error)
+        object.__setattr__(self, "tolerance", tolerance)
+
+
+@dataclass(frozen=True)
 class JacobianResult:
     """Value, Jacobian, and provenance for a vector-valued objective."""
 
@@ -3624,6 +3674,84 @@ def value_and_custom_vjp(
     )
 
 
+def check_custom_derivative_consistency(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    finite_difference_step: float = 1.0e-6,
+    tolerance: float = 1.0e-5,
+) -> CustomDerivativeCheckResult:
+    """Check custom JVP/VJP rules against adjoint and finite-difference identities."""
+
+    tolerance_value = _as_real_scalar("custom derivative tolerance", tolerance)
+    if tolerance_value < 0.0:
+        raise ValueError("custom derivative tolerance must be finite and non-negative")
+    step_value = _as_real_scalar(
+        "custom derivative finite_difference_step", finite_difference_step
+    )
+    if step_value <= 0.0:
+        raise ValueError("custom derivative finite_difference_step must be finite and positive")
+    custom_jvp_result = value_and_custom_jvp(
+        rule,
+        values,
+        tangent,
+        parameters=parameters,
+    )
+    custom_vjp_result = value_and_custom_vjp(
+        rule,
+        values,
+        cotangent,
+        parameters=parameters,
+    )
+    parameter_values = _as_parameter_array(values)
+    reference_parameters = tuple(
+        Parameter(name, trainable=flag)
+        for name, flag in zip(
+            custom_jvp_result.parameter_names,
+            custom_jvp_result.trainable,
+            strict=True,
+        )
+    )
+    reference_jvp = value_and_finite_difference_jvp(
+        rule.value_fn,
+        parameter_values,
+        custom_jvp_result.tangent,
+        parameters=reference_parameters,
+        step=step_value,
+    )
+    reference_vjp = finite_difference_vjp(
+        rule.value_fn,
+        parameter_values,
+        custom_vjp_result.cotangent,
+        parameters=reference_parameters,
+        step=step_value,
+    )
+    primal_inner = float(np.dot(custom_jvp_result.jvp, custom_vjp_result.cotangent))
+    adjoint_inner = float(np.dot(custom_jvp_result.tangent, custom_vjp_result.vjp))
+    adjoint_inner_error = abs(primal_inner - adjoint_inner)
+    jvp_l2_error = float(np.linalg.norm(custom_jvp_result.jvp - reference_jvp.jvp))
+    vjp_l2_error = float(np.linalg.norm(custom_vjp_result.vjp - reference_vjp.vjp))
+    passed = (
+        adjoint_inner_error <= tolerance_value
+        and jvp_l2_error <= tolerance_value
+        and vjp_l2_error <= tolerance_value
+    )
+    return CustomDerivativeCheckResult(
+        custom_jvp=custom_jvp_result,
+        custom_vjp=custom_vjp_result,
+        reference_jvp=reference_jvp,
+        reference_vjp=reference_vjp,
+        adjoint_inner_error=adjoint_inner_error,
+        jvp_l2_error=jvp_l2_error,
+        vjp_l2_error=vjp_l2_error,
+        tolerance=tolerance_value,
+        passed=passed,
+    )
+
+
 def finite_difference_vjp(
     objective: VectorObjective,
     values: ArrayLike,
@@ -4674,6 +4802,7 @@ def jax_value_and_grad(
 
 __all__ = [
     "ArmijoLineSearchResult",
+    "CustomDerivativeCheckResult",
     "CustomDerivativeRule",
     "DifferentiableOptimizer",
     "DualNumber",
@@ -4721,6 +4850,7 @@ __all__ = [
     "batch_value_and_parameter_shift_grad",
     "batch_vector_jacobian_product",
     "check_parameter_shift_consistency",
+    "check_custom_derivative_consistency",
     "complex_step_gradient",
     "custom_jvp",
     "custom_vjp",
