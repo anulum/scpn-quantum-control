@@ -23,7 +23,7 @@ mkdocs-material==9.7.6
 pymdown-extensions==10.21.3
 mkdocstrings[python]==1.0.4
 # IBM hardware
-qiskit-ibm-runtime==0.46.1
+qiskit-ibm-runtime==0.47.0
 # AWS Braket provider surface
 amazon-braket-sdk==1.117.3
 # Visualization
