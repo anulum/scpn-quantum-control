@@ -3800,6 +3800,56 @@ def test_program_adjoint_result_validation_paths() -> None:
         )
 
 
+def test_program_ad_extreme_reductions_match_strict_selection_adjoint() -> None:
+    """Program AD max/min reductions should route adjoints to unique selected entries."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        column_max = np.max(matrix, axis=0)
+        row_min = np.min(matrix, axis=1)
+        return column_max[0] + 2.0 * column_max[1] + 3.0 * column_max[2] + row_min[0] - row_min[1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 4.0, -2.0, 3.0, 0.5, -1.0], dtype=np.float64),
+        parameters=(
+            Parameter("x00"),
+            Parameter("x01"),
+            Parameter("x02"),
+            Parameter("x10"),
+            Parameter("x11"),
+            Parameter("x12"),
+        ),
+    )
+
+    assert result.value == pytest.approx(7.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [0.0, 2.0, 1.0, 1.0, 0.0, 2.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result),
+        result.gradient,
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_extreme_reductions_fail_closed_on_ties() -> None:
+    """Program AD max/min reductions should reject nondifferentiable tied selectors."""
+
+    with pytest.raises(ValueError, match="np.max.*ties"):
+        whole_program_value_and_grad(
+            lambda values: np.max(values),
+            np.array([2.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="np.min.*ties"):
+        whole_program_value_and_grad(
+            lambda values: np.min(np.reshape(values, (2, 2)), axis=1)[0],
+            np.array([1.0, 1.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_ad_emits_deterministic_ssa_effect_ir() -> None:
     """Program AD should expose deterministic SSA, alias, mutation, and control metadata."""
 

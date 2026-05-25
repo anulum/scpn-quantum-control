@@ -1074,6 +1074,22 @@ class TraceADArray:
             return _coerce_trace_array(args[0], self.context).mean(
                 axis=cast(int | None, kwargs.get("axis"))
             )
+        if func is np.max:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.max supports one array and optional axis")
+            return _trace_extreme(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | None, kwargs.get("axis")),
+                choose_max=True,
+            )
+        if func is np.min:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.min supports one array and optional axis")
+            return _trace_extreme(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | None, kwargs.get("axis")),
+                choose_max=False,
+            )
         if func is np.dot:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.dot supports two operands")
@@ -1470,6 +1486,62 @@ def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADSca
             total = total + array._items[int(np.ravel_multi_index(source_index, array.shape))]
         items.append(total)
     return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _trace_extreme(
+    array: TraceADArray,
+    *,
+    axis: int | None,
+    choose_max: bool,
+) -> TraceADScalar | TraceADArray:
+    op_name = "np.max" if choose_max else "np.min"
+    if array.size == 0:
+        raise ValueError(f"program AD {op_name} requires at least one element")
+    if axis is None:
+        return _trace_strict_extreme(array._items, op_name=op_name, choose_max=choose_max)
+    axis = _normalise_axis("axis", axis, array.ndim)
+    if array.shape[axis] == 0:
+        raise ValueError(f"program AD {op_name} requires at least one element")
+    reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
+    if reduced_shape == ():
+        candidates = tuple(
+            array._items[int(np.ravel_multi_index((axis_index,), array.shape))]
+            for axis_index in range(array.shape[axis])
+        )
+        return _trace_strict_extreme(candidates, op_name=op_name, choose_max=choose_max)
+    items: list[TraceADScalar] = []
+    for reduced_flat in range(int(np.prod(reduced_shape))):
+        reduced_index = np.unravel_index(reduced_flat, reduced_shape)
+        candidates = tuple(
+            array._items[
+                int(
+                    np.ravel_multi_index(
+                        reduced_index[:axis] + (axis_index,) + reduced_index[axis:],
+                        array.shape,
+                    )
+                )
+            ]
+            for axis_index in range(array.shape[axis])
+        )
+        items.append(_trace_strict_extreme(candidates, op_name=op_name, choose_max=choose_max))
+    return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _trace_strict_extreme(
+    items: Sequence[TraceADScalar],
+    *,
+    op_name: str,
+    choose_max: bool,
+) -> TraceADScalar:
+    if not items:
+        raise ValueError(f"program AD {op_name} requires at least one element")
+    selected = items[0]
+    for item in items[1:]:
+        if item.primal == selected.primal:
+            raise ValueError(f"program AD {op_name} is non-differentiable at ties")
+        if (item.primal > selected.primal) if choose_max else (item.primal < selected.primal):
+            selected = item
+    return selected
 
 
 def _trace_transpose(
