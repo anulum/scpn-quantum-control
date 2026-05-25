@@ -1079,6 +1079,25 @@ class TraceADArray:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.dot supports two operands")
             return _trace_dot(args[0], args[1], self.context)
+        if func is np.inner:
+            if len(args) != 2 or kwargs:
+                raise ValueError("whole-program AD np.inner supports two operands")
+            return _trace_inner(args[0], args[1], self.context)
+        if func is np.outer:
+            if len(args) != 2 or kwargs:
+                raise ValueError("whole-program AD np.outer supports two operands")
+            return _trace_outer(args[0], args[1], self.context)
+        if func is np.tensordot:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axes"}:
+                raise ValueError("whole-program AD np.tensordot supports two operands and axes")
+            axes = args[2] if len(args) == 3 else kwargs.get("axes", 2)
+            return _trace_tensordot(args[0], args[1], self.context, axes=axes)
+        if func is np.einsum:
+            if len(args) < 2 or kwargs:
+                raise ValueError("whole-program AD np.einsum supports explicit operands only")
+            if not isinstance(args[0], str):
+                raise ValueError("whole-program AD np.einsum requires a string subscript")
+            return _trace_einsum(args[0], args[1:], self.context)
         if func is np.matmul:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.matmul supports two operands")
@@ -1102,6 +1121,20 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("whole-program AD np.transpose supports one array")
             return _coerce_trace_array(args[0], self.context).T
+        if func is np.trace:
+            if len(args) != 1 or kwargs.keys() - {"offset", "axis1", "axis2"}:
+                raise ValueError("whole-program AD np.trace supports one matrix")
+            return _trace_trace(
+                args[0],
+                self.context,
+                offset=cast(int, kwargs.get("offset", 0)),
+                axis1=cast(int, kwargs.get("axis1", 0)),
+                axis2=cast(int, kwargs.get("axis2", 1)),
+            )
+        if func is np.diag:
+            if len(args) != 1 or kwargs.keys() - {"k"}:
+                raise ValueError("whole-program AD np.diag supports one vector or matrix")
+            return _trace_diag(args[0], self.context, k=cast(int, kwargs.get("k", 0)))
         if func is np.concatenate:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError(
@@ -1134,6 +1167,11 @@ class TraceADArray:
                 self.context,
                 ord_value=kwargs.get("ord"),
                 axis=cast(int | None, kwargs.get("axis")),
+            )
+        if func is np.sort or func is np.argsort:
+            raise ValueError(
+                "whole-program AD sort/argsort selection semantics are not differentiable "
+                "without an explicit primitive policy"
             )
         raise ValueError(f"unsupported whole-program AD NumPy function {func.__name__}")
 
@@ -1438,6 +1476,105 @@ def _trace_dot(
     raise ValueError("whole-program AD np.dot result must be scalar for this operand pair")
 
 
+def _trace_inner(
+    left: object,
+    right: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    lhs = _coerce_trace_array(left, context)
+    rhs = _coerce_trace_array(right, context)
+    if lhs.ndim == 0 or rhs.ndim == 0:
+        return _trace_multiply_arrays(lhs, rhs, context)
+    if lhs.ndim > 2 or rhs.ndim > 2:
+        raise ValueError("whole-program AD np.inner supports operands with rank <= 2")
+    lhs_outer = lhs.shape[:-1]
+    rhs_outer = rhs.shape[:-1]
+    shared = lhs.shape[-1]
+    if rhs.shape[-1] != shared:
+        raise ValueError("whole-program AD np.inner last dimensions must align")
+    result_items: list[TraceADScalar] = []
+    lhs_rows = int(np.prod(lhs_outer)) if lhs_outer else 1
+    rhs_rows = int(np.prod(rhs_outer)) if rhs_outer else 1
+    for lhs_row in range(lhs_rows):
+        for rhs_row in range(rhs_rows):
+            total = lhs._items[lhs_row * shared] * rhs._items[rhs_row * shared]
+            for index in range(1, shared):
+                total = (
+                    total
+                    + lhs._items[lhs_row * shared + index] * rhs._items[rhs_row * shared + index]
+                )
+            result_items.append(total)
+    shape = lhs_outer + rhs_outer
+    return result_items[0] if shape == () else TraceADArray(tuple(result_items), shape, context)
+
+
+def _trace_outer(
+    left: object,
+    right: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADArray:
+    lhs = _coerce_trace_array(left, context)
+    rhs = _coerce_trace_array(right, context)
+    left_items = tuple(lhs._items)
+    right_items = tuple(rhs._items)
+    items = tuple(left_item * right_item for left_item in left_items for right_item in right_items)
+    return TraceADArray(items, (len(left_items), len(right_items)), context)
+
+
+def _trace_tensordot(
+    left: object,
+    right: object,
+    context: _WholeProgramTraceContext,
+    *,
+    axes: object,
+) -> TraceADScalar | TraceADArray:
+    if axes == 0:
+        lhs = _coerce_trace_array(left, context)
+        rhs = _coerce_trace_array(right, context)
+        items = tuple(
+            left_item * right_item for left_item in lhs._items for right_item in rhs._items
+        )
+        return TraceADArray(items, lhs.shape + rhs.shape, context)
+    if axes == 1:
+        lhs = _coerce_trace_array(left, context)
+        rhs = _coerce_trace_array(right, context)
+        if lhs.ndim == 1 and rhs.ndim == 1:
+            return _trace_dot(lhs, rhs, context)
+        return _trace_matmul(lhs, rhs, context)
+    if axes == ((1,), (0,)):
+        return _trace_matmul(left, right, context)
+    if axes == ((0,), (0,)):
+        return _trace_inner(left, right, context)
+    raise ValueError(
+        "whole-program AD np.tensordot supports axes 0, axes 1, and one-axis rank<=2 contractions"
+    )
+
+
+def _trace_einsum(
+    subscripts: str,
+    operands: Sequence[object],
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    normalised = subscripts.replace(" ", "")
+    if normalised == "i,i->" and len(operands) == 2:
+        return _trace_dot(operands[0], operands[1], context)
+    if normalised == "i,j->ij" and len(operands) == 2:
+        return _trace_outer(operands[0], operands[1], context)
+    if normalised == "ij,j->i" and len(operands) == 2:
+        return _trace_matmul(operands[0], operands[1], context)
+    if normalised == "i,ij->j" and len(operands) == 2:
+        return _trace_matmul(operands[0], operands[1], context)
+    if normalised == "ij,jk->ik" and len(operands) == 2:
+        return _trace_matmul(operands[0], operands[1], context)
+    if normalised == "ii->" and len(operands) == 1:
+        return _trace_trace(operands[0], context)
+    if normalised == "ii->i" and len(operands) == 1:
+        return _trace_diag(operands[0], context)
+    raise ValueError(
+        "whole-program AD np.einsum supports explicit dot, outer, matmul, trace, and diag forms"
+    )
+
+
 def _trace_matmul(
     left: object,
     right: object,
@@ -1486,6 +1623,72 @@ def _trace_matmul(
     if lhs.ndim == 1 and rhs.ndim == 1:
         return _trace_dot(lhs, rhs, context)
     raise ValueError("whole-program AD matmul supports rank-1 and rank-2 operands")
+
+
+def _trace_trace(
+    values: object,
+    context: _WholeProgramTraceContext,
+    *,
+    offset: int = 0,
+    axis1: int = 0,
+    axis2: int = 1,
+) -> TraceADScalar:
+    array = _coerce_trace_array(values, context)
+    if array.ndim != 2:
+        raise ValueError("whole-program AD np.trace supports matrices only")
+    if (axis1, axis2) != (0, 1):
+        raise ValueError("whole-program AD np.trace supports axis1=0 and axis2=1")
+    diag = _trace_diag(array, context, k=offset)
+    if not isinstance(diag, TraceADArray):
+        raise ValueError("whole-program AD np.trace diagonal extraction must return an array")
+    return cast(TraceADScalar, diag.sum())
+
+
+def _trace_diag(
+    values: object,
+    context: _WholeProgramTraceContext,
+    *,
+    k: int = 0,
+) -> TraceADArray:
+    array = _coerce_trace_array(values, context)
+    if array.ndim == 1:
+        size = array.shape[0] + abs(k)
+        zero = _trace_constant(0.0, context)
+        items: list[TraceADScalar] = []
+        for row in range(size):
+            for col in range(size):
+                source_index = row if k >= 0 else col
+                on_diag = (col - row) == k
+                items.append(array._items[source_index] if on_diag else zero)
+        return TraceADArray(tuple(items), (size, size), context)
+    if array.ndim == 2:
+        rows, cols = array.shape
+        items = []
+        for row in range(rows):
+            col = row + k
+            if 0 <= col < cols:
+                items.append(array._items[row * cols + col])
+        if not items:
+            raise ValueError("whole-program AD np.diag offset selects an empty diagonal")
+        return TraceADArray(tuple(items), (len(items),), context)
+    raise ValueError("whole-program AD np.diag supports vectors and matrices only")
+
+
+def _trace_multiply_arrays(
+    left: TraceADArray,
+    right: TraceADArray,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    shape = left.shape if left.shape != () else right.shape
+    left = _broadcast_trace_array(left, shape, context)
+    right = _broadcast_trace_array(right, shape, context)
+    items = tuple(lhs * rhs for lhs, rhs in zip(left._items, right._items, strict=True))
+    return items[0] if shape == () else TraceADArray(items, shape, context)
+
+
+def _trace_constant(value: float, context: _WholeProgramTraceContext) -> TraceADScalar:
+    tangent = np.zeros(context.parameter_count, dtype=np.float64)
+    return TraceADScalar(value, tangent, context, repr(float(value)))
 
 
 def _coerce_trace_predicate_array(

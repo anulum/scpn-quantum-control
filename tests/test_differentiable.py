@@ -3440,6 +3440,70 @@ def test_whole_program_ad_handles_numpy_composition_and_norms() -> None:
     np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
 
 
+def test_whole_program_ad_handles_numpy_linear_algebra_primitives() -> None:
+    """Program AD should cover bounded NumPy linear algebra forms exactly."""
+
+    def objective(values: np.ndarray) -> object:
+        left = values[:2]
+        right = values[2:4]
+        matrix = np.reshape(values, (2, 2))
+        return (
+            np.inner(left, right)
+            + np.sum(np.outer(left, right))
+            + np.trace(matrix)
+            + np.sum(np.diag(matrix))
+            + np.tensordot(left, right, axes=1)
+            + np.sum(np.tensordot(left, right, axes=0))
+            + np.einsum("i,i->", left, right)
+            + np.sum(np.einsum("i,j->ij", left, right))
+            + np.sum(np.einsum("ij,j->i", matrix, left))
+            + np.einsum("ii->", matrix)
+        )
+
+    values = np.array([0.5, -0.25, 1.5, -2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+    expected = np.array(
+        [
+            7.0 * values[2] + 3.0 * values[3] + 2.0 * values[0] + 3.0,
+            3.0 * values[2] + 7.0 * values[3] + 2.0 * values[1],
+            7.0 * values[0] + 3.0 * values[1],
+            3.0 * values[0] + 7.0 * values[1] + 3.0,
+        ],
+        dtype=np.float64,
+    )
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
+    """Unsupported NumPy linear algebra modes should fail closed with explicit diagnostics."""
+
+    with pytest.raises(ValueError, match="einsum supports explicit"):
+        whole_program_value_and_grad(
+            lambda values: np.einsum("i->", values),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="tensordot supports axes"):
+        whole_program_value_and_grad(
+            lambda values: np.tensordot(values, values, axes=2),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="sort/argsort selection semantics"):
+        whole_program_value_and_grad(
+            lambda values: np.sort(values)[0],
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 
