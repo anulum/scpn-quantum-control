@@ -3903,6 +3903,21 @@ def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
         )
 
 
+def test_program_ad_index_selection_primitives_fail_closed() -> None:
+    """Index-valued selection should require an explicit nondifferentiable policy."""
+
+    with pytest.raises(ValueError, match="argmax/argmin index selection semantics"):
+        whole_program_value_and_grad(
+            lambda values: np.argmax(values),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="argmax/argmin index selection semantics"):
+        whole_program_value_and_grad(
+            lambda values: np.reshape(values, (2, 2)).argmin(axis=1)[0],
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_extreme_reductions_fail_closed_on_ties() -> None:
     """Program AD max/min reductions should reject nondifferentiable tied selectors."""
 

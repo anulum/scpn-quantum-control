@@ -23,7 +23,7 @@ import sys
 import textwrap
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -976,6 +976,14 @@ class TraceADArray:
     ) -> TraceADScalar | TraceADArray:
         return _trace_take(self, indices, axis=axis, mode=mode)
 
+    def argmax(self, axis: int | None = None) -> NoReturn:
+        del axis
+        _raise_index_selection_boundary()
+
+    def argmin(self, axis: int | None = None) -> NoReturn:
+        del axis
+        _raise_index_selection_boundary()
+
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
         if self.ndim > 2:
             raise ValueError("whole-program AD array indexing supports arrays with rank <= 2")
@@ -1211,6 +1219,8 @@ class TraceADArray:
                 ord_value=kwargs.get("ord"),
                 axis=cast(int | None, kwargs.get("axis")),
             )
+        if func in {np.argmax, np.argmin}:
+            _raise_index_selection_boundary()
         if func is np.sort or func is np.argsort:
             raise ValueError(
                 "whole-program AD sort/argsort selection semantics are not differentiable "
@@ -1592,6 +1602,13 @@ def _trace_take(
         return array._items[int(selected_array)]
     items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
+
+
+def _raise_index_selection_boundary() -> NoReturn:
+    raise ValueError(
+        "program AD argmax/argmin index selection semantics require an explicit "
+        "nondifferentiable primitive policy"
+    )
 
 
 def _trace_transpose(
