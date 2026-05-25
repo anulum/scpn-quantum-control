@@ -4588,6 +4588,26 @@ def gauss_newton_gradient(
     return natural_gradient(base_gradient, metric, damping=0.0, rcond=rcond)
 
 
+def custom_gauss_newton_gradient(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    weights: ArrayLike | None = None,
+    damping: float = 0.0,
+    rcond: float = 1.0e-12,
+) -> NaturalGradientResult:
+    """Return a Gauss-Newton update from an exact custom residual Jacobian."""
+
+    jacobian_result = value_and_custom_jacobian(rule, values, parameters=parameters)
+    return gauss_newton_gradient(
+        jacobian_result,
+        weights=weights,
+        damping=damping,
+        rcond=rcond,
+    )
+
+
 def levenberg_marquardt_step(
     jacobian: JacobianResult,
     values: ArrayLike,
@@ -4642,6 +4662,31 @@ def levenberg_marquardt_step(
         candidate_values=candidate_values,
         damping=damping_value,
         predicted_reduction=predicted_reduction,
+    )
+
+
+def custom_levenberg_marquardt_step(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    weights: ArrayLike | None = None,
+    damping: float = 1.0e-3,
+    bounds: Sequence[ParameterBounds] | None = None,
+    max_step_norm: float | None = None,
+    rcond: float = 1.0e-12,
+) -> LevenbergMarquardtStep:
+    """Return an LM candidate using an exact custom residual Jacobian."""
+
+    jacobian_result = value_and_custom_jacobian(rule, values, parameters=parameters)
+    return levenberg_marquardt_step(
+        jacobian_result,
+        values,
+        weights=weights,
+        damping=damping,
+        bounds=bounds,
+        max_step_norm=max_step_norm,
+        rcond=rcond,
     )
 
 
@@ -5065,7 +5110,9 @@ __all__ = [
     "check_custom_derivative_consistency",
     "complex_step_gradient",
     "custom_jacobian",
+    "custom_gauss_newton_gradient",
     "custom_jvp",
+    "custom_levenberg_marquardt_step",
     "custom_vjp",
     "dual_cos",
     "dual_exp",

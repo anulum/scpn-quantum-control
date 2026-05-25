@@ -418,8 +418,10 @@ from scpn_quantum_control import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    custom_gauss_newton_gradient,
     custom_jacobian,
     custom_jvp,
+    custom_levenberg_marquardt_step,
     custom_vjp,
     dual_cos,
     dual_exp,
@@ -581,6 +583,7 @@ finite_difference_gradient(objective, values, parameters=None, step=1e-6) -> np.
 value_and_finite_difference_grad(objective, values, parameters=None, step=1e-6) -> GradientResult
 batch_value_and_finite_difference_grad(objectives, values, parameters=None, step=1e-6) -> tuple[GradientResult, ...]
 complex_step_gradient(objective, values, parameters=None, step=1e-30) -> np.ndarray
+custom_gauss_newton_gradient(rule, values, parameters=None, weights=None, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 custom_jacobian(rule, values, parameters=None) -> np.ndarray
 value_and_custom_jacobian(rule, values, parameters=None) -> JacobianResult
 custom_jvp(rule, values, tangent, parameters=None) -> np.ndarray
@@ -631,6 +634,7 @@ gauss_newton_gradient(jacobian, weights=None, damping=0.0, rcond=1e-12) -> Natur
 huber_residual_weights(residuals, delta=1.0, min_weight=0.0) -> np.ndarray
 least_squares_covariance(jacobian, weights=None, residual_variance=None, damping=0.0, rcond=1e-12) -> LeastSquaresCovarianceResult
 levenberg_marquardt_step(jacobian, values, weights=None, damping=1e-3, bounds=None, max_step_norm=None, rcond=1e-12) -> LevenbergMarquardtStep
+custom_levenberg_marquardt_step(rule, values, parameters=None, weights=None, damping=1e-3, bounds=None, max_step_norm=None, rcond=1e-12) -> LevenbergMarquardtStep
 soft_l1_residual_weights(residuals, scale=1.0, min_weight=0.0) -> np.ndarray
 update_levenberg_marquardt_damping(trial, decrease_factor=1/3, increase_factor=2.0, min_damping=1e-12, max_damping=1e12, high_quality_ratio=0.75) -> LevenbergMarquardtDampingUpdate
 check_parameter_shift_consistency(objective, values, parameters=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> GradientCheckResult
@@ -705,6 +709,7 @@ rules can be validated before being used in training loops.
 `check_custom_derivative_consistency()` audits an exact rule pair against the adjoint identity `<J t, c> = <t, J^T c>` and finite-difference JVP/VJP references before the rule is trusted in production control paths.
 `custom_jacobian()` and `value_and_custom_jacobian()` materialise exact dense Jacobians from custom JVP columns or VJP rows, preserving trainable masks and `step=0.0` provenance for downstream least-squares, natural-gradient, and benchmark workflows.
 The `batch_custom_*` helpers provide exact batched JVP, VJP, and Jacobian transforms over tangent, cotangent, or parameter batches so custom physics derivatives can be benchmarked and vectorised without finite-difference reconstruction.
+`custom_gauss_newton_gradient()` and `custom_levenberg_marquardt_step()` feed exact custom residual Jacobians into least-squares optimisation directly, preserving damping, weights, bounds, trainable masks, and solver provenance without finite-difference Jacobian reconstruction.
 The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.

@@ -72,8 +72,10 @@ from scpn_quantum_control.differentiable import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    custom_gauss_newton_gradient,
     custom_jacobian,
     custom_jvp,
+    custom_levenberg_marquardt_step,
     custom_vjp,
     dense_to_sparse_matrix,
     dual_cos,
@@ -1006,6 +1008,61 @@ def test_batched_custom_jacobian_materializes_parameter_batches() -> None:
     np.testing.assert_allclose(results[1].value, [-4.0, 1.0])
     with pytest.raises(ValueError, match="two-dimensional batch"):
         batch_value_and_custom_jacobian(rule, [1.0, 2.0])
+
+
+def test_custom_gauss_newton_gradient_uses_exact_custom_jacobian() -> None:
+    """Exact custom residual Jacobians should feed Gauss-Newton directly."""
+
+    rule = CustomDerivativeRule(
+        name="scaled_residual",
+        value_fn=lambda values: np.array([2.0 * values[0] - 1.0, values[1] + 3.0]),
+        jvp_rule=lambda values, tangent: np.array([2.0 * tangent[0], tangent[1]]),
+        parameter_names=("theta", "frozen_phi"),
+        trainable=(True, False),
+    )
+
+    result = custom_gauss_newton_gradient(
+        rule,
+        [2.0, -1.0],
+        weights=[1.0, 4.0],
+        damping=1.0,
+    )
+
+    assert isinstance(result, NaturalGradientResult)
+    assert result.base_gradient.method == "gauss_newton:custom_jacobian:scaled_residual"
+    assert result.base_gradient.parameter_names == ("theta", "frozen_phi")
+    assert result.base_gradient.trainable == (True, False)
+    assert result.base_gradient.value == pytest.approx(12.5)
+    np.testing.assert_allclose(result.base_gradient.gradient, [6.0, 0.0])
+    np.testing.assert_allclose(result.metric, [[5.0, 0.0], [0.0, 1.0]])
+    np.testing.assert_allclose(result.natural_gradient, [1.2, 0.0])
+
+
+def test_custom_levenberg_marquardt_step_uses_exact_custom_jacobian() -> None:
+    """Exact custom residual Jacobians should feed bounded LM candidates."""
+
+    rule = CustomDerivativeRule(
+        name="identity_residual",
+        value_fn=lambda values: np.array([values[0], 2.0 * values[1]]),
+        jvp_rule=lambda values, tangent: np.array([tangent[0], 2.0 * tangent[1]]),
+    )
+
+    result = custom_levenberg_marquardt_step(
+        rule,
+        [2.0, -1.0],
+        damping=1.0,
+        max_step_norm=1.0,
+    )
+
+    assert isinstance(result, LevenbergMarquardtStep)
+    assert (
+        result.gauss_newton.base_gradient.method
+        == "gauss_newton:custom_jacobian:identity_residual"
+    )
+    np.testing.assert_allclose(result.gauss_newton.base_gradient.gradient, [2.0, -4.0])
+    assert np.linalg.norm(result.step) == pytest.approx(1.0)
+    np.testing.assert_allclose(result.candidate_values, np.array([2.0, -1.0]) + result.step)
+    assert result.predicted_reduction > 0.0
 
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
@@ -2958,8 +3015,10 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.CustomDerivativeCheckResult is CustomDerivativeCheckResult
     assert scpn.CustomDerivativeRule is CustomDerivativeRule
     assert scpn.check_custom_derivative_consistency is check_custom_derivative_consistency
+    assert scpn.custom_gauss_newton_gradient is custom_gauss_newton_gradient
     assert scpn.custom_jacobian is custom_jacobian
     assert scpn.custom_jvp is custom_jvp
+    assert scpn.custom_levenberg_marquardt_step is custom_levenberg_marquardt_step
     assert scpn.custom_vjp is custom_vjp
     assert scpn.DualNumber is DualNumber
     assert scpn.FixedPointSensitivityResult is FixedPointSensitivityResult
