@@ -14,6 +14,11 @@ runtime dependency of the core package.
 
 from __future__ import annotations
 
+import ast
+import inspect
+import linecache
+import sys
+import textwrap
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any, cast
@@ -27,6 +32,217 @@ ComplexStepObjective = Callable[[NDArray[np.complex128]], object]
 CustomJVPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 CustomVJPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 VMapInAxes = int | None | Sequence[int | None]
+
+
+@dataclass(frozen=True)
+class WholeProgramTraceEvent:
+    """One executed Python source line observed during whole-program AD tracing."""
+
+    filename: str
+    function_name: str
+    line_number: int
+    source: str
+
+    def __post_init__(self) -> None:
+        if not self.filename:
+            raise ValueError("trace event filename must be non-empty")
+        if not self.function_name:
+            raise ValueError("trace event function_name must be non-empty")
+        if self.line_number <= 0:
+            raise ValueError("trace event line_number must be positive")
+        object.__setattr__(self, "source", str(self.source).strip())
+
+
+@dataclass(frozen=True)
+class WholeProgramADResult:
+    """Value, gradient, execution trace, and polyglot AD lowering status."""
+
+    value: float
+    gradient: NDArray[np.float64]
+    method: str
+    step: float
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+    trace_events: tuple[WholeProgramTraceEvent, ...]
+    source: str | None
+    control_flow_observed: bool
+    numpy_observed: bool
+    polyglot_targets: dict[str, str]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        value = _as_real_scalar("whole-program AD value", self.value)
+        gradient = _as_real_numeric_array("whole-program AD gradient", self.gradient)
+        if gradient.ndim != 1:
+            raise ValueError("whole-program AD gradient must be one-dimensional")
+        if not np.all(np.isfinite(gradient)):
+            raise ValueError("whole-program AD gradient must contain finite values")
+        step = _as_real_scalar("whole-program AD step", self.step)
+        if step <= 0.0:
+            raise ValueError("whole-program AD step must be positive")
+        if self.evaluations < 1:
+            raise ValueError("whole-program AD evaluations must be positive")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("trainable mask length must match gradient length")
+        if any(not isinstance(event, WholeProgramTraceEvent) for event in self.trace_events):
+            raise ValueError("trace_events must contain WholeProgramTraceEvent entries")
+        if not isinstance(self.control_flow_observed, bool):
+            raise ValueError("control_flow_observed must be a boolean")
+        if not isinstance(self.numpy_observed, bool):
+            raise ValueError("numpy_observed must be a boolean")
+        if not self.polyglot_targets:
+            raise ValueError("polyglot_targets must be non-empty")
+        if any(not key or not value for key, value in self.polyglot_targets.items()):
+            raise ValueError("polyglot target names and status values must be non-empty")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "step", step)
+
+
+def whole_program_value_and_grad(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    parameters: Sequence[Parameter] | None = None,
+    *,
+    step: float = 1.0e-6,
+    trace: bool = True,
+) -> WholeProgramADResult:
+    """Differentiate an arbitrary eager Python objective with execution tracing.
+
+    This is the whole-program boundary for Python/NumPy/control-flow objectives
+    that are not written against SCPN primitive AD contracts. It evaluates the
+    callable eagerly, records executed Python source lines when requested, and
+    computes central finite-difference gradients through the complete callable.
+    Polyglot compiler targets are reported explicitly as interchange or blocked
+    until a real Rust/LLVM executable differentiation backend exists.
+    """
+
+    if not callable(objective):
+        raise ValueError("whole-program objective must be callable")
+    result = value_and_finite_difference_grad(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+    trace_events: tuple[WholeProgramTraceEvent, ...] = ()
+    source = _objective_source(objective)
+    if trace:
+        array = _as_parameter_array(values)
+        trace_events = _trace_whole_program_objective(objective, array)
+    return WholeProgramADResult(
+        value=result.value,
+        gradient=result.gradient,
+        method="whole_program_finite_difference",
+        step=result.shift if result.shift is not None else step,
+        evaluations=result.evaluations + (1 if trace else 0),
+        parameter_names=result.parameter_names,
+        trainable=result.trainable,
+        trace_events=trace_events,
+        source=source,
+        control_flow_observed=_source_has_control_flow(source),
+        numpy_observed=_source_mentions_numpy(source)
+        or any(_source_mentions_numpy(event.source) for event in trace_events),
+        polyglot_targets={
+            "python": "eager whole-program gradient available",
+            "mlir": "trace interchange available",
+            "rust": "blocked: no Rust whole-program AD lowering backend",
+            "llvm": "blocked: no LLVM/JIT whole-program AD lowering backend",
+        },
+        claim_boundary=(
+            "whole-program eager Python gradient via central finite differences with "
+            "runtime source tracing; no executable Rust, LLVM, or JIT AD lowering claim"
+        ),
+    )
+
+
+def whole_program_grad(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    parameters: Sequence[Parameter] | None = None,
+    *,
+    step: float = 1.0e-6,
+    trace: bool = True,
+) -> NDArray[np.float64]:
+    """Return only the whole-program gradient for an arbitrary eager callable."""
+
+    return whole_program_value_and_grad(
+        objective, values, parameters=parameters, step=step, trace=trace
+    ).gradient
+
+
+def _objective_source(objective: Callable[..., object]) -> str | None:
+    """Return dedented source for a Python callable when introspection permits."""
+
+    try:
+        return textwrap.dedent(inspect.getsource(objective)).strip()
+    except (OSError, TypeError):
+        return None
+
+
+def _source_has_control_flow(source: str | None) -> bool:
+    """Return whether source contains explicit Python control-flow nodes."""
+
+    if source is None:
+        return False
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return any(token in source for token in ("if ", "for ", "while "))
+    return any(
+        isinstance(node, (ast.If, ast.For, ast.While, ast.IfExp)) for node in ast.walk(tree)
+    )
+
+
+def _source_mentions_numpy(source: str | None) -> bool:
+    """Return whether a source fragment visibly references NumPy."""
+
+    if source is None:
+        return False
+    return "np." in source or "numpy." in source
+
+
+def _trace_whole_program_objective(
+    objective: ScalarObjective, values: NDArray[np.float64]
+) -> tuple[WholeProgramTraceEvent, ...]:
+    """Execute ``objective`` once and capture source-line trace events."""
+
+    code = getattr(objective, "__code__", None)
+    if code is None:
+        return ()
+    target_filename = code.co_filename
+    events: list[WholeProgramTraceEvent] = []
+    seen: set[tuple[str, int, str]] = set()
+    previous_trace = sys.gettrace()
+
+    def tracer(frame: Any, event: str, arg: object) -> Any:
+        del arg
+        if event == "line" and frame.f_code.co_filename == target_filename:
+            key = (frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name)
+            if key not in seen:
+                seen.add(key)
+                events.append(
+                    WholeProgramTraceEvent(
+                        filename=frame.f_code.co_filename,
+                        function_name=frame.f_code.co_name,
+                        line_number=frame.f_lineno,
+                        source=linecache.getline(frame.f_code.co_filename, frame.f_lineno),
+                    )
+                )
+        return tracer
+
+    sys.settrace(tracer)
+    try:
+        raw = objective(np.array(values, dtype=np.float64, copy=True))
+    finally:
+        sys.settrace(previous_trace)
+    _as_real_scalar("whole-program traced objective", raw)
+    return tuple(events)
 
 
 def vmap(
@@ -5290,6 +5506,10 @@ __all__ = [
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",
     "value_and_grad",
+    "whole_program_grad",
+    "whole_program_value_and_grad",
+    "WholeProgramADResult",
+    "WholeProgramTraceEvent",
     "vmap",
     "parameter_shift_gradient",
     "value_and_complex_step_grad",

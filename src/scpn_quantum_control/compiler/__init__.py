@@ -13,6 +13,7 @@ from .mlir import (
     MLIRModule,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_whole_program_ad_trace_to_mlir,
 )
 
 __all__ = [
@@ -20,5 +21,6 @@ __all__ = [
     "MLIRCompileConfig",
     "MLIRModule",
     "compile_custom_derivative_rule_to_mlir",
+    "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
 ]

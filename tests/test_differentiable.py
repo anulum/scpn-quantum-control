@@ -49,6 +49,8 @@ from scpn_quantum_control.differentiable import (
     StochasticGradientResult,
     VJPResult,
     WeightedGradientResult,
+    WholeProgramADResult,
+    WholeProgramTraceEvent,
     allocate_parameter_shift_shots,
     armijo_backtracking_line_search,
     batch_complex_step_gradient,
@@ -135,6 +137,8 @@ from scpn_quantum_control.differentiable import (
     vector_jacobian_product,
     vmap,
     weighted_gradient_sum,
+    whole_program_grad,
+    whole_program_value_and_grad,
 )
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 from scpn_quantum_control.qsnn.training import QSNNTrainer
@@ -3207,3 +3211,60 @@ def test_vmap_is_exported_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.vmap is vmap
+
+
+def test_whole_program_value_and_grad_traces_numpy_control_flow() -> None:
+    """Whole-program AD should handle ordinary Python control flow and NumPy calls."""
+
+    def objective(values: np.ndarray) -> float:
+        total = 0.0
+        for index, value in enumerate(values):
+            if value > 0.0:
+                total += float(np.sin(value) + index * value)
+            else:
+                total += float(value**2)
+        return total
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, -0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("theta"), Parameter("bias"), Parameter("phase")),
+    )
+
+    assert result.method == "whole_program_finite_difference"
+    assert result.control_flow_observed is True
+    assert result.numpy_observed is True
+    assert result.polyglot_targets["python"].startswith("eager")
+    assert result.polyglot_targets["rust"].startswith("blocked")
+    assert result.polyglot_targets["llvm"].startswith("blocked")
+    assert len(result.trace_events) >= 4
+    np.testing.assert_allclose(
+        result.gradient,
+        [math.cos(0.25), -1.0, math.cos(0.75) + 2.0],
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+
+
+def test_whole_program_grad_respects_trainable_mask() -> None:
+    """Whole-program gradients should preserve frozen parameters."""
+
+    gradient = whole_program_grad(
+        lambda values: float(values[0] ** 2 + values[1] ** 2),
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("frozen", trainable=False)),
+        trace=False,
+    )
+
+    np.testing.assert_allclose(gradient, [4.0, 0.0], rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_whole_program_ad_is_exported_from_package_root() -> None:
+    """Whole-program AD should be stable as a package-root API."""
+
+    import scpn_quantum_control as scpn
+
+    assert scpn.WholeProgramADResult is WholeProgramADResult
+    assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
+    assert scpn.whole_program_grad is whole_program_grad
+    assert scpn.whole_program_value_and_grad is whole_program_value_and_grad

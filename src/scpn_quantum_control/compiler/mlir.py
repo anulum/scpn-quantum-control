@@ -24,7 +24,11 @@ from typing import Any
 
 import numpy as np
 
-from ..differentiable import CustomDerivativeRule, value_and_custom_jacobian
+from ..differentiable import (
+    CustomDerivativeRule,
+    WholeProgramADResult,
+    value_and_custom_jacobian,
+)
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
 
 
@@ -240,6 +244,84 @@ def compile_custom_derivative_rule_to_mlir(
     )
 
 
+def compile_whole_program_ad_trace_to_mlir(
+    result: WholeProgramADResult,
+    config: DifferentiableMLIRCompileConfig | None = None,
+) -> MLIRModule:
+    """Lower a whole-program AD execution trace to MLIR-style interchange text.
+
+    The emitted module is an audit artifact for Python whole-program gradients
+    and polyglot compiler planning. It deliberately records Rust and LLVM/JIT
+    executable differentiation as blocked unless a real backend is provided.
+    """
+
+    if not isinstance(result, WholeProgramADResult):
+        raise ValueError("whole-program MLIR lowering requires a WholeProgramADResult")
+    compile_config = DifferentiableMLIRCompileConfig() if config is None else config
+    lines = [
+        f'module attributes {{scpn.module = "whole_program_ad", '
+        f'scpn.dialect = "{compile_config.dialect}", '
+        f"scpn.n_parameters = {result.gradient.size}, "
+        f"scpn.trace_events = {len(result.trace_events)}, "
+        f"scpn.control_flow = {_fmt_bool(result.control_flow_observed)}, "
+        f"scpn.numpy = {_fmt_bool(result.numpy_observed)}}} {{",
+        "  func.func @main() {",
+    ]
+    if compile_config.include_numeric_payload:
+        lines.append(f"    scpn_diff.value %objective {{value = {_fmt_float(result.value)}}}")
+        for index, (name, trainable, gradient) in enumerate(
+            zip(result.parameter_names, result.trainable, result.gradient, strict=True)
+        ):
+            lines.append(
+                "    scpn_diff.parameter "
+                f'%p{index} {{name = "{_escape_mlir_string(name)}", '
+                f"trainable = {_fmt_bool(trainable)}, "
+                f"gradient = {_fmt_float(float(gradient))}}}"
+            )
+    for index, event in enumerate(result.trace_events):
+        lines.append(
+            "    scpn_diff.trace_event "
+            f'{{index = {index}, file = "{_escape_mlir_string(event.filename)}", '
+            f'line = {event.line_number}, function = "{_escape_mlir_string(event.function_name)}", '
+            f'source = "{_escape_mlir_string(event.source)}"}}'
+        )
+    lines.append(
+        "    scpn_diff.whole_program_ad "
+        f'{{method = "{_escape_mlir_string(result.method)}", '
+        'execution = "python_eager_interchange_only"}}'
+    )
+    lines.append("    return")
+    lines.append("  }")
+    if compile_config.include_metadata:
+        metadata = {
+            "claim_boundary": result.claim_boundary,
+            "method": result.method,
+            "polyglot_targets": result.polyglot_targets,
+            "target": compile_config.target,
+        }
+        encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+        lines.append(f'  scpn.metadata {{json = "{_escape_mlir_string(encoded)}"}}')
+    lines.append("}")
+    text = "\n".join(lines) + "\n"
+    return MLIRModule(
+        text=text,
+        sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        dialect=compile_config.dialect,
+        resource_counts={
+            "parameters": int(result.gradient.size),
+            "trace_events": len(result.trace_events),
+            "trainable_parameters": int(sum(result.trainable)),
+            "gradient_nnz": int(np.count_nonzero(result.gradient)),
+        },
+        metadata={
+            "claim_boundary": "whole-program AD trace interchange; no executable Rust, LLVM, or JIT lowering",
+            "target": compile_config.target,
+            "polyglot_targets": dict(result.polyglot_targets),
+            "sha256_source": "module.text",
+        },
+    )
+
+
 def _coupling_terms(K_nm: np.ndarray) -> tuple[tuple[int, int, float], ...]:
     terms: list[tuple[int, int, float]] = []
     n_oscillators = K_nm.shape[0]
@@ -270,5 +352,6 @@ __all__ = [
     "MLIRCompileConfig",
     "MLIRModule",
     "compile_custom_derivative_rule_to_mlir",
+    "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
 ]

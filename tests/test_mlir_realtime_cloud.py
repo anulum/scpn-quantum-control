@@ -17,6 +17,7 @@ from scpn_quantum_control.compiler.mlir import (
     MLIRCompileConfig,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_whole_program_ad_trace_to_mlir,
 )
 from scpn_quantum_control.control.realtime_runtime import (
     RealtimeRuntimeConfig,
@@ -31,7 +32,11 @@ from scpn_quantum_control.deployment.cloud_native import (
     ContainerResources,
     generate_cloud_manifests,
 )
-from scpn_quantum_control.differentiable import CustomDerivativeRule
+from scpn_quantum_control.differentiable import (
+    CustomDerivativeRule,
+    Parameter,
+    whole_program_value_and_grad,
+)
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
 
 
@@ -133,6 +138,32 @@ def test_differentiable_mlir_rejects_executable_target_claims() -> None:
         DifferentiableMLIRCompileConfig(target="llvm")
     with pytest.raises(ValueError, match="boolean"):
         DifferentiableMLIRCompileConfig(include_numeric_payload=1)  # type: ignore[arg-type]
+
+
+def test_whole_program_ad_mlir_exports_trace_and_polyglot_status() -> None:
+    """Whole-program AD trace lowering should be deterministic and honest."""
+
+    def objective(values: np.ndarray) -> float:
+        if values[0] > 0.0:
+            return float(np.sin(values[0]) + values[1] ** 2)
+        return float(values[1])
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, -0.5], dtype=np.float64),
+        parameters=(Parameter("theta"), Parameter("bias")),
+    )
+    module = compile_whole_program_ad_trace_to_mlir(result, DifferentiableMLIRCompileConfig())
+    repeat = compile_whole_program_ad_trace_to_mlir(result, DifferentiableMLIRCompileConfig())
+
+    assert module.text == repeat.text
+    assert module.sha256 == repeat.sha256
+    assert module.resource_counts["parameters"] == 2
+    assert module.resource_counts["trace_events"] == len(result.trace_events)
+    assert module.metadata["polyglot_targets"]["llvm"].startswith("blocked")
+    assert 'scpn.module = "whole_program_ad"' in module.text
+    assert "scpn_diff.trace_event" in module.text
+    assert 'execution = "python_eager_interchange_only"' in module.text
 
 
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:

@@ -60,6 +60,7 @@ from .compiler.mlir import (
     MLIRModule,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_whole_program_ad_trace_to_mlir,
 )
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
@@ -127,6 +128,8 @@ from .differentiable import (
     StochasticGradientResult,
     VJPResult,
     WeightedGradientResult,
+    WholeProgramADResult,
+    WholeProgramTraceEvent,
     allocate_parameter_shift_shots,
     armijo_backtracking_line_search,
     batch_complex_step_gradient,
@@ -213,6 +216,8 @@ from .differentiable import (
     vector_jacobian_product,
     vmap,
     weighted_gradient_sum,
+    whole_program_grad,
+    whole_program_value_and_grad,
 )
 from .forecasting import (
     ForecastModelRun,
@@ -537,6 +542,7 @@ __all__ = [
     "MLIRCompileConfig",
     "MLIRModule",
     "compile_custom_derivative_rule_to_mlir",
+    "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "MonotonicRealtimeClock",
     "RealtimeRunResult",
@@ -660,6 +666,8 @@ __all__ = [
     "DualNumber",
     "VJPResult",
     "WeightedGradientResult",
+    "WholeProgramADResult",
+    "WholeProgramTraceEvent",
     "allocate_parameter_shift_shots",
     "armijo_backtracking_line_search",
     "batch_complex_step_gradient",
@@ -740,6 +748,8 @@ __all__ = [
     "value_and_finite_difference_jvp",
     "value_and_forward_mode_grad",
     "value_and_grad",
+    "whole_program_grad",
+    "whole_program_value_and_grad",
     "vmap",
     "value_and_hessian",
     "value_and_jacobian",

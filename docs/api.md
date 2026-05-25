@@ -485,6 +485,8 @@ from scpn_quantum_control import (
     value_and_finite_difference_jvp,
     value_and_forward_mode_grad,
     value_and_grad,
+    whole_program_grad,
+    whole_program_value_and_grad,
     vmap,
     value_and_hessian,
     value_and_jacobian,
@@ -593,6 +595,8 @@ reverse_exp(value) -> ReverseNode
 reverse_log(value) -> ReverseNode
 grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> np.ndarray
 value_and_grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> GradientResult
+whole_program_value_and_grad(objective, values, parameters=None, step=1e-6, trace=True) -> WholeProgramADResult
+whole_program_grad(objective, values, parameters=None, step=1e-6, trace=True) -> np.ndarray
 vmap(function, in_axes=0, out_axes=0) -> callable
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
 batch_value_and_parameter_shift_grad(objectives, values, parameters=None, rule=None) -> tuple[GradientResult, ...]
@@ -733,6 +737,7 @@ masks, and evaluation counts instead of only a stacked gradient matrix.
 The canonical transform helpers `grad()`, `value_and_grad()`, `jacobian()`, and
 `hessian()` provide stable user-facing names with explicit method dispatch. This
 `vmap()` adds a composable eager vectorization transform over selected input axes, with broadcast arguments, nested tuple/list/dict outputs, explicit `out_axes`, and fail-closed shape validation. It is deterministic NumPy execution, not a JIT claim.
+`whole_program_value_and_grad()` is the arbitrary eager Python boundary for objectives that use ordinary Python, NumPy calls, and runtime control flow instead of SCPN primitive AD contracts. It records executed source-line trace events, computes central finite-difference gradients through the complete callable, preserves trainable masks, and reports polyglot target status explicitly: Python eager gradients and MLIR trace interchange are available, while Rust and LLVM/JIT executable whole-program AD lowerings are blocked until real backends exist.
 keeps today's parameter-shift, finite-difference, and complex-step backends
 compatible while leaving room for future reverse-mode, forward-mode, sparse, and
 implicit-differentiation implementations behind the same public contract.

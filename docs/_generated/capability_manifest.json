@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 390,
+    "public_api_exports": 395,
     "public_documentation_pages": 235,
-    "python_model_classes": 1475,
+    "python_model_classes": 1477,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -6868,6 +6868,14 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "WholeProgramADResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "WholeProgramTraceEvent",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "WilsonLoopResult",
         "path": "src/scpn_quantum_control/gauge/wilson_loop.py"
       },
@@ -7928,6 +7936,8 @@
     "VQLS_GradShafranov",
     "VirtualRealtimeClock",
     "WeightedGradientResult",
+    "WholeProgramADResult",
+    "WholeProgramTraceEvent",
     "ZNEResult",
     "aggregator_provider_optional_dependency_matrix",
     "aggregator_provider_routes_for",
@@ -7988,6 +7998,7 @@
     "compile_hamiltonian",
     "compile_kuramoto_to_mlir",
     "compile_trotter_circuit",
+    "compile_whole_program_ad_trace_to_mlir",
     "complex_step_gradient",
     "compound_mitigate_pipeline",
     "concatenated_logical_rate",
@@ -8160,6 +8171,8 @@
     "verify_identity",
     "vmap",
     "weighted_gradient_sum",
+    "whole_program_grad",
+    "whole_program_value_and_grad",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
   ],
