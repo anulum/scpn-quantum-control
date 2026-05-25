@@ -3922,6 +3922,59 @@ def test_program_ad_roll_preserves_exact_adjoint() -> None:
     )
 
 
+def test_program_ad_rot90_preserves_exact_adjoint() -> None:
+    """Program AD rot90 permutations should preserve exact element adjoints."""
+
+    weights_default = np.linspace(-2.0, 1.0, 12, dtype=np.float64).reshape(4, 3)
+    weights_axes = np.linspace(0.5, 3.5, 24, dtype=np.float64).reshape(2, 3, 4)
+    weights_negative = np.linspace(-1.5, 2.5, 24, dtype=np.float64).reshape(2, 4, 3)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:12], (3, 4))
+        tensor = np.reshape(values, (2, 3, 4))
+        return (
+            np.sum(np.rot90(matrix) * weights_default)
+            + np.sum(np.rot90(tensor, k=2, axes=(0, 1)) * weights_axes)
+            + np.sum(np.rot90(tensor, k=-1, axes=(1, 2)) * weights_negative)
+        )
+
+    values = np.linspace(-1.0, 1.0, 24, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+    expected = np.zeros((2, 3, 4), dtype=np.float64)
+    expected.reshape(-1)[:12] += np.rot90(weights_default, k=-1).reshape(-1)
+    expected += np.rot90(weights_axes, k=-2, axes=(0, 1))
+    expected += np.rot90(weights_negative, k=1, axes=(1, 2))
+
+    np.testing.assert_allclose(result.gradient, expected.reshape(-1), rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected.reshape(-1), rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_rot90_fails_closed_invalid_static_contracts() -> None:
+    """Program AD rot90 should reject invalid rotation contracts."""
+
+    with pytest.raises(ValueError, match="rot90 k must be a static integer"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.rot90(np.reshape(values, (2, 2)), k=True)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="rot90 axes must contain exactly two axes"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.rot90(np.reshape(values, (2, 2, 1)), axes=(0, 1, 2))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="rot90 axes axes must be unique"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.rot90(np.reshape(values, (2, 2)), axes=(0, 0))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_flip_family_preserves_exact_adjoint() -> None:
     """Program AD flip-family permutations should preserve exact element adjoints."""
 

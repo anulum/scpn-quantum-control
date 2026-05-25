@@ -1278,6 +1278,23 @@ class TraceADArray:
                 shift=shift,
                 axis=axis,
             )
+        if func is np.rot90:
+            if len(args) == 1 and kwargs.keys() <= {"k", "axes"}:
+                k_value = kwargs.get("k", 1)
+                axes_value = kwargs.get("axes", (0, 1))
+            elif len(args) == 2 and kwargs.keys() <= {"axes"}:
+                k_value = args[1]
+                axes_value = kwargs.get("axes", (0, 1))
+            elif len(args) == 3 and not kwargs:
+                k_value = args[1]
+                axes_value = args[2]
+            else:
+                raise ValueError("program AD np.rot90 supports array, k, and axes")
+            return _trace_rot90(
+                _coerce_trace_array(args[0], self.context),
+                k=k_value,
+                axes=axes_value,
+            )
         if func is np.flip:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("program AD np.flip supports one array and optional axis")
@@ -1684,6 +1701,34 @@ def _trace_roll(array: TraceADArray, *, shift: object, axis: object = None) -> T
     return TraceADArray(
         tuple(array._items[int(index)] for index in rolled.reshape(-1)),
         tuple(map(int, rolled.shape)),
+        array.context,
+    )
+
+
+def _normalise_rot90_k(k: object) -> int:
+    if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+        raise ValueError("program AD rot90 k must be a static integer")
+    return int(k)
+
+
+def _normalise_rot90_axes(axes: object, *, rank: int) -> tuple[int, int]:
+    normalised = _normalise_axis_permutation_axes("rot90", axes, rank=rank, role="axes")
+    if len(normalised) != 2:
+        raise ValueError("program AD rot90 axes must contain exactly two axes")
+    return (normalised[0], normalised[1])
+
+
+def _trace_rot90(array: TraceADArray, *, k: object = 1, axes: object = (0, 1)) -> TraceADArray:
+    k_value = _normalise_rot90_k(k)
+    axes_value = _normalise_rot90_axes(axes, rank=array.ndim)
+    rotated = np.rot90(
+        np.arange(array.size, dtype=np.int64).reshape(array.shape),
+        k=k_value,
+        axes=axes_value,
+    )
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in rotated.reshape(-1)),
+        tuple(map(int, rotated.shape)),
         array.context,
     )
 
