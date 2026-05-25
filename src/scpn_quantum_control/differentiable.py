@@ -810,6 +810,10 @@ class TraceADScalar:
 
     def _compare(self, op: str, other: object) -> _TracePredicate:
         rhs = self._coerce(other)
+        if op in {"gt", "ge", "lt", "le"} and self.primal == rhs.primal:
+            raise ValueError(
+                "whole-program AD ordering predicate is non-differentiable at equality"
+            )
         comparisons = {
             "gt": self.primal > rhs.primal,
             "ge": self.primal >= rhs.primal,

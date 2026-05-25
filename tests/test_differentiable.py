@@ -3658,6 +3658,16 @@ def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_
             lambda values: np.sum(np.clip(values, -0.5, 0.5)),
             np.array([0.25, 0.5], dtype=np.float64),
         )
+    with pytest.raises(ValueError, match="ordering predicate is non-differentiable"):
+        whole_program_value_and_grad(
+            lambda values: values[0] if values[0] > values[1] else values[1],
+            np.array([1.0, 1.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="ordering predicate is non-differentiable"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.where(values >= 0.0, values, -values)),
+            np.array([0.0, 1.0], dtype=np.float64),
+        )
 
 
 def test_whole_program_grad_respects_trainable_mask() -> None:
