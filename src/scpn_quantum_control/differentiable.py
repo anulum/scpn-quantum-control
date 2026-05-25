@@ -4566,6 +4566,33 @@ class CustomDerivativeRegistry:
             raise ValueError(f"no primitive contract registered for {primitive_identity.key}")
         return contract
 
+    def require_complete_contract(self, identity: PrimitiveIdentity | str) -> PrimitiveContract:
+        """Return a compiler/vectorization-ready primitive contract or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        contract = self.require_contract(primitive_identity)
+        missing: list[str] = []
+        if contract.batching_rule is None:
+            missing.append("batching_rule")
+        if contract.lowering_rule is None:
+            missing.append("lowering_rule")
+        if not contract.lowering_metadata:
+            missing.append("lowering_metadata")
+        if contract.shape_rule is None:
+            missing.append("shape_rule")
+        if contract.dtype_rule is None:
+            missing.append("dtype_rule")
+        if contract.nondifferentiable_policy == "not_declared":
+            missing.append("nondifferentiable_policy")
+        if not contract.effect:
+            missing.append("effect")
+        if missing:
+            joined = ", ".join(missing)
+            raise ValueError(
+                f"incomplete primitive contract for {primitive_identity.key}: missing {joined}"
+            )
+        return contract
+
     def transform_snapshot(self) -> dict[PrimitiveIdentity, PrimitiveTransformRule]:
         """Return a copy of registered primitive transform bindings."""
 
@@ -4710,6 +4737,17 @@ def primitive_contract_for(
 
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_contract(identity)
+
+
+def primitive_complete_contract_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveContract:
+    """Resolve a compiler/vectorization-ready primitive contract or fail closed."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require_complete_contract(identity)
 
 
 def custom_derivative_rule_for(
@@ -8745,6 +8783,7 @@ __all__ = [
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "primitive_complete_contract_for",
     "primitive_contract_for",
     "primitive_dtype_rule_for",
     "primitive_effect_for",

@@ -134,6 +134,7 @@ from scpn_quantum_control.differentiable import (
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    primitive_complete_contract_for,
     primitive_contract_for,
     primitive_dtype_rule_for,
     primitive_effect_for,
@@ -5129,6 +5130,69 @@ def test_primitive_registry_exposes_unified_contracts() -> None:
         registry.require_contract(missing)
 
 
+def test_primitive_registry_requires_complete_contract_for_compiler_consumers() -> None:
+    """Compiler-facing primitive contracts should fail closed until every facet is declared."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "strict_contract", "1")
+    rule = CustomDerivativeRule(
+        name="strict_contract_rule",
+        value_fn=lambda values: np.array([values[0] * values[1]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [values[1] * tangent[0] + values[0] * tangent[1]], dtype=np.float64
+        ),
+    )
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function, axes
+        return np.moveaxis(np.prod(np.asarray(args[0], dtype=np.float64), axis=1), 0, out_axes)
+
+    def lowering_rule(lowered_rule: CustomDerivativeRule) -> object:
+        return lowered_rule.name
+
+    def shape_rule(args: tuple[object, ...]) -> tuple[int, ...]:
+        del args
+        return (1,)
+
+    def dtype_rule(args: tuple[object, ...]) -> str:
+        del args
+        return "float64"
+
+    registry = CustomDerivativeRegistry({identity: rule})
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        registry.require_complete_contract(identity)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(identity, registry=registry)
+
+    transform = PrimitiveTransformRule(
+        identity=identity,
+        derivative_rule=rule,
+        batching_rule=batching_rule,
+        lowering_rule=lowering_rule,
+        lowering_metadata={"mlir_op": "scpn_diff.strict_contract"},
+        shape_rule=shape_rule,
+        dtype_rule=dtype_rule,
+        nondifferentiable_policy="fail_closed_at_boundaries",
+        effect="pure",
+    )
+    registry.register_transform(transform, overwrite=True)
+
+    contract = registry.require_complete_contract(identity)
+    assert contract.derivative_rule is rule
+    assert contract.batching_rule is batching_rule
+    assert contract.lowering_rule is lowering_rule
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.strict_contract"
+    assert contract.shape_rule is shape_rule
+    assert contract.dtype_rule is dtype_rule
+    assert contract.nondifferentiable_policy == "fail_closed_at_boundaries"
+    assert contract.effect == "pure"
+    assert primitive_complete_contract_for(identity, registry=registry) == contract
+
+
 def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
     """Primitive transform registration should fail closed and support explicit overwrite."""
 
@@ -5349,6 +5413,7 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.PrimitiveLoweringRule is PrimitiveLoweringRule
     assert scpn.PrimitiveShapeRule is PrimitiveShapeRule
     assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
+    assert scpn.primitive_complete_contract_for is primitive_complete_contract_for
     assert scpn.primitive_dtype_rule_for is primitive_dtype_rule_for
     assert scpn.primitive_effect_for is primitive_effect_for
     assert scpn.primitive_contract_for is primitive_contract_for
