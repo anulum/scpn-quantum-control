@@ -325,6 +325,9 @@ def test_executable_compiler_ad_kernel_verifies_scalar_gradient_output() -> None
     assert kernel.verification.gradient_close is True
     assert "verified executable MLIR-runtime" in kernel.claim_boundary
     assert "native LLVM/JIT code generation remains fail-closed" in kernel.claim_boundary
+    assert kernel.llvm_gradient_ir is not None
+    assert 'source = "verified_mlir_runtime_vjp_cotangent_one"' in kernel.llvm_gradient_ir
+    assert "define void @quadratic_phase_rule_gradient" in kernel.llvm_gradient_ir
     assert "scpn_diff.custom_rule" in kernel.mlir_module.text
     np.testing.assert_allclose(
         kernel.gradient(values),

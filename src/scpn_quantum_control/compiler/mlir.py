@@ -354,6 +354,7 @@ class ExecutableCompilerADKernel:
     jvp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None
     vjp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None
     verification: CompilerADKernelVerification
+    llvm_gradient_ir: str | None = None
     claim_boundary: str = (
         "verified executable MLIR-runtime primitive AD kernel; "
         "native LLVM/JIT code generation remains fail-closed"
@@ -376,6 +377,8 @@ class ExecutableCompilerADKernel:
             raise ValueError("verification must be CompilerADKernelVerification")
         if not self.verification.passed:
             raise ValueError("executable compiler AD kernel verification failed")
+        if self.llvm_gradient_ir is not None and not self.llvm_gradient_ir.strip():
+            raise ValueError("llvm_gradient_ir must be non-empty or None")
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
 
@@ -621,6 +624,11 @@ def compile_custom_derivative_rule_to_executable(
         sample_tangent=sample_tangent,
         sample_cotangent=sample_cotangent,
     )
+    llvm_gradient_ir = (
+        _compile_scalar_gradient_llvm_ir(rule, values, vjp_kernel)
+        if verification.gradient_close is True and rule.vjp_rule is not None
+        else None
+    )
     return ExecutableCompilerADKernel(
         rule_name=rule.name,
         backend=compile_config.backend,
@@ -629,6 +637,7 @@ def compile_custom_derivative_rule_to_executable(
         jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
         vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
         verification=verification,
+        llvm_gradient_ir=llvm_gradient_ir,
     )
 
 
@@ -737,6 +746,41 @@ def _verify_executable_ad_kernel(
     if not verification.passed:
         raise ValueError("executable compiler AD kernel verification failed")
     return verification
+
+
+def _compile_scalar_gradient_llvm_ir(
+    rule: CustomDerivativeRule,
+    values: np.ndarray,
+    vjp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray],
+) -> str:
+    value = _as_finite_vector("rule value", rule.value_fn(values))
+    if value.size != 1:
+        return ""
+    gradient = vjp_kernel(values, np.ones(1, dtype=np.float64))
+    function_name = _safe_llvm_symbol(f"{rule.name}_gradient")
+    lines = [
+        f'; scpn.compiler_ad = "{_escape_mlir_string(rule.name)}"',
+        '; source = "verified_mlir_runtime_vjp_cotangent_one"',
+        '; execution = "mlir_runtime_gradient_adapter"',
+        '; native_llvm_jit = "blocked_until_native_codegen_backend_exists"',
+        f"define void @{function_name}(double* %out) {{",
+        "entry:",
+    ]
+    for index, component in enumerate(gradient):
+        lines.append(f"  %slot{index} = getelementptr double, double* %out, i64 {index}")
+        lines.append(f"  store double {_fmt_float(float(component))}, double* %slot{index}")
+    lines.append("  ret void")
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+def _safe_llvm_symbol(value: str) -> str:
+    symbol = "".join(
+        character if character.isalnum() or character == "_" else "_" for character in value
+    )
+    if not symbol or symbol[0].isdigit():
+        symbol = f"_{symbol}"
+    return symbol
 
 
 def compile_whole_program_ad_trace_to_mlir(
