@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 442,
+    "public_api_exports": 444,
     "public_documentation_pages": 235,
-    "python_model_classes": 1498,
-    "python_model_source_modules": 766,
+    "python_model_classes": 1499,
+    "python_model_source_modules": 767,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
-    "test_files": 1874
+    "test_files": 1875
   },
   "documentation": {
     "examples": [
@@ -428,7 +428,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 7
+        "python_modules": 8
       },
       {
         "package": "bridge",
@@ -2022,6 +2022,10 @@
       {
         "name": "DifferentiableOptimizer",
         "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "DifferentiableProgrammingBenchmarkResult",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
       },
       {
         "name": "DisciplineRole",
@@ -7094,6 +7098,7 @@
       "src/scpn_quantum_control/benchmarks/advantage_protocol.py",
       "src/scpn_quantum_control/benchmarks/appqsim_protocol.py",
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
@@ -7899,6 +7904,7 @@
     "DWaveLeapHALAdapter",
     "DifferentiableMLIRCompileConfig",
     "DifferentiableOptimizer",
+    "DifferentiableProgrammingBenchmarkResult",
     "DisruptionBenchmark",
     "DualNumber",
     "DynamicCouplingConfig",
@@ -8234,6 +8240,7 @@
     "rigetti_quil_workload",
     "run_biological_qec_batch_execution",
     "run_biological_qec_execution",
+    "run_differentiable_programming_benchmark_suite",
     "run_documented_classical_baselines",
     "run_real_data_sync_forecast_benchmark",
     "run_real_data_sync_forecast_suite",
@@ -8961,6 +8968,7 @@
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
       "tests/test_differentiable.py",
+      "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",
       "tests/test_dla_parity_dataset.py",

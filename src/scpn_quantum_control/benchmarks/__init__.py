@@ -15,6 +15,10 @@ from .classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from .differentiable_programming import (
+    DifferentiableProgrammingBenchmarkResult,
+    run_differentiable_programming_benchmark_suite,
+)
 from .gpu_baseline import GPUBaselineResult, gpu_baseline_comparison
 from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
 from .quantum_advantage import (
@@ -32,6 +36,8 @@ __all__ = [
     "qutip_lindblad_baseline",
     "run_documented_classical_baselines",
     "scipy_ode_baseline",
+    "DifferentiableProgrammingBenchmarkResult",
+    "run_differentiable_programming_benchmark_suite",
     "GPUBaselineResult",
     "gpu_baseline_comparison",
     "MPSBaselineResult",

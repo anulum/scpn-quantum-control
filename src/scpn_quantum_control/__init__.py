@@ -20,6 +20,10 @@ from .benchmarks.classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from .benchmarks.differentiable_programming import (
+    DifferentiableProgrammingBenchmarkResult,
+    run_differentiable_programming_benchmark_suite,
+)
 from .benchmarks.quantum_advantage import (
     AdvantageResult,
     classical_benchmark,
@@ -905,6 +909,8 @@ __all__ = [
     "qutip_lindblad_baseline",
     "mps_tebd_baseline",
     "run_documented_classical_baselines",
+    "DifferentiableProgrammingBenchmarkResult",
+    "run_differentiable_programming_benchmark_suite",
     "AdvantageResult",
     "classical_benchmark",
     "quantum_benchmark",
