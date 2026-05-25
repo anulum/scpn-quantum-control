@@ -938,16 +938,11 @@ class TraceADArray:
 
     @property
     def T(self) -> TraceADArray:
-        """Return the transpose for rank-2 program AD arrays."""
+        """Return the NumPy-compatible reversed-axis transpose."""
 
-        if self.ndim != 2:
+        if self.ndim < 2:
             return self.copy()
-        rows, cols = self.shape
-        return TraceADArray(
-            tuple(self._items[row * cols + col] for col in range(cols) for row in range(rows)),
-            (cols, rows),
-            self.context,
-        )
+        return _trace_transpose(self, self.context)
 
     def sum(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         return _trace_array_sum(self, axis=axis)
@@ -1118,9 +1113,13 @@ class TraceADArray:
                 raise ValueError("whole-program AD np.ravel supports one array")
             return _coerce_trace_array(args[0], self.context).ravel()
         if func is np.transpose:
-            if len(args) != 1 or kwargs:
-                raise ValueError("whole-program AD np.transpose supports one array")
-            return _coerce_trace_array(args[0], self.context).T
+            if len(args) != 1 or kwargs.keys() - {"axes"}:
+                raise ValueError("whole-program AD np.transpose supports one array and axes")
+            return _trace_transpose(
+                args[0],
+                self.context,
+                axes=cast(tuple[int, ...] | None, kwargs.get("axes")),
+            )
         if func is np.trace:
             if len(args) != 1 or kwargs.keys() - {"offset", "axis1", "axis2"}:
                 raise ValueError("whole-program AD np.trace supports one matrix")
@@ -1446,32 +1445,49 @@ def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADSca
         for item in array._items[1:]:
             total = total + item
         return total
-    if axis is not None:
-        axis = _normalise_axis("axis", axis, array.ndim)
-    if array.ndim == 1 and axis == 0:
+    axis = _normalise_axis("axis", axis, array.ndim)
+    reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
+    if reduced_shape == ():
         total = array._items[0]
         for item in array._items[1:]:
             total = total + item
         return total
-    if array.ndim == 2:
-        rows, cols = array.shape
-        if axis == 0:
-            items = []
-            for col in range(cols):
-                total = array._items[col]
-                for row in range(1, rows):
-                    total = total + array._items[row * cols + col]
-                items.append(total)
-            return TraceADArray(tuple(items), (cols,), array.context)
-        if axis == 1:
-            items = []
-            for row in range(rows):
-                total = array._items[row * cols]
-                for col in range(1, cols):
-                    total = total + array._items[row * cols + col]
-                items.append(total)
-            return TraceADArray(tuple(items), (rows,), array.context)
-    raise ValueError("whole-program AD array reductions support rank <= 2")
+    items: list[TraceADScalar] = []
+    for reduced_flat in range(int(np.prod(reduced_shape))):
+        reduced_index = np.unravel_index(reduced_flat, reduced_shape)
+        source_index = reduced_index[:axis] + (0,) + reduced_index[axis:]
+        total = array._items[int(np.ravel_multi_index(source_index, array.shape))]
+        for axis_index in range(1, array.shape[axis]):
+            source_index = reduced_index[:axis] + (axis_index,) + reduced_index[axis:]
+            total = total + array._items[int(np.ravel_multi_index(source_index, array.shape))]
+        items.append(total)
+    return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _trace_transpose(
+    values: object,
+    context: _WholeProgramTraceContext,
+    *,
+    axes: tuple[int, ...] | None = None,
+) -> TraceADArray:
+    array = _coerce_trace_array(values, context)
+    if array.ndim < 2:
+        return array.copy()
+    if axes is None:
+        axes = tuple(reversed(range(array.ndim)))
+    if len(axes) != array.ndim:
+        raise ValueError("whole-program AD np.transpose axes must match array rank")
+    normalised_axes = tuple(_normalise_axis("axis", axis, array.ndim) for axis in axes)
+    if sorted(normalised_axes) != list(range(array.ndim)):
+        raise ValueError("whole-program AD np.transpose axes must be a permutation")
+    target_shape = tuple(array.shape[axis] for axis in normalised_axes)
+    inverse_axes = tuple(normalised_axes.index(axis) for axis in range(array.ndim))
+    items: list[TraceADScalar] = []
+    for target_flat in range(int(np.prod(target_shape))):
+        target_index = np.unravel_index(target_flat, target_shape)
+        source_index = tuple(target_index[inverse_axes[axis]] for axis in range(array.ndim))
+        items.append(array._items[int(np.ravel_multi_index(source_index, array.shape))])
+    return TraceADArray(tuple(items), target_shape, context)
 
 
 def _trace_dot(

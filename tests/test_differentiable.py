@@ -3556,6 +3556,79 @@ def test_whole_program_ad_broadcasting_rejects_incompatible_shapes() -> None:
         )
 
 
+def test_whole_program_ad_handles_rank_n_reductions_and_transpose() -> None:
+    """Program AD should support rank-N reductions and explicit transpose axes."""
+
+    weights_axis0 = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    weights_axis1 = np.array([[2.0, -1.0], [0.25, 1.5]], dtype=np.float64)
+    weights_transpose = np.array(
+        [[[0.5, -0.25], [1.0, 2.0]], [[-1.5, 0.75], [0.0, 1.25]]],
+        dtype=np.float64,
+    )
+
+    def objective(values: np.ndarray) -> object:
+        tensor = np.reshape(values, (2, 2, 2))
+        axis0 = np.sum(tensor, axis=0)
+        axis1 = np.mean(tensor, axis=1)
+        transposed = np.transpose(tensor, axes=(2, 0, 1))
+        reversed_axes = tensor.T
+        return (
+            np.sum(axis0 * weights_axis0)
+            + np.sum(axis1 * weights_axis1)
+            + np.sum(transposed * weights_transpose)
+            + np.sum(reversed_axes)
+        )
+
+    values = np.linspace(-0.4, 0.9, 8, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(8)),
+    )
+    expected_tensor = np.zeros((2, 2, 2), dtype=np.float64)
+    for i in range(2):
+        for j in range(2):
+            for k in range(2):
+                expected_tensor[i, j, k] = (
+                    weights_axis0[j, k]
+                    + 0.5 * weights_axis1[i, k]
+                    + weights_transpose[k, i, j]
+                    + 1.0
+                )
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    np.testing.assert_allclose(
+        result.gradient, expected_tensor.reshape(-1), rtol=1.0e-12, atol=1.0e-12
+    )
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result),
+        expected_tensor.reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_whole_program_ad_rank_n_axis_validation_paths() -> None:
+    """Rank-N program AD array operations should reject invalid axes explicitly."""
+
+    with pytest.raises(ValueError, match="axis"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values, (2, 2)), axis=3),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="axes must match"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.transpose(np.reshape(values, (2, 2, 1)), axes=(0, 1))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="axes must be a permutation"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.transpose(np.reshape(values, (2, 2)), axes=(0, 0))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 
