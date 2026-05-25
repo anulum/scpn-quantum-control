@@ -1261,6 +1261,23 @@ class TraceADArray:
                 source=cast(int | tuple[int, ...], source),
                 destination=cast(int | tuple[int, ...], destination),
             )
+        if func is np.roll:
+            if len(args) == 2 and kwargs.keys() <= {"axis"}:
+                shift = args[1]
+                axis = kwargs.get("axis")
+            elif len(args) == 3 and not kwargs:
+                shift = args[1]
+                axis = args[2]
+            elif len(args) == 1 and "shift" in kwargs and kwargs.keys() <= {"shift", "axis"}:
+                shift = kwargs["shift"]
+                axis = kwargs.get("axis")
+            else:
+                raise ValueError("program AD np.roll supports array, shift, and optional axis")
+            return _trace_roll(
+                _coerce_trace_array(args[0], self.context),
+                shift=shift,
+                axis=axis,
+            )
         if func is np.take:
             if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis", "mode"}:
                 raise ValueError("program AD np.take supports array, indices, axis, and mode")
@@ -1615,6 +1632,43 @@ def _trace_moveaxis(
     return TraceADArray(
         tuple(array._items[int(index)] for index in moved_indices.reshape(-1)),
         tuple(map(int, moved_indices.shape)),
+        array.context,
+    )
+
+
+def _normalise_roll_shift_scalar(shift: object) -> int:
+    if isinstance(shift, bool) or not isinstance(shift, (int, np.integer)):
+        raise ValueError("program AD roll shift must be static integers")
+    return int(shift)
+
+
+def _normalise_roll_shift_tuple(shift: object, axis_count: int) -> tuple[int, ...]:
+    if isinstance(shift, (int, np.integer)) and not isinstance(shift, bool):
+        return tuple(int(shift) for _ in range(axis_count))
+    try:
+        raw_shifts = tuple(cast(Any, shift))
+    except TypeError as exc:
+        raise ValueError("program AD roll shift must be static integers") from exc
+    if len(raw_shifts) != axis_count:
+        raise ValueError("program AD roll shift and axis lengths must match")
+    return tuple(_normalise_roll_shift_scalar(item) for item in raw_shifts)
+
+
+def _trace_roll(array: TraceADArray, *, shift: object, axis: object = None) -> TraceADArray:
+    if axis is None:
+        flat_shift = _normalise_roll_shift_scalar(shift)
+        rolled = np.roll(np.arange(array.size, dtype=np.int64), flat_shift).reshape(array.shape)
+    else:
+        axes = _normalise_axis_permutation_axes("roll", axis, rank=array.ndim, role="axis")
+        shifts = _normalise_roll_shift_tuple(shift, len(axes))
+        rolled = np.roll(
+            np.arange(array.size, dtype=np.int64).reshape(array.shape),
+            shifts,
+            axis=axes,
+        )
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in rolled.reshape(-1)),
+        tuple(map(int, rolled.shape)),
         array.context,
     )
 

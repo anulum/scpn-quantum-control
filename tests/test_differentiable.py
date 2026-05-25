@@ -3893,6 +3893,55 @@ def test_program_ad_axis_permutations_preserve_exact_adjoint() -> None:
     )
 
 
+def test_program_ad_roll_preserves_exact_adjoint() -> None:
+    """Program AD static roll permutations should preserve exact element adjoints."""
+
+    weights_flat = np.linspace(-2.0, 1.0, 24, dtype=np.float64).reshape(2, 3, 4)
+    weights_axes = np.linspace(0.25, 3.25, 24, dtype=np.float64).reshape(2, 3, 4)
+
+    def objective(values: np.ndarray) -> object:
+        tensor = np.reshape(values, (2, 3, 4))
+        flat_roll = np.roll(tensor, shift=5)
+        axis_roll = np.roll(tensor, shift=(1, -2), axis=(0, 2))
+        return np.sum(flat_roll * weights_flat) + np.sum(axis_roll * weights_axes)
+
+    values = np.linspace(-1.0, 1.0, 24, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+    expected = (
+        np.roll(weights_flat.reshape(-1), shift=-5).reshape(2, 3, 4)
+        + np.roll(weights_axes, shift=(-1, 2), axis=(0, 2))
+    ).reshape(-1)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_roll_fails_closed_invalid_static_contracts() -> None:
+    """Program AD roll should reject dynamic or inconsistent permutation contracts."""
+
+    with pytest.raises(ValueError, match="roll shift must be static integers"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.roll(values, shift=True)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="roll shift and axis lengths must match"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.roll(np.reshape(values, (2, 2)), shift=(1, 2), axis=0)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="roll axis out of bounds"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.roll(np.reshape(values, (2, 2)), shift=1, axis=2)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_axis_permutations_fail_closed_invalid_axes() -> None:
     """Program AD axis permutations should reject invalid static axis contracts."""
 
