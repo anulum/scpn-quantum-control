@@ -3588,6 +3588,55 @@ def custom_jvp(
     return value_and_custom_jvp(rule, values, tangent, parameters=parameters).jvp
 
 
+def batch_custom_jvp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    tangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> NDArray[np.float64]:
+    """Return stacked exact custom JVPs for a batch of tangent vectors."""
+
+    return cast(
+        NDArray[np.float64],
+        np.vstack(
+            [
+                result.jvp
+                for result in batch_value_and_custom_jvp(
+                    rule,
+                    values,
+                    tangents,
+                    parameters=parameters,
+                )
+            ]
+        ),
+    )
+
+
+def batch_value_and_custom_jvp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    tangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> tuple[JVPResult, ...]:
+    """Return one exact custom JVP result per tangent row."""
+
+    parameter_values = _as_parameter_array(values)
+    tangent_batch = _as_batch_parameter_array(
+        "custom JVP tangents", tangents, parameter_values.size
+    )
+    return tuple(
+        value_and_custom_jvp(
+            rule,
+            parameter_values,
+            tangent,
+            parameters=parameters,
+        )
+        for tangent in tangent_batch
+    )
+
+
 def value_and_custom_jvp(
     rule: CustomDerivativeRule,
     values: ArrayLike,
@@ -3635,6 +3684,54 @@ def custom_vjp(
     """Return an exact custom vector-Jacobian product for a registered primitive."""
 
     return value_and_custom_vjp(rule, values, cotangent, parameters=parameters)
+
+
+def batch_custom_vjp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    cotangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> NDArray[np.float64]:
+    """Return stacked exact custom VJPs for a batch of cotangent vectors."""
+
+    return cast(
+        NDArray[np.float64],
+        np.vstack(
+            [
+                result.vjp
+                for result in batch_value_and_custom_vjp(
+                    rule,
+                    values,
+                    cotangents,
+                    parameters=parameters,
+                )
+            ]
+        ),
+    )
+
+
+def batch_value_and_custom_vjp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    cotangents: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> tuple[VJPResult, ...]:
+    """Return one exact custom VJP result per cotangent row."""
+
+    parameter_values = _as_parameter_array(values)
+    value = _as_vector_output(rule.value_fn(parameter_values.copy()))
+    cotangent_batch = _as_batch_vector_array("custom VJP cotangents", cotangents, value.size)
+    return tuple(
+        value_and_custom_vjp(
+            rule,
+            parameter_values,
+            cotangent,
+            parameters=parameters,
+        )
+        for cotangent in cotangent_batch
+    )
 
 
 def value_and_custom_vjp(
@@ -3761,6 +3858,53 @@ def custom_jacobian(
     """Return the exact dense Jacobian implied by a custom derivative rule."""
 
     return value_and_custom_jacobian(rule, values, parameters=parameters).jacobian
+
+
+def batch_custom_jacobian(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> NDArray[np.float64]:
+    """Return stacked exact custom Jacobians for a batch of parameter rows."""
+
+    return cast(
+        NDArray[np.float64],
+        np.stack(
+            [
+                result.jacobian
+                for result in batch_value_and_custom_jacobian(
+                    rule,
+                    values,
+                    parameters=parameters,
+                )
+            ],
+            axis=0,
+        ),
+    )
+
+
+def batch_value_and_custom_jacobian(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> tuple[JacobianResult, ...]:
+    """Return one exact custom Jacobian result per parameter row."""
+
+    batch = _as_real_numeric_array("custom Jacobian values", values)
+    if batch.ndim != 2:
+        raise ValueError("custom Jacobian values must be a two-dimensional batch")
+    if not np.all(np.isfinite(batch)):
+        raise ValueError("custom Jacobian values must contain only finite values")
+    return tuple(
+        value_and_custom_jacobian(
+            rule,
+            row,
+            parameters=parameters,
+        )
+        for row in batch
+    )
 
 
 def value_and_custom_jacobian(
@@ -4899,12 +5043,18 @@ __all__ = [
     "WeightedGradientResult",
     "armijo_backtracking_line_search",
     "allocate_parameter_shift_shots",
+    "batch_custom_jacobian",
+    "batch_custom_jvp",
+    "batch_custom_vjp",
     "batch_finite_difference_hvp",
     "batch_finite_difference_jvp",
     "batch_finite_difference_vjp",
     "batch_complex_step_gradient",
     "batch_parameter_shift_gradient",
     "batch_value_and_complex_step_grad",
+    "batch_value_and_custom_jacobian",
+    "batch_value_and_custom_jvp",
+    "batch_value_and_custom_vjp",
     "batch_value_and_finite_difference_grad",
     "batch_value_and_finite_difference_hvp",
     "batch_value_and_finite_difference_jvp",

@@ -52,11 +52,17 @@ from scpn_quantum_control.differentiable import (
     allocate_parameter_shift_shots,
     armijo_backtracking_line_search,
     batch_complex_step_gradient,
+    batch_custom_jacobian,
+    batch_custom_jvp,
+    batch_custom_vjp,
     batch_finite_difference_hvp,
     batch_finite_difference_jvp,
     batch_finite_difference_vjp,
     batch_parameter_shift_gradient,
     batch_value_and_complex_step_grad,
+    batch_value_and_custom_jacobian,
+    batch_value_and_custom_jvp,
+    batch_value_and_custom_vjp,
     batch_value_and_finite_difference_grad,
     batch_value_and_finite_difference_hvp,
     batch_value_and_finite_difference_jvp,
@@ -932,6 +938,74 @@ def test_custom_jacobian_rejects_invalid_exact_rule_shapes() -> None:
     )
     with pytest.raises(ValueError, match="VJP output length"):
         value_and_custom_jacobian(bad_vjp, [1.0])
+
+
+def test_batched_custom_jvp_and_vjp_apply_exact_rules() -> None:
+    """Batched custom transforms should preserve exact rule outputs and metadata."""
+
+    rule = CustomDerivativeRule(
+        name="affine_pair",
+        value_fn=lambda values: np.array([values[0] + values[1], values[0] - values[1]]),
+        jvp_rule=lambda values, tangent: np.array(
+            [tangent[0] + tangent[1], tangent[0] - tangent[1]]
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [cotangent[0] + cotangent[1], cotangent[0] - cotangent[1]]
+        ),
+        parameter_names=("theta", "frozen_phi"),
+        trainable=(True, False),
+    )
+
+    jvp_results = batch_value_and_custom_jvp(
+        rule,
+        [2.0, 5.0],
+        [[1.0, 10.0], [-2.0, 30.0]],
+    )
+    vjp_results = batch_value_and_custom_vjp(
+        rule,
+        [2.0, 5.0],
+        [[3.0, 4.0], [-1.0, 2.0]],
+    )
+
+    assert len(jvp_results) == 2
+    assert len(vjp_results) == 2
+    np.testing.assert_allclose(
+        batch_custom_jvp(rule, [2.0, 5.0], [[1.0, 10.0], [-2.0, 30.0]]), [[1.0, 1.0], [-2.0, -2.0]]
+    )
+    np.testing.assert_allclose(
+        batch_custom_vjp(rule, [2.0, 5.0], [[3.0, 4.0], [-1.0, 2.0]]), [[7.0, 0.0], [1.0, 0.0]]
+    )
+    assert jvp_results[0].parameter_names == ("theta", "frozen_phi")
+    assert vjp_results[0].trainable == (True, False)
+
+
+def test_batched_custom_jacobian_materializes_parameter_batches() -> None:
+    """Custom Jacobians should batch over parameter rows for benchmark workflows."""
+
+    rule = CustomDerivativeRule(
+        name="quadratic_vector",
+        value_fn=lambda values: np.array([values[0] * values[1], values[0] ** 2]),
+        jvp_rule=lambda values, tangent: np.array(
+            [
+                values[1] * tangent[0] + values[0] * tangent[1],
+                2.0 * values[0] * tangent[0],
+            ]
+        ),
+    )
+
+    results = batch_value_and_custom_jacobian(rule, [[2.0, 3.0], [-1.0, 4.0]])
+
+    assert len(results) == 2
+    np.testing.assert_allclose(
+        batch_custom_jacobian(rule, [[2.0, 3.0], [-1.0, 4.0]]),
+        [
+            [[3.0, 2.0], [4.0, 0.0]],
+            [[4.0, -1.0], [-2.0, 0.0]],
+        ],
+    )
+    np.testing.assert_allclose(results[1].value, [-4.0, 1.0])
+    with pytest.raises(ValueError, match="two-dimensional batch"):
+        batch_value_and_custom_jacobian(rule, [1.0, 2.0])
 
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
@@ -2875,6 +2949,12 @@ def test_differentiable_api_exported_from_package_root() -> None:
 
     assert scpn.ArmijoLineSearchResult is ArmijoLineSearchResult
     assert scpn.armijo_backtracking_line_search is armijo_backtracking_line_search
+    assert scpn.batch_custom_jacobian is batch_custom_jacobian
+    assert scpn.batch_custom_jvp is batch_custom_jvp
+    assert scpn.batch_custom_vjp is batch_custom_vjp
+    assert scpn.batch_value_and_custom_jacobian is batch_value_and_custom_jacobian
+    assert scpn.batch_value_and_custom_jvp is batch_value_and_custom_jvp
+    assert scpn.batch_value_and_custom_vjp is batch_value_and_custom_vjp
     assert scpn.CustomDerivativeCheckResult is CustomDerivativeCheckResult
     assert scpn.CustomDerivativeRule is CustomDerivativeRule
     assert scpn.check_custom_derivative_consistency is check_custom_derivative_consistency

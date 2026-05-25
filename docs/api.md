@@ -400,6 +400,9 @@ from scpn_quantum_control import (
     allocate_parameter_shift_shots,
     armijo_backtracking_line_search,
     batch_complex_step_gradient,
+    batch_custom_jacobian,
+    batch_custom_jvp,
+    batch_custom_vjp,
     batch_finite_difference_hvp,
     batch_finite_difference_jvp,
     batch_finite_difference_vjp,
@@ -408,6 +411,9 @@ from scpn_quantum_control import (
     batch_value_and_finite_difference_jvp,
     batch_value_and_finite_difference_vjp,
     batch_value_and_complex_step_grad,
+    batch_value_and_custom_jacobian,
+    batch_value_and_custom_jvp,
+    batch_value_and_custom_vjp,
     batch_vector_jacobian_product,
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
@@ -583,6 +589,12 @@ value_and_complex_step_grad(objective, values, parameters=None, step=1e-30) -> G
 value_and_custom_jvp(rule, values, tangent, parameters=None) -> JVPResult
 value_and_custom_vjp(rule, values, cotangent, parameters=None) -> VJPResult
 batch_complex_step_gradient(objectives, values, parameters=None, step=1e-30) -> np.ndarray
+batch_custom_jvp(rule, values, tangents, parameters=None) -> np.ndarray
+batch_value_and_custom_jvp(rule, values, tangents, parameters=None) -> tuple[JVPResult, ...]
+batch_custom_vjp(rule, values, cotangents, parameters=None) -> np.ndarray
+batch_value_and_custom_vjp(rule, values, cotangents, parameters=None) -> tuple[VJPResult, ...]
+batch_custom_jacobian(rule, values, parameters=None) -> np.ndarray
+batch_value_and_custom_jacobian(rule, values, parameters=None) -> tuple[JacobianResult, ...]
 batch_value_and_complex_step_grad(objectives, values, parameters=None, step=1e-30) -> tuple[GradientResult, ...]
 finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
@@ -692,6 +704,7 @@ rules can be validated before being used in training loops.
 `CustomDerivativeRule`, `custom_jvp()`, and `custom_vjp()` provide an exact-rule boundary for primitives with known physics derivatives. Custom rules evaluate the primitive once, enforce trainable masks, reject shape drift, and preserve JVP/VJP provenance without falling back to finite-difference steps.
 `check_custom_derivative_consistency()` audits an exact rule pair against the adjoint identity `<J t, c> = <t, J^T c>` and finite-difference JVP/VJP references before the rule is trusted in production control paths.
 `custom_jacobian()` and `value_and_custom_jacobian()` materialise exact dense Jacobians from custom JVP columns or VJP rows, preserving trainable masks and `step=0.0` provenance for downstream least-squares, natural-gradient, and benchmark workflows.
+The `batch_custom_*` helpers provide exact batched JVP, VJP, and Jacobian transforms over tangent, cotangent, or parameter batches so custom physics derivatives can be benchmarked and vectorised without finite-difference reconstruction.
 The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.
