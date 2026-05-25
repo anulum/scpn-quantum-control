@@ -47,6 +47,7 @@ from scpn_quantum_control.differentiable import (
     ParameterBounds,
     ParameterShiftRule,
     PrimitiveBatchingRule,
+    PrimitiveContract,
     PrimitiveDTypeRule,
     PrimitiveIdentity,
     PrimitiveLoweringRule,
@@ -133,6 +134,7 @@ from scpn_quantum_control.differentiable import (
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    primitive_contract_for,
     primitive_dtype_rule_for,
     primitive_effect_for,
     primitive_nondifferentiable_policy_for,
@@ -4962,6 +4964,69 @@ def test_primitive_transform_registry_contract_accessors_fail_closed() -> None:
         registry.require_nondifferentiable_policy(identity)
 
 
+def test_primitive_registry_exposes_unified_contracts() -> None:
+    """Primitive registry should expose all transform contracts in one fail-closed lookup."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "unified_contract", "1")
+    rule = CustomDerivativeRule(
+        name="unified_contract_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function, axes, out_axes
+        return np.asarray(args[0], dtype=np.float64)
+
+    def lowering_rule(lowered_rule: CustomDerivativeRule) -> object:
+        return lowered_rule.name
+
+    def shape_rule(args: tuple[object, ...]) -> tuple[int, ...]:
+        del args
+        return (1,)
+
+    def dtype_rule(args: tuple[object, ...]) -> str:
+        del args
+        return "float64"
+
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            batching_rule=batching_rule,
+            lowering_rule=lowering_rule,
+            lowering_metadata={"mlir_op": "scpn_diff.unified_contract"},
+            shape_rule=shape_rule,
+            dtype_rule=dtype_rule,
+            nondifferentiable_policy="fail_closed_at_boundaries",
+            effect="pure",
+        )
+    )
+
+    contract = registry.require_contract(identity)
+    assert isinstance(contract, PrimitiveContract)
+    assert contract.identity is identity
+    assert contract.derivative_rule is rule
+    assert contract.batching_rule is batching_rule
+    assert contract.lowering_rule is lowering_rule
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.unified_contract"
+    assert contract.shape_rule is shape_rule
+    assert contract.dtype_rule is dtype_rule
+    assert contract.nondifferentiable_policy == "fail_closed_at_boundaries"
+    assert contract.effect == "pure"
+    assert primitive_contract_for(identity, registry=registry) == contract
+
+    missing = PrimitiveIdentity("scpn.quantum", "unified_contract_missing", "1")
+    with pytest.raises(ValueError, match="no primitive contract"):
+        registry.require_contract(missing)
+
+
 def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
     """Primitive transform registration should fail closed and support explicit overwrite."""
 
@@ -5177,12 +5242,14 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.PrimitiveBatchingRule is PrimitiveBatchingRule
+    assert scpn.PrimitiveContract is PrimitiveContract
     assert scpn.PrimitiveDTypeRule is PrimitiveDTypeRule
     assert scpn.PrimitiveLoweringRule is PrimitiveLoweringRule
     assert scpn.PrimitiveShapeRule is PrimitiveShapeRule
     assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
     assert scpn.primitive_dtype_rule_for is primitive_dtype_rule_for
     assert scpn.primitive_effect_for is primitive_effect_for
+    assert scpn.primitive_contract_for is primitive_contract_for
     assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.register_primitive_batching_rule is register_primitive_batching_rule

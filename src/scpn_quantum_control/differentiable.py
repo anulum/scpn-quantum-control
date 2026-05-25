@@ -4220,6 +4220,63 @@ class PrimitiveTransformRule:
         object.__setattr__(self, "lowering_metadata", metadata)
 
 
+@dataclass(frozen=True)
+class PrimitiveContract:
+    """Unified registered contract for one differentiable primitive identity."""
+
+    identity: PrimitiveIdentity
+    derivative_rule: CustomDerivativeRule
+    batching_rule: PrimitiveBatchingRule | None
+    lowering_rule: PrimitiveLoweringRule | None
+    lowering_metadata: Mapping[str, str]
+    shape_rule: PrimitiveShapeRule | None
+    dtype_rule: PrimitiveDTypeRule | None
+    nondifferentiable_policy: str
+    effect: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.identity, PrimitiveIdentity):
+            raise ValueError("contract identity must be a PrimitiveIdentity")
+        if not isinstance(self.derivative_rule, CustomDerivativeRule):
+            raise ValueError("contract derivative_rule must be a CustomDerivativeRule")
+        if self.batching_rule is not None and not callable(self.batching_rule):
+            raise ValueError("contract batching_rule must be callable")
+        if self.lowering_rule is not None and not callable(self.lowering_rule):
+            raise ValueError("contract lowering_rule must be callable")
+        if self.shape_rule is not None and not callable(self.shape_rule):
+            raise ValueError("contract shape_rule must be callable")
+        if self.dtype_rule is not None and not callable(self.dtype_rule):
+            raise ValueError("contract dtype_rule must be callable")
+        if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
+            raise ValueError("contract nondifferentiable_policy must be a non-empty string")
+        if not isinstance(self.effect, str) or not self.effect:
+            raise ValueError("contract effect must be a non-empty string")
+        metadata = dict(self.lowering_metadata)
+        if any(not isinstance(key, str) or not key for key in metadata):
+            raise ValueError("contract lowering metadata keys must be non-empty strings")
+        if any(not isinstance(value, str) or not value for value in metadata.values()):
+            raise ValueError("contract lowering metadata values must be non-empty strings")
+        object.__setattr__(self, "lowering_metadata", metadata)
+
+    @staticmethod
+    def from_transform(transform: PrimitiveTransformRule) -> PrimitiveContract:
+        """Build an immutable primitive contract view from a transform binding."""
+
+        return PrimitiveContract(
+            identity=transform.identity,
+            derivative_rule=transform.derivative_rule,
+            batching_rule=transform.batching_rule,
+            lowering_rule=transform.lowering_rule,
+            lowering_metadata={}
+            if transform.lowering_metadata is None
+            else transform.lowering_metadata,
+            shape_rule=transform.shape_rule,
+            dtype_rule=transform.dtype_rule,
+            nondifferentiable_policy=transform.nondifferentiable_policy,
+            effect=transform.effect,
+        )
+
+
 class CustomDerivativeRegistry:
     """Conflict-safe registry binding primitive identities to exact rules."""
 
@@ -4402,6 +4459,12 @@ class CustomDerivativeRegistry:
         transform = self._transforms.get(PrimitiveIdentity.parse(identity))
         return None if transform is None else transform.effect
 
+    def contract_for(self, identity: PrimitiveIdentity | str) -> PrimitiveContract | None:
+        """Return the unified registered primitive contract, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else PrimitiveContract.from_transform(transform)
+
     def require_batching_rule(self, identity: PrimitiveIdentity | str) -> PrimitiveBatchingRule:
         """Return a primitive batching rule or fail closed."""
 
@@ -4457,6 +4520,15 @@ class CustomDerivativeRegistry:
         if effect is None:
             raise ValueError(f"no effect registered for {primitive_identity.key}")
         return effect
+
+    def require_contract(self, identity: PrimitiveIdentity | str) -> PrimitiveContract:
+        """Return a unified primitive contract or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        contract = self.contract_for(primitive_identity)
+        if contract is None:
+            raise ValueError(f"no primitive contract registered for {primitive_identity.key}")
+        return contract
 
     def transform_snapshot(self) -> dict[PrimitiveIdentity, PrimitiveTransformRule]:
         """Return a copy of registered primitive transform bindings."""
@@ -4591,6 +4663,17 @@ def primitive_effect_for(
 
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_effect(identity)
+
+
+def primitive_contract_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveContract:
+    """Resolve a unified primitive transform contract or fail closed."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require_contract(identity)
 
 
 def custom_derivative_rule_for(
@@ -8555,6 +8638,7 @@ __all__ = [
     "ProgramADEffectIR",
     "ProgramADSSAValue",
     "PrimitiveBatchingRule",
+    "PrimitiveContract",
     "PrimitiveDTypeRule",
     "PrimitiveIdentity",
     "PrimitiveLoweringRule",
@@ -8625,6 +8709,7 @@ __all__ = [
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "primitive_contract_for",
     "primitive_dtype_rule_for",
     "primitive_effect_for",
     "primitive_nondifferentiable_policy_for",

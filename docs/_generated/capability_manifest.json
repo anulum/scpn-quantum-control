@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 444,
+    "public_api_exports": 446,
     "public_documentation_pages": 235,
-    "python_model_classes": 1499,
+    "python_model_classes": 1500,
     "python_model_source_modules": 767,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -4484,6 +4484,10 @@
         "path": "src/scpn_quantum_control/paper0/preface_i_rigour_validation.py"
       },
       {
+        "name": "PrimitiveContract",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "PrimitiveIdentity",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -7971,6 +7975,7 @@
     "PhaseOrchestratorAdapter",
     "PhaseVQE",
     "PrimitiveBatchingRule",
+    "PrimitiveContract",
     "PrimitiveDTypeRule",
     "PrimitiveIdentity",
     "PrimitiveLoweringRule",
@@ -8198,6 +8203,7 @@
     "pennylane_gate_workload",
     "pgbo",
     "plasma_omega",
+    "primitive_contract_for",
     "primitive_dtype_rule_for",
     "primitive_effect_for",
     "primitive_nondifferentiable_policy_for",
