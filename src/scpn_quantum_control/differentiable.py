@@ -956,6 +956,16 @@ class TraceADArray:
 
         return self.ravel()
 
+    def squeeze(self, axis: int | tuple[int, ...] | None = None) -> TraceADArray:
+        """Return a derivative-preserving array with singleton axes removed."""
+
+        return _trace_squeeze(self, axis=axis)
+
+    def expand_dims(self, axis: int | tuple[int, ...]) -> TraceADArray:
+        """Return a derivative-preserving array with singleton axes inserted."""
+
+        return _trace_expand_dims(self, axis=axis)
+
     @property
     def T(self) -> TraceADArray:
         """Return the NumPy-compatible reversed-axis transpose."""
@@ -1200,6 +1210,24 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("whole-program AD np.ravel supports one array")
             return _coerce_trace_array(args[0], self.context).ravel()
+        if func is np.squeeze:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.squeeze supports one array and optional axis")
+            return _trace_squeeze(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | tuple[int, ...] | None, kwargs.get("axis")),
+            )
+        if func is np.expand_dims:
+            if len(args) == 2 and not kwargs:
+                axis = args[1]
+            elif len(args) == 1 and set(kwargs) == {"axis"}:
+                axis = kwargs["axis"]
+            else:
+                raise ValueError("program AD np.expand_dims supports one array and axis")
+            return _trace_expand_dims(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | tuple[int, ...], axis),
+            )
         if func is np.take:
             if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis", "mode"}:
                 raise ValueError("program AD np.take supports array, indices, axis, and mode")
@@ -1442,6 +1470,53 @@ def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | 
         tuple(int(dimension) for dimension in selected_array.shape),
         array.context,
     )
+
+
+def _normalise_shape_transform_axes(
+    name: str, axis: int | tuple[int, ...], *, output_rank: int
+) -> tuple[int, ...]:
+    axes = (axis,) if isinstance(axis, (int, np.integer)) else tuple(axis)
+    if not axes:
+        raise ValueError(f"program AD {name} requires at least one axis")
+    normalised: list[int] = []
+    for item in axes:
+        if isinstance(item, bool) or not isinstance(item, (int, np.integer)):
+            raise ValueError(f"program AD {name} axes must be static integers")
+        value = int(item)
+        if value < 0:
+            value += output_rank
+        if value < 0 or value >= output_rank:
+            raise ValueError(f"program AD {name} axis out of bounds")
+        if value in normalised:
+            raise ValueError(f"program AD {name} axes must be unique")
+        normalised.append(value)
+    return tuple(sorted(normalised))
+
+
+def _trace_squeeze(
+    array: TraceADArray, *, axis: int | tuple[int, ...] | None = None
+) -> TraceADArray:
+    if axis is None:
+        target_shape = tuple(dimension for dimension in array.shape if dimension != 1)
+        return TraceADArray(tuple(array._items), target_shape, array.context)
+    axes = _normalise_shape_transform_axes("squeeze", axis, output_rank=array.ndim)
+    for item in axes:
+        if array.shape[item] != 1:
+            raise ValueError("program AD squeeze axis must have length one")
+    target_shape = tuple(
+        dimension for index, dimension in enumerate(array.shape) if index not in axes
+    )
+    return TraceADArray(tuple(array._items), target_shape, array.context)
+
+
+def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> TraceADArray:
+    axis_tuple = (axis,) if isinstance(axis, (int, np.integer)) else tuple(axis)
+    output_rank = array.ndim + len(axis_tuple)
+    axes = _normalise_shape_transform_axes("expand_dims", axis_tuple, output_rank=output_rank)
+    shape = list(array.shape)
+    for item in axes:
+        shape.insert(item, 1)
+    return TraceADArray(tuple(array._items), tuple(shape), array.context)
 
 
 def _validate_trace_basic_index(index: object) -> None:

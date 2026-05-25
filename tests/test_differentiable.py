@@ -3802,6 +3802,61 @@ def test_whole_program_ad_rank_n_axis_validation_paths() -> None:
         )
 
 
+def test_program_ad_squeeze_expand_dims_preserve_exact_adjoint() -> None:
+    """Program AD shape-only transforms should preserve exact element adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        tensor = np.reshape(values, (1, 2, 1, 3))
+        squeezed = np.squeeze(tensor, axis=(0, 2))
+        method_squeezed = tensor.squeeze()
+        expanded = np.expand_dims(squeezed[1], axis=(0, 1))
+        first_row = squeezed[0]
+        method_expanded = (
+            first_row.expand_dims(axis=1)
+            if hasattr(first_row, "expand_dims")
+            else np.expand_dims(first_row, axis=1)
+        )
+        return (
+            np.sum(squeezed * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
+            + np.sum(method_squeezed[0] * np.array([0.5, 1.5, 2.5]))
+            + np.sum(expanded * np.array([[[7.0, 11.0, 13.0]]]))
+            + np.sum(method_expanded * np.array([[17.0], [19.0], [23.0]]))
+        )
+
+    values = np.array([0.2, -0.3, 0.4, 1.1, -1.2, 1.3], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+    expected = np.array([18.5, 22.5, 28.5, 11.0, 16.0, 19.0], dtype=np.float64)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_squeeze_expand_dims_fail_closed_axes() -> None:
+    """Program AD shape-only transforms should reject invalid axis semantics."""
+
+    with pytest.raises(ValueError, match="squeeze axis must have length one"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.squeeze(np.reshape(values, (2, 1)), axis=0)),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="expand_dims axes must be unique"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.expand_dims(values, axis=(0, 0))),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="expand_dims axes must be static integers"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(values.expand_dims(axis=(True,))),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_boundaries() -> (
     None
 ):
