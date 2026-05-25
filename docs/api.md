@@ -367,6 +367,7 @@ those extras are installed.
 ```python
 from scpn_quantum_control import (
     ArmijoLineSearchResult,
+    CustomDerivativeRule,
     DifferentiableOptimizer,
     DualNumber,
     FixedPointSensitivityResult,
@@ -409,6 +410,8 @@ from scpn_quantum_control import (
     batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    custom_jvp,
+    custom_vjp,
     dual_cos,
     dual_exp,
     dual_log,
@@ -446,6 +449,8 @@ from scpn_quantum_control import (
     sparse_jacobian,
     update_levenberg_marquardt_damping,
     value_and_complex_step_grad,
+    value_and_custom_jvp,
+    value_and_custom_vjp,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_hvp,
@@ -523,6 +528,7 @@ GradientResult(value, gradient, method, shift, coefficient, evaluations, paramet
 StochasticGradientResult(value, gradient, standard_error, covariance, confidence_radius, shots, confidence_level, method, shift, coefficient, evaluations, parameter_names, trainable)
 OptimizationResult(values, final_gradient, value_history, steps, converged, reason, best_values=None, best_value=None)
 GradientCheckResult(reference, candidate, max_abs_error, l2_error, value_delta, tolerance, passed)
+CustomDerivativeRule(name, value_fn, jvp_rule=None, vjp_rule=None, parameter_names=(), trainable=())
 HVPResult(value, hvp, tangent, method, step, evaluations, parameter_names, trainable)
 JacobianResult(value, jacobian, method, step, evaluations, parameter_names, trainable)
 JVPResult(value, jvp, tangent, method, step, evaluations, parameter_names, trainable)
@@ -564,7 +570,11 @@ finite_difference_gradient(objective, values, parameters=None, step=1e-6) -> np.
 value_and_finite_difference_grad(objective, values, parameters=None, step=1e-6) -> GradientResult
 batch_value_and_finite_difference_grad(objectives, values, parameters=None, step=1e-6) -> tuple[GradientResult, ...]
 complex_step_gradient(objective, values, parameters=None, step=1e-30) -> np.ndarray
+custom_jvp(rule, values, tangent, parameters=None) -> np.ndarray
+custom_vjp(rule, values, cotangent, parameters=None) -> VJPResult
 value_and_complex_step_grad(objective, values, parameters=None, step=1e-30) -> GradientResult
+value_and_custom_jvp(rule, values, tangent, parameters=None) -> JVPResult
+value_and_custom_vjp(rule, values, cotangent, parameters=None) -> VJPResult
 batch_complex_step_gradient(objectives, values, parameters=None, step=1e-30) -> np.ndarray
 batch_value_and_complex_step_grad(objectives, values, parameters=None, step=1e-30) -> tuple[GradientResult, ...]
 finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.ndarray
@@ -671,6 +681,7 @@ provenance.
 `check_parameter_shift_consistency()` compares a parameter-shift candidate
 against central finite differences and returns explicit error metrics, so custom
 rules can be validated before being used in training loops.
+`CustomDerivativeRule`, `custom_jvp()`, and `custom_vjp()` provide an exact-rule boundary for primitives with known physics derivatives. Custom rules evaluate the primitive once, enforce trainable masks, reject shape drift, and preserve JVP/VJP provenance without falling back to finite-difference steps.
 The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.

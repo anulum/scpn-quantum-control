@@ -16,6 +16,7 @@ import pytest
 
 from scpn_quantum_control.differentiable import (
     ArmijoLineSearchResult,
+    CustomDerivativeRule,
     DifferentiableOptimizer,
     DualNumber,
     FisherConjugateGradientResult,
@@ -63,6 +64,8 @@ from scpn_quantum_control.differentiable import (
     batch_vector_jacobian_product,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    custom_jvp,
+    custom_vjp,
     dense_to_sparse_matrix,
     dual_cos,
     dual_exp,
@@ -104,6 +107,8 @@ from scpn_quantum_control.differentiable import (
     sparse_jacobian,
     update_levenberg_marquardt_damping,
     value_and_complex_step_grad,
+    value_and_custom_jvp,
+    value_and_custom_vjp,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_hvp,
@@ -713,6 +718,83 @@ def test_implicit_fixed_point_sensitivity_rejects_invalid_contracts() -> None:
         implicit_fixed_point_sensitivity(np.eye(1), [[1.0]], rcond=0.0)
     with pytest.raises(ValueError, match="fixed-point damping"):
         implicit_fixed_point_sensitivity(np.eye(1), [[1.0]], damping=-1.0)
+
+
+def test_custom_derivative_rule_evaluates_exact_jvp_and_vjp() -> None:
+    """Custom rules should expose exact primitive derivatives with provenance."""
+
+    rule = CustomDerivativeRule(
+        name="quadratic_coupler",
+        value_fn=lambda values: np.array([values[0] * values[1], values[0] ** 2]),
+        jvp_rule=lambda values, tangent: np.array(
+            [
+                tangent[0] * values[1] + values[0] * tangent[1],
+                2.0 * values[0] * tangent[0],
+            ]
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [
+                cotangent[0] * values[1] + 2.0 * cotangent[1] * values[0],
+                cotangent[0] * values[0],
+            ]
+        ),
+        parameter_names=("theta", "phi"),
+        trainable=(True, False),
+    )
+
+    jvp_result = value_and_custom_jvp(rule, [2.0, 3.0], [0.5, 7.0])
+    vjp_result = value_and_custom_vjp(rule, [2.0, 3.0], [11.0, 13.0])
+
+    np.testing.assert_allclose(custom_jvp(rule, [2.0, 3.0], [0.5, 7.0]), [1.5, 2.0])
+    np.testing.assert_allclose(jvp_result.value, [6.0, 4.0])
+    np.testing.assert_allclose(jvp_result.tangent, [0.5, 0.0])
+    np.testing.assert_allclose(jvp_result.jvp, [1.5, 2.0])
+    assert jvp_result.method == "custom_jvp:quadratic_coupler"
+    assert jvp_result.step == pytest.approx(0.0)
+    assert jvp_result.parameter_names == ("theta", "phi")
+    assert jvp_result.trainable == (True, False)
+    np.testing.assert_allclose(custom_vjp(rule, [2.0, 3.0], [11.0, 13.0]).vjp, [85.0, 0.0])
+    np.testing.assert_allclose(vjp_result.value, [6.0, 4.0])
+    np.testing.assert_allclose(vjp_result.vjp, [85.0, 0.0])
+    assert vjp_result.method == "custom_vjp:quadratic_coupler"
+
+
+def test_custom_derivative_rule_rejects_invalid_contracts() -> None:
+    """Custom derivative rules must fail closed on bad exact-rule contracts."""
+
+    with pytest.raises(ValueError, match="requires a JVP or VJP"):
+        CustomDerivativeRule(name="bad", value_fn=lambda values: values)
+    with pytest.raises(ValueError, match="lengths must match"):
+        CustomDerivativeRule(
+            name="bad_meta",
+            value_fn=lambda values: values,
+            jvp_rule=lambda values, tangent: tangent,
+            parameter_names=("x", "y"),
+            trainable=(True,),
+        )
+
+    rule = CustomDerivativeRule(
+        name="bad_shapes",
+        value_fn=lambda values: np.array([values[0]]),
+        jvp_rule=lambda values, tangent: np.array([1.0, 2.0]),
+        vjp_rule=lambda values, cotangent: np.array([1.0, 2.0]),
+    )
+    with pytest.raises(ValueError, match="JVP output shape"):
+        value_and_custom_jvp(rule, [1.0], [1.0])
+    with pytest.raises(ValueError, match="cotangent shape"):
+        value_and_custom_vjp(rule, [1.0], [1.0, 2.0])
+    with pytest.raises(ValueError, match="VJP output length"):
+        value_and_custom_vjp(rule, [1.0], [1.0])
+    with pytest.raises(ValueError, match="does not define a JVP"):
+        value_and_custom_jvp(
+            CustomDerivativeRule(
+                name="vjp_only",
+                value_fn=lambda values: values,
+                vjp_rule=lambda values, cotangent: cotangent,
+            ),
+            [1.0],
+            [1.0],
+        )
 
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
@@ -2656,6 +2738,9 @@ def test_differentiable_api_exported_from_package_root() -> None:
 
     assert scpn.ArmijoLineSearchResult is ArmijoLineSearchResult
     assert scpn.armijo_backtracking_line_search is armijo_backtracking_line_search
+    assert scpn.CustomDerivativeRule is CustomDerivativeRule
+    assert scpn.custom_jvp is custom_jvp
+    assert scpn.custom_vjp is custom_vjp
     assert scpn.DualNumber is DualNumber
     assert scpn.FixedPointSensitivityResult is FixedPointSensitivityResult
     assert scpn.FisherConjugateGradientResult is FisherConjugateGradientResult
@@ -2678,6 +2763,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.dual_sin is dual_sin
     assert scpn.dense_to_sparse_matrix is dense_to_sparse_matrix
     assert scpn.value_and_complex_step_grad is value_and_complex_step_grad
+    assert scpn.value_and_custom_jvp is value_and_custom_jvp
+    assert scpn.value_and_custom_vjp is value_and_custom_vjp
     assert scpn.parameter_shift_gradient is parameter_shift_gradient
     assert scpn.batch_finite_difference_hvp is batch_finite_difference_hvp
     assert scpn.batch_finite_difference_jvp is batch_finite_difference_jvp

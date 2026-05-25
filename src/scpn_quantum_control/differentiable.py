@@ -24,6 +24,8 @@ from numpy.typing import ArrayLike, NDArray
 ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]]
 VectorObjective = Callable[[NDArray[np.float64]], ArrayLike]
 ComplexStepObjective = Callable[[NDArray[np.complex128]], object]
+CustomJVPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
+CustomVJPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
@@ -725,8 +727,8 @@ class JVPResult:
         if not self.method:
             raise ValueError("JVP method must be non-empty")
         step = _as_real_scalar("JVP step", self.step)
-        if step <= 0.0:
-            raise ValueError("JVP step must be finite and positive")
+        if step < 0.0:
+            raise ValueError("JVP step must be finite and non-negative")
         if self.evaluations < 0:
             raise ValueError("JVP evaluations must be non-negative")
         if len(self.parameter_names) != tangent.size:
@@ -773,8 +775,8 @@ class VJPResult:
         if not self.method:
             raise ValueError("VJP method must be non-empty")
         step = _as_real_scalar("VJP step", self.step)
-        if step <= 0.0:
-            raise ValueError("VJP step must be finite and positive")
+        if step < 0.0:
+            raise ValueError("VJP step must be finite and non-negative")
         if self.evaluations < 0:
             raise ValueError("VJP evaluations must be non-negative")
         if len(self.parameter_names) != vjp.size:
@@ -1189,6 +1191,40 @@ class FixedPointSensitivityResult:
         object.__setattr__(self, "system_matrix", system_matrix)
         object.__setattr__(self, "damping", damping)
         object.__setattr__(self, "condition_number", condition_number)
+
+
+@dataclass(frozen=True)
+class CustomDerivativeRule:
+    """Exact custom derivative rules for one differentiable vector primitive."""
+
+    name: str
+    value_fn: VectorObjective
+    jvp_rule: CustomJVPRule | None = None
+    vjp_rule: CustomVJPRule | None = None
+    parameter_names: tuple[str, ...] = ()
+    trainable: tuple[bool, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.name, str) or not self.name:
+            raise ValueError("custom derivative rule name must be non-empty")
+        if not callable(self.value_fn):
+            raise ValueError("custom derivative value_fn must be callable")
+        if self.jvp_rule is None and self.vjp_rule is None:
+            raise ValueError("custom derivative rule requires a JVP or VJP rule")
+        if self.jvp_rule is not None and not callable(self.jvp_rule):
+            raise ValueError("custom derivative jvp_rule must be callable")
+        if self.vjp_rule is not None and not callable(self.vjp_rule):
+            raise ValueError("custom derivative vjp_rule must be callable")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        if (
+            self.parameter_names
+            and self.trainable
+            and len(self.parameter_names) != len(self.trainable)
+        ):
+            raise ValueError("parameter_names and trainable mask lengths must match")
 
 
 @dataclass(frozen=True)
@@ -3462,6 +3498,132 @@ def vector_jacobian_product(
     )
 
 
+def _normalise_custom_derivative_parameters(
+    values: NDArray[np.float64],
+    rule: CustomDerivativeRule,
+    parameters: Sequence[Parameter] | None,
+) -> tuple[Parameter, ...]:
+    """Return explicit parameter metadata for a custom derivative primitive."""
+
+    if parameters is not None:
+        return _normalise_parameters(values, parameters)
+    if rule.parameter_names:
+        if len(rule.parameter_names) != values.size:
+            raise ValueError(
+                "custom derivative parameter_names length must match parameter length"
+            )
+        trainable = (
+            rule.trainable
+            if rule.trainable
+            else tuple(True for _ in range(len(rule.parameter_names)))
+        )
+        if len(trainable) != values.size:
+            raise ValueError("custom derivative trainable mask length must match parameter length")
+        return tuple(
+            Parameter(name, trainable=flag)
+            for name, flag in zip(rule.parameter_names, trainable, strict=True)
+        )
+    return _normalise_parameters(values, None)
+
+
+def custom_jvp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> NDArray[np.float64]:
+    """Return an exact custom Jacobian-vector product for a registered primitive."""
+
+    return value_and_custom_jvp(rule, values, tangent, parameters=parameters).jvp
+
+
+def value_and_custom_jvp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> JVPResult:
+    """Evaluate a custom primitive and its exact JVP rule."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("custom JVP requires a CustomDerivativeRule")
+    if rule.jvp_rule is None:
+        raise ValueError("custom derivative rule does not define a JVP rule")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_custom_derivative_parameters(parameter_values, rule, parameters)
+    tangent_values = _as_parameter_array(tangent)
+    if tangent_values.shape != parameter_values.shape:
+        raise ValueError("custom JVP tangent length must match parameter length")
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    masked_tangent = tangent_values.copy()
+    masked_tangent[~trainable] = 0.0
+    value = _as_vector_output(rule.value_fn(parameter_values.copy()))
+    jvp = _as_vector_output(rule.jvp_rule(parameter_values.copy(), masked_tangent.copy()))
+    if jvp.shape != value.shape:
+        raise ValueError("custom JVP output shape must match primitive value shape")
+    return JVPResult(
+        value=value,
+        jvp=jvp,
+        tangent=masked_tangent,
+        method=f"custom_jvp:{rule.name}",
+        step=0.0,
+        evaluations=1,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
+def custom_vjp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> VJPResult:
+    """Return an exact custom vector-Jacobian product for a registered primitive."""
+
+    return value_and_custom_vjp(rule, values, cotangent, parameters=parameters)
+
+
+def value_and_custom_vjp(
+    rule: CustomDerivativeRule,
+    values: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+) -> VJPResult:
+    """Evaluate a custom primitive and its exact VJP rule."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("custom VJP requires a CustomDerivativeRule")
+    if rule.vjp_rule is None:
+        raise ValueError("custom derivative rule does not define a VJP rule")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_custom_derivative_parameters(parameter_values, rule, parameters)
+    value = _as_vector_output(rule.value_fn(parameter_values.copy()))
+    cotangent_values = _as_vector_output(cotangent)
+    if cotangent_values.shape != value.shape:
+        raise ValueError("custom VJP cotangent shape must match primitive value shape")
+    vjp = _as_parameter_array(rule.vjp_rule(parameter_values.copy(), cotangent_values.copy()))
+    if vjp.shape != parameter_values.shape:
+        raise ValueError("custom VJP output length must match parameter length")
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    masked_vjp = vjp.copy()
+    masked_vjp[~trainable] = 0.0
+    return VJPResult(
+        value=value,
+        cotangent=cotangent_values,
+        vjp=masked_vjp,
+        method=f"custom_vjp:{rule.name}",
+        step=0.0,
+        evaluations=1,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
+
+
 def finite_difference_vjp(
     objective: VectorObjective,
     values: ArrayLike,
@@ -4512,6 +4674,7 @@ def jax_value_and_grad(
 
 __all__ = [
     "ArmijoLineSearchResult",
+    "CustomDerivativeRule",
     "DifferentiableOptimizer",
     "DualNumber",
     "FixedPointSensitivityResult",
@@ -4559,6 +4722,8 @@ __all__ = [
     "batch_vector_jacobian_product",
     "check_parameter_shift_consistency",
     "complex_step_gradient",
+    "custom_jvp",
+    "custom_vjp",
     "dual_cos",
     "dual_exp",
     "dual_log",
@@ -4602,6 +4767,8 @@ __all__ = [
     "value_and_grad",
     "parameter_shift_gradient",
     "value_and_complex_step_grad",
+    "value_and_custom_jvp",
+    "value_and_custom_vjp",
     "value_and_finite_difference_grad",
     "value_and_finite_difference_hessian",
     "value_and_finite_difference_hvp",
