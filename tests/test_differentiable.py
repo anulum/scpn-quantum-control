@@ -66,6 +66,7 @@ from scpn_quantum_control.differentiable import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    custom_jacobian,
     custom_jvp,
     custom_vjp,
     dense_to_sparse_matrix,
@@ -109,6 +110,7 @@ from scpn_quantum_control.differentiable import (
     sparse_jacobian,
     update_levenberg_marquardt_damping,
     value_and_complex_step_grad,
+    value_and_custom_jacobian,
     value_and_custom_jvp,
     value_and_custom_vjp,
     value_and_finite_difference_grad,
@@ -860,6 +862,76 @@ def test_check_custom_derivative_consistency_detects_bad_adjoint_rule() -> None:
     assert result.passed is False
     assert result.adjoint_inner_error == pytest.approx(1.0)
     assert result.vjp_l2_error == pytest.approx(4.0, rel=1.0e-6)
+
+
+def test_custom_jacobian_materializes_exact_jvp_columns() -> None:
+    """Custom JVP rules should materialise exact dense Jacobian columns."""
+
+    rule = CustomDerivativeRule(
+        name="quadratic_vector",
+        value_fn=lambda values: np.array([values[0] * values[1], values[0] ** 2]),
+        jvp_rule=lambda values, tangent: np.array(
+            [
+                values[1] * tangent[0] + values[0] * tangent[1],
+                2.0 * values[0] * tangent[0],
+            ]
+        ),
+        parameter_names=("theta", "frozen_phi"),
+        trainable=(True, False),
+    )
+
+    result = value_and_custom_jacobian(rule, [2.0, 3.0])
+
+    assert isinstance(result, JacobianResult)
+    assert result.method == "custom_jacobian:quadratic_vector"
+    assert result.step == pytest.approx(0.0)
+    assert result.evaluations == 1
+    assert result.parameter_names == ("theta", "frozen_phi")
+    assert result.trainable == (True, False)
+    np.testing.assert_allclose(result.value, [6.0, 4.0])
+    np.testing.assert_allclose(result.jacobian, [[3.0, 0.0], [4.0, 0.0]])
+    np.testing.assert_allclose(custom_jacobian(rule, [2.0, 3.0]), result.jacobian)
+
+
+def test_custom_jacobian_materializes_exact_vjp_rows() -> None:
+    """VJP-only rules should materialise exact dense Jacobian rows."""
+
+    rule = CustomDerivativeRule(
+        name="linear_readout",
+        value_fn=lambda values: np.array([values[0] + 2.0 * values[1], -values[0]]),
+        vjp_rule=lambda values, cotangent: np.array(
+            [cotangent[0] - cotangent[1], 2.0 * cotangent[0]]
+        ),
+    )
+
+    result = value_and_custom_jacobian(rule, [0.25, -0.5])
+
+    np.testing.assert_allclose(result.value, [-0.75, -0.25])
+    np.testing.assert_allclose(result.jacobian, [[1.0, 2.0], [-1.0, 0.0]])
+    assert result.method == "custom_jacobian:linear_readout"
+
+
+def test_custom_jacobian_rejects_invalid_exact_rule_shapes() -> None:
+    """Custom Jacobian materialisation must reject malformed exact derivatives."""
+
+    with pytest.raises(ValueError, match="CustomDerivativeRule"):
+        value_and_custom_jacobian(object(), [1.0])  # type: ignore[arg-type]
+
+    bad_jvp = CustomDerivativeRule(
+        name="bad_jvp",
+        value_fn=lambda values: np.array([values[0]]),
+        jvp_rule=lambda values, tangent: np.array([1.0, 2.0]),
+    )
+    with pytest.raises(ValueError, match="JVP output shape"):
+        value_and_custom_jacobian(bad_jvp, [1.0])
+
+    bad_vjp = CustomDerivativeRule(
+        name="bad_vjp",
+        value_fn=lambda values: np.array([values[0]]),
+        vjp_rule=lambda values, cotangent: np.array([1.0, 2.0]),
+    )
+    with pytest.raises(ValueError, match="VJP output length"):
+        value_and_custom_jacobian(bad_vjp, [1.0])
 
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
@@ -2806,6 +2878,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.CustomDerivativeCheckResult is CustomDerivativeCheckResult
     assert scpn.CustomDerivativeRule is CustomDerivativeRule
     assert scpn.check_custom_derivative_consistency is check_custom_derivative_consistency
+    assert scpn.custom_jacobian is custom_jacobian
     assert scpn.custom_jvp is custom_jvp
     assert scpn.custom_vjp is custom_vjp
     assert scpn.DualNumber is DualNumber
@@ -2830,6 +2903,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.dual_sin is dual_sin
     assert scpn.dense_to_sparse_matrix is dense_to_sparse_matrix
     assert scpn.value_and_complex_step_grad is value_and_complex_step_grad
+    assert scpn.value_and_custom_jacobian is value_and_custom_jacobian
     assert scpn.value_and_custom_jvp is value_and_custom_jvp
     assert scpn.value_and_custom_vjp is value_and_custom_vjp
     assert scpn.parameter_shift_gradient is parameter_shift_gradient

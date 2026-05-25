@@ -412,6 +412,7 @@ from scpn_quantum_control import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    custom_jacobian,
     custom_jvp,
     custom_vjp,
     dual_cos,
@@ -451,6 +452,7 @@ from scpn_quantum_control import (
     sparse_jacobian,
     update_levenberg_marquardt_damping,
     value_and_complex_step_grad,
+    value_and_custom_jacobian,
     value_and_custom_jvp,
     value_and_custom_vjp,
     value_and_finite_difference_grad,
@@ -573,6 +575,8 @@ finite_difference_gradient(objective, values, parameters=None, step=1e-6) -> np.
 value_and_finite_difference_grad(objective, values, parameters=None, step=1e-6) -> GradientResult
 batch_value_and_finite_difference_grad(objectives, values, parameters=None, step=1e-6) -> tuple[GradientResult, ...]
 complex_step_gradient(objective, values, parameters=None, step=1e-30) -> np.ndarray
+custom_jacobian(rule, values, parameters=None) -> np.ndarray
+value_and_custom_jacobian(rule, values, parameters=None) -> JacobianResult
 custom_jvp(rule, values, tangent, parameters=None) -> np.ndarray
 custom_vjp(rule, values, cotangent, parameters=None) -> VJPResult
 value_and_complex_step_grad(objective, values, parameters=None, step=1e-30) -> GradientResult
@@ -687,6 +691,7 @@ against central finite differences and returns explicit error metrics, so custom
 rules can be validated before being used in training loops.
 `CustomDerivativeRule`, `custom_jvp()`, and `custom_vjp()` provide an exact-rule boundary for primitives with known physics derivatives. Custom rules evaluate the primitive once, enforce trainable masks, reject shape drift, and preserve JVP/VJP provenance without falling back to finite-difference steps.
 `check_custom_derivative_consistency()` audits an exact rule pair against the adjoint identity `<J t, c> = <t, J^T c>` and finite-difference JVP/VJP references before the rule is trusted in production control paths.
+`custom_jacobian()` and `value_and_custom_jacobian()` materialise exact dense Jacobians from custom JVP columns or VJP rows, preserving trainable masks and `step=0.0` provenance for downstream least-squares, natural-gradient, and benchmark workflows.
 The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.
