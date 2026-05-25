@@ -26,6 +26,141 @@ VectorObjective = Callable[[NDArray[np.float64]], ArrayLike]
 ComplexStepObjective = Callable[[NDArray[np.complex128]], object]
 CustomJVPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 CustomVJPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
+VMapInAxes = int | None | Sequence[int | None]
+
+
+def vmap(
+    function: Callable[..., object],
+    in_axes: VMapInAxes = 0,
+    out_axes: int = 0,
+) -> Callable[..., object]:
+    """Return a composable vectorizing transform over leading or selected axes.
+
+    The transform mirrors the practical contract of a JAX-style ``vmap`` for the
+    native NumPy differentiable layer: mapped arguments are sliced along their
+    declared axes, ``None`` axes are broadcast unchanged, and stackable scalar,
+    array, tuple, list, or dict outputs are reassembled with the mapped axis at
+    ``out_axes``. It is an eager deterministic transform, not a JIT compiler.
+    """
+
+    if not callable(function):
+        raise ValueError("vmap function must be callable")
+    if not isinstance(out_axes, int):
+        raise ValueError("out_axes must be an integer")
+
+    def vectorized(*args: object) -> object:
+        if not args:
+            raise ValueError("vmap requires at least one argument")
+        axes = _normalise_vmap_in_axes(in_axes, len(args))
+        mapped: list[tuple[NDArray[np.float64], int] | None] = []
+        batch_size: int | None = None
+        for index, (arg, axis) in enumerate(zip(args, axes, strict=True)):
+            if axis is None:
+                mapped.append(None)
+                continue
+            array = _as_real_numeric_array(f"vmap argument {index}", arg)
+            axis_index = _normalise_axis(f"in_axes[{index}]", axis, array.ndim)
+            size = int(array.shape[axis_index])
+            if size <= 0:
+                raise ValueError("mapped axes must be non-empty")
+            if batch_size is None:
+                batch_size = size
+            elif size != batch_size:
+                raise ValueError("all mapped axes must have the same length")
+            mapped.append((array, axis_index))
+        if batch_size is None:
+            raise ValueError("at least one in_axes entry must be mapped")
+
+        outputs = []
+        for item in range(batch_size):
+            call_args = []
+            for arg, mapping in zip(args, mapped, strict=True):
+                if mapping is None:
+                    call_args.append(arg)
+                else:
+                    array, axis_index = mapping
+                    call_args.append(np.take(array, item, axis=axis_index))
+            outputs.append(function(*call_args))
+        return _stack_vmap_outputs(outputs, out_axes)
+
+    return vectorized
+
+
+def _normalise_vmap_in_axes(in_axes: VMapInAxes, arity: int) -> tuple[int | None, ...]:
+    """Return one input-axis declaration per positional argument."""
+
+    if isinstance(in_axes, int) or in_axes is None:
+        return tuple(in_axes for _ in range(arity))
+    axes = tuple(in_axes)
+    if len(axes) != arity:
+        raise ValueError("in_axes length must match positional argument count")
+    if any(axis is not None and not isinstance(axis, int) for axis in axes):
+        raise ValueError("in_axes entries must be integers or None")
+    return axes
+
+
+def _normalise_axis(name: str, axis: int, ndim: int) -> int:
+    """Return a non-negative axis for an array with ``ndim`` dimensions."""
+
+    if ndim == 0:
+        raise ValueError(f"{name} cannot map over a scalar")
+    if axis < 0:
+        axis += ndim
+    if axis < 0 or axis >= ndim:
+        raise ValueError(f"{name} is out of bounds for argument rank {ndim}")
+    return axis
+
+
+def _stack_vmap_outputs(outputs: Sequence[object], out_axes: int) -> object:
+    """Stack per-example outputs while preserving simple pytree structure."""
+
+    if not outputs:
+        raise ValueError("vmap outputs must be non-empty")
+    first = outputs[0]
+    if isinstance(first, np.ndarray) or np.isscalar(first):
+        arrays = [np.asarray(output) for output in outputs]
+        shape = arrays[0].shape
+        if any(array.shape != shape for array in arrays):
+            raise ValueError("vmap output leaves must have consistent shapes")
+        axis = out_axes
+        result_rank = arrays[0].ndim + 1
+        if axis < 0:
+            axis += result_rank
+        if axis < 0 or axis >= result_rank:
+            raise ValueError("out_axes is out of bounds for stacked output rank")
+        stacked = np.stack(arrays, axis=axis)
+        if stacked.dtype.kind in {"b", "O", "S", "U"}:
+            raise ValueError("vmap output leaves must be numeric")
+        return stacked
+    if isinstance(first, tuple):
+        if any(not isinstance(output, tuple) or len(output) != len(first) for output in outputs):
+            raise ValueError("vmap tuple outputs must have consistent structure")
+        return tuple(
+            _stack_vmap_outputs(
+                [cast(tuple[object, ...], output)[index] for output in outputs], out_axes
+            )
+            for index in range(len(first))
+        )
+    if isinstance(first, list):
+        if any(not isinstance(output, list) or len(output) != len(first) for output in outputs):
+            raise ValueError("vmap list outputs must have consistent structure")
+        return [
+            _stack_vmap_outputs(
+                [cast(list[object], output)[index] for output in outputs], out_axes
+            )
+            for index in range(len(first))
+        ]
+    if isinstance(first, dict):
+        keys = tuple(first.keys())
+        if any(not isinstance(output, dict) or tuple(output.keys()) != keys for output in outputs):
+            raise ValueError("vmap dict outputs must have consistent keys")
+        return {
+            key: _stack_vmap_outputs(
+                [cast(dict[object, object], output)[key] for output in outputs], out_axes
+            )
+            for key in keys
+        }
+    raise ValueError("vmap output leaves must be numeric arrays, scalars, tuples, lists, or dicts")
 
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
@@ -5155,6 +5290,7 @@ __all__ = [
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",
     "value_and_grad",
+    "vmap",
     "parameter_shift_gradient",
     "value_and_complex_step_grad",
     "value_and_custom_jacobian",

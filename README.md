@@ -44,7 +44,7 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.7 |
-| Public API exports | 389 |
+| Public API exports | 390 |
 | Python source modules | 766 |
 | Public Python classes | 1475 |
 | Paper 0 validation modules | 466 |

@@ -8,7 +8,7 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 389,
+    "public_api_exports": 390,
     "public_documentation_pages": 235,
     "python_model_classes": 1475,
     "python_model_source_modules": 766,
@@ -8158,6 +8158,7 @@
     "value_and_reverse_mode_grad",
     "vector_jacobian_product",
     "verify_identity",
+    "vmap",
     "weighted_gradient_sum",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"

@@ -211,6 +211,7 @@ from .differentiable import (
     value_and_parameter_shift_grad,
     value_and_reverse_mode_grad,
     vector_jacobian_product,
+    vmap,
     weighted_gradient_sum,
 )
 from .forecasting import (
@@ -739,6 +740,7 @@ __all__ = [
     "value_and_finite_difference_jvp",
     "value_and_forward_mode_grad",
     "value_and_grad",
+    "vmap",
     "value_and_hessian",
     "value_and_jacobian",
     "value_and_parameter_shift_grad",
