@@ -667,6 +667,7 @@ class _WholeProgramTraceContext:
             "log",
             "log1p",
             "sqrt",
+            "tan",
             "tanh",
             "reciprocal",
             "abs",
@@ -1521,6 +1522,7 @@ def _apply_trace_ufunc(
             np.log,
             np.log1p,
             np.sqrt,
+            np.tan,
             np.tanh,
             np.reciprocal,
             np.square,
@@ -1594,6 +1596,12 @@ def _apply_unary_trace_ufunc(ufunc: np.ufunc, arg: TraceADScalar) -> TraceADScal
             raise ValueError("whole-program AD sqrt input must be positive")
         primal = float(np.sqrt(arg.primal))
         return arg.context.make("sqrt", (arg.name,), primal, arg.tangent / (2.0 * primal))
+    if ufunc is np.tan:
+        cosine = float(np.cos(arg.primal))
+        if abs(cosine) <= 1.0e-15:
+            raise ValueError("whole-program AD tan input must have non-zero cosine")
+        primal = float(np.tan(arg.primal))
+        return arg.context.make("tan", (arg.name,), primal, arg.tangent / cosine**2)
     if ufunc is np.tanh:
         primal = float(np.tanh(arg.primal))
         return arg.context.make("tanh", (arg.name,), primal, (1.0 - primal**2) * arg.tangent)
@@ -2483,6 +2491,7 @@ def _program_adjoint_node_contributions(
         "log",
         "log1p",
         "sqrt",
+        "tan",
         "tanh",
         "reciprocal",
         "square",
@@ -2506,6 +2515,11 @@ def _program_adjoint_node_contributions(
             return ((arg_name, 1.0 / (1.0 + arg_value)),)
         if node.op == "sqrt":
             return ((arg_name, 1.0 / (2.0 * node.value)),)
+        if node.op == "tan":
+            cosine = float(np.cos(arg_value))
+            if abs(cosine) <= 1.0e-15:
+                raise ValueError("tan adjoint requires non-zero cosine")
+            return ((arg_name, 1.0 / cosine**2),)
         if node.op == "tanh":
             return ((arg_name, 1.0 - node.value**2),)
         if node.op == "reciprocal":

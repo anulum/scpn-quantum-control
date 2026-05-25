@@ -3569,6 +3569,45 @@ def test_program_ad_log1p_ufunc_fails_closed_at_domain_boundary() -> None:
         )
 
 
+def test_program_ad_tan_ufunc_matches_exact_adjoint() -> None:
+    """Program AD tangent should preserve exact trigonometric derivatives and adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        angles = values[:2]
+        return np.sum(np.tan(angles) * np.array([2.0, -3.0])) + values[2] * np.tan(values[0])
+
+    values = np.array([0.25, -0.4, 1.5], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("theta0"), Parameter("theta1"), Parameter("gain")),
+    )
+    expected = np.array(
+        [
+            (2.0 + values[2]) / math.cos(values[0]) ** 2,
+            -3.0 / math.cos(values[1]) ** 2,
+            math.tan(values[0]),
+        ],
+        dtype=np.float64,
+    )
+
+    assert any(node.op == "tan" for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_tan_ufunc_fails_closed_at_singular_boundary() -> None:
+    """Program AD tangent should reject singular cosine-zero boundaries."""
+
+    with pytest.raises(ValueError, match="tan input must have non-zero cosine"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.tan(values)),
+            np.array([math.pi / 2.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
     """Unsupported NumPy linear algebra modes should fail closed with explicit diagnostics."""
 
@@ -4634,7 +4673,7 @@ def test_whole_program_ad_operator_surface_and_fail_closed_paths() -> None:
     with pytest.raises(ValueError, match="log input"):
         whole_program_value_and_grad(lambda values: np.log(values[0]), [-1.0])
     with pytest.raises(ValueError, match="unsupported whole-program AD NumPy ufunc"):
-        whole_program_value_and_grad(lambda values: np.tan(values[0]), [1.0])
+        whole_program_value_and_grad(lambda values: np.arcsin(values[0]), [0.25])
     np.testing.assert_allclose(
         whole_program_grad(lambda values: np.add(values[0], values[0]), [1.0]),
         [2.0],
