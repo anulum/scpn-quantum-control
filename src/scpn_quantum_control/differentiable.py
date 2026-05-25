@@ -1421,6 +1421,10 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.det supports one matrix")
             return _trace_det(args[0], self.context)
+        if func is np.linalg.inv:
+            if len(args) != 1 or kwargs:
+                raise ValueError("program AD np.linalg.inv supports one matrix")
+            return _trace_inv(args[0], self.context)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
         if func is np.sort or func is np.argsort:
@@ -2698,6 +2702,36 @@ def _trace_det_items(
     if total is None:
         return _coerce_trace_scalar(1.0, context)
     return total
+
+
+def _trace_inv(matrix: object, context: _WholeProgramTraceContext) -> TraceADArray:
+    array = _coerce_trace_array(matrix, context)
+    if array.ndim != 2:
+        raise ValueError("program AD np.linalg.inv supports rank-2 matrices only")
+    rows, cols = array.shape
+    if rows != cols:
+        raise ValueError("program AD np.linalg.inv requires a square matrix")
+    if rows == 0:
+        return TraceADArray((), (0, 0), context)
+    determinant = _trace_det_items(tuple(array._items), rows, context)
+    if determinant.primal == 0.0:
+        raise ValueError("program AD np.linalg.inv requires a nonsingular matrix")
+    if rows == 1:
+        return TraceADArray((_coerce_trace_scalar(1.0, context) / determinant,), (1, 1), context)
+    inverse_items: list[TraceADScalar] = []
+    for row in range(rows):
+        for col in range(cols):
+            minor_items = tuple(
+                array._items[minor_row * rows + minor_col]
+                for minor_row in range(rows)
+                for minor_col in range(cols)
+                if minor_row != col and minor_col != row
+            )
+            cofactor = _trace_det_items(minor_items, rows - 1, context)
+            if (row + col) % 2:
+                cofactor = -cofactor
+            inverse_items.append(cofactor / determinant)
+    return TraceADArray(tuple(inverse_items), (rows, cols), context)
 
 
 def _trace_trace(

@@ -4243,6 +4243,80 @@ def test_program_ad_linalg_det_fails_closed_invalid_matrix_contracts() -> None:
         )
 
 
+def test_program_ad_linalg_inv_matches_inverse_differential() -> None:
+    """Program AD inverse should match the exact matrix inverse differential."""
+
+    weights_two = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
+    weights_three = np.array(
+        [[0.25, -0.5, 1.5], [2.0, 0.75, -1.0], [-0.25, 1.25, 0.5]],
+        dtype=np.float64,
+    )
+
+    def objective(values: np.ndarray) -> object:
+        two_by_two = np.reshape(values[:4], (2, 2))
+        three_by_three = np.reshape(values[4:], (3, 3))
+        return np.sum(np.linalg.inv(two_by_two) * weights_two) + np.sum(
+            np.linalg.inv(three_by_three) * weights_three
+        )
+
+    values = np.array(
+        [
+            2.0,
+            -0.5,
+            0.75,
+            1.5,
+            1.5,
+            0.25,
+            -0.5,
+            0.0,
+            1.25,
+            0.5,
+            -0.25,
+            0.75,
+            1.75,
+        ],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    two_by_two = values[:4].reshape(2, 2)
+    three_by_three = values[4:].reshape(3, 3)
+    expected = np.zeros_like(values)
+    inv_two = np.linalg.inv(two_by_two)
+    inv_three = np.linalg.inv(three_by_three)
+    expected[:4] = (-(inv_two.T @ weights_two @ inv_two.T)).reshape(-1)
+    expected[4:] = (-(inv_three.T @ weights_three @ inv_three.T)).reshape(-1)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_linalg_inv_fails_closed_invalid_matrix_contracts() -> None:
+    """Program AD inverse should reject non-rank-2, non-square, and singular inputs."""
+
+    with pytest.raises(ValueError, match="rank-2 matrices only"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.inv(values)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires a square matrix"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.inv(np.reshape(values, (2, 3)))),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires a nonsingular matrix"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.inv(np.reshape(values, (2, 2)))),
+            np.array([1.0, 2.0, 2.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 
