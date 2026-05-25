@@ -17,7 +17,9 @@ from .classical_baselines import (
 )
 from .differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
+    DifferentiableProgrammingExternalReferenceResult,
     run_differentiable_programming_benchmark_suite,
+    run_differentiable_programming_external_reference_suite,
 )
 from .gpu_baseline import GPUBaselineResult, gpu_baseline_comparison
 from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
@@ -37,7 +39,9 @@ __all__ = [
     "run_documented_classical_baselines",
     "scipy_ode_baseline",
     "DifferentiableProgrammingBenchmarkResult",
+    "DifferentiableProgrammingExternalReferenceResult",
     "run_differentiable_programming_benchmark_suite",
+    "run_differentiable_programming_external_reference_suite",
     "GPUBaselineResult",
     "gpu_baseline_comparison",
     "MPSBaselineResult",

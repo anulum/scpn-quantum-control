@@ -14,8 +14,11 @@ import pytest
 
 from scpn_quantum_control.benchmarks import (
     DifferentiableProgrammingBenchmarkResult,
+    DifferentiableProgrammingExternalReferenceResult,
     run_differentiable_programming_benchmark_suite,
+    run_differentiable_programming_external_reference_suite,
 )
+from scpn_quantum_control.benchmarks import differentiable_programming as dp_benchmarks
 
 
 def test_differentiable_programming_benchmark_suite_matches_analytic_references() -> None:
@@ -112,6 +115,71 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
         )
 
 
+def test_differentiable_programming_external_reference_suite_fails_closed_when_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """External-reference rows should be optional and explicit about backend availability."""
+
+    monkeypatch.setattr(dp_benchmarks, "is_jax_autodiff_available", lambda: False)
+
+    assert run_differentiable_programming_external_reference_suite() == ()
+
+
+def test_differentiable_programming_external_reference_result_validation_paths() -> None:
+    """External-reference benchmark metadata should reject malformed rows."""
+
+    gradient = np.array([1.0, 2.0], dtype=np.float64)
+    row = DifferentiableProgrammingExternalReferenceResult(
+        case_id="case",
+        backend="jax",
+        program_value=1.0,
+        reference_value=1.0,
+        program_gradient=gradient,
+        reference_gradient=gradient.copy(),
+        max_abs_value_error=0.0,
+        max_abs_gradient_error=0.0,
+        claim_boundary="diagnostic correctness only, not a performance claim",
+    )
+
+    assert row.passed is True
+    with pytest.raises(ValueError, match="backend"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="case",
+            backend="",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=gradient,
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="gradient shapes"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="case",
+            backend="jax",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=np.array([1.0], dtype=np.float64),
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="value error"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="case",
+            backend="jax",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=gradient,
+            max_abs_value_error=-1.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="diagnostic",
+        )
+
+
 def test_differentiable_programming_benchmark_exports_from_package_root() -> None:
     """Benchmark suite API should be stable from the package root."""
 
@@ -121,6 +189,14 @@ def test_differentiable_programming_benchmark_exports_from_package_root() -> Non
         scpn.DifferentiableProgrammingBenchmarkResult is DifferentiableProgrammingBenchmarkResult
     )
     assert (
+        scpn.DifferentiableProgrammingExternalReferenceResult
+        is DifferentiableProgrammingExternalReferenceResult
+    )
+    assert (
         scpn.run_differentiable_programming_benchmark_suite
         is run_differentiable_programming_benchmark_suite
+    )
+    assert (
+        scpn.run_differentiable_programming_external_reference_suite
+        is run_differentiable_programming_external_reference_suite
     )

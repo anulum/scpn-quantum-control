@@ -19,6 +19,8 @@ from numpy.typing import NDArray
 
 from ..differentiable import (
     Parameter,
+    is_jax_autodiff_available,
+    jax_value_and_grad,
     program_adjoint_gradient,
     vmap,
     whole_program_value_and_grad,
@@ -72,6 +74,47 @@ class DifferentiableProgrammingBenchmarkResult:
         )
 
 
+@dataclass(frozen=True)
+class DifferentiableProgrammingExternalReferenceResult:
+    """Program-AD comparison against an independently executed autodiff backend."""
+
+    case_id: str
+    backend: str
+    program_value: float
+    reference_value: float
+    program_gradient: NDArray[np.float64]
+    reference_gradient: NDArray[np.float64]
+    max_abs_value_error: float
+    max_abs_gradient_error: float
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.case_id:
+            raise ValueError("external reference case_id must be non-empty")
+        if not self.backend:
+            raise ValueError("external reference backend must be non-empty")
+        if not math.isfinite(self.program_value) or not math.isfinite(self.reference_value):
+            raise ValueError("external reference values must be finite")
+        program_gradient = _as_gradient("program_gradient", self.program_gradient)
+        reference_gradient = _as_gradient("reference_gradient", self.reference_gradient)
+        if program_gradient.shape != reference_gradient.shape:
+            raise ValueError("external reference gradient shapes must match")
+        if self.max_abs_value_error < 0.0 or not math.isfinite(self.max_abs_value_error):
+            raise ValueError("external reference value error must be finite and non-negative")
+        if self.max_abs_gradient_error < 0.0 or not math.isfinite(self.max_abs_gradient_error):
+            raise ValueError("external reference gradient error must be finite and non-negative")
+        if not self.claim_boundary:
+            raise ValueError("external reference claim_boundary must be non-empty")
+        object.__setattr__(self, "program_gradient", program_gradient)
+        object.__setattr__(self, "reference_gradient", reference_gradient)
+
+    @property
+    def passed(self) -> bool:
+        """Return whether program AD matches the external reference backend."""
+
+        return self.max_abs_value_error <= 1.0e-10 and self.max_abs_gradient_error <= 1.0e-10
+
+
 def run_differentiable_programming_benchmark_suite() -> tuple[
     DifferentiableProgrammingBenchmarkResult, ...
 ]:
@@ -84,6 +127,16 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _mutation_heavy_case(),
         _transform_nesting_case(),
     )
+
+
+def run_differentiable_programming_external_reference_suite() -> tuple[
+    DifferentiableProgrammingExternalReferenceResult, ...
+]:
+    """Run optional external-backend conformance comparisons when dependencies exist."""
+
+    if not is_jax_autodiff_available():
+        return ()
+    return (_jax_linalg_primitive_case(),)
 
 
 def _loop_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
@@ -197,6 +250,56 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
     )
 
 
+def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceResult:
+    import jax.numpy as jnp
+
+    values = np.array([1.5, 2.0, -0.75, 0.5], dtype=np.float64)
+    inverse_weights = np.array([[0.25, 0.0], [0.0, -0.5]], dtype=np.float64)
+    solve_weights = np.array([1.25, -0.75], dtype=np.float64)
+    power_weights = np.array([[0.5, 0.0], [0.0, -0.25]], dtype=np.float64)
+
+    def program_objective(trace_values: Any) -> object:
+        matrix = np.diag(trace_values[:2])
+        rhs = trace_values[2:4]
+        return (
+            np.linalg.det(matrix)
+            + np.sum(np.linalg.inv(matrix) * inverse_weights)
+            + np.sum(np.linalg.solve(matrix, rhs) * solve_weights)
+            + np.sum(np.linalg.matrix_power(matrix, 2) * power_weights)
+        )
+
+    def reference_objective(raw_values: Any) -> object:
+        matrix = jnp.diag(raw_values[:2])
+        rhs = raw_values[2:4]
+        return (
+            jnp.linalg.det(matrix)
+            + jnp.sum(jnp.linalg.inv(matrix) * jnp.asarray(inverse_weights))
+            + jnp.sum(jnp.linalg.solve(matrix, rhs) * jnp.asarray(solve_weights))
+            + jnp.sum(jnp.linalg.matrix_power(matrix, 2) * jnp.asarray(power_weights))
+        )
+
+    program_result = whole_program_value_and_grad(
+        program_objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+    reference_value, reference_gradient = jax_value_and_grad(reference_objective, values)
+    return DifferentiableProgrammingExternalReferenceResult(
+        case_id="jax_linalg_primitive_reference",
+        backend="jax",
+        program_value=program_result.value,
+        reference_value=reference_value,
+        program_gradient=program_result.gradient,
+        reference_gradient=reference_gradient,
+        max_abs_value_error=abs(program_result.value - reference_value),
+        max_abs_gradient_error=_max_abs_error(program_result.gradient, reference_gradient),
+        claim_boundary=(
+            "optional JAX external-backend conformance for supported linalg primitives; "
+            "diagnostic correctness only, not a JIT, performance, LLVM, Rust, or hardware claim"
+        ),
+    )
+
+
 def _mutation_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     values = np.array([0.4, -0.6, 1.25, -1.5], dtype=np.float64)
 
@@ -292,5 +395,7 @@ def _max_abs_error(left: NDArray[np.float64], right: NDArray[np.float64]) -> flo
 
 __all__ = [
     "DifferentiableProgrammingBenchmarkResult",
+    "DifferentiableProgrammingExternalReferenceResult",
     "run_differentiable_programming_benchmark_suite",
+    "run_differentiable_programming_external_reference_suite",
 ]

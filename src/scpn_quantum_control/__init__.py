@@ -22,7 +22,9 @@ from .benchmarks.classical_baselines import (
 )
 from .benchmarks.differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
+    DifferentiableProgrammingExternalReferenceResult,
     run_differentiable_programming_benchmark_suite,
+    run_differentiable_programming_external_reference_suite,
 )
 from .benchmarks.quantum_advantage import (
     AdvantageResult,
@@ -924,7 +926,9 @@ __all__ = [
     "mps_tebd_baseline",
     "run_documented_classical_baselines",
     "DifferentiableProgrammingBenchmarkResult",
+    "DifferentiableProgrammingExternalReferenceResult",
     "run_differentiable_programming_benchmark_suite",
+    "run_differentiable_programming_external_reference_suite",
     "AdvantageResult",
     "classical_benchmark",
     "quantum_benchmark",

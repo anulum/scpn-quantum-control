@@ -6,9 +6,9 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.7 |
-| Public API exports | 451 |
+| Public API exports | 453 |
 | Python source modules | 767 |
-| Public Python classes | 1500 |
+| Public Python classes | 1501 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
