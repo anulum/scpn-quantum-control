@@ -1629,6 +1629,212 @@ class CustomDerivativeRule:
 
 
 @dataclass(frozen=True)
+class PrimitiveIdentity:
+    """Stable typed identity for a differentiable primitive implementation."""
+
+    namespace: str
+    name: str
+    version: str = "1"
+
+    def __post_init__(self) -> None:
+        namespace = _normalise_identity_token("primitive namespace", self.namespace)
+        name = _normalise_identity_token("primitive name", self.name)
+        version = _normalise_identity_token("primitive version", self.version)
+        object.__setattr__(self, "namespace", namespace)
+        object.__setattr__(self, "name", name)
+        object.__setattr__(self, "version", version)
+
+    @property
+    def key(self) -> str:
+        """Return the canonical registry key for this primitive identity."""
+
+        return f"{self.namespace}:{self.name}@{self.version}"
+
+    @staticmethod
+    def parse(identity: PrimitiveIdentity | str) -> PrimitiveIdentity:
+        """Return a typed identity from an existing identity or canonical string."""
+
+        if isinstance(identity, PrimitiveIdentity):
+            return identity
+        if not isinstance(identity, str) or not identity:
+            raise ValueError("primitive identity must be a PrimitiveIdentity or non-empty string")
+        if "@" in identity:
+            stem, version = identity.rsplit("@", 1)
+        else:
+            stem, version = identity, "1"
+        if ":" not in stem:
+            raise ValueError(
+                "primitive identity string must use 'namespace:name[@version]' format"
+            )
+        namespace, name = stem.split(":", 1)
+        return PrimitiveIdentity(namespace=namespace, name=name, version=version)
+
+
+def _normalise_identity_token(name: str, value: object) -> str:
+    """Return a registry-safe identity token."""
+
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{name} must be a non-empty string")
+    if any(character.isspace() for character in value):
+        raise ValueError(f"{name} must not contain whitespace")
+    if any(character in value for character in (":", "@")):
+        raise ValueError(f"{name} must not contain ':' or '@'")
+    return value
+
+
+class CustomDerivativeRegistry:
+    """Conflict-safe registry binding primitive identities to exact rules."""
+
+    def __init__(self, rules: dict[PrimitiveIdentity, CustomDerivativeRule] | None = None) -> None:
+        self._rules: dict[PrimitiveIdentity, CustomDerivativeRule] = {}
+        if rules is not None:
+            for identity, rule in rules.items():
+                self.register(identity, rule)
+
+    def register(
+        self,
+        identity: PrimitiveIdentity | str,
+        rule: CustomDerivativeRule,
+        *,
+        overwrite: bool = False,
+    ) -> CustomDerivativeRule:
+        """Register an exact derivative rule for a primitive identity."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        if not isinstance(rule, CustomDerivativeRule):
+            raise ValueError("registered custom derivative rule must be a CustomDerivativeRule")
+        existing = self._rules.get(primitive_identity)
+        if existing is not None and existing != rule and not overwrite:
+            raise ValueError(
+                f"custom derivative rule already registered for {primitive_identity.key}"
+            )
+        self._rules[primitive_identity] = rule
+        return rule
+
+    def decorator(
+        self,
+        identity: PrimitiveIdentity | str,
+        *,
+        overwrite: bool = False,
+    ) -> Callable[[CustomDerivativeRule], CustomDerivativeRule]:
+        """Return a decorator that registers a CustomDerivativeRule object."""
+
+        def register_rule(rule: CustomDerivativeRule) -> CustomDerivativeRule:
+            return self.register(identity, rule, overwrite=overwrite)
+
+        return register_rule
+
+    def lookup(self, identity: PrimitiveIdentity | str) -> CustomDerivativeRule | None:
+        """Return the registered rule for an identity, if present."""
+
+        return self._rules.get(PrimitiveIdentity.parse(identity))
+
+    def require(self, identity: PrimitiveIdentity | str) -> CustomDerivativeRule:
+        """Return the registered rule or fail closed with a useful error."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        rule = self._rules.get(primitive_identity)
+        if rule is None:
+            raise ValueError(f"no custom derivative rule registered for {primitive_identity.key}")
+        return rule
+
+    def unregister(self, identity: PrimitiveIdentity | str) -> CustomDerivativeRule:
+        """Remove and return a registered rule."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        try:
+            return self._rules.pop(primitive_identity)
+        except KeyError as exc:
+            raise ValueError(
+                f"no custom derivative rule registered for {primitive_identity.key}"
+            ) from exc
+
+    def snapshot(self) -> dict[PrimitiveIdentity, CustomDerivativeRule]:
+        """Return an immutable-by-copy snapshot of registered primitive rules."""
+
+        return dict(self._rules)
+
+
+DEFAULT_CUSTOM_DERIVATIVE_REGISTRY = CustomDerivativeRegistry()
+
+
+def register_custom_derivative_rule(
+    identity: PrimitiveIdentity | str,
+    rule: CustomDerivativeRule,
+    *,
+    overwrite: bool = False,
+    registry: CustomDerivativeRegistry | None = None,
+) -> CustomDerivativeRule:
+    """Register a custom derivative rule in the selected or default registry."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.register(identity, rule, overwrite=overwrite)
+
+
+def custom_derivative_rule_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> CustomDerivativeRule:
+    """Resolve a custom derivative rule for a primitive identity."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require(identity)
+
+
+def registered_custom_jvp(
+    identity: PrimitiveIdentity | str,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    registry: CustomDerivativeRegistry | None = None,
+) -> NDArray[np.float64]:
+    """Return a JVP by resolving the primitive's registered custom rule."""
+
+    return custom_jvp(
+        custom_derivative_rule_for(identity, registry=registry),
+        values,
+        tangent,
+        parameters=parameters,
+    )
+
+
+def registered_custom_vjp(
+    identity: PrimitiveIdentity | str,
+    values: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    registry: CustomDerivativeRegistry | None = None,
+) -> VJPResult:
+    """Return a VJP by resolving the primitive's registered custom rule."""
+
+    return custom_vjp(
+        custom_derivative_rule_for(identity, registry=registry),
+        values,
+        cotangent,
+        parameters=parameters,
+    )
+
+
+def registered_custom_jacobian(
+    identity: PrimitiveIdentity | str,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    registry: CustomDerivativeRegistry | None = None,
+) -> JacobianResult:
+    """Return a dense Jacobian by resolving the primitive's registered custom rule."""
+
+    return value_and_custom_jacobian(
+        custom_derivative_rule_for(identity, registry=registry),
+        values,
+        parameters=parameters,
+    )
+
+
+@dataclass(frozen=True)
 class LevenbergMarquardtStep:
     """Bounded Levenberg-Marquardt candidate step with model diagnostics."""
 
@@ -5406,6 +5612,8 @@ __all__ = [
     "ArmijoLineSearchResult",
     "CustomDerivativeCheckResult",
     "CustomDerivativeRule",
+    "CustomDerivativeRegistry",
+    "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
     "DifferentiableOptimizer",
     "DualNumber",
     "FixedPointSensitivityResult",
@@ -5431,6 +5639,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "PrimitiveIdentity",
     "ReverseNode",
     "ShotAllocationResult",
     "SparseMatrixResult",
@@ -5462,6 +5671,7 @@ __all__ = [
     "complex_step_gradient",
     "custom_jacobian",
     "custom_gauss_newton_gradient",
+    "custom_derivative_rule_for",
     "custom_jvp",
     "custom_levenberg_marquardt_step",
     "custom_vjp",
@@ -5493,6 +5703,10 @@ __all__ = [
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "registered_custom_jacobian",
+    "registered_custom_jvp",
+    "registered_custom_vjp",
+    "register_custom_derivative_rule",
     "reverse_cos",
     "reverse_exp",
     "reverse_log",

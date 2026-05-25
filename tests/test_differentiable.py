@@ -15,8 +15,10 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.differentiable import (
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     ArmijoLineSearchResult,
     CustomDerivativeCheckResult,
+    CustomDerivativeRegistry,
     CustomDerivativeRule,
     DifferentiableOptimizer,
     DualNumber,
@@ -43,6 +45,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    PrimitiveIdentity,
     ReverseNode,
     ShotAllocationResult,
     SparseMatrixResult,
@@ -74,6 +77,7 @@ from scpn_quantum_control.differentiable import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
     complex_step_gradient,
+    custom_derivative_rule_for,
     custom_gauss_newton_gradient,
     custom_jacobian,
     custom_jvp,
@@ -109,6 +113,10 @@ from scpn_quantum_control.differentiable import (
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    register_custom_derivative_rule,
+    registered_custom_jacobian,
+    registered_custom_jvp,
+    registered_custom_vjp,
     reverse_cos,
     reverse_exp,
     reverse_log,
@@ -3268,3 +3276,98 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
+
+
+def test_custom_derivative_registry_binds_rule_by_primitive_identity() -> None:
+    """Registered primitive identities should resolve exact custom rules automatically."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "rx_expectation", "1")
+    rule = CustomDerivativeRule(
+        name="rx_expectation_rule",
+        value_fn=lambda values: np.array([np.cos(values[0]), values[1] ** 2], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [-np.sin(values[0]) * tangent[0], 2.0 * values[1] * tangent[1]],
+            dtype=np.float64,
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [-np.sin(values[0]) * cotangent[0], 2.0 * values[1] * cotangent[1]],
+            dtype=np.float64,
+        ),
+        parameter_names=("theta", "gain"),
+        trainable=(True, False),
+    )
+    registry = CustomDerivativeRegistry()
+
+    assert registry.register(identity, rule) is rule
+    assert registry.lookup("scpn.quantum:rx_expectation@1") is rule
+    assert custom_derivative_rule_for(identity, registry=registry) is rule
+    np.testing.assert_allclose(
+        registered_custom_jvp(
+            "scpn.quantum:rx_expectation@1",
+            np.array([0.25, 3.0], dtype=np.float64),
+            np.array([1.0, 1.0], dtype=np.float64),
+            registry=registry,
+        ),
+        [-math.sin(0.25), 0.0],
+        atol=1.0e-12,
+    )
+    vjp = registered_custom_vjp(
+        identity,
+        np.array([0.25, 3.0], dtype=np.float64),
+        np.array([2.0, -1.0], dtype=np.float64),
+        registry=registry,
+    )
+    np.testing.assert_allclose(vjp.vjp, [-2.0 * math.sin(0.25), 0.0], atol=1.0e-12)
+    jacobian_result = registered_custom_jacobian(
+        identity,
+        np.array([0.25, 3.0], dtype=np.float64),
+        registry=registry,
+    )
+    np.testing.assert_allclose(
+        jacobian_result.jacobian,
+        [[-math.sin(0.25), 0.0], [0.0, 0.0]],
+        atol=1.0e-12,
+    )
+
+
+def test_custom_derivative_registry_rejects_ambiguous_identity_and_conflicts() -> None:
+    """Registry bindings should fail closed on malformed keys and rule conflicts."""
+
+    rule = CustomDerivativeRule(
+        name="linear_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+    other = CustomDerivativeRule(
+        name="other_linear_rule",
+        value_fn=lambda values: np.array([2.0 * values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([2.0 * tangent[0]], dtype=np.float64),
+    )
+    registry = CustomDerivativeRegistry()
+    registry.register("scpn.test:linear@1", rule)
+
+    with pytest.raises(ValueError, match="already registered"):
+        registry.register("scpn.test:linear@1", other)
+    assert registry.register("scpn.test:linear@1", other, overwrite=True) is other
+    with pytest.raises(ValueError, match="namespace:name"):
+        PrimitiveIdentity.parse("bad-key")
+    with pytest.raises(ValueError, match="no custom derivative rule"):
+        custom_derivative_rule_for("scpn.test:missing@1", registry=registry)
+    removed = registry.unregister("scpn.test:linear@1")
+    assert removed is other
+    assert registry.snapshot() == {}
+
+
+def test_custom_derivative_global_registry_and_root_exports() -> None:
+    """The default registry and root package exports should be stable."""
+
+    import scpn_quantum_control as scpn
+
+    assert scpn.PrimitiveIdentity is PrimitiveIdentity
+    assert scpn.CustomDerivativeRegistry is CustomDerivativeRegistry
+    assert scpn.DEFAULT_CUSTOM_DERIVATIVE_REGISTRY is DEFAULT_CUSTOM_DERIVATIVE_REGISTRY
+    assert scpn.register_custom_derivative_rule is register_custom_derivative_rule
+    assert scpn.custom_derivative_rule_for is custom_derivative_rule_for
+    assert scpn.registered_custom_jvp is registered_custom_jvp
+    assert scpn.registered_custom_vjp is registered_custom_vjp
+    assert scpn.registered_custom_jacobian is registered_custom_jacobian

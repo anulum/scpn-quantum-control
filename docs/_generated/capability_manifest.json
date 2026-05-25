@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 395,
+    "public_api_exports": 403,
     "public_documentation_pages": 235,
-    "python_model_classes": 1477,
+    "python_model_classes": 1479,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -1865,6 +1865,10 @@
       },
       {
         "name": "CustomDerivativeCheckResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "CustomDerivativeRegistry",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -4458,6 +4462,10 @@
       {
         "name": "PrefaceIRigourFixtureResult",
         "path": "src/scpn_quantum_control/paper0/preface_i_rigour_validation.py"
+      },
+      {
+        "name": "PrimitiveIdentity",
+        "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
         "name": "PrincipleTeleologyAsOptimisationConfig",
@@ -7806,7 +7814,9 @@
     "ContainerResources",
     "ControlQEC",
     "CustomDerivativeCheckResult",
+    "CustomDerivativeRegistry",
     "CustomDerivativeRule",
+    "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
     "DWaveLeapHALAdapter",
     "DifferentiableMLIRCompileConfig",
     "DifferentiableOptimizer",
@@ -7874,6 +7884,7 @@
     "PennyLaneDeviceHALAdapter",
     "PhaseOrchestratorAdapter",
     "PhaseVQE",
+    "PrimitiveIdentity",
     "Problem",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
@@ -8002,6 +8013,7 @@
     "complex_step_gradient",
     "compound_mitigate_pipeline",
     "concatenated_logical_rate",
+    "custom_derivative_rule_for",
     "custom_gauss_newton_gradient",
     "custom_jacobian",
     "custom_jvp",
@@ -8096,6 +8108,10 @@
     "quantum_to_ssgf_state",
     "qutip_backend",
     "qutip_lindblad_baseline",
+    "register_custom_derivative_rule",
+    "registered_custom_jacobian",
+    "registered_custom_jvp",
+    "registered_custom_vjp",
     "resolve_aggregator_provider_route",
     "reverse_cos",
     "reverse_exp",
