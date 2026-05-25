@@ -129,6 +129,7 @@ from scpn_quantum_control.differentiable import (
     jacobian,
     jacrev,
     jax_value_and_grad,
+    jvp,
     least_squares_covariance,
     levenberg_marquardt_step,
     natural_gradient,
@@ -174,9 +175,12 @@ from scpn_quantum_control.differentiable import (
     value_and_jacfwd,
     value_and_jacobian,
     value_and_jacrev,
+    value_and_jvp,
     value_and_parameter_shift_grad,
     value_and_reverse_mode_grad,
+    value_and_vjp,
     vector_jacobian_product,
+    vjp,
     vmap,
     weighted_gradient_sum,
     whole_program_grad,
@@ -4827,6 +4831,48 @@ def test_transform_algebra_nested_batch_jacobian_and_adjoint_contracts() -> None
     )
 
 
+def test_canonical_jvp_vjp_transforms_compose_with_vmap_and_jacobians() -> None:
+    """Canonical JVP/VJP names should compose with vmap, jacfwd, jacrev, and hessian."""
+
+    def sample_loss(row: np.ndarray) -> float:
+        return float(row[0] ** 2 + row[0] * row[1] + np.sin(row[1]))
+
+    values = np.array([[0.4, -0.3], [1.2, 0.5]], dtype=np.float64)
+    flat_values = values.reshape(-1)
+    tangent = np.array([0.5, -1.0, 1.5, -0.25], dtype=np.float64)
+    cotangent = np.array([2.0, -0.75], dtype=np.float64)
+
+    def batched_loss(flat: np.ndarray) -> np.ndarray:
+        return vmap(sample_loss)(flat.reshape(values.shape))
+
+    forward_jacobian = jacfwd(batched_loss, flat_values, step=1.0e-6)
+    reverse_jacobian = jacrev(batched_loss, flat_values, step=1.0e-6)
+    jvp_result = value_and_jvp(batched_loss, flat_values, tangent, step=1.0e-6)
+    vjp_result = value_and_vjp(batched_loss, flat_values, cotangent, step=1.0e-6)
+
+    np.testing.assert_allclose(forward_jacobian, reverse_jacobian, rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(jvp_result.value, batched_loss(flat_values), atol=1.0e-12)
+    np.testing.assert_allclose(vjp_result.value, batched_loss(flat_values), atol=1.0e-12)
+    np.testing.assert_allclose(
+        jvp(batched_loss, flat_values, tangent, step=1.0e-6),
+        forward_jacobian @ tangent,
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        vjp(batched_loss, flat_values, cotangent, step=1.0e-6),
+        reverse_jacobian.T @ cotangent,
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        hessian(sample_loss, values[0], step=1.0e-4),
+        jacfwd(lambda row: grad(sample_loss, row, method="finite_difference"), values[0]),
+        rtol=1.0e-4,
+        atol=1.0e-4,
+    )
+
+
 def test_transform_algebra_custom_rules_and_whole_program_ad_compose_with_vmap() -> None:
     """Custom rules and whole-program AD should compose under vmap."""
 
@@ -4867,8 +4913,12 @@ def test_transform_algebra_aliases_are_exported_from_package_root() -> None:
 
     assert scpn.jacfwd is jacfwd
     assert scpn.jacrev is jacrev
+    assert scpn.jvp is jvp
+    assert scpn.vjp is vjp
     assert scpn.value_and_jacfwd is value_and_jacfwd
     assert scpn.value_and_jacrev is value_and_jacrev
+    assert scpn.value_and_jvp is value_and_jvp
+    assert scpn.value_and_vjp is value_and_vjp
 
 
 def test_vmap_uses_registered_primitive_batching_rule() -> None:

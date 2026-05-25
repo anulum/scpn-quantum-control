@@ -7055,6 +7055,49 @@ def finite_difference_jvp(
     ).jvp
 
 
+def value_and_jvp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> JVPResult:
+    """Evaluate a vector objective and canonical Jacobian-vector product transform."""
+
+    if method != "finite_difference":
+        raise ValueError("JVP method must be finite_difference")
+    return value_and_finite_difference_jvp(
+        objective,
+        values,
+        tangent,
+        parameters=parameters,
+        step=step,
+    )
+
+
+def jvp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a canonical Jacobian-vector product transform."""
+
+    return value_and_jvp(
+        objective,
+        values,
+        tangent,
+        parameters=parameters,
+        method=method,
+        step=step,
+    ).jvp
+
+
 def value_and_finite_difference_jvp(
     objective: VectorObjective,
     values: ArrayLike,
@@ -7598,6 +7641,68 @@ def finite_difference_vjp(
         step=step,
     )
     return vector_jacobian_product(jacobian, cotangent)
+
+
+def value_and_finite_difference_vjp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    step: float = 1.0e-6,
+) -> VJPResult:
+    """Evaluate a vector objective and one finite-difference VJP result."""
+
+    jacobian = value_and_finite_difference_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        step=step,
+    )
+    return vector_jacobian_product(jacobian, cotangent)
+
+
+def value_and_vjp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> VJPResult:
+    """Evaluate a vector objective and canonical vector-Jacobian product transform."""
+
+    if method != "finite_difference":
+        raise ValueError("VJP method must be finite_difference")
+    return value_and_finite_difference_vjp(
+        objective,
+        values,
+        cotangent,
+        parameters=parameters,
+        step=step,
+    )
+
+
+def vjp(
+    objective: VectorObjective,
+    values: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a canonical vector-Jacobian product transform."""
+
+    return value_and_vjp(
+        objective,
+        values,
+        cotangent,
+        parameters=parameters,
+        method=method,
+        step=step,
+    ).vjp
 
 
 def batch_vector_jacobian_product(
@@ -8780,6 +8885,7 @@ __all__ = [
     "jacobian",
     "jacrev",
     "jax_value_and_grad",
+    "jvp",
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
@@ -8837,7 +8943,10 @@ __all__ = [
     "value_and_jacfwd",
     "value_and_jacobian",
     "value_and_jacrev",
+    "value_and_jvp",
     "value_and_parameter_shift_grad",
     "value_and_reverse_mode_grad",
+    "value_and_vjp",
     "vector_jacobian_product",
+    "vjp",
 ]
