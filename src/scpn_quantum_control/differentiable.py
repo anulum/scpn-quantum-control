@@ -669,6 +669,8 @@ class _WholeProgramTraceContext:
             "sqrt",
             "tan",
             "tanh",
+            "arcsin",
+            "arccos",
             "reciprocal",
             "abs",
             "clip",
@@ -1524,6 +1526,8 @@ def _apply_trace_ufunc(
             np.sqrt,
             np.tan,
             np.tanh,
+            np.arcsin,
+            np.arccos,
             np.reciprocal,
             np.square,
             np.absolute,
@@ -1605,6 +1609,17 @@ def _apply_unary_trace_ufunc(ufunc: np.ufunc, arg: TraceADScalar) -> TraceADScal
     if ufunc is np.tanh:
         primal = float(np.tanh(arg.primal))
         return arg.context.make("tanh", (arg.name,), primal, (1.0 - primal**2) * arg.tangent)
+    if ufunc in {np.arcsin, np.arccos}:
+        if abs(arg.primal) >= 1.0:
+            raise ValueError(
+                f"whole-program AD {ufunc.__name__} input must be strictly inside (-1, 1)"
+            )
+        scale = 1.0 / float(np.sqrt(1.0 - arg.primal**2))
+        if ufunc is np.arccos:
+            scale = -scale
+        return arg.context.make(
+            ufunc.__name__, (arg.name,), float(ufunc(arg.primal)), scale * arg.tangent
+        )
     if ufunc is np.reciprocal:
         if arg.primal == 0.0:
             raise ValueError("whole-program AD reciprocal input must be non-zero")
@@ -2493,6 +2508,8 @@ def _program_adjoint_node_contributions(
         "sqrt",
         "tan",
         "tanh",
+        "arcsin",
+        "arccos",
         "reciprocal",
         "square",
         "abs",
@@ -2522,6 +2539,13 @@ def _program_adjoint_node_contributions(
             return ((arg_name, 1.0 / cosine**2),)
         if node.op == "tanh":
             return ((arg_name, 1.0 - node.value**2),)
+        if node.op in {"arcsin", "arccos"}:
+            if abs(arg_value) >= 1.0:
+                raise ValueError(f"{node.op} adjoint requires input strictly inside (-1, 1)")
+            scale = 1.0 / float(np.sqrt(1.0 - arg_value**2))
+            if node.op == "arccos":
+                scale = -scale
+            return ((arg_name, scale),)
         if node.op == "reciprocal":
             if arg_value == 0.0:
                 raise ValueError("reciprocal adjoint requires non-zero input")

@@ -3608,6 +3608,55 @@ def test_program_ad_tan_ufunc_fails_closed_at_singular_boundary() -> None:
         )
 
 
+def test_program_ad_arcsin_arccos_ufuncs_match_exact_adjoint() -> None:
+    """Program AD inverse trig ufuncs should preserve exact branch-local adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        return (
+            2.0 * np.arcsin(values[0])
+            - 3.0 * np.arccos(values[1])
+            + values[2] * np.arcsin(values[1])
+        )
+
+    values = np.array([0.25, -0.4, 1.5], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x0"), Parameter("x1"), Parameter("gain")),
+    )
+    expected = np.array(
+        [
+            2.0 / math.sqrt(1.0 - values[0] ** 2),
+            (3.0 + values[2]) / math.sqrt(1.0 - values[1] ** 2),
+            math.asin(values[1]),
+        ],
+        dtype=np.float64,
+    )
+
+    assert any(node.op == "arcsin" for node in result.ir_nodes)
+    assert any(node.op == "arccos" for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_arcsin_arccos_fail_closed_at_domain_boundaries() -> None:
+    """Program AD inverse trig ufuncs should reject singular or invalid domains."""
+
+    for ufunc in (np.arcsin, np.arccos):
+        with pytest.raises(ValueError, match="input must be strictly inside"):
+            whole_program_value_and_grad(
+                lambda values, fn=ufunc: np.sum(fn(values)),
+                np.array([1.0], dtype=np.float64),
+            )
+        with pytest.raises(ValueError, match="input must be strictly inside"):
+            whole_program_value_and_grad(
+                lambda values, fn=ufunc: np.sum(fn(values)),
+                np.array([1.25], dtype=np.float64),
+            )
+
+
 def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
     """Unsupported NumPy linear algebra modes should fail closed with explicit diagnostics."""
 
@@ -4673,7 +4722,7 @@ def test_whole_program_ad_operator_surface_and_fail_closed_paths() -> None:
     with pytest.raises(ValueError, match="log input"):
         whole_program_value_and_grad(lambda values: np.log(values[0]), [-1.0])
     with pytest.raises(ValueError, match="unsupported whole-program AD NumPy ufunc"):
-        whole_program_value_and_grad(lambda values: np.arcsin(values[0]), [0.25])
+        whole_program_value_and_grad(lambda values: np.arctan2(values[0], values[0]), [0.25])
     np.testing.assert_allclose(
         whole_program_grad(lambda values: np.add(values[0], values[0]), [1.0]),
         [2.0],
