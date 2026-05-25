@@ -1171,6 +1171,10 @@ class TraceADArray:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.dot supports two operands")
             return _trace_dot(args[0], args[1], self.context)
+        if func is np.vdot:
+            if len(args) != 2 or kwargs:
+                raise ValueError("program AD np.vdot supports two operands")
+            return _trace_vdot(args[0], args[1], self.context)
         if func is np.inner:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.inner supports two operands")
@@ -2483,6 +2487,23 @@ def _trace_dot(
     if isinstance(result, TraceADScalar):
         return result
     raise ValueError("whole-program AD np.dot result must be scalar for this operand pair")
+
+
+def _trace_vdot(
+    left: object,
+    right: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar:
+    lhs = _coerce_trace_array(left, context)
+    rhs = _coerce_trace_array(right, context)
+    if lhs.size != rhs.size:
+        raise ValueError("program AD np.vdot flattened operands must have matching size")
+    if lhs.size == 0:
+        return _coerce_trace_scalar(0.0, context)
+    total = lhs._items[0] * rhs._items[0]
+    for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
+        total = total + left_item * right_item
+    return total
 
 
 def _trace_inner(
