@@ -5436,6 +5436,50 @@ def _program_ad_linalg_runtime_dtype(_args: tuple[object, ...]) -> str:
     return "float64"
 
 
+def _program_ad_linalg_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != len(axes):
+        raise ValueError("program AD linalg batching axes must match argument count")
+    mapped: list[tuple[NDArray[np.float64], int] | None] = []
+    batch_size: int | None = None
+    for index, (arg, axis) in enumerate(zip(args, axes, strict=True)):
+        if axis is None:
+            mapped.append(None)
+            continue
+        array = _as_real_numeric_array(f"program AD linalg batched argument {index}", arg)
+        axis_index = _normalise_axis(f"axes[{index}]", axis, array.ndim)
+        size = int(array.shape[axis_index])
+        if size <= 0:
+            raise ValueError("program AD linalg batching axes must be non-empty")
+        if batch_size is None:
+            batch_size = size
+        elif size != batch_size:
+            raise ValueError("program AD linalg batching axes must share one batch size")
+        mapped.append((array, axis_index))
+    if batch_size is None:
+        raise ValueError("program AD linalg batching requires at least one mapped axis")
+
+    outputs: list[NDArray[np.float64]] = []
+    for batch_index in range(batch_size):
+        sliced_args: list[object] = []
+        for original, mapped_arg in zip(args, mapped, strict=True):
+            if mapped_arg is None:
+                sliced_args.append(original)
+                continue
+            array, axis_index = mapped_arg
+            sliced_args.append(np.take(array, batch_index, axis=axis_index))
+        outputs.append(
+            _as_real_numeric_array("program AD linalg batched output", function(*sliced_args))
+        )
+    stacked = np.stack(outputs, axis=0)
+    axis_index = _normalise_axis("out_axes", out_axes, stacked.ndim)
+    return np.moveaxis(stacked, 0, axis_index)
+
+
 def _register_program_ad_linalg_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_LINALG_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -5449,6 +5493,7 @@ def _register_program_ad_linalg_primitive_contracts() -> None:
             PrimitiveTransformRule(
                 identity=identity,
                 derivative_rule=rule,
+                batching_rule=_program_ad_linalg_batching_rule,
                 lowering_metadata={
                     "program_ad": "operator_intercepted_trace",
                     "mlir": "blocked_until_executable_linalg_lowering",

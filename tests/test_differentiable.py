@@ -4601,6 +4601,7 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
         assert contract.effect == "pure"
         assert contract.lowering_metadata["program_ad"] == "operator_intercepted_trace"
         assert contract.lowering_metadata["mlir"] == "blocked_until_executable_linalg_lowering"
+        assert contract.batching_rule is not None
         assert contract.dtype_rule is not None
         assert contract.dtype_rule(()) == "float64"
         assert contract.shape_rule is not None
@@ -4617,6 +4618,37 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
     np.testing.assert_allclose(
         result.gradient,
         np.array([1.5, -0.75, 0.5, 2.0], dtype=np.float64),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
+    """Registered linalg batching rules should vectorize pure NumPy primitive calls."""
+
+    det_contract = primitive_contract_for(PrimitiveIdentity("scpn.program_ad.linalg", "det", "1"))
+    solve_contract = primitive_contract_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "solve", "1")
+    )
+    assert det_contract.batching_rule is not None
+    assert solve_contract.batching_rule is not None
+
+    matrices = np.array(
+        [
+            [[2.0, -0.5], [0.75, 1.5]],
+            [[1.25, 0.25], [-0.5, 2.0]],
+        ],
+        dtype=np.float64,
+    )
+    rhs = np.array([[1.0, -0.25], [0.5, 1.5]], dtype=np.float64)
+
+    det_values = det_contract.batching_rule(np.linalg.det, (matrices,), (0,), 0)
+    solve_values = solve_contract.batching_rule(np.linalg.solve, (matrices, rhs), (0, 0), 0)
+
+    np.testing.assert_allclose(det_values, np.linalg.det(matrices), rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        solve_values,
+        np.stack([np.linalg.solve(matrices[index], rhs[index]) for index in range(2)]),
         rtol=1.0e-12,
         atol=1.0e-12,
     )
