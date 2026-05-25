@@ -108,7 +108,9 @@ from scpn_quantum_control.differentiable import (
     implicit_fixed_point_sensitivity,
     implicit_stationary_sensitivity,
     is_jax_autodiff_available,
+    jacfwd,
     jacobian,
+    jacrev,
     jax_value_and_grad,
     least_squares_covariance,
     levenberg_marquardt_step,
@@ -141,7 +143,9 @@ from scpn_quantum_control.differentiable import (
     value_and_forward_mode_grad,
     value_and_grad,
     value_and_hessian,
+    value_and_jacfwd,
     value_and_jacobian,
+    value_and_jacrev,
     value_and_parameter_shift_grad,
     value_and_reverse_mode_grad,
     vector_jacobian_product,
@@ -3436,3 +3440,105 @@ def test_whole_program_trace_ad_is_exported_from_package_root() -> None:
     assert scpn.WholeProgramIRNode is WholeProgramIRNode
     assert scpn.whole_program_trace_grad is whole_program_trace_grad
     assert scpn.whole_program_trace_value_and_grad is whole_program_trace_value_and_grad
+
+
+def test_transform_algebra_grad_of_vmap_and_vmap_of_grad_are_consistent() -> None:
+    """grad(vmap(f)) and vmap(grad(f)) should agree for separable objectives."""
+
+    def sample_loss(row: np.ndarray) -> float:
+        return float(row[0] ** 2 + np.sin(row[1]))
+
+    values = np.array([[1.5, 0.25], [-0.5, -0.75]], dtype=np.float64)
+    per_sample_grad = vmap(
+        lambda row: grad(sample_loss, row, method="finite_difference"),
+    )(values)
+    aggregate_grad = grad(
+        lambda flat: float(np.sum(vmap(sample_loss)(flat.reshape(values.shape)))),
+        values.reshape(-1),
+        method="finite_difference",
+    ).reshape(values.shape)
+
+    np.testing.assert_allclose(per_sample_grad, aggregate_grad, rtol=1.0e-6, atol=1.0e-6)
+
+
+def test_transform_algebra_jacfwd_jacrev_jvp_vjp_and_hessian_contracts() -> None:
+    """Canonical Jacobian, directional, adjoint, and Hessian transforms should compose."""
+
+    def vector_objective(values: np.ndarray) -> np.ndarray:
+        return np.array(
+            [values[0] ** 2, np.sin(values[1]), values[0] * values[1]],
+            dtype=np.float64,
+        )
+
+    values = np.array([1.25, -0.4], dtype=np.float64)
+    expected_jacobian = np.array(
+        [[2.5, 0.0], [0.0, math.cos(-0.4)], [-0.4, 1.25]],
+        dtype=np.float64,
+    )
+    forward = jacfwd(vector_objective, values)
+    reverse = jacrev(vector_objective, values)
+    canonical = jacobian(vector_objective, values)
+
+    np.testing.assert_allclose(forward, expected_jacobian, rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(reverse, expected_jacobian, rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(canonical, expected_jacobian, rtol=1.0e-6, atol=1.0e-6)
+    tangent = np.array([0.5, -2.0], dtype=np.float64)
+    jvp_result = value_and_finite_difference_jvp(vector_objective, values, tangent)
+    np.testing.assert_allclose(
+        jvp_result.jvp, expected_jacobian @ tangent, rtol=1.0e-6, atol=1.0e-6
+    )
+    cotangent = np.array([1.0, -0.5, 2.0], dtype=np.float64)
+    vjp_result = finite_difference_vjp(vector_objective, values, cotangent)
+    np.testing.assert_allclose(
+        vjp_result.vjp, expected_jacobian.T @ cotangent, rtol=1.0e-6, atol=1.0e-6
+    )
+    np.testing.assert_allclose(
+        hessian(lambda row: float(row[0] ** 2 + row[0] * row[1] + np.sin(row[1])), values),
+        [[2.0, 1.0], [1.0, -math.sin(-0.4)]],
+        rtol=1.0e-4,
+        atol=1.0e-4,
+    )
+
+
+def test_transform_algebra_custom_rules_and_whole_program_trace_compose_with_vmap() -> None:
+    """Custom rules and whole-program trace AD should compose under vmap."""
+
+    rule = CustomDerivativeRule(
+        name="affine_sine_rule",
+        value_fn=lambda values: np.array([values[0] + np.sin(values[1])], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [tangent[0] + math.cos(values[1]) * tangent[1]], dtype=np.float64
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [cotangent[0], math.cos(values[1]) * cotangent[0]], dtype=np.float64
+        ),
+        parameter_names=("offset", "phase"),
+        trainable=(True, True),
+    )
+    values = np.array([[1.0, 0.25], [-2.0, -0.5]], dtype=np.float64)
+    custom_jacobians = vmap(lambda row: custom_jacobian(rule, row))(values)
+    trace_gradients = vmap(
+        lambda row: whole_program_trace_grad(
+            lambda trace_values: trace_values[0] + np.sin(trace_values[1]),
+            row,
+            trace=False,
+        )
+    )(values)
+
+    expected = np.array(
+        [[[1.0, math.cos(0.25)]], [[1.0, math.cos(-0.5)]]],
+        dtype=np.float64,
+    )
+    np.testing.assert_allclose(custom_jacobians, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(trace_gradients, expected[:, 0, :], rtol=1.0e-12, atol=1.0e-12)
+
+
+def test_transform_algebra_aliases_are_exported_from_package_root() -> None:
+    """Transform algebra aliases should be stable package-root APIs."""
+
+    import scpn_quantum_control as scpn
+
+    assert scpn.jacfwd is jacfwd
+    assert scpn.jacrev is jacrev
+    assert scpn.value_and_jacfwd is value_and_jacfwd
+    assert scpn.value_and_jacrev is value_and_jacrev

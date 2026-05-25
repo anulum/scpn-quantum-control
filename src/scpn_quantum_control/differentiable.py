@@ -3949,6 +3949,93 @@ def jacobian(
     ).jacobian
 
 
+def value_and_jacfwd(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> JacobianResult:
+    """Evaluate a vector objective and Jacobian through forward-Jacobian semantics.
+
+    The current backend is the same central finite-difference Jacobian used by
+    ``jacobian``. The separate name establishes transform algebra semantics for
+    callers and tests while leaving room for a future true forward-mode Jacobian
+    implementation behind the same contract.
+    """
+
+    return value_and_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+        step=step,
+    )
+
+
+def jacfwd(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a vector-objective Jacobian using forward-Jacobian semantics."""
+
+    return value_and_jacfwd(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+        step=step,
+    ).jacobian
+
+
+def value_and_jacrev(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> JacobianResult:
+    """Evaluate a vector objective and Jacobian through reverse-Jacobian semantics.
+
+    Until a true reverse-over-vector backend exists, this is an explicit alias to
+    the finite-difference Jacobian contract. It preserves API and composition
+    semantics without overclaiming reverse compiler AD.
+    """
+
+    return value_and_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+        step=step,
+    )
+
+
+def jacrev(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> NDArray[np.float64]:
+    """Return a vector-objective Jacobian using reverse-Jacobian semantics."""
+
+    return value_and_jacrev(
+        objective,
+        values,
+        parameters=parameters,
+        method=method,
+        step=step,
+    ).jacobian
+
+
 def value_and_hessian(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -6007,7 +6094,9 @@ __all__ = [
     "implicit_fixed_point_sensitivity",
     "implicit_stationary_sensitivity",
     "is_jax_autodiff_available",
+    "jacfwd",
     "jacobian",
+    "jacrev",
     "jax_value_and_grad",
     "least_squares_covariance",
     "levenberg_marquardt_step",
@@ -6050,7 +6139,9 @@ __all__ = [
     "value_and_finite_difference_jvp",
     "value_and_forward_mode_grad",
     "value_and_hessian",
+    "value_and_jacfwd",
     "value_and_jacobian",
+    "value_and_jacrev",
     "value_and_parameter_shift_grad",
     "value_and_reverse_mode_grad",
     "vector_jacobian_product",

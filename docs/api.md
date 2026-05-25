@@ -640,6 +640,10 @@ batch_value_and_complex_step_grad(objectives, values, parameters=None, step=1e-3
 finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> np.ndarray
 value_and_finite_difference_jacobian(objective, values, parameters=None, step=1e-6) -> JacobianResult
 jacobian(objective, values, parameters=None, method="finite_difference", step=1e-6) -> np.ndarray
+jacfwd(objective, values, parameters=None, method="finite_difference", step=1e-6) -> np.ndarray
+jacrev(objective, values, parameters=None, method="finite_difference", step=1e-6) -> np.ndarray
+value_and_jacfwd(objective, values, parameters=None, method="finite_difference", step=1e-6) -> JacobianResult
+value_and_jacrev(objective, values, parameters=None, method="finite_difference", step=1e-6) -> JacobianResult
 value_and_jacobian(objective, values, parameters=None, method="finite_difference", step=1e-6) -> JacobianResult
 dense_to_sparse_matrix(matrix, parameter_names=None, trainable=None, method="dense_to_sparse", tolerance=0.0) -> SparseMatrixResult
 sparse_jacobian(jacobian_result, tolerance=0.0) -> SparseMatrixResult
@@ -752,8 +756,8 @@ The `batch_custom_*` helpers provide exact batched JVP, VJP, and Jacobian transf
 The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.
-The canonical transform helpers `grad()`, `value_and_grad()`, `jacobian()`, and
-`hessian()` provide stable user-facing names with explicit method dispatch. This
+The canonical transform helpers `grad()`, `value_and_grad()`, `jacobian()`, `jacfwd()`, `jacrev()`, and
+`hessian()` provide stable user-facing names with explicit method dispatch. `jacfwd()` and `jacrev()` are explicit transform-algebra aliases over the current finite-difference Jacobian backend until true forward- and reverse-Jacobian engines land; tests guarantee their composition semantics without overclaiming backend implementation. Transform nesting contracts cover `grad(vmap(f))`, `vmap(grad(f))`, JVP/VJP consistency against Jacobians, Hessian symmetry, custom derivative rules under `vmap`, and whole-program trace AD under `vmap`. This
 `vmap()` adds a composable eager vectorization transform over selected input axes, with broadcast arguments, nested tuple/list/dict outputs, explicit `out_axes`, and fail-closed shape validation. It is deterministic NumPy execution, not a JIT claim.
 `whole_program_value_and_grad()` is the arbitrary eager Python boundary for objectives that use ordinary Python, NumPy calls, and runtime control flow instead of SCPN primitive AD contracts. It records executed source-line trace events, computes central finite-difference gradients through the complete callable, preserves trainable masks, and reports polyglot target status explicitly: Python eager gradients and MLIR trace interchange are available, while Rust and LLVM/JIT executable whole-program AD lowerings are blocked until real backends exist.
 `whole_program_trace_value_and_grad()` adds an exact operator-intercepted trace-AD path for supported scalar Python arithmetic, NumPy unary ufuncs, and executed-branch control flow. It emits `WholeProgramIRNode` records, rejects derivative-losing `float()` conversion, preserves trainable masks, and differentiates the executed branch rather than estimating gradients by finite differences.
