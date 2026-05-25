@@ -3996,6 +3996,37 @@ def test_program_ad_variance_and_std_reject_invalid_ddof() -> None:
         )
 
 
+def test_program_ad_cumulative_sum_matches_prefix_adjoint() -> None:
+    """Program AD cumulative sums should accumulate prefix adjoints exactly."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        flat_prefix = np.cumsum(values)
+        row_prefix = matrix.cumsum(axis=1)
+        return flat_prefix[3] + row_prefix[1, 2] - 2.0 * row_prefix[0, 1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(19.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [-1.0, -1.0, 1.0, 2.0, 1.0, 1.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 
