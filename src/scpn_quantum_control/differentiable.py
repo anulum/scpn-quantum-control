@@ -1417,6 +1417,10 @@ class TraceADArray:
                 ord_value=kwargs.get("ord"),
                 axis=cast(int | None, kwargs.get("axis")),
             )
+        if func is np.linalg.det:
+            if len(args) != 1 or kwargs:
+                raise ValueError("program AD np.linalg.det supports one matrix")
+            return _trace_det(args[0], self.context)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
         if func is np.sort or func is np.argsort:
@@ -2653,6 +2657,47 @@ def _trace_matmul(
     if lhs.ndim == 1 and rhs.ndim == 1:
         return _trace_dot(lhs, rhs, context)
     raise ValueError("whole-program AD matmul supports rank-1 and rank-2 operands")
+
+
+def _trace_det(matrix: object, context: _WholeProgramTraceContext) -> TraceADScalar:
+    array = _coerce_trace_array(matrix, context)
+    if array.ndim != 2:
+        raise ValueError("program AD np.linalg.det supports rank-2 matrices only")
+    rows, cols = array.shape
+    if rows != cols:
+        raise ValueError("program AD np.linalg.det requires a square matrix")
+    return _trace_det_items(tuple(array._items), rows, context)
+
+
+def _trace_det_items(
+    items: tuple[TraceADScalar, ...],
+    size: int,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar:
+    if size == 0:
+        return _coerce_trace_scalar(1.0, context)
+    if size == 1:
+        return items[0]
+    if size == 2:
+        return items[0] * items[3] - items[1] * items[2]
+    total: TraceADScalar | None = None
+    for col in range(size):
+        minor_items = tuple(
+            items[row * size + minor_col]
+            for row in range(1, size)
+            for minor_col in range(size)
+            if minor_col != col
+        )
+        term = items[col] * _trace_det_items(minor_items, size - 1, context)
+        if total is None:
+            total = term
+        elif col % 2 == 0:
+            total = total + term
+        else:
+            total = total - term
+    if total is None:
+        return _coerce_trace_scalar(1.0, context)
+    return total
 
 
 def _trace_trace(
