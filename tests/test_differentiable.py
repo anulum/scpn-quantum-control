@@ -142,6 +142,8 @@ from scpn_quantum_control.differentiable import (
     primitive_nondifferentiable_policy_for,
     primitive_shape_rule_for,
     primitive_static_argument_rule_for,
+    program_ad_linalg_matrix_power_derivative_rule,
+    program_ad_linalg_multi_dot_derivative_rule,
     program_adjoint_gradient,
     program_adjoint_result,
     register_custom_derivative_rule,
@@ -4749,6 +4751,71 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
         matrix_power_rule.value_fn(matrix.reshape(-1))
 
 
+def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> None:
+    """Static linalg primitive factories should expose direct value/JVP kernels."""
+
+    matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
+    tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
+    left = np.array([0.75, -1.5], dtype=np.float64)
+    middle = matrix
+    right = np.array([1.25, 0.5], dtype=np.float64)
+    tangent_left = np.array([0.2, -0.1], dtype=np.float64)
+    tangent_middle = tangent_matrix
+    tangent_right = np.array([0.4, -0.3], dtype=np.float64)
+
+    square_rule = program_ad_linalg_matrix_power_derivative_rule(2)
+    inverse_rule = program_ad_linalg_matrix_power_derivative_rule(-1)
+    zero_rule = program_ad_linalg_matrix_power_derivative_rule(0)
+
+    np.testing.assert_allclose(
+        square_rule.value_fn(matrix.reshape(-1)), (matrix @ matrix).reshape(-1)
+    )
+    np.testing.assert_allclose(
+        square_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        (tangent_matrix @ matrix + matrix @ tangent_matrix).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    inverse = np.linalg.inv(matrix)
+    np.testing.assert_allclose(inverse_rule.value_fn(matrix.reshape(-1)), inverse.reshape(-1))
+    np.testing.assert_allclose(
+        inverse_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        (-(inverse @ tangent_matrix @ inverse)).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        zero_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        np.zeros(matrix.size, dtype=np.float64),
+    )
+
+    multi_rule = program_ad_linalg_multi_dot_derivative_rule(((2,), (2, 2), (2,)))
+    values = np.concatenate((left, middle.reshape(-1), right))
+    tangent = np.concatenate((tangent_left, tangent_middle.reshape(-1), tangent_right))
+    np.testing.assert_allclose(
+        multi_rule.value_fn(values),
+        np.asarray(np.linalg.multi_dot((left, middle, right))).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    expected_jvp = (
+        np.linalg.multi_dot((tangent_left, middle, right))
+        + np.linalg.multi_dot((left, tangent_middle, right))
+        + np.linalg.multi_dot((left, middle, tangent_right))
+    )
+    np.testing.assert_allclose(
+        multi_rule.jvp_rule(values, tangent),
+        np.asarray(expected_jvp).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    with pytest.raises(ValueError, match="integer power"):
+        program_ad_linalg_matrix_power_derivative_rule(1.5)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="at least two shapes"):
+        program_ad_linalg_multi_dot_derivative_rule(((2,),))
+
+
 def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
     """Registered linalg batching rules should vectorize pure NumPy primitive calls."""
 
@@ -6729,6 +6796,14 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.primitive_static_argument_rule_for is primitive_static_argument_rule_for
+    assert (
+        scpn.program_ad_linalg_matrix_power_derivative_rule
+        is program_ad_linalg_matrix_power_derivative_rule
+    )
+    assert (
+        scpn.program_ad_linalg_multi_dot_derivative_rule
+        is program_ad_linalg_multi_dot_derivative_rule
+    )
     assert scpn.register_primitive_batching_rule is register_primitive_batching_rule
     assert scpn.register_primitive_lowering_rule is register_primitive_lowering_rule
     assert scpn.register_primitive_transform_rule is register_primitive_transform_rule

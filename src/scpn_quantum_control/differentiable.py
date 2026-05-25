@@ -5563,6 +5563,132 @@ def _program_ad_linalg_solve_jvp(
     return np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution).astype(np.float64)
 
 
+def program_ad_linalg_matrix_power_derivative_rule(
+    power: int | np.integer,
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP rule for a fixed matrix-power primitive."""
+
+    if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
+        raise ValueError("program AD linalg matrix_power derivative rule requires integer power")
+    exponent = int(power)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix = _program_ad_linalg_square_matrix("matrix_power", values)
+        return np.linalg.matrix_power(matrix, exponent).reshape(-1).astype(np.float64)
+
+    def jvp_rule(
+        values: NDArray[np.float64],
+        tangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        matrix = _program_ad_linalg_square_matrix("matrix_power", values)
+        tangent_matrix = _program_ad_linalg_square_matrix("matrix_power", tangent)
+        if tangent_matrix.shape != matrix.shape:
+            raise ValueError(
+                "program AD linalg matrix_power tangent shape must match matrix shape"
+            )
+        if exponent == 0:
+            return np.zeros_like(matrix, dtype=np.float64).reshape(-1)
+        if exponent > 0:
+            total = np.zeros_like(matrix, dtype=np.float64)
+            powers = [np.linalg.matrix_power(matrix, index) for index in range(exponent)]
+            for index in range(exponent):
+                total = total + powers[index] @ tangent_matrix @ powers[exponent - 1 - index]
+            return total.reshape(-1).astype(np.float64)
+        inverse = np.linalg.inv(matrix)
+        inverse_tangent = -(inverse @ tangent_matrix @ inverse)
+        positive_exponent = -exponent
+        total = np.zeros_like(matrix, dtype=np.float64)
+        powers = [np.linalg.matrix_power(inverse, index) for index in range(positive_exponent)]
+        for index in range(positive_exponent):
+            total = total + powers[index] @ inverse_tangent @ powers[positive_exponent - 1 - index]
+        return total.reshape(-1).astype(np.float64)
+
+    return CustomDerivativeRule(
+        name=f"program_ad_linalg_matrix_power_{exponent}_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+    )
+
+
+def _normalise_program_ad_linalg_multi_dot_shapes(
+    operand_shapes: Sequence[Sequence[int]],
+) -> tuple[tuple[int, ...], ...]:
+    shapes = tuple(tuple(int(dim) for dim in shape) for shape in operand_shapes)
+    if len(shapes) < 2:
+        raise ValueError(
+            "program AD linalg multi_dot derivative rule requires at least two shapes"
+        )
+    for index, shape in enumerate(shapes):
+        if len(shape) not in {1, 2}:
+            raise ValueError("program AD linalg multi_dot derivative rule supports rank-1/rank-2")
+        if any(dim <= 0 for dim in shape):
+            raise ValueError(
+                "program AD linalg multi_dot derivative rule dimensions must be positive"
+            )
+        if 0 < index < len(shapes) - 1 and len(shape) != 2:
+            raise ValueError(
+                "program AD linalg multi_dot derivative rule middle operands must be rank-2"
+            )
+    _program_ad_linalg_multi_dot_shape((tuple(np.zeros(shape) for shape in shapes),))
+    return shapes
+
+
+def _split_program_ad_linalg_multi_dot_operands(
+    name: str,
+    values: NDArray[np.float64],
+    operand_shapes: tuple[tuple[int, ...], ...],
+) -> tuple[NDArray[np.float64], ...]:
+    vector = _as_real_numeric_array(f"program AD linalg multi_dot {name}", values).reshape(-1)
+    expected_size = sum(int(np.prod(shape)) for shape in operand_shapes)
+    if vector.size != expected_size:
+        raise ValueError("program AD linalg multi_dot direct rule values size must match shapes")
+    operands: list[NDArray[np.float64]] = []
+    cursor = 0
+    for shape in operand_shapes:
+        size = int(np.prod(shape))
+        operands.append(vector[cursor : cursor + size].reshape(shape))
+        cursor += size
+    return tuple(operands)
+
+
+def _as_flat_multi_dot_result(value: object) -> NDArray[np.float64]:
+    return np.asarray(value, dtype=np.float64).reshape(-1)
+
+
+def program_ad_linalg_multi_dot_derivative_rule(
+    operand_shapes: Sequence[Sequence[int]],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP rule for a fixed multi-dot operand signature."""
+
+    shapes = _normalise_program_ad_linalg_multi_dot_shapes(operand_shapes)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
+        return _as_flat_multi_dot_result(np.linalg.multi_dot(operands))
+
+    def jvp_rule(
+        values: NDArray[np.float64],
+        tangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
+        tangent_operands = _split_program_ad_linalg_multi_dot_operands("tangent", tangent, shapes)
+        total: NDArray[np.float64] | None = None
+        for index, tangent_operand in enumerate(tangent_operands):
+            varied = operands[:index] + (tangent_operand,) + operands[index + 1 :]
+            contribution = _as_flat_multi_dot_result(np.linalg.multi_dot(varied))
+            total = contribution if total is None else total + contribution
+        if total is None:
+            raise ValueError("program AD linalg multi_dot direct rule requires operands")
+        return total.astype(np.float64)
+
+    signature = "x".join("_".join(str(dim) for dim in shape) for shape in shapes)
+    return CustomDerivativeRule(
+        name=f"program_ad_linalg_multi_dot_{signature}_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+    )
+
+
 def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "det":
         return CustomDerivativeRule(
@@ -10112,6 +10238,8 @@ __all__ = [
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
+    "program_ad_linalg_matrix_power_derivative_rule",
+    "program_ad_linalg_multi_dot_derivative_rule",
     "program_adjoint_gradient",
     "program_adjoint_result",
     "registered_custom_jacobian",
