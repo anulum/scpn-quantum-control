@@ -13,7 +13,9 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.compiler.mlir import (
+    DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
+    compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
 )
 from scpn_quantum_control.control.realtime_runtime import (
@@ -29,6 +31,7 @@ from scpn_quantum_control.deployment.cloud_native import (
     ContainerResources,
     generate_cloud_manifests,
 )
+from scpn_quantum_control.differentiable import CustomDerivativeRule
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
 
 
@@ -77,6 +80,59 @@ def test_kuramoto_mlir_rejects_invalid_compile_config() -> None:
         MLIRCompileConfig(time=0.1, trotter_steps=0)
     with pytest.raises(ValueError, match="time"):
         MLIRCompileConfig(time=float("nan"))
+
+
+def test_differentiable_mlir_lowers_custom_derivative_rule_deterministically() -> None:
+    """Differentiable primitive lowering should be deterministic and auditable."""
+
+    rule = CustomDerivativeRule(
+        name="linear_residual",
+        value_fn=lambda values: np.array(
+            [values[0] + 2.0 * values[1], values[0] - values[1]],
+            dtype=np.float64,
+        ),
+        jvp_rule=lambda values, tangent: np.array(
+            [tangent[0] + 2.0 * tangent[1], tangent[0] - tangent[1]],
+            dtype=np.float64,
+        ),
+        parameter_names=("theta", "phi"),
+        trainable=(True, False),
+    )
+
+    module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        np.array([1.5, -0.25], dtype=np.float64),
+        DifferentiableMLIRCompileConfig(),
+    )
+    repeat = compile_custom_derivative_rule_to_mlir(
+        rule,
+        np.array([1.5, -0.25], dtype=np.float64),
+        DifferentiableMLIRCompileConfig(),
+    )
+
+    assert module.text == repeat.text
+    assert module.sha256 == repeat.sha256
+    assert module.dialect == "scpn_diff"
+    assert module.resource_counts["parameters"] == 2
+    assert module.resource_counts["outputs"] == 2
+    assert module.resource_counts["jacobian_nnz"] == 2
+    assert module.resource_counts["trainable_parameters"] == 1
+    assert 'scpn.module = "differentiable_primitive"' in module.text
+    assert 'scpn.rule = "linear_residual"' in module.text
+    assert "scpn_diff.parameter" in module.text
+    assert "scpn_diff.value" in module.text
+    assert "scpn_diff.jacobian" in module.text
+    assert 'execution = "interchange_only"' in module.text
+    assert module.metadata["target"] == "mlir"
+
+
+def test_differentiable_mlir_rejects_executable_target_claims() -> None:
+    """LLVM/JIT target names must fail until backed by a real executable backend."""
+
+    with pytest.raises(ValueError, match="target"):
+        DifferentiableMLIRCompileConfig(target="llvm")
+    with pytest.raises(ValueError, match="boolean"):
+        DifferentiableMLIRCompileConfig(include_numeric_payload=1)  # type: ignore[arg-type]
 
 
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
@@ -228,7 +284,9 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
 
     import scpn_quantum_control as scpn
 
+    assert scpn.DifferentiableMLIRCompileConfig is DifferentiableMLIRCompileConfig
     assert scpn.MLIRCompileConfig is MLIRCompileConfig
+    assert scpn.compile_custom_derivative_rule_to_mlir is compile_custom_derivative_rule_to_mlir
     assert scpn.compile_kuramoto_to_mlir is compile_kuramoto_to_mlir
     assert scpn.RealtimeRuntimeConfig is RealtimeRuntimeConfig
     assert scpn.RealtimeSLAConfig is RealtimeSLAConfig

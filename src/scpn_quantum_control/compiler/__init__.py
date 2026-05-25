@@ -7,10 +7,18 @@
 # scpn-quantum-control -- compiler exports
 """Compiler frontends and interchange formats."""
 
-from .mlir import MLIRCompileConfig, MLIRModule, compile_kuramoto_to_mlir
+from .mlir import (
+    DifferentiableMLIRCompileConfig,
+    MLIRCompileConfig,
+    MLIRModule,
+    compile_custom_derivative_rule_to_mlir,
+    compile_kuramoto_to_mlir,
+)
 
 __all__ = [
+    "DifferentiableMLIRCompileConfig",
     "MLIRCompileConfig",
     "MLIRModule",
+    "compile_custom_derivative_rule_to_mlir",
     "compile_kuramoto_to_mlir",
 ]

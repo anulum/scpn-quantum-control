@@ -54,7 +54,13 @@ from .bridge.ssgf_adapter import (
     ssgf_state_to_quantum,
     ssgf_w_to_hamiltonian,
 )
-from .compiler.mlir import MLIRCompileConfig, MLIRModule, compile_kuramoto_to_mlir
+from .compiler.mlir import (
+    DifferentiableMLIRCompileConfig,
+    MLIRCompileConfig,
+    MLIRModule,
+    compile_custom_derivative_rule_to_mlir,
+    compile_kuramoto_to_mlir,
+)
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
 from .control.q_disruption_iter import (
@@ -526,8 +532,10 @@ __all__ = [
     "QuantumPetriNet",
     "QuantumPetriStepReport",
     "QuantumPetriCampaignReport",
+    "DifferentiableMLIRCompileConfig",
     "MLIRCompileConfig",
     "MLIRModule",
+    "compile_custom_derivative_rule_to_mlir",
     "compile_kuramoto_to_mlir",
     "MonotonicRealtimeClock",
     "RealtimeRunResult",

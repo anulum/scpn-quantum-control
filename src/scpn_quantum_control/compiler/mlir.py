@@ -24,6 +24,7 @@ from typing import Any
 
 import numpy as np
 
+from ..differentiable import CustomDerivativeRule, value_and_custom_jacobian
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
 
 
@@ -66,6 +67,28 @@ class MLIRModule:
             raise ValueError("sha256 must match text")
         object.__setattr__(self, "resource_counts", MappingProxyType(dict(self.resource_counts)))
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+
+
+@dataclass(frozen=True)
+class DifferentiableMLIRCompileConfig:
+    """Configuration for differentiable primitive MLIR-style lowering."""
+
+    dialect: str = "scpn_diff"
+    target: str = "mlir"
+    include_numeric_payload: bool = True
+    include_metadata: bool = True
+
+    def __post_init__(self) -> None:
+        if not self.dialect or not self.dialect.replace("_", "").isalnum():
+            raise ValueError("dialect must be a non-empty MLIR-safe identifier")
+        if self.target not in {"mlir"}:
+            raise ValueError(
+                "target must be 'mlir'; executable LLVM/JIT lowering is not yet available"
+            )
+        if not isinstance(self.include_numeric_payload, bool):
+            raise ValueError("include_numeric_payload must be a boolean")
+        if not isinstance(self.include_metadata, bool):
+            raise ValueError("include_metadata must be a boolean")
 
 
 def compile_kuramoto_to_mlir(
@@ -133,6 +156,90 @@ def compile_kuramoto_to_mlir(
     )
 
 
+def compile_custom_derivative_rule_to_mlir(
+    rule: CustomDerivativeRule,
+    values: np.ndarray,
+    config: DifferentiableMLIRCompileConfig | None = None,
+) -> MLIRModule:
+    """Lower an exact custom derivative rule to deterministic MLIR-style text.
+
+    This emits an auditable differentiable-primitive interchange artifact with
+    value and Jacobian shape metadata. When numeric payloads are enabled, the
+    current value and exact custom Jacobian are embedded as deterministic
+    attributes. The function deliberately does not claim executable LLVM or JIT
+    code generation.
+    """
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("differentiable MLIR lowering requires a CustomDerivativeRule")
+    compile_config = DifferentiableMLIRCompileConfig() if config is None else config
+    jacobian_result = value_and_custom_jacobian(rule, values)
+    parameter_count = jacobian_result.jacobian.shape[1]
+    output_count = jacobian_result.value.size
+    lines = [
+        f'module attributes {{scpn.module = "differentiable_primitive", '
+        f'scpn.dialect = "{compile_config.dialect}", '
+        f'scpn.rule = "{_escape_mlir_string(rule.name)}", '
+        f"scpn.n_parameters = {parameter_count}, "
+        f"scpn.n_outputs = {output_count}}} {{",
+        "  func.func @main() {",
+    ]
+    for index, (name, trainable) in enumerate(
+        zip(jacobian_result.parameter_names, jacobian_result.trainable, strict=True)
+    ):
+        lines.append(
+            "    scpn_diff.parameter "
+            f'%p{index} {{name = "{_escape_mlir_string(name)}", trainable = {_fmt_bool(trainable)}}}'
+        )
+    if compile_config.include_numeric_payload:
+        for index, value in enumerate(jacobian_result.value):
+            lines.append(f"    scpn_diff.value %{index} {{value = {_fmt_float(float(value))}}}")
+        for row in range(output_count):
+            for column in range(parameter_count):
+                value = float(jacobian_result.jacobian[row, column])
+                if abs(value) > 1.0e-15:
+                    lines.append(
+                        "    scpn_diff.jacobian "
+                        f"{{row = {row}, col = {column}, value = {_fmt_float(value)}}}"
+                    )
+    lines.append(
+        "    scpn_diff.custom_rule "
+        f"{{jvp = {_fmt_bool(rule.jvp_rule is not None)}, "
+        f"vjp = {_fmt_bool(rule.vjp_rule is not None)}, "
+        'execution = "interchange_only"}}'
+    )
+    lines.append("    return")
+    lines.append("  }")
+    if compile_config.include_metadata:
+        metadata = {
+            "method": jacobian_result.method,
+            "parameter_names": list(jacobian_result.parameter_names),
+            "trainable": list(jacobian_result.trainable),
+            "target": compile_config.target,
+        }
+        encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+        lines.append(f'  scpn.metadata {{json = "{_escape_mlir_string(encoded)}"}}')
+    lines.append("}")
+    text = "\n".join(lines) + "\n"
+    return MLIRModule(
+        text=text,
+        sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        dialect=compile_config.dialect,
+        resource_counts={
+            "parameters": parameter_count,
+            "outputs": output_count,
+            "jacobian_nnz": int(np.count_nonzero(jacobian_result.jacobian)),
+            "trainable_parameters": int(sum(jacobian_result.trainable)),
+        },
+        metadata={
+            "claim_boundary": "textual differentiable MLIR-style IR export; no executable LLVM or JIT lowering",
+            "rule": rule.name,
+            "target": compile_config.target,
+            "sha256_source": "module.text",
+        },
+    )
+
+
 def _coupling_terms(K_nm: np.ndarray) -> tuple[tuple[int, int, float], ...]:
     terms: list[tuple[int, int, float]] = []
     n_oscillators = K_nm.shape[0]
@@ -150,8 +257,18 @@ def _fmt_float(value: float) -> str:
     return format(value, ".17g")
 
 
+def _fmt_bool(value: bool) -> str:
+    return "true" if value else "false"
+
+
 def _escape_mlir_string(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
-__all__ = ["MLIRCompileConfig", "MLIRModule", "compile_kuramoto_to_mlir"]
+__all__ = [
+    "DifferentiableMLIRCompileConfig",
+    "MLIRCompileConfig",
+    "MLIRModule",
+    "compile_custom_derivative_rule_to_mlir",
+    "compile_kuramoto_to_mlir",
+]

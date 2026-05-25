@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 387,
+    "public_api_exports": 389,
     "public_documentation_pages": 235,
-    "python_model_classes": 1474,
+    "python_model_classes": 1475,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -1998,6 +1998,10 @@
       {
         "name": "DerivedLagrangianDetailFixtureResult",
         "path": "src/scpn_quantum_control/paper0/derived_lagrangian_detail_validation.py"
+      },
+      {
+        "name": "DifferentiableMLIRCompileConfig",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
         "name": "DifferentiableOptimizer",
@@ -7796,6 +7800,7 @@
     "CustomDerivativeCheckResult",
     "CustomDerivativeRule",
     "DWaveLeapHALAdapter",
+    "DifferentiableMLIRCompileConfig",
     "DifferentiableOptimizer",
     "DisruptionBenchmark",
     "DualNumber",
@@ -7978,6 +7983,7 @@
     "classical_benchmark",
     "classical_reference_backend",
     "coherence_budget",
+    "compile_custom_derivative_rule_to_mlir",
     "compile_dense_hamiltonian",
     "compile_hamiltonian",
     "compile_kuramoto_to_mlir",

@@ -58,7 +58,12 @@ scientific validation. See [Paper 0 Validation Register](paper0/paper0_validatio
 ### `compiler.mlir`
 
 ```python
-from scpn_quantum_control import MLIRCompileConfig, compile_kuramoto_to_mlir
+from scpn_quantum_control import (
+    DifferentiableMLIRCompileConfig,
+    MLIRCompileConfig,
+    compile_custom_derivative_rule_to_mlir,
+    compile_kuramoto_to_mlir,
+)
 
 module = compile_kuramoto_to_mlir(
     problem,
@@ -66,12 +71,22 @@ module = compile_kuramoto_to_mlir(
 )
 module.text      # deterministic MLIR-style textual IR
 module.sha256    # digest over module.text
+
+diff_module = compile_custom_derivative_rule_to_mlir(
+    rule,
+    values,
+    DifferentiableMLIRCompileConfig(),
+)
 ```
 
 The MLIR compiler surface emits deterministic, auditable Kuramoto-XY IR with
 explicit omega terms, coupling terms, Trotter parameters, resource counts, and
-claim-boundary metadata. It is an interchange layer; it does not claim LLVM/QIR
-lowering, cloud submission, pulse compilation, or hardware execution.
+claim-boundary metadata. It also lowers exact custom derivative rules into a
+deterministic differentiable-primitive MLIR-style interchange artifact carrying
+parameter metadata, output values, exact custom Jacobian payloads, and resource
+counts. Executable LLVM/JIT targets fail closed until a real runtime backend is
+implemented; this surface does not claim LLVM/QIR lowering, cloud submission,
+pulse compilation, or hardware execution.
 
 ### `control.realtime_runtime`
 
