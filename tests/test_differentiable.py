@@ -3922,6 +3922,67 @@ def test_program_ad_roll_preserves_exact_adjoint() -> None:
     )
 
 
+def test_program_ad_repeat_accumulates_exact_adjoint() -> None:
+    """Program AD repeat should accumulate adjoints from repeated source elements."""
+
+    flat_repeats = (1, 2, 0, 3, 1, 2)
+    weights_flat = np.linspace(-2.0, 2.0, sum(flat_repeats), dtype=np.float64)
+    axis_repeats = (2, 1, 3)
+    weights_axis = np.linspace(0.5, 3.5, 12, dtype=np.float64).reshape(2, 6)
+    weights_method = np.linspace(-1.25, 1.75, 12, dtype=np.float64).reshape(4, 3)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        flat = np.repeat(matrix, flat_repeats)
+        axis_repeat = np.repeat(matrix, axis_repeats, axis=1)
+        method_repeat = matrix.repeat(2, axis=0)
+        return (
+            np.sum(flat * weights_flat)
+            + np.sum(axis_repeat * weights_axis)
+            + np.sum(method_repeat * weights_method)
+        )
+
+    values = np.linspace(-0.8, 0.9, 6, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    flat_indices = np.repeat(np.arange(6, dtype=np.int64), flat_repeats)
+    expected = np.zeros(6, dtype=np.float64)
+    np.add.at(expected, flat_indices, weights_flat)
+    axis_indices = np.repeat(np.arange(6, dtype=np.int64).reshape(2, 3), axis_repeats, axis=1)
+    np.add.at(expected, axis_indices.reshape(-1), weights_axis.reshape(-1))
+    method_indices = np.repeat(np.arange(6, dtype=np.int64).reshape(2, 3), 2, axis=0)
+    np.add.at(expected, method_indices.reshape(-1), weights_method.reshape(-1))
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_repeat_fails_closed_invalid_static_contracts() -> None:
+    """Program AD repeat should reject invalid static repeat contracts."""
+
+    with pytest.raises(ValueError, match="repeat counts must be static non-negative integers"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.repeat(values, True)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="repeat counts length must match selected axis"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.repeat(np.reshape(values, (2, 2)), (1, 2, 3), axis=1)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="repeat axis out of bounds"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.repeat(np.reshape(values, (2, 2)), 2, axis=2)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 

@@ -956,6 +956,11 @@ class TraceADArray:
 
         return self.ravel()
 
+    def repeat(self, repeats: object, axis: int | None = None) -> TraceADArray:
+        """Return a derivative-preserving array with repeated elements."""
+
+        return _trace_repeat(self, repeats=repeats, axis=axis)
+
     def squeeze(self, axis: int | tuple[int, ...] | None = None) -> TraceADArray:
         """Return a derivative-preserving array with singleton axes removed."""
 
@@ -1260,6 +1265,23 @@ class TraceADArray:
                 _coerce_trace_array(args[0], self.context),
                 source=cast(int | tuple[int, ...], source),
                 destination=cast(int | tuple[int, ...], destination),
+            )
+        if func is np.repeat:
+            if len(args) == 2 and kwargs.keys() <= {"axis"}:
+                repeats = args[1]
+                axis = kwargs.get("axis")
+            elif len(args) == 3 and not kwargs:
+                repeats = args[1]
+                axis = args[2]
+            elif len(args) == 1 and "repeats" in kwargs and kwargs.keys() <= {"repeats", "axis"}:
+                repeats = kwargs["repeats"]
+                axis = kwargs.get("axis")
+            else:
+                raise ValueError("program AD np.repeat supports array, repeats, and optional axis")
+            return _trace_repeat(
+                _coerce_trace_array(args[0], self.context),
+                repeats=repeats,
+                axis=cast(int | None, axis),
             )
         if func is np.roll:
             if len(args) == 2 and kwargs.keys() <= {"axis"}:
@@ -1664,6 +1686,45 @@ def _trace_moveaxis(
     return TraceADArray(
         tuple(array._items[int(index)] for index in moved_indices.reshape(-1)),
         tuple(map(int, moved_indices.shape)),
+        array.context,
+    )
+
+
+def _normalise_repeat_count(count: object) -> int:
+    if isinstance(count, bool) or not isinstance(count, (int, np.integer)):
+        raise ValueError("program AD repeat counts must be static non-negative integers")
+    value = int(count)
+    if value < 0:
+        raise ValueError("program AD repeat counts must be static non-negative integers")
+    return value
+
+
+def _normalise_repeat_counts(repeats: object, selected_size: int) -> int | tuple[int, ...]:
+    if isinstance(repeats, (int, np.integer)) and not isinstance(repeats, bool):
+        return _normalise_repeat_count(repeats)
+    try:
+        raw_repeats = tuple(cast(Any, repeats))
+    except TypeError as exc:
+        raise ValueError("program AD repeat counts must be static non-negative integers") from exc
+    if len(raw_repeats) != selected_size:
+        raise ValueError("program AD repeat counts length must match selected axis")
+    return tuple(_normalise_repeat_count(item) for item in raw_repeats)
+
+
+def _trace_repeat(
+    array: TraceADArray, *, repeats: object, axis: int | None = None
+) -> TraceADArray:
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    if axis is None:
+        repeat_counts = _normalise_repeat_counts(repeats, array.size)
+        repeated = np.repeat(source.reshape(-1), repeat_counts)
+    else:
+        axis_index = _normalise_axis_permutation_axis("repeat", axis, rank=array.ndim)
+        repeat_counts = _normalise_repeat_counts(repeats, array.shape[axis_index])
+        repeated = np.repeat(source, repeat_counts, axis=axis_index)
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in repeated.reshape(-1)),
+        tuple(map(int, repeated.shape)),
         array.context,
     )
 
