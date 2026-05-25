@@ -47,9 +47,16 @@ from scpn_quantum_control.differentiable import (
     ParameterBounds,
     ParameterShiftRule,
     PrimitiveBatchingRule,
+    PrimitiveDTypeRule,
     PrimitiveIdentity,
     PrimitiveLoweringRule,
+    PrimitiveShapeRule,
     PrimitiveTransformRule,
+    ProgramADAliasEdge,
+    ProgramADControlRegion,
+    ProgramADEffect,
+    ProgramADEffectIR,
+    ProgramADSSAValue,
     ReverseNode,
     ShotAllocationResult,
     SparseMatrixResult,
@@ -3449,6 +3456,11 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.TraceADArray is TraceADArray
+    assert scpn.ProgramADAliasEdge is ProgramADAliasEdge
+    assert scpn.ProgramADControlRegion is ProgramADControlRegion
+    assert scpn.ProgramADEffect is ProgramADEffect
+    assert scpn.ProgramADEffectIR is ProgramADEffectIR
+    assert scpn.ProgramADSSAValue is ProgramADSSAValue
     assert scpn.WholeProgramADResult is WholeProgramADResult
     assert scpn.WholeProgramBytecodeInstruction is WholeProgramBytecodeInstruction
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
@@ -3456,6 +3468,98 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
+
+
+def test_whole_program_ad_emits_deterministic_ssa_effect_ir() -> None:
+    """Program AD should expose deterministic SSA, alias, mutation, and control metadata."""
+
+    def objective(values: np.ndarray) -> object:
+        alias = values.copy()
+        total = values[0]
+        for index in range(1, 3):
+            total = total + alias[index] * float(index)
+        if total > 0.0:
+            alias[0] = total
+        return alias[0] + np.sin(values[2])
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+
+    assert result.program_ir is not None
+    assert result.program_ir.serialization.startswith('{"alias_edges"')
+    assert "program_ad_effect_ir.v1" in result.program_ir.serialization
+    assert result.program_ir.ssa_values[0] == ProgramADSSAValue(
+        name="%0",
+        producer=0,
+        version=0,
+        shape=(),
+        dtype="float64",
+        effect=0,
+    )
+    assert [effect.ordering for effect in result.program_ir.effects] == list(
+        range(len(result.program_ir.effects))
+    )
+    assert any(effect.kind == "mutation" for effect in result.program_ir.effects)
+    assert any(effect.kind == "control_branch" for effect in result.program_ir.effects)
+    assert any(edge.kind == "mutation_version" for edge in result.program_ir.alias_edges)
+    assert result.program_ir.alias_edges
+    assert any(region.kind == "runtime_branch" for region in result.program_ir.control_regions)
+    assert any(region.kind.startswith("source_") for region in result.program_ir.control_regions)
+    np.testing.assert_allclose(
+        result.gradient,
+        [1.0, 1.0, 2.0 + math.cos(0.75)],
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_effect_ir_validation_paths() -> None:
+    """Program AD IR dataclasses should fail closed on malformed compiler metadata."""
+
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(
+        index=0,
+        kind="pure",
+        target="%0",
+        inputs=("theta",),
+        version=0,
+        ordering=0,
+    )
+    edge = ProgramADAliasEdge(source="alias", target="%0", kind="source_alias", version=0)
+    region = ProgramADControlRegion(
+        index=0,
+        kind="runtime_branch",
+        predicate="%0:gt:0.0",
+        entered=True,
+        source_line=None,
+    )
+    ir = ProgramADEffectIR(
+        ssa_values=(value,),
+        effects=(effect,),
+        alias_edges=(edge,),
+        control_regions=(region,),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    assert ir.ssa_values == (value,)
+    with pytest.raises(ValueError, match="SSA value name"):
+        ProgramADSSAValue("", producer=0, version=0, shape=(), dtype="float64")
+    with pytest.raises(ValueError, match="effect kind"):
+        ProgramADEffect(index=0, kind="", target="%0", inputs=(), version=0, ordering=0)
+    with pytest.raises(ValueError, match="alias source"):
+        ProgramADAliasEdge(source="", target="%0", kind="source_alias", version=0)
+    with pytest.raises(ValueError, match="control region kind"):
+        ProgramADControlRegion(index=0, kind="", predicate=None, entered=True, source_line=None)
+    with pytest.raises(ValueError, match="serialization"):
+        ProgramADEffectIR(
+            ssa_values=(value,),
+            effects=(effect,),
+            alias_edges=(edge,),
+            control_regions=(region,),
+            serialization="",
+        )
 
 
 def test_custom_derivative_registry_binds_rule_by_primitive_identity() -> None:
@@ -3914,7 +4018,7 @@ def test_vmap_uses_registered_primitive_batching_rule() -> None:
 
 
 def test_primitive_transform_registry_holds_derivative_batching_and_lowering_metadata() -> None:
-    """Registry transform bindings should keep derivative, batching, and lowering metadata together."""
+    """Registry transform bindings should keep complete primitive metadata together."""
 
     identity = PrimitiveIdentity("scpn.quantum", "lowered_batch", "1")
     rule = CustomDerivativeRule(
@@ -3935,6 +4039,14 @@ def test_primitive_transform_registry_holds_derivative_batching_and_lowering_met
     def lowering_rule(lowered_rule: CustomDerivativeRule) -> object:
         return lowered_rule.name
 
+    def shape_rule(args: tuple[object, ...]) -> tuple[int, ...]:
+        del args
+        return (1,)
+
+    def dtype_rule(args: tuple[object, ...]) -> str:
+        del args
+        return "float64"
+
     registry = CustomDerivativeRegistry()
     transform = PrimitiveTransformRule(
         identity=identity,
@@ -3942,6 +4054,10 @@ def test_primitive_transform_registry_holds_derivative_batching_and_lowering_met
         batching_rule=batching_rule,
         lowering_rule=lowering_rule,
         lowering_metadata={"mlir_op": "scpn_diff.lowered_batch", "rust": "blocked"},
+        shape_rule=shape_rule,
+        dtype_rule=dtype_rule,
+        nondifferentiable_policy="fail_closed_at_boundaries",
+        effect="pure",
     )
 
     assert registry.register_transform(transform) is transform
@@ -3951,6 +4067,14 @@ def test_primitive_transform_registry_holds_derivative_batching_and_lowering_met
     snapshot = registry.transform_snapshot()
     assert snapshot[identity].lowering_rule is lowering_rule
     assert snapshot[identity].lowering_metadata["mlir_op"] == "scpn_diff.lowered_batch"
+    assert snapshot[identity].shape_rule is shape_rule
+    assert snapshot[identity].dtype_rule is dtype_rule
+    assert snapshot[identity].shape_rule is not None
+    assert snapshot[identity].shape_rule(()) == (1,)
+    assert snapshot[identity].dtype_rule is not None
+    assert snapshot[identity].dtype_rule(()) == "float64"
+    assert snapshot[identity].nondifferentiable_policy == "fail_closed_at_boundaries"
+    assert snapshot[identity].effect == "pure"
     with pytest.raises(ValueError, match="batching rule already registered"):
         registry.register_batching_rule(identity, batching_rule)
     with pytest.raises(ValueError, match="lowering rule already registered"):
@@ -4012,6 +4136,26 @@ def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
             derivative_rule=first_rule,
             lowering_rule=object(),
         )
+    with pytest.raises(ValueError, match="shape_rule"):
+        PrimitiveTransformRule(  # type: ignore[arg-type]
+            identity=identity,
+            derivative_rule=first_rule,
+            shape_rule=object(),
+        )
+    with pytest.raises(ValueError, match="dtype_rule"):
+        PrimitiveTransformRule(  # type: ignore[arg-type]
+            identity=identity,
+            derivative_rule=first_rule,
+            dtype_rule=object(),
+        )
+    with pytest.raises(ValueError, match="nondifferentiable_policy"):
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=first_rule,
+            nondifferentiable_policy="",
+        )
+    with pytest.raises(ValueError, match="effect"):
+        PrimitiveTransformRule(identity=identity, derivative_rule=first_rule, effect="")
     with pytest.raises(ValueError, match="metadata keys"):
         PrimitiveTransformRule(
             identity=identity,
@@ -4152,7 +4296,9 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.PrimitiveBatchingRule is PrimitiveBatchingRule
+    assert scpn.PrimitiveDTypeRule is PrimitiveDTypeRule
     assert scpn.PrimitiveLoweringRule is PrimitiveLoweringRule
+    assert scpn.PrimitiveShapeRule is PrimitiveShapeRule
     assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
     assert scpn.register_primitive_batching_rule is register_primitive_batching_rule
     assert scpn.register_primitive_lowering_rule is register_primitive_lowering_rule

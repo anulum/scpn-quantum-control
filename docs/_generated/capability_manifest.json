@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 428,
+    "public_api_exports": 435,
     "public_documentation_pages": 235,
-    "python_model_classes": 1492,
+    "python_model_classes": 1497,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -4504,6 +4504,26 @@
         "path": "src/scpn_quantum_control/stable_core.py"
       },
       {
+        "name": "ProgramADAliasEdge",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ProgramADControlRegion",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ProgramADEffect",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ProgramADEffectIR",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ProgramADSSAValue",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ProjectedSPSAOptimizer",
         "path": "src/scpn_quantum_control/topology_control/optimizers.py"
       },
@@ -7941,11 +7961,18 @@
     "PhaseOrchestratorAdapter",
     "PhaseVQE",
     "PrimitiveBatchingRule",
+    "PrimitiveDTypeRule",
     "PrimitiveIdentity",
     "PrimitiveLoweringRule",
     "PrimitiveLoweringStatus",
+    "PrimitiveShapeRule",
     "PrimitiveTransformRule",
     "Problem",
+    "ProgramADAliasEdge",
+    "ProgramADControlRegion",
+    "ProgramADEffect",
+    "ProgramADEffectIR",
+    "ProgramADSSAValue",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
     "ProviderMetadataProbe",

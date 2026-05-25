@@ -17,6 +17,7 @@ from __future__ import annotations
 import ast
 import dis
 import inspect
+import json
 import linecache
 import sys
 import textwrap
@@ -82,6 +83,128 @@ class WholeProgramIRNode:
             raise ValueError("IR node tangent must contain finite values")
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "tangent", tangent)
+
+
+@dataclass(frozen=True)
+class ProgramADSSAValue:
+    """One versioned SSA value emitted by program AD graph capture."""
+
+    name: str
+    producer: int | None
+    version: int
+    shape: tuple[int, ...]
+    dtype: str
+    effect: int | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.name, str) or not self.name:
+            raise ValueError("program AD SSA value name must be a non-empty string")
+        if self.producer is not None and self.producer < 0:
+            raise ValueError("program AD SSA value producer must be non-negative or None")
+        if self.version < 0:
+            raise ValueError("program AD SSA value version must be non-negative")
+        if any(not isinstance(dimension, int) or dimension < 0 for dimension in self.shape):
+            raise ValueError("program AD SSA value shape dimensions must be non-negative ints")
+        if not isinstance(self.dtype, str) or not self.dtype:
+            raise ValueError("program AD SSA value dtype must be a non-empty string")
+        if self.effect is not None and self.effect < 0:
+            raise ValueError("program AD SSA value effect must be non-negative or None")
+
+
+@dataclass(frozen=True)
+class ProgramADEffect:
+    """One ordered effect or pure operation in program AD graph capture."""
+
+    index: int
+    kind: str
+    target: str
+    inputs: tuple[str, ...]
+    version: int
+    ordering: int
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError("program AD effect index must be non-negative")
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ValueError("program AD effect kind must be a non-empty string")
+        if not isinstance(self.target, str) or not self.target:
+            raise ValueError("program AD effect target must be a non-empty string")
+        if any(not isinstance(item, str) or not item for item in self.inputs):
+            raise ValueError("program AD effect inputs must be non-empty strings")
+        if self.version < 0:
+            raise ValueError("program AD effect version must be non-negative")
+        if self.ordering < 0:
+            raise ValueError("program AD effect ordering must be non-negative")
+
+
+@dataclass(frozen=True)
+class ProgramADAliasEdge:
+    """One alias or mutation-version edge in program AD graph capture."""
+
+    source: str
+    target: str
+    kind: str
+    version: int
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.source, str) or not self.source:
+            raise ValueError("program AD alias source must be a non-empty string")
+        if not isinstance(self.target, str) or not self.target:
+            raise ValueError("program AD alias target must be a non-empty string")
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ValueError("program AD alias kind must be a non-empty string")
+        if self.version < 0:
+            raise ValueError("program AD alias version must be non-negative")
+
+
+@dataclass(frozen=True)
+class ProgramADControlRegion:
+    """One source or runtime control-flow region in program AD graph capture."""
+
+    index: int
+    kind: str
+    predicate: str | None
+    entered: bool
+    source_line: int | None
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError("program AD control region index must be non-negative")
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ValueError("program AD control region kind must be a non-empty string")
+        if self.predicate is not None and (
+            not isinstance(self.predicate, str) or not self.predicate
+        ):
+            raise ValueError("program AD control region predicate must be non-empty or None")
+        if not isinstance(self.entered, bool):
+            raise ValueError("program AD control region entered must be a boolean")
+        if self.source_line is not None and self.source_line <= 0:
+            raise ValueError("program AD control region source_line must be positive or None")
+
+
+@dataclass(frozen=True)
+class ProgramADEffectIR:
+    """Deterministic SSA/effect IR emitted by program AD graph capture."""
+
+    ssa_values: tuple[ProgramADSSAValue, ...]
+    effects: tuple[ProgramADEffect, ...]
+    alias_edges: tuple[ProgramADAliasEdge, ...]
+    control_regions: tuple[ProgramADControlRegion, ...]
+    serialization: str
+
+    def __post_init__(self) -> None:
+        if any(not isinstance(value, ProgramADSSAValue) for value in self.ssa_values):
+            raise ValueError("program AD IR ssa_values must contain ProgramADSSAValue entries")
+        if any(not isinstance(effect, ProgramADEffect) for effect in self.effects):
+            raise ValueError("program AD IR effects must contain ProgramADEffect entries")
+        if any(not isinstance(edge, ProgramADAliasEdge) for edge in self.alias_edges):
+            raise ValueError("program AD IR alias_edges must contain ProgramADAliasEdge entries")
+        if any(not isinstance(region, ProgramADControlRegion) for region in self.control_regions):
+            raise ValueError(
+                "program AD IR control_regions must contain ProgramADControlRegion entries"
+            )
+        if not isinstance(self.serialization, str) or not self.serialization:
+            raise ValueError("program AD IR serialization must be a non-empty string")
 
 
 @dataclass(frozen=True)
@@ -173,6 +296,7 @@ class WholeProgramADResult:
     bytecode_instructions: tuple[WholeProgramBytecodeInstruction, ...] = ()
     source_ir_features: tuple[WholeProgramSourceIRFeature, ...] = ()
     semantics_report: WholeProgramSemanticsReport | None = None
+    program_ir: ProgramADEffectIR | None = None
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("whole-program AD value", self.value)
@@ -210,6 +334,8 @@ class WholeProgramADResult:
             self.semantics_report, WholeProgramSemanticsReport
         ):
             raise ValueError("semantics_report must be a WholeProgramSemanticsReport or None")
+        if self.program_ir is not None and not isinstance(self.program_ir, ProgramADEffectIR):
+            raise ValueError("program_ir must be a ProgramADEffectIR or None")
         if not isinstance(self.control_flow_observed, bool):
             raise ValueError("control_flow_observed must be a boolean")
         if not isinstance(self.numpy_observed, bool):
@@ -282,6 +408,10 @@ def whole_program_value_and_grad(
             "derivative-losing operations fail closed"
         ),
     )
+    program_ir = context.program_ir(
+        source_ir_features=source_ir_features,
+        bytecode_instructions=bytecode_instructions,
+    )
     return WholeProgramADResult(
         value=raw.primal,
         gradient=raw.tangent.copy(),
@@ -297,19 +427,20 @@ def whole_program_value_and_grad(
         numpy_observed=semantics_report.numpy_observed,
         polyglot_targets={
             "python": "operator-intercepted whole-program AD available",
-            "mlir": "bytecode/source/graph whole-program AD interchange available",
+            "mlir": "SSA/effect program AD interchange available; executable lowering blocked",
             "rust": "blocked: no Rust whole-program AD interpreter/lowering backend",
             "llvm": "blocked: no LLVM/JIT whole-program AD interpreter/lowering backend",
         },
         claim_boundary=(
             "whole-program operator-intercepted AD for executed Python scalar arithmetic, "
             "loops, local aliasing, list mutation, supported NumPy scalar ufuncs, and "
-            "executed-branch control flow; no finite-difference fallback and no executable "
-            "Rust, LLVM, or JIT AD lowering claim"
+            "executed-branch control flow with deterministic SSA/effect IR evidence; no "
+            "finite-difference fallback and no executable Rust, LLVM, or JIT AD lowering claim"
         ),
         bytecode_instructions=bytecode_instructions,
         source_ir_features=source_ir_features,
         semantics_report=semantics_report,
+        program_ir=program_ir,
     )
 
 
@@ -319,6 +450,12 @@ class _WholeProgramTraceContext:
     def __init__(self, parameter_count: int) -> None:
         self.parameter_count = parameter_count
         self.nodes: list[WholeProgramIRNode] = []
+        self.ssa_values: list[ProgramADSSAValue] = []
+        self.effects: list[ProgramADEffect] = []
+        self.alias_edges: list[ProgramADAliasEdge] = []
+        self.control_regions: list[ProgramADControlRegion] = []
+        self._value_versions: dict[str, int] = {}
+        self._effect_order = 0
 
     def make(
         self,
@@ -336,7 +473,149 @@ class _WholeProgramTraceContext:
             tangent=tangent.copy(),
         )
         self.nodes.append(node)
-        return TraceADScalar(node.value, node.tangent, self, f"%{node.index}")
+        name = f"%{node.index}"
+        version = self._next_value_version(name)
+        effect = ProgramADEffect(
+            index=len(self.effects),
+            kind=self._effect_kind(op),
+            target=name,
+            inputs=inputs,
+            version=version,
+            ordering=self._effect_order,
+        )
+        self._effect_order += 1
+        self.effects.append(effect)
+        self.ssa_values.append(
+            ProgramADSSAValue(
+                name=name,
+                producer=node.index,
+                version=version,
+                shape=(),
+                dtype="float64",
+                effect=effect.index,
+            )
+        )
+        if op.startswith("mutation:"):
+            target = inputs[0] if inputs else name
+            self.alias_edges.append(
+                ProgramADAliasEdge(
+                    source=target,
+                    target=name,
+                    kind="mutation_version",
+                    version=version,
+                )
+            )
+        if op.startswith("branch:"):
+            self.control_regions.append(
+                ProgramADControlRegion(
+                    index=len(self.control_regions),
+                    kind="runtime_branch",
+                    predicate=op,
+                    entered=bool(value),
+                    source_line=None,
+                )
+            )
+        return TraceADScalar(node.value, node.tangent, self, name)
+
+    def program_ir(
+        self,
+        *,
+        source_ir_features: tuple[WholeProgramSourceIRFeature, ...],
+        bytecode_instructions: tuple[WholeProgramBytecodeInstruction, ...],
+    ) -> ProgramADEffectIR:
+        """Build deterministic SSA/effect IR metadata from captured program AD evidence."""
+
+        alias_edges = list(self.alias_edges)
+        control_regions = list(self.control_regions)
+        for feature in source_ir_features:
+            if "alias" in feature.kind:
+                alias_edges.append(
+                    ProgramADAliasEdge(
+                        source=feature.detail,
+                        target=f"source:{feature.line_number}",
+                        kind=feature.kind,
+                        version=len(alias_edges),
+                    )
+                )
+            if any(token in feature.kind for token in ("branch", "control", "loop")):
+                control_regions.append(
+                    ProgramADControlRegion(
+                        index=len(control_regions),
+                        kind=f"source_{feature.kind}",
+                        predicate=feature.detail,
+                        entered=True,
+                        source_line=feature.line_number,
+                    )
+                )
+        payload = {
+            "format": "program_ad_effect_ir.v1",
+            "ssa_values": [
+                {
+                    "name": value.name,
+                    "producer": value.producer,
+                    "version": value.version,
+                    "shape": value.shape,
+                    "dtype": value.dtype,
+                    "effect": value.effect,
+                }
+                for value in self.ssa_values
+            ],
+            "effects": [
+                {
+                    "index": effect.index,
+                    "kind": effect.kind,
+                    "target": effect.target,
+                    "inputs": effect.inputs,
+                    "version": effect.version,
+                    "ordering": effect.ordering,
+                }
+                for effect in self.effects
+            ],
+            "alias_edges": [
+                {
+                    "source": edge.source,
+                    "target": edge.target,
+                    "kind": edge.kind,
+                    "version": edge.version,
+                }
+                for edge in alias_edges
+            ],
+            "control_regions": [
+                {
+                    "index": region.index,
+                    "kind": region.kind,
+                    "predicate": region.predicate,
+                    "entered": region.entered,
+                    "source_line": region.source_line,
+                }
+                for region in control_regions
+            ],
+            "bytecode_offsets": tuple(instruction.offset for instruction in bytecode_instructions),
+        }
+        return ProgramADEffectIR(
+            ssa_values=tuple(self.ssa_values),
+            effects=tuple(self.effects),
+            alias_edges=tuple(alias_edges),
+            control_regions=tuple(control_regions),
+            serialization=json.dumps(payload, sort_keys=True, separators=(",", ":")),
+        )
+
+    def _next_value_version(self, name: str) -> int:
+        version = self._value_versions.get(name, -1) + 1
+        self._value_versions[name] = version
+        return version
+
+    @staticmethod
+    def _effect_kind(op: str) -> str:
+        if op == "parameter":
+            return "parameter"
+        if op.startswith("branch:"):
+            return "control_branch"
+        if op.startswith("mutation:"):
+            return "mutation"
+        if op in {"sin", "cos", "exp", "log", "sqrt", "tanh", "abs", "clip", "where"}:
+            return "primitive"
+        return "pure"
 
 
 class _TracePredicate:
@@ -2985,6 +3264,8 @@ def _normalise_identity_token(name: str, value: object) -> str:
 
 
 PrimitiveLoweringRule = Callable[[CustomDerivativeRule], object]
+PrimitiveShapeRule = Callable[[tuple[object, ...]], tuple[int, ...]]
+PrimitiveDTypeRule = Callable[[tuple[object, ...]], str]
 
 
 @dataclass(frozen=True)
@@ -2996,6 +3277,10 @@ class PrimitiveTransformRule:
     batching_rule: PrimitiveBatchingRule | None = None
     lowering_rule: PrimitiveLoweringRule | None = None
     lowering_metadata: Mapping[str, str] | None = None
+    shape_rule: PrimitiveShapeRule | None = None
+    dtype_rule: PrimitiveDTypeRule | None = None
+    nondifferentiable_policy: str = "not_declared"
+    effect: str = "pure"
 
     def __post_init__(self) -> None:
         if not isinstance(self.identity, PrimitiveIdentity):
@@ -3006,6 +3291,14 @@ class PrimitiveTransformRule:
             raise ValueError("transform batching_rule must be callable")
         if self.lowering_rule is not None and not callable(self.lowering_rule):
             raise ValueError("transform lowering_rule must be callable")
+        if self.shape_rule is not None and not callable(self.shape_rule):
+            raise ValueError("transform shape_rule must be callable")
+        if self.dtype_rule is not None and not callable(self.dtype_rule):
+            raise ValueError("transform dtype_rule must be callable")
+        if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
+            raise ValueError("transform nondifferentiable_policy must be a non-empty string")
+        if not isinstance(self.effect, str) or not self.effect:
+            raise ValueError("transform effect must be a non-empty string")
         metadata = {} if self.lowering_metadata is None else dict(self.lowering_metadata)
         if any(not isinstance(key, str) or not key for key in metadata):
             raise ValueError("lowering metadata keys must be non-empty strings")
@@ -7218,9 +7511,16 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "ProgramADAliasEdge",
+    "ProgramADControlRegion",
+    "ProgramADEffect",
+    "ProgramADEffectIR",
+    "ProgramADSSAValue",
     "PrimitiveBatchingRule",
+    "PrimitiveDTypeRule",
     "PrimitiveIdentity",
     "PrimitiveLoweringRule",
+    "PrimitiveShapeRule",
     "PrimitiveTransformRule",
     "ReverseNode",
     "ShotAllocationResult",
