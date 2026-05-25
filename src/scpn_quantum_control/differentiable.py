@@ -951,6 +951,9 @@ class TraceADArray:
     def sum(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         return _trace_array_sum(self, axis=axis)
 
+    def prod(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        return _trace_array_prod(self, axis=axis)
+
     def mean(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         result = _trace_array_sum(self, axis=axis)
         divisor = (
@@ -1087,6 +1090,13 @@ class TraceADArray:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("whole-program AD np.sum supports one array and optional axis")
             return _trace_array_sum(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | None, kwargs.get("axis")),
+            )
+        if func is np.prod:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.prod supports one array and optional axis")
+            return _trace_array_prod(
                 _coerce_trace_array(args[0], self.context),
                 axis=cast(int | None, kwargs.get("axis")),
             )
@@ -1518,6 +1528,35 @@ def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADSca
         for axis_index in range(1, array.shape[axis]):
             source_index = reduced_index[:axis] + (axis_index,) + reduced_index[axis:]
             total = total + array._items[int(np.ravel_multi_index(source_index, array.shape))]
+        items.append(total)
+    return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _trace_array_prod(
+    array: TraceADArray, axis: int | None = None
+) -> TraceADScalar | TraceADArray:
+    if not array._items:
+        raise ValueError("program AD array product reductions require at least one element")
+    if axis is None:
+        total = array._items[0]
+        for item in array._items[1:]:
+            total = total * item
+        return total
+    axis = _normalise_axis("axis", axis, array.ndim)
+    reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
+    if reduced_shape == ():
+        total = array._items[0]
+        for item in array._items[1:]:
+            total = total * item
+        return total
+    items: list[TraceADScalar] = []
+    for reduced_flat in range(int(np.prod(reduced_shape))):
+        reduced_index = np.unravel_index(reduced_flat, reduced_shape)
+        source_index = reduced_index[:axis] + (0,) + reduced_index[axis:]
+        total = array._items[int(np.ravel_multi_index(source_index, array.shape))]
+        for axis_index in range(1, array.shape[axis]):
+            source_index = reduced_index[:axis] + (axis_index,) + reduced_index[axis:]
+            total = total * array._items[int(np.ravel_multi_index(source_index, array.shape))]
         items.append(total)
     return TraceADArray(tuple(items), reduced_shape, array.context)
 

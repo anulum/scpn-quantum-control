@@ -3903,6 +3903,58 @@ def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
         )
 
 
+def test_program_ad_product_reductions_match_product_rule_adjoint() -> None:
+    """Program AD product reductions should preserve exact product-rule adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        row_products = np.prod(matrix, axis=1)
+        return np.prod(values[:3]) + row_products[0] - 2.0 * row_products[1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([2.0, -3.0, 4.0, 5.0, -2.0, 0.5], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(-38.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [-24.0, 16.0, -12.0, 2.0, -5.0, 20.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_product_reduction_methods_handle_zero_factor() -> None:
+    """Trace-array prod methods should handle single-zero factors without finite differences."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return matrix.prod(axis=0)[0] + matrix.prod()
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.0, 2.0, 3.0, -4.0], dtype=np.float64),
+        parameters=(
+            Parameter("x00"),
+            Parameter("x01"),
+            Parameter("x10"),
+            Parameter("x11"),
+        ),
+    )
+
+    assert result.value == pytest.approx(0.0)
+    np.testing.assert_allclose(result.gradient, [-21.0, 0.0, 0.0, 0.0], atol=1.0e-12)
+
+
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 
