@@ -3633,6 +3633,33 @@ def test_whole_program_ad_rank_n_axis_validation_paths() -> None:
         )
 
 
+def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_boundaries() -> (
+    None
+):
+    """Selection primitives should reject boundary points with ambiguous derivatives."""
+
+    with pytest.raises(ValueError, match="maximum is non-differentiable"):
+        whole_program_value_and_grad(
+            lambda values: np.maximum(values[0], values[1]),
+            np.array([1.0, 1.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="minimum is non-differentiable"):
+        whole_program_value_and_grad(
+            lambda values: np.minimum(values[0], values[1]),
+            np.array([1.0, 1.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="np.clip is non-differentiable"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.clip(values, -0.5, 0.5)),
+            np.array([-0.5, 0.25], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="np.clip is non-differentiable"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.clip(values, -0.5, 0.5)),
+            np.array([0.25, 0.5], dtype=np.float64),
+        )
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 

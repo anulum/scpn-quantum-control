@@ -1429,9 +1429,13 @@ def _apply_binary_trace_ufunc(
     if ufunc is np.power:
         return left**right
     if ufunc is np.maximum:
+        if left.primal == right.primal:
+            raise ValueError("whole-program AD maximum is non-differentiable at equal inputs")
         chosen = left if left.primal >= right.primal else right
         return left.context.make("maximum", (left.name, right.name), chosen.primal, chosen.tangent)
     if ufunc is np.minimum:
+        if left.primal == right.primal:
+            raise ValueError("whole-program AD minimum is non-differentiable at equal inputs")
         chosen = left if left.primal <= right.primal else right
         return left.context.make("minimum", (left.name, right.name), chosen.primal, chosen.tangent)
     raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
@@ -1855,6 +1859,8 @@ def _trace_clip(
     ):
         if lower_item.primal > upper_item.primal:
             raise ValueError("whole-program AD np.clip lower bound must not exceed upper bound")
+        if value.primal == lower_item.primal or value.primal == upper_item.primal:
+            raise ValueError("whole-program AD np.clip is non-differentiable at clipping boundary")
         if value.primal < lower_item.primal:
             chosen = lower_item
         elif value.primal > upper_item.primal:
