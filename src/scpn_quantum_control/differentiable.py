@@ -968,6 +968,14 @@ class TraceADArray:
     def min(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         return _trace_extreme(self, axis=axis, choose_max=False)
 
+    def take(
+        self,
+        indices: object,
+        axis: int | None = None,
+        mode: str = "raise",
+    ) -> TraceADScalar | TraceADArray:
+        return _trace_take(self, indices, axis=axis, mode=mode)
+
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
         if self.ndim > 2:
             raise ValueError("whole-program AD array indexing supports arrays with rank <= 2")
@@ -1138,6 +1146,16 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("whole-program AD np.ravel supports one array")
             return _coerce_trace_array(args[0], self.context).ravel()
+        if func is np.take:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis", "mode"}:
+                raise ValueError("program AD np.take supports array, indices, axis, and mode")
+            axis = args[2] if len(args) == 3 else kwargs.get("axis")
+            return _trace_take(
+                _coerce_trace_array(args[0], self.context),
+                args[1],
+                axis=cast(int | None, axis),
+                mode=cast(str, kwargs.get("mode", "raise")),
+            )
         if func is np.transpose:
             if len(args) != 1 or kwargs.keys() - {"axes"}:
                 raise ValueError("whole-program AD np.transpose supports one array and axes")
@@ -1548,6 +1566,32 @@ def _trace_strict_extreme(
         if (item.primal > selected.primal) if choose_max else (item.primal < selected.primal):
             selected = item
     return selected
+
+
+def _trace_take(
+    array: TraceADArray,
+    indices: object,
+    *,
+    axis: int | None,
+    mode: str,
+) -> TraceADScalar | TraceADArray:
+    if mode != "raise":
+        raise ValueError("program AD np.take currently supports only mode='raise'")
+    if isinstance(indices, (TraceADScalar, TraceADArray)):
+        raise ValueError("program AD np.take requires static integer indices")
+    raw_indices = np.asarray(indices)
+    if raw_indices.dtype.kind not in {"i", "u"}:
+        raise ValueError("program AD np.take requires static integer indices")
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    try:
+        selected = np.take(source, raw_indices, axis=axis, mode="raise")
+    except (IndexError, ValueError) as exc:
+        raise ValueError("program AD np.take indices must be in bounds") from exc
+    selected_array = np.asarray(selected)
+    if selected_array.shape == ():
+        return array._items[int(selected_array)]
+    items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
+    return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
 
 
 def _trace_transpose(

@@ -3857,6 +3857,52 @@ def test_program_ad_extreme_reduction_methods_match_numpy_functions() -> None:
     np.testing.assert_allclose(result.gradient, [0.0, -1.0, 1.0, 1.0], atol=1.0e-12)
 
 
+def test_program_ad_static_take_accumulates_gather_adjoint() -> None:
+    """Static NumPy take gathers should preserve exact adjoint accumulation."""
+
+    def objective(values: np.ndarray) -> object:
+        vector_gather = np.take(values, [2, 0, 2])
+        matrix = np.reshape(values, (2, 3))
+        column_gather = matrix.take([1, 0], axis=1)
+        return np.sum(vector_gather) + column_gather[0, 0] - 2.0 * column_gather[1, 1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(1.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [1.0, 1.0, 2.0, -2.0, 0.0, 0.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
+    """Program AD take should fail closed outside static integer gather semantics."""
+
+    with pytest.raises(ValueError, match="static integer indices"):
+        whole_program_value_and_grad(
+            lambda values: np.take(values, values[0]),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="mode='raise'"):
+        whole_program_value_and_grad(
+            lambda values: np.take(values, [0], mode="wrap")[0],
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_extreme_reductions_fail_closed_on_ties() -> None:
     """Program AD max/min reductions should reject nondifferentiable tied selectors."""
 
