@@ -659,7 +659,18 @@ class _WholeProgramTraceContext:
             return "control_branch"
         if op.startswith("mutation:"):
             return "mutation"
-        if op in {"sin", "cos", "exp", "log", "sqrt", "tanh", "abs", "clip", "where"}:
+        if op in {
+            "sin",
+            "cos",
+            "exp",
+            "log",
+            "sqrt",
+            "tanh",
+            "reciprocal",
+            "abs",
+            "clip",
+            "where",
+        }:
             return "primitive"
         return "pure"
 
@@ -1507,6 +1518,7 @@ def _apply_trace_ufunc(
             np.log,
             np.sqrt,
             np.tanh,
+            np.reciprocal,
             np.square,
             np.absolute,
         }
@@ -1569,6 +1581,16 @@ def _apply_unary_trace_ufunc(ufunc: np.ufunc, arg: TraceADScalar) -> TraceADScal
     if ufunc is np.tanh:
         primal = float(np.tanh(arg.primal))
         return arg.context.make("tanh", (arg.name,), primal, (1.0 - primal**2) * arg.tangent)
+    if ufunc is np.reciprocal:
+        if arg.primal == 0.0:
+            raise ValueError("whole-program AD reciprocal input must be non-zero")
+        primal = 1.0 / arg.primal
+        return arg.context.make(
+            "reciprocal",
+            (arg.name,),
+            primal,
+            -arg.tangent / arg.primal**2,
+        )
     if ufunc is np.square:
         return arg.context.make(
             "square", (arg.name,), arg.primal**2, 2.0 * arg.primal * arg.tangent
@@ -2437,7 +2459,17 @@ def _program_adjoint_node_contributions(
         raise ValueError("mutation adjoints require alias/effect semantics")
     if node.op == "neg":
         return ((node.inputs[0], -1.0),)
-    if node.op in {"sin", "cos", "exp", "log", "sqrt", "tanh", "square", "abs"}:
+    if node.op in {
+        "sin",
+        "cos",
+        "exp",
+        "log",
+        "sqrt",
+        "tanh",
+        "reciprocal",
+        "square",
+        "abs",
+    }:
         arg_name = node.inputs[0]
         arg_value = _program_adjoint_input_value(arg_name, node_by_name)
         if node.op == "sin":
@@ -2452,6 +2484,10 @@ def _program_adjoint_node_contributions(
             return ((arg_name, 1.0 / (2.0 * node.value)),)
         if node.op == "tanh":
             return ((arg_name, 1.0 - node.value**2),)
+        if node.op == "reciprocal":
+            if arg_value == 0.0:
+                raise ValueError("reciprocal adjoint requires non-zero input")
+            return ((arg_name, -1.0 / arg_value**2),)
         if node.op == "square":
             return ((arg_name, 2.0 * arg_value),)
         if node.op == "abs":

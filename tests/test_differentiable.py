@@ -3490,6 +3490,40 @@ def test_whole_program_ad_handles_numpy_linear_algebra_primitives() -> None:
     )
 
 
+def test_program_ad_reciprocal_ufunc_matches_exact_adjoint() -> None:
+    """Program AD reciprocal should preserve exact inverse derivatives and adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        reciprocal = np.reciprocal(values)
+        return np.sum(reciprocal * np.array([1.0, -2.0, 3.0, -4.0])) + matrix[0, 1] ** -1
+
+    values = np.array([2.0, -4.0, 0.5, -0.25], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x0"), Parameter("x1"), Parameter("x2"), Parameter("x3")),
+    )
+    expected = np.array([-0.25, 0.0625, -12.0, 64.0], dtype=np.float64)
+
+    assert result.value == pytest.approx(22.75)
+    assert any(node.op == "reciprocal" for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_reciprocal_ufunc_fails_closed_at_zero() -> None:
+    """Program AD reciprocal should reject singular inverse boundaries."""
+
+    with pytest.raises(ValueError, match="reciprocal input must be non-zero"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reciprocal(values)),
+            np.array([1.0, 0.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
     """Unsupported NumPy linear algebra modes should fail closed with explicit diagnostics."""
 
