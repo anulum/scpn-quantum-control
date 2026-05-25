@@ -54,6 +54,33 @@ class WholeProgramTraceEvent:
 
 
 @dataclass(frozen=True)
+class WholeProgramIRNode:
+    """One operator-intercepted IR node from whole-program trace AD."""
+
+    index: int
+    op: str
+    inputs: tuple[str, ...]
+    value: float
+    tangent: NDArray[np.float64]
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError("IR node index must be non-negative")
+        if not self.op:
+            raise ValueError("IR node op must be non-empty")
+        if any(not isinstance(item, str) or not item for item in self.inputs):
+            raise ValueError("IR node inputs must be non-empty strings")
+        value = _as_real_scalar("IR node value", self.value)
+        tangent = _as_real_numeric_array("IR node tangent", self.tangent)
+        if tangent.ndim != 1:
+            raise ValueError("IR node tangent must be one-dimensional")
+        if not np.all(np.isfinite(tangent)):
+            raise ValueError("IR node tangent must contain finite values")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "tangent", tangent)
+
+
+@dataclass(frozen=True)
 class WholeProgramADResult:
     """Value, gradient, execution trace, and polyglot AD lowering status."""
 
@@ -70,6 +97,7 @@ class WholeProgramADResult:
     numpy_observed: bool
     polyglot_targets: dict[str, str]
     claim_boundary: str
+    ir_nodes: tuple[WholeProgramIRNode, ...] = ()
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("whole-program AD value", self.value)
@@ -79,8 +107,8 @@ class WholeProgramADResult:
         if not np.all(np.isfinite(gradient)):
             raise ValueError("whole-program AD gradient must contain finite values")
         step = _as_real_scalar("whole-program AD step", self.step)
-        if step <= 0.0:
-            raise ValueError("whole-program AD step must be positive")
+        if step < 0.0:
+            raise ValueError("whole-program AD step must be non-negative")
         if self.evaluations < 1:
             raise ValueError("whole-program AD evaluations must be positive")
         if len(self.parameter_names) != gradient.size:
@@ -89,6 +117,8 @@ class WholeProgramADResult:
             raise ValueError("trainable mask length must match gradient length")
         if any(not isinstance(event, WholeProgramTraceEvent) for event in self.trace_events):
             raise ValueError("trace_events must contain WholeProgramTraceEvent entries")
+        if any(not isinstance(node, WholeProgramIRNode) for node in self.ir_nodes):
+            raise ValueError("ir_nodes must contain WholeProgramIRNode entries")
         if not isinstance(self.control_flow_observed, bool):
             raise ValueError("control_flow_observed must be a boolean")
         if not isinstance(self.numpy_observed, bool):
@@ -144,6 +174,7 @@ def whole_program_value_and_grad(
         parameter_names=result.parameter_names,
         trainable=result.trainable,
         trace_events=trace_events,
+        ir_nodes=(),
         source=source,
         control_flow_observed=_source_has_control_flow(source),
         numpy_observed=_source_mentions_numpy(source)
@@ -159,6 +190,284 @@ def whole_program_value_and_grad(
             "runtime source tracing; no executable Rust, LLVM, or JIT AD lowering claim"
         ),
     )
+
+
+class _WholeProgramTraceContext:
+    """Mutable builder for whole-program trace AD IR nodes."""
+
+    def __init__(self, parameter_count: int) -> None:
+        self.parameter_count = parameter_count
+        self.nodes: list[WholeProgramIRNode] = []
+
+    def make(
+        self,
+        op: str,
+        inputs: tuple[str, ...],
+        value: float,
+        tangent: NDArray[np.float64],
+    ) -> TraceADScalar:
+        node = WholeProgramIRNode(
+            index=len(self.nodes),
+            op=op,
+            inputs=inputs,
+            value=value,
+            tangent=tangent.copy(),
+        )
+        self.nodes.append(node)
+        return TraceADScalar(node.value, node.tangent, self, f"%{node.index}")
+
+
+class _TracePredicate:
+    """Primal control-flow predicate recorded by trace AD."""
+
+    def __init__(self, value: bool, context: _WholeProgramTraceContext, label: str) -> None:
+        self.value = bool(value)
+        self.context = context
+        self.label = label
+
+    def __bool__(self) -> bool:
+        tangent = np.zeros(self.context.parameter_count, dtype=np.float64)
+        self.context.make(f"branch:{self.label}:{self.value}", (), float(self.value), tangent)
+        return self.value
+
+
+class TraceADScalar:
+    """Operator-intercepted scalar for exact executed-path whole-program AD."""
+
+    __array_priority__ = 1000.0
+
+    def __init__(
+        self,
+        primal: float,
+        tangent: NDArray[np.float64],
+        context: _WholeProgramTraceContext,
+        name: str,
+    ) -> None:
+        self.primal = _as_real_scalar("trace AD primal", primal)
+        self.tangent = _as_real_numeric_array("trace AD tangent", tangent)
+        if self.tangent.ndim != 1:
+            raise ValueError("trace AD tangent must be one-dimensional")
+        self.context = context
+        self.name = name
+
+    def __float__(self) -> float:
+        raise ValueError("trace AD scalar cannot be converted to float without losing derivatives")
+
+    def _coerce(self, other: object) -> TraceADScalar:
+        if isinstance(other, TraceADScalar):
+            if other.context is not self.context:
+                raise ValueError("trace AD scalars belong to different traces")
+            return other
+        tangent = np.zeros(self.context.parameter_count, dtype=np.float64)
+        return TraceADScalar(
+            _as_real_scalar("trace AD constant", other), tangent, self.context, repr(other)
+        )
+
+    def _binary(self, op: str, other: object) -> TraceADScalar:
+        rhs = self._coerce(other)
+        if op == "add":
+            return self.context.make(
+                op, (self.name, rhs.name), self.primal + rhs.primal, self.tangent + rhs.tangent
+            )
+        if op == "sub":
+            return self.context.make(
+                op, (self.name, rhs.name), self.primal - rhs.primal, self.tangent - rhs.tangent
+            )
+        if op == "mul":
+            return self.context.make(
+                op,
+                (self.name, rhs.name),
+                self.primal * rhs.primal,
+                self.tangent * rhs.primal + self.primal * rhs.tangent,
+            )
+        if op == "div":
+            if rhs.primal == 0.0:
+                raise ValueError("trace AD division denominator must be non-zero")
+            return self.context.make(
+                op,
+                (self.name, rhs.name),
+                self.primal / rhs.primal,
+                (self.tangent * rhs.primal - self.primal * rhs.tangent) / rhs.primal**2,
+            )
+        if op == "pow":
+            if self.primal <= 0.0 and np.any(rhs.tangent != 0.0):
+                raise ValueError("trace AD variable exponent requires positive base")
+            primal = self.primal**rhs.primal
+            if np.all(rhs.tangent == 0.0):
+                tangent = rhs.primal * self.primal ** (rhs.primal - 1.0) * self.tangent
+            else:
+                tangent = primal * (
+                    rhs.tangent * float(np.log(self.primal))
+                    + rhs.primal * self.tangent / self.primal
+                )
+            return self.context.make(op, (self.name, rhs.name), primal, tangent)
+        raise ValueError(f"unsupported trace AD binary op {op}")
+
+    def __add__(self, other: object) -> TraceADScalar:
+        return self._binary("add", other)
+
+    def __radd__(self, other: object) -> TraceADScalar:
+        return self.__add__(other)
+
+    def __sub__(self, other: object) -> TraceADScalar:
+        return self._binary("sub", other)
+
+    def __rsub__(self, other: object) -> TraceADScalar:
+        return self._coerce(other)._binary("sub", self)
+
+    def __mul__(self, other: object) -> TraceADScalar:
+        return self._binary("mul", other)
+
+    def __rmul__(self, other: object) -> TraceADScalar:
+        return self.__mul__(other)
+
+    def __truediv__(self, other: object) -> TraceADScalar:
+        return self._binary("div", other)
+
+    def __rtruediv__(self, other: object) -> TraceADScalar:
+        return self._coerce(other)._binary("div", self)
+
+    def __pow__(self, other: object) -> TraceADScalar:
+        return self._binary("pow", other)
+
+    def __rpow__(self, other: object) -> TraceADScalar:
+        return self._coerce(other)._binary("pow", self)
+
+    def __neg__(self) -> TraceADScalar:
+        return self.context.make("neg", (self.name,), -self.primal, -self.tangent)
+
+    def _compare(self, op: str, other: object) -> _TracePredicate:
+        rhs = self._coerce(other)
+        comparisons = {
+            "gt": self.primal > rhs.primal,
+            "ge": self.primal >= rhs.primal,
+            "lt": self.primal < rhs.primal,
+            "le": self.primal <= rhs.primal,
+        }
+        return _TracePredicate(comparisons[op], self.context, f"{self.name}:{op}:{rhs.name}")
+
+    def __gt__(self, other: object) -> _TracePredicate:
+        return self._compare("gt", other)
+
+    def __ge__(self, other: object) -> _TracePredicate:
+        return self._compare("ge", other)
+
+    def __lt__(self, other: object) -> _TracePredicate:
+        return self._compare("lt", other)
+
+    def __le__(self, other: object) -> _TracePredicate:
+        return self._compare("le", other)
+
+    def __array_ufunc__(
+        self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
+    ) -> TraceADScalar:
+        if method != "__call__" or kwargs:
+            raise ValueError("trace AD supports only direct NumPy scalar ufunc calls")
+        args = [
+            self._coerce(item) if not isinstance(item, TraceADScalar) else item for item in inputs
+        ]
+        if len(args) != 1:
+            raise ValueError("trace AD supports unary NumPy ufuncs only")
+        arg = args[0]
+        if ufunc is np.sin:
+            return self.context.make(
+                "sin",
+                (arg.name,),
+                float(np.sin(arg.primal)),
+                float(np.cos(arg.primal)) * arg.tangent,
+            )
+        if ufunc is np.cos:
+            return self.context.make(
+                "cos",
+                (arg.name,),
+                float(np.cos(arg.primal)),
+                -float(np.sin(arg.primal)) * arg.tangent,
+            )
+        if ufunc is np.exp:
+            primal = float(np.exp(arg.primal))
+            return self.context.make("exp", (arg.name,), primal, primal * arg.tangent)
+        if ufunc is np.log:
+            if arg.primal <= 0.0:
+                raise ValueError("trace AD log input must be positive")
+            return self.context.make(
+                "log", (arg.name,), float(np.log(arg.primal)), arg.tangent / arg.primal
+            )
+        raise ValueError(f"unsupported trace AD NumPy ufunc {ufunc.__name__}")
+
+
+def whole_program_trace_value_and_grad(
+    objective: Callable[[NDArray[Any]], object],
+    values: ArrayLike,
+    parameters: Sequence[Parameter] | None = None,
+    *,
+    trace: bool = True,
+) -> WholeProgramADResult:
+    """Differentiate a supported Python/NumPy objective by operator-intercepted trace AD.
+
+    Control-flow predicates branch on primal values and record branch IR nodes;
+    derivatives are exact for the executed branch and supported scalar ops.
+    """
+
+    if not callable(objective):
+        raise ValueError("whole-program trace objective must be callable")
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    context = _WholeProgramTraceContext(parameter_values.size)
+    traced_values: list[TraceADScalar] = []
+    for index, (value, parameter) in enumerate(zip(parameter_values, parameter_meta, strict=True)):
+        tangent = np.zeros(parameter_values.size, dtype=np.float64)
+        if parameter.trainable:
+            tangent[index] = 1.0
+        traced_values.append(context.make("parameter", (parameter.name,), float(value), tangent))
+    raw = objective(np.array(traced_values, dtype=object))
+    if not isinstance(raw, TraceADScalar):
+        raise ValueError("whole-program trace objective must return a trace AD scalar")
+    source = _objective_source(objective)
+    trace_events = (
+        _trace_whole_program_objective(cast(ScalarObjective, objective), parameter_values)
+        if trace
+        else ()
+    )
+    return WholeProgramADResult(
+        value=raw.primal,
+        gradient=raw.tangent.copy(),
+        method="whole_program_trace_ad",
+        step=0.0,
+        evaluations=1 + (1 if trace else 0),
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        trace_events=trace_events,
+        ir_nodes=tuple(context.nodes),
+        source=source,
+        control_flow_observed=_source_has_control_flow(source)
+        or any(node.op.startswith("branch:") for node in context.nodes),
+        numpy_observed=_source_mentions_numpy(source)
+        or any(node.op in {"sin", "cos", "exp", "log"} for node in context.nodes),
+        polyglot_targets={
+            "python": "operator-intercepted trace AD available for supported scalar ops",
+            "mlir": "trace IR interchange available",
+            "rust": "blocked: no Rust whole-program trace AD lowering backend",
+            "llvm": "blocked: no LLVM/JIT whole-program trace AD lowering backend",
+        },
+        claim_boundary=(
+            "whole-program operator-intercepted trace AD for supported Python scalar arithmetic, "
+            "NumPy unary ufuncs, and executed-branch control flow; no executable Rust, LLVM, or JIT AD lowering claim"
+        ),
+    )
+
+
+def whole_program_trace_grad(
+    objective: Callable[[NDArray[Any]], object],
+    values: ArrayLike,
+    parameters: Sequence[Parameter] | None = None,
+    *,
+    trace: bool = True,
+) -> NDArray[np.float64]:
+    """Return only the operator-intercepted whole-program trace AD gradient."""
+
+    return whole_program_trace_value_and_grad(
+        objective, values, parameters=parameters, trace=trace
+    ).gradient
 
 
 def whole_program_grad(
@@ -5721,8 +6030,12 @@ __all__ = [
     "weighted_gradient_sum",
     "value_and_grad",
     "whole_program_grad",
+    "whole_program_trace_grad",
+    "whole_program_trace_value_and_grad",
     "whole_program_value_and_grad",
+    "TraceADScalar",
     "WholeProgramADResult",
+    "WholeProgramIRNode",
     "WholeProgramTraceEvent",
     "vmap",
     "parameter_shift_gradient",

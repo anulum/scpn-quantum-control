@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 407,
+    "public_api_exports": 411,
     "public_documentation_pages": 235,
-    "python_model_classes": 1481,
+    "python_model_classes": 1483,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -6668,6 +6668,10 @@
         "path": "src/scpn_quantum_control/paper0/torus_surface_flow_lyapunov_style_certificate_validation.py"
       },
       {
+        "name": "TraceADScalar",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "TraceSTDPConfig",
         "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
@@ -6885,6 +6889,10 @@
       },
       {
         "name": "WholeProgramADResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "WholeProgramIRNode",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -7948,6 +7956,7 @@
     "SynchronisationForecastBenchmarkResult",
     "SynchronisationForecastDataset",
     "TopologicalCouplingOptimizer",
+    "TraceADScalar",
     "TraceSTDPConfig",
     "TraceSTDPState",
     "TrajectoryResult",
@@ -7958,6 +7967,7 @@
     "VirtualRealtimeClock",
     "WeightedGradientResult",
     "WholeProgramADResult",
+    "WholeProgramIRNode",
     "WholeProgramTraceEvent",
     "ZNEResult",
     "aggregator_provider_optional_dependency_matrix",
@@ -8200,6 +8210,8 @@
     "vmap",
     "weighted_gradient_sum",
     "whole_program_grad",
+    "whole_program_trace_grad",
+    "whole_program_trace_value_and_grad",
     "whole_program_value_and_grad",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"

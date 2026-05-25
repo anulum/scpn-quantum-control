@@ -50,9 +50,11 @@ from scpn_quantum_control.differentiable import (
     ShotAllocationResult,
     SparseMatrixResult,
     StochasticGradientResult,
+    TraceADScalar,
     VJPResult,
     WeightedGradientResult,
     WholeProgramADResult,
+    WholeProgramIRNode,
     WholeProgramTraceEvent,
     allocate_parameter_shift_shots,
     armijo_backtracking_line_search,
@@ -146,6 +148,8 @@ from scpn_quantum_control.differentiable import (
     vmap,
     weighted_gradient_sum,
     whole_program_grad,
+    whole_program_trace_grad,
+    whole_program_trace_value_and_grad,
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
@@ -3371,3 +3375,64 @@ def test_custom_derivative_global_registry_and_root_exports() -> None:
     assert scpn.registered_custom_jvp is registered_custom_jvp
     assert scpn.registered_custom_vjp is registered_custom_vjp
     assert scpn.registered_custom_jacobian is registered_custom_jacobian
+
+
+def test_whole_program_trace_ad_records_ir_and_executed_branch_semantics() -> None:
+    """Trace AD should differentiate the executed Python control-flow branch exactly."""
+
+    def objective(values: np.ndarray) -> object:
+        total = values[0] * values[0]
+        for index, value in enumerate(values):
+            if value > 0.0:
+                total = total + np.sin(value) + index * value
+            else:
+                total = total + value**2
+        return total
+
+    result = whole_program_trace_value_and_grad(
+        objective,
+        np.array([0.25, -0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("theta"), Parameter("bias"), Parameter("phase")),
+    )
+
+    assert result.method == "whole_program_trace_ad"
+    assert result.step == 0.0
+    assert result.control_flow_observed is True
+    assert result.numpy_observed is True
+    assert any(node.op.startswith("branch:") for node in result.ir_nodes)
+    assert any(node.op == "sin" for node in result.ir_nodes)
+    np.testing.assert_allclose(
+        result.gradient,
+        [2.0 * 0.25 + math.cos(0.25), -1.0, math.cos(0.75) + 2.0],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_whole_program_trace_grad_respects_trainable_mask_and_rejects_derivative_loss() -> None:
+    """Trace AD should freeze masked parameters and reject float-cast derivative loss."""
+
+    gradient = whole_program_trace_grad(
+        lambda values: values[0] ** 2 + values[1] ** 2,
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("frozen", trainable=False)),
+        trace=False,
+    )
+    np.testing.assert_allclose(gradient, [4.0, 0.0], rtol=1.0e-12, atol=1.0e-12)
+
+    with pytest.raises(ValueError, match="converted to float"):
+        whole_program_trace_value_and_grad(
+            lambda values: float(values[0] ** 2),
+            np.array([2.0], dtype=np.float64),
+        )
+
+
+def test_whole_program_trace_ad_is_exported_from_package_root() -> None:
+    """Trace AD whole-program APIs should be stable root-level exports."""
+
+    import scpn_quantum_control as scpn
+
+    assert scpn.TraceADScalar is TraceADScalar
+    assert scpn.WholeProgramIRNode is WholeProgramIRNode
+    assert scpn.whole_program_trace_grad is whole_program_trace_grad
+    assert scpn.whole_program_trace_value_and_grad is whole_program_trace_value_and_grad
