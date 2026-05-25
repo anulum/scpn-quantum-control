@@ -3741,8 +3741,8 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     )
 
 
-def test_program_adjoint_replay_fails_closed_for_mutation_effects() -> None:
-    """Reverse-mode program adjoints should not claim support for mutation without alias adjoints."""
+def test_program_adjoint_replay_supports_static_setitem_effects() -> None:
+    """Reverse-mode program adjoints should replay static setitem dataflow exactly."""
 
     def objective(values: np.ndarray) -> object:
         work = values.copy()
@@ -3756,10 +3756,10 @@ def test_program_adjoint_replay_fails_closed_for_mutation_effects() -> None:
     )
 
     assert result.adjoint_result is not None
-    assert result.adjoint_result.supported is False
-    assert "mutation:setitem" in result.adjoint_result.unsupported_ops
-    with pytest.raises(ValueError, match="mutation:setitem"):
-        program_adjoint_gradient(result)
+    assert result.adjoint_result.supported is True
+    assert result.adjoint_result.unsupported_ops == ()
+    np.testing.assert_allclose(result.gradient, [1.0, 3.0], atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
 def test_program_adjoint_result_validation_paths() -> None:

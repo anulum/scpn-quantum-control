@@ -2373,7 +2373,11 @@ def _program_adjoint_result_from_nodes(
     """Replay reverse-mode adjoints over supported scalar program AD IR nodes."""
 
     parameter_count = len(parameter_names)
-    unsupported_ops: set[str] = {node.op for node in nodes if node.op.startswith("mutation:")}
+    unsupported_ops: set[str] = {
+        node.op
+        for node in nodes
+        if node.op.startswith("mutation:") and node.op != "mutation:setitem"
+    }
     node_by_name = {f"%{node.index}": node for node in nodes}
     adjoints = {name: 0.0 for name in node_by_name}
     if output_name not in adjoints:
@@ -2426,6 +2430,8 @@ def _program_adjoint_node_contributions(
     if node.op == "parameter":
         return ()
     if node.op.startswith("branch:"):
+        return ()
+    if node.op == "mutation:setitem":
         return ()
     if node.op.startswith("mutation:"):
         raise ValueError("mutation adjoints require alias/effect semantics")
