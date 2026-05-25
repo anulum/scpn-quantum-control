@@ -1425,6 +1425,10 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.inv supports one matrix")
             return _trace_inv(args[0], self.context)
+        if func is np.linalg.solve:
+            if len(args) != 2 or kwargs:
+                raise ValueError("program AD np.linalg.solve supports matrix and right-hand side")
+            return _trace_solve(args[0], args[1], self.context)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
         if func is np.sort or func is np.argsort:
@@ -2732,6 +2736,29 @@ def _trace_inv(matrix: object, context: _WholeProgramTraceContext) -> TraceADArr
                 cofactor = -cofactor
             inverse_items.append(cofactor / determinant)
     return TraceADArray(tuple(inverse_items), (rows, cols), context)
+
+
+def _trace_solve(
+    matrix: object,
+    rhs: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    lhs = _coerce_trace_array(matrix, context)
+    right = _coerce_trace_array(rhs, context)
+    if lhs.ndim != 2:
+        raise ValueError("program AD np.linalg.solve matrix must be rank-2")
+    rows, cols = lhs.shape
+    if rows != cols:
+        raise ValueError("program AD np.linalg.solve matrix must be square")
+    if right.ndim == 1:
+        if right.shape[0] != rows:
+            raise ValueError("program AD np.linalg.solve vector length must match matrix")
+    elif right.ndim == 2:
+        if right.shape[0] != rows:
+            raise ValueError("program AD np.linalg.solve right-hand matrix rows must match matrix")
+    else:
+        raise ValueError("program AD np.linalg.solve right-hand side must be rank-1 or rank-2")
+    return _trace_matmul(_trace_inv(lhs, context), right, context)
 
 
 def _trace_trace(

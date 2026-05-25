@@ -4317,6 +4317,98 @@ def test_program_ad_linalg_inv_fails_closed_invalid_matrix_contracts() -> None:
         )
 
 
+def test_program_ad_linalg_solve_matches_implicit_linear_system_differential() -> None:
+    """Program AD solve should match exact linear-system differential semantics."""
+
+    vector_weights = np.array([0.5, -1.25], dtype=np.float64)
+    matrix_weights = np.array([[1.0, -0.5], [0.25, 1.5], [-1.25, 0.75]], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix_two = np.reshape(values[:4], (2, 2))
+        rhs_two = values[4:6]
+        matrix_three = np.reshape(values[6:15], (3, 3))
+        rhs_three = np.reshape(values[15:], (3, 2))
+        return np.sum(np.linalg.solve(matrix_two, rhs_two) * vector_weights) + np.sum(
+            np.linalg.solve(matrix_three, rhs_three) * matrix_weights
+        )
+
+    values = np.array(
+        [
+            2.0,
+            -0.5,
+            0.75,
+            1.5,
+            0.25,
+            -1.0,
+            1.5,
+            0.25,
+            -0.5,
+            0.0,
+            1.25,
+            0.5,
+            -0.25,
+            0.75,
+            1.75,
+            0.5,
+            -1.0,
+            1.25,
+            0.75,
+            -0.5,
+            1.5,
+        ],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    matrix_two = values[:4].reshape(2, 2)
+    rhs_two = values[4:6]
+    matrix_three = values[6:15].reshape(3, 3)
+    rhs_three = values[15:].reshape(3, 2)
+    solution_two = np.linalg.solve(matrix_two, rhs_two)
+    solution_three = np.linalg.solve(matrix_three, rhs_three)
+    expected = np.zeros_like(values)
+    adjoint_rhs_two = np.linalg.solve(matrix_two.T, vector_weights)
+    expected[:4] = (-np.outer(adjoint_rhs_two, solution_two)).reshape(-1)
+    expected[4:6] = adjoint_rhs_two
+    adjoint_rhs_three = np.linalg.solve(matrix_three.T, matrix_weights)
+    expected[6:15] = (-(adjoint_rhs_three @ solution_three.T)).reshape(-1)
+    expected[15:] = adjoint_rhs_three.reshape(-1)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_linalg_solve_fails_closed_invalid_contracts() -> None:
+    """Program AD solve should reject invalid matrix and right-hand side contracts."""
+
+    with pytest.raises(ValueError, match="matrix must be rank-2"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.solve(values[:2], values[2:4])),
+            np.arange(1.0, 5.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="matrix must be square"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.solve(np.reshape(values[:6], (2, 3)), values[6:8])),
+            np.arange(1.0, 9.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="vector length must match matrix"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.solve(np.reshape(values[:4], (2, 2)), values[4:7])),
+            np.arange(1.0, 8.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires a nonsingular matrix"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.solve(np.reshape(values[:4], (2, 2)), values[4:6])),
+            np.array([1.0, 2.0, 2.0, 4.0, 1.0, 0.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 
