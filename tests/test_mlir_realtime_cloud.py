@@ -47,6 +47,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     PrimitiveIdentity,
     PrimitiveTransformRule,
+    primitive_contract_for,
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
@@ -117,6 +118,8 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert isinstance(plan.statuses[0], PrimitiveLoweringStatus)
     assert plan.statuses[0].has_shape_rule is True
     assert plan.statuses[0].has_dtype_rule is True
+    assert plan.statuses[0].has_static_argument_rule is False
+    assert plan.statuses[0].lowering_metadata["mlir_op"] == "scpn_diff.rx_expectation"
     assert plan.statuses[0].nondifferentiable_policy == "fail_closed_at_branch_points"
     assert plan.statuses[0].effect == "pure"
     assert module.text == repeat.text
@@ -130,12 +133,63 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert "scpn_diff.lowering_status" in module.text
     assert "shape_rule = true" in module.text
     assert "dtype_rule = true" in module.text
+    assert "static_argument_rule = false" in module.text
+    assert "scpn_diff.lowering_metadata" in module.text
     assert 'policy = "fail_closed_at_branch_points"' in module.text
     assert 'effect = "pure"' in module.text
     assert 'execution = "interchange_only"' in module.text
     assert "blocked: rust batching backend not linked" in module.text
     assert "blocked: llvm lowering backend not linked" in module.text
     assert "scpn_diff.rx_expectation" in module.text
+
+
+def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
+    """Compiler AD planning should expose static linalg signatures without native overclaim."""
+
+    registry = CustomDerivativeRegistry()
+    for name in ("matrix_power", "multi_dot"):
+        contract = primitive_contract_for(PrimitiveIdentity("scpn.program_ad.linalg", name, "1"))
+        registry.register_transform(
+            PrimitiveTransformRule(
+                identity=contract.identity,
+                derivative_rule=contract.derivative_rule,
+                batching_rule=contract.batching_rule,
+                lowering_metadata=contract.lowering_metadata,
+                shape_rule=contract.shape_rule,
+                dtype_rule=contract.dtype_rule,
+                static_argument_rule=contract.static_argument_rule,
+                nondifferentiable_policy=contract.nondifferentiable_policy,
+                effect=contract.effect,
+            )
+        )
+
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+
+    statuses = {status.identity.name: status for status in plan.statuses}
+    assert statuses["matrix_power"].has_static_argument_rule is True
+    assert statuses["multi_dot"].has_static_argument_rule is True
+    assert (
+        statuses["matrix_power"].lowering_metadata["static_derivative_factory"]
+        == "program_ad_linalg_matrix_power_derivative_rule"
+    )
+    assert statuses["matrix_power"].lowering_metadata["static_signature"] == "power:i64"
+    assert (
+        statuses["multi_dot"].lowering_metadata["static_signature"]
+        == "operand_shapes:ranked_tensor_shape_sequence"
+    )
+    assert module.resource_counts["executable_backends"] == 0
+    assert module.metadata["static_argument_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1",
+        "scpn.program_ad.linalg:multi_dot@1",
+    ]
+    assert "static_argument_rule = true" in module.text
+    assert 'key = "static_signature", value = "power:i64"' in module.text
+    assert (
+        'key = "static_signature", value = "operand_shapes:ranked_tensor_shape_sequence"'
+        in module.text
+    )
+    assert "blocked_until_executable_linalg_lowering" in module.text
 
 
 def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims() -> None:

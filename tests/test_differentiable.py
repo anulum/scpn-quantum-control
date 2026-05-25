@@ -4603,7 +4603,11 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
         assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
         assert contract.effect == "pure"
         assert contract.lowering_metadata["program_ad"] == "operator_intercepted_trace"
-        assert contract.lowering_metadata["mlir"] == "blocked_until_executable_linalg_lowering"
+        assert (
+            contract.lowering_metadata["mlir"]
+            == "available: scpn_diff linalg dialect interchange; executable lowering blocked"
+        )
+        assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.linalg.{name}"
         assert contract.batching_rule is not None
         assert contract.dtype_rule is not None
         assert contract.shape_rule is not None
@@ -4667,6 +4671,10 @@ def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
     vector = np.array([1.0, -0.25], dtype=np.float64)
     right = np.array([[0.25, 1.0, -0.5], [1.5, -0.25, 0.75]], dtype=np.float64)
 
+    contracts = {
+        name: primitive_contract_for(PrimitiveIdentity("scpn.program_ad.linalg", name, "1"))
+        for name in ("matrix_power", "multi_dot")
+    }
     no_static = primitive_static_argument_rule_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "det", "1")
     )
@@ -4687,6 +4695,19 @@ def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
         is matrix_power_static
     )
     assert callable(matrix_power_static)
+    assert (
+        contracts["matrix_power"].lowering_metadata["static_derivative_factory"]
+        == "program_ad_linalg_matrix_power_derivative_rule"
+    )
+    assert contracts["matrix_power"].lowering_metadata["static_signature"] == "power:i64"
+    assert (
+        contracts["multi_dot"].lowering_metadata["static_derivative_factory"]
+        == "program_ad_linalg_multi_dot_derivative_rule"
+    )
+    assert (
+        contracts["multi_dot"].lowering_metadata["static_signature"]
+        == "operand_shapes:ranked_tensor_shape_sequence"
+    )
 
     with pytest.raises(ValueError, match="integer power"):
         matrix_power_static((matrix, 1.5))

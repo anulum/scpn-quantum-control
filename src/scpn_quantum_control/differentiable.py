@@ -5923,6 +5923,36 @@ def _program_ad_linalg_batching_rule(
     return np.moveaxis(stacked, 0, axis_index)
 
 
+def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
+    metadata = {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff linalg dialect interchange; executable lowering blocked",
+        "mlir_op": f"scpn_diff.linalg.{name}",
+        "llvm": "blocked_until_executable_linalg_lowering",
+        "rust": "blocked_until_polyglot_linalg_ad",
+        "static_argument_rule": "none",
+        "static_derivative_factory": "not_required",
+        "static_signature": "none",
+    }
+    if name == "matrix_power":
+        metadata.update(
+            {
+                "static_argument_rule": "required",
+                "static_derivative_factory": "program_ad_linalg_matrix_power_derivative_rule",
+                "static_signature": "power:i64",
+            }
+        )
+    elif name == "multi_dot":
+        metadata.update(
+            {
+                "static_argument_rule": "required",
+                "static_derivative_factory": "program_ad_linalg_multi_dot_derivative_rule",
+                "static_signature": "operand_shapes:ranked_tensor_shape_sequence",
+            }
+        )
+    return metadata
+
+
 def _register_program_ad_linalg_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_LINALG_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -5933,12 +5963,7 @@ def _register_program_ad_linalg_primitive_contracts() -> None:
                 identity=identity,
                 derivative_rule=rule,
                 batching_rule=_program_ad_linalg_batching_rule,
-                lowering_metadata={
-                    "program_ad": "operator_intercepted_trace",
-                    "mlir": "blocked_until_executable_linalg_lowering",
-                    "llvm": "blocked_until_executable_linalg_lowering",
-                    "rust": "blocked_until_polyglot_linalg_ad",
-                },
+                lowering_metadata=_program_ad_linalg_lowering_metadata(name),
                 shape_rule=_PROGRAM_AD_LINALG_SHAPE_RULES[name],
                 dtype_rule=_program_ad_linalg_dtype_rule,
                 static_argument_rule=_PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES[name],

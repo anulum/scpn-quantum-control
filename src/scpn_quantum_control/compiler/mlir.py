@@ -87,6 +87,8 @@ class PrimitiveLoweringStatus:
     mlir_op: str
     has_shape_rule: bool = False
     has_dtype_rule: bool = False
+    has_static_argument_rule: bool = False
+    lowering_metadata: Mapping[str, str] = field(default_factory=dict)
     nondifferentiable_policy: str = "not_declared"
     effect: str = "pure"
     mlir_lowering: str = "available: scpn_diff dialect interchange"
@@ -106,6 +108,14 @@ class PrimitiveLoweringStatus:
             raise ValueError("mlir_op must be a non-empty MLIR-safe operation name")
         if not isinstance(self.has_shape_rule, bool) or not isinstance(self.has_dtype_rule, bool):
             raise ValueError("has_shape_rule and has_dtype_rule must be booleans")
+        if not isinstance(self.has_static_argument_rule, bool):
+            raise ValueError("has_static_argument_rule must be a boolean")
+        metadata = dict(self.lowering_metadata)
+        if any(not isinstance(key, str) or not key for key in metadata):
+            raise ValueError("lowering metadata keys must be non-empty strings")
+        if any(not isinstance(value, str) or not value for value in metadata.values()):
+            raise ValueError("lowering metadata values must be non-empty strings")
+        object.__setattr__(self, "lowering_metadata", MappingProxyType(metadata))
         if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
             raise ValueError("nondifferentiable_policy must be non-empty")
         if not isinstance(self.effect, str) or not self.effect:
@@ -183,6 +193,9 @@ def build_compiler_ad_transform_plan(
                 and transform_rule.shape_rule is not None,
                 has_dtype_rule=transform_rule is not None
                 and transform_rule.dtype_rule is not None,
+                has_static_argument_rule=transform_rule is not None
+                and transform_rule.static_argument_rule is not None,
+                lowering_metadata=metadata,
                 nondifferentiable_policy="not_declared"
                 if transform_rule is None
                 else transform_rule.nondifferentiable_policy,
@@ -220,6 +233,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f"jvp = {_fmt_bool(status.has_jvp)}, vjp = {_fmt_bool(status.has_vjp)}, "
             f"shape_rule = {_fmt_bool(status.has_shape_rule)}, "
             f"dtype_rule = {_fmt_bool(status.has_dtype_rule)}, "
+            f"static_argument_rule = {_fmt_bool(status.has_static_argument_rule)}, "
             f'policy = "{_escape_mlir_string(status.nondifferentiable_policy)}", '
             f'effect = "{_escape_mlir_string(status.effect)}"}}'
         )
@@ -230,6 +244,13 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f'rust = "{_escape_mlir_string(status.rust_lowering)}", '
             f'llvm = "{_escape_mlir_string(status.llvm_lowering)}"}}'
         )
+        for key, value in sorted(status.lowering_metadata.items()):
+            lines.append(
+                "    scpn_diff.lowering_metadata "
+                f'{{identity = "{_escape_mlir_string(status.identity.key)}", '
+                f'key = "{_escape_mlir_string(key)}", '
+                f'value = "{_escape_mlir_string(value)}"}}'
+            )
     lines.append(
         "    scpn_diff.ad_transform "
         f'{{kind = "{_escape_mlir_string(plan.transform)}", execution = "interchange_only"}}'
@@ -241,6 +262,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "dialect": plan.dialect,
         "executable_backend": plan.executable_backend,
         "primitive_identities": [status.identity.key for status in plan.statuses],
+        "static_argument_primitives": [
+            status.identity.key for status in plan.statuses if status.has_static_argument_rule
+        ],
         "transform": plan.transform,
     }
     encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
