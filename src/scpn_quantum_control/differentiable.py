@@ -601,6 +601,16 @@ class TraceADArray:
             raise ValueError("TraceADArray reshape must preserve size")
         return TraceADArray(tuple(self._items), tuple(int(item) for item in target), self.context)
 
+    def ravel(self) -> TraceADArray:
+        """Return a flat view-preserving program AD array."""
+
+        return TraceADArray(tuple(self._items), (self.size,), self.context)
+
+    def flatten(self) -> TraceADArray:
+        """Return a flat copy-equivalent program AD array."""
+
+        return self.ravel()
+
     @property
     def T(self) -> TraceADArray:
         """Return the transpose for rank-2 program AD arrays."""
@@ -752,6 +762,54 @@ class TraceADArray:
             if len(args) != 3 or kwargs:
                 raise ValueError("whole-program AD np.where supports condition, x, and y")
             return _trace_where(args[0], args[1], args[2], self.context)
+        if func is np.reshape:
+            if len(args) != 2 or kwargs:
+                raise ValueError("whole-program AD np.reshape supports array and shape")
+            shape = args[1]
+            if isinstance(shape, int):
+                return _coerce_trace_array(args[0], self.context).reshape(shape)
+            return _coerce_trace_array(args[0], self.context).reshape(cast(tuple[int, ...], shape))
+        if func is np.ravel:
+            if len(args) != 1 or kwargs:
+                raise ValueError("whole-program AD np.ravel supports one array")
+            return _coerce_trace_array(args[0], self.context).ravel()
+        if func is np.transpose:
+            if len(args) != 1 or kwargs:
+                raise ValueError("whole-program AD np.transpose supports one array")
+            return _coerce_trace_array(args[0], self.context).T
+        if func is np.concatenate:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError(
+                    "whole-program AD np.concatenate supports arrays and optional axis"
+                )
+            return _trace_concatenate(
+                cast(Sequence[object], args[0]),
+                self.context,
+                axis=cast(int, kwargs.get("axis", 0)),
+            )
+        if func is np.stack:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("whole-program AD np.stack supports arrays and optional axis")
+            return _trace_stack(
+                cast(Sequence[object], args[0]),
+                self.context,
+                axis=cast(int, kwargs.get("axis", 0)),
+            )
+        if func is np.clip:
+            if len(args) < 3 or len(args) > 4 or kwargs:
+                raise ValueError("whole-program AD np.clip supports array, lower, and upper")
+            return _trace_clip(args[0], args[1], args[2], self.context)
+        if func is np.linalg.norm:
+            if len(args) != 1 or kwargs.keys() - {"ord", "axis"}:
+                raise ValueError(
+                    "whole-program AD np.linalg.norm supports one array and optional ord/axis"
+                )
+            return _trace_norm(
+                args[0],
+                self.context,
+                ord_value=kwargs.get("ord"),
+                axis=cast(int | None, kwargs.get("axis")),
+            )
         raise ValueError(f"unsupported whole-program AD NumPy function {func.__name__}")
 
     def _binary(self, other: object, op: np.ufunc) -> TraceADScalar | TraceADArray:
@@ -1172,6 +1230,108 @@ def _trace_where(
         )
     result = tuple(items)
     return result[0] if shape == () else TraceADArray(result, shape, context)
+
+
+def _trace_concatenate(
+    arrays: Sequence[object],
+    context: _WholeProgramTraceContext,
+    *,
+    axis: int = 0,
+) -> TraceADArray:
+    if not arrays:
+        raise ValueError("whole-program AD np.concatenate requires at least one array")
+    trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
+    if axis != 0:
+        raise ValueError("whole-program AD np.concatenate currently supports axis=0")
+    if any(array.ndim != 1 for array in trace_arrays):
+        raise ValueError("whole-program AD np.concatenate supports one-dimensional arrays")
+    items = tuple(item for array in trace_arrays for item in array._items)
+    return TraceADArray(items, (len(items),), context)
+
+
+def _trace_stack(
+    arrays: Sequence[object],
+    context: _WholeProgramTraceContext,
+    *,
+    axis: int = 0,
+) -> TraceADArray:
+    if not arrays:
+        raise ValueError("whole-program AD np.stack requires at least one array")
+    trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
+    shape = trace_arrays[0].shape
+    if any(array.shape != shape for array in trace_arrays):
+        raise ValueError("whole-program AD np.stack operands must have matching shapes")
+    if len(shape) != 1:
+        raise ValueError("whole-program AD np.stack currently supports one-dimensional arrays")
+    if axis < 0:
+        axis += 2
+    if axis == 0:
+        items = tuple(item for array in trace_arrays for item in array._items)
+        return TraceADArray(items, (len(trace_arrays), shape[0]), context)
+    if axis == 1:
+        items = tuple(
+            trace_arrays[row]._items[col]
+            for col in range(shape[0])
+            for row in range(len(trace_arrays))
+        )
+        return TraceADArray(items, (shape[0], len(trace_arrays)), context)
+    raise ValueError("whole-program AD np.stack supports axis 0 or 1 for vectors")
+
+
+def _trace_clip(
+    values: object,
+    lower: object,
+    upper: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    value_array = _coerce_trace_array(values, context)
+    lower_array = _broadcast_trace_array(lower, value_array.shape, context)
+    upper_array = _broadcast_trace_array(upper, value_array.shape, context)
+    items = []
+    for value, lower_item, upper_item in zip(
+        value_array._items, lower_array._items, upper_array._items, strict=True
+    ):
+        if lower_item.primal > upper_item.primal:
+            raise ValueError("whole-program AD np.clip lower bound must not exceed upper bound")
+        if value.primal < lower_item.primal:
+            chosen = lower_item
+        elif value.primal > upper_item.primal:
+            chosen = upper_item
+        else:
+            chosen = value
+        items.append(
+            context.make(
+                "clip",
+                (value.name, lower_item.name, upper_item.name),
+                chosen.primal,
+                chosen.tangent,
+            )
+        )
+    result = tuple(items)
+    return (
+        result[0] if value_array.shape == () else TraceADArray(result, value_array.shape, context)
+    )
+
+
+def _trace_norm(
+    values: object,
+    context: _WholeProgramTraceContext,
+    *,
+    ord_value: object = None,
+    axis: int | None = None,
+) -> TraceADScalar:
+    if axis is not None:
+        raise ValueError("whole-program AD np.linalg.norm supports flattened norms only")
+    if ord_value not in {None, 2, 2.0}:
+        raise ValueError("whole-program AD np.linalg.norm supports only Euclidean norm")
+    array = _coerce_trace_array(values, context)
+    squared = array._items[0] * array._items[0]
+    for item in array._items[1:]:
+        squared = squared + item * item
+    norm = np.sqrt(squared)
+    if not isinstance(norm, TraceADScalar):
+        raise ValueError("whole-program AD norm must return a scalar")
+    return norm
 
 
 def whole_program_grad(

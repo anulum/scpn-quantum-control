@@ -3403,6 +3403,33 @@ def test_whole_program_ad_handles_matrix_indexing_reductions_and_products() -> N
     np.testing.assert_allclose(result.gradient, [6.5, 3.5, 8.0, 1.5], atol=1.0e-12)
 
 
+def test_whole_program_ad_handles_numpy_composition_and_norms() -> None:
+    """Program AD should cover common NumPy shape composition and norm workflows."""
+
+    def objective(values: np.ndarray) -> object:
+        left = values[:2]
+        right = values[2:4]
+        stacked = np.stack((left, right), axis=0)
+        flat = np.concatenate((stacked[0], stacked[1]))
+        reshaped = np.reshape(flat, (2, 2))
+        transposed = np.transpose(reshaped)
+        clipped = np.clip(transposed, -0.25, 1.5)
+        return np.linalg.norm(clipped) + np.sum(np.ravel(transposed))
+
+    values = np.array([0.5, -0.1, 2.0, -2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+
+    norm = math.sqrt(0.5**2 + (-0.1) ** 2 + 1.5**2 + (-0.25) ** 2)
+    expected = np.array([1.0 + 0.5 / norm, 1.0 - 0.1 / norm, 1.0, 1.0], dtype=np.float64)
+    assert any(node.op == "clip" for node in result.ir_nodes)
+    assert any(node.op == "sqrt" for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 
