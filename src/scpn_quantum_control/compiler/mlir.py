@@ -85,6 +85,10 @@ class PrimitiveLoweringStatus:
     has_jvp: bool
     has_vjp: bool
     mlir_op: str
+    has_shape_rule: bool = False
+    has_dtype_rule: bool = False
+    nondifferentiable_policy: str = "not_declared"
+    effect: str = "pure"
     mlir_lowering: str = "available: scpn_diff dialect interchange"
     rust_lowering: str = "blocked: no Rust differentiable primitive backend"
     llvm_lowering: str = "blocked: no LLVM/JIT differentiable primitive backend"
@@ -100,6 +104,12 @@ class PrimitiveLoweringStatus:
             raise ValueError("primitive lowering requires a JVP or VJP rule")
         if not self.mlir_op or not self.mlir_op.replace(".", "").replace("_", "").isalnum():
             raise ValueError("mlir_op must be a non-empty MLIR-safe operation name")
+        if not isinstance(self.has_shape_rule, bool) or not isinstance(self.has_dtype_rule, bool):
+            raise ValueError("has_shape_rule and has_dtype_rule must be booleans")
+        if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
+            raise ValueError("nondifferentiable_policy must be non-empty")
+        if not isinstance(self.effect, str) or not self.effect:
+            raise ValueError("effect must be non-empty")
         for label, status in (
             ("mlir_lowering", self.mlir_lowering),
             ("rust_lowering", self.rust_lowering),
@@ -169,6 +179,14 @@ def build_compiler_ad_transform_plan(
                 has_jvp=rule.jvp_rule is not None,
                 has_vjp=rule.vjp_rule is not None,
                 mlir_op=metadata.get("mlir_op", f"{dialect}.{identity.namespace}_{identity.name}"),
+                has_shape_rule=transform_rule is not None
+                and transform_rule.shape_rule is not None,
+                has_dtype_rule=transform_rule is not None
+                and transform_rule.dtype_rule is not None,
+                nondifferentiable_policy="not_declared"
+                if transform_rule is None
+                else transform_rule.nondifferentiable_policy,
+                effect="pure" if transform_rule is None else transform_rule.effect,
                 mlir_lowering=metadata.get("mlir", default_mlir_status),
                 rust_lowering=metadata.get(
                     "rust", "blocked: no Rust differentiable primitive backend"
@@ -199,7 +217,11 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f'%p{index} {{identity = "{_escape_mlir_string(status.identity.key)}", '
             f'rule = "{_escape_mlir_string(status.rule_name)}", '
             f'op = "{_escape_mlir_string(status.mlir_op)}", '
-            f"jvp = {_fmt_bool(status.has_jvp)}, vjp = {_fmt_bool(status.has_vjp)}}}"
+            f"jvp = {_fmt_bool(status.has_jvp)}, vjp = {_fmt_bool(status.has_vjp)}, "
+            f"shape_rule = {_fmt_bool(status.has_shape_rule)}, "
+            f"dtype_rule = {_fmt_bool(status.has_dtype_rule)}, "
+            f'policy = "{_escape_mlir_string(status.nondifferentiable_policy)}", '
+            f'effect = "{_escape_mlir_string(status.effect)}"}}'
         )
         lines.append(
             "    scpn_diff.lowering_status "

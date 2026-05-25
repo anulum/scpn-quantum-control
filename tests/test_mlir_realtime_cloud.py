@@ -84,10 +84,23 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
         trainable=(True,),
     )
     registry = CustomDerivativeRegistry()
+
+    def shape_rule(args: tuple[object, ...]) -> tuple[int, ...]:
+        del args
+        return (1,)
+
+    def dtype_rule(args: tuple[object, ...]) -> str:
+        del args
+        return "float64"
+
     registry.register_transform(
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
+            shape_rule=shape_rule,
+            dtype_rule=dtype_rule,
+            nondifferentiable_policy="fail_closed_at_branch_points",
+            effect="pure",
             lowering_metadata={
                 "mlir_op": "scpn_diff.rx_expectation",
                 "rust": "blocked: rust batching backend not linked",
@@ -102,6 +115,10 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
 
     assert isinstance(plan, CompilerADTransformPlan)
     assert isinstance(plan.statuses[0], PrimitiveLoweringStatus)
+    assert plan.statuses[0].has_shape_rule is True
+    assert plan.statuses[0].has_dtype_rule is True
+    assert plan.statuses[0].nondifferentiable_policy == "fail_closed_at_branch_points"
+    assert plan.statuses[0].effect == "pure"
     assert module.text == repeat.text
     assert module.sha256 == repeat.sha256
     assert module.resource_counts["primitives"] == 1
@@ -111,6 +128,10 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.metadata["executable_backend"] == "none"
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
+    assert "shape_rule = true" in module.text
+    assert "dtype_rule = true" in module.text
+    assert 'policy = "fail_closed_at_branch_points"' in module.text
+    assert 'effect = "pure"' in module.text
     assert 'execution = "interchange_only"' in module.text
     assert "blocked: rust batching backend not linked" in module.text
     assert "blocked: llvm lowering backend not linked" in module.text
@@ -131,6 +152,15 @@ def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims(
     )
     with pytest.raises(ValueError, match="executable_backend"):
         CompilerADTransformPlan((status,), executable_backend="llvm")
+    with pytest.raises(ValueError, match="nondifferentiable_policy"):
+        PrimitiveLoweringStatus(
+            identity=PrimitiveIdentity("scpn.test", "primitive", "1"),
+            rule_name="rule",
+            has_jvp=True,
+            has_vjp=False,
+            mlir_op="scpn_diff.scpn_test_primitive",
+            nondifferentiable_policy="",
+        )
     with pytest.raises(ValueError, match="registry"):
         build_compiler_ad_transform_plan(object())  # type: ignore[arg-type]
 
