@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 415,
+    "public_api_exports": 419,
     "public_documentation_pages": 235,
-    "python_model_classes": 1483,
+    "python_model_classes": 1484,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -4476,6 +4476,10 @@
         "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
+        "name": "PrimitiveTransformRule",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "PrincipleTeleologyAsOptimisationConfig",
         "path": "src/scpn_quantum_control/paper0/principle_teleology_as_optimisation_validation.py"
       },
@@ -7901,8 +7905,10 @@
     "PennyLaneDeviceHALAdapter",
     "PhaseOrchestratorAdapter",
     "PhaseVQE",
+    "PrimitiveBatchingRule",
     "PrimitiveIdentity",
     "PrimitiveLoweringStatus",
+    "PrimitiveTransformRule",
     "Problem",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
@@ -8133,6 +8139,8 @@
     "qutip_backend",
     "qutip_lindblad_baseline",
     "register_custom_derivative_rule",
+    "register_primitive_batching_rule",
+    "register_primitive_transform_rule",
     "registered_custom_jacobian",
     "registered_custom_jvp",
     "registered_custom_vjp",

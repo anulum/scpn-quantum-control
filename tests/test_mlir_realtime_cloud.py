@@ -41,6 +41,7 @@ from scpn_quantum_control.differentiable import (
     CustomDerivativeRule,
     Parameter,
     PrimitiveIdentity,
+    PrimitiveTransformRule,
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
@@ -78,7 +79,17 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
         trainable=(True,),
     )
     registry = CustomDerivativeRegistry()
-    registry.register(identity, rule)
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            lowering_metadata={
+                "mlir_op": "scpn_diff.rx_expectation",
+                "rust": "blocked: rust batching backend not linked",
+                "llvm": "blocked: llvm lowering backend not linked",
+            },
+        )
+    )
 
     plan = build_compiler_ad_transform_plan(registry)
     module = compile_compiler_ad_transform_plan_to_mlir(plan)
@@ -96,8 +107,9 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
     assert 'execution = "interchange_only"' in module.text
-    assert "blocked: no Rust" in module.text
-    assert "blocked: no LLVM" in module.text
+    assert "blocked: rust batching backend not linked" in module.text
+    assert "blocked: llvm lowering backend not linked" in module.text
+    assert "scpn_diff.rx_expectation" in module.text
 
 
 def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims() -> None:

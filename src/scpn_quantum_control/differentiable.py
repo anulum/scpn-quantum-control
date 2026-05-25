@@ -19,7 +19,7 @@ import inspect
 import linecache
 import sys
 import textwrap
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, cast
 
@@ -32,6 +32,9 @@ ComplexStepObjective = Callable[[NDArray[np.complex128]], object]
 CustomJVPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 CustomVJPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 VMapInAxes = int | None | Sequence[int | None]
+PrimitiveBatchingRule = Callable[
+    [Callable[..., object], tuple[object, ...], tuple[int | None, ...], int], object
+]
 
 
 @dataclass(frozen=True)
@@ -558,6 +561,9 @@ def vmap(
     function: Callable[..., object],
     in_axes: VMapInAxes = 0,
     out_axes: int = 0,
+    *,
+    primitive_identity: PrimitiveIdentity | str | None = None,
+    registry: CustomDerivativeRegistry | None = None,
 ) -> Callable[..., object]:
     """Return a composable vectorizing transform over leading or selected axes.
 
@@ -572,6 +578,10 @@ def vmap(
         raise ValueError("vmap function must be callable")
     if not isinstance(out_axes, int):
         raise ValueError("out_axes must be an integer")
+    batching_rule: PrimitiveBatchingRule | None = None
+    if primitive_identity is not None:
+        target_registry = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+        batching_rule = target_registry.require_batching_rule(primitive_identity)
 
     def vectorized(*args: object) -> object:
         if not args:
@@ -595,6 +605,8 @@ def vmap(
             mapped.append((array, axis_index))
         if batch_size is None:
             raise ValueError("at least one in_axes entry must be mapped")
+        if batching_rule is not None:
+            return batching_rule(function, args, axes, out_axes)
 
         outputs = []
         for item in range(batch_size):
@@ -1991,11 +2003,36 @@ def _normalise_identity_token(name: str, value: object) -> str:
     return value
 
 
+@dataclass(frozen=True)
+class PrimitiveTransformRule:
+    """Combined transform binding for one differentiable primitive identity."""
+
+    identity: PrimitiveIdentity
+    derivative_rule: CustomDerivativeRule
+    batching_rule: PrimitiveBatchingRule | None = None
+    lowering_metadata: Mapping[str, str] | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.identity, PrimitiveIdentity):
+            raise ValueError("transform identity must be a PrimitiveIdentity")
+        if not isinstance(self.derivative_rule, CustomDerivativeRule):
+            raise ValueError("transform derivative_rule must be a CustomDerivativeRule")
+        if self.batching_rule is not None and not callable(self.batching_rule):
+            raise ValueError("transform batching_rule must be callable")
+        metadata = {} if self.lowering_metadata is None else dict(self.lowering_metadata)
+        if any(not isinstance(key, str) or not key for key in metadata):
+            raise ValueError("lowering metadata keys must be non-empty strings")
+        if any(not isinstance(value, str) or not value for value in metadata.values()):
+            raise ValueError("lowering metadata values must be non-empty strings")
+        object.__setattr__(self, "lowering_metadata", metadata)
+
+
 class CustomDerivativeRegistry:
     """Conflict-safe registry binding primitive identities to exact rules."""
 
     def __init__(self, rules: dict[PrimitiveIdentity, CustomDerivativeRule] | None = None) -> None:
         self._rules: dict[PrimitiveIdentity, CustomDerivativeRule] = {}
+        self._transforms: dict[PrimitiveIdentity, PrimitiveTransformRule] = {}
         if rules is not None:
             for identity, rule in rules.items():
                 self.register(identity, rule)
@@ -2018,6 +2055,18 @@ class CustomDerivativeRegistry:
                 f"custom derivative rule already registered for {primitive_identity.key}"
             )
         self._rules[primitive_identity] = rule
+        existing_transform = self._transforms.get(primitive_identity)
+        if existing_transform is None or existing_transform.derivative_rule != rule:
+            self._transforms[primitive_identity] = PrimitiveTransformRule(
+                identity=primitive_identity,
+                derivative_rule=rule,
+                batching_rule=None
+                if existing_transform is None
+                else existing_transform.batching_rule,
+                lowering_metadata={}
+                if existing_transform is None
+                else existing_transform.lowering_metadata,
+            )
         return rule
 
     def decorator(
@@ -2032,6 +2081,70 @@ class CustomDerivativeRegistry:
             return self.register(identity, rule, overwrite=overwrite)
 
         return register_rule
+
+    def register_transform(
+        self,
+        transform: PrimitiveTransformRule,
+        *,
+        overwrite: bool = False,
+    ) -> PrimitiveTransformRule:
+        """Register derivative, batching, and lowering metadata for one primitive."""
+
+        if not isinstance(transform, PrimitiveTransformRule):
+            raise ValueError("transform must be a PrimitiveTransformRule")
+        existing = self._transforms.get(transform.identity)
+        if existing is not None and existing != transform and not overwrite:
+            raise ValueError(
+                f"primitive transform already registered for {transform.identity.key}"
+            )
+        self.register(transform.identity, transform.derivative_rule, overwrite=overwrite)
+        self._transforms[transform.identity] = transform
+        return transform
+
+    def register_batching_rule(
+        self,
+        identity: PrimitiveIdentity | str,
+        batching_rule: PrimitiveBatchingRule,
+        *,
+        overwrite: bool = False,
+    ) -> PrimitiveBatchingRule:
+        """Attach a primitive-specific batching rule to an existing identity."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        if not callable(batching_rule):
+            raise ValueError("batching_rule must be callable")
+        rule = self.require(primitive_identity)
+        existing = self._transforms.get(primitive_identity)
+        if existing is not None and existing.batching_rule is not None and not overwrite:
+            raise ValueError(f"batching rule already registered for {primitive_identity.key}")
+        metadata = {} if existing is None else existing.lowering_metadata
+        self._transforms[primitive_identity] = PrimitiveTransformRule(
+            identity=primitive_identity,
+            derivative_rule=rule,
+            batching_rule=batching_rule,
+            lowering_metadata=metadata,
+        )
+        return batching_rule
+
+    def batching_rule_for(self, identity: PrimitiveIdentity | str) -> PrimitiveBatchingRule | None:
+        """Return the registered primitive batching rule, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else transform.batching_rule
+
+    def require_batching_rule(self, identity: PrimitiveIdentity | str) -> PrimitiveBatchingRule:
+        """Return a primitive batching rule or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        rule = self.batching_rule_for(primitive_identity)
+        if rule is None:
+            raise ValueError(f"no batching rule registered for {primitive_identity.key}")
+        return rule
+
+    def transform_snapshot(self) -> dict[PrimitiveIdentity, PrimitiveTransformRule]:
+        """Return a copy of registered primitive transform bindings."""
+
+        return dict(self._transforms)
 
     def lookup(self, identity: PrimitiveIdentity | str) -> CustomDerivativeRule | None:
         """Return the registered rule for an identity, if present."""
@@ -2052,6 +2165,7 @@ class CustomDerivativeRegistry:
 
         primitive_identity = PrimitiveIdentity.parse(identity)
         try:
+            self._transforms.pop(primitive_identity, None)
             return self._rules.pop(primitive_identity)
         except KeyError as exc:
             raise ValueError(
@@ -2078,6 +2192,31 @@ def register_custom_derivative_rule(
 
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.register(identity, rule, overwrite=overwrite)
+
+
+def register_primitive_transform_rule(
+    transform: PrimitiveTransformRule,
+    *,
+    overwrite: bool = False,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveTransformRule:
+    """Register a combined derivative/batching/lowering transform binding."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.register_transform(transform, overwrite=overwrite)
+
+
+def register_primitive_batching_rule(
+    identity: PrimitiveIdentity | str,
+    batching_rule: PrimitiveBatchingRule,
+    *,
+    overwrite: bool = False,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveBatchingRule:
+    """Register a batching rule for an existing primitive derivative rule."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.register_batching_rule(identity, batching_rule, overwrite=overwrite)
 
 
 def custom_derivative_rule_for(
@@ -6035,7 +6174,9 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "PrimitiveBatchingRule",
     "PrimitiveIdentity",
+    "PrimitiveTransformRule",
     "ReverseNode",
     "ShotAllocationResult",
     "SparseMatrixResult",
@@ -6102,6 +6243,8 @@ __all__ = [
     "levenberg_marquardt_step",
     "natural_gradient",
     "registered_custom_jacobian",
+    "register_primitive_batching_rule",
+    "register_primitive_transform_rule",
     "registered_custom_jvp",
     "registered_custom_vjp",
     "register_custom_derivative_rule",

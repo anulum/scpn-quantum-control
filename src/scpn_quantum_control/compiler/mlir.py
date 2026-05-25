@@ -148,14 +148,28 @@ def build_compiler_ad_transform_plan(
     if not isinstance(registry, CustomDerivativeRegistry):
         raise ValueError("registry must be a CustomDerivativeRegistry")
     statuses = []
+    transform_snapshot = registry.transform_snapshot()
     for identity, rule in sorted(registry.snapshot().items(), key=lambda item: item[0].key):
+        transform_rule = transform_snapshot.get(identity)
+        metadata = (
+            {}
+            if transform_rule is None or transform_rule.lowering_metadata is None
+            else dict(transform_rule.lowering_metadata)
+        )
         statuses.append(
             PrimitiveLoweringStatus(
                 identity=identity,
                 rule_name=rule.name,
                 has_jvp=rule.jvp_rule is not None,
                 has_vjp=rule.vjp_rule is not None,
-                mlir_op=f"{dialect}.{identity.namespace}_{identity.name}",
+                mlir_op=metadata.get("mlir_op", f"{dialect}.{identity.namespace}_{identity.name}"),
+                mlir_lowering=metadata.get("mlir", "available: scpn_diff dialect interchange"),
+                rust_lowering=metadata.get(
+                    "rust", "blocked: no Rust differentiable primitive backend"
+                ),
+                llvm_lowering=metadata.get(
+                    "llvm", "blocked: no LLVM/JIT differentiable primitive backend"
+                ),
             )
         )
     return CompilerADTransformPlan(tuple(statuses), dialect=dialect, transform=transform)

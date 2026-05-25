@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 
 import numpy as np
 import pytest
@@ -45,7 +46,9 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    PrimitiveBatchingRule,
     PrimitiveIdentity,
+    PrimitiveTransformRule,
     ReverseNode,
     ShotAllocationResult,
     SparseMatrixResult,
@@ -118,6 +121,8 @@ from scpn_quantum_control.differentiable import (
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
     register_custom_derivative_rule,
+    register_primitive_batching_rule,
+    register_primitive_transform_rule,
     registered_custom_jacobian,
     registered_custom_jvp,
     registered_custom_vjp,
@@ -3542,3 +3547,109 @@ def test_transform_algebra_aliases_are_exported_from_package_root() -> None:
     assert scpn.jacrev is jacrev
     assert scpn.value_and_jacfwd is value_and_jacfwd
     assert scpn.value_and_jacrev is value_and_jacrev
+
+
+def test_vmap_uses_registered_primitive_batching_rule() -> None:
+    """vmap should dispatch to primitive-specific batching rules when requested."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "batched_affine", "1")
+    rule = CustomDerivativeRule(
+        name="batched_affine_rule",
+        value_fn=lambda values: np.array([values[0] + 2.0 * values[1]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [tangent[0] + 2.0 * tangent[1]], dtype=np.float64
+        ),
+        parameter_names=("offset", "phase"),
+        trainable=(True, True),
+    )
+    registry = CustomDerivativeRegistry()
+    registry.register(identity, rule)
+    calls: list[str] = []
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        calls.append("batching_rule")
+        assert axes == (0, None)
+        batch = np.asarray(args[0], dtype=np.float64)
+        scale = float(args[1])
+        return np.stack([batch[:, 0] + scale * batch[:, 1]], axis=out_axes)
+
+    registry.register_batching_rule(identity, batching_rule)
+    batched = vmap(
+        lambda row, scale: row[0] + scale * row[1],
+        in_axes=(0, None),
+        out_axes=1,
+        primitive_identity=identity,
+        registry=registry,
+    )
+
+    result = batched(np.array([[1.0, 2.0], [3.0, -1.0]], dtype=np.float64), 2.0)
+
+    assert calls == ["batching_rule"]
+    np.testing.assert_allclose(result, [[5.0], [1.0]], atol=1.0e-12)
+
+
+def test_primitive_transform_registry_holds_derivative_batching_and_lowering_metadata() -> None:
+    """Registry transform bindings should keep derivative, batching, and lowering metadata together."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "lowered_batch", "1")
+    rule = CustomDerivativeRule(
+        name="lowered_batch_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function, axes
+        return np.asarray(args[0], dtype=np.float64).sum(axis=1 + out_axes * 0)
+
+    registry = CustomDerivativeRegistry()
+    transform = PrimitiveTransformRule(
+        identity=identity,
+        derivative_rule=rule,
+        batching_rule=batching_rule,
+        lowering_metadata={"mlir_op": "scpn_diff.lowered_batch", "rust": "blocked"},
+    )
+
+    assert registry.register_transform(transform) is transform
+    assert registry.require(identity) is rule
+    assert registry.require_batching_rule(identity) is batching_rule
+    snapshot = registry.transform_snapshot()
+    assert snapshot[identity].lowering_metadata["mlir_op"] == "scpn_diff.lowered_batch"
+    with pytest.raises(ValueError, match="batching rule already registered"):
+        registry.register_batching_rule(identity, batching_rule)
+
+
+def test_vmap_rejects_missing_requested_primitive_batching_rule() -> None:
+    """Explicit primitive batching dispatch should fail closed if the rule is absent."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "missing_batch", "1")
+    rule = CustomDerivativeRule(
+        name="missing_batch_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+    registry = CustomDerivativeRegistry({identity: rule})
+
+    with pytest.raises(ValueError, match="no batching rule"):
+        vmap(lambda row: row[0], primitive_identity=identity, registry=registry)
+
+
+def test_primitive_batching_exports_are_available_from_package_root() -> None:
+    """Primitive batching registry APIs should be stable root exports."""
+
+    import scpn_quantum_control as scpn
+
+    assert scpn.PrimitiveBatchingRule is PrimitiveBatchingRule
+    assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
+    assert scpn.register_primitive_batching_rule is register_primitive_batching_rule
+    assert scpn.register_primitive_transform_rule is register_primitive_transform_rule
