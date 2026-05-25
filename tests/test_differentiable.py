@@ -3373,6 +3373,36 @@ def test_whole_program_ad_handles_piecewise_vector_numpy_semantics() -> None:
     np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
 
 
+def test_whole_program_ad_handles_matrix_indexing_reductions_and_products() -> None:
+    """Program AD should cover rank-2 array control, mutation, and products."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = values.reshape(2, 2).copy()
+        matrix[0, 1] = matrix[0, 1] + matrix[1, 0]
+        column_sum = np.sum(matrix, axis=0)
+        row_sum = np.sum(matrix, axis=1)
+        matrix_vector = matrix @ np.array([2.0, -1.0], dtype=np.float64)
+        vector_matrix = np.array([1.5, -0.5], dtype=np.float64) @ matrix
+        return (
+            np.sum(column_sum)
+            + np.sum(row_sum)
+            + np.sum(matrix_vector)
+            + np.sum(vector_matrix)
+            + np.sum(matrix.T)
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+
+    assert any(node.op == "mutation:setitem" for node in result.ir_nodes)
+    assert result.semantics_report is not None
+    assert result.semantics_report.mutation_observed is True
+    np.testing.assert_allclose(result.gradient, [6.5, 3.5, 8.0, 1.5], atol=1.0e-12)
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 

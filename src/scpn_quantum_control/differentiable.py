@@ -566,9 +566,17 @@ class TraceADArray:
         return self.shape[0]
 
     def __iter__(self) -> object:
-        if self.ndim != 1:
-            raise ValueError("whole-program AD array iteration supports one-dimensional arrays")
-        return iter(self._items)
+        if self.ndim == 1:
+            return iter(self._items)
+        if self.ndim == 2:
+            rows, cols = self.shape
+            return iter(
+                TraceADArray(
+                    tuple(self._items[row * cols : (row + 1) * cols]), (cols,), self.context
+                )
+                for row in range(rows)
+            )
+        raise ValueError("whole-program AD array iteration supports arrays with rank <= 2")
 
     def __array__(self, dtype: object = None) -> object:
         del dtype
@@ -593,6 +601,19 @@ class TraceADArray:
             raise ValueError("TraceADArray reshape must preserve size")
         return TraceADArray(tuple(self._items), tuple(int(item) for item in target), self.context)
 
+    @property
+    def T(self) -> TraceADArray:
+        """Return the transpose for rank-2 program AD arrays."""
+
+        if self.ndim != 2:
+            return self.copy()
+        rows, cols = self.shape
+        return TraceADArray(
+            tuple(self._items[row * cols + col] for col in range(cols) for row in range(rows)),
+            (cols, rows),
+            self.context,
+        )
+
     def sum(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         return _trace_array_sum(self, axis=axis)
 
@@ -608,32 +629,88 @@ class TraceADArray:
         )
 
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
-        if self.ndim != 1:
-            raise ValueError("whole-program AD array indexing supports one-dimensional arrays")
+        if self.ndim > 2:
+            raise ValueError("whole-program AD array indexing supports arrays with rank <= 2")
         if isinstance(index, tuple):
-            if len(index) != 1:
-                raise ValueError("whole-program AD array supports one-dimensional indices")
-            index = index[0]
+            if self.ndim == 1:
+                if len(index) != 1:
+                    raise ValueError("whole-program AD vector indexing expects one index")
+                index = index[0]
+            elif len(index) == 2:
+                row_index, col_index = index
+                rows, cols = self.shape
+                row_values = tuple(
+                    range(*row_index.indices(rows))
+                    if isinstance(row_index, slice)
+                    else (int(row_index),)
+                )
+                col_values = tuple(
+                    range(*col_index.indices(cols))
+                    if isinstance(col_index, slice)
+                    else (int(col_index),)
+                )
+                items = tuple(
+                    self._items[row * cols + col] for row in row_values for col in col_values
+                )
+                if not isinstance(row_index, slice) and not isinstance(col_index, slice):
+                    return items[0]
+                shape = (
+                    len(row_values) if isinstance(row_index, slice) else 1,
+                    len(col_values) if isinstance(col_index, slice) else 1,
+                )
+                return TraceADArray(items, shape, self.context)
+            else:
+                raise ValueError("whole-program AD matrix indexing expects two indices")
         if isinstance(index, slice):
+            if self.ndim == 2:
+                rows, cols = self.shape
+                row_values = tuple(range(*index.indices(rows)))
+                return TraceADArray(
+                    tuple(
+                        self._items[row * cols + col] for row in row_values for col in range(cols)
+                    ),
+                    (len(row_values), cols),
+                    self.context,
+                )
             sliced = tuple(self._items[index])
             return TraceADArray(sliced, (len(sliced),), self.context)
         if isinstance(index, (int, np.integer)):
+            if self.ndim == 2:
+                rows, cols = self.shape
+                row = int(index)
+                if row < 0:
+                    row += rows
+                return TraceADArray(
+                    tuple(self._items[row * cols : (row + 1) * cols]), (cols,), self.context
+                )
             return self._items[int(index)]
         raise ValueError("whole-program AD array indices must be integers or slices")
 
     def __setitem__(self, index: object, value: object) -> None:
-        if self.ndim != 1:
-            raise ValueError("whole-program AD array mutation supports one-dimensional arrays")
-        if not isinstance(index, (int, np.integer)):
+        if self.ndim > 2:
+            raise ValueError("whole-program AD array mutation supports arrays with rank <= 2")
+        if isinstance(index, tuple):
+            if self.ndim != 2 or len(index) != 2:
+                raise ValueError("whole-program AD matrix mutation expects two integer indices")
+            row, col = int(index[0]), int(index[1])
+            rows, cols = self.shape
+            if row < 0:
+                row += rows
+            if col < 0:
+                col += cols
+            flat_index = row * cols + col
+        elif isinstance(index, (int, np.integer)):
+            flat_index = int(index)
+        else:
             raise ValueError("whole-program AD array mutation supports integer indices")
         scalar = _coerce_trace_scalar(value, self.context)
         self.context.make(
             "mutation:setitem",
-            (f"%array[{int(index)}]", scalar.name),
+            (f"%array[{flat_index}]", scalar.name),
             scalar.primal,
             scalar.tangent,
         )
-        self._items[int(index)] = scalar
+        self._items[flat_index] = scalar
 
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
@@ -665,8 +742,12 @@ class TraceADArray:
             )
         if func is np.dot:
             if len(args) != 2 or kwargs:
-                raise ValueError("whole-program AD np.dot supports two one-dimensional operands")
+                raise ValueError("whole-program AD np.dot supports two operands")
             return _trace_dot(args[0], args[1], self.context)
+        if func is np.matmul:
+            if len(args) != 2 or kwargs:
+                raise ValueError("whole-program AD np.matmul supports two operands")
+            return _trace_matmul(args[0], args[1], self.context)
         if func is np.where:
             if len(args) != 3 or kwargs:
                 raise ValueError("whole-program AD np.where supports condition, x, and y")
@@ -708,6 +789,12 @@ class TraceADArray:
 
     def __neg__(self) -> TraceADScalar | TraceADArray:
         return _apply_trace_ufunc(np.negative, (self,), self.context)
+
+    def __matmul__(self, other: object) -> TraceADScalar | TraceADArray:
+        return _trace_matmul(self, other, self.context)
+
+    def __rmatmul__(self, other: object) -> TraceADScalar | TraceADArray:
+        return _trace_matmul(other, self, self.context)
 
     def _compare(self, op: str, other: object) -> _TracePredicate | TraceADPredicateArray:
         right = _coerce_trace_array(other, self.context)
@@ -845,6 +932,8 @@ def _apply_trace_ufunc(
             for lhs, rhs in zip(left._items, right._items, strict=True)
         )
         return items[0] if shape == () else TraceADArray(items, shape, context)
+    if ufunc is np.matmul and len(inputs) == 2:
+        return _trace_matmul(inputs[0], inputs[1], context)
     raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
 
 
@@ -911,16 +1000,39 @@ def _apply_binary_trace_ufunc(
 
 
 def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADScalar | TraceADArray:
-    if axis is not None:
-        axis = _normalise_axis("axis", axis, array.ndim)
-        if array.ndim != 1 or axis != 0:
-            raise ValueError("whole-program AD array reductions support one-dimensional arrays")
     if not array._items:
         raise ValueError("whole-program AD array reductions require at least one element")
-    total = array._items[0]
-    for item in array._items[1:]:
-        total = total + item
-    return total
+    if axis is None:
+        total = array._items[0]
+        for item in array._items[1:]:
+            total = total + item
+        return total
+    if axis is not None:
+        axis = _normalise_axis("axis", axis, array.ndim)
+    if array.ndim == 1 and axis == 0:
+        total = array._items[0]
+        for item in array._items[1:]:
+            total = total + item
+        return total
+    if array.ndim == 2:
+        rows, cols = array.shape
+        if axis == 0:
+            items = []
+            for col in range(cols):
+                total = array._items[col]
+                for row in range(1, rows):
+                    total = total + array._items[row * cols + col]
+                items.append(total)
+            return TraceADArray(tuple(items), (cols,), array.context)
+        if axis == 1:
+            items = []
+            for row in range(rows):
+                total = array._items[row * cols]
+                for col in range(1, cols):
+                    total = total + array._items[row * cols + col]
+                items.append(total)
+            return TraceADArray(tuple(items), (rows,), array.context)
+    raise ValueError("whole-program AD array reductions support rank <= 2")
 
 
 def _trace_dot(
@@ -930,12 +1042,67 @@ def _trace_dot(
 ) -> TraceADScalar:
     lhs = _coerce_trace_array(left, context)
     rhs = _coerce_trace_array(right, context)
-    if lhs.ndim != 1 or rhs.ndim != 1 or lhs.shape != rhs.shape:
-        raise ValueError("whole-program AD np.dot supports matching one-dimensional operands")
-    total = lhs._items[0] * rhs._items[0]
-    for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
-        total = total + left_item * right_item
-    return total
+    if lhs.ndim == 1 and rhs.ndim == 1 and lhs.shape == rhs.shape:
+        total = lhs._items[0] * rhs._items[0]
+        for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
+            total = total + left_item * right_item
+        return total
+    result = _trace_matmul(lhs, rhs, context)
+    if isinstance(result, TraceADArray) and result.shape == ():
+        return result.item()
+    if isinstance(result, TraceADScalar):
+        return result
+    raise ValueError("whole-program AD np.dot result must be scalar for this operand pair")
+
+
+def _trace_matmul(
+    left: object,
+    right: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    lhs = _coerce_trace_array(left, context)
+    rhs = _coerce_trace_array(right, context)
+    if lhs.ndim == 2 and rhs.ndim == 1:
+        rows, cols = lhs.shape
+        if rhs.shape != (cols,):
+            raise ValueError("whole-program AD matrix-vector dimensions must align")
+        items = []
+        for row in range(rows):
+            total = lhs._items[row * cols] * rhs._items[0]
+            for col in range(1, cols):
+                total = total + lhs._items[row * cols + col] * rhs._items[col]
+            items.append(total)
+        return TraceADArray(tuple(items), (rows,), context)
+    if lhs.ndim == 1 and rhs.ndim == 2:
+        rows, cols = rhs.shape
+        if lhs.shape != (rows,):
+            raise ValueError("whole-program AD vector-matrix dimensions must align")
+        items = []
+        for col in range(cols):
+            total = lhs._items[0] * rhs._items[col]
+            for row in range(1, rows):
+                total = total + lhs._items[row] * rhs._items[row * cols + col]
+            items.append(total)
+        return TraceADArray(tuple(items), (cols,), context)
+    if lhs.ndim == 2 and rhs.ndim == 2:
+        lhs_rows, lhs_cols = lhs.shape
+        rhs_rows, rhs_cols = rhs.shape
+        if lhs_cols != rhs_rows:
+            raise ValueError("whole-program AD matrix-matrix dimensions must align")
+        items = []
+        for row in range(lhs_rows):
+            for col in range(rhs_cols):
+                total = lhs._items[row * lhs_cols] * rhs._items[col]
+                for inner in range(1, lhs_cols):
+                    total = (
+                        total
+                        + lhs._items[row * lhs_cols + inner] * rhs._items[inner * rhs_cols + col]
+                    )
+                items.append(total)
+        return TraceADArray(tuple(items), (lhs_rows, rhs_cols), context)
+    if lhs.ndim == 1 and rhs.ndim == 1:
+        return _trace_dot(lhs, rhs, context)
+    raise ValueError("whole-program AD matmul supports rank-1 and rank-2 operands")
 
 
 def _coerce_trace_predicate_array(
