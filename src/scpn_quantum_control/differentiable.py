@@ -1126,6 +1126,18 @@ class TraceADArray:
                 _coerce_trace_array(args[0], self.context),
                 axis=cast(int | None, kwargs.get("axis")),
             )
+        if func is np.diff:
+            if "prepend" in kwargs or "append" in kwargs:
+                raise ValueError("program AD np.diff does not support prepend/append")
+            if len(args) < 1 or len(args) > 3 or kwargs.keys() - {"n", "axis"}:
+                raise ValueError("program AD np.diff supports array, n, and axis")
+            n_value = args[1] if len(args) >= 2 else kwargs.get("n", 1)
+            axis_value = args[2] if len(args) >= 3 else kwargs.get("axis", -1)
+            return _trace_diff(
+                _coerce_trace_array(args[0], self.context),
+                n=n_value,
+                axis=cast(int, axis_value),
+            )
         if func is np.mean:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("whole-program AD np.mean supports one array and optional axis")
@@ -1649,6 +1661,36 @@ def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray
             total = total * array._items[int(np.ravel_multi_index(source_index, array.shape))]
         axis_prod_items.append(total)
     return TraceADArray(tuple(axis_prod_items), array.shape, array.context)
+
+
+def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
+    if not isinstance(n, (int, np.integer)):
+        raise ValueError("program AD np.diff requires non-negative integer n")
+    order = int(n)
+    if order < 0:
+        raise ValueError("program AD np.diff requires non-negative integer n")
+    result = array.copy()
+    for _ in range(order):
+        result = _trace_first_diff(result, axis=axis)
+    return result
+
+
+def _trace_first_diff(array: TraceADArray, *, axis: int) -> TraceADArray:
+    axis = _normalise_axis("axis", axis, array.ndim)
+    target_axis_size = max(array.shape[axis] - 1, 0)
+    target_shape = array.shape[:axis] + (target_axis_size,) + array.shape[axis + 1 :]
+    if target_axis_size == 0:
+        return TraceADArray((), target_shape, array.context)
+    items: list[TraceADScalar] = []
+    for target_flat in range(int(np.prod(target_shape))):
+        target_index = np.unravel_index(target_flat, target_shape)
+        left_index = target_index[:axis] + (target_index[axis],) + target_index[axis + 1 :]
+        right_index = target_index[:axis] + (target_index[axis] + 1,) + target_index[axis + 1 :]
+        items.append(
+            array._items[int(np.ravel_multi_index(right_index, array.shape))]
+            - array._items[int(np.ravel_multi_index(left_index, array.shape))]
+        )
+    return TraceADArray(tuple(items), target_shape, array.context)
 
 
 def _normalise_ddof(ddof: object, count: int) -> int:

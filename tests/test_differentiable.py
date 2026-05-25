@@ -4080,6 +4080,52 @@ def test_program_ad_cumulative_product_method_handles_zero_factor() -> None:
     np.testing.assert_allclose(result.gradient, [-22.0, 0.0, 0.0, 0.0], atol=1.0e-12)
 
 
+def test_program_ad_finite_differences_match_linear_adjoint() -> None:
+    """Program AD finite differences should preserve exact linear adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        first_order = np.diff(values)
+        second_order_rows = np.diff(matrix, n=2, axis=1)
+        return first_order[2] - 2.0 * first_order[4] + second_order_rows[0, 0]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 3.0, 6.0, 10.0, 15.0, 21.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(-7.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [1.0, -2.0, 0.0, 1.0, 2.0, -2.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_finite_differences_reject_boundary_extensions() -> None:
+    """Program AD finite differences should fail closed for boundary-extension modes."""
+
+    with pytest.raises(ValueError, match="non-negative integer n"):
+        whole_program_value_and_grad(
+            lambda values: np.diff(values, n=-1)[0],
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="prepend/append"):
+        whole_program_value_and_grad(
+            lambda values: np.diff(values, prepend=0.0)[0],
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 
