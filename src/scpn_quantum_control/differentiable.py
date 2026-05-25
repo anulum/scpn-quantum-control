@@ -1138,6 +1138,17 @@ class TraceADArray:
                 n=n_value,
                 axis=cast(int, axis_value),
             )
+        if func in {np.zeros_like, np.ones_like}:
+            if len(args) != 1:
+                raise ValueError("program AD like-constructors require one reference array")
+            _validate_trace_like_constructor_kwargs(kwargs)
+            fill_value = 0.0 if func is np.zeros_like else 1.0
+            return _trace_like_constant(args[0], fill_value, self.context)
+        if func is np.full_like:
+            if len(args) != 2:
+                raise ValueError("program AD full_like requires reference array and fill value")
+            _validate_trace_like_constructor_kwargs(kwargs)
+            return _trace_like_constant(args[0], args[1], self.context)
         if func is np.mean:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("whole-program AD np.mean supports one array and optional axis")
@@ -1404,6 +1415,28 @@ def _coerce_trace_array(value: object, context: _WholeProgramTraceContext) -> Tr
         for item in array.reshape(-1)
     )
     return TraceADArray(items, tuple(array.shape), context)
+
+
+def _validate_trace_like_constructor_kwargs(kwargs: Mapping[str, object]) -> None:
+    if "shape" in kwargs:
+        raise ValueError("program AD like-constructors do not support shape overrides")
+    unsupported = kwargs.keys() - {"dtype", "order", "subok"}
+    if unsupported:
+        raise ValueError("program AD like-constructors support dtype, order, and subok only")
+    if "dtype" in kwargs and kwargs["dtype"] is not None:
+        dtype = np.dtype(cast(Any, kwargs["dtype"]))
+        if dtype.kind in {"O", "S", "U", "c"}:
+            raise ValueError("program AD like-constructors require real numeric dtype")
+
+
+def _trace_like_constant(
+    reference: object,
+    fill_value: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADArray:
+    array = _coerce_trace_array(reference, context)
+    scalar = _coerce_trace_scalar(fill_value, context)
+    return TraceADArray(tuple(scalar for _ in range(array.size)), array.shape, context)
 
 
 def _broadcast_trace_array(
