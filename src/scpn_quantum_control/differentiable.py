@@ -1433,6 +1433,10 @@ class TraceADArray:
             if len(args) != 2 or kwargs:
                 raise ValueError("program AD np.linalg.matrix_power supports matrix and power")
             return _trace_matrix_power(args[0], args[1], self.context)
+        if func is np.linalg.multi_dot:
+            if len(args) != 1 or kwargs:
+                raise ValueError("program AD np.linalg.multi_dot supports one operand sequence")
+            return _trace_multi_dot(args[0], self.context)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
         if func is np.sort or func is np.argsort:
@@ -2807,6 +2811,30 @@ def _trace_matrix_power(
             if not isinstance(product, TraceADArray):
                 raise ValueError("program AD np.linalg.matrix_power expected matrix product")
             factor = product
+    return result
+
+
+def _trace_multi_dot(
+    operands: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    if isinstance(operands, (TraceADArray, np.ndarray)):
+        raise ValueError("program AD np.linalg.multi_dot requires a static operand sequence")
+    if not isinstance(operands, Sequence):
+        raise ValueError("program AD np.linalg.multi_dot requires a static operand sequence")
+    arrays = tuple(_coerce_trace_array(operand, context) for operand in operands)
+    if len(arrays) < 2:
+        raise ValueError("program AD np.linalg.multi_dot requires at least two operands")
+    for index, array in enumerate(arrays):
+        if array.ndim not in {1, 2}:
+            raise ValueError("program AD np.linalg.multi_dot supports rank-1 and rank-2 operands")
+        if 0 < index < len(arrays) - 1 and array.ndim != 2:
+            raise ValueError("program AD np.linalg.multi_dot middle operands must be rank-2")
+    result: TraceADScalar | TraceADArray = arrays[0]
+    for operand in arrays[1:]:
+        if isinstance(result, TraceADScalar):
+            raise ValueError("program AD np.linalg.multi_dot encountered scalar intermediate")
+        result = _trace_matmul(result, operand, context)
     return result
 
 

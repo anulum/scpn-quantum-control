@@ -4471,6 +4471,102 @@ def test_program_ad_linalg_matrix_power_fails_closed_invalid_contracts() -> None
         )
 
 
+def test_program_ad_linalg_multi_dot_matches_exact_chain_differential() -> None:
+    """Program AD multi_dot should compose exact static matrix-chain semantics."""
+
+    matrix_weights = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
+    scalar_weight = 1.75
+
+    def objective(values: np.ndarray) -> object:
+        left = np.reshape(values[:4], (2, 2))
+        middle = np.reshape(values[4:8], (2, 2))
+        right = np.reshape(values[8:12], (2, 2))
+        vector_left = values[12:14]
+        vector_right = values[14:16]
+        return np.sum(np.linalg.multi_dot((left, middle, right)) * matrix_weights) + (
+            scalar_weight * np.linalg.multi_dot((vector_left, middle, vector_right))
+        )
+
+    values = np.array(
+        [
+            1.0,
+            -0.5,
+            0.75,
+            1.5,
+            0.25,
+            -1.0,
+            1.25,
+            0.5,
+            -0.75,
+            2.0,
+            0.5,
+            -1.5,
+            1.25,
+            -0.25,
+            0.75,
+            -1.0,
+        ],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    left = values[:4].reshape(2, 2)
+    middle = values[4:8].reshape(2, 2)
+    right = values[8:12].reshape(2, 2)
+    vector_left = values[12:14]
+    vector_right = values[14:16]
+    expected = np.zeros_like(values)
+    expected[:4] = (matrix_weights @ right.T @ middle.T).reshape(-1)
+    expected[4:8] = (
+        left.T @ matrix_weights @ right.T + scalar_weight * np.outer(vector_left, vector_right)
+    ).reshape(-1)
+    expected[8:12] = (middle.T @ left.T @ matrix_weights).reshape(-1)
+    expected[12:14] = scalar_weight * (middle @ vector_right)
+    expected[14:16] = scalar_weight * (vector_left @ middle)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_linalg_multi_dot_fails_closed_invalid_contracts() -> None:
+    """Program AD multi_dot should reject dynamic or invalid matrix-chain contracts."""
+
+    with pytest.raises(ValueError, match="requires at least two operands"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.multi_dot((values,))),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="supports rank-1 and rank-2 operands"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.linalg.multi_dot((np.reshape(values[:8], (2, 2, 2)), values[8:10]))
+            ),
+            np.arange(1.0, 11.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="middle operands must be rank-2"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.linalg.multi_dot((np.reshape(values[:4], (2, 2)), values[4:6], values[6:8]))
+            ),
+            np.arange(1.0, 9.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="dimensions must align"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.linalg.multi_dot(
+                    (np.reshape(values[:4], (2, 2)), np.reshape(values[4:], (3, 2)))
+                )
+            ),
+            np.arange(1.0, 11.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 
