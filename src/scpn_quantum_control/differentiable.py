@@ -1225,6 +1225,16 @@ class TraceADArray:
             if isinstance(shape, int):
                 return _coerce_trace_array(args[0], self.context).reshape(shape)
             return _coerce_trace_array(args[0], self.context).reshape(cast(tuple[int, ...], shape))
+        if func is np.broadcast_to:
+            if len(args) != 2 or kwargs.keys() - {"subok"}:
+                raise ValueError("program AD np.broadcast_to supports array, shape, and subok")
+            if kwargs.get("subok", False):
+                raise ValueError("program AD np.broadcast_to does not support subok")
+            return _broadcast_trace_array(
+                args[0],
+                _normalise_trace_broadcast_shape(args[1]),
+                self.context,
+            )
         if func is np.ravel:
             if len(args) != 1 or kwargs:
                 raise ValueError("whole-program AD np.ravel supports one array")
@@ -1437,6 +1447,19 @@ def _trace_like_constant(
     array = _coerce_trace_array(reference, context)
     scalar = _coerce_trace_scalar(fill_value, context)
     return TraceADArray(tuple(scalar for _ in range(array.size)), array.shape, context)
+
+
+def _normalise_trace_broadcast_shape(shape: object) -> tuple[int, ...]:
+    dimensions: tuple[int, ...]
+    if isinstance(shape, (int, np.integer)) and not isinstance(shape, bool):
+        dimensions = (int(shape),)
+    elif isinstance(shape, Sequence) and not isinstance(shape, (str, bytes)):
+        dimensions = tuple(int(dimension) for dimension in shape)
+    else:
+        raise ValueError("program AD np.broadcast_to requires an integer shape")
+    if any(dimension < 0 for dimension in dimensions):
+        raise ValueError("program AD np.broadcast_to shape dimensions must be non-negative")
+    return dimensions
 
 
 def _broadcast_trace_array(

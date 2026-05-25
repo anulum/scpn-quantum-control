@@ -4161,6 +4161,36 @@ def test_program_ad_like_constant_constructors_reject_shape_overrides() -> None:
         )
 
 
+def test_program_ad_broadcast_to_accumulates_repeated_adjoint_paths() -> None:
+    """Program AD broadcast_to should accumulate derivatives from repeated uses."""
+
+    weights = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        broadcast = np.broadcast_to(values, (3, 2))
+        return np.sum(broadcast * weights)
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0], dtype=np.float64),
+        parameters=(Parameter("x0"), Parameter("x1")),
+    )
+
+    assert result.value == pytest.approx(33.0)
+    np.testing.assert_allclose(result.gradient, [9.0, 12.0], atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_broadcast_to_rejects_subclass_propagation() -> None:
+    """Program AD broadcast_to should fail closed on subclass propagation."""
+
+    with pytest.raises(ValueError, match="subok"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.broadcast_to(values, (2, 2), subok=True)),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 
