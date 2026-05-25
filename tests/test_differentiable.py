@@ -4027,6 +4027,59 @@ def test_program_ad_cumulative_sum_matches_prefix_adjoint() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_cumulative_product_matches_prefix_product_adjoint() -> None:
+    """Program AD cumulative products should preserve exact product-rule adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        flat_prefix = np.cumprod(values)
+        row_prefix = matrix.cumprod(axis=1)
+        return flat_prefix[2] + row_prefix[1, 2] - row_prefix[0, 1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([2.0, -3.0, 4.0, 5.0, -2.0, 0.5], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(-23.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [-9.0, 6.0, -6.0, -1.0, 2.5, -10.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_cumulative_product_method_handles_zero_factor() -> None:
+    """Trace-array cumulative product methods should differentiate single-zero prefixes."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return np.cumprod(values)[3] + matrix.cumprod(axis=1)[0, 1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.0, 2.0, 3.0, -4.0], dtype=np.float64),
+        parameters=(
+            Parameter("x00"),
+            Parameter("x01"),
+            Parameter("x10"),
+            Parameter("x11"),
+        ),
+    )
+
+    assert result.value == pytest.approx(0.0)
+    np.testing.assert_allclose(result.gradient, [-22.0, 0.0, 0.0, 0.0], atol=1.0e-12)
+
+
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 

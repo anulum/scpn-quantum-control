@@ -957,6 +957,9 @@ class TraceADArray:
     def prod(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         return _trace_array_prod(self, axis=axis)
 
+    def cumprod(self, axis: int | None = None) -> TraceADArray:
+        return _trace_cumprod(self, axis=axis)
+
     def mean(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         result = _trace_array_sum(self, axis=axis)
         divisor = (
@@ -1113,6 +1116,13 @@ class TraceADArray:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("program AD np.prod supports one array and optional axis")
             return _trace_array_prod(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | None, kwargs.get("axis")),
+            )
+        if func is np.cumprod:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.cumprod supports one array and optional axis")
+            return _trace_cumprod(
                 _coerce_trace_array(args[0], self.context),
                 axis=cast(int | None, kwargs.get("axis")),
             )
@@ -1615,6 +1625,30 @@ def _trace_array_prod(
             total = total * array._items[int(np.ravel_multi_index(source_index, array.shape))]
         items.append(total)
     return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray:
+    if not array._items:
+        raise ValueError("program AD cumulative product requires at least one element")
+    if axis is None:
+        prod_items: list[TraceADScalar] = []
+        total = array._items[0]
+        prod_items.append(total)
+        for item in array._items[1:]:
+            total = total * item
+            prod_items.append(total)
+        return TraceADArray(tuple(prod_items), (array.size,), array.context)
+    axis = _normalise_axis("axis", axis, array.ndim)
+    axis_prod_items: list[TraceADScalar] = []
+    for flat_index in range(array.size):
+        target_index = np.unravel_index(flat_index, array.shape)
+        source_index = target_index[:axis] + (0,) + target_index[axis + 1 :]
+        total = array._items[int(np.ravel_multi_index(source_index, array.shape))]
+        for axis_index in range(1, target_index[axis] + 1):
+            source_index = target_index[:axis] + (axis_index,) + target_index[axis + 1 :]
+            total = total * array._items[int(np.ravel_multi_index(source_index, array.shape))]
+        axis_prod_items.append(total)
+    return TraceADArray(tuple(axis_prod_items), array.shape, array.context)
 
 
 def _normalise_ddof(ddof: object, count: int) -> int:
