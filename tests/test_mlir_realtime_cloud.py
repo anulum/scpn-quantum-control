@@ -279,10 +279,10 @@ def test_differentiable_mlir_rejects_executable_target_claims() -> None:
 def test_whole_program_ad_mlir_exports_trace_and_polyglot_status() -> None:
     """Whole-program AD trace lowering should be deterministic and honest."""
 
-    def objective(values: np.ndarray) -> float:
+    def objective(values: np.ndarray) -> object:
         if values[0] > 0.0:
-            return float(np.sin(values[0]) + values[1] ** 2)
-        return float(values[1])
+            return np.sin(values[0]) + values[1] ** 2
+        return values[1]
 
     result = whole_program_value_and_grad(
         objective,
@@ -299,7 +299,7 @@ def test_whole_program_ad_mlir_exports_trace_and_polyglot_status() -> None:
     assert module.metadata["polyglot_targets"]["llvm"].startswith("blocked")
     assert 'scpn.module = "whole_program_ad"' in module.text
     assert "scpn_diff.trace_event" in module.text
-    assert 'execution = "python_eager_interchange_only"' in module.text
+    assert 'execution = "python_whole_program_ad_interchange"' in module.text
 
 
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:

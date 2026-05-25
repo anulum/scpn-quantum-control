@@ -15,6 +15,7 @@ runtime dependency of the core package.
 from __future__ import annotations
 
 import ast
+import dis
 import inspect
 import linecache
 import sys
@@ -58,7 +59,7 @@ class WholeProgramTraceEvent:
 
 @dataclass(frozen=True)
 class WholeProgramIRNode:
-    """One operator-intercepted IR node from whole-program trace AD."""
+    """One operator-intercepted IR node from whole-program AD."""
 
     index: int
     op: str
@@ -84,6 +85,74 @@ class WholeProgramIRNode:
 
 
 @dataclass(frozen=True)
+class WholeProgramBytecodeInstruction:
+    """One Python bytecode instruction captured for whole-program AD frontend IR."""
+
+    offset: int
+    opname: str
+    argrepr: str
+    line_number: int | None
+
+    def __post_init__(self) -> None:
+        if self.offset < 0:
+            raise ValueError("bytecode instruction offset must be non-negative")
+        if not self.opname:
+            raise ValueError("bytecode instruction opname must be non-empty")
+        if not isinstance(self.argrepr, str):
+            raise ValueError("bytecode instruction argrepr must be a string")
+        if self.line_number is not None and self.line_number <= 0:
+            raise ValueError("bytecode instruction line_number must be positive or None")
+
+
+@dataclass(frozen=True)
+class WholeProgramSourceIRFeature:
+    """One source-level semantic feature captured for whole-program AD."""
+
+    kind: str
+    detail: str
+    line_number: int
+
+    def __post_init__(self) -> None:
+        if not self.kind:
+            raise ValueError("source IR feature kind must be non-empty")
+        if not self.detail:
+            raise ValueError("source IR feature detail must be non-empty")
+        if self.line_number <= 0:
+            raise ValueError("source IR feature line_number must be positive")
+
+
+@dataclass(frozen=True)
+class WholeProgramSemanticsReport:
+    """Static semantics summary for whole-program AD graph capture."""
+
+    bytecode_frontend: bool
+    source_frontend: bool
+    graph_capture: bool
+    aliasing_observed: bool
+    mutation_observed: bool
+    loop_observed: bool
+    control_flow_observed: bool
+    numpy_observed: bool
+    differentiation_semantics: str
+
+    def __post_init__(self) -> None:
+        for name in (
+            "bytecode_frontend",
+            "source_frontend",
+            "graph_capture",
+            "aliasing_observed",
+            "mutation_observed",
+            "loop_observed",
+            "control_flow_observed",
+            "numpy_observed",
+        ):
+            if not isinstance(getattr(self, name), bool):
+                raise ValueError(f"{name} must be a boolean")
+        if not self.differentiation_semantics:
+            raise ValueError("differentiation_semantics must be non-empty")
+
+
+@dataclass(frozen=True)
 class WholeProgramADResult:
     """Value, gradient, execution trace, and polyglot AD lowering status."""
 
@@ -101,6 +170,9 @@ class WholeProgramADResult:
     polyglot_targets: dict[str, str]
     claim_boundary: str
     ir_nodes: tuple[WholeProgramIRNode, ...] = ()
+    bytecode_instructions: tuple[WholeProgramBytecodeInstruction, ...] = ()
+    source_ir_features: tuple[WholeProgramSourceIRFeature, ...] = ()
+    semantics_report: WholeProgramSemanticsReport | None = None
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("whole-program AD value", self.value)
@@ -122,6 +194,22 @@ class WholeProgramADResult:
             raise ValueError("trace_events must contain WholeProgramTraceEvent entries")
         if any(not isinstance(node, WholeProgramIRNode) for node in self.ir_nodes):
             raise ValueError("ir_nodes must contain WholeProgramIRNode entries")
+        if any(
+            not isinstance(instruction, WholeProgramBytecodeInstruction)
+            for instruction in self.bytecode_instructions
+        ):
+            raise ValueError(
+                "bytecode_instructions must contain WholeProgramBytecodeInstruction entries"
+            )
+        if any(
+            not isinstance(feature, WholeProgramSourceIRFeature)
+            for feature in self.source_ir_features
+        ):
+            raise ValueError("source_ir_features must contain WholeProgramSourceIRFeature entries")
+        if self.semantics_report is not None and not isinstance(
+            self.semantics_report, WholeProgramSemanticsReport
+        ):
+            raise ValueError("semantics_report must be a WholeProgramSemanticsReport or None")
         if not isinstance(self.control_flow_observed, bool):
             raise ValueError("control_flow_observed must be a boolean")
         if not isinstance(self.numpy_observed, bool):
@@ -138,65 +226,91 @@ class WholeProgramADResult:
 
 
 def whole_program_value_and_grad(
-    objective: ScalarObjective,
+    objective: Callable[[NDArray[Any]], object],
     values: ArrayLike,
     parameters: Sequence[Parameter] | None = None,
     *,
-    step: float = 1.0e-6,
     trace: bool = True,
 ) -> WholeProgramADResult:
-    """Differentiate an arbitrary eager Python objective with execution tracing.
+    """Differentiate the executed Python/NumPy program by operator-intercepted AD.
 
-    This is the whole-program boundary for Python/NumPy/control-flow objectives
-    that are not written against SCPN primitive AD contracts. It evaluates the
-    callable eagerly, records executed Python source lines when requested, and
-    computes central finite-difference gradients through the complete callable.
-    Polyglot compiler targets are reported explicitly as interchange or blocked
-    until a real Rust/LLVM executable differentiation backend exists.
+    This is the whole-program AD boundary for differentiable Python programs
+    that execute through traceable scalar values. It preserves Python execution
+    semantics for loops, executed control-flow branches, local aliases, list
+    mutation, and supported NumPy scalar ufuncs. Operations that would erase
+    derivative information fail closed instead of falling back to finite
+    differences or silently returning approximate gradients.
     """
 
     if not callable(objective):
         raise ValueError("whole-program objective must be callable")
-    result = value_and_finite_difference_grad(
-        objective,
-        values,
-        parameters=parameters,
-        step=step,
-    )
-    trace_events: tuple[WholeProgramTraceEvent, ...] = ()
+    parameter_values = _as_parameter_array(values)
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    context = _WholeProgramTraceContext(parameter_values.size)
+    traced_values: list[TraceADScalar] = []
+    for index, (value, parameter) in enumerate(zip(parameter_values, parameter_meta, strict=True)):
+        tangent = np.zeros(parameter_values.size, dtype=np.float64)
+        if parameter.trainable:
+            tangent[index] = 1.0
+        traced_values.append(context.make("parameter", (parameter.name,), float(value), tangent))
+    raw = objective(np.array(traced_values, dtype=object))
+    if not isinstance(raw, TraceADScalar):
+        raise ValueError("whole-program objective must return a whole-program AD scalar")
     source = _objective_source(objective)
-    if trace:
-        array = _as_parameter_array(values)
-        trace_events = _trace_whole_program_objective(objective, array)
-    return WholeProgramADResult(
-        value=result.value,
-        gradient=result.gradient,
-        method="whole_program_finite_difference",
-        step=result.shift if result.shift is not None else step,
-        evaluations=result.evaluations + (1 if trace else 0),
-        parameter_names=result.parameter_names,
-        trainable=result.trainable,
+    trace_events = (
+        _trace_whole_program_objective(cast(ScalarObjective, objective), parameter_values)
+        if trace
+        else ()
+    )
+    bytecode_instructions = _objective_bytecode(objective)
+    source_ir_features = _source_ir_features(source)
+    semantics_report = _whole_program_semantics_report(
+        bytecode_instructions=bytecode_instructions,
+        source_ir_features=source_ir_features,
         trace_events=trace_events,
-        ir_nodes=(),
         source=source,
-        control_flow_observed=_source_has_control_flow(source),
         numpy_observed=_source_mentions_numpy(source)
-        or any(_source_mentions_numpy(event.source) for event in trace_events),
+        or any(node.op in {"sin", "cos", "exp", "log"} for node in context.nodes),
+        differentiation_semantics=(
+            "operator-intercepted exact forward AD over the executed Python program; "
+            "loops, branches, local aliasing, list mutation, and supported NumPy scalar "
+            "ufuncs execute with derivative-carrying values, while unsupported "
+            "derivative-losing operations fail closed"
+        ),
+    )
+    return WholeProgramADResult(
+        value=raw.primal,
+        gradient=raw.tangent.copy(),
+        method="whole_program_ad",
+        step=0.0,
+        evaluations=1 + (1 if trace else 0),
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        trace_events=trace_events,
+        ir_nodes=tuple(context.nodes),
+        source=source,
+        control_flow_observed=semantics_report.control_flow_observed,
+        numpy_observed=semantics_report.numpy_observed,
         polyglot_targets={
-            "python": "eager whole-program gradient available",
-            "mlir": "trace interchange available",
-            "rust": "blocked: no Rust whole-program AD lowering backend",
-            "llvm": "blocked: no LLVM/JIT whole-program AD lowering backend",
+            "python": "operator-intercepted whole-program AD available",
+            "mlir": "bytecode/source/graph whole-program AD interchange available",
+            "rust": "blocked: no Rust whole-program AD interpreter/lowering backend",
+            "llvm": "blocked: no LLVM/JIT whole-program AD interpreter/lowering backend",
         },
         claim_boundary=(
-            "whole-program eager Python gradient via central finite differences with "
-            "runtime source tracing; no executable Rust, LLVM, or JIT AD lowering claim"
+            "whole-program operator-intercepted AD for executed Python scalar arithmetic, "
+            "loops, local aliasing, list mutation, supported NumPy scalar ufuncs, and "
+            "executed-branch control flow; no finite-difference fallback and no executable "
+            "Rust, LLVM, or JIT AD lowering claim"
         ),
+        bytecode_instructions=bytecode_instructions,
+        source_ir_features=source_ir_features,
+        semantics_report=semantics_report,
     )
 
 
 class _WholeProgramTraceContext:
-    """Mutable builder for whole-program trace AD IR nodes."""
+    """Mutable builder for whole-program AD IR nodes."""
 
     def __init__(self, parameter_count: int) -> None:
         self.parameter_count = parameter_count
@@ -222,7 +336,7 @@ class _WholeProgramTraceContext:
 
 
 class _TracePredicate:
-    """Primal control-flow predicate recorded by trace AD."""
+    """Primal control-flow predicate recorded by whole-program AD."""
 
     def __init__(self, value: bool, context: _WholeProgramTraceContext, label: str) -> None:
         self.value = bool(value)
@@ -247,24 +361,26 @@ class TraceADScalar:
         context: _WholeProgramTraceContext,
         name: str,
     ) -> None:
-        self.primal = _as_real_scalar("trace AD primal", primal)
-        self.tangent = _as_real_numeric_array("trace AD tangent", tangent)
+        self.primal = _as_real_scalar("whole-program AD primal", primal)
+        self.tangent = _as_real_numeric_array("whole-program AD tangent", tangent)
         if self.tangent.ndim != 1:
-            raise ValueError("trace AD tangent must be one-dimensional")
+            raise ValueError("whole-program AD tangent must be one-dimensional")
         self.context = context
         self.name = name
 
     def __float__(self) -> float:
-        raise ValueError("trace AD scalar cannot be converted to float without losing derivatives")
+        raise ValueError(
+            "whole-program AD scalar cannot be converted to float without losing derivatives"
+        )
 
     def _coerce(self, other: object) -> TraceADScalar:
         if isinstance(other, TraceADScalar):
             if other.context is not self.context:
-                raise ValueError("trace AD scalars belong to different traces")
+                raise ValueError("whole-program AD scalars belong to different traces")
             return other
         tangent = np.zeros(self.context.parameter_count, dtype=np.float64)
         return TraceADScalar(
-            _as_real_scalar("trace AD constant", other), tangent, self.context, repr(other)
+            _as_real_scalar("whole-program AD constant", other), tangent, self.context, repr(other)
         )
 
     def _binary(self, op: str, other: object) -> TraceADScalar:
@@ -286,7 +402,7 @@ class TraceADScalar:
             )
         if op == "div":
             if rhs.primal == 0.0:
-                raise ValueError("trace AD division denominator must be non-zero")
+                raise ValueError("whole-program AD division denominator must be non-zero")
             return self.context.make(
                 op,
                 (self.name, rhs.name),
@@ -295,7 +411,7 @@ class TraceADScalar:
             )
         if op == "pow":
             if self.primal <= 0.0 and np.any(rhs.tangent != 0.0):
-                raise ValueError("trace AD variable exponent requires positive base")
+                raise ValueError("whole-program AD variable exponent requires positive base")
             primal = self.primal**rhs.primal
             if np.all(rhs.tangent == 0.0):
                 tangent = rhs.primal * self.primal ** (rhs.primal - 1.0) * self.tangent
@@ -305,7 +421,7 @@ class TraceADScalar:
                     + rhs.primal * self.tangent / self.primal
                 )
             return self.context.make(op, (self.name, rhs.name), primal, tangent)
-        raise ValueError(f"unsupported trace AD binary op {op}")
+        raise ValueError(f"unsupported whole-program AD binary op {op}")
 
     def __add__(self, other: object) -> TraceADScalar:
         return self._binary("add", other)
@@ -366,12 +482,12 @@ class TraceADScalar:
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
     ) -> TraceADScalar:
         if method != "__call__" or kwargs:
-            raise ValueError("trace AD supports only direct NumPy scalar ufunc calls")
+            raise ValueError("whole-program AD supports only direct NumPy scalar ufunc calls")
         args = [
             self._coerce(item) if not isinstance(item, TraceADScalar) else item for item in inputs
         ]
         if len(args) != 1:
-            raise ValueError("trace AD supports unary NumPy ufuncs only")
+            raise ValueError("whole-program AD supports unary NumPy ufuncs only")
         arg = args[0]
         if ufunc is np.sin:
             return self.context.make(
@@ -392,100 +508,24 @@ class TraceADScalar:
             return self.context.make("exp", (arg.name,), primal, primal * arg.tangent)
         if ufunc is np.log:
             if arg.primal <= 0.0:
-                raise ValueError("trace AD log input must be positive")
+                raise ValueError("whole-program AD log input must be positive")
             return self.context.make(
                 "log", (arg.name,), float(np.log(arg.primal)), arg.tangent / arg.primal
             )
-        raise ValueError(f"unsupported trace AD NumPy ufunc {ufunc.__name__}")
-
-
-def whole_program_trace_value_and_grad(
-    objective: Callable[[NDArray[Any]], object],
-    values: ArrayLike,
-    parameters: Sequence[Parameter] | None = None,
-    *,
-    trace: bool = True,
-) -> WholeProgramADResult:
-    """Differentiate a supported Python/NumPy objective by operator-intercepted trace AD.
-
-    Control-flow predicates branch on primal values and record branch IR nodes;
-    derivatives are exact for the executed branch and supported scalar ops.
-    """
-
-    if not callable(objective):
-        raise ValueError("whole-program trace objective must be callable")
-    parameter_values = _as_parameter_array(values)
-    parameter_meta = _normalise_parameters(parameter_values, parameters)
-    context = _WholeProgramTraceContext(parameter_values.size)
-    traced_values: list[TraceADScalar] = []
-    for index, (value, parameter) in enumerate(zip(parameter_values, parameter_meta, strict=True)):
-        tangent = np.zeros(parameter_values.size, dtype=np.float64)
-        if parameter.trainable:
-            tangent[index] = 1.0
-        traced_values.append(context.make("parameter", (parameter.name,), float(value), tangent))
-    raw = objective(np.array(traced_values, dtype=object))
-    if not isinstance(raw, TraceADScalar):
-        raise ValueError("whole-program trace objective must return a trace AD scalar")
-    source = _objective_source(objective)
-    trace_events = (
-        _trace_whole_program_objective(cast(ScalarObjective, objective), parameter_values)
-        if trace
-        else ()
-    )
-    return WholeProgramADResult(
-        value=raw.primal,
-        gradient=raw.tangent.copy(),
-        method="whole_program_trace_ad",
-        step=0.0,
-        evaluations=1 + (1 if trace else 0),
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-        trace_events=trace_events,
-        ir_nodes=tuple(context.nodes),
-        source=source,
-        control_flow_observed=_source_has_control_flow(source)
-        or any(node.op.startswith("branch:") for node in context.nodes),
-        numpy_observed=_source_mentions_numpy(source)
-        or any(node.op in {"sin", "cos", "exp", "log"} for node in context.nodes),
-        polyglot_targets={
-            "python": "operator-intercepted trace AD available for supported scalar ops",
-            "mlir": "trace IR interchange available",
-            "rust": "blocked: no Rust whole-program trace AD lowering backend",
-            "llvm": "blocked: no LLVM/JIT whole-program trace AD lowering backend",
-        },
-        claim_boundary=(
-            "whole-program operator-intercepted trace AD for supported Python scalar arithmetic, "
-            "NumPy unary ufuncs, and executed-branch control flow; no executable Rust, LLVM, or JIT AD lowering claim"
-        ),
-    )
-
-
-def whole_program_trace_grad(
-    objective: Callable[[NDArray[Any]], object],
-    values: ArrayLike,
-    parameters: Sequence[Parameter] | None = None,
-    *,
-    trace: bool = True,
-) -> NDArray[np.float64]:
-    """Return only the operator-intercepted whole-program trace AD gradient."""
-
-    return whole_program_trace_value_and_grad(
-        objective, values, parameters=parameters, trace=trace
-    ).gradient
+        raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
 
 
 def whole_program_grad(
-    objective: ScalarObjective,
+    objective: Callable[[NDArray[Any]], object],
     values: ArrayLike,
     parameters: Sequence[Parameter] | None = None,
     *,
-    step: float = 1.0e-6,
     trace: bool = True,
 ) -> NDArray[np.float64]:
-    """Return only the whole-program gradient for an arbitrary eager callable."""
+    """Return only the exact whole-program AD gradient."""
 
     return whole_program_value_and_grad(
-        objective, values, parameters=parameters, step=step, trace=trace
+        objective, values, parameters=parameters, trace=trace
     ).gradient
 
 
@@ -496,6 +536,127 @@ def _objective_source(objective: Callable[..., object]) -> str | None:
         return textwrap.dedent(inspect.getsource(objective)).strip()
     except (OSError, TypeError):
         return None
+
+
+def _objective_bytecode(
+    objective: Callable[..., object],
+) -> tuple[WholeProgramBytecodeInstruction, ...]:
+    """Return bytecode frontend IR for a Python objective when available."""
+
+    try:
+        instructions = dis.get_instructions(objective)
+    except TypeError:
+        return ()
+    return tuple(
+        WholeProgramBytecodeInstruction(
+            offset=int(instruction.offset),
+            opname=instruction.opname,
+            argrepr=instruction.argrepr,
+            line_number=instruction.starts_line,
+        )
+        for instruction in instructions
+    )
+
+
+def _source_ir_features(source: str | None) -> tuple[WholeProgramSourceIRFeature, ...]:
+    """Return source-level control, alias, mutation, and loop features."""
+
+    if source is None:
+        return ()
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return ()
+    features: list[WholeProgramSourceIRFeature] = []
+
+    def add(node: ast.AST, kind: str, detail: str) -> None:
+        line_number = int(getattr(node, "lineno", 1) or 1)
+        features.append(WholeProgramSourceIRFeature(kind, detail, line_number))
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.If):
+            add(node, "control_flow", "if")
+        elif isinstance(node, ast.IfExp):
+            add(node, "control_flow", "if_expression")
+        elif isinstance(node, ast.For):
+            add(node, "loop", "for")
+        elif isinstance(node, ast.While):
+            add(node, "loop", "while")
+        elif isinstance(node, ast.Break):
+            add(node, "loop", "break")
+        elif isinstance(node, ast.Continue):
+            add(node, "loop", "continue")
+        elif isinstance(node, ast.Assign):
+            if len(node.targets) > 1 or any(
+                isinstance(target, ast.Name) for target in node.targets
+            ):
+                add(node, "alias_analysis", "assignment_binding")
+            if any(_is_mutation_target(target) for target in node.targets):
+                add(node, "mutation", "indexed_or_attribute_assignment")
+        elif isinstance(node, ast.AugAssign):
+            add(node, "mutation", "augmented_assignment")
+        elif isinstance(node, ast.Delete):
+            add(node, "mutation", "delete")
+        elif isinstance(node, ast.Call):
+            name = _ast_call_name(node.func)
+            if name.startswith("np.") or name.startswith("numpy."):
+                add(node, "numpy", name)
+            if name.rsplit(".", 1)[-1] in {
+                "append",
+                "extend",
+                "insert",
+                "pop",
+                "remove",
+                "clear",
+                "sort",
+                "update",
+                "add",
+            }:
+                add(node, "mutation", name)
+    return tuple(features)
+
+
+def _is_mutation_target(node: ast.AST) -> bool:
+    return isinstance(node, ast.Subscript | ast.Attribute)
+
+
+def _ast_call_name(node: ast.AST) -> str:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        prefix = _ast_call_name(node.value)
+        return f"{prefix}.{node.attr}" if prefix else node.attr
+    return ""
+
+
+def _whole_program_semantics_report(
+    *,
+    bytecode_instructions: tuple[WholeProgramBytecodeInstruction, ...],
+    source_ir_features: tuple[WholeProgramSourceIRFeature, ...],
+    trace_events: tuple[WholeProgramTraceEvent, ...],
+    source: str | None,
+    numpy_observed: bool,
+    differentiation_semantics: str,
+) -> WholeProgramSemanticsReport:
+    feature_kinds = {feature.kind for feature in source_ir_features}
+    jump_ops = {
+        instruction.opname
+        for instruction in bytecode_instructions
+        if "JUMP" in instruction.opname or instruction.opname in {"FOR_ITER"}
+    }
+    return WholeProgramSemanticsReport(
+        bytecode_frontend=bool(bytecode_instructions),
+        source_frontend=source is not None,
+        graph_capture=bool(trace_events or bytecode_instructions or source_ir_features),
+        aliasing_observed="alias_analysis" in feature_kinds,
+        mutation_observed="mutation" in feature_kinds,
+        loop_observed="loop" in feature_kinds or "FOR_ITER" in jump_ops,
+        control_flow_observed=_source_has_control_flow(source)
+        or "control_flow" in feature_kinds
+        or bool(jump_ops),
+        numpy_observed=numpy_observed or "numpy" in feature_kinds,
+        differentiation_semantics=differentiation_semantics,
+    )
 
 
 def _source_has_control_flow(source: str | None) -> bool:
@@ -6328,12 +6489,13 @@ __all__ = [
     "weighted_gradient_sum",
     "value_and_grad",
     "whole_program_grad",
-    "whole_program_trace_grad",
-    "whole_program_trace_value_and_grad",
     "whole_program_value_and_grad",
     "TraceADScalar",
     "WholeProgramADResult",
+    "WholeProgramBytecodeInstruction",
     "WholeProgramIRNode",
+    "WholeProgramSemanticsReport",
+    "WholeProgramSourceIRFeature",
     "WholeProgramTraceEvent",
     "vmap",
     "parameter_shift_gradient",

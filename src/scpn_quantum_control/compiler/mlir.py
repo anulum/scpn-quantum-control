@@ -731,10 +731,23 @@ def compile_whole_program_ad_trace_to_mlir(
             f'line = {event.line_number}, function = "{_escape_mlir_string(event.function_name)}", '
             f'source = "{_escape_mlir_string(event.source)}"}}'
         )
+    for index, instruction in enumerate(result.bytecode_instructions):
+        lines.append(
+            "    scpn_diff.bytecode "
+            f"{{index = {index}, offset = {instruction.offset}, "
+            f'op = "{_escape_mlir_string(instruction.opname)}", '
+            f'arg = "{_escape_mlir_string(instruction.argrepr)}"}}'
+        )
+    for index, feature in enumerate(result.source_ir_features):
+        lines.append(
+            "    scpn_diff.source_semantics "
+            f'{{index = {index}, kind = "{_escape_mlir_string(feature.kind)}", '
+            f'detail = "{_escape_mlir_string(feature.detail)}", line = {feature.line_number}}}'
+        )
     lines.append(
         "    scpn_diff.whole_program_ad "
         f'{{method = "{_escape_mlir_string(result.method)}", '
-        'execution = "python_eager_interchange_only"}}'
+        'execution = "python_whole_program_ad_interchange"}}'
     )
     lines.append("    return")
     lines.append("  }")
@@ -743,6 +756,19 @@ def compile_whole_program_ad_trace_to_mlir(
             "claim_boundary": result.claim_boundary,
             "method": result.method,
             "polyglot_targets": result.polyglot_targets,
+            "semantics_report": None
+            if result.semantics_report is None
+            else {
+                "aliasing_observed": result.semantics_report.aliasing_observed,
+                "bytecode_frontend": result.semantics_report.bytecode_frontend,
+                "control_flow_observed": result.semantics_report.control_flow_observed,
+                "differentiation_semantics": result.semantics_report.differentiation_semantics,
+                "graph_capture": result.semantics_report.graph_capture,
+                "loop_observed": result.semantics_report.loop_observed,
+                "mutation_observed": result.semantics_report.mutation_observed,
+                "numpy_observed": result.semantics_report.numpy_observed,
+                "source_frontend": result.semantics_report.source_frontend,
+            },
             "target": compile_config.target,
         }
         encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
@@ -755,6 +781,9 @@ def compile_whole_program_ad_trace_to_mlir(
         dialect=compile_config.dialect,
         resource_counts={
             "parameters": int(result.gradient.size),
+            "bytecode_instructions": len(result.bytecode_instructions),
+            "source_ir_features": len(result.source_ir_features),
+            "ir_nodes": len(result.ir_nodes),
             "trace_events": len(result.trace_events),
             "trainable_parameters": int(sum(result.trainable)),
             "gradient_nnz": int(np.count_nonzero(result.gradient)),
@@ -763,6 +792,19 @@ def compile_whole_program_ad_trace_to_mlir(
             "claim_boundary": "whole-program AD trace interchange; no executable Rust, LLVM, or JIT lowering",
             "target": compile_config.target,
             "polyglot_targets": dict(result.polyglot_targets),
+            "semantics_report": None
+            if result.semantics_report is None
+            else {
+                "aliasing_observed": result.semantics_report.aliasing_observed,
+                "bytecode_frontend": result.semantics_report.bytecode_frontend,
+                "control_flow_observed": result.semantics_report.control_flow_observed,
+                "differentiation_semantics": result.semantics_report.differentiation_semantics,
+                "graph_capture": result.semantics_report.graph_capture,
+                "loop_observed": result.semantics_report.loop_observed,
+                "mutation_observed": result.semantics_report.mutation_observed,
+                "numpy_observed": result.semantics_report.numpy_observed,
+                "source_frontend": result.semantics_report.source_frontend,
+            },
             "sha256_source": "module.text",
         },
     )

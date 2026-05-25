@@ -58,7 +58,10 @@ from scpn_quantum_control.differentiable import (
     VJPResult,
     WeightedGradientResult,
     WholeProgramADResult,
+    WholeProgramBytecodeInstruction,
     WholeProgramIRNode,
+    WholeProgramSemanticsReport,
+    WholeProgramSourceIRFeature,
     WholeProgramTraceEvent,
     allocate_parameter_shift_shots,
     armijo_backtracking_line_search,
@@ -159,8 +162,6 @@ from scpn_quantum_control.differentiable import (
     vmap,
     weighted_gradient_sum,
     whole_program_grad,
-    whole_program_trace_grad,
-    whole_program_trace_value_and_grad,
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
@@ -1699,7 +1700,7 @@ def test_natural_gradient_optimizer_respects_frozen_parameters() -> None:
 
     optimizer = NaturalGradientOptimizer(learning_rate=0.5)
     result = optimizer.minimize(
-        lambda values: float(values[0] ** 2 + values[1] ** 2),
+        lambda values: values[0] ** 2 + values[1] ** 2,
         [2.0, 10.0],
         lambda _gradient, _values: np.eye(2),
         parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
@@ -1769,12 +1770,12 @@ def test_armijo_backtracking_line_search_respects_bounds_and_frozen_parameters()
     """Line search should project bounds and remove frozen direction components."""
 
     gradient = value_and_finite_difference_grad(
-        lambda values: float(values[0] ** 2 + values[1] ** 2),
+        lambda values: values[0] ** 2 + values[1] ** 2,
         [2.0, 10.0],
         parameters=[Parameter("x"), Parameter("frozen", trainable=False)],
     )
     result = armijo_backtracking_line_search(
-        lambda values: float(values[0] ** 2 + values[1] ** 2),
+        lambda values: values[0] ** 2 + values[1] ** 2,
         [2.0, 10.0],
         gradient,
         [-10.0, -999.0],
@@ -3239,13 +3240,13 @@ def test_vmap_is_exported_from_package_root() -> None:
 def test_whole_program_value_and_grad_traces_numpy_control_flow() -> None:
     """Whole-program AD should handle ordinary Python control flow and NumPy calls."""
 
-    def objective(values: np.ndarray) -> float:
-        total = 0.0
+    def objective(values: np.ndarray) -> object:
+        total = values[0] * 0.0
         for index, value in enumerate(values):
             if value > 0.0:
-                total += float(np.sin(value) + index * value)
+                total = total + np.sin(value) + index * value
             else:
-                total += float(value**2)
+                total = total + value**2
         return total
 
     result = whole_program_value_and_grad(
@@ -3254,10 +3255,10 @@ def test_whole_program_value_and_grad_traces_numpy_control_flow() -> None:
         parameters=(Parameter("theta"), Parameter("bias"), Parameter("phase")),
     )
 
-    assert result.method == "whole_program_finite_difference"
+    assert result.method == "whole_program_ad"
     assert result.control_flow_observed is True
     assert result.numpy_observed is True
-    assert result.polyglot_targets["python"].startswith("eager")
+    assert result.polyglot_targets["python"].startswith("operator-intercepted")
     assert result.polyglot_targets["rust"].startswith("blocked")
     assert result.polyglot_targets["llvm"].startswith("blocked")
     assert len(result.trace_events) >= 4
@@ -3269,11 +3270,53 @@ def test_whole_program_value_and_grad_traces_numpy_control_flow() -> None:
     )
 
 
+def test_whole_program_ad_captures_bytecode_source_alias_mutation_and_loop_semantics() -> None:
+    """Arbitrary whole-program AD should expose frontend IR and semantic analysis."""
+
+    def objective(values: np.ndarray) -> object:
+        history = [values[0]]
+        alias = history
+        total = values[0] * 0.0
+        for item in range(3):
+            alias.append(values[1] * item)
+            total = total + history[item]
+        if total > 0.0:
+            return np.sin(values[0]) + total
+        return np.cos(values[1]) - total
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.5, 0.25], dtype=np.float64),
+        parameters=(Parameter("theta"), Parameter("phi")),
+    )
+
+    assert result.semantics_report is not None
+    assert result.semantics_report.bytecode_frontend is True
+    assert result.semantics_report.source_frontend is True
+    assert result.semantics_report.graph_capture is True
+    assert result.semantics_report.aliasing_observed is True
+    assert result.semantics_report.mutation_observed is True
+    assert result.semantics_report.loop_observed is True
+    assert result.semantics_report.control_flow_observed is True
+    assert result.semantics_report.numpy_observed is True
+    assert result.bytecode_instructions
+    assert any(instruction.opname == "FOR_ITER" for instruction in result.bytecode_instructions)
+    assert {feature.kind for feature in result.source_ir_features} >= {
+        "alias_analysis",
+        "control_flow",
+        "loop",
+        "mutation",
+        "numpy",
+    }
+    assert any(node.op.startswith("branch:") for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, [math.cos(0.5) + 1.0, 1.0], atol=1.0e-12)
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 
     gradient = whole_program_grad(
-        lambda values: float(values[0] ** 2 + values[1] ** 2),
+        lambda values: values[0] ** 2 + values[1] ** 2,
         np.array([2.0, 3.0], dtype=np.float64),
         parameters=(Parameter("x"), Parameter("frozen", trainable=False)),
         trace=False,
@@ -3288,7 +3331,10 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.WholeProgramADResult is WholeProgramADResult
+    assert scpn.WholeProgramBytecodeInstruction is WholeProgramBytecodeInstruction
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
+    assert scpn.WholeProgramSourceIRFeature is WholeProgramSourceIRFeature
+    assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
 
@@ -3388,8 +3434,8 @@ def test_custom_derivative_global_registry_and_root_exports() -> None:
     assert scpn.registered_custom_jacobian is registered_custom_jacobian
 
 
-def test_whole_program_trace_ad_records_ir_and_executed_branch_semantics() -> None:
-    """Trace AD should differentiate the executed Python control-flow branch exactly."""
+def test_whole_program_ad_records_ir_and_executed_branch_semantics() -> None:
+    """Whole-program AD should differentiate the executed Python control-flow branch exactly."""
 
     def objective(values: np.ndarray) -> object:
         total = values[0] * values[0]
@@ -3400,13 +3446,13 @@ def test_whole_program_trace_ad_records_ir_and_executed_branch_semantics() -> No
                 total = total + value**2
         return total
 
-    result = whole_program_trace_value_and_grad(
+    result = whole_program_value_and_grad(
         objective,
         np.array([0.25, -0.5, 0.75], dtype=np.float64),
         parameters=(Parameter("theta"), Parameter("bias"), Parameter("phase")),
     )
 
-    assert result.method == "whole_program_trace_ad"
+    assert result.method == "whole_program_ad"
     assert result.step == 0.0
     assert result.control_flow_observed is True
     assert result.numpy_observed is True
@@ -3420,10 +3466,10 @@ def test_whole_program_trace_ad_records_ir_and_executed_branch_semantics() -> No
     )
 
 
-def test_whole_program_trace_grad_respects_trainable_mask_and_rejects_derivative_loss() -> None:
-    """Trace AD should freeze masked parameters and reject float-cast derivative loss."""
+def test_whole_program_grad_respects_trainable_mask_and_rejects_derivative_loss() -> None:
+    """Whole-program AD should freeze masked parameters and reject float-cast derivative loss."""
 
-    gradient = whole_program_trace_grad(
+    gradient = whole_program_grad(
         lambda values: values[0] ** 2 + values[1] ** 2,
         np.array([2.0, 3.0], dtype=np.float64),
         parameters=(Parameter("x"), Parameter("frozen", trainable=False)),
@@ -3432,25 +3478,14 @@ def test_whole_program_trace_grad_respects_trainable_mask_and_rejects_derivative
     np.testing.assert_allclose(gradient, [4.0, 0.0], rtol=1.0e-12, atol=1.0e-12)
 
     with pytest.raises(ValueError, match="converted to float"):
-        whole_program_trace_value_and_grad(
+        whole_program_value_and_grad(
             lambda values: float(values[0] ** 2),
             np.array([2.0], dtype=np.float64),
         )
 
 
-def test_whole_program_trace_ad_is_exported_from_package_root() -> None:
-    """Trace AD whole-program APIs should be stable root-level exports."""
-
-    import scpn_quantum_control as scpn
-
-    assert scpn.TraceADScalar is TraceADScalar
-    assert scpn.WholeProgramIRNode is WholeProgramIRNode
-    assert scpn.whole_program_trace_grad is whole_program_trace_grad
-    assert scpn.whole_program_trace_value_and_grad is whole_program_trace_value_and_grad
-
-
-def test_whole_program_trace_ad_operator_surface_and_fail_closed_paths() -> None:
-    """Trace AD should cover scalar operator interception and reject derivative loss."""
+def test_whole_program_ad_operator_surface_and_fail_closed_paths() -> None:
+    """Whole-program AD should cover scalar operator interception and reject derivative loss."""
 
     def objective(values: np.ndarray) -> object:
         x, y = values
@@ -3472,9 +3507,9 @@ def test_whole_program_trace_ad_operator_surface_and_fail_closed_paths() -> None
             + (-y)
         )
 
-    result = whole_program_trace_value_and_grad(objective, [1.5, 0.25], trace=False)
+    result = whole_program_value_and_grad(objective, [1.5, 0.25], trace=False)
 
-    assert result.method == "whole_program_trace_ad"
+    assert result.method == "whole_program_ad"
     assert result.evaluations == 1
     assert result.numpy_observed is True
     assert result.control_flow_observed is True
@@ -3496,17 +3531,17 @@ def test_whole_program_trace_ad_operator_surface_and_fail_closed_paths() -> None
     }.issubset(ops)
 
     with pytest.raises(ValueError, match="converted to float"):
-        whole_program_trace_value_and_grad(lambda values: float(values[0]), [1.0])
+        whole_program_value_and_grad(lambda values: float(values[0]), [1.0])
     with pytest.raises(ValueError, match="denominator"):
-        whole_program_trace_value_and_grad(lambda values: values[0] / 0.0, [1.0])
+        whole_program_value_and_grad(lambda values: values[0] / 0.0, [1.0])
     with pytest.raises(ValueError, match="log input"):
-        whole_program_trace_value_and_grad(lambda values: np.log(values[0]), [-1.0])
-    with pytest.raises(ValueError, match="unsupported trace AD NumPy ufunc"):
-        whole_program_trace_value_and_grad(lambda values: np.tan(values[0]), [1.0])
+        whole_program_value_and_grad(lambda values: np.log(values[0]), [-1.0])
+    with pytest.raises(ValueError, match="unsupported whole-program AD NumPy ufunc"):
+        whole_program_value_and_grad(lambda values: np.tan(values[0]), [1.0])
     with pytest.raises(ValueError, match="unary NumPy ufuncs"):
-        whole_program_trace_value_and_grad(lambda values: np.add(values[0], values[0]), [1.0])
+        whole_program_value_and_grad(lambda values: np.add(values[0], values[0]), [1.0])
     with pytest.raises(ValueError, match="direct NumPy scalar ufunc"):
-        whole_program_trace_value_and_grad(
+        whole_program_value_and_grad(
             lambda values: values[0].__array_ufunc__(np.sin, "reduce", values[0]), [1.0]
         )
     with pytest.raises(ValueError, match="different traces"):
@@ -3523,7 +3558,7 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
     valid = {
         "value": 1.0,
         "gradient": np.array([1.0, 2.0], dtype=np.float64),
-        "method": "whole_program_trace_ad",
+        "method": "whole_program_ad",
         "step": 0.0,
         "evaluations": 1,
         "parameter_names": ("x", "y"),
@@ -3558,7 +3593,7 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
             WholeProgramADResult(**payload)
 
 
-def test_whole_program_trace_event_and_ir_node_validation_paths() -> None:
+def test_whole_program_event_and_ir_node_validation_paths() -> None:
     """Trace event and IR node records should reject malformed trace metadata."""
 
     event = WholeProgramTraceEvent("objective.py", "loss", 7, "  return x  ")
@@ -3595,15 +3630,13 @@ def test_whole_program_trace_event_and_ir_node_validation_paths() -> None:
             WholeProgramIRNode(*args)
 
 
-def test_whole_program_trace_ad_rejects_unsupported_power_and_return_contracts() -> None:
-    """Trace AD should fail closed for unsupported powers and non-scalar returns."""
+def test_whole_program_ad_rejects_unsupported_power_and_return_contracts() -> None:
+    """Whole-program AD should fail closed for unsupported powers and non-scalar returns."""
 
     with pytest.raises(ValueError, match="positive base"):
-        whole_program_trace_value_and_grad(lambda values: (-values[0]) ** values[0], [1.0])
-    with pytest.raises(ValueError, match="trace AD scalar"):
-        whole_program_trace_value_and_grad(
-            lambda values: np.array([values[0]], dtype=object), [1.0]
-        )
+        whole_program_value_and_grad(lambda values: (-values[0]) ** values[0], [1.0])
+    with pytest.raises(ValueError, match="whole-program AD scalar"):
+        whole_program_value_and_grad(lambda values: np.array([values[0]], dtype=object), [1.0])
     with pytest.raises(ValueError, match="one-dimensional"):
         TraceADScalar(
             1.0,
@@ -3671,8 +3704,8 @@ def test_transform_algebra_jacfwd_jacrev_jvp_vjp_and_hessian_contracts() -> None
     )
 
 
-def test_transform_algebra_custom_rules_and_whole_program_trace_compose_with_vmap() -> None:
-    """Custom rules and whole-program trace AD should compose under vmap."""
+def test_transform_algebra_custom_rules_and_whole_program_ad_compose_with_vmap() -> None:
+    """Custom rules and whole-program AD should compose under vmap."""
 
     rule = CustomDerivativeRule(
         name="affine_sine_rule",
@@ -3689,7 +3722,7 @@ def test_transform_algebra_custom_rules_and_whole_program_trace_compose_with_vma
     values = np.array([[1.0, 0.25], [-2.0, -0.5]], dtype=np.float64)
     custom_jacobians = vmap(lambda row: custom_jacobian(rule, row))(values)
     trace_gradients = vmap(
-        lambda row: whole_program_trace_grad(
+        lambda row: whole_program_grad(
             lambda trace_values: trace_values[0] + np.sin(trace_values[1]),
             row,
             trace=False,

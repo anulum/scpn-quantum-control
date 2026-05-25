@@ -629,10 +629,8 @@ reverse_exp(value) -> ReverseNode
 reverse_log(value) -> ReverseNode
 grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> np.ndarray
 value_and_grad(objective, values, parameters=None, method="parameter_shift", rule=None, step=None) -> GradientResult
-whole_program_value_and_grad(objective, values, parameters=None, step=1e-6, trace=True) -> WholeProgramADResult
-whole_program_grad(objective, values, parameters=None, step=1e-6, trace=True) -> np.ndarray
-whole_program_trace_value_and_grad(objective, values, parameters=None, trace=True) -> WholeProgramADResult
-whole_program_trace_grad(objective, values, parameters=None, trace=True) -> np.ndarray
+whole_program_value_and_grad(objective, values, parameters=None, trace=True) -> WholeProgramADResult
+whole_program_grad(objective, values, parameters=None, trace=True) -> np.ndarray
 vmap(function, in_axes=0, out_axes=0) -> callable
 batch_parameter_shift_gradient(objectives, values, parameters=None, rule=None) -> np.ndarray
 batch_value_and_parameter_shift_grad(objectives, values, parameters=None, rule=None) -> tuple[GradientResult, ...]
@@ -777,10 +775,9 @@ The `batch_value_*` helpers return one `GradientResult` per scalar objective so
 multi-objective workflows keep objective values, gradient metadata, trainable
 masks, and evaluation counts instead of only a stacked gradient matrix.
 The canonical transform helpers `grad()`, `value_and_grad()`, `jacobian()`, `jacfwd()`, `jacrev()`, and
-`hessian()` provide stable user-facing names with explicit method dispatch. `jacfwd()` and `jacrev()` are explicit transform-algebra aliases over the current finite-difference Jacobian backend until true forward- and reverse-Jacobian engines land; tests guarantee their composition semantics without overclaiming backend implementation. Transform nesting contracts cover `grad(vmap(f))`, `vmap(grad(f))`, JVP/VJP consistency against Jacobians, Hessian symmetry, custom derivative rules under `vmap`, and whole-program trace AD under `vmap`. This
+`hessian()` provide stable user-facing names with explicit method dispatch. `jacfwd()` and `jacrev()` are explicit transform-algebra aliases over the current finite-difference Jacobian backend until true forward- and reverse-Jacobian engines land; tests guarantee their composition semantics without overclaiming backend implementation. Transform nesting contracts cover `grad(vmap(f))`, `vmap(grad(f))`, JVP/VJP consistency against Jacobians, Hessian symmetry, custom derivative rules under `vmap`, and whole-program AD under `vmap`. This
 `vmap()` adds a composable eager vectorization transform over selected input axes, with broadcast arguments, nested tuple/list/dict outputs, explicit `out_axes`, and fail-closed shape validation. It is deterministic NumPy execution, not a JIT claim.
-`whole_program_value_and_grad()` is the arbitrary eager Python boundary for objectives that use ordinary Python, NumPy calls, and runtime control flow instead of SCPN primitive AD contracts. It records executed source-line trace events, computes central finite-difference gradients through the complete callable, preserves trainable masks, and reports polyglot target status explicitly: Python eager gradients and MLIR trace interchange are available, while Rust and LLVM/JIT executable whole-program AD lowerings are blocked until real backends exist.
-`whole_program_trace_value_and_grad()` adds an exact operator-intercepted trace-AD path for supported scalar Python arithmetic, NumPy unary ufuncs, and executed-branch control flow. It emits `WholeProgramIRNode` records, rejects derivative-losing `float()` conversion, preserves trainable masks, and differentiates the executed branch rather than estimating gradients by finite differences.
+`whole_program_value_and_grad()` is the exact operator-intercepted whole-program AD path for differentiable Python programs that execute through traceable scalar values. It emits bytecode/source IR metadata, records `WholeProgramIRNode` graph nodes, preserves trainable masks, executes Python loops, local aliasing, list mutation, supported NumPy scalar ufuncs, and executed-branch control flow with derivative-carrying values, and rejects derivative-losing operations such as `float()` conversion instead of falling back to finite differences. Rust and LLVM/JIT executable whole-program AD lowerings remain blocked until real polyglot interpreter or compiler backends exist.
 keeps today's parameter-shift, finite-difference, and complex-step backends
 compatible while leaving room for future reverse-mode, forward-mode, sparse, and
 implicit-differentiation implementations behind the same public contract.
