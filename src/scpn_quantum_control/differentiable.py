@@ -19,6 +19,7 @@ import dis
 import inspect
 import json
 import linecache
+import math
 import sys
 import textwrap
 from collections.abc import Callable, Mapping, Sequence
@@ -5428,6 +5429,134 @@ def _program_ad_linalg_direct_jvp(
     )
 
 
+def _program_ad_linalg_square_matrix(
+    primitive_name: str,
+    values: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array(f"program AD linalg {primitive_name} values", values).reshape(
+        -1
+    )
+    size = int(vector.size)
+    rows = int(math.isqrt(size))
+    if rows * rows != size:
+        raise ValueError(
+            f"program AD linalg {primitive_name} direct rule requires a flattened square matrix"
+        )
+    return vector.reshape(rows, rows)
+
+
+def _program_ad_linalg_det_cofactor_matrix(matrix: NDArray[np.float64]) -> NDArray[np.float64]:
+    rows, cols = matrix.shape
+    if rows != cols:
+        raise ValueError("program AD linalg det direct rule requires a square matrix")
+    if rows == 0:
+        return np.zeros((0, 0), dtype=np.float64)
+    if rows == 1:
+        return np.ones((1, 1), dtype=np.float64)
+    cofactors = np.zeros_like(matrix, dtype=np.float64)
+    for row in range(rows):
+        for col in range(cols):
+            minor = np.delete(np.delete(matrix, row, axis=0), col, axis=1)
+            cofactors[row, col] = ((-1.0) ** (row + col)) * float(np.linalg.det(minor))
+    return cofactors
+
+
+def _program_ad_linalg_det_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("det", values)
+    return np.array([float(np.linalg.det(matrix))], dtype=np.float64)
+
+
+def _program_ad_linalg_det_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("det", values)
+    tangent_matrix = _program_ad_linalg_square_matrix("det", tangent)
+    if tangent_matrix.shape != matrix.shape:
+        raise ValueError("program AD linalg det tangent shape must match matrix shape")
+    cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
+    return np.array([float(np.sum(cofactors * tangent_matrix))], dtype=np.float64)
+
+
+def _program_ad_linalg_inv_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("inv", values)
+    return np.linalg.inv(matrix).reshape(-1).astype(np.float64)
+
+
+def _program_ad_linalg_inv_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("inv", values)
+    tangent_matrix = _program_ad_linalg_square_matrix("inv", tangent)
+    if tangent_matrix.shape != matrix.shape:
+        raise ValueError("program AD linalg inv tangent shape must match matrix shape")
+    inverse = np.linalg.inv(matrix)
+    return (-(inverse @ tangent_matrix @ inverse)).reshape(-1).astype(np.float64)
+
+
+def _program_ad_linalg_solve_split(
+    primitive_name: str,
+    values: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD linalg {primitive_name} values", values).reshape(
+        -1
+    )
+    total = int(vector.size)
+    rows = int((math.isqrt(1 + 4 * total) - 1) // 2)
+    if rows * rows + rows != total:
+        raise ValueError(
+            "program AD linalg solve direct rule requires flattened square matrix "
+            "followed by vector right-hand side"
+        )
+    matrix = vector[: rows * rows].reshape(rows, rows)
+    rhs = vector[rows * rows :]
+    return matrix, rhs
+
+
+def _program_ad_linalg_solve_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    matrix, rhs = _program_ad_linalg_solve_split("solve", values)
+    return np.linalg.solve(matrix, rhs).astype(np.float64)
+
+
+def _program_ad_linalg_solve_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix, rhs = _program_ad_linalg_solve_split("solve", values)
+    tangent_matrix, tangent_rhs = _program_ad_linalg_solve_split("solve", tangent)
+    if tangent_matrix.shape != matrix.shape or tangent_rhs.shape != rhs.shape:
+        raise ValueError("program AD linalg solve tangent shape must match primal shape")
+    solution = np.linalg.solve(matrix, rhs)
+    return np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution).astype(np.float64)
+
+
+def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
+    if name == "det":
+        return CustomDerivativeRule(
+            name="program_ad_linalg_det_direct_rule",
+            value_fn=_program_ad_linalg_det_value,
+            jvp_rule=_program_ad_linalg_det_jvp,
+        )
+    if name == "inv":
+        return CustomDerivativeRule(
+            name="program_ad_linalg_inv_direct_rule",
+            value_fn=_program_ad_linalg_inv_value,
+            jvp_rule=_program_ad_linalg_inv_jvp,
+        )
+    if name == "solve":
+        return CustomDerivativeRule(
+            name="program_ad_linalg_solve_direct_rule",
+            value_fn=_program_ad_linalg_solve_value,
+            jvp_rule=_program_ad_linalg_solve_jvp,
+        )
+    return CustomDerivativeRule(
+        name=f"program_ad_linalg_{name}_trace_contract",
+        value_fn=_program_ad_linalg_direct_value,
+        jvp_rule=_program_ad_linalg_direct_jvp,
+    )
+
+
 def _program_ad_linalg_shape_of(value: object) -> tuple[int, ...]:
     if isinstance(value, TraceADArray):
         return value.shape
@@ -5602,11 +5731,7 @@ def _register_program_ad_linalg_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_LINALG_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
-        rule = CustomDerivativeRule(
-            name=f"program_ad_linalg_{name}_trace_contract",
-            value_fn=_program_ad_linalg_direct_value,
-            jvp_rule=_program_ad_linalg_direct_jvp,
-        )
+        rule = _program_ad_linalg_derivative_rule(name)
         DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
             PrimitiveTransformRule(
                 identity=identity,

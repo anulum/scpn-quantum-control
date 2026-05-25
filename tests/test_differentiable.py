@@ -4657,6 +4657,63 @@ def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None
         contracts["multi_dot"].shape_rule(((rhs_vector, np.ones((3, 2), dtype=np.float64)),))
 
 
+def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> None:
+    """Feasible linalg primitive contracts should expose direct derivative kernels."""
+
+    matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
+    tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
+    rhs = np.array([0.25, -1.0], dtype=np.float64)
+    tangent_rhs = np.array([0.5, -0.25], dtype=np.float64)
+
+    det_rule = custom_derivative_rule_for(PrimitiveIdentity("scpn.program_ad.linalg", "det", "1"))
+    inv_rule = custom_derivative_rule_for(PrimitiveIdentity("scpn.program_ad.linalg", "inv", "1"))
+    solve_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "solve", "1")
+    )
+
+    assert det_rule.name == "program_ad_linalg_det_direct_rule"
+    assert inv_rule.name == "program_ad_linalg_inv_direct_rule"
+    assert solve_rule.name == "program_ad_linalg_solve_direct_rule"
+    assert det_rule.jvp_rule is not None
+    assert inv_rule.jvp_rule is not None
+    assert solve_rule.jvp_rule is not None
+
+    np.testing.assert_allclose(det_rule.value_fn(matrix.reshape(-1)), [np.linalg.det(matrix)])
+    cofactor = np.array([[matrix[1, 1], -matrix[1, 0]], [-matrix[0, 1], matrix[0, 0]]])
+    np.testing.assert_allclose(
+        det_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        [np.sum(cofactor * tangent_matrix)],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    inverse = np.linalg.inv(matrix)
+    np.testing.assert_allclose(inv_rule.value_fn(matrix.reshape(-1)), inverse.reshape(-1))
+    np.testing.assert_allclose(
+        inv_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        (-(inverse @ tangent_matrix @ inverse)).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    solve_values = np.concatenate((matrix.reshape(-1), rhs))
+    solve_tangent = np.concatenate((tangent_matrix.reshape(-1), tangent_rhs))
+    solution = np.linalg.solve(matrix, rhs)
+    np.testing.assert_allclose(solve_rule.value_fn(solve_values), solution)
+    np.testing.assert_allclose(
+        solve_rule.jvp_rule(solve_values, solve_tangent),
+        np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    matrix_power_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
+    )
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        matrix_power_rule.value_fn(matrix.reshape(-1))
+
+
 def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
     """Registered linalg batching rules should vectorize pure NumPy primitive calls."""
 
