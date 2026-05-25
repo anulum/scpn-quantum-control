@@ -209,6 +209,7 @@ class _WholeProgramTraceContext:
         value: float,
         tangent: NDArray[np.float64],
     ) -> TraceADScalar:
+        """Create a trace scalar and append its IR node to this AD context."""
         node = WholeProgramIRNode(
             index=len(self.nodes),
             op=op,
