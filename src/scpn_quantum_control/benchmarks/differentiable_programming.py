@@ -80,6 +80,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
     return (
         _loop_heavy_case(),
         _matrix_heavy_case(),
+        _linalg_primitive_case(),
         _mutation_heavy_case(),
         _transform_nesting_case(),
     )
@@ -144,6 +145,52 @@ def _matrix_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     return _program_ad_case(
         "matrix_heavy_linear_algebra",
         "matrix-heavy",
+        objective,
+        values,
+        analytic,
+    )
+
+
+def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([1.5, 2.0, -0.75, 0.5], dtype=np.float64)
+    inverse_weights = np.array([[0.25, 0.0], [0.0, -0.5]], dtype=np.float64)
+    solve_weights = np.array([1.25, -0.75], dtype=np.float64)
+    power_weights = np.array([[0.5, 0.0], [0.0, -0.25]], dtype=np.float64)
+    multi_dot_left = np.array([0.75, -1.5], dtype=np.float64)
+    multi_dot_right = np.array([1.25, 0.5], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        matrix = np.diag(trace_values[:2])
+        rhs = trace_values[2:4]
+        return (
+            np.linalg.det(matrix)
+            + np.sum(np.linalg.inv(matrix) * inverse_weights)
+            + np.sum(np.linalg.solve(matrix, rhs) * solve_weights)
+            + np.sum(np.linalg.matrix_power(matrix, 2) * power_weights)
+            + np.linalg.multi_dot((multi_dot_left, matrix, multi_dot_right))
+        )
+
+    x0, x1, rhs0, rhs1 = values
+    analytic = np.array(
+        [
+            x1
+            - inverse_weights[0, 0] / (x0 * x0)
+            - solve_weights[0] * rhs0 / (x0 * x0)
+            + 2.0 * power_weights[0, 0] * x0
+            + multi_dot_left[0] * multi_dot_right[0],
+            x0
+            - inverse_weights[1, 1] / (x1 * x1)
+            - solve_weights[1] * rhs1 / (x1 * x1)
+            + 2.0 * power_weights[1, 1] * x1
+            + multi_dot_left[1] * multi_dot_right[1],
+            solve_weights[0] / x0,
+            solve_weights[1] / x1,
+        ],
+        dtype=np.float64,
+    )
+    return _program_ad_case(
+        "linalg_primitive_contracts",
+        "linalg-primitive",
         objective,
         values,
         analytic,

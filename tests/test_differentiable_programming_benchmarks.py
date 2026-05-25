@@ -26,12 +26,14 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert [row.case_id for row in results] == [
         "loop_heavy_scalar",
         "matrix_heavy_linear_algebra",
+        "linalg_primitive_contracts",
         "mutation_heavy_forward_only",
         "transform_nesting_vmap_program_grad",
     ]
     assert {row.category for row in results} == {
         "loop-heavy",
         "matrix-heavy",
+        "linalg-primitive",
         "mutation-heavy",
         "transform-nesting",
     }
@@ -45,9 +47,14 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
             or "not a performance" in row.claim_boundary
         )
     mutation_row = next(row for row in results if row.category == "mutation-heavy")
-    assert mutation_row.adjoint_supported is False
-    assert mutation_row.max_abs_adjoint_error is None
+    assert mutation_row.adjoint_supported is True
+    assert mutation_row.max_abs_adjoint_error is not None
+    assert mutation_row.max_abs_adjoint_error <= 1.0e-12
     assert np.any(mutation_row.gradient != 0.0)
+    linalg_row = next(row for row in results if row.category == "linalg-primitive")
+    assert linalg_row.adjoint_supported is True
+    assert linalg_row.max_abs_adjoint_error is not None
+    assert linalg_row.max_abs_adjoint_error <= 1.0e-12
 
 
 def test_differentiable_programming_benchmark_result_validation_paths() -> None:
