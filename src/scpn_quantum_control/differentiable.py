@@ -900,10 +900,14 @@ class TraceADArray:
 
     @property
     def ndim(self) -> int:
+        """Return the rank of the derivative-carrying array."""
+
         return len(self.shape)
 
     @property
     def size(self) -> int:
+        """Return the total number of derivative-carrying elements."""
+
         return len(self._items)
 
     def __len__(self) -> int:
@@ -931,14 +935,20 @@ class TraceADArray:
         )
 
     def item(self) -> TraceADScalar:
+        """Return the only scalar element, failing closed for non-scalar arrays."""
+
         if self.size != 1:
             raise ValueError("TraceADArray.item requires exactly one element")
         return self._items[0]
 
     def copy(self) -> TraceADArray:
+        """Return a derivative-preserving shallow array copy."""
+
         return TraceADArray(tuple(self._items), self.shape, self.context)
 
     def reshape(self, *shape: int | tuple[int, ...]) -> TraceADArray:
+        """Return a derivative-preserving reshaped array view."""
+
         if len(shape) == 1 and isinstance(shape[0], tuple):
             raw_target: object = shape[0]
         else:
@@ -985,18 +995,28 @@ class TraceADArray:
         return _trace_transpose(self, self.context)
 
     def sum(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving sum over all elements or one axis."""
+
         return _trace_array_sum(self, axis=axis)
 
     def cumsum(self, axis: int | None = None) -> TraceADArray:
+        """Return a derivative-preserving cumulative sum."""
+
         return _trace_cumsum(self, axis=axis)
 
     def prod(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving product over all elements or one axis."""
+
         return _trace_array_prod(self, axis=axis)
 
     def cumprod(self, axis: int | None = None) -> TraceADArray:
+        """Return a derivative-preserving cumulative product."""
+
         return _trace_cumprod(self, axis=axis)
 
     def mean(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving arithmetic mean."""
+
         result = _trace_array_sum(self, axis=axis)
         divisor = (
             self.size if axis is None else self.shape[_normalise_axis("axis", axis, self.ndim)]
@@ -1008,15 +1028,23 @@ class TraceADArray:
         )
 
     def var(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving variance with NumPy-compatible ddof."""
+
         return _trace_variance(self, axis=axis, ddof=ddof)
 
     def std(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving standard deviation."""
+
         return _trace_std(self, axis=axis, ddof=ddof)
 
     def max(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving maximum with tie-safe semantics."""
+
         return _trace_extreme(self, axis=axis, choose_max=True)
 
     def min(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving minimum with tie-safe semantics."""
+
         return _trace_extreme(self, axis=axis, choose_max=False)
 
     def take(
@@ -1025,13 +1053,19 @@ class TraceADArray:
         axis: int | None = None,
         mode: str = "raise",
     ) -> TraceADScalar | TraceADArray:
+        """Return derivative-preserving positional elements with fail-closed modes."""
+
         return _trace_take(self, indices, axis=axis, mode=mode)
 
     def argmax(self, axis: int | None = None) -> NoReturn:
+        """Reject nondifferentiable maximum-index selection."""
+
         del axis
         _raise_index_selection_boundary()
 
     def argmin(self, axis: int | None = None) -> NoReturn:
+        """Reject nondifferentiable minimum-index selection."""
+
         del axis
         _raise_index_selection_boundary()
 
