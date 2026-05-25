@@ -3835,6 +3835,28 @@ def test_program_ad_extreme_reductions_match_strict_selection_adjoint() -> None:
     )
 
 
+def test_program_ad_extreme_reduction_methods_match_numpy_functions() -> None:
+    """Trace arrays should support ndarray-style max/min method reductions."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return matrix.max(axis=0)[1] - matrix.min(axis=1)[0] + matrix.max()
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, -3.0, 4.0, 2.0], dtype=np.float64),
+        parameters=(
+            Parameter("x00"),
+            Parameter("x01"),
+            Parameter("x10"),
+            Parameter("x11"),
+        ),
+    )
+
+    assert result.value == pytest.approx(9.0)
+    np.testing.assert_allclose(result.gradient, [0.0, -1.0, 1.0, 1.0], atol=1.0e-12)
+
+
 def test_program_ad_extreme_reductions_fail_closed_on_ties() -> None:
     """Program AD max/min reductions should reject nondifferentiable tied selectors."""
 

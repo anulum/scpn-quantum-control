@@ -962,6 +962,12 @@ class TraceADArray:
             else result / float(divisor)
         )
 
+    def max(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        return _trace_extreme(self, axis=axis, choose_max=True)
+
+    def min(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
+        return _trace_extreme(self, axis=axis, choose_max=False)
+
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
         if self.ndim > 2:
             raise ValueError("whole-program AD array indexing supports arrays with rank <= 2")
