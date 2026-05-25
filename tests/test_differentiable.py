@@ -4037,6 +4037,57 @@ def test_program_ad_tile_fails_closed_invalid_static_contracts() -> None:
         )
 
 
+def test_program_ad_atleast_rank_transforms_preserve_exact_adjoint() -> None:
+    """Program AD atleast transforms should preserve derivatives through rank lifts."""
+
+    vector_weights_2d = np.linspace(-1.5, 2.5, 6, dtype=np.float64).reshape(1, 6)
+    vector_weights_3d = np.linspace(0.25, 2.75, 6, dtype=np.float64).reshape(1, 6, 1)
+    matrix_weights = np.linspace(-2.0, 2.0, 6, dtype=np.float64).reshape(2, 3, 1)
+    multi_left_weights = np.linspace(-0.75, 1.25, 6, dtype=np.float64)
+    multi_right_weights = np.linspace(1.5, 3.0, 3, dtype=np.float64).reshape(1, 3)
+
+    def objective(values: np.ndarray) -> object:
+        vector = values[:6]
+        matrix = np.reshape(values[:6], (2, 3))
+        left, right = np.atleast_1d(vector, values[1:4])
+        return (
+            np.sum(np.atleast_2d(vector) * vector_weights_2d)
+            + np.sum(np.atleast_3d(vector) * vector_weights_3d)
+            + np.sum(np.atleast_3d(matrix) * matrix_weights)
+            + np.sum(left * multi_left_weights)
+            + np.sum(np.atleast_2d(right) * multi_right_weights)
+        )
+
+    values = np.linspace(-1.0, 1.0, 6, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros(6, dtype=np.float64)
+    expected += vector_weights_2d.reshape(-1)
+    expected += vector_weights_3d.reshape(-1)
+    expected += matrix_weights.reshape(-1)
+    expected += multi_left_weights
+    expected[1:4] += multi_right_weights.reshape(-1)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_atleast_rank_transforms_fail_closed_invalid_contracts() -> None:
+    """Program AD atleast transforms should reject non-NumPy keyword contracts."""
+
+    with pytest.raises(TypeError, match="unexpected keyword argument"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.atleast_2d(values, dtype=float)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 

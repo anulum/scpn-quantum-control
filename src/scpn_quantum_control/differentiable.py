@@ -1077,7 +1077,7 @@ class TraceADArray:
         types: tuple[type, ...],
         args: tuple[object, ...],
         kwargs: dict[str, object],
-    ) -> TraceADScalar | TraceADArray:
+    ) -> TraceADScalar | TraceADArray | list[TraceADArray]:
         del types
         if func is np.sum:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
@@ -1220,6 +1220,15 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("whole-program AD np.ravel supports one array")
             return _coerce_trace_array(args[0], self.context).ravel()
+        if func in {np.atleast_1d, np.atleast_2d, np.atleast_3d}:
+            if not args or kwargs:
+                raise ValueError("program AD atleast transforms support positional arrays only")
+            target_rank = 1 if func is np.atleast_1d else 2 if func is np.atleast_2d else 3
+            transformed = tuple(
+                _trace_atleast_nd(_coerce_trace_array(item, self.context), rank=target_rank)
+                for item in args
+            )
+            return transformed[0] if len(transformed) == 1 else list(transformed)
         if func is np.squeeze:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("program AD np.squeeze supports one array and optional axis")
@@ -1629,6 +1638,30 @@ def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> T
     for item in axes:
         shape.insert(item, 1)
     return TraceADArray(tuple(array._items), tuple(shape), array.context)
+
+
+def _trace_atleast_nd(array: TraceADArray, *, rank: int) -> TraceADArray:
+    if rank == 1:
+        shape = array.shape if array.ndim >= 1 else (1,)
+    elif rank == 2:
+        if array.ndim == 0:
+            shape = (1, 1)
+        elif array.ndim == 1:
+            shape = (1, array.shape[0])
+        else:
+            shape = array.shape
+    elif rank == 3:
+        if array.ndim == 0:
+            shape = (1, 1, 1)
+        elif array.ndim == 1:
+            shape = (1, array.shape[0], 1)
+        elif array.ndim == 2:
+            shape = (array.shape[0], array.shape[1], 1)
+        else:
+            shape = array.shape
+    else:
+        raise ValueError("program AD atleast rank must be 1, 2, or 3")
+    return TraceADArray(tuple(array._items), shape, array.context)
 
 
 def _normalise_axis_permutation_axis(name: str, axis: object, *, rank: int) -> int:
