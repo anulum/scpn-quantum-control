@@ -105,7 +105,10 @@ deterministic MLIR provenance plus deterministic LLVM-style scalar-gradient
 provenance for verified scalar-output kernels, binds normalized value/JVP/VJP
 runtime kernels, exposes verified scalar-output `gradient()` execution through
 VJP cotangent-one semantics, and verifies those kernels against the source rule
-before returning. The executable backend is `mlir_runtime`; the LLVM artifact is
+before returning. `make_program_ad_linalg_matrix_power_executable_lowering_rule()`
+and `make_program_ad_linalg_multi_dot_executable_lowering_rule()` bind concrete
+static linalg signatures to verified MLIR-runtime value/JVP kernels derived from
+the direct derivative factories. The executable backend is `mlir_runtime`; the LLVM artifact is
 audit provenance for the verified gradient adapter, and native LLVM/JIT targets
 still fail closed until real code generation is present. This surface does not
 claim LLVM/QIR lowering, cloud submission, pulse compilation, or hardware
@@ -117,7 +120,8 @@ lowering metadata, executable MLIR-runtime availability when a lowering rule is
 registered, and fail-closed Rust/LLVM backend status. Static program-AD linalg
 contracts now expose MLIR metadata for fixed `matrix_power` powers and fixed
 `multi_dot` operand-shape signatures, including the direct derivative factory
-that can be used by later lowering passes. `compile_compiler_ad_transform_plan_to_mlir()`
+and optional verified MLIR-runtime lowering rule used by concrete static
+signatures. `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native Rust, LLVM, and JIT
 differentiated runtimes remain unavailable until backed by real lowering and
 runtime verification.

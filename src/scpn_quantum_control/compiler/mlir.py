@@ -30,6 +30,8 @@ from ..differentiable import (
     CustomDerivativeRule,
     PrimitiveIdentity,
     WholeProgramADResult,
+    program_ad_linalg_matrix_power_derivative_rule,
+    program_ad_linalg_multi_dot_derivative_rule,
     value_and_custom_jacobian,
 )
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
@@ -693,6 +695,58 @@ def compile_registered_primitive_to_executable(
         sample_tangent=sample_tangent,
         sample_cotangent=sample_cotangent,
     )
+
+
+def make_program_ad_linalg_matrix_power_executable_lowering_rule(
+    power: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    *,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[[CustomDerivativeRule], ExecutableCompilerADKernel]:
+    """Build a verified executable lowering rule for a fixed matrix_power signature."""
+
+    direct_rule = program_ad_linalg_matrix_power_derivative_rule(power)
+    values = _as_finite_vector("sample_values", sample_values)
+    compile_config = CompilerADExecutableConfig() if config is None else config
+
+    def lowering_rule(_registered_rule: CustomDerivativeRule) -> ExecutableCompilerADKernel:
+        if not isinstance(_registered_rule, CustomDerivativeRule):
+            raise ValueError("registered_rule must be a CustomDerivativeRule")
+        return compile_custom_derivative_rule_to_executable(
+            direct_rule,
+            values,
+            compile_config,
+            sample_tangent=sample_tangent,
+        )
+
+    return lowering_rule
+
+
+def make_program_ad_linalg_multi_dot_executable_lowering_rule(
+    operand_shapes: Sequence[Sequence[int]],
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    *,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[[CustomDerivativeRule], ExecutableCompilerADKernel]:
+    """Build a verified executable lowering rule for a fixed multi_dot signature."""
+
+    direct_rule = program_ad_linalg_multi_dot_derivative_rule(operand_shapes)
+    values = _as_finite_vector("sample_values", sample_values)
+    compile_config = CompilerADExecutableConfig() if config is None else config
+
+    def lowering_rule(_registered_rule: CustomDerivativeRule) -> ExecutableCompilerADKernel:
+        if not isinstance(_registered_rule, CustomDerivativeRule):
+            raise ValueError("registered_rule must be a CustomDerivativeRule")
+        return compile_custom_derivative_rule_to_executable(
+            direct_rule,
+            values,
+            compile_config,
+            sample_tangent=sample_tangent,
+        )
+
+    return lowering_rule
 
 
 def _verify_executable_ad_kernel(

@@ -27,6 +27,8 @@ from scpn_quantum_control.compiler.mlir import (
     compile_kuramoto_to_mlir,
     compile_registered_primitive_to_executable,
     compile_whole_program_ad_trace_to_mlir,
+    make_program_ad_linalg_matrix_power_executable_lowering_rule,
+    make_program_ad_linalg_multi_dot_executable_lowering_rule,
 )
 from scpn_quantum_control.control.realtime_runtime import (
     RealtimeRuntimeConfig,
@@ -48,6 +50,8 @@ from scpn_quantum_control.differentiable import (
     PrimitiveIdentity,
     PrimitiveTransformRule,
     primitive_contract_for,
+    program_ad_linalg_matrix_power_derivative_rule,
+    program_ad_linalg_multi_dot_derivative_rule,
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
@@ -190,6 +194,113 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         in module.text
     )
     assert "blocked_until_executable_linalg_lowering" in module.text
+
+
+def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
+    """Static linalg lowering factories should execute verified MLIR-runtime kernels."""
+
+    matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
+    tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
+    left = np.array([0.75, -1.5], dtype=np.float64)
+    right = np.array([1.25, 0.5], dtype=np.float64)
+    tangent_left = np.array([0.2, -0.1], dtype=np.float64)
+    tangent_right = np.array([0.4, -0.3], dtype=np.float64)
+
+    power_rule = program_ad_linalg_matrix_power_derivative_rule(2)
+    power_lowering = make_program_ad_linalg_matrix_power_executable_lowering_rule(
+        2,
+        matrix.reshape(-1),
+        sample_tangent=tangent_matrix.reshape(-1),
+    )
+    power_kernel = power_lowering(power_rule)
+
+    assert power_kernel.backend == "mlir_runtime"
+    assert power_kernel.verification.passed is True
+    assert power_kernel.verification.jvp_close is True
+    assert "native LLVM/JIT code generation remains fail-closed" in power_kernel.claim_boundary
+    np.testing.assert_allclose(
+        power_kernel.value(matrix.reshape(-1)), (matrix @ matrix).reshape(-1)
+    )
+    np.testing.assert_allclose(
+        power_kernel.jvp(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        (tangent_matrix @ matrix + matrix @ tangent_matrix).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    multi_values = np.concatenate((left, matrix.reshape(-1), right))
+    multi_tangent = np.concatenate((tangent_left, tangent_matrix.reshape(-1), tangent_right))
+    multi_rule = program_ad_linalg_multi_dot_derivative_rule(((2,), (2, 2), (2,)))
+    multi_lowering = make_program_ad_linalg_multi_dot_executable_lowering_rule(
+        ((2,), (2, 2), (2,)),
+        multi_values,
+        sample_tangent=multi_tangent,
+    )
+    multi_kernel = multi_lowering(multi_rule)
+
+    expected_multi_jvp = (
+        np.linalg.multi_dot((tangent_left, matrix, right))
+        + np.linalg.multi_dot((left, tangent_matrix, right))
+        + np.linalg.multi_dot((left, matrix, tangent_right))
+    )
+    assert multi_kernel.backend == "mlir_runtime"
+    assert multi_kernel.verification.passed is True
+    assert multi_kernel.verification.jvp_close is True
+    np.testing.assert_allclose(
+        multi_kernel.value(multi_values),
+        np.asarray(np.linalg.multi_dot((left, matrix, right))).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        multi_kernel.jvp(multi_values, multi_tangent),
+        np.asarray(expected_multi_jvp).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
+    """Concrete static linalg lowering rules should mark only MLIR-runtime execution available."""
+
+    identity = PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
+    contract = primitive_contract_for(identity)
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=contract.derivative_rule,
+            batching_rule=contract.batching_rule,
+            lowering_rule=make_program_ad_linalg_matrix_power_executable_lowering_rule(
+                2, np.array([2.0, -0.5, 0.75, 1.5], dtype=np.float64)
+            ),
+            lowering_metadata={
+                **contract.lowering_metadata,
+                "mlir": "available: executable scpn_diff MLIR-runtime linalg kernel",
+            },
+            shape_rule=contract.shape_rule,
+            dtype_rule=contract.dtype_rule,
+            static_argument_rule=contract.static_argument_rule,
+            nondifferentiable_policy=contract.nondifferentiable_policy,
+            effect=contract.effect,
+        )
+    )
+
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+    kernel = compile_registered_primitive_to_executable(registry, identity, np.array([0.0]))
+
+    assert plan.statuses[0].has_static_argument_rule is True
+    assert (
+        plan.statuses[0].mlir_lowering
+        == "available: executable scpn_diff MLIR-runtime linalg kernel"
+    )
+    assert module.resource_counts["executable_backends"] == 0
+    assert module.metadata["executable_backend"] == "none"
+    assert "available: executable scpn_diff MLIR-runtime linalg kernel" in module.text
+    assert "blocked_until_executable_linalg_lowering" in module.text
+    assert kernel.backend == "mlir_runtime"
+    assert kernel.verification.passed is True
 
 
 def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims() -> None:
@@ -599,6 +710,14 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
         is compile_registered_primitive_to_executable
     )
     assert scpn.compile_kuramoto_to_mlir is compile_kuramoto_to_mlir
+    assert (
+        scpn.make_program_ad_linalg_matrix_power_executable_lowering_rule
+        is make_program_ad_linalg_matrix_power_executable_lowering_rule
+    )
+    assert (
+        scpn.make_program_ad_linalg_multi_dot_executable_lowering_rule
+        is make_program_ad_linalg_multi_dot_executable_lowering_rule
+    )
     assert scpn.RealtimeRuntimeConfig is RealtimeRuntimeConfig
     assert scpn.RealtimeSLAConfig is RealtimeSLAConfig
     assert scpn.run_realtime_control_loop is run_realtime_control_loop
