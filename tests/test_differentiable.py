@@ -4409,6 +4409,68 @@ def test_program_ad_linalg_solve_fails_closed_invalid_contracts() -> None:
         )
 
 
+def test_program_ad_linalg_matrix_power_matches_exact_differential() -> None:
+    """Program AD matrix_power should compose exact matrix products and inverses."""
+
+    weights_square = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
+    weights_inverse = np.array([[1.0, -0.5], [0.25, 1.5]], dtype=np.float64)
+    weights_identity = np.array([[0.75, -0.25], [1.25, 0.5]], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return (
+            np.sum(np.linalg.matrix_power(matrix, 2) * weights_square)
+            + np.sum(np.linalg.matrix_power(matrix, -1) * weights_inverse)
+            + np.sum(np.linalg.matrix_power(matrix, 0) * weights_identity)
+        )
+
+    values = np.array([2.0, -0.5, 0.75, 1.5], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    matrix = values.reshape(2, 2)
+    inv_matrix = np.linalg.inv(matrix)
+    expected_matrix = (
+        weights_square @ matrix.T
+        + matrix.T @ weights_square
+        - inv_matrix.T @ weights_inverse @ inv_matrix.T
+    )
+    np.testing.assert_allclose(
+        result.gradient, expected_matrix.reshape(-1), rtol=1.0e-12, atol=1.0e-12
+    )
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_matrix.reshape(-1), rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_linalg_matrix_power_fails_closed_invalid_contracts() -> None:
+    """Program AD matrix_power should reject invalid matrices and powers."""
+
+    with pytest.raises(ValueError, match="rank-2 matrices only"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.matrix_power(values, 2)),
+            np.arange(1.0, 5.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires a square matrix"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.matrix_power(np.reshape(values, (2, 3)), 2)),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="exponent must be a static integer"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.matrix_power(np.reshape(values, (2, 2)), 1.5)),
+            np.arange(1.0, 5.0, dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires a nonsingular matrix"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.matrix_power(np.reshape(values, (2, 2)), -1)),
+            np.array([1.0, 2.0, 2.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 

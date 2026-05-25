@@ -1429,6 +1429,10 @@ class TraceADArray:
             if len(args) != 2 or kwargs:
                 raise ValueError("program AD np.linalg.solve supports matrix and right-hand side")
             return _trace_solve(args[0], args[1], self.context)
+        if func is np.linalg.matrix_power:
+            if len(args) != 2 or kwargs:
+                raise ValueError("program AD np.linalg.matrix_power supports matrix and power")
+            return _trace_matrix_power(args[0], args[1], self.context)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
         if func is np.sort or func is np.argsort:
@@ -2759,6 +2763,51 @@ def _trace_solve(
     else:
         raise ValueError("program AD np.linalg.solve right-hand side must be rank-1 or rank-2")
     return _trace_matmul(_trace_inv(lhs, context), right, context)
+
+
+def _trace_identity_matrix(size: int, context: _WholeProgramTraceContext) -> TraceADArray:
+    zero = _coerce_trace_scalar(0.0, context)
+    one = _coerce_trace_scalar(1.0, context)
+    return TraceADArray(
+        tuple(one if row == col else zero for row in range(size) for col in range(size)),
+        (size, size),
+        context,
+    )
+
+
+def _trace_matrix_power(
+    matrix: object,
+    power: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADArray:
+    array = _coerce_trace_array(matrix, context)
+    if array.ndim != 2:
+        raise ValueError("program AD np.linalg.matrix_power supports rank-2 matrices only")
+    rows, cols = array.shape
+    if rows != cols:
+        raise ValueError("program AD np.linalg.matrix_power requires a square matrix")
+    if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
+        raise ValueError("program AD np.linalg.matrix_power exponent must be a static integer")
+    exponent = int(power)
+    if exponent == 0:
+        return _trace_identity_matrix(rows, context)
+    base = _trace_inv(array, context) if exponent < 0 else array
+    exponent = abs(exponent)
+    result = _trace_identity_matrix(rows, context)
+    factor = base
+    while exponent:
+        if exponent & 1:
+            product = _trace_matmul(result, factor, context)
+            if not isinstance(product, TraceADArray):
+                raise ValueError("program AD np.linalg.matrix_power expected matrix product")
+            result = product
+        exponent >>= 1
+        if exponent:
+            product = _trace_matmul(factor, factor, context)
+            if not isinstance(product, TraceADArray):
+                raise ValueError("program AD np.linalg.matrix_power expected matrix product")
+            factor = product
+    return result
 
 
 def _trace_trace(
