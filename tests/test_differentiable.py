@@ -4724,6 +4724,74 @@ def test_transform_algebra_jacfwd_jacrev_jvp_vjp_and_hessian_contracts() -> None
     )
 
 
+def test_transform_algebra_nested_batch_jacobian_and_adjoint_contracts() -> None:
+    """Nested grad, vmap, Jacobian, Hessian, JVP, and VJP transforms should agree."""
+
+    def sample_loss(row: np.ndarray) -> float:
+        return float(row[0] ** 3 + row[0] * row[1] + np.sin(row[1]))
+
+    def sample_gradient(row: np.ndarray) -> np.ndarray:
+        return np.array([3.0 * row[0] ** 2 + row[1], row[0] + math.cos(row[1])])
+
+    def sample_hessian(row: np.ndarray) -> np.ndarray:
+        return np.array([[6.0 * row[0], 1.0], [1.0, -math.sin(row[1])]], dtype=np.float64)
+
+    values = np.array([[0.7, -0.2], [-1.1, 0.4]], dtype=np.float64)
+    expected_gradients = np.vstack([sample_gradient(row) for row in values])
+
+    per_sample_gradients = vmap(
+        lambda row: grad(sample_loss, row, method="finite_difference", step=1.0e-6)
+    )(values)
+    aggregate_gradient = grad(
+        lambda flat: float(np.sum(vmap(sample_loss)(flat.reshape(values.shape)))),
+        values.reshape(-1),
+        method="finite_difference",
+        step=1.0e-6,
+    ).reshape(values.shape)
+    np.testing.assert_allclose(per_sample_gradients, expected_gradients, rtol=1.0e-5, atol=1.0e-5)
+    np.testing.assert_allclose(aggregate_gradient, expected_gradients, rtol=1.0e-5, atol=1.0e-5)
+
+    def batched_vector_objective(flat: np.ndarray) -> np.ndarray:
+        return vmap(sample_loss)(flat.reshape(values.shape))
+
+    expected_jacobian = np.zeros((2, 4), dtype=np.float64)
+    expected_jacobian[0, 0:2] = expected_gradients[0]
+    expected_jacobian[1, 2:4] = expected_gradients[1]
+    flat_values = values.reshape(-1)
+    forward_jacobian = jacfwd(batched_vector_objective, flat_values, step=1.0e-6)
+    reverse_jacobian = jacrev(batched_vector_objective, flat_values, step=1.0e-6)
+    np.testing.assert_allclose(forward_jacobian, expected_jacobian, rtol=1.0e-5, atol=1.0e-5)
+    np.testing.assert_allclose(reverse_jacobian, expected_jacobian, rtol=1.0e-5, atol=1.0e-5)
+
+    tangent = np.array([0.5, -0.25, 1.25, -0.75], dtype=np.float64)
+    jvp_result = value_and_finite_difference_jvp(
+        batched_vector_objective,
+        flat_values,
+        tangent,
+        step=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        jvp_result.jvp, expected_jacobian @ tangent, rtol=1.0e-5, atol=1.0e-5
+    )
+
+    cotangent = np.array([2.0, -0.5], dtype=np.float64)
+    vjp_result = finite_difference_vjp(
+        batched_vector_objective,
+        flat_values,
+        cotangent,
+        step=1.0e-6,
+    )
+    np.testing.assert_allclose(
+        vjp_result.vjp, expected_jacobian.T @ cotangent, rtol=1.0e-5, atol=1.0e-5
+    )
+    np.testing.assert_allclose(
+        hessian(sample_loss, values[0], step=1.0e-4),
+        sample_hessian(values[0]),
+        rtol=1.0e-4,
+        atol=1.0e-4,
+    )
+
+
 def test_transform_algebra_custom_rules_and_whole_program_ad_compose_with_vmap() -> None:
     """Custom rules and whole-program AD should compose under vmap."""
 
