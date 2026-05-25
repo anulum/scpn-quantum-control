@@ -4590,6 +4590,38 @@ def test_program_ad_linalg_spectral_operations_fail_closed_policy_boundary() -> 
             )
 
 
+def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
+    """Supported program AD linalg primitives should expose registry contracts."""
+
+    for name in ("det", "inv", "solve", "matrix_power", "multi_dot"):
+        identity = PrimitiveIdentity("scpn.program_ad.linalg", name, "1")
+        contract = primitive_contract_for(identity)
+        assert contract.identity == identity
+        assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+        assert contract.effect == "pure"
+        assert contract.lowering_metadata["program_ad"] == "operator_intercepted_trace"
+        assert contract.lowering_metadata["mlir"] == "blocked_until_executable_linalg_lowering"
+        assert contract.dtype_rule is not None
+        assert contract.dtype_rule(()) == "float64"
+        assert contract.shape_rule is not None
+        with pytest.raises(ValueError, match="shape is resolved by trace execution"):
+            contract.shape_rule(())
+        with pytest.raises(ValueError, match="incomplete primitive contract"):
+            primitive_complete_contract_for(identity)
+
+    values = np.array([2.0, -0.5, 0.75, 1.5], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        lambda flat_values: np.linalg.det(np.reshape(flat_values, (2, 2))),
+        values,
+    )
+    np.testing.assert_allclose(
+        result.gradient,
+        np.array([1.5, -0.75, 0.5, 2.0], dtype=np.float64),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 

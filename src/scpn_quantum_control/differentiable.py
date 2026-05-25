@@ -1420,22 +1420,27 @@ class TraceADArray:
         if func is np.linalg.det:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.det supports one matrix")
+            _require_program_ad_linalg_contract("det")
             return _trace_det(args[0], self.context)
         if func is np.linalg.inv:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.inv supports one matrix")
+            _require_program_ad_linalg_contract("inv")
             return _trace_inv(args[0], self.context)
         if func is np.linalg.solve:
             if len(args) != 2 or kwargs:
                 raise ValueError("program AD np.linalg.solve supports matrix and right-hand side")
+            _require_program_ad_linalg_contract("solve")
             return _trace_solve(args[0], args[1], self.context)
         if func is np.linalg.matrix_power:
             if len(args) != 2 or kwargs:
                 raise ValueError("program AD np.linalg.matrix_power supports matrix and power")
+            _require_program_ad_linalg_contract("matrix_power")
             return _trace_matrix_power(args[0], args[1], self.context)
         if func is np.linalg.multi_dot:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.multi_dot supports one operand sequence")
+            _require_program_ad_linalg_contract("multi_dot")
             return _trace_multi_dot(args[0], self.context)
         if func in {
             np.linalg.eig,
@@ -5397,6 +5402,80 @@ class CustomDerivativeRegistry:
 
 
 DEFAULT_CUSTOM_DERIVATIVE_REGISTRY = CustomDerivativeRegistry()
+
+_PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
+_PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("det", "inv", "solve", "matrix_power", "multi_dot")
+}
+
+
+def _program_ad_linalg_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD linalg primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_linalg_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD linalg primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_linalg_runtime_shape(_args: tuple[object, ...]) -> tuple[int, ...]:
+    raise ValueError("program AD linalg primitive shape is resolved by trace execution")
+
+
+def _program_ad_linalg_runtime_dtype(_args: tuple[object, ...]) -> str:
+    return "float64"
+
+
+def _register_program_ad_linalg_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_LINALG_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        rule = CustomDerivativeRule(
+            name=f"program_ad_linalg_{name}_trace_contract",
+            value_fn=_program_ad_linalg_direct_value,
+            jvp_rule=_program_ad_linalg_direct_jvp,
+        )
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=rule,
+                lowering_metadata={
+                    "program_ad": "operator_intercepted_trace",
+                    "mlir": "blocked_until_executable_linalg_lowering",
+                    "llvm": "blocked_until_executable_linalg_lowering",
+                    "rust": "blocked_until_polyglot_linalg_ad",
+                },
+                shape_rule=_program_ad_linalg_runtime_shape,
+                dtype_rule=_program_ad_linalg_runtime_dtype,
+                nondifferentiable_policy=_PROGRAM_AD_LINALG_POLICY,
+                effect="pure",
+            )
+        )
+
+
+def _require_program_ad_linalg_contract(name: str) -> PrimitiveContract:
+    identity = _PROGRAM_AD_LINALG_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD linalg primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_LINALG_POLICY:
+        raise ValueError(f"invalid program AD linalg primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD linalg primitive effect for {identity.key}")
+    return contract
+
+
+_register_program_ad_linalg_primitive_contracts()
 
 
 def register_custom_derivative_rule(
