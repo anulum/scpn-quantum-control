@@ -3857,6 +3857,62 @@ def test_program_ad_squeeze_expand_dims_fail_closed_axes() -> None:
         )
 
 
+def test_program_ad_axis_permutations_preserve_exact_adjoint() -> None:
+    """Program AD rank-N axis permutations should preserve exact element adjoints."""
+
+    weights_swap = np.arange(24.0, dtype=np.float64).reshape(4, 3, 2) / 7.0
+    weights_method = np.linspace(-1.5, 2.0, 24, dtype=np.float64).reshape(2, 4, 3)
+    weights_move = np.linspace(0.25, 3.25, 24, dtype=np.float64).reshape(4, 3, 2)
+
+    def objective(values: np.ndarray) -> object:
+        tensor = np.reshape(values, (2, 3, 4))
+        swapped = np.swapaxes(tensor, 0, 2)
+        method_swapped = tensor.swapaxes(1, 2)
+        moved = np.moveaxis(tensor, source=(0, 2), destination=(2, 0))
+        return (
+            np.sum(swapped * weights_swap)
+            + np.sum(method_swapped * weights_method)
+            + np.sum(moved * weights_move)
+        )
+
+    values = np.linspace(-0.75, 1.5, 24, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+    expected = (
+        np.swapaxes(weights_swap, 0, 2)
+        + np.swapaxes(weights_method, 1, 2)
+        + np.moveaxis(weights_move, source=(2, 0), destination=(0, 2))
+    ).reshape(-1)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_axis_permutations_fail_closed_invalid_axes() -> None:
+    """Program AD axis permutations should reject invalid static axis contracts."""
+
+    with pytest.raises(ValueError, match="swapaxes axes must be static integers"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values, (2, 2)).swapaxes(True, 1)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="moveaxis source and destination lengths must match"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.moveaxis(np.reshape(values, (2, 2, 1)), (0, 1), (2,))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="moveaxis source axes must be unique"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.moveaxis(np.reshape(values, (2, 2, 1)), (0, 0), (1, 2))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_boundaries() -> (
     None
 ):

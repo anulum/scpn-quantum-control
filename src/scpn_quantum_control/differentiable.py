@@ -966,6 +966,11 @@ class TraceADArray:
 
         return _trace_expand_dims(self, axis=axis)
 
+    def swapaxes(self, axis1: int, axis2: int) -> TraceADArray:
+        """Return a derivative-preserving array with two axes exchanged."""
+
+        return _trace_swapaxes(self, axis1=axis1, axis2=axis2)
+
     @property
     def T(self) -> TraceADArray:
         """Return the NumPy-compatible reversed-axis transpose."""
@@ -1227,6 +1232,34 @@ class TraceADArray:
             return _trace_expand_dims(
                 _coerce_trace_array(args[0], self.context),
                 axis=cast(int | tuple[int, ...], axis),
+            )
+        if func is np.swapaxes:
+            if len(args) == 3 and not kwargs:
+                axis1 = args[1]
+                axis2 = args[2]
+            elif len(args) == 1 and set(kwargs) == {"axis1", "axis2"}:
+                axis1 = kwargs["axis1"]
+                axis2 = kwargs["axis2"]
+            else:
+                raise ValueError("program AD np.swapaxes supports array, axis1, and axis2")
+            return _trace_swapaxes(
+                _coerce_trace_array(args[0], self.context),
+                axis1=cast(int, axis1),
+                axis2=cast(int, axis2),
+            )
+        if func is np.moveaxis:
+            if len(args) == 3 and not kwargs:
+                source = args[1]
+                destination = args[2]
+            elif len(args) == 1 and set(kwargs) == {"source", "destination"}:
+                source = kwargs["source"]
+                destination = kwargs["destination"]
+            else:
+                raise ValueError("program AD np.moveaxis supports array, source, and destination")
+            return _trace_moveaxis(
+                _coerce_trace_array(args[0], self.context),
+                source=cast(int | tuple[int, ...], source),
+                destination=cast(int | tuple[int, ...], destination),
             )
         if func is np.take:
             if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis", "mode"}:
@@ -1517,6 +1550,73 @@ def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> T
     for item in axes:
         shape.insert(item, 1)
     return TraceADArray(tuple(array._items), tuple(shape), array.context)
+
+
+def _normalise_axis_permutation_axis(name: str, axis: object, *, rank: int) -> int:
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError(f"program AD {name} axes must be static integers")
+    value = int(axis)
+    if value < 0:
+        value += rank
+    if value < 0 or value >= rank:
+        raise ValueError(f"program AD {name} axis out of bounds")
+    return value
+
+
+def _normalise_axis_permutation_axes(
+    name: str, axes: object, *, rank: int, role: str
+) -> tuple[int, ...]:
+    if isinstance(axes, (int, np.integer)):
+        raw_axes = (axes,)
+    else:
+        try:
+            raw_axes = tuple(cast(Any, axes))
+        except TypeError as exc:
+            raise ValueError(f"program AD {name} {role} axes must be static integers") from exc
+    normalised = tuple(
+        _normalise_axis_permutation_axis(name, axis, rank=rank) for axis in raw_axes
+    )
+    if len(set(normalised)) != len(normalised):
+        raise ValueError(f"program AD {name} {role} axes must be unique")
+    return normalised
+
+
+def _trace_swapaxes(array: TraceADArray, *, axis1: int, axis2: int) -> TraceADArray:
+    first = _normalise_axis_permutation_axis("swapaxes", axis1, rank=array.ndim)
+    second = _normalise_axis_permutation_axis("swapaxes", axis2, rank=array.ndim)
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    moved = np.swapaxes(source, first, second)
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in moved.reshape(-1)),
+        tuple(map(int, moved.shape)),
+        array.context,
+    )
+
+
+def _trace_moveaxis(
+    array: TraceADArray,
+    *,
+    source: int | tuple[int, ...],
+    destination: int | tuple[int, ...],
+) -> TraceADArray:
+    source_axes = _normalise_axis_permutation_axes(
+        "moveaxis", source, rank=array.ndim, role="source"
+    )
+    destination_axes = _normalise_axis_permutation_axes(
+        "moveaxis", destination, rank=array.ndim, role="destination"
+    )
+    if len(source_axes) != len(destination_axes):
+        raise ValueError("program AD moveaxis source and destination lengths must match")
+    moved_indices = np.moveaxis(
+        np.arange(array.size, dtype=np.int64).reshape(array.shape),
+        source_axes,
+        destination_axes,
+    )
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in moved_indices.reshape(-1)),
+        tuple(map(int, moved_indices.shape)),
+        array.context,
+    )
 
 
 def _validate_trace_basic_index(index: object) -> None:
