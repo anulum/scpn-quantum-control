@@ -3922,6 +3922,65 @@ def test_program_ad_roll_preserves_exact_adjoint() -> None:
     )
 
 
+def test_program_ad_flip_family_preserves_exact_adjoint() -> None:
+    """Program AD flip-family permutations should preserve exact element adjoints."""
+
+    weights_all = np.linspace(-1.0, 2.0, 24, dtype=np.float64).reshape(2, 3, 4)
+    weights_axis = np.linspace(0.25, 3.25, 24, dtype=np.float64).reshape(2, 3, 4)
+    weights_tuple = np.linspace(-2.5, 1.5, 24, dtype=np.float64).reshape(2, 3, 4)
+    weights_ud = np.linspace(1.0, 4.0, 24, dtype=np.float64).reshape(2, 3, 4)
+    weights_lr = np.linspace(-3.0, -0.25, 24, dtype=np.float64).reshape(2, 3, 4)
+
+    def objective(values: np.ndarray) -> object:
+        tensor = np.reshape(values, (2, 3, 4))
+        return (
+            np.sum(np.flip(tensor) * weights_all)
+            + np.sum(np.flip(tensor, axis=1) * weights_axis)
+            + np.sum(np.flip(tensor, axis=(0, 2)) * weights_tuple)
+            + np.sum(np.flipud(tensor) * weights_ud)
+            + np.sum(np.fliplr(tensor) * weights_lr)
+        )
+
+    values = np.linspace(-1.25, 1.25, 24, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+    expected = (
+        np.flip(weights_all)
+        + np.flip(weights_axis, axis=1)
+        + np.flip(weights_tuple, axis=(0, 2))
+        + np.flipud(weights_ud)
+        + np.fliplr(weights_lr)
+    ).reshape(-1)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_flip_family_fails_closed_invalid_axes() -> None:
+    """Program AD flip-family permutations should reject invalid axes."""
+
+    with pytest.raises(ValueError, match="flip axes must be static integers"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.flip(values, axis=True)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="flip axis axes must be unique"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.flip(np.reshape(values, (2, 2)), axis=(0, 0))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="fliplr requires at least rank-2 arrays"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.fliplr(values)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_roll_fails_closed_invalid_static_contracts() -> None:
     """Program AD roll should reject dynamic or inconsistent permutation contracts."""
 

@@ -1278,6 +1278,21 @@ class TraceADArray:
                 shift=shift,
                 axis=axis,
             )
+        if func is np.flip:
+            if len(args) != 1 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.flip supports one array and optional axis")
+            return _trace_flip(
+                _coerce_trace_array(args[0], self.context),
+                axis=kwargs.get("axis"),
+            )
+        if func is np.flipud:
+            if len(args) != 1 or kwargs:
+                raise ValueError("program AD np.flipud supports one array")
+            return _trace_flipud(_coerce_trace_array(args[0], self.context))
+        if func is np.fliplr:
+            if len(args) != 1 or kwargs:
+                raise ValueError("program AD np.fliplr supports one array")
+            return _trace_fliplr(_coerce_trace_array(args[0], self.context))
         if func is np.take:
             if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis", "mode"}:
                 raise ValueError("program AD np.take supports array, indices, axis, and mode")
@@ -1671,6 +1686,32 @@ def _trace_roll(array: TraceADArray, *, shift: object, axis: object = None) -> T
         tuple(map(int, rolled.shape)),
         array.context,
     )
+
+
+def _trace_flip(array: TraceADArray, *, axis: object = None) -> TraceADArray:
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    if axis is None:
+        flipped = np.flip(source)
+    else:
+        axes = _normalise_axis_permutation_axes("flip", axis, rank=array.ndim, role="axis")
+        flipped = np.flip(source, axis=axes)
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in flipped.reshape(-1)),
+        tuple(map(int, flipped.shape)),
+        array.context,
+    )
+
+
+def _trace_flipud(array: TraceADArray) -> TraceADArray:
+    if array.ndim < 1:
+        raise ValueError("program AD flipud requires at least rank-1 arrays")
+    return _trace_flip(array, axis=0)
+
+
+def _trace_fliplr(array: TraceADArray) -> TraceADArray:
+    if array.ndim < 2:
+        raise ValueError("program AD fliplr requires at least rank-2 arrays")
+    return _trace_flip(array, axis=1)
 
 
 def _validate_trace_basic_index(index: object) -> None:
