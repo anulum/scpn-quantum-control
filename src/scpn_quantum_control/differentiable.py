@@ -3400,12 +3400,19 @@ def _objective_bytecode(
         instructions = dis.get_instructions(objective)
     except TypeError:
         return ()
+
+    def normalise_line_number(value: int | None) -> int | None:
+        if value is None:
+            return None
+        line_number = int(value)
+        return line_number if line_number > 0 else None
+
     return tuple(
         WholeProgramBytecodeInstruction(
             offset=int(instruction.offset),
             opname=instruction.opname,
             argrepr=instruction.argrepr,
-            line_number=instruction.starts_line,
+            line_number=normalise_line_number(instruction.starts_line),
         )
         for instruction in instructions
     )
