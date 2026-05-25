@@ -3447,6 +3447,170 @@ def test_whole_program_trace_ad_is_exported_from_package_root() -> None:
     assert scpn.whole_program_trace_value_and_grad is whole_program_trace_value_and_grad
 
 
+def test_whole_program_trace_ad_operator_surface_and_fail_closed_paths() -> None:
+    """Trace AD should cover scalar operator interception and reject derivative loss."""
+
+    def objective(values: np.ndarray) -> object:
+        x, y = values
+        branch = x if x >= y else y
+        reverse_branch = y if y <= x else x
+        return (
+            np.sin(x)
+            + np.cos(y)
+            + np.exp(x - y)
+            + np.log(x + 3.0)
+            + (2.0 + x)
+            + (5.0 - y)
+            + (3.0 * x)
+            + (12.0 / (x + 4.0))
+            + (x**2.0)
+            + (2.0 ** (y + 1.0))
+            - branch
+            + reverse_branch
+            + (-y)
+        )
+
+    result = whole_program_trace_value_and_grad(objective, [1.5, 0.25], trace=False)
+
+    assert result.method == "whole_program_trace_ad"
+    assert result.evaluations == 1
+    assert result.numpy_observed is True
+    assert result.control_flow_observed is True
+    assert result.gradient.shape == (2,)
+    ops = {node.op.split(":", maxsplit=1)[0] for node in result.ir_nodes}
+    assert {
+        "parameter",
+        "branch",
+        "sin",
+        "cos",
+        "exp",
+        "log",
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "pow",
+        "neg",
+    }.issubset(ops)
+
+    with pytest.raises(ValueError, match="converted to float"):
+        whole_program_trace_value_and_grad(lambda values: float(values[0]), [1.0])
+    with pytest.raises(ValueError, match="denominator"):
+        whole_program_trace_value_and_grad(lambda values: values[0] / 0.0, [1.0])
+    with pytest.raises(ValueError, match="log input"):
+        whole_program_trace_value_and_grad(lambda values: np.log(values[0]), [-1.0])
+    with pytest.raises(ValueError, match="unsupported trace AD NumPy ufunc"):
+        whole_program_trace_value_and_grad(lambda values: np.tan(values[0]), [1.0])
+    with pytest.raises(ValueError, match="unary NumPy ufuncs"):
+        whole_program_trace_value_and_grad(lambda values: np.add(values[0], values[0]), [1.0])
+    with pytest.raises(ValueError, match="direct NumPy scalar ufunc"):
+        whole_program_trace_value_and_grad(
+            lambda values: values[0].__array_ufunc__(np.sin, "reduce", values[0]), [1.0]
+        )
+    with pytest.raises(ValueError, match="different traces"):
+        left_context = type("_TraceCtx", (), {"parameter_count": 1})()
+        right_context = type("_TraceCtx", (), {"parameter_count": 1})()
+        left = TraceADScalar(1.0, np.array([1.0], dtype=np.float64), left_context, "%l")  # type: ignore[arg-type]
+        right = TraceADScalar(2.0, np.array([1.0], dtype=np.float64), right_context, "%r")  # type: ignore[arg-type]
+        _ = left + right
+
+
+def test_whole_program_result_validation_fail_closed_paths() -> None:
+    """Whole-program AD result contracts should reject malformed metadata."""
+
+    valid = {
+        "value": 1.0,
+        "gradient": np.array([1.0, 2.0], dtype=np.float64),
+        "method": "whole_program_trace_ad",
+        "step": 0.0,
+        "evaluations": 1,
+        "parameter_names": ("x", "y"),
+        "trainable": (True, False),
+        "trace_events": (),
+        "ir_nodes": (),
+        "source": None,
+        "control_flow_observed": False,
+        "numpy_observed": False,
+        "polyglot_targets": {"python": "available"},
+        "claim_boundary": "bounded claim",
+    }
+
+    for key, value, message in (
+        ("value", float("nan"), "finite"),
+        ("gradient", np.array([[1.0]]), "one-dimensional"),
+        ("step", -1.0, "step"),
+        ("evaluations", 0, "evaluations"),
+        ("parameter_names", ("x",), "parameter_names"),
+        ("trainable", (True,), "trainable"),
+        ("trace_events", (object(),), "trace_events"),
+        ("ir_nodes", (object(),), "ir_nodes"),
+        ("control_flow_observed", "yes", "control_flow_observed"),
+        ("numpy_observed", "yes", "numpy_observed"),
+        ("polyglot_targets", {}, "polyglot_targets"),
+        ("polyglot_targets", {"": "available"}, "polyglot target"),
+        ("claim_boundary", "", "claim_boundary"),
+    ):
+        payload = dict(valid)
+        payload[key] = value
+        with pytest.raises(ValueError, match=message):
+            WholeProgramADResult(**payload)
+
+
+def test_whole_program_trace_event_and_ir_node_validation_paths() -> None:
+    """Trace event and IR node records should reject malformed trace metadata."""
+
+    event = WholeProgramTraceEvent("objective.py", "loss", 7, "  return x  ")
+    assert event.source == "return x"
+
+    valid_tangent = np.array([1.0, 0.0], dtype=np.float64)
+    node = WholeProgramIRNode(0, "parameter", ("x",), 1.5, valid_tangent)
+    assert node.value == pytest.approx(1.5)
+    np.testing.assert_allclose(node.tangent, valid_tangent)
+
+    for kwargs, message in (
+        ({"filename": "", "function_name": "loss", "line_number": 1, "source": ""}, "filename"),
+        (
+            {"filename": "objective.py", "function_name": "", "line_number": 1, "source": ""},
+            "function_name",
+        ),
+        (
+            {"filename": "objective.py", "function_name": "loss", "line_number": 0, "source": ""},
+            "line_number",
+        ),
+    ):
+        with pytest.raises(ValueError, match=message):
+            WholeProgramTraceEvent(**kwargs)
+
+    for args, message in (
+        ((-1, "parameter", ("x",), 1.0, valid_tangent), "index"),
+        ((0, "", ("x",), 1.0, valid_tangent), "op"),
+        ((0, "parameter", ("",), 1.0, valid_tangent), "inputs"),
+        ((0, "parameter", ("x",), float("inf"), valid_tangent), "finite"),
+        ((0, "parameter", ("x",), 1.0, np.array([[1.0]])), "one-dimensional"),
+        ((0, "parameter", ("x",), 1.0, np.array([float("nan")])), "finite"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            WholeProgramIRNode(*args)
+
+
+def test_whole_program_trace_ad_rejects_unsupported_power_and_return_contracts() -> None:
+    """Trace AD should fail closed for unsupported powers and non-scalar returns."""
+
+    with pytest.raises(ValueError, match="positive base"):
+        whole_program_trace_value_and_grad(lambda values: (-values[0]) ** values[0], [1.0])
+    with pytest.raises(ValueError, match="trace AD scalar"):
+        whole_program_trace_value_and_grad(
+            lambda values: np.array([values[0]], dtype=object), [1.0]
+        )
+    with pytest.raises(ValueError, match="one-dimensional"):
+        TraceADScalar(
+            1.0,
+            np.array([[1.0]], dtype=np.float64),
+            type("_TraceCtx", (), {"parameter_count": 1})(),
+            "%bad",
+        )
+
+
 def test_transform_algebra_grad_of_vmap_and_vmap_of_grad_are_consistent() -> None:
     """grad(vmap(f)) and vmap(grad(f)) should agree for separable objectives."""
 
