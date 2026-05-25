@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 428,
     "public_documentation_pages": 235,
-    "python_model_classes": 1491,
+    "python_model_classes": 1492,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -6685,6 +6685,10 @@
       },
       {
         "name": "TraceADArray",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "TraceADPredicateArray",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {

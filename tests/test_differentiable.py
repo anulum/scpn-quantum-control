@@ -3342,6 +3342,37 @@ def test_whole_program_ad_handles_vector_numpy_reductions_dot_and_array_mutation
     np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
 
 
+def test_whole_program_ad_handles_piecewise_vector_numpy_semantics() -> None:
+    """Whole-program AD should differentiate executed vector piecewise NumPy branches."""
+
+    def objective(values: np.ndarray) -> object:
+        shifted = values + np.array([2.0, 3.0, 4.0], dtype=np.float64)
+        smooth = np.sqrt(shifted) + np.tanh(values) + np.square(values)
+        piecewise = np.where(values > 0.0, smooth, np.absolute(values - 1.0))
+        clipped = np.maximum(piecewise, values + 0.5)
+        return np.sum(np.minimum(clipped, piecewise + 2.0))
+
+    values = np.array([0.25, -0.5, 1.2], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+
+    expected = np.array(
+        [
+            0.5 / math.sqrt(2.25) + (1.0 - math.tanh(0.25) ** 2) + 0.5,
+            -1.0,
+            0.5 / math.sqrt(5.2) + (1.0 - math.tanh(1.2) ** 2) + 2.4,
+        ],
+        dtype=np.float64,
+    )
+    assert any(node.op == "where" for node in result.ir_nodes)
+    assert any(node.op == "maximum" for node in result.ir_nodes)
+    assert any(node.op == "minimum" for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 

@@ -353,6 +353,29 @@ class _TracePredicate:
         return self.value
 
 
+class TraceADPredicateArray:
+    """Derivative-safe vector of primal predicates for piecewise whole-program AD."""
+
+    def __init__(
+        self,
+        predicates: tuple[_TracePredicate, ...],
+        shape: tuple[int, ...],
+        context: _WholeProgramTraceContext,
+    ) -> None:
+        if int(np.prod(shape)) != len(predicates):
+            raise ValueError("predicate array shape must match predicate count")
+        if any(predicate.context is not context for predicate in predicates):
+            raise ValueError("predicate array items must belong to the same trace")
+        self.predicates = predicates
+        self.shape = shape
+        self.context = context
+
+    def __bool__(self) -> bool:
+        if self.shape != () or len(self.predicates) != 1:
+            raise ValueError("whole-program AD vector predicates cannot be used as scalar bools")
+        return bool(self.predicates[0])
+
+
 class TraceADScalar:
     """Operator-intercepted scalar for exact executed-path whole-program AD."""
 
@@ -467,6 +490,8 @@ class TraceADScalar:
             "ge": self.primal >= rhs.primal,
             "lt": self.primal < rhs.primal,
             "le": self.primal <= rhs.primal,
+            "eq": self.primal == rhs.primal,
+            "ne": self.primal != rhs.primal,
         }
         return _TracePredicate(comparisons[op], self.context, f"{self.name}:{op}:{rhs.name}")
 
@@ -481,6 +506,18 @@ class TraceADScalar:
 
     def __le__(self, other: object) -> _TracePredicate:
         return self._compare("le", other)
+
+    def __eq__(self, other: object) -> _TracePredicate:  # type: ignore[override]
+        rhs = self._coerce(other)
+        return _TracePredicate(
+            self.primal == rhs.primal, self.context, f"{self.name}:eq:{rhs.name}"
+        )
+
+    def __ne__(self, other: object) -> _TracePredicate:  # type: ignore[override]
+        rhs = self._coerce(other)
+        return _TracePredicate(
+            self.primal != rhs.primal, self.context, f"{self.name}:ne:{rhs.name}"
+        )
 
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
@@ -630,6 +667,10 @@ class TraceADArray:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.dot supports two one-dimensional operands")
             return _trace_dot(args[0], args[1], self.context)
+        if func is np.where:
+            if len(args) != 3 or kwargs:
+                raise ValueError("whole-program AD np.where supports condition, x, and y")
+            return _trace_where(args[0], args[1], args[2], self.context)
         raise ValueError(f"unsupported whole-program AD NumPy function {func.__name__}")
 
     def _binary(self, other: object, op: np.ufunc) -> TraceADScalar | TraceADArray:
@@ -667,6 +708,39 @@ class TraceADArray:
 
     def __neg__(self) -> TraceADScalar | TraceADArray:
         return _apply_trace_ufunc(np.negative, (self,), self.context)
+
+    def _compare(self, op: str, other: object) -> _TracePredicate | TraceADPredicateArray:
+        right = _coerce_trace_array(other, self.context)
+        shape = self.shape if self.shape != () else right.shape
+        left = _broadcast_trace_array(self, shape, self.context)
+        right = _broadcast_trace_array(right, shape, self.context)
+        predicates = tuple(
+            left_item._compare(op, right_item)
+            for left_item, right_item in zip(left._items, right._items, strict=True)
+        )
+        return (
+            predicates[0]
+            if shape == ()
+            else TraceADPredicateArray(predicates, shape, self.context)
+        )
+
+    def __gt__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        return self._compare("gt", other)
+
+    def __ge__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        return self._compare("ge", other)
+
+    def __lt__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        return self._compare("lt", other)
+
+    def __le__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        return self._compare("le", other)
+
+    def __eq__(self, other: object) -> _TracePredicate | TraceADPredicateArray:  # type: ignore[override]
+        return self._compare("eq", other)
+
+    def __ne__(self, other: object) -> _TracePredicate | TraceADPredicateArray:  # type: ignore[override]
+        return self._compare("ne", other)
 
 
 def _coerce_trace_scalar(value: object, context: _WholeProgramTraceContext) -> TraceADScalar:
@@ -731,11 +805,36 @@ def _apply_trace_ufunc(
         operand = _coerce_trace_array(inputs[0], context)
         items = tuple(-item for item in operand._items)
         return items[0] if operand.shape == () else TraceADArray(items, operand.shape, context)
-    if ufunc in {np.sin, np.cos, np.exp, np.log} and len(inputs) == 1:
+    if (
+        ufunc
+        in {
+            np.sin,
+            np.cos,
+            np.exp,
+            np.log,
+            np.sqrt,
+            np.tanh,
+            np.square,
+            np.absolute,
+        }
+        and len(inputs) == 1
+    ):
         operand = _coerce_trace_array(inputs[0], context)
         items = tuple(_apply_unary_trace_ufunc(ufunc, item) for item in operand._items)
         return items[0] if operand.shape == () else TraceADArray(items, operand.shape, context)
-    if ufunc in {np.add, np.subtract, np.multiply, np.divide, np.power} and len(inputs) == 2:
+    if (
+        ufunc
+        in {
+            np.add,
+            np.subtract,
+            np.multiply,
+            np.divide,
+            np.power,
+            np.maximum,
+            np.minimum,
+        }
+        and len(inputs) == 2
+    ):
         left = _coerce_trace_array(inputs[0], context)
         right = _coerce_trace_array(inputs[1], context)
         shape = left.shape if left.shape != () else right.shape
@@ -767,6 +866,23 @@ def _apply_unary_trace_ufunc(ufunc: np.ufunc, arg: TraceADScalar) -> TraceADScal
         return arg.context.make(
             "log", (arg.name,), float(np.log(arg.primal)), arg.tangent / arg.primal
         )
+    if ufunc is np.sqrt:
+        if arg.primal <= 0.0:
+            raise ValueError("whole-program AD sqrt input must be positive")
+        primal = float(np.sqrt(arg.primal))
+        return arg.context.make("sqrt", (arg.name,), primal, arg.tangent / (2.0 * primal))
+    if ufunc is np.tanh:
+        primal = float(np.tanh(arg.primal))
+        return arg.context.make("tanh", (arg.name,), primal, (1.0 - primal**2) * arg.tangent)
+    if ufunc is np.square:
+        return arg.context.make(
+            "square", (arg.name,), arg.primal**2, 2.0 * arg.primal * arg.tangent
+        )
+    if ufunc is np.absolute:
+        if arg.primal == 0.0:
+            raise ValueError("whole-program AD absolute value is non-differentiable at zero")
+        sign = 1.0 if arg.primal > 0.0 else -1.0
+        return arg.context.make("abs", (arg.name,), abs(arg.primal), sign * arg.tangent)
     raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
 
 
@@ -785,6 +901,12 @@ def _apply_binary_trace_ufunc(
         return left / right
     if ufunc is np.power:
         return left**right
+    if ufunc is np.maximum:
+        chosen = left if left.primal >= right.primal else right
+        return left.context.make("maximum", (left.name, right.name), chosen.primal, chosen.tangent)
+    if ufunc is np.minimum:
+        chosen = left if left.primal <= right.primal else right
+        return left.context.make("minimum", (left.name, right.name), chosen.primal, chosen.tangent)
     raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
 
 
@@ -814,6 +936,75 @@ def _trace_dot(
     for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
         total = total + left_item * right_item
     return total
+
+
+def _coerce_trace_predicate_array(
+    condition: object,
+    shape: tuple[int, ...],
+    context: _WholeProgramTraceContext,
+) -> TraceADPredicateArray:
+    if isinstance(condition, _TracePredicate):
+        if condition.context is not context:
+            raise ValueError("whole-program AD predicate belongs to a different trace")
+        return TraceADPredicateArray(
+            tuple(condition for _ in range(int(np.prod(shape)))), shape, context
+        )
+    if isinstance(condition, TraceADPredicateArray):
+        if condition.context is not context:
+            raise ValueError("whole-program AD predicate array belongs to a different trace")
+        if condition.shape == shape:
+            return condition
+        if condition.shape == ():
+            return TraceADPredicateArray(
+                tuple(condition.predicates[0] for _ in range(int(np.prod(shape)))),
+                shape,
+                context,
+            )
+        raise ValueError("whole-program AD np.where predicate shape must match operands")
+    if isinstance(condition, (bool, np.bool_)):
+        predicate = _TracePredicate(bool(condition), context, f"constant:{bool(condition)}")
+        return TraceADPredicateArray(
+            tuple(predicate for _ in range(int(np.prod(shape)))), shape, context
+        )
+    raw = np.asarray(condition)
+    if raw.dtype.kind != "b":
+        raise ValueError("whole-program AD np.where condition must be boolean or AD predicate")
+    if tuple(raw.shape) not in {shape, ()}:
+        raise ValueError("whole-program AD np.where condition shape must match operands")
+    flat = np.broadcast_to(raw, shape).reshape(-1)
+    predicates = tuple(
+        _TracePredicate(bool(item), context, f"constant:{bool(item)}") for item in flat
+    )
+    return TraceADPredicateArray(predicates, shape, context)
+
+
+def _trace_where(
+    condition: object,
+    x_value: object,
+    y_value: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    x_array = _coerce_trace_array(x_value, context)
+    y_array = _coerce_trace_array(y_value, context)
+    shape = x_array.shape if x_array.shape != () else y_array.shape
+    x_array = _broadcast_trace_array(x_array, shape, context)
+    y_array = _broadcast_trace_array(y_array, shape, context)
+    predicates = _coerce_trace_predicate_array(condition, shape, context)
+    items = []
+    for predicate, x_item, y_item in zip(
+        predicates.predicates, x_array._items, y_array._items, strict=True
+    ):
+        chosen = x_item if bool(predicate) else y_item
+        items.append(
+            context.make(
+                "where",
+                (predicate.label, x_item.name, y_item.name),
+                chosen.primal,
+                chosen.tangent,
+            )
+        )
+    result = tuple(items)
+    return result[0] if shape == () else TraceADArray(result, shape, context)
 
 
 def whole_program_grad(
