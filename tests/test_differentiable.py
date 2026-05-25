@@ -3529,6 +3529,46 @@ def test_program_ad_reciprocal_ufunc_fails_closed_at_zero() -> None:
         )
 
 
+def test_program_ad_log1p_and_expm1_ufuncs_match_exact_adjoint() -> None:
+    """Program AD should preserve stable log1p/expm1 derivatives and adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        transformed = np.log1p(values[:2]) + np.expm1(values[1:3])
+        return np.sum(transformed * np.array([2.0, -3.0])) + np.log1p(values[2])
+
+    values = np.array([0.5, -0.2, 1.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x0"), Parameter("x1"), Parameter("x2")),
+    )
+    expected = np.array(
+        [
+            2.0 / (1.0 + values[0]),
+            2.0 * math.exp(values[1]) - 3.0 / (1.0 + values[1]),
+            -3.0 * math.exp(values[2]) + 1.0 / (1.0 + values[2]),
+        ],
+        dtype=np.float64,
+    )
+
+    assert any(node.op == "log1p" for node in result.ir_nodes)
+    assert any(node.op == "expm1" for node in result.ir_nodes)
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_log1p_ufunc_fails_closed_at_domain_boundary() -> None:
+    """Program AD log1p should reject inputs where the derivative is singular."""
+
+    with pytest.raises(ValueError, match="log1p input must be greater than -1"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.log1p(values)),
+            np.array([0.0, -1.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
     """Unsupported NumPy linear algebra modes should fail closed with explicit diagnostics."""
 

@@ -663,7 +663,9 @@ class _WholeProgramTraceContext:
             "sin",
             "cos",
             "exp",
+            "expm1",
             "log",
+            "log1p",
             "sqrt",
             "tanh",
             "reciprocal",
@@ -1515,7 +1517,9 @@ def _apply_trace_ufunc(
             np.sin,
             np.cos,
             np.exp,
+            np.expm1,
             np.log,
+            np.log1p,
             np.sqrt,
             np.tanh,
             np.reciprocal,
@@ -1567,11 +1571,23 @@ def _apply_unary_trace_ufunc(ufunc: np.ufunc, arg: TraceADScalar) -> TraceADScal
     if ufunc is np.exp:
         primal = float(np.exp(arg.primal))
         return arg.context.make("exp", (arg.name,), primal, primal * arg.tangent)
+    if ufunc is np.expm1:
+        primal = float(np.expm1(arg.primal))
+        return arg.context.make("expm1", (arg.name,), primal, np.exp(arg.primal) * arg.tangent)
     if ufunc is np.log:
         if arg.primal <= 0.0:
             raise ValueError("whole-program AD log input must be positive")
         return arg.context.make(
             "log", (arg.name,), float(np.log(arg.primal)), arg.tangent / arg.primal
+        )
+    if ufunc is np.log1p:
+        if arg.primal <= -1.0:
+            raise ValueError("whole-program AD log1p input must be greater than -1")
+        return arg.context.make(
+            "log1p",
+            (arg.name,),
+            float(np.log1p(arg.primal)),
+            arg.tangent / (1.0 + arg.primal),
         )
     if ufunc is np.sqrt:
         if arg.primal <= 0.0:
@@ -2463,7 +2479,9 @@ def _program_adjoint_node_contributions(
         "sin",
         "cos",
         "exp",
+        "expm1",
         "log",
+        "log1p",
         "sqrt",
         "tanh",
         "reciprocal",
@@ -2478,8 +2496,14 @@ def _program_adjoint_node_contributions(
             return ((arg_name, -float(np.sin(arg_value))),)
         if node.op == "exp":
             return ((arg_name, node.value),)
+        if node.op == "expm1":
+            return ((arg_name, float(np.exp(arg_value))),)
         if node.op == "log":
             return ((arg_name, 1.0 / arg_value),)
+        if node.op == "log1p":
+            if arg_value <= -1.0:
+                raise ValueError("log1p adjoint requires input greater than -1")
+            return ((arg_name, 1.0 / (1.0 + arg_value)),)
         if node.op == "sqrt":
             return ((arg_name, 1.0 / (2.0 * node.value)),)
         if node.op == "tanh":
