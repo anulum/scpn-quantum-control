@@ -3823,6 +3823,12 @@ class CustomDerivativeRegistry:
                 lowering_metadata={}
                 if existing_transform is None
                 else existing_transform.lowering_metadata,
+                shape_rule=None if existing_transform is None else existing_transform.shape_rule,
+                dtype_rule=None if existing_transform is None else existing_transform.dtype_rule,
+                nondifferentiable_policy="not_declared"
+                if existing_transform is None
+                else existing_transform.nondifferentiable_policy,
+                effect="pure" if existing_transform is None else existing_transform.effect,
             )
         return rule
 
@@ -3881,6 +3887,12 @@ class CustomDerivativeRegistry:
             batching_rule=batching_rule,
             lowering_rule=None if existing is None else existing.lowering_rule,
             lowering_metadata=metadata,
+            shape_rule=None if existing is None else existing.shape_rule,
+            dtype_rule=None if existing is None else existing.dtype_rule,
+            nondifferentiable_policy="not_declared"
+            if existing is None
+            else existing.nondifferentiable_policy,
+            effect="pure" if existing is None else existing.effect,
         )
         return batching_rule
 
@@ -3906,6 +3918,12 @@ class CustomDerivativeRegistry:
             batching_rule=None if existing is None else existing.batching_rule,
             lowering_rule=lowering_rule,
             lowering_metadata={} if existing is None else existing.lowering_metadata,
+            shape_rule=None if existing is None else existing.shape_rule,
+            dtype_rule=None if existing is None else existing.dtype_rule,
+            nondifferentiable_policy="not_declared"
+            if existing is None
+            else existing.nondifferentiable_policy,
+            effect="pure" if existing is None else existing.effect,
         )
         return lowering_rule
 
@@ -3920,6 +3938,30 @@ class CustomDerivativeRegistry:
 
         transform = self._transforms.get(PrimitiveIdentity.parse(identity))
         return None if transform is None else transform.lowering_rule
+
+    def shape_rule_for(self, identity: PrimitiveIdentity | str) -> PrimitiveShapeRule | None:
+        """Return the registered primitive shape rule, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else transform.shape_rule
+
+    def dtype_rule_for(self, identity: PrimitiveIdentity | str) -> PrimitiveDTypeRule | None:
+        """Return the registered primitive dtype rule, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else transform.dtype_rule
+
+    def nondifferentiable_policy_for(self, identity: PrimitiveIdentity | str) -> str | None:
+        """Return the registered primitive nondifferentiability policy, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else transform.nondifferentiable_policy
+
+    def effect_for(self, identity: PrimitiveIdentity | str) -> str | None:
+        """Return the registered primitive effect classification, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else transform.effect
 
     def require_batching_rule(self, identity: PrimitiveIdentity | str) -> PrimitiveBatchingRule:
         """Return a primitive batching rule or fail closed."""
@@ -3938,6 +3980,44 @@ class CustomDerivativeRegistry:
         if rule is None:
             raise ValueError(f"no lowering rule registered for {primitive_identity.key}")
         return rule
+
+    def require_shape_rule(self, identity: PrimitiveIdentity | str) -> PrimitiveShapeRule:
+        """Return a primitive shape rule or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        rule = self.shape_rule_for(primitive_identity)
+        if rule is None:
+            raise ValueError(f"no shape rule registered for {primitive_identity.key}")
+        return rule
+
+    def require_dtype_rule(self, identity: PrimitiveIdentity | str) -> PrimitiveDTypeRule:
+        """Return a primitive dtype rule or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        rule = self.dtype_rule_for(primitive_identity)
+        if rule is None:
+            raise ValueError(f"no dtype rule registered for {primitive_identity.key}")
+        return rule
+
+    def require_nondifferentiable_policy(self, identity: PrimitiveIdentity | str) -> str:
+        """Return a primitive nondifferentiability policy or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        policy = self.nondifferentiable_policy_for(primitive_identity)
+        if policy is None or policy == "not_declared":
+            raise ValueError(
+                f"no nondifferentiable policy registered for {primitive_identity.key}"
+            )
+        return policy
+
+    def require_effect(self, identity: PrimitiveIdentity | str) -> str:
+        """Return a primitive effect classification or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        effect = self.effect_for(primitive_identity)
+        if effect is None:
+            raise ValueError(f"no effect registered for {primitive_identity.key}")
+        return effect
 
     def transform_snapshot(self) -> dict[PrimitiveIdentity, PrimitiveTransformRule]:
         """Return a copy of registered primitive transform bindings."""
@@ -4028,6 +4108,50 @@ def register_primitive_lowering_rule(
 
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.register_lowering_rule(identity, lowering_rule, overwrite=overwrite)
+
+
+def primitive_shape_rule_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveShapeRule:
+    """Resolve a primitive shape rule or fail closed."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require_shape_rule(identity)
+
+
+def primitive_dtype_rule_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveDTypeRule:
+    """Resolve a primitive dtype rule or fail closed."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require_dtype_rule(identity)
+
+
+def primitive_nondifferentiable_policy_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> str:
+    """Resolve a primitive nondifferentiability policy or fail closed."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require_nondifferentiable_policy(identity)
+
+
+def primitive_effect_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> str:
+    """Resolve a primitive effect classification or fail closed."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require_effect(identity)
 
 
 def custom_derivative_rule_for(
@@ -8062,6 +8186,10 @@ __all__ = [
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "primitive_dtype_rule_for",
+    "primitive_effect_for",
+    "primitive_nondifferentiable_policy_for",
+    "primitive_shape_rule_for",
     "program_adjoint_gradient",
     "program_adjoint_result",
     "registered_custom_jacobian",

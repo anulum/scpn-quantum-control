@@ -133,6 +133,10 @@ from scpn_quantum_control.differentiable import (
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    primitive_dtype_rule_for,
+    primitive_effect_for,
+    primitive_nondifferentiable_policy_for,
+    primitive_shape_rule_for,
     program_adjoint_gradient,
     program_adjoint_result,
     register_custom_derivative_rule,
@@ -4353,6 +4357,17 @@ def test_primitive_transform_registry_holds_derivative_batching_and_lowering_met
     assert registry.require(identity) is rule
     assert registry.require_batching_rule(identity) is batching_rule
     assert registry.require_lowering_rule(identity) is lowering_rule
+    assert registry.require_shape_rule(identity) is shape_rule
+    assert registry.require_dtype_rule(identity) is dtype_rule
+    assert registry.require_nondifferentiable_policy(identity) == "fail_closed_at_boundaries"
+    assert registry.require_effect(identity) == "pure"
+    assert primitive_shape_rule_for(identity, registry=registry) is shape_rule
+    assert primitive_dtype_rule_for(identity, registry=registry) is dtype_rule
+    assert (
+        primitive_nondifferentiable_policy_for(identity, registry=registry)
+        == "fail_closed_at_boundaries"
+    )
+    assert primitive_effect_for(identity, registry=registry) == "pure"
     snapshot = registry.transform_snapshot()
     assert snapshot[identity].lowering_rule is lowering_rule
     assert snapshot[identity].lowering_metadata["mlir_op"] == "scpn_diff.lowered_batch"
@@ -4368,6 +4383,83 @@ def test_primitive_transform_registry_holds_derivative_batching_and_lowering_met
         registry.register_batching_rule(identity, batching_rule)
     with pytest.raises(ValueError, match="lowering rule already registered"):
         registry.register_lowering_rule(identity, lowering_rule)
+
+
+def test_primitive_transform_registry_preserves_contract_metadata_on_partial_updates() -> None:
+    """Partial registry updates should not erase shape, dtype, policy, or effect contracts."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "metadata_preserved", "1")
+    rule = CustomDerivativeRule(
+        name="metadata_preserved_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+
+    def shape_rule(args: tuple[object, ...]) -> tuple[int, ...]:
+        del args
+        return (1,)
+
+    def dtype_rule(args: tuple[object, ...]) -> str:
+        del args
+        return "float64"
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function, axes, out_axes
+        return np.asarray(args[0], dtype=np.float64)
+
+    def lowering_rule(lowered_rule: CustomDerivativeRule) -> object:
+        return lowered_rule.name
+
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            shape_rule=shape_rule,
+            dtype_rule=dtype_rule,
+            nondifferentiable_policy="fail_closed",
+            effect="pure",
+        )
+    )
+
+    registry.register_batching_rule(identity, batching_rule)
+    registry.register_lowering_rule(identity, lowering_rule)
+    transform = registry.transform_snapshot()[identity]
+
+    assert transform.shape_rule is shape_rule
+    assert transform.dtype_rule is dtype_rule
+    assert transform.nondifferentiable_policy == "fail_closed"
+    assert transform.effect == "pure"
+    assert transform.batching_rule is batching_rule
+    assert transform.lowering_rule is lowering_rule
+
+
+def test_primitive_transform_registry_contract_accessors_fail_closed() -> None:
+    """Primitive contract accessors should fail closed when metadata is absent."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "contract_missing", "1")
+    rule = CustomDerivativeRule(
+        name="contract_missing_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+    registry = CustomDerivativeRegistry({identity: rule})
+
+    assert registry.shape_rule_for(identity) is None
+    assert registry.dtype_rule_for(identity) is None
+    assert registry.nondifferentiable_policy_for(identity) == "not_declared"
+    assert registry.effect_for(identity) == "pure"
+    with pytest.raises(ValueError, match="no shape rule"):
+        registry.require_shape_rule(identity)
+    with pytest.raises(ValueError, match="no dtype rule"):
+        registry.require_dtype_rule(identity)
+    with pytest.raises(ValueError, match="no nondifferentiable policy"):
+        registry.require_nondifferentiable_policy(identity)
 
 
 def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
@@ -4589,6 +4681,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.PrimitiveLoweringRule is PrimitiveLoweringRule
     assert scpn.PrimitiveShapeRule is PrimitiveShapeRule
     assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
+    assert scpn.primitive_dtype_rule_for is primitive_dtype_rule_for
+    assert scpn.primitive_effect_for is primitive_effect_for
+    assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
+    assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.register_primitive_batching_rule is register_primitive_batching_rule
     assert scpn.register_primitive_lowering_rule is register_primitive_lowering_rule
     assert scpn.register_primitive_transform_rule is register_primitive_transform_rule
