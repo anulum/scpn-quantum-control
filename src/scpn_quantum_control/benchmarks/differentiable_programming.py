@@ -136,7 +136,11 @@ def run_differentiable_programming_external_reference_suite() -> tuple[
 
     if not is_jax_autodiff_available():
         return ()
-    return (_jax_linalg_primitive_case(),)
+    return (
+        _jax_loop_heavy_case(),
+        _jax_linalg_primitive_case(),
+        _jax_transform_nesting_case(),
+    )
 
 
 def _loop_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
@@ -250,9 +254,52 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
     )
 
 
-def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceResult:
+def _jax_loop_heavy_case() -> DifferentiableProgrammingExternalReferenceResult:
+    import jax
     import jax.numpy as jnp
 
+    jax.config.update("jax_enable_x64", True)
+    values = np.array([0.2, -0.4, 0.7, -0.9], dtype=np.float64)
+
+    def program_objective(trace_values: Any) -> object:
+        total = trace_values[0] * trace_values[0]
+        for index in range(4):
+            total = total + float(index + 1) * np.sin(trace_values[index])
+        return total
+
+    def reference_objective(raw_values: Any) -> object:
+        total = raw_values[0] * raw_values[0]
+        for index in range(4):
+            total = total + float(index + 1) * jnp.sin(raw_values[index])
+        return total
+
+    program_result = whole_program_value_and_grad(
+        program_objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+    reference_value, reference_gradient = jax_value_and_grad(reference_objective, values)
+    return DifferentiableProgrammingExternalReferenceResult(
+        case_id="jax_loop_heavy_reference",
+        backend="jax",
+        program_value=program_result.value,
+        reference_value=reference_value,
+        program_gradient=program_result.gradient,
+        reference_gradient=reference_gradient,
+        max_abs_value_error=abs(program_result.value - reference_value),
+        max_abs_gradient_error=_max_abs_error(program_result.gradient, reference_gradient),
+        claim_boundary=(
+            "optional JAX external-backend conformance for loop-heavy program AD; "
+            "diagnostic correctness only, not a JIT, performance, LLVM, Rust, or hardware claim"
+        ),
+    )
+
+
+def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceResult:
+    import jax
+    import jax.numpy as jnp
+
+    jax.config.update("jax_enable_x64", True)
     values = np.array([1.5, 2.0, -0.75, 0.5], dtype=np.float64)
     inverse_weights = np.array([[0.25, 0.0], [0.0, -0.5]], dtype=np.float64)
     solve_weights = np.array([1.25, -0.75], dtype=np.float64)
@@ -295,6 +342,49 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
         max_abs_gradient_error=_max_abs_error(program_result.gradient, reference_gradient),
         claim_boundary=(
             "optional JAX external-backend conformance for supported linalg primitives; "
+            "diagnostic correctness only, not a JIT, performance, LLVM, Rust, or hardware claim"
+        ),
+    )
+
+
+def _jax_transform_nesting_case() -> DifferentiableProgrammingExternalReferenceResult:
+    import jax
+    import jax.numpy as jnp
+
+    jax.config.update("jax_enable_x64", True)
+    values = np.array([[0.5, -0.25], [1.25, 0.75], [-0.4, 1.1]], dtype=np.float64)
+
+    def program_sample_objective(row: Any) -> object:
+        return row[0] * row[0] + np.sin(row[1])
+
+    program_gradients = vmap(
+        lambda row: (
+            whole_program_value_and_grad(program_sample_objective, row, trace=False).gradient
+        )
+    )(values)
+
+    def reference_sample_objective(row: Any) -> object:
+        return row[0] * row[0] + jnp.sin(row[1])
+
+    reference_gradients = np.asarray(
+        jax.vmap(jax.grad(reference_sample_objective))(jnp.asarray(values)),
+        dtype=np.float64,
+    )
+    program_gradient = np.asarray(program_gradients, dtype=np.float64).reshape(-1)
+    reference_gradient = reference_gradients.reshape(-1)
+    program_value = float(np.sum(values[:, 0] ** 2 + np.sin(values[:, 1])))
+    reference_value = float(np.sum(np.asarray(jax.vmap(reference_sample_objective)(values))))
+    return DifferentiableProgrammingExternalReferenceResult(
+        case_id="jax_transform_nesting_reference",
+        backend="jax",
+        program_value=program_value,
+        reference_value=reference_value,
+        program_gradient=program_gradient,
+        reference_gradient=reference_gradient,
+        max_abs_value_error=abs(program_value - reference_value),
+        max_abs_gradient_error=_max_abs_error(program_gradient, reference_gradient),
+        claim_boundary=(
+            "optional JAX external-backend conformance for vmap over program AD gradients; "
             "diagnostic correctness only, not a JIT, performance, LLVM, Rust, or hardware claim"
         ),
     )

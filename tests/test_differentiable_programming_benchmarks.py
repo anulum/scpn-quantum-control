@@ -125,6 +125,37 @@ def test_differentiable_programming_external_reference_suite_fails_closed_when_u
     assert run_differentiable_programming_external_reference_suite() == ()
 
 
+def test_differentiable_programming_external_reference_suite_uses_all_jax_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """External-reference suite should include every optional JAX conformance row."""
+
+    gradient = np.array([1.0], dtype=np.float64)
+
+    def row(case_id: str) -> DifferentiableProgrammingExternalReferenceResult:
+        return DifferentiableProgrammingExternalReferenceResult(
+            case_id=case_id,
+            backend="jax",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=gradient,
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="diagnostic correctness only, not a performance claim",
+        )
+
+    monkeypatch.setattr(dp_benchmarks, "is_jax_autodiff_available", lambda: True)
+    monkeypatch.setattr(dp_benchmarks, "_jax_loop_heavy_case", lambda: row("loop"))
+    monkeypatch.setattr(dp_benchmarks, "_jax_linalg_primitive_case", lambda: row("linalg"))
+    monkeypatch.setattr(dp_benchmarks, "_jax_transform_nesting_case", lambda: row("transform"))
+
+    results = run_differentiable_programming_external_reference_suite()
+
+    assert [result.case_id for result in results] == ["loop", "linalg", "transform"]
+    assert all(result.passed for result in results)
+
+
 def test_differentiable_programming_external_reference_result_validation_paths() -> None:
     """External-reference benchmark metadata should reject malformed rows."""
 
