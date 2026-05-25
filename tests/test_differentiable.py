@@ -3629,6 +3629,142 @@ def test_primitive_transform_registry_holds_derivative_batching_and_lowering_met
         registry.register_batching_rule(identity, batching_rule)
 
 
+def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
+    """Primitive transform registration should fail closed and support explicit overwrite."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "validated_batch", "1")
+    first_rule = CustomDerivativeRule(
+        name="validated_first",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+    second_rule = CustomDerivativeRule(
+        name="validated_second",
+        value_fn=lambda values: np.array([2.0 * values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([2.0 * tangent[0]], dtype=np.float64),
+    )
+
+    def first_batch(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function, axes, out_axes
+        return np.asarray(args[0], dtype=np.float64)
+
+    def second_batch(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function, axes
+        return np.moveaxis(np.asarray(args[0], dtype=np.float64), 0, out_axes)
+
+    with pytest.raises(ValueError, match="PrimitiveIdentity"):
+        PrimitiveTransformRule(  # type: ignore[arg-type]
+            identity="scpn.quantum.invalid@1",
+            derivative_rule=first_rule,
+        )
+    with pytest.raises(ValueError, match="CustomDerivativeRule"):
+        PrimitiveTransformRule(  # type: ignore[arg-type]
+            identity=identity,
+            derivative_rule=object(),
+        )
+    with pytest.raises(ValueError, match="batching_rule"):
+        PrimitiveTransformRule(  # type: ignore[arg-type]
+            identity=identity,
+            derivative_rule=first_rule,
+            batching_rule=object(),
+        )
+    with pytest.raises(ValueError, match="metadata keys"):
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=first_rule,
+            lowering_metadata={"": "scpn_diff.validated"},
+        )
+    with pytest.raises(ValueError, match="metadata values"):
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=first_rule,
+            lowering_metadata={"mlir_op": ""},
+        )
+
+    registry = CustomDerivativeRegistry()
+    transform = PrimitiveTransformRule(
+        identity=identity,
+        derivative_rule=first_rule,
+        batching_rule=first_batch,
+        lowering_metadata={"mlir_op": "scpn_diff.validated_batch"},
+    )
+    assert registry.register_transform(transform) is transform
+    with pytest.raises(ValueError, match="already registered"):
+        registry.register_transform(
+            PrimitiveTransformRule(identity=identity, derivative_rule=second_rule)
+        )
+
+    replacement = PrimitiveTransformRule(
+        identity=identity,
+        derivative_rule=second_rule,
+        batching_rule=second_batch,
+        lowering_metadata={"mlir_op": "scpn_diff.validated_batch_v2"},
+    )
+    assert registry.register_transform(replacement, overwrite=True) is replacement
+    assert registry.require(identity) is second_rule
+    assert registry.batching_rule_for(identity) is second_batch
+    assert (
+        registry.transform_snapshot()[identity].lowering_metadata["mlir_op"]
+        == "scpn_diff.validated_batch_v2"
+    )
+
+
+def test_primitive_batching_registry_helper_and_unregister_paths() -> None:
+    """Top-level batching helpers should bind default-registry rules and unregister cleanly."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "default_helper_batch", "1")
+    rule = CustomDerivativeRule(
+        name="default_helper_rule",
+        value_fn=lambda values: np.array([values[0] + values[1]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0] + tangent[1]], dtype=np.float64),
+    )
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function
+        assert axes == (0,)
+        return np.moveaxis(np.asarray(args[0], dtype=np.float64).sum(axis=1), 0, out_axes)
+
+    with pytest.raises(ValueError, match="no custom derivative rule"):
+        register_primitive_batching_rule(identity, batching_rule)
+    with pytest.raises(ValueError, match="callable"):
+        CustomDerivativeRegistry({identity: rule}).register_batching_rule(  # type: ignore[arg-type]
+            identity,
+            object(),
+        )
+
+    register_custom_derivative_rule(identity, rule)
+    try:
+        assert register_primitive_batching_rule(identity, batching_rule) is batching_rule
+        batched = vmap(lambda row: row[0] + row[1], primitive_identity=identity)
+        np.testing.assert_allclose(
+            batched(np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float64)),
+            [3.0, 7.0],
+            atol=1.0e-12,
+        )
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(identity) is rule
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.batching_rule_for(identity) is None
+        with pytest.raises(ValueError, match="no custom derivative rule"):
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(identity)
+    finally:
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.lookup(identity) is not None:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(identity)
+
+
 def test_vmap_rejects_missing_requested_primitive_batching_rule() -> None:
     """Explicit primitive batching dispatch should fail closed if the rule is absent."""
 
