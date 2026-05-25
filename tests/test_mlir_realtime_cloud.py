@@ -295,6 +295,45 @@ def test_custom_derivative_rule_compiles_to_verified_executable_ad_kernel() -> N
     )
 
 
+def test_executable_compiler_ad_kernel_verifies_scalar_gradient_output() -> None:
+    """Executable compiler AD should expose verified scalar-output gradients."""
+
+    rule = CustomDerivativeRule(
+        name="quadratic_phase_rule",
+        value_fn=lambda values: np.array([values[0] ** 2 + np.sin(values[1])], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [2.0 * values[0] * tangent[0] + np.cos(values[1]) * tangent[1]],
+            dtype=np.float64,
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [2.0 * values[0] * cotangent[0], np.cos(values[1]) * cotangent[0]],
+            dtype=np.float64,
+        ),
+        parameter_names=("theta", "phase"),
+        trainable=(True, True),
+    )
+    values = np.array([0.75, -0.3], dtype=np.float64)
+
+    kernel = compile_custom_derivative_rule_to_executable(
+        rule,
+        values,
+        sample_tangent=np.array([0.25, -0.5], dtype=np.float64),
+        sample_cotangent=np.array([1.0], dtype=np.float64),
+    )
+
+    assert kernel.backend == "mlir_runtime"
+    assert kernel.verification.gradient_close is True
+    assert "verified executable MLIR-runtime" in kernel.claim_boundary
+    assert "native LLVM/JIT code generation remains fail-closed" in kernel.claim_boundary
+    assert "scpn_diff.custom_rule" in kernel.mlir_module.text
+    np.testing.assert_allclose(
+        kernel.gradient(values),
+        [1.5, np.cos(-0.3)],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_differentiable_mlir_rejects_executable_target_claims() -> None:
     """LLVM/JIT target names must fail until backed by a real executable backend."""
 

@@ -319,6 +319,7 @@ class CompilerADKernelVerification:
     vjp_close: bool | None
     max_abs_error: float
     samples: int
+    gradient_close: bool | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.value_close, bool):
@@ -327,6 +328,8 @@ class CompilerADKernelVerification:
             raise ValueError("jvp_close must be a boolean or None")
         if self.vjp_close is not None and not isinstance(self.vjp_close, bool):
             raise ValueError("vjp_close must be a boolean or None")
+        if self.gradient_close is not None and not isinstance(self.gradient_close, bool):
+            raise ValueError("gradient_close must be a boolean or None")
         if not np.isfinite(self.max_abs_error) or self.max_abs_error < 0.0:
             raise ValueError("max_abs_error must be finite and non-negative")
         if self.samples < 1:
@@ -336,7 +339,7 @@ class CompilerADKernelVerification:
     def passed(self) -> bool:
         """Return whether all executed verification checks passed."""
 
-        checks = (self.value_close, self.jvp_close, self.vjp_close)
+        checks = (self.value_close, self.jvp_close, self.vjp_close, self.gradient_close)
         return all(check is not False for check in checks)
 
 
@@ -394,6 +397,17 @@ class ExecutableCompilerADKernel:
         if self.vjp_kernel is None:
             raise ValueError(f"kernel {self.rule_name} has no VJP rule")
         return self.vjp_kernel(values, cotangent)
+
+    def gradient(self, values: np.ndarray) -> np.ndarray:
+        """Execute the compiled scalar-output gradient kernel."""
+
+        if self.vjp_kernel is None:
+            raise ValueError(f"kernel {self.rule_name} has no VJP rule")
+        checked_values = _as_finite_vector("values", values)
+        output = self.value_kernel(checked_values)
+        if output.size != 1:
+            raise ValueError(f"kernel {self.rule_name} gradient requires scalar output")
+        return self.vjp_kernel(checked_values, np.ones(1, dtype=np.float64))
 
 
 def compile_kuramoto_to_mlir(
@@ -666,6 +680,7 @@ def _verify_executable_ad_kernel(
             vjp_close=None,
             max_abs_error=0.0,
             samples=1,
+            gradient_close=None,
         )
     errors: list[float] = []
     expected_value = _as_finite_vector("rule value", rule.value_fn(values))
@@ -688,6 +703,7 @@ def _verify_executable_ad_kernel(
         jvp_close = bool(np.allclose(kernel_jvp, expected_jvp, atol=config.atol, rtol=config.rtol))
         errors.append(_max_abs_error(kernel_jvp, expected_jvp))
     vjp_close: bool | None = None
+    gradient_close: bool | None = None
     if rule.vjp_rule is not None and vjp_kernel is not None:
         cotangent = (
             np.ones_like(expected_value)
@@ -700,12 +716,23 @@ def _verify_executable_ad_kernel(
         kernel_vjp = vjp_kernel(values, cotangent)
         vjp_close = bool(np.allclose(kernel_vjp, expected_vjp, atol=config.atol, rtol=config.rtol))
         errors.append(_max_abs_error(kernel_vjp, expected_vjp))
+        if expected_value.size == 1:
+            unit_cotangent = np.ones(1, dtype=np.float64)
+            expected_gradient = _as_finite_vector(
+                "rule scalar gradient", rule.vjp_rule(values, unit_cotangent)
+            )
+            kernel_gradient = vjp_kernel(values, unit_cotangent)
+            gradient_close = bool(
+                np.allclose(kernel_gradient, expected_gradient, atol=config.atol, rtol=config.rtol)
+            )
+            errors.append(_max_abs_error(kernel_gradient, expected_gradient))
     verification = CompilerADKernelVerification(
         value_close=value_close,
         jvp_close=jvp_close,
         vjp_close=vjp_close,
         max_abs_error=max(errors),
         samples=1,
+        gradient_close=gradient_close,
     )
     if not verification.passed:
         raise ValueError("executable compiler AD kernel verification failed")

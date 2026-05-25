@@ -102,10 +102,11 @@ parameter metadata, output values, exact custom Jacobian payloads, and resource
 counts. `compile_custom_derivative_rule_to_executable()` adds an executable
 compiler-backed AD boundary for exact custom primitive rules: it emits
 deterministic MLIR provenance, binds normalized value/JVP/VJP runtime kernels,
-and verifies those kernels against the source rule before returning. The
-executable backend is `mlir_runtime`; native LLVM/JIT targets still fail closed
-until real code generation is present. This surface does not claim LLVM/QIR
-lowering, cloud submission, pulse compilation, or hardware execution.
+exposes verified scalar-output `gradient()` execution through VJP cotangent-one
+semantics, and verifies those kernels against the source rule before returning.
+The executable backend is `mlir_runtime`; native LLVM/JIT targets still fail
+closed until real code generation is present. This surface does not claim
+LLVM/QIR lowering, cloud submission, pulse compilation, or hardware execution.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, executable MLIR-runtime availability when
