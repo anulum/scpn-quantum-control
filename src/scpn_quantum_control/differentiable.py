@@ -965,6 +965,12 @@ class TraceADArray:
             else result / float(divisor)
         )
 
+    def var(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
+        return _trace_variance(self, axis=axis, ddof=ddof)
+
+    def std(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
+        return _trace_std(self, axis=axis, ddof=ddof)
+
     def max(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         return _trace_extreme(self, axis=axis, choose_max=True)
 
@@ -1105,6 +1111,22 @@ class TraceADArray:
                 raise ValueError("whole-program AD np.mean supports one array and optional axis")
             return _coerce_trace_array(args[0], self.context).mean(
                 axis=cast(int | None, kwargs.get("axis"))
+            )
+        if func is np.var:
+            if len(args) != 1 or kwargs.keys() - {"axis", "ddof"}:
+                raise ValueError("program AD np.var supports one array, axis, and ddof")
+            return _trace_variance(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | None, kwargs.get("axis")),
+                ddof=kwargs.get("ddof", 0),
+            )
+        if func is np.std:
+            if len(args) != 1 or kwargs.keys() - {"axis", "ddof"}:
+                raise ValueError("program AD np.std supports one array, axis, and ddof")
+            return _trace_std(
+                _coerce_trace_array(args[0], self.context),
+                axis=cast(int | None, kwargs.get("axis")),
+                ddof=kwargs.get("ddof", 0),
             )
         if func is np.max:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
@@ -1559,6 +1581,69 @@ def _trace_array_prod(
             total = total * array._items[int(np.ravel_multi_index(source_index, array.shape))]
         items.append(total)
     return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _normalise_ddof(ddof: object, count: int) -> int:
+    if not isinstance(ddof, (int, np.integer)):
+        raise ValueError("program AD variance/std reductions require integer ddof")
+    ddof_int = int(ddof)
+    if ddof_int < 0:
+        raise ValueError("program AD variance/std reductions require non-negative ddof")
+    if count - ddof_int <= 0:
+        raise ValueError("program AD variance/std ddof must leave a positive denominator")
+    return ddof_int
+
+
+def _trace_variance(
+    array: TraceADArray,
+    *,
+    axis: int | None,
+    ddof: object,
+) -> TraceADScalar | TraceADArray:
+    if not array._items:
+        raise ValueError("program AD variance reductions require at least one element")
+    count = array.size if axis is None else array.shape[_normalise_axis("axis", axis, array.ndim)]
+    ddof_int = _normalise_ddof(ddof, count)
+    mean = array.mean(axis=axis)
+    if axis is None:
+        if not isinstance(mean, TraceADScalar):
+            raise ValueError("program AD variance scalar mean expected")
+        squared = tuple((item - mean) * (item - mean) for item in array._items)
+        total = squared[0]
+        for item in squared[1:]:
+            total = total + item
+        return total / float(count - ddof_int)
+    axis = _normalise_axis("axis", axis, array.ndim)
+    if not isinstance(mean, TraceADArray):
+        raise ValueError("program AD variance axis mean expected an array")
+    reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
+    if reduced_shape == ():
+        return _trace_variance(array, axis=None, ddof=ddof_int)
+    items: list[TraceADScalar] = []
+    for reduced_flat in range(int(np.prod(reduced_shape))):
+        reduced_index = np.unravel_index(reduced_flat, reduced_shape)
+        centre = mean._items[reduced_flat]
+        source_index = reduced_index[:axis] + (0,) + reduced_index[axis:]
+        delta = array._items[int(np.ravel_multi_index(source_index, array.shape))] - centre
+        total = delta * delta
+        for axis_index in range(1, array.shape[axis]):
+            source_index = reduced_index[:axis] + (axis_index,) + reduced_index[axis:]
+            delta = array._items[int(np.ravel_multi_index(source_index, array.shape))] - centre
+            total = total + delta * delta
+        items.append(total / float(count - ddof_int))
+    return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _trace_std(
+    array: TraceADArray,
+    *,
+    axis: int | None,
+    ddof: object,
+) -> TraceADScalar | TraceADArray:
+    variance = _trace_variance(array, axis=axis, ddof=ddof)
+    if isinstance(variance, TraceADScalar):
+        return _apply_trace_ufunc(np.sqrt, (variance,), array.context)
+    return _apply_trace_ufunc(np.sqrt, (variance,), array.context)
 
 
 def _trace_extreme(

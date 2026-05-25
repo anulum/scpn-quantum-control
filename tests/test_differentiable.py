@@ -3955,6 +3955,47 @@ def test_program_ad_product_reduction_methods_handle_zero_factor() -> None:
     np.testing.assert_allclose(result.gradient, [-21.0, 0.0, 0.0, 0.0], atol=1.0e-12)
 
 
+def test_program_ad_variance_and_std_reductions_match_analytic_gradients() -> None:
+    """Program AD variance and standard deviation should use exact differentiable reductions."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return np.var(values) + matrix.var(axis=0)[1] + np.std(values[:2])
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 3.0, 5.0, 7.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+        ),
+    )
+
+    assert result.value == pytest.approx(10.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [-2.0, -2.0, 0.5, 3.5],
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_variance_and_std_reject_invalid_ddof() -> None:
+    """Program AD variance/std should fail closed on unsupported or singular ddof."""
+
+    with pytest.raises(ValueError, match="integer ddof"):
+        whole_program_value_and_grad(
+            lambda values: np.var(values, ddof=0.5),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="ddof must leave"):
+        whole_program_value_and_grad(
+            lambda values: np.std(values, ddof=2),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 
