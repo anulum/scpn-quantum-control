@@ -4987,6 +4987,7 @@ def _normalise_identity_token(name: str, value: object) -> str:
 PrimitiveLoweringRule = Callable[[CustomDerivativeRule], object]
 PrimitiveShapeRule = Callable[[tuple[object, ...]], tuple[int, ...]]
 PrimitiveDTypeRule = Callable[[tuple[object, ...]], str]
+PrimitiveStaticArgumentRule = Callable[[tuple[object, ...]], tuple[object, ...]]
 
 
 @dataclass(frozen=True)
@@ -5000,6 +5001,7 @@ class PrimitiveTransformRule:
     lowering_metadata: Mapping[str, str] | None = None
     shape_rule: PrimitiveShapeRule | None = None
     dtype_rule: PrimitiveDTypeRule | None = None
+    static_argument_rule: PrimitiveStaticArgumentRule | None = None
     nondifferentiable_policy: str = "not_declared"
     effect: str = "pure"
 
@@ -5016,6 +5018,8 @@ class PrimitiveTransformRule:
             raise ValueError("transform shape_rule must be callable")
         if self.dtype_rule is not None and not callable(self.dtype_rule):
             raise ValueError("transform dtype_rule must be callable")
+        if self.static_argument_rule is not None and not callable(self.static_argument_rule):
+            raise ValueError("transform static_argument_rule must be callable")
         if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
             raise ValueError("transform nondifferentiable_policy must be a non-empty string")
         if not isinstance(self.effect, str) or not self.effect:
@@ -5039,6 +5043,7 @@ class PrimitiveContract:
     lowering_metadata: Mapping[str, str]
     shape_rule: PrimitiveShapeRule | None
     dtype_rule: PrimitiveDTypeRule | None
+    static_argument_rule: PrimitiveStaticArgumentRule | None
     nondifferentiable_policy: str
     effect: str
 
@@ -5055,6 +5060,8 @@ class PrimitiveContract:
             raise ValueError("contract shape_rule must be callable")
         if self.dtype_rule is not None and not callable(self.dtype_rule):
             raise ValueError("contract dtype_rule must be callable")
+        if self.static_argument_rule is not None and not callable(self.static_argument_rule):
+            raise ValueError("contract static_argument_rule must be callable")
         if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
             raise ValueError("contract nondifferentiable_policy must be a non-empty string")
         if not isinstance(self.effect, str) or not self.effect:
@@ -5080,6 +5087,7 @@ class PrimitiveContract:
             else transform.lowering_metadata,
             shape_rule=transform.shape_rule,
             dtype_rule=transform.dtype_rule,
+            static_argument_rule=transform.static_argument_rule,
             nondifferentiable_policy=transform.nondifferentiable_policy,
             effect=transform.effect,
         )
@@ -5129,6 +5137,9 @@ class CustomDerivativeRegistry:
                 else existing_transform.lowering_metadata,
                 shape_rule=None if existing_transform is None else existing_transform.shape_rule,
                 dtype_rule=None if existing_transform is None else existing_transform.dtype_rule,
+                static_argument_rule=None
+                if existing_transform is None
+                else existing_transform.static_argument_rule,
                 nondifferentiable_policy="not_declared"
                 if existing_transform is None
                 else existing_transform.nondifferentiable_policy,
@@ -5193,6 +5204,7 @@ class CustomDerivativeRegistry:
             lowering_metadata=metadata,
             shape_rule=None if existing is None else existing.shape_rule,
             dtype_rule=None if existing is None else existing.dtype_rule,
+            static_argument_rule=None if existing is None else existing.static_argument_rule,
             nondifferentiable_policy="not_declared"
             if existing is None
             else existing.nondifferentiable_policy,
@@ -5224,6 +5236,7 @@ class CustomDerivativeRegistry:
             lowering_metadata={} if existing is None else existing.lowering_metadata,
             shape_rule=None if existing is None else existing.shape_rule,
             dtype_rule=None if existing is None else existing.dtype_rule,
+            static_argument_rule=None if existing is None else existing.static_argument_rule,
             nondifferentiable_policy="not_declared"
             if existing is None
             else existing.nondifferentiable_policy,
@@ -5254,6 +5267,14 @@ class CustomDerivativeRegistry:
 
         transform = self._transforms.get(PrimitiveIdentity.parse(identity))
         return None if transform is None else transform.dtype_rule
+
+    def static_argument_rule_for(
+        self, identity: PrimitiveIdentity | str
+    ) -> PrimitiveStaticArgumentRule | None:
+        """Return the registered primitive static-argument rule, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else transform.static_argument_rule
 
     def nondifferentiable_policy_for(self, identity: PrimitiveIdentity | str) -> str | None:
         """Return the registered primitive nondifferentiability policy, if present."""
@@ -5307,6 +5328,17 @@ class CustomDerivativeRegistry:
         rule = self.dtype_rule_for(primitive_identity)
         if rule is None:
             raise ValueError(f"no dtype rule registered for {primitive_identity.key}")
+        return rule
+
+    def require_static_argument_rule(
+        self, identity: PrimitiveIdentity | str
+    ) -> PrimitiveStaticArgumentRule:
+        """Return a primitive static-argument rule or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        rule = self.static_argument_rule_for(primitive_identity)
+        if rule is None:
+            raise ValueError(f"no static argument rule registered for {primitive_identity.key}")
         return rule
 
     def require_nondifferentiable_policy(self, identity: PrimitiveIdentity | str) -> str:
@@ -5674,12 +5706,50 @@ def _program_ad_linalg_dtype_rule(args: tuple[object, ...]) -> str:
     return str(np.result_type(*(array.dtype for array in arrays)))
 
 
+def _program_ad_linalg_no_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    del args
+    return ()
+
+
+def _program_ad_linalg_matrix_power_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD linalg matrix_power static rule requires matrix and power")
+    power = args[1]
+    if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
+        raise ValueError("program AD linalg matrix_power static rule requires an integer power")
+    return (int(power),)
+
+
+def _program_ad_linalg_multi_dot_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg multi_dot static rule requires one operand sequence")
+    operands = args[0]
+    if isinstance(operands, (TraceADArray, np.ndarray)) or not isinstance(operands, Sequence):
+        raise ValueError(
+            "program AD linalg multi_dot static rule requires a static operand sequence"
+        )
+    shapes = tuple(_program_ad_linalg_shape_of(operand) for operand in operands)
+    if len(shapes) < 2:
+        raise ValueError("program AD linalg multi_dot static rule requires at least two operands")
+    return shapes
+
+
 _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "det": _program_ad_linalg_det_shape,
     "inv": _program_ad_linalg_inv_shape,
     "solve": _program_ad_linalg_solve_shape,
     "matrix_power": _program_ad_linalg_matrix_power_shape,
     "multi_dot": _program_ad_linalg_multi_dot_shape,
+}
+
+_PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "det": _program_ad_linalg_no_static_arguments,
+    "inv": _program_ad_linalg_no_static_arguments,
+    "solve": _program_ad_linalg_no_static_arguments,
+    "matrix_power": _program_ad_linalg_matrix_power_static_arguments,
+    "multi_dot": _program_ad_linalg_multi_dot_static_arguments,
 }
 
 
@@ -5745,6 +5815,7 @@ def _register_program_ad_linalg_primitive_contracts() -> None:
                 },
                 shape_rule=_PROGRAM_AD_LINALG_SHAPE_RULES[name],
                 dtype_rule=_program_ad_linalg_dtype_rule,
+                static_argument_rule=_PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES[name],
                 nondifferentiable_policy=_PROGRAM_AD_LINALG_POLICY,
                 effect="pure",
             )
@@ -5837,6 +5908,17 @@ def primitive_dtype_rule_for(
 
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_dtype_rule(identity)
+
+
+def primitive_static_argument_rule_for(
+    identity: PrimitiveIdentity | str,
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveStaticArgumentRule:
+    """Resolve a primitive static-argument rule or fail closed."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.require_static_argument_rule(identity)
 
 
 def primitive_nondifferentiable_policy_for(
@@ -9955,6 +10037,7 @@ __all__ = [
     "PrimitiveIdentity",
     "PrimitiveLoweringRule",
     "PrimitiveShapeRule",
+    "PrimitiveStaticArgumentRule",
     "PrimitiveTransformRule",
     "ReverseNode",
     "ShotAllocationResult",
@@ -10028,6 +10111,7 @@ __all__ = [
     "primitive_effect_for",
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
+    "primitive_static_argument_rule_for",
     "program_adjoint_gradient",
     "program_adjoint_result",
     "registered_custom_jacobian",

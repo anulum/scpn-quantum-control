@@ -141,6 +141,7 @@ from scpn_quantum_control.differentiable import (
     primitive_effect_for,
     primitive_nondifferentiable_policy_for,
     primitive_shape_rule_for,
+    primitive_static_argument_rule_for,
     program_adjoint_gradient,
     program_adjoint_result,
     register_custom_derivative_rule,
@@ -4657,6 +4658,40 @@ def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None
         contracts["multi_dot"].shape_rule(((rhs_vector, np.ones((3, 2), dtype=np.float64)),))
 
 
+def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
+    """Supported linalg primitive contracts should expose static-argument policies."""
+
+    matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
+    vector = np.array([1.0, -0.25], dtype=np.float64)
+    right = np.array([[0.25, 1.0, -0.5], [1.5, -0.25, 0.75]], dtype=np.float64)
+
+    no_static = primitive_static_argument_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "det", "1")
+    )
+    matrix_power_static = primitive_static_argument_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
+    )
+    multi_dot_static = primitive_static_argument_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "multi_dot", "1")
+    )
+
+    assert no_static((matrix,)) == ()
+    assert matrix_power_static((matrix, np.int64(-2))) == (-2,)
+    assert multi_dot_static(((vector, matrix, right),)) == ((2,), (2, 2), (2, 3))
+    assert (
+        primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
+        ).static_argument_rule
+        is matrix_power_static
+    )
+    assert callable(matrix_power_static)
+
+    with pytest.raises(ValueError, match="integer power"):
+        matrix_power_static((matrix, 1.5))
+    with pytest.raises(ValueError, match="static operand sequence"):
+        multi_dot_static((np.reshape(np.arange(4.0), (2, 2)),))
+
+
 def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> None:
     """Feasible linalg primitive contracts should expose direct derivative kernels."""
 
@@ -6685,6 +6720,7 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.PrimitiveDTypeRule is PrimitiveDTypeRule
     assert scpn.PrimitiveLoweringRule is PrimitiveLoweringRule
     assert scpn.PrimitiveShapeRule is PrimitiveShapeRule
+    assert scpn.PrimitiveStaticArgumentRule is not None
     assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
     assert scpn.primitive_complete_contract_for is primitive_complete_contract_for
     assert scpn.primitive_dtype_rule_for is primitive_dtype_rule_for
@@ -6692,6 +6728,7 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.primitive_contract_for is primitive_contract_for
     assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
+    assert scpn.primitive_static_argument_rule_for is primitive_static_argument_rule_for
     assert scpn.register_primitive_batching_rule is register_primitive_batching_rule
     assert scpn.register_primitive_lowering_rule is register_primitive_lowering_rule
     assert scpn.register_primitive_transform_rule is register_primitive_transform_rule
