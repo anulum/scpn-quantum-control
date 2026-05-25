@@ -3983,6 +3983,60 @@ def test_program_ad_repeat_fails_closed_invalid_static_contracts() -> None:
         )
 
 
+def test_program_ad_tile_accumulates_exact_adjoint() -> None:
+    """Program AD tile should accumulate adjoints from every tiled source use."""
+
+    weights_matrix = np.linspace(-2.5, 3.5, 24, dtype=np.float64).reshape(4, 6)
+    weights_promoted = np.linspace(0.25, 2.25, 36, dtype=np.float64).reshape(3, 2, 6)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        tiled = np.tile(matrix, (2, 2))
+        promoted = np.tile(matrix, (3, 1, 2))
+        return np.sum(tiled * weights_matrix) + np.sum(promoted * weights_promoted)
+
+    values = np.linspace(-0.6, 1.1, 6, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    source = np.arange(6, dtype=np.int64).reshape(2, 3)
+    expected = np.zeros(6, dtype=np.float64)
+    np.add.at(expected, np.tile(source, (2, 2)).reshape(-1), weights_matrix.reshape(-1))
+    np.add.at(
+        expected,
+        np.tile(source.reshape(1, 2, 3), (3, 1, 2)).reshape(-1),
+        weights_promoted.reshape(-1),
+    )
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_tile_fails_closed_invalid_static_contracts() -> None:
+    """Program AD tile should reject dynamic or invalid repetition contracts."""
+
+    with pytest.raises(ValueError, match="tile reps must be static non-negative integers"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.tile(values, True)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="tile reps must be static non-negative integers"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.tile(values, (2, -1))),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="tile reps must contain at least one axis"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.tile(values, ())),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 

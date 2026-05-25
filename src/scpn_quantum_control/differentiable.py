@@ -1283,6 +1283,14 @@ class TraceADArray:
                 repeats=repeats,
                 axis=cast(int | None, axis),
             )
+        if func is np.tile:
+            if len(args) == 2 and not kwargs:
+                reps = args[1]
+            elif len(args) == 1 and set(kwargs) == {"reps"}:
+                reps = kwargs["reps"]
+            else:
+                raise ValueError("program AD np.tile supports array and reps")
+            return _trace_tile(_coerce_trace_array(args[0], self.context), reps=reps)
         if func is np.roll:
             if len(args) == 2 and kwargs.keys() <= {"axis"}:
                 shift = args[1]
@@ -1725,6 +1733,41 @@ def _trace_repeat(
     return TraceADArray(
         tuple(array._items[int(index)] for index in repeated.reshape(-1)),
         tuple(map(int, repeated.shape)),
+        array.context,
+    )
+
+
+def _normalise_tile_reps(reps: object) -> tuple[int, ...]:
+    values: tuple[int, ...]
+    if isinstance(reps, (int, np.integer)) and not isinstance(reps, bool):
+        values = (int(reps),)
+    else:
+        try:
+            values = tuple(cast(Any, reps))
+        except TypeError as exc:
+            raise ValueError("program AD tile reps must be static non-negative integers") from exc
+        if not values:
+            raise ValueError("program AD tile reps must contain at least one axis")
+        if any(
+            isinstance(item, bool) or not isinstance(item, (int, np.integer)) for item in values
+        ):
+            raise ValueError("program AD tile reps must be static non-negative integers")
+        values = tuple(int(item) for item in values)
+    if any(value < 0 for value in values):
+        raise ValueError("program AD tile reps must be static non-negative integers")
+    return values
+
+
+def _trace_tile(array: TraceADArray, *, reps: object) -> TraceADArray:
+    reps_tuple = _normalise_tile_reps(reps)
+    rank = max(array.ndim, len(reps_tuple))
+    source_shape = (1,) * (rank - array.ndim) + array.shape
+    reps_aligned = (1,) * (rank - len(reps_tuple)) + reps_tuple
+    source = np.arange(array.size, dtype=np.int64).reshape(source_shape)
+    tiled = np.tile(source, reps_aligned)
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in tiled.reshape(-1)),
+        tuple(map(int, tiled.shape)),
         array.context,
     )
 
