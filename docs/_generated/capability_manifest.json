@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 419,
+    "public_api_exports": 426,
     "public_documentation_pages": 235,
-    "python_model_classes": 1484,
+    "python_model_classes": 1487,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -1720,6 +1720,14 @@
         "path": "src/scpn_quantum_control/paper0/collective_niche_construction_validation.py"
       },
       {
+        "name": "CompilerADExecutableConfig",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
+        "name": "CompilerADKernelVerification",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
         "name": "CompilerADTransformPlan",
         "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
@@ -2226,6 +2234,10 @@
       {
         "name": "EthicsTeleologyFixtureResult",
         "path": "src/scpn_quantum_control/paper0/ethics_teleology_validation.py"
+      },
+      {
+        "name": "ExecutableCompilerADKernel",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
         "name": "ExecutionRegion",
@@ -7831,6 +7843,8 @@
     "ClassicalBaselineRun",
     "CloudDeploymentSpec",
     "CloudManifestBundle",
+    "CompilerADExecutableConfig",
+    "CompilerADKernelVerification",
     "CompilerADTransformPlan",
     "ContainerResources",
     "ControlQEC",
@@ -7845,6 +7859,7 @@
     "DualNumber",
     "DynamicCouplingConfig",
     "DynamicCouplingEngine",
+    "ExecutableCompilerADKernel",
     "ExecutionRegion",
     "Experiment",
     "FaultTolerantUPDE",
@@ -7907,6 +7922,7 @@
     "PhaseVQE",
     "PrimitiveBatchingRule",
     "PrimitiveIdentity",
+    "PrimitiveLoweringRule",
     "PrimitiveLoweringStatus",
     "PrimitiveTransformRule",
     "Problem",
@@ -8032,10 +8048,12 @@
     "classical_reference_backend",
     "coherence_budget",
     "compile_compiler_ad_transform_plan_to_mlir",
+    "compile_custom_derivative_rule_to_executable",
     "compile_custom_derivative_rule_to_mlir",
     "compile_dense_hamiltonian",
     "compile_hamiltonian",
     "compile_kuramoto_to_mlir",
+    "compile_registered_primitive_to_executable",
     "compile_trotter_circuit",
     "compile_whole_program_ad_trace_to_mlir",
     "complex_step_gradient",
@@ -8140,6 +8158,7 @@
     "qutip_lindblad_baseline",
     "register_custom_derivative_rule",
     "register_primitive_batching_rule",
+    "register_primitive_lowering_rule",
     "register_primitive_transform_rule",
     "registered_custom_jacobian",
     "registered_custom_jvp",

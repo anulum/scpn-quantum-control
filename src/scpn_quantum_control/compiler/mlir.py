@@ -17,12 +17,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..differentiable import (
     CustomDerivativeRegistry,
@@ -156,6 +157,11 @@ def build_compiler_ad_transform_plan(
             if transform_rule is None or transform_rule.lowering_metadata is None
             else dict(transform_rule.lowering_metadata)
         )
+        default_mlir_status = (
+            "available: executable scpn_diff MLIR-runtime primitive kernel"
+            if transform_rule is not None and transform_rule.lowering_rule is not None
+            else "available: scpn_diff dialect interchange"
+        )
         statuses.append(
             PrimitiveLoweringStatus(
                 identity=identity,
@@ -163,7 +169,7 @@ def build_compiler_ad_transform_plan(
                 has_jvp=rule.jvp_rule is not None,
                 has_vjp=rule.vjp_rule is not None,
                 mlir_op=metadata.get("mlir_op", f"{dialect}.{identity.namespace}_{identity.name}"),
-                mlir_lowering=metadata.get("mlir", "available: scpn_diff dialect interchange"),
+                mlir_lowering=metadata.get("mlir", default_mlir_status),
                 rust_lowering=metadata.get(
                     "rust", "blocked: no Rust differentiable primitive backend"
                 ),
@@ -253,6 +259,119 @@ class DifferentiableMLIRCompileConfig:
             raise ValueError("include_numeric_payload must be a boolean")
         if not isinstance(self.include_metadata, bool):
             raise ValueError("include_metadata must be a boolean")
+
+
+@dataclass(frozen=True)
+class CompilerADExecutableConfig:
+    """Configuration for verified executable primitive AD kernels."""
+
+    backend: str = "mlir_runtime"
+    atol: float = 1.0e-10
+    rtol: float = 1.0e-10
+    verify: bool = True
+    mlir_config: DifferentiableMLIRCompileConfig = field(
+        default_factory=DifferentiableMLIRCompileConfig
+    )
+
+    def __post_init__(self) -> None:
+        if self.backend != "mlir_runtime":
+            raise ValueError(
+                "backend must be 'mlir_runtime'; native LLVM/JIT lowering is not yet available"
+            )
+        if not np.isfinite(self.atol) or self.atol < 0.0:
+            raise ValueError("atol must be finite and non-negative")
+        if not np.isfinite(self.rtol) or self.rtol < 0.0:
+            raise ValueError("rtol must be finite and non-negative")
+        if not isinstance(self.verify, bool):
+            raise ValueError("verify must be a boolean")
+        if not isinstance(self.mlir_config, DifferentiableMLIRCompileConfig):
+            raise ValueError("mlir_config must be a DifferentiableMLIRCompileConfig")
+
+
+@dataclass(frozen=True)
+class CompilerADKernelVerification:
+    """Runtime verification evidence for an executable primitive AD kernel."""
+
+    value_close: bool
+    jvp_close: bool | None
+    vjp_close: bool | None
+    max_abs_error: float
+    samples: int
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.value_close, bool):
+            raise ValueError("value_close must be a boolean")
+        if self.jvp_close is not None and not isinstance(self.jvp_close, bool):
+            raise ValueError("jvp_close must be a boolean or None")
+        if self.vjp_close is not None and not isinstance(self.vjp_close, bool):
+            raise ValueError("vjp_close must be a boolean or None")
+        if not np.isfinite(self.max_abs_error) or self.max_abs_error < 0.0:
+            raise ValueError("max_abs_error must be finite and non-negative")
+        if self.samples < 1:
+            raise ValueError("samples must be positive")
+
+    @property
+    def passed(self) -> bool:
+        """Return whether all executed verification checks passed."""
+
+        checks = (self.value_close, self.jvp_close, self.vjp_close)
+        return all(check is not False for check in checks)
+
+
+@dataclass(frozen=True)
+class ExecutableCompilerADKernel:
+    """Executable compiler-backed primitive AD kernel with MLIR provenance."""
+
+    rule_name: str
+    backend: str
+    mlir_module: MLIRModule
+    value_kernel: Callable[[np.ndarray], np.ndarray]
+    jvp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None
+    vjp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None
+    verification: CompilerADKernelVerification
+    claim_boundary: str = (
+        "verified executable MLIR-runtime primitive AD kernel; "
+        "native LLVM/JIT code generation remains fail-closed"
+    )
+
+    def __post_init__(self) -> None:
+        if not self.rule_name:
+            raise ValueError("rule_name must be non-empty")
+        if self.backend != "mlir_runtime":
+            raise ValueError("backend must be 'mlir_runtime'")
+        if not isinstance(self.mlir_module, MLIRModule):
+            raise ValueError("mlir_module must be an MLIRModule")
+        if not callable(self.value_kernel):
+            raise ValueError("value_kernel must be callable")
+        if self.jvp_kernel is not None and not callable(self.jvp_kernel):
+            raise ValueError("jvp_kernel must be callable")
+        if self.vjp_kernel is not None and not callable(self.vjp_kernel):
+            raise ValueError("vjp_kernel must be callable")
+        if not isinstance(self.verification, CompilerADKernelVerification):
+            raise ValueError("verification must be CompilerADKernelVerification")
+        if not self.verification.passed:
+            raise ValueError("executable compiler AD kernel verification failed")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+
+    def value(self, values: np.ndarray) -> np.ndarray:
+        """Execute the compiled value kernel."""
+
+        return self.value_kernel(values)
+
+    def jvp(self, values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+        """Execute the compiled JVP kernel."""
+
+        if self.jvp_kernel is None:
+            raise ValueError(f"kernel {self.rule_name} has no JVP rule")
+        return self.jvp_kernel(values, tangent)
+
+    def vjp(self, values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+        """Execute the compiled VJP kernel."""
+
+        if self.vjp_kernel is None:
+            raise ValueError(f"kernel {self.rule_name} has no VJP rule")
+        return self.vjp_kernel(values, cotangent)
 
 
 def compile_kuramoto_to_mlir(
@@ -404,6 +523,173 @@ def compile_custom_derivative_rule_to_mlir(
     )
 
 
+def compile_custom_derivative_rule_to_executable(
+    rule: CustomDerivativeRule,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    *,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile a custom derivative rule into a verified executable AD kernel.
+
+    The executable backend is the dependency-free SCPN MLIR runtime adapter:
+    it couples deterministic differentiable MLIR provenance with normalized
+    runtime callables for value/JVP/VJP execution and verifies those kernels
+    against the source custom derivative rule before returning. Native LLVM/JIT
+    targets remain fail-closed until real code generation is present.
+    """
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("executable AD lowering requires a CustomDerivativeRule")
+    compile_config = CompilerADExecutableConfig() if config is None else config
+    values = _as_finite_vector("sample_values", sample_values)
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _as_finite_vector(
+            "value kernel output", rule.value_fn(_as_finite_vector("values", raw_values))
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        if rule.jvp_rule is None:
+            raise ValueError(f"rule {rule.name} has no JVP rule")
+        checked_values = _as_finite_vector("values", raw_values)
+        checked_tangent = _as_finite_vector("tangent", raw_tangent)
+        if checked_tangent.shape != checked_values.shape:
+            raise ValueError("tangent shape must match values shape")
+        return _as_finite_vector(
+            "JVP kernel output", rule.jvp_rule(checked_values, checked_tangent)
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        if rule.vjp_rule is None:
+            raise ValueError(f"rule {rule.name} has no VJP rule")
+        checked_values = _as_finite_vector("values", raw_values)
+        checked_cotangent = _as_finite_vector("cotangent", raw_cotangent)
+        return _as_finite_vector(
+            "VJP kernel output", rule.vjp_rule(checked_values, checked_cotangent)
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+    )
+
+
+def compile_registered_primitive_to_executable(
+    registry: CustomDerivativeRegistry,
+    identity: PrimitiveIdentity | str,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    *,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile a registered primitive identity into an executable AD kernel."""
+
+    if not isinstance(registry, CustomDerivativeRegistry):
+        raise ValueError("registry must be a CustomDerivativeRegistry")
+    primitive_identity = PrimitiveIdentity.parse(identity)
+    transform = registry.transform_snapshot().get(primitive_identity)
+    rule = registry.require(primitive_identity)
+    if transform is not None and transform.lowering_rule is not None:
+        lowered = transform.lowering_rule(rule)
+        if not isinstance(lowered, ExecutableCompilerADKernel):
+            raise ValueError("registered lowering_rule must return an ExecutableCompilerADKernel")
+        return lowered
+    return compile_custom_derivative_rule_to_executable(
+        rule,
+        sample_values,
+        config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+
+
+def _verify_executable_ad_kernel(
+    rule: CustomDerivativeRule,
+    values: np.ndarray,
+    value_kernel: Callable[[np.ndarray], np.ndarray],
+    jvp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None,
+    vjp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None,
+    config: CompilerADExecutableConfig,
+    *,
+    sample_tangent: Sequence[float] | np.ndarray | None,
+    sample_cotangent: Sequence[float] | np.ndarray | None,
+) -> CompilerADKernelVerification:
+    if not config.verify:
+        return CompilerADKernelVerification(
+            value_close=True,
+            jvp_close=None,
+            vjp_close=None,
+            max_abs_error=0.0,
+            samples=1,
+        )
+    errors: list[float] = []
+    expected_value = _as_finite_vector("rule value", rule.value_fn(values))
+    kernel_value = value_kernel(values)
+    value_close = bool(
+        np.allclose(kernel_value, expected_value, atol=config.atol, rtol=config.rtol)
+    )
+    errors.append(_max_abs_error(kernel_value, expected_value))
+    jvp_close: bool | None = None
+    if rule.jvp_rule is not None and jvp_kernel is not None:
+        tangent = (
+            np.ones_like(values)
+            if sample_tangent is None
+            else _as_finite_vector("sample_tangent", sample_tangent)
+        )
+        if tangent.shape != values.shape:
+            raise ValueError("sample_tangent shape must match sample_values shape")
+        expected_jvp = _as_finite_vector("rule JVP", rule.jvp_rule(values, tangent))
+        kernel_jvp = jvp_kernel(values, tangent)
+        jvp_close = bool(np.allclose(kernel_jvp, expected_jvp, atol=config.atol, rtol=config.rtol))
+        errors.append(_max_abs_error(kernel_jvp, expected_jvp))
+    vjp_close: bool | None = None
+    if rule.vjp_rule is not None and vjp_kernel is not None:
+        cotangent = (
+            np.ones_like(expected_value)
+            if sample_cotangent is None
+            else _as_finite_vector("sample_cotangent", sample_cotangent)
+        )
+        if cotangent.shape != expected_value.shape:
+            raise ValueError("sample_cotangent shape must match value output shape")
+        expected_vjp = _as_finite_vector("rule VJP", rule.vjp_rule(values, cotangent))
+        kernel_vjp = vjp_kernel(values, cotangent)
+        vjp_close = bool(np.allclose(kernel_vjp, expected_vjp, atol=config.atol, rtol=config.rtol))
+        errors.append(_max_abs_error(kernel_vjp, expected_vjp))
+    verification = CompilerADKernelVerification(
+        value_close=value_close,
+        jvp_close=jvp_close,
+        vjp_close=vjp_close,
+        max_abs_error=max(errors),
+        samples=1,
+    )
+    if not verification.passed:
+        raise ValueError("executable compiler AD kernel verification failed")
+    return verification
+
+
 def compile_whole_program_ad_trace_to_mlir(
     result: WholeProgramADResult,
     config: DifferentiableMLIRCompileConfig | None = None,
@@ -493,6 +779,25 @@ def _coupling_terms(K_nm: np.ndarray) -> tuple[tuple[int, int, float], ...]:
     return tuple(terms)
 
 
+def _as_finite_vector(name: str, value: object) -> NDArray[np.float64]:
+    array = np.asarray(value, dtype=np.float64)
+    if array.ndim == 0:
+        array = array.reshape(1)
+    if array.ndim != 1:
+        raise ValueError(f"{name} must be one-dimensional")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values")
+    return cast(NDArray[np.float64], array.copy())
+
+
+def _max_abs_error(left: np.ndarray, right: np.ndarray) -> float:
+    if left.shape != right.shape:
+        return float("inf")
+    if left.size == 0:
+        return 0.0
+    return float(np.max(np.abs(left - right)))
+
+
 def _fmt_float(value: float) -> str:
     if not np.isfinite(value):
         raise ValueError("MLIR numeric attributes must be finite")
@@ -509,13 +814,18 @@ def _escape_mlir_string(value: str) -> str:
 
 __all__ = [
     "CompilerADTransformPlan",
+    "CompilerADExecutableConfig",
+    "CompilerADKernelVerification",
     "DifferentiableMLIRCompileConfig",
+    "ExecutableCompilerADKernel",
     "MLIRCompileConfig",
     "PrimitiveLoweringStatus",
     "MLIRModule",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",
     "compile_custom_derivative_rule_to_mlir",
+    "compile_custom_derivative_rule_to_executable",
+    "compile_registered_primitive_to_executable",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
 ]

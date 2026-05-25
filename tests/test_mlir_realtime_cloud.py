@@ -13,14 +13,19 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.compiler.mlir import (
+    CompilerADExecutableConfig,
+    CompilerADKernelVerification,
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
+    ExecutableCompilerADKernel,
     MLIRCompileConfig,
     PrimitiveLoweringStatus,
     build_compiler_ad_transform_plan,
     compile_compiler_ad_transform_plan_to_mlir,
+    compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_registered_primitive_to_executable,
     compile_whole_program_ad_trace_to_mlir,
 )
 from scpn_quantum_control.control.realtime_runtime import (
@@ -206,11 +211,67 @@ def test_differentiable_mlir_lowers_custom_derivative_rule_deterministically() -
     assert module.metadata["target"] == "mlir"
 
 
+def test_custom_derivative_rule_compiles_to_verified_executable_ad_kernel() -> None:
+    """Compiler AD should execute differentiated primitive kernels with MLIR provenance."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "rx_expectation", "1")
+    rule = CustomDerivativeRule(
+        name="rx_expectation_rule",
+        value_fn=lambda values: np.array([np.cos(values[0])], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [-np.sin(values[0]) * tangent[0]], dtype=np.float64
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [-np.sin(values[0]) * cotangent[0]], dtype=np.float64
+        ),
+        parameter_names=("theta",),
+        trainable=(True,),
+    )
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            lowering_metadata={
+                "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+                "mlir_op": "scpn_diff.rx_expectation",
+                "llvm": "blocked: native LLVM lowering backend not linked",
+            },
+        )
+    )
+
+    kernel = compile_registered_primitive_to_executable(
+        registry,
+        identity,
+        np.array([0.25], dtype=np.float64),
+        sample_tangent=np.array([0.5], dtype=np.float64),
+        sample_cotangent=np.array([2.0], dtype=np.float64),
+    )
+
+    assert isinstance(kernel, ExecutableCompilerADKernel)
+    assert isinstance(kernel.verification, CompilerADKernelVerification)
+    assert kernel.backend == "mlir_runtime"
+    assert kernel.verification.passed is True
+    assert kernel.mlir_module.metadata["target"] == "mlir"
+    assert "differentiable_primitive" in kernel.mlir_module.text
+    np.testing.assert_allclose(kernel.value(np.array([0.25])), [np.cos(0.25)])
+    np.testing.assert_allclose(
+        kernel.jvp(np.array([0.25]), np.array([0.5])),
+        [-np.sin(0.25) * 0.5],
+    )
+    np.testing.assert_allclose(
+        kernel.vjp(np.array([0.25]), np.array([2.0])),
+        [-np.sin(0.25) * 2.0],
+    )
+
+
 def test_differentiable_mlir_rejects_executable_target_claims() -> None:
     """LLVM/JIT target names must fail until backed by a real executable backend."""
 
     with pytest.raises(ValueError, match="target"):
         DifferentiableMLIRCompileConfig(target="llvm")
+    with pytest.raises(ValueError, match="backend"):
+        CompilerADExecutableConfig(backend="llvm")
     with pytest.raises(ValueError, match="boolean"):
         DifferentiableMLIRCompileConfig(include_numeric_payload=1)  # type: ignore[arg-type]
 
@@ -390,8 +451,11 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
 
     import scpn_quantum_control as scpn
 
+    assert scpn.CompilerADExecutableConfig is CompilerADExecutableConfig
+    assert scpn.CompilerADKernelVerification is CompilerADKernelVerification
     assert scpn.CompilerADTransformPlan is CompilerADTransformPlan
     assert scpn.DifferentiableMLIRCompileConfig is DifferentiableMLIRCompileConfig
+    assert scpn.ExecutableCompilerADKernel is ExecutableCompilerADKernel
     assert scpn.MLIRCompileConfig is MLIRCompileConfig
     assert scpn.PrimitiveLoweringStatus is PrimitiveLoweringStatus
     assert scpn.build_compiler_ad_transform_plan is build_compiler_ad_transform_plan
@@ -399,7 +463,15 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
         scpn.compile_compiler_ad_transform_plan_to_mlir
         is compile_compiler_ad_transform_plan_to_mlir
     )
+    assert (
+        scpn.compile_custom_derivative_rule_to_executable
+        is compile_custom_derivative_rule_to_executable
+    )
     assert scpn.compile_custom_derivative_rule_to_mlir is compile_custom_derivative_rule_to_mlir
+    assert (
+        scpn.compile_registered_primitive_to_executable
+        is compile_registered_primitive_to_executable
+    )
     assert scpn.compile_kuramoto_to_mlir is compile_kuramoto_to_mlir
     assert scpn.RealtimeRuntimeConfig is RealtimeRuntimeConfig
     assert scpn.RealtimeSLAConfig is RealtimeSLAConfig

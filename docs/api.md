@@ -59,12 +59,14 @@ scientific validation. See [Paper 0 Validation Register](paper0/paper0_validatio
 
 ```python
 from scpn_quantum_control import (
+    CompilerADExecutableConfig,
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
     PrimitiveLoweringStatus,
     build_compiler_ad_transform_plan,
     compile_compiler_ad_transform_plan_to_mlir,
+    compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
 )
@@ -81,6 +83,12 @@ diff_module = compile_custom_derivative_rule_to_mlir(
     values,
     DifferentiableMLIRCompileConfig(),
 )
+kernel = compile_custom_derivative_rule_to_executable(
+    rule,
+    values,
+    CompilerADExecutableConfig(),
+)
+kernel.jvp(values, tangent)
 
 ad_plan = build_compiler_ad_transform_plan(custom_rule_registry)
 ad_plan_module = compile_compiler_ad_transform_plan_to_mlir(ad_plan)
@@ -91,9 +99,20 @@ explicit omega terms, coupling terms, Trotter parameters, resource counts, and
 claim-boundary metadata. It also lowers exact custom derivative rules into a
 deterministic differentiable-primitive MLIR-style interchange artifact carrying
 parameter metadata, output values, exact custom Jacobian payloads, and resource
-counts. Executable LLVM/JIT targets fail closed until a real runtime backend is
-implemented; this surface does not claim LLVM/QIR lowering, cloud submission,
-pulse compilation, or hardware execution. `build_compiler_ad_transform_plan()` converts registered primitive identities into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint intent, MLIR dialect operation names, and fail-closed Rust/LLVM backend status. `compile_compiler_ad_transform_plan_to_mlir()` emits that plan as MLIR-style interchange; executable Rust, LLVM, and JIT differentiated runtimes remain unavailable until backed by real lowering and runtime verification.
+counts. `compile_custom_derivative_rule_to_executable()` adds an executable
+compiler-backed AD boundary for exact custom primitive rules: it emits
+deterministic MLIR provenance, binds normalized value/JVP/VJP runtime kernels,
+and verifies those kernels against the source rule before returning. The
+executable backend is `mlir_runtime`; native LLVM/JIT targets still fail closed
+until real code generation is present. This surface does not claim LLVM/QIR
+lowering, cloud submission, pulse compilation, or hardware execution.
+`build_compiler_ad_transform_plan()` converts registered primitive identities
+into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
+intent, MLIR dialect operation names, executable MLIR-runtime availability when
+a lowering rule is registered, and fail-closed Rust/LLVM backend status.
+`compile_compiler_ad_transform_plan_to_mlir()` emits that plan as MLIR-style
+interchange; executable native Rust, LLVM, and JIT differentiated runtimes
+remain unavailable until backed by real lowering and runtime verification.
 
 ### `control.realtime_runtime`
 
@@ -749,7 +768,7 @@ against central finite differences and returns explicit error metrics, so custom
 rules can be validated before being used in training loops.
 `CustomDerivativeRule`, `custom_jvp()`, and `custom_vjp()` provide an exact-rule boundary for primitives with known physics derivatives. Custom rules evaluate the primitive once, enforce trainable masks, reject shape drift, and preserve JVP/VJP provenance without falling back to finite-difference steps.
 `PrimitiveIdentity`, `CustomDerivativeRegistry`, and the `registered_custom_*` helpers bind exact custom derivative rules to stable primitive identities such as quantum gate, Hamiltonian, or residual-map implementations. The registry rejects malformed identities and conflicting registrations unless explicit overwrite is requested, allowing polyglot primitive surfaces to resolve derivative rules by identity instead of passing rule objects manually through every call.
-`PrimitiveTransformRule` extends that identity binding with primitive-specific batching rules and lowering metadata. When `vmap(..., primitive_identity=..., registry=...)` is used, the transform dispatches through the registered batching rule instead of the generic eager loop; missing batching rules fail closed. Compiler AD planning consumes the same lowering metadata for MLIR/Rust/LLVM status reporting.
+`PrimitiveTransformRule` extends that identity binding with primitive-specific batching rules, executable compiler lowering rules, and lowering metadata. When `vmap(..., primitive_identity=..., registry=...)` is used, the transform dispatches through the registered batching rule instead of the generic eager loop; missing batching rules fail closed. Compiler AD planning consumes the same lowering metadata and lowering-rule presence for MLIR-runtime/Rust/LLVM status reporting.
 `check_custom_derivative_consistency()` audits an exact rule pair against the adjoint identity `<J t, c> = <t, J^T c>` and finite-difference JVP/VJP references before the rule is trusted in production control paths.
 `custom_jacobian()` and `value_and_custom_jacobian()` materialise exact dense Jacobians from custom JVP columns or VJP rows, preserving trainable masks and `step=0.0` provenance for downstream least-squares, natural-gradient, and benchmark workflows.
 The `batch_custom_*` helpers provide exact batched JVP, VJP, and Jacobian transforms over tangent, cotangent, or parameter batches so custom physics derivatives can be benchmarked and vectorised without finite-difference reconstruction.

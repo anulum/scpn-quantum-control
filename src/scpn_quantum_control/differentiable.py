@@ -2004,6 +2004,9 @@ def _normalise_identity_token(name: str, value: object) -> str:
     return value
 
 
+PrimitiveLoweringRule = Callable[[CustomDerivativeRule], object]
+
+
 @dataclass(frozen=True)
 class PrimitiveTransformRule:
     """Combined transform binding for one differentiable primitive identity."""
@@ -2011,6 +2014,7 @@ class PrimitiveTransformRule:
     identity: PrimitiveIdentity
     derivative_rule: CustomDerivativeRule
     batching_rule: PrimitiveBatchingRule | None = None
+    lowering_rule: PrimitiveLoweringRule | None = None
     lowering_metadata: Mapping[str, str] | None = None
 
     def __post_init__(self) -> None:
@@ -2020,6 +2024,8 @@ class PrimitiveTransformRule:
             raise ValueError("transform derivative_rule must be a CustomDerivativeRule")
         if self.batching_rule is not None and not callable(self.batching_rule):
             raise ValueError("transform batching_rule must be callable")
+        if self.lowering_rule is not None and not callable(self.lowering_rule):
+            raise ValueError("transform lowering_rule must be callable")
         metadata = {} if self.lowering_metadata is None else dict(self.lowering_metadata)
         if any(not isinstance(key, str) or not key for key in metadata):
             raise ValueError("lowering metadata keys must be non-empty strings")
@@ -2064,6 +2070,9 @@ class CustomDerivativeRegistry:
                 batching_rule=None
                 if existing_transform is None
                 else existing_transform.batching_rule,
+                lowering_rule=None
+                if existing_transform is None
+                else existing_transform.lowering_rule,
                 lowering_metadata={}
                 if existing_transform is None
                 else existing_transform.lowering_metadata,
@@ -2123,15 +2132,47 @@ class CustomDerivativeRegistry:
             identity=primitive_identity,
             derivative_rule=rule,
             batching_rule=batching_rule,
+            lowering_rule=None if existing is None else existing.lowering_rule,
             lowering_metadata=metadata,
         )
         return batching_rule
+
+    def register_lowering_rule(
+        self,
+        identity: PrimitiveIdentity | str,
+        lowering_rule: PrimitiveLoweringRule,
+        *,
+        overwrite: bool = False,
+    ) -> PrimitiveLoweringRule:
+        """Attach an executable compiler lowering rule to an existing identity."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        if not callable(lowering_rule):
+            raise ValueError("lowering_rule must be callable")
+        rule = self.require(primitive_identity)
+        existing = self._transforms.get(primitive_identity)
+        if existing is not None and existing.lowering_rule is not None and not overwrite:
+            raise ValueError(f"lowering rule already registered for {primitive_identity.key}")
+        self._transforms[primitive_identity] = PrimitiveTransformRule(
+            identity=primitive_identity,
+            derivative_rule=rule,
+            batching_rule=None if existing is None else existing.batching_rule,
+            lowering_rule=lowering_rule,
+            lowering_metadata={} if existing is None else existing.lowering_metadata,
+        )
+        return lowering_rule
 
     def batching_rule_for(self, identity: PrimitiveIdentity | str) -> PrimitiveBatchingRule | None:
         """Return the registered primitive batching rule, if present."""
 
         transform = self._transforms.get(PrimitiveIdentity.parse(identity))
         return None if transform is None else transform.batching_rule
+
+    def lowering_rule_for(self, identity: PrimitiveIdentity | str) -> PrimitiveLoweringRule | None:
+        """Return the registered executable compiler lowering rule, if present."""
+
+        transform = self._transforms.get(PrimitiveIdentity.parse(identity))
+        return None if transform is None else transform.lowering_rule
 
     def require_batching_rule(self, identity: PrimitiveIdentity | str) -> PrimitiveBatchingRule:
         """Return a primitive batching rule or fail closed."""
@@ -2140,6 +2181,15 @@ class CustomDerivativeRegistry:
         rule = self.batching_rule_for(primitive_identity)
         if rule is None:
             raise ValueError(f"no batching rule registered for {primitive_identity.key}")
+        return rule
+
+    def require_lowering_rule(self, identity: PrimitiveIdentity | str) -> PrimitiveLoweringRule:
+        """Return an executable compiler lowering rule or fail closed."""
+
+        primitive_identity = PrimitiveIdentity.parse(identity)
+        rule = self.lowering_rule_for(primitive_identity)
+        if rule is None:
+            raise ValueError(f"no lowering rule registered for {primitive_identity.key}")
         return rule
 
     def transform_snapshot(self) -> dict[PrimitiveIdentity, PrimitiveTransformRule]:
@@ -2218,6 +2268,19 @@ def register_primitive_batching_rule(
 
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.register_batching_rule(identity, batching_rule, overwrite=overwrite)
+
+
+def register_primitive_lowering_rule(
+    identity: PrimitiveIdentity | str,
+    lowering_rule: PrimitiveLoweringRule,
+    *,
+    overwrite: bool = False,
+    registry: CustomDerivativeRegistry | None = None,
+) -> PrimitiveLoweringRule:
+    """Register an executable compiler lowering rule for an existing primitive."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    return target.register_lowering_rule(identity, lowering_rule, overwrite=overwrite)
 
 
 def custom_derivative_rule_for(
@@ -6177,6 +6240,7 @@ __all__ = [
     "ParameterShiftRule",
     "PrimitiveBatchingRule",
     "PrimitiveIdentity",
+    "PrimitiveLoweringRule",
     "PrimitiveTransformRule",
     "ReverseNode",
     "ShotAllocationResult",
@@ -6245,6 +6309,7 @@ __all__ = [
     "natural_gradient",
     "registered_custom_jacobian",
     "register_primitive_batching_rule",
+    "register_primitive_lowering_rule",
     "register_primitive_transform_rule",
     "registered_custom_jvp",
     "registered_custom_vjp",

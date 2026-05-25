@@ -48,6 +48,7 @@ from scpn_quantum_control.differentiable import (
     ParameterShiftRule,
     PrimitiveBatchingRule,
     PrimitiveIdentity,
+    PrimitiveLoweringRule,
     PrimitiveTransformRule,
     ReverseNode,
     ShotAllocationResult,
@@ -122,6 +123,7 @@ from scpn_quantum_control.differentiable import (
     parameter_shift_gradient_with_uncertainty,
     register_custom_derivative_rule,
     register_primitive_batching_rule,
+    register_primitive_lowering_rule,
     register_primitive_transform_rule,
     registered_custom_jacobian,
     registered_custom_jvp,
@@ -3776,21 +3778,29 @@ def test_primitive_transform_registry_holds_derivative_batching_and_lowering_met
         del function, axes
         return np.asarray(args[0], dtype=np.float64).sum(axis=1 + out_axes * 0)
 
+    def lowering_rule(lowered_rule: CustomDerivativeRule) -> object:
+        return lowered_rule.name
+
     registry = CustomDerivativeRegistry()
     transform = PrimitiveTransformRule(
         identity=identity,
         derivative_rule=rule,
         batching_rule=batching_rule,
+        lowering_rule=lowering_rule,
         lowering_metadata={"mlir_op": "scpn_diff.lowered_batch", "rust": "blocked"},
     )
 
     assert registry.register_transform(transform) is transform
     assert registry.require(identity) is rule
     assert registry.require_batching_rule(identity) is batching_rule
+    assert registry.require_lowering_rule(identity) is lowering_rule
     snapshot = registry.transform_snapshot()
+    assert snapshot[identity].lowering_rule is lowering_rule
     assert snapshot[identity].lowering_metadata["mlir_op"] == "scpn_diff.lowered_batch"
     with pytest.raises(ValueError, match="batching rule already registered"):
         registry.register_batching_rule(identity, batching_rule)
+    with pytest.raises(ValueError, match="lowering rule already registered"):
+        registry.register_lowering_rule(identity, lowering_rule)
 
 
 def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
@@ -3841,6 +3851,12 @@ def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
             identity=identity,
             derivative_rule=first_rule,
             batching_rule=object(),
+        )
+    with pytest.raises(ValueError, match="lowering_rule"):
+        PrimitiveTransformRule(  # type: ignore[arg-type]
+            identity=identity,
+            derivative_rule=first_rule,
+            lowering_rule=object(),
         )
     with pytest.raises(ValueError, match="metadata keys"):
         PrimitiveTransformRule(
@@ -3929,6 +3945,38 @@ def test_primitive_batching_registry_helper_and_unregister_paths() -> None:
             DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(identity)
 
 
+def test_primitive_lowering_registry_helper_and_unregister_paths() -> None:
+    """Top-level lowering helpers should bind default-registry executable compiler rules."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "default_helper_lower", "1")
+    rule = CustomDerivativeRule(
+        name="default_helper_lower_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+
+    def lowering_rule(lowered_rule: CustomDerivativeRule) -> object:
+        return lowered_rule.name
+
+    with pytest.raises(ValueError, match="no custom derivative rule"):
+        register_primitive_lowering_rule(identity, lowering_rule)
+    with pytest.raises(ValueError, match="callable"):
+        CustomDerivativeRegistry({identity: rule}).register_lowering_rule(  # type: ignore[arg-type]
+            identity,
+            object(),
+        )
+
+    register_custom_derivative_rule(identity, rule)
+    try:
+        assert register_primitive_lowering_rule(identity, lowering_rule) is lowering_rule
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_lowering_rule(identity) is lowering_rule
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(identity) is rule
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.lowering_rule_for(identity) is None
+    finally:
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.lookup(identity) is not None:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(identity)
+
+
 def test_vmap_rejects_missing_requested_primitive_batching_rule() -> None:
     """Explicit primitive batching dispatch should fail closed if the rule is absent."""
 
@@ -3950,6 +3998,8 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.PrimitiveBatchingRule is PrimitiveBatchingRule
+    assert scpn.PrimitiveLoweringRule is PrimitiveLoweringRule
     assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
     assert scpn.register_primitive_batching_rule is register_primitive_batching_rule
+    assert scpn.register_primitive_lowering_rule is register_primitive_lowering_rule
     assert scpn.register_primitive_transform_rule is register_primitive_transform_rule
