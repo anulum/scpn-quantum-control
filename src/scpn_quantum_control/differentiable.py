@@ -1000,62 +1000,7 @@ class TraceADArray:
         _raise_index_selection_boundary()
 
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
-        if self.ndim > 2:
-            raise ValueError("whole-program AD array indexing supports arrays with rank <= 2")
-        if isinstance(index, tuple):
-            if self.ndim == 1:
-                if len(index) != 1:
-                    raise ValueError("whole-program AD vector indexing expects one index")
-                index = index[0]
-            elif len(index) == 2:
-                row_index, col_index = index
-                rows, cols = self.shape
-                row_values = tuple(
-                    range(*row_index.indices(rows))
-                    if isinstance(row_index, slice)
-                    else (int(row_index),)
-                )
-                col_values = tuple(
-                    range(*col_index.indices(cols))
-                    if isinstance(col_index, slice)
-                    else (int(col_index),)
-                )
-                items = tuple(
-                    self._items[row * cols + col] for row in row_values for col in col_values
-                )
-                if not isinstance(row_index, slice) and not isinstance(col_index, slice):
-                    return items[0]
-                shape = (
-                    len(row_values) if isinstance(row_index, slice) else 1,
-                    len(col_values) if isinstance(col_index, slice) else 1,
-                )
-                return TraceADArray(items, shape, self.context)
-            else:
-                raise ValueError("whole-program AD matrix indexing expects two indices")
-        if isinstance(index, slice):
-            if self.ndim == 2:
-                rows, cols = self.shape
-                row_values = tuple(range(*index.indices(rows)))
-                return TraceADArray(
-                    tuple(
-                        self._items[row * cols + col] for row in row_values for col in range(cols)
-                    ),
-                    (len(row_values), cols),
-                    self.context,
-                )
-            sliced = tuple(self._items[index])
-            return TraceADArray(sliced, (len(sliced),), self.context)
-        if isinstance(index, (int, np.integer)):
-            if self.ndim == 2:
-                rows, cols = self.shape
-                row = int(index)
-                if row < 0:
-                    row += rows
-                return TraceADArray(
-                    tuple(self._items[row * cols : (row + 1) * cols]), (cols,), self.context
-                )
-            return self._items[int(index)]
-        raise ValueError("whole-program AD array indices must be integers or slices")
+        return _trace_array_getitem(self, index)
 
     def __setitem__(self, index: object, value: object) -> None:
         if self.ndim > 2:
@@ -1460,6 +1405,55 @@ def _normalise_trace_broadcast_shape(shape: object) -> tuple[int, ...]:
     if any(dimension < 0 for dimension in dimensions):
         raise ValueError("program AD np.broadcast_to shape dimensions must be non-negative")
     return dimensions
+
+
+def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | TraceADArray:
+    _validate_trace_basic_index(index)
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    try:
+        selected = source[cast(Any, index)]
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD basic indexing requires static in-bounds integer, slice, "
+            "ellipsis, or newaxis selectors"
+        ) from exc
+    selected_array = np.asarray(selected)
+    if selected_array.shape == ():
+        return array._items[int(selected_array)]
+    items = tuple(array._items[int(item)] for item in selected_array.reshape(-1))
+    return TraceADArray(
+        items,
+        tuple(int(dimension) for dimension in selected_array.shape),
+        array.context,
+    )
+
+
+def _validate_trace_basic_index(index: object) -> None:
+    if isinstance(index, tuple):
+        for selector in index:
+            _validate_trace_basic_index_selector(selector)
+        return
+    _validate_trace_basic_index_selector(index)
+
+
+def _validate_trace_basic_index_selector(selector: object) -> None:
+    if isinstance(selector, (TraceADScalar, TraceADArray, np.ndarray, list)):
+        raise ValueError("program AD advanced indexing is not supported; indices must be static")
+    if isinstance(selector, (bool, np.bool_)):
+        raise ValueError("program AD advanced indexing is not supported; indices must be static")
+    if selector is Ellipsis or selector is None:
+        return
+    if isinstance(selector, (int, np.integer)):
+        return
+    if isinstance(selector, slice):
+        for item in (selector.start, selector.stop, selector.step):
+            if item is not None and (
+                isinstance(item, (bool, np.bool_, TraceADScalar, TraceADArray))
+                or not isinstance(item, (int, np.integer))
+            ):
+                raise ValueError("program AD basic indexing requires static integer slice bounds")
+        return
+    raise ValueError("program AD advanced indexing is not supported; indices must be static")
 
 
 def _broadcast_trace_array(

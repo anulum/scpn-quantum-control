@@ -4191,6 +4191,48 @@ def test_program_ad_broadcast_to_rejects_subclass_propagation() -> None:
         )
 
 
+def test_program_ad_basic_slicing_preserves_static_adjoint_paths() -> None:
+    """Program AD basic slicing should preserve exact static index adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        block = matrix[..., 1:]
+        expanded = matrix[:, :1][:, None, :]
+        return np.sum(block * np.array([[1.0, 2.0], [3.0, 4.0]])) + 2.0 * expanded[1, 0, 0]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(55.0)
+    np.testing.assert_allclose(result.gradient, [0.0, 1.0, 2.0, 2.0, 3.0, 4.0])
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_advanced_indexing_fails_closed() -> None:
+    """Program AD array indexing should reject dynamic advanced index selectors."""
+
+    with pytest.raises(ValueError, match="advanced indexing"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values, (2, 2))[[0, 1]]),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="advanced indexing"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(values[np.array([True, False])]),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 
