@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 403,
+    "public_api_exports": 407,
     "public_documentation_pages": 235,
-    "python_model_classes": 1479,
+    "python_model_classes": 1481,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -1718,6 +1718,10 @@
       {
         "name": "CollectiveNicheConstructionFixtureResult",
         "path": "src/scpn_quantum_control/paper0/collective_niche_construction_validation.py"
+      },
+      {
+        "name": "CompilerADTransformPlan",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
         "name": "ComplexityEconomicsSocialPhysicsConfig",
@@ -4466,6 +4470,10 @@
       {
         "name": "PrimitiveIdentity",
         "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "PrimitiveLoweringStatus",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
         "name": "PrincipleTeleologyAsOptimisationConfig",
@@ -7811,6 +7819,7 @@
     "ClassicalBaselineRun",
     "CloudDeploymentSpec",
     "CloudManifestBundle",
+    "CompilerADTransformPlan",
     "ContainerResources",
     "ControlQEC",
     "CustomDerivativeCheckResult",
@@ -7885,6 +7894,7 @@
     "PhaseOrchestratorAdapter",
     "PhaseVQE",
     "PrimitiveIdentity",
+    "PrimitiveLoweringStatus",
     "Problem",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
@@ -7982,6 +7992,7 @@
     "bloqade_ahs_workload",
     "braket_circuit_to_workload",
     "build_backend",
+    "build_compiler_ad_transform_plan",
     "build_experiment",
     "build_identity_attractor",
     "build_knm_paper27",
@@ -8004,6 +8015,7 @@
     "classical_benchmark",
     "classical_reference_backend",
     "coherence_budget",
+    "compile_compiler_ad_transform_plan_to_mlir",
     "compile_custom_derivative_rule_to_mlir",
     "compile_dense_hamiltonian",
     "compile_hamiltonian",

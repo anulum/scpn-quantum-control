@@ -13,8 +13,12 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.compiler.mlir import (
+    CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
+    PrimitiveLoweringStatus,
+    build_compiler_ad_transform_plan,
+    compile_compiler_ad_transform_plan_to_mlir,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
     compile_whole_program_ad_trace_to_mlir,
@@ -33,8 +37,10 @@ from scpn_quantum_control.deployment.cloud_native import (
     generate_cloud_manifests,
 )
 from scpn_quantum_control.differentiable import (
+    CustomDerivativeRegistry,
     CustomDerivativeRule,
     Parameter,
+    PrimitiveIdentity,
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
@@ -53,6 +59,63 @@ def _problem():
         np.array([0.1, -0.2, 0.3], dtype=np.float64),
         metadata={"experiment": "compiler-smoke"},
     )
+
+
+def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends() -> None:
+    """Compiler-backed AD planning should expose real dialect metadata without backend overclaim."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "rx_expectation", "1")
+    rule = CustomDerivativeRule(
+        name="rx_expectation_rule",
+        value_fn=lambda values: np.array([np.cos(values[0])], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [-np.sin(values[0]) * tangent[0]], dtype=np.float64
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [-np.sin(values[0]) * cotangent[0]], dtype=np.float64
+        ),
+        parameter_names=("theta",),
+        trainable=(True,),
+    )
+    registry = CustomDerivativeRegistry()
+    registry.register(identity, rule)
+
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+    repeat = compile_compiler_ad_transform_plan_to_mlir(plan)
+
+    assert isinstance(plan, CompilerADTransformPlan)
+    assert isinstance(plan.statuses[0], PrimitiveLoweringStatus)
+    assert module.text == repeat.text
+    assert module.sha256 == repeat.sha256
+    assert module.resource_counts["primitives"] == 1
+    assert module.resource_counts["jvp_rules"] == 1
+    assert module.resource_counts["vjp_rules"] == 1
+    assert module.resource_counts["executable_backends"] == 0
+    assert module.metadata["executable_backend"] == "none"
+    assert "scpn_diff.primitive" in module.text
+    assert "scpn_diff.lowering_status" in module.text
+    assert 'execution = "interchange_only"' in module.text
+    assert "blocked: no Rust" in module.text
+    assert "blocked: no LLVM" in module.text
+
+
+def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims() -> None:
+    """Compiler AD planning must fail closed until executable backends exist."""
+
+    with pytest.raises(ValueError, match="at least one primitive"):
+        CompilerADTransformPlan(())
+    status = PrimitiveLoweringStatus(
+        identity=PrimitiveIdentity("scpn.test", "primitive", "1"),
+        rule_name="rule",
+        has_jvp=True,
+        has_vjp=False,
+        mlir_op="scpn_diff.scpn_test_primitive",
+    )
+    with pytest.raises(ValueError, match="executable_backend"):
+        CompilerADTransformPlan((status,), executable_backend="llvm")
+    with pytest.raises(ValueError, match="registry"):
+        build_compiler_ad_transform_plan(object())  # type: ignore[arg-type]
 
 
 def test_kuramoto_mlir_emits_deterministic_text_digest_and_resources() -> None:
@@ -315,8 +378,15 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
 
     import scpn_quantum_control as scpn
 
+    assert scpn.CompilerADTransformPlan is CompilerADTransformPlan
     assert scpn.DifferentiableMLIRCompileConfig is DifferentiableMLIRCompileConfig
     assert scpn.MLIRCompileConfig is MLIRCompileConfig
+    assert scpn.PrimitiveLoweringStatus is PrimitiveLoweringStatus
+    assert scpn.build_compiler_ad_transform_plan is build_compiler_ad_transform_plan
+    assert (
+        scpn.compile_compiler_ad_transform_plan_to_mlir
+        is compile_compiler_ad_transform_plan_to_mlir
+    )
     assert scpn.compile_custom_derivative_rule_to_mlir is compile_custom_derivative_rule_to_mlir
     assert scpn.compile_kuramoto_to_mlir is compile_kuramoto_to_mlir
     assert scpn.RealtimeRuntimeConfig is RealtimeRuntimeConfig

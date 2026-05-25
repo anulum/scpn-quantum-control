@@ -8,18 +8,26 @@
 """Compiler frontends and interchange formats."""
 
 from .mlir import (
+    CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
     MLIRModule,
+    PrimitiveLoweringStatus,
+    build_compiler_ad_transform_plan,
+    compile_compiler_ad_transform_plan_to_mlir,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
     compile_whole_program_ad_trace_to_mlir,
 )
 
 __all__ = [
+    "CompilerADTransformPlan",
     "DifferentiableMLIRCompileConfig",
     "MLIRCompileConfig",
+    "PrimitiveLoweringStatus",
     "MLIRModule",
+    "build_compiler_ad_transform_plan",
+    "compile_compiler_ad_transform_plan_to_mlir",
     "compile_custom_derivative_rule_to_mlir",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",

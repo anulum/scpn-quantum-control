@@ -59,8 +59,12 @@ scientific validation. See [Paper 0 Validation Register](paper0/paper0_validatio
 
 ```python
 from scpn_quantum_control import (
+    CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
+    PrimitiveLoweringStatus,
+    build_compiler_ad_transform_plan,
+    compile_compiler_ad_transform_plan_to_mlir,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
 )
@@ -77,6 +81,9 @@ diff_module = compile_custom_derivative_rule_to_mlir(
     values,
     DifferentiableMLIRCompileConfig(),
 )
+
+ad_plan = build_compiler_ad_transform_plan(custom_rule_registry)
+ad_plan_module = compile_compiler_ad_transform_plan_to_mlir(ad_plan)
 ```
 
 The MLIR compiler surface emits deterministic, auditable Kuramoto-XY IR with
@@ -86,7 +93,7 @@ deterministic differentiable-primitive MLIR-style interchange artifact carrying
 parameter metadata, output values, exact custom Jacobian payloads, and resource
 counts. Executable LLVM/JIT targets fail closed until a real runtime backend is
 implemented; this surface does not claim LLVM/QIR lowering, cloud submission,
-pulse compilation, or hardware execution.
+pulse compilation, or hardware execution. `build_compiler_ad_transform_plan()` converts registered primitive identities into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint intent, MLIR dialect operation names, and fail-closed Rust/LLVM backend status. `compile_compiler_ad_transform_plan_to_mlir()` emits that plan as MLIR-style interchange; executable Rust, LLVM, and JIT differentiated runtimes remain unavailable until backed by real lowering and runtime verification.
 
 ### `control.realtime_runtime`
 

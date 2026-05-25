@@ -25,7 +25,9 @@ from typing import Any
 import numpy as np
 
 from ..differentiable import (
+    CustomDerivativeRegistry,
     CustomDerivativeRule,
+    PrimitiveIdentity,
     WholeProgramADResult,
     value_and_custom_jacobian,
 )
@@ -71,6 +73,150 @@ class MLIRModule:
             raise ValueError("sha256 must match text")
         object.__setattr__(self, "resource_counts", MappingProxyType(dict(self.resource_counts)))
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+
+
+@dataclass(frozen=True)
+class PrimitiveLoweringStatus:
+    """Compiler-backed AD lowering status for one primitive identity."""
+
+    identity: PrimitiveIdentity
+    rule_name: str
+    has_jvp: bool
+    has_vjp: bool
+    mlir_op: str
+    mlir_lowering: str = "available: scpn_diff dialect interchange"
+    rust_lowering: str = "blocked: no Rust differentiable primitive backend"
+    llvm_lowering: str = "blocked: no LLVM/JIT differentiable primitive backend"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.identity, PrimitiveIdentity):
+            raise ValueError("identity must be a PrimitiveIdentity")
+        if not self.rule_name:
+            raise ValueError("rule_name must be non-empty")
+        if not isinstance(self.has_jvp, bool) or not isinstance(self.has_vjp, bool):
+            raise ValueError("has_jvp and has_vjp must be booleans")
+        if not self.has_jvp and not self.has_vjp:
+            raise ValueError("primitive lowering requires a JVP or VJP rule")
+        if not self.mlir_op or not self.mlir_op.replace(".", "").replace("_", "").isalnum():
+            raise ValueError("mlir_op must be a non-empty MLIR-safe operation name")
+        for label, status in (
+            ("mlir_lowering", self.mlir_lowering),
+            ("rust_lowering", self.rust_lowering),
+            ("llvm_lowering", self.llvm_lowering),
+        ):
+            if not isinstance(status, str) or not status:
+                raise ValueError(f"{label} must be non-empty")
+
+
+@dataclass(frozen=True)
+class CompilerADTransformPlan:
+    """Deterministic compiler AD plan over registered differentiable primitives."""
+
+    statuses: tuple[PrimitiveLoweringStatus, ...]
+    dialect: str = "scpn_diff"
+    transform: str = "jvp_vjp_adjoint"
+    executable_backend: str = "none"
+    claim_boundary: str = (
+        "compiler-backed AD planning and MLIR dialect interchange only; "
+        "no executable Rust, LLVM, or JIT differentiated runtime"
+    )
+
+    def __post_init__(self) -> None:
+        if not self.statuses:
+            raise ValueError("compiler AD transform plan requires at least one primitive")
+        if not self.dialect or not self.dialect.replace("_", "").isalnum():
+            raise ValueError("dialect must be a non-empty MLIR-safe identifier")
+        if self.transform not in {"jvp", "vjp", "adjoint", "jvp_vjp_adjoint"}:
+            raise ValueError("transform must be one of jvp, vjp, adjoint, jvp_vjp_adjoint")
+        if self.executable_backend != "none":
+            raise ValueError("executable_backend must be 'none' until a real backend exists")
+        keys = [status.identity.key for status in self.statuses]
+        if len(set(keys)) != len(keys):
+            raise ValueError("compiler AD transform plan contains duplicate primitive identities")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+
+
+def build_compiler_ad_transform_plan(
+    registry: CustomDerivativeRegistry,
+    *,
+    dialect: str = "scpn_diff",
+    transform: str = "jvp_vjp_adjoint",
+) -> CompilerADTransformPlan:
+    """Build a deterministic compiler AD plan from registered primitive rules."""
+
+    if not isinstance(registry, CustomDerivativeRegistry):
+        raise ValueError("registry must be a CustomDerivativeRegistry")
+    statuses = []
+    for identity, rule in sorted(registry.snapshot().items(), key=lambda item: item[0].key):
+        statuses.append(
+            PrimitiveLoweringStatus(
+                identity=identity,
+                rule_name=rule.name,
+                has_jvp=rule.jvp_rule is not None,
+                has_vjp=rule.vjp_rule is not None,
+                mlir_op=f"{dialect}.{identity.namespace}_{identity.name}",
+            )
+        )
+    return CompilerADTransformPlan(tuple(statuses), dialect=dialect, transform=transform)
+
+
+def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) -> MLIRModule:
+    """Emit deterministic MLIR-style dialect metadata for compiler-backed AD planning."""
+
+    if not isinstance(plan, CompilerADTransformPlan):
+        raise ValueError("compiler AD MLIR lowering requires a CompilerADTransformPlan")
+    lines = [
+        f'module attributes {{scpn.module = "compiler_ad_transform_plan", '
+        f'scpn.dialect = "{plan.dialect}", '
+        f'scpn.transform = "{plan.transform}", '
+        f"scpn.n_primitives = {len(plan.statuses)}}} {{",
+        "  func.func @main() {",
+    ]
+    for index, status in enumerate(plan.statuses):
+        lines.append(
+            "    scpn_diff.primitive "
+            f'%p{index} {{identity = "{_escape_mlir_string(status.identity.key)}", '
+            f'rule = "{_escape_mlir_string(status.rule_name)}", '
+            f'op = "{_escape_mlir_string(status.mlir_op)}", '
+            f"jvp = {_fmt_bool(status.has_jvp)}, vjp = {_fmt_bool(status.has_vjp)}}}"
+        )
+        lines.append(
+            "    scpn_diff.lowering_status "
+            f'{{identity = "{_escape_mlir_string(status.identity.key)}", '
+            f'mlir = "{_escape_mlir_string(status.mlir_lowering)}", '
+            f'rust = "{_escape_mlir_string(status.rust_lowering)}", '
+            f'llvm = "{_escape_mlir_string(status.llvm_lowering)}"}}'
+        )
+    lines.append(
+        "    scpn_diff.ad_transform "
+        f'{{kind = "{_escape_mlir_string(plan.transform)}", execution = "interchange_only"}}'
+    )
+    lines.append("    return")
+    lines.append("  }")
+    metadata = {
+        "claim_boundary": plan.claim_boundary,
+        "dialect": plan.dialect,
+        "executable_backend": plan.executable_backend,
+        "primitive_identities": [status.identity.key for status in plan.statuses],
+        "transform": plan.transform,
+    }
+    encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+    lines.append(f'  scpn.metadata {{json = "{_escape_mlir_string(encoded)}"}}')
+    lines.append("}")
+    text = "\n".join(lines) + "\n"
+    return MLIRModule(
+        text=text,
+        sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        dialect=plan.dialect,
+        resource_counts={
+            "primitives": len(plan.statuses),
+            "jvp_rules": sum(status.has_jvp for status in plan.statuses),
+            "vjp_rules": sum(status.has_vjp for status in plan.statuses),
+            "executable_backends": 0,
+        },
+        metadata=metadata,
+    )
 
 
 @dataclass(frozen=True)
@@ -348,9 +494,13 @@ def _escape_mlir_string(value: str) -> str:
 
 
 __all__ = [
+    "CompilerADTransformPlan",
     "DifferentiableMLIRCompileConfig",
     "MLIRCompileConfig",
+    "PrimitiveLoweringStatus",
     "MLIRModule",
+    "build_compiler_ad_transform_plan",
+    "compile_compiler_ad_transform_plan_to_mlir",
     "compile_custom_derivative_rule_to_mlir",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
