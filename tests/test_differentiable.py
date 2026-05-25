@@ -52,6 +52,7 @@ from scpn_quantum_control.differentiable import (
     PrimitiveLoweringRule,
     PrimitiveShapeRule,
     PrimitiveTransformRule,
+    ProgramADAdjointResult,
     ProgramADAliasEdge,
     ProgramADControlRegion,
     ProgramADEffect,
@@ -132,6 +133,8 @@ from scpn_quantum_control.differentiable import (
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    program_adjoint_gradient,
+    program_adjoint_result,
     register_custom_derivative_rule,
     register_primitive_batching_rule,
     register_primitive_lowering_rule,
@@ -3456,6 +3459,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     import scpn_quantum_control as scpn
 
     assert scpn.TraceADArray is TraceADArray
+    assert scpn.ProgramADAdjointResult is ProgramADAdjointResult
     assert scpn.ProgramADAliasEdge is ProgramADAliasEdge
     assert scpn.ProgramADControlRegion is ProgramADControlRegion
     assert scpn.ProgramADEffect is ProgramADEffect
@@ -3466,8 +3470,104 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
     assert scpn.WholeProgramSourceIRFeature is WholeProgramSourceIRFeature
     assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
+    assert scpn.program_adjoint_gradient is program_adjoint_gradient
+    assert scpn.program_adjoint_result is program_adjoint_result
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
+
+
+def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() -> None:
+    """Reverse-mode program adjoint replay should match forward program AD on supported IR."""
+
+    def objective(values: np.ndarray) -> object:
+        x, y, z = values
+        branch = x if x > y else y
+        return (
+            np.sin(x)
+            + np.cos(y)
+            + np.exp(x - y)
+            + np.log(z + 3.0)
+            + np.sqrt(z + 4.0)
+            + np.tanh(x * z)
+            + (x**2.0)
+            + (2.0**y)
+            + branch
+        )
+
+    values = np.array([1.25, -0.4, 0.75], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+    )
+    adjoint = program_adjoint_result(result)
+
+    assert adjoint.supported is True
+    assert adjoint.unsupported_ops == ()
+    assert adjoint.method == "program_adjoint_replay"
+    np.testing.assert_allclose(adjoint.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), result.gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_adjoint_replay_fails_closed_for_mutation_effects() -> None:
+    """Reverse-mode program adjoints should not claim support for mutation without alias adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        work = values.copy()
+        work[0] = values[1] * values[1]
+        return work[0] + values[0]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 1.5], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is False
+    assert "mutation:setitem" in result.adjoint_result.unsupported_ops
+    with pytest.raises(ValueError, match="mutation:setitem"):
+        program_adjoint_gradient(result)
+
+
+def test_program_adjoint_result_validation_paths() -> None:
+    """Program adjoint result metadata should reject malformed reverse-mode outputs."""
+
+    result = ProgramADAdjointResult(
+        gradient=np.array([1.0], dtype=np.float64),
+        supported=True,
+        unsupported_ops=(),
+        method="program_adjoint_replay",
+        claim_boundary="supported scalar replay",
+    )
+
+    assert result.supported is True
+    with pytest.raises(ValueError, match="one-dimensional"):
+        ProgramADAdjointResult(
+            gradient=np.array([[1.0]], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_replay",
+            claim_boundary="supported scalar replay",
+        )
+    with pytest.raises(ValueError, match="cannot be supported"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=("mutation:setitem",),
+            method="program_adjoint_replay",
+            claim_boundary="supported scalar replay",
+        )
+    with pytest.raises(ValueError, match="method"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="",
+            claim_boundary="supported scalar replay",
+        )
 
 
 def test_whole_program_ad_emits_deterministic_ssa_effect_ir() -> None:

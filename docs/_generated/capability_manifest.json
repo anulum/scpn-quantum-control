@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 40,
     "paper0_validation_modules": 466,
-    "public_api_exports": 435,
+    "public_api_exports": 438,
     "public_documentation_pages": 235,
-    "python_model_classes": 1497,
+    "python_model_classes": 1498,
     "python_model_source_modules": 766,
     "rust_pyo3_model_wrappers": 55,
     "rust_source_modules": 27,
@@ -4504,6 +4504,10 @@
         "path": "src/scpn_quantum_control/stable_core.py"
       },
       {
+        "name": "ProgramADAdjointResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ProgramADAliasEdge",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -7968,6 +7972,7 @@
     "PrimitiveShapeRule",
     "PrimitiveTransformRule",
     "Problem",
+    "ProgramADAdjointResult",
     "ProgramADAliasEdge",
     "ProgramADControlRegion",
     "ProgramADEffect",
@@ -8190,6 +8195,8 @@
     "probe_aggregator_provider_capability",
     "problem_from_kuramoto",
     "problem_to_kuramoto",
+    "program_adjoint_gradient",
+    "program_adjoint_result",
     "prove_identity",
     "provider_optional_dependency_matrix",
     "psi_field",

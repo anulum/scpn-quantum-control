@@ -208,6 +208,35 @@ class ProgramADEffectIR:
 
 
 @dataclass(frozen=True)
+class ProgramADAdjointResult:
+    """Reverse-mode adjoint replay result for a captured program AD graph."""
+
+    gradient: NDArray[np.float64]
+    supported: bool
+    unsupported_ops: tuple[str, ...]
+    method: str
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        gradient = _as_real_numeric_array("program AD adjoint gradient", self.gradient)
+        if gradient.ndim != 1:
+            raise ValueError("program AD adjoint gradient must be one-dimensional")
+        if not np.all(np.isfinite(gradient)):
+            raise ValueError("program AD adjoint gradient must contain finite values")
+        if not isinstance(self.supported, bool):
+            raise ValueError("program AD adjoint supported must be a boolean")
+        if any(not isinstance(op, str) or not op for op in self.unsupported_ops):
+            raise ValueError("program AD adjoint unsupported_ops must be non-empty strings")
+        if self.supported and self.unsupported_ops:
+            raise ValueError("program AD adjoint cannot be supported with unsupported ops")
+        if not self.method:
+            raise ValueError("program AD adjoint method must be non-empty")
+        if not self.claim_boundary:
+            raise ValueError("program AD adjoint claim_boundary must be non-empty")
+        object.__setattr__(self, "gradient", gradient)
+
+
+@dataclass(frozen=True)
 class WholeProgramBytecodeInstruction:
     """One Python bytecode instruction captured for whole-program AD frontend IR."""
 
@@ -297,6 +326,7 @@ class WholeProgramADResult:
     source_ir_features: tuple[WholeProgramSourceIRFeature, ...] = ()
     semantics_report: WholeProgramSemanticsReport | None = None
     program_ir: ProgramADEffectIR | None = None
+    adjoint_result: ProgramADAdjointResult | None = None
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("whole-program AD value", self.value)
@@ -336,6 +366,15 @@ class WholeProgramADResult:
             raise ValueError("semantics_report must be a WholeProgramSemanticsReport or None")
         if self.program_ir is not None and not isinstance(self.program_ir, ProgramADEffectIR):
             raise ValueError("program_ir must be a ProgramADEffectIR or None")
+        if self.adjoint_result is not None and not isinstance(
+            self.adjoint_result, ProgramADAdjointResult
+        ):
+            raise ValueError("adjoint_result must be a ProgramADAdjointResult or None")
+        if (
+            self.adjoint_result is not None
+            and self.adjoint_result.gradient.shape != gradient.shape
+        ):
+            raise ValueError("adjoint_result gradient shape must match forward gradient shape")
         if not isinstance(self.control_flow_observed, bool):
             raise ValueError("control_flow_observed must be a boolean")
         if not isinstance(self.numpy_observed, bool):
@@ -412,6 +451,12 @@ def whole_program_value_and_grad(
         source_ir_features=source_ir_features,
         bytecode_instructions=bytecode_instructions,
     )
+    adjoint_result = _program_adjoint_result_from_nodes(
+        nodes=tuple(context.nodes),
+        output_name=raw.name,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+    )
     return WholeProgramADResult(
         value=raw.primal,
         gradient=raw.tangent.copy(),
@@ -426,7 +471,7 @@ def whole_program_value_and_grad(
         control_flow_observed=semantics_report.control_flow_observed,
         numpy_observed=semantics_report.numpy_observed,
         polyglot_targets={
-            "python": "operator-intercepted whole-program AD available",
+            "python": "operator-intercepted forward AD and supported scalar adjoint replay available",
             "mlir": "SSA/effect program AD interchange available; executable lowering blocked",
             "rust": "blocked: no Rust whole-program AD interpreter/lowering backend",
             "llvm": "blocked: no LLVM/JIT whole-program AD interpreter/lowering backend",
@@ -441,6 +486,7 @@ def whole_program_value_and_grad(
         source_ir_features=source_ir_features,
         semantics_report=semantics_report,
         program_ir=program_ir,
+        adjoint_result=adjoint_result,
     )
 
 
@@ -1625,6 +1671,197 @@ def whole_program_grad(
     return whole_program_value_and_grad(
         objective, values, parameters=parameters, trace=trace
     ).gradient
+
+
+def program_adjoint_result(result: WholeProgramADResult) -> ProgramADAdjointResult:
+    """Return the reverse-mode adjoint replay result attached to a program AD result."""
+
+    if not isinstance(result, WholeProgramADResult):
+        raise ValueError("program adjoint input must be a WholeProgramADResult")
+    if result.adjoint_result is None:
+        raise ValueError("program AD result does not contain adjoint replay metadata")
+    return result.adjoint_result
+
+
+def program_adjoint_gradient(result: WholeProgramADResult) -> NDArray[np.float64]:
+    """Return a supported reverse-mode adjoint gradient or fail closed."""
+
+    adjoint = program_adjoint_result(result)
+    if not adjoint.supported:
+        unsupported = ", ".join(adjoint.unsupported_ops)
+        raise ValueError(f"program AD adjoint replay unsupported for ops: {unsupported}")
+    return cast(NDArray[np.float64], adjoint.gradient.copy())
+
+
+def _program_adjoint_result_from_nodes(
+    *,
+    nodes: tuple[WholeProgramIRNode, ...],
+    output_name: str,
+    parameter_names: tuple[str, ...],
+    trainable: tuple[bool, ...],
+) -> ProgramADAdjointResult:
+    """Replay reverse-mode adjoints over supported scalar program AD IR nodes."""
+
+    parameter_count = len(parameter_names)
+    unsupported_ops: set[str] = {node.op for node in nodes if node.op.startswith("mutation:")}
+    node_by_name = {f"%{node.index}": node for node in nodes}
+    adjoints = {name: 0.0 for name in node_by_name}
+    if output_name not in adjoints:
+        unsupported_ops.add("output:not_in_ir")
+    else:
+        adjoints[output_name] = 1.0
+    for node in reversed(nodes):
+        name = f"%{node.index}"
+        cotangent = adjoints.get(name, 0.0)
+        if cotangent == 0.0:
+            continue
+        try:
+            contributions = _program_adjoint_node_contributions(node, node_by_name)
+        except ValueError:
+            unsupported_ops.add(node.op)
+            continue
+        for input_name, contribution in contributions:
+            if input_name in adjoints:
+                adjoints[input_name] += cotangent * contribution
+    gradient = np.zeros(parameter_count, dtype=np.float64)
+    for index, (name, trainable_flag) in enumerate(zip(parameter_names, trainable, strict=True)):
+        if not trainable_flag:
+            continue
+        for node in nodes:
+            if node.op == "parameter" and node.inputs == (name,):
+                gradient[index] = adjoints.get(f"%{node.index}", 0.0)
+                break
+    supported = not unsupported_ops
+    if not supported:
+        gradient = np.zeros(parameter_count, dtype=np.float64)
+    return ProgramADAdjointResult(
+        gradient=gradient,
+        supported=supported,
+        unsupported_ops=tuple(sorted(unsupported_ops)),
+        method="program_adjoint_replay",
+        claim_boundary=(
+            "reverse-mode adjoint replay over captured scalar program AD IR for supported "
+            "pure operations; unsupported operations fail closed without substituting finite "
+            "differences or forward tangents"
+        ),
+    )
+
+
+def _program_adjoint_node_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse-mode contributions for one captured IR node."""
+
+    if node.op == "parameter":
+        return ()
+    if node.op.startswith("branch:"):
+        return ()
+    if node.op.startswith("mutation:"):
+        raise ValueError("mutation adjoints require alias/effect semantics")
+    if node.op == "neg":
+        return ((node.inputs[0], -1.0),)
+    if node.op in {"sin", "cos", "exp", "log", "sqrt", "tanh", "square", "abs"}:
+        arg_name = node.inputs[0]
+        arg_value = _program_adjoint_input_value(arg_name, node_by_name)
+        if node.op == "sin":
+            return ((arg_name, float(np.cos(arg_value))),)
+        if node.op == "cos":
+            return ((arg_name, -float(np.sin(arg_value))),)
+        if node.op == "exp":
+            return ((arg_name, node.value),)
+        if node.op == "log":
+            return ((arg_name, 1.0 / arg_value),)
+        if node.op == "sqrt":
+            return ((arg_name, 1.0 / (2.0 * node.value)),)
+        if node.op == "tanh":
+            return ((arg_name, 1.0 - node.value**2),)
+        if node.op == "square":
+            return ((arg_name, 2.0 * arg_value),)
+        if node.op == "abs":
+            if arg_value == 0.0:
+                raise ValueError("abs adjoint is undefined at zero")
+            return ((arg_name, 1.0 if arg_value > 0.0 else -1.0),)
+    if node.op in {"add", "sub", "mul", "div", "pow", "maximum", "minimum", "where", "clip"}:
+        return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
+    raise ValueError(f"unsupported program AD adjoint op {node.op}")
+
+
+def _program_adjoint_binary_or_selection_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    if node.op == "where":
+        if len(node.inputs) != 3:
+            raise ValueError("where adjoint requires predicate, true value, and false value")
+        left_name = node.inputs[1]
+        right_name = node.inputs[2]
+        left = _program_adjoint_input_value(left_name, node_by_name)
+        right = _program_adjoint_input_value(right_name, node_by_name)
+        return ((left_name, 1.0),) if node.value == left else ((right_name, 1.0),)
+    if node.op == "clip":
+        if len(node.inputs) != 3:
+            raise ValueError("clip adjoint requires value, lower, and upper inputs")
+        value_name, lower_name, upper_name = node.inputs
+        value = _program_adjoint_input_value(value_name, node_by_name)
+        lower = _program_adjoint_input_value(lower_name, node_by_name)
+        upper = _program_adjoint_input_value(upper_name, node_by_name)
+        if value < lower:
+            return ((lower_name, 1.0),)
+        if value > upper:
+            return ((upper_name, 1.0),)
+        if value in (lower, upper):
+            raise ValueError("clip adjoint is undefined at clipping boundary")
+        return ((value_name, 1.0),)
+    left_name = node.inputs[0]
+    right_name = node.inputs[1] if len(node.inputs) > 1 else ""
+    left = _program_adjoint_input_value(left_name, node_by_name)
+    right = _program_adjoint_input_value(right_name, node_by_name) if right_name else 0.0
+    if node.op == "add":
+        return ((left_name, 1.0), (right_name, 1.0))
+    if node.op == "sub":
+        return ((left_name, 1.0), (right_name, -1.0))
+    if node.op == "mul":
+        return ((left_name, right), (right_name, left))
+    if node.op == "div":
+        return ((left_name, 1.0 / right), (right_name, -left / right**2))
+    if node.op == "pow":
+        if left <= 0.0 and _program_adjoint_is_ir_value(right_name):
+            raise ValueError("variable exponent adjoint requires positive base")
+        primal = node.value
+        contributions = [(left_name, right * left ** (right - 1.0))]
+        if _program_adjoint_is_ir_value(right_name):
+            contributions.append((right_name, primal * float(np.log(left))))
+        return tuple(contributions)
+    if node.op == "maximum":
+        if left == right:
+            raise ValueError("maximum adjoint is undefined at ties")
+        return ((left_name, 1.0),) if node.value == left else ((right_name, 1.0),)
+    if node.op == "minimum":
+        if left == right:
+            raise ValueError("minimum adjoint is undefined at ties")
+        return ((left_name, 1.0),) if node.value == left else ((right_name, 1.0),)
+    raise ValueError(f"unsupported program AD adjoint op {node.op}")
+
+
+def _program_adjoint_input_value(
+    name: str,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> float:
+    if _program_adjoint_is_ir_value(name):
+        if name not in node_by_name:
+            raise ValueError(f"program AD adjoint input {name} is missing from IR")
+        return node_by_name[name].value
+    try:
+        return float(name)
+    except ValueError:
+        if name.startswith("np.float64(") and name.endswith(")"):
+            return float(name.removeprefix("np.float64(").removesuffix(")"))
+        raise ValueError(f"program AD adjoint literal {name!r} is not numeric") from None
+
+
+def _program_adjoint_is_ir_value(name: str) -> bool:
+    return isinstance(name, str) and name.startswith("%") and name[1:].isdigit()
 
 
 def _objective_source(objective: Callable[..., object]) -> str | None:
@@ -7511,6 +7748,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "ProgramADAdjointResult",
     "ProgramADAliasEdge",
     "ProgramADControlRegion",
     "ProgramADEffect",
@@ -7587,6 +7825,8 @@ __all__ = [
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "program_adjoint_gradient",
+    "program_adjoint_result",
     "registered_custom_jacobian",
     "register_primitive_batching_rule",
     "register_primitive_lowering_rule",
