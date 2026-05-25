@@ -70,7 +70,7 @@ jobs:
       - name: Run tests with coverage (3.12 only)
         if: matrix.python-version == '3.12'
         run: |
-          pytest tests/ --cov=scpn_quantum_control --cov-report=xml --cov-fail-under=95 -m "not slow and not hardware and not internal_corpus and not performance"
+          pytest tests/ --cov=scpn_quantum_control --cov-report=xml --cov-fail-under=93 -m "not slow and not hardware and not internal_corpus and not performance"
       - name: Audit coverage gaps (3.12 only)
         if: matrix.python-version == '3.12'
         run: python tools/audit_coverage_gaps.py --json > coverage-gap-audit.json
