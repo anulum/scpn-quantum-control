@@ -4088,6 +4088,59 @@ def test_program_ad_atleast_rank_transforms_fail_closed_invalid_contracts() -> N
         )
 
 
+def test_program_ad_reshape_inferred_dimension_preserves_exact_adjoint() -> None:
+    """Program AD reshape should support one inferred dimension exactly."""
+
+    matrix_weights = np.linspace(-2.0, 2.0, 6, dtype=np.float64).reshape(2, 3)
+    method_weights = np.linspace(0.5, 3.5, 6, dtype=np.float64).reshape(2, 3)
+    promoted_weights = np.linspace(-1.25, 1.75, 6, dtype=np.float64).reshape(3, 2)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (-1, 3))
+        method_matrix = values.reshape(2, -1)
+        promoted = np.reshape(values, (3, -1))
+        return (
+            np.sum(matrix * matrix_weights)
+            + np.sum(method_matrix * method_weights)
+            + np.sum(promoted * promoted_weights)
+        )
+
+    values = np.linspace(-1.0, 1.0, 6, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected = (
+        matrix_weights.reshape(-1) + method_weights.reshape(-1) + promoted_weights.reshape(-1)
+    )
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_reshape_inferred_dimension_fails_closed_invalid_contracts() -> None:
+    """Program AD reshape should reject ambiguous or size-losing inferred shapes."""
+
+    with pytest.raises(ValueError, match="at most one inferred dimension"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values, (-1, -1))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="inferred dimension must preserve size"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values, (4, -1))),
+            np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="dimensions must be non-negative or -1"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values, (2, -2))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
 

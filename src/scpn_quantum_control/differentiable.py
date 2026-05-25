@@ -939,12 +939,11 @@ class TraceADArray:
 
     def reshape(self, *shape: int | tuple[int, ...]) -> TraceADArray:
         if len(shape) == 1 and isinstance(shape[0], tuple):
-            target = shape[0]
+            raw_target: object = shape[0]
         else:
-            target = cast(tuple[int, ...], shape)
-        if int(np.prod(target)) != self.size:
-            raise ValueError("TraceADArray reshape must preserve size")
-        return TraceADArray(tuple(self._items), tuple(int(item) for item in target), self.context)
+            raw_target = shape
+        target = _normalise_trace_reshape_shape(raw_target, self.size)
+        return TraceADArray(tuple(self._items), target, self.context)
 
     def ravel(self) -> TraceADArray:
         """Return a flat view-preserving program AD array."""
@@ -1557,6 +1556,38 @@ def _trace_like_constant(
     array = _coerce_trace_array(reference, context)
     scalar = _coerce_trace_scalar(fill_value, context)
     return TraceADArray(tuple(scalar for _ in range(array.size)), array.shape, context)
+
+
+def _normalise_trace_reshape_shape(shape: object, size: int) -> tuple[int, ...]:
+    dimensions: tuple[int, ...]
+    if isinstance(shape, (int, np.integer)) and not isinstance(shape, bool):
+        dimensions = (int(shape),)
+    elif isinstance(shape, Sequence) and not isinstance(shape, (str, bytes)):
+        raw_dimensions = tuple(cast(Any, shape))
+        if any(
+            isinstance(dimension, bool) or not isinstance(dimension, (int, np.integer))
+            for dimension in raw_dimensions
+        ):
+            raise ValueError("program AD reshape shape dimensions must be static integers")
+        dimensions = tuple(int(dimension) for dimension in raw_dimensions)
+    else:
+        raise ValueError("program AD reshape shape must be a static integer or shape tuple")
+    inferred_axes = tuple(index for index, dimension in enumerate(dimensions) if dimension == -1)
+    if len(inferred_axes) > 1:
+        raise ValueError("program AD reshape supports at most one inferred dimension")
+    if any(dimension < -1 for dimension in dimensions):
+        raise ValueError("program AD reshape dimensions must be non-negative or -1")
+    known_product = int(np.prod(tuple(dimension for dimension in dimensions if dimension != -1)))
+    if inferred_axes:
+        if known_product == 0:
+            raise ValueError("program AD reshape cannot infer dimension from zero product")
+        if size % known_product != 0:
+            raise ValueError("program AD reshape inferred dimension must preserve size")
+        inferred = size // known_product
+        dimensions = tuple(inferred if dimension == -1 else dimension for dimension in dimensions)
+    if int(np.prod(dimensions)) != size:
+        raise ValueError("program AD reshape must preserve size")
+    return dimensions
 
 
 def _normalise_trace_broadcast_shape(shape: object) -> tuple[int, ...]:
