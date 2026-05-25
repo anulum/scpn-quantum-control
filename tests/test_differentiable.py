@@ -3504,6 +3504,58 @@ def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
         )
 
 
+def test_whole_program_ad_handles_numpy_broadcasting_semantics() -> None:
+    """Program AD should follow NumPy broadcasting for ufuncs, predicates, and where."""
+
+    def objective(values: np.ndarray) -> object:
+        column = np.reshape(values[:2], (2, 1))
+        row = values[2:5]
+        broadcast_product = column * row
+        shifted = broadcast_product + values[5]
+        selected = np.where(shifted > 0.0, shifted, -shifted)
+        return np.sum(selected) + np.sum(row / (column + 3.0))
+
+    values = np.array([0.5, 1.25, 0.2, -0.4, 0.75, 0.3], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(
+            Parameter("c0"),
+            Parameter("c1"),
+            Parameter("r0"),
+            Parameter("r1"),
+            Parameter("r2"),
+            Parameter("bias"),
+        ),
+    )
+
+    column = values[:2].reshape(2, 1)
+    row = values[2:5]
+    shifted = column * row + values[5]
+    signs = np.where(shifted > 0.0, 1.0, -1.0)
+    expected = np.zeros(6, dtype=np.float64)
+    expected[0:2] = np.sum(signs * row, axis=1) - np.sum(row) / (column[:, 0] + 3.0) ** 2
+    expected[2:5] = np.sum(signs * column, axis=0) + np.sum(1.0 / (column[:, 0] + 3.0))
+    expected[5] = np.sum(signs)
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_whole_program_ad_broadcasting_rejects_incompatible_shapes() -> None:
+    """Program AD broadcasting should fail closed on incompatible NumPy shapes."""
+
+    with pytest.raises(ValueError, match="broadcasting rules"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values[:4], (2, 2)) + values[4:7]),
+            np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
 

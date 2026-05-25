@@ -1219,7 +1219,7 @@ class TraceADArray:
 
     def _compare(self, op: str, other: object) -> _TracePredicate | TraceADPredicateArray:
         right = _coerce_trace_array(other, self.context)
-        shape = self.shape if self.shape != () else right.shape
+        shape = _broadcast_shape(self.shape, right.shape)
         left = _broadcast_trace_array(self, shape, self.context)
         right = _broadcast_trace_array(right, shape, self.context)
         predicates = tuple(
@@ -1299,9 +1299,27 @@ def _broadcast_trace_array(
         return TraceADArray(
             tuple(array.item() for _ in range(int(np.prod(shape)))), shape, context
         )
-    raise ValueError(
-        "whole-program AD array operands must have matching shapes or scalar broadcast"
+    try:
+        source_indices = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+        broadcast_indices = np.broadcast_to(source_indices, shape).reshape(-1)
+    except ValueError as exc:
+        raise ValueError(
+            "whole-program AD array operands must follow NumPy broadcasting rules"
+        ) from exc
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in broadcast_indices), shape, context
     )
+
+
+def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
+    """Return a NumPy-compatible broadcast shape or fail closed."""
+
+    try:
+        return cast(tuple[int, ...], np.broadcast_shapes(*shapes))
+    except ValueError as exc:
+        raise ValueError(
+            "whole-program AD array operands must follow NumPy broadcasting rules"
+        ) from exc
 
 
 def _apply_trace_ufunc(
@@ -1345,7 +1363,7 @@ def _apply_trace_ufunc(
     ):
         left = _coerce_trace_array(inputs[0], context)
         right = _coerce_trace_array(inputs[1], context)
-        shape = left.shape if left.shape != () else right.shape
+        shape = _broadcast_shape(left.shape, right.shape)
         left = _broadcast_trace_array(left, shape, context)
         right = _broadcast_trace_array(right, shape, context)
         items = tuple(
@@ -1679,7 +1697,7 @@ def _trace_multiply_arrays(
     right: TraceADArray,
     context: _WholeProgramTraceContext,
 ) -> TraceADScalar | TraceADArray:
-    shape = left.shape if left.shape != () else right.shape
+    shape = _broadcast_shape(left.shape, right.shape)
     left = _broadcast_trace_array(left, shape, context)
     right = _broadcast_trace_array(right, shape, context)
     items = tuple(lhs * rhs for lhs, rhs in zip(left._items, right._items, strict=True))
@@ -1739,7 +1757,7 @@ def _trace_where(
 ) -> TraceADScalar | TraceADArray:
     x_array = _coerce_trace_array(x_value, context)
     y_array = _coerce_trace_array(y_value, context)
-    shape = x_array.shape if x_array.shape != () else y_array.shape
+    shape = _broadcast_shape(x_array.shape, y_array.shape)
     x_array = _broadcast_trace_array(x_array, shape, context)
     y_array = _broadcast_trace_array(y_array, shape, context)
     predicates = _coerce_trace_predicate_array(condition, shape, context)
