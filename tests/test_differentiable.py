@@ -4442,6 +4442,108 @@ def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch()
     }
 
 
+def test_program_ad_binary_elementwise_primitives_are_registry_policy_gated() -> None:
+    """Binary elementwise math should expose broadcast-aware primitive contracts."""
+
+    left = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    right = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+    for name in ("add", "subtract", "multiply", "divide", "power", "maximum", "minimum"):
+        contract = primitive_contract_for(f"scpn.program_ad.elementwise:{name}")
+        assert contract.identity == PrimitiveIdentity("scpn.program_ad.elementwise", name, "1")
+        assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+        assert contract.effect == "pure"
+        assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.elementwise.{name}"
+        assert contract.shape_rule is not None
+        assert contract.shape_rule((left, right)) == (2, 3)
+        assert contract.dtype_rule is not None
+        assert contract.dtype_rule((left, right)) == "float64"
+        assert contract.static_argument_rule is not None
+        assert contract.static_argument_rule((left, right)) == ()
+        with pytest.raises(ValueError, match="incomplete primitive contract"):
+            primitive_complete_contract_for(contract.identity)
+
+
+def test_program_ad_binary_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported binary elementwise primitives must execute through registry validation rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.elementwise:{name}")
+        for name in ("add", "multiply", "divide", "power", "maximum", "minimum")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+    try:
+        result = whole_program_value_and_grad(
+            lambda values: np.sum(
+                (values + np.array([2.0, 3.0, 4.0]))
+                * np.array([1.5, 2.0, 2.5])
+                / np.array([2.0, 4.0, 5.0])
+                + np.power(values + 2.0, np.array([2.0, 1.5, 1.25]))
+                + np.maximum(values, np.array([-1.0, 0.0, 0.5]))
+                - np.minimum(values, np.array([-2.0, -1.0, 0.25]))
+            ),
+            np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    values = np.array([0.25, 0.5, 0.75], dtype=np.float64)
+    expected_value = float(
+        np.sum(
+            (values + np.array([2.0, 3.0, 4.0]))
+            * np.array([1.5, 2.0, 2.5])
+            / np.array([2.0, 4.0, 5.0])
+            + np.power(values + 2.0, np.array([2.0, 1.5, 1.25]))
+            + np.maximum(values, np.array([-1.0, 0.0, 0.5]))
+            - np.minimum(values, np.array([-2.0, -1.0, 0.25]))
+        )
+    )
+    assert result.value == pytest.approx(expected_value)
+    assert calls == {
+        "add": {"shape", "dtype", "static"},
+        "multiply": {"shape", "dtype", "static"},
+        "divide": {"shape", "dtype", "static"},
+        "power": {"shape", "dtype", "static"},
+        "maximum": {"shape", "dtype", "static"},
+        "minimum": {"shape", "dtype", "static"},
+    }
+
+
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
     """Program AD vdot should apply exact flattened real inner-product semantics."""
 

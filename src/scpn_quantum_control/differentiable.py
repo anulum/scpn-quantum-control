@@ -2114,6 +2114,9 @@ def _apply_trace_ufunc(
     ):
         left = _coerce_trace_array(inputs[0], context)
         right = _coerce_trace_array(inputs[1], context)
+        _require_program_ad_elementwise_contract(
+            _program_ad_elementwise_name(ufunc), (left, right)
+        )
         shape = _broadcast_shape(left.shape, right.shape)
         left = _broadcast_trace_array(left, shape, context)
         right = _broadcast_trace_array(right, shape, context)
@@ -5510,7 +5513,7 @@ _PROGRAM_AD_REDUCTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
 
 _PROGRAM_AD_ELEMENTWISE_PRIMITIVE_NAMESPACE = "scpn.program_ad.elementwise"
 _PROGRAM_AD_ELEMENTWISE_POLICY = "program_ad_trace_exact_fail_closed"
-_PROGRAM_AD_ELEMENTWISE_NAMES = (
+_PROGRAM_AD_ELEMENTWISE_UNARY_NAMES = (
     "sin",
     "cos",
     "exp",
@@ -5526,6 +5529,19 @@ _PROGRAM_AD_ELEMENTWISE_NAMES = (
     "square",
     "abs",
     "negative",
+)
+_PROGRAM_AD_ELEMENTWISE_BINARY_NAMES = (
+    "add",
+    "subtract",
+    "multiply",
+    "divide",
+    "power",
+    "maximum",
+    "minimum",
+)
+_PROGRAM_AD_ELEMENTWISE_NAMES = (
+    *_PROGRAM_AD_ELEMENTWISE_UNARY_NAMES,
+    *_PROGRAM_AD_ELEMENTWISE_BINARY_NAMES,
 )
 _PROGRAM_AD_ELEMENTWISE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ELEMENTWISE_PRIMITIVE_NAMESPACE, name, "1")
@@ -5785,15 +5801,20 @@ def _program_ad_reduction_dtype_rule(args: tuple[object, ...]) -> str:
 
 
 def _program_ad_elementwise_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 1:
-        raise ValueError("program AD elementwise shape rule requires one operand")
-    return _program_ad_array_shape_of(args[0])
+    if len(args) == 1:
+        return _program_ad_array_shape_of(args[0])
+    if len(args) == 2:
+        return _broadcast_shape(
+            _program_ad_array_shape_of(args[0]), _program_ad_array_shape_of(args[1])
+        )
+    raise ValueError("program AD elementwise shape rule requires one or two operands")
 
 
 def _program_ad_elementwise_dtype_rule(args: tuple[object, ...]) -> str:
-    if len(args) != 1:
-        raise ValueError("program AD elementwise dtype rule requires one operand")
-    return _program_ad_array_dtype_of(args[0])
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD elementwise dtype rule requires one or two operands")
+    dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in args)
+    return str(np.result_type(*dtypes))
 
 
 def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -5852,8 +5873,8 @@ def _program_ad_reduction_static_arguments(args: tuple[object, ...]) -> tuple[ob
 
 
 def _program_ad_elementwise_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 1:
-        raise ValueError("program AD elementwise static rule requires one operand")
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD elementwise static rule requires one or two operands")
     return ()
 
 
@@ -6030,15 +6051,38 @@ def _program_ad_elementwise_batching_rule(
 ) -> object:
     if len(args) != len(axes):
         raise ValueError("program AD elementwise batching axes must match argument count")
-    if len(args) != 1:
-        raise ValueError("program AD elementwise batching requires one operand")
-    array = _as_real_numeric_array("program AD elementwise batched operand", args[0])
-    axis = axes[0]
-    result = _as_real_numeric_array("program AD elementwise batched output", function(array))
-    if axis is None:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD elementwise batching requires one or two operands")
+    arrays = tuple(
+        _as_real_numeric_array(f"program AD elementwise batched operand {index}", arg)
+        for index, arg in enumerate(args)
+    )
+    if all(axis is None for axis in axes):
+        result = _as_real_numeric_array("program AD elementwise batched output", function(*arrays))
         return result
-    axis_index = _normalise_axis("axes[0]", axis, array.ndim)
-    return np.moveaxis(result, axis_index, _normalise_axis("out_axes", out_axes, result.ndim))
+    mapped_axes: list[int | None] = [
+        None if axis is None else _normalise_axis(f"axes[{index}]", axis, array.ndim)
+        for index, (axis, array) in enumerate(zip(axes, arrays, strict=True))
+    ]
+    batch_sizes = {
+        int(array.shape[axis])
+        for array, axis in zip(arrays, mapped_axes, strict=True)
+        if axis is not None
+    }
+    if len(batch_sizes) != 1:
+        raise ValueError("program AD elementwise batching axes must share one batch size")
+    batch_size = batch_sizes.pop()
+    outputs = []
+    for batch_index in range(batch_size):
+        sliced_args = tuple(
+            array if axis is None else np.take(array, batch_index, axis=axis)
+            for array, axis in zip(arrays, mapped_axes, strict=True)
+        )
+        outputs.append(
+            _as_real_numeric_array("program AD elementwise batched output", function(*sliced_args))
+        )
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
 def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
