@@ -2072,6 +2072,7 @@ def _apply_trace_ufunc(
 ) -> TraceADScalar | TraceADArray:
     if ufunc is np.negative and len(inputs) == 1:
         operand = _coerce_trace_array(inputs[0], context)
+        _require_program_ad_elementwise_contract("negative", (operand,))
         items = tuple(-item for item in operand._items)
         return items[0] if operand.shape == () else TraceADArray(items, operand.shape, context)
     if (
@@ -2095,6 +2096,7 @@ def _apply_trace_ufunc(
         and len(inputs) == 1
     ):
         operand = _coerce_trace_array(inputs[0], context)
+        _require_program_ad_elementwise_contract(_program_ad_elementwise_name(ufunc), (operand,))
         items = tuple(_apply_unary_trace_ufunc(ufunc, item) for item in operand._items)
         return items[0] if operand.shape == () else TraceADArray(items, operand.shape, context)
     if (
@@ -5506,6 +5508,30 @@ _PROGRAM_AD_REDUCTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     for name in ("sum", "prod", "mean")
 }
 
+_PROGRAM_AD_ELEMENTWISE_PRIMITIVE_NAMESPACE = "scpn.program_ad.elementwise"
+_PROGRAM_AD_ELEMENTWISE_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_ELEMENTWISE_NAMES = (
+    "sin",
+    "cos",
+    "exp",
+    "expm1",
+    "log",
+    "log1p",
+    "sqrt",
+    "tan",
+    "tanh",
+    "arcsin",
+    "arccos",
+    "reciprocal",
+    "square",
+    "abs",
+    "negative",
+)
+_PROGRAM_AD_ELEMENTWISE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_ELEMENTWISE_PRIMITIVE_NAMESPACE, name, "1")
+    for name in _PROGRAM_AD_ELEMENTWISE_NAMES
+}
+
 _PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
 _PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
@@ -5587,6 +5613,37 @@ def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
         value_fn=_program_ad_reduction_direct_value,
         jvp_rule=_program_ad_reduction_direct_jvp,
     )
+
+
+def _program_ad_elementwise_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD elementwise primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_elementwise_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD elementwise primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_elementwise_derivative_rule(name: str) -> CustomDerivativeRule:
+    return CustomDerivativeRule(
+        name=f"program_ad_elementwise_{name}_trace_contract",
+        value_fn=_program_ad_elementwise_direct_value,
+        jvp_rule=_program_ad_elementwise_direct_jvp,
+    )
+
+
+def _program_ad_elementwise_name(ufunc: np.ufunc) -> str:
+    if ufunc is np.absolute:
+        return "abs"
+    return str(ufunc.__name__)
 
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
@@ -5727,6 +5784,18 @@ def _program_ad_reduction_dtype_rule(args: tuple[object, ...]) -> str:
     return _program_ad_array_dtype_of(args[0])
 
 
+def _program_ad_elementwise_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD elementwise shape rule requires one operand")
+    return _program_ad_array_shape_of(args[0])
+
+
+def _program_ad_elementwise_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 1:
+        raise ValueError("program AD elementwise dtype rule requires one operand")
+    return _program_ad_array_dtype_of(args[0])
+
+
 def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD array getitem static rule requires array and index")
@@ -5782,6 +5851,12 @@ def _program_ad_reduction_static_arguments(args: tuple[object, ...]) -> tuple[ob
     return (_program_ad_reduction_axis(args),)
 
 
+def _program_ad_elementwise_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD elementwise static rule requires one operand")
+    return ()
+
+
 _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "getitem": _program_ad_array_getitem_shape,
     "take": _program_ad_array_take_shape,
@@ -5808,6 +5883,10 @@ _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "sum": _program_ad_reduction_shape,
     "prod": _program_ad_reduction_shape,
     "mean": _program_ad_reduction_shape,
+}
+
+_PROGRAM_AD_ELEMENTWISE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    name: _program_ad_elementwise_shape for name in _PROGRAM_AD_ELEMENTWISE_NAMES
 }
 
 
@@ -5943,6 +6022,37 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
     }
 
 
+def _program_ad_elementwise_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != len(axes):
+        raise ValueError("program AD elementwise batching axes must match argument count")
+    if len(args) != 1:
+        raise ValueError("program AD elementwise batching requires one operand")
+    array = _as_real_numeric_array("program AD elementwise batched operand", args[0])
+    axis = axes[0]
+    result = _as_real_numeric_array("program AD elementwise batched output", function(array))
+    if axis is None:
+        return result
+    axis_index = _normalise_axis("axes[0]", axis, array.ndim)
+    return np.moveaxis(result, axis_index, _normalise_axis("out_axes", out_axes, result.ndim))
+
+
+def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff elementwise dialect interchange; executable lowering blocked",
+        "mlir_op": f"scpn_diff.elementwise.{name}",
+        "llvm": "blocked_until_executable_elementwise_lowering",
+        "rust": "blocked_until_polyglot_elementwise_ad",
+        "static_argument_rule": "none",
+        "static_signature": "none",
+    }
+
+
 def _register_program_ad_array_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -5995,6 +6105,25 @@ def _register_program_ad_reduction_primitive_contracts() -> None:
                 dtype_rule=_program_ad_reduction_dtype_rule,
                 static_argument_rule=_program_ad_reduction_static_arguments,
                 nondifferentiable_policy=_PROGRAM_AD_REDUCTION_POLICY,
+                effect="pure",
+            )
+        )
+
+
+def _register_program_ad_elementwise_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_ELEMENTWISE_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_elementwise_derivative_rule(name),
+                batching_rule=_program_ad_elementwise_batching_rule,
+                lowering_metadata=_program_ad_elementwise_lowering_metadata(name),
+                shape_rule=_PROGRAM_AD_ELEMENTWISE_SHAPE_RULES[name],
+                dtype_rule=_program_ad_elementwise_dtype_rule,
+                static_argument_rule=_program_ad_elementwise_static_arguments,
+                nondifferentiable_policy=_PROGRAM_AD_ELEMENTWISE_POLICY,
                 effect="pure",
             )
         )
@@ -6078,6 +6207,23 @@ def _require_program_ad_reduction_contract(
         raise ValueError(f"invalid program AD reduction primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD reduction primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
+def _require_program_ad_elementwise_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = _PROGRAM_AD_ELEMENTWISE_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD elementwise primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_ELEMENTWISE_POLICY:
+        raise ValueError(f"invalid program AD elementwise primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD elementwise primitive effect for {identity.key}")
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
@@ -6633,6 +6779,7 @@ def _require_program_ad_linalg_contract(
 _register_program_ad_array_primitive_contracts()
 _register_program_ad_shape_primitive_contracts()
 _register_program_ad_reduction_primitive_contracts()
+_register_program_ad_elementwise_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
 
 

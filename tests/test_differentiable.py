@@ -4331,6 +4331,117 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
     }
 
 
+def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
+    """Unary elementwise math should expose primitive registry contracts."""
+
+    vector = np.array([0.25, 0.5, 0.75], dtype=np.float64)
+    for name in (
+        "sin",
+        "cos",
+        "exp",
+        "expm1",
+        "log",
+        "log1p",
+        "sqrt",
+        "tan",
+        "tanh",
+        "arcsin",
+        "arccos",
+        "reciprocal",
+        "square",
+        "abs",
+        "negative",
+    ):
+        contract = primitive_contract_for(f"scpn.program_ad.elementwise:{name}")
+        assert contract.identity == PrimitiveIdentity("scpn.program_ad.elementwise", name, "1")
+        assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+        assert contract.effect == "pure"
+        assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.elementwise.{name}"
+        assert contract.shape_rule is not None
+        assert contract.shape_rule((vector,)) == (3,)
+        assert contract.dtype_rule is not None
+        assert contract.dtype_rule((vector,)) == "float64"
+        assert contract.static_argument_rule is not None
+        assert contract.static_argument_rule((vector,)) == ()
+        with pytest.raises(ValueError, match="incomplete primitive contract"):
+            primitive_complete_contract_for(contract.identity)
+
+
+def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported unary elementwise primitives must execute through registry validation rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.elementwise:{name}")
+        for name in ("sin", "log1p", "sqrt", "reciprocal", "negative")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+    try:
+        result = whole_program_value_and_grad(
+            lambda values: np.sum(
+                -np.sin(values)
+                + np.log1p(values)
+                + np.sqrt(values + 4.0)
+                + np.reciprocal(values + 2.0)
+            ),
+            np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    expected_value = float(
+        np.sum(
+            -np.sin(np.array([0.25, 0.5, 0.75]))
+            + np.log1p(np.array([0.25, 0.5, 0.75]))
+            + np.sqrt(np.array([4.25, 4.5, 4.75]))
+            + np.reciprocal(np.array([2.25, 2.5, 2.75]))
+        )
+    )
+    assert result.value == pytest.approx(expected_value)
+    assert calls == {
+        "sin": {"shape", "dtype", "static"},
+        "log1p": {"shape", "dtype", "static"},
+        "sqrt": {"shape", "dtype", "static"},
+        "reciprocal": {"shape", "dtype", "static"},
+        "negative": {"shape", "dtype", "static"},
+    }
+
+
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
     """Program AD vdot should apply exact flattened real inner-product semantics."""
 
