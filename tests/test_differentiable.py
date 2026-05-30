@@ -4239,6 +4239,98 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
     }
 
 
+def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
+    """Sum, product, and mean should expose primitive registry contracts."""
+
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    expected_shapes = {
+        "sum": (2,),
+        "prod": (2,),
+        "mean": (2,),
+    }
+
+    for name, expected_shape in expected_shapes.items():
+        contract = primitive_contract_for(f"scpn.program_ad.reduction:{name}")
+        assert contract.identity == PrimitiveIdentity("scpn.program_ad.reduction", name, "1")
+        assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+        assert contract.effect == "pure"
+        assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.reduction.{name}"
+        assert contract.shape_rule is not None
+        assert contract.shape_rule((matrix, 1)) == expected_shape
+        assert contract.shape_rule((matrix, None)) == ()
+        assert contract.dtype_rule is not None
+        assert contract.dtype_rule((matrix, 1)) == "float64"
+        assert contract.static_argument_rule is not None
+        assert contract.static_argument_rule((matrix, 1)) == (1,)
+        assert contract.static_argument_rule((matrix, None)) == (None,)
+        with pytest.raises(ValueError, match="incomplete primitive contract"):
+            primitive_complete_contract_for(contract.identity)
+
+
+def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported reduction primitives must execute through registry validation rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.reduction:{name}")
+        for name in ("sum", "prod", "mean")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+    try:
+        result = whole_program_value_and_grad(
+            lambda values: (
+                np.sum(np.reshape(values, (2, 3)), axis=0)[0]
+                + np.prod(np.reshape(values, (2, 3)), axis=1)[1]
+                + np.mean(np.reshape(values, (2, 3)), axis=1)[0]
+            ),
+            np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert result.value == pytest.approx(127.0)
+    assert calls == {
+        "sum": {"shape", "dtype", "static"},
+        "prod": {"shape", "dtype", "static"},
+        "mean": {"shape", "dtype", "static"},
+    }
+
+
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
     """Program AD vdot should apply exact flattened real inner-product semantics."""
 
