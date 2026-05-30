@@ -1677,6 +1677,7 @@ def _normalise_trace_broadcast_shape(shape: object) -> tuple[int, ...]:
 
 
 def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | TraceADArray:
+    _require_program_ad_array_contract("getitem")
     _validate_trace_basic_index(index)
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     try:
@@ -2486,6 +2487,7 @@ def _trace_take(
     axis: int | None,
     mode: str,
 ) -> TraceADScalar | TraceADArray:
+    _require_program_ad_array_contract("take")
     if mode != "raise":
         raise ValueError("program AD np.take currently supports only mode='raise'")
     if isinstance(indices, (TraceADScalar, TraceADArray)):
@@ -5477,12 +5479,213 @@ class CustomDerivativeRegistry:
 
 DEFAULT_CUSTOM_DERIVATIVE_REGISTRY = CustomDerivativeRegistry()
 
+_PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE = "scpn.program_ad.array"
+_PROGRAM_AD_ARRAY_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_ARRAY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("getitem", "take")
+}
+
 _PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
 _PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE, name, "1")
     for name in ("det", "inv", "solve", "matrix_power", "multi_dot")
 }
+
+
+def _program_ad_array_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD array primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_array_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD array primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_array_derivative_rule(name: str) -> CustomDerivativeRule:
+    return CustomDerivativeRule(
+        name=f"program_ad_array_{name}_trace_contract",
+        value_fn=_program_ad_array_direct_value,
+        jvp_rule=_program_ad_array_direct_jvp,
+    )
+
+
+def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
+    if isinstance(value, TraceADArray):
+        return value.shape
+    return tuple(int(dim) for dim in np.asarray(value).shape)
+
+
+def _program_ad_array_dtype_of(value: object) -> str:
+    if isinstance(value, TraceADArray):
+        return "float64"
+    array = np.asarray(value)
+    if array.dtype.kind in {"O", "S", "U", "c"}:
+        raise ValueError("program AD array primitive dtype rule requires real numeric arrays")
+    return str(array.dtype)
+
+
+def _program_ad_array_getitem_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD array getitem shape rule requires array and index")
+    _validate_trace_basic_index(args[1])
+    source = np.arange(int(np.prod(_program_ad_array_shape_of(args[0]))), dtype=np.int64).reshape(
+        _program_ad_array_shape_of(args[0])
+    )
+    try:
+        selected = source[cast(Any, args[1])]
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError("program AD array getitem shape rule requires in-bounds indices") from exc
+    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
+
+
+def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {2, 3, 4}:
+        raise ValueError(
+            "program AD array take shape rule requires array, indices, axis, and mode"
+        )
+    indices = args[1]
+    axis = cast(int | None, args[2]) if len(args) >= 3 else None
+    mode = cast(str, args[3]) if len(args) == 4 else "raise"
+    if mode != "raise":
+        raise ValueError("program AD array take shape rule supports only mode='raise'")
+    raw_indices = np.asarray(indices)
+    if raw_indices.dtype.kind not in {"i", "u"}:
+        raise ValueError("program AD array take shape rule requires static integer indices")
+    source = np.arange(int(np.prod(_program_ad_array_shape_of(args[0]))), dtype=np.int64).reshape(
+        _program_ad_array_shape_of(args[0])
+    )
+    try:
+        selected = np.take(source, raw_indices, axis=axis, mode="raise")
+    except (IndexError, ValueError) as exc:
+        raise ValueError("program AD array take shape rule indices must be in bounds") from exc
+    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
+
+
+def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
+    if not args:
+        raise ValueError("program AD array dtype rule requires an array operand")
+    return _program_ad_array_dtype_of(args[0])
+
+
+def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD array getitem static rule requires array and index")
+    _validate_trace_basic_index(args[1])
+    return (args[1],)
+
+
+def _program_ad_array_take_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {2, 3, 4}:
+        raise ValueError(
+            "program AD array take static rule requires array, indices, axis, and mode"
+        )
+    raw_indices = np.asarray(args[1])
+    if raw_indices.dtype.kind not in {"i", "u"}:
+        raise ValueError("program AD array take static rule requires static integer indices")
+    axis = cast(int | None, args[2]) if len(args) >= 3 else None
+    if axis is not None and (isinstance(axis, bool) or not isinstance(axis, (int, np.integer))):
+        raise ValueError("program AD array take static rule requires static integer axis")
+    mode = cast(str, args[3]) if len(args) == 4 else "raise"
+    if mode != "raise":
+        raise ValueError("program AD array take static rule supports only mode='raise'")
+    return (
+        tuple(int(index) for index in raw_indices.reshape(-1)),
+        None if axis is None else int(axis),
+        mode,
+    )
+
+
+_PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "getitem": _program_ad_array_getitem_shape,
+    "take": _program_ad_array_take_shape,
+}
+
+_PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "getitem": _program_ad_array_getitem_static_arguments,
+    "take": _program_ad_array_take_static_arguments,
+}
+
+
+def _program_ad_array_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != len(axes):
+        raise ValueError("program AD array batching axes must match argument count")
+    if not args:
+        raise ValueError("program AD array batching requires an array operand")
+    array = _as_real_numeric_array("program AD array batched operand", args[0])
+    axis = axes[0]
+    if axis is None:
+        raise ValueError("program AD array batching requires the array operand to be mapped")
+    axis_index = _normalise_axis("axes[0]", axis, array.ndim)
+    batch_size = int(array.shape[axis_index])
+    if any(item is not None for item in axes[1:]):
+        raise ValueError("program AD array batching supports static non-array arguments only")
+    outputs = [
+        _as_real_numeric_array(
+            "program AD array batched output",
+            function(np.take(array, batch_index, axis=axis_index), *args[1:]),
+        )
+        for batch_index in range(batch_size)
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff array dialect interchange; executable lowering blocked",
+        "mlir_op": f"scpn_diff.array.{name}",
+        "llvm": "blocked_until_executable_array_lowering",
+        "rust": "blocked_until_polyglot_array_ad",
+        "static_argument_rule": "required",
+        "static_signature": "basic_index" if name == "getitem" else "indices_axis_mode",
+    }
+
+
+def _register_program_ad_array_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_array_derivative_rule(name),
+                batching_rule=_program_ad_array_batching_rule,
+                lowering_metadata=_program_ad_array_lowering_metadata(name),
+                shape_rule=_PROGRAM_AD_ARRAY_SHAPE_RULES[name],
+                dtype_rule=_program_ad_array_dtype_rule,
+                static_argument_rule=_PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES[name],
+                nondifferentiable_policy=_PROGRAM_AD_ARRAY_POLICY,
+                effect="pure",
+            )
+        )
+
+
+def _require_program_ad_array_contract(name: str) -> PrimitiveContract:
+    identity = _PROGRAM_AD_ARRAY_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD array primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_ARRAY_POLICY:
+        raise ValueError(f"invalid program AD array primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD array primitive effect for {identity.key}")
+    return contract
 
 
 def _program_ad_linalg_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -6026,6 +6229,7 @@ def _require_program_ad_linalg_contract(name: str) -> PrimitiveContract:
     return contract
 
 
+_register_program_ad_array_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
 
 

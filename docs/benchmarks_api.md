@@ -10,11 +10,13 @@
 
 The `benchmarks` package measures the computational frontier: at what
 system size does quantum hardware outperform the best classical methods
-for simulating Kuramoto-XY dynamics? Five modules answer this from
+for simulating Kuramoto-XY dynamics? Six modules answer this from
 different angles — documented classical baselines, exact diagonalisation,
-GPU statevector, MPS tensor networks, and application-oriented metrics.
+GPU statevector, MPS tensor networks, application-oriented metrics, and
+differentiable-programming conformance.
 
-5 modules, 16 public symbols, 3 crossover estimates.
+6 modules, differentiable-programming conformance rows, and 3 crossover
+estimates.
 
 ## Architecture
 
@@ -341,6 +343,34 @@ qubit pairs.
 
 ---
 
+### 6. `differentiable_programming` — Program AD Conformance
+
+Provides deterministic correctness rows for the native differentiable
+programming surface. These rows compare implemented program AD gradients
+against analytic references and explicitly avoid wall-clock, compiler, LLVM,
+Rust, JIT, or hardware performance claims.
+
+#### `run_differentiable_programming_benchmark_suite()`
+
+Runs the committed conformance rows:
+
+| Case | Category | Contract |
+|------|----------|----------|
+| `loop_heavy_scalar` | loop-heavy | Executed Python loops with scalar ufuncs |
+| `matrix_heavy_linear_algebra` | matrix-heavy | Dot, outer, trace, tensordot, and einsum semantics |
+| `linalg_primitive_contracts` | linalg-primitive | Registry-gated linalg primitive contracts |
+| `indexing_static_gather_contracts` | indexing-heavy | Static slicing, `np.take`, and repeated adjoint accumulation |
+| `mutation_heavy_forward_only` | mutation-heavy | Static array mutation dataflow |
+| `transform_nesting_vmap_program_grad` | transform-nesting | `vmap` over program AD gradients |
+
+#### `run_differentiable_programming_external_reference_suite()`
+
+Runs optional JAX reference comparisons when JAX is installed. When JAX is not
+available, it returns an empty tuple rather than weakening the base dependency
+contract.
+
+---
+
 ## Crossover Summary
 
 The three crossover estimates address different classical methods:
@@ -367,9 +397,11 @@ observable tolerance, and hardware dataset for the specific workload.
 | `gpu_baseline` | — | — (pure estimates) |
 | `mps_baseline` | analysis.entanglement_spectrum | numpy |
 | `appqsim_protocol` | bridge.*, hardware.classical, analysis.* | qiskit |
+| `differentiable_programming` | differentiable | numpy; optional jax reference rows |
 
-No optional external dependencies. All benchmarks run with the base
-installation.
+The core benchmark suite runs with the base installation. Optional external
+reference rows declare their backend availability instead of fabricating
+comparisons.
 
 ## Testing
 

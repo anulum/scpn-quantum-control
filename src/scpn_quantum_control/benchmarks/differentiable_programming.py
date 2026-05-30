@@ -124,6 +124,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _loop_heavy_case(),
         _matrix_heavy_case(),
         _linalg_primitive_case(),
+        _indexing_heavy_case(),
         _mutation_heavy_case(),
         _transform_nesting_case(),
     )
@@ -402,6 +403,32 @@ def _mutation_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     return _program_ad_case(
         "mutation_heavy_forward_only",
         "mutation-heavy",
+        objective,
+        values,
+        analytic,
+    )
+
+
+def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([1.0, -2.0, 0.5, 3.0, -1.5, 2.0], dtype=np.float64)
+    block_weights = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        matrix = np.reshape(trace_values, (2, 3))
+        block = matrix[:, 1:]
+        gathered = np.take(trace_values, [2, 0, 2])
+        lower_left = matrix[1:, :2]
+        return (
+            np.sum(block * block_weights)
+            + np.sum(gathered)
+            - 2.0 * lower_left[0, 1]
+            + 0.5 * matrix[None, :, :][0, -1, -1]
+        )
+
+    analytic = np.array([1.0, 1.0, 4.0, 0.0, 1.0, 4.5], dtype=np.float64)
+    return _program_ad_case(
+        "indexing_static_gather_contracts",
+        "indexing-heavy",
         objective,
         values,
         analytic,

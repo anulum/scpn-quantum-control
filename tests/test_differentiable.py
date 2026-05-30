@@ -5605,6 +5605,44 @@ def test_program_ad_basic_slicing_preserves_static_adjoint_paths() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> None:
+    """Static indexing and take should expose primitive registry contracts."""
+
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    contract = primitive_contract_for("scpn.program_ad.array:getitem")
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.array", "getitem", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["program_ad"] == "operator_intercepted_trace"
+    assert (
+        contract.lowering_metadata["mlir"]
+        == "available: scpn_diff array dialect interchange; executable lowering blocked"
+    )
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.array.getitem"
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((matrix, (slice(None), slice(1, None)))) == (2, 2)
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((matrix, (slice(None), slice(1, None)))) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((matrix, (slice(None), slice(1, None)))) == (
+        (slice(None), slice(1, None)),
+    )
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(contract.identity)
+
+    take_contract = primitive_contract_for("scpn.program_ad.array:take")
+    assert take_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "take", "1")
+    assert take_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.take"
+    assert take_contract.shape_rule is not None
+    assert take_contract.shape_rule((matrix, np.array([1, 0]), 1)) == (2, 2)
+    assert take_contract.static_argument_rule is not None
+    assert take_contract.static_argument_rule((matrix, np.array([1, 0]), 1)) == (
+        (1, 0),
+        1,
+        "raise",
+    )
+
+
 def test_program_ad_advanced_indexing_fails_closed() -> None:
     """Program AD array indexing should reject dynamic advanced index selectors."""
 
