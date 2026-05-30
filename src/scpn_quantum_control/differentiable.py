@@ -1455,27 +1455,27 @@ class TraceADArray:
         if func is np.linalg.det:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.det supports one matrix")
-            _require_program_ad_linalg_contract("det")
+            _require_program_ad_linalg_contract("det", args)
             return _trace_det(args[0], self.context)
         if func is np.linalg.inv:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.inv supports one matrix")
-            _require_program_ad_linalg_contract("inv")
+            _require_program_ad_linalg_contract("inv", args)
             return _trace_inv(args[0], self.context)
         if func is np.linalg.solve:
             if len(args) != 2 or kwargs:
                 raise ValueError("program AD np.linalg.solve supports matrix and right-hand side")
-            _require_program_ad_linalg_contract("solve")
+            _require_program_ad_linalg_contract("solve", args)
             return _trace_solve(args[0], args[1], self.context)
         if func is np.linalg.matrix_power:
             if len(args) != 2 or kwargs:
                 raise ValueError("program AD np.linalg.matrix_power supports matrix and power")
-            _require_program_ad_linalg_contract("matrix_power")
+            _require_program_ad_linalg_contract("matrix_power", args)
             return _trace_matrix_power(args[0], args[1], self.context)
         if func is np.linalg.multi_dot:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.linalg.multi_dot supports one operand sequence")
-            _require_program_ad_linalg_contract("multi_dot")
+            _require_program_ad_linalg_contract("multi_dot", args)
             return _trace_multi_dot(args[0], self.context)
         if func in {
             np.linalg.eig,
@@ -1677,7 +1677,7 @@ def _normalise_trace_broadcast_shape(shape: object) -> tuple[int, ...]:
 
 
 def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | TraceADArray:
-    _require_program_ad_array_contract("getitem")
+    _require_program_ad_array_contract("getitem", (array, index))
     _validate_trace_basic_index(index)
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     try:
@@ -2487,7 +2487,7 @@ def _trace_take(
     axis: int | None,
     mode: str,
 ) -> TraceADScalar | TraceADArray:
-    _require_program_ad_array_contract("take")
+    _require_program_ad_array_contract("take", (array, indices, axis, mode))
     if mode != "raise":
         raise ValueError("program AD np.take currently supports only mode='raise'")
     if isinstance(indices, (TraceADScalar, TraceADArray)):
@@ -5676,7 +5676,42 @@ def _register_program_ad_array_primitive_contracts() -> None:
         )
 
 
-def _require_program_ad_array_contract(name: str) -> PrimitiveContract:
+def _validate_program_ad_primitive_contract_dispatch(
+    contract: PrimitiveContract,
+    args: tuple[object, ...],
+) -> None:
+    if contract.static_argument_rule is None:
+        raise ValueError(
+            f"program AD primitive {contract.identity.key} missing static argument rule"
+        )
+    if contract.shape_rule is None:
+        raise ValueError(f"program AD primitive {contract.identity.key} missing shape rule")
+    if contract.dtype_rule is None:
+        raise ValueError(f"program AD primitive {contract.identity.key} missing dtype rule")
+    static_arguments = contract.static_argument_rule(args)
+    if not isinstance(static_arguments, tuple):
+        raise ValueError(
+            f"program AD primitive {contract.identity.key} static rule must return a tuple"
+        )
+    shape = contract.shape_rule(args)
+    if not isinstance(shape, tuple) or any(
+        not isinstance(dimension, int) or dimension < 0 for dimension in shape
+    ):
+        raise ValueError(
+            f"program AD primitive {contract.identity.key} shape rule must return "
+            "non-negative integer dimensions"
+        )
+    dtype = contract.dtype_rule(args)
+    if not isinstance(dtype, str) or not dtype:
+        raise ValueError(
+            f"program AD primitive {contract.identity.key} dtype rule must return a dtype name"
+        )
+
+
+def _require_program_ad_array_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
     identity = _PROGRAM_AD_ARRAY_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD array primitive identity registered for {name}")
@@ -5685,6 +5720,8 @@ def _require_program_ad_array_contract(name: str) -> PrimitiveContract:
         raise ValueError(f"invalid program AD array primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD array primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
 
 
@@ -6061,12 +6098,13 @@ def _program_ad_linalg_multi_dot_shape(args: tuple[object, ...]) -> tuple[int, .
 def _program_ad_linalg_dtype_rule(args: tuple[object, ...]) -> str:
     arrays: list[NDArray[np.float64]] = []
     for arg in args:
-        if isinstance(arg, Sequence) and not isinstance(
-            arg, (str, bytes, TraceADArray, np.ndarray)
-        ):
-            arrays.extend(
-                _as_real_numeric_array("program AD linalg dtype operand", item) for item in arg
-            )
+        if isinstance(arg, TraceADArray):
+            continue
+        if isinstance(arg, Sequence) and not isinstance(arg, (str, bytes, np.ndarray)):
+            for item in arg:
+                if isinstance(item, TraceADArray):
+                    continue
+                arrays.append(_as_real_numeric_array("program AD linalg dtype operand", item))
         elif isinstance(arg, (int, np.integer)) and not isinstance(arg, bool):
             continue
         else:
@@ -6217,7 +6255,10 @@ def _register_program_ad_linalg_primitive_contracts() -> None:
         )
 
 
-def _require_program_ad_linalg_contract(name: str) -> PrimitiveContract:
+def _require_program_ad_linalg_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
     identity = _PROGRAM_AD_LINALG_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD linalg primitive identity registered for {name}")
@@ -6226,6 +6267,8 @@ def _require_program_ad_linalg_contract(name: str) -> PrimitiveContract:
         raise ValueError(f"invalid program AD linalg primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD linalg primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
 
 

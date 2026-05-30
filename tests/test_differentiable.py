@@ -5643,6 +5643,123 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
     )
 
 
+def _transform_rule_from_contract(contract):
+    return PrimitiveTransformRule(
+        identity=contract.identity,
+        derivative_rule=contract.derivative_rule,
+        batching_rule=contract.batching_rule,
+        lowering_rule=contract.lowering_rule,
+        lowering_metadata=contract.lowering_metadata,
+        shape_rule=contract.shape_rule,
+        dtype_rule=contract.dtype_rule,
+        static_argument_rule=contract.static_argument_rule,
+        nondifferentiable_policy=contract.nondifferentiable_policy,
+        effect=contract.effect,
+    )
+
+
+def test_program_ad_array_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported array primitives must execute through registry validation rules."""
+
+    original = primitive_contract_for("scpn.program_ad.array:getitem")
+    calls: list[str] = []
+
+    assert original.shape_rule is not None
+    assert original.dtype_rule is not None
+    assert original.static_argument_rule is not None
+
+    def shape_rule(args):
+        calls.append("shape")
+        return original.shape_rule(args)
+
+    def dtype_rule(args):
+        calls.append("dtype")
+        return original.dtype_rule(args)
+
+    def static_argument_rule(args):
+        calls.append("static")
+        return original.static_argument_rule(args)
+
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        PrimitiveTransformRule(
+            identity=original.identity,
+            derivative_rule=original.derivative_rule,
+            batching_rule=original.batching_rule,
+            lowering_rule=original.lowering_rule,
+            lowering_metadata=original.lowering_metadata,
+            shape_rule=shape_rule,
+            dtype_rule=dtype_rule,
+            static_argument_rule=static_argument_rule,
+            nondifferentiable_policy=original.nondifferentiable_policy,
+            effect=original.effect,
+        ),
+        overwrite=True,
+    )
+    try:
+        result = whole_program_value_and_grad(
+            lambda values: np.sum(np.reshape(values, (2, 2))[:, 1:]),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+
+    assert result.value == pytest.approx(6.0)
+    assert set(calls) == {"shape", "dtype", "static"}
+
+
+def test_program_ad_linalg_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported linalg primitives must execute through registry validation rules."""
+
+    original = primitive_contract_for("scpn.program_ad.linalg:det")
+    calls: list[str] = []
+
+    assert original.shape_rule is not None
+    assert original.dtype_rule is not None
+    assert original.static_argument_rule is not None
+
+    def shape_rule(args):
+        calls.append("shape")
+        return original.shape_rule(args)
+
+    def dtype_rule(args):
+        calls.append("dtype")
+        return original.dtype_rule(args)
+
+    def static_argument_rule(args):
+        calls.append("static")
+        return original.static_argument_rule(args)
+
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        PrimitiveTransformRule(
+            identity=original.identity,
+            derivative_rule=original.derivative_rule,
+            batching_rule=original.batching_rule,
+            lowering_rule=original.lowering_rule,
+            lowering_metadata=original.lowering_metadata,
+            shape_rule=shape_rule,
+            dtype_rule=dtype_rule,
+            static_argument_rule=static_argument_rule,
+            nondifferentiable_policy=original.nondifferentiable_policy,
+            effect=original.effect,
+        ),
+        overwrite=True,
+    )
+    try:
+        result = whole_program_value_and_grad(
+            lambda values: np.linalg.det(np.reshape(values, (2, 2))),
+            np.array([1.0, 2.0, 3.0, 5.0], dtype=np.float64),
+        )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+
+    assert result.value == pytest.approx(-1.0)
+    assert set(calls) == {"shape", "dtype", "static"}
+
+
 def test_program_ad_advanced_indexing_fails_closed() -> None:
     """Program AD array indexing should reject dynamic advanced index selectors."""
 
