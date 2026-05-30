@@ -953,12 +953,14 @@ class TraceADArray:
             raw_target: object = shape[0]
         else:
             raw_target = shape
+        _require_program_ad_shape_contract("reshape", (self, raw_target))
         target = _normalise_trace_reshape_shape(raw_target, self.size)
         return TraceADArray(tuple(self._items), target, self.context)
 
     def ravel(self) -> TraceADArray:
         """Return a flat view-preserving program AD array."""
 
+        _require_program_ad_shape_contract("ravel", (self,))
         return TraceADArray(tuple(self._items), (self.size,), self.context)
 
     def flatten(self) -> TraceADArray:
@@ -2529,6 +2531,7 @@ def _trace_transpose(
     axes: tuple[int, ...] | None = None,
 ) -> TraceADArray:
     array = _coerce_trace_array(values, context)
+    _require_program_ad_shape_contract("transpose", (array, axes))
     if array.ndim < 2:
         return array.copy()
     if axes is None:
@@ -5486,6 +5489,13 @@ _PROGRAM_AD_ARRAY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     for name in ("getitem", "take")
 }
 
+_PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE = "scpn.program_ad.shape"
+_PROGRAM_AD_SHAPE_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("reshape", "ravel", "transpose")
+}
+
 _PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
 _PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
@@ -5516,6 +5526,31 @@ def _program_ad_array_derivative_rule(name: str) -> CustomDerivativeRule:
         name=f"program_ad_array_{name}_trace_contract",
         value_fn=_program_ad_array_direct_value,
         jvp_rule=_program_ad_array_direct_jvp,
+    )
+
+
+def _program_ad_shape_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD shape primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_shape_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD shape primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_shape_derivative_rule(name: str) -> CustomDerivativeRule:
+    return CustomDerivativeRule(
+        name=f"program_ad_shape_{name}_trace_contract",
+        value_fn=_program_ad_shape_direct_value,
+        jvp_rule=_program_ad_shape_direct_jvp,
     )
 
 
@@ -5577,6 +5612,58 @@ def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
     return _program_ad_array_dtype_of(args[0])
 
 
+def _program_ad_shape_reshape_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD shape reshape rule requires array and target shape")
+    source_shape = _program_ad_array_shape_of(args[0])
+    return _normalise_trace_reshape_shape(args[1], int(np.prod(source_shape)))
+
+
+def _program_ad_shape_ravel_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD shape ravel rule requires one array")
+    return (int(np.prod(_program_ad_array_shape_of(args[0]))),)
+
+
+def _program_ad_shape_normalised_transpose_axes(
+    array_shape: tuple[int, ...],
+    axes: object,
+) -> tuple[int, ...]:
+    if len(array_shape) < 2:
+        return ()
+    if axes is None:
+        return tuple(reversed(range(len(array_shape))))
+    if not isinstance(axes, Sequence) or isinstance(axes, (str, bytes)):
+        raise ValueError("program AD shape transpose axes must be a static axis sequence")
+    raw_axes = tuple(cast(Any, axes))
+    if len(raw_axes) != len(array_shape):
+        raise ValueError("program AD shape transpose axes must match array rank")
+    normalised_axes = tuple(
+        _normalise_axis("axis", cast(int, axis), len(array_shape)) for axis in raw_axes
+    )
+    if sorted(normalised_axes) != list(range(len(array_shape))):
+        raise ValueError("program AD shape transpose axes must be a permutation")
+    return normalised_axes
+
+
+def _program_ad_shape_transpose_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD shape transpose rule requires array and optional axes")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axes = _program_ad_shape_normalised_transpose_axes(
+        source_shape, args[1] if len(args) == 2 else None
+    )
+    if not axes:
+        return source_shape
+    return tuple(source_shape[axis] for axis in axes)
+
+
+def _program_ad_shape_dtype_rule(args: tuple[object, ...]) -> str:
+    if not args:
+        raise ValueError("program AD shape dtype rule requires an array operand")
+    return _program_ad_array_dtype_of(args[0])
+
+
 def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD array getitem static rule requires array and index")
@@ -5605,6 +5692,29 @@ def _program_ad_array_take_static_arguments(args: tuple[object, ...]) -> tuple[o
     )
 
 
+def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD shape reshape static rule requires array and target shape")
+    source_shape = _program_ad_array_shape_of(args[0])
+    return (_normalise_trace_reshape_shape(args[1], int(np.prod(source_shape))),)
+
+
+def _program_ad_shape_no_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD shape static rule requires one array")
+    return ()
+
+
+def _program_ad_shape_transpose_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD shape transpose static rule requires array and optional axes")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axes = _program_ad_shape_normalised_transpose_axes(
+        source_shape, args[1] if len(args) == 2 else None
+    )
+    return () if not axes else (axes,)
+
+
 _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "getitem": _program_ad_array_getitem_shape,
     "take": _program_ad_array_take_shape,
@@ -5613,6 +5723,18 @@ _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
 _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
     "getitem": _program_ad_array_getitem_static_arguments,
     "take": _program_ad_array_take_static_arguments,
+}
+
+_PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "reshape": _program_ad_shape_reshape_shape,
+    "ravel": _program_ad_shape_ravel_shape,
+    "transpose": _program_ad_shape_transpose_shape,
+}
+
+_PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "reshape": _program_ad_shape_reshape_static_arguments,
+    "ravel": _program_ad_shape_no_static_arguments,
+    "transpose": _program_ad_shape_transpose_static_arguments,
 }
 
 
@@ -5657,6 +5779,50 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
     }
 
 
+def _program_ad_shape_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != len(axes):
+        raise ValueError("program AD shape batching axes must match argument count")
+    if not args:
+        raise ValueError("program AD shape batching requires an array operand")
+    array = _as_real_numeric_array("program AD shape batched operand", args[0])
+    axis = axes[0]
+    if axis is None:
+        return function(*args)
+    if any(item is not None for item in axes[1:]):
+        raise ValueError("program AD shape batching supports static non-array arguments only")
+    axis_index = _normalise_axis("axes[0]", axis, array.ndim)
+    outputs = [
+        _as_real_numeric_array(
+            "program AD shape batched output",
+            function(np.take(array, batch_index, axis=axis_index), *args[1:]),
+        )
+        for batch_index in range(int(array.shape[axis_index]))
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff shape dialect interchange; executable lowering blocked",
+        "mlir_op": f"scpn_diff.shape.{name}",
+        "llvm": "blocked_until_executable_shape_lowering",
+        "rust": "blocked_until_polyglot_shape_ad",
+        "static_argument_rule": "required",
+        "static_signature": {
+            "reshape": "target_shape",
+            "ravel": "none",
+            "transpose": "axes",
+        }[name],
+    }
+
+
 def _register_program_ad_array_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -5671,6 +5837,25 @@ def _register_program_ad_array_primitive_contracts() -> None:
                 dtype_rule=_program_ad_array_dtype_rule,
                 static_argument_rule=_PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES[name],
                 nondifferentiable_policy=_PROGRAM_AD_ARRAY_POLICY,
+                effect="pure",
+            )
+        )
+
+
+def _register_program_ad_shape_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_SHAPE_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_shape_derivative_rule(name),
+                batching_rule=_program_ad_shape_batching_rule,
+                lowering_metadata=_program_ad_shape_lowering_metadata(name),
+                shape_rule=_PROGRAM_AD_SHAPE_SHAPE_RULES[name],
+                dtype_rule=_program_ad_shape_dtype_rule,
+                static_argument_rule=_PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES[name],
+                nondifferentiable_policy=_PROGRAM_AD_SHAPE_POLICY,
                 effect="pure",
             )
         )
@@ -5720,6 +5905,23 @@ def _require_program_ad_array_contract(
         raise ValueError(f"invalid program AD array primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD array primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
+def _require_program_ad_shape_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = _PROGRAM_AD_SHAPE_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD shape primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_SHAPE_POLICY:
+        raise ValueError(f"invalid program AD shape primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD shape primitive effect for {identity.key}")
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
@@ -6273,6 +6475,7 @@ def _require_program_ad_linalg_contract(
 
 
 _register_program_ad_array_primitive_contracts()
+_register_program_ad_shape_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
 
 
