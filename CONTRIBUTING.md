@@ -89,7 +89,7 @@ fix(bridge): correct XXZ Hamiltonian sign convention
 docs(tutorials): add Floquet time crystal tutorial
 ```
 
-Every commit message must include a `Co-Authored-By:` trailer (enforced
+Every commit message must include the exact authorship line (enforced
 by `tools/check_commit_trailers.py` as a `commit-msg` pre-commit hook):
 
 ```
@@ -97,7 +97,7 @@ feat(analysis): add Krylov complexity probe for sync transition
 
 Short explanation of *why* this change.
 
-Co-Authored-By: Arcane Sapience <protoscience@anulum.li>
+Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
 ```
 
 The subject line must not contain these words: `elite`, `Elite`,
@@ -109,19 +109,19 @@ their removal from elsewhere in the repo.
 ### Merging Dependabot pull requests
 
 `gh pr merge --squash --delete-branch` on its own keeps Dependabot's
-default commit message, which omits the `Co-Authored-By` trailer.
+default commit message, which omits the required authorship line.
 Use the following form so the resulting squash commit still passes
-the trailer check:
+the authorship-line check:
 
 ```bash
 gh pr merge <N> --squash --delete-branch \
   --body "$(gh pr view <N> --json body -q .body)
 
-Co-Authored-By: Arcane Sapience <protoscience@anulum.li>"
+Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)"
 ```
 
 The auditor in `tools/check_commit_trailers.py` runs weekly in CI and
-will flag any future Dependabot merge that omits the trailer. Seven
+will flag any future Dependabot merge that omits the authorship line. Seven
 merges made on 2026-04-17 before the hook existed are in the
 historical-exempt list in that file.
 

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Commit-trailer auditor
-name: Commit Trailer Audit
+# SCPN Quantum Control — Commit-authorship auditor
+name: Commit Authorship Audit
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
     branches: [main]
   schedule:
     # Weekly Monday 05:00 UTC so any Dependabot merge that sneaks
-    # through without Co-Authored-By is surfaced within 7 days.
+    # through without the required authorship line is surfaced within 7 days.
     - cron: '0 5 * * 1'
   workflow_dispatch:
 
@@ -76,6 +76,6 @@ jobs:
           esac
           echo "range=$RANGE" >> "$GITHUB_OUTPUT"
           echo "Audit range: $RANGE"
-      - name: Run commit-trailer auditor
+      - name: Run commit-authorship auditor
         if: steps.range.outputs.range != ''
         run: python tools/check_commit_trailers.py --range "${{ steps.range.outputs.range }}"

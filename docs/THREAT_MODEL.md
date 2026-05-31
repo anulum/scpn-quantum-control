@@ -108,7 +108,7 @@ We explicitly do **not** plan against:
   weekly.
 - Pre-commit hooks include `gitleaks` and a custom
   `tools/check_secrets.py` vault-pattern scanner.
-  `tools/check_commit_trailers.py` enforces `Co-Authored-By` and
+  `tools/check_commit_trailers.py` enforces the required authorship line and
   an anti-slop word-list on commit subjects.
 - Releases carry CycloneDX SBOMs (`sbom.yml`) and Sigstore
   signatures (`publish.yml`). Downstream verifies without a PyPI

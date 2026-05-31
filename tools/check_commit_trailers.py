@@ -12,7 +12,7 @@ Two roles:
 
 1. **commit-msg hook** — invoked with a single path argument (the file
    holding the pending commit message). Used by pre-commit to block
-   local commits that omit `Co-Authored-By:` or that include any of
+   local commits that omit `Authored by` or that include any of
    the banned quality / slop words in the commit subject or body.
 
 2. **CI auditor** — invoked without arguments. Walks every commit
@@ -39,10 +39,19 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
-# Required trailer in every commit message.
-REQUIRED_TRAILER_RE = re.compile(r"^Co-Authored-By:\s+.+<\S+@\S+>\s*$", re.MULTILINE)
+# Required authorship line in every new commit message. This is deliberately
+# not a Git `Co-Authored-By` trailer; the project policy is forward-only from
+# AUTHORSHIP_POLICY_EFFECTIVE_UTC and historical trailers remain accepted only
+# for commits whose immutable commit timestamp predates that boundary.
+REQUIRED_AUTHORSHIP_LINE = "Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)"
+AUTHORSHIP_POLICY_EFFECTIVE_UTC = datetime.fromisoformat("2026-05-31T21:46:25+00:00")
+LEGACY_COAUTHOR_TRAILER_RE = re.compile(
+    r"^Co-Authored-By:\s+Arcane Sapience\s+<protoscience@anulum\.li>\s*$",
+    re.MULTILINE,
+)
 
 # Banned tokens per `feedback_no_internal_quality_labels` and
 # `feedback_anti_slop_policy`. Case-insensitive whole-word match.
@@ -91,7 +100,7 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
         "4bbcc87",
         # 2026-05-18: five Dependabot squash merges were created through
         # the protected branch UI with a literal escaped "\n\n" before the
-        # trailer, so Git did not parse a real Co-Authored-By trailer.
+        # trailer, so Git did not parse a real authorship line.
         # Force-amending them would rewrite published main history; the
         # waiver is recorded in docs/internal/AUDIT_INDEX.md.
         "d07a7ea",
@@ -111,7 +120,16 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
 )
 
 
-def _message_violations(msg: str, check_body_banned: bool = False) -> list[str]:
+def _has_required_authorship_line(msg: str) -> bool:
+    """Return True when the exact required authorship line is present."""
+    return any(line.strip() == REQUIRED_AUTHORSHIP_LINE for line in msg.splitlines())
+
+
+def _message_violations(
+    msg: str,
+    check_body_banned: bool = False,
+    allow_legacy_trailer: bool = False,
+) -> list[str]:
     """Return a list of violations for this commit message.
 
     When `check_body_banned` is False (the default for the commit-msg
@@ -121,8 +139,10 @@ def _message_violations(msg: str, check_body_banned: bool = False) -> list[str]:
     words in the course of removing them, which is legitimate.
     """
     violations: list[str] = []
-    if not REQUIRED_TRAILER_RE.search(msg):
-        violations.append("missing `Co-Authored-By:` trailer")
+    has_current_line = _has_required_authorship_line(msg)
+    has_legacy_line = bool(LEGACY_COAUTHOR_TRAILER_RE.search(msg))
+    if not has_current_line and not (allow_legacy_trailer and has_legacy_line):
+        violations.append(f"missing `{REQUIRED_AUTHORSHIP_LINE}` authorship line")
     # Extract subject line (Keep a Changelog / Conventional Commits)
     subject = next((line for line in msg.splitlines() if line.strip()), "")
     scope = msg if check_body_banned else subject
@@ -148,8 +168,10 @@ def _commit_msg_hook(path: Path) -> int:
             file=sys.stderr,
         )
         print(
-            '  gh pr merge <N> --squash --body "$(gh pr view <N> --json body -q .body)'
-            '\\n\\nCo-Authored-By: Arcane Sapience <protoscience@anulum.li>"',
+            (
+                '  gh pr merge <N> --squash --body "$(gh pr view <N> '
+                f'--json body -q .body)\\n\\n{REQUIRED_AUTHORSHIP_LINE}"'
+            ),
             file=sys.stderr,
         )
         return 1
@@ -187,7 +209,17 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
             text=True,
             check=True,
         )
-        violations = _message_violations(msg_result.stdout)
+        date_result = subprocess.run(
+            ["git", "log", "-1", "--format=%cI", sha],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        committed_at = datetime.fromisoformat(date_result.stdout.strip())
+        violations = _message_violations(
+            msg_result.stdout,
+            allow_legacy_trailer=committed_at < AUTHORSHIP_POLICY_EFFECTIVE_UTC,
+        )
         if violations:
             fails.append(f"{short}: {'; '.join(violations)}")
     print(f"Audited {len(shas)} commits in {range_spec}")

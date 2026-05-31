@@ -101,7 +101,7 @@ Pull requests get the same triage treatment as issues, plus:
   comments can still land.
 - Maintainer review is typically ≤ 72 hours on P0 / P1, ≤ 1 week on P2,
   weekly cadence on P3.
-- `co-authored-by` trailer is required on every commit (see
+- The required authorship line is required on every commit (see
   `CONTRIBUTING.md`).
 
 ## Stale-bot policy
@@ -330,7 +330,7 @@ a row, or if an open `P0-critical` has not been responded to in
 ## Relationship to other docs
 
 * `CONTRIBUTING.md` — what a contributor does **before** opening an
-  issue or PR (linting, coverage, Co-Authored-By trailer).
+  issue or PR (linting, coverage, required authorship line).
 * `SECURITY.md` — private disclosure flow; triage entry point for
   any security label.
 * `docs/THREAT_MODEL.md` — severity calibration for security
@@ -366,4 +366,3 @@ edit this file directly and land on `main`.
 |---|---|
 | 2026-04-17 | Initial policy (closes audit item B11). |
 | 2026-04-17 | Worked examples + label combination matrix + flow diagrams added under SUPERIOR-doc-standard remediation. |
-

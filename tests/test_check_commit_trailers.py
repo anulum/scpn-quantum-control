@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for commit trailer checker
-"""Tests for the commit-message trailer checker."""
+# SCPN Quantum Control — Tests for commit authorship checker
+"""Tests for the commit-message authorship checker."""
 
 from __future__ import annotations
 
@@ -31,6 +31,9 @@ _check_commit_trailers = _load_tool_module(
     "check_commit_trailers.py",
 )
 
+REQUIRED_AUTHORSHIP_LINE = "Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)"
+LEGACY_COAUTHOR_TRAILER = "Co-Authored-By: " + "Arcane Sapience <protoscience@anulum.li>"
+
 
 def _message_file(tmp_path: Path, text: str) -> Path:
     path = tmp_path / "COMMIT_EDITMSG"
@@ -38,14 +41,14 @@ def _message_file(tmp_path: Path, text: str) -> Path:
     return path
 
 
-def test_commit_message_hook_accepts_required_trailer(tmp_path: Path):
+def test_commit_message_hook_accepts_required_authorship_line(tmp_path: Path):
     path = _message_file(
         tmp_path,
         "\n".join(
             [
                 "Add release audit coverage",
                 "",
-                "Co-Authored-By: Arcane Sapience <protoscience@anulum.li>",
+                REQUIRED_AUTHORSHIP_LINE,
             ]
         ),
     )
@@ -53,11 +56,11 @@ def test_commit_message_hook_accepts_required_trailer(tmp_path: Path):
     assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 0
 
 
-def test_commit_message_hook_rejects_missing_trailer(tmp_path: Path, capsys):
+def test_commit_message_hook_rejects_missing_authorship_line(tmp_path: Path, capsys):
     path = _message_file(tmp_path, "Add release audit coverage\n")
 
     assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 1
-    assert "missing `Co-Authored-By:` trailer" in capsys.readouterr().err
+    assert f"missing `{REQUIRED_AUTHORSHIP_LINE}` authorship line" in capsys.readouterr().err
 
 
 def test_commit_message_hook_rejects_banned_subject_word(tmp_path: Path, capsys):
@@ -67,7 +70,7 @@ def test_commit_message_hook_rejects_banned_subject_word(tmp_path: Path, capsys)
             [
                 "Add comprehensive release audit",
                 "",
-                "Co-Authored-By: Arcane Sapience <protoscience@anulum.li>",
+                REQUIRED_AUTHORSHIP_LINE,
             ]
         ),
     )
@@ -83,13 +86,34 @@ def test_message_violations_allow_banned_words_in_body_by_default():
             "",
             "This removes a prior comprehensive wording from docs.",
             "",
-            "Co-Authored-By: Arcane Sapience <protoscience@anulum.li>",
+            REQUIRED_AUTHORSHIP_LINE,
         ]
     )
 
     assert _check_commit_trailers._message_violations(message) == []
     assert _check_commit_trailers._message_violations(message, check_body_banned=True) == [
         "banned word(s) in message: comprehensive"
+    ]
+
+
+def test_legacy_coauthor_trailer_is_transition_only():
+    message = "\n".join(
+        [
+            "Add release audit coverage",
+            "",
+            LEGACY_COAUTHOR_TRAILER,
+        ]
+    )
+
+    assert (
+        _check_commit_trailers._message_violations(
+            message,
+            allow_legacy_trailer=True,
+        )
+        == []
+    )
+    assert _check_commit_trailers._message_violations(message) == [
+        f"missing `{REQUIRED_AUTHORSHIP_LINE}` authorship line"
     ]
 
 

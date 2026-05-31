@@ -275,5 +275,5 @@ Before tagging:
 8. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
    result-pack evidence argument when applicable.
 9. Run the scoped docs build and version-consistency checks.
-10. Commit with the required trailer after staged-diff audit.
+10. Commit with the required authorship line after staged-diff audit.
 11. Push the commit and wait for CI before creating a release tag.

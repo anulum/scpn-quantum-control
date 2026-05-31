@@ -43,7 +43,7 @@ repos:
         pass_filenames: false
 
       - id: commit-trailers
-        name: Co-Authored-By + anti-slop trailer check
+        name: authorship line + anti-slop commit-message check
         entry: python tools/check_commit_trailers.py
         language: python
         stages: [commit-msg]
