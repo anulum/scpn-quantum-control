@@ -1174,6 +1174,18 @@ class TraceADArray:
             return _coerce_trace_array(args[0], self.context).mean(
                 axis=cast(int | None, kwargs.get("axis"))
             )
+        if func is np.trapezoid or func is getattr(np, "trapz", None):
+            if len(args) < 1 or len(args) > 2 or kwargs.keys() - {"x", "dx", "axis"}:
+                raise ValueError("program AD np.trapezoid supports y, x, dx, and axis")
+            if len(args) == 2 and "x" in kwargs:
+                raise ValueError("program AD np.trapezoid x must be supplied once")
+            x_value = args[1] if len(args) == 2 else kwargs.get("x")
+            return _trace_trapezoid(
+                _coerce_trace_array(args[0], self.context),
+                x=x_value,
+                dx=kwargs.get("dx", 1.0),
+                axis=kwargs.get("axis", -1),
+            )
         if func is np.var:
             if len(args) != 1 or kwargs.keys() - {"axis", "ddof"}:
                 raise ValueError("program AD np.var supports one array, axis, and ddof")
@@ -2546,6 +2558,90 @@ def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADSca
             total = total + array._items[int(np.ravel_multi_index(source_index, array.shape))]
         items.append(total)
     return TraceADArray(tuple(items), reduced_shape, array.context)
+
+
+def _normalise_trapezoid_axis(axis: object, ndim: int) -> int:
+    if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD np.trapezoid axis must be a static integer")
+    try:
+        return _normalise_axis("axis", int(axis), ndim)
+    except ValueError as exc:
+        if "out of bounds" in str(exc):
+            raise ValueError("program AD np.trapezoid axis out of bounds") from exc
+        raise
+
+
+def _trace_trapezoid_widths(
+    array: TraceADArray,
+    *,
+    x: object,
+    dx: object,
+    axis: int,
+) -> NDArray[np.float64]:
+    axis_size = array.shape[axis]
+    if axis_size < 2:
+        raise ValueError("program AD np.trapezoid requires at least two samples along axis")
+    width_shape = array.shape[:axis] + (axis_size - 1,) + array.shape[axis + 1 :]
+    if isinstance(x, (TraceADArray, TraceADScalar)):
+        raise ValueError("program AD np.trapezoid grid x must be static real numeric")
+    if x is None:
+        dx_value = _as_real_scalar("program AD np.trapezoid dx", dx)
+        if not np.isfinite(dx_value):
+            raise ValueError("program AD np.trapezoid dx must be finite")
+        return np.full(width_shape, dx_value, dtype=np.float64)
+    dx_value = _as_real_scalar("program AD np.trapezoid dx", dx)
+    if dx_value != 1.0:
+        raise ValueError("program AD np.trapezoid accepts either x or dx, not both")
+    x_array = _as_real_numeric_array("program AD np.trapezoid x", x)
+    if not bool(np.all(np.isfinite(x_array))):
+        raise ValueError("program AD np.trapezoid x must contain only finite values")
+    if x_array.ndim == 1:
+        if x_array.shape[0] != axis_size:
+            raise ValueError("program AD np.trapezoid x must match the integration axis")
+        reshape = [1 for _ in array.shape]
+        reshape[axis] = axis_size - 1
+        return cast(
+            NDArray[np.float64],
+            np.broadcast_to(np.diff(x_array).reshape(tuple(reshape)), width_shape).copy(),
+        )
+    if tuple(x_array.shape) != array.shape:
+        raise ValueError(
+            "program AD np.trapezoid x must match the integration axis or full array shape"
+        )
+    return cast(NDArray[np.float64], np.diff(x_array, axis=axis))
+
+
+def _trace_trapezoid(
+    array: TraceADArray,
+    *,
+    x: object = None,
+    dx: object = 1.0,
+    axis: object = -1,
+) -> TraceADScalar | TraceADArray:
+    _require_program_ad_reduction_contract("trapezoid", (array, x, dx, axis))
+    axis_index = _normalise_trapezoid_axis(axis, array.ndim)
+    widths = _trace_trapezoid_widths(array, x=x, dx=dx, axis=axis_index)
+    reduced_shape = array.shape[:axis_index] + array.shape[axis_index + 1 :]
+
+    def integrate_at(reduced_index: tuple[int, ...]) -> TraceADScalar:
+        total = _coerce_trace_scalar(0.0, array.context)
+        for segment_index in range(array.shape[axis_index] - 1):
+            left_index = reduced_index[:axis_index] + (segment_index,) + reduced_index[axis_index:]
+            right_index = (
+                reduced_index[:axis_index] + (segment_index + 1,) + reduced_index[axis_index:]
+            )
+            width_index = (
+                reduced_index[:axis_index] + (segment_index,) + reduced_index[axis_index:]
+            )
+            left = array._items[int(np.ravel_multi_index(left_index, array.shape))]
+            right = array._items[int(np.ravel_multi_index(right_index, array.shape))]
+            total = total + (left + right) * (0.5 * float(widths[width_index]))
+        return total
+
+    if reduced_shape == ():
+        return integrate_at(())
+    items = tuple(integrate_at(tuple(index)) for index in np.ndindex(reduced_shape))
+    return TraceADArray(items, reduced_shape, array.context)
 
 
 def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
@@ -6677,7 +6773,7 @@ _PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.reduction"
 _PROGRAM_AD_REDUCTION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_REDUCTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("sum", "prod", "mean")
+    for name in ("sum", "prod", "mean", "trapezoid")
 }
 
 _PROGRAM_AD_ELEMENTWISE_PRIMITIVE_NAMESPACE = "scpn.program_ad.elementwise"
@@ -7659,6 +7755,39 @@ def _program_ad_reduction_mean_vjp(
     return np.full(vector.shape, scalar_cotangent / float(vector.size), dtype=np.float64)
 
 
+def _program_ad_reduction_trapezoid_flat_weights(size: int) -> NDArray[np.float64]:
+    if size < 2:
+        raise ValueError("program AD reduction trapezoid direct rule requires at least two values")
+    weights = np.ones(size, dtype=np.float64)
+    weights[0] = 0.5
+    weights[-1] = 0.5
+    return weights
+
+
+def _program_ad_reduction_trapezoid_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("trapezoid", values)
+    _program_ad_reduction_trapezoid_flat_weights(vector.size)
+    return np.array([float(np.trapezoid(vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_trapezoid_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector, tangent_vector = _program_ad_reduction_tangent_pair("trapezoid", values, tangent)
+    _program_ad_reduction_trapezoid_flat_weights(vector.size)
+    return np.array([float(np.trapezoid(tangent_vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_trapezoid_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("trapezoid", values)
+    scalar_cotangent = _program_ad_reduction_scalar_cotangent("trapezoid", cotangent)
+    return scalar_cotangent * _program_ad_reduction_trapezoid_flat_weights(vector.size)
+
+
 def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "sum":
         return CustomDerivativeRule(
@@ -7680,6 +7809,13 @@ def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
             value_fn=_program_ad_reduction_mean_value,
             jvp_rule=_program_ad_reduction_mean_jvp,
             vjp_rule=_program_ad_reduction_mean_vjp,
+        )
+    if name == "trapezoid":
+        return CustomDerivativeRule(
+            name="program_ad_reduction_trapezoid_direct_rule",
+            value_fn=_program_ad_reduction_trapezoid_value,
+            jvp_rule=_program_ad_reduction_trapezoid_jvp,
+            vjp_rule=_program_ad_reduction_trapezoid_vjp,
         )
     raise ValueError(f"unsupported program AD reduction primitive {name}")
 
@@ -8028,6 +8164,128 @@ def program_ad_reduction_prod_derivative_rule(
     """Build an exact direct derivative rule for a fixed product reduction signature."""
 
     return _program_ad_reduction_static_rule("prod", source_shape, axis)
+
+
+def _program_ad_reduction_trapezoid_static_widths(
+    source_shape: tuple[int, ...],
+    *,
+    x: object,
+    dx: object,
+    axis: int,
+) -> NDArray[np.float64]:
+    axis_size = source_shape[axis]
+    if axis_size < 2:
+        raise ValueError(
+            "program AD reduction trapezoid direct rule requires at least two samples along axis"
+        )
+    width_shape = source_shape[:axis] + (axis_size - 1,) + source_shape[axis + 1 :]
+    if isinstance(x, (TraceADArray, TraceADScalar)):
+        raise ValueError("program AD reduction trapezoid grid x must be static real numeric")
+    if x is None:
+        dx_value = _as_real_scalar("program AD reduction trapezoid dx", dx)
+        return np.full(width_shape, dx_value, dtype=np.float64)
+    dx_value = _as_real_scalar("program AD reduction trapezoid dx", dx)
+    if dx_value != 1.0:
+        raise ValueError("program AD reduction trapezoid accepts either x or dx, not both")
+    x_array = _as_real_numeric_array("program AD reduction trapezoid x", x)
+    if not bool(np.all(np.isfinite(x_array))):
+        raise ValueError("program AD reduction trapezoid x must contain only finite values")
+    if x_array.ndim == 1:
+        if x_array.shape[0] != axis_size:
+            raise ValueError("program AD reduction trapezoid x must match the integration axis")
+        reshape = [1 for _ in source_shape]
+        reshape[axis] = axis_size - 1
+        return cast(
+            NDArray[np.float64],
+            np.broadcast_to(np.diff(x_array).reshape(tuple(reshape)), width_shape).copy(),
+        )
+    if tuple(x_array.shape) != source_shape:
+        raise ValueError(
+            "program AD reduction trapezoid x must match the integration axis or full array shape"
+        )
+    return cast(NDArray[np.float64], np.diff(x_array, axis=axis))
+
+
+def _program_ad_reduction_trapezoid_static_weights(
+    source_shape: tuple[int, ...],
+    *,
+    x: object,
+    dx: object,
+    axis: int,
+) -> NDArray[np.float64]:
+    widths = _program_ad_reduction_trapezoid_static_widths(source_shape, x=x, dx=dx, axis=axis)
+    weights = np.zeros(source_shape, dtype=np.float64)
+    reduced_shape = source_shape[:axis] + source_shape[axis + 1 :]
+    for reduced_index in np.ndindex(reduced_shape):
+        reduced_index_tuple = tuple(reduced_index)
+        for segment_index in range(source_shape[axis] - 1):
+            left_index = reduced_index_tuple[:axis] + (segment_index,) + reduced_index_tuple[axis:]
+            right_index = (
+                reduced_index_tuple[:axis] + (segment_index + 1,) + reduced_index_tuple[axis:]
+            )
+            width_index = (
+                reduced_index_tuple[:axis] + (segment_index,) + reduced_index_tuple[axis:]
+            )
+            half_width = 0.5 * float(widths[width_index])
+            weights[left_index] += half_width
+            weights[right_index] += half_width
+    return weights
+
+
+def program_ad_reduction_trapezoid_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    x: object = None,
+    dx: object = 1.0,
+    axis: int = -1,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed trapezoid integration signature."""
+
+    source = _program_ad_reduction_normalise_static_shape("trapezoid", source_shape)
+    normalised_axis = _normalise_trapezoid_axis(axis, len(source))
+    weights = _program_ad_reduction_trapezoid_static_weights(
+        source, x=x, dx=dx, axis=normalised_axis
+    )
+    output_shape = _program_ad_reduction_output_shape(source, normalised_axis)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        values_array = _program_ad_reduction_source_vector(
+            "trapezoid", "values", values, source_shape=source
+        ).reshape(source)
+        return _program_ad_float64_vector_result(
+            np.sum(values_array * weights, axis=normalised_axis)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_reduction_source_vector("trapezoid", "values", values, source_shape=source)
+        tangent_array = _program_ad_reduction_source_vector(
+            "trapezoid", "tangent", tangent, source_shape=source
+        ).reshape(source)
+        return _program_ad_float64_vector_result(
+            np.sum(tangent_array * weights, axis=normalised_axis)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_reduction_source_vector("trapezoid", "values", values, source_shape=source)
+        cotangent_array = _program_ad_reduction_cotangent_array(
+            "trapezoid", cotangent, output_shape=output_shape
+        )
+        if output_shape == ():
+            return _program_ad_float64_vector_result(float(cotangent_array) * weights)
+        expanded = np.expand_dims(cotangent_array, axis=normalised_axis)
+        return _program_ad_float64_vector_result(expanded * weights)
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_reduction_trapezoid_"
+            f"{_program_ad_shape_signature(source)}_axis_{normalised_axis}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
 
 
 def _program_ad_elementwise_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -10198,6 +10456,19 @@ def _program_ad_reduction_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return source_shape[:normalised_axis] + source_shape[normalised_axis + 1 :]
 
 
+def _program_ad_reduction_trapezoid_axis(args: tuple[object, ...]) -> int:
+    if len(args) != 4:
+        raise ValueError("program AD trapezoid rule requires y, x, dx, and axis")
+    return _normalise_trapezoid_axis(args[3], len(_program_ad_array_shape_of(args[0])))
+
+
+def _program_ad_reduction_trapezoid_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = _program_ad_reduction_trapezoid_axis(args)
+    _program_ad_reduction_trapezoid_static_widths(source_shape, x=args[1], dx=args[2], axis=axis)
+    return source_shape[:axis] + source_shape[axis + 1 :]
+
+
 def _program_ad_reduction_dtype_rule(args: tuple[object, ...]) -> str:
     if not args:
         raise ValueError("program AD reduction dtype rule requires an array operand")
@@ -10601,6 +10872,25 @@ def _program_ad_shape_transpose_static_arguments(args: tuple[object, ...]) -> tu
 
 
 def _program_ad_reduction_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) == 4:
+        source_shape = _program_ad_array_shape_of(args[0])
+        axis = _program_ad_reduction_trapezoid_axis(args)
+        _program_ad_reduction_trapezoid_static_widths(
+            source_shape, x=args[1], dx=args[2], axis=axis
+        )
+        x = args[1]
+        if x is None:
+            return (None, _as_real_scalar("program AD trapezoid dx", args[2]), axis)
+        x_array = _as_real_numeric_array("program AD trapezoid x", x)
+        return (
+            (
+                "x",
+                tuple(int(dimension) for dimension in x_array.shape),
+                tuple(float(item) for item in x_array.reshape(-1)),
+            ),
+            1.0,
+            axis,
+        )
     return (_program_ad_reduction_axis(args),)
 
 
@@ -10692,6 +10982,7 @@ _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "sum": _program_ad_reduction_shape,
     "prod": _program_ad_reduction_shape,
     "mean": _program_ad_reduction_shape,
+    "trapezoid": _program_ad_reduction_trapezoid_shape,
 }
 
 _PROGRAM_AD_ELEMENTWISE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -10877,17 +11168,29 @@ def _program_ad_reduction_batching_rule(
     if any(item is not None for item in axes[1:]):
         raise ValueError("program AD reduction batching supports static axes only")
     batch_axis = _normalise_axis("axes[0]", batch_axis, array.ndim)
-    reduction_axis = _program_ad_reduction_axis(args)
+    reduction_axis = (
+        _program_ad_reduction_trapezoid_axis(args)
+        if len(args) == 4
+        else _program_ad_reduction_axis(args)
+    )
     if reduction_axis is not None:
         reduction_axis = _normalise_axis("reduction axis", reduction_axis, array.ndim)
         if reduction_axis == batch_axis:
             raise ValueError("program AD reduction batching cannot reduce the mapped batch axis")
         if reduction_axis > batch_axis:
             reduction_axis -= 1
+    static_tail: tuple[object, ...] = (reduction_axis,)
+    if len(args) == 4 and args[1] is not None:
+        x_array = _as_real_numeric_array("program AD trapezoid batched x", args[1])
+        if tuple(x_array.shape) == tuple(array.shape):
+            raise ValueError(
+                "program AD trapezoid batching requires scalar dx or one-dimensional static x"
+            )
+        static_tail = (args[1], args[2], reduction_axis)
     outputs = [
         _as_real_numeric_array(
             "program AD reduction batched output",
-            function(np.take(array, batch_index, axis=batch_axis), reduction_axis),
+            function(np.take(array, batch_index, axis=batch_axis), *static_tail),
         )
         for batch_index in range(int(array.shape[batch_axis]))
     ]
@@ -10900,11 +11203,13 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "sum": "program_ad_reduction_sum_derivative_rule",
         "prod": "program_ad_reduction_prod_derivative_rule",
         "mean": "program_ad_reduction_mean_derivative_rule",
+        "trapezoid": "program_ad_reduction_trapezoid_derivative_rule",
     }[name]
     nondifferentiable_boundaries = {
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "trapezoid": "static_axis_and_static_grid_spacing",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -10914,7 +11219,11 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "rust": "blocked_until_polyglot_reduction_ad",
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
-        "static_signature": "source_shape:ranked_tensor_shape;axis",
+        "static_signature": (
+            "source_shape:ranked_tensor_shape;axis"
+            if name != "trapezoid"
+            else "source_shape:ranked_tensor_shape;x_or_dx;axis"
+        ),
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],
         "nondifferentiable_boundary_policy": "fail_closed",
     }
@@ -16985,6 +17294,7 @@ __all__ = [
     "program_ad_reduction_mean_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",
+    "program_ad_reduction_trapezoid_derivative_rule",
     "program_ad_selection_clip_derivative_rule",
     "program_ad_selection_where_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
