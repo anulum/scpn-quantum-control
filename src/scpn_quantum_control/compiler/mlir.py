@@ -362,11 +362,13 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             status.identity.key: status.effect
             for status in plan.statuses
             if status.nondifferentiable_policy != "not_declared"
+            and status.nondifferentiable_boundary != "not_declared"
         },
         "nondifferentiable_policies": {
             status.identity.key: status.nondifferentiable_policy
             for status in plan.statuses
             if status.nondifferentiable_policy != "not_declared"
+            and status.nondifferentiable_boundary != "not_declared"
         },
         "nondifferentiable_boundaries": {
             status.identity.key: status.nondifferentiable_boundary
@@ -424,10 +426,14 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "shape_rules": sum(status.has_shape_rule for status in plan.statuses),
             "dtype_rules": sum(status.has_dtype_rule for status in plan.statuses),
             "effects": sum(
-                status.nondifferentiable_policy != "not_declared" for status in plan.statuses
+                status.nondifferentiable_policy != "not_declared"
+                and status.nondifferentiable_boundary != "not_declared"
+                for status in plan.statuses
             ),
             "nondifferentiable_policies": sum(
-                status.nondifferentiable_policy != "not_declared" for status in plan.statuses
+                status.nondifferentiable_policy != "not_declared"
+                and status.nondifferentiable_boundary != "not_declared"
+                for status in plan.statuses
             ),
             "nondifferentiable_boundaries": sum(
                 status.nondifferentiable_boundary != "not_declared" for status in plan.statuses

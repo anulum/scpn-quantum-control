@@ -202,8 +202,12 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
 
     assert plan.statuses[0].nondifferentiable_policy == "fail_closed_at_branch_points"
     assert plan.statuses[0].nondifferentiable_boundary == "not_declared"
+    assert module.metadata["effects"] == {}
+    assert module.metadata["nondifferentiable_policies"] == {}
     assert module.metadata["nondifferentiable_boundaries"] == {}
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.resource_counts["effects"] == 0
+    assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 0
     assert module.resource_counts["uncontracted_primitives"] == 1
