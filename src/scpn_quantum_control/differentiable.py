@@ -5626,29 +5626,96 @@ def _program_ad_shape_derivative_rule(name: str) -> CustomDerivativeRule:
     )
 
 
-def _program_ad_reduction_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
-    raise ValueError(
-        "program AD reduction primitive contracts are executable only through "
-        "operator-intercepted trace dispatch"
-    )
+def _program_ad_reduction_vector(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array(f"program AD reduction {name} values", values).reshape(-1)
+    if vector.size == 0:
+        raise ValueError(f"program AD reduction {name} direct rule requires at least one value")
+    return vector
 
 
-def _program_ad_reduction_direct_jvp(
-    _values: NDArray[np.float64],
-    _tangent: NDArray[np.float64],
+def _program_ad_reduction_tangent_pair(
+    name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _program_ad_reduction_vector(name, values)
+    tangent_vector = _as_real_numeric_array(
+        f"program AD reduction {name} tangent", tangent
+    ).reshape(-1)
+    if tangent_vector.shape != vector.shape:
+        raise ValueError(f"program AD reduction {name} tangent shape must match values shape")
+    return vector, tangent_vector
+
+
+def _program_ad_reduction_sum_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("sum", values)
+    return np.array([float(np.sum(vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_sum_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    raise ValueError(
-        "program AD reduction primitive contracts are executable only through "
-        "operator-intercepted trace dispatch"
-    )
+    _vector, tangent_vector = _program_ad_reduction_tangent_pair("sum", values, tangent)
+    return np.array([float(np.sum(tangent_vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_prod_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("prod", values)
+    return np.array([float(np.prod(vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_prod_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector, tangent_vector = _program_ad_reduction_tangent_pair("prod", values, tangent)
+    total = 0.0
+    for tangent_index in range(vector.size):
+        product = 1.0
+        for factor_index in range(vector.size):
+            product *= (
+                tangent_vector[factor_index]
+                if factor_index == tangent_index
+                else vector[factor_index]
+            )
+        total += product
+    return np.array([float(total)], dtype=np.float64)
+
+
+def _program_ad_reduction_mean_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("mean", values)
+    return np.array([float(np.mean(vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_mean_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    _vector, tangent_vector = _program_ad_reduction_tangent_pair("mean", values, tangent)
+    return np.array([float(np.mean(tangent_vector))], dtype=np.float64)
 
 
 def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
-    return CustomDerivativeRule(
-        name=f"program_ad_reduction_{name}_trace_contract",
-        value_fn=_program_ad_reduction_direct_value,
-        jvp_rule=_program_ad_reduction_direct_jvp,
-    )
+    if name == "sum":
+        return CustomDerivativeRule(
+            name="program_ad_reduction_sum_direct_rule",
+            value_fn=_program_ad_reduction_sum_value,
+            jvp_rule=_program_ad_reduction_sum_jvp,
+        )
+    if name == "prod":
+        return CustomDerivativeRule(
+            name="program_ad_reduction_prod_direct_rule",
+            value_fn=_program_ad_reduction_prod_value,
+            jvp_rule=_program_ad_reduction_prod_jvp,
+        )
+    if name == "mean":
+        return CustomDerivativeRule(
+            name="program_ad_reduction_mean_direct_rule",
+            value_fn=_program_ad_reduction_mean_value,
+            jvp_rule=_program_ad_reduction_mean_jvp,
+        )
+    raise ValueError(f"unsupported program AD reduction primitive {name}")
 
 
 def _program_ad_elementwise_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:

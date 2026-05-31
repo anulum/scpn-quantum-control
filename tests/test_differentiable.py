@@ -4331,6 +4331,53 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
     }
 
 
+def test_program_ad_reduction_primitives_expose_direct_value_jvp_kernels() -> None:
+    """Flat reduction primitive contracts should expose exact direct value/JVP rules."""
+
+    values = np.array([2.0, 0.0, -3.0, 4.0], dtype=np.float64)
+    tangent = np.array([0.5, -1.0, 0.25, 2.0], dtype=np.float64)
+
+    sum_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.reduction", "sum", "1")
+    )
+    prod_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.reduction", "prod", "1")
+    )
+    mean_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.reduction", "mean", "1")
+    )
+
+    assert sum_rule.name == "program_ad_reduction_sum_direct_rule"
+    assert prod_rule.name == "program_ad_reduction_prod_direct_rule"
+    assert mean_rule.name == "program_ad_reduction_mean_direct_rule"
+    assert sum_rule.jvp_rule is not None
+    assert prod_rule.jvp_rule is not None
+    assert mean_rule.jvp_rule is not None
+
+    np.testing.assert_allclose(sum_rule.value_fn(values), [np.sum(values)])
+    np.testing.assert_allclose(sum_rule.jvp_rule(values, tangent), [np.sum(tangent)])
+
+    expected_prod_jvp = np.array(
+        [
+            tangent[0] * values[1] * values[2] * values[3]
+            + values[0] * tangent[1] * values[2] * values[3]
+            + values[0] * values[1] * tangent[2] * values[3]
+            + values[0] * values[1] * values[2] * tangent[3]
+        ],
+        dtype=np.float64,
+    )
+    np.testing.assert_allclose(prod_rule.value_fn(values), [np.prod(values)])
+    np.testing.assert_allclose(
+        prod_rule.jvp_rule(values, tangent),
+        expected_prod_jvp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    np.testing.assert_allclose(mean_rule.value_fn(values), [np.mean(values)])
+    np.testing.assert_allclose(mean_rule.jvp_rule(values, tangent), [np.mean(tangent)])
+
+
 def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
     """Unary elementwise math should expose primitive registry contracts."""
 
