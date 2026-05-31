@@ -512,9 +512,11 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
     primitive_next_hard_gap = {
         identity: gaps[0] for identity, gaps in primitive_hard_gaps.items() if gaps
     }
+    primitive_hard_gap_primitives: dict[str, list[str]] = {}
     primitive_hard_gap_counts: dict[str, int] = {}
-    for gaps in primitive_hard_gaps.values():
+    for identity, gaps in primitive_hard_gaps.items():
         for gap in gaps:
+            primitive_hard_gap_primitives.setdefault(gap, []).append(identity)
             primitive_hard_gap_counts[gap] = primitive_hard_gap_counts.get(gap, 0) + 1
 
     metadata = {
@@ -673,6 +675,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "primitive_hard_gaps": primitive_hard_gaps,
         "primitive_next_hard_gap": primitive_next_hard_gap,
         "primitive_hard_gap_counts": primitive_hard_gap_counts,
+        "primitive_hard_gap_primitives": primitive_hard_gap_primitives,
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key

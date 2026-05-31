@@ -232,6 +232,12 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
         "scpn.quantum:rx_expectation@1": "registry_contract"
     }
     assert module.metadata["primitive_hard_gap_counts"]["registry_contract"] == 1
+    assert module.metadata["primitive_hard_gap_primitives"]["registry_contract"] == [
+        "scpn.quantum:rx_expectation@1"
+    ]
+    assert module.metadata["primitive_hard_gap_primitives"]["native_backend_contract"] == [
+        "scpn.quantum:rx_expectation@1"
+    ]
     assert module.resource_counts["mlir_runtime_blockers"] == 1
     assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert module.resource_counts["primitive_readiness_verdicts"] == 1
@@ -361,6 +367,9 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
         "scpn.quantum:policy_only@1": "registry_contract"
     }
     assert module.metadata["primitive_hard_gap_counts"]["registry_contract"] == 1
+    assert module.metadata["primitive_hard_gap_primitives"]["registry_contract"] == [
+        "scpn.quantum:policy_only@1"
+    ]
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["registry_contracts"] == 0
@@ -658,6 +667,16 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         "reverse_contract": len(plan.statuses),
         "rust_backend_contract": len(plan.statuses),
         "transform_contract": len(plan.statuses),
+    }
+    assert module.metadata["primitive_hard_gap_primitives"] == {
+        "adjoint_contract": [status.identity.key for status in plan.statuses],
+        "jit_backend_contract": [status.identity.key for status in plan.statuses],
+        "llvm_backend_contract": [status.identity.key for status in plan.statuses],
+        "mlir_runtime_contract": [status.identity.key for status in plan.statuses],
+        "native_backend_contract": [status.identity.key for status in plan.statuses],
+        "reverse_contract": [status.identity.key for status in plan.statuses],
+        "rust_backend_contract": [status.identity.key for status in plan.statuses],
+        "transform_contract": [status.identity.key for status in plan.statuses],
     }
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
@@ -1159,6 +1178,15 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
         "reverse_contract": 1,
         "rust_backend_contract": 1,
         "transform_contract": 1,
+    }
+    assert module.metadata["primitive_hard_gap_primitives"] == {
+        "adjoint_contract": ["scpn.program_ad.linalg:matrix_power@1"],
+        "jit_backend_contract": ["scpn.program_ad.linalg:matrix_power@1"],
+        "llvm_backend_contract": ["scpn.program_ad.linalg:matrix_power@1"],
+        "native_backend_contract": ["scpn.program_ad.linalg:matrix_power@1"],
+        "reverse_contract": ["scpn.program_ad.linalg:matrix_power@1"],
+        "rust_backend_contract": ["scpn.program_ad.linalg:matrix_power@1"],
+        "transform_contract": ["scpn.program_ad.linalg:matrix_power@1"],
     }
     assert module.metadata["rust_backend_contract_primitives"] == []
     assert module.metadata["rust_backend_incomplete_primitives"] == [
