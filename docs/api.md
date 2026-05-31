@@ -82,6 +82,7 @@ from scpn_quantum_control import (
     compile_scalar_binary_elementwise_ad_to_native_llvm_jit,
     compile_scalar_quadratic_ad_to_native_llvm_jit,
     compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
+    compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit,
     compile_vector_dot_ad_to_native_llvm_jit,
     compile_vector_squared_norm_ad_to_native_llvm_jit,
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
@@ -207,6 +208,13 @@ native_solve_kernel = compile_matrix_2x2_solve_ad_to_native_llvm_jit(
 )
 native_solve_kernel.value(np.array([2.0, -1.0, 0.5, 3.0, 1.5, -2.0], dtype=np.float64))
 
+native_cholesky_kernel = compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
+    rule,
+    sample_values=np.array([4.0, 1.0, 3.0], dtype=np.float64),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_cholesky_kernel.value(np.array([4.0, 1.0, 3.0], dtype=np.float64))
+
 native_eigen_kernel = compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
     rule,
     sample_values=np.array([2.0, 0.5, 3.0], dtype=np.float64),
@@ -285,6 +293,11 @@ remain fail-closed.
 row-major `A x = b` primitive over concatenated `[A, b]` inputs with exact
 linear-solve value, JVP, and VJP kernels; singular matrices and the public
 vector-output gradient helper remain fail-closed.
+`compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit()` adds a bounded
+positive-definite symmetric factorisation primitive over upper-triangle
+`[a00, a01, a11]` inputs with exact lower-triangle value, JVP, and VJP
+kernels; non-positive-definite matrices and the public vector-output gradient
+helper remain fail-closed.
 `compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit()` adds a bounded
 distinct-eigenvalue symmetric spectral primitive over upper-triangle
 `[a00, a01, a11]` inputs with exact closed-form value, JVP, and VJP kernels;
@@ -305,6 +318,7 @@ concatenated `[A, x]` inputs with exact matrix-entry gradients
 `make_matrix_2x2_determinant_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_inverse_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_solve_native_llvm_jit_lowering_rule()` and
+`make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule()` and
 `make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule()` and
 `make_matrix_vector_product_native_llvm_jit_lowering_rule()` and
 `make_matrix_quadratic_form_native_llvm_jit_lowering_rule()` bind those native

@@ -3356,6 +3356,142 @@ def _compile_matrix_2x2_solve_native_llvm_ir(rule_name: str) -> str:
     )
 
 
+def _compile_symmetric_2x2_cholesky_native_llvm_ir(rule_name: str) -> str:
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    return "\n".join(
+        [
+            f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+            '; primitive = "symmetric_2x2_cholesky"',
+            '; source = "native_symmetric_2x2_cholesky_ad_codegen"',
+            '; execution = "native_llvm_mcjit"',
+            "; dimension = 2",
+            "; value_count = 3",
+            "; input_layout = upper_triangle",
+            "; output_layout = lower_triangle",
+            f'target triple = "{_escape_mlir_string(triple)}"',
+            "",
+            "declare double @llvm.sqrt.f64(double)",
+            "",
+            f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+            "entry:",
+            "  %a00ptr = getelementptr double, double* %values, i64 0",
+            "  %a01ptr = getelementptr double, double* %values, i64 1",
+            "  %a11ptr = getelementptr double, double* %values, i64 2",
+            "  %a00 = load double, double* %a00ptr",
+            "  %a01 = load double, double* %a01ptr",
+            "  %a11 = load double, double* %a11ptr",
+            "  %l00 = call double @llvm.sqrt.f64(double %a00)",
+            "  %l10 = fdiv double %a01, %l00",
+            "  %l10_sq = fmul double %l10, %l10",
+            "  %schur = fsub double %a11, %l10_sq",
+            "  %l11 = call double @llvm.sqrt.f64(double %schur)",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  %out1 = getelementptr double, double* %out, i64 1",
+            "  %out2 = getelementptr double, double* %out, i64 2",
+            "  store double %l00, double* %out0",
+            "  store double %l10, double* %out1",
+            "  store double %l11, double* %out2",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+            "  %cotangent = alloca [3 x double]",
+            "  %cotangent0 = getelementptr [3 x double], [3 x double]* %cotangent, i64 0, i64 0",
+            "  %cotangent1 = getelementptr [3 x double], [3 x double]* %cotangent, i64 0, i64 1",
+            "  %cotangent2 = getelementptr [3 x double], [3 x double]* %cotangent, i64 0, i64 2",
+            "  store double 1.0, double* %cotangent0",
+            "  store double 1.0, double* %cotangent1",
+            "  store double 1.0, double* %cotangent2",
+            f"  call void @{base_symbol}_vjp(double* %values, double* %cotangent0, double* %out)",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_jvp(double* %values, double* %tangent, double* %out) {{",
+            "entry:",
+            "  %a00ptr_jvp = getelementptr double, double* %values, i64 0",
+            "  %a01ptr_jvp = getelementptr double, double* %values, i64 1",
+            "  %a11ptr_jvp = getelementptr double, double* %values, i64 2",
+            "  %t00ptr_jvp = getelementptr double, double* %tangent, i64 0",
+            "  %t01ptr_jvp = getelementptr double, double* %tangent, i64 1",
+            "  %t11ptr_jvp = getelementptr double, double* %tangent, i64 2",
+            "  %a00_jvp = load double, double* %a00ptr_jvp",
+            "  %a01_jvp = load double, double* %a01ptr_jvp",
+            "  %a11_jvp = load double, double* %a11ptr_jvp",
+            "  %t00_jvp = load double, double* %t00ptr_jvp",
+            "  %t01_jvp = load double, double* %t01ptr_jvp",
+            "  %t11_jvp = load double, double* %t11ptr_jvp",
+            "  %l00_jvp = call double @llvm.sqrt.f64(double %a00_jvp)",
+            "  %l10_jvp = fdiv double %a01_jvp, %l00_jvp",
+            "  %l10_sq_jvp = fmul double %l10_jvp, %l10_jvp",
+            "  %schur_jvp = fsub double %a11_jvp, %l10_sq_jvp",
+            "  %l11_jvp = call double @llvm.sqrt.f64(double %schur_jvp)",
+            "  %two_l00_jvp = fmul double 2.0, %l00_jvp",
+            "  %tangent_l00 = fdiv double %t00_jvp, %two_l00_jvp",
+            "  %t01_over_l00 = fdiv double %t01_jvp, %l00_jvp",
+            "  %l10_tangent_l00 = fmul double %l10_jvp, %tangent_l00",
+            "  %l10_tangent_l00_over_l00 = fdiv double %l10_tangent_l00, %l00_jvp",
+            "  %tangent_l10 = fsub double %t01_over_l00, %l10_tangent_l00_over_l00",
+            "  %two_l10_jvp = fmul double 2.0, %l10_jvp",
+            "  %schur_tangent_term = fmul double %two_l10_jvp, %tangent_l10",
+            "  %schur_tangent = fsub double %t11_jvp, %schur_tangent_term",
+            "  %two_l11_jvp = fmul double 2.0, %l11_jvp",
+            "  %tangent_l11 = fdiv double %schur_tangent, %two_l11_jvp",
+            "  %out_jvp0 = getelementptr double, double* %out, i64 0",
+            "  %out_jvp1 = getelementptr double, double* %out, i64 1",
+            "  %out_jvp2 = getelementptr double, double* %out, i64 2",
+            "  store double %tangent_l00, double* %out_jvp0",
+            "  store double %tangent_l10, double* %out_jvp1",
+            "  store double %tangent_l11, double* %out_jvp2",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_vjp(double* %values, double* %cotangent, double* %out) {{",
+            "entry:",
+            "  %a00ptr_vjp = getelementptr double, double* %values, i64 0",
+            "  %a01ptr_vjp = getelementptr double, double* %values, i64 1",
+            "  %a11ptr_vjp = getelementptr double, double* %values, i64 2",
+            "  %cotangent0ptr = getelementptr double, double* %cotangent, i64 0",
+            "  %cotangent1ptr = getelementptr double, double* %cotangent, i64 1",
+            "  %cotangent2ptr = getelementptr double, double* %cotangent, i64 2",
+            "  %a00_vjp = load double, double* %a00ptr_vjp",
+            "  %a01_vjp = load double, double* %a01ptr_vjp",
+            "  %a11_vjp = load double, double* %a11ptr_vjp",
+            "  %cotangent0 = load double, double* %cotangent0ptr",
+            "  %cotangent1 = load double, double* %cotangent1ptr",
+            "  %cotangent2 = load double, double* %cotangent2ptr",
+            "  %l00_vjp = call double @llvm.sqrt.f64(double %a00_vjp)",
+            "  %l10_vjp = fdiv double %a01_vjp, %l00_vjp",
+            "  %l10_sq_vjp = fmul double %l10_vjp, %l10_vjp",
+            "  %schur_vjp = fsub double %a11_vjp, %l10_sq_vjp",
+            "  %l11_vjp = call double @llvm.sqrt.f64(double %schur_vjp)",
+            "  %two_l11_vjp = fmul double 2.0, %l11_vjp",
+            "  %adjoint_schur = fdiv double %cotangent2, %two_l11_vjp",
+            "  %two_l10_vjp = fmul double 2.0, %l10_vjp",
+            "  %l10_schur_adjoint = fmul double %two_l10_vjp, %adjoint_schur",
+            "  %adjoint_l10 = fsub double %cotangent1, %l10_schur_adjoint",
+            "  %l00_sq_vjp = fmul double %l00_vjp, %l00_vjp",
+            "  %adjoint_l10_a01 = fmul double %adjoint_l10, %a01_vjp",
+            "  %adjoint_l10_a01_over_l00_sq = fdiv double %adjoint_l10_a01, %l00_sq_vjp",
+            "  %adjoint_l00 = fsub double %cotangent0, %adjoint_l10_a01_over_l00_sq",
+            "  %two_l00_vjp = fmul double 2.0, %l00_vjp",
+            "  %out0_value = fdiv double %adjoint_l00, %two_l00_vjp",
+            "  %out1_value = fdiv double %adjoint_l10, %l00_vjp",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  %out1 = getelementptr double, double* %out, i64 1",
+            "  %out2 = getelementptr double, double* %out, i64 2",
+            "  store double %out0_value, double* %out0",
+            "  store double %out1_value, double* %out1",
+            "  store double %adjoint_schur, double* %out2",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
+
+
 def _compile_symmetric_2x2_eigenvalues_native_llvm_ir(rule_name: str) -> str:
     llvm = _load_llvmlite_binding()
     triple = llvm.get_default_triple()
@@ -4199,6 +4335,68 @@ def _call_native_matrix_2x2_solve_binary(
         )
     if output_size not in {2, 6}:
         raise ValueError("native 2x2 solve LLVM/JIT output_size must be two or six")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _as_native_symmetric_2x2_cholesky_values(
+    label: str,
+    values: Sequence[float] | np.ndarray,
+) -> np.ndarray:
+    checked_values = np.ascontiguousarray(_as_finite_vector(label, values), dtype=np.float64)
+    if checked_values.size != 3:
+        raise ValueError(
+            "native symmetric 2x2 Cholesky LLVM/JIT kernel requires upper-triangle values"
+        )
+    a00, a01, a11 = (float(item) for item in checked_values)
+    schur = a11 - (a01 * a01) / a00 if a00 > 0.0 else float("nan")
+    if not np.isfinite(schur) or a00 <= 1.0e-24 or schur <= 1.0e-24:
+        raise ValueError(
+            f"native symmetric 2x2 Cholesky LLVM/JIT kernel requires positive definite {label}"
+        )
+    return checked_values
+
+
+def _call_native_symmetric_2x2_cholesky_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = _as_native_symmetric_2x2_cholesky_values("values", values)
+    if output_size != 3:
+        raise ValueError("native symmetric 2x2 Cholesky LLVM/JIT output_size must be three")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_symmetric_2x2_cholesky_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = _as_native_symmetric_2x2_cholesky_values("values", values)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_vector.size != 3:
+        raise ValueError(
+            f"native symmetric 2x2 Cholesky LLVM/JIT kernel requires three {label} values"
+        )
+    if output_size != 3:
+        raise ValueError("native symmetric 2x2 Cholesky LLVM/JIT output_size must be three")
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -6066,6 +6264,155 @@ def make_matrix_2x2_solve_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile SPD symmetric 2x2 Cholesky value/JVP/VJP kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native symmetric 2x2 Cholesky AD requires backend='native_llvm_jit'")
+    values = _as_native_symmetric_2x2_cholesky_values("sample_values", sample_values)
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_symmetric_2x2_cholesky_native_llvm_ir(rule.name)
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_symmetric_2x2_cholesky_unary(
+            native_functions["value"],
+            raw_values,
+            3,
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_symmetric_2x2_cholesky_binary(
+            native_functions["jvp"],
+            raw_values,
+            raw_tangent,
+            "tangent",
+            3,
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_symmetric_2x2_cholesky_binary(
+            native_functions["vjp"],
+            raw_values,
+            raw_cotangent,
+            "cotangent",
+            3,
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_sum_gradient = _call_native_symmetric_2x2_cholesky_unary(
+            native_functions["gradient"],
+            values,
+            3,
+        )
+        reference_sum_gradient = vjp_kernel(values, np.ones(3, dtype=np.float64))
+        if not np.allclose(
+            native_sum_gradient,
+            reference_sum_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError(
+                "native LLVM/JIT symmetric 2x2 Cholesky sum-gradient provenance verification failed"
+            )
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT SPD symmetric 2x2 Cholesky value/JVP/VJP "
+            "kernel with sum-output gradient provenance; public gradient remains "
+            "scalar-output fail-closed and non-SPD matrices remain fail-closed"
+        ),
+    )
+
+
+def make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule(
+    *,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for SPD symmetric 2x2 Cholesky native LLVM/JIT kernels."""
+
+    captured_values = (
+        None
+        if sample_values is None
+        else _as_native_symmetric_2x2_cholesky_values("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native symmetric 2x2 Cholesky lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
+            rule,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -6568,6 +6915,7 @@ __all__ = [
     "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
     "compile_vector_dot_ad_to_native_llvm_jit",
     "compile_vector_squared_norm_ad_to_native_llvm_jit",
+    "compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit",
     "compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
@@ -6582,6 +6930,7 @@ __all__ = [
     "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule",
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
     "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
+    "make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule",
     "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
