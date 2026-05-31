@@ -438,6 +438,15 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "verified:"
         )
 
+    def mlir_runtime_blocker(status: PrimitiveLoweringStatus) -> str | None:
+        if has_mlir_runtime_contract(status):
+            return None
+        if not status.has_lowering_rule:
+            return "blocked: no MLIR-runtime lowering rule"
+        if not status.mlir_runtime_verification.startswith("verified:"):
+            return "blocked: no verified MLIR-runtime provenance"
+        return "blocked: MLIR-runtime contract incomplete"
+
     metadata = {
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
@@ -578,6 +587,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if not has_mlir_runtime_contract(status)
         ],
+        "mlir_runtime_blockers": {
+            status.identity.key: blocker
+            for status in plan.statuses
+            for blocker in (mlir_runtime_blocker(status),)
+            if blocker is not None
+        },
         "mlir_runtime_verification_primitives": {
             status.identity.key: status.mlir_runtime_verification
             for status in plan.statuses
@@ -692,6 +707,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "mlir_runtime_incomplete_primitives": sum(
                 not has_mlir_runtime_contract(status) for status in plan.statuses
+            ),
+            "mlir_runtime_blockers": sum(
+                mlir_runtime_blocker(status) is not None for status in plan.statuses
             ),
             "mlir_runtime_verifications": sum(
                 status.mlir_runtime_verification.startswith("verified:")

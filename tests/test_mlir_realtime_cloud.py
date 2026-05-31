@@ -198,7 +198,11 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.metadata["mlir_runtime_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
     ]
+    assert module.metadata["mlir_runtime_blockers"] == {
+        "scpn.quantum:rx_expectation@1": "blocked: no MLIR-runtime lowering rule"
+    }
     assert module.metadata["mlir_runtime_verification_primitives"] == {}
+    assert module.resource_counts["mlir_runtime_blockers"] == 1
     assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
@@ -307,6 +311,9 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     }
     assert module.metadata["mlir_runtime_contract_primitives"] == []
     assert module.metadata["mlir_runtime_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["mlir_runtime_blockers"] == {
+        "scpn.quantum:policy_only@1": "blocked: no MLIR-runtime lowering rule"
+    }
     assert module.metadata["mlir_runtime_verification_primitives"] == {}
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
@@ -332,6 +339,7 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["jit_backend_blockers"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 0
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
+    assert module.resource_counts["mlir_runtime_blockers"] == 1
     assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
@@ -541,6 +549,11 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert (
         module.metadata["mlir_runtime_incomplete_primitives"] == expected_mlir_runtime_incomplete
     )
+    assert module.metadata["mlir_runtime_blockers"] == {
+        status.identity.key: "blocked: no MLIR-runtime lowering rule"
+        for status in plan.statuses
+        if status.identity.key in expected_mlir_runtime_incomplete
+    }
     assert module.metadata["mlir_runtime_verification_primitives"] == {}
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
@@ -584,6 +597,7 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == len(
         expected_mlir_runtime_incomplete
     )
+    assert module.resource_counts["mlir_runtime_blockers"] == len(expected_mlir_runtime_incomplete)
     assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
@@ -991,6 +1005,7 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
         "scpn.program_ad.linalg:matrix_power@1"
     ]
     assert module.metadata["mlir_runtime_incomplete_primitives"] == []
+    assert module.metadata["mlir_runtime_blockers"] == {}
     assert module.metadata["mlir_runtime_verification_primitives"] == {
         "scpn.program_ad.linalg:matrix_power@1": (
             "verified: deterministic matrix_power sample JVP"
@@ -1020,6 +1035,7 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert module.resource_counts["mlir_runtime_lowerings"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 1
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 0
+    assert module.resource_counts["mlir_runtime_blockers"] == 0
     assert module.resource_counts["mlir_runtime_verifications"] == 1
     assert module.resource_counts["rust_backend_contracts"] == 0
     assert module.resource_counts["rust_backend_incomplete_primitives"] == 1

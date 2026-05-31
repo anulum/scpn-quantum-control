@@ -132,7 +132,8 @@ native-backend contract coverage, native-backend incomplete primitive identities
 backend-specific Rust/LLVM/JIT contract coverage, backend-specific Rust/LLVM/JIT
 incomplete primitive identities, backend-specific Rust/LLVM/JIT blocker
 provenance maps, MLIR-runtime contract coverage, MLIR-runtime incomplete primitive identities,
-verified MLIR-runtime provenance coverage, boundary-policy coverage, MLIR-runtime lowering primitive
+MLIR-runtime blocker provenance maps, verified MLIR-runtime provenance coverage,
+boundary-policy coverage, MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
 cannot be mistaken for complete compiler contracts. Static program-AD array,
 shape, elementwise, reduction, product, cumulative, and linalg contracts expose
