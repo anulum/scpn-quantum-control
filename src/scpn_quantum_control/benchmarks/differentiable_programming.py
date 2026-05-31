@@ -271,12 +271,28 @@ def _selection_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     upper = np.array([0.5, 0.75, 2.0], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
+        selected = np.select(
+            [trace_values < -0.25, trace_values > 0.5],
+            [trace_values * trace_values, 1.5 * trace_values],
+            default=-0.75 * trace_values,
+        )
+        callable_piecewise = np.piecewise(
+            trace_values,
+            [trace_values < -0.25, trace_values > 0.5],
+            [
+                lambda item: item * item,
+                lambda item: 1.5 * item,
+                lambda item: -0.75 * item,
+            ],
+        )
         return np.sum(
             np.where(trace_values > thresholds, trace_values**2, -trace_values)
             + np.clip(trace_values + offsets, -0.75, upper)
+            + 0.09 * selected
+            + 0.04 * callable_piecewise
         )
 
-    analytic = np.array([-1.0, 1.8, 3.4], dtype=np.float64)
+    analytic = np.array([-1.26, 1.7025, 3.595], dtype=np.float64)
     return _program_ad_case(
         "selection_piecewise_contracts",
         "selection-heavy",

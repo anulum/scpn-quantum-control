@@ -1240,6 +1240,17 @@ class TraceADArray:
             if len(args) != 3 or kwargs:
                 raise ValueError("whole-program AD np.where supports condition, x, and y")
             return _trace_where(args[0], args[1], args[2], self.context)
+        if func is np.select:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"default"}:
+                raise ValueError("program AD np.select supports condlist, choicelist, and default")
+            if len(args) == 3 and "default" in kwargs:
+                raise ValueError("program AD np.select default must be supplied once")
+            default = args[2] if len(args) == 3 else kwargs.get("default", 0.0)
+            return _trace_select(args[0], args[1], default, self.context)
+        if func is np.piecewise:
+            if len(args) != 3 or kwargs:
+                raise ValueError("program AD np.piecewise supports array, condlist, and funclist")
+            return _trace_piecewise(args[0], args[1], args[2], self.context)
         if func is np.reshape:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.reshape supports array and shape")
@@ -3586,6 +3597,61 @@ def _coerce_trace_predicate_array(
         _TracePredicate(bool(item), context, f"constant:{bool(item)}") for item in flat
     )
     return TraceADPredicateArray(predicates, shape, context)
+
+
+def _trace_select(
+    condlist: object,
+    choicelist: object,
+    default: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    if isinstance(condlist, (TraceADArray, np.ndarray)) or not isinstance(condlist, Sequence):
+        raise ValueError("program AD np.select requires a static condition sequence")
+    if isinstance(choicelist, (TraceADArray, np.ndarray)) or not isinstance(choicelist, Sequence):
+        raise ValueError("program AD np.select requires a static choice sequence")
+    conditions = tuple(condlist)
+    choices = tuple(choicelist)
+    if len(conditions) != len(choices):
+        raise ValueError("program AD np.select requires matching condition and choice counts")
+    if not conditions:
+        default_array = _coerce_trace_array(default, context)
+        return default_array._items[0] if default_array.shape == () else default_array
+    result: object = default
+    for condition, choice in reversed(tuple(zip(conditions, choices, strict=True))):
+        result = _trace_where(condition, choice, result, context)
+    return cast(TraceADScalar | TraceADArray, result)
+
+
+def _trace_piecewise(
+    values: object,
+    condlist: object,
+    funclist: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    if isinstance(condlist, (TraceADArray, np.ndarray)) or not isinstance(condlist, Sequence):
+        raise ValueError("program AD np.piecewise requires a static condition sequence")
+    if isinstance(funclist, (TraceADArray, np.ndarray)) or not isinstance(funclist, Sequence):
+        raise ValueError("program AD np.piecewise requires a static function sequence")
+    conditions = tuple(condlist)
+    functions = tuple(funclist)
+    if len(functions) not in {len(conditions), len(conditions) + 1}:
+        raise ValueError(
+            "program AD np.piecewise requires one function per condition and optional default"
+        )
+    array = _coerce_trace_array(values, context)
+    if len(functions) == len(conditions) + 1:
+        default_function = functions[-1]
+        result: object = (
+            default_function(array) if callable(default_function) else default_function
+        )
+        branch_functions = functions[:-1]
+    else:
+        result = 0.0
+        branch_functions = functions
+    for condition, function in zip(conditions, branch_functions, strict=True):
+        choice = function(array) if callable(function) else function
+        result = _trace_where(condition, choice, result, context)
+    return cast(TraceADScalar | TraceADArray, result)
 
 
 def _trace_where(

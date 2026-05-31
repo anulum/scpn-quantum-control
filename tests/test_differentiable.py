@@ -3420,6 +3420,100 @@ def test_whole_program_ad_handles_piecewise_vector_numpy_semantics() -> None:
     np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
 
 
+def test_program_ad_select_folds_branch_adjoint_semantics() -> None:
+    """Program AD np.select should route adjoints through selected branches."""
+
+    def objective(values: np.ndarray) -> object:
+        selected = np.select(
+            [values < -0.5, values > 0.75],
+            [values * values, 3.0 * values + 1.0],
+            default=-2.0 * values,
+        )
+        return np.sum(selected)
+
+    values = np.array([-1.0, -0.25, 0.5, 1.0, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([-2.0, -2.0, -2.0, 3.0, 3.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_piecewise_callable_folds_branch_adjoint_semantics() -> None:
+    """Program AD np.piecewise should support callable branch transforms."""
+
+    def objective(values: np.ndarray) -> object:
+        selected = np.piecewise(
+            values,
+            [values < -0.5, values > 0.75],
+            [lambda item: item * item, lambda item: 3.0 * item + 1.0, lambda item: -2.0 * item],
+        )
+        return np.sum(selected)
+
+    values = np.array([-1.0, -0.25, 0.5, 1.0, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([-2.0, -2.0, -2.0, 3.0, 3.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_piecewise_matches_numpy_overwrite_and_default_semantics() -> None:
+    """Program AD np.piecewise should preserve default-zero and later-branch semantics."""
+
+    def objective(values: np.ndarray) -> object:
+        selected = np.piecewise(
+            values,
+            [values > -0.5, values > 0.75],
+            [lambda item: item + 1.0, lambda item: 3.0 * item],
+        )
+        return np.sum(selected)
+
+    values = np.array([-1.0, 0.0, 1.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([0.0, 1.0, 3.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_select_and_piecewise_reject_invalid_contracts() -> None:
+    """Program AD selection folds should fail closed on malformed branch contracts."""
+
+    with pytest.raises(ValueError, match="matching condition and choice counts"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.select([values > 0.0], [values, -values])),
+            np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="one function per condition"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.piecewise(values, [values > 0.0], [])),
+            np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+
 def test_whole_program_ad_handles_matrix_indexing_reductions_and_products() -> None:
     """Program AD should cover rank-2 array control, mutation, and products."""
 
