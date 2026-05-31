@@ -3613,6 +3613,55 @@ def test_program_ad_compress_routes_axis_static_mask_adjoint_semantics() -> None
     )
 
 
+def test_program_ad_extract_routes_static_mask_adjoint_semantics() -> None:
+    """Program AD np.extract should route same-size static mask adjoints as gathers."""
+
+    mask = np.array([True, False, True, False], dtype=np.bool_)
+
+    def objective(values: np.ndarray) -> object:
+        extracted = np.extract(mask, values)
+        return np.sum(extracted * np.array([1.5, -2.0], dtype=np.float64))
+
+    values = np.array([-1.0, 0.25, 1.5, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([1.5, 0.0, -2.0, 0.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_extract_routes_matrix_static_mask_adjoint_semantics() -> None:
+    """Program AD np.extract should flatten same-shape matrix masks like NumPy."""
+
+    mask = np.array([[True, False, True], [False, True, False]], dtype=np.bool_)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = values.reshape((2, 3))
+        extracted = np.extract(mask, matrix)
+        return np.sum(extracted * np.array([1.0, -2.0, 3.0], dtype=np.float64))
+
+    values = np.array([0.5, -0.25, 1.0, 1.5, 0.75, -2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([1.0, 0.0, -2.0, 0.0, 3.0, 0.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
 def test_program_ad_select_and_piecewise_reject_invalid_contracts() -> None:
     """Program AD selection folds should fail closed on malformed branch contracts."""
 
@@ -3658,6 +3707,22 @@ def test_program_ad_compress_rejects_dynamic_and_invalid_mask_contracts() -> Non
         whole_program_value_and_grad(
             lambda values: np.sum(np.compress(np.array([[True, False]]), values)),
             np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_extract_rejects_dynamic_and_size_mismatched_mask_contracts() -> None:
+    """Program AD np.extract should fail closed on nondifferentiable mask contracts."""
+
+    with pytest.raises(ValueError, match="static boolean condition"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.extract(values > 0.0, values)),
+            np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="condition size must match array size"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.extract(np.array([True, False]), values)),
+            np.array([-1.0, 1.0, 2.0], dtype=np.float64),
         )
 
 

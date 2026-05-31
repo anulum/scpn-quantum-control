@@ -1271,6 +1271,13 @@ class TraceADArray:
                 _coerce_trace_array(args[1], self.context),
                 axis=axis,
             )
+        if func is np.extract:
+            if len(args) != 2 or kwargs:
+                raise ValueError("program AD np.extract supports condition and array")
+            return _trace_extract(
+                args[0],
+                _coerce_trace_array(args[1], self.context),
+            )
         if func is np.reshape:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.reshape supports array and shape")
@@ -3738,6 +3745,35 @@ def _trace_compress_condition_indices(condition: object) -> NDArray[np.int64]:
     if raw.dtype.kind != "b":
         raise ValueError("program AD np.compress requires a static boolean condition")
     return cast(NDArray[np.int64], np.flatnonzero(raw).astype(np.int64))
+
+
+def _trace_extract(
+    condition: object,
+    array: TraceADArray,
+) -> TraceADScalar | TraceADArray:
+    indices = _trace_extract_condition_indices(condition, array.size)
+    return _trace_take(array.ravel(), indices, axis=0, mode="raise")
+
+
+def _trace_extract_condition_indices(condition: object, array_size: int) -> NDArray[np.int64]:
+    if isinstance(
+        condition, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)
+    ):
+        raise ValueError("program AD np.extract requires a static boolean condition")
+    raw = np.asarray(condition)
+    if raw.dtype == object and any(
+        isinstance(
+            item,
+            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
+        )
+        for item in raw.reshape(-1)
+    ):
+        raise ValueError("program AD np.extract requires a static boolean condition")
+    if raw.dtype.kind != "b":
+        raise ValueError("program AD np.extract requires a static boolean condition")
+    if raw.size != array_size:
+        raise ValueError("program AD np.extract condition size must match array size")
+    return cast(NDArray[np.int64], np.flatnonzero(raw.reshape(-1)).astype(np.int64))
 
 
 def _trace_select(
