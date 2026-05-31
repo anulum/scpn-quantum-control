@@ -1815,6 +1815,130 @@ def _compile_scalar_binary_elementwise_native_llvm_ir(
     return "\n".join(lines)
 
 
+def _validate_vector_dot_dimension(dimension: int | np.integer) -> int:
+    checked = int(dimension)
+    if checked < 1:
+        raise ValueError("native vector dot dimension must be positive")
+    return checked
+
+
+def _compile_vector_dot_native_llvm_ir(rule_name: str, dimension: int) -> str:
+    checked_dimension = _validate_vector_dot_dimension(dimension)
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    lines = [
+        f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+        '; primitive = "dot"',
+        '; source = "native_vector_dot_ad_codegen"',
+        '; execution = "native_llvm_mcjit"',
+        f"; dimension = {checked_dimension}",
+        f'target triple = "{_escape_mlir_string(triple)}"',
+        "",
+        f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+        "entry:",
+    ]
+    previous_sum = "0.0"
+    for index in range(checked_dimension):
+        right_index = checked_dimension + index
+        lines.extend(
+            [
+                f"  %xptr{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %yptr{index} = getelementptr double, double* %values, i64 {right_index}",
+                f"  %x{index} = load double, double* %xptr{index}",
+                f"  %y{index} = load double, double* %yptr{index}",
+                f"  %prod{index} = fmul double %x{index}, %y{index}",
+                f"  %sum{index} = fadd double {previous_sum}, %prod{index}",
+            ]
+        )
+        previous_sum = f"%sum{index}"
+    lines.extend(
+        [
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            f"  store double {previous_sum}, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+        ]
+    )
+    for index in range(checked_dimension):
+        right_index = checked_dimension + index
+        lines.extend(
+            [
+                f"  %xptr{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %yptr{index} = getelementptr double, double* %values, i64 {right_index}",
+                f"  %x{index} = load double, double* %xptr{index}",
+                f"  %y{index} = load double, double* %yptr{index}",
+                f"  %outxptr{index} = getelementptr double, double* %out, i64 {index}",
+                f"  %outyptr{index} = getelementptr double, double* %out, i64 {right_index}",
+                f"  store double %y{index}, double* %outxptr{index}",
+                f"  store double %x{index}, double* %outyptr{index}",
+            ]
+        )
+    lines.extend(
+        [
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_jvp(double* %values, double* %tangent, double* %out) {{",
+            "entry:",
+        ]
+    )
+    previous_jvp_sum = "0.0"
+    for index in range(checked_dimension):
+        right_index = checked_dimension + index
+        lines.extend(
+            [
+                f"  %xptr_jvp{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %yptr_jvp{index} = getelementptr double, double* %values, i64 {right_index}",
+                f"  %txptr{index} = getelementptr double, double* %tangent, i64 {index}",
+                f"  %typtr{index} = getelementptr double, double* %tangent, i64 {right_index}",
+                f"  %x_jvp{index} = load double, double* %xptr_jvp{index}",
+                f"  %y_jvp{index} = load double, double* %yptr_jvp{index}",
+                f"  %tx{index} = load double, double* %txptr{index}",
+                f"  %ty{index} = load double, double* %typtr{index}",
+                f"  %left_jvp{index} = fmul double %y_jvp{index}, %tx{index}",
+                f"  %right_jvp{index} = fmul double %x_jvp{index}, %ty{index}",
+                f"  %term_jvp{index} = fadd double %left_jvp{index}, %right_jvp{index}",
+                f"  %sum_jvp{index} = fadd double {previous_jvp_sum}, %term_jvp{index}",
+            ]
+        )
+        previous_jvp_sum = f"%sum_jvp{index}"
+    lines.extend(
+        [
+            "  %out_jvp0 = getelementptr double, double* %out, i64 0",
+            f"  store double {previous_jvp_sum}, double* %out_jvp0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_vjp(double* %values, double* %cotangent, double* %out) {{",
+            "entry:",
+            "  %cotangent0ptr = getelementptr double, double* %cotangent, i64 0",
+            "  %cotangent0 = load double, double* %cotangent0ptr",
+        ]
+    )
+    for index in range(checked_dimension):
+        right_index = checked_dimension + index
+        lines.extend(
+            [
+                f"  %xptr_vjp{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %yptr_vjp{index} = getelementptr double, double* %values, i64 {right_index}",
+                f"  %x_vjp{index} = load double, double* %xptr_vjp{index}",
+                f"  %y_vjp{index} = load double, double* %yptr_vjp{index}",
+                f"  %vjp_x{index} = fmul double %y_vjp{index}, %cotangent0",
+                f"  %vjp_y{index} = fmul double %x_vjp{index}, %cotangent0",
+                f"  %outxptr_vjp{index} = getelementptr double, double* %out, i64 {index}",
+                f"  %outyptr_vjp{index} = getelementptr double, double* %out, i64 {right_index}",
+                f"  store double %vjp_x{index}, double* %outxptr_vjp{index}",
+                f"  store double %vjp_y{index}, double* %outyptr_vjp{index}",
+            ]
+        )
+    lines.extend(["  ret void", "}", ""])
+    return "\n".join(lines)
+
+
 def _compile_native_llvm_jit_functions(
     llvm_ir: str,
     base_symbol: str,
@@ -1927,6 +2051,59 @@ def _call_native_scalar_pair_binary(
         )
     if output_size not in {1, 2}:
         raise ValueError("native scalar binary LLVM/JIT output_size must be one or two")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_vector_dot_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_vector_dot_dimension(dimension)
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    if checked_values.size != 2 * checked_dimension:
+        raise ValueError("native vector dot LLVM/JIT kernel requires 2 * dimension values")
+    if output_size not in {1, 2 * checked_dimension}:
+        raise ValueError("native vector dot LLVM/JIT output_size must be one or 2 * dimension")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_vector_dot_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_vector_dot_dimension(dimension)
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_values.size != 2 * checked_dimension:
+        raise ValueError("native vector dot LLVM/JIT kernel requires 2 * dimension values")
+    expected_vector_size = 2 * checked_dimension if label == "tangent" else 1
+    if checked_vector.size != expected_vector_size:
+        raise ValueError(
+            f"native vector dot LLVM/JIT kernel requires {expected_vector_size} {label} value(s)"
+        )
+    if output_size not in {1, 2 * checked_dimension}:
+        raise ValueError("native vector dot LLVM/JIT output_size must be one or 2 * dimension")
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -2367,6 +2544,155 @@ def make_scalar_binary_elementwise_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_vector_dot_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile vector dot-product value/JVP/VJP/gradient kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    checked_dimension = _validate_vector_dot_dimension(dimension)
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native vector dot AD requires backend='native_llvm_jit'")
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != 2 * checked_dimension:
+        raise ValueError("native vector dot AD requires exactly 2 * dimension sample values")
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_vector_dot_native_llvm_ir(rule.name, checked_dimension)
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_vector_dot_unary(
+            native_functions["value"], raw_values, checked_dimension, 1
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_vector_dot_binary(
+            native_functions["jvp"],
+            raw_values,
+            raw_tangent,
+            "tangent",
+            checked_dimension,
+            1,
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_vector_dot_binary(
+            native_functions["vjp"],
+            raw_values,
+            raw_cotangent,
+            "cotangent",
+            checked_dimension,
+            2 * checked_dimension,
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_gradient = _call_native_vector_dot_unary(
+            native_functions["gradient"], values, checked_dimension, 2 * checked_dimension
+        )
+        reference_gradient = vjp_kernel(values, np.ones(1, dtype=np.float64))
+        if not np.allclose(
+            native_gradient,
+            reference_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError("native LLVM/JIT vector dot gradient verification failed")
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT vector dot value/JVP/VJP/gradient kernel; "
+            "unregistered primitives remain fail-closed"
+        ),
+    )
+
+
+def make_vector_dot_native_llvm_jit_lowering_rule(
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for vector dot-product native LLVM/JIT kernels."""
+
+    checked_dimension = _validate_vector_dot_dimension(dimension)
+    captured_values = (
+        None if sample_values is None else _as_finite_vector("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native vector dot lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_vector_dot_ad_to_native_llvm_jit(
+            rule,
+            dimension=checked_dimension,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def _safe_llvm_symbol(value: str) -> str:
     symbol = "".join(
         character if character.isalnum() or character == "_" else "_" for character in value
@@ -2557,9 +2883,11 @@ __all__ = [
     "compile_scalar_binary_elementwise_ad_to_native_llvm_jit",
     "compile_scalar_quadratic_ad_to_native_llvm_jit",
     "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
+    "compile_vector_dot_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule",
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
     "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
+    "make_vector_dot_native_llvm_jit_lowering_rule",
 ]

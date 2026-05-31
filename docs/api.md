@@ -74,6 +74,7 @@ from scpn_quantum_control import (
     compile_scalar_binary_elementwise_ad_to_native_llvm_jit,
     compile_scalar_quadratic_ad_to_native_llvm_jit,
     compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
+    compile_vector_dot_ad_to_native_llvm_jit,
 )
 
 module = compile_kuramoto_to_mlir(
@@ -121,6 +122,14 @@ native_binary_kernel = compile_scalar_binary_elementwise_ad_to_native_llvm_jit(
 )
 native_binary_kernel.gradient(np.array([1.5, -2.0], dtype=np.float64))
 
+native_dot_kernel = compile_vector_dot_ad_to_native_llvm_jit(
+    rule,
+    dimension=2,
+    sample_values=np.array([1.0, 2.0, -3.0, 4.0], dtype=np.float64),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_dot_kernel.gradient(np.array([1.0, 2.0, -3.0, 4.0], dtype=np.float64))
+
 ad_plan = build_compiler_ad_transform_plan(custom_rule_registry)
 ad_plan_module = compile_compiler_ad_transform_plan_to_mlir(ad_plan)
 ```
@@ -151,14 +160,18 @@ primitives using LLVM intrinsics for value and analytic derivative kernels.
 `compile_scalar_binary_elementwise_ad_to_native_llvm_jit()` covers scalar
 `add`, `subtract`, and `multiply` elementwise primitives with native value,
 JVP, VJP, and two-component gradient kernels.
+`compile_vector_dot_ad_to_native_llvm_jit()` emits dimension-specialised native
+LLVM MCJIT kernels for vector dot products over concatenated `[x, y]` inputs,
+with scalar value/JVP and full `[y, x]` VJP/gradient output.
 `make_scalar_quadratic_native_llvm_jit_lowering_rule()` and
 `make_scalar_unary_elementwise_native_llvm_jit_lowering_rule()` and
-`make_scalar_binary_elementwise_native_llvm_jit_lowering_rule()` bind those
-native backends to primitive registry lowering metadata when the primitive has
-the matching static scalar signature. Other primitive families remain
-fail-closed for native LLVM/JIT until they provide their own verified lowering
-rule. This surface does not claim LLVM/QIR lowering for unrelated primitives,
-cloud submission, pulse compilation, or hardware execution.
+`make_scalar_binary_elementwise_native_llvm_jit_lowering_rule()` and
+`make_vector_dot_native_llvm_jit_lowering_rule()` bind those native backends to
+primitive registry lowering metadata when the primitive has the matching static
+signature. Other primitive families remain fail-closed for native LLVM/JIT until
+they provide their own verified lowering rule. This surface does not claim
+LLVM/QIR lowering for unrelated primitives, cloud submission, pulse compilation,
+or hardware execution.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, primitive-specific batching-rule
