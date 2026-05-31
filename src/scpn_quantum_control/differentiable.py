@@ -2566,6 +2566,7 @@ def _trace_dot(
 ) -> TraceADScalar:
     lhs = _coerce_trace_array(left, context)
     rhs = _coerce_trace_array(right, context)
+    _require_program_ad_product_contract("dot", (lhs, rhs))
     if lhs.ndim == 1 and rhs.ndim == 1 and lhs.shape == rhs.shape:
         total = lhs._items[0] * rhs._items[0]
         for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
@@ -2586,6 +2587,7 @@ def _trace_vdot(
 ) -> TraceADScalar:
     lhs = _coerce_trace_array(left, context)
     rhs = _coerce_trace_array(right, context)
+    _require_program_ad_product_contract("vdot", (lhs, rhs))
     if lhs.size != rhs.size:
         raise ValueError("program AD np.vdot flattened operands must have matching size")
     if lhs.size == 0:
@@ -2702,6 +2704,7 @@ def _trace_matmul(
 ) -> TraceADScalar | TraceADArray:
     lhs = _coerce_trace_array(left, context)
     rhs = _coerce_trace_array(right, context)
+    _require_program_ad_product_contract("matmul", (lhs, rhs))
     if lhs.ndim == 2 and rhs.ndim == 1:
         rows, cols = lhs.shape
         if rhs.shape != (cols,):
@@ -5548,6 +5551,13 @@ _PROGRAM_AD_ELEMENTWISE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     for name in _PROGRAM_AD_ELEMENTWISE_NAMES
 }
 
+_PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
+_PROGRAM_AD_PRODUCT_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_PRODUCT_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("dot", "vdot", "matmul")
+}
+
 _PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
 _PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
@@ -5660,6 +5670,31 @@ def _program_ad_elementwise_name(ufunc: np.ufunc) -> str:
     if ufunc is np.absolute:
         return "abs"
     return str(ufunc.__name__)
+
+
+def _program_ad_product_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD product primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_product_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD product primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
+    return CustomDerivativeRule(
+        name=f"program_ad_product_{name}_trace_contract",
+        value_fn=_program_ad_product_direct_value,
+        jvp_rule=_program_ad_product_direct_jvp,
+    )
 
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
@@ -5817,6 +5852,54 @@ def _program_ad_elementwise_dtype_rule(args: tuple[object, ...]) -> str:
     return str(np.result_type(*dtypes))
 
 
+def _program_ad_product_matmul_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD product matmul shape rule requires two operands")
+    lhs_shape = _program_ad_array_shape_of(args[0])
+    rhs_shape = _program_ad_array_shape_of(args[1])
+    if len(lhs_shape) == 1 and len(rhs_shape) == 1:
+        if lhs_shape != rhs_shape:
+            raise ValueError("program AD product vector dimensions must align")
+        return ()
+    if len(lhs_shape) == 2 and len(rhs_shape) == 1:
+        if lhs_shape[1] != rhs_shape[0]:
+            raise ValueError("program AD product matrix-vector dimensions must align")
+        return (lhs_shape[0],)
+    if len(lhs_shape) == 1 and len(rhs_shape) == 2:
+        if lhs_shape[0] != rhs_shape[0]:
+            raise ValueError("program AD product vector-matrix dimensions must align")
+        return (rhs_shape[1],)
+    if len(lhs_shape) == 2 and len(rhs_shape) == 2:
+        if lhs_shape[1] != rhs_shape[0]:
+            raise ValueError("program AD product matrix-matrix dimensions must align")
+        return (lhs_shape[0], rhs_shape[1])
+    raise ValueError("program AD product matmul supports rank-1 and rank-2 operands")
+
+
+def _program_ad_product_dot_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    shape = _program_ad_product_matmul_shape(args)
+    if shape != ():
+        raise ValueError("program AD product dot contract supports scalar dot results only")
+    return shape
+
+
+def _program_ad_product_vdot_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD product vdot shape rule requires two operands")
+    lhs_size = int(np.prod(_program_ad_array_shape_of(args[0])))
+    rhs_size = int(np.prod(_program_ad_array_shape_of(args[1])))
+    if lhs_size != rhs_size:
+        raise ValueError("program AD np.vdot flattened operands must have matching size")
+    return ()
+
+
+def _program_ad_product_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 2:
+        raise ValueError("program AD product dtype rule requires two operands")
+    dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in args)
+    return str(np.result_type(*dtypes))
+
+
 def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD array getitem static rule requires array and index")
@@ -5878,6 +5961,12 @@ def _program_ad_elementwise_static_arguments(args: tuple[object, ...]) -> tuple[
     return ()
 
 
+def _program_ad_product_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD product static rule requires two operands")
+    return ()
+
+
 _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "getitem": _program_ad_array_getitem_shape,
     "take": _program_ad_array_take_shape,
@@ -5908,6 +5997,12 @@ _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
 
 _PROGRAM_AD_ELEMENTWISE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     name: _program_ad_elementwise_shape for name in _PROGRAM_AD_ELEMENTWISE_NAMES
+}
+
+_PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "dot": _program_ad_product_dot_shape,
+    "vdot": _program_ad_product_vdot_shape,
+    "matmul": _program_ad_product_matmul_shape,
 }
 
 
@@ -6097,6 +6192,57 @@ def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
     }
 
 
+def _program_ad_product_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 2 or len(axes) != 2:
+        raise ValueError("program AD product batching requires two operands and two axes")
+    arrays = tuple(
+        _as_real_numeric_array(f"program AD product batched operand {index}", arg)
+        for index, arg in enumerate(args)
+    )
+    if all(axis is None for axis in axes):
+        return _as_real_numeric_array("program AD product batched output", function(*arrays))
+    mapped_axes: list[int | None] = [
+        None if axis is None else _normalise_axis(f"axes[{index}]", axis, array.ndim)
+        for index, (axis, array) in enumerate(zip(axes, arrays, strict=True))
+    ]
+    batch_sizes = {
+        int(array.shape[axis])
+        for array, axis in zip(arrays, mapped_axes, strict=True)
+        if axis is not None
+    }
+    if len(batch_sizes) != 1:
+        raise ValueError("program AD product batching axes must share one batch size")
+    batch_size = batch_sizes.pop()
+    outputs = []
+    for batch_index in range(batch_size):
+        sliced_args = tuple(
+            array if axis is None else np.take(array, batch_index, axis=axis)
+            for array, axis in zip(arrays, mapped_axes, strict=True)
+        )
+        outputs.append(
+            _as_real_numeric_array("program AD product batched output", function(*sliced_args))
+        )
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff product dialect interchange; executable lowering blocked",
+        "mlir_op": f"scpn_diff.product.{name}",
+        "llvm": "blocked_until_executable_product_lowering",
+        "rust": "blocked_until_polyglot_product_ad",
+        "static_argument_rule": "none",
+        "static_signature": "none",
+    }
+
+
 def _register_program_ad_array_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -6168,6 +6314,25 @@ def _register_program_ad_elementwise_primitive_contracts() -> None:
                 dtype_rule=_program_ad_elementwise_dtype_rule,
                 static_argument_rule=_program_ad_elementwise_static_arguments,
                 nondifferentiable_policy=_PROGRAM_AD_ELEMENTWISE_POLICY,
+                effect="pure",
+            )
+        )
+
+
+def _register_program_ad_product_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_PRODUCT_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_product_derivative_rule(name),
+                batching_rule=_program_ad_product_batching_rule,
+                lowering_metadata=_program_ad_product_lowering_metadata(name),
+                shape_rule=_PROGRAM_AD_PRODUCT_SHAPE_RULES[name],
+                dtype_rule=_program_ad_product_dtype_rule,
+                static_argument_rule=_program_ad_product_static_arguments,
+                nondifferentiable_policy=_PROGRAM_AD_PRODUCT_POLICY,
                 effect="pure",
             )
         )
@@ -6268,6 +6433,23 @@ def _require_program_ad_elementwise_contract(
         raise ValueError(f"invalid program AD elementwise primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD elementwise primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
+def _require_program_ad_product_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = _PROGRAM_AD_PRODUCT_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD product primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_PRODUCT_POLICY:
+        raise ValueError(f"invalid program AD product primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD product primitive effect for {identity.key}")
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
@@ -6612,7 +6794,9 @@ def _program_ad_linalg_multi_dot_shape(args: tuple[object, ...]) -> tuple[int, .
         raise ValueError("program AD linalg multi_dot shape rule requires at least two operands")
     for index, shape in enumerate(shapes):
         if len(shape) not in {1, 2}:
-            raise ValueError("program AD linalg multi_dot shape rule supports rank-1/rank-2")
+            raise ValueError(
+                "program AD linalg multi_dot shape rule supports rank-1 and rank-2 operands"
+            )
         if 0 < index < len(shapes) - 1 and len(shape) != 2:
             raise ValueError(
                 "program AD linalg multi_dot shape rule middle operands must be rank-2"
@@ -6824,6 +7008,7 @@ _register_program_ad_array_primitive_contracts()
 _register_program_ad_shape_primitive_contracts()
 _register_program_ad_reduction_primitive_contracts()
 _register_program_ad_elementwise_primitive_contracts()
+_register_program_ad_product_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
 
 

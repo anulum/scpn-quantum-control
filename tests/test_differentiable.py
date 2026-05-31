@@ -4544,6 +4544,110 @@ def test_program_ad_binary_elementwise_primitives_validate_registry_rules_at_dis
     }
 
 
+def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
+    """Dot, vdot, and matmul should expose primitive registry contracts."""
+
+    left_vector = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+    right_vector = np.array([4.0, 5.0, 6.0], dtype=np.float64)
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+
+    dot_contract = primitive_contract_for("scpn.program_ad.product:dot")
+    assert dot_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "dot", "1")
+    assert dot_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert dot_contract.effect == "pure"
+    assert dot_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.dot"
+    assert dot_contract.shape_rule is not None
+    assert dot_contract.shape_rule((left_vector, right_vector)) == ()
+    assert dot_contract.dtype_rule is not None
+    assert dot_contract.dtype_rule((left_vector, right_vector)) == "float64"
+    assert dot_contract.static_argument_rule is not None
+    assert dot_contract.static_argument_rule((left_vector, right_vector)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(dot_contract.identity)
+
+    vdot_contract = primitive_contract_for("scpn.program_ad.product:vdot")
+    assert vdot_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "vdot", "1")
+    assert vdot_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.vdot"
+    assert vdot_contract.shape_rule is not None
+    assert vdot_contract.shape_rule((matrix, np.arange(6.0, dtype=np.float64))) == ()
+
+    matmul_contract = primitive_contract_for("scpn.program_ad.product:matmul")
+    assert matmul_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "matmul", "1")
+    assert matmul_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.matmul"
+    assert matmul_contract.shape_rule is not None
+    assert matmul_contract.shape_rule((matrix, right_vector)) == (2,)
+
+
+def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported product primitives must execute through registry validation rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.product:{name}")
+        for name in ("dot", "vdot", "matmul")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+    try:
+        result = whole_program_value_and_grad(
+            lambda values: (
+                np.dot(values[:3], np.array([2.0, -1.0, 0.5]))
+                + np.vdot(np.reshape(values, (2, 3)), np.arange(1.0, 7.0))
+                + np.sum(np.matmul(np.reshape(values, (2, 3)), np.array([1.0, 2.0, -1.0])))
+            ),
+            np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64),
+        )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    values = np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64)
+    expected_value = float(
+        np.dot(values[:3], np.array([2.0, -1.0, 0.5]))
+        + np.vdot(np.reshape(values, (2, 3)), np.arange(1.0, 7.0))
+        + np.sum(np.matmul(np.reshape(values, (2, 3)), np.array([1.0, 2.0, -1.0])))
+    )
+    assert result.value == pytest.approx(expected_value)
+    assert calls == {
+        "dot": {"shape", "dtype", "static"},
+        "vdot": {"shape", "dtype", "static"},
+        "matmul": {"shape", "dtype", "static"},
+    }
+
+
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
     """Program AD vdot should apply exact flattened real inner-product semantics."""
 
