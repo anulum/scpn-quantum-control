@@ -2766,6 +2766,110 @@ def _compile_matrix_trace_native_llvm_ir(rule_name: str, dimension: int) -> str:
     return "\n".join(lines)
 
 
+def _compile_matrix_frobenius_norm_squared_native_llvm_ir(
+    rule_name: str,
+    dimension: int,
+) -> str:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    lines = [
+        f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+        '; primitive = "matrix_frobenius_norm_squared"',
+        '; source = "native_matrix_frobenius_norm_squared_ad_codegen"',
+        '; execution = "native_llvm_mcjit"',
+        f"; dimension = {checked_dimension}",
+        f"; value_count = {matrix_size}",
+        f'target triple = "{_escape_mlir_string(triple)}"',
+        "",
+        f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+        "entry:",
+    ]
+    previous_value_sum = "0.0"
+    for index in range(matrix_size):
+        lines.extend(
+            [
+                f"  %valueptr_value{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %value_value{index} = load double, double* %valueptr_value{index}",
+                f"  %square_value{index} = fmul double %value_value{index}, %value_value{index}",
+                f"  %sum_value{index} = fadd double {previous_value_sum}, %square_value{index}",
+            ]
+        )
+        previous_value_sum = f"%sum_value{index}"
+    lines.extend(
+        [
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            f"  store double {previous_value_sum}, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+        ]
+    )
+    for index in range(matrix_size):
+        lines.extend(
+            [
+                f"  %valueptr_gradient{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %value_gradient{index} = load double, double* %valueptr_gradient{index}",
+                f"  %gradient{index} = fmul double 2.0, %value_gradient{index}",
+                f"  %out_gradient{index} = getelementptr double, double* %out, i64 {index}",
+                f"  store double %gradient{index}, double* %out_gradient{index}",
+            ]
+        )
+    lines.extend(
+        [
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_jvp(double* %values, double* %tangent, double* %out) {{",
+            "entry:",
+        ]
+    )
+    previous_jvp_sum = "0.0"
+    for index in range(matrix_size):
+        lines.extend(
+            [
+                f"  %valueptr_jvp{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %tangentptr_jvp{index} = getelementptr double, double* %tangent, i64 {index}",
+                f"  %value_jvp{index} = load double, double* %valueptr_jvp{index}",
+                f"  %tangent_jvp{index} = load double, double* %tangentptr_jvp{index}",
+                f"  %product_jvp{index} = fmul double %value_jvp{index}, %tangent_jvp{index}",
+                f"  %scaled_jvp{index} = fmul double 2.0, %product_jvp{index}",
+                f"  %sum_jvp{index} = fadd double {previous_jvp_sum}, %scaled_jvp{index}",
+            ]
+        )
+        previous_jvp_sum = f"%sum_jvp{index}"
+    lines.extend(
+        [
+            "  %out_jvp0 = getelementptr double, double* %out, i64 0",
+            f"  store double {previous_jvp_sum}, double* %out_jvp0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_vjp(double* %values, double* %cotangent, double* %out) {{",
+            "entry:",
+            "  %cotangent0ptr = getelementptr double, double* %cotangent, i64 0",
+            "  %cotangent0 = load double, double* %cotangent0ptr",
+        ]
+    )
+    for index in range(matrix_size):
+        lines.extend(
+            [
+                f"  %valueptr_vjp{index} = getelementptr double, double* %values, i64 {index}",
+                f"  %value_vjp{index} = load double, double* %valueptr_vjp{index}",
+                f"  %gradient_vjp{index} = fmul double 2.0, %value_vjp{index}",
+                f"  %scaled_vjp{index} = fmul double %cotangent0, %gradient_vjp{index}",
+                f"  %out_vjp{index} = getelementptr double, double* %out, i64 {index}",
+                f"  store double %scaled_vjp{index}, double* %out_vjp{index}",
+            ]
+        )
+    lines.extend(["  ret void", "}", ""])
+    return "\n".join(lines)
+
+
 def _compile_native_llvm_jit_functions(
     llvm_ir: str,
     base_symbol: str,
@@ -3248,6 +3352,70 @@ def _call_native_matrix_trace_binary(
         )
     if output_size not in {1, matrix_size}:
         raise ValueError("native matrix trace LLVM/JIT output_size must be one or matrix-sized")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_frobenius_norm_squared_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    if checked_values.size != matrix_size:
+        raise ValueError(
+            "native matrix Frobenius-squared LLVM/JIT kernel requires dimension * dimension values"
+        )
+    if output_size not in {1, matrix_size}:
+        raise ValueError(
+            "native matrix Frobenius-squared LLVM/JIT output_size must be one or matrix-sized"
+        )
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_frobenius_norm_squared_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_values.size != matrix_size:
+        raise ValueError(
+            "native matrix Frobenius-squared LLVM/JIT kernel requires dimension * dimension values"
+        )
+    expected_vector_size = matrix_size if label == "tangent" else 1
+    if checked_vector.size != expected_vector_size:
+        raise ValueError(
+            "native matrix Frobenius-squared LLVM/JIT kernel requires "
+            f"{expected_vector_size} {label} value(s)"
+        )
+    if output_size not in {1, matrix_size}:
+        raise ValueError(
+            "native matrix Frobenius-squared LLVM/JIT output_size must be one or matrix-sized"
+        )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -4442,6 +4610,169 @@ def make_matrix_trace_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile matrix Frobenius-squared value/JVP/VJP/gradient kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native matrix Frobenius-squared AD requires backend='native_llvm_jit'")
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != matrix_size:
+        raise ValueError(
+            "native matrix Frobenius-squared AD requires dimension * dimension sample values"
+        )
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_matrix_frobenius_norm_squared_native_llvm_ir(
+        rule.name,
+        checked_dimension,
+    )
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_frobenius_norm_squared_unary(
+            native_functions["value"],
+            raw_values,
+            checked_dimension,
+            1,
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_frobenius_norm_squared_binary(
+            native_functions["jvp"],
+            raw_values,
+            raw_tangent,
+            "tangent",
+            checked_dimension,
+            1,
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_frobenius_norm_squared_binary(
+            native_functions["vjp"],
+            raw_values,
+            raw_cotangent,
+            "cotangent",
+            checked_dimension,
+            matrix_size,
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_gradient = _call_native_matrix_frobenius_norm_squared_unary(
+            native_functions["gradient"],
+            values,
+            checked_dimension,
+            matrix_size,
+        )
+        reference_gradient = vjp_kernel(values, np.ones(1, dtype=np.float64))
+        if not np.allclose(
+            native_gradient,
+            reference_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError(
+                "native LLVM/JIT matrix Frobenius-squared gradient verification failed"
+            )
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT matrix Frobenius-squared value/JVP/VJP/gradient "
+            "kernel; unregistered primitives remain fail-closed"
+        ),
+    )
+
+
+def make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule(
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for matrix Frobenius-squared native LLVM/JIT kernels."""
+
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    captured_values = (
+        None if sample_values is None else _as_finite_vector("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native matrix Frobenius-squared lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
+            rule,
+            dimension=checked_dimension,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -4782,6 +5113,7 @@ __all__ = [
     "compile_custom_derivative_rule_to_mlir",
     "compile_custom_derivative_rule_to_executable",
     "compile_registered_primitive_to_executable",
+    "compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit",
     "compile_matrix_matrix_product_ad_to_native_llvm_jit",
     "compile_matrix_quadratic_form_ad_to_native_llvm_jit",
     "compile_matrix_trace_ad_to_native_llvm_jit",
@@ -4793,6 +5125,7 @@ __all__ = [
     "compile_vector_squared_norm_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
+    "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule",
     "make_matrix_matrix_product_native_llvm_jit_lowering_rule",
     "make_matrix_quadratic_form_native_llvm_jit_lowering_rule",
     "make_matrix_trace_native_llvm_jit_lowering_rule",
