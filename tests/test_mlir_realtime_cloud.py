@@ -266,6 +266,43 @@ def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None
     assert 'static_signature = "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2"' in module.text
 
 
+def test_compiler_ad_plan_does_not_count_not_required_static_factories() -> None:
+    """Compiler AD resource counts should count only actual static factories."""
+
+    registry = CustomDerivativeRegistry()
+    for key in (
+        "scpn.program_ad.elementwise:sin",
+        "scpn.program_ad.elementwise:multiply",
+    ):
+        contract = primitive_contract_for(key)
+        registry.register_transform(
+            PrimitiveTransformRule(
+                identity=contract.identity,
+                derivative_rule=contract.derivative_rule,
+                batching_rule=contract.batching_rule,
+                lowering_metadata=contract.lowering_metadata,
+                shape_rule=contract.shape_rule,
+                dtype_rule=contract.dtype_rule,
+                static_argument_rule=contract.static_argument_rule,
+                nondifferentiable_policy=contract.nondifferentiable_policy,
+                effect=contract.effect,
+            )
+        )
+
+    module = compile_compiler_ad_transform_plan_to_mlir(build_compiler_ad_transform_plan(registry))
+
+    assert module.resource_counts["static_derivative_factories"] == 1
+    assert module.resource_counts["static_derivative_signatures"] == 1
+    assert module.metadata["static_derivative_factories"] == {
+        "scpn.program_ad.elementwise:multiply@1": ("program_ad_elementwise_binary_derivative_rule")
+    }
+    assert module.metadata["static_derivative_signatures"] == {
+        "scpn.program_ad.elementwise:multiply@1": (
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+        )
+    }
+
+
 def test_compiler_ad_transform_plan_rejects_incomplete_static_factory_metadata() -> None:
     """Compiler AD planning should fail closed on unpaired static factory metadata."""
 

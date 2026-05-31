@@ -302,7 +302,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "static_derivative_factories": {
             status.identity.key: status.static_derivative_factory
             for status in plan.statuses
-            if status.static_derivative_factory != "not_declared"
+            if status.static_derivative_factory not in {"not_declared", "not_required"}
         },
         "static_derivative_signatures": {
             status.identity.key: status.static_signature
@@ -324,7 +324,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "jvp_rules": sum(status.has_jvp for status in plan.statuses),
             "vjp_rules": sum(status.has_vjp for status in plan.statuses),
             "static_derivative_factories": sum(
-                status.static_derivative_factory != "not_declared" for status in plan.statuses
+                status.static_derivative_factory not in {"not_declared", "not_required"}
+                for status in plan.statuses
             ),
             "static_derivative_signatures": sum(
                 status.static_signature != "none" for status in plan.statuses
