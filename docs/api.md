@@ -71,6 +71,7 @@ from scpn_quantum_control import (
     compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_matrix_quadratic_form_ad_to_native_llvm_jit,
     compile_scalar_binary_elementwise_ad_to_native_llvm_jit,
     compile_scalar_quadratic_ad_to_native_llvm_jit,
     compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
@@ -130,6 +131,16 @@ native_dot_kernel = compile_vector_dot_ad_to_native_llvm_jit(
 )
 native_dot_kernel.gradient(np.array([1.0, 2.0, -3.0, 4.0], dtype=np.float64))
 
+native_quadratic_form_kernel = compile_matrix_quadratic_form_ad_to_native_llvm_jit(
+    rule,
+    dimension=2,
+    sample_values=np.array([2.0, -1.0, 0.5, 3.0, 1.5, -2.0], dtype=np.float64),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_quadratic_form_kernel.gradient(
+    np.array([2.0, -1.0, 0.5, 3.0, 1.5, -2.0], dtype=np.float64)
+)
+
 ad_plan = build_compiler_ad_transform_plan(custom_rule_registry)
 ad_plan_module = compile_compiler_ad_transform_plan_to_mlir(ad_plan)
 ```
@@ -163,15 +174,20 @@ JVP, VJP, and two-component gradient kernels.
 `compile_vector_dot_ad_to_native_llvm_jit()` emits dimension-specialised native
 LLVM MCJIT kernels for vector dot products over concatenated `[x, y]` inputs,
 with scalar value/JVP and full `[y, x]` VJP/gradient output.
+`compile_matrix_quadratic_form_ad_to_native_llvm_jit()` extends native compiler
+AD to rank-2 scalar linalg by compiling `x.T @ A @ x` over row-major
+concatenated `[A, x]` inputs with exact matrix-entry gradients
+`outer(x, x)` and vector gradients `(A + A.T) @ x`.
 `make_scalar_quadratic_native_llvm_jit_lowering_rule()` and
 `make_scalar_unary_elementwise_native_llvm_jit_lowering_rule()` and
 `make_scalar_binary_elementwise_native_llvm_jit_lowering_rule()` and
-`make_vector_dot_native_llvm_jit_lowering_rule()` bind those native backends to
-primitive registry lowering metadata when the primitive has the matching static
-signature. Other primitive families remain fail-closed for native LLVM/JIT until
-they provide their own verified lowering rule. This surface does not claim
-LLVM/QIR lowering for unrelated primitives, cloud submission, pulse compilation,
-or hardware execution.
+`make_vector_dot_native_llvm_jit_lowering_rule()` and
+`make_matrix_quadratic_form_native_llvm_jit_lowering_rule()` bind those native
+backends to primitive registry lowering metadata when the primitive has the
+matching static signature. Other primitive families remain fail-closed for
+native LLVM/JIT until they provide their own verified lowering rule. This
+surface does not claim LLVM/QIR lowering for unrelated primitives, cloud
+submission, pulse compilation, or hardware execution.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, primitive-specific batching-rule
