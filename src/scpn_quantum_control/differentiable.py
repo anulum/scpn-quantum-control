@@ -8446,7 +8446,7 @@ def _program_ad_elementwise_batching_rule(
 
 def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
     is_binary = name in _PROGRAM_AD_ELEMENTWISE_BINARY_NAMES
-    return {
+    metadata = {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff elementwise dialect interchange; executable lowering blocked",
         "mlir_op": f"scpn_diff.elementwise.{name}",
@@ -8462,6 +8462,24 @@ def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
             else "none"
         ),
     }
+    nondifferentiable_boundaries = {
+        "log": "positive_domain",
+        "log1p": "greater_than_minus_one_domain",
+        "sqrt": "nonnegative_domain_with_singular_zero_derivative",
+        "arcsin": "closed_unit_interval_with_singular_endpoints",
+        "arccos": "closed_unit_interval_with_singular_endpoints",
+        "reciprocal": "nonzero_domain",
+        "abs": "zero_cusp",
+        "divide": "nonzero_denominator",
+        "power": "positive_base_for_variable_exponent",
+        "maximum": "equal_operand_tie",
+        "minimum": "equal_operand_tie",
+    }
+    boundary = nondifferentiable_boundaries.get(name)
+    if boundary is not None:
+        metadata["nondifferentiable_boundary"] = boundary
+        metadata["nondifferentiable_boundary_policy"] = "fail_closed"
+    return metadata
 
 
 def _program_ad_product_batching_rule(

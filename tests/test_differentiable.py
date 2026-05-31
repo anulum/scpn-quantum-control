@@ -4653,6 +4653,30 @@ def test_program_ad_unary_elementwise_primitives_expose_direct_value_jvp_kernels
         abs_rule.jvp_rule(np.array([-1.0, 0.0, 1.0]), tangent)
 
 
+def test_program_ad_elementwise_boundary_metadata_is_explicit() -> None:
+    """Elementwise contracts should expose fail-closed mathematical boundaries."""
+
+    expected_boundaries = {
+        "log": "positive_domain",
+        "log1p": "greater_than_minus_one_domain",
+        "sqrt": "nonnegative_domain_with_singular_zero_derivative",
+        "arcsin": "closed_unit_interval_with_singular_endpoints",
+        "arccos": "closed_unit_interval_with_singular_endpoints",
+        "reciprocal": "nonzero_domain",
+        "abs": "zero_cusp",
+        "divide": "nonzero_denominator",
+        "power": "positive_base_for_variable_exponent",
+        "maximum": "equal_operand_tie",
+        "minimum": "equal_operand_tie",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.elementwise", name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
 def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported unary elementwise primitives must execute through registry validation rules."""
 
