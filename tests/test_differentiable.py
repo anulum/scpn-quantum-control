@@ -4193,6 +4193,22 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     assert transpose_contract.static_argument_rule((matrix, (1, 0))) == ((1, 0),)
 
 
+def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
+    """Shape contracts should expose fail-closed static-layout boundaries."""
+
+    expected_boundaries = {
+        "reshape": "element_count_preserving_static_shape",
+        "ravel": "contiguous_flat_view_shape",
+        "transpose": "static_axis_permutation",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.shape", name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
 def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported shape primitives must execute through registry validation rules."""
 
@@ -7287,6 +7303,21 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         1,
         "raise",
     )
+
+
+def test_program_ad_array_boundary_metadata_is_explicit() -> None:
+    """Array-indexing contracts should expose fail-closed static gather boundaries."""
+
+    expected_boundaries = {
+        "getitem": "basic_static_index_scatter_add",
+        "take": "static_integer_gather_scatter_add",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.array", name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
 
 def _transform_rule_from_contract(contract):

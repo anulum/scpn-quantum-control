@@ -8286,6 +8286,10 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "getitem": "program_ad_array_getitem_derivative_rule",
         "take": "program_ad_array_take_derivative_rule",
     }[name]
+    nondifferentiable_boundaries = {
+        "getitem": "basic_static_index_scatter_add",
+        "take": "static_integer_gather_scatter_add",
+    }
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff array dialect interchange; executable lowering blocked",
@@ -8295,6 +8299,8 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
         "static_signature": static_signature,
+        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
+        "nondifferentiable_boundary_policy": "fail_closed",
     }
 
 
@@ -8337,6 +8343,11 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "ravel": "source_shape:ranked_tensor_shape",
         "transpose": "source_shape:ranked_tensor_shape;axes",
     }[name]
+    nondifferentiable_boundaries = {
+        "reshape": "element_count_preserving_static_shape",
+        "ravel": "contiguous_flat_view_shape",
+        "transpose": "static_axis_permutation",
+    }
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff shape dialect interchange; executable lowering blocked",
@@ -8346,6 +8357,8 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
         "static_signature": static_signature,
+        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
+        "nondifferentiable_boundary_policy": "fail_closed",
     }
 
 
