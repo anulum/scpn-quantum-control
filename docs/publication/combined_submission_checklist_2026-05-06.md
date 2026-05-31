@@ -24,6 +24,21 @@ minimal AI-disclosure policy. It does not claim that submission has happened.
 | JOSS-style software note | `paper/submissions_joss/submission_joss_001_software_framework_note/paper.md`; preview `paper/submissions_joss/submission_joss_001_software_framework_note/paper_preview.tex` | `paper/submissions_joss/submission_joss_001_software_framework_note/paper_preview.pdf` | `docs/publication/joss_software_submission_checklist_2026-05-06.md` |
 | SCPN/FIM Hamiltonian paper | `paper/submissions/submission_004_scpn_fim_hamiltonian/scpn_fim_hamiltonian.tex` | `paper/submissions/submission_004_scpn_fim_hamiltonian/scpn_fim_hamiltonian.pdf` | `docs/campaigns/scpn_fim_submission_checklist_2026-05-06.md` |
 
+## Published Zenodo Records
+
+The public publication sources embed the current Zenodo DOIs. Keep this index
+aligned with the source files before any regenerated PDF or metadata upload.
+
+| Package | DOI |
+|---------|-----|
+| DLA parity hardware preprint | [`10.5281/zenodo.20382000`](https://doi.org/10.5281/zenodo.20382000) |
+| Reduced-Pauli entanglement checks | [`10.5281/zenodo.20382075`](https://doi.org/10.5281/zenodo.20382075) |
+| Monitored feedback versus open-loop control | [`10.5281/zenodo.20382099`](https://doi.org/10.5281/zenodo.20382099) |
+| SCPN/FIM Hamiltonian paper | [`10.5281/zenodo.20382125`](https://doi.org/10.5281/zenodo.20382125) |
+| Rust/VQE methods paper | [`10.5281/zenodo.20382138`](https://doi.org/10.5281/zenodo.20382138) |
+| IBM Fez synchronisation paper | [`10.5281/zenodo.20382203`](https://doi.org/10.5281/zenodo.20382203) |
+| JOSS-style software note | [`10.5281/zenodo.20382333`](https://doi.org/10.5281/zenodo.20382333) |
+
 ## Claim Boundaries That Must Survive Upload
 
 - DLA parity: claim parity-sector/excitation-number correlated leakage

@@ -18,6 +18,7 @@ affiliations:
   - name: ANULUM, Marbach SG, Switzerland
     index: 1
 date: 8 May 2026
+doi: 10.5281/zenodo.20382333
 bibliography: paper.bib
 ---
 
