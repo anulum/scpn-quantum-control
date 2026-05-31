@@ -530,11 +530,16 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     module = compile_compiler_ad_transform_plan_to_mlir(plan)
     kernel = compile_registered_primitive_to_executable(registry, identity, np.array([0.0]))
 
+    assert plan.statuses[0].has_lowering_rule is True
     assert plan.statuses[0].has_static_argument_rule is True
     assert (
         plan.statuses[0].mlir_lowering
         == "available: executable scpn_diff MLIR-runtime linalg kernel"
     )
+    assert module.metadata["mlir_runtime_lowering_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1"
+    ]
+    assert module.resource_counts["mlir_runtime_lowerings"] == 1
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
     assert "available: executable scpn_diff MLIR-runtime linalg kernel" in module.text
