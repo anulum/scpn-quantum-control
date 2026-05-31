@@ -86,6 +86,7 @@ from scpn_quantum_control import (
     compile_vector_dot_ad_to_native_llvm_jit,
     compile_vector_squared_norm_ad_to_native_llvm_jit,
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
+    make_executable_ad_kernel_batching_rule,
 )
 
 module = compile_kuramoto_to_mlir(
@@ -232,6 +233,8 @@ native_quadratic_form_kernel.gradient(
     np.array([2.0, -1.0, 0.5, 3.0, 1.5, -2.0], dtype=np.float64)
 )
 
+native_batching_rule = make_executable_ad_kernel_batching_rule(native_det_kernel)
+
 ad_plan = build_compiler_ad_transform_plan(custom_rule_registry)
 ad_plan_module = compile_compiler_ad_transform_plan_to_mlir(ad_plan)
 ```
@@ -327,6 +330,11 @@ matching static signature. Other primitive families remain fail-closed for
 native LLVM/JIT until they provide their own verified lowering rule. This
 surface does not claim LLVM/QIR lowering for unrelated primitives, cloud
 submission, pulse compilation, or hardware execution.
+`make_executable_ad_kernel_batching_rule()` binds a verified executable
+compiler AD kernel into primitive-registry `vmap` dispatch. Its automatic mode
+maps one-argument calls to `value` and two-argument calls to `jvp` or `vjp`
+only when tangent and cotangent dimensions are unambiguous; equal input/output
+dimensions require an explicit method selection and otherwise fail closed.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, primitive-specific batching-rule

@@ -32,6 +32,7 @@ from numpy.typing import NDArray
 from ..differentiable import (
     CustomDerivativeRegistry,
     CustomDerivativeRule,
+    PrimitiveBatchingRule,
     PrimitiveIdentity,
     WholeProgramADResult,
     program_ad_linalg_matrix_power_derivative_rule,
@@ -1033,6 +1034,177 @@ class ExecutableCompilerADKernel:
         if output.size != 1:
             raise ValueError(f"kernel {self.rule_name} gradient requires scalar output")
         return self.vjp_kernel(checked_values, np.ones(1, dtype=np.float64))
+
+
+def make_executable_ad_kernel_batching_rule(
+    kernel: ExecutableCompilerADKernel,
+    *,
+    method: str = "auto",
+) -> PrimitiveBatchingRule:
+    """Create a primitive-specific batching rule backed by an executable AD kernel.
+
+    ``method="auto"`` dispatches one-argument calls to ``value`` and two-argument
+    calls to ``jvp`` or ``vjp`` by matching the second slice against the input and
+    output dimensions. If those dimensions are equal, callers must request
+    ``method="jvp"`` or ``method="vjp"`` explicitly so transform nesting remains
+    fail-closed rather than guessing.
+    """
+
+    if not isinstance(kernel, ExecutableCompilerADKernel):
+        raise ValueError("kernel must be an ExecutableCompilerADKernel")
+    if method not in {"auto", "value", "jvp", "vjp", "gradient"}:
+        raise ValueError("method must be 'auto', 'value', 'jvp', 'vjp', or 'gradient'")
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function
+        batched_args, batch_size = _prepare_executable_kernel_batch_args(args, axes)
+        outputs = []
+        for item in range(batch_size):
+            call_args = tuple(
+                _slice_executable_kernel_batch_arg(arg, axis, item) for arg, axis in batched_args
+            )
+            outputs.append(_execute_kernel_batch_slice(kernel, method, call_args))
+        return _stack_executable_kernel_batch_outputs(outputs, out_axes)
+
+    return batching_rule
+
+
+def _prepare_executable_kernel_batch_args(
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+) -> tuple[tuple[tuple[object, int | None], ...], int]:
+    if not args:
+        raise ValueError("executable AD kernel batching requires at least one argument")
+    if len(args) != len(axes):
+        raise ValueError("executable AD kernel batching axes must match argument count")
+    batched: list[tuple[object, int | None]] = []
+    batch_size: int | None = None
+    for index, (arg, axis) in enumerate(zip(args, axes, strict=True)):
+        if axis is None:
+            batched.append((arg, None))
+            continue
+        if not isinstance(axis, int):
+            raise ValueError("executable AD kernel batching axes must be integers or None")
+        array = _as_executable_kernel_batch_array(f"argument {index}", arg)
+        axis_index = _normalise_executable_kernel_batch_axis(
+            f"axes[{index}]",
+            axis,
+            array.ndim,
+        )
+        size = int(array.shape[axis_index])
+        if size <= 0:
+            raise ValueError("executable AD kernel batching axes must be non-empty")
+        if batch_size is None:
+            batch_size = size
+        elif size != batch_size:
+            raise ValueError("executable AD kernel batching axes must have the same length")
+        batched.append((array, axis_index))
+    if batch_size is None:
+        raise ValueError("executable AD kernel batching requires at least one mapped axis")
+    return tuple(batched), batch_size
+
+
+def _slice_executable_kernel_batch_arg(arg: object, axis: int | None, item: int) -> object:
+    if axis is None:
+        return arg
+    return np.take(cast(np.ndarray, arg), item, axis=axis)
+
+
+def _as_executable_kernel_batch_array(name: str, value: object) -> np.ndarray:
+    raw = np.asarray(value)
+    if raw.dtype.kind in {"b", "O", "S", "U"}:
+        raise ValueError(f"executable AD kernel batching {name} must be numeric")
+    array = np.ascontiguousarray(raw, dtype=np.float64)
+    if array.ndim == 0:
+        raise ValueError(f"executable AD kernel batching {name} cannot map over a scalar")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"executable AD kernel batching {name} must contain only finite values")
+    return array
+
+
+def _normalise_executable_kernel_batch_axis(name: str, axis: int, ndim: int) -> int:
+    if ndim == 0:
+        raise ValueError(f"{name} cannot map over a scalar")
+    if axis < 0:
+        axis += ndim
+    if axis < 0 or axis >= ndim:
+        raise ValueError(f"{name} is out of bounds for argument rank {ndim}")
+    return axis
+
+
+def _execute_kernel_batch_slice(
+    kernel: ExecutableCompilerADKernel,
+    method: str,
+    args: tuple[object, ...],
+) -> np.ndarray:
+    if method == "value":
+        if len(args) != 1:
+            raise ValueError("executable AD kernel value batching requires one argument")
+        return kernel.value(_as_finite_vector("values", args[0]))
+    if method == "gradient":
+        if len(args) != 1:
+            raise ValueError("executable AD kernel gradient batching requires one argument")
+        return kernel.gradient(_as_finite_vector("values", args[0]))
+    if method == "jvp":
+        if len(args) != 2:
+            raise ValueError("executable AD kernel JVP batching requires values and tangent")
+        return kernel.jvp(
+            _as_finite_vector("values", args[0]),
+            _as_finite_vector("tangent", args[1]),
+        )
+    if method == "vjp":
+        if len(args) != 2:
+            raise ValueError("executable AD kernel VJP batching requires values and cotangent")
+        return kernel.vjp(
+            _as_finite_vector("values", args[0]),
+            _as_finite_vector("cotangent", args[1]),
+        )
+    if len(args) == 1:
+        return kernel.value(_as_finite_vector("values", args[0]))
+    if len(args) != 2:
+        raise ValueError("automatic executable AD kernel batching supports one or two arguments")
+    values = _as_finite_vector("values", args[0])
+    tangent_or_cotangent = _as_finite_vector("tangent_or_cotangent", args[1])
+    output_size = int(kernel.value(values).size)
+    input_size = int(values.size)
+    jvp_matches = kernel.jvp_kernel is not None and tangent_or_cotangent.size == input_size
+    vjp_matches = kernel.vjp_kernel is not None and tangent_or_cotangent.size == output_size
+    if jvp_matches and vjp_matches:
+        raise ValueError(
+            "ambiguous executable AD kernel batching method; specify method='jvp' or method='vjp'"
+        )
+    if jvp_matches:
+        return kernel.jvp(values, tangent_or_cotangent)
+    if vjp_matches:
+        return kernel.vjp(values, tangent_or_cotangent)
+    raise ValueError(
+        "automatic executable AD kernel batching could not match the second argument "
+        "to tangent or cotangent dimensions"
+    )
+
+
+def _stack_executable_kernel_batch_outputs(
+    outputs: Sequence[np.ndarray],
+    out_axes: int,
+) -> np.ndarray:
+    if not outputs:
+        raise ValueError("executable AD kernel batching outputs must be non-empty")
+    arrays = [np.asarray(output, dtype=np.float64) for output in outputs]
+    shape = arrays[0].shape
+    if any(array.shape != shape for array in arrays):
+        raise ValueError("executable AD kernel batching outputs must have consistent shapes")
+    result_rank = arrays[0].ndim + 1
+    axis = out_axes
+    if axis < 0:
+        axis += result_rank
+    if axis < 0 or axis >= result_rank:
+        raise ValueError("executable AD kernel batching out_axes is out of bounds")
+    return np.stack(arrays, axis=axis)
 
 
 def compile_kuramoto_to_mlir(
@@ -6919,6 +7091,7 @@ __all__ = [
     "compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
+    "make_executable_ad_kernel_batching_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_inverse_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_solve_native_llvm_jit_lowering_rule",
