@@ -153,7 +153,9 @@ from scpn_quantum_control.differentiable import (
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
     program_ad_linalg_trace_derivative_rule,
+    program_ad_product_inner_derivative_rule,
     program_ad_product_matmul_derivative_rule,
+    program_ad_product_outer_derivative_rule,
     program_ad_reduction_mean_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
     program_ad_reduction_sum_derivative_rule,
@@ -5047,7 +5049,7 @@ def test_program_ad_elementwise_binary_static_factory_supports_broadcasting() ->
 
 
 def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
-    """Dot, vdot, and matmul should expose primitive registry contracts."""
+    """Dot, vdot, inner, outer, and matmul should expose primitive registry contracts."""
 
     left_vector = np.array([1.0, 2.0, 3.0], dtype=np.float64)
     right_vector = np.array([4.0, 5.0, 6.0], dtype=np.float64)
@@ -5073,6 +5075,18 @@ def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
     assert vdot_contract.shape_rule is not None
     assert vdot_contract.shape_rule((matrix, np.arange(6.0, dtype=np.float64))) == ()
 
+    inner_contract = primitive_contract_for("scpn.program_ad.product:inner")
+    assert inner_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "inner", "1")
+    assert inner_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.inner"
+    assert inner_contract.shape_rule is not None
+    assert inner_contract.shape_rule((matrix, matrix)) == (2, 2)
+
+    outer_contract = primitive_contract_for("scpn.program_ad.product:outer")
+    assert outer_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "outer", "1")
+    assert outer_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.outer"
+    assert outer_contract.shape_rule is not None
+    assert outer_contract.shape_rule((left_vector, matrix)) == (3, 6)
+
     matmul_contract = primitive_contract_for("scpn.program_ad.product:matmul")
     assert matmul_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "matmul", "1")
     assert matmul_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.matmul"
@@ -5086,6 +5100,8 @@ def test_program_ad_product_boundary_metadata_is_explicit() -> None:
     expected_boundaries = {
         "dot": "inner_dimension_alignment",
         "vdot": "flattened_size_alignment",
+        "inner": "last_dimension_alignment",
+        "outer": "flattened_outer_product",
         "matmul": "core_dimension_alignment",
     }
     for name, boundary in expected_boundaries.items():
@@ -5101,7 +5117,7 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
 
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.product:{name}")
-        for name in ("dot", "vdot", "matmul")
+        for name in ("dot", "vdot", "inner", "outer", "matmul")
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
 
@@ -5142,6 +5158,8 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
             lambda values: (
                 np.dot(values[:3], np.array([2.0, -1.0, 0.5]))
                 + np.vdot(np.reshape(values, (2, 3)), np.arange(1.0, 7.0))
+                + np.inner(values[:3], np.array([0.5, -2.0, 1.5]))
+                + np.sum(np.outer(values[:2], values[2:4]) * np.array([[1.0, -0.5], [0.25, 2.0]]))
                 + np.sum(np.matmul(np.reshape(values, (2, 3)), np.array([1.0, 2.0, -1.0])))
             ),
             np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64),
@@ -5156,12 +5174,16 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
     expected_value = float(
         np.dot(values[:3], np.array([2.0, -1.0, 0.5]))
         + np.vdot(np.reshape(values, (2, 3)), np.arange(1.0, 7.0))
+        + np.inner(values[:3], np.array([0.5, -2.0, 1.5]))
+        + np.sum(np.outer(values[:2], values[2:4]) * np.array([[1.0, -0.5], [0.25, 2.0]]))
         + np.sum(np.matmul(np.reshape(values, (2, 3)), np.array([1.0, 2.0, -1.0])))
     )
     assert result.value == pytest.approx(expected_value)
     assert calls == {
         "dot": {"shape", "dtype", "static"},
         "vdot": {"shape", "dtype", "static"},
+        "inner": {"shape", "dtype", "static"},
+        "outer": {"shape", "dtype", "static"},
         "matmul": {"shape", "dtype", "static"},
     }
 
@@ -5180,13 +5202,25 @@ def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None
     vdot_rule = custom_derivative_rule_for(
         PrimitiveIdentity("scpn.program_ad.product", "vdot", "1")
     )
+    inner_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.product", "inner", "1")
+    )
+    outer_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.product", "outer", "1")
+    )
 
     assert dot_rule.name == "program_ad_product_dot_direct_rule"
     assert vdot_rule.name == "program_ad_product_vdot_direct_rule"
+    assert inner_rule.name == "program_ad_product_inner_direct_rule"
+    assert outer_rule.name == "program_ad_product_outer_direct_rule"
     assert dot_rule.jvp_rule is not None
     assert vdot_rule.jvp_rule is not None
+    assert inner_rule.jvp_rule is not None
+    assert outer_rule.jvp_rule is not None
     assert dot_rule.vjp_rule is not None
     assert vdot_rule.vjp_rule is not None
+    assert inner_rule.vjp_rule is not None
+    assert outer_rule.vjp_rule is not None
 
     expected_inner = np.array([np.dot(left, right)], dtype=np.float64)
     expected_inner_jvp = np.array(
@@ -5206,6 +5240,23 @@ def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None
     )
     np.testing.assert_allclose(
         vdot_rule.vjp_rule(vector_values, np.array([2.5])), expected_inner_vjp
+    )
+    np.testing.assert_allclose(inner_rule.value_fn(vector_values), expected_inner)
+    np.testing.assert_allclose(
+        inner_rule.jvp_rule(vector_values, vector_tangent), expected_inner_jvp
+    )
+    np.testing.assert_allclose(
+        inner_rule.vjp_rule(vector_values, np.array([2.5])), expected_inner_vjp
+    )
+    expected_outer = np.outer(left, right)
+    expected_outer_jvp = np.outer(left_tangent, right) + np.outer(left, right_tangent)
+    expected_outer_vjp = np.concatenate((expected_outer @ right, expected_outer.T @ left))
+    np.testing.assert_allclose(outer_rule.value_fn(vector_values), expected_outer.reshape(-1))
+    np.testing.assert_allclose(
+        outer_rule.jvp_rule(vector_values, vector_tangent), expected_outer_jvp.reshape(-1)
+    )
+    np.testing.assert_allclose(
+        outer_rule.vjp_rule(vector_values, expected_outer.reshape(-1)), expected_outer_vjp
     )
 
     left_matrix = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
@@ -5326,6 +5377,72 @@ def test_program_ad_product_matmul_static_derivative_factory_supports_rank1_rank
         program_ad_product_matmul_derivative_rule((2, 3), (2, 2))
     with pytest.raises(ValueError, match="rank-1 or rank-2"):
         program_ad_product_matmul_derivative_rule((1, 2, 3), (3,))
+
+
+def test_program_ad_product_inner_outer_static_derivative_factories() -> None:
+    """Static inner and outer factories should expose exact product adjoints."""
+
+    left = np.array([[1.0, -2.0, 0.5], [0.75, 3.0, -1.25]], dtype=np.float64)
+    right = np.array([[0.25, -1.0, 1.5], [1.25, 0.5, -0.75]], dtype=np.float64)
+    tangent_left = np.array([[0.2, -0.3, 0.4], [0.1, 0.5, -0.25]], dtype=np.float64)
+    tangent_right = np.array([[-0.5, 0.6, 0.25], [0.75, -0.2, 0.1]], dtype=np.float64)
+    values = np.concatenate((left.reshape(-1), right.reshape(-1)))
+    tangent = np.concatenate((tangent_left.reshape(-1), tangent_right.reshape(-1)))
+
+    inner_rule = program_ad_product_inner_derivative_rule(left.shape, right.shape)
+    assert inner_rule.name == "program_ad_product_inner_2x3_by_2x3_direct_rule"
+    assert inner_rule.jvp_rule is not None
+    assert inner_rule.vjp_rule is not None
+    expected_inner = np.inner(left, right)
+    expected_inner_jvp = np.inner(tangent_left, right) + np.inner(left, tangent_right)
+    inner_cotangent = np.array([[1.5, -0.5], [0.75, 2.0]], dtype=np.float64)
+    expected_left_adjoint = inner_cotangent @ right
+    expected_right_adjoint = inner_cotangent.T @ left
+    np.testing.assert_allclose(inner_rule.value_fn(values), expected_inner.reshape(-1))
+    np.testing.assert_allclose(
+        inner_rule.jvp_rule(values, tangent),
+        expected_inner_jvp.reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        inner_rule.vjp_rule(values, inner_cotangent.reshape(-1)),
+        np.concatenate((expected_left_adjoint.reshape(-1), expected_right_adjoint.reshape(-1))),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    outer_rule = program_ad_product_outer_derivative_rule((2,), (3,))
+    assert outer_rule.name == "program_ad_product_outer_2_by_3_direct_rule"
+    assert outer_rule.jvp_rule is not None
+    assert outer_rule.vjp_rule is not None
+    outer_left = np.array([1.0, -2.0], dtype=np.float64)
+    outer_right = np.array([0.25, -1.0, 1.5], dtype=np.float64)
+    outer_left_tangent = np.array([0.2, -0.3], dtype=np.float64)
+    outer_right_tangent = np.array([-0.5, 0.6, 0.25], dtype=np.float64)
+    outer_values = np.concatenate((outer_left, outer_right))
+    outer_tangent = np.concatenate((outer_left_tangent, outer_right_tangent))
+    outer_cotangent = np.array([[1.25, -0.5, 0.75], [-1.0, 0.25, 1.5]], dtype=np.float64)
+    np.testing.assert_allclose(
+        outer_rule.value_fn(outer_values), np.outer(outer_left, outer_right).reshape(-1)
+    )
+    np.testing.assert_allclose(
+        outer_rule.jvp_rule(outer_values, outer_tangent),
+        (
+            np.outer(outer_left_tangent, outer_right) + np.outer(outer_left, outer_right_tangent)
+        ).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        outer_rule.vjp_rule(outer_values, outer_cotangent.reshape(-1)),
+        np.concatenate((outer_cotangent @ outer_right, outer_cotangent.T @ outer_left)),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    with pytest.raises(ValueError, match="last dimensions must align"):
+        program_ad_product_inner_derivative_rule((2, 3), (2, 2))
 
 
 def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
@@ -6241,6 +6358,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         ),
         "scpn.program_ad.product:matmul": (
             "program_ad_product_matmul_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.product:inner": (
+            "program_ad_product_inner_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.product:outer": (
+            "program_ad_product_outer_derivative_rule",
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         ),
         "scpn.program_ad.cumulative:cumsum": (
@@ -8834,6 +8959,12 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.primitive_static_argument_rule_for is primitive_static_argument_rule_for
     assert scpn.program_ad_linalg_diag_derivative_rule is program_ad_linalg_diag_derivative_rule
+    assert (
+        scpn.program_ad_product_inner_derivative_rule is program_ad_product_inner_derivative_rule
+    )
+    assert (
+        scpn.program_ad_product_outer_derivative_rule is program_ad_product_outer_derivative_rule
+    )
     assert (
         scpn.program_ad_linalg_matrix_power_derivative_rule
         is program_ad_linalg_matrix_power_derivative_rule

@@ -2610,6 +2610,7 @@ def _trace_inner(
     rhs = _coerce_trace_array(right, context)
     if lhs.ndim == 0 or rhs.ndim == 0:
         return _trace_multiply_arrays(lhs, rhs, context)
+    _require_program_ad_product_contract("inner", (lhs, rhs))
     if lhs.ndim > 2 or rhs.ndim > 2:
         raise ValueError("whole-program AD np.inner supports operands with rank <= 2")
     lhs_outer = lhs.shape[:-1]
@@ -2640,6 +2641,7 @@ def _trace_outer(
 ) -> TraceADArray:
     lhs = _coerce_trace_array(left, context)
     rhs = _coerce_trace_array(right, context)
+    _require_program_ad_product_contract("outer", (lhs, rhs))
     left_items = tuple(lhs._items)
     right_items = tuple(rhs._items)
     items = tuple(left_item * right_item for left_item in left_items for right_item in right_items)
@@ -5566,7 +5568,7 @@ _PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
 _PROGRAM_AD_PRODUCT_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_PRODUCT_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("dot", "vdot", "matmul")
+    for name in ("dot", "vdot", "inner", "outer", "matmul")
 }
 
 _PROGRAM_AD_CUMULATIVE_PRIMITIVE_NAMESPACE = "scpn.program_ad.cumulative"
@@ -7198,6 +7200,69 @@ def _program_ad_product_vdot_vjp(
     )
 
 
+def _program_ad_product_inner_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("inner", values)
+    return _program_ad_float64_vector_result([float(np.inner(left, right))])
+
+
+def _program_ad_product_inner_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("inner", values)
+    tangent_left, tangent_right = _program_ad_product_split_pair("inner tangent", tangent)
+    if tangent_left.shape != left.shape or tangent_right.shape != right.shape:
+        raise ValueError("program AD product inner tangent shape must match values shape")
+    return _program_ad_float64_vector_result(
+        [float(np.inner(tangent_left, right) + np.inner(left, tangent_right))]
+    )
+
+
+def _program_ad_product_inner_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("inner", values)
+    scalar_cotangent = _program_ad_product_scalar_cotangent("inner", cotangent)
+    return _program_ad_float64_vector_result(
+        np.concatenate((scalar_cotangent * right, scalar_cotangent * left))
+    )
+
+
+def _program_ad_product_outer_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("outer", values)
+    return _program_ad_float64_vector_result(np.outer(left, right))
+
+
+def _program_ad_product_outer_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("outer", values)
+    tangent_left, tangent_right = _program_ad_product_split_pair("outer tangent", tangent)
+    if tangent_left.shape != left.shape or tangent_right.shape != right.shape:
+        raise ValueError("program AD product outer tangent shape must match values shape")
+    return _program_ad_float64_vector_result(
+        np.outer(tangent_left, right) + np.outer(left, tangent_right)
+    )
+
+
+def _program_ad_product_outer_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("outer", values)
+    cotangent_vector = _as_real_numeric_array(
+        "program AD product outer cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.size != left.size * right.size:
+        raise ValueError("program AD product outer VJP cotangent shape must match output shape")
+    cotangent_matrix = cotangent_vector.reshape(left.size, right.size)
+    return _program_ad_float64_vector_result(
+        np.concatenate((cotangent_matrix @ right, cotangent_matrix.T @ left))
+    )
+
+
 def _program_ad_product_square_matrix_pair(
     primitive_name: str,
     values: NDArray[np.float64],
@@ -7382,6 +7447,202 @@ def program_ad_product_matmul_derivative_rule(
     )
 
 
+def _program_ad_product_normalise_inner_shapes(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    left = tuple(int(dimension) for dimension in left_shape)
+    right = tuple(int(dimension) for dimension in right_shape)
+    if not left or not right:
+        raise ValueError("program AD product inner direct rule requires non-scalar operands")
+    if any(dimension <= 0 for dimension in (*left, *right)):
+        raise ValueError("program AD product inner direct rule dimensions must be positive")
+    if left[-1] != right[-1]:
+        raise ValueError("program AD product inner direct rule last dimensions must align")
+    return left, right, left[:-1] + right[:-1]
+
+
+def _program_ad_product_static_split_pair(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    *,
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD product {primitive_name} values", values).reshape(
+        -1
+    )
+    left_size = _program_ad_shape_static_size(left_shape)
+    right_size = _program_ad_shape_static_size(right_shape)
+    if vector.size != left_size + right_size:
+        raise ValueError(
+            f"program AD product {primitive_name} direct rule requires flattened left "
+            "operand followed by right operand"
+        )
+    return (
+        vector[:left_size].reshape(left_shape),
+        vector[left_size:].reshape(right_shape),
+    )
+
+
+def program_ad_product_inner_derivative_rule(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed inner-product signature."""
+
+    left_static_shape, right_static_shape, output_shape = (
+        _program_ad_product_normalise_inner_shapes(left_shape, right_shape)
+    )
+    expected_output_size = _program_ad_shape_static_size(output_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "inner", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        return _program_ad_float64_vector_result(np.inner(left, right))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "inner", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        tangent_left, tangent_right = _program_ad_product_static_split_pair(
+            "inner tangent",
+            tangent,
+            left_shape=left_static_shape,
+            right_shape=right_static_shape,
+        )
+        return _program_ad_float64_vector_result(
+            np.inner(tangent_left, right) + np.inner(left, tangent_right)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "inner", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        cotangent_vector = _as_real_numeric_array(
+            "program AD product inner cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != expected_output_size:
+            raise ValueError(
+                "program AD product inner VJP cotangent shape must match output shape"
+            )
+        cotangent_array = (
+            cotangent_vector.reshape(output_shape)
+            if output_shape
+            else np.asarray(cotangent_vector[0], dtype=np.float64)
+        )
+        left_outer_rank = left.ndim - 1
+        right_outer_rank = right.ndim - 1
+        left_adjoint = np.tensordot(
+            cotangent_array,
+            right,
+            axes=(
+                tuple(range(left_outer_rank, left_outer_rank + right_outer_rank)),
+                tuple(range(right_outer_rank)),
+            ),
+        )
+        right_adjoint = np.tensordot(
+            cotangent_array,
+            left,
+            axes=(tuple(range(left_outer_rank)), tuple(range(left_outer_rank))),
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate(
+                (np.asarray(left_adjoint).reshape(-1), np.asarray(right_adjoint).reshape(-1))
+            )
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_product_inner_"
+            f"{_program_ad_shape_signature(left_static_shape)}_by_"
+            f"{_program_ad_shape_signature(right_static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_product_normalise_outer_shapes(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    left = tuple(int(dimension) for dimension in left_shape)
+    right = tuple(int(dimension) for dimension in right_shape)
+    if any(dimension <= 0 for dimension in (*left, *right)):
+        raise ValueError("program AD product outer direct rule dimensions must be positive")
+    return left, right
+
+
+def program_ad_product_outer_derivative_rule(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed outer-product signature."""
+
+    left_static_shape, right_static_shape = _program_ad_product_normalise_outer_shapes(
+        left_shape, right_shape
+    )
+    left_size = _program_ad_shape_static_size(left_static_shape)
+    right_size = _program_ad_shape_static_size(right_static_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "outer", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        return _program_ad_float64_vector_result(np.outer(left.reshape(-1), right.reshape(-1)))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "outer", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        tangent_left, tangent_right = _program_ad_product_static_split_pair(
+            "outer tangent",
+            tangent,
+            left_shape=left_static_shape,
+            right_shape=right_static_shape,
+        )
+        return _program_ad_float64_vector_result(
+            np.outer(tangent_left.reshape(-1), right.reshape(-1))
+            + np.outer(left.reshape(-1), tangent_right.reshape(-1))
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "outer", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        cotangent_vector = _as_real_numeric_array(
+            "program AD product outer cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != left_size * right_size:
+            raise ValueError(
+                "program AD product outer VJP cotangent shape must match output shape"
+            )
+        cotangent_matrix = cotangent_vector.reshape(left_size, right_size)
+        left_adjoint = (cotangent_matrix @ right.reshape(-1)).reshape(left_static_shape)
+        right_adjoint = (cotangent_matrix.T @ left.reshape(-1)).reshape(right_static_shape)
+        return _program_ad_float64_vector_result(
+            np.concatenate((left_adjoint.reshape(-1), right_adjoint.reshape(-1)))
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_product_outer_"
+            f"{_program_ad_shape_signature(left_static_shape)}_by_"
+            f"{_program_ad_shape_signature(right_static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "dot":
         return CustomDerivativeRule(
@@ -7396,6 +7657,20 @@ def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
             value_fn=_program_ad_product_vdot_value,
             jvp_rule=_program_ad_product_vdot_jvp,
             vjp_rule=_program_ad_product_vdot_vjp,
+        )
+    if name == "inner":
+        return CustomDerivativeRule(
+            name="program_ad_product_inner_direct_rule",
+            value_fn=_program_ad_product_inner_value,
+            jvp_rule=_program_ad_product_inner_jvp,
+            vjp_rule=_program_ad_product_inner_vjp,
+        )
+    if name == "outer":
+        return CustomDerivativeRule(
+            name="program_ad_product_outer_direct_rule",
+            value_fn=_program_ad_product_outer_value,
+            jvp_rule=_program_ad_product_outer_jvp,
+            vjp_rule=_program_ad_product_outer_vjp,
         )
     if name == "matmul":
         return CustomDerivativeRule(
@@ -8064,6 +8339,28 @@ def _program_ad_product_vdot_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return ()
 
 
+def _program_ad_product_inner_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD product inner shape rule requires two operands")
+    lhs_shape = _program_ad_array_shape_of(args[0])
+    rhs_shape = _program_ad_array_shape_of(args[1])
+    if not lhs_shape or not rhs_shape:
+        raise ValueError("program AD product inner shape rule requires non-scalar operands")
+    if lhs_shape[-1] != rhs_shape[-1]:
+        raise ValueError("program AD product inner last dimensions must align")
+    return lhs_shape[:-1] + rhs_shape[:-1]
+
+
+def _program_ad_product_outer_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD product outer shape rule requires two operands")
+    lhs_size = int(np.prod(_program_ad_array_shape_of(args[0])))
+    rhs_size = int(np.prod(_program_ad_array_shape_of(args[1])))
+    if lhs_size <= 0 or rhs_size <= 0:
+        raise ValueError("program AD product outer shape rule requires non-empty operands")
+    return (lhs_size, rhs_size)
+
+
 def _program_ad_product_dtype_rule(args: tuple[object, ...]) -> str:
     if len(args) != 2:
         raise ValueError("program AD product dtype rule requires two operands")
@@ -8240,6 +8537,8 @@ _PROGRAM_AD_ELEMENTWISE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
 _PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "dot": _program_ad_product_dot_shape,
     "vdot": _program_ad_product_vdot_shape,
+    "inner": _program_ad_product_inner_shape,
+    "outer": _program_ad_product_outer_shape,
     "matmul": _program_ad_product_matmul_shape,
 }
 
@@ -8550,17 +8849,25 @@ def _program_ad_product_batching_rule(
 
 
 def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
-    static_factory = (
-        "program_ad_product_matmul_derivative_rule" if name == "matmul" else "not_required"
-    )
-    static_signature = (
-        "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
-        if name == "matmul"
-        else "none"
-    )
+    static_factories = {
+        "dot": "not_required",
+        "vdot": "not_required",
+        "inner": "program_ad_product_inner_derivative_rule",
+        "outer": "program_ad_product_outer_derivative_rule",
+        "matmul": "program_ad_product_matmul_derivative_rule",
+    }
+    static_signatures = {
+        "dot": "none",
+        "vdot": "none",
+        "inner": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        "outer": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        "matmul": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+    }
     nondifferentiable_boundaries = {
         "dot": "inner_dimension_alignment",
         "vdot": "flattened_size_alignment",
+        "inner": "last_dimension_alignment",
+        "outer": "flattened_outer_product",
         "matmul": "core_dimension_alignment",
     }
     return {
@@ -8570,8 +8877,8 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_product_lowering",
         "rust": "blocked_until_polyglot_product_ad",
         "static_argument_rule": "none",
-        "static_derivative_factory": static_factory,
-        "static_signature": static_signature,
+        "static_derivative_factory": static_factories[name],
+        "static_signature": static_signatures[name],
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],
         "nondifferentiable_boundary_policy": "fail_closed",
     }
@@ -14272,7 +14579,9 @@ __all__ = [
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",
     "program_ad_linalg_trace_derivative_rule",
+    "program_ad_product_inner_derivative_rule",
     "program_ad_product_matmul_derivative_rule",
+    "program_ad_product_outer_derivative_rule",
     "program_ad_reduction_mean_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",
