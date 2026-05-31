@@ -4037,9 +4037,9 @@ def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
             lambda values: np.tensordot(values, values, axes=2),
             np.array([1.0, 2.0], dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="sort/argsort selection semantics"):
+    with pytest.raises(ValueError, match="argsort selection semantics"):
         whole_program_value_and_grad(
-            lambda values: np.sort(values)[0],
+            lambda values: np.argsort(values)[0],
             np.array([1.0, 2.0], dtype=np.float64),
         )
 
@@ -7554,6 +7554,80 @@ def test_program_ad_flip_family_preserves_exact_adjoint() -> None:
     np.testing.assert_allclose(
         program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
     )
+
+
+def test_program_ad_sort_routes_strict_static_order_adjoint_semantics() -> None:
+    """Program AD np.sort should route adjoints through strict sorted order."""
+
+    weights_flat = np.array([1.5, -2.0, 0.25, 3.0], dtype=np.float64)
+    weights_axis = np.array(
+        [[0.5, -1.0, 2.0], [1.25, -0.75, 3.5]],
+        dtype=np.float64,
+    )
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:6], (2, 3))
+        flat_sorted = np.sort(values[6:10], axis=None)
+        axis_sorted = np.sort(matrix, axis=1)
+        return np.sum(flat_sorted * weights_flat) + np.sum(axis_sorted * weights_axis)
+
+    values = np.array(
+        [3.0, 1.0, 2.0, -1.0, 4.0, 0.5, 0.25, -2.0, 1.5, -0.75],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros_like(values)
+    flat_indices = np.argsort(values[6:10])
+    flat_expected = np.zeros(4, dtype=np.float64)
+    flat_expected[flat_indices] = weights_flat
+    expected[6:10] = flat_expected
+    matrix = values[:6].reshape(2, 3)
+    axis_indices = np.argsort(matrix, axis=1)
+    matrix_expected = np.zeros_like(matrix)
+    np.put_along_axis(matrix_expected, axis_indices, weights_axis, axis=1)
+    expected[:6] = matrix_expected.reshape(-1)
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result),
+        expected,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_sort_fails_closed_on_nondifferentiable_boundaries() -> None:
+    """Program AD np.sort should reject ties, invalid axes, and integer policies."""
+
+    with pytest.raises(ValueError, match="strictly ordered"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.sort(values)),
+            np.array([1.0, 1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="axis must be a static integer or None"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.sort(np.reshape(values, (2, 2)), axis=True)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="axis out of bounds"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.sort(np.reshape(values, (2, 2)), axis=2)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="argsort selection semantics"):
+        whole_program_value_and_grad(
+            lambda values: np.argsort(values)[0],
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
 
 
 def test_program_ad_flip_family_fails_closed_invalid_axes() -> None:

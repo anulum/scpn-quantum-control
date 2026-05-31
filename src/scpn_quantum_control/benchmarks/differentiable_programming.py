@@ -470,6 +470,8 @@ def _mutation_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
 def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     values = np.array([1.0, -2.0, 0.5, 3.0, -1.5, 2.0], dtype=np.float64)
     block_weights = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float64)
+    flat_sort_weights = np.array([-0.4, 0.8, -1.2, 1.6, -2.0, 2.4], dtype=np.float64)
+    axis_sort_weights = np.array([[0.3, -0.6, 0.9], [-1.1, 1.4, -1.7]], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
         matrix = np.reshape(trace_values, (2, 3))
@@ -511,6 +513,8 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
         depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
         flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
+        flat_sorted = np.sort(trace_values, axis=None)
+        axis_sorted = np.sort(matrix, axis=1)
         return (
             np.sum(block * block_weights)
             + np.sum(gathered)
@@ -649,9 +653,11 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             + np.sum(
                 flat_assembled * np.array([-0.25, 0.5, -1.5, 2.0, 0.75, -0.5], dtype=np.float64)
             )
+            + 0.075 * np.sum(flat_sorted * flat_sort_weights)
+            + 0.055 * np.sum(axis_sorted * axis_sort_weights)
         )
 
-    analytic = np.array([5.97555, 4.42925, 4.9608, 5.34445, 8.3469, 12.16325], dtype=np.float64)
+    analytic = np.array([6.14505, 4.41575, 4.8378, 5.43095, 8.3464, 12.09025], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",

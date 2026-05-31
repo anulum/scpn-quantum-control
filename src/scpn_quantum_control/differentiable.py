@@ -38,6 +38,7 @@ VMapInAxes = int | None | Sequence[int | None]
 PrimitiveBatchingRule = Callable[
     [Callable[..., object], tuple[object, ...], tuple[int | None, ...], int], object
 ]
+_TraceSortKind = Literal["quicksort", "mergesort", "heapsort", "stable"]
 
 
 @dataclass(frozen=True)
@@ -1649,10 +1650,28 @@ class TraceADArray:
             _raise_spectral_linalg_boundary(func.__name__)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
-        if func is np.sort or func is np.argsort:
+        if func is np.sort:
+            if len(args) != 1:
+                raise ValueError("program AD np.sort expects exactly one differentiable array")
+            unsupported_sort_kwargs = set(kwargs) - {"axis", "kind", "order"}
+            if unsupported_sort_kwargs:
+                raise ValueError(
+                    "program AD np.sort only supports axis, kind, and order keyword arguments"
+                )
+            if kwargs.get("order") is not None:
+                raise ValueError("program AD np.sort does not support structured-array order")
+            kind = kwargs.get("kind")
+            if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
+                raise ValueError("program AD np.sort kind must be a NumPy sort kind")
+            return _trace_sort(
+                _coerce_trace_array(args[0], self.context),
+                axis=kwargs.get("axis", -1),
+                kind=cast(_TraceSortKind | None, kind),
+            )
+        if func is np.argsort:
             raise ValueError(
-                "whole-program AD sort/argsort selection semantics are not differentiable "
-                "without an explicit primitive policy"
+                "whole-program AD argsort selection semantics are nondifferentiable "
+                "integer selection without an explicit primitive policy"
             )
         raise ValueError(f"unsupported whole-program AD NumPy function {func.__name__}")
 
@@ -2146,6 +2165,70 @@ def _trace_flip(array: TraceADArray, *, axis: object = None) -> TraceADArray:
     return TraceADArray(
         tuple(array._items[int(index)] for index in flipped.reshape(-1)),
         tuple(map(int, flipped.shape)),
+        array.context,
+    )
+
+
+def _normalise_sort_axis(axis: object, rank: int) -> int:
+    if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD np.sort axis must be a static integer or None")
+    axis_index = int(axis)
+    if axis_index < 0:
+        axis_index += rank
+    if axis_index < 0 or axis_index >= rank:
+        raise ValueError("program AD np.sort axis out of bounds")
+    return axis_index
+
+
+def _require_strict_sort_values(values: NDArray[np.float64]) -> None:
+    if not bool(np.all(np.isfinite(values))):
+        raise ValueError("program AD np.sort requires finite values")
+    if values.size <= 1:
+        return
+    sorted_values = np.sort(values.reshape(-1))
+    if bool(np.any(np.diff(sorted_values) == 0.0)):
+        raise ValueError(
+            "program AD np.sort requires strictly ordered values; equal values form "
+            "a nondifferentiable selection boundary"
+        )
+
+
+def _require_strict_sort_axis(values: NDArray[np.float64], *, axis: int) -> None:
+    if not bool(np.all(np.isfinite(values))):
+        raise ValueError("program AD np.sort requires finite values")
+    if values.shape[axis] <= 1:
+        return
+    sorted_values = np.sort(values, axis=axis)
+    if bool(np.any(np.diff(sorted_values, axis=axis) == 0.0)):
+        raise ValueError(
+            "program AD np.sort requires strictly ordered values; equal values form "
+            "a nondifferentiable selection boundary"
+        )
+
+
+def _trace_sort(
+    array: TraceADArray,
+    *,
+    axis: object = -1,
+    kind: _TraceSortKind | None = None,
+) -> TraceADArray:
+    values = np.array([item.primal for item in array._items], dtype=np.float64)
+    source = np.arange(array.size, dtype=np.int64)
+    sort_kind: _TraceSortKind = "quicksort" if kind is None else kind
+    if axis is None:
+        _require_strict_sort_values(values)
+        order = np.argsort(values, kind=sort_kind)
+        sorted_indices = source[order].reshape(array.shape)
+    else:
+        axis_index = _normalise_sort_axis(axis, array.ndim)
+        shaped_values = values.reshape(array.shape)
+        _require_strict_sort_axis(shaped_values, axis=axis_index)
+        shaped_source = source.reshape(array.shape)
+        order = np.argsort(shaped_values, axis=axis_index, kind=sort_kind)
+        sorted_indices = np.take_along_axis(shaped_source, order, axis=axis_index)
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in sorted_indices.reshape(-1)),
+        tuple(map(int, sorted_indices.shape)),
         array.context,
     )
 
