@@ -8234,6 +8234,56 @@ def test_program_ad_broadcast_to_rejects_subclass_propagation() -> None:
         )
 
 
+def test_program_ad_broadcast_arrays_accumulates_operand_adjoint_paths() -> None:
+    """Program AD broadcast_arrays should gather each operand's repeated adjoints."""
+
+    column_weights = np.array([[1.0, -2.0, 3.0], [0.5, -1.0, 2.0]], dtype=np.float64)
+    row_weights = np.array([[-0.25, 0.75, 1.25], [2.0, -1.5, 0.5]], dtype=np.float64)
+    scalar_weights = np.array([[0.2, -0.4, 0.6], [-0.8, 1.0, -1.2]], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        column = np.reshape(values[:2], (2, 1))
+        row = values[2:5]
+        scalar = values[5]
+        broadcast_column, broadcast_row, broadcast_scalar = np.broadcast_arrays(
+            column, row, scalar
+        )
+        return (
+            np.sum(broadcast_column * column_weights)
+            + np.sum(broadcast_row * row_weights)
+            + np.sum(broadcast_scalar * scalar_weights)
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.arange(1.0, 7.0, dtype=np.float64),
+        parameters=tuple(Parameter(f"x{index}") for index in range(6)),
+    )
+
+    expected_gradient = np.array([2.0, 1.5, 1.75, -0.75, 1.75, -0.6], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(np.arange(1.0, 7.0, dtype=np.float64))))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_broadcast_arrays_rejects_invalid_contracts() -> None:
+    """Program AD broadcast_arrays should fail closed on unsupported broadcast contracts."""
+
+    with pytest.raises(ValueError, match="broadcasting rules"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.broadcast_arrays(values[:2], values[2:5])[0]),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="subok"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.broadcast_arrays(values[:2], values[:2], subok=True)[0]),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_basic_slicing_preserves_static_adjoint_paths() -> None:
     """Program AD basic slicing should preserve exact static index adjoints."""
 

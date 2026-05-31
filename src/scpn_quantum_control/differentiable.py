@@ -1257,6 +1257,12 @@ class TraceADArray:
                 _normalise_trace_broadcast_shape(args[1]),
                 self.context,
             )
+        if func is np.broadcast_arrays:
+            if not args or kwargs.keys() - {"subok"}:
+                raise ValueError("program AD np.broadcast_arrays supports operands and subok")
+            if kwargs.get("subok", False):
+                raise ValueError("program AD np.broadcast_arrays does not support subok")
+            return _trace_broadcast_arrays(args, self.context)
         if func is np.ravel:
             if len(args) != 1 or kwargs:
                 raise ValueError("whole-program AD np.ravel supports one array")
@@ -2198,6 +2204,14 @@ def _broadcast_trace_array(
     return TraceADArray(
         tuple(array._items[int(index)] for index in broadcast_indices), shape, context
     )
+
+
+def _trace_broadcast_arrays(
+    values: Sequence[object], context: _WholeProgramTraceContext
+) -> list[TraceADArray]:
+    arrays = tuple(_coerce_trace_array(value, context) for value in values)
+    shape = _broadcast_shape(*(array.shape for array in arrays))
+    return [_broadcast_trace_array(array, shape, context) for array in arrays]
 
 
 def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
