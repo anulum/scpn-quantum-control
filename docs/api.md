@@ -70,6 +70,7 @@ from scpn_quantum_control import (
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
     compile_scalar_quadratic_ad_to_native_llvm_jit,
+    compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
 )
 
 module = compile_kuramoto_to_mlir(
@@ -101,6 +102,14 @@ native_kernel = compile_scalar_quadratic_ad_to_native_llvm_jit(
 )
 native_kernel.gradient(values)
 
+native_unary_kernel = compile_scalar_unary_elementwise_ad_to_native_llvm_jit(
+    rule,
+    primitive="sin",
+    sample_values=values,
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_unary_kernel.gradient(values)
+
 ad_plan = build_compiler_ad_transform_plan(custom_rule_registry)
 ad_plan_module = compile_compiler_ad_transform_plan_to_mlir(ad_plan)
 ```
@@ -125,12 +134,16 @@ LLVM MCJIT backend for scalar quadratic primitives: it emits MLIR provenance,
 generates LLVM IR for value, JVP, VJP, and gradient functions, verifies native
 execution against the source derivative rule, and returns an executable kernel
 with `backend="native_llvm_jit"`.
-`make_scalar_quadratic_native_llvm_jit_lowering_rule()` binds that native
-backend to primitive registry lowering metadata when the primitive has the
-matching static scalar quadratic signature. Other primitive families remain
-fail-closed for native LLVM/JIT until they provide their own verified lowering
-rule. This surface does not claim LLVM/QIR lowering for unrelated primitives,
-cloud submission, pulse compilation, or hardware execution.
+`compile_scalar_unary_elementwise_ad_to_native_llvm_jit()` extends the same
+native execution boundary to scalar `sin`, `cos`, and `exp` elementwise
+primitives using LLVM intrinsics for value and analytic derivative kernels.
+`make_scalar_quadratic_native_llvm_jit_lowering_rule()` and
+`make_scalar_unary_elementwise_native_llvm_jit_lowering_rule()` bind those native
+backends to primitive registry lowering metadata when the primitive has the
+matching static scalar signature. Other primitive families remain fail-closed
+for native LLVM/JIT until they provide their own verified lowering rule. This
+surface does not claim LLVM/QIR lowering for unrelated primitives, cloud
+submission, pulse compilation, or hardware execution.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, primitive-specific batching-rule

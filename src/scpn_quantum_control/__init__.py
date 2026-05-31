@@ -76,10 +76,12 @@ from .compiler.mlir import (
     compile_kuramoto_to_mlir,
     compile_registered_primitive_to_executable,
     compile_scalar_quadratic_ad_to_native_llvm_jit,
+    compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
     compile_whole_program_ad_trace_to_mlir,
     make_program_ad_linalg_matrix_power_executable_lowering_rule,
     make_program_ad_linalg_multi_dot_executable_lowering_rule,
     make_scalar_quadratic_native_llvm_jit_lowering_rule,
+    make_scalar_unary_elementwise_native_llvm_jit_lowering_rule,
 )
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
@@ -620,9 +622,11 @@ __all__ = [
     "compile_custom_derivative_rule_to_mlir",
     "compile_registered_primitive_to_executable",
     "compile_scalar_quadratic_ad_to_native_llvm_jit",
+    "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
     "make_program_ad_linalg_matrix_power_executable_lowering_rule",
     "make_program_ad_linalg_multi_dot_executable_lowering_rule",
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
+    "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "MonotonicRealtimeClock",

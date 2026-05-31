@@ -23,8 +23,10 @@ from .mlir import (
     compile_kuramoto_to_mlir,
     compile_registered_primitive_to_executable,
     compile_scalar_quadratic_ad_to_native_llvm_jit,
+    compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
     compile_whole_program_ad_trace_to_mlir,
     make_scalar_quadratic_native_llvm_jit_lowering_rule,
+    make_scalar_unary_elementwise_native_llvm_jit_lowering_rule,
 )
 
 __all__ = [
@@ -42,7 +44,9 @@ __all__ = [
     "compile_custom_derivative_rule_to_mlir",
     "compile_registered_primitive_to_executable",
     "compile_scalar_quadratic_ad_to_native_llvm_jit",
+    "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
+    "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
 ]
