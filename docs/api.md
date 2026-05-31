@@ -115,14 +115,17 @@ claim LLVM/QIR lowering, cloud submission, pulse compilation, or hardware
 execution.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
-intent, MLIR dialect operation names, static-argument-rule presence, registry
+intent, MLIR dialect operation names, primitive-specific batching-rule
+presence, static-argument-rule presence, registry
 lowering metadata, promoted static derivative factory/signature contracts,
 promoted paired primitive nondifferentiability-policy, fail-closed boundary,
 and boundary-policy contracts, executable MLIR-runtime availability when a
 lowering rule is registered, and
 fail-closed Rust/LLVM backend status. Its deterministic module metadata also
-lists rule-coverage, boundary-contracted policy/effect coverage, aggregate
-boundary-contract primitive coverage, boundary-policy coverage, MLIR-runtime lowering primitive
+lists rule-coverage, batching-rule coverage, boundary-contracted
+policy/effect coverage, aggregate boundary-contract primitive coverage,
+complete registry-contract primitive coverage, boundary-policy coverage,
+MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
 cannot be mistaken for complete compiler contracts. Static program-AD array,
 shape, elementwise, reduction, product, cumulative, and linalg contracts expose

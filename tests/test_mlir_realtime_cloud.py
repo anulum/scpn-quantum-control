@@ -120,6 +120,7 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
 
     assert isinstance(plan, CompilerADTransformPlan)
     assert isinstance(plan.statuses[0], PrimitiveLoweringStatus)
+    assert plan.statuses[0].has_batching_rule is False
     assert plan.statuses[0].has_shape_rule is True
     assert plan.statuses[0].has_dtype_rule is True
     assert plan.statuses[0].has_static_argument_rule is False
@@ -131,10 +132,14 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.resource_counts["primitives"] == 1
     assert module.resource_counts["jvp_rules"] == 1
     assert module.resource_counts["vjp_rules"] == 1
+    assert module.resource_counts["batching_rules"] == 0
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
+    assert module.metadata["batching_rule_primitives"] == []
+    assert module.metadata["registry_contract_primitives"] == []
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
+    assert "batching_rule = false" in module.text
     assert "shape_rule = true" in module.text
     assert "dtype_rule = true" in module.text
     assert "static_argument_rule = false" in module.text
@@ -206,8 +211,10 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.metadata["nondifferentiable_policies"] == {}
     assert module.metadata["nondifferentiable_boundaries"] == {}
     assert module.metadata["boundary_contract_primitives"] == []
+    assert module.metadata["registry_contract_primitives"] == []
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
+    assert module.resource_counts["registry_contracts"] == 0
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
@@ -239,6 +246,8 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     module = compile_compiler_ad_transform_plan_to_mlir(plan)
 
     statuses = {status.identity.name: status for status in plan.statuses}
+    assert statuses["matrix_power"].has_batching_rule is True
+    assert statuses["multi_dot"].has_batching_rule is True
     assert statuses["matrix_power"].has_static_argument_rule is True
     assert statuses["multi_dot"].has_static_argument_rule is True
     assert statuses["matrix_power"].nondifferentiable_boundary == "negative_power_singular_matrix"
@@ -259,6 +268,10 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         "scpn.program_ad.linalg:matrix_power@1",
         "scpn.program_ad.linalg:multi_dot@1",
     ]
+    assert module.metadata["batching_rule_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1",
+        "scpn.program_ad.linalg:multi_dot@1",
+    ]
     assert module.metadata["nondifferentiable_boundaries"] == {
         "scpn.program_ad.linalg:matrix_power@1": "negative_power_singular_matrix",
         "scpn.program_ad.linalg:multi_dot@1": "static_shape_alignment",
@@ -271,9 +284,16 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         "scpn.program_ad.linalg:matrix_power@1",
         "scpn.program_ad.linalg:multi_dot@1",
     ]
+    assert module.metadata["registry_contract_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1",
+        "scpn.program_ad.linalg:multi_dot@1",
+    ]
+    assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
+    assert module.resource_counts["registry_contracts"] == 2
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
+    assert "batching_rule = true" in module.text
     assert "static_argument_rule = true" in module.text
     assert 'boundary = "negative_power_singular_matrix"' in module.text
     assert 'boundary_policy = "fail_closed"' in module.text

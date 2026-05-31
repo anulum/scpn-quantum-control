@@ -87,6 +87,7 @@ class PrimitiveLoweringStatus:
     has_jvp: bool
     has_vjp: bool
     mlir_op: str
+    has_batching_rule: bool = False
     has_shape_rule: bool = False
     has_dtype_rule: bool = False
     has_static_argument_rule: bool = False
@@ -113,6 +114,8 @@ class PrimitiveLoweringStatus:
             raise ValueError("primitive lowering requires a JVP or VJP rule")
         if not self.mlir_op or not self.mlir_op.replace(".", "").replace("_", "").isalnum():
             raise ValueError("mlir_op must be a non-empty MLIR-safe operation name")
+        if not isinstance(self.has_batching_rule, bool):
+            raise ValueError("has_batching_rule must be a boolean")
         if not isinstance(self.has_shape_rule, bool) or not isinstance(self.has_dtype_rule, bool):
             raise ValueError("has_shape_rule and has_dtype_rule must be booleans")
         if not isinstance(self.has_static_argument_rule, bool):
@@ -269,6 +272,8 @@ def build_compiler_ad_transform_plan(
                 has_jvp=rule.jvp_rule is not None,
                 has_vjp=rule.vjp_rule is not None,
                 mlir_op=metadata.get("mlir_op", f"{dialect}.{identity.namespace}_{identity.name}"),
+                has_batching_rule=transform_rule is not None
+                and transform_rule.batching_rule is not None,
                 has_shape_rule=transform_rule is not None
                 and transform_rule.shape_rule is not None,
                 has_dtype_rule=transform_rule is not None
@@ -323,6 +328,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f'rule = "{_escape_mlir_string(status.rule_name)}", '
             f'op = "{_escape_mlir_string(status.mlir_op)}", '
             f"jvp = {_fmt_bool(status.has_jvp)}, vjp = {_fmt_bool(status.has_vjp)}, "
+            f"batching_rule = {_fmt_bool(status.has_batching_rule)}, "
             f"shape_rule = {_fmt_bool(status.has_shape_rule)}, "
             f"dtype_rule = {_fmt_bool(status.has_dtype_rule)}, "
             f"static_argument_rule = {_fmt_bool(status.has_static_argument_rule)}, "
@@ -354,6 +360,20 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
     )
     lines.append("    return")
     lines.append("  }")
+
+    def has_registry_contract(status: PrimitiveLoweringStatus) -> bool:
+        return (
+            (status.has_jvp or status.has_vjp)
+            and status.has_batching_rule
+            and status.has_shape_rule
+            and status.has_dtype_rule
+            and status.static_derivative_factory not in {"not_declared", "not_required"}
+            and status.static_signature != "none"
+            and status.nondifferentiable_policy != "not_declared"
+            and status.nondifferentiable_boundary != "not_declared"
+            and status.nondifferentiable_boundary_policy == "fail_closed"
+        )
+
     metadata = {
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
@@ -390,6 +410,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             status.identity.key for status in plan.statuses if status.has_lowering_rule
         ],
         "primitive_identities": [status.identity.key for status in plan.statuses],
+        "batching_rule_primitives": [
+            status.identity.key for status in plan.statuses if status.has_batching_rule
+        ],
         "shape_rule_primitives": [
             status.identity.key for status in plan.statuses if status.has_shape_rule
         ],
@@ -409,6 +432,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if status.static_signature != "none"
         },
+        "registry_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_registry_contract(status)
+        ],
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key
@@ -429,6 +455,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "primitives": len(plan.statuses),
             "jvp_rules": sum(status.has_jvp for status in plan.statuses),
             "vjp_rules": sum(status.has_vjp for status in plan.statuses),
+            "batching_rules": sum(status.has_batching_rule for status in plan.statuses),
             "shape_rules": sum(status.has_shape_rule for status in plan.statuses),
             "dtype_rules": sum(status.has_dtype_rule for status in plan.statuses),
             "effects": sum(
@@ -464,6 +491,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "static_derivative_signatures": sum(
                 status.static_signature != "none" for status in plan.statuses
             ),
+            "registry_contracts": sum(has_registry_contract(status) for status in plan.statuses),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"
                 or status.nondifferentiable_boundary == "not_declared"
