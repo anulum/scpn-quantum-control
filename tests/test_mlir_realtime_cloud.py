@@ -263,6 +263,10 @@ def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None
     assert module.resource_counts["shape_rules"] == len(expected_factories)
     assert module.resource_counts["dtype_rules"] == len(expected_factories)
     assert module.resource_counts["static_argument_rules"] == len(expected_factories)
+    expected_rule_primitives = sorted(expected_factories)
+    assert module.metadata["shape_rule_primitives"] == expected_rule_primitives
+    assert module.metadata["dtype_rule_primitives"] == expected_rule_primitives
+    assert module.metadata["static_argument_primitives"] == expected_rule_primitives
     assert 'static_derivative_factory = "program_ad_array_getitem_derivative_rule"' in module.text
     assert 'static_signature = "source_shape:ranked_tensor_shape;index:basic_index"' in module.text
     assert 'static_derivative_factory = "program_ad_linalg_solve_derivative_rule"' in module.text

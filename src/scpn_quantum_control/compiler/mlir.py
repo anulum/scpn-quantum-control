@@ -296,6 +296,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "dialect": plan.dialect,
         "executable_backend": plan.executable_backend,
         "primitive_identities": [status.identity.key for status in plan.statuses],
+        "shape_rule_primitives": [
+            status.identity.key for status in plan.statuses if status.has_shape_rule
+        ],
+        "dtype_rule_primitives": [
+            status.identity.key for status in plan.statuses if status.has_dtype_rule
+        ],
         "static_argument_primitives": [
             status.identity.key for status in plan.statuses if status.has_static_argument_rule
         ],
