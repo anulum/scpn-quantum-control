@@ -476,6 +476,10 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     trapz_row_weights = np.array([0.35, -0.45], dtype=np.float64)
     gradient_flat_weights = np.array([0.25, -0.5, 1.0, -1.5, 0.75, -0.25], dtype=np.float64)
     gradient_axis_weights = np.array([[0.4, -0.6, 0.8], [-1.0, 1.2, -1.4]], dtype=np.float64)
+    interp_xp = np.array([-3.0, 0.0, 2.0, 5.0], dtype=np.float64)
+    interp_static_fp = np.array([0.75, -1.25, 1.5, -0.5], dtype=np.float64)
+    interp_sample_weights = np.array([0.45, -0.35], dtype=np.float64)
+    interp_control_weights = np.array([1.1, -0.7, 0.3], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
         matrix = np.reshape(trace_values, (2, 3))
@@ -527,6 +531,12 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             np.array([0.0, 0.5, 1.5], dtype=np.float64),
             axis=1,
             edge_order=2,
+        )
+        sample_interpolation = np.interp(trace_values[:2], interp_xp, interp_static_fp)
+        control_interpolation = np.interp(
+            np.array([-2.5, 1.0, 4.0], dtype=np.float64),
+            interp_xp,
+            trace_values[2:],
         )
         return (
             np.sum(block * block_weights)
@@ -672,10 +682,19 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             - 0.04 * flat_integral
             + 0.031 * np.sum(flat_gradient * gradient_flat_weights)
             + 0.027 * np.sum(axis_gradient * gradient_axis_weights)
+            + 0.029 * np.sum(sample_interpolation * interp_sample_weights)
+            + 0.034 * np.sum(control_interpolation * interp_control_weights)
         )
 
     analytic = np.array(
-        [6.1665875, 4.3594, 4.8996125, 5.4040375, 8.35195, 12.0356125],
+        [
+            6.18453125,
+            4.366166666666667,
+            4.930779166666667,
+            5.398370833333333,
+            8.34345,
+            12.0424125,
+        ],
         dtype=np.float64,
     )
     return _program_ad_case(

@@ -8787,6 +8787,122 @@ def test_program_ad_gradient_fails_closed_invalid_static_contracts() -> None:
         )
 
 
+def test_program_ad_interp_matches_static_grid_piecewise_adjoint() -> None:
+    """Program AD np.interp should replay exact static-grid piecewise adjoints."""
+
+    grid = np.array([0.0, 1.0, 2.5, 4.0], dtype=np.float64)
+    sample_weights = np.array([0.7, -1.1, 0.6], dtype=np.float64)
+    static_weights = np.array([1.2, -0.8, 0.4], dtype=np.float64)
+    boundary_weights = np.array([0.3, -0.7], dtype=np.float64)
+    static_values = np.array([0.5, -0.25, 1.25, -1.5], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        samples = values[:3]
+        controls = values[3:]
+        dynamic_values = np.interp(samples, grid, controls)
+        static_grid_values = np.interp(samples + 0.05, grid, static_values)
+        boundary_values = np.interp(np.array([-0.25, 4.25], dtype=np.float64), grid, controls)
+        return (
+            np.sum(dynamic_values * sample_weights)
+            + 0.2 * np.sum(static_grid_values * static_weights)
+            + 0.13 * np.sum(boundary_values * boundary_weights)
+        )
+
+    values = np.array([0.4, 1.8, 3.2, -1.0, 2.0, 0.5, 3.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros_like(values)
+    samples = values[:3]
+    controls = values[3:]
+    for sample_index, sample in enumerate(samples):
+        segment = int(np.searchsorted(grid, sample, side="right") - 1)
+        width = grid[segment + 1] - grid[segment]
+        position = (sample - grid[segment]) / width
+        expected[sample_index] += (
+            sample_weights[sample_index] * (controls[segment + 1] - controls[segment]) / width
+        )
+        expected[3 + segment] += sample_weights[sample_index] * (1.0 - position)
+        expected[3 + segment + 1] += sample_weights[sample_index] * position
+
+        static_sample = sample + 0.05
+        static_segment = int(np.searchsorted(grid, static_sample, side="right") - 1)
+        static_width = grid[static_segment + 1] - grid[static_segment]
+        expected[sample_index] += (
+            0.2
+            * static_weights[sample_index]
+            * (static_values[static_segment + 1] - static_values[static_segment])
+            / static_width
+        )
+    expected[3] += 0.13 * boundary_weights[0]
+    expected[6] += 0.13 * boundary_weights[1]
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), expected, atol=1.0e-12)
+
+
+def test_program_ad_interp_fails_closed_invalid_static_contracts() -> None:
+    """Program AD np.interp should reject dynamic grids and singular piecewise cases."""
+
+    with pytest.raises(ValueError, match="xp grid must be static"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.interp(np.array([0.5]), values[:3], values[3:])),
+            np.array([0.0, 1.0, 2.0, -1.0, 0.5, 2.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="strictly increasing"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.interp(values[:1], np.array([0.0, 1.0, 1.0]), np.array([0.5, 1.0, 1.5]))
+            ),
+            np.array([0.5], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="avoid grid knots"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.interp(values[:1], np.array([0.0, 1.0, 2.0]), np.array([0.5, 1.0, 1.5]))
+            ),
+            np.array([1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="period is not supported"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.interp(
+                    values[:1],
+                    np.array([0.0, 1.0, 2.0]),
+                    np.array([0.5, 1.0, 1.5]),
+                    period=2.0,
+                )
+            ),
+            np.array([0.5], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="fp values must match"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.interp(values[:1], np.array([0.0, 1.0, 2.0]), values[1:])),
+            np.array([0.5, -1.0, 1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="left boundary must be static"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.interp(
+                    np.array([-0.5], dtype=np.float64),
+                    np.array([0.0, 1.0, 2.0]),
+                    values[:3],
+                    left=values[3],
+                )
+            ),
+            np.array([-1.0, 0.5, 2.0, 3.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_trapezoid_matches_static_grid_adjoint() -> None:
     """Program AD trapezoidal integration should apply exact static-grid adjoints."""
 

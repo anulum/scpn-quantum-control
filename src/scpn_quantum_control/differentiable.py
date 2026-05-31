@@ -1171,6 +1171,26 @@ class TraceADArray:
                 axis=kwargs.get("axis"),
                 edge_order=kwargs.get("edge_order", 1),
             )
+        if func is np.interp:
+            if len(args) < 3 or len(args) > 6 or kwargs.keys() - {"left", "right", "period"}:
+                raise ValueError(
+                    "program AD np.interp supports x, xp, fp, left, right, and period"
+                )
+            if len(args) >= 4 and "left" in kwargs:
+                raise ValueError("program AD np.interp left must be supplied once")
+            if len(args) >= 5 and "right" in kwargs:
+                raise ValueError("program AD np.interp right must be supplied once")
+            if len(args) >= 6 and "period" in kwargs:
+                raise ValueError("program AD np.interp period must be supplied once")
+            return _trace_interp(
+                args[0],
+                args[1],
+                args[2],
+                left=args[3] if len(args) >= 4 else kwargs.get("left"),
+                right=args[4] if len(args) >= 5 else kwargs.get("right"),
+                period=args[5] if len(args) >= 6 else kwargs.get("period"),
+                context=self.context,
+            )
         if func in {np.zeros_like, np.ones_like}:
             if len(args) != 1:
                 raise ValueError("program AD like-constructors require one reference array")
@@ -2832,6 +2852,119 @@ def _trace_gradient(
         for axis_index, spacing in zip(axes, spacing_specs, strict=True)
     ]
     return gradients[0] if len(gradients) == 1 else gradients
+
+
+def _normalise_interp_grid(xp: object) -> NDArray[np.float64]:
+    if isinstance(xp, (TraceADArray, TraceADScalar)):
+        raise ValueError("program AD np.interp xp grid must be static real numeric")
+    grid = _as_real_numeric_array("program AD np.interp xp grid", xp)
+    if grid.ndim != 1:
+        raise ValueError("program AD np.interp xp grid must be one-dimensional")
+    if grid.size < 2:
+        raise ValueError("program AD np.interp xp grid requires at least two samples")
+    if not bool(np.all(np.isfinite(grid))):
+        raise ValueError("program AD np.interp xp grid must contain only finite values")
+    if not bool(np.all(np.diff(grid) > 0.0)):
+        raise ValueError("program AD np.interp xp grid must be strictly increasing")
+    return grid
+
+
+def _normalise_interp_trace_values(
+    fp: object, *, grid_size: int, context: _WholeProgramTraceContext
+) -> tuple[TraceADScalar, ...]:
+    if isinstance(fp, TraceADArray):
+        if fp.ndim != 1 or fp.size != grid_size:
+            raise ValueError("program AD np.interp fp values must match xp grid length")
+        return tuple(fp._items)
+    if isinstance(fp, TraceADScalar):
+        raise ValueError("program AD np.interp fp values must be one-dimensional")
+    values = _as_real_numeric_array("program AD np.interp fp values", fp)
+    if values.ndim != 1 or values.size != grid_size:
+        raise ValueError("program AD np.interp fp values must match xp grid length")
+    if not bool(np.all(np.isfinite(values))):
+        raise ValueError("program AD np.interp fp values must contain only finite values")
+    return tuple(_coerce_trace_scalar(float(value), context) for value in values)
+
+
+def _normalise_interp_boundary(
+    name: str, value: object, context: _WholeProgramTraceContext
+) -> TraceADScalar | None:
+    if value is None:
+        return None
+    if isinstance(value, (TraceADArray, TraceADScalar)):
+        raise ValueError(f"program AD np.interp {name} boundary must be static real numeric")
+    return _coerce_trace_scalar(_as_real_scalar(f"program AD np.interp {name}", value), context)
+
+
+def _normalise_interp_samples(
+    x: object, *, context: _WholeProgramTraceContext
+) -> tuple[tuple[TraceADScalar, ...], tuple[int, ...]]:
+    if isinstance(x, TraceADArray):
+        return tuple(x._items), x.shape
+    if isinstance(x, TraceADScalar):
+        return (x,), ()
+    samples = _as_real_numeric_array("program AD np.interp x samples", x)
+    if not bool(np.all(np.isfinite(samples))):
+        raise ValueError("program AD np.interp x samples must contain only finite values")
+    return tuple(
+        _coerce_trace_scalar(float(value), context) for value in samples.reshape(-1)
+    ), tuple(samples.shape)
+
+
+def _trace_interp_scalar(
+    sample: TraceADScalar,
+    *,
+    grid: NDArray[np.float64],
+    values: tuple[TraceADScalar, ...],
+    left: TraceADScalar | None,
+    right: TraceADScalar | None,
+) -> TraceADScalar:
+    primal = sample.primal
+    if not math.isfinite(primal):
+        raise ValueError("program AD np.interp x samples must contain only finite values")
+    if bool(np.any(grid == primal)):
+        raise ValueError("program AD np.interp differentiable samples must avoid grid knots")
+    if primal < float(grid[0]):
+        return values[0] if left is None else left
+    if primal > float(grid[-1]):
+        return values[-1] if right is None else right
+    segment = int(np.searchsorted(grid, primal, side="right") - 1)
+    lower = float(grid[segment])
+    upper = float(grid[segment + 1])
+    weight = (sample - lower) / (upper - lower)
+    return values[segment] + (values[segment + 1] - values[segment]) * weight
+
+
+def _trace_interp(
+    x: object,
+    xp: object,
+    fp: object,
+    *,
+    left: object = None,
+    right: object = None,
+    period: object = None,
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    if period is not None:
+        raise ValueError("program AD np.interp period is not supported")
+    grid = _normalise_interp_grid(xp)
+    values = _normalise_interp_trace_values(fp, grid_size=grid.size, context=context)
+    left_value = _normalise_interp_boundary("left", left, context)
+    right_value = _normalise_interp_boundary("right", right, context)
+    samples, shape = _normalise_interp_samples(x, context=context)
+    outputs = tuple(
+        _trace_interp_scalar(
+            sample,
+            grid=grid,
+            values=values,
+            left=left_value,
+            right=right_value,
+        )
+        for sample in samples
+    )
+    if shape == ():
+        return outputs[0]
+    return TraceADArray(outputs, shape, context)
 
 
 def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
