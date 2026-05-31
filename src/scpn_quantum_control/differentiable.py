@@ -2012,11 +2012,17 @@ def _validate_trace_basic_index(index: object) -> None:
     _validate_trace_basic_index_selector(index)
 
 
+_PROGRAM_AD_STATIC_INDEX_ERROR = (
+    "program AD array getitem requires static integer or boolean index arrays, "
+    "integer/slice/ellipsis/newaxis selectors, and static integer slice bounds"
+)
+
+
 def _validate_trace_basic_index_selector(selector: object) -> None:
-    if isinstance(selector, (TraceADScalar, TraceADArray, np.ndarray, list)):
-        raise ValueError("program AD advanced indexing is not supported; indices must be static")
+    if isinstance(selector, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)):
+        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
     if isinstance(selector, (bool, np.bool_)):
-        raise ValueError("program AD advanced indexing is not supported; indices must be static")
+        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
     if selector is Ellipsis or selector is None:
         return
     if isinstance(selector, (int, np.integer)):
@@ -2024,12 +2030,42 @@ def _validate_trace_basic_index_selector(selector: object) -> None:
     if isinstance(selector, slice):
         for item in (selector.start, selector.stop, selector.step):
             if item is not None and (
-                isinstance(item, (bool, np.bool_, TraceADScalar, TraceADArray))
+                isinstance(
+                    item,
+                    (
+                        bool,
+                        np.bool_,
+                        TraceADScalar,
+                        TraceADArray,
+                        _TracePredicate,
+                        TraceADPredicateArray,
+                    ),
+                )
                 or not isinstance(item, (int, np.integer))
             ):
                 raise ValueError("program AD basic indexing requires static integer slice bounds")
         return
-    raise ValueError("program AD advanced indexing is not supported; indices must be static")
+    if isinstance(selector, (np.ndarray, list)):
+        _trace_static_index_array(selector)
+        return
+    raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
+
+
+def _trace_static_index_array(selector: object) -> NDArray[Any]:
+    array = np.asarray(selector)
+    if array.dtype == object and any(
+        isinstance(
+            item,
+            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
+        )
+        for item in array.reshape(-1)
+    ):
+        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
+    if array.dtype.kind not in {"i", "u", "b"}:
+        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
+    if array.shape == () and array.dtype.kind == "b":
+        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
+    return cast(NDArray[Any], array)
 
 
 def _broadcast_trace_array(
@@ -5779,7 +5815,7 @@ def program_ad_array_getitem_derivative_rule(
     source_shape: Sequence[int],
     index: object,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for a fixed basic-index signature."""
+    """Build an exact direct derivative rule for a fixed static gather-index signature."""
 
     source = _program_ad_array_normalise_static_shape("getitem", source_shape)
     flat_indices = _program_ad_array_getitem_flat_indices(source, index)
@@ -8841,7 +8877,36 @@ def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tupl
     if len(args) != 2:
         raise ValueError("program AD array getitem static rule requires array and index")
     _validate_trace_basic_index(args[1])
-    return (args[1],)
+    index = args[1]
+    if isinstance(index, tuple):
+        return (tuple(_program_ad_array_static_index_component(item) for item in index),)
+    return (_program_ad_array_static_index_component(index),)
+
+
+def _program_ad_array_static_index_component(selector: object) -> object:
+    if selector is Ellipsis or selector is None:
+        return selector
+    if isinstance(selector, (int, np.integer)) and not isinstance(selector, (bool, np.bool_)):
+        return int(selector)
+    if isinstance(selector, slice):
+        return slice(
+            None if selector.start is None else int(selector.start),
+            None if selector.stop is None else int(selector.stop),
+            None if selector.step is None else int(selector.step),
+        )
+    if isinstance(selector, (np.ndarray, list)):
+        array = _trace_static_index_array(selector)
+        dtype_name = "bool" if array.dtype.kind == "b" else "int64"
+        values = tuple(
+            bool(item) if array.dtype.kind == "b" else int(item) for item in array.reshape(-1)
+        )
+        return (
+            "static_index_array",
+            dtype_name,
+            tuple(int(dimension) for dimension in array.shape),
+            values,
+        )
+    raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
 
 
 def _program_ad_array_take_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -9045,7 +9110,7 @@ def _program_ad_array_batching_rule(
 
 def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
     static_signature = {
-        "getitem": "source_shape:ranked_tensor_shape;index:basic_index",
+        "getitem": "source_shape:ranked_tensor_shape;index:static_gather_index",
         "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
     }[name]
     static_factory = {
@@ -9053,7 +9118,7 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "take": "program_ad_array_take_derivative_rule",
     }[name]
     nondifferentiable_boundaries = {
-        "getitem": "basic_static_index_scatter_add",
+        "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
     }
     return {

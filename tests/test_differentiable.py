@@ -6324,7 +6324,7 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
     expected_factories = {
         "scpn.program_ad.array:getitem": (
             "program_ad_array_getitem_derivative_rule",
-            "source_shape:ranked_tensor_shape;index:basic_index",
+            "source_shape:ranked_tensor_shape;index:static_gather_index",
         ),
         "scpn.program_ad.array:take": (
             "program_ad_array_take_derivative_rule",
@@ -7337,6 +7337,38 @@ def test_program_ad_static_take_accumulates_gather_adjoint() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_static_advanced_indexing_accumulates_gather_adjoint() -> None:
+    """Static integer and boolean advanced indexes should preserve exact scatter adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        integer_gather = matrix[[1, 0, 1], [2, 0, 2]]
+        boolean_rows = matrix[np.array([True, False])]
+        repeated_columns = boolean_rows[:, np.array([2, 0, 2])]
+        return np.sum(integer_gather) + 2.0 * np.sum(repeated_columns)
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(27.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [3.0, 0.0, 4.0, 0.0, 0.0, 2.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
     """Program AD take should fail closed outside static integer gather semantics."""
 
@@ -7683,11 +7715,19 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
     assert contract.lowering_metadata["mlir_op"] == "scpn_diff.array.getitem"
     assert contract.shape_rule is not None
     assert contract.shape_rule((matrix, (slice(None), slice(1, None)))) == (2, 2)
+    assert contract.shape_rule((matrix, ([1, 0, 1], [2, 0, 2]))) == (3,)
+    assert contract.shape_rule((matrix, np.array([True, False]))) == (1, 3)
     assert contract.dtype_rule is not None
     assert contract.dtype_rule((matrix, (slice(None), slice(1, None)))) == "float64"
     assert contract.static_argument_rule is not None
     assert contract.static_argument_rule((matrix, (slice(None), slice(1, None)))) == (
         (slice(None), slice(1, None)),
+    )
+    assert contract.static_argument_rule((matrix, ([1, 0, 1], [2, 0, 2]))) == (
+        (
+            ("static_index_array", "int64", (3,), (1, 0, 1)),
+            ("static_index_array", "int64", (3,), (2, 0, 2)),
+        ),
     )
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(contract.identity)
@@ -7709,7 +7749,7 @@ def test_program_ad_array_boundary_metadata_is_explicit() -> None:
     """Array-indexing contracts should expose fail-closed static gather boundaries."""
 
     expected_boundaries = {
-        "getitem": "basic_static_index_scatter_add",
+        "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
     }
     for name, boundary in expected_boundaries.items():
@@ -7816,6 +7856,30 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
         atol=0.0,
     )
 
+    advanced_getitem_rule = program_ad_array_getitem_derivative_rule(
+        (2, 3), ([1, 0, 1], [2, 0, 2])
+    )
+    assert advanced_getitem_rule.jvp_rule is not None
+    assert advanced_getitem_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        advanced_getitem_rule.value_fn(values),
+        matrix[[1, 0, 1], [2, 0, 2]].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        advanced_getitem_rule.jvp_rule(values, tangent),
+        tangent.reshape(2, 3)[[1, 0, 1], [2, 0, 2]].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        advanced_getitem_rule.vjp_rule(values, np.array([1.0, -0.5, 2.0], dtype=np.float64)),
+        np.array([-0.5, 0.0, 0.0, 0.0, 0.0, 3.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+
     take_rule = program_ad_array_take_derivative_rule((2, 3), (2, 0, 2), axis=1)
     assert take_rule.name == "program_ad_array_take_2x3_axis_1_static_direct_rule"
     assert take_rule.jvp_rule is not None
@@ -7836,8 +7900,8 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
         atol=0.0,
     )
 
-    with pytest.raises(ValueError, match="advanced indexing"):
-        program_ad_array_getitem_derivative_rule((2, 3), np.array([0, 1]))
+    with pytest.raises(ValueError, match="static integer or boolean"):
+        program_ad_array_getitem_derivative_rule((2, 3), np.array([1.0, 0.0]))
     with pytest.raises(ValueError, match="mode='raise'"):
         program_ad_array_take_derivative_rule((2, 3), (0,), axis=0, mode="wrap")
 
@@ -7896,14 +7960,14 @@ def test_program_ad_linalg_primitives_validate_registry_rules_at_dispatch() -> N
 def test_program_ad_advanced_indexing_fails_closed() -> None:
     """Program AD array indexing should reject dynamic advanced index selectors."""
 
-    with pytest.raises(ValueError, match="advanced indexing"):
+    with pytest.raises(ValueError, match="static integer or boolean"):
         whole_program_value_and_grad(
-            lambda values: np.sum(np.reshape(values, (2, 2))[[0, 1]]),
+            lambda values: np.sum(np.reshape(values, (2, 2))[[values[0], values[1]]]),
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="advanced indexing"):
+    with pytest.raises(ValueError, match="static integer or boolean"):
         whole_program_value_and_grad(
-            lambda values: np.sum(values[np.array([True, False])]),
+            lambda values: np.sum(values[np.array([values[0] > 0.0, True], dtype=object)]),
             np.array([1.0, 2.0], dtype=np.float64),
         )
 
