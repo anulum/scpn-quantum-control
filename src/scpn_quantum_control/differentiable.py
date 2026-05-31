@@ -1744,11 +1744,30 @@ class TraceADArray:
                 raise ValueError("program AD np.linalg.svd supports hermitian=False only")
             _require_program_ad_linalg_contract("svd", (matrix,))
             return _trace_svdvals(matrix, self.context)
+        if func is np.linalg.pinv:
+            if not 1 <= len(args) <= 3:
+                raise ValueError(
+                    "program AD np.linalg.pinv supports one matrix and static cutoff options"
+                )
+            matrix = args[0]
+            rcond = args[1] if len(args) >= 2 else kwargs.pop("rcond", None)
+            hermitian = args[2] if len(args) >= 3 else kwargs.pop("hermitian", False)
+            rtol = kwargs.pop("rtol", None)
+            if kwargs:
+                raise ValueError("program AD np.linalg.pinv supports rcond, rtol, and hermitian")
+            if rcond is not None and rtol is not None:
+                raise ValueError("program AD np.linalg.pinv accepts only one of rcond or rtol")
+            if not isinstance(hermitian, (bool, np.bool_)):
+                raise ValueError("program AD np.linalg.pinv hermitian must be static boolean")
+            if bool(hermitian):
+                raise ValueError("program AD np.linalg.pinv supports hermitian=False only")
+            cutoff = _program_ad_linalg_normalise_rcond(rtol if rtol is not None else rcond)
+            _require_program_ad_linalg_contract("pinv", (matrix,))
+            return _trace_pinv(matrix, self.context, rcond=cutoff)
         if func in {
             np.linalg.eig,
             np.linalg.eigh,
             np.linalg.eigvals,
-            np.linalg.pinv,
         }:
             _raise_spectral_linalg_boundary(func.__name__)
         if func in {np.argmax, np.argmin}:
@@ -4247,6 +4266,47 @@ def _trace_svdvals(matrix: object, context: _WholeProgramTraceContext) -> TraceA
     return TraceADArray(tuple(items), (singular_values.size,), context)
 
 
+def _trace_pinv(
+    matrix: object,
+    context: _WholeProgramTraceContext,
+    *,
+    rcond: float = 1.0e-15,
+) -> TraceADArray:
+    array = _coerce_trace_array(matrix, context)
+    if array.ndim != 2:
+        raise ValueError("program AD np.linalg.pinv requires a rank-2 matrix")
+    rows, cols = array.shape
+    if rows <= 0 or cols <= 0:
+        raise ValueError("program AD np.linalg.pinv requires non-empty matrix dimensions")
+    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
+    pinv = _program_ad_linalg_pinv_value_matrix(primal, rcond=rcond)
+    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+        rows, cols, context.parameter_count
+    )
+    items: list[TraceADScalar] = []
+    input_names = tuple(item.name for item in array._items)
+    for row in range(cols):
+        for col in range(rows):
+            tangent = np.array(
+                [
+                    _program_ad_linalg_pinv_jvp_matrix(primal, pinv, tangent_tensor[:, :, index])[
+                        row, col
+                    ]
+                    for index in range(context.parameter_count)
+                ],
+                dtype=np.float64,
+            )
+            items.append(
+                context.make(
+                    f"linalg:pinv:{rows}x{cols}:{rcond:.17g}:{row}:{col}",
+                    input_names,
+                    float(pinv[row, col]),
+                    tangent,
+                )
+            )
+    return TraceADArray(tuple(items), (cols, rows), context)
+
+
 def _trace_trace(
     values: object,
     context: _WholeProgramTraceContext,
@@ -5124,6 +5184,8 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_eigvalsh_contributions(node, node_by_name)
     if node.op.startswith("linalg:svdvals:"):
         return _program_adjoint_svdvals_contributions(node, node_by_name)
+    if node.op.startswith("linalg:pinv:"):
+        return _program_adjoint_pinv_contributions(node, node_by_name)
     raise ValueError(f"unsupported program AD adjoint op {node.op}")
 
 
@@ -5262,6 +5324,44 @@ def _program_adjoint_svdvals_contributions(
         (
             node.inputs[row * cols + col],
             float(left[row, singular_value_index] * right_h[singular_value_index, col]),
+        )
+        for row in range(rows)
+        for col in range(cols)
+    )
+
+
+def _program_adjoint_pinv_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for a constant-full-rank pinv element."""
+
+    parts = node.op.split(":")
+    if len(parts) != 6:
+        raise ValueError("pinv adjoint requires shape, cutoff, and output-index metadata")
+    try:
+        rows, cols = (int(part) for part in parts[2].split("x", maxsplit=1))
+        rcond = float(parts[3])
+        output_row = int(parts[4])
+        output_col = int(parts[5])
+    except ValueError as exc:
+        raise ValueError("pinv adjoint metadata is malformed") from exc
+    if rows <= 0 or cols <= 0 or rows * cols != len(node.inputs):
+        raise ValueError("pinv adjoint requires flattened matrix inputs matching metadata")
+    if output_row < 0 or output_row >= cols or output_col < 0 or output_col >= rows:
+        raise ValueError("pinv adjoint output index is outside pseudoinverse shape")
+    matrix = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    ).reshape(rows, cols)
+    pinv = _program_ad_linalg_pinv_value_matrix(matrix, rcond=rcond)
+    cotangent = np.zeros_like(pinv, dtype=np.float64)
+    cotangent[output_row, output_col] = 1.0
+    local_adjoint = _program_ad_linalg_pinv_vjp_matrix(matrix, pinv, cotangent)
+    return tuple(
+        (
+            node.inputs[row * cols + col],
+            float(local_adjoint[row, col]),
         )
         for row in range(rows)
         for col in range(cols)
@@ -7483,6 +7583,7 @@ _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "multi_dot",
         "eigvalsh",
         "svd",
+        "pinv",
     )
 }
 
@@ -13215,6 +13316,119 @@ def _program_ad_linalg_require_distinct_positive_singular_values(
         )
 
 
+def _program_ad_linalg_normalise_rcond(value: object) -> float:
+    if value is None:
+        return 1.0e-15
+    if isinstance(value, (TraceADScalar, TraceADArray)):
+        raise ValueError("program AD linalg pinv rcond must be static")
+    if isinstance(value, bool) or not isinstance(value, (int, float, np.integer, np.floating)):
+        raise ValueError("program AD linalg pinv rcond must be a static real scalar")
+    cutoff = float(value)
+    if cutoff < 0.0 or not math.isfinite(cutoff):
+        raise ValueError("program AD linalg pinv rcond must be finite and non-negative")
+    return cutoff
+
+
+def _program_ad_linalg_require_constant_full_rank(
+    matrix: NDArray[np.float64],
+    singular_values: NDArray[np.float64],
+    *,
+    rcond: float,
+) -> None:
+    rank = min(matrix.shape)
+    if singular_values.size != rank:
+        raise ValueError("program AD linalg pinv requires rank-2 singular values")
+    scale = max(1.0, float(np.max(np.abs(singular_values))))
+    threshold = rcond * scale
+    if float(np.min(singular_values)) <= threshold:
+        raise ValueError(
+            "program AD linalg pinv requires a constant full-rank matrix above cutoff"
+        )
+
+
+def _program_ad_linalg_pinv_value_matrix(
+    matrix: NDArray[np.float64],
+    *,
+    rcond: float = 1.0e-15,
+) -> NDArray[np.float64]:
+    if matrix.ndim != 2:
+        raise ValueError("program AD linalg pinv requires a rank-2 matrix")
+    if matrix.shape[0] <= 0 or matrix.shape[1] <= 0:
+        raise ValueError("program AD linalg pinv requires non-empty matrix dimensions")
+    _left, singular_values, _right_h = np.linalg.svd(matrix, full_matrices=False)
+    _program_ad_linalg_require_constant_full_rank(matrix, singular_values, rcond=rcond)
+    return np.linalg.pinv(matrix, rcond=rcond, hermitian=False).astype(np.float64)
+
+
+def _program_ad_linalg_pinv_jvp_matrix(
+    matrix: NDArray[np.float64],
+    pinv: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    if tangent.shape != matrix.shape:
+        raise ValueError("program AD linalg pinv tangent shape must match matrix shape")
+    left_projector = np.eye(matrix.shape[1], dtype=np.float64) - pinv @ matrix
+    right_projector = np.eye(matrix.shape[0], dtype=np.float64) - matrix @ pinv
+    return cast(
+        NDArray[np.float64],
+        (
+            -pinv @ tangent @ pinv
+            + pinv @ pinv.T @ tangent.T @ right_projector
+            + left_projector @ tangent.T @ pinv.T @ pinv
+        ).astype(np.float64),
+    )
+
+
+def _program_ad_linalg_pinv_vjp_matrix(
+    matrix: NDArray[np.float64],
+    pinv: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    if cotangent.shape != pinv.shape:
+        raise ValueError("program AD linalg pinv VJP cotangent shape must match output shape")
+    left_projector = np.eye(matrix.shape[1], dtype=np.float64) - pinv @ matrix
+    right_projector = np.eye(matrix.shape[0], dtype=np.float64) - matrix @ pinv
+    return cast(
+        NDArray[np.float64],
+        (
+            -pinv.T @ cotangent @ pinv.T
+            + right_projector.T @ cotangent.T @ pinv @ pinv.T
+            + pinv.T @ pinv @ cotangent.T @ left_projector.T
+        ).astype(np.float64),
+    )
+
+
+def _program_ad_linalg_pinv_square_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("pinv", values)
+    return _program_ad_float64_vector_result(_program_ad_linalg_pinv_value_matrix(matrix))
+
+
+def _program_ad_linalg_pinv_square_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("pinv", values)
+    tangent_matrix = _program_ad_linalg_square_matrix("pinv tangent", tangent)
+    pinv = _program_ad_linalg_pinv_value_matrix(matrix)
+    return _program_ad_float64_vector_result(
+        _program_ad_linalg_pinv_jvp_matrix(matrix, pinv, tangent_matrix)
+    )
+
+
+def _program_ad_linalg_pinv_square_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("pinv", values)
+    pinv = _program_ad_linalg_pinv_value_matrix(matrix)
+    cotangent_matrix = _as_real_numeric_array("program AD linalg pinv cotangent", cotangent)
+    if cotangent_matrix.size != pinv.size:
+        raise ValueError("program AD linalg pinv VJP cotangent size must match output")
+    return _program_ad_float64_vector_result(
+        _program_ad_linalg_pinv_vjp_matrix(matrix, pinv, cotangent_matrix.reshape(pinv.shape))
+    )
+
+
 def _program_ad_linalg_uplo(
     value: object,
     primitive_name: str,
@@ -13419,6 +13633,68 @@ def program_ad_linalg_svdvals_derivative_rule(
     )
 
 
+def program_ad_linalg_pinv_derivative_rule(
+    matrix_shape: Sequence[int],
+    *,
+    rcond: float | None = None,
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for fixed-shape full-rank pseudoinverse."""
+
+    static_shape = _program_ad_linalg_rank2_shape("pinv", matrix_shape)
+    if any(dimension <= 0 for dimension in static_shape):
+        raise ValueError("program AD linalg pinv derivative rule requires positive dimensions")
+    cutoff = _program_ad_linalg_normalise_rcond(rcond)
+    output_shape = (static_shape[1], static_shape[0])
+    input_size = _program_ad_shape_static_size(static_shape)
+    output_size = _program_ad_shape_static_size(output_shape)
+
+    def split_input(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _as_real_numeric_array(f"program AD linalg pinv {name}", values).reshape(-1)
+        if vector.size != input_size:
+            raise ValueError("program AD linalg pinv direct rule values size must match shape")
+        return vector.reshape(static_shape)
+
+    def split_output(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _as_real_numeric_array(f"program AD linalg pinv {name}", values).reshape(-1)
+        if vector.size != output_size:
+            raise ValueError("program AD linalg pinv VJP cotangent size must match output")
+        return vector.reshape(output_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix = split_input("values", values)
+        return _program_ad_float64_vector_result(
+            _program_ad_linalg_pinv_value_matrix(matrix, rcond=cutoff)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix = split_input("values", values)
+        tangent_matrix = split_input("tangent", tangent)
+        pinv = _program_ad_linalg_pinv_value_matrix(matrix, rcond=cutoff)
+        return _program_ad_float64_vector_result(
+            _program_ad_linalg_pinv_jvp_matrix(matrix, pinv, tangent_matrix)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        matrix = split_input("values", values)
+        cotangent_matrix = split_output("cotangent", cotangent)
+        pinv = _program_ad_linalg_pinv_value_matrix(matrix, rcond=cutoff)
+        return _program_ad_float64_vector_result(
+            _program_ad_linalg_pinv_vjp_matrix(matrix, pinv, cotangent_matrix)
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_linalg_pinv_"
+            f"{_program_ad_shape_signature(static_shape)}_rcond_{cutoff:.3e}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "det":
         return CustomDerivativeRule(
@@ -13454,6 +13730,13 @@ def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
             value_fn=_program_ad_linalg_eigvalsh_value,
             jvp_rule=_program_ad_linalg_eigvalsh_jvp,
             vjp_rule=_program_ad_linalg_eigvalsh_vjp,
+        )
+    if name == "pinv":
+        return CustomDerivativeRule(
+            name="program_ad_linalg_pinv_square_direct_rule",
+            value_fn=_program_ad_linalg_pinv_square_value,
+            jvp_rule=_program_ad_linalg_pinv_square_jvp,
+            vjp_rule=_program_ad_linalg_pinv_square_vjp,
         )
     return CustomDerivativeRule(
         name=f"program_ad_linalg_{name}_trace_contract",
@@ -13633,6 +13916,18 @@ def _program_ad_linalg_svd_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return (min(rows, cols),)
 
 
+def _program_ad_linalg_pinv_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg pinv shape rule requires one matrix")
+    shape = _program_ad_linalg_shape_of(args[0])
+    if len(shape) != 2:
+        raise ValueError("program AD linalg pinv shape rule requires a rank-2 matrix")
+    rows, cols = shape
+    if rows <= 0 or cols <= 0:
+        raise ValueError("program AD linalg pinv shape rule requires non-empty dimensions")
+    return (cols, rows)
+
+
 def _program_ad_linalg_dtype_rule(args: tuple[object, ...]) -> str:
     arrays: list[NDArray[np.float64]] = []
     for arg in args:
@@ -13741,6 +14036,7 @@ _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "multi_dot": _program_ad_linalg_multi_dot_shape,
     "eigvalsh": _program_ad_linalg_eigvalsh_shape,
     "svd": _program_ad_linalg_svd_shape,
+    "pinv": _program_ad_linalg_pinv_shape,
 }
 
 _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
@@ -13754,6 +14050,7 @@ _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
     "multi_dot": _program_ad_linalg_multi_dot_static_arguments,
     "eigvalsh": _program_ad_linalg_no_static_arguments,
     "svd": _program_ad_linalg_no_static_arguments,
+    "pinv": _program_ad_linalg_no_static_arguments,
 }
 
 
@@ -13813,6 +14110,7 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
         "multi_dot": "static_shape_alignment",
         "eigvalsh": "symmetric_matrix_distinct_eigenvalues",
         "svd": "distinct_positive_singular_values",
+        "pinv": "rank_threshold_crossing",
     }
     metadata = {
         "program_ad": "operator_intercepted_trace",
@@ -13885,6 +14183,13 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
             {
                 "static_derivative_factory": "program_ad_linalg_svdvals_derivative_rule",
                 "static_signature": "matrix_shape:rank2;compute_uv:false;hermitian:false",
+            }
+        )
+    elif name == "pinv":
+        metadata.update(
+            {
+                "static_derivative_factory": "program_ad_linalg_pinv_derivative_rule",
+                "static_signature": "matrix_shape:rank2_full_rank;rcond:static_f64",
             }
         )
     return metadata
@@ -18227,6 +18532,7 @@ __all__ = [
     "program_ad_linalg_eigvalsh_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
+    "program_ad_linalg_pinv_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",
     "program_ad_linalg_svdvals_derivative_rule",
     "program_ad_linalg_trace_derivative_rule",

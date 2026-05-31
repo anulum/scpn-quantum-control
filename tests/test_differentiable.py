@@ -6872,7 +6872,6 @@ def test_program_ad_linalg_spectral_operations_fail_closed_policy_boundary() -> 
         lambda matrix: np.sum(np.linalg.eig(matrix)[0]),
         lambda matrix: np.sum(np.linalg.eigh(matrix)[0]),
         lambda matrix: np.sum(np.linalg.eigvals(matrix)),
-        lambda matrix: np.sum(np.linalg.pinv(matrix)),
     )
 
     for objective in spectral_objectives:
@@ -11707,3 +11706,103 @@ def test_program_ad_linalg_svdvals_registry_contract_and_root_export():
     metadata = contract.lowering_metadata
     assert metadata["static_derivative_factory"] == "program_ad_linalg_svdvals_derivative_rule"
     assert metadata["nondifferentiable_boundary"] == "distinct_positive_singular_values"
+
+
+def test_program_ad_linalg_pinv_gradient_and_adjoint_match_rank_constant_formula():
+    from scpn_quantum_control.differentiable import (
+        program_adjoint_gradient,
+        whole_program_value_and_grad,
+    )
+
+    values = np.array([2.0, 0.3, -0.2, 1.4], dtype=np.float64)
+    weights = np.array([[0.4, -0.6], [1.2, -0.3]], dtype=np.float64)
+
+    def objective(trace_values):
+        matrix = np.reshape(trace_values, (2, 2))
+        return np.sum(np.linalg.pinv(matrix) * weights)
+
+    result = whole_program_value_and_grad(objective, values)
+    matrix = values.reshape(2, 2)
+    inverse = np.linalg.inv(matrix)
+    expected = (-(inverse.T @ weights @ inverse.T)).reshape(-1)
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_linalg_pinv_direct_rule_returns_jvp_and_vjp():
+    from scpn_quantum_control.differentiable import program_ad_linalg_pinv_derivative_rule
+
+    rule = program_ad_linalg_pinv_derivative_rule((2, 3))
+    matrix = np.array([[2.0, 0.3, -0.2], [0.4, 1.5, 0.7]], dtype=np.float64)
+    tangent = np.array([[0.2, -0.1, 0.05], [0.15, 0.4, -0.2]], dtype=np.float64)
+    cotangent = np.array([[0.25, -0.5], [0.75, 0.1], [-0.2, 0.4]], dtype=np.float64)
+    pinv = np.linalg.pinv(matrix)
+    left_projector = np.eye(matrix.shape[1]) - pinv @ matrix
+    right_projector = np.eye(matrix.shape[0]) - matrix @ pinv
+
+    expected_jvp = (
+        -pinv @ tangent @ pinv
+        + pinv @ pinv.T @ tangent.T @ right_projector
+        + left_projector @ tangent.T @ pinv.T @ pinv
+    ).reshape(-1)
+    expected_vjp = (
+        -pinv.T @ cotangent @ pinv.T
+        + right_projector @ cotangent.T @ pinv @ pinv.T
+        + pinv.T @ pinv @ cotangent.T @ left_projector
+    ).reshape(-1)
+
+    np.testing.assert_allclose(rule.value_fn(matrix.reshape(-1)), pinv.reshape(-1))
+    np.testing.assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)), expected_jvp
+    )
+    np.testing.assert_allclose(
+        rule.vjp_rule(matrix.reshape(-1), cotangent.reshape(-1)), expected_vjp
+    )
+
+
+def test_program_ad_linalg_pinv_fails_closed_on_rank_loss_vector_or_hermitian_mode():
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    rank_deficient = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float64)
+    vector = np.array([1.0, 2.0], dtype=np.float64)
+    full_rank = np.array([2.0, 0.3, -0.2, 1.4], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="rank-2 matrix"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(np.linalg.pinv(trace_values)), vector
+        )
+
+    with pytest.raises(ValueError, match="constant full-rank matrix"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(np.linalg.pinv(np.reshape(trace_values, (2, 2)))),
+            rank_deficient,
+        )
+
+    with pytest.raises(ValueError, match="hermitian=False"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(
+                np.linalg.pinv(np.reshape(trace_values, (2, 2)), hermitian=True)
+            ),
+            full_rank,
+        )
+
+
+def test_program_ad_linalg_pinv_registry_contract_and_root_export():
+    import scpn_quantum_control as scpn
+    from scpn_quantum_control.differentiable import (
+        primitive_contract_for,
+        program_ad_linalg_pinv_derivative_rule,
+    )
+
+    assert scpn.program_ad_linalg_pinv_derivative_rule is program_ad_linalg_pinv_derivative_rule
+    contract = primitive_contract_for("scpn.program_ad.linalg:pinv")
+    assert contract is not None
+    assert contract.shape_rule((np.zeros((2, 3), dtype=np.float64),)) == (3, 2)
+    metadata = contract.lowering_metadata
+    assert metadata["static_derivative_factory"] == "program_ad_linalg_pinv_derivative_rule"
+    assert metadata["nondifferentiable_boundary"] == "rank_threshold_crossing"
