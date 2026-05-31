@@ -4353,9 +4353,13 @@ def test_program_ad_reduction_primitives_expose_direct_value_jvp_kernels() -> No
     assert sum_rule.jvp_rule is not None
     assert prod_rule.jvp_rule is not None
     assert mean_rule.jvp_rule is not None
+    assert sum_rule.vjp_rule is not None
+    assert prod_rule.vjp_rule is not None
+    assert mean_rule.vjp_rule is not None
 
     np.testing.assert_allclose(sum_rule.value_fn(values), [np.sum(values)])
     np.testing.assert_allclose(sum_rule.jvp_rule(values, tangent), [np.sum(tangent)])
+    np.testing.assert_allclose(sum_rule.vjp_rule(values, np.array([1.75])), np.full(4, 1.75))
 
     expected_prod_jvp = np.array(
         [
@@ -4373,9 +4377,25 @@ def test_program_ad_reduction_primitives_expose_direct_value_jvp_kernels() -> No
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+    np.testing.assert_allclose(
+        prod_rule.vjp_rule(values, np.array([-2.0])),
+        -2.0
+        * np.array(
+            [
+                values[1] * values[2] * values[3],
+                values[0] * values[2] * values[3],
+                values[0] * values[1] * values[3],
+                values[0] * values[1] * values[2],
+            ],
+            dtype=np.float64,
+        ),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
 
     np.testing.assert_allclose(mean_rule.value_fn(values), [np.mean(values)])
     np.testing.assert_allclose(mean_rule.jvp_rule(values, tangent), [np.mean(tangent)])
+    np.testing.assert_allclose(mean_rule.vjp_rule(values, np.array([2.0])), np.full(4, 0.5))
 
 
 def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
@@ -4412,6 +4432,71 @@ def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
         assert contract.static_argument_rule((vector,)) == ()
         with pytest.raises(ValueError, match="incomplete primitive contract"):
             primitive_complete_contract_for(contract.identity)
+
+
+def test_program_ad_unary_elementwise_primitives_expose_direct_value_jvp_kernels() -> None:
+    """Unary elementwise primitive contracts should expose exact direct value/JVP rules."""
+
+    regular_values = np.array([0.25, 0.5, 0.75], dtype=np.float64)
+    tangent = np.array([1.5, -0.25, 0.75], dtype=np.float64)
+    positive_values = np.array([1.25, 2.0, 3.5], dtype=np.float64)
+    bounded_values = np.array([-0.5, 0.0, 0.5], dtype=np.float64)
+
+    cases = {
+        "sin": (regular_values, np.sin(regular_values), np.cos(regular_values) * tangent),
+        "cos": (regular_values, np.cos(regular_values), -np.sin(regular_values) * tangent),
+        "exp": (regular_values, np.exp(regular_values), np.exp(regular_values) * tangent),
+        "expm1": (regular_values, np.expm1(regular_values), np.exp(regular_values) * tangent),
+        "log": (positive_values, np.log(positive_values), tangent / positive_values),
+        "log1p": (regular_values, np.log1p(regular_values), tangent / (1.0 + regular_values)),
+        "sqrt": (
+            positive_values,
+            np.sqrt(positive_values),
+            tangent / (2.0 * np.sqrt(positive_values)),
+        ),
+        "tan": (regular_values, np.tan(regular_values), tangent / np.cos(regular_values) ** 2),
+        "tanh": (
+            regular_values,
+            np.tanh(regular_values),
+            tangent * (1.0 - np.tanh(regular_values) ** 2),
+        ),
+        "arcsin": (
+            bounded_values,
+            np.arcsin(bounded_values),
+            tangent / np.sqrt(1.0 - bounded_values**2),
+        ),
+        "arccos": (
+            bounded_values,
+            np.arccos(bounded_values),
+            -tangent / np.sqrt(1.0 - bounded_values**2),
+        ),
+        "reciprocal": (
+            positive_values,
+            np.reciprocal(positive_values),
+            -tangent / positive_values**2,
+        ),
+        "square": (regular_values, np.square(regular_values), 2.0 * regular_values * tangent),
+        "abs": (positive_values, np.abs(positive_values), np.sign(positive_values) * tangent),
+        "negative": (regular_values, np.negative(regular_values), -tangent),
+    }
+
+    for name, (values, expected_value, expected_jvp) in cases.items():
+        rule = custom_derivative_rule_for(
+            PrimitiveIdentity("scpn.program_ad.elementwise", name, "1")
+        )
+        assert rule.name == f"program_ad_elementwise_{name}_direct_rule"
+        assert rule.jvp_rule is not None
+        assert rule.vjp_rule is not None
+        np.testing.assert_allclose(rule.value_fn(values), expected_value)
+        np.testing.assert_allclose(rule.jvp_rule(values, tangent), expected_jvp)
+        np.testing.assert_allclose(rule.vjp_rule(values, tangent), expected_jvp)
+
+    with pytest.raises(ValueError, match="undefined at zero"):
+        abs_rule = custom_derivative_rule_for(
+            PrimitiveIdentity("scpn.program_ad.elementwise", "abs", "1")
+        )
+        assert abs_rule.jvp_rule is not None
+        abs_rule.jvp_rule(np.array([-1.0, 0.0, 1.0]), tangent)
 
 
 def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
@@ -4508,6 +4593,86 @@ def test_program_ad_binary_elementwise_primitives_are_registry_policy_gated() ->
         assert contract.static_argument_rule((left, right)) == ()
         with pytest.raises(ValueError, match="incomplete primitive contract"):
             primitive_complete_contract_for(contract.identity)
+
+
+def test_program_ad_binary_elementwise_primitives_expose_direct_value_jvp_kernels() -> None:
+    """Binary elementwise primitive contracts should expose exact direct value/JVP rules."""
+
+    left = np.array([3.0, 1.5, 4.0], dtype=np.float64)
+    right = np.array([2.0, 5.0, 0.5], dtype=np.float64)
+    tangent_left = np.array([0.25, -0.5, 1.25], dtype=np.float64)
+    tangent_right = np.array([-1.0, 0.75, 0.5], dtype=np.float64)
+    values = np.concatenate([left, right])
+    tangent = np.concatenate([tangent_left, tangent_right])
+
+    cases = {
+        "add": (left + right, tangent_left + tangent_right),
+        "subtract": (left - right, tangent_left - tangent_right),
+        "multiply": (left * right, tangent_left * right + left * tangent_right),
+        "divide": (left / right, (tangent_left * right - left * tangent_right) / right**2),
+        "power": (
+            left**right,
+            left**right * (tangent_right * np.log(left) + right * tangent_left / left),
+        ),
+        "maximum": (np.maximum(left, right), np.where(left > right, tangent_left, tangent_right)),
+        "minimum": (np.minimum(left, right), np.where(left < right, tangent_left, tangent_right)),
+    }
+
+    for name, (expected_value, expected_jvp) in cases.items():
+        rule = custom_derivative_rule_for(
+            PrimitiveIdentity("scpn.program_ad.elementwise", name, "1")
+        )
+        assert rule.name == f"program_ad_elementwise_{name}_direct_rule"
+        assert rule.jvp_rule is not None
+        assert rule.vjp_rule is not None
+        np.testing.assert_allclose(rule.value_fn(values), expected_value)
+        np.testing.assert_allclose(rule.jvp_rule(values, tangent), expected_jvp)
+        cotangent = np.array([1.25, -0.5, 0.75], dtype=np.float64)
+        if name == "add":
+            expected_vjp = np.concatenate([cotangent, cotangent])
+        elif name == "subtract":
+            expected_vjp = np.concatenate([cotangent, -cotangent])
+        elif name == "multiply":
+            expected_vjp = np.concatenate([cotangent * right, cotangent * left])
+        elif name == "divide":
+            expected_vjp = np.concatenate([cotangent / right, -cotangent * left / right**2])
+        elif name == "power":
+            expected_vjp = np.concatenate(
+                [
+                    cotangent * right * left ** (right - 1.0),
+                    cotangent * left**right * np.log(left),
+                ]
+            )
+        elif name == "maximum":
+            expected_vjp = np.concatenate(
+                [np.where(left > right, cotangent, 0.0), np.where(left > right, 0.0, cotangent)]
+            )
+        else:
+            expected_vjp = np.concatenate(
+                [np.where(left < right, cotangent, 0.0), np.where(left < right, 0.0, cotangent)]
+            )
+        np.testing.assert_allclose(rule.vjp_rule(values, cotangent), expected_vjp)
+
+    maximum_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.elementwise", "maximum", "1")
+    )
+    assert maximum_rule.jvp_rule is not None
+    with pytest.raises(ValueError, match="undefined at equal operands"):
+        maximum_rule.jvp_rule(np.concatenate([left, left]), tangent)
+
+    divide_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.elementwise", "divide", "1")
+    )
+    assert divide_rule.jvp_rule is not None
+    with pytest.raises(ValueError, match="non-zero right operand"):
+        divide_rule.jvp_rule(np.concatenate([left, np.array([1.0, 0.0, 2.0])]), tangent)
+
+    power_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.elementwise", "power", "1")
+    )
+    assert power_rule.jvp_rule is not None
+    with pytest.raises(ValueError, match="positive left operand"):
+        power_rule.jvp_rule(np.concatenate([np.array([1.0, 0.0, 2.0]), right]), tangent)
 
 
 def test_program_ad_binary_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
@@ -4714,18 +4879,27 @@ def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None
     assert vdot_rule.name == "program_ad_product_vdot_direct_rule"
     assert dot_rule.jvp_rule is not None
     assert vdot_rule.jvp_rule is not None
+    assert dot_rule.vjp_rule is not None
+    assert vdot_rule.vjp_rule is not None
 
     expected_inner = np.array([np.dot(left, right)], dtype=np.float64)
     expected_inner_jvp = np.array(
         [np.dot(left_tangent, right) + np.dot(left, right_tangent)], dtype=np.float64
     )
+    expected_inner_vjp = np.concatenate((2.5 * right, 2.5 * left))
     np.testing.assert_allclose(dot_rule.value_fn(vector_values), expected_inner)
     np.testing.assert_allclose(
         dot_rule.jvp_rule(vector_values, vector_tangent), expected_inner_jvp
     )
+    np.testing.assert_allclose(
+        dot_rule.vjp_rule(vector_values, np.array([2.5])), expected_inner_vjp
+    )
     np.testing.assert_allclose(vdot_rule.value_fn(vector_values), expected_inner)
     np.testing.assert_allclose(
         vdot_rule.jvp_rule(vector_values, vector_tangent), expected_inner_jvp
+    )
+    np.testing.assert_allclose(
+        vdot_rule.vjp_rule(vector_values, np.array([2.5])), expected_inner_vjp
     )
 
     left_matrix = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
@@ -4742,12 +4916,26 @@ def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None
 
     assert matmul_rule.name == "program_ad_product_matmul_direct_rule"
     assert matmul_rule.jvp_rule is not None
+    assert matmul_rule.vjp_rule is not None
     np.testing.assert_allclose(
         matmul_rule.value_fn(matrix_values), (left_matrix @ right_matrix).reshape(-1)
     )
     np.testing.assert_allclose(
         matmul_rule.jvp_rule(matrix_values, matrix_tangent),
         (left_matrix_tangent @ right_matrix + left_matrix @ right_matrix_tangent).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    matrix_cotangent = np.array([[1.5, -0.5], [0.75, 2.0]], dtype=np.float64)
+    expected_matmul_vjp = np.concatenate(
+        (
+            (matrix_cotangent @ right_matrix.T).reshape(-1),
+            (left_matrix.T @ matrix_cotangent).reshape(-1),
+        )
+    )
+    np.testing.assert_allclose(
+        matmul_rule.vjp_rule(matrix_values, matrix_cotangent.reshape(-1)),
+        expected_matmul_vjp,
         rtol=1.0e-12,
         atol=1.0e-12,
     )
@@ -4883,9 +5071,16 @@ def test_program_ad_cumulative_primitives_expose_direct_value_jvp_kernels() -> N
     assert cumsum_rule.jvp_rule is not None
     assert cumprod_rule.jvp_rule is not None
     assert diff_rule.jvp_rule is not None
+    assert cumsum_rule.vjp_rule is not None
+    assert cumprod_rule.vjp_rule is not None
+    assert diff_rule.vjp_rule is not None
 
     np.testing.assert_allclose(cumsum_rule.value_fn(values), np.cumsum(values))
     np.testing.assert_allclose(cumsum_rule.jvp_rule(values, tangent), np.cumsum(tangent))
+    cotangent = np.array([1.0, -0.5, 0.25, 2.0], dtype=np.float64)
+    np.testing.assert_allclose(
+        cumsum_rule.vjp_rule(values, cotangent), np.flip(np.cumsum(np.flip(cotangent)))
+    )
 
     expected_cumprod = np.cumprod(values)
     expected_cumprod_jvp = np.array(
@@ -4909,9 +5104,36 @@ def test_program_ad_cumulative_primitives_expose_direct_value_jvp_kernels() -> N
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+    expected_cumprod_vjp = np.array(
+        [
+            cotangent[0]
+            + cotangent[1] * values[1]
+            + cotangent[2] * values[1] * values[2]
+            + cotangent[3] * values[1] * values[2] * values[3],
+            cotangent[1] * values[0]
+            + cotangent[2] * values[0] * values[2]
+            + cotangent[3] * values[0] * values[2] * values[3],
+            cotangent[2] * values[0] * values[1]
+            + cotangent[3] * values[0] * values[1] * values[3],
+            cotangent[3] * values[0] * values[1] * values[2],
+        ],
+        dtype=np.float64,
+    )
+    np.testing.assert_allclose(
+        cumprod_rule.vjp_rule(values, cotangent),
+        expected_cumprod_vjp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
 
     np.testing.assert_allclose(diff_rule.value_fn(values), np.diff(values))
     np.testing.assert_allclose(diff_rule.jvp_rule(values, tangent), np.diff(tangent))
+    np.testing.assert_allclose(
+        diff_rule.vjp_rule(values, cotangent[:3]),
+        np.array(
+            [-cotangent[0], cotangent[0] - cotangent[1], cotangent[1] - cotangent[2], cotangent[2]]
+        ),
+    )
 
 
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
@@ -5505,6 +5727,9 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
     assert det_rule.jvp_rule is not None
     assert inv_rule.jvp_rule is not None
     assert solve_rule.jvp_rule is not None
+    assert det_rule.vjp_rule is not None
+    assert inv_rule.vjp_rule is not None
+    assert solve_rule.vjp_rule is not None
 
     np.testing.assert_allclose(det_rule.value_fn(matrix.reshape(-1)), [np.linalg.det(matrix)])
     cofactor = np.array([[matrix[1, 1], -matrix[1, 0]], [-matrix[0, 1], matrix[0, 0]]])
@@ -5514,8 +5739,15 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+    np.testing.assert_allclose(
+        det_rule.vjp_rule(matrix.reshape(-1), np.array([1.75])),
+        (1.75 * cofactor).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
 
     inverse = np.linalg.inv(matrix)
+    inverse_cotangent = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
     np.testing.assert_allclose(inv_rule.value_fn(matrix.reshape(-1)), inverse.reshape(-1))
     np.testing.assert_allclose(
         inv_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
@@ -5523,14 +5755,28 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+    np.testing.assert_allclose(
+        inv_rule.vjp_rule(matrix.reshape(-1), inverse_cotangent.reshape(-1)),
+        (-(inverse.T @ inverse_cotangent @ inverse.T)).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
 
     solve_values = np.concatenate((matrix.reshape(-1), rhs))
     solve_tangent = np.concatenate((tangent_matrix.reshape(-1), tangent_rhs))
     solution = np.linalg.solve(matrix, rhs)
+    solve_cotangent = np.array([1.25, -0.5], dtype=np.float64)
+    solve_adjoint_rhs = np.linalg.solve(matrix.T, solve_cotangent)
     np.testing.assert_allclose(solve_rule.value_fn(solve_values), solution)
     np.testing.assert_allclose(
         solve_rule.jvp_rule(solve_values, solve_tangent),
         np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        solve_rule.vjp_rule(solve_values, solve_cotangent),
+        np.concatenate(((-np.outer(solve_adjoint_rhs, solution)).reshape(-1), solve_adjoint_rhs)),
         rtol=1.0e-12,
         atol=1.0e-12,
     )
@@ -5557,6 +5803,10 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
     square_rule = program_ad_linalg_matrix_power_derivative_rule(2)
     inverse_rule = program_ad_linalg_matrix_power_derivative_rule(-1)
     zero_rule = program_ad_linalg_matrix_power_derivative_rule(0)
+    matrix_cotangent = np.array([[1.5, -0.5], [0.75, 2.0]], dtype=np.float64)
+    assert square_rule.vjp_rule is not None
+    assert inverse_rule.vjp_rule is not None
+    assert zero_rule.vjp_rule is not None
 
     np.testing.assert_allclose(
         square_rule.value_fn(matrix.reshape(-1)), (matrix @ matrix).reshape(-1)
@@ -5564,6 +5814,12 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
     np.testing.assert_allclose(
         square_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
         (tangent_matrix @ matrix + matrix @ tangent_matrix).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        square_rule.vjp_rule(matrix.reshape(-1), matrix_cotangent.reshape(-1)),
+        (matrix_cotangent @ matrix.T + matrix.T @ matrix_cotangent).reshape(-1),
         rtol=1.0e-12,
         atol=1.0e-12,
     )
@@ -5576,11 +5832,22 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
         atol=1.0e-12,
     )
     np.testing.assert_allclose(
+        inverse_rule.vjp_rule(matrix.reshape(-1), matrix_cotangent.reshape(-1)),
+        (-(inverse.T @ matrix_cotangent @ inverse.T)).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
         zero_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        np.zeros(matrix.size, dtype=np.float64),
+    )
+    np.testing.assert_allclose(
+        zero_rule.vjp_rule(matrix.reshape(-1), matrix_cotangent.reshape(-1)),
         np.zeros(matrix.size, dtype=np.float64),
     )
 
     multi_rule = program_ad_linalg_multi_dot_derivative_rule(((2,), (2, 2), (2,)))
+    assert multi_rule.vjp_rule is not None
     values = np.concatenate((left, middle.reshape(-1), right))
     tangent = np.concatenate((tangent_left, tangent_middle.reshape(-1), tangent_right))
     np.testing.assert_allclose(
@@ -5597,6 +5864,18 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
     np.testing.assert_allclose(
         multi_rule.jvp_rule(values, tangent),
         np.asarray(expected_jvp).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        multi_rule.vjp_rule(values, np.array([2.5], dtype=np.float64)),
+        np.concatenate(
+            (
+                (2.5 * (middle @ right)).reshape(-1),
+                (2.5 * np.outer(left, right)).reshape(-1),
+                (2.5 * (left @ middle)).reshape(-1),
+            )
+        ),
         rtol=1.0e-12,
         atol=1.0e-12,
     )

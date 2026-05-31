@@ -5660,6 +5660,27 @@ def _program_ad_reduction_sum_jvp(
     return np.array([float(np.sum(tangent_vector))], dtype=np.float64)
 
 
+def _program_ad_reduction_scalar_cotangent(
+    name: str,
+    cotangent: NDArray[np.float64],
+) -> float:
+    cotangent_vector = _as_real_numeric_array(
+        f"program AD reduction {name} cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.shape != (1,):
+        raise ValueError(f"program AD reduction {name} VJP requires one scalar cotangent")
+    return float(cotangent_vector[0])
+
+
+def _program_ad_reduction_sum_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("sum", values)
+    scalar_cotangent = _program_ad_reduction_scalar_cotangent("sum", cotangent)
+    return np.full(vector.shape, scalar_cotangent, dtype=np.float64)
+
+
 def _program_ad_reduction_prod_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
     vector = _program_ad_reduction_vector("prod", values)
     return np.array([float(np.prod(vector))], dtype=np.float64)
@@ -5683,6 +5704,22 @@ def _program_ad_reduction_prod_jvp(
     return np.array([float(total)], dtype=np.float64)
 
 
+def _program_ad_reduction_prod_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("prod", values)
+    scalar_cotangent = _program_ad_reduction_scalar_cotangent("prod", cotangent)
+    result = np.empty_like(vector, dtype=np.float64)
+    for tangent_index in range(vector.size):
+        product = 1.0
+        for factor_index in range(vector.size):
+            if factor_index != tangent_index:
+                product *= vector[factor_index]
+        result[tangent_index] = scalar_cotangent * product
+    return result
+
+
 def _program_ad_reduction_mean_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
     vector = _program_ad_reduction_vector("mean", values)
     return np.array([float(np.mean(vector))], dtype=np.float64)
@@ -5696,24 +5733,36 @@ def _program_ad_reduction_mean_jvp(
     return np.array([float(np.mean(tangent_vector))], dtype=np.float64)
 
 
+def _program_ad_reduction_mean_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("mean", values)
+    scalar_cotangent = _program_ad_reduction_scalar_cotangent("mean", cotangent)
+    return np.full(vector.shape, scalar_cotangent / float(vector.size), dtype=np.float64)
+
+
 def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "sum":
         return CustomDerivativeRule(
             name="program_ad_reduction_sum_direct_rule",
             value_fn=_program_ad_reduction_sum_value,
             jvp_rule=_program_ad_reduction_sum_jvp,
+            vjp_rule=_program_ad_reduction_sum_vjp,
         )
     if name == "prod":
         return CustomDerivativeRule(
             name="program_ad_reduction_prod_direct_rule",
             value_fn=_program_ad_reduction_prod_value,
             jvp_rule=_program_ad_reduction_prod_jvp,
+            vjp_rule=_program_ad_reduction_prod_vjp,
         )
     if name == "mean":
         return CustomDerivativeRule(
             name="program_ad_reduction_mean_direct_rule",
             value_fn=_program_ad_reduction_mean_value,
             jvp_rule=_program_ad_reduction_mean_jvp,
+            vjp_rule=_program_ad_reduction_mean_vjp,
         )
     raise ValueError(f"unsupported program AD reduction primitive {name}")
 
@@ -5735,7 +5784,328 @@ def _program_ad_elementwise_direct_jvp(
     )
 
 
+def _program_ad_elementwise_unary_vector(
+    name: str, values: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    return _as_real_numeric_array(f"program AD elementwise {name} values", values).reshape(-1)
+
+
+def _program_ad_elementwise_unary_tangent_pair(
+    name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _program_ad_elementwise_unary_vector(name, values)
+    tangent_vector = _as_real_numeric_array(
+        f"program AD elementwise {name} tangent", tangent
+    ).reshape(-1)
+    if tangent_vector.shape != vector.shape:
+        raise ValueError(f"program AD elementwise {name} tangent shape must match values shape")
+    return vector, tangent_vector
+
+
+def _program_ad_float64_vector_result(values: object) -> NDArray[np.float64]:
+    return cast(NDArray[np.float64], np.asarray(values, dtype=np.float64).reshape(-1))
+
+
+def _program_ad_elementwise_require_domain(
+    name: str,
+    vector: NDArray[np.float64],
+    *,
+    derivative: bool,
+) -> None:
+    if name == "log" and np.any(vector <= 0.0):
+        raise ValueError(
+            "program AD elementwise log direct rule requires values greater than zero"
+        )
+    if name == "log1p" and np.any(vector <= -1.0):
+        raise ValueError(
+            "program AD elementwise log1p direct rule requires values greater than -1"
+        )
+    if name == "sqrt" and np.any(vector < 0.0):
+        raise ValueError("program AD elementwise sqrt direct rule requires non-negative values")
+    if name == "sqrt" and derivative and np.any(vector <= 0.0):
+        raise ValueError(
+            "program AD elementwise sqrt derivative is singular at non-positive values"
+        )
+    if name in {"arcsin", "arccos"} and np.any(np.abs(vector) > 1.0):
+        raise ValueError(f"program AD elementwise {name} direct rule requires values in [-1, 1]")
+    if name in {"arcsin", "arccos"} and derivative and np.any(np.abs(vector) >= 1.0):
+        raise ValueError(
+            f"program AD elementwise {name} derivative is singular at boundary values"
+        )
+    if name == "reciprocal" and np.any(vector == 0.0):
+        raise ValueError("program AD elementwise reciprocal direct rule requires non-zero values")
+    if name == "tan" and derivative and np.any(np.cos(vector) == 0.0):
+        raise ValueError("program AD elementwise tan derivative is singular at odd pi/2 values")
+    if name == "abs" and derivative and np.any(vector == 0.0):
+        raise ValueError("program AD elementwise abs derivative is undefined at zero")
+
+
+def _program_ad_elementwise_unary_value(
+    name: str, values: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    vector = _program_ad_elementwise_unary_vector(name, values)
+    _program_ad_elementwise_require_domain(name, vector, derivative=False)
+    if name == "sin":
+        return _program_ad_float64_vector_result(np.sin(vector))
+    if name == "cos":
+        return _program_ad_float64_vector_result(np.cos(vector))
+    if name == "exp":
+        return _program_ad_float64_vector_result(np.exp(vector))
+    if name == "expm1":
+        return _program_ad_float64_vector_result(np.expm1(vector))
+    if name == "log":
+        return _program_ad_float64_vector_result(np.log(vector))
+    if name == "log1p":
+        return _program_ad_float64_vector_result(np.log1p(vector))
+    if name == "sqrt":
+        return _program_ad_float64_vector_result(np.sqrt(vector))
+    if name == "tan":
+        return _program_ad_float64_vector_result(np.tan(vector))
+    if name == "tanh":
+        return _program_ad_float64_vector_result(np.tanh(vector))
+    if name == "arcsin":
+        return _program_ad_float64_vector_result(np.arcsin(vector))
+    if name == "arccos":
+        return _program_ad_float64_vector_result(np.arccos(vector))
+    if name == "reciprocal":
+        return _program_ad_float64_vector_result(np.reciprocal(vector))
+    if name == "square":
+        return _program_ad_float64_vector_result(np.square(vector))
+    if name == "abs":
+        return _program_ad_float64_vector_result(np.abs(vector))
+    if name == "negative":
+        return _program_ad_float64_vector_result(np.negative(vector))
+    raise ValueError(f"unsupported program AD elementwise primitive {name}")
+
+
+def _program_ad_elementwise_unary_jvp(
+    name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector, tangent_vector = _program_ad_elementwise_unary_tangent_pair(name, values, tangent)
+    _program_ad_elementwise_require_domain(name, vector, derivative=True)
+    if name == "sin":
+        return _program_ad_float64_vector_result(np.cos(vector) * tangent_vector)
+    if name == "cos":
+        return _program_ad_float64_vector_result(-np.sin(vector) * tangent_vector)
+    if name == "exp":
+        return _program_ad_float64_vector_result(np.exp(vector) * tangent_vector)
+    if name == "expm1":
+        return _program_ad_float64_vector_result(np.exp(vector) * tangent_vector)
+    if name == "log":
+        return _program_ad_float64_vector_result(tangent_vector / vector)
+    if name == "log1p":
+        return _program_ad_float64_vector_result(tangent_vector / (1.0 + vector))
+    if name == "sqrt":
+        return _program_ad_float64_vector_result(tangent_vector / (2.0 * np.sqrt(vector)))
+    if name == "tan":
+        return _program_ad_float64_vector_result(tangent_vector / np.cos(vector) ** 2)
+    if name == "tanh":
+        return _program_ad_float64_vector_result(tangent_vector * (1.0 - np.tanh(vector) ** 2))
+    if name == "arcsin":
+        return _program_ad_float64_vector_result(tangent_vector / np.sqrt(1.0 - vector**2))
+    if name == "arccos":
+        return _program_ad_float64_vector_result(-tangent_vector / np.sqrt(1.0 - vector**2))
+    if name == "reciprocal":
+        return _program_ad_float64_vector_result(-tangent_vector / vector**2)
+    if name == "square":
+        return _program_ad_float64_vector_result(2.0 * vector * tangent_vector)
+    if name == "abs":
+        return _program_ad_float64_vector_result(np.sign(vector) * tangent_vector)
+    if name == "negative":
+        return _program_ad_float64_vector_result(np.negative(tangent_vector))
+    raise ValueError(f"unsupported program AD elementwise primitive {name}")
+
+
+def _program_ad_elementwise_direct_value_for(name: str) -> VectorObjective:
+    return lambda values: _program_ad_elementwise_unary_value(name, values)
+
+
+def _program_ad_elementwise_direct_jvp_for(name: str) -> CustomJVPRule:
+    return lambda values, tangent: _program_ad_elementwise_unary_jvp(name, values, tangent)
+
+
+def _program_ad_elementwise_direct_vjp_for(name: str) -> CustomVJPRule:
+    return lambda values, cotangent: _program_ad_elementwise_unary_jvp(name, values, cotangent)
+
+
+def _program_ad_elementwise_binary_pair(
+    name: str,
+    values: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD elementwise {name} values", values).reshape(-1)
+    if vector.size == 0 or vector.size % 2 != 0:
+        raise ValueError(
+            f"program AD elementwise {name} direct rule requires two equal flat operands"
+        )
+    midpoint = vector.size // 2
+    return vector[:midpoint], vector[midpoint:]
+
+
+def _program_ad_elementwise_binary_tangent_pair(
+    name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    left, right = _program_ad_elementwise_binary_pair(name, values)
+    tangent_left, tangent_right = _program_ad_elementwise_binary_pair(f"{name} tangent", tangent)
+    if tangent_left.shape != left.shape or tangent_right.shape != right.shape:
+        raise ValueError(f"program AD elementwise {name} tangent shape must match values shape")
+    return left, right, tangent_left, tangent_right
+
+
+def _program_ad_elementwise_require_binary_domain(
+    name: str,
+    left: NDArray[np.float64],
+    right: NDArray[np.float64],
+    *,
+    derivative: bool,
+) -> None:
+    if name == "divide" and np.any(right == 0.0):
+        raise ValueError(
+            "program AD elementwise divide direct rule requires non-zero right operand"
+        )
+    if name == "power" and np.any(left <= 0.0):
+        raise ValueError("program AD elementwise power direct rule requires positive left operand")
+    if name in {"maximum", "minimum"} and derivative and np.any(left == right):
+        raise ValueError(
+            f"program AD elementwise {name} derivative is undefined at equal operands"
+        )
+
+
+def _program_ad_elementwise_binary_value(
+    name: str,
+    values: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_elementwise_binary_pair(name, values)
+    _program_ad_elementwise_require_binary_domain(name, left, right, derivative=False)
+    if name == "add":
+        return _program_ad_float64_vector_result(left + right)
+    if name == "subtract":
+        return _program_ad_float64_vector_result(left - right)
+    if name == "multiply":
+        return _program_ad_float64_vector_result(left * right)
+    if name == "divide":
+        return _program_ad_float64_vector_result(left / right)
+    if name == "power":
+        return _program_ad_float64_vector_result(left**right)
+    if name == "maximum":
+        return _program_ad_float64_vector_result(np.maximum(left, right))
+    if name == "minimum":
+        return _program_ad_float64_vector_result(np.minimum(left, right))
+    raise ValueError(f"unsupported program AD elementwise primitive {name}")
+
+
+def _program_ad_elementwise_binary_jvp(
+    name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right, tangent_left, tangent_right = _program_ad_elementwise_binary_tangent_pair(
+        name, values, tangent
+    )
+    _program_ad_elementwise_require_binary_domain(name, left, right, derivative=True)
+    if name == "add":
+        return _program_ad_float64_vector_result(tangent_left + tangent_right)
+    if name == "subtract":
+        return _program_ad_float64_vector_result(tangent_left - tangent_right)
+    if name == "multiply":
+        return _program_ad_float64_vector_result(tangent_left * right + left * tangent_right)
+    if name == "divide":
+        return _program_ad_float64_vector_result(
+            (tangent_left * right - left * tangent_right) / right**2
+        )
+    if name == "power":
+        return _program_ad_float64_vector_result(
+            left**right * (tangent_right * np.log(left) + right * tangent_left / left)
+        )
+    if name == "maximum":
+        return _program_ad_float64_vector_result(
+            np.where(left > right, tangent_left, tangent_right)
+        )
+    if name == "minimum":
+        return _program_ad_float64_vector_result(
+            np.where(left < right, tangent_left, tangent_right)
+        )
+    raise ValueError(f"unsupported program AD elementwise primitive {name}")
+
+
+def _program_ad_elementwise_binary_vjp(
+    name: str,
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_elementwise_binary_pair(name, values)
+    cotangent_vector = _as_real_numeric_array(
+        f"program AD elementwise {name} cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.shape != left.shape:
+        raise ValueError(
+            f"program AD elementwise {name} VJP cotangent shape must match output shape"
+        )
+    _program_ad_elementwise_require_binary_domain(name, left, right, derivative=True)
+    left_vjp: NDArray[np.float64]
+    right_vjp: NDArray[np.float64]
+    if name == "add":
+        left_vjp = cotangent_vector
+        right_vjp = cotangent_vector
+    elif name == "subtract":
+        left_vjp = cotangent_vector
+        right_vjp = -cotangent_vector
+    elif name == "multiply":
+        left_vjp = cotangent_vector * right
+        right_vjp = cotangent_vector * left
+    elif name == "divide":
+        left_vjp = cotangent_vector / right
+        right_vjp = -cotangent_vector * left / right**2
+    elif name == "power":
+        left_vjp = cotangent_vector * right * left ** (right - 1.0)
+        right_vjp = cotangent_vector * left**right * np.log(left)
+    elif name == "maximum":
+        left_vjp = _program_ad_float64_vector_result(np.where(left > right, cotangent_vector, 0.0))
+        right_vjp = _program_ad_float64_vector_result(
+            np.where(left > right, 0.0, cotangent_vector)
+        )
+    elif name == "minimum":
+        left_vjp = _program_ad_float64_vector_result(np.where(left < right, cotangent_vector, 0.0))
+        right_vjp = _program_ad_float64_vector_result(
+            np.where(left < right, 0.0, cotangent_vector)
+        )
+    else:
+        raise ValueError(f"unsupported program AD elementwise primitive {name}")
+    return _program_ad_float64_vector_result(np.concatenate([left_vjp, right_vjp]))
+
+
+def _program_ad_elementwise_binary_value_for(name: str) -> VectorObjective:
+    return lambda values: _program_ad_elementwise_binary_value(name, values)
+
+
+def _program_ad_elementwise_binary_jvp_for(name: str) -> CustomJVPRule:
+    return lambda values, tangent: _program_ad_elementwise_binary_jvp(name, values, tangent)
+
+
+def _program_ad_elementwise_binary_vjp_for(name: str) -> CustomVJPRule:
+    return lambda values, cotangent: _program_ad_elementwise_binary_vjp(name, values, cotangent)
+
+
 def _program_ad_elementwise_derivative_rule(name: str) -> CustomDerivativeRule:
+    if name in _PROGRAM_AD_ELEMENTWISE_UNARY_NAMES:
+        return CustomDerivativeRule(
+            name=f"program_ad_elementwise_{name}_direct_rule",
+            value_fn=_program_ad_elementwise_direct_value_for(name),
+            jvp_rule=_program_ad_elementwise_direct_jvp_for(name),
+            vjp_rule=_program_ad_elementwise_direct_vjp_for(name),
+        )
+    if name in _PROGRAM_AD_ELEMENTWISE_BINARY_NAMES:
+        return CustomDerivativeRule(
+            name=f"program_ad_elementwise_{name}_direct_rule",
+            value_fn=_program_ad_elementwise_binary_value_for(name),
+            jvp_rule=_program_ad_elementwise_binary_jvp_for(name),
+            vjp_rule=_program_ad_elementwise_binary_vjp_for(name),
+        )
     return CustomDerivativeRule(
         name=f"program_ad_elementwise_{name}_trace_contract",
         value_fn=_program_ad_elementwise_direct_value,
@@ -5782,6 +6152,29 @@ def _program_ad_product_dot_jvp(
     )
 
 
+def _program_ad_product_scalar_cotangent(
+    primitive_name: str,
+    cotangent: NDArray[np.float64],
+) -> float:
+    cotangent_vector = _as_real_numeric_array(
+        f"program AD product {primitive_name} cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.shape != (1,):
+        raise ValueError(f"program AD product {primitive_name} VJP requires one scalar cotangent")
+    return float(cotangent_vector[0])
+
+
+def _program_ad_product_dot_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("dot", values)
+    scalar_cotangent = _program_ad_product_scalar_cotangent("dot", cotangent)
+    return _program_ad_float64_vector_result(
+        np.concatenate((scalar_cotangent * right, scalar_cotangent * left))
+    )
+
+
 def _program_ad_product_vdot_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
     left, right = _program_ad_product_split_pair("vdot", values)
     return np.array([float(np.vdot(left, right))], dtype=np.float64)
@@ -5798,6 +6191,17 @@ def _program_ad_product_vdot_jvp(
     return np.array(
         [float(np.vdot(tangent_left, right) + np.vdot(left, tangent_right))],
         dtype=np.float64,
+    )
+
+
+def _program_ad_product_vdot_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("vdot", values)
+    scalar_cotangent = _program_ad_product_scalar_cotangent("vdot", cotangent)
+    return _program_ad_float64_vector_result(
+        np.concatenate((scalar_cotangent * right, scalar_cotangent * left))
     )
 
 
@@ -5830,24 +6234,48 @@ def _program_ad_product_matmul_jvp(
     return (tangent_left @ right + left @ tangent_right).reshape(-1).astype(np.float64)
 
 
+def _program_ad_product_matmul_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_square_matrix_pair("matmul", values)
+    cotangent_matrix = _as_real_numeric_array(
+        "program AD product matmul cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_matrix.shape != (left.size,):
+        raise ValueError("program AD product matmul VJP cotangent shape must match output shape")
+    cotangent_square = cotangent_matrix.reshape(left.shape)
+    return _program_ad_float64_vector_result(
+        np.concatenate(
+            (
+                (cotangent_square @ right.T).reshape(-1),
+                (left.T @ cotangent_square).reshape(-1),
+            )
+        )
+    )
+
+
 def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "dot":
         return CustomDerivativeRule(
             name="program_ad_product_dot_direct_rule",
             value_fn=_program_ad_product_dot_value,
             jvp_rule=_program_ad_product_dot_jvp,
+            vjp_rule=_program_ad_product_dot_vjp,
         )
     if name == "vdot":
         return CustomDerivativeRule(
             name="program_ad_product_vdot_direct_rule",
             value_fn=_program_ad_product_vdot_value,
             jvp_rule=_program_ad_product_vdot_jvp,
+            vjp_rule=_program_ad_product_vdot_vjp,
         )
     if name == "matmul":
         return CustomDerivativeRule(
             name="program_ad_product_matmul_direct_rule",
             value_fn=_program_ad_product_matmul_value,
             jvp_rule=_program_ad_product_matmul_jvp,
+            vjp_rule=_program_ad_product_matmul_vjp,
         )
     raise ValueError(f"unsupported program AD product primitive {name}")
 
@@ -5868,6 +6296,19 @@ def _program_ad_cumulative_cumsum_jvp(
     if tangent_vector.shape != vector.shape:
         raise ValueError("program AD cumulative cumsum tangent shape must match values shape")
     return np.cumsum(tangent_vector).astype(np.float64)
+
+
+def _program_ad_cumulative_cumsum_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
+    cotangent_vector = _as_real_numeric_array(
+        "program AD cumulative cumsum cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.shape != vector.shape:
+        raise ValueError("program AD cumulative cumsum cotangent shape must match output shape")
+    return _program_ad_float64_vector_result(np.flip(np.cumsum(np.flip(cotangent_vector))))
 
 
 def _program_ad_cumulative_cumprod_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -5901,6 +6342,29 @@ def _program_ad_cumulative_cumprod_jvp(
     return result
 
 
+def _program_ad_cumulative_cumprod_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
+    cotangent_vector = _as_real_numeric_array(
+        "program AD cumulative cumprod cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.shape != vector.shape:
+        raise ValueError("program AD cumulative cumprod cotangent shape must match output shape")
+    result = np.zeros_like(vector, dtype=np.float64)
+    for input_index in range(vector.size):
+        total = 0.0
+        for output_index in range(input_index, vector.size):
+            product = 1.0
+            for factor_index in range(output_index + 1):
+                if factor_index != input_index:
+                    product *= vector[factor_index]
+            total += cotangent_vector[output_index] * product
+        result[input_index] = total
+    return result
+
+
 def _program_ad_cumulative_diff_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
     vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
     return np.diff(vector).astype(np.float64)
@@ -5919,24 +6383,49 @@ def _program_ad_cumulative_diff_jvp(
     return np.diff(tangent_vector).astype(np.float64)
 
 
+def _program_ad_cumulative_diff_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
+    cotangent_vector = _as_real_numeric_array(
+        "program AD cumulative diff cotangent", cotangent
+    ).reshape(-1)
+    if vector.size == 0:
+        raise ValueError("program AD cumulative diff direct rule requires at least one value")
+    if cotangent_vector.shape != (max(vector.size - 1, 0),):
+        raise ValueError("program AD cumulative diff cotangent shape must match output shape")
+    result = np.zeros_like(vector, dtype=np.float64)
+    if cotangent_vector.size == 0:
+        return result
+    result[0] = -cotangent_vector[0]
+    result[-1] = cotangent_vector[-1]
+    if vector.size > 2:
+        result[1:-1] = cotangent_vector[:-1] - cotangent_vector[1:]
+    return result
+
+
 def _program_ad_cumulative_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "cumsum":
         return CustomDerivativeRule(
             name="program_ad_cumulative_cumsum_direct_rule",
             value_fn=_program_ad_cumulative_cumsum_value,
             jvp_rule=_program_ad_cumulative_cumsum_jvp,
+            vjp_rule=_program_ad_cumulative_cumsum_vjp,
         )
     if name == "cumprod":
         return CustomDerivativeRule(
             name="program_ad_cumulative_cumprod_direct_rule",
             value_fn=_program_ad_cumulative_cumprod_value,
             jvp_rule=_program_ad_cumulative_cumprod_jvp,
+            vjp_rule=_program_ad_cumulative_cumprod_vjp,
         )
     if name == "diff":
         return CustomDerivativeRule(
             name="program_ad_cumulative_diff_direct_rule",
             value_fn=_program_ad_cumulative_diff_value,
             jvp_rule=_program_ad_cumulative_diff_jvp,
+            vjp_rule=_program_ad_cumulative_diff_vjp,
         )
     raise ValueError(f"unsupported program AD cumulative primitive {name}")
 
@@ -6920,6 +7409,28 @@ def _program_ad_linalg_det_jvp(
     return np.array([float(np.sum(cofactors * tangent_matrix))], dtype=np.float64)
 
 
+def _program_ad_linalg_scalar_cotangent(
+    primitive_name: str,
+    cotangent: NDArray[np.float64],
+) -> float:
+    cotangent_vector = _as_real_numeric_array(
+        f"program AD linalg {primitive_name} cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.shape != (1,):
+        raise ValueError(f"program AD linalg {primitive_name} VJP requires one scalar cotangent")
+    return float(cotangent_vector[0])
+
+
+def _program_ad_linalg_det_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("det", values)
+    scalar_cotangent = _program_ad_linalg_scalar_cotangent("det", cotangent)
+    cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
+    return _program_ad_float64_vector_result(scalar_cotangent * cofactors)
+
+
 def _program_ad_linalg_inv_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
     matrix = _program_ad_linalg_square_matrix("inv", values)
     return np.linalg.inv(matrix).reshape(-1).astype(np.float64)
@@ -6935,6 +7446,18 @@ def _program_ad_linalg_inv_jvp(
         raise ValueError("program AD linalg inv tangent shape must match matrix shape")
     inverse = np.linalg.inv(matrix)
     return (-(inverse @ tangent_matrix @ inverse)).reshape(-1).astype(np.float64)
+
+
+def _program_ad_linalg_inv_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("inv", values)
+    cotangent_matrix = _program_ad_linalg_square_matrix("inv cotangent", cotangent)
+    if cotangent_matrix.shape != matrix.shape:
+        raise ValueError("program AD linalg inv VJP cotangent shape must match output shape")
+    inverse = np.linalg.inv(matrix)
+    return _program_ad_float64_vector_result(-(inverse.T @ cotangent_matrix @ inverse.T))
 
 
 def _program_ad_linalg_solve_split(
@@ -6971,6 +7494,24 @@ def _program_ad_linalg_solve_jvp(
         raise ValueError("program AD linalg solve tangent shape must match primal shape")
     solution = np.linalg.solve(matrix, rhs)
     return np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution).astype(np.float64)
+
+
+def _program_ad_linalg_solve_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix, rhs = _program_ad_linalg_solve_split("solve", values)
+    cotangent_vector = _as_real_numeric_array(
+        "program AD linalg solve cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.shape != rhs.shape:
+        raise ValueError("program AD linalg solve VJP cotangent shape must match solution shape")
+    solution = np.linalg.solve(matrix, rhs)
+    rhs_adjoint = np.linalg.solve(matrix.T, cotangent_vector)
+    matrix_adjoint = -np.outer(rhs_adjoint, solution)
+    return _program_ad_float64_vector_result(
+        np.concatenate((matrix_adjoint.reshape(-1), rhs_adjoint))
+    )
 
 
 def program_ad_linalg_matrix_power_derivative_rule(
@@ -7013,10 +7554,40 @@ def program_ad_linalg_matrix_power_derivative_rule(
             total = total + powers[index] @ inverse_tangent @ powers[positive_exponent - 1 - index]
         return total.reshape(-1).astype(np.float64)
 
+    def vjp_rule(
+        values: NDArray[np.float64],
+        cotangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        matrix = _program_ad_linalg_square_matrix("matrix_power", values)
+        cotangent_matrix = _program_ad_linalg_square_matrix("matrix_power cotangent", cotangent)
+        if cotangent_matrix.shape != matrix.shape:
+            raise ValueError(
+                "program AD linalg matrix_power VJP cotangent shape must match output shape"
+            )
+        if exponent == 0:
+            return np.zeros_like(matrix, dtype=np.float64).reshape(-1)
+        if exponent > 0:
+            total = np.zeros_like(matrix, dtype=np.float64)
+            powers = [np.linalg.matrix_power(matrix, index) for index in range(exponent)]
+            for index in range(exponent):
+                total = total + powers[index].T @ cotangent_matrix @ powers[exponent - 1 - index].T
+            return total.reshape(-1).astype(np.float64)
+        inverse = np.linalg.inv(matrix)
+        positive_exponent = -exponent
+        inverse_adjoint = np.zeros_like(matrix, dtype=np.float64)
+        powers = [np.linalg.matrix_power(inverse, index) for index in range(positive_exponent)]
+        for index in range(positive_exponent):
+            inverse_adjoint = (
+                inverse_adjoint
+                + powers[index].T @ cotangent_matrix @ powers[positive_exponent - 1 - index].T
+            )
+        return _program_ad_float64_vector_result(-(inverse.T @ inverse_adjoint @ inverse.T))
+
     return CustomDerivativeRule(
         name=f"program_ad_linalg_matrix_power_{exponent}_direct_rule",
         value_fn=value_fn,
         jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
     )
 
 
@@ -7091,11 +7662,37 @@ def program_ad_linalg_multi_dot_derivative_rule(
             raise ValueError("program AD linalg multi_dot direct rule requires operands")
         return total.astype(np.float64)
 
+    def vjp_rule(
+        values: NDArray[np.float64],
+        cotangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        operands = _split_program_ad_linalg_multi_dot_operands("values", values, shapes)
+        output = _as_flat_multi_dot_result(np.linalg.multi_dot(operands))
+        cotangent_vector = _as_real_numeric_array(
+            "program AD linalg multi_dot cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.shape != output.shape:
+            raise ValueError(
+                "program AD linalg multi_dot VJP cotangent shape must match output shape"
+            )
+        adjoints: list[NDArray[np.float64]] = []
+        for operand_index, operand in enumerate(operands):
+            operand_adjoint = np.zeros_like(operand, dtype=np.float64)
+            for element_index in np.ndindex(operand.shape):
+                basis = np.zeros_like(operand, dtype=np.float64)
+                basis[element_index] = 1.0
+                varied = operands[:operand_index] + (basis,) + operands[operand_index + 1 :]
+                contribution = _as_flat_multi_dot_result(np.linalg.multi_dot(varied))
+                operand_adjoint[element_index] = float(np.dot(cotangent_vector, contribution))
+            adjoints.append(operand_adjoint.reshape(-1))
+        return _program_ad_float64_vector_result(np.concatenate(adjoints))
+
     signature = "x".join("_".join(str(dim) for dim in shape) for shape in shapes)
     return CustomDerivativeRule(
         name=f"program_ad_linalg_multi_dot_{signature}_direct_rule",
         value_fn=value_fn,
         jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
     )
 
 
@@ -7105,18 +7702,21 @@ def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
             name="program_ad_linalg_det_direct_rule",
             value_fn=_program_ad_linalg_det_value,
             jvp_rule=_program_ad_linalg_det_jvp,
+            vjp_rule=_program_ad_linalg_det_vjp,
         )
     if name == "inv":
         return CustomDerivativeRule(
             name="program_ad_linalg_inv_direct_rule",
             value_fn=_program_ad_linalg_inv_value,
             jvp_rule=_program_ad_linalg_inv_jvp,
+            vjp_rule=_program_ad_linalg_inv_vjp,
         )
     if name == "solve":
         return CustomDerivativeRule(
             name="program_ad_linalg_solve_direct_rule",
             value_fn=_program_ad_linalg_solve_value,
             jvp_rule=_program_ad_linalg_solve_jvp,
+            vjp_rule=_program_ad_linalg_solve_vjp,
         )
     return CustomDerivativeRule(
         name=f"program_ad_linalg_{name}_trace_contract",
