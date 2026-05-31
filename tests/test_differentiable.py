@@ -4354,6 +4354,22 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
             primitive_complete_contract_for(contract.identity)
 
 
+def test_program_ad_reduction_boundary_metadata_is_explicit() -> None:
+    """Reduction contracts should expose fail-closed static-axis boundaries."""
+
+    expected_boundaries = {
+        "sum": "static_axis_and_stable_output_shape",
+        "prod": "static_axis_zero_factor_sensitive",
+        "mean": "static_axis_nonempty_reduction",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.reduction", name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
 def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported reduction primitives must execute through registry validation rules."""
 
@@ -5330,6 +5346,22 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert diff_contract.shape_rule((matrix, 2, 1)) == (2, 1)
     assert diff_contract.static_argument_rule is not None
     assert diff_contract.static_argument_rule((matrix, 2, 1)) == (2, 1)
+
+
+def test_program_ad_cumulative_boundary_metadata_is_explicit() -> None:
+    """Cumulative contracts should expose fail-closed sequence boundaries."""
+
+    expected_boundaries = {
+        "cumsum": "ordered_axis_sequence",
+        "cumprod": "ordered_axis_zero_factor_sensitive",
+        "diff": "finite_difference_order_and_spacing",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.cumulative", name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
 
 def test_program_ad_cumulative_primitives_validate_registry_rules_at_dispatch() -> None:

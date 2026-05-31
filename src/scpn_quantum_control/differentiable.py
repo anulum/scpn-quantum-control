@@ -8390,6 +8390,11 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "prod": "program_ad_reduction_prod_derivative_rule",
         "mean": "program_ad_reduction_mean_derivative_rule",
     }[name]
+    nondifferentiable_boundaries = {
+        "sum": "static_axis_and_stable_output_shape",
+        "prod": "static_axis_zero_factor_sensitive",
+        "mean": "static_axis_nonempty_reduction",
+    }
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff reduction dialect interchange; executable lowering blocked",
@@ -8399,6 +8404,8 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
         "static_signature": "source_shape:ranked_tensor_shape;axis",
+        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
+        "nondifferentiable_boundary_policy": "fail_closed",
     }
 
 
@@ -8583,6 +8590,11 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
         "cumprod": "program_ad_cumulative_cumprod_derivative_rule",
         "diff": "program_ad_cumulative_diff_derivative_rule",
     }[name]
+    nondifferentiable_boundaries = {
+        "cumsum": "ordered_axis_sequence",
+        "cumprod": "ordered_axis_zero_factor_sensitive",
+        "diff": "finite_difference_order_and_spacing",
+    }
     static_signature = (
         "source_shape:ranked_tensor_shape;order_axis"
         if name == "diff"
@@ -8597,6 +8609,8 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
         "static_signature": static_signature,
+        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
+        "nondifferentiable_boundary_policy": "fail_closed",
     }
 
 
