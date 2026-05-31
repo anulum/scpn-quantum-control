@@ -1689,6 +1689,132 @@ def _compile_scalar_unary_elementwise_native_llvm_ir(
     return "\n".join(lines)
 
 
+def _scalar_binary_native_value_line(primitive: str) -> str:
+    if primitive == "add":
+        return "%value = fadd double %x, %y"
+    if primitive == "subtract":
+        return "%value = fsub double %x, %y"
+    if primitive == "multiply":
+        return "%value = fmul double %x, %y"
+    raise ValueError(
+        "native scalar binary LLVM/JIT primitive must be one of add, subtract, multiply"
+    )
+
+
+def _scalar_binary_native_gradient_lines(primitive: str) -> tuple[str, ...]:
+    if primitive == "add":
+        return ("%grad_x = fadd double 1.0, 0.0", "%grad_y = fadd double 1.0, 0.0")
+    if primitive == "subtract":
+        return ("%grad_x = fadd double 1.0, 0.0", "%grad_y = fsub double -0.0, 1.0")
+    if primitive == "multiply":
+        return ("%grad_x = fadd double %y, 0.0", "%grad_y = fadd double %x, 0.0")
+    raise ValueError(
+        "native scalar binary LLVM/JIT primitive must be one of add, subtract, multiply"
+    )
+
+
+def _compile_scalar_binary_elementwise_native_llvm_ir(
+    rule_name: str,
+    primitive: str,
+) -> str:
+    checked_primitive = primitive.strip().lower()
+    value_line = _scalar_binary_native_value_line(checked_primitive)
+    gradient_lines = _scalar_binary_native_gradient_lines(checked_primitive)
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    lines = [
+        f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+        f'; primitive = "{_escape_mlir_string(checked_primitive)}"',
+        '; source = "native_scalar_binary_elementwise_ad_codegen"',
+        '; execution = "native_llvm_mcjit"',
+        f'target triple = "{_escape_mlir_string(triple)}"',
+        "",
+        f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+        "entry:",
+        "  %xptr = getelementptr double, double* %values, i64 0",
+        "  %yptr = getelementptr double, double* %values, i64 1",
+        "  %x = load double, double* %xptr",
+        "  %y = load double, double* %yptr",
+        f"  {value_line}",
+        "  %out0 = getelementptr double, double* %out, i64 0",
+        "  store double %value, double* %out0",
+        "  ret void",
+        "}",
+        "",
+        f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+        "entry:",
+        "  %xptr = getelementptr double, double* %values, i64 0",
+        "  %yptr = getelementptr double, double* %values, i64 1",
+        "  %x = load double, double* %xptr",
+        "  %y = load double, double* %yptr",
+    ]
+    lines.extend(f"  {line}" for line in gradient_lines)
+    lines.extend(
+        [
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  %out1 = getelementptr double, double* %out, i64 1",
+            "  store double %grad_x, double* %out0",
+            "  store double %grad_y, double* %out1",
+            "  ret void",
+            "}",
+            "",
+            (
+                f"define void @{base_symbol}_jvp(double* %values, "
+                "double* %tangent, double* %out) {"
+            ),
+            "entry:",
+            "  %xptr = getelementptr double, double* %values, i64 0",
+            "  %yptr = getelementptr double, double* %values, i64 1",
+            "  %x = load double, double* %xptr",
+            "  %y = load double, double* %yptr",
+        ]
+    )
+    lines.extend(f"  {line}" for line in gradient_lines)
+    lines.extend(
+        [
+            "  %tangent0ptr = getelementptr double, double* %tangent, i64 0",
+            "  %tangent1ptr = getelementptr double, double* %tangent, i64 1",
+            "  %tangent0 = load double, double* %tangent0ptr",
+            "  %tangent1 = load double, double* %tangent1ptr",
+            "  %jvp_x = fmul double %grad_x, %tangent0",
+            "  %jvp_y = fmul double %grad_y, %tangent1",
+            "  %jvp = fadd double %jvp_x, %jvp_y",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  store double %jvp, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            (
+                f"define void @{base_symbol}_vjp(double* %values, "
+                "double* %cotangent, double* %out) {"
+            ),
+            "entry:",
+            "  %xptr = getelementptr double, double* %values, i64 0",
+            "  %yptr = getelementptr double, double* %values, i64 1",
+            "  %x = load double, double* %xptr",
+            "  %y = load double, double* %yptr",
+        ]
+    )
+    lines.extend(f"  {line}" for line in gradient_lines)
+    lines.extend(
+        [
+            "  %cotangent0ptr = getelementptr double, double* %cotangent, i64 0",
+            "  %cotangent0 = load double, double* %cotangent0ptr",
+            "  %vjp_x = fmul double %grad_x, %cotangent0",
+            "  %vjp_y = fmul double %grad_y, %cotangent0",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  %out1 = getelementptr double, double* %out, i64 1",
+            "  store double %vjp_x, double* %out0",
+            "  store double %vjp_y, double* %out1",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def _compile_native_llvm_jit_functions(
     llvm_ir: str,
     base_symbol: str,
@@ -1752,6 +1878,56 @@ def _call_native_scalar_binary(
     if checked_vector.size != 1:
         raise ValueError(f"native scalar LLVM/JIT kernel requires one {label} value")
     output = np.zeros(1, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_scalar_pair_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    if checked_values.size != 2:
+        raise ValueError("native scalar binary LLVM/JIT kernel requires two values")
+    if output_size not in {1, 2}:
+        raise ValueError("native scalar binary LLVM/JIT output_size must be one or two")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_scalar_pair_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_values.size != 2:
+        raise ValueError("native scalar binary LLVM/JIT kernel requires two values")
+    expected_vector_size = 2 if label == "tangent" else 1
+    if checked_vector.size != expected_vector_size:
+        raise ValueError(
+            f"native scalar binary LLVM/JIT kernel requires {expected_vector_size} "
+            f"{label} value(s)"
+        )
+    if output_size not in {1, 2}:
+        raise ValueError("native scalar binary LLVM/JIT output_size must be one or two")
+    output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
         checked_values.ctypes.data_as(double_pointer),
@@ -2051,6 +2227,146 @@ def make_scalar_unary_elementwise_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_scalar_binary_elementwise_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    primitive: str,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile scalar binary elementwise value/JVP/VJP/gradient kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    checked_primitive = primitive.strip().lower()
+    _scalar_binary_native_value_line(checked_primitive)
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native scalar binary AD requires backend='native_llvm_jit'")
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != 2:
+        raise ValueError("native scalar binary AD requires exactly two sample values")
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_scalar_binary_elementwise_native_llvm_ir(
+        rule.name,
+        checked_primitive,
+    )
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_scalar_pair_unary(native_functions["value"], raw_values, 1)
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_scalar_pair_binary(
+            native_functions["jvp"], raw_values, raw_tangent, "tangent", 1
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_scalar_pair_binary(
+            native_functions["vjp"], raw_values, raw_cotangent, "cotangent", 2
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_gradient = _call_native_scalar_pair_unary(native_functions["gradient"], values, 2)
+        reference_gradient = vjp_kernel(values, np.ones(1, dtype=np.float64))
+        if not np.allclose(
+            native_gradient,
+            reference_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError("native LLVM/JIT scalar binary gradient verification failed")
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT scalar binary value/JVP/VJP/gradient kernel; "
+            "unregistered primitives remain fail-closed"
+        ),
+    )
+
+
+def make_scalar_binary_elementwise_native_llvm_jit_lowering_rule(
+    *,
+    primitive: str,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for scalar binary elementwise native LLVM/JIT kernels."""
+
+    checked_primitive = primitive.strip().lower()
+    _scalar_binary_native_value_line(checked_primitive)
+    captured_values = (
+        None if sample_values is None else _as_finite_vector("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native scalar binary lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_scalar_binary_elementwise_ad_to_native_llvm_jit(
+            rule,
+            primitive=checked_primitive,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def _safe_llvm_symbol(value: str) -> str:
     symbol = "".join(
         character if character.isalnum() or character == "_" else "_" for character in value
@@ -2238,10 +2554,12 @@ __all__ = [
     "compile_custom_derivative_rule_to_mlir",
     "compile_custom_derivative_rule_to_executable",
     "compile_registered_primitive_to_executable",
+    "compile_scalar_binary_elementwise_ad_to_native_llvm_jit",
     "compile_scalar_quadratic_ad_to_native_llvm_jit",
     "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
+    "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule",
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
     "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
 ]
