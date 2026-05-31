@@ -679,6 +679,16 @@ def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims(
             mlir_op="scpn_diff.scpn_test_primitive",
             nondifferentiable_boundary_policy="fail_closed",
         )
+    with pytest.raises(ValueError, match="nondifferentiable_policy"):
+        PrimitiveLoweringStatus(
+            identity=PrimitiveIdentity("scpn.test", "primitive", "1"),
+            rule_name="rule",
+            has_jvp=True,
+            has_vjp=False,
+            mlir_op="scpn_diff.scpn_test_primitive",
+            nondifferentiable_boundary="declared_test_boundary",
+            nondifferentiable_boundary_policy="fail_closed",
+        )
     with pytest.raises(ValueError, match="registry"):
         build_compiler_ad_transform_plan(object())  # type: ignore[arg-type]
 

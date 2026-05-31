@@ -117,7 +117,7 @@ execution.
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, static-argument-rule presence, registry
 lowering metadata, promoted static derivative factory/signature contracts,
-promoted paired fail-closed nondifferentiable-boundary and boundary-policy contracts, executable MLIR-runtime availability when a lowering rule is registered, and
+promoted paired primitive nondifferentiability-policy, fail-closed boundary, and boundary-policy contracts, executable MLIR-runtime availability when a lowering rule is registered, and
 fail-closed Rust/LLVM backend status. Its deterministic module metadata also
 lists rule-coverage, policy/effect coverage, boundary-contract and boundary-policy coverage, MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
