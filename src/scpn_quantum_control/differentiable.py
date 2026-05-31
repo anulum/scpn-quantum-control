@@ -3145,17 +3145,36 @@ def _trace_concatenate(
     arrays: Sequence[object],
     context: _WholeProgramTraceContext,
     *,
-    axis: int = 0,
+    axis: int | None = 0,
 ) -> TraceADArray:
     if not arrays:
         raise ValueError("whole-program AD np.concatenate requires at least one array")
     trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
-    if axis != 0:
-        raise ValueError("whole-program AD np.concatenate currently supports axis=0")
-    if any(array.ndim != 1 for array in trace_arrays):
-        raise ValueError("whole-program AD np.concatenate supports one-dimensional arrays")
-    items = tuple(item for array in trace_arrays for item in array._items)
-    return TraceADArray(items, (len(items),), context)
+    flat_items = tuple(item for array in trace_arrays for item in array._items)
+    index_arrays: list[NDArray[np.int64]] = []
+    offset = 0
+    for array in trace_arrays:
+        next_offset = offset + array.size
+        index_array = np.arange(offset, next_offset, dtype=np.int64).reshape(array.shape)
+        index_arrays.append(index_array if axis is not None else index_array.reshape(-1))
+        offset = next_offset
+    try:
+        if axis is None:
+            selected = np.concatenate(index_arrays, axis=0)
+        else:
+            if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+                raise TypeError("axis must be an integer or None")
+            selected = np.concatenate(index_arrays, axis=int(axis))
+    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            "whole-program AD np.concatenate requires shape-compatible arrays "
+            "and a static integer axis or None"
+        ) from exc
+    selected_array = np.asarray(selected, dtype=np.int64)
+    items = tuple(flat_items[int(index)] for index in selected_array.reshape(-1))
+    return TraceADArray(
+        items, tuple(int(dimension) for dimension in selected_array.shape), context
+    )
 
 
 def _trace_stack(
@@ -3170,21 +3189,26 @@ def _trace_stack(
     shape = trace_arrays[0].shape
     if any(array.shape != shape for array in trace_arrays):
         raise ValueError("whole-program AD np.stack operands must have matching shapes")
-    if len(shape) != 1:
-        raise ValueError("whole-program AD np.stack currently supports one-dimensional arrays")
-    if axis < 0:
-        axis += 2
-    if axis == 0:
-        items = tuple(item for array in trace_arrays for item in array._items)
-        return TraceADArray(items, (len(trace_arrays), shape[0]), context)
-    if axis == 1:
-        items = tuple(
-            trace_arrays[row]._items[col]
-            for col in range(shape[0])
-            for row in range(len(trace_arrays))
-        )
-        return TraceADArray(items, (shape[0], len(trace_arrays)), context)
-    raise ValueError("whole-program AD np.stack supports axis 0 or 1 for vectors")
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("whole-program AD np.stack requires a static integer axis")
+    flat_items = tuple(item for array in trace_arrays for item in array._items)
+    index_arrays: list[NDArray[np.int64]] = []
+    offset = 0
+    for array in trace_arrays:
+        next_offset = offset + array.size
+        index_arrays.append(np.arange(offset, next_offset, dtype=np.int64).reshape(shape))
+        offset = next_offset
+    try:
+        selected = np.stack(index_arrays, axis=int(axis))
+    except (ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            "whole-program AD np.stack requires a valid static axis for matching-shape arrays"
+        ) from exc
+    selected_array = np.asarray(selected, dtype=np.int64)
+    items = tuple(flat_items[int(index)] for index in selected_array.reshape(-1))
+    return TraceADArray(
+        items, tuple(int(dimension) for dimension in selected_array.shape), context
+    )
 
 
 def _trace_clip(

@@ -456,6 +456,9 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         along = np.take_along_axis(matrix, along_indices, axis=1)
         wrapped = np.take(trace_values, [-1, 6, 0], mode="wrap")
         clipped = np.take(matrix, [-2, 1, 10], axis=1, mode="clip")
+        column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
+        depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
+        flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
         return (
             np.sum(block * block_weights)
             + np.sum(gathered)
@@ -473,9 +476,23 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
                     dtype=np.float64,
                 )
             )
+            + np.sum(column_assembled * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
+            + np.sum(
+                depth_stacked
+                * np.array(
+                    [
+                        [[0.5, -1.0], [1.5, 0.25], [-0.75, 2.0]],
+                        [[-0.5, 1.25], [0.75, -1.5], [2.5, -0.25]],
+                    ],
+                    dtype=np.float64,
+                )
+            )
+            + np.sum(
+                flat_assembled * np.array([-0.25, 0.5, -1.5, 2.0, 0.75, -0.5], dtype=np.float64)
+            )
         )
 
-    analytic = np.array([1.15, 1.05, 4.3, -0.4, 1.65, 5.1], dtype=np.float64)
+    analytic = np.array([5.4, 4.3, 5.55, 4.35, 7.65, 12.35], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",

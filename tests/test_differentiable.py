@@ -3475,6 +3475,41 @@ def test_whole_program_ad_handles_numpy_composition_and_norms() -> None:
     np.testing.assert_allclose(result.gradient, expected, atol=1.0e-12)
 
 
+def test_program_ad_concatenate_and_stack_general_static_axes() -> None:
+    """Program AD should preserve exact adjoints for static concatenate and stack axes."""
+
+    concat_weights = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], dtype=np.float64)
+    stack_weights = np.array(
+        [
+            [[0.5, -1.0], [1.5, 0.25], [-0.75, 2.0]],
+            [[-0.5, 1.25], [0.75, -1.5], [2.5, -0.25]],
+        ],
+        dtype=np.float64,
+    )
+    flat_weights = np.array([-0.25, 0.5, -1.5, 2.0, 0.75, -0.5], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
+        depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
+        flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
+        return (
+            np.sum(column_assembled * concat_weights)
+            + np.sum(depth_stacked * stack_weights)
+            + np.sum(flat_assembled * flat_weights)
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=tuple(Parameter(f"x{index}") for index in range(6)),
+    )
+
+    assert result.value == pytest.approx(107.0)
+    np.testing.assert_allclose(result.gradient, [4.25, 3.25, 1.25, 4.75, 6.0, 7.25])
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_whole_program_ad_handles_numpy_linear_algebra_primitives() -> None:
     """Program AD should cover bounded NumPy linear algebra forms exactly."""
 
