@@ -95,6 +95,8 @@ class PrimitiveLoweringStatus:
     static_derivative_factory: str = "not_declared"
     static_signature: str = "none"
     nondifferentiable_policy: str = "not_declared"
+    nondifferentiable_boundary: str = "not_declared"
+    nondifferentiable_boundary_policy: str = "not_declared"
     effect: str = "pure"
     mlir_lowering: str = "available: scpn_diff dialect interchange"
     rust_lowering: str = "blocked: no Rust differentiable primitive backend"
@@ -149,6 +151,30 @@ class PrimitiveLoweringStatus:
             )
         if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
             raise ValueError("nondifferentiable_policy must be non-empty")
+        if (
+            not isinstance(self.nondifferentiable_boundary, str)
+            or not self.nondifferentiable_boundary
+        ):
+            raise ValueError("nondifferentiable_boundary must be non-empty")
+        if (
+            not isinstance(self.nondifferentiable_boundary_policy, str)
+            or not self.nondifferentiable_boundary_policy
+        ):
+            raise ValueError("nondifferentiable_boundary_policy must be non-empty")
+        metadata_boundary = metadata.get("nondifferentiable_boundary")
+        if metadata_boundary is not None and metadata_boundary != self.nondifferentiable_boundary:
+            raise ValueError("nondifferentiable_boundary must match lowering metadata")
+        metadata_boundary_policy = metadata.get("nondifferentiable_boundary_policy")
+        if (
+            metadata_boundary_policy is not None
+            and metadata_boundary_policy != self.nondifferentiable_boundary_policy
+        ):
+            raise ValueError("nondifferentiable_boundary_policy must match lowering metadata")
+        if (
+            self.nondifferentiable_boundary != "not_declared"
+            and self.nondifferentiable_boundary_policy != "fail_closed"
+        ):
+            raise ValueError("declared nondifferentiable boundaries must be fail_closed")
         if not isinstance(self.effect, str) or not self.effect:
             raise ValueError("effect must be non-empty")
         for label, status in (
@@ -247,6 +273,12 @@ def build_compiler_ad_transform_plan(
                 nondifferentiable_policy="not_declared"
                 if transform_rule is None
                 else transform_rule.nondifferentiable_policy,
+                nondifferentiable_boundary=metadata.get(
+                    "nondifferentiable_boundary", "not_declared"
+                ),
+                nondifferentiable_boundary_policy=metadata.get(
+                    "nondifferentiable_boundary_policy", "not_declared"
+                ),
                 effect="pure" if transform_rule is None else transform_rule.effect,
                 mlir_lowering=metadata.get("mlir", default_mlir_status),
                 rust_lowering=metadata.get(
@@ -286,6 +318,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f'static_derivative_factory = "{_escape_mlir_string(status.static_derivative_factory)}", '
             f'static_signature = "{_escape_mlir_string(status.static_signature)}", '
             f'policy = "{_escape_mlir_string(status.nondifferentiable_policy)}", '
+            f'boundary = "{_escape_mlir_string(status.nondifferentiable_boundary)}", '
+            f'boundary_policy = "{_escape_mlir_string(status.nondifferentiable_boundary_policy)}", '
             f'effect = "{_escape_mlir_string(status.effect)}"}}'
         )
         lines.append(
@@ -321,6 +355,16 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             status.identity.key: status.nondifferentiable_policy
             for status in plan.statuses
             if status.nondifferentiable_policy != "not_declared"
+        },
+        "nondifferentiable_boundaries": {
+            status.identity.key: status.nondifferentiable_boundary
+            for status in plan.statuses
+            if status.nondifferentiable_boundary != "not_declared"
+        },
+        "nondifferentiable_boundary_policies": {
+            status.identity.key: status.nondifferentiable_boundary_policy
+            for status in plan.statuses
+            if status.nondifferentiable_boundary_policy != "not_declared"
         },
         "mlir_runtime_lowering_primitives": [
             status.identity.key for status in plan.statuses if status.has_lowering_rule
@@ -371,6 +415,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "nondifferentiable_policies": sum(
                 status.nondifferentiable_policy != "not_declared" for status in plan.statuses
+            ),
+            "nondifferentiable_boundaries": sum(
+                status.nondifferentiable_boundary != "not_declared" for status in plan.statuses
             ),
             "mlir_runtime_lowerings": sum(status.has_lowering_rule for status in plan.statuses),
             "static_argument_rules": sum(

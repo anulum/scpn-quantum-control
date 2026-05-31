@@ -201,6 +201,10 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     statuses = {status.identity.name: status for status in plan.statuses}
     assert statuses["matrix_power"].has_static_argument_rule is True
     assert statuses["multi_dot"].has_static_argument_rule is True
+    assert statuses["matrix_power"].nondifferentiable_boundary == "negative_power_singular_matrix"
+    assert statuses["matrix_power"].nondifferentiable_boundary_policy == "fail_closed"
+    assert statuses["multi_dot"].nondifferentiable_boundary == "static_shape_alignment"
+    assert statuses["multi_dot"].nondifferentiable_boundary_policy == "fail_closed"
     assert (
         statuses["matrix_power"].lowering_metadata["static_derivative_factory"]
         == "program_ad_linalg_matrix_power_derivative_rule"
@@ -215,7 +219,18 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         "scpn.program_ad.linalg:matrix_power@1",
         "scpn.program_ad.linalg:multi_dot@1",
     ]
+    assert module.metadata["nondifferentiable_boundaries"] == {
+        "scpn.program_ad.linalg:matrix_power@1": "negative_power_singular_matrix",
+        "scpn.program_ad.linalg:multi_dot@1": "static_shape_alignment",
+    }
+    assert module.metadata["nondifferentiable_boundary_policies"] == {
+        "scpn.program_ad.linalg:matrix_power@1": "fail_closed",
+        "scpn.program_ad.linalg:multi_dot@1": "fail_closed",
+    }
+    assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert "static_argument_rule = true" in module.text
+    assert 'boundary = "negative_power_singular_matrix"' in module.text
+    assert 'boundary_policy = "fail_closed"' in module.text
     assert 'key = "static_signature", value = "power:i64"' in module.text
     assert (
         'key = "static_signature", value = "operand_shapes:ranked_tensor_shape_sequence"'
