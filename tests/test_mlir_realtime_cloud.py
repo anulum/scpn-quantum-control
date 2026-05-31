@@ -313,6 +313,47 @@ def test_compiler_ad_transform_plan_rejects_incomplete_static_factory_metadata()
             build_compiler_ad_transform_plan(registry)
 
 
+def test_primitive_lowering_status_rejects_conflicting_static_metadata() -> None:
+    """Primitive lowering status should reject contradictory static metadata fields."""
+
+    identity = PrimitiveIdentity("scpn.test", "conflicting_static_metadata", "1")
+    rule_name = "conflicting_static_metadata_rule"
+    cases = (
+        (
+            {
+                "mlir_op": "scpn_diff.conflicting_static_metadata",
+                "static_derivative_factory": "metadata_factory_rule",
+                "static_signature": "source_shape:ranked_tensor_shape",
+            },
+            "field_factory_rule",
+            "source_shape:ranked_tensor_shape",
+            "static_derivative_factory",
+        ),
+        (
+            {
+                "mlir_op": "scpn_diff.conflicting_static_metadata",
+                "static_derivative_factory": "metadata_factory_rule",
+                "static_signature": "source_shape:ranked_tensor_shape",
+            },
+            "metadata_factory_rule",
+            "other_shape:ranked_tensor_shape",
+            "static_signature",
+        ),
+    )
+    for lowering_metadata, static_factory, static_signature, message in cases:
+        with pytest.raises(ValueError, match=message):
+            PrimitiveLoweringStatus(
+                identity=identity,
+                rule_name=rule_name,
+                has_jvp=True,
+                has_vjp=False,
+                mlir_op="scpn_diff.conflicting_static_metadata",
+                lowering_metadata=lowering_metadata,
+                static_derivative_factory=static_factory,
+                static_signature=static_signature,
+            )
+
+
 def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
     """Static linalg lowering factories should execute verified MLIR-runtime kernels."""
 

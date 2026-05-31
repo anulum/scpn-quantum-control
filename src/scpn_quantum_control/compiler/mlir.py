@@ -127,6 +127,12 @@ class PrimitiveLoweringStatus:
             raise ValueError("static_derivative_factory must be non-empty")
         if not isinstance(self.static_signature, str) or not self.static_signature:
             raise ValueError("static_signature must be non-empty")
+        metadata_factory = metadata.get("static_derivative_factory")
+        if metadata_factory is not None and metadata_factory != self.static_derivative_factory:
+            raise ValueError("static_derivative_factory must match lowering metadata")
+        metadata_signature = metadata.get("static_signature")
+        if metadata_signature is not None and metadata_signature != self.static_signature:
+            raise ValueError("static_signature must match lowering metadata")
         factory_declared = self.static_derivative_factory not in {
             "not_declared",
             "not_required",
