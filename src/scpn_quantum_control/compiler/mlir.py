@@ -175,6 +175,11 @@ class PrimitiveLoweringStatus:
             and self.nondifferentiable_boundary_policy != "fail_closed"
         ):
             raise ValueError("declared nondifferentiable boundaries must be fail_closed")
+        if (
+            self.nondifferentiable_boundary == "not_declared"
+            and self.nondifferentiable_boundary_policy != "not_declared"
+        ):
+            raise ValueError("nondifferentiable_boundary is required when policy is declared")
         if not isinstance(self.effect, str) or not self.effect:
             raise ValueError("effect must be non-empty")
         for label, status in (
