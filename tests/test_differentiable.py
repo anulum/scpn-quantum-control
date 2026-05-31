@@ -3498,6 +3498,72 @@ def test_program_ad_piecewise_matches_numpy_overwrite_and_default_semantics() ->
     )
 
 
+def test_program_ad_choose_routes_static_selector_adjoint_semantics() -> None:
+    """Program AD np.choose should route adjoints through static selected choices."""
+
+    selector = np.array([0, 1, 2, 0], dtype=np.int64)
+
+    def objective(values: np.ndarray) -> object:
+        selected = np.choose(
+            selector,
+            [values * values, -values, 3.0 * values + 1.0],
+        )
+        return np.sum(selected)
+
+    values = np.array([-1.0, 0.25, 1.0, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([-2.0, -1.0, 3.0, 4.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_choose_matches_static_clip_and_wrap_modes() -> None:
+    """Program AD np.choose should preserve NumPy static selector policies."""
+
+    selector = np.array([-1, 0, 3], dtype=np.int64)
+
+    def clip_objective(values: np.ndarray) -> object:
+        return np.sum(np.choose(selector, [values, 2.0 * values], mode="clip"))
+
+    def wrap_objective(values: np.ndarray) -> object:
+        return np.sum(np.choose(selector, [values, 2.0 * values], mode="wrap"))
+
+    values = np.array([0.2, 0.4, 0.6], dtype=np.float64)
+    clip_result = whole_program_value_and_grad(
+        clip_objective,
+        values,
+        parameters=tuple(Parameter(f"clip_{index}") for index in range(values.size)),
+    )
+    wrap_result = whole_program_value_and_grad(
+        wrap_objective,
+        values,
+        parameters=tuple(Parameter(f"wrap_{index}") for index in range(values.size)),
+    )
+
+    assert clip_result.value == pytest.approx(float(clip_objective(values)))
+    np.testing.assert_allclose(
+        clip_result.gradient,
+        np.array([1.0, 1.0, 2.0], dtype=np.float64),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    assert wrap_result.value == pytest.approx(float(wrap_objective(values)))
+    np.testing.assert_allclose(
+        wrap_result.gradient,
+        np.array([2.0, 1.0, 2.0], dtype=np.float64),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_program_ad_select_and_piecewise_reject_invalid_contracts() -> None:
     """Program AD selection folds should fail closed on malformed branch contracts."""
 
@@ -3510,6 +3576,22 @@ def test_program_ad_select_and_piecewise_reject_invalid_contracts() -> None:
     with pytest.raises(ValueError, match="one function per condition"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.piecewise(values, [values > 0.0], [])),
+            np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_choose_rejects_dynamic_and_invalid_selector_contracts() -> None:
+    """Program AD np.choose should fail closed on nondifferentiable selector contracts."""
+
+    with pytest.raises(ValueError, match="static integer selector"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.choose(values > 0.0, [values, -values])),
+            np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="out of bounds"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.choose(np.array([0, 2]), [values, -values])),
             np.array([-1.0, 1.0], dtype=np.float64),
         )
 

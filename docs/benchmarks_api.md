@@ -358,7 +358,7 @@ Runs the committed conformance rows:
 |------|----------|----------|
 | `loop_heavy_scalar` | loop-heavy | Executed Python loops with scalar ufuncs |
 | `matrix_heavy_linear_algebra` | matrix-heavy | Dot, inner, outer, trace, tensordot, and einsum semantics |
-| `selection_piecewise_contracts` | selection-heavy | Registry-gated `where`/`clip` branch and boundary contracts, with `np.select` and callable `np.piecewise` folded through the same trace selection semantics |
+| `selection_piecewise_contracts` | selection-heavy | Registry-gated `where`/`clip` branch and boundary contracts, with `np.select`, callable `np.piecewise`, and static-selector `np.choose` folded through trace selection semantics |
 | `linalg_primitive_contracts` | linalg-primitive | Registry-gated determinant, inverse, solve, trace, diagonal, flattened diagonal, matrix-power, and multi-dot contracts |
 | `indexing_static_gather_contracts` | indexing-heavy | Static slicing, static-axis concatenate/stack assembly, `np.hstack`/`np.vstack`/`np.column_stack`/`np.dstack` assembly conveniences, nested `np.block` assembly, static `np.split`/`np.array_split`/`np.hsplit`/`np.vsplit`/`np.dsplit` gather assembly, static `np.tril`/`np.triu` triangular masks, static `np.diagonal` offset/axis gather assembly, static `np.broadcast_arrays` broadcast assembly, static integer/boolean advanced getitem, `np.take` raise/wrap/clip modes, `np.take_along_axis`, static `np.delete`, static constant `np.pad`, static constant `np.insert`, `np.append`, and repeated adjoint accumulation |
 | `mutation_heavy_forward_only` | mutation-heavy | Static array mutation dataflow |

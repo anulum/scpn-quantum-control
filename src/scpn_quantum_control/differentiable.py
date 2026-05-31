@@ -1251,6 +1251,15 @@ class TraceADArray:
             if len(args) != 3 or kwargs:
                 raise ValueError("program AD np.piecewise supports array, condlist, and funclist")
             return _trace_piecewise(args[0], args[1], args[2], self.context)
+        if func is np.choose:
+            if len(args) != 2 or kwargs.keys() - {"mode"}:
+                raise ValueError("program AD np.choose supports selector, choices, and mode")
+            return _trace_choose(
+                args[0],
+                args[1],
+                self.context,
+                mode=cast(str, kwargs.get("mode", "raise")),
+            )
         if func is np.reshape:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.reshape supports array and shape")
@@ -3599,6 +3608,91 @@ def _coerce_trace_predicate_array(
     return TraceADPredicateArray(predicates, shape, context)
 
 
+def _trace_choose(
+    selector: object,
+    choices: object,
+    context: _WholeProgramTraceContext,
+    *,
+    mode: str,
+) -> TraceADScalar | TraceADArray:
+    choice_arrays = _trace_choose_choice_arrays(choices, context)
+    selector_indices = _trace_choose_selector_indices(
+        selector,
+        choice_count=len(choice_arrays),
+        mode=mode,
+    )
+    shape = _broadcast_shape(
+        tuple(int(dimension) for dimension in selector_indices.shape),
+        *(choice.shape for choice in choice_arrays),
+    )
+    broadcast_selector = np.broadcast_to(selector_indices, shape).reshape(-1)
+    broadcast_choices = tuple(
+        _broadcast_trace_array(choice, shape, context) for choice in choice_arrays
+    )
+    items: list[TraceADScalar] = []
+    for flat_index, choice_index in enumerate(broadcast_selector):
+        chosen = broadcast_choices[int(choice_index)]._items[flat_index]
+        items.append(
+            context.make(
+                "choose",
+                (f"static_selector:{int(choice_index)}", chosen.name),
+                chosen.primal,
+                chosen.tangent,
+            )
+        )
+    result = tuple(items)
+    return result[0] if shape == () else TraceADArray(result, shape, context)
+
+
+def _trace_choose_choice_arrays(
+    choices: object,
+    context: _WholeProgramTraceContext,
+) -> tuple[TraceADArray, ...]:
+    if isinstance(choices, TraceADArray):
+        raise ValueError("program AD np.choose requires a static choice sequence")
+    if isinstance(choices, (np.ndarray, Sequence)):
+        choice_sequence = tuple(choices)
+    else:
+        raise ValueError("program AD np.choose requires a static choice sequence")
+    if not choice_sequence:
+        raise ValueError("program AD np.choose requires at least one choice")
+    return tuple(_coerce_trace_array(choice, context) for choice in choice_sequence)
+
+
+def _trace_choose_selector_indices(
+    selector: object,
+    *,
+    choice_count: int,
+    mode: str,
+) -> NDArray[np.int64]:
+    if isinstance(selector, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)):
+        raise ValueError("program AD np.choose requires a static integer selector")
+    raw = np.asarray(selector)
+    if raw.dtype == object and any(
+        isinstance(
+            item,
+            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
+        )
+        for item in raw.reshape(-1)
+    ):
+        raise ValueError("program AD np.choose requires a static integer selector")
+    if raw.dtype.kind not in {"i", "u", "b"}:
+        raise ValueError("program AD np.choose requires a static integer selector")
+    indices = raw.astype(np.int64, copy=False)
+    if mode == "raise":
+        if bool(np.any(indices < 0)) or bool(np.any(indices >= choice_count)):
+            raise ValueError("program AD np.choose selector indices out of bounds")
+        return indices
+    if mode == "wrap":
+        return cast(NDArray[np.int64], np.mod(indices, choice_count).astype(np.int64))
+    if mode == "clip":
+        return cast(
+            NDArray[np.int64],
+            np.clip(indices, 0, choice_count - 1).astype(np.int64),
+        )
+    raise ValueError("program AD np.choose mode must be raise, wrap, or clip")
+
+
 def _trace_select(
     condlist: object,
     choicelist: object,
@@ -4190,7 +4284,18 @@ def _program_adjoint_node_contributions(
             if arg_value == 0.0:
                 raise ValueError("abs adjoint is undefined at zero")
             return ((arg_name, 1.0 if arg_value > 0.0 else -1.0),)
-    if node.op in {"add", "sub", "mul", "div", "pow", "maximum", "minimum", "where", "clip"}:
+    if node.op in {
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "pow",
+        "maximum",
+        "minimum",
+        "where",
+        "clip",
+        "choose",
+    }:
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
     raise ValueError(f"unsupported program AD adjoint op {node.op}")
 
@@ -4220,6 +4325,10 @@ def _program_adjoint_binary_or_selection_contributions(
         if value in (lower, upper):
             raise ValueError("clip adjoint is undefined at clipping boundary")
         return ((value_name, 1.0),)
+    if node.op == "choose":
+        if len(node.inputs) != 2 or not node.inputs[0].startswith("static_selector:"):
+            raise ValueError("choose adjoint requires static selector and selected value")
+        return ((node.inputs[1], 1.0),)
     left_name = node.inputs[0]
     right_name = node.inputs[1] if len(node.inputs) > 1 else ""
     left = _program_adjoint_input_value(left_name, node_by_name)
