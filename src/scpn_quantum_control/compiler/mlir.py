@@ -399,6 +399,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             status.identity.key
             for status in plan.statuses
             if status.nondifferentiable_policy == "not_declared"
+            or status.nondifferentiable_boundary == "not_declared"
         ],
     }
     encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
@@ -436,7 +437,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
                 status.static_signature != "none" for status in plan.statuses
             ),
             "uncontracted_primitives": sum(
-                status.nondifferentiable_policy == "not_declared" for status in plan.statuses
+                status.nondifferentiable_policy == "not_declared"
+                or status.nondifferentiable_boundary == "not_declared"
+                for status in plan.statuses
             ),
             "executable_backends": 0,
         },

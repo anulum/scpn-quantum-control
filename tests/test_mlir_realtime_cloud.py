@@ -175,6 +175,39 @@ def test_compiler_ad_plan_does_not_count_uncontracted_policy_effect_coverage() -
     assert module.resource_counts["uncontracted_primitives"] == 1
 
 
+def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
+    """Policy-only primitives should remain uncontracted without boundary metadata."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "policy_only", "1")
+    rule = CustomDerivativeRule(
+        name="policy_only_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda _values, tangent: np.array([tangent[0]], dtype=np.float64),
+        parameter_names=("theta",),
+        trainable=(True,),
+    )
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            lowering_metadata={"mlir_op": "scpn_diff.policy_only"},
+            nondifferentiable_policy="fail_closed_at_branch_points",
+            effect="pure",
+        )
+    )
+
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+
+    assert plan.statuses[0].nondifferentiable_policy == "fail_closed_at_branch_points"
+    assert plan.statuses[0].nondifferentiable_boundary == "not_declared"
+    assert module.metadata["nondifferentiable_boundaries"] == {}
+    assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.resource_counts["nondifferentiable_boundaries"] == 0
+    assert module.resource_counts["uncontracted_primitives"] == 1
+
+
 def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     """Compiler AD planning should expose static linalg signatures without native overclaim."""
 
