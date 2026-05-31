@@ -100,6 +100,7 @@ class PrimitiveLoweringStatus:
     nondifferentiable_boundary_policy: str = "not_declared"
     effect: str = "pure"
     mlir_lowering: str = "available: scpn_diff dialect interchange"
+    mlir_runtime_verification: str = "not_declared"
     rust_lowering: str = "blocked: no Rust differentiable primitive backend"
     llvm_lowering: str = "blocked: no LLVM/JIT differentiable primitive backend"
     jit_lowering: str = "blocked: no JIT differentiable primitive backend"
@@ -195,6 +196,7 @@ class PrimitiveLoweringStatus:
             raise ValueError("effect must be non-empty")
         for label, status in (
             ("mlir_lowering", self.mlir_lowering),
+            ("mlir_runtime_verification", self.mlir_runtime_verification),
             ("rust_lowering", self.rust_lowering),
             ("llvm_lowering", self.llvm_lowering),
             ("jit_lowering", self.jit_lowering),
@@ -202,12 +204,24 @@ class PrimitiveLoweringStatus:
             if not isinstance(status, str) or not status:
                 raise ValueError(f"{label} must be non-empty")
         mlir_runtime_claimed = "MLIR-runtime" in self.mlir_lowering
+        mlir_runtime_verified = self.mlir_runtime_verification.startswith("verified:")
         if mlir_runtime_claimed and not self.has_lowering_rule:
             raise ValueError(
                 "has_lowering_rule must be true when mlir_lowering claims MLIR-runtime"
             )
         if self.has_lowering_rule and not mlir_runtime_claimed:
             raise ValueError("mlir_lowering must declare MLIR-runtime lowering")
+        if mlir_runtime_claimed and not mlir_runtime_verified:
+            raise ValueError(
+                "mlir_runtime_verification must start with 'verified:' when "
+                "mlir_lowering claims MLIR-runtime"
+            )
+        if self.mlir_runtime_verification != "not_declared" and not mlir_runtime_verified:
+            raise ValueError("mlir_runtime_verification must be 'not_declared' or verified")
+        if mlir_runtime_verified and not self.has_lowering_rule:
+            raise ValueError(
+                "has_lowering_rule must be true when mlir_runtime_verification is verified"
+            )
         if "blocked" not in self.rust_lowering.lower():
             raise ValueError("rust_lowering must remain blocked until Rust AD lowering exists")
         if "blocked" not in self.llvm_lowering.lower():
@@ -302,6 +316,9 @@ def build_compiler_ad_transform_plan(
                 ),
                 effect="pure" if transform_rule is None else transform_rule.effect,
                 mlir_lowering=metadata.get("mlir", default_mlir_status),
+                mlir_runtime_verification=metadata.get(
+                    "mlir_runtime_verification", "not_declared"
+                ),
                 rust_lowering=metadata.get(
                     "rust", "blocked: no Rust differentiable primitive backend"
                 ),
@@ -340,6 +357,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f"dtype_rule = {_fmt_bool(status.has_dtype_rule)}, "
             f"static_argument_rule = {_fmt_bool(status.has_static_argument_rule)}, "
             f"lowering_rule = {_fmt_bool(status.has_lowering_rule)}, "
+            f'mlir_runtime_verification = "{_escape_mlir_string(status.mlir_runtime_verification)}", '
             f'static_derivative_factory = "{_escape_mlir_string(status.static_derivative_factory)}", '
             f'static_signature = "{_escape_mlir_string(status.static_signature)}", '
             f'policy = "{_escape_mlir_string(status.nondifferentiable_policy)}", '
@@ -351,6 +369,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "    scpn_diff.lowering_status "
             f'{{identity = "{_escape_mlir_string(status.identity.key)}", '
             f'mlir = "{_escape_mlir_string(status.mlir_lowering)}", '
+            f'verification = "{_escape_mlir_string(status.mlir_runtime_verification)}", '
             f'rust = "{_escape_mlir_string(status.rust_lowering)}", '
             f'llvm = "{_escape_mlir_string(status.llvm_lowering)}", '
             f'jit = "{_escape_mlir_string(status.jit_lowering)}"}}'
@@ -415,7 +434,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         )
 
     def has_mlir_runtime_contract(status: PrimitiveLoweringStatus) -> bool:
-        return status.has_lowering_rule
+        return status.has_lowering_rule and status.mlir_runtime_verification.startswith(
+            "verified:"
+        )
 
     metadata = {
         "claim_boundary": plan.claim_boundary,
@@ -542,6 +563,11 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if not has_mlir_runtime_contract(status)
         ],
+        "mlir_runtime_verification_primitives": {
+            status.identity.key: status.mlir_runtime_verification
+            for status in plan.statuses
+            if status.mlir_runtime_verification.startswith("verified:")
+        },
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key
@@ -642,6 +668,10 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "mlir_runtime_incomplete_primitives": sum(
                 not has_mlir_runtime_contract(status) for status in plan.statuses
+            ),
+            "mlir_runtime_verifications": sum(
+                status.mlir_runtime_verification.startswith("verified:")
+                for status in plan.statuses
             ),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"

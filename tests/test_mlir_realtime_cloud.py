@@ -125,6 +125,7 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert plan.statuses[0].has_dtype_rule is True
     assert plan.statuses[0].has_static_argument_rule is False
     assert plan.statuses[0].lowering_metadata["mlir_op"] == "scpn_diff.rx_expectation"
+    assert plan.statuses[0].mlir_runtime_verification == "not_declared"
     assert plan.statuses[0].nondifferentiable_policy == "fail_closed_at_branch_points"
     assert plan.statuses[0].effect == "pure"
     assert module.text == repeat.text
@@ -185,6 +186,8 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.metadata["mlir_runtime_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
     ]
+    assert module.metadata["mlir_runtime_verification_primitives"] == {}
+    assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
     assert "batching_rule = false" in module.text
@@ -283,6 +286,7 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.metadata["jit_backend_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.metadata["mlir_runtime_contract_primitives"] == []
     assert module.metadata["mlir_runtime_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["mlir_runtime_verification_primitives"] == {}
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["registry_contracts"] == 0
@@ -304,6 +308,7 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["jit_backend_incomplete_primitives"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 0
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
+    assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
@@ -424,7 +429,9 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         if status.identity.key not in expected_jit_contracts
     ]
     expected_mlir_runtime_contracts = [
-        status.identity.key for status in plan.statuses if status.has_lowering_rule
+        status.identity.key
+        for status in plan.statuses
+        if status.has_lowering_rule and status.mlir_runtime_verification.startswith("verified:")
     ]
     expected_mlir_runtime_incomplete = [
         status.identity.key
@@ -495,6 +502,7 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert (
         module.metadata["mlir_runtime_incomplete_primitives"] == expected_mlir_runtime_incomplete
     )
+    assert module.metadata["mlir_runtime_verification_primitives"] == {}
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
     assert module.resource_counts["registry_contracts"] == 2
@@ -534,6 +542,7 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == len(
         expected_mlir_runtime_incomplete
     )
+    assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
     assert "batching_rule = true" in module.text
@@ -783,6 +792,16 @@ def test_primitive_lowering_status_rejects_inconsistent_lowering_rule_provenance
                 has_lowering_rule=has_lowering_rule,
                 mlir_lowering=mlir_lowering,
             )
+    with pytest.raises(ValueError, match="mlir_runtime_verification"):
+        PrimitiveLoweringStatus(
+            identity=identity,
+            rule_name="lowering_provenance_rule",
+            has_jvp=True,
+            has_vjp=False,
+            mlir_op="scpn_diff.lowering_provenance",
+            has_lowering_rule=True,
+            mlir_lowering="available: executable scpn_diff MLIR-runtime primitive kernel",
+        )
 
 
 def test_primitive_lowering_status_rejects_native_backend_overclaims() -> None:
@@ -899,6 +918,7 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
             lowering_metadata={
                 **contract.lowering_metadata,
                 "mlir": "available: executable scpn_diff MLIR-runtime linalg kernel",
+                "mlir_runtime_verification": "verified: deterministic matrix_power sample JVP",
             },
             shape_rule=contract.shape_rule,
             dtype_rule=contract.dtype_rule,
@@ -918,6 +938,10 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
         plan.statuses[0].mlir_lowering
         == "available: executable scpn_diff MLIR-runtime linalg kernel"
     )
+    assert (
+        plan.statuses[0].mlir_runtime_verification
+        == "verified: deterministic matrix_power sample JVP"
+    )
     assert module.metadata["mlir_runtime_lowering_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
     ]
@@ -925,6 +949,11 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
         "scpn.program_ad.linalg:matrix_power@1"
     ]
     assert module.metadata["mlir_runtime_incomplete_primitives"] == []
+    assert module.metadata["mlir_runtime_verification_primitives"] == {
+        "scpn.program_ad.linalg:matrix_power@1": (
+            "verified: deterministic matrix_power sample JVP"
+        )
+    }
     assert module.metadata["rust_backend_contract_primitives"] == []
     assert module.metadata["rust_backend_incomplete_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
@@ -940,6 +969,7 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert module.resource_counts["mlir_runtime_lowerings"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 1
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 0
+    assert module.resource_counts["mlir_runtime_verifications"] == 1
     assert module.resource_counts["rust_backend_contracts"] == 0
     assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
     assert module.resource_counts["llvm_backend_contracts"] == 0
@@ -949,6 +979,7 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
     assert "available: executable scpn_diff MLIR-runtime linalg kernel" in module.text
+    assert "verified: deterministic matrix_power sample JVP" in module.text
     assert "blocked_until_executable_linalg_lowering" in module.text
     assert kernel.backend == "mlir_runtime"
     assert kernel.verification.passed is True
