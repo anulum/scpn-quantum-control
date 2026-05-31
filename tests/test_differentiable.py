@@ -4648,6 +4648,64 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
     }
 
 
+def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None:
+    """Flat product primitive contracts should expose exact direct value/JVP rules."""
+
+    left = np.array([1.0, -2.0, 3.0], dtype=np.float64)
+    right = np.array([0.5, 4.0, -1.5], dtype=np.float64)
+    left_tangent = np.array([0.2, -0.1, 0.4], dtype=np.float64)
+    right_tangent = np.array([-0.3, 0.6, 0.25], dtype=np.float64)
+    vector_values = np.concatenate((left, right))
+    vector_tangent = np.concatenate((left_tangent, right_tangent))
+
+    dot_rule = custom_derivative_rule_for(PrimitiveIdentity("scpn.program_ad.product", "dot", "1"))
+    vdot_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.product", "vdot", "1")
+    )
+
+    assert dot_rule.name == "program_ad_product_dot_direct_rule"
+    assert vdot_rule.name == "program_ad_product_vdot_direct_rule"
+    assert dot_rule.jvp_rule is not None
+    assert vdot_rule.jvp_rule is not None
+
+    expected_inner = np.array([np.dot(left, right)], dtype=np.float64)
+    expected_inner_jvp = np.array(
+        [np.dot(left_tangent, right) + np.dot(left, right_tangent)], dtype=np.float64
+    )
+    np.testing.assert_allclose(dot_rule.value_fn(vector_values), expected_inner)
+    np.testing.assert_allclose(
+        dot_rule.jvp_rule(vector_values, vector_tangent), expected_inner_jvp
+    )
+    np.testing.assert_allclose(vdot_rule.value_fn(vector_values), expected_inner)
+    np.testing.assert_allclose(
+        vdot_rule.jvp_rule(vector_values, vector_tangent), expected_inner_jvp
+    )
+
+    left_matrix = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    right_matrix = np.array([[2.0, 1.5], [-1.0, 0.25]], dtype=np.float64)
+    left_matrix_tangent = np.array([[0.2, -0.3], [0.4, 0.1]], dtype=np.float64)
+    right_matrix_tangent = np.array([[-0.5, 0.6], [0.25, -0.2]], dtype=np.float64)
+    matrix_values = np.concatenate((left_matrix.reshape(-1), right_matrix.reshape(-1)))
+    matrix_tangent = np.concatenate(
+        (left_matrix_tangent.reshape(-1), right_matrix_tangent.reshape(-1))
+    )
+    matmul_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.product", "matmul", "1")
+    )
+
+    assert matmul_rule.name == "program_ad_product_matmul_direct_rule"
+    assert matmul_rule.jvp_rule is not None
+    np.testing.assert_allclose(
+        matmul_rule.value_fn(matrix_values), (left_matrix @ right_matrix).reshape(-1)
+    )
+    np.testing.assert_allclose(
+        matmul_rule.jvp_rule(matrix_values, matrix_tangent),
+        (left_matrix_tangent @ right_matrix + left_matrix @ right_matrix_tangent).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     """Cumsum, cumprod, and diff should expose primitive registry contracts."""
 

@@ -5682,29 +5682,107 @@ def _program_ad_elementwise_name(ufunc: np.ufunc) -> str:
     return str(ufunc.__name__)
 
 
-def _program_ad_product_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
-    raise ValueError(
-        "program AD product primitive contracts are executable only through "
-        "operator-intercepted trace dispatch"
+def _program_ad_product_split_pair(
+    primitive_name: str,
+    values: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD product {primitive_name} values", values).reshape(
+        -1
     )
+    if vector.size == 0 or vector.size % 2 != 0:
+        raise ValueError(
+            f"program AD product {primitive_name} direct rule requires two equal flat operands"
+        )
+    midpoint = vector.size // 2
+    return vector[:midpoint], vector[midpoint:]
 
 
-def _program_ad_product_direct_jvp(
-    _values: NDArray[np.float64],
-    _tangent: NDArray[np.float64],
+def _program_ad_product_dot_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("dot", values)
+    return np.array([float(np.dot(left, right))], dtype=np.float64)
+
+
+def _program_ad_product_dot_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    raise ValueError(
-        "program AD product primitive contracts are executable only through "
-        "operator-intercepted trace dispatch"
+    left, right = _program_ad_product_split_pair("dot", values)
+    tangent_left, tangent_right = _program_ad_product_split_pair("dot tangent", tangent)
+    if tangent_left.shape != left.shape or tangent_right.shape != right.shape:
+        raise ValueError("program AD product dot tangent shape must match values shape")
+    return np.array(
+        [float(np.dot(tangent_left, right) + np.dot(left, tangent_right))], dtype=np.float64
     )
+
+
+def _program_ad_product_vdot_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("vdot", values)
+    return np.array([float(np.vdot(left, right))], dtype=np.float64)
+
+
+def _program_ad_product_vdot_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_split_pair("vdot", values)
+    tangent_left, tangent_right = _program_ad_product_split_pair("vdot tangent", tangent)
+    if tangent_left.shape != left.shape or tangent_right.shape != right.shape:
+        raise ValueError("program AD product vdot tangent shape must match values shape")
+    return np.array(
+        [float(np.vdot(tangent_left, right) + np.vdot(left, tangent_right))],
+        dtype=np.float64,
+    )
+
+
+def _program_ad_product_square_matrix_pair(
+    primitive_name: str,
+    values: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    left, right = _program_ad_product_split_pair(primitive_name, values)
+    rows = int(math.isqrt(left.size))
+    if rows * rows != left.size:
+        raise ValueError(
+            f"program AD product {primitive_name} direct rule requires two square matrices"
+        )
+    return left.reshape(rows, rows), right.reshape(rows, rows)
+
+
+def _program_ad_product_matmul_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    left, right = _program_ad_product_square_matrix_pair("matmul", values)
+    return (left @ right).reshape(-1).astype(np.float64)
+
+
+def _program_ad_product_matmul_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_product_square_matrix_pair("matmul", values)
+    tangent_left, tangent_right = _program_ad_product_square_matrix_pair("matmul tangent", tangent)
+    if tangent_left.shape != left.shape or tangent_right.shape != right.shape:
+        raise ValueError("program AD product matmul tangent shape must match values shape")
+    return (tangent_left @ right + left @ tangent_right).reshape(-1).astype(np.float64)
 
 
 def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
-    return CustomDerivativeRule(
-        name=f"program_ad_product_{name}_trace_contract",
-        value_fn=_program_ad_product_direct_value,
-        jvp_rule=_program_ad_product_direct_jvp,
-    )
+    if name == "dot":
+        return CustomDerivativeRule(
+            name="program_ad_product_dot_direct_rule",
+            value_fn=_program_ad_product_dot_value,
+            jvp_rule=_program_ad_product_dot_jvp,
+        )
+    if name == "vdot":
+        return CustomDerivativeRule(
+            name="program_ad_product_vdot_direct_rule",
+            value_fn=_program_ad_product_vdot_value,
+            jvp_rule=_program_ad_product_vdot_jvp,
+        )
+    if name == "matmul":
+        return CustomDerivativeRule(
+            name="program_ad_product_matmul_direct_rule",
+            value_fn=_program_ad_product_matmul_value,
+            jvp_rule=_program_ad_product_matmul_jvp,
+        )
+    raise ValueError(f"unsupported program AD product primitive {name}")
 
 
 def _program_ad_cumulative_cumsum_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
