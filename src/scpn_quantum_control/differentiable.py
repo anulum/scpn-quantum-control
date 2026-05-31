@@ -8278,6 +8278,14 @@ def _program_ad_array_batching_rule(
 
 
 def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
+    static_signature = {
+        "getitem": "source_shape:ranked_tensor_shape;index:basic_index",
+        "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
+    }[name]
+    static_factory = {
+        "getitem": "program_ad_array_getitem_derivative_rule",
+        "take": "program_ad_array_take_derivative_rule",
+    }[name]
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff array dialect interchange; executable lowering blocked",
@@ -8285,7 +8293,8 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_array_lowering",
         "rust": "blocked_until_polyglot_array_ad",
         "static_argument_rule": "required",
-        "static_signature": "basic_index" if name == "getitem" else "indices_axis_mode",
+        "static_derivative_factory": static_factory,
+        "static_signature": static_signature,
     }
 
 
@@ -8318,6 +8327,16 @@ def _program_ad_shape_batching_rule(
 
 
 def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
+    static_factory = {
+        "reshape": "program_ad_shape_reshape_derivative_rule",
+        "ravel": "program_ad_shape_ravel_derivative_rule",
+        "transpose": "program_ad_shape_transpose_derivative_rule",
+    }[name]
+    static_signature = {
+        "reshape": "source_shape:ranked_tensor_shape;target_shape",
+        "ravel": "source_shape:ranked_tensor_shape",
+        "transpose": "source_shape:ranked_tensor_shape;axes",
+    }[name]
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff shape dialect interchange; executable lowering blocked",
@@ -8325,11 +8344,8 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_shape_lowering",
         "rust": "blocked_until_polyglot_shape_ad",
         "static_argument_rule": "required",
-        "static_signature": {
-            "reshape": "target_shape",
-            "ravel": "none",
-            "transpose": "axes",
-        }[name],
+        "static_derivative_factory": static_factory,
+        "static_signature": static_signature,
     }
 
 
@@ -8369,6 +8385,11 @@ def _program_ad_reduction_batching_rule(
 
 
 def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
+    static_factory = {
+        "sum": "program_ad_reduction_sum_derivative_rule",
+        "prod": "program_ad_reduction_prod_derivative_rule",
+        "mean": "program_ad_reduction_mean_derivative_rule",
+    }[name]
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff reduction dialect interchange; executable lowering blocked",
@@ -8376,7 +8397,8 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_reduction_lowering",
         "rust": "blocked_until_polyglot_reduction_ad",
         "static_argument_rule": "required",
-        "static_signature": "axis",
+        "static_derivative_factory": static_factory,
+        "static_signature": "source_shape:ranked_tensor_shape;axis",
     }
 
 
@@ -8423,6 +8445,7 @@ def _program_ad_elementwise_batching_rule(
 
 
 def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
+    is_binary = name in _PROGRAM_AD_ELEMENTWISE_BINARY_NAMES
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff elementwise dialect interchange; executable lowering blocked",
@@ -8430,7 +8453,14 @@ def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_elementwise_lowering",
         "rust": "blocked_until_polyglot_elementwise_ad",
         "static_argument_rule": "none",
-        "static_signature": "none",
+        "static_derivative_factory": (
+            "program_ad_elementwise_binary_derivative_rule" if is_binary else "not_required"
+        ),
+        "static_signature": (
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+            if is_binary
+            else "none"
+        ),
     }
 
 
@@ -8474,6 +8504,14 @@ def _program_ad_product_batching_rule(
 
 
 def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
+    static_factory = (
+        "program_ad_product_matmul_derivative_rule" if name == "matmul" else "not_required"
+    )
+    static_signature = (
+        "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+        if name == "matmul"
+        else "none"
+    )
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff product dialect interchange; executable lowering blocked",
@@ -8481,7 +8519,8 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_product_lowering",
         "rust": "blocked_until_polyglot_product_ad",
         "static_argument_rule": "none",
-        "static_signature": "none",
+        "static_derivative_factory": static_factory,
+        "static_signature": static_signature,
     }
 
 
@@ -8514,6 +8553,16 @@ def _program_ad_cumulative_batching_rule(
 
 
 def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
+    static_factory = {
+        "cumsum": "program_ad_cumulative_cumsum_derivative_rule",
+        "cumprod": "program_ad_cumulative_cumprod_derivative_rule",
+        "diff": "program_ad_cumulative_diff_derivative_rule",
+    }[name]
+    static_signature = (
+        "source_shape:ranked_tensor_shape;order_axis"
+        if name == "diff"
+        else "source_shape:ranked_tensor_shape;axis"
+    )
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff cumulative dialect interchange; executable lowering blocked",
@@ -8521,7 +8570,8 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_cumulative_lowering",
         "rust": "blocked_until_polyglot_cumulative_ad",
         "static_argument_rule": "required",
-        "static_signature": "order_axis" if name == "diff" else "axis",
+        "static_derivative_factory": static_factory,
+        "static_signature": static_signature,
     }
 
 

@@ -6093,6 +6093,78 @@ def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
         multi_dot_static((np.reshape(np.arange(4.0), (2, 2)),))
 
 
+def test_program_ad_primitive_metadata_advertises_static_derivative_factories() -> None:
+    """Primitive metadata should expose factory names required by lowering planners."""
+
+    expected_factories = {
+        "scpn.program_ad.array:getitem": (
+            "program_ad_array_getitem_derivative_rule",
+            "source_shape:ranked_tensor_shape;index:basic_index",
+        ),
+        "scpn.program_ad.array:take": (
+            "program_ad_array_take_derivative_rule",
+            "source_shape:ranked_tensor_shape;indices_axis_mode",
+        ),
+        "scpn.program_ad.shape:reshape": (
+            "program_ad_shape_reshape_derivative_rule",
+            "source_shape:ranked_tensor_shape;target_shape",
+        ),
+        "scpn.program_ad.shape:ravel": (
+            "program_ad_shape_ravel_derivative_rule",
+            "source_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.shape:transpose": (
+            "program_ad_shape_transpose_derivative_rule",
+            "source_shape:ranked_tensor_shape;axes",
+        ),
+        "scpn.program_ad.reduction:sum": (
+            "program_ad_reduction_sum_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.reduction:prod": (
+            "program_ad_reduction_prod_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.reduction:mean": (
+            "program_ad_reduction_mean_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.elementwise:multiply": (
+            "program_ad_elementwise_binary_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.product:matmul": (
+            "program_ad_product_matmul_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.cumulative:cumsum": (
+            "program_ad_cumulative_cumsum_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.cumulative:cumprod": (
+            "program_ad_cumulative_cumprod_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.cumulative:diff": (
+            "program_ad_cumulative_diff_derivative_rule",
+            "source_shape:ranked_tensor_shape;order_axis",
+        ),
+        "scpn.program_ad.linalg:solve": (
+            "program_ad_linalg_solve_derivative_rule",
+            "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2",
+        ),
+    }
+
+    for primitive, (factory, signature) in expected_factories.items():
+        metadata = primitive_contract_for(primitive).lowering_metadata
+        assert metadata["static_derivative_factory"] == factory
+        assert metadata["static_signature"] == signature
+
+    unary_metadata = primitive_contract_for("scpn.program_ad.elementwise:sin").lowering_metadata
+    assert unary_metadata["static_derivative_factory"] == "not_required"
+    assert unary_metadata["static_signature"] == "none"
+
+
 def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> None:
     """Feasible linalg primitive contracts should expose direct derivative kernels."""
 
