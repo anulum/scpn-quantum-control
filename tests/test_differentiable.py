@@ -3564,6 +3564,55 @@ def test_program_ad_choose_matches_static_clip_and_wrap_modes() -> None:
     )
 
 
+def test_program_ad_compress_routes_flat_static_mask_adjoint_semantics() -> None:
+    """Program AD np.compress should route flat static mask adjoints as gathers."""
+
+    mask = np.array([True, False, True, False], dtype=np.bool_)
+
+    def objective(values: np.ndarray) -> object:
+        compressed = np.compress(mask, values)
+        return np.sum(compressed * np.array([2.0, -3.0], dtype=np.float64))
+
+    values = np.array([-1.0, 0.25, 1.5, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([2.0, 0.0, -3.0, 0.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_compress_routes_axis_static_mask_adjoint_semantics() -> None:
+    """Program AD np.compress should preserve axis-specific static mask gathers."""
+
+    mask = np.array([True, False, True], dtype=np.bool_)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = values.reshape((2, 3))
+        compressed = np.compress(mask, matrix, axis=1)
+        return np.sum(compressed * np.array([[1.0, -2.0], [3.0, -4.0]], dtype=np.float64))
+
+    values = np.array([0.5, -0.25, 1.0, 1.5, 0.75, -2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([1.0, 0.0, -2.0, 3.0, 0.0, -4.0], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
 def test_program_ad_select_and_piecewise_reject_invalid_contracts() -> None:
     """Program AD selection folds should fail closed on malformed branch contracts."""
 
@@ -3592,6 +3641,22 @@ def test_program_ad_choose_rejects_dynamic_and_invalid_selector_contracts() -> N
     with pytest.raises(ValueError, match="out of bounds"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.choose(np.array([0, 2]), [values, -values])),
+            np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_compress_rejects_dynamic_and_invalid_mask_contracts() -> None:
+    """Program AD np.compress should fail closed on nondifferentiable mask contracts."""
+
+    with pytest.raises(ValueError, match="static boolean condition"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.compress(values > 0.0, values)),
+            np.array([-1.0, 1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="one-dimensional condition"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.compress(np.array([[True, False]]), values)),
             np.array([-1.0, 1.0], dtype=np.float64),
         )
 

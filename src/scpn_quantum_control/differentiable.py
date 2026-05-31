@@ -1260,6 +1260,17 @@ class TraceADArray:
                 self.context,
                 mode=cast(str, kwargs.get("mode", "raise")),
             )
+        if func is np.compress:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.compress supports condition, array, and axis")
+            if len(args) == 3 and "axis" in kwargs:
+                raise ValueError("program AD np.compress axis must be supplied once")
+            axis = args[2] if len(args) == 3 else kwargs.get("axis")
+            return _trace_compress(
+                args[0],
+                _coerce_trace_array(args[1], self.context),
+                axis=axis,
+            )
         if func is np.reshape:
             if len(args) != 2 or kwargs:
                 raise ValueError("whole-program AD np.reshape supports array and shape")
@@ -3691,6 +3702,42 @@ def _trace_choose_selector_indices(
             np.clip(indices, 0, choice_count - 1).astype(np.int64),
         )
     raise ValueError("program AD np.choose mode must be raise, wrap, or clip")
+
+
+def _trace_compress(
+    condition: object,
+    array: TraceADArray,
+    *,
+    axis: object,
+) -> TraceADScalar | TraceADArray:
+    indices = _trace_compress_condition_indices(condition)
+    if axis is None:
+        return _trace_take(array.ravel(), indices, axis=0, mode="raise")
+    if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD np.compress requires a static integer axis or None")
+    normalised_axis = _normalise_axis("axis", int(axis), array.ndim)
+    return _trace_take(array, indices, axis=normalised_axis, mode="raise")
+
+
+def _trace_compress_condition_indices(condition: object) -> NDArray[np.int64]:
+    if isinstance(
+        condition, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)
+    ):
+        raise ValueError("program AD np.compress requires a static boolean condition")
+    raw = np.asarray(condition)
+    if raw.dtype == object and any(
+        isinstance(
+            item,
+            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
+        )
+        for item in raw.reshape(-1)
+    ):
+        raise ValueError("program AD np.compress requires a static boolean condition")
+    if raw.ndim != 1:
+        raise ValueError("program AD np.compress requires a one-dimensional condition")
+    if raw.dtype.kind != "b":
+        raise ValueError("program AD np.compress requires a static boolean condition")
+    return cast(NDArray[np.int64], np.flatnonzero(raw).astype(np.int64))
 
 
 def _trace_select(

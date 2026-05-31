@@ -289,15 +289,16 @@ def _selection_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             np.array([0, 1, 2], dtype=np.int64),
             [trace_values * trace_values, -0.5 * trace_values, 2.0 * trace_values],
         )
+        compressed = np.compress(np.array([True, False, True], dtype=np.bool_), trace_values)
         return np.sum(
             np.where(trace_values > thresholds, trace_values**2, -trace_values)
             + np.clip(trace_values + offsets, -0.75, upper)
             + 0.09 * selected
             + 0.04 * callable_piecewise
             + 0.03 * chosen
-        )
+        ) + 0.02 * np.sum(compressed * np.array([2.0, -3.0], dtype=np.float64))
 
-    analytic = np.array([-1.32, 1.6875, 3.655], dtype=np.float64)
+    analytic = np.array([-1.28, 1.6875, 3.595], dtype=np.float64)
     return _program_ad_case(
         "selection_piecewise_contracts",
         "selection-heavy",
