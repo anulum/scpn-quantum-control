@@ -9521,12 +9521,21 @@ def _program_ad_linalg_batching_rule(
 
 
 def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
+    nondifferentiable_boundaries = {
+        "det": "singular_matrix_rank_drop",
+        "inv": "singular_matrix_inverse",
+        "solve": "singular_or_incompatible_linear_system",
+        "matrix_power": "negative_power_singular_matrix",
+        "multi_dot": "static_shape_alignment",
+    }
     metadata = {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff linalg dialect interchange; executable lowering blocked",
         "mlir_op": f"scpn_diff.linalg.{name}",
         "llvm": "blocked_until_executable_linalg_lowering",
         "rust": "blocked_until_polyglot_linalg_ad",
+        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
+        "nondifferentiable_boundary_policy": "fail_closed",
         "static_argument_rule": "none",
         "static_derivative_factory": "not_required",
         "static_signature": "none",

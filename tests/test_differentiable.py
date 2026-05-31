@@ -6005,6 +6005,22 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
     )
 
 
+def test_program_ad_linalg_nondifferentiable_boundary_metadata_is_explicit() -> None:
+    """Linalg contracts should expose singular-boundary fail-closed semantics."""
+
+    expected_boundaries = {
+        "det": "singular_matrix_rank_drop",
+        "inv": "singular_matrix_inverse",
+        "solve": "singular_or_incompatible_linear_system",
+        "matrix_power": "negative_power_singular_matrix",
+        "multi_dot": "static_shape_alignment",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(f"scpn.program_ad.linalg:{name}").lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
 def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None:
     """Supported linalg primitive contracts should expose concrete shape and dtype rules."""
 
