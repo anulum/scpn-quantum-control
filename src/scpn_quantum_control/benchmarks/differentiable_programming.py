@@ -451,6 +451,9 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         lower_left = matrix[1:, :2]
         advanced = matrix[[1, 0, 1], [2, 0, 2]]
         masked_columns = matrix[np.array([True, False])][:, np.array([2, 0, 2])]
+        along_indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)
+        along_weights = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64)
+        along = np.take_along_axis(matrix, along_indices, axis=1)
         return (
             np.sum(block * block_weights)
             + np.sum(gathered)
@@ -458,9 +461,10 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             + 0.5 * matrix[None, :, :][0, -1, -1]
             + 0.25 * np.sum(advanced)
             - 0.1 * np.sum(masked_columns)
+            + 0.2 * np.sum(along * along_weights)
         )
 
-    analytic = np.array([1.15, 1.0, 3.8, 0.0, 1.0, 5.0], dtype=np.float64)
+    analytic = np.array([1.05, 1.0, 4.4, -0.25, 1.35, 5.0], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",

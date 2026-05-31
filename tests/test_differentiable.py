@@ -143,6 +143,7 @@ from scpn_quantum_control.differentiable import (
     primitive_shape_rule_for,
     primitive_static_argument_rule_for,
     program_ad_array_getitem_derivative_rule,
+    program_ad_array_take_along_axis_derivative_rule,
     program_ad_array_take_derivative_rule,
     program_ad_cumulative_cumprod_derivative_rule,
     program_ad_cumulative_cumsum_derivative_rule,
@@ -6330,6 +6331,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_array_take_derivative_rule",
             "source_shape:ranked_tensor_shape;indices_axis_mode",
         ),
+        "scpn.program_ad.array:take_along_axis": (
+            "program_ad_array_take_along_axis_derivative_rule",
+            "source_shape:ranked_tensor_shape;indices_shape_axis",
+        ),
         "scpn.program_ad.shape:reshape": (
             "program_ad_shape_reshape_derivative_rule",
             "source_shape:ranked_tensor_shape;target_shape",
@@ -7369,6 +7374,39 @@ def test_program_ad_static_advanced_indexing_accumulates_gather_adjoint() -> Non
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_static_take_along_axis_accumulates_gather_adjoint() -> None:
+    """Static take_along_axis gathers should preserve exact repeated-index adjoints."""
+
+    indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)
+    weights = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        gathered = np.take_along_axis(matrix, indices, axis=1)
+        return np.sum(gathered * weights)
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(12.25)
+    np.testing.assert_allclose(
+        result.gradient,
+        [-0.5, 0.0, 3.0, -1.25, 1.75, 0.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
     """Program AD take should fail closed outside static integer gather semantics."""
 
@@ -7744,6 +7782,23 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         "raise",
     )
 
+    along_contract = primitive_contract_for("scpn.program_ad.array:take_along_axis")
+    assert along_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.array", "take_along_axis", "1"
+    )
+    assert along_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.take_along_axis"
+    assert along_contract.shape_rule is not None
+    assert along_contract.shape_rule((matrix, np.array([[2, 0, 2], [1, 1, 0]]), 1)) == (
+        2,
+        3,
+    )
+    assert along_contract.static_argument_rule is not None
+    assert along_contract.static_argument_rule((matrix, np.array([[2, 0, 2], [1, 1, 0]]), 1)) == (
+        (2, 0, 2, 1, 1, 0),
+        (2, 3),
+        1,
+    )
+
 
 def test_program_ad_array_boundary_metadata_is_explicit() -> None:
     """Array-indexing contracts should expose fail-closed static gather boundaries."""
@@ -7751,6 +7806,7 @@ def test_program_ad_array_boundary_metadata_is_explicit() -> None:
     expected_boundaries = {
         "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
+        "take_along_axis": "static_along_axis_gather_scatter_add",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(
@@ -7905,6 +7961,27 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
     with pytest.raises(ValueError, match="mode='raise'"):
         program_ad_array_take_derivative_rule((2, 3), (0,), axis=0, mode="wrap")
 
+    along_indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)
+    along_weights = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64)
+    along_rule = program_ad_array_take_along_axis_derivative_rule((2, 3), along_indices, axis=1)
+    assert along_rule.name == "program_ad_array_take_along_axis_2x3_axis_1_static_direct_rule"
+    assert along_rule.jvp_rule is not None
+    assert along_rule.vjp_rule is not None
+    expected_along = np.take_along_axis(matrix, along_indices, axis=1)
+    expected_along_tangent = np.take_along_axis(tangent.reshape(2, 3), along_indices, axis=1)
+    np.testing.assert_allclose(along_rule.value_fn(values), expected_along.reshape(-1))
+    np.testing.assert_allclose(
+        along_rule.jvp_rule(values, tangent), expected_along_tangent.reshape(-1)
+    )
+    np.testing.assert_allclose(
+        along_rule.vjp_rule(values, along_weights.reshape(-1)),
+        np.array([-0.5, 0.0, 3.0, -1.25, 1.75, 0.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+    with pytest.raises(ValueError, match="static integer indices"):
+        program_ad_array_take_along_axis_derivative_rule((2, 3), np.array([[0.0, 1.0]]), axis=1)
+
 
 def test_program_ad_linalg_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported linalg primitives must execute through registry validation rules."""
@@ -7969,6 +8046,17 @@ def test_program_ad_advanced_indexing_fails_closed() -> None:
         whole_program_value_and_grad(
             lambda values: np.sum(values[np.array([values[0] > 0.0, True], dtype=object)]),
             np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="static integer indices"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.take_along_axis(
+                    np.reshape(values, (2, 2)),
+                    np.array([[values[0], values[1]]], dtype=object),
+                    axis=1,
+                )
+            ),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
         )
 
 
@@ -9195,6 +9283,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.primitive_static_argument_rule_for is primitive_static_argument_rule_for
+    assert (
+        scpn.program_ad_array_take_along_axis_derivative_rule
+        is program_ad_array_take_along_axis_derivative_rule
+    )
     assert scpn.program_ad_linalg_diag_derivative_rule is program_ad_linalg_diag_derivative_rule
     assert (
         scpn.program_ad_product_inner_derivative_rule is program_ad_product_inner_derivative_rule

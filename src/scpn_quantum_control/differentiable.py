@@ -1400,6 +1400,13 @@ class TraceADArray:
                 axis=cast(int | None, axis),
                 mode=cast(str, kwargs.get("mode", "raise")),
             )
+        if func is np.take_along_axis:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.take_along_axis supports array, indices, and axis")
+            axis = args[2] if len(args) == 3 else kwargs.get("axis", -1)
+            return _trace_take_along_axis(
+                _coerce_trace_array(args[0], self.context), args[1], axis=axis
+            )
         if func is np.transpose:
             if len(args) != 1 or kwargs.keys() - {"axes"}:
                 raise ValueError("whole-program AD np.transpose supports one array and axes")
@@ -2552,6 +2559,32 @@ def _trace_take(
     selected_array = np.asarray(selected)
     if selected_array.shape == ():
         return array._items[int(selected_array)]
+    items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
+    return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
+
+
+def _trace_take_along_axis(
+    array: TraceADArray,
+    indices: object,
+    *,
+    axis: object,
+) -> TraceADArray:
+    _require_program_ad_array_contract("take_along_axis", (array, indices, axis))
+    if isinstance(indices, (TraceADScalar, TraceADArray)):
+        raise ValueError("program AD np.take_along_axis requires static integer indices")
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD np.take_along_axis requires a static integer axis")
+    raw_indices = _program_ad_array_take_indices(indices)
+    normalised_axis = _normalise_axis("axis", int(axis), array.ndim)
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    try:
+        selected = np.take_along_axis(source, raw_indices, axis=normalised_axis)
+    except (IndexError, ValueError) as exc:
+        raise ValueError(
+            "program AD np.take_along_axis requires static in-bounds indices "
+            "with shape compatible with the source"
+        ) from exc
+    selected_array = np.asarray(selected)
     items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
 
@@ -5563,7 +5596,7 @@ _PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE = "scpn.program_ad.array"
 _PROGRAM_AD_ARRAY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ARRAY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("getitem", "take")
+    for name in ("getitem", "take", "take_along_axis")
 }
 
 _PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE = "scpn.program_ad.shape"
@@ -5751,6 +5784,26 @@ def _program_ad_array_take_flat_indices(
     return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
+def _program_ad_array_take_along_axis_flat_indices(
+    source_shape: tuple[int, ...],
+    indices: object,
+    axis: int,
+) -> NDArray[np.int64]:
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    raw_indices = _program_ad_array_take_indices(indices)
+    normalised_axis = _normalise_axis("axis", axis, len(source_shape))
+    try:
+        selected = np.take_along_axis(source_indices, raw_indices, axis=normalised_axis)
+    except (IndexError, ValueError) as exc:
+        raise ValueError(
+            "program AD array take_along_axis direct rule requires in-bounds indices "
+            "with shape compatible with the source"
+        ) from exc
+    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
+
+
 def _program_ad_array_direct_gather(
     primitive_name: str,
     values: NDArray[np.float64],
@@ -5898,6 +5951,58 @@ def program_ad_array_take_derivative_rule(
         name=(
             "program_ad_array_take_"
             f"{_program_ad_array_signature(source)}_axis_{axis_signature}_static_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_array_take_along_axis_derivative_rule(
+    source_shape: Sequence[int],
+    indices: object,
+    *,
+    axis: int,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed take_along_axis signature."""
+
+    source = _program_ad_array_normalise_static_shape("take_along_axis", source_shape)
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError(
+            "program AD array take_along_axis direct rule requires static integer axis"
+        )
+    normalised_axis = _normalise_axis("axis", int(axis), len(source))
+    flat_indices = _program_ad_array_take_along_axis_flat_indices(source, indices, normalised_axis)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather(
+            "take_along_axis", values, source_shape=source, flat_indices=flat_indices
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather_jvp(
+            "take_along_axis",
+            values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_scatter_vjp(
+            "take_along_axis",
+            values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_array_take_along_axis_"
+            f"{_program_ad_array_signature(source)}_axis_{normalised_axis}_static_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -8594,6 +8699,34 @@ def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
+def _program_ad_array_take_along_axis_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 3:
+        raise ValueError(
+            "program AD array take_along_axis shape rule requires array, indices, and axis"
+        )
+    axis = args[2]
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError(
+            "program AD array take_along_axis shape rule requires static integer axis"
+        )
+    raw_indices = np.asarray(args[1])
+    if raw_indices.dtype.kind not in {"i", "u"}:
+        raise ValueError(
+            "program AD array take_along_axis shape rule requires static integer indices"
+        )
+    source = np.arange(int(np.prod(_program_ad_array_shape_of(args[0]))), dtype=np.int64).reshape(
+        _program_ad_array_shape_of(args[0])
+    )
+    try:
+        selected = np.take_along_axis(source, raw_indices, axis=int(axis))
+    except (IndexError, ValueError) as exc:
+        raise ValueError(
+            "program AD array take_along_axis shape rule indices must be in bounds "
+            "and shape-compatible"
+        ) from exc
+    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
+
+
 def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
     if not args:
         raise ValueError("program AD array dtype rule requires an array operand")
@@ -8930,6 +9063,31 @@ def _program_ad_array_take_static_arguments(args: tuple[object, ...]) -> tuple[o
     )
 
 
+def _program_ad_array_take_along_axis_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    if len(args) != 3:
+        raise ValueError(
+            "program AD array take_along_axis static rule requires array, indices, and axis"
+        )
+    raw_indices = np.asarray(args[1])
+    if raw_indices.dtype.kind not in {"i", "u"}:
+        raise ValueError(
+            "program AD array take_along_axis static rule requires static integer indices"
+        )
+    axis = args[2]
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError(
+            "program AD array take_along_axis static rule requires static integer axis"
+        )
+    normalised_axis = _normalise_axis("axis", int(axis), len(_program_ad_array_shape_of(args[0])))
+    return (
+        tuple(int(index) for index in raw_indices.reshape(-1)),
+        tuple(int(dimension) for dimension in raw_indices.shape),
+        normalised_axis,
+    )
+
+
 def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD shape reshape static rule requires array and target shape")
@@ -9014,11 +9172,13 @@ def _program_ad_cumulative_diff_static_arguments(args: tuple[object, ...]) -> tu
 _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "getitem": _program_ad_array_getitem_shape,
     "take": _program_ad_array_take_shape,
+    "take_along_axis": _program_ad_array_take_along_axis_shape,
 }
 
 _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
     "getitem": _program_ad_array_getitem_static_arguments,
     "take": _program_ad_array_take_static_arguments,
+    "take_along_axis": _program_ad_array_take_along_axis_static_arguments,
 }
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -9112,14 +9272,17 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
     static_signature = {
         "getitem": "source_shape:ranked_tensor_shape;index:static_gather_index",
         "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
+        "take_along_axis": "source_shape:ranked_tensor_shape;indices_shape_axis",
     }[name]
     static_factory = {
         "getitem": "program_ad_array_getitem_derivative_rule",
         "take": "program_ad_array_take_derivative_rule",
+        "take_along_axis": "program_ad_array_take_along_axis_derivative_rule",
     }[name]
     nondifferentiable_boundaries = {
         "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
+        "take_along_axis": "static_along_axis_gather_scatter_add",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -15197,6 +15360,7 @@ __all__ = [
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
     "program_ad_array_getitem_derivative_rule",
+    "program_ad_array_take_along_axis_derivative_rule",
     "program_ad_array_take_derivative_rule",
     "program_ad_cumulative_cumprod_derivative_rule",
     "program_ad_cumulative_cumsum_derivative_rule",
