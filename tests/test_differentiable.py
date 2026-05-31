@@ -7570,6 +7570,43 @@ def test_program_ad_static_constant_insert_preserves_scatter_adjoint() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_append_preserves_traceable_assembly_adjoint() -> None:
+    """NumPy append should preserve exact flat and axis-aware assembly adjoints."""
+
+    values = np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)
+    axis_weights = np.array([[1.5, -0.25], [2.0, -1.0]], dtype=np.float64)
+    flat_weights = np.array([0.75, -1.5, 2.5, -0.5, 4.0, -2.0], dtype=np.float64)
+
+    def objective(trace_values: np.ndarray) -> object:
+        matrix = np.reshape(trace_values, (2, 2))
+        axis_appended = np.append(matrix[:, :1], np.array([[7.0], [-3.0]]), axis=1)
+        flat_appended = np.append(trace_values[:2], trace_values[2:])
+        constant_appended = np.append(trace_values[:2], np.array([5.0, -4.0]))
+        return (
+            np.sum(axis_appended * axis_weights)
+            + np.sum(flat_appended * flat_weights[:4])
+            + np.sum(constant_appended * flat_weights[2:])
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    expected_value = float(
+        np.sum(
+            np.append(values.reshape(2, 2)[:, :1], np.array([[7.0], [-3.0]]), axis=1)
+            * axis_weights
+        )
+        + np.sum(np.append(values[:2], values[2:]) * flat_weights[:4])
+        + np.sum(np.append(values[:2], np.array([5.0, -4.0])) * flat_weights[2:])
+    )
+    assert result.value == pytest.approx(expected_value)
+    np.testing.assert_allclose(result.gradient, [4.75, -2.0, 4.5, -0.5])
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
     """Program AD take should fail closed outside static integer gather semantics."""
 
@@ -7627,6 +7664,21 @@ def test_program_ad_static_constant_insert_rejects_dynamic_parameters() -> None:
         whole_program_value_and_grad(
             lambda values: np.sum(np.insert(values, 1, values[0])),
             np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_append_rejects_dynamic_or_incompatible_axes() -> None:
+    """Program AD append should fail closed outside static axis-compatible assembly."""
+
+    with pytest.raises(ValueError, match="static integer axis"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.append(values[:1], values[1:], axis=values[0])),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="axis-compatible"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.append(np.reshape(values, (2, 2)), values[:2], axis=0)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
         )
 
 

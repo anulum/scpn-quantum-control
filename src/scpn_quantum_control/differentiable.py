@@ -1439,6 +1439,15 @@ class TraceADArray:
                 args[2],
                 axis=axis,
             )
+        if func is np.append:
+            if len(args) != 2 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.append supports array, values, and axis")
+            return _trace_append(
+                _coerce_trace_array(args[0], self.context),
+                args[1],
+                self.context,
+                axis=kwargs.get("axis"),
+            )
         if func is np.transpose:
             if len(args) != 1 or kwargs.keys() - {"axes"}:
                 raise ValueError("whole-program AD np.transpose supports one array and axes")
@@ -3556,6 +3565,32 @@ def _trace_concatenate(
     return TraceADArray(
         items, tuple(int(dimension) for dimension in selected_array.shape), context
     )
+
+
+def _trace_append(
+    array: TraceADArray,
+    values: object,
+    context: _WholeProgramTraceContext,
+    *,
+    axis: object,
+) -> TraceADArray:
+    if axis is not None and (
+        isinstance(axis, (bool, np.bool_, TraceADScalar, TraceADArray))
+        or not isinstance(axis, (int, np.integer))
+    ):
+        raise ValueError("program AD np.append requires a static integer axis or None")
+    trace_values = _coerce_trace_array(values, context)
+    operands = (array.ravel(), trace_values.ravel()) if axis is None else (array, trace_values)
+    try:
+        return _trace_concatenate(
+            operands,
+            context,
+            axis=None if axis is None else int(axis),
+        )
+    except ValueError as exc:
+        raise ValueError(
+            "program AD np.append requires axis-compatible arrays and a static integer axis or None"
+        ) from exc
 
 
 def _trace_stack(
