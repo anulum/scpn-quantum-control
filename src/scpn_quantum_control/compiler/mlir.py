@@ -380,6 +380,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if status.nondifferentiable_boundary_policy != "not_declared"
         },
+        "boundary_contract_primitives": [
+            status.identity.key
+            for status in plan.statuses
+            if status.nondifferentiable_boundary != "not_declared"
+            and status.nondifferentiable_boundary_policy == "fail_closed"
+        ],
         "mlir_runtime_lowering_primitives": [
             status.identity.key for status in plan.statuses if status.has_lowering_rule
         ],
@@ -440,6 +446,11 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "nondifferentiable_boundary_policies": sum(
                 status.nondifferentiable_boundary_policy != "not_declared"
+                for status in plan.statuses
+            ),
+            "boundary_contracts": sum(
+                status.nondifferentiable_boundary != "not_declared"
+                and status.nondifferentiable_boundary_policy == "fail_closed"
                 for status in plan.statuses
             ),
             "mlir_runtime_lowerings": sum(status.has_lowering_rule for status in plan.statuses),

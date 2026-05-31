@@ -205,7 +205,9 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.metadata["effects"] == {}
     assert module.metadata["nondifferentiable_policies"] == {}
     assert module.metadata["nondifferentiable_boundaries"] == {}
+    assert module.metadata["boundary_contract_primitives"] == []
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
@@ -265,6 +267,11 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         "scpn.program_ad.linalg:matrix_power@1": "fail_closed",
         "scpn.program_ad.linalg:multi_dot@1": "fail_closed",
     }
+    assert module.metadata["boundary_contract_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1",
+        "scpn.program_ad.linalg:multi_dot@1",
+    ]
+    assert module.resource_counts["boundary_contracts"] == 2
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
     assert "static_argument_rule = true" in module.text
