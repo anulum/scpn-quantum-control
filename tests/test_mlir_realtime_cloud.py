@@ -147,6 +147,32 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert "scpn_diff.rx_expectation" in module.text
 
 
+def test_compiler_ad_plan_does_not_count_uncontracted_policy_effect_coverage() -> None:
+    """Compiler AD provenance should not overstate semantics for derivative-only rules."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "derivative_only", "1")
+    rule = CustomDerivativeRule(
+        name="derivative_only_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda _values, tangent: np.array([tangent[0]], dtype=np.float64),
+        parameter_names=("theta",),
+        trainable=(True,),
+    )
+    registry = CustomDerivativeRegistry()
+    registry.register(identity, rule)
+
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+
+    assert plan.statuses[0].identity == identity
+    assert plan.statuses[0].nondifferentiable_policy == "not_declared"
+    assert plan.statuses[0].effect == "pure"
+    assert module.metadata["nondifferentiable_policies"] == {}
+    assert module.metadata["effects"] == {}
+    assert module.resource_counts["nondifferentiable_policies"] == 0
+    assert module.resource_counts["effects"] == 0
+
+
 def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     """Compiler AD planning should expose static linalg signatures without native overclaim."""
 

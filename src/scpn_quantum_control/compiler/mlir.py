@@ -295,9 +295,15 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
         "executable_backend": plan.executable_backend,
-        "effects": {status.identity.key: status.effect for status in plan.statuses},
+        "effects": {
+            status.identity.key: status.effect
+            for status in plan.statuses
+            if status.nondifferentiable_policy != "not_declared"
+        },
         "nondifferentiable_policies": {
-            status.identity.key: status.nondifferentiable_policy for status in plan.statuses
+            status.identity.key: status.nondifferentiable_policy
+            for status in plan.statuses
+            if status.nondifferentiable_policy != "not_declared"
         },
         "primitive_identities": [status.identity.key for status in plan.statuses],
         "shape_rule_primitives": [
@@ -335,8 +341,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "vjp_rules": sum(status.has_vjp for status in plan.statuses),
             "shape_rules": sum(status.has_shape_rule for status in plan.statuses),
             "dtype_rules": sum(status.has_dtype_rule for status in plan.statuses),
-            "effects": len(plan.statuses),
-            "nondifferentiable_policies": len(plan.statuses),
+            "effects": sum(
+                status.nondifferentiable_policy != "not_declared" for status in plan.statuses
+            ),
+            "nondifferentiable_policies": sum(
+                status.nondifferentiable_policy != "not_declared" for status in plan.statuses
+            ),
             "static_argument_rules": sum(
                 status.has_static_argument_rule for status in plan.statuses
             ),
