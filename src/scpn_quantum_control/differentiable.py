@@ -1470,6 +1470,21 @@ class TraceADArray:
             if len(args) != 1 or kwargs.keys() - {"k"}:
                 raise ValueError("whole-program AD np.diag supports one vector or matrix")
             return _trace_diag(args[0], self.context, k=cast(int, kwargs.get("k", 0)))
+        if func is np.diagonal:
+            if len(args) < 1 or len(args) > 4 or kwargs.keys() - {"offset", "axis1", "axis2"}:
+                raise ValueError("program AD np.diagonal supports array, offset, axis1, and axis2")
+            if len(args) >= 2 and "offset" in kwargs:
+                raise ValueError("program AD np.diagonal offset must be supplied once")
+            if len(args) >= 3 and "axis1" in kwargs:
+                raise ValueError("program AD np.diagonal axis1 must be supplied once")
+            if len(args) >= 4 and "axis2" in kwargs:
+                raise ValueError("program AD np.diagonal axis2 must be supplied once")
+            return _trace_diagonal(
+                _coerce_trace_array(args[0], self.context),
+                offset=args[1] if len(args) >= 2 else kwargs.get("offset", 0),
+                axis1=args[2] if len(args) >= 3 else kwargs.get("axis1", 0),
+                axis2=args[3] if len(args) >= 4 else kwargs.get("axis2", 1),
+            )
         if func is np.concatenate:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError(
@@ -3718,6 +3733,45 @@ def _trace_triangular_mask(
         for item, mask_value in zip(array._items, mask, strict=True)
     )
     return TraceADArray(items, array.shape, array.context)
+
+
+def _trace_diagonal(
+    array: TraceADArray,
+    *,
+    offset: object,
+    axis1: object,
+    axis2: object,
+) -> TraceADArray:
+    if array.ndim < 2:
+        raise ValueError("program AD np.diagonal requires rank >= 2")
+    if isinstance(offset, bool) or not isinstance(offset, (int, np.integer)):
+        raise ValueError("program AD np.diagonal requires static integer offset")
+    if isinstance(axis1, bool) or not isinstance(axis1, (int, np.integer)):
+        raise ValueError("program AD np.diagonal requires static integer axes")
+    if isinstance(axis2, bool) or not isinstance(axis2, (int, np.integer)):
+        raise ValueError("program AD np.diagonal requires static integer axes")
+    axis1_value = _normalise_axis("axis1", int(axis1), array.ndim)
+    axis2_value = _normalise_axis("axis2", int(axis2), array.ndim)
+    if axis1_value == axis2_value:
+        raise ValueError("program AD np.diagonal requires distinct axes")
+    index_array = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    try:
+        selected = np.diagonal(
+            index_array,
+            offset=int(offset),
+            axis1=axis1_value,
+            axis2=axis2_value,
+        )
+    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            "program AD np.diagonal requires static offset and distinct axes "
+            "compatible with array shape"
+        ) from exc
+    selected_array = np.asarray(selected, dtype=np.int64)
+    items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
+    return TraceADArray(
+        items, tuple(int(dimension) for dimension in selected_array.shape), array.context
+    )
 
 
 def _trace_concatenate(

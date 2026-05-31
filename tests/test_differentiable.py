@@ -6020,6 +6020,55 @@ def test_program_ad_triangular_masks_reject_invalid_contracts() -> None:
         )
 
 
+def test_program_ad_diagonal_preserves_offset_axis_adjoint() -> None:
+    """Program AD np.diagonal should gather exact offset/axis adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:9], (3, 3))
+        tensor = np.reshape(values, (2, 2, 3))
+        main = np.diagonal(matrix)
+        upper = np.diagonal(matrix, offset=1)
+        batched = np.diagonal(tensor, offset=1, axis1=1, axis2=2)
+        return (
+            np.sum(main * np.array([1.0, -2.0, 3.0], dtype=np.float64))
+            + np.sum(upper * np.array([0.5, -1.5], dtype=np.float64))
+            + np.sum(batched * np.array([[0.25, -0.75], [1.25, -2.0]], dtype=np.float64))
+        )
+
+    values = np.linspace(-1.0, 1.0, 12, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array(
+        [1.0, 0.75, 0.0, 0.0, -2.0, -2.25, 0.0, 1.25, 3.0, 0.0, 0.0, -2.0],
+        dtype=np.float64,
+    )
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_diagonal_rejects_invalid_contracts() -> None:
+    """Program AD np.diagonal should fail closed on invalid static contracts."""
+
+    with pytest.raises(ValueError, match="rank >= 2"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.diagonal(values)),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="static integer offset"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.diagonal(np.reshape(values, (2, 3)), offset=0.5)),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 
