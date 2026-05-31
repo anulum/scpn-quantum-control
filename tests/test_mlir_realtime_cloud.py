@@ -202,8 +202,22 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
         "scpn.quantum:rx_expectation@1": "blocked: no MLIR-runtime lowering rule"
     }
     assert module.metadata["mlir_runtime_verification_primitives"] == {}
+    assert module.metadata["primitive_readiness"]["scpn.quantum:rx_expectation@1"] == {
+        "adjoint_contract": False,
+        "forward_contract": False,
+        "jit_backend_contract": False,
+        "llvm_backend_contract": False,
+        "mlir_runtime_contract": False,
+        "native_backend_contract": False,
+        "registry_contract": False,
+        "reverse_contract": False,
+        "rust_backend_contract": False,
+        "transform_contract": False,
+        "verdict": "registry_incomplete",
+    }
     assert module.resource_counts["mlir_runtime_blockers"] == 1
     assert module.resource_counts["mlir_runtime_verifications"] == 0
+    assert module.resource_counts["primitive_readiness_verdicts"] == 1
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
     assert "batching_rule = false" in module.text
@@ -315,6 +329,9 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
         "scpn.quantum:policy_only@1": "blocked: no MLIR-runtime lowering rule"
     }
     assert module.metadata["mlir_runtime_verification_primitives"] == {}
+    assert module.metadata["primitive_readiness"]["scpn.quantum:policy_only@1"]["verdict"] == (
+        "registry_incomplete"
+    )
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["registry_contracts"] == 0
@@ -341,6 +358,7 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
     assert module.resource_counts["mlir_runtime_blockers"] == 1
     assert module.resource_counts["mlir_runtime_verifications"] == 0
+    assert module.resource_counts["primitive_readiness_verdicts"] == 1
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
@@ -555,6 +573,26 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         if status.identity.key in expected_mlir_runtime_incomplete
     }
     assert module.metadata["mlir_runtime_verification_primitives"] == {}
+    assert module.metadata["primitive_readiness"] == {
+        status.identity.key: {
+            "adjoint_contract": status.identity.key
+            in module.metadata["adjoint_contract_primitives"],
+            "forward_contract": status.identity.key
+            in module.metadata["forward_contract_primitives"],
+            "jit_backend_contract": status.identity.key in expected_jit_contracts,
+            "llvm_backend_contract": status.identity.key in expected_llvm_contracts,
+            "mlir_runtime_contract": status.identity.key in expected_mlir_runtime_contracts,
+            "native_backend_contract": status.identity.key in expected_native_contracts,
+            "registry_contract": status.identity.key
+            in module.metadata["registry_contract_primitives"],
+            "reverse_contract": status.identity.key
+            in module.metadata["reverse_contract_primitives"],
+            "rust_backend_contract": status.identity.key in expected_rust_contracts,
+            "transform_contract": status.identity.key in expected_transform_contracts,
+            "verdict": "forward_interchange_only",
+        }
+        for status in plan.statuses
+    }
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
     assert module.resource_counts["registry_contracts"] == 2
@@ -599,6 +637,7 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     )
     assert module.resource_counts["mlir_runtime_blockers"] == len(expected_mlir_runtime_incomplete)
     assert module.resource_counts["mlir_runtime_verifications"] == 0
+    assert module.resource_counts["primitive_readiness_verdicts"] == len(plan.statuses)
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
     assert "batching_rule = true" in module.text
@@ -1011,6 +1050,19 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
             "verified: deterministic matrix_power sample JVP"
         )
     }
+    assert module.metadata["primitive_readiness"]["scpn.program_ad.linalg:matrix_power@1"] == {
+        "adjoint_contract": False,
+        "forward_contract": True,
+        "jit_backend_contract": False,
+        "llvm_backend_contract": False,
+        "mlir_runtime_contract": True,
+        "native_backend_contract": False,
+        "registry_contract": True,
+        "reverse_contract": False,
+        "rust_backend_contract": False,
+        "transform_contract": False,
+        "verdict": "mlir_runtime_verified",
+    }
     assert module.metadata["rust_backend_contract_primitives"] == []
     assert module.metadata["rust_backend_incomplete_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
@@ -1037,6 +1089,7 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 0
     assert module.resource_counts["mlir_runtime_blockers"] == 0
     assert module.resource_counts["mlir_runtime_verifications"] == 1
+    assert module.resource_counts["primitive_readiness_verdicts"] == 1
     assert module.resource_counts["rust_backend_contracts"] == 0
     assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
     assert module.resource_counts["rust_backend_blockers"] == 1

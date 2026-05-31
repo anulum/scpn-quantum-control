@@ -447,6 +447,43 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             return "blocked: no verified MLIR-runtime provenance"
         return "blocked: MLIR-runtime contract incomplete"
 
+    def primitive_readiness(status: PrimitiveLoweringStatus) -> dict[str, bool | str]:
+        registry_contract = has_registry_contract(status)
+        forward_contract = has_forward_contract(status)
+        reverse_contract = has_reverse_contract(status)
+        adjoint_contract = has_adjoint_contract(status)
+        transform_contract = has_transform_contract(status)
+        mlir_runtime_contract = has_mlir_runtime_contract(status)
+        rust_backend_contract = has_rust_backend_contract(status)
+        llvm_backend_contract = has_llvm_backend_contract(status)
+        jit_backend_contract = has_jit_backend_contract(status)
+        native_backend_contract = has_native_backend_contract(status)
+        if native_backend_contract and mlir_runtime_contract and transform_contract:
+            verdict = "native_executable"
+        elif mlir_runtime_contract:
+            verdict = "mlir_runtime_verified"
+        elif transform_contract:
+            verdict = "transform_interchange_only"
+        elif registry_contract and forward_contract:
+            verdict = "forward_interchange_only"
+        elif registry_contract:
+            verdict = "registry_contract_only"
+        else:
+            verdict = "registry_incomplete"
+        return {
+            "adjoint_contract": adjoint_contract,
+            "forward_contract": forward_contract,
+            "jit_backend_contract": jit_backend_contract,
+            "llvm_backend_contract": llvm_backend_contract,
+            "mlir_runtime_contract": mlir_runtime_contract,
+            "native_backend_contract": native_backend_contract,
+            "registry_contract": registry_contract,
+            "reverse_contract": reverse_contract,
+            "rust_backend_contract": rust_backend_contract,
+            "transform_contract": transform_contract,
+            "verdict": verdict,
+        }
+
     metadata = {
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
@@ -598,6 +635,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if status.mlir_runtime_verification.startswith("verified:")
         },
+        "primitive_readiness": {
+            status.identity.key: primitive_readiness(status) for status in plan.statuses
+        },
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key
@@ -715,6 +755,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
                 status.mlir_runtime_verification.startswith("verified:")
                 for status in plan.statuses
             ),
+            "primitive_readiness_verdicts": len(plan.statuses),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"
                 or status.nondifferentiable_boundary == "not_declared"
