@@ -12,6 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.compiler.mlir as compiler_mlir
 from scpn_quantum_control.compiler.mlir import (
     CompilerADExecutableConfig,
     CompilerADKernelVerification,
@@ -1529,6 +1530,122 @@ def test_executable_compiler_ad_kernel_verifies_scalar_gradient_output() -> None
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+
+
+def test_native_llvm_jit_scalar_quadratic_kernel_executes_and_marks_plan_native() -> None:
+    """Native LLVM/JIT scalar AD kernels should execute and update compiler contracts."""
+
+    identity = PrimitiveIdentity("scpn.compiler_ad.native", "scalar_quadratic", "1")
+    rule = CustomDerivativeRule(
+        name="native_scalar_quadratic_rule",
+        value_fn=lambda values: np.array(
+            [3.0 * values[0] ** 2 - 2.0 * values[0] + 0.5],
+            dtype=np.float64,
+        ),
+        jvp_rule=lambda values, tangent: np.array(
+            [(6.0 * values[0] - 2.0) * tangent[0]],
+            dtype=np.float64,
+        ),
+        vjp_rule=lambda values, cotangent: np.array(
+            [(6.0 * values[0] - 2.0) * cotangent[0]],
+            dtype=np.float64,
+        ),
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+    config = CompilerADExecutableConfig(backend="native_llvm_jit")
+    values = np.array([0.75], dtype=np.float64)
+    tangent = np.array([-0.25], dtype=np.float64)
+    cotangent = np.array([1.5], dtype=np.float64)
+
+    kernel = compiler_mlir.compile_scalar_quadratic_ad_to_native_llvm_jit(
+        rule,
+        quadratic=3.0,
+        linear=-2.0,
+        constant=0.5,
+        sample_values=values,
+        config=config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+
+    assert kernel.backend == "native_llvm_jit"
+    assert kernel.verification.passed is True
+    assert kernel.verification.value_close is True
+    assert kernel.verification.jvp_close is True
+    assert kernel.verification.vjp_close is True
+    assert kernel.verification.gradient_close is True
+    assert "verified native LLVM MCJIT" in kernel.claim_boundary
+    assert kernel.llvm_gradient_ir is not None
+    assert "target triple" in kernel.llvm_gradient_ir
+    assert "define void @native_scalar_quadratic_rule_value" in kernel.llvm_gradient_ir
+    assert "define void @native_scalar_quadratic_rule_jvp" in kernel.llvm_gradient_ir
+    assert "define void @native_scalar_quadratic_rule_vjp" in kernel.llvm_gradient_ir
+    assert "define void @native_scalar_quadratic_rule_gradient" in kernel.llvm_gradient_ir
+    np.testing.assert_allclose(kernel.value(values), [0.6875], rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(kernel.jvp(values, tangent), [-0.625], rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(kernel.vjp(values, cotangent), [3.75], rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(kernel.gradient(values), [2.5], rtol=1.0e-12, atol=1.0e-12)
+
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            lowering_rule=compiler_mlir.make_scalar_quadratic_native_llvm_jit_lowering_rule(
+                quadratic=3.0,
+                linear=-2.0,
+                constant=0.5,
+                sample_values=values,
+                config=config,
+                sample_tangent=tangent,
+                sample_cotangent=cotangent,
+            ),
+            lowering_metadata={
+                "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+                "mlir_op": "scpn_diff.native_scalar_quadratic",
+                "mlir_runtime_verification": (
+                    "verified: native LLVM/JIT scalar quadratic sample JVP"
+                ),
+                "llvm": "available: native LLVM MCJIT scalar AD kernel",
+                "jit": "available: native LLVM MCJIT scalar AD kernel",
+                "native_backend": "native_llvm_jit",
+                "native_backend_verification": (
+                    "verified: native LLVM MCJIT value/JVP/VJP/gradient"
+                ),
+                "static_derivative_factory": "native_scalar_quadratic_llvm_jit",
+                "static_signature": "quadratic:f64,linear:f64,constant:f64",
+                "nondifferentiable_boundary": "none_scalar_polynomial",
+                "nondifferentiable_boundary_policy": "fail_closed",
+            },
+            shape_rule=lambda _args: (1,),
+            dtype_rule=lambda _args: "float64",
+            static_argument_rule=lambda args: args,
+            nondifferentiable_policy="polynomial_is_smooth_over_reals",
+            effect="pure",
+        )
+    )
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+    registered_kernel = compile_registered_primitive_to_executable(registry, identity, values)
+
+    assert registered_kernel.backend == "native_llvm_jit"
+    assert plan.executable_backend == "native_llvm_jit"
+    assert module.metadata["executable_backend"] == "native_llvm_jit"
+    assert module.resource_counts["executable_backends"] == 1
+    assert module.resource_counts["llvm_backend_contracts"] == 1
+    assert module.resource_counts["jit_backend_contracts"] == 1
+    assert module.resource_counts["native_backend_contracts"] == 1
+    assert module.resource_counts["primitive_readiness_native_executable"] == 1
+    assert module.metadata["llvm_backend_contract_primitives"] == [identity.key]
+    assert module.metadata["jit_backend_contract_primitives"] == [identity.key]
+    assert module.metadata["native_backend_contract_primitives"] == [identity.key]
+    assert module.metadata["primitive_readiness"][identity.key]["llvm_backend_contract"] is True
+    assert module.metadata["primitive_readiness"][identity.key]["jit_backend_contract"] is True
+    assert module.metadata["primitive_readiness"][identity.key]["native_backend_contract"] is True
+    assert module.metadata["primitive_readiness"][identity.key]["verdict"] == "native_executable"
+    assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
 
 
 def test_differentiable_mlir_rejects_executable_target_claims() -> None:

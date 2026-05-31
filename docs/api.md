@@ -69,6 +69,7 @@ from scpn_quantum_control import (
     compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_scalar_quadratic_ad_to_native_llvm_jit,
 )
 
 module = compile_kuramoto_to_mlir(
@@ -90,6 +91,16 @@ kernel = compile_custom_derivative_rule_to_executable(
 )
 kernel.jvp(values, tangent)
 
+native_kernel = compile_scalar_quadratic_ad_to_native_llvm_jit(
+    rule,
+    quadratic=3.0,
+    linear=-2.0,
+    constant=0.5,
+    sample_values=values,
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_kernel.gradient(values)
+
 ad_plan = build_compiler_ad_transform_plan(custom_rule_registry)
 ad_plan_module = compile_compiler_ad_transform_plan_to_mlir(ad_plan)
 ```
@@ -108,11 +119,18 @@ VJP cotangent-one semantics, and verifies those kernels against the source rule
 before returning. `make_program_ad_linalg_matrix_power_executable_lowering_rule()`
 and `make_program_ad_linalg_multi_dot_executable_lowering_rule()` bind concrete
 static linalg signatures to verified MLIR-runtime value/JVP kernels derived from
-the direct derivative factories. The executable backend is `mlir_runtime`; the LLVM artifact is
-audit provenance for the verified gradient adapter, and native LLVM/JIT targets
-still fail closed until real code generation is present. This surface does not
-claim LLVM/QIR lowering, cloud submission, pulse compilation, or hardware
-execution.
+the direct derivative factories.
+`compile_scalar_quadratic_ad_to_native_llvm_jit()` is the native executable
+LLVM MCJIT backend for scalar quadratic primitives: it emits MLIR provenance,
+generates LLVM IR for value, JVP, VJP, and gradient functions, verifies native
+execution against the source derivative rule, and returns an executable kernel
+with `backend="native_llvm_jit"`.
+`make_scalar_quadratic_native_llvm_jit_lowering_rule()` binds that native
+backend to primitive registry lowering metadata when the primitive has the
+matching static scalar quadratic signature. Other primitive families remain
+fail-closed for native LLVM/JIT until they provide their own verified lowering
+rule. This surface does not claim LLVM/QIR lowering for unrelated primitives,
+cloud submission, pulse compilation, or hardware execution.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, primitive-specific batching-rule
@@ -145,14 +163,16 @@ shape, elementwise, reduction, product, cumulative, and linalg contracts expose
 MLIR metadata for direct derivative factories and fixed signatures; concrete
 static linalg signatures can also bind optional verified MLIR-runtime lowering
 rules, MLIR-runtime availability fails closed unless the primitive has a
-registered lowering rule, and Rust/LLVM/JIT native backend availability remains
-blocked until executable differentiated backends exist. Rust and LLVM/JIT
-differentiated backend claims also fail closed until real native lowering is
-implemented.
+registered lowering rule, and Rust native backend availability remains blocked
+until executable differentiated backends exist. LLVM/JIT native backend
+availability is recognized only for primitives that carry verified
+`native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
+fail-closed until native Rust lowering is implemented.
 `compile_compiler_ad_transform_plan_to_mlir()`
-emits that plan as MLIR-style interchange; executable native Rust, LLVM, and JIT
-differentiated runtimes remain unavailable until backed by real lowering and
-runtime verification.
+emits that plan as MLIR-style interchange; executable native LLVM/JIT
+differentiated runtimes are marked executable only for verified native lowering
+metadata, and native Rust differentiated runtime remains unavailable until
+backed by lowering and runtime verification.
 
 ### `control.realtime_runtime`
 

@@ -8,14 +8,18 @@
 """Deterministic MLIR-style export for Kuramoto-XY workloads.
 
 The module emits a conservative textual interchange layer for the SCPN
-Kuramoto-XY compiler. It does not require an MLIR Python runtime and does not
-claim lowering to LLVM, QIR, or provider pulses. The value is a stable,
-auditable IR boundary for compiler passes and external tooling.
+Kuramoto-XY compiler. It does not require an MLIR Python runtime. Compiler AD
+native LLVM/JIT execution is available only for primitives with verified native
+lowering metadata; unrelated QIR, provider-pulse, and hardware execution claims
+remain outside this boundary. The value is a stable, auditable IR boundary for
+compiler passes and external tooling.
 """
 
 from __future__ import annotations
 
+import ctypes
 import hashlib
+import importlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -224,10 +228,30 @@ class PrimitiveLoweringStatus:
             )
         if "blocked" not in self.rust_lowering.lower():
             raise ValueError("rust_lowering must remain blocked until Rust AD lowering exists")
-        if "blocked" not in self.llvm_lowering.lower():
-            raise ValueError("llvm_lowering must remain blocked until LLVM/JIT AD lowering exists")
-        if "blocked" not in self.jit_lowering.lower():
-            raise ValueError("jit_lowering must remain blocked until JIT AD lowering exists")
+        native_backend = metadata.get("native_backend")
+        native_backend_verification = metadata.get("native_backend_verification", "")
+        native_llvm_jit_verified = (
+            native_backend == "native_llvm_jit"
+            and native_backend_verification.startswith("verified:")
+        )
+        llvm_available = "blocked" not in self.llvm_lowering.lower()
+        jit_available = "blocked" not in self.jit_lowering.lower()
+        if llvm_available and not native_llvm_jit_verified:
+            raise ValueError("llvm_lowering requires verified native_llvm_jit lowering metadata")
+        if jit_available and not native_llvm_jit_verified:
+            raise ValueError("jit_lowering requires verified native_llvm_jit lowering metadata")
+        if native_llvm_jit_verified and (not llvm_available or not jit_available):
+            raise ValueError("verified native_llvm_jit lowering requires LLVM and JIT status")
+
+
+def _status_has_native_llvm_jit_backend(status: PrimitiveLoweringStatus) -> bool:
+    metadata = status.lowering_metadata
+    return (
+        metadata.get("native_backend") == "native_llvm_jit"
+        and metadata.get("native_backend_verification", "").startswith("verified:")
+        and "blocked" not in status.llvm_lowering.lower()
+        and "blocked" not in status.jit_lowering.lower()
+    )
 
 
 @dataclass(frozen=True)
@@ -250,8 +274,8 @@ class CompilerADTransformPlan:
             raise ValueError("dialect must be a non-empty MLIR-safe identifier")
         if self.transform not in {"jvp", "vjp", "adjoint", "jvp_vjp_adjoint"}:
             raise ValueError("transform must be one of jvp, vjp, adjoint, jvp_vjp_adjoint")
-        if self.executable_backend != "none":
-            raise ValueError("executable_backend must be 'none' until a real backend exists")
+        if self.executable_backend not in {"none", "native_llvm_jit"}:
+            raise ValueError("executable_backend must be 'none' or 'native_llvm_jit'")
         keys = [status.identity.key for status in self.statuses]
         if len(set(keys)) != len(keys):
             raise ValueError("compiler AD transform plan contains duplicate primitive identities")
@@ -330,7 +354,27 @@ def build_compiler_ad_transform_plan(
                 ),
             )
         )
-    return CompilerADTransformPlan(tuple(statuses), dialect=dialect, transform=transform)
+    executable_backend = (
+        "native_llvm_jit"
+        if statuses and all(_status_has_native_llvm_jit_backend(status) for status in statuses)
+        else "none"
+    )
+    claim_boundary = (
+        "verified executable native LLVM/JIT primitive AD kernels for all planned primitives; "
+        "Rust differentiated runtime remains fail-closed"
+        if executable_backend == "native_llvm_jit"
+        else (
+            "compiler-backed AD planning and MLIR dialect interchange only; "
+            "no executable Rust, LLVM, or JIT differentiated runtime"
+        )
+    )
+    return CompilerADTransformPlan(
+        tuple(statuses),
+        dialect=dialect,
+        transform=transform,
+        executable_backend=executable_backend,
+        claim_boundary=claim_boundary,
+    )
 
 
 def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) -> MLIRModule:
@@ -345,6 +389,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         f"scpn.n_primitives = {len(plan.statuses)}}} {{",
         "  func.func @main() {",
     ]
+    execution = (
+        plan.executable_backend if plan.executable_backend != "none" else "interchange_only"
+    )
     for index, status in enumerate(plan.statuses):
         lines.append(
             "    scpn_diff.primitive "
@@ -383,7 +430,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             )
     lines.append(
         "    scpn_diff.ad_transform "
-        f'{{kind = "{_escape_mlir_string(plan.transform)}", execution = "interchange_only"}}'
+        f'{{kind = "{_escape_mlir_string(plan.transform)}", '
+        f'execution = "{_escape_mlir_string(execution)}"}}'
     )
     lines.append("    return")
     lines.append("  }")
@@ -417,21 +465,29 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             and has_adjoint_contract(status)
         )
 
+    def exposes_nondifferentiable_policy(status: PrimitiveLoweringStatus) -> bool:
+        has_static_contract = (
+            status.static_derivative_factory not in {"not_declared", "not_required"}
+            and status.static_signature != "none"
+        )
+        return status.nondifferentiable_policy != "not_declared" and (
+            status.nondifferentiable_boundary != "not_declared" or has_static_contract
+        )
+
     def has_rust_backend_contract(status: PrimitiveLoweringStatus) -> bool:
         return "blocked" not in status.rust_lowering.lower()
 
+    def has_native_llvm_jit_proof(status: PrimitiveLoweringStatus) -> bool:
+        return _status_has_native_llvm_jit_backend(status)
+
     def has_llvm_backend_contract(status: PrimitiveLoweringStatus) -> bool:
-        return "blocked" not in status.llvm_lowering.lower()
+        return has_native_llvm_jit_proof(status) and "blocked" not in status.llvm_lowering.lower()
 
     def has_jit_backend_contract(status: PrimitiveLoweringStatus) -> bool:
-        return "blocked" not in status.jit_lowering.lower()
+        return has_native_llvm_jit_proof(status) and "blocked" not in status.jit_lowering.lower()
 
     def has_native_backend_contract(status: PrimitiveLoweringStatus) -> bool:
-        return (
-            has_rust_backend_contract(status)
-            and has_llvm_backend_contract(status)
-            and has_jit_backend_contract(status)
-        )
+        return has_llvm_backend_contract(status) and has_jit_backend_contract(status)
 
     def has_mlir_runtime_contract(status: PrimitiveLoweringStatus) -> bool:
         return status.has_lowering_rule and status.mlir_runtime_verification.startswith(
@@ -537,14 +593,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "effects": {
             status.identity.key: status.effect
             for status in plan.statuses
-            if status.nondifferentiable_policy != "not_declared"
-            and status.nondifferentiable_boundary != "not_declared"
+            if exposes_nondifferentiable_policy(status)
         },
         "nondifferentiable_policies": {
             status.identity.key: status.nondifferentiable_policy
             for status in plan.statuses
-            if status.nondifferentiable_policy != "not_declared"
-            and status.nondifferentiable_boundary != "not_declared"
+            if exposes_nondifferentiable_policy(status)
         },
         "nondifferentiable_boundaries": {
             status.identity.key: status.nondifferentiable_boundary
@@ -712,15 +766,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "batching_rules": sum(status.has_batching_rule for status in plan.statuses),
             "shape_rules": sum(status.has_shape_rule for status in plan.statuses),
             "dtype_rules": sum(status.has_dtype_rule for status in plan.statuses),
-            "effects": sum(
-                status.nondifferentiable_policy != "not_declared"
-                and status.nondifferentiable_boundary != "not_declared"
-                for status in plan.statuses
-            ),
+            "effects": sum(exposes_nondifferentiable_policy(status) for status in plan.statuses),
             "nondifferentiable_policies": sum(
-                status.nondifferentiable_policy != "not_declared"
-                and status.nondifferentiable_boundary != "not_declared"
-                for status in plan.statuses
+                exposes_nondifferentiable_policy(status) for status in plan.statuses
             ),
             "nondifferentiable_boundaries": sum(
                 status.nondifferentiable_boundary != "not_declared" for status in plan.statuses
@@ -831,7 +879,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
                 or status.nondifferentiable_boundary == "not_declared"
                 for status in plan.statuses
             ),
-            "executable_backends": 0,
+            "executable_backends": int(plan.executable_backend != "none"),
         },
         metadata=metadata,
     )
@@ -872,10 +920,8 @@ class CompilerADExecutableConfig:
     )
 
     def __post_init__(self) -> None:
-        if self.backend != "mlir_runtime":
-            raise ValueError(
-                "backend must be 'mlir_runtime'; native LLVM/JIT lowering is not yet available"
-            )
+        if self.backend not in {"mlir_runtime", "native_llvm_jit"}:
+            raise ValueError("backend must be 'mlir_runtime' or 'native_llvm_jit'")
         if not np.isfinite(self.atol) or self.atol < 0.0:
             raise ValueError("atol must be finite and non-negative")
         if not np.isfinite(self.rtol) or self.rtol < 0.0:
@@ -939,8 +985,8 @@ class ExecutableCompilerADKernel:
     def __post_init__(self) -> None:
         if not self.rule_name:
             raise ValueError("rule_name must be non-empty")
-        if self.backend != "mlir_runtime":
-            raise ValueError("backend must be 'mlir_runtime'")
+        if self.backend not in {"mlir_runtime", "native_llvm_jit"}:
+            raise ValueError("backend must be 'mlir_runtime' or 'native_llvm_jit'")
         if not isinstance(self.mlir_module, MLIRModule):
             raise ValueError("mlir_module must be an MLIRModule")
         if not callable(self.value_kernel):
@@ -1152,12 +1198,17 @@ def compile_custom_derivative_rule_to_executable(
     it couples deterministic differentiable MLIR provenance with normalized
     runtime callables for value/JVP/VJP execution and verifies those kernels
     against the source custom derivative rule before returning. Native LLVM/JIT
-    targets remain fail-closed until real code generation is present.
+    kernels use primitive-specific lowering entrypoints.
     """
 
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("executable AD lowering requires a CustomDerivativeRule")
     compile_config = CompilerADExecutableConfig() if config is None else config
+    if compile_config.backend != "mlir_runtime":
+        raise ValueError(
+            "compile_custom_derivative_rule_to_executable requires backend='mlir_runtime'; "
+            "use a primitive-specific native LLVM/JIT lowering entrypoint"
+        )
     values = _as_finite_vector("sample_values", sample_values)
     mlir_module = compile_custom_derivative_rule_to_mlir(
         rule,
@@ -1234,7 +1285,17 @@ def compile_registered_primitive_to_executable(
     transform = registry.transform_snapshot().get(primitive_identity)
     rule = registry.require(primitive_identity)
     if transform is not None and transform.lowering_rule is not None:
-        lowered = transform.lowering_rule(rule)
+        lowering_rule = cast(Callable[..., Any], transform.lowering_rule)
+        try:
+            lowered = lowering_rule(
+                rule,
+                sample_values,
+                config,
+                sample_tangent=sample_tangent,
+                sample_cotangent=sample_cotangent,
+            )
+        except TypeError:
+            lowered = lowering_rule(rule)
         if not isinstance(lowered, ExecutableCompilerADKernel):
             raise ValueError("registered lowering_rule must return an ExecutableCompilerADKernel")
         return lowered
@@ -1400,6 +1461,339 @@ def _compile_scalar_gradient_llvm_ir(
     lines.append("  ret void")
     lines.append("}")
     return "\n".join(lines) + "\n"
+
+
+def _load_llvmlite_binding() -> Any:
+    try:
+        llvm = importlib.import_module("llvmlite.binding")
+    except ModuleNotFoundError as exc:
+        raise ValueError(
+            "native_llvm_jit backend requires llvmlite.binding to be installed"
+        ) from exc
+
+    for initializer in (
+        llvm.initialize_native_target,
+        llvm.initialize_native_asmprinter,
+    ):
+        try:
+            initializer()
+        except RuntimeError as exc:
+            if "already" not in str(exc).lower():
+                raise
+    return llvm
+
+
+def _compile_scalar_quadratic_native_llvm_ir(
+    rule_name: str,
+    quadratic: float,
+    linear: float,
+    constant: float,
+) -> str:
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    doubled_quadratic = 2.0 * quadratic
+    quadratic_literal = _fmt_llvm_double(quadratic)
+    linear_literal = _fmt_llvm_double(linear)
+    constant_literal = _fmt_llvm_double(constant)
+    doubled_quadratic_literal = _fmt_llvm_double(doubled_quadratic)
+    return "\n".join(
+        [
+            f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+            '; source = "native_scalar_quadratic_ad_codegen"',
+            '; execution = "native_llvm_mcjit"',
+            f'target triple = "{_escape_mlir_string(triple)}"',
+            "",
+            f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+            "entry:",
+            "  %xptr = getelementptr double, double* %values, i64 0",
+            "  %x = load double, double* %xptr",
+            "  %x2 = fmul double %x, %x",
+            f"  %ax2 = fmul double {quadratic_literal}, %x2",
+            f"  %bx = fmul double {linear_literal}, %x",
+            "  %sum = fadd double %ax2, %bx",
+            f"  %value = fadd double %sum, {constant_literal}",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  store double %value, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+            "  %xptr = getelementptr double, double* %values, i64 0",
+            "  %x = load double, double* %xptr",
+            f"  %ax = fmul double {doubled_quadratic_literal}, %x",
+            f"  %grad = fadd double %ax, {linear_literal}",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  store double %grad, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            (
+                f"define void @{base_symbol}_jvp(double* %values, "
+                "double* %tangent, double* %out) {"
+            ),
+            "entry:",
+            "  %xptr = getelementptr double, double* %values, i64 0",
+            "  %x = load double, double* %xptr",
+            f"  %ax = fmul double {doubled_quadratic_literal}, %x",
+            f"  %grad = fadd double %ax, {linear_literal}",
+            "  %tangent0ptr = getelementptr double, double* %tangent, i64 0",
+            "  %tangent0 = load double, double* %tangent0ptr",
+            "  %jvp = fmul double %grad, %tangent0",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  store double %jvp, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            (
+                f"define void @{base_symbol}_vjp(double* %values, "
+                "double* %cotangent, double* %out) {"
+            ),
+            "entry:",
+            "  %xptr = getelementptr double, double* %values, i64 0",
+            "  %x = load double, double* %xptr",
+            f"  %ax = fmul double {doubled_quadratic_literal}, %x",
+            f"  %grad = fadd double %ax, {linear_literal}",
+            "  %cotangent0ptr = getelementptr double, double* %cotangent, i64 0",
+            "  %cotangent0 = load double, double* %cotangent0ptr",
+            "  %vjp = fmul double %grad, %cotangent0",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  store double %vjp, double* %out0",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
+
+
+def _fmt_llvm_double(value: float) -> str:
+    text = _fmt_float(float(value))
+    if "." not in text and "e" not in text.lower():
+        return f"{text}.0"
+    return text
+
+
+def _compile_native_llvm_jit_functions(
+    llvm_ir: str,
+    base_symbol: str,
+) -> Mapping[str, Any]:
+    llvm = _load_llvmlite_binding()
+    module = llvm.parse_assembly(llvm_ir)
+    module.verify()
+    target = llvm.Target.from_default_triple()
+    target_machine = target.create_target_machine()
+    backing_module = llvm.parse_assembly("")
+    engine = llvm.create_mcjit_compiler(backing_module, target_machine)
+    engine.add_module(module)
+    engine.finalize_object()
+    engine.run_static_constructors()
+
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    unary_function = ctypes.CFUNCTYPE(None, double_pointer, double_pointer)
+    binary_function = ctypes.CFUNCTYPE(None, double_pointer, double_pointer, double_pointer)
+    functions: dict[str, Any] = {"engine": engine}
+    for name, signature in (
+        ("value", unary_function),
+        ("gradient", unary_function),
+        ("jvp", binary_function),
+        ("vjp", binary_function),
+    ):
+        address = engine.get_function_address(f"{base_symbol}_{name}")
+        if address == 0:
+            raise ValueError(f"native_llvm_jit symbol {base_symbol}_{name} was not emitted")
+        functions[name] = signature(address)
+    return MappingProxyType(functions)
+
+
+def _call_native_scalar_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+) -> np.ndarray:
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    if checked_values.size != 1:
+        raise ValueError("native scalar LLVM/JIT kernel requires one value")
+    output = np.zeros(1, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_scalar_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+) -> np.ndarray:
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_values.size != 1:
+        raise ValueError("native scalar LLVM/JIT kernel requires one value")
+    if checked_vector.size != 1:
+        raise ValueError(f"native scalar LLVM/JIT kernel requires one {label} value")
+    output = np.zeros(1, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def compile_scalar_quadratic_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    quadratic: float,
+    linear: float,
+    constant: float,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile scalar quadratic value/JVP/VJP/gradient kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native scalar quadratic AD requires backend='native_llvm_jit'")
+    coefficients = np.asarray([quadratic, linear, constant], dtype=np.float64)
+    if not np.all(np.isfinite(coefficients)):
+        raise ValueError("quadratic, linear, and constant coefficients must be finite")
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != 1:
+        raise ValueError("native scalar quadratic AD requires exactly one sample value")
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_scalar_quadratic_native_llvm_ir(
+        rule.name,
+        float(coefficients[0]),
+        float(coefficients[1]),
+        float(coefficients[2]),
+    )
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_scalar_unary(native_functions["value"], raw_values)
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_scalar_binary(
+            native_functions["jvp"], raw_values, raw_tangent, "tangent"
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_scalar_binary(
+            native_functions["vjp"], raw_values, raw_cotangent, "cotangent"
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_gradient = _call_native_scalar_unary(native_functions["gradient"], values)
+        reference_gradient = vjp_kernel(values, np.ones(1, dtype=np.float64))
+        if not np.allclose(
+            native_gradient,
+            reference_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError("native LLVM/JIT gradient kernel verification failed")
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT scalar quadratic value/JVP/VJP/gradient kernel; "
+            "unregistered primitives remain fail-closed"
+        ),
+    )
+
+
+def make_scalar_quadratic_native_llvm_jit_lowering_rule(
+    *,
+    quadratic: float,
+    linear: float,
+    constant: float,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for scalar quadratic native LLVM/JIT AD kernels."""
+
+    coefficients = np.asarray([quadratic, linear, constant], dtype=np.float64)
+    if not np.all(np.isfinite(coefficients)):
+        raise ValueError("quadratic, linear, and constant coefficients must be finite")
+    captured_values = (
+        None if sample_values is None else _as_finite_vector("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native scalar quadratic lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_scalar_quadratic_ad_to_native_llvm_jit(
+            rule,
+            quadratic=float(coefficients[0]),
+            linear=float(coefficients[1]),
+            constant=float(coefficients[2]),
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
 
 
 def _safe_llvm_symbol(value: str) -> str:
@@ -1589,6 +1983,8 @@ __all__ = [
     "compile_custom_derivative_rule_to_mlir",
     "compile_custom_derivative_rule_to_executable",
     "compile_registered_primitive_to_executable",
+    "compile_scalar_quadratic_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
+    "make_scalar_quadratic_native_llvm_jit_lowering_rule",
 ]
