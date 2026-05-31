@@ -142,6 +142,8 @@ from scpn_quantum_control.differentiable import (
     primitive_nondifferentiable_policy_for,
     primitive_shape_rule_for,
     primitive_static_argument_rule_for,
+    program_ad_array_getitem_derivative_rule,
+    program_ad_array_take_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_shape_ravel_derivative_rule,
@@ -6832,6 +6834,62 @@ def test_program_ad_array_primitives_validate_registry_rules_at_dispatch() -> No
 
     assert result.value == pytest.approx(6.0)
     assert set(calls) == {"shape", "dtype", "static"}
+
+
+def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> None:
+    """Static array-indexing factories should expose exact gather/scatter adjoints."""
+
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    values = matrix.reshape(-1)
+    tangent = np.array([0.5, -1.0, 0.25, 2.0, -0.75, 1.25], dtype=np.float64)
+
+    getitem_rule = program_ad_array_getitem_derivative_rule((2, 3), (slice(None), 1))
+    assert getitem_rule.name == "program_ad_array_getitem_2x3_static_direct_rule"
+    assert getitem_rule.jvp_rule is not None
+    assert getitem_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        getitem_rule.value_fn(values),
+        matrix[:, 1].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        getitem_rule.jvp_rule(values, tangent),
+        tangent.reshape(2, 3)[:, 1].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        getitem_rule.vjp_rule(values, np.array([1.5, -2.0], dtype=np.float64)),
+        np.array([0.0, 1.5, 0.0, 0.0, -2.0, 0.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    take_rule = program_ad_array_take_derivative_rule((2, 3), (2, 0, 2), axis=1)
+    assert take_rule.name == "program_ad_array_take_2x3_axis_1_static_direct_rule"
+    assert take_rule.jvp_rule is not None
+    assert take_rule.vjp_rule is not None
+    expected_take = np.take(matrix, [2, 0, 2], axis=1)
+    expected_take_tangent = np.take(tangent.reshape(2, 3), [2, 0, 2], axis=1)
+    np.testing.assert_allclose(take_rule.value_fn(values), expected_take.reshape(-1))
+    np.testing.assert_allclose(
+        take_rule.jvp_rule(values, tangent), expected_take_tangent.reshape(-1)
+    )
+    np.testing.assert_allclose(
+        take_rule.vjp_rule(
+            values,
+            np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64).reshape(-1),
+        ),
+        np.array([-0.5, 0.0, 3.0, 1.5, 0.0, -1.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    with pytest.raises(ValueError, match="advanced indexing"):
+        program_ad_array_getitem_derivative_rule((2, 3), np.array([0, 1]))
+    with pytest.raises(ValueError, match="mode='raise'"):
+        program_ad_array_take_derivative_rule((2, 3), (0,), axis=0, mode="wrap")
 
 
 def test_program_ad_linalg_primitives_validate_registry_rules_at_dispatch() -> None:

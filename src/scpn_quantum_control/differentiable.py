@@ -5601,6 +5601,240 @@ def _program_ad_array_derivative_rule(name: str) -> CustomDerivativeRule:
     )
 
 
+def _program_ad_array_normalise_static_shape(
+    primitive_name: str, source_shape: Sequence[int]
+) -> tuple[int, ...]:
+    shape = tuple(int(dimension) for dimension in source_shape)
+    if any(dimension < 0 for dimension in shape):
+        raise ValueError(
+            f"program AD array {primitive_name} direct rule requires non-negative dimensions"
+        )
+    return shape
+
+
+def _program_ad_array_static_size(source_shape: tuple[int, ...]) -> int:
+    size = 1
+    for dimension in source_shape:
+        size *= dimension
+    return size
+
+
+def _program_ad_array_signature(source_shape: tuple[int, ...]) -> str:
+    return "scalar" if not source_shape else "x".join(str(dimension) for dimension in source_shape)
+
+
+def _program_ad_array_vector(
+    primitive_name: str,
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    expected_size: int,
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array(f"program AD array {primitive_name} {role}", values).reshape(
+        -1
+    )
+    if vector.size != expected_size:
+        raise ValueError(
+            f"program AD array {primitive_name} direct rule requires {role} "
+            f"with {expected_size} values"
+        )
+    return vector
+
+
+def _program_ad_array_getitem_flat_indices(
+    source_shape: tuple[int, ...], index: object
+) -> NDArray[np.int64]:
+    _validate_trace_basic_index(index)
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    try:
+        selected = source_indices[cast(Any, index)]
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array getitem direct rule requires in-bounds indices"
+        ) from exc
+    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
+
+
+def _program_ad_array_take_indices(indices: object) -> NDArray[np.int64]:
+    raw_indices = np.asarray(indices)
+    if raw_indices.dtype.kind not in {"i", "u"}:
+        raise ValueError("program AD array take direct rule requires static integer indices")
+    return cast(NDArray[np.int64], np.asarray(raw_indices, dtype=np.int64))
+
+
+def _program_ad_array_take_flat_indices(
+    source_shape: tuple[int, ...],
+    indices: object,
+    axis: int | None,
+) -> NDArray[np.int64]:
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    raw_indices = _program_ad_array_take_indices(indices)
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source_shape))
+    try:
+        selected = np.take(source_indices, raw_indices, axis=normalised_axis, mode="raise")
+    except (IndexError, ValueError) as exc:
+        raise ValueError("program AD array take direct rule requires in-bounds indices") from exc
+    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
+
+
+def _program_ad_array_direct_gather(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_array_vector(
+        primitive_name,
+        "values",
+        values,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    return _program_ad_float64_vector_result(vector[flat_indices])
+
+
+def _program_ad_array_direct_gather_jvp(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+) -> NDArray[np.float64]:
+    _program_ad_array_vector(
+        primitive_name,
+        "values",
+        values,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    tangent_vector = _program_ad_array_vector(
+        primitive_name,
+        "tangent",
+        tangent,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    return _program_ad_float64_vector_result(tangent_vector[flat_indices])
+
+
+def _program_ad_array_direct_scatter_vjp(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+) -> NDArray[np.float64]:
+    source_size = _program_ad_array_static_size(source_shape)
+    _program_ad_array_vector(primitive_name, "values", values, expected_size=source_size)
+    cotangent_vector = _program_ad_array_vector(
+        primitive_name,
+        "cotangent",
+        cotangent,
+        expected_size=int(flat_indices.size),
+    )
+    result = np.zeros(source_size, dtype=np.float64)
+    np.add.at(result, flat_indices, cotangent_vector)
+    return result
+
+
+def program_ad_array_getitem_derivative_rule(
+    source_shape: Sequence[int],
+    index: object,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed basic-index signature."""
+
+    source = _program_ad_array_normalise_static_shape("getitem", source_shape)
+    flat_indices = _program_ad_array_getitem_flat_indices(source, index)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather(
+            "getitem", values, source_shape=source, flat_indices=flat_indices
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather_jvp(
+            "getitem",
+            values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_scatter_vjp(
+            "getitem",
+            values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=f"program_ad_array_getitem_{_program_ad_array_signature(source)}_static_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_array_take_derivative_rule(
+    source_shape: Sequence[int],
+    indices: object,
+    *,
+    axis: int | None = None,
+    mode: str = "raise",
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed NumPy take signature."""
+
+    if mode != "raise":
+        raise ValueError("program AD array take direct rule supports only mode='raise'")
+    source = _program_ad_array_normalise_static_shape("take", source_shape)
+    flat_indices = _program_ad_array_take_flat_indices(source, indices, axis)
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
+    axis_signature = "flat" if normalised_axis is None else str(normalised_axis)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather(
+            "take", values, source_shape=source, flat_indices=flat_indices
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather_jvp(
+            "take",
+            values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_scatter_vjp(
+            "take",
+            values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_array_take_"
+            f"{_program_ad_array_signature(source)}_axis_{axis_signature}_static_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_shape_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
     raise ValueError(
         "program AD shape primitive contracts are executable only through "
@@ -12462,6 +12696,8 @@ __all__ = [
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
+    "program_ad_array_getitem_derivative_rule",
+    "program_ad_array_take_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
