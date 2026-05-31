@@ -73,6 +73,7 @@ from scpn_quantum_control import (
     compile_kuramoto_to_mlir,
     compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
     compile_matrix_2x2_inverse_ad_to_native_llvm_jit,
+    compile_matrix_2x2_solve_ad_to_native_llvm_jit,
     compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit,
     compile_matrix_matrix_product_ad_to_native_llvm_jit,
     compile_matrix_quadratic_form_ad_to_native_llvm_jit,
@@ -198,6 +199,13 @@ native_inverse_kernel = compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
 )
 native_inverse_kernel.value(np.array([2.0, -1.0, 0.5, 3.0], dtype=np.float64))
 
+native_solve_kernel = compile_matrix_2x2_solve_ad_to_native_llvm_jit(
+    rule,
+    sample_values=np.array([2.0, -1.0, 0.5, 3.0, 1.5, -2.0], dtype=np.float64),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_solve_kernel.value(np.array([2.0, -1.0, 0.5, 3.0, 1.5, -2.0], dtype=np.float64))
+
 native_quadratic_form_kernel = compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule,
     dimension=2,
@@ -265,6 +273,10 @@ adjugate-gradient JVP, VJP, and gradient output.
 nonsingular row-major 2x2 inverse primitive with exact rational value, JVP,
 and VJP kernels; singular matrices and the public vector-output gradient helper
 remain fail-closed.
+`compile_matrix_2x2_solve_ad_to_native_llvm_jit()` adds a bounded nonsingular
+row-major `A x = b` primitive over concatenated `[A, b]` inputs with exact
+linear-solve value, JVP, and VJP kernels; singular matrices and the public
+vector-output gradient helper remain fail-closed.
 `compile_matrix_quadratic_form_ad_to_native_llvm_jit()` extends native compiler
 AD to rank-2 scalar linalg by compiling `x.T @ A @ x` over row-major
 concatenated `[A, x]` inputs with exact matrix-entry gradients
@@ -279,6 +291,7 @@ concatenated `[A, x]` inputs with exact matrix-entry gradients
 `make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_determinant_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_inverse_native_llvm_jit_lowering_rule()` and
+`make_matrix_2x2_solve_native_llvm_jit_lowering_rule()` and
 `make_matrix_vector_product_native_llvm_jit_lowering_rule()` and
 `make_matrix_quadratic_form_native_llvm_jit_lowering_rule()` bind those native
 backends to primitive registry lowering metadata when the primitive has the
