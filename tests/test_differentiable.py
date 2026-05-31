@@ -6872,7 +6872,6 @@ def test_program_ad_linalg_spectral_operations_fail_closed_policy_boundary() -> 
         lambda matrix: np.sum(np.linalg.eig(matrix)[0]),
         lambda matrix: np.sum(np.linalg.eigh(matrix)[0]),
         lambda matrix: np.sum(np.linalg.eigvals(matrix)),
-        lambda matrix: np.sum(np.linalg.svd(matrix, compute_uv=False)),
         lambda matrix: np.sum(np.linalg.pinv(matrix)),
     )
 
@@ -11612,3 +11611,99 @@ def test_program_ad_linalg_eigvalsh_reverse_adjoint_replay_matches_spectral_adjo
     np.testing.assert_allclose(
         program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
     )
+
+
+def test_program_ad_linalg_svdvals_gradient_and_adjoint_match_singular_vector_adjoint():
+    from scpn_quantum_control.differentiable import (
+        program_adjoint_gradient,
+        whole_program_value_and_grad,
+    )
+
+    values = np.array([2.0, 0.3, -0.2, 1.1], dtype=np.float64)
+    weights = np.array([0.5, -1.3], dtype=np.float64)
+
+    def objective(trace_values):
+        matrix = np.reshape(trace_values, (2, 2))
+        return np.sum(np.linalg.svd(matrix, compute_uv=False) * weights)
+
+    result = whole_program_value_and_grad(objective, values)
+    matrix = values.reshape(2, 2)
+    left, _singular_values, right_h = np.linalg.svd(matrix, full_matrices=False)
+    expected = (left @ np.diag(weights) @ right_h).reshape(-1)
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_linalg_svdvals_direct_rule_returns_singular_value_jvp_and_vjp():
+    from scpn_quantum_control.differentiable import program_ad_linalg_svdvals_derivative_rule
+
+    rule = program_ad_linalg_svdvals_derivative_rule((2, 3))
+    matrix = np.array([[2.0, 0.25, -0.1], [0.3, 1.4, 0.6]], dtype=np.float64)
+    tangent = np.array([[0.2, -0.1, 0.05], [0.15, 0.4, -0.2]], dtype=np.float64)
+    cotangent = np.array([1.25, -0.5], dtype=np.float64)
+    left, singular_values, right_h = np.linalg.svd(matrix, full_matrices=False)
+
+    expected_jvp = np.array(
+        [float(left[:, index].T @ tangent @ right_h[index, :]) for index in range(2)],
+        dtype=np.float64,
+    )
+    expected_vjp = (left @ np.diag(cotangent) @ right_h).reshape(-1)
+
+    np.testing.assert_allclose(rule.value_fn(matrix.reshape(-1)), singular_values)
+    np.testing.assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)), expected_jvp
+    )
+    np.testing.assert_allclose(rule.vjp_rule(matrix.reshape(-1), cotangent), expected_vjp)
+
+
+def test_program_ad_linalg_svdvals_fails_closed_on_vector_return_or_degenerate_values():
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    values = np.array([2.0, 0.3, -0.2, 1.1], dtype=np.float64)
+    repeated = np.eye(2, dtype=np.float64).reshape(-1)
+    rank_deficient = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="compute_uv=False"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(np.linalg.svd(np.reshape(trace_values, (2, 2)))[1]),
+            values,
+        )
+
+    with pytest.raises(ValueError, match="distinct positive singular values"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(
+                np.linalg.svd(np.reshape(trace_values, (2, 2)), compute_uv=False)
+            ),
+            repeated,
+        )
+
+    with pytest.raises(ValueError, match="distinct positive singular values"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(
+                np.linalg.svd(np.reshape(trace_values, (2, 2)), compute_uv=False)
+            ),
+            rank_deficient,
+        )
+
+
+def test_program_ad_linalg_svdvals_registry_contract_and_root_export():
+    import scpn_quantum_control as scpn
+    from scpn_quantum_control.differentiable import (
+        primitive_contract_for,
+        program_ad_linalg_svdvals_derivative_rule,
+    )
+
+    assert (
+        scpn.program_ad_linalg_svdvals_derivative_rule is program_ad_linalg_svdvals_derivative_rule
+    )
+    contract = primitive_contract_for("scpn.program_ad.linalg:svd")
+    assert contract is not None
+    assert contract.shape_rule((np.zeros((2, 3), dtype=np.float64),)) == (2,)
+    metadata = contract.lowering_metadata
+    assert metadata["static_derivative_factory"] == "program_ad_linalg_svdvals_derivative_rule"
+    assert metadata["nondifferentiable_boundary"] == "distinct_positive_singular_values"

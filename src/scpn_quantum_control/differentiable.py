@@ -1719,11 +1719,35 @@ class TraceADArray:
                 )
             _require_program_ad_linalg_contract("eigvalsh", (matrix,))
             return _trace_eigvalsh(matrix, self.context, uplo=str(uplo))
+        if func is np.linalg.svd:
+            if not 1 <= len(args) <= 4:
+                raise ValueError(
+                    "program AD np.linalg.svd supports one matrix and static SVD options"
+                )
+            matrix = args[0]
+            full_matrices = args[1] if len(args) >= 2 else kwargs.pop("full_matrices", True)
+            compute_uv = args[2] if len(args) >= 3 else kwargs.pop("compute_uv", True)
+            hermitian = args[3] if len(args) >= 4 else kwargs.pop("hermitian", False)
+            if kwargs:
+                raise ValueError(
+                    "program AD np.linalg.svd supports full_matrices, compute_uv, and hermitian"
+                )
+            if not isinstance(full_matrices, (bool, np.bool_)):
+                raise ValueError("program AD np.linalg.svd full_matrices must be static boolean")
+            if not isinstance(compute_uv, (bool, np.bool_)):
+                raise ValueError("program AD np.linalg.svd compute_uv must be static boolean")
+            if not isinstance(hermitian, (bool, np.bool_)):
+                raise ValueError("program AD np.linalg.svd hermitian must be static boolean")
+            if bool(compute_uv):
+                raise ValueError("program AD np.linalg.svd supports compute_uv=False only")
+            if bool(hermitian):
+                raise ValueError("program AD np.linalg.svd supports hermitian=False only")
+            _require_program_ad_linalg_contract("svd", (matrix,))
+            return _trace_svdvals(matrix, self.context)
         if func in {
             np.linalg.eig,
             np.linalg.eigh,
             np.linalg.eigvals,
-            np.linalg.svd,
             np.linalg.pinv,
         }:
             _raise_spectral_linalg_boundary(func.__name__)
@@ -4190,6 +4214,39 @@ def _trace_eigvalsh(
     return TraceADArray(tuple(items), (rows,), context)
 
 
+def _trace_svdvals(matrix: object, context: _WholeProgramTraceContext) -> TraceADArray:
+    array = _coerce_trace_array(matrix, context)
+    if array.ndim != 2:
+        raise ValueError("program AD np.linalg.svd requires a rank-2 matrix")
+    rows, cols = array.shape
+    if rows <= 0 or cols <= 0:
+        raise ValueError("program AD np.linalg.svd requires non-empty matrix dimensions")
+    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
+    left, singular_values, right_h = np.linalg.svd(primal, full_matrices=False)
+    _program_ad_linalg_require_distinct_positive_singular_values(singular_values, "svd")
+    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+        rows, cols, context.parameter_count
+    )
+    items: list[TraceADScalar] = []
+    input_names = tuple(item.name for item in array._items)
+    for index, singular_value in enumerate(singular_values):
+        tangent = np.einsum(
+            "i,j,ijp->p",
+            left[:, index],
+            right_h[index, :],
+            tangent_tensor,
+        )
+        items.append(
+            context.make(
+                f"linalg:svdvals:{rows}x{cols}:{index}",
+                input_names,
+                float(singular_value),
+                np.asarray(tangent, dtype=np.float64),
+            )
+        )
+    return TraceADArray(tuple(items), (singular_values.size,), context)
+
+
 def _trace_trace(
     values: object,
     context: _WholeProgramTraceContext,
@@ -5065,6 +5122,8 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigvalsh:"):
         return _program_adjoint_eigvalsh_contributions(node, node_by_name)
+    if node.op.startswith("linalg:svdvals:"):
+        return _program_adjoint_svdvals_contributions(node, node_by_name)
     raise ValueError(f"unsupported program AD adjoint op {node.op}")
 
 
@@ -5170,6 +5229,42 @@ def _program_adjoint_eigvalsh_contributions(
         )
         for row in range(matrix_size)
         for col in range(matrix_size)
+    )
+
+
+def _program_adjoint_svdvals_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for a distinct positive SVD singular value."""
+
+    parts = node.op.split(":")
+    if len(parts) != 4:
+        raise ValueError("svd adjoint requires shape-qualified singular-value metadata")
+    try:
+        rows, cols = (int(part) for part in parts[2].split("x", maxsplit=1))
+        singular_value_index = int(parts[3])
+    except ValueError as exc:
+        raise ValueError("svd adjoint metadata is malformed") from exc
+    if rows <= 0 or cols <= 0 or rows * cols != len(node.inputs):
+        raise ValueError("svd adjoint requires flattened matrix inputs matching metadata")
+    matrix = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    ).reshape(rows, cols)
+    left, singular_values, right_h = np.linalg.svd(matrix, full_matrices=False)
+    _program_ad_linalg_require_distinct_positive_singular_values(
+        singular_values, "svd adjoint replay"
+    )
+    if singular_value_index < 0 or singular_value_index >= singular_values.size:
+        raise ValueError("svd adjoint singular-value index is outside the spectrum")
+    return tuple(
+        (
+            node.inputs[row * cols + col],
+            float(left[row, singular_value_index] * right_h[singular_value_index, col]),
+        )
+        for row in range(rows)
+        for col in range(cols)
     )
 
 
@@ -7387,6 +7482,7 @@ _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "matrix_power",
         "multi_dot",
         "eigvalsh",
+        "svd",
     )
 }
 
@@ -13095,6 +13191,30 @@ def _program_ad_linalg_require_distinct_eigenvalues(
         raise ValueError(f"program AD linalg {primitive_name} requires distinct eigenvalues")
 
 
+def _program_ad_linalg_require_distinct_positive_singular_values(
+    singular_values: NDArray[np.float64],
+    primitive_name: str,
+) -> None:
+    if singular_values.size == 0:
+        raise ValueError(
+            f"program AD linalg {primitive_name} requires distinct positive singular values"
+        )
+    scale = max(1.0, float(np.max(np.abs(singular_values))))
+    tolerance = 1.0e-10 * scale
+    if float(np.min(singular_values)) <= tolerance:
+        raise ValueError(
+            f"program AD linalg {primitive_name} requires distinct positive singular values"
+        )
+    if singular_values.size <= 1:
+        return
+    gaps = np.abs(singular_values[:, None] - singular_values[None, :])
+    strict_gaps = gaps[np.triu_indices(singular_values.size, k=1)]
+    if float(np.min(strict_gaps)) <= tolerance:
+        raise ValueError(
+            f"program AD linalg {primitive_name} requires distinct positive singular values"
+        )
+
+
 def _program_ad_linalg_uplo(
     value: object,
     primitive_name: str,
@@ -13228,6 +13348,70 @@ def program_ad_linalg_eigvalsh_derivative_rule(
     return CustomDerivativeRule(
         name=(
             f"program_ad_linalg_eigvalsh_{_program_ad_shape_signature(static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_linalg_svdvals_derivative_rule(
+    matrix_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for fixed-shape SVD singular values."""
+
+    static_shape = _program_ad_linalg_rank2_shape("svd", matrix_shape)
+    if any(dimension <= 0 for dimension in static_shape):
+        raise ValueError("program AD linalg svd derivative rule requires positive dimensions")
+    output_size = min(static_shape)
+    matrix_size = _program_ad_shape_static_size(static_shape)
+
+    def split(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _as_real_numeric_array(f"program AD linalg svd {name}", values).reshape(-1)
+        if vector.size != matrix_size:
+            raise ValueError("program AD linalg svd direct rule values size must match shape")
+        return vector.reshape(static_shape)
+
+    def decompose(
+        name: str,
+        values: NDArray[np.float64],
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+        matrix = split(name, values)
+        left, singular_values, right_h = np.linalg.svd(matrix, full_matrices=False)
+        _program_ad_linalg_require_distinct_positive_singular_values(singular_values, "svd")
+        return matrix, left, singular_values, right_h
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        _matrix, _left, singular_values, _right_h = decompose("values", values)
+        return _program_ad_float64_vector_result(singular_values)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _matrix, left, _singular_values, right_h = decompose("values", values)
+        tangent_matrix = split("tangent", tangent)
+        return _program_ad_float64_vector_result(
+            np.array(
+                [
+                    float(left[:, index].T @ tangent_matrix @ right_h[index, :])
+                    for index in range(output_size)
+                ],
+                dtype=np.float64,
+            )
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _matrix, left, _singular_values, right_h = decompose("values", values)
+        cotangent_vector = _as_real_numeric_array(
+            "program AD linalg svd cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != output_size:
+            raise ValueError("program AD linalg svd VJP cotangent size must match singular values")
+        return _program_ad_float64_vector_result(left @ np.diag(cotangent_vector) @ right_h)
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_linalg_svdvals_{_program_ad_shape_signature(static_shape)}_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -13437,6 +13621,18 @@ def _program_ad_linalg_eigvalsh_shape(args: tuple[object, ...]) -> tuple[int, ..
     return (rows,)
 
 
+def _program_ad_linalg_svd_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg svd shape rule requires one matrix")
+    shape = _program_ad_linalg_shape_of(args[0])
+    if len(shape) != 2:
+        raise ValueError("program AD linalg svd shape rule requires a rank-2 matrix")
+    rows, cols = shape
+    if rows <= 0 or cols <= 0:
+        raise ValueError("program AD linalg svd shape rule requires non-empty dimensions")
+    return (min(rows, cols),)
+
+
 def _program_ad_linalg_dtype_rule(args: tuple[object, ...]) -> str:
     arrays: list[NDArray[np.float64]] = []
     for arg in args:
@@ -13544,6 +13740,7 @@ _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "matrix_power": _program_ad_linalg_matrix_power_shape,
     "multi_dot": _program_ad_linalg_multi_dot_shape,
     "eigvalsh": _program_ad_linalg_eigvalsh_shape,
+    "svd": _program_ad_linalg_svd_shape,
 }
 
 _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
@@ -13556,6 +13753,7 @@ _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
     "matrix_power": _program_ad_linalg_matrix_power_static_arguments,
     "multi_dot": _program_ad_linalg_multi_dot_static_arguments,
     "eigvalsh": _program_ad_linalg_no_static_arguments,
+    "svd": _program_ad_linalg_no_static_arguments,
 }
 
 
@@ -13614,6 +13812,7 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
         "matrix_power": "negative_power_singular_matrix",
         "multi_dot": "static_shape_alignment",
         "eigvalsh": "symmetric_matrix_distinct_eigenvalues",
+        "svd": "distinct_positive_singular_values",
     }
     metadata = {
         "program_ad": "operator_intercepted_trace",
@@ -13679,6 +13878,13 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
             {
                 "static_derivative_factory": "program_ad_linalg_eigvalsh_derivative_rule",
                 "static_signature": "matrix_shape:rank2_square_symmetric_distinct_spectrum",
+            }
+        )
+    elif name == "svd":
+        metadata.update(
+            {
+                "static_derivative_factory": "program_ad_linalg_svdvals_derivative_rule",
+                "static_signature": "matrix_shape:rank2;compute_uv:false;hermitian:false",
             }
         )
     return metadata
@@ -18022,6 +18228,7 @@ __all__ = [
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",
+    "program_ad_linalg_svdvals_derivative_rule",
     "program_ad_linalg_trace_derivative_rule",
     "program_ad_product_inner_derivative_rule",
     "program_ad_product_matmul_derivative_rule",

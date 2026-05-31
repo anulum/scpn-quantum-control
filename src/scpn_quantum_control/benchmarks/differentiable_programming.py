@@ -218,6 +218,7 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
     multi_dot_left = np.array([0.75, -1.5], dtype=np.float64)
     multi_dot_right = np.array([1.25, 0.5], dtype=np.float64)
     eigvalsh_weights = np.array([0.2, -0.3], dtype=np.float64)
+    svd_weights = np.array([0.15, -0.25], dtype=np.float64)
     trace_weight = 0.375
     diag_weights = np.array([-1.25, 0.5], dtype=np.float64)
 
@@ -233,6 +234,7 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + np.sum(np.linalg.matrix_power(matrix, 2) * power_weights)
             + np.linalg.multi_dot((multi_dot_left, matrix, multi_dot_right))
             + np.sum(np.linalg.eigvalsh(matrix) * eigvalsh_weights)
+            + np.sum(np.linalg.svd(matrix, compute_uv=False) * svd_weights)
         )
 
     x0, x1, rhs0, rhs1 = values
@@ -245,7 +247,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + diag_weights[0]
             + 2.0 * power_weights[0, 0] * x0
             + multi_dot_left[0] * multi_dot_right[0]
-            + eigvalsh_weights[0],
+            + eigvalsh_weights[0]
+            + svd_weights[1],
             x0
             - inverse_weights[1, 1] / (x1 * x1)
             - solve_weights[1] * rhs1 / (x1 * x1)
@@ -253,7 +256,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + diag_weights[1]
             + 2.0 * power_weights[1, 1] * x1
             + multi_dot_left[1] * multi_dot_right[1]
-            + eigvalsh_weights[1],
+            + eigvalsh_weights[1]
+            + svd_weights[0],
             solve_weights[0] / x0,
             solve_weights[1] / x1,
         ],
@@ -368,6 +372,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
     solve_weights = np.array([1.25, -0.75], dtype=np.float64)
     power_weights = np.array([[0.5, 0.0], [0.0, -0.25]], dtype=np.float64)
     eigvalsh_weights = np.array([0.2, -0.3], dtype=np.float64)
+    svd_weights = np.array([0.15, -0.25], dtype=np.float64)
 
     def program_objective(trace_values: Any) -> object:
         matrix = np.diag(trace_values[:2])
@@ -378,6 +383,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
             + np.sum(np.linalg.solve(matrix, rhs) * solve_weights)
             + np.sum(np.linalg.matrix_power(matrix, 2) * power_weights)
             + np.sum(np.linalg.eigvalsh(matrix) * eigvalsh_weights)
+            + np.sum(np.linalg.svd(matrix, compute_uv=False) * svd_weights)
         )
 
     def reference_objective(raw_values: Any) -> object:
@@ -389,6 +395,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
             + jnp.sum(jnp.linalg.solve(matrix, rhs) * jnp.asarray(solve_weights))
             + jnp.sum(jnp.linalg.matrix_power(matrix, 2) * jnp.asarray(power_weights))
             + jnp.sum(jnp.linalg.eigvalsh(matrix) * jnp.asarray(eigvalsh_weights))
+            + jnp.sum(jnp.linalg.svd(matrix, compute_uv=False) * jnp.asarray(svd_weights))
         )
 
     program_result = whole_program_value_and_grad(
