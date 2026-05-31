@@ -122,9 +122,9 @@ promoted paired primitive nondifferentiability-policy, fail-closed boundary,
 and boundary-policy contracts, executable MLIR-runtime availability when a
 lowering rule is registered, and
 fail-closed Rust/LLVM backend status. Its deterministic module metadata also
-lists rule-coverage, VJP reverse-readiness coverage, batching-rule coverage,
-boundary-contracted policy/effect coverage, aggregate boundary-contract
-primitive coverage, complete registry-contract primitive coverage,
+lists rule-coverage, JVP forward-readiness coverage, VJP reverse-readiness
+coverage, batching-rule coverage, boundary-contracted policy/effect coverage,
+aggregate boundary-contract primitive coverage, complete registry-contract primitive coverage,
 reverse-contract primitive coverage, reverse-incomplete primitive identities,
 adjoint-contract primitive coverage, adjoint-incomplete primitive identities,
 boundary-policy coverage, MLIR-runtime lowering primitive

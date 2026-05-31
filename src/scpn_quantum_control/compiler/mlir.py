@@ -377,6 +377,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
     def has_reverse_contract(status: PrimitiveLoweringStatus) -> bool:
         return status.has_vjp and has_registry_contract(status)
 
+    def has_forward_contract(status: PrimitiveLoweringStatus) -> bool:
+        return status.has_jvp and has_registry_contract(status)
+
     def has_adjoint_contract(status: PrimitiveLoweringStatus) -> bool:
         return status.effect == "pure" and has_reverse_contract(status)
 
@@ -449,6 +452,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "reverse_incomplete_primitives": [
             status.identity.key for status in plan.statuses if not status.has_vjp
         ],
+        "forward_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_forward_contract(status)
+        ],
+        "forward_incomplete_primitives": [
+            status.identity.key for status in plan.statuses if not has_forward_contract(status)
+        ],
         "adjoint_contract_primitives": [
             status.identity.key for status in plan.statuses if has_adjoint_contract(status)
         ],
@@ -512,6 +521,10 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
                 status.static_signature != "none" for status in plan.statuses
             ),
             "registry_contracts": sum(has_registry_contract(status) for status in plan.statuses),
+            "forward_contracts": sum(has_forward_contract(status) for status in plan.statuses),
+            "forward_incomplete_primitives": sum(
+                not has_forward_contract(status) for status in plan.statuses
+            ),
             "reverse_contracts": sum(has_reverse_contract(status) for status in plan.statuses),
             "reverse_incomplete_primitives": sum(not status.has_vjp for status in plan.statuses),
             "adjoint_contracts": sum(has_adjoint_contract(status) for status in plan.statuses),
