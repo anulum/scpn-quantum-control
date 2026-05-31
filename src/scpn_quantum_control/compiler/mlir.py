@@ -541,6 +541,11 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if not has_rust_backend_contract(status)
         ],
+        "rust_backend_blockers": {
+            status.identity.key: status.rust_lowering
+            for status in plan.statuses
+            if "blocked" in status.rust_lowering.lower()
+        },
         "llvm_backend_contract_primitives": [
             status.identity.key for status in plan.statuses if has_llvm_backend_contract(status)
         ],
@@ -549,12 +554,22 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if not has_llvm_backend_contract(status)
         ],
+        "llvm_backend_blockers": {
+            status.identity.key: status.llvm_lowering
+            for status in plan.statuses
+            if "blocked" in status.llvm_lowering.lower()
+        },
         "jit_backend_contract_primitives": [
             status.identity.key for status in plan.statuses if has_jit_backend_contract(status)
         ],
         "jit_backend_incomplete_primitives": [
             status.identity.key for status in plan.statuses if not has_jit_backend_contract(status)
         ],
+        "jit_backend_blockers": {
+            status.identity.key: status.jit_lowering
+            for status in plan.statuses
+            if "blocked" in status.jit_lowering.lower()
+        },
         "mlir_runtime_contract_primitives": [
             status.identity.key for status in plan.statuses if has_mlir_runtime_contract(status)
         ],
@@ -651,17 +666,26 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "rust_backend_incomplete_primitives": sum(
                 not has_rust_backend_contract(status) for status in plan.statuses
             ),
+            "rust_backend_blockers": sum(
+                "blocked" in status.rust_lowering.lower() for status in plan.statuses
+            ),
             "llvm_backend_contracts": sum(
                 has_llvm_backend_contract(status) for status in plan.statuses
             ),
             "llvm_backend_incomplete_primitives": sum(
                 not has_llvm_backend_contract(status) for status in plan.statuses
             ),
+            "llvm_backend_blockers": sum(
+                "blocked" in status.llvm_lowering.lower() for status in plan.statuses
+            ),
             "jit_backend_contracts": sum(
                 has_jit_backend_contract(status) for status in plan.statuses
             ),
             "jit_backend_incomplete_primitives": sum(
                 not has_jit_backend_contract(status) for status in plan.statuses
+            ),
+            "jit_backend_blockers": sum(
+                "blocked" in status.jit_lowering.lower() for status in plan.statuses
             ),
             "mlir_runtime_contracts": sum(
                 has_mlir_runtime_contract(status) for status in plan.statuses

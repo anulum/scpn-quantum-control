@@ -146,10 +146,13 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.resource_counts["native_backend_incomplete_primitives"] == 1
     assert module.resource_counts["rust_backend_contracts"] == 0
     assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["rust_backend_blockers"] == 1
     assert module.resource_counts["llvm_backend_contracts"] == 0
     assert module.resource_counts["llvm_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["llvm_backend_blockers"] == 1
     assert module.resource_counts["jit_backend_contracts"] == 0
     assert module.resource_counts["jit_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["jit_backend_blockers"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 0
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
     assert module.resource_counts["executable_backends"] == 0
@@ -174,14 +177,23 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.metadata["rust_backend_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
     ]
+    assert module.metadata["rust_backend_blockers"] == {
+        "scpn.quantum:rx_expectation@1": "blocked: rust batching backend not linked"
+    }
     assert module.metadata["llvm_backend_contract_primitives"] == []
     assert module.metadata["llvm_backend_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
     ]
+    assert module.metadata["llvm_backend_blockers"] == {
+        "scpn.quantum:rx_expectation@1": "blocked: llvm lowering backend not linked"
+    }
     assert module.metadata["jit_backend_contract_primitives"] == []
     assert module.metadata["jit_backend_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
     ]
+    assert module.metadata["jit_backend_blockers"] == {
+        "scpn.quantum:rx_expectation@1": "blocked: no JIT differentiable primitive backend"
+    }
     assert module.metadata["mlir_runtime_contract_primitives"] == []
     assert module.metadata["mlir_runtime_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
@@ -280,10 +292,19 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     ]
     assert module.metadata["rust_backend_contract_primitives"] == []
     assert module.metadata["rust_backend_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["rust_backend_blockers"] == {
+        "scpn.quantum:policy_only@1": "blocked: no Rust differentiable primitive backend"
+    }
     assert module.metadata["llvm_backend_contract_primitives"] == []
     assert module.metadata["llvm_backend_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["llvm_backend_blockers"] == {
+        "scpn.quantum:policy_only@1": "blocked: no LLVM/JIT differentiable primitive backend"
+    }
     assert module.metadata["jit_backend_contract_primitives"] == []
     assert module.metadata["jit_backend_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["jit_backend_blockers"] == {
+        "scpn.quantum:policy_only@1": "blocked: no JIT differentiable primitive backend"
+    }
     assert module.metadata["mlir_runtime_contract_primitives"] == []
     assert module.metadata["mlir_runtime_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.metadata["mlir_runtime_verification_primitives"] == {}
@@ -302,10 +323,13 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["native_backend_incomplete_primitives"] == 1
     assert module.resource_counts["rust_backend_contracts"] == 0
     assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["rust_backend_blockers"] == 1
     assert module.resource_counts["llvm_backend_contracts"] == 0
     assert module.resource_counts["llvm_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["llvm_backend_blockers"] == 1
     assert module.resource_counts["jit_backend_contracts"] == 0
     assert module.resource_counts["jit_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["jit_backend_blockers"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 0
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
     assert module.resource_counts["mlir_runtime_verifications"] == 0
@@ -494,10 +518,25 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.metadata["native_backend_incomplete_primitives"] == expected_native_incomplete
     assert module.metadata["rust_backend_contract_primitives"] == expected_rust_contracts
     assert module.metadata["rust_backend_incomplete_primitives"] == expected_rust_incomplete
+    assert module.metadata["rust_backend_blockers"] == {
+        status.identity.key: status.rust_lowering
+        for status in plan.statuses
+        if "blocked" in status.rust_lowering.lower()
+    }
     assert module.metadata["llvm_backend_contract_primitives"] == expected_llvm_contracts
     assert module.metadata["llvm_backend_incomplete_primitives"] == expected_llvm_incomplete
+    assert module.metadata["llvm_backend_blockers"] == {
+        status.identity.key: status.llvm_lowering
+        for status in plan.statuses
+        if "blocked" in status.llvm_lowering.lower()
+    }
     assert module.metadata["jit_backend_contract_primitives"] == expected_jit_contracts
     assert module.metadata["jit_backend_incomplete_primitives"] == expected_jit_incomplete
+    assert module.metadata["jit_backend_blockers"] == {
+        status.identity.key: status.jit_lowering
+        for status in plan.statuses
+        if "blocked" in status.jit_lowering.lower()
+    }
     assert module.metadata["mlir_runtime_contract_primitives"] == expected_mlir_runtime_contracts
     assert (
         module.metadata["mlir_runtime_incomplete_primitives"] == expected_mlir_runtime_incomplete
@@ -530,14 +569,17 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.resource_counts["rust_backend_incomplete_primitives"] == len(
         expected_rust_incomplete
     )
+    assert module.resource_counts["rust_backend_blockers"] == len(expected_rust_incomplete)
     assert module.resource_counts["llvm_backend_contracts"] == len(expected_llvm_contracts)
     assert module.resource_counts["llvm_backend_incomplete_primitives"] == len(
         expected_llvm_incomplete
     )
+    assert module.resource_counts["llvm_backend_blockers"] == len(expected_llvm_incomplete)
     assert module.resource_counts["jit_backend_contracts"] == len(expected_jit_contracts)
     assert module.resource_counts["jit_backend_incomplete_primitives"] == len(
         expected_jit_incomplete
     )
+    assert module.resource_counts["jit_backend_blockers"] == len(expected_jit_incomplete)
     assert module.resource_counts["mlir_runtime_contracts"] == len(expected_mlir_runtime_contracts)
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == len(
         expected_mlir_runtime_incomplete
@@ -958,24 +1000,36 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert module.metadata["rust_backend_incomplete_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
     ]
+    assert module.metadata["rust_backend_blockers"] == {
+        "scpn.program_ad.linalg:matrix_power@1": plan.statuses[0].rust_lowering
+    }
     assert module.metadata["llvm_backend_contract_primitives"] == []
     assert module.metadata["llvm_backend_incomplete_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
     ]
+    assert module.metadata["llvm_backend_blockers"] == {
+        "scpn.program_ad.linalg:matrix_power@1": plan.statuses[0].llvm_lowering
+    }
     assert module.metadata["jit_backend_contract_primitives"] == []
     assert module.metadata["jit_backend_incomplete_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
     ]
+    assert module.metadata["jit_backend_blockers"] == {
+        "scpn.program_ad.linalg:matrix_power@1": plan.statuses[0].jit_lowering
+    }
     assert module.resource_counts["mlir_runtime_lowerings"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 1
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 0
     assert module.resource_counts["mlir_runtime_verifications"] == 1
     assert module.resource_counts["rust_backend_contracts"] == 0
     assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["rust_backend_blockers"] == 1
     assert module.resource_counts["llvm_backend_contracts"] == 0
     assert module.resource_counts["llvm_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["llvm_backend_blockers"] == 1
     assert module.resource_counts["jit_backend_contracts"] == 0
     assert module.resource_counts["jit_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["jit_backend_blockers"] == 1
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
     assert "available: executable scpn_diff MLIR-runtime linalg kernel" in module.text
