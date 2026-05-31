@@ -377,6 +377,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
     def has_reverse_contract(status: PrimitiveLoweringStatus) -> bool:
         return status.has_vjp and has_registry_contract(status)
 
+    def has_adjoint_contract(status: PrimitiveLoweringStatus) -> bool:
+        return status.effect == "pure" and has_reverse_contract(status)
+
     metadata = {
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
@@ -446,6 +449,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "reverse_incomplete_primitives": [
             status.identity.key for status in plan.statuses if not status.has_vjp
         ],
+        "adjoint_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_adjoint_contract(status)
+        ],
+        "adjoint_incomplete_primitives": [
+            status.identity.key for status in plan.statuses if not has_adjoint_contract(status)
+        ],
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key
@@ -505,6 +514,10 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "registry_contracts": sum(has_registry_contract(status) for status in plan.statuses),
             "reverse_contracts": sum(has_reverse_contract(status) for status in plan.statuses),
             "reverse_incomplete_primitives": sum(not status.has_vjp for status in plan.statuses),
+            "adjoint_contracts": sum(has_adjoint_contract(status) for status in plan.statuses),
+            "adjoint_incomplete_primitives": sum(
+                not has_adjoint_contract(status) for status in plan.statuses
+            ),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"
                 or status.nondifferentiable_boundary == "not_declared"
