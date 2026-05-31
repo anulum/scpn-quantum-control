@@ -822,7 +822,9 @@ def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None
         "scpn.program_ad.linalg:solve@1": "program_ad_linalg_solve_derivative_rule",
     }
     expected_signatures = {
-        "scpn.program_ad.array:getitem@1": "source_shape:ranked_tensor_shape;index:basic_index",
+        "scpn.program_ad.array:getitem@1": (
+            "source_shape:ranked_tensor_shape;index:static_gather_index"
+        ),
         "scpn.program_ad.shape:reshape@1": "source_shape:ranked_tensor_shape;target_shape",
         "scpn.program_ad.elementwise:multiply@1": (
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
@@ -880,7 +882,10 @@ def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None
     assert module.resource_counts["nondifferentiable_policies"] == len(expected_policies)
     assert module.resource_counts["effects"] == len(expected_effects)
     assert 'static_derivative_factory = "program_ad_array_getitem_derivative_rule"' in module.text
-    assert 'static_signature = "source_shape:ranked_tensor_shape;index:basic_index"' in module.text
+    assert (
+        'static_signature = "source_shape:ranked_tensor_shape;index:static_gather_index"'
+        in module.text
+    )
     assert 'static_derivative_factory = "program_ad_linalg_solve_derivative_rule"' in module.text
     assert 'static_signature = "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2"' in module.text
 
