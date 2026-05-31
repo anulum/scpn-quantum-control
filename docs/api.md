@@ -134,6 +134,7 @@ incomplete primitive identities, backend-specific Rust/LLVM/JIT blocker
 provenance maps, MLIR-runtime contract coverage, MLIR-runtime incomplete primitive identities,
 MLIR-runtime blocker provenance maps, verified MLIR-runtime provenance coverage,
 per-primitive readiness verdict metadata, aggregate readiness verdict counts,
+per-primitive hard-gap queues, next hard-gap metadata, aggregate hard-gap counts,
 boundary-policy coverage, MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
 cannot be mistaken for complete compiler contracts. Static program-AD array,
