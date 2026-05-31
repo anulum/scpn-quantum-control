@@ -5896,6 +5896,65 @@ def test_program_ad_block_rejects_incompatible_nested_layouts() -> None:
         )
 
 
+def test_program_ad_split_family_preserves_gather_adjoint() -> None:
+    """Program AD split-family calls should replay exact gather adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        cube = np.reshape(values, (1, 2, 3))
+        first, second, third = np.split(values, [2, 4])
+        top, bottom = np.vsplit(matrix, 2)
+        left, middle, right = np.hsplit(matrix, [1, 2])
+        depth0, depth1 = np.dsplit(cube, [1])
+        uneven0, uneven1, uneven2, uneven3 = np.array_split(values, 4)
+        return (
+            np.sum(first * np.array([1.0, -2.0], dtype=np.float64))
+            + np.sum(second * np.array([0.5, 3.0], dtype=np.float64))
+            + np.sum(third * np.array([-1.5, 2.5], dtype=np.float64))
+            + np.sum(top * np.array([[0.25, -0.5, 0.75]], dtype=np.float64))
+            + np.sum(bottom * np.array([[-1.0, 1.5, -2.0]], dtype=np.float64))
+            + np.sum(left * np.array([[2.0], [-0.25]], dtype=np.float64))
+            + np.sum(middle * np.array([[-1.25], [0.5]], dtype=np.float64))
+            + np.sum(right * np.array([[1.75], [-0.75]], dtype=np.float64))
+            + np.sum(depth0 * np.array([[[0.4], [-0.6]]], dtype=np.float64))
+            + np.sum(depth1 * np.array([[[0.2, -0.3], [0.8, -0.9]]], dtype=np.float64))
+            + np.sum(uneven0 * np.array([0.05, -0.1], dtype=np.float64))
+            + np.sum(uneven1 * np.array([0.15, -0.2], dtype=np.float64))
+            + np.sum(uneven2 * np.array([0.25], dtype=np.float64))
+            + np.sum(uneven3 * np.array([-0.3], dtype=np.float64))
+        )
+
+    values = np.array([1.0, -2.0, 0.5, 3.0, -1.5, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([3.7, -3.65, 2.85, 0.95, 1.55, -1.45], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_split_family_rejects_invalid_static_sections() -> None:
+    """Program AD split-family calls should fail closed on invalid split contracts."""
+
+    with pytest.raises(ValueError, match="static split"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.split(values, 4)[0]),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="static split"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.vsplit(values, 2)[0]),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 

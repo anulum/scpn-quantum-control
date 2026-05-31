@@ -1500,6 +1500,29 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError("program AD np.block supports one nested block sequence")
             return _trace_block(args[0], self.context)
+        if func in {np.split, np.array_split}:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis"}:
+                raise ValueError(
+                    f"program AD np.{func.__name__} supports array, sections, and axis"
+                )
+            axis = args[2] if len(args) == 3 else kwargs.get("axis", 0)
+            return _trace_split(
+                func.__name__,
+                _coerce_trace_array(args[0], self.context),
+                args[1],
+                self.context,
+                axis=axis,
+            )
+        if func in {np.hsplit, np.vsplit, np.dsplit}:
+            if len(args) != 2 or kwargs:
+                raise ValueError(f"program AD np.{func.__name__} supports array and sections")
+            return _trace_split(
+                func.__name__,
+                _coerce_trace_array(args[0], self.context),
+                args[1],
+                self.context,
+                axis=None,
+            )
         if func is np.clip:
             if len(args) < 3 or len(args) > 4 or kwargs:
                 raise ValueError("whole-program AD np.clip supports array, lower, and upper")
@@ -3600,6 +3623,63 @@ def _trace_block(
     return TraceADArray(
         items, tuple(int(dimension) for dimension in selected_array.shape), context
     )
+
+
+def _trace_split(
+    name: str,
+    array: TraceADArray,
+    indices_or_sections: object,
+    context: _WholeProgramTraceContext,
+    *,
+    axis: object,
+) -> list[TraceADArray]:
+    if array.ndim == 0:
+        raise ValueError(
+            f"program AD np.{name} requires static split sections compatible with array shape"
+        )
+    if name == "hsplit":
+        axis_value = 0 if array.ndim == 1 else 1
+    elif name == "vsplit":
+        if array.ndim < 2:
+            raise ValueError(
+                "program AD np.vsplit requires static split sections compatible with array shape"
+            )
+        axis_value = 0
+    elif name == "dsplit":
+        if array.ndim < 3:
+            raise ValueError(
+                "program AD np.dsplit requires static split sections compatible with array shape"
+            )
+        axis_value = 2
+    else:
+        if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+            raise ValueError(
+                f"program AD np.{name} requires static split sections compatible with array shape"
+            )
+        axis_value = _normalise_axis("axis", int(axis), array.ndim)
+
+    index_array = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    try:
+        if name == "array_split":
+            selected = np.array_split(index_array, cast(Any, indices_or_sections), axis=axis_value)
+        else:
+            selected = np.split(index_array, cast(Any, indices_or_sections), axis=axis_value)
+    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            f"program AD np.{name} requires static split sections compatible with array shape"
+        ) from exc
+    result: list[TraceADArray] = []
+    for part in selected:
+        part_array = np.asarray(part, dtype=np.int64)
+        items = tuple(array._items[int(index)] for index in part_array.reshape(-1))
+        result.append(
+            TraceADArray(
+                items,
+                tuple(int(dimension) for dimension in part_array.shape),
+                context,
+            )
+        )
+    return result
 
 
 def _trace_concatenate(

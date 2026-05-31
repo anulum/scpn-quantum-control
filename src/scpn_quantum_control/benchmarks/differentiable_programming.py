@@ -467,6 +467,11 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         column_stacked = np.column_stack((trace_values[:3], trace_values[3:]))
         dstacked = np.dstack((matrix[:, :2], matrix[:, 1:]))
         blocked = np.block([[matrix[:, :2], matrix[:, 2:]], [matrix[1:, :2], matrix[:1, 1:2]]])
+        split_first, split_second, split_third = np.split(trace_values, [2, 4])
+        split_top, split_bottom = np.vsplit(matrix, 2)
+        split_left, split_middle, split_right = np.hsplit(matrix, [1, 2])
+        split_depth0, split_depth1 = np.dsplit(np.reshape(trace_values, (1, 2, 3)), [1])
+        uneven0, uneven1, uneven2, uneven3 = np.array_split(trace_values, 4)
         column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
         depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
         flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
@@ -538,6 +543,23 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
                     dtype=np.float64,
                 )
             )
+            + 0.015
+            * (
+                np.sum(split_first * np.array([1.0, -2.0], dtype=np.float64))
+                + np.sum(split_second * np.array([0.5, 3.0], dtype=np.float64))
+                + np.sum(split_third * np.array([-1.5, 2.5], dtype=np.float64))
+                + np.sum(split_top * np.array([[0.25, -0.5, 0.75]], dtype=np.float64))
+                + np.sum(split_bottom * np.array([[-1.0, 1.5, -2.0]], dtype=np.float64))
+                + np.sum(split_left * np.array([[2.0], [-0.25]], dtype=np.float64))
+                + np.sum(split_middle * np.array([[-1.25], [0.5]], dtype=np.float64))
+                + np.sum(split_right * np.array([[1.75], [-0.75]], dtype=np.float64))
+                + np.sum(split_depth0 * np.array([[[0.4], [-0.6]]], dtype=np.float64))
+                + np.sum(split_depth1 * np.array([[[0.2, -0.3], [0.8, -0.9]]], dtype=np.float64))
+                + np.sum(uneven0 * np.array([0.05, -0.1], dtype=np.float64))
+                + np.sum(uneven1 * np.array([0.15, -0.2], dtype=np.float64))
+                + np.sum(uneven2 * np.array([0.25], dtype=np.float64))
+                + np.sum(uneven3 * np.array([-0.3], dtype=np.float64))
+            )
             + np.sum(column_assembled * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
             + np.sum(
                 depth_stacked
@@ -554,7 +576,7 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             )
         )
 
-    analytic = np.array([5.88525, 4.449, 4.94175, 5.25325, 8.29875, 12.192], dtype=np.float64)
+    analytic = np.array([5.94075, 4.39425, 4.9845, 5.2675, 8.322, 12.17025], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",
