@@ -264,6 +264,55 @@ def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None
     assert 'static_signature = "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2"' in module.text
 
 
+def test_compiler_ad_transform_plan_rejects_incomplete_static_factory_metadata() -> None:
+    """Compiler AD planning should fail closed on unpaired static factory metadata."""
+
+    rule = CustomDerivativeRule(
+        name="incomplete_static_metadata_rule",
+        value_fn=lambda values: np.array([values[0]], dtype=np.float64),
+        jvp_rule=lambda _values, tangent: np.array([tangent[0]], dtype=np.float64),
+    )
+    cases = (
+        (
+            PrimitiveIdentity("scpn.test", "missing_static_signature", "1"),
+            {
+                "mlir_op": "scpn_diff.missing_static_signature",
+                "static_derivative_factory": "program_ad_test_derivative_rule",
+            },
+            "static_signature",
+        ),
+        (
+            PrimitiveIdentity("scpn.test", "missing_static_factory", "1"),
+            {
+                "mlir_op": "scpn_diff.missing_static_factory",
+                "static_signature": "source_shape:ranked_tensor_shape",
+            },
+            "static_derivative_factory",
+        ),
+        (
+            PrimitiveIdentity("scpn.test", "factory_not_required_with_signature", "1"),
+            {
+                "mlir_op": "scpn_diff.factory_not_required_with_signature",
+                "static_derivative_factory": "not_required",
+                "static_signature": "source_shape:ranked_tensor_shape",
+            },
+            "static_derivative_factory",
+        ),
+    )
+    for identity, lowering_metadata, message in cases:
+        registry = CustomDerivativeRegistry()
+        registry.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=rule,
+                lowering_metadata=lowering_metadata,
+            )
+        )
+
+        with pytest.raises(ValueError, match=message):
+            build_compiler_ad_transform_plan(registry)
+
+
 def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
     """Static linalg lowering factories should execute verified MLIR-runtime kernels."""
 

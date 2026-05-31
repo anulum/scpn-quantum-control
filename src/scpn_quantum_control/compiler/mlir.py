@@ -127,6 +127,17 @@ class PrimitiveLoweringStatus:
             raise ValueError("static_derivative_factory must be non-empty")
         if not isinstance(self.static_signature, str) or not self.static_signature:
             raise ValueError("static_signature must be non-empty")
+        factory_declared = self.static_derivative_factory not in {
+            "not_declared",
+            "not_required",
+        }
+        signature_declared = self.static_signature != "none"
+        if factory_declared and not signature_declared:
+            raise ValueError("static_signature is required for static derivative factories")
+        if signature_declared and not factory_declared:
+            raise ValueError(
+                "static_derivative_factory is required for static derivative signatures"
+            )
         if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
             raise ValueError("nondifferentiable_policy must be non-empty")
         if not isinstance(self.effect, str) or not self.effect:
