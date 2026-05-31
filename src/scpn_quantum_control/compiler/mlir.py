@@ -521,6 +521,14 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
     primitive_hard_gap_priority = [
         gap for gap in hard_gap_order if gap in primitive_hard_gap_primitives
     ]
+    primitive_hard_gap_frontier = {
+        gap: {
+            "count": len(primitive_hard_gap_primitives[gap]),
+            "next_primitive": primitive_hard_gap_primitives[gap][0],
+            "primitives": primitive_hard_gap_primitives[gap],
+        }
+        for gap in primitive_hard_gap_priority
+    }
 
     metadata = {
         "claim_boundary": plan.claim_boundary,
@@ -680,6 +688,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "primitive_hard_gap_counts": primitive_hard_gap_counts,
         "primitive_hard_gap_primitives": primitive_hard_gap_primitives,
         "primitive_hard_gap_priority": primitive_hard_gap_priority,
+        "primitive_hard_gap_frontier": primitive_hard_gap_frontier,
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key
@@ -816,6 +825,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "primitive_hard_gaps": sum(len(gaps) for gaps in primitive_hard_gaps.values()),
             "primitive_next_hard_gaps": len(primitive_next_hard_gap),
             "primitive_hard_gap_priority_classes": len(primitive_hard_gap_priority),
+            "primitive_hard_gap_frontier_classes": len(primitive_hard_gap_frontier),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"
                 or status.nondifferentiable_boundary == "not_declared"

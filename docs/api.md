@@ -137,6 +137,7 @@ per-primitive readiness verdict metadata, aggregate readiness verdict counts,
 per-primitive hard-gap queues, next hard-gap metadata, aggregate hard-gap counts,
 per-hard-gap primitive reverse indexes,
 global hard-gap priority ordering,
+structured hard-gap frontier records,
 boundary-policy coverage, MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
 cannot be mistaken for complete compiler contracts. Static program-AD array,

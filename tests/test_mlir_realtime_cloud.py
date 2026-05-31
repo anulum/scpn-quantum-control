@@ -250,12 +250,23 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
         "jit_backend_contract",
         "native_backend_contract",
     ]
+    assert module.metadata["primitive_hard_gap_frontier"]["registry_contract"] == {
+        "count": 1,
+        "next_primitive": "scpn.quantum:rx_expectation@1",
+        "primitives": ["scpn.quantum:rx_expectation@1"],
+    }
+    assert module.metadata["primitive_hard_gap_frontier"]["native_backend_contract"] == {
+        "count": 1,
+        "next_primitive": "scpn.quantum:rx_expectation@1",
+        "primitives": ["scpn.quantum:rx_expectation@1"],
+    }
     assert module.resource_counts["mlir_runtime_blockers"] == 1
     assert module.resource_counts["mlir_runtime_verifications"] == 0
     assert module.resource_counts["primitive_readiness_verdicts"] == 1
     assert module.resource_counts["primitive_hard_gaps"] == 10
     assert module.resource_counts["primitive_next_hard_gaps"] == 1
     assert module.resource_counts["primitive_hard_gap_priority_classes"] == 10
+    assert module.resource_counts["primitive_hard_gap_frontier_classes"] == 10
     assert module.resource_counts["primitive_readiness_registry_incomplete"] == 1
     assert module.resource_counts["primitive_readiness_forward_interchange_only"] == 0
     assert module.resource_counts["primitive_readiness_transform_interchange_only"] == 0
@@ -384,6 +395,11 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
         "scpn.quantum:policy_only@1"
     ]
     assert module.metadata["primitive_hard_gap_priority"][0] == "registry_contract"
+    assert module.metadata["primitive_hard_gap_frontier"]["registry_contract"] == {
+        "count": 1,
+        "next_primitive": "scpn.quantum:policy_only@1",
+        "primitives": ["scpn.quantum:policy_only@1"],
+    }
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["registry_contracts"] == 0
@@ -702,6 +718,16 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         "jit_backend_contract",
         "native_backend_contract",
     ]
+    assert module.metadata["primitive_hard_gap_frontier"]["reverse_contract"] == {
+        "count": len(plan.statuses),
+        "next_primitive": plan.statuses[0].identity.key,
+        "primitives": [status.identity.key for status in plan.statuses],
+    }
+    assert module.metadata["primitive_hard_gap_frontier"]["native_backend_contract"] == {
+        "count": len(plan.statuses),
+        "next_primitive": plan.statuses[0].identity.key,
+        "primitives": [status.identity.key for status in plan.statuses],
+    }
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
     assert module.resource_counts["registry_contracts"] == 2
@@ -750,6 +776,7 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.resource_counts["primitive_hard_gaps"] == 8 * len(plan.statuses)
     assert module.resource_counts["primitive_next_hard_gaps"] == len(plan.statuses)
     assert module.resource_counts["primitive_hard_gap_priority_classes"] == 8
+    assert module.resource_counts["primitive_hard_gap_frontier_classes"] == 8
     assert module.resource_counts["primitive_readiness_registry_incomplete"] == 0
     assert module.resource_counts["primitive_readiness_forward_interchange_only"] == len(
         plan.statuses
@@ -1222,6 +1249,16 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
         "jit_backend_contract",
         "native_backend_contract",
     ]
+    assert module.metadata["primitive_hard_gap_frontier"]["reverse_contract"] == {
+        "count": 1,
+        "next_primitive": "scpn.program_ad.linalg:matrix_power@1",
+        "primitives": ["scpn.program_ad.linalg:matrix_power@1"],
+    }
+    assert module.metadata["primitive_hard_gap_frontier"]["native_backend_contract"] == {
+        "count": 1,
+        "next_primitive": "scpn.program_ad.linalg:matrix_power@1",
+        "primitives": ["scpn.program_ad.linalg:matrix_power@1"],
+    }
     assert module.metadata["rust_backend_contract_primitives"] == []
     assert module.metadata["rust_backend_incomplete_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
@@ -1252,6 +1289,7 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert module.resource_counts["primitive_hard_gaps"] == 7
     assert module.resource_counts["primitive_next_hard_gaps"] == 1
     assert module.resource_counts["primitive_hard_gap_priority_classes"] == 7
+    assert module.resource_counts["primitive_hard_gap_frontier_classes"] == 7
     assert module.resource_counts["primitive_readiness_registry_incomplete"] == 0
     assert module.resource_counts["primitive_readiness_forward_interchange_only"] == 0
     assert module.resource_counts["primitive_readiness_transform_interchange_only"] == 0
