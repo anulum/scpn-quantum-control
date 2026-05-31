@@ -143,6 +143,8 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.resource_counts["transform_incomplete_primitives"] == 1
     assert module.resource_counts["native_backend_contracts"] == 0
     assert module.resource_counts["native_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["mlir_runtime_contracts"] == 0
+    assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
     assert module.metadata["jvp_rule_primitives"] == ["scpn.quantum:rx_expectation@1"]
@@ -159,6 +161,10 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.metadata["transform_incomplete_primitives"] == ["scpn.quantum:rx_expectation@1"]
     assert module.metadata["native_backend_contract_primitives"] == []
     assert module.metadata["native_backend_incomplete_primitives"] == [
+        "scpn.quantum:rx_expectation@1"
+    ]
+    assert module.metadata["mlir_runtime_contract_primitives"] == []
+    assert module.metadata["mlir_runtime_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
     ]
     assert "scpn_diff.primitive" in module.text
@@ -250,6 +256,8 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.metadata["native_backend_incomplete_primitives"] == [
         "scpn.quantum:policy_only@1"
     ]
+    assert module.metadata["mlir_runtime_contract_primitives"] == []
+    assert module.metadata["mlir_runtime_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["registry_contracts"] == 0
@@ -263,6 +271,8 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["transform_incomplete_primitives"] == 1
     assert module.resource_counts["native_backend_contracts"] == 0
     assert module.resource_counts["native_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["mlir_runtime_contracts"] == 0
+    assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
@@ -351,6 +361,14 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         for status in plan.statuses
         if status.identity.key not in expected_native_contracts
     ]
+    expected_mlir_runtime_contracts = [
+        status.identity.key for status in plan.statuses if status.has_lowering_rule
+    ]
+    expected_mlir_runtime_incomplete = [
+        status.identity.key
+        for status in plan.statuses
+        if status.identity.key not in expected_mlir_runtime_contracts
+    ]
     assert statuses["matrix_power"].has_batching_rule is True
     assert statuses["multi_dot"].has_batching_rule is True
     assert statuses["matrix_power"].has_static_argument_rule is True
@@ -405,6 +423,10 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.metadata["transform_incomplete_primitives"] == expected_transform_incomplete
     assert module.metadata["native_backend_contract_primitives"] == expected_native_contracts
     assert module.metadata["native_backend_incomplete_primitives"] == expected_native_incomplete
+    assert module.metadata["mlir_runtime_contract_primitives"] == expected_mlir_runtime_contracts
+    assert (
+        module.metadata["mlir_runtime_incomplete_primitives"] == expected_mlir_runtime_incomplete
+    )
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
     assert module.resource_counts["registry_contracts"] == 2
@@ -427,6 +449,10 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.resource_counts["native_backend_contracts"] == len(expected_native_contracts)
     assert module.resource_counts["native_backend_incomplete_primitives"] == len(
         expected_native_incomplete
+    )
+    assert module.resource_counts["mlir_runtime_contracts"] == len(expected_mlir_runtime_contracts)
+    assert module.resource_counts["mlir_runtime_incomplete_primitives"] == len(
+        expected_mlir_runtime_incomplete
     )
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
@@ -806,7 +832,13 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert module.metadata["mlir_runtime_lowering_primitives"] == [
         "scpn.program_ad.linalg:matrix_power@1"
     ]
+    assert module.metadata["mlir_runtime_contract_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1"
+    ]
+    assert module.metadata["mlir_runtime_incomplete_primitives"] == []
     assert module.resource_counts["mlir_runtime_lowerings"] == 1
+    assert module.resource_counts["mlir_runtime_contracts"] == 1
+    assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 0
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
     assert "available: executable scpn_diff MLIR-runtime linalg kernel" in module.text

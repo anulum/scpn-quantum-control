@@ -396,6 +396,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             and "blocked" not in status.llvm_lowering.lower()
         )
 
+    def has_mlir_runtime_contract(status: PrimitiveLoweringStatus) -> bool:
+        return status.has_lowering_rule
+
     metadata = {
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
@@ -491,6 +494,14 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if not has_native_backend_contract(status)
         ],
+        "mlir_runtime_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_mlir_runtime_contract(status)
+        ],
+        "mlir_runtime_incomplete_primitives": [
+            status.identity.key
+            for status in plan.statuses
+            if not has_mlir_runtime_contract(status)
+        ],
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key
@@ -567,6 +578,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "native_backend_incomplete_primitives": sum(
                 not has_native_backend_contract(status) for status in plan.statuses
+            ),
+            "mlir_runtime_contracts": sum(
+                has_mlir_runtime_contract(status) for status in plan.statuses
+            ),
+            "mlir_runtime_incomplete_primitives": sum(
+                not has_mlir_runtime_contract(status) for status in plan.statuses
             ),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"
