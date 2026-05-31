@@ -144,6 +144,9 @@ from scpn_quantum_control.differentiable import (
     primitive_static_argument_rule_for,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
+    program_ad_shape_ravel_derivative_rule,
+    program_ad_shape_reshape_derivative_rule,
+    program_ad_shape_transpose_derivative_rule,
     program_adjoint_gradient,
     program_adjoint_result,
     register_custom_derivative_rule,
@@ -4237,6 +4240,79 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
         "ravel": {"shape", "dtype", "static"},
         "transpose": {"shape", "dtype", "static"},
     }
+
+
+def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> None:
+    """Static shape-transform factories should expose exact value, JVP, and VJP rules."""
+
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    values = matrix.reshape(-1)
+    tangent = np.array([0.5, -1.0, 0.25, 2.0, -0.75, 1.25], dtype=np.float64)
+    cotangent_reshape = np.arange(1.0, 7.0, dtype=np.float64).reshape(3, 2)
+
+    reshape_rule = program_ad_shape_reshape_derivative_rule((2, 3), (3, 2))
+    assert reshape_rule.name == "program_ad_shape_reshape_2x3_to_3x2_direct_rule"
+    assert reshape_rule.jvp_rule is not None
+    assert reshape_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        reshape_rule.value_fn(values),
+        matrix.reshape(3, 2).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        reshape_rule.jvp_rule(values, tangent),
+        tangent.reshape(2, 3).reshape(3, 2).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        reshape_rule.vjp_rule(values, cotangent_reshape.reshape(-1)),
+        cotangent_reshape.reshape(2, 3).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    ravel_rule = program_ad_shape_ravel_derivative_rule((2, 3))
+    assert ravel_rule.name == "program_ad_shape_ravel_2x3_direct_rule"
+    assert ravel_rule.jvp_rule is not None
+    assert ravel_rule.vjp_rule is not None
+    np.testing.assert_allclose(ravel_rule.value_fn(values), values, rtol=0.0, atol=0.0)
+    np.testing.assert_allclose(ravel_rule.jvp_rule(values, tangent), tangent, rtol=0.0, atol=0.0)
+    np.testing.assert_allclose(
+        ravel_rule.vjp_rule(values, cotangent_reshape.reshape(-1)),
+        cotangent_reshape.reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    transpose_rule = program_ad_shape_transpose_derivative_rule((2, 3), (1, 0))
+    assert transpose_rule.name == "program_ad_shape_transpose_2x3_axes_1_0_direct_rule"
+    assert transpose_rule.jvp_rule is not None
+    assert transpose_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        transpose_rule.value_fn(values),
+        matrix.transpose(1, 0).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        transpose_rule.jvp_rule(values, tangent),
+        tangent.reshape(2, 3).transpose(1, 0).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        transpose_rule.vjp_rule(values, cotangent_reshape.reshape(-1)),
+        cotangent_reshape.transpose(1, 0).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    with pytest.raises(ValueError, match="same element count"):
+        program_ad_shape_reshape_derivative_rule((2, 3), (4, 2))
+    with pytest.raises(ValueError, match="permutation"):
+        program_ad_shape_transpose_derivative_rule((2, 3), (0, 0))
 
 
 def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:

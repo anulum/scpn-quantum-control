@@ -5626,6 +5626,181 @@ def _program_ad_shape_derivative_rule(name: str) -> CustomDerivativeRule:
     )
 
 
+def _program_ad_shape_normalise_static_shape(
+    primitive_name: str, shape: Sequence[int]
+) -> tuple[int, ...]:
+    normalised = tuple(int(dimension) for dimension in shape)
+    if any(dimension < 0 for dimension in normalised):
+        raise ValueError(
+            f"program AD shape {primitive_name} direct rule requires non-negative dimensions"
+        )
+    return normalised
+
+
+def _program_ad_shape_static_size(shape: tuple[int, ...]) -> int:
+    size = 1
+    for dimension in shape:
+        size *= dimension
+    return size
+
+
+def _program_ad_shape_signature(shape: tuple[int, ...]) -> str:
+    return "scalar" if not shape else "x".join(str(dimension) for dimension in shape)
+
+
+def _program_ad_shape_vector(
+    primitive_name: str,
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    expected_size: int,
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array(f"program AD shape {primitive_name} {role}", values).reshape(
+        -1
+    )
+    if vector.size != expected_size:
+        raise ValueError(
+            f"program AD shape {primitive_name} direct rule requires {role} "
+            f"with {expected_size} values"
+        )
+    return vector
+
+
+def program_ad_shape_reshape_derivative_rule(
+    source_shape: Sequence[int],
+    target_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed reshape signature."""
+
+    source = _program_ad_shape_normalise_static_shape("reshape", source_shape)
+    target = _program_ad_shape_normalise_static_shape("reshape", target_shape)
+    source_size = _program_ad_shape_static_size(source)
+    target_size = _program_ad_shape_static_size(target)
+    if source_size != target_size:
+        raise ValueError(
+            "program AD shape reshape direct rule requires source and target "
+            "with the same element count"
+        )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("reshape", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(vector.reshape(source).reshape(target))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("reshape", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "reshape", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(tangent_vector.reshape(source).reshape(target))
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("reshape", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "reshape", "cotangent", cotangent, expected_size=target_size
+        )
+        return _program_ad_float64_vector_result(cotangent_vector.reshape(target).reshape(source))
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_reshape_"
+            f"{_program_ad_shape_signature(source)}_to_"
+            f"{_program_ad_shape_signature(target)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_shape_ravel_derivative_rule(source_shape: Sequence[int]) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed ravel signature."""
+
+    source = _program_ad_shape_normalise_static_shape("ravel", source_shape)
+    source_size = _program_ad_shape_static_size(source)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_shape_vector("ravel", "values", values, expected_size=source_size)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("ravel", "values", values, expected_size=source_size)
+        return _program_ad_shape_vector("ravel", "tangent", tangent, expected_size=source_size)
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("ravel", "values", values, expected_size=source_size)
+        return _program_ad_shape_vector("ravel", "cotangent", cotangent, expected_size=source_size)
+
+    return CustomDerivativeRule(
+        name=f"program_ad_shape_ravel_{_program_ad_shape_signature(source)}_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_normalise_static_axes(
+    source_shape: tuple[int, ...],
+    axes: Sequence[int] | None,
+) -> tuple[int, ...]:
+    if axes is None:
+        return tuple(reversed(range(len(source_shape))))
+    normalised = tuple(int(axis) for axis in axes)
+    if len(normalised) != len(source_shape) or set(normalised) != set(range(len(source_shape))):
+        raise ValueError("program AD shape transpose direct rule requires axes permutation")
+    return normalised
+
+
+def program_ad_shape_transpose_derivative_rule(
+    source_shape: Sequence[int],
+    axes: Sequence[int] | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed transpose signature."""
+
+    source = _program_ad_shape_normalise_static_shape("transpose", source_shape)
+    normalised_axes = _program_ad_shape_normalise_static_axes(source, axes)
+    inverse_axes = tuple(int(axis) for axis in np.argsort(normalised_axes))
+    source_size = _program_ad_shape_static_size(source)
+    target = tuple(source[axis] for axis in normalised_axes)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("transpose", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(vector.reshape(source).transpose(normalised_axes))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("transpose", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "transpose", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            tangent_vector.reshape(source).transpose(normalised_axes)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("transpose", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "transpose", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            cotangent_vector.reshape(target).transpose(inverse_axes)
+        )
+
+    axes_signature = "_".join(str(axis) for axis in normalised_axes)
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_transpose_"
+            f"{_program_ad_shape_signature(source)}_axes_{axes_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_reduction_vector(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
     vector = _as_real_numeric_array(f"program AD reduction {name} values", values).reshape(-1)
     if vector.size == 0:
@@ -12289,6 +12464,9 @@ __all__ = [
     "primitive_static_argument_rule_for",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
+    "program_ad_shape_ravel_derivative_rule",
+    "program_ad_shape_reshape_derivative_rule",
+    "program_ad_shape_transpose_derivative_rule",
     "program_adjoint_gradient",
     "program_adjoint_result",
     "registered_custom_jacobian",
