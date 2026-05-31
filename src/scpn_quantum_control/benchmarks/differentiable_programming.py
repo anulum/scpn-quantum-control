@@ -480,6 +480,11 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     interp_static_fp = np.array([0.75, -1.25, 1.5, -0.5], dtype=np.float64)
     interp_sample_weights = np.array([0.45, -0.35], dtype=np.float64)
     interp_control_weights = np.array([1.1, -0.7, 0.3], dtype=np.float64)
+    convolve_full_weights = np.array([0.2, -0.35, 0.5, -0.65, 0.8], dtype=np.float64)
+    convolve_same_kernel = np.array([0.4, -0.2], dtype=np.float64)
+    convolve_same_weights = np.array([1.0, -0.75, 0.5, -0.25, 0.125, -0.5], dtype=np.float64)
+    convolve_static_signal = np.array([0.75, -1.25, 1.5, -0.5], dtype=np.float64)
+    convolve_valid_weights = np.array([0.6, -0.4], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
         matrix = np.reshape(trace_values, (2, 3))
@@ -537,6 +542,13 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             np.array([-2.5, 1.0, 4.0], dtype=np.float64),
             interp_xp,
             trace_values[2:],
+        )
+        dynamic_convolution = np.convolve(trace_values[:3], trace_values[3:], mode="full")
+        static_kernel_convolution = np.convolve(trace_values, convolve_same_kernel, mode="same")
+        static_signal_convolution = np.convolve(
+            convolve_static_signal,
+            trace_values[3:],
+            mode="valid",
         )
         return (
             np.sum(block * block_weights)
@@ -684,16 +696,19 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             + 0.027 * np.sum(axis_gradient * gradient_axis_weights)
             + 0.029 * np.sum(sample_interpolation * interp_sample_weights)
             + 0.034 * np.sum(control_interpolation * interp_control_weights)
+            + 0.023 * np.sum(dynamic_convolution * convolve_full_weights)
+            + 0.019 * np.sum(static_kernel_convolution * convolve_same_weights)
+            - 0.017 * np.sum(static_signal_convolution * convolve_valid_weights)
         )
 
     analytic = np.array(
         [
-            6.18453125,
-            4.366166666666667,
-            4.930779166666667,
-            5.398370833333333,
-            8.34345,
-            12.0424125,
+            6.24385625,
+            4.2872666666666674,
+            5.029254166666667,
+            5.403745833333333,
+            8.330725000000001,
+            12.073062499999999,
         ],
         dtype=np.float64,
     )

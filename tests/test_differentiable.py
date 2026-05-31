@@ -8903,6 +8903,76 @@ def test_program_ad_interp_fails_closed_invalid_static_contracts() -> None:
         )
 
 
+def test_program_ad_convolve_matches_signal_kernel_adjoint() -> None:
+    """Program AD np.convolve should replay exact signal and kernel adjoints."""
+
+    static_kernel = np.array([0.75, -1.25, 0.5], dtype=np.float64)
+    static_signal = np.array([1.5, -0.5, 2.0, 0.25], dtype=np.float64)
+    full_weights = np.array([0.2, -0.4, 0.6, -0.8, 1.0, -1.2], dtype=np.float64)
+    same_weights = np.array([-0.5, 0.25, 1.25, -0.75], dtype=np.float64)
+    valid_weights = np.array([1.4, -0.9], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        signal = values[:4]
+        kernel = values[4:]
+        return (
+            np.sum(np.convolve(signal, kernel, mode="full") * full_weights)
+            + 0.31 * np.sum(np.convolve(signal, static_kernel, mode="same") * same_weights)
+            - 0.17 * np.sum(np.convolve(static_signal, kernel, mode="valid") * valid_weights)
+        )
+
+    values = np.array([1.0, -2.0, 0.5, 3.0, -1.5, 2.0, 0.75], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros_like(values)
+    signal = values[:4]
+    kernel = values[4:]
+    for source_index in range(4):
+        basis_signal = np.zeros(4, dtype=np.float64)
+        basis_signal[source_index] = 1.0
+        expected[source_index] = np.sum(
+            np.convolve(basis_signal, kernel, mode="full") * full_weights
+        ) + 0.31 * np.sum(np.convolve(basis_signal, static_kernel, mode="same") * same_weights)
+    for kernel_index in range(3):
+        basis_kernel = np.zeros(3, dtype=np.float64)
+        basis_kernel[kernel_index] = 1.0
+        expected[4 + kernel_index] = np.sum(
+            np.convolve(signal, basis_kernel, mode="full") * full_weights
+        ) - 0.17 * np.sum(np.convolve(static_signal, basis_kernel, mode="valid") * valid_weights)
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), expected, atol=1.0e-12)
+
+
+def test_program_ad_convolve_fails_closed_invalid_contracts() -> None:
+    """Program AD np.convolve should reject invalid rank, mode, and empty operands."""
+
+    with pytest.raises(ValueError, match="mode must be"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.convolve(values, np.array([1.0]), mode=True)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="one-dimensional"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.convolve(np.reshape(values[:4], (2, 2)), np.array([1.0, -0.5]))
+            ),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="non-empty"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.convolve(values[:0], np.array([1.0]))),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_trapezoid_matches_static_grid_adjoint() -> None:
     """Program AD trapezoidal integration should apply exact static-grid adjoints."""
 

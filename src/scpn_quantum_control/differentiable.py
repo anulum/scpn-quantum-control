@@ -1191,6 +1191,17 @@ class TraceADArray:
                 period=args[5] if len(args) >= 6 else kwargs.get("period"),
                 context=self.context,
             )
+        if func is np.convolve:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"mode"}:
+                raise ValueError("program AD np.convolve supports two operands and mode")
+            if len(args) == 3 and "mode" in kwargs:
+                raise ValueError("program AD np.convolve mode must be supplied once")
+            return _trace_convolve(
+                args[0],
+                args[1],
+                context=self.context,
+                mode=args[2] if len(args) == 3 else kwargs.get("mode", "full"),
+            )
         if func in {np.zeros_like, np.ones_like}:
             if len(args) != 1:
                 raise ValueError("program AD like-constructors require one reference array")
@@ -2965,6 +2976,70 @@ def _trace_interp(
     if shape == ():
         return outputs[0]
     return TraceADArray(outputs, shape, context)
+
+
+def _normalise_convolve_mode(mode: object) -> Literal["full", "same", "valid"]:
+    if not isinstance(mode, str) or mode not in {"full", "same", "valid"}:
+        raise ValueError("program AD np.convolve mode must be 'full', 'same', or 'valid'")
+    return cast(Literal["full", "same", "valid"], mode)
+
+
+def _normalise_convolve_operand(
+    name: str, operand: object, context: _WholeProgramTraceContext
+) -> tuple[TraceADScalar, ...]:
+    if isinstance(operand, TraceADArray):
+        if operand.ndim != 1:
+            raise ValueError(f"program AD np.convolve {name} operand must be one-dimensional")
+        if operand.size == 0:
+            raise ValueError(f"program AD np.convolve {name} operand must be non-empty")
+        return tuple(operand._items)
+    if isinstance(operand, TraceADScalar):
+        raise ValueError(f"program AD np.convolve {name} operand must be one-dimensional")
+    values = _as_real_numeric_array(f"program AD np.convolve {name} operand", operand)
+    if values.ndim != 1:
+        raise ValueError(f"program AD np.convolve {name} operand must be one-dimensional")
+    if values.size == 0:
+        raise ValueError(f"program AD np.convolve {name} operand must be non-empty")
+    if not bool(np.all(np.isfinite(values))):
+        raise ValueError(f"program AD np.convolve {name} operand must contain only finite values")
+    return tuple(_coerce_trace_scalar(float(value), context) for value in values)
+
+
+def _convolve_output_window(
+    left_size: int, right_size: int, mode: Literal["full", "same", "valid"]
+) -> tuple[int, int]:
+    if mode == "full":
+        return 0, left_size + right_size - 1
+    if mode == "same":
+        output_size = max(left_size, right_size)
+        start = (min(left_size, right_size) - 1) // 2
+        return start, start + output_size
+    output_size = max(left_size, right_size) - min(left_size, right_size) + 1
+    start = min(left_size, right_size) - 1
+    return start, start + output_size
+
+
+def _trace_convolve(
+    left: object,
+    right: object,
+    *,
+    context: _WholeProgramTraceContext,
+    mode: object = "full",
+) -> TraceADArray:
+    mode_value = _normalise_convolve_mode(mode)
+    left_values = _normalise_convolve_operand("left", left, context)
+    right_values = _normalise_convolve_operand("right", right, context)
+    full_items: list[TraceADScalar] = []
+    for output_index in range(len(left_values) + len(right_values) - 1):
+        total = _coerce_trace_scalar(0.0, context)
+        left_start = max(0, output_index - len(right_values) + 1)
+        left_stop = min(len(left_values), output_index + 1)
+        for left_index in range(left_start, left_stop):
+            right_index = output_index - left_index
+            total = total + left_values[left_index] * right_values[right_index]
+        full_items.append(total)
+    start, stop = _convolve_output_window(len(left_values), len(right_values), mode_value)
+    return TraceADArray(tuple(full_items[start:stop]), (stop - start,), context)
 
 
 def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
