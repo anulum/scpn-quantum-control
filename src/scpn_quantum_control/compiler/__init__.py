@@ -27,12 +27,14 @@ from .mlir import (
     compile_scalar_quadratic_ad_to_native_llvm_jit,
     compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
     compile_vector_dot_ad_to_native_llvm_jit,
+    compile_vector_squared_norm_ad_to_native_llvm_jit,
     compile_whole_program_ad_trace_to_mlir,
     make_matrix_quadratic_form_native_llvm_jit_lowering_rule,
     make_scalar_binary_elementwise_native_llvm_jit_lowering_rule,
     make_scalar_quadratic_native_llvm_jit_lowering_rule,
     make_scalar_unary_elementwise_native_llvm_jit_lowering_rule,
     make_vector_dot_native_llvm_jit_lowering_rule,
+    make_vector_squared_norm_native_llvm_jit_lowering_rule,
 )
 
 __all__ = [
@@ -54,6 +56,7 @@ __all__ = [
     "compile_scalar_quadratic_ad_to_native_llvm_jit",
     "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
     "compile_vector_dot_ad_to_native_llvm_jit",
+    "compile_vector_squared_norm_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "make_matrix_quadratic_form_native_llvm_jit_lowering_rule",
@@ -61,4 +64,5 @@ __all__ = [
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
     "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_lowering_rule",
+    "make_vector_squared_norm_native_llvm_jit_lowering_rule",
 ]
