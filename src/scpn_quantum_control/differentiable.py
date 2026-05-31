@@ -1429,6 +1429,16 @@ class TraceADArray:
                 mode=mode,
                 constant_values=kwargs.get("constant_values", 0.0),
             )
+        if func is np.insert:
+            if len(args) < 3 or len(args) > 4 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.insert supports array, object, values, and axis")
+            axis = args[3] if len(args) == 4 else kwargs.get("axis")
+            return _trace_insert(
+                _coerce_trace_array(args[0], self.context),
+                args[1],
+                args[2],
+                axis=axis,
+            )
         if func is np.transpose:
             if len(args) != 1 or kwargs.keys() - {"axes"}:
                 raise ValueError("whole-program AD np.transpose supports one array and axes")
@@ -2829,6 +2839,140 @@ def _trace_pad(
         array.shape,
         pad_width,
         constant_values,
+        context="trace",
+    )
+    items = tuple(
+        array._items[int(index)]
+        if int(index) >= 0
+        else _trace_constant(float(flat_constants[position]), array.context)
+        for position, index in enumerate(flat_indices)
+    )
+    return TraceADArray(items, output_shape, array.context)
+
+
+def _program_ad_array_insert_object(obj: object, *, context: str) -> object:
+    if isinstance(obj, (TraceADScalar, TraceADArray)):
+        raise ValueError(
+            f"program AD array insert {context} requires static integer insertion indices"
+        )
+    if isinstance(obj, (bool, np.bool_)):
+        raise ValueError(
+            f"program AD array insert {context} requires static integer insertion indices"
+        )
+    if isinstance(obj, (int, np.integer)):
+        return int(obj)
+    if isinstance(obj, slice):
+        components = (obj.start, obj.stop, obj.step)
+        if any(
+            component is not None
+            and (
+                isinstance(component, (bool, np.bool_))
+                or not isinstance(component, (int, np.integer))
+            )
+            for component in components
+        ):
+            raise ValueError(
+                f"program AD array insert {context} requires static integer insertion indices"
+            )
+        return slice(
+            None if obj.start is None else int(cast(int | np.integer, obj.start)),
+            None if obj.stop is None else int(cast(int | np.integer, obj.stop)),
+            None if obj.step is None else int(cast(int | np.integer, obj.step)),
+        )
+    raw_obj = np.asarray(obj)
+    if raw_obj.dtype.kind not in {"i", "u"}:
+        raise ValueError(
+            f"program AD array insert {context} requires static integer insertion indices"
+        )
+    if raw_obj.shape == ():
+        return int(raw_obj)
+    return np.asarray(raw_obj, dtype=np.int64)
+
+
+def _program_ad_array_insert_values(values: object, *, context: str) -> NDArray[np.float64]:
+    if _program_ad_contains_trace_value(values):
+        raise ValueError(
+            f"program AD array insert {context} requires static finite real insert values"
+        )
+    raw_values = np.asarray(values)
+    if raw_values.dtype.kind in {"O", "S", "U", "c"}:
+        raise ValueError(
+            f"program AD array insert {context} requires static finite real insert values"
+        )
+    insert_values = np.asarray(raw_values, dtype=np.float64)
+    if not np.all(np.isfinite(insert_values)):
+        raise ValueError(
+            f"program AD array insert {context} requires static finite real insert values"
+        )
+    return cast(NDArray[np.float64], insert_values)
+
+
+def _program_ad_array_insert_axis(axis: object, ndim: int, *, context: str) -> int | None:
+    if axis is None:
+        return None
+    if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+        raise ValueError(
+            f"program AD array insert {context} requires a static integer axis or None"
+        )
+    return _normalise_axis("axis", int(axis), ndim)
+
+
+def _program_ad_array_insert_layout(
+    source_shape: tuple[int, ...],
+    obj: object,
+    values: object,
+    axis: object,
+    *,
+    context: str,
+) -> tuple[NDArray[np.int64], NDArray[np.float64], tuple[int, ...]]:
+    insert_obj = _program_ad_array_insert_object(obj, context=context)
+    insert_values = _program_ad_array_insert_values(values, context=context)
+    normalised_axis = _program_ad_array_insert_axis(axis, len(source_shape), context=context)
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    source_zeros = np.zeros(source_shape, dtype=np.float64)
+    marker_values: object
+    marker_values = -1 if insert_values.shape == () else np.full(insert_values.shape, -1)
+    source = source_indices.reshape(-1) if normalised_axis is None else source_indices
+    try:
+        inserted_indices = np.insert(
+            source,
+            cast(Any, insert_obj),
+            cast(Any, marker_values),
+            axis=normalised_axis,
+        )
+        inserted_constants = np.insert(
+            source_zeros.reshape(-1) if normalised_axis is None else source_zeros,
+            cast(Any, insert_obj),
+            insert_values,
+            axis=normalised_axis,
+        )
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array insert requires static insertion indices and insert values "
+            "compatible with the source shape"
+        ) from exc
+    return (
+        cast(NDArray[np.int64], np.asarray(inserted_indices, dtype=np.int64).reshape(-1)),
+        cast(NDArray[np.float64], np.asarray(inserted_constants, dtype=np.float64).reshape(-1)),
+        tuple(int(dimension) for dimension in np.asarray(inserted_indices).shape),
+    )
+
+
+def _trace_insert(
+    array: TraceADArray,
+    obj: object,
+    values: object,
+    *,
+    axis: object,
+) -> TraceADArray:
+    _require_program_ad_array_contract("insert", (array, obj, values, axis))
+    flat_indices, flat_constants, output_shape = _program_ad_array_insert_layout(
+        array.shape,
+        obj,
+        values,
+        axis,
         context="trace",
     )
     items = tuple(
@@ -5871,7 +6015,7 @@ _PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE = "scpn.program_ad.array"
 _PROGRAM_AD_ARRAY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ARRAY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("getitem", "take", "take_along_axis", "delete", "pad")
+    for name in ("getitem", "take", "take_along_axis", "delete", "pad", "insert")
 }
 
 _PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE = "scpn.program_ad.shape"
@@ -6481,6 +6625,69 @@ def program_ad_array_pad_derivative_rule(
         name=(
             "program_ad_array_pad_"
             f"{_program_ad_array_signature(source)}_static_constant_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_array_insert_derivative_rule(
+    source_shape: Sequence[int],
+    obj: object,
+    values: object,
+    *,
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed static constant insertion."""
+
+    source = _program_ad_array_normalise_static_shape("insert", source_shape)
+    flat_indices, flat_constants, _ = _program_ad_array_insert_layout(
+        source,
+        obj,
+        values,
+        axis,
+        context="direct rule",
+    )
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
+    axis_signature = "flat" if normalised_axis is None else str(normalised_axis)
+
+    def value_fn(source_values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_value(
+            "insert",
+            source_values,
+            source_shape=source,
+            flat_indices=flat_indices,
+            flat_constants=flat_constants,
+        )
+
+    def jvp_rule(
+        source_values: NDArray[np.float64], tangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_jvp(
+            "insert",
+            source_values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        source_values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_vjp(
+            "insert",
+            source_values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_array_insert_"
+            f"{_program_ad_array_signature(source)}_axis_{axis_signature}"
+            "_static_constant_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -9248,6 +9455,21 @@ def _program_ad_array_pad_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return output_shape
 
 
+def _program_ad_array_insert_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {3, 4}:
+        raise ValueError(
+            "program AD array insert shape rule requires array, object, values, and axis"
+        )
+    _, _, output_shape = _program_ad_array_insert_layout(
+        _program_ad_array_shape_of(args[0]),
+        args[1],
+        args[2],
+        args[3] if len(args) == 4 else None,
+        context="shape rule",
+    )
+    return output_shape
+
+
 def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
     if not args:
         raise ValueError("program AD array dtype rule requires an array operand")
@@ -9670,6 +9892,43 @@ def _program_ad_array_pad_static_arguments(args: tuple[object, ...]) -> tuple[ob
     )
 
 
+def _program_ad_array_insert_static_object(obj: object) -> object:
+    insert_obj = _program_ad_array_insert_object(obj, context="static rule")
+    if isinstance(insert_obj, int):
+        return insert_obj
+    if isinstance(insert_obj, slice):
+        return insert_obj
+    return tuple(int(index) for index in np.asarray(insert_obj).reshape(-1))
+
+
+def _program_ad_array_insert_static_values(values: object) -> object:
+    insert_values = _program_ad_array_insert_values(values, context="static rule")
+    if insert_values.shape == ():
+        return float(insert_values)
+    return (
+        "static_insert_values",
+        tuple(int(dimension) for dimension in insert_values.shape),
+        tuple(float(item) for item in insert_values.reshape(-1)),
+    )
+
+
+def _program_ad_array_insert_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {3, 4}:
+        raise ValueError(
+            "program AD array insert static rule requires array, object, values, and axis"
+        )
+    normalised_axis = _program_ad_array_insert_axis(
+        args[3] if len(args) == 4 else None,
+        len(_program_ad_array_shape_of(args[0])),
+        context="static rule",
+    )
+    return (
+        _program_ad_array_insert_static_object(args[1]),
+        _program_ad_array_insert_static_values(args[2]),
+        normalised_axis,
+    )
+
+
 def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD shape reshape static rule requires array and target shape")
@@ -9757,6 +10016,7 @@ _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "take_along_axis": _program_ad_array_take_along_axis_shape,
     "delete": _program_ad_array_delete_shape,
     "pad": _program_ad_array_pad_shape,
+    "insert": _program_ad_array_insert_shape,
 }
 
 _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
@@ -9765,6 +10025,7 @@ _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRul
     "take_along_axis": _program_ad_array_take_along_axis_static_arguments,
     "delete": _program_ad_array_delete_static_arguments,
     "pad": _program_ad_array_pad_static_arguments,
+    "insert": _program_ad_array_insert_static_arguments,
 }
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -9861,6 +10122,7 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "take_along_axis": "source_shape:ranked_tensor_shape;indices_shape_axis",
         "delete": "source_shape:ranked_tensor_shape;object_axis",
         "pad": "source_shape:ranked_tensor_shape;pad_width_constant_values",
+        "insert": "source_shape:ranked_tensor_shape;object_values_axis",
     }[name]
     static_factory = {
         "getitem": "program_ad_array_getitem_derivative_rule",
@@ -9868,6 +10130,7 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "take_along_axis": "program_ad_array_take_along_axis_derivative_rule",
         "delete": "program_ad_array_delete_derivative_rule",
         "pad": "program_ad_array_pad_derivative_rule",
+        "insert": "program_ad_array_insert_derivative_rule",
     }[name]
     nondifferentiable_boundaries = {
         "getitem": "static_gather_index_scatter_add",
@@ -9875,6 +10138,7 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "take_along_axis": "static_along_axis_gather_scatter_add",
         "delete": "static_delete_gather_scatter_add",
         "pad": "static_constant_pad_scatter_add",
+        "insert": "static_constant_insert_scatter_add",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -15953,6 +16217,7 @@ __all__ = [
     "primitive_static_argument_rule_for",
     "program_ad_array_delete_derivative_rule",
     "program_ad_array_getitem_derivative_rule",
+    "program_ad_array_insert_derivative_rule",
     "program_ad_array_pad_derivative_rule",
     "program_ad_array_take_along_axis_derivative_rule",
     "program_ad_array_take_derivative_rule",

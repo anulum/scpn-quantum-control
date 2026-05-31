@@ -459,6 +459,7 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         axis_deleted = np.delete(matrix, [1], axis=1)
         flat_deleted = np.delete(trace_values, [1, 4])
         padded = np.pad(matrix, ((1, 0), (1, 0)), mode="constant", constant_values=-0.75)
+        inserted = np.insert(matrix, 1, np.array([-0.25, 0.5]), axis=1)
         column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
         depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
         flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
@@ -489,6 +490,14 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
                     dtype=np.float64,
                 )
             )
+            + 0.12
+            * np.sum(
+                inserted
+                * np.array(
+                    [[1.0, -4.0, 2.0, 0.5], [-1.0, 3.0, 1.5, -2.0]],
+                    dtype=np.float64,
+                )
+            )
             + np.sum(column_assembled * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
             + np.sum(
                 depth_stacked
@@ -505,7 +514,7 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             )
         )
 
-    analytic = np.array([5.65, 4.4125, 4.75, 5.375, 8.025, 12.425], dtype=np.float64)
+    analytic = np.array([5.77, 4.6525, 4.81, 5.255, 8.205, 12.185], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",
