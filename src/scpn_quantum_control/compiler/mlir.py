@@ -102,6 +102,7 @@ class PrimitiveLoweringStatus:
     mlir_lowering: str = "available: scpn_diff dialect interchange"
     rust_lowering: str = "blocked: no Rust differentiable primitive backend"
     llvm_lowering: str = "blocked: no LLVM/JIT differentiable primitive backend"
+    jit_lowering: str = "blocked: no JIT differentiable primitive backend"
 
     def __post_init__(self) -> None:
         if not isinstance(self.identity, PrimitiveIdentity):
@@ -196,6 +197,7 @@ class PrimitiveLoweringStatus:
             ("mlir_lowering", self.mlir_lowering),
             ("rust_lowering", self.rust_lowering),
             ("llvm_lowering", self.llvm_lowering),
+            ("jit_lowering", self.jit_lowering),
         ):
             if not isinstance(status, str) or not status:
                 raise ValueError(f"{label} must be non-empty")
@@ -210,6 +212,8 @@ class PrimitiveLoweringStatus:
             raise ValueError("rust_lowering must remain blocked until Rust AD lowering exists")
         if "blocked" not in self.llvm_lowering.lower():
             raise ValueError("llvm_lowering must remain blocked until LLVM/JIT AD lowering exists")
+        if "blocked" not in self.jit_lowering.lower():
+            raise ValueError("jit_lowering must remain blocked until JIT AD lowering exists")
 
 
 @dataclass(frozen=True)
@@ -304,6 +308,9 @@ def build_compiler_ad_transform_plan(
                 llvm_lowering=metadata.get(
                     "llvm", "blocked: no LLVM/JIT differentiable primitive backend"
                 ),
+                jit_lowering=metadata.get(
+                    "jit", "blocked: no JIT differentiable primitive backend"
+                ),
             )
         )
     return CompilerADTransformPlan(tuple(statuses), dialect=dialect, transform=transform)
@@ -345,7 +352,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f'{{identity = "{_escape_mlir_string(status.identity.key)}", '
             f'mlir = "{_escape_mlir_string(status.mlir_lowering)}", '
             f'rust = "{_escape_mlir_string(status.rust_lowering)}", '
-            f'llvm = "{_escape_mlir_string(status.llvm_lowering)}"}}'
+            f'llvm = "{_escape_mlir_string(status.llvm_lowering)}", '
+            f'jit = "{_escape_mlir_string(status.jit_lowering)}"}}'
         )
         for key, value in sorted(status.lowering_metadata.items()):
             lines.append(
@@ -390,10 +398,20 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             and has_adjoint_contract(status)
         )
 
+    def has_rust_backend_contract(status: PrimitiveLoweringStatus) -> bool:
+        return "blocked" not in status.rust_lowering.lower()
+
+    def has_llvm_backend_contract(status: PrimitiveLoweringStatus) -> bool:
+        return "blocked" not in status.llvm_lowering.lower()
+
+    def has_jit_backend_contract(status: PrimitiveLoweringStatus) -> bool:
+        return "blocked" not in status.jit_lowering.lower()
+
     def has_native_backend_contract(status: PrimitiveLoweringStatus) -> bool:
         return (
-            "blocked" not in status.rust_lowering.lower()
-            and "blocked" not in status.llvm_lowering.lower()
+            has_rust_backend_contract(status)
+            and has_llvm_backend_contract(status)
+            and has_jit_backend_contract(status)
         )
 
     def has_mlir_runtime_contract(status: PrimitiveLoweringStatus) -> bool:
@@ -494,6 +512,28 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if not has_native_backend_contract(status)
         ],
+        "rust_backend_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_rust_backend_contract(status)
+        ],
+        "rust_backend_incomplete_primitives": [
+            status.identity.key
+            for status in plan.statuses
+            if not has_rust_backend_contract(status)
+        ],
+        "llvm_backend_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_llvm_backend_contract(status)
+        ],
+        "llvm_backend_incomplete_primitives": [
+            status.identity.key
+            for status in plan.statuses
+            if not has_llvm_backend_contract(status)
+        ],
+        "jit_backend_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_jit_backend_contract(status)
+        ],
+        "jit_backend_incomplete_primitives": [
+            status.identity.key for status in plan.statuses if not has_jit_backend_contract(status)
+        ],
         "mlir_runtime_contract_primitives": [
             status.identity.key for status in plan.statuses if has_mlir_runtime_contract(status)
         ],
@@ -578,6 +618,24 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "native_backend_incomplete_primitives": sum(
                 not has_native_backend_contract(status) for status in plan.statuses
+            ),
+            "rust_backend_contracts": sum(
+                has_rust_backend_contract(status) for status in plan.statuses
+            ),
+            "rust_backend_incomplete_primitives": sum(
+                not has_rust_backend_contract(status) for status in plan.statuses
+            ),
+            "llvm_backend_contracts": sum(
+                has_llvm_backend_contract(status) for status in plan.statuses
+            ),
+            "llvm_backend_incomplete_primitives": sum(
+                not has_llvm_backend_contract(status) for status in plan.statuses
+            ),
+            "jit_backend_contracts": sum(
+                has_jit_backend_contract(status) for status in plan.statuses
+            ),
+            "jit_backend_incomplete_primitives": sum(
+                not has_jit_backend_contract(status) for status in plan.statuses
             ),
             "mlir_runtime_contracts": sum(
                 has_mlir_runtime_contract(status) for status in plan.statuses

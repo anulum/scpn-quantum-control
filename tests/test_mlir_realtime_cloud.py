@@ -143,6 +143,12 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.resource_counts["transform_incomplete_primitives"] == 1
     assert module.resource_counts["native_backend_contracts"] == 0
     assert module.resource_counts["native_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["rust_backend_contracts"] == 0
+    assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["llvm_backend_contracts"] == 0
+    assert module.resource_counts["llvm_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["jit_backend_contracts"] == 0
+    assert module.resource_counts["jit_backend_incomplete_primitives"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 0
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
     assert module.resource_counts["executable_backends"] == 0
@@ -163,6 +169,18 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.metadata["native_backend_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
     ]
+    assert module.metadata["rust_backend_contract_primitives"] == []
+    assert module.metadata["rust_backend_incomplete_primitives"] == [
+        "scpn.quantum:rx_expectation@1"
+    ]
+    assert module.metadata["llvm_backend_contract_primitives"] == []
+    assert module.metadata["llvm_backend_incomplete_primitives"] == [
+        "scpn.quantum:rx_expectation@1"
+    ]
+    assert module.metadata["jit_backend_contract_primitives"] == []
+    assert module.metadata["jit_backend_incomplete_primitives"] == [
+        "scpn.quantum:rx_expectation@1"
+    ]
     assert module.metadata["mlir_runtime_contract_primitives"] == []
     assert module.metadata["mlir_runtime_incomplete_primitives"] == [
         "scpn.quantum:rx_expectation@1"
@@ -179,6 +197,7 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert 'execution = "interchange_only"' in module.text
     assert "blocked: rust batching backend not linked" in module.text
     assert "blocked: llvm lowering backend not linked" in module.text
+    assert "blocked: no JIT differentiable primitive backend" in module.text
     assert "scpn_diff.rx_expectation" in module.text
 
 
@@ -256,6 +275,12 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.metadata["native_backend_incomplete_primitives"] == [
         "scpn.quantum:policy_only@1"
     ]
+    assert module.metadata["rust_backend_contract_primitives"] == []
+    assert module.metadata["rust_backend_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["llvm_backend_contract_primitives"] == []
+    assert module.metadata["llvm_backend_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["jit_backend_contract_primitives"] == []
+    assert module.metadata["jit_backend_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.metadata["mlir_runtime_contract_primitives"] == []
     assert module.metadata["mlir_runtime_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
@@ -271,6 +296,12 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["transform_incomplete_primitives"] == 1
     assert module.resource_counts["native_backend_contracts"] == 0
     assert module.resource_counts["native_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["rust_backend_contracts"] == 0
+    assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["llvm_backend_contracts"] == 0
+    assert module.resource_counts["llvm_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["jit_backend_contracts"] == 0
+    assert module.resource_counts["jit_backend_incomplete_primitives"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 0
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 1
     assert module.resource_counts["effects"] == 0
@@ -355,11 +386,42 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         for status in plan.statuses
         if "blocked" not in status.rust_lowering.lower()
         and "blocked" not in status.llvm_lowering.lower()
+        and "blocked" not in status.jit_lowering.lower()
     ]
     expected_native_incomplete = [
         status.identity.key
         for status in plan.statuses
         if status.identity.key not in expected_native_contracts
+    ]
+    expected_rust_contracts = [
+        status.identity.key
+        for status in plan.statuses
+        if "blocked" not in status.rust_lowering.lower()
+    ]
+    expected_rust_incomplete = [
+        status.identity.key
+        for status in plan.statuses
+        if status.identity.key not in expected_rust_contracts
+    ]
+    expected_llvm_contracts = [
+        status.identity.key
+        for status in plan.statuses
+        if "blocked" not in status.llvm_lowering.lower()
+    ]
+    expected_llvm_incomplete = [
+        status.identity.key
+        for status in plan.statuses
+        if status.identity.key not in expected_llvm_contracts
+    ]
+    expected_jit_contracts = [
+        status.identity.key
+        for status in plan.statuses
+        if "blocked" not in status.jit_lowering.lower()
+    ]
+    expected_jit_incomplete = [
+        status.identity.key
+        for status in plan.statuses
+        if status.identity.key not in expected_jit_contracts
     ]
     expected_mlir_runtime_contracts = [
         status.identity.key for status in plan.statuses if status.has_lowering_rule
@@ -423,6 +485,12 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.metadata["transform_incomplete_primitives"] == expected_transform_incomplete
     assert module.metadata["native_backend_contract_primitives"] == expected_native_contracts
     assert module.metadata["native_backend_incomplete_primitives"] == expected_native_incomplete
+    assert module.metadata["rust_backend_contract_primitives"] == expected_rust_contracts
+    assert module.metadata["rust_backend_incomplete_primitives"] == expected_rust_incomplete
+    assert module.metadata["llvm_backend_contract_primitives"] == expected_llvm_contracts
+    assert module.metadata["llvm_backend_incomplete_primitives"] == expected_llvm_incomplete
+    assert module.metadata["jit_backend_contract_primitives"] == expected_jit_contracts
+    assert module.metadata["jit_backend_incomplete_primitives"] == expected_jit_incomplete
     assert module.metadata["mlir_runtime_contract_primitives"] == expected_mlir_runtime_contracts
     assert (
         module.metadata["mlir_runtime_incomplete_primitives"] == expected_mlir_runtime_incomplete
@@ -449,6 +517,18 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.resource_counts["native_backend_contracts"] == len(expected_native_contracts)
     assert module.resource_counts["native_backend_incomplete_primitives"] == len(
         expected_native_incomplete
+    )
+    assert module.resource_counts["rust_backend_contracts"] == len(expected_rust_contracts)
+    assert module.resource_counts["rust_backend_incomplete_primitives"] == len(
+        expected_rust_incomplete
+    )
+    assert module.resource_counts["llvm_backend_contracts"] == len(expected_llvm_contracts)
+    assert module.resource_counts["llvm_backend_incomplete_primitives"] == len(
+        expected_llvm_incomplete
+    )
+    assert module.resource_counts["jit_backend_contracts"] == len(expected_jit_contracts)
+    assert module.resource_counts["jit_backend_incomplete_primitives"] == len(
+        expected_jit_incomplete
     )
     assert module.resource_counts["mlir_runtime_contracts"] == len(expected_mlir_runtime_contracts)
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == len(
@@ -727,6 +807,15 @@ def test_primitive_lowering_status_rejects_native_backend_overclaims() -> None:
             mlir_op="scpn_diff.native_backend_overclaim",
             llvm_lowering="available: LLVM/JIT differentiable backend",
         )
+    with pytest.raises(ValueError, match="jit_lowering"):
+        PrimitiveLoweringStatus(
+            identity=identity,
+            rule_name="native_backend_overclaim_rule",
+            has_jvp=True,
+            has_vjp=False,
+            mlir_op="scpn_diff.native_backend_overclaim",
+            jit_lowering="available: JIT differentiable backend",
+        )
 
 
 def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
@@ -836,9 +925,27 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
         "scpn.program_ad.linalg:matrix_power@1"
     ]
     assert module.metadata["mlir_runtime_incomplete_primitives"] == []
+    assert module.metadata["rust_backend_contract_primitives"] == []
+    assert module.metadata["rust_backend_incomplete_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1"
+    ]
+    assert module.metadata["llvm_backend_contract_primitives"] == []
+    assert module.metadata["llvm_backend_incomplete_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1"
+    ]
+    assert module.metadata["jit_backend_contract_primitives"] == []
+    assert module.metadata["jit_backend_incomplete_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1"
+    ]
     assert module.resource_counts["mlir_runtime_lowerings"] == 1
     assert module.resource_counts["mlir_runtime_contracts"] == 1
     assert module.resource_counts["mlir_runtime_incomplete_primitives"] == 0
+    assert module.resource_counts["rust_backend_contracts"] == 0
+    assert module.resource_counts["rust_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["llvm_backend_contracts"] == 0
+    assert module.resource_counts["llvm_backend_incomplete_primitives"] == 1
+    assert module.resource_counts["jit_backend_contracts"] == 0
+    assert module.resource_counts["jit_backend_incomplete_primitives"] == 1
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
     assert "available: executable scpn_diff MLIR-runtime linalg kernel" in module.text

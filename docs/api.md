@@ -129,7 +129,8 @@ reverse-contract primitive coverage, reverse-incomplete primitive identities,
 adjoint-contract primitive coverage, adjoint-incomplete primitive identities,
 transform-contract primitive coverage, transform-incomplete primitive identities,
 native-backend contract coverage, native-backend incomplete primitive identities,
-MLIR-runtime contract coverage, MLIR-runtime incomplete primitive identities,
+backend-specific Rust/LLVM/JIT contract coverage, backend-specific Rust/LLVM/JIT
+incomplete primitive identities, MLIR-runtime contract coverage, MLIR-runtime incomplete primitive identities,
 boundary-policy coverage, MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
 cannot be mistaken for complete compiler contracts. Static program-AD array,
