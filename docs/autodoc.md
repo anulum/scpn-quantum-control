@@ -92,7 +92,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.control.q_disruption_iter
     options:
-      members: [ITERFeatureSpec, normalize_iter_features, generate_synthetic_iter_data, from_fusion_core_shot, DisruptionBenchmark]
+      members: [ITERFeatureSpec, normalize_iter_features, generate_synthetic_iter_data, from_fusion_core_shot, scpn_control_bridge_dependency_contract, validate_scpn_control_bridge_dependency_contract, DisruptionBenchmark]
 
 ## QSNN
 

@@ -543,7 +543,7 @@ core tutorials and retained investigation notebooks. Core notebooks:
 | 06 | PEC Error Cancellation | Advanced | PEC vs ZNE, overhead scaling |
 | 07 | Quantum Advantage | Advanced | Scaling crossover prediction |
 | 08 | Identity Continuity | Advanced | Attractor basin, fingerprint |
-| 09 | ITER Disruption | Domain | Feature distributions, accuracy |
+| 09 | ITER Disruption | Domain | Feature distributions, accuracy, CONTROL bridge contract |
 | 10 | QSNN Training | Advanced | Loss curve, weight evolution |
 | 11 | Surface Code Budget | Advanced | QEC resource estimation |
 | 12 | Trapped Ion Comparison | Advanced | Noise model comparison |

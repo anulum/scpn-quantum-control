@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+- 2026-05-31 — Added an SCPN-CONTROL disruption bridge dependency contract to
+  the ITER quantum disruption backend, including classifier API, 11-feature
+  ordering, Qiskit core dependencies, optional provider families, report schema
+  awareness, downstream non-admission policy, and tamper-evident contract
+  digests for future backend hardening.
+
 ## [0.9.7] - 2026-05-19
 
 ### Added

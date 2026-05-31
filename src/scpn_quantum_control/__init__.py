@@ -118,6 +118,8 @@ from .control.q_disruption_iter import (
     from_fusion_core_shot,
     generate_synthetic_iter_data,
     normalize_iter_features,
+    scpn_control_bridge_dependency_contract,
+    validate_scpn_control_bridge_dependency_contract,
 )
 from .control.qaoa_mpc import QAOA_MPC
 from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
@@ -642,6 +644,8 @@ __all__ = [
     "from_fusion_core_shot",
     "generate_synthetic_iter_data",
     "normalize_iter_features",
+    "scpn_control_bridge_dependency_contract",
+    "validate_scpn_control_bridge_dependency_contract",
     "QAOA_MPC",
     "QuantumPetriNet",
     "QuantumPetriStepReport",

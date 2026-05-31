@@ -26,6 +26,8 @@ from .q_disruption_iter import (
     ITERFeatureSpec,
     generate_synthetic_iter_data,
     normalize_iter_features,
+    scpn_control_bridge_dependency_contract,
+    validate_scpn_control_bridge_dependency_contract,
 )
 from .qaoa_mpc import QAOA_MPC
 from .qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
@@ -60,6 +62,8 @@ __all__ = [
     "ITERFeatureSpec",
     "generate_synthetic_iter_data",
     "normalize_iter_features",
+    "scpn_control_bridge_dependency_contract",
+    "validate_scpn_control_bridge_dependency_contract",
     "FeedbackStep",
     "RealtimeFeedbackConfig",
     "RealtimeSyncFeedbackController",

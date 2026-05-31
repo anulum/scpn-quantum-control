@@ -1383,7 +1383,16 @@ from_fusion_core_shot(
     allow_density_proxy=False,
 ) -> (features, label, warnings)
 DisruptionBenchmark(n_train=100, n_test=50, allow_synthetic=True).run(epochs=10) -> dict
+scpn_control_bridge_dependency_contract() -> dict
+validate_scpn_control_bridge_dependency_contract(payload: dict) -> dict
 ```
+
+The bridge dependency contract mirrors the `scpn-control` fail-closed facade
+requirements without importing that package. It records the required
+`QuantumDisruptionClassifier(seed=...).predict(normalised_iter_features)` API,
+the 11-feature ITER ordering, declared centre-default policy, Qiskit core
+dependencies, optional provider families, CONTROL report schemas, and the
+downstream non-admission policy.
 
 ## applications
 

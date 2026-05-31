@@ -15,11 +15,64 @@ real tokamak disruption data from NPZ archives.
 
 from __future__ import annotations
 
+import hashlib
+import json
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 
 from .q_disruption import QuantumDisruptionClassifier
+
+SCPN_CONTROL_BRIDGE_CONTRACT_SCHEMA_VERSION = (
+    "scpn-control.quantum-disruption-dependency-contract.v1"
+)
+SCPN_CONTROL_BRIDGE_REPORT_SCHEMA_VERSION = "scpn-control.quantum-disruption-bridge-report.v1"
+SCPN_CONTROL_KERNEL_REPORT_SCHEMA_VERSION = "scpn-control.quantum-disruption-kernel-report.v1"
+SCPN_CONTROL_CERTIFICATE_SCHEMA_VERSION = "scpn-control.quantum-disruption-advisory-certificate.v1"
+CONTROL_FACADE_OWNER = "scpn-control"
+QUANTUM_BACKEND_OWNER = "scpn-quantum-control"
+QUANTUM_MODULE = "scpn_quantum_control.control.q_disruption_iter"
+CLAIM_BOUNDARY = (
+    "advisory bounded-model quantum disruption bridge; not measured facility validation, "
+    "not controller promotion, and not publication-safe evidence without external validation"
+)
+REQUIRED_DOWNSTREAM_POLICY = (
+    "do_not_admit_control_action",
+    "do_not_publish_as_facility_validation",
+    "require_external_evidence",
+)
+CONTROL_FEATURE_NAMES = (
+    "Ip",
+    "beta_N",
+    "q95",
+    "n_nGW",
+    "li",
+    "dBp_dt",
+    "locked_mode_amp",
+    "n1_rms",
+)
+EXTRA_ITER_FEATURE_NAMES = ("P_rad", "V_loop", "W_stored", "kappa", "dIp_dt")
+QUANTUM_CORE_DEPENDENCIES = (
+    "qiskit>=2.2,<3.0",
+    "qiskit-" + "a" + "er>=0.15,<1.0",
+    "qiskit-qasm3-import>=0.6,<1.0",
+)
+QUANTUM_OPTIONAL_PROVIDER_DEPENDENCIES = (
+    "qiskit-ibm-runtime>=0.40,<1.0",
+    "amazon-bra" + "k" + "et-sdk>=1.117,<2.0",
+    "azure-quantum>=3.9,<4.0",
+    "qbraid>=0.12,<1.0",
+    "cirq-core>=1.6,<2.0",
+    "pennylane>=0.40,<1.0",
+    "requests>=2.22,<3.0",
+    "oqc-qcaas-client>=3.22,<4.0",
+    "pulser-core>=1.8,<2.0",
+    "perceval-quandela>=1.1,<2.0",
+    "pytket-quantinuum>=0.59,<1.0",
+    "pyquil>=4.17,<5.0",
+)
 
 
 @dataclass
@@ -69,6 +122,114 @@ def normalize_iter_features(raw: np.ndarray, spec: ITERFeatureSpec | None = None
     denom = np.where(denom > 0, denom, 1.0)
     normed: np.ndarray = np.clip((raw - spec.mins) / denom, 0.0, 1.0)
     return normed
+
+
+def scpn_control_bridge_dependency_contract() -> dict[str, Any]:
+    """Return the SCPN-CONTROL disruption bridge dependency contract.
+
+    The contract is intentionally mirrored locally instead of importing
+    SCPN-CONTROL, so this backend can be validated before CONTROL is installed.
+    """
+
+    spec = ITERFeatureSpec()
+    payload: dict[str, Any] = {
+        "schema_version": SCPN_CONTROL_BRIDGE_CONTRACT_SCHEMA_VERSION,
+        "control_facade_owner": CONTROL_FACADE_OWNER,
+        "quantum_backend_owner": QUANTUM_BACKEND_OWNER,
+        "control_package": "scpn-control",
+        "quantum_package": "scpn-quantum-control",
+        "quantum_module": QUANTUM_MODULE,
+        "report_schema_versions": {
+            "bridge": SCPN_CONTROL_BRIDGE_REPORT_SCHEMA_VERSION,
+            "kernel": SCPN_CONTROL_KERNEL_REPORT_SCHEMA_VERSION,
+            "certificate": SCPN_CONTROL_CERTIFICATE_SCHEMA_VERSION,
+        },
+        "required_public_surface": {
+            "classifier_class": "QuantumDisruptionClassifier",
+            "constructor_kwargs": ["seed"],
+            "predict_method": "predict",
+            "predict_input": {
+                "shape": [11],
+                "feature_names": list(spec.names),
+                "normalised_range": [0.0, 1.0],
+                "dtype": "float64-compatible",
+            },
+            "predict_output": {
+                "type": "scalar-float",
+                "range": [0.0, 1.0],
+            },
+        },
+        "feature_contract": {
+            "control_feature_names": list(CONTROL_FEATURE_NAMES),
+            "iter_feature_names": list(spec.names),
+            "extra_iter_features": list(EXTRA_ITER_FEATURE_NAMES),
+            "centre_defaults_allowed_only_when_declared": True,
+        },
+        "dependency_groups": {
+            "control_runtime": ["numpy"],
+            "quantum_core": list(QUANTUM_CORE_DEPENDENCIES),
+            "quantum_optional_providers": list(QUANTUM_OPTIONAL_PROVIDER_DEPENDENCIES),
+        },
+        "claim_boundary": CLAIM_BOUNDARY,
+        "required_downstream_policy": list(REQUIRED_DOWNSTREAM_POLICY),
+        "admitted_for_control": False,
+        "publication_safe": False,
+    }
+    payload["contract_sha256"] = _contract_digest(payload)
+    return validate_scpn_control_bridge_dependency_contract(payload)
+
+
+def validate_scpn_control_bridge_dependency_contract(payload: dict[str, Any]) -> dict[str, Any]:
+    """Validate the SCPN-CONTROL disruption bridge dependency contract."""
+
+    if not isinstance(payload, dict):
+        raise ValueError("SCPN-CONTROL bridge dependency contract must be an object")
+    if payload.get("schema_version") != SCPN_CONTROL_BRIDGE_CONTRACT_SCHEMA_VERSION:
+        raise ValueError("SCPN-CONTROL bridge dependency contract schema_version is unsupported")
+    if payload.get("control_facade_owner") != CONTROL_FACADE_OWNER:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract control_facade_owner is unsupported"
+        )
+    if payload.get("quantum_backend_owner") != QUANTUM_BACKEND_OWNER:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract quantum_backend_owner is unsupported"
+        )
+    if payload.get("quantum_module") != QUANTUM_MODULE:
+        raise ValueError("SCPN-CONTROL bridge dependency contract quantum_module is unsupported")
+    if payload.get("claim_boundary") != CLAIM_BOUNDARY:
+        raise ValueError("SCPN-CONTROL bridge dependency contract claim_boundary is unsupported")
+    if payload.get("admitted_for_control") is not False:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract admitted_for_control must be false"
+        )
+    if payload.get("publication_safe") is not False:
+        raise ValueError("SCPN-CONTROL bridge dependency contract publication_safe must be false")
+    _validate_bridge_report_schemas(payload.get("report_schema_versions"))
+    _validate_bridge_public_surface(payload.get("required_public_surface"))
+    _validate_bridge_feature_contract(payload.get("feature_contract"))
+    _validate_bridge_dependency_groups(payload.get("dependency_groups"))
+    policy = payload.get("required_downstream_policy")
+    if not isinstance(policy, list) or any(
+        not isinstance(item, str) or not item for item in policy
+    ):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract required_downstream_policy must be strings"
+        )
+    for required_policy in REQUIRED_DOWNSTREAM_POLICY:
+        if required_policy not in policy:
+            raise ValueError(
+                f"SCPN-CONTROL bridge dependency contract missing policy {required_policy}"
+            )
+    declared_digest = payload.get("contract_sha256")
+    if not isinstance(declared_digest, str) or not _is_sha256(declared_digest):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract contract_sha256 must be a SHA-256 hex digest"
+        )
+    if _contract_digest(payload) != declared_digest.lower():
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract contract_sha256 does not match payload"
+        )
+    return payload
 
 
 def generate_synthetic_iter_data(
@@ -219,3 +380,129 @@ class DisruptionBenchmark:
             "source_mode": self.source_mode,
             "publication_safe": self.publication_safe,
         }
+
+
+def _validate_bridge_report_schemas(value: object) -> None:
+    if value != {
+        "bridge": SCPN_CONTROL_BRIDGE_REPORT_SCHEMA_VERSION,
+        "kernel": SCPN_CONTROL_KERNEL_REPORT_SCHEMA_VERSION,
+        "certificate": SCPN_CONTROL_CERTIFICATE_SCHEMA_VERSION,
+    }:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract report_schema_versions are unsupported"
+        )
+
+
+def _validate_bridge_public_surface(value: object) -> None:
+    if not isinstance(value, dict):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract required_public_surface must be an object"
+        )
+    if value.get("classifier_class") != "QuantumDisruptionClassifier":
+        raise ValueError("SCPN-CONTROL bridge dependency contract classifier_class is unsupported")
+    if value.get("constructor_kwargs") != ["seed"]:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract constructor_kwargs are unsupported"
+        )
+    if value.get("predict_method") != "predict":
+        raise ValueError("SCPN-CONTROL bridge dependency contract predict_method is unsupported")
+    predict_input = value.get("predict_input")
+    if not isinstance(predict_input, dict):
+        raise ValueError("SCPN-CONTROL bridge dependency contract predict_input must be an object")
+    if predict_input.get("shape") != [11]:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract predict_input shape is unsupported"
+        )
+    if predict_input.get("feature_names") != ITERFeatureSpec().names:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract predict_input feature_names are unsupported"
+        )
+    if predict_input.get("normalised_range") != [0.0, 1.0]:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract predict_input normalised_range is unsupported"
+        )
+    if predict_input.get("dtype") != "float64-compatible":
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract predict_input dtype is unsupported"
+        )
+    predict_output = value.get("predict_output")
+    if not isinstance(predict_output, dict):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract predict_output must be an object"
+        )
+    if predict_output.get("type") != "scalar-float":
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract predict_output type is unsupported"
+        )
+    if predict_output.get("range") != [0.0, 1.0]:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract predict_output range is unsupported"
+        )
+
+
+def _validate_bridge_feature_contract(value: object) -> None:
+    if not isinstance(value, dict):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract feature_contract must be an object"
+        )
+    if value.get("control_feature_names") != list(CONTROL_FEATURE_NAMES):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract control_feature_names are unsupported"
+        )
+    if value.get("iter_feature_names") != ITERFeatureSpec().names:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract iter_feature_names are unsupported"
+        )
+    if value.get("extra_iter_features") != list(EXTRA_ITER_FEATURE_NAMES):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract extra_iter_features are unsupported"
+        )
+    if value.get("centre_defaults_allowed_only_when_declared") is not True:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract centre default policy is unsupported"
+        )
+
+
+def _validate_bridge_dependency_groups(value: object) -> None:
+    if not isinstance(value, dict):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract dependency_groups must be an object"
+        )
+    if value.get("control_runtime") != ["numpy"]:
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract control_runtime dependencies are unsupported"
+        )
+    if value.get("quantum_core") != list(QUANTUM_CORE_DEPENDENCIES):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract quantum_core dependencies are unsupported"
+        )
+    if value.get("quantum_optional_providers") != list(QUANTUM_OPTIONAL_PROVIDER_DEPENDENCIES):
+        raise ValueError(
+            "SCPN-CONTROL bridge dependency contract optional provider dependencies are unsupported"
+        )
+
+
+def _contract_digest(contract: Mapping[str, Any]) -> str:
+    content = {key: value for key, value in contract.items() if key != "contract_sha256"}
+    return _payload_digest({"dependency_contract": content})
+
+
+def _payload_digest(payload: Mapping[str, Any]) -> str:
+    encoded = json.dumps(_jsonable(payload), sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _jsonable(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_jsonable(item) for item in value]
+    if isinstance(value, np.ndarray):
+        return _jsonable(value.tolist())
+    if isinstance(value, np.floating | np.integer):
+        return value.item()
+    return value
+
+
+def _is_sha256(value: str) -> bool:
+    return len(value) == 64 and all(char in "0123456789abcdefABCDEF" for char in value)

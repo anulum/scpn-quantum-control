@@ -15,6 +15,8 @@ from scpn_quantum_control.control.q_disruption_iter import (
     ITERFeatureSpec,
     generate_synthetic_iter_data,
     normalize_iter_features,
+    scpn_control_bridge_dependency_contract,
+    validate_scpn_control_bridge_dependency_contract,
 )
 
 
@@ -39,6 +41,50 @@ def test_normalize_preserves_center():
     mid = (spec.mins + spec.maxs) / 2
     normed = normalize_iter_features(mid, spec)
     np.testing.assert_allclose(normed, 0.5, atol=1e-10)
+
+
+def test_scpn_control_bridge_dependency_contract_advertises_required_surface():
+    contract = scpn_control_bridge_dependency_contract()
+
+    assert contract["control_facade_owner"] == "scpn-control"
+    assert contract["quantum_backend_owner"] == "scpn-quantum-control"
+    assert contract["quantum_module"] == "scpn_quantum_control.control.q_disruption_iter"
+    assert contract["required_public_surface"]["classifier_class"] == "QuantumDisruptionClassifier"
+    assert contract["required_public_surface"]["constructor_kwargs"] == ["seed"]
+    assert contract["required_public_surface"]["predict_input"]["shape"] == [11]
+    assert (
+        contract["required_public_surface"]["predict_input"]["feature_names"]
+        == ITERFeatureSpec().names
+    )
+    assert contract["required_public_surface"]["predict_output"]["range"] == [0.0, 1.0]
+    assert "qiskit>=2.2,<3.0" in contract["dependency_groups"]["quantum_core"]
+    assert "pennylane>=0.40,<1.0" in contract["dependency_groups"]["quantum_optional_providers"]
+    assert (
+        "qiskit-ibm-runtime>=0.40,<1.0"
+        in contract["dependency_groups"]["quantum_optional_providers"]
+    )
+    assert "do_not_admit_control_action" in contract["required_downstream_policy"]
+    assert contract["admitted_for_control"] is False
+    assert contract["publication_safe"] is False
+    assert len(contract["contract_sha256"]) == 64
+    assert validate_scpn_control_bridge_dependency_contract(contract) == contract
+
+
+def test_scpn_control_bridge_dependency_contract_rejects_feature_order_drift():
+    contract = scpn_control_bridge_dependency_contract()
+    drifted = {
+        **contract,
+        "required_public_surface": {
+            **contract["required_public_surface"],
+            "predict_input": {
+                **contract["required_public_surface"]["predict_input"],
+                "feature_names": list(reversed(ITERFeatureSpec().names)),
+            },
+        },
+    }
+
+    with pytest.raises(ValueError, match="feature_names"):
+        validate_scpn_control_bridge_dependency_contract(drifted)
 
 
 def test_generate_synthetic_shapes():
