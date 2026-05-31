@@ -1707,11 +1707,22 @@ class TraceADArray:
                 raise ValueError("program AD np.linalg.multi_dot supports one operand sequence")
             _require_program_ad_linalg_contract("multi_dot", args)
             return _trace_multi_dot(args[0], self.context)
+        if func is np.linalg.eigvalsh:
+            if len(args) == 2 and not kwargs:
+                matrix, uplo = args
+            elif len(args) == 1 and set(kwargs) <= {"UPLO"}:
+                matrix = args[0]
+                uplo = kwargs.get("UPLO", "L")
+            else:
+                raise ValueError(
+                    "program AD np.linalg.eigvalsh supports one matrix and optional UPLO"
+                )
+            _require_program_ad_linalg_contract("eigvalsh", (matrix,))
+            return _trace_eigvalsh(matrix, self.context, uplo=str(uplo))
         if func in {
             np.linalg.eig,
             np.linalg.eigh,
             np.linalg.eigvals,
-            np.linalg.eigvalsh,
             np.linalg.svd,
             np.linalg.pinv,
         }:
@@ -4143,6 +4154,40 @@ def _trace_multi_dot(
             raise ValueError("program AD np.linalg.multi_dot encountered scalar intermediate")
         result = _trace_matmul(result, operand, context)
     return result
+
+
+def _trace_eigvalsh(
+    matrix: object, context: _WholeProgramTraceContext, *, uplo: str = "L"
+) -> TraceADArray:
+    array = _coerce_trace_array(matrix, context)
+    if array.ndim != 2:
+        raise ValueError("program AD np.linalg.eigvalsh requires a rank-2 matrix")
+    rows, cols = array.shape
+    if rows != cols:
+        raise ValueError("program AD np.linalg.eigvalsh requires a square matrix")
+    uplo_value = _program_ad_linalg_uplo(uplo, "np.linalg.eigvalsh")
+    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
+    if not np.allclose(primal, primal.T, rtol=1.0e-12, atol=1.0e-12):
+        raise ValueError("program AD np.linalg.eigvalsh requires a symmetric matrix")
+    eigenvalues, eigenvectors = np.linalg.eigh(primal, UPLO=uplo_value)
+    _program_ad_linalg_require_distinct_eigenvalues(eigenvalues, "eigvalsh")
+    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+        rows, cols, context.parameter_count
+    )
+    items: list[TraceADScalar] = []
+    input_names = tuple(item.name for item in array._items)
+    for index, eigenvalue in enumerate(eigenvalues):
+        eigenvector = eigenvectors[:, index]
+        tangent = np.einsum("i,j,ijp->p", eigenvector, eigenvector, tangent_tensor)
+        items.append(
+            context.make(
+                f"linalg:eigvalsh:{index}",
+                input_names,
+                float(eigenvalue),
+                np.asarray(tangent, dtype=np.float64),
+            )
+        )
+    return TraceADArray(tuple(items), (rows,), context)
 
 
 def _trace_trace(
@@ -7297,7 +7342,17 @@ _PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
 _PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("det", "inv", "solve", "trace", "diag", "diagflat", "matrix_power", "multi_dot")
+    for name in (
+        "det",
+        "inv",
+        "solve",
+        "trace",
+        "diag",
+        "diagflat",
+        "matrix_power",
+        "multi_dot",
+        "eigvalsh",
+    )
 }
 
 
@@ -12984,6 +13039,167 @@ def program_ad_linalg_diagflat_derivative_rule(
     )
 
 
+def _program_ad_linalg_require_symmetric(
+    primitive_name: str,
+    matrix: NDArray[np.float64],
+) -> None:
+    if not np.allclose(matrix, matrix.T, rtol=1.0e-12, atol=1.0e-12):
+        raise ValueError(f"program AD linalg {primitive_name} requires a symmetric matrix")
+
+
+def _program_ad_linalg_require_distinct_eigenvalues(
+    eigenvalues: NDArray[np.float64],
+    primitive_name: str,
+) -> None:
+    if eigenvalues.size <= 1:
+        return
+    gaps = np.abs(eigenvalues[:, None] - eigenvalues[None, :])
+    strict_gaps = gaps[np.triu_indices(eigenvalues.size, k=1)]
+    scale = max(1.0, float(np.max(np.abs(eigenvalues))))
+    if float(np.min(strict_gaps)) <= 1.0e-10 * scale:
+        raise ValueError(f"program AD linalg {primitive_name} requires distinct eigenvalues")
+
+
+def _program_ad_linalg_uplo(
+    value: object,
+    primitive_name: str,
+) -> Literal["L", "U"]:
+    uplo_value = str(value).upper()
+    if uplo_value not in {"L", "U"}:
+        raise ValueError(f"program AD linalg {primitive_name} requires UPLO='L' or UPLO='U'")
+    return cast(Literal["L", "U"], uplo_value)
+
+
+def _program_ad_linalg_eigvalsh_decomposition(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    *,
+    uplo: str = "L",
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    matrix = _program_ad_linalg_square_matrix(primitive_name, values)
+    _program_ad_linalg_require_symmetric(primitive_name, matrix)
+    uplo_value = _program_ad_linalg_uplo(uplo, primitive_name)
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix, UPLO=uplo_value)
+    _program_ad_linalg_require_distinct_eigenvalues(eigenvalues, primitive_name)
+    return matrix, eigenvalues.astype(np.float64), eigenvectors.astype(np.float64)
+
+
+def _program_ad_linalg_eigvalsh_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    _matrix, eigenvalues, _eigenvectors = _program_ad_linalg_eigvalsh_decomposition(
+        "eigvalsh", values
+    )
+    return _program_ad_float64_vector_result(eigenvalues)
+
+
+def _program_ad_linalg_eigvalsh_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix, _eigenvalues, eigenvectors = _program_ad_linalg_eigvalsh_decomposition(
+        "eigvalsh", values
+    )
+    tangent_matrix = _program_ad_linalg_square_matrix("eigvalsh tangent", tangent)
+    if tangent_matrix.shape != matrix.shape:
+        raise ValueError("program AD linalg eigvalsh tangent shape must match matrix shape")
+    _program_ad_linalg_require_symmetric("eigvalsh tangent", tangent_matrix)
+    return _program_ad_float64_vector_result(
+        np.array(
+            [
+                float(eigenvector.T @ tangent_matrix @ eigenvector)
+                for eigenvector in eigenvectors.T
+            ],
+            dtype=np.float64,
+        )
+    )
+
+
+def _program_ad_linalg_eigvalsh_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    _matrix, eigenvalues, eigenvectors = _program_ad_linalg_eigvalsh_decomposition(
+        "eigvalsh", values
+    )
+    cotangent_vector = _as_real_numeric_array(
+        "program AD linalg eigvalsh cotangent", cotangent
+    ).reshape(-1)
+    if cotangent_vector.size != eigenvalues.size:
+        raise ValueError("program AD linalg eigvalsh VJP cotangent size must match eigenvalues")
+    adjoint = eigenvectors @ np.diag(cotangent_vector) @ eigenvectors.T
+    return _program_ad_float64_vector_result(adjoint)
+
+
+def program_ad_linalg_eigvalsh_derivative_rule(
+    matrix_shape: Sequence[int],
+    *,
+    uplo: str = "L",
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed symmetric eigvalsh primitive."""
+
+    static_shape = _program_ad_linalg_rank2_shape("eigvalsh", matrix_shape)
+    if static_shape[0] != static_shape[1]:
+        raise ValueError("program AD linalg eigvalsh derivative rule requires a square matrix")
+    uplo_value = _program_ad_linalg_uplo(uplo, "eigvalsh derivative rule")
+    matrix_size = _program_ad_shape_static_size(static_shape)
+
+    def split(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _as_real_numeric_array(f"program AD linalg eigvalsh {name}", values).reshape(-1)
+        if vector.size != matrix_size:
+            raise ValueError("program AD linalg eigvalsh direct rule values size must match shape")
+        return vector.reshape(static_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix = split("values", values)
+        _program_ad_linalg_require_symmetric("eigvalsh", matrix)
+        eigenvalues, _eigenvectors = np.linalg.eigh(matrix, UPLO=uplo_value)
+        _program_ad_linalg_require_distinct_eigenvalues(eigenvalues, "eigvalsh")
+        return _program_ad_float64_vector_result(eigenvalues)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix = split("values", values)
+        tangent_matrix = split("tangent", tangent)
+        _program_ad_linalg_require_symmetric("eigvalsh", matrix)
+        _program_ad_linalg_require_symmetric("eigvalsh tangent", tangent_matrix)
+        eigenvalues, eigenvectors = np.linalg.eigh(matrix, UPLO=uplo_value)
+        _program_ad_linalg_require_distinct_eigenvalues(eigenvalues, "eigvalsh")
+        return _program_ad_float64_vector_result(
+            np.array(
+                [
+                    float(eigenvector.T @ tangent_matrix @ eigenvector)
+                    for eigenvector in eigenvectors.T
+                ],
+                dtype=np.float64,
+            )
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        matrix = split("values", values)
+        _program_ad_linalg_require_symmetric("eigvalsh", matrix)
+        eigenvalues, eigenvectors = np.linalg.eigh(matrix, UPLO=uplo_value)
+        _program_ad_linalg_require_distinct_eigenvalues(eigenvalues, "eigvalsh")
+        cotangent_vector = _as_real_numeric_array(
+            "program AD linalg eigvalsh cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != static_shape[0]:
+            raise ValueError(
+                "program AD linalg eigvalsh VJP cotangent size must match eigenvalues"
+            )
+        return _program_ad_float64_vector_result(
+            eigenvectors @ np.diag(cotangent_vector) @ eigenvectors.T
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_linalg_eigvalsh_{_program_ad_shape_signature(static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "det":
         return CustomDerivativeRule(
@@ -13012,6 +13228,13 @@ def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
             value_fn=_program_ad_linalg_trace_value,
             jvp_rule=_program_ad_linalg_trace_jvp,
             vjp_rule=_program_ad_linalg_trace_vjp,
+        )
+    if name == "eigvalsh":
+        return CustomDerivativeRule(
+            name="program_ad_linalg_eigvalsh_direct_rule",
+            value_fn=_program_ad_linalg_eigvalsh_value,
+            jvp_rule=_program_ad_linalg_eigvalsh_jvp,
+            vjp_rule=_program_ad_linalg_eigvalsh_vjp,
         )
     return CustomDerivativeRule(
         name=f"program_ad_linalg_{name}_trace_contract",
@@ -13172,6 +13395,13 @@ def _program_ad_linalg_multi_dot_shape(args: tuple[object, ...]) -> tuple[int, .
     return result_shape
 
 
+def _program_ad_linalg_eigvalsh_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg eigvalsh shape rule requires one matrix")
+    rows, _cols = _program_ad_linalg_require_matrix_shape("eigvalsh", args[0])
+    return (rows,)
+
+
 def _program_ad_linalg_dtype_rule(args: tuple[object, ...]) -> str:
     arrays: list[NDArray[np.float64]] = []
     for arg in args:
@@ -13278,6 +13508,7 @@ _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "diagflat": _program_ad_linalg_diagflat_shape,
     "matrix_power": _program_ad_linalg_matrix_power_shape,
     "multi_dot": _program_ad_linalg_multi_dot_shape,
+    "eigvalsh": _program_ad_linalg_eigvalsh_shape,
 }
 
 _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
@@ -13289,6 +13520,7 @@ _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
     "diagflat": _program_ad_linalg_diagflat_static_arguments,
     "matrix_power": _program_ad_linalg_matrix_power_static_arguments,
     "multi_dot": _program_ad_linalg_multi_dot_static_arguments,
+    "eigvalsh": _program_ad_linalg_no_static_arguments,
 }
 
 
@@ -13346,6 +13578,7 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
         "diagflat": "static_flattened_diagonal_offset_rank",
         "matrix_power": "negative_power_singular_matrix",
         "multi_dot": "static_shape_alignment",
+        "eigvalsh": "symmetric_matrix_distinct_eigenvalues",
     }
     metadata = {
         "program_ad": "operator_intercepted_trace",
@@ -13404,6 +13637,13 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
                 "static_argument_rule": "required",
                 "static_derivative_factory": "program_ad_linalg_multi_dot_derivative_rule",
                 "static_signature": "operand_shapes:ranked_tensor_shape_sequence",
+            }
+        )
+    elif name == "eigvalsh":
+        metadata.update(
+            {
+                "static_derivative_factory": "program_ad_linalg_eigvalsh_derivative_rule",
+                "static_signature": "matrix_shape:rank2_square_symmetric_distinct_spectrum",
             }
         )
     return metadata
@@ -17743,6 +17983,7 @@ __all__ = [
     "program_ad_elementwise_binary_derivative_rule",
     "program_ad_linalg_diag_derivative_rule",
     "program_ad_linalg_diagflat_derivative_rule",
+    "program_ad_linalg_eigvalsh_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",

@@ -6872,7 +6872,6 @@ def test_program_ad_linalg_spectral_operations_fail_closed_policy_boundary() -> 
         lambda matrix: np.sum(np.linalg.eig(matrix)[0]),
         lambda matrix: np.sum(np.linalg.eigh(matrix)[0]),
         lambda matrix: np.sum(np.linalg.eigvals(matrix)),
-        lambda matrix: np.sum(np.linalg.eigvalsh(matrix)),
         lambda matrix: np.sum(np.linalg.svd(matrix, compute_uv=False)),
         lambda matrix: np.sum(np.linalg.pinv(matrix)),
     )
@@ -11503,3 +11502,85 @@ def test_primitive_identity_and_contracts_fail_closed_on_malformed_metadata() ->
     for factory, message in malformed_cases:
         with pytest.raises(ValueError, match=message):
             factory()
+
+
+def test_program_ad_linalg_eigvalsh_distinct_symmetric_gradient_matches_spectral_adjoint():
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    values = np.array([2.0, 0.35, -0.2, 3.0], dtype=np.float64)
+    weights = np.array([0.75, -1.25], dtype=np.float64)
+
+    def objective(trace_values):
+        raw = np.reshape(trace_values, (2, 2))
+        matrix = 0.5 * (raw + raw.T)
+        return np.sum(np.linalg.eigvalsh(matrix) * weights)
+
+    result = whole_program_value_and_grad(objective, values)
+    raw = values.reshape(2, 2)
+    matrix = 0.5 * (raw + raw.T)
+    _eigenvalues, eigenvectors = np.linalg.eigh(matrix)
+    spectral_adjoint = eigenvectors @ np.diag(weights) @ eigenvectors.T
+    expected = (0.5 * (spectral_adjoint + spectral_adjoint.T)).reshape(-1)
+
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+
+
+def test_program_ad_linalg_eigvalsh_direct_rule_returns_spectral_jvp_and_vjp():
+    from scpn_quantum_control.differentiable import program_ad_linalg_eigvalsh_derivative_rule
+
+    rule = program_ad_linalg_eigvalsh_derivative_rule((2, 2))
+    matrix = np.array([[2.0, 0.35], [0.35, 3.0]], dtype=np.float64)
+    tangent = np.array([[0.2, -0.1], [-0.1, 0.4]], dtype=np.float64)
+    cotangent = np.array([1.25, -0.5], dtype=np.float64)
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix)
+
+    expected_jvp = np.array(
+        [float(eigenvector.T @ tangent @ eigenvector) for eigenvector in eigenvectors.T],
+        dtype=np.float64,
+    )
+    expected_vjp = (eigenvectors @ np.diag(cotangent) @ eigenvectors.T).reshape(-1)
+
+    np.testing.assert_allclose(rule.value_fn(matrix.reshape(-1)), eigenvalues)
+    np.testing.assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)), expected_jvp
+    )
+    np.testing.assert_allclose(rule.vjp_rule(matrix.reshape(-1), cotangent), expected_vjp)
+
+
+def test_program_ad_linalg_eigvalsh_fails_closed_on_nonsymmetric_or_degenerate_inputs():
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    nonsymmetric = np.array([1.0, 0.25, -0.5, 2.0], dtype=np.float64)
+    degenerate = np.eye(2, dtype=np.float64).reshape(-1)
+
+    with pytest.raises(ValueError, match="symmetric matrix"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(np.linalg.eigvalsh(np.reshape(trace_values, (2, 2)))),
+            nonsymmetric,
+        )
+
+    with pytest.raises(ValueError, match="distinct eigenvalues"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(np.linalg.eigvalsh(np.reshape(trace_values, (2, 2)))),
+            degenerate,
+        )
+
+
+def test_program_ad_linalg_eigvalsh_registry_contract_and_root_export():
+    import scpn_quantum_control as scpn
+    from scpn_quantum_control.differentiable import (
+        primitive_contract_for,
+        program_ad_linalg_eigvalsh_derivative_rule,
+    )
+
+    assert (
+        scpn.program_ad_linalg_eigvalsh_derivative_rule
+        is program_ad_linalg_eigvalsh_derivative_rule
+    )
+    contract = primitive_contract_for("scpn.program_ad.linalg:eigvalsh")
+    assert contract is not None
+    assert contract.shape_rule((np.eye(3, dtype=np.float64),)) == (3,)
+    assert contract.static_argument_rule((np.eye(3, dtype=np.float64),)) == ()
+    metadata = contract.lowering_metadata
+    assert metadata["static_derivative_factory"] == "program_ad_linalg_eigvalsh_derivative_rule"
+    assert metadata["nondifferentiable_boundary"] == "symmetric_matrix_distinct_eigenvalues"
