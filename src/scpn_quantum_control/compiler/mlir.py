@@ -374,6 +374,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             and status.nondifferentiable_boundary_policy == "fail_closed"
         )
 
+    def has_reverse_contract(status: PrimitiveLoweringStatus) -> bool:
+        return status.has_vjp and has_registry_contract(status)
+
     metadata = {
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
@@ -410,6 +413,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             status.identity.key for status in plan.statuses if status.has_lowering_rule
         ],
         "primitive_identities": [status.identity.key for status in plan.statuses],
+        "jvp_rule_primitives": [status.identity.key for status in plan.statuses if status.has_jvp],
+        "vjp_rule_primitives": [status.identity.key for status in plan.statuses if status.has_vjp],
         "batching_rule_primitives": [
             status.identity.key for status in plan.statuses if status.has_batching_rule
         ],
@@ -434,6 +439,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         },
         "registry_contract_primitives": [
             status.identity.key for status in plan.statuses if has_registry_contract(status)
+        ],
+        "reverse_contract_primitives": [
+            status.identity.key for status in plan.statuses if has_reverse_contract(status)
+        ],
+        "reverse_incomplete_primitives": [
+            status.identity.key for status in plan.statuses if not status.has_vjp
         ],
         "transform": plan.transform,
         "uncontracted_primitives": [
@@ -492,6 +503,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
                 status.static_signature != "none" for status in plan.statuses
             ),
             "registry_contracts": sum(has_registry_contract(status) for status in plan.statuses),
+            "reverse_contracts": sum(has_reverse_contract(status) for status in plan.statuses),
+            "reverse_incomplete_primitives": sum(not status.has_vjp for status in plan.statuses),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"
                 or status.nondifferentiable_boundary == "not_declared"

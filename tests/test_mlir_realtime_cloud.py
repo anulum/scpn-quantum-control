@@ -133,10 +133,16 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.resource_counts["jvp_rules"] == 1
     assert module.resource_counts["vjp_rules"] == 1
     assert module.resource_counts["batching_rules"] == 0
+    assert module.resource_counts["reverse_contracts"] == 0
+    assert module.resource_counts["reverse_incomplete_primitives"] == 0
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
+    assert module.metadata["jvp_rule_primitives"] == ["scpn.quantum:rx_expectation@1"]
+    assert module.metadata["vjp_rule_primitives"] == ["scpn.quantum:rx_expectation@1"]
     assert module.metadata["batching_rule_primitives"] == []
     assert module.metadata["registry_contract_primitives"] == []
+    assert module.metadata["reverse_contract_primitives"] == []
+    assert module.metadata["reverse_incomplete_primitives"] == []
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
     assert "batching_rule = false" in module.text
@@ -212,9 +218,15 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.metadata["nondifferentiable_boundaries"] == {}
     assert module.metadata["boundary_contract_primitives"] == []
     assert module.metadata["registry_contract_primitives"] == []
+    assert module.metadata["jvp_rule_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["vjp_rule_primitives"] == []
+    assert module.metadata["reverse_contract_primitives"] == []
+    assert module.metadata["reverse_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["registry_contracts"] == 0
+    assert module.resource_counts["reverse_contracts"] == 0
+    assert module.resource_counts["reverse_incomplete_primitives"] == 1
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
@@ -246,6 +258,17 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     module = compile_compiler_ad_transform_plan_to_mlir(plan)
 
     statuses = {status.identity.name: status for status in plan.statuses}
+    expected_jvp_primitives = [status.identity.key for status in plan.statuses if status.has_jvp]
+    expected_vjp_primitives = [status.identity.key for status in plan.statuses if status.has_vjp]
+    expected_reverse_contracts = [
+        status.identity.key
+        for status in plan.statuses
+        if status.has_vjp
+        and status.identity.key in module.metadata["registry_contract_primitives"]
+    ]
+    expected_reverse_incomplete = [
+        status.identity.key for status in plan.statuses if not status.has_vjp
+    ]
     assert statuses["matrix_power"].has_batching_rule is True
     assert statuses["multi_dot"].has_batching_rule is True
     assert statuses["matrix_power"].has_static_argument_rule is True
@@ -288,9 +311,17 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         "scpn.program_ad.linalg:matrix_power@1",
         "scpn.program_ad.linalg:multi_dot@1",
     ]
+    assert module.metadata["jvp_rule_primitives"] == expected_jvp_primitives
+    assert module.metadata["vjp_rule_primitives"] == expected_vjp_primitives
+    assert module.metadata["reverse_contract_primitives"] == expected_reverse_contracts
+    assert module.metadata["reverse_incomplete_primitives"] == expected_reverse_incomplete
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
     assert module.resource_counts["registry_contracts"] == 2
+    assert module.resource_counts["reverse_contracts"] == len(expected_reverse_contracts)
+    assert module.resource_counts["reverse_incomplete_primitives"] == len(
+        expected_reverse_incomplete
+    )
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
     assert "batching_rule = true" in module.text
