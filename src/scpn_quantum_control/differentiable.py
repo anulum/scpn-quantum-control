@@ -24,7 +24,7 @@ import sys
 import textwrap
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, NoReturn, cast
+from typing import Any, Literal, NoReturn, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -2536,6 +2536,19 @@ def _trace_strict_extreme(
     return selected
 
 
+ProgramADArrayTakeMode = Literal["raise", "wrap", "clip"]
+
+_PROGRAM_AD_ARRAY_TAKE_MODES = frozenset(("raise", "wrap", "clip"))
+
+
+def _program_ad_array_take_mode(mode: object, *, context: str) -> ProgramADArrayTakeMode:
+    if not isinstance(mode, str) or mode not in _PROGRAM_AD_ARRAY_TAKE_MODES:
+        raise ValueError(
+            f"program AD array take {context} supports mode in ('raise', 'wrap', 'clip')"
+        )
+    return cast(ProgramADArrayTakeMode, mode)
+
+
 def _trace_take(
     array: TraceADArray,
     indices: object,
@@ -2544,8 +2557,7 @@ def _trace_take(
     mode: str,
 ) -> TraceADScalar | TraceADArray:
     _require_program_ad_array_contract("take", (array, indices, axis, mode))
-    if mode != "raise":
-        raise ValueError("program AD np.take currently supports only mode='raise'")
+    mode_name = _program_ad_array_take_mode(mode, context="trace")
     if isinstance(indices, (TraceADScalar, TraceADArray)):
         raise ValueError("program AD np.take requires static integer indices")
     raw_indices = np.asarray(indices)
@@ -2553,9 +2565,11 @@ def _trace_take(
         raise ValueError("program AD np.take requires static integer indices")
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     try:
-        selected = np.take(source, raw_indices, axis=axis, mode="raise")
+        selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
     except (IndexError, ValueError) as exc:
-        raise ValueError("program AD np.take indices must be in bounds") from exc
+        if mode_name == "raise":
+            raise ValueError("program AD np.take indices must be in bounds") from exc
+        raise ValueError("program AD np.take requires axis-compatible static indices") from exc
     selected_array = np.asarray(selected)
     if selected_array.shape == ():
         return array._items[int(selected_array)]
@@ -5771,16 +5785,24 @@ def _program_ad_array_take_flat_indices(
     source_shape: tuple[int, ...],
     indices: object,
     axis: int | None,
+    mode: str,
 ) -> NDArray[np.int64]:
     source_indices = np.arange(
         _program_ad_array_static_size(source_shape), dtype=np.int64
     ).reshape(source_shape)
     raw_indices = _program_ad_array_take_indices(indices)
+    mode_name = _program_ad_array_take_mode(mode, context="direct rule")
     normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source_shape))
     try:
-        selected = np.take(source_indices, raw_indices, axis=normalised_axis, mode="raise")
+        selected = np.take(source_indices, raw_indices, axis=normalised_axis, mode=mode_name)
     except (IndexError, ValueError) as exc:
-        raise ValueError("program AD array take direct rule requires in-bounds indices") from exc
+        if mode_name == "raise":
+            raise ValueError(
+                "program AD array take direct rule requires in-bounds indices"
+            ) from exc
+        raise ValueError(
+            "program AD array take direct rule requires axis-compatible indices"
+        ) from exc
     return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
@@ -5915,12 +5937,12 @@ def program_ad_array_take_derivative_rule(
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed NumPy take signature."""
 
-    if mode != "raise":
-        raise ValueError("program AD array take direct rule supports only mode='raise'")
+    mode_name = _program_ad_array_take_mode(mode, context="direct rule")
     source = _program_ad_array_normalise_static_shape("take", source_shape)
-    flat_indices = _program_ad_array_take_flat_indices(source, indices, axis)
+    flat_indices = _program_ad_array_take_flat_indices(source, indices, axis, mode_name)
     normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
     axis_signature = "flat" if normalised_axis is None else str(normalised_axis)
+    mode_signature = "" if mode_name == "raise" else f"_mode_{mode_name}"
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
         return _program_ad_array_direct_gather(
@@ -5950,7 +5972,8 @@ def program_ad_array_take_derivative_rule(
     return CustomDerivativeRule(
         name=(
             "program_ad_array_take_"
-            f"{_program_ad_array_signature(source)}_axis_{axis_signature}_static_direct_rule"
+            f"{_program_ad_array_signature(source)}_axis_{axis_signature}"
+            f"{mode_signature}_static_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -8684,8 +8707,7 @@ def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     indices = args[1]
     axis = cast(int | None, args[2]) if len(args) >= 3 else None
     mode = cast(str, args[3]) if len(args) == 4 else "raise"
-    if mode != "raise":
-        raise ValueError("program AD array take shape rule supports only mode='raise'")
+    mode_name = _program_ad_array_take_mode(mode, context="shape rule")
     raw_indices = np.asarray(indices)
     if raw_indices.dtype.kind not in {"i", "u"}:
         raise ValueError("program AD array take shape rule requires static integer indices")
@@ -8693,9 +8715,13 @@ def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
         _program_ad_array_shape_of(args[0])
     )
     try:
-        selected = np.take(source, raw_indices, axis=axis, mode="raise")
+        selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
     except (IndexError, ValueError) as exc:
-        raise ValueError("program AD array take shape rule indices must be in bounds") from exc
+        if mode_name == "raise":
+            raise ValueError("program AD array take shape rule indices must be in bounds") from exc
+        raise ValueError(
+            "program AD array take shape rule requires axis-compatible indices"
+        ) from exc
     return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
@@ -9054,12 +9080,11 @@ def _program_ad_array_take_static_arguments(args: tuple[object, ...]) -> tuple[o
     if axis is not None and (isinstance(axis, bool) or not isinstance(axis, (int, np.integer))):
         raise ValueError("program AD array take static rule requires static integer axis")
     mode = cast(str, args[3]) if len(args) == 4 else "raise"
-    if mode != "raise":
-        raise ValueError("program AD array take static rule supports only mode='raise'")
+    mode_name = _program_ad_array_take_mode(mode, context="static rule")
     return (
         tuple(int(index) for index in raw_indices.reshape(-1)),
         None if axis is None else int(axis),
-        mode,
+        mode_name,
     )
 
 

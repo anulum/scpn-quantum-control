@@ -360,7 +360,7 @@ Runs the committed conformance rows:
 | `matrix_heavy_linear_algebra` | matrix-heavy | Dot, inner, outer, trace, tensordot, and einsum semantics |
 | `selection_piecewise_contracts` | selection-heavy | Registry-gated `where` and `clip` branch/boundary contracts |
 | `linalg_primitive_contracts` | linalg-primitive | Registry-gated determinant, inverse, solve, trace, diagonal, matrix-power, and multi-dot contracts |
-| `indexing_static_gather_contracts` | indexing-heavy | Static slicing, static integer/boolean advanced getitem, `np.take`, `np.take_along_axis`, and repeated adjoint accumulation |
+| `indexing_static_gather_contracts` | indexing-heavy | Static slicing, static integer/boolean advanced getitem, `np.take` raise/wrap/clip modes, `np.take_along_axis`, and repeated adjoint accumulation |
 | `mutation_heavy_forward_only` | mutation-heavy | Static array mutation dataflow |
 | `transform_nesting_vmap_program_grad` | transform-nesting | `vmap` over program AD gradients |
 

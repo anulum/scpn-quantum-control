@@ -7342,6 +7342,35 @@ def test_program_ad_static_take_accumulates_gather_adjoint() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_static_take_modes_accumulate_gather_adjoint() -> None:
+    """Static NumPy take wrap and clip modes should preserve exact scatter adjoints."""
+
+    wrap_weights = np.array([0.5, -1.0, 2.0], dtype=np.float64)
+    clip_weights = np.array([-0.25, 1.5, 0.75], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        wrapped = np.take(values, [-1, 6, 0], mode="wrap")
+        clipped = np.take(values, [-3, 2, 20], mode="clip")
+        return np.sum(wrapped * wrap_weights) + np.sum(clipped * clip_weights)
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=(
+            Parameter("x0"),
+            Parameter("x1"),
+            Parameter("x2"),
+            Parameter("x3"),
+            Parameter("x4"),
+            Parameter("x5"),
+        ),
+    )
+
+    assert result.value == pytest.approx(12.75)
+    np.testing.assert_allclose(result.gradient, [0.75, 0.0, 1.5, 0.0, 0.0, 1.25])
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_static_advanced_indexing_accumulates_gather_adjoint() -> None:
     """Static integer and boolean advanced indexes should preserve exact scatter adjoints."""
 
@@ -7415,9 +7444,9 @@ def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
             lambda values: np.take(values, values[0]),
             np.array([1.0, 2.0], dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="mode='raise'"):
+    with pytest.raises(ValueError, match="mode"):
         whole_program_value_and_grad(
-            lambda values: np.take(values, [0], mode="wrap")[0],
+            lambda values: np.take(values, [0], mode="not_a_mode")[0],
             np.array([1.0, 2.0], dtype=np.float64),
         )
 
@@ -7781,6 +7810,18 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         1,
         "raise",
     )
+    assert take_contract.shape_rule((matrix, np.array([-1, 5]), None, "wrap")) == (2,)
+    assert take_contract.static_argument_rule((matrix, np.array([-1, 5]), None, "wrap")) == (
+        (-1, 5),
+        None,
+        "wrap",
+    )
+    assert take_contract.shape_rule((matrix, np.array([-2, 1, 8]), 1, "clip")) == (2, 3)
+    assert take_contract.static_argument_rule((matrix, np.array([-2, 1, 8]), 1, "clip")) == (
+        (-2, 1, 8),
+        1,
+        "clip",
+    )
 
     along_contract = primitive_contract_for("scpn.program_ad.array:take_along_axis")
     assert along_contract.identity == PrimitiveIdentity(
@@ -7958,8 +7999,35 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
 
     with pytest.raises(ValueError, match="static integer or boolean"):
         program_ad_array_getitem_derivative_rule((2, 3), np.array([1.0, 0.0]))
-    with pytest.raises(ValueError, match="mode='raise'"):
-        program_ad_array_take_derivative_rule((2, 3), (0,), axis=0, mode="wrap")
+
+    wrap_rule = program_ad_array_take_derivative_rule((6,), (-1, 6, 0), mode="wrap")
+    assert wrap_rule.name == "program_ad_array_take_6_axis_flat_mode_wrap_static_direct_rule"
+    assert wrap_rule.jvp_rule is not None
+    assert wrap_rule.vjp_rule is not None
+    np.testing.assert_allclose(wrap_rule.value_fn(np.arange(6.0)), [5.0, 0.0, 0.0])
+    np.testing.assert_allclose(
+        wrap_rule.jvp_rule(
+            np.arange(6.0),
+            np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64),
+        ),
+        [5.0, 0.0, 0.0],
+    )
+    np.testing.assert_allclose(
+        wrap_rule.vjp_rule(np.arange(6.0), np.array([0.5, -1.0, 2.0], dtype=np.float64)),
+        [1.0, 0.0, 0.0, 0.0, 0.0, 0.5],
+    )
+
+    clip_rule = program_ad_array_take_derivative_rule((6,), (-3, 2, 20), mode="clip")
+    assert clip_rule.name == "program_ad_array_take_6_axis_flat_mode_clip_static_direct_rule"
+    assert clip_rule.jvp_rule is not None
+    assert clip_rule.vjp_rule is not None
+    np.testing.assert_allclose(clip_rule.value_fn(np.arange(6.0)), [0.0, 2.0, 5.0])
+    np.testing.assert_allclose(
+        clip_rule.vjp_rule(np.arange(6.0), np.array([-0.25, 1.5, 0.75], dtype=np.float64)),
+        [-0.25, 0.0, 1.5, 0.0, 0.0, 0.75],
+    )
+    with pytest.raises(ValueError, match="mode"):
+        program_ad_array_take_derivative_rule((2, 3), (0,), axis=0, mode="not_a_mode")
 
     along_indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)
     along_weights = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64)
