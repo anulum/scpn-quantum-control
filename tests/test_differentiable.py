@@ -15,6 +15,7 @@ from collections.abc import Callable
 import numpy as np
 import pytest
 
+from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     ArmijoLineSearchResult,
@@ -7471,6 +7472,29 @@ def test_program_ad_static_take_along_axis_accumulates_gather_adjoint() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_static_delete_preserves_gather_adjoint() -> None:
+    """Static NumPy delete should preserve exact gather/scatter adjoints."""
+
+    axis_weights = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    flat_weights = np.array([0.25, -0.75, 1.25, -1.5], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        axis_deleted = np.delete(matrix, [1], axis=1)
+        flat_deleted = np.delete(values, [1, 4])
+        return np.sum(axis_deleted * axis_weights) + np.sum(flat_deleted * flat_weights)
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        parameters=tuple(Parameter(f"x{index}") for index in range(6)),
+    )
+
+    assert result.value == pytest.approx(9.0)
+    np.testing.assert_allclose(result.gradient, [1.25, 0.0, -2.75, 1.75, 0.0, 1.5])
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
     """Program AD take should fail closed outside static integer gather semantics."""
 
@@ -7482,6 +7506,16 @@ def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
     with pytest.raises(ValueError, match="mode"):
         whole_program_value_and_grad(
             lambda values: np.take(values, [0], mode="not_a_mode")[0],
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_static_delete_rejects_dynamic_indices() -> None:
+    """Program AD delete should fail closed on derivative-carrying deletion indices."""
+
+    with pytest.raises(ValueError, match="static integer"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.delete(values, values[0])),
             np.array([1.0, 2.0], dtype=np.float64),
         )
 
@@ -7875,6 +7909,19 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         1,
     )
 
+    delete_contract = primitive_contract_for("scpn.program_ad.array:delete")
+    assert delete_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "delete", "1")
+    assert delete_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.delete"
+    assert delete_contract.shape_rule is not None
+    assert delete_contract.shape_rule((matrix, np.array([1]), 1)) == (2, 2)
+    assert delete_contract.shape_rule((matrix, np.array([1, 4]), None)) == (4,)
+    assert delete_contract.static_argument_rule is not None
+    assert delete_contract.static_argument_rule((matrix, np.array([1]), 1)) == ((1,), 1)
+    assert delete_contract.static_argument_rule((matrix, np.array([1, 4]), None)) == (
+        (1, 4),
+        None,
+    )
+
 
 def test_program_ad_array_boundary_metadata_is_explicit() -> None:
     """Array-indexing contracts should expose fail-closed static gather boundaries."""
@@ -7883,6 +7930,7 @@ def test_program_ad_array_boundary_metadata_is_explicit() -> None:
         "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
         "take_along_axis": "static_along_axis_gather_scatter_add",
+        "delete": "static_delete_gather_scatter_add",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(
@@ -8063,6 +8111,29 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
     )
     with pytest.raises(ValueError, match="mode"):
         program_ad_array_take_derivative_rule((2, 3), (0,), axis=0, mode="not_a_mode")
+
+    delete_rule = differentiable_module.program_ad_array_delete_derivative_rule(
+        (2, 3), (1,), axis=1
+    )
+    assert delete_rule.name == "program_ad_array_delete_2x3_axis_1_static_direct_rule"
+    assert delete_rule.jvp_rule is not None
+    assert delete_rule.vjp_rule is not None
+    np.testing.assert_allclose(delete_rule.value_fn(values), [0.0, 2.0, 3.0, 5.0])
+    np.testing.assert_allclose(delete_rule.jvp_rule(values, tangent), [0.5, 0.25, 2.0, 1.25])
+    np.testing.assert_allclose(
+        delete_rule.vjp_rule(values, np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)),
+        [1.0, 0.0, -2.0, 0.5, 0.0, 3.0],
+    )
+
+    flat_delete_rule = differentiable_module.program_ad_array_delete_derivative_rule((6,), (1, 4))
+    assert flat_delete_rule.name == "program_ad_array_delete_6_axis_flat_static_direct_rule"
+    np.testing.assert_allclose(flat_delete_rule.value_fn(np.arange(6.0)), [0.0, 2.0, 3.0, 5.0])
+    np.testing.assert_allclose(
+        flat_delete_rule.vjp_rule(
+            np.arange(6.0), np.array([0.25, -0.75, 1.25, -1.5], dtype=np.float64)
+        ),
+        [0.25, 0.0, -0.75, 1.25, 0.0, -1.5],
+    )
 
     along_indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)
     along_weights = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64)

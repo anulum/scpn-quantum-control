@@ -1407,6 +1407,15 @@ class TraceADArray:
             return _trace_take_along_axis(
                 _coerce_trace_array(args[0], self.context), args[1], axis=axis
             )
+        if func is np.delete:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.delete supports array, object, and axis")
+            axis = args[2] if len(args) == 3 else kwargs.get("axis")
+            return _trace_delete(
+                _coerce_trace_array(args[0], self.context),
+                args[1],
+                axis=axis,
+            )
         if func is np.transpose:
             if len(args) != 1 or kwargs.keys() - {"axes"}:
                 raise ValueError("whole-program AD np.transpose supports one array and axes")
@@ -2599,6 +2608,79 @@ def _trace_take_along_axis(
             "with shape compatible with the source"
         ) from exc
     selected_array = np.asarray(selected)
+    items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
+    return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
+
+
+def _program_ad_array_delete_object(obj: object, *, context: str) -> object:
+    if isinstance(obj, (TraceADScalar, TraceADArray)):
+        raise ValueError(
+            f"program AD array delete {context} requires static integer, slice, "
+            "or boolean deletion selectors"
+        )
+    if isinstance(obj, (bool, np.bool_)):
+        raise ValueError(
+            f"program AD array delete {context} requires static integer, slice, "
+            "or boolean deletion selectors"
+        )
+    if isinstance(obj, (int, np.integer)):
+        return int(obj)
+    if isinstance(obj, slice):
+        components = (obj.start, obj.stop, obj.step)
+        if any(
+            component is not None
+            and (
+                isinstance(component, (bool, np.bool_))
+                or not isinstance(component, (int, np.integer))
+            )
+            for component in components
+        ):
+            raise ValueError(
+                f"program AD array delete {context} requires static integer slice bounds"
+            )
+        return slice(
+            None if obj.start is None else int(cast(int | np.integer, obj.start)),
+            None if obj.stop is None else int(cast(int | np.integer, obj.stop)),
+            None if obj.step is None else int(cast(int | np.integer, obj.step)),
+        )
+    raw_obj = np.asarray(obj)
+    if raw_obj.dtype.kind == "b":
+        return np.asarray(raw_obj, dtype=np.bool_)
+    if raw_obj.dtype.kind in {"i", "u"}:
+        if raw_obj.shape == ():
+            return int(raw_obj)
+        return np.asarray(raw_obj, dtype=np.int64)
+    raise ValueError(
+        f"program AD array delete {context} requires static integer, slice, "
+        "or boolean deletion selectors"
+    )
+
+
+def _trace_delete(
+    array: TraceADArray,
+    obj: object,
+    *,
+    axis: object,
+) -> TraceADArray:
+    _require_program_ad_array_contract("delete", (array, obj, axis))
+    delete_obj = _program_ad_array_delete_object(obj, context="trace")
+    source: NDArray[np.int64]
+    if axis is None:
+        source = np.arange(array.size, dtype=np.int64).reshape(-1)
+        normalised_axis = None
+    else:
+        if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+            raise ValueError("program AD np.delete requires a static integer axis or None")
+        normalised_axis = _normalise_axis("axis", int(axis), array.ndim)
+        source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    try:
+        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD np.delete requires static in-bounds deletion selectors "
+            "and a compatible axis"
+        ) from exc
+    selected_array = np.asarray(selected, dtype=np.int64)
     items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
 
@@ -5634,7 +5716,7 @@ _PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE = "scpn.program_ad.array"
 _PROGRAM_AD_ARRAY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ARRAY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("getitem", "take", "take_along_axis")
+    for name in ("getitem", "take", "take_along_axis", "delete")
 }
 
 _PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE = "scpn.program_ad.shape"
@@ -5850,6 +5932,27 @@ def _program_ad_array_take_along_axis_flat_indices(
     return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
+def _program_ad_array_delete_flat_indices(
+    source_shape: tuple[int, ...],
+    obj: object,
+    axis: int | None,
+) -> NDArray[np.int64]:
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    delete_obj = _program_ad_array_delete_object(obj, context="direct rule")
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source_shape))
+    source = source_indices.reshape(-1) if normalised_axis is None else source_indices
+    try:
+        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array delete direct rule requires static in-bounds deletion selectors "
+            "and an axis-compatible source"
+        ) from exc
+    return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
+
+
 def _program_ad_array_direct_gather(
     primitive_name: str,
     values: NDArray[np.float64],
@@ -6050,6 +6153,55 @@ def program_ad_array_take_along_axis_derivative_rule(
         name=(
             "program_ad_array_take_along_axis_"
             f"{_program_ad_array_signature(source)}_axis_{normalised_axis}_static_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_array_delete_derivative_rule(
+    source_shape: Sequence[int],
+    obj: object,
+    *,
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed NumPy delete signature."""
+
+    source = _program_ad_array_normalise_static_shape("delete", source_shape)
+    flat_indices = _program_ad_array_delete_flat_indices(source, obj, axis)
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
+    axis_signature = "flat" if normalised_axis is None else str(normalised_axis)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather(
+            "delete", values, source_shape=source, flat_indices=flat_indices
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_gather_jvp(
+            "delete",
+            values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_scatter_vjp(
+            "delete",
+            values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_array_delete_"
+            f"{_program_ad_array_signature(source)}_axis_{axis_signature}_static_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -8777,6 +8929,30 @@ def _program_ad_array_take_along_axis_shape(args: tuple[object, ...]) -> tuple[i
     return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
+def _program_ad_array_delete_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {2, 3}:
+        raise ValueError("program AD array delete shape rule requires array, object, and axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    delete_obj = _program_ad_array_delete_object(args[1], context="shape rule")
+    axis = args[2] if len(args) == 3 else None
+    source: NDArray[np.int64]
+    if axis is None:
+        source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(-1)
+        normalised_axis = None
+    else:
+        if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+            raise ValueError("program AD array delete shape rule requires static integer axis")
+        normalised_axis = _normalise_axis("axis", int(axis), len(source_shape))
+        source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(source_shape)
+    try:
+        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array delete shape rule requires static in-bounds deletion selectors"
+        ) from exc
+    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
+
+
 def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
     if not args:
         raise ValueError("program AD array dtype rule requires an array operand")
@@ -9137,6 +9313,37 @@ def _program_ad_array_take_along_axis_static_arguments(
     )
 
 
+def _program_ad_array_delete_static_object(obj: object) -> object:
+    delete_obj = _program_ad_array_delete_object(obj, context="static rule")
+    if isinstance(delete_obj, int):
+        return delete_obj
+    if isinstance(delete_obj, slice):
+        return delete_obj
+    delete_array = np.asarray(delete_obj)
+    if delete_array.dtype.kind == "b":
+        return (
+            "static_delete_mask",
+            tuple(int(dimension) for dimension in delete_array.shape),
+            tuple(bool(item) for item in delete_array.reshape(-1)),
+        )
+    return tuple(int(index) for index in delete_array.reshape(-1))
+
+
+def _program_ad_array_delete_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {2, 3}:
+        raise ValueError("program AD array delete static rule requires array, object, and axis")
+    axis = args[2] if len(args) == 3 else None
+    if axis is None:
+        normalised_axis = None
+    else:
+        if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+            raise ValueError("program AD array delete static rule requires static integer axis")
+        normalised_axis = _normalise_axis(
+            "axis", int(axis), len(_program_ad_array_shape_of(args[0]))
+        )
+    return (_program_ad_array_delete_static_object(args[1]), normalised_axis)
+
+
 def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD shape reshape static rule requires array and target shape")
@@ -9222,12 +9429,14 @@ _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "getitem": _program_ad_array_getitem_shape,
     "take": _program_ad_array_take_shape,
     "take_along_axis": _program_ad_array_take_along_axis_shape,
+    "delete": _program_ad_array_delete_shape,
 }
 
 _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
     "getitem": _program_ad_array_getitem_static_arguments,
     "take": _program_ad_array_take_static_arguments,
     "take_along_axis": _program_ad_array_take_along_axis_static_arguments,
+    "delete": _program_ad_array_delete_static_arguments,
 }
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -9322,16 +9531,19 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "getitem": "source_shape:ranked_tensor_shape;index:static_gather_index",
         "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
         "take_along_axis": "source_shape:ranked_tensor_shape;indices_shape_axis",
+        "delete": "source_shape:ranked_tensor_shape;object_axis",
     }[name]
     static_factory = {
         "getitem": "program_ad_array_getitem_derivative_rule",
         "take": "program_ad_array_take_derivative_rule",
         "take_along_axis": "program_ad_array_take_along_axis_derivative_rule",
+        "delete": "program_ad_array_delete_derivative_rule",
     }[name]
     nondifferentiable_boundaries = {
         "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
         "take_along_axis": "static_along_axis_gather_scatter_add",
+        "delete": "static_delete_gather_scatter_add",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -15408,6 +15620,7 @@ __all__ = [
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
+    "program_ad_array_delete_derivative_rule",
     "program_ad_array_getitem_derivative_rule",
     "program_ad_array_take_along_axis_derivative_rule",
     "program_ad_array_take_derivative_rule",
