@@ -2669,6 +2669,103 @@ def _compile_matrix_matrix_product_native_llvm_ir(rule_name: str, dimension: int
     return "\n".join(lines)
 
 
+def _compile_matrix_trace_native_llvm_ir(rule_name: str, dimension: int) -> str:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    lines = [
+        f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+        '; primitive = "matrix_trace"',
+        '; source = "native_matrix_trace_ad_codegen"',
+        '; execution = "native_llvm_mcjit"',
+        f"; dimension = {checked_dimension}",
+        f"; value_count = {matrix_size}",
+        f'target triple = "{_escape_mlir_string(triple)}"',
+        "",
+        f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+        "entry:",
+    ]
+    previous_sum = "0.0"
+    for index in range(checked_dimension):
+        diagonal_index = index * checked_dimension + index
+        lines.extend(
+            [
+                f"  %diagptr_value{index} = getelementptr double, double* %values, i64 {diagonal_index}",
+                f"  %diag_value{index} = load double, double* %diagptr_value{index}",
+                f"  %sum_value{index} = fadd double {previous_sum}, %diag_value{index}",
+            ]
+        )
+        previous_sum = f"%sum_value{index}"
+    lines.extend(
+        [
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            f"  store double {previous_sum}, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+        ]
+    )
+    for row in range(checked_dimension):
+        for column in range(checked_dimension):
+            matrix_index = row * checked_dimension + column
+            value = "1.0" if row == column else "0.0"
+            lines.extend(
+                [
+                    f"  %out_gradient{row}_{column} = getelementptr double, double* %out, i64 {matrix_index}",
+                    f"  store double {value}, double* %out_gradient{row}_{column}",
+                ]
+            )
+    lines.extend(
+        [
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_jvp(double* %values, double* %tangent, double* %out) {{",
+            "entry:",
+        ]
+    )
+    previous_jvp_sum = "0.0"
+    for index in range(checked_dimension):
+        diagonal_index = index * checked_dimension + index
+        lines.extend(
+            [
+                f"  %diagptr_jvp{index} = getelementptr double, double* %tangent, i64 {diagonal_index}",
+                f"  %diag_jvp{index} = load double, double* %diagptr_jvp{index}",
+                f"  %sum_jvp{index} = fadd double {previous_jvp_sum}, %diag_jvp{index}",
+            ]
+        )
+        previous_jvp_sum = f"%sum_jvp{index}"
+    lines.extend(
+        [
+            "  %out_jvp0 = getelementptr double, double* %out, i64 0",
+            f"  store double {previous_jvp_sum}, double* %out_jvp0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_vjp(double* %values, double* %cotangent, double* %out) {{",
+            "entry:",
+            "  %cotangent0ptr = getelementptr double, double* %cotangent, i64 0",
+            "  %cotangent0 = load double, double* %cotangent0ptr",
+        ]
+    )
+    for row in range(checked_dimension):
+        for column in range(checked_dimension):
+            matrix_index = row * checked_dimension + column
+            value = "%cotangent0" if row == column else "0.0"
+            lines.extend(
+                [
+                    f"  %out_vjp{row}_{column} = getelementptr double, double* %out, i64 {matrix_index}",
+                    f"  store double {value}, double* %out_vjp{row}_{column}",
+                ]
+            )
+    lines.extend(["  ret void", "}", ""])
+    return "\n".join(lines)
+
+
 def _compile_native_llvm_jit_functions(
     llvm_ir: str,
     base_symbol: str,
@@ -3092,6 +3189,65 @@ def _call_native_matrix_matrix_product_binary(
         raise ValueError(
             "native matrix-matrix product LLVM/JIT output_size must be matrix-sized or input-sized"
         )
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_trace_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    if checked_values.size != matrix_size:
+        raise ValueError(
+            "native matrix trace LLVM/JIT kernel requires dimension * dimension values"
+        )
+    if output_size not in {1, matrix_size}:
+        raise ValueError("native matrix trace LLVM/JIT output_size must be one or matrix-sized")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_trace_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_values.size != matrix_size:
+        raise ValueError(
+            "native matrix trace LLVM/JIT kernel requires dimension * dimension values"
+        )
+    expected_vector_size = matrix_size if label == "tangent" else 1
+    if checked_vector.size != expected_vector_size:
+        raise ValueError(
+            f"native matrix trace LLVM/JIT kernel requires {expected_vector_size} {label} value(s)"
+        )
+    if output_size not in {1, matrix_size}:
+        raise ValueError("native matrix trace LLVM/JIT output_size must be one or matrix-sized")
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -4136,6 +4292,156 @@ def make_matrix_matrix_product_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_matrix_trace_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile matrix trace value/JVP/VJP/gradient kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    matrix_size = checked_dimension * checked_dimension
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native matrix trace AD requires backend='native_llvm_jit'")
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != matrix_size:
+        raise ValueError("native matrix trace AD requires dimension * dimension sample values")
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_matrix_trace_native_llvm_ir(rule.name, checked_dimension)
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_trace_unary(
+            native_functions["value"], raw_values, checked_dimension, 1
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_trace_binary(
+            native_functions["jvp"],
+            raw_values,
+            raw_tangent,
+            "tangent",
+            checked_dimension,
+            1,
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_trace_binary(
+            native_functions["vjp"],
+            raw_values,
+            raw_cotangent,
+            "cotangent",
+            checked_dimension,
+            matrix_size,
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_gradient = _call_native_matrix_trace_unary(
+            native_functions["gradient"], values, checked_dimension, matrix_size
+        )
+        reference_gradient = vjp_kernel(values, np.ones(1, dtype=np.float64))
+        if not np.allclose(
+            native_gradient,
+            reference_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError("native LLVM/JIT matrix trace gradient verification failed")
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT matrix trace value/JVP/VJP/gradient kernel; "
+            "unregistered primitives remain fail-closed"
+        ),
+    )
+
+
+def make_matrix_trace_native_llvm_jit_lowering_rule(
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for matrix trace native LLVM/JIT kernels."""
+
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    captured_values = (
+        None if sample_values is None else _as_finite_vector("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native matrix trace lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_matrix_trace_ad_to_native_llvm_jit(
+            rule,
+            dimension=checked_dimension,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -4478,6 +4784,7 @@ __all__ = [
     "compile_registered_primitive_to_executable",
     "compile_matrix_matrix_product_ad_to_native_llvm_jit",
     "compile_matrix_quadratic_form_ad_to_native_llvm_jit",
+    "compile_matrix_trace_ad_to_native_llvm_jit",
     "compile_matrix_vector_product_ad_to_native_llvm_jit",
     "compile_scalar_binary_elementwise_ad_to_native_llvm_jit",
     "compile_scalar_quadratic_ad_to_native_llvm_jit",
@@ -4488,6 +4795,7 @@ __all__ = [
     "compile_kuramoto_to_mlir",
     "make_matrix_matrix_product_native_llvm_jit_lowering_rule",
     "make_matrix_quadratic_form_native_llvm_jit_lowering_rule",
+    "make_matrix_trace_native_llvm_jit_lowering_rule",
     "make_matrix_vector_product_native_llvm_jit_lowering_rule",
     "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule",
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",

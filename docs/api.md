@@ -73,6 +73,7 @@ from scpn_quantum_control import (
     compile_kuramoto_to_mlir,
     compile_matrix_matrix_product_ad_to_native_llvm_jit,
     compile_matrix_quadratic_form_ad_to_native_llvm_jit,
+    compile_matrix_trace_ad_to_native_llvm_jit,
     compile_matrix_vector_product_ad_to_native_llvm_jit,
     compile_scalar_binary_elementwise_ad_to_native_llvm_jit,
     compile_scalar_quadratic_ad_to_native_llvm_jit,
@@ -164,6 +165,14 @@ native_matmul_kernel.jvp(
     np.array([0.2, -0.1, 0.3, 0.4, -0.5, 0.75, 0.25, -0.2], dtype=np.float64),
 )
 
+native_trace_kernel = compile_matrix_trace_ad_to_native_llvm_jit(
+    rule,
+    dimension=2,
+    sample_values=np.array([2.0, -1.0, 0.5, 3.0], dtype=np.float64),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_trace_kernel.gradient(np.array([2.0, -1.0, 0.5, 3.0], dtype=np.float64))
+
 native_quadratic_form_kernel = compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule,
     dimension=2,
@@ -218,6 +227,9 @@ the public gradient helper is scalar-output only.
 coverage to square `A @ B` over concatenated `[A, B]` inputs with exact
 matrix-output JVP and VJP; `gradient()` remains fail-closed for the same
 scalar-output boundary.
+`compile_matrix_trace_ad_to_native_llvm_jit()` covers scalar-output matrix
+reductions by compiling `trace(A)` over row-major matrix inputs with exact
+identity-mask JVP, VJP, and gradient output.
 `compile_matrix_quadratic_form_ad_to_native_llvm_jit()` extends native compiler
 AD to rank-2 scalar linalg by compiling `x.T @ A @ x` over row-major
 concatenated `[A, x]` inputs with exact matrix-entry gradients
@@ -228,6 +240,7 @@ concatenated `[A, x]` inputs with exact matrix-entry gradients
 `make_vector_dot_native_llvm_jit_lowering_rule()` and
 `make_vector_squared_norm_native_llvm_jit_lowering_rule()` and
 `make_matrix_matrix_product_native_llvm_jit_lowering_rule()` and
+`make_matrix_trace_native_llvm_jit_lowering_rule()` and
 `make_matrix_vector_product_native_llvm_jit_lowering_rule()` and
 `make_matrix_quadratic_form_native_llvm_jit_lowering_rule()` bind those native
 backends to primitive registry lowering metadata when the primitive has the

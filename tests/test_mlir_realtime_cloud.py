@@ -2468,6 +2468,114 @@ def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -
     assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
 
 
+def test_native_llvm_jit_matrix_trace_kernel_executes_and_marks_plan_native() -> None:
+    """Native LLVM/JIT matrix trace AD kernels should execute scalar-output AD."""
+
+    identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_trace", "1")
+    rule = CustomDerivativeRule(
+        name="native_matrix_trace_rule",
+        value_fn=lambda values: np.array([np.trace(values.reshape(2, 2))], dtype=np.float64),
+        jvp_rule=lambda _values, tangent: np.array(
+            [np.trace(tangent.reshape(2, 2))],
+            dtype=np.float64,
+        ),
+        vjp_rule=lambda _values, cotangent: np.array(
+            [cotangent[0], 0.0, 0.0, cotangent[0]],
+            dtype=np.float64,
+        ),
+        parameter_names=("a00", "a01", "a10", "a11"),
+        trainable=(True, True, True, True),
+    )
+    config = CompilerADExecutableConfig(backend="native_llvm_jit")
+    values = np.array([2.0, -1.0, 0.5, 3.0], dtype=np.float64)
+    tangent = np.array([0.1, -0.2, 0.3, 0.4], dtype=np.float64)
+    cotangent = np.array([1.25], dtype=np.float64)
+
+    kernel = compiler_mlir.compile_matrix_trace_ad_to_native_llvm_jit(
+        rule,
+        dimension=2,
+        sample_values=values,
+        config=config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+
+    assert kernel.backend == "native_llvm_jit"
+    assert kernel.verification.passed is True
+    assert kernel.verification.value_close is True
+    assert kernel.verification.jvp_close is True
+    assert kernel.verification.vjp_close is True
+    assert kernel.verification.gradient_close is True
+    assert "verified native LLVM MCJIT matrix trace" in kernel.claim_boundary
+    assert kernel.llvm_gradient_ir is not None
+    assert "define void @native_matrix_trace_rule_value" in kernel.llvm_gradient_ir
+    assert "define void @native_matrix_trace_rule_jvp" in kernel.llvm_gradient_ir
+    assert "define void @native_matrix_trace_rule_vjp" in kernel.llvm_gradient_ir
+    assert "define void @native_matrix_trace_rule_gradient" in kernel.llvm_gradient_ir
+    np.testing.assert_allclose(kernel.value(values), [5.0], rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(kernel.jvp(values, tangent), [0.5], rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        kernel.vjp(values, cotangent),
+        [1.25, 0.0, 0.0, 1.25],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        kernel.gradient(values),
+        [1.0, 0.0, 0.0, 1.0],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            lowering_rule=compiler_mlir.make_matrix_trace_native_llvm_jit_lowering_rule(
+                dimension=2,
+                sample_values=values,
+                config=config,
+                sample_tangent=tangent,
+                sample_cotangent=cotangent,
+            ),
+            lowering_metadata={
+                "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+                "mlir_op": "scpn_diff.native_matrix_trace",
+                "mlir_runtime_verification": "verified: native LLVM/JIT matrix trace JVP",
+                "llvm": "available: native LLVM MCJIT matrix trace AD kernel",
+                "jit": "available: native LLVM MCJIT matrix trace AD kernel",
+                "native_backend": "native_llvm_jit",
+                "native_backend_verification": (
+                    "verified: native LLVM MCJIT matrix trace value/JVP/VJP/gradient"
+                ),
+                "static_derivative_factory": "native_matrix_trace_llvm_jit",
+                "static_signature": "primitive:trace;dimension:2;layout:row_major",
+                "nondifferentiable_boundary": "none_smooth_matrix_trace",
+                "nondifferentiable_boundary_policy": "fail_closed",
+            },
+            shape_rule=lambda _args: (1,),
+            dtype_rule=lambda _args: "float64",
+            static_argument_rule=lambda args: args,
+            nondifferentiable_policy="smooth_matrix_trace_real_domain",
+            effect="pure",
+        )
+    )
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+    registered_kernel = compile_registered_primitive_to_executable(registry, identity, values)
+
+    assert registered_kernel.backend == "native_llvm_jit"
+    assert plan.executable_backend == "native_llvm_jit"
+    assert module.metadata["executable_backend"] == "native_llvm_jit"
+    assert module.resource_counts["native_backend_contracts"] == 1
+    assert module.resource_counts["primitive_readiness_native_executable"] == 1
+    assert module.metadata["native_backend_contract_primitives"] == [identity.key]
+    assert module.metadata["primitive_readiness"][identity.key]["verdict"] == "native_executable"
+    assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
+
+
 def test_differentiable_mlir_rejects_executable_target_claims() -> None:
     """LLVM/JIT target names must fail until backed by a real executable backend."""
 
