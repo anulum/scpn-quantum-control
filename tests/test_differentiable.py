@@ -5955,6 +5955,71 @@ def test_program_ad_split_family_rejects_invalid_static_sections() -> None:
         )
 
 
+def test_program_ad_triangular_masks_preserve_zeroed_adjoint() -> None:
+    """Program AD tril/triu should pass adjoints only through unmasked entries."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:6], (2, 3))
+        cube = np.reshape(values, (2, 2, 3))
+        lower_matrix = np.tril(matrix)
+        upper_matrix = np.triu(matrix, k=1)
+        lower_cube = np.tril(cube, k=-1)
+        upper_cube = np.triu(cube)
+        return (
+            np.sum(lower_matrix * np.array([[1.0, -2.0, 3.0], [0.5, 1.5, -1.0]], dtype=np.float64))
+            + np.sum(
+                upper_matrix * np.array([[-0.25, 0.75, -1.25], [2.0, -0.5, 1.0]], dtype=np.float64)
+            )
+            + np.sum(
+                lower_cube
+                * np.array(
+                    [[[0.1, -0.2, 0.3], [2.0, -0.4, 0.5]], [[0.6, -0.7, 0.8], [-1.5, 0.9, -1.0]]],
+                    dtype=np.float64,
+                )
+            )
+            + np.sum(
+                upper_cube
+                * np.array(
+                    [[[0.2, -0.4, 0.6], [1.0, -0.8, 0.5]], [[-0.3, 0.7, -0.9], [0.4, 1.1, -1.2]]],
+                    dtype=np.float64,
+                )
+            )
+        )
+
+    values = np.linspace(-1.1, 1.1, 12, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array(
+        [1.2, 0.35, -0.65, 2.5, 0.7, 1.5, -0.3, 0.7, -0.9, -1.5, 1.1, -1.2],
+        dtype=np.float64,
+    )
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_triangular_masks_reject_invalid_contracts() -> None:
+    """Program AD tril/triu should fail closed on invalid rank and k contracts."""
+
+    with pytest.raises(ValueError, match="rank >= 2"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.tril(values)),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="static integer k"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.triu(np.reshape(values, (2, 3)), 0.5)),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 

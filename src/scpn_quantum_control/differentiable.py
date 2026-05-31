@@ -1523,6 +1523,18 @@ class TraceADArray:
                 self.context,
                 axis=None,
             )
+        if func in {np.tril, np.triu}:
+            if len(args) == 1 and kwargs.keys() <= {"k"}:
+                k_value = kwargs.get("k", 0)
+            elif len(args) == 2 and not kwargs:
+                k_value = args[1]
+            else:
+                raise ValueError(f"program AD np.{func.__name__} supports array and k")
+            return _trace_triangular_mask(
+                _coerce_trace_array(args[0], self.context),
+                k=k_value,
+                lower=func is np.tril,
+            )
         if func is np.clip:
             if len(args) < 3 or len(args) > 4 or kwargs:
                 raise ValueError("whole-program AD np.clip supports array, lower, and upper")
@@ -3680,6 +3692,32 @@ def _trace_split(
             )
         )
     return result
+
+
+def _trace_triangular_mask(
+    array: TraceADArray,
+    *,
+    k: object,
+    lower: bool,
+) -> TraceADArray:
+    name = "tril" if lower else "triu"
+    if array.ndim < 2:
+        raise ValueError(f"program AD np.{name} requires rank >= 2")
+    if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+        raise ValueError(f"program AD np.{name} requires static integer k")
+    rows, cols = array.shape[-2:]
+    row_index, col_index = np.ogrid[:rows, :cols]
+    if lower:
+        base_mask = row_index + int(k) >= col_index
+    else:
+        base_mask = row_index + int(k) <= col_index
+    mask = np.broadcast_to(base_mask, array.shape).reshape(-1)
+    zero = _trace_constant(0.0, array.context)
+    items = tuple(
+        item if bool(mask_value) else zero
+        for item, mask_value in zip(array._items, mask, strict=True)
+    )
+    return TraceADArray(items, array.shape, array.context)
 
 
 def _trace_concatenate(

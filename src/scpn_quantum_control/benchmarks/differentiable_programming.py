@@ -472,6 +472,9 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         split_left, split_middle, split_right = np.hsplit(matrix, [1, 2])
         split_depth0, split_depth1 = np.dsplit(np.reshape(trace_values, (1, 2, 3)), [1])
         uneven0, uneven1, uneven2, uneven3 = np.array_split(trace_values, 4)
+        lower_triangle = np.tril(matrix)
+        upper_triangle = np.triu(matrix, k=1)
+        depth_triangle = np.tril(np.reshape(trace_values, (1, 2, 3)), k=-1)
         column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
         depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
         flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
@@ -560,6 +563,21 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
                 + np.sum(uneven2 * np.array([0.25], dtype=np.float64))
                 + np.sum(uneven3 * np.array([-0.3], dtype=np.float64))
             )
+            + 0.02
+            * (
+                np.sum(
+                    lower_triangle
+                    * np.array([[1.0, -2.0, 3.0], [0.5, 1.5, -1.0]], dtype=np.float64)
+                )
+                + np.sum(
+                    upper_triangle
+                    * np.array([[-0.25, 0.75, -1.25], [2.0, -0.5, 1.0]], dtype=np.float64)
+                )
+                + np.sum(
+                    depth_triangle
+                    * np.array([[[0.1, -0.2, 0.3], [2.0, -0.4, 0.5]]], dtype=np.float64)
+                )
+            )
             + np.sum(column_assembled * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
             + np.sum(
                 depth_stacked
@@ -576,7 +594,7 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             )
         )
 
-    analytic = np.array([5.94075, 4.39425, 4.9845, 5.2675, 8.322, 12.17025], dtype=np.float64)
+    analytic = np.array([5.96075, 4.40925, 4.9595, 5.3175, 8.352, 12.19025], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",
