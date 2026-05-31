@@ -7010,6 +7010,140 @@ def _program_ad_product_matmul_vjp(
     )
 
 
+def _program_ad_product_normalise_matmul_shapes(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    left = tuple(int(dimension) for dimension in left_shape)
+    right = tuple(int(dimension) for dimension in right_shape)
+    if any(dimension < 0 for dimension in (*left, *right)):
+        raise ValueError("program AD product matmul direct rule requires non-negative dimensions")
+    if len(left) not in {1, 2} or len(right) not in {1, 2}:
+        raise ValueError(
+            "program AD product matmul direct rule supports rank-1 or rank-2 operands"
+        )
+    if len(left) == 1 and len(right) == 1:
+        if left[0] != right[0]:
+            raise ValueError("program AD product matmul direct rule dimensions must align")
+        return left, right, ()
+    if len(left) == 2 and len(right) == 1:
+        if left[1] != right[0]:
+            raise ValueError("program AD product matmul direct rule dimensions must align")
+        return left, right, (left[0],)
+    if len(left) == 1 and len(right) == 2:
+        if left[0] != right[0]:
+            raise ValueError("program AD product matmul direct rule dimensions must align")
+        return left, right, (right[1],)
+    if left[1] != right[0]:
+        raise ValueError("program AD product matmul direct rule dimensions must align")
+    return left, right, (left[0], right[1])
+
+
+def _program_ad_product_matmul_static_split(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD product matmul {role}", values).reshape(-1)
+    left_size = _program_ad_shape_static_size(left_shape)
+    right_size = _program_ad_shape_static_size(right_shape)
+    if vector.size != left_size + right_size:
+        raise ValueError(
+            "program AD product matmul direct rule requires flattened left operand "
+            "followed by right operand"
+        )
+    return (
+        vector[:left_size].reshape(left_shape),
+        vector[left_size:].reshape(right_shape),
+    )
+
+
+def program_ad_product_matmul_derivative_rule(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed matmul primitive signature."""
+
+    left_static_shape, right_static_shape, output_shape = (
+        _program_ad_product_normalise_matmul_shapes(left_shape, right_shape)
+    )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_matmul_static_split(
+            "values", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        return _program_ad_float64_vector_result(left @ right)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_matmul_static_split(
+            "values", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        tangent_left, tangent_right = _program_ad_product_matmul_static_split(
+            "tangent", tangent, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        return _program_ad_float64_vector_result(tangent_left @ right + left @ tangent_right)
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        left, right = _program_ad_product_matmul_static_split(
+            "values", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        cotangent_vector = _as_real_numeric_array(
+            "program AD product matmul cotangent", cotangent
+        ).reshape(-1)
+        expected_size = _program_ad_shape_static_size(output_shape)
+        if cotangent_vector.size != expected_size:
+            raise ValueError(
+                "program AD product matmul VJP cotangent shape must match output shape"
+            )
+        cotangent_value = (
+            float(cotangent_vector[0])
+            if output_shape == ()
+            else cotangent_vector.reshape(output_shape)
+        )
+        left_adjoint: NDArray[np.float64]
+        right_adjoint: NDArray[np.float64]
+        if left.ndim == 1 and right.ndim == 1:
+            scalar = float(cotangent_value)
+            left_adjoint = scalar * right
+            right_adjoint = scalar * left
+        elif left.ndim == 2 and right.ndim == 1:
+            cotangent_array = cast(NDArray[np.float64], cotangent_value)
+            left_adjoint = _program_ad_float64_vector_result(
+                np.outer(cotangent_array, right)
+            ).reshape(left.shape)
+            right_adjoint = left.T @ cotangent_array
+        elif left.ndim == 1 and right.ndim == 2:
+            cotangent_array = cast(NDArray[np.float64], cotangent_value)
+            left_adjoint = right @ cotangent_array
+            right_adjoint = _program_ad_float64_vector_result(
+                np.outer(left, cotangent_array)
+            ).reshape(right.shape)
+        else:
+            cotangent_array = cast(NDArray[np.float64], cotangent_value)
+            left_adjoint = cotangent_array @ right.T
+            right_adjoint = left.T @ cotangent_array
+        return _program_ad_float64_vector_result(
+            np.concatenate(
+                (np.asarray(left_adjoint).reshape(-1), np.asarray(right_adjoint).reshape(-1))
+            )
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_product_matmul_"
+            f"{_program_ad_shape_signature(left_static_shape)}_by_"
+            f"{_program_ad_shape_signature(right_static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "dot":
         return CustomDerivativeRule(
@@ -13155,6 +13289,7 @@ __all__ = [
     "primitive_static_argument_rule_for",
     "program_ad_array_getitem_derivative_rule",
     "program_ad_array_take_derivative_rule",
+    "program_ad_product_matmul_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",

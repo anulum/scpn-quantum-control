@@ -147,6 +147,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
+    program_ad_product_matmul_derivative_rule,
     program_ad_reduction_mean_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
     program_ad_reduction_sum_derivative_rule,
@@ -5088,6 +5089,87 @@ def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+
+
+def test_program_ad_product_matmul_static_derivative_factory_supports_rank1_rank2() -> None:
+    """Static matmul factories should support vector and rectangular matrix contracts."""
+
+    matrix = np.array([[1.0, -2.0, 0.5], [0.75, 3.0, -1.25]], dtype=np.float64)
+    vector = np.array([0.25, -1.5, 2.0], dtype=np.float64)
+    tangent_matrix = np.array([[0.2, -0.3, 0.4], [0.1, 0.5, -0.25]], dtype=np.float64)
+    tangent_vector = np.array([-0.5, 0.75, 1.25], dtype=np.float64)
+
+    matvec_rule = program_ad_product_matmul_derivative_rule((2, 3), (3,))
+    assert matvec_rule.name == "program_ad_product_matmul_2x3_by_3_direct_rule"
+    assert matvec_rule.jvp_rule is not None
+    assert matvec_rule.vjp_rule is not None
+    matvec_values = np.concatenate((matrix.reshape(-1), vector))
+    matvec_tangent = np.concatenate((tangent_matrix.reshape(-1), tangent_vector))
+    matvec_cotangent = np.array([1.25, -0.5], dtype=np.float64)
+    np.testing.assert_allclose(matvec_rule.value_fn(matvec_values), matrix @ vector)
+    np.testing.assert_allclose(
+        matvec_rule.jvp_rule(matvec_values, matvec_tangent),
+        tangent_matrix @ vector + matrix @ tangent_vector,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        matvec_rule.vjp_rule(matvec_values, matvec_cotangent),
+        np.concatenate(
+            (np.outer(matvec_cotangent, vector).reshape(-1), matrix.T @ matvec_cotangent)
+        ),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    row = np.array([1.5, -0.75], dtype=np.float64)
+    right = np.array([[2.0, -1.0, 0.25], [0.5, 1.25, -2.0]], dtype=np.float64)
+    tangent_row = np.array([-0.25, 0.5], dtype=np.float64)
+    tangent_right = np.array([[0.1, -0.3, 0.7], [0.4, -0.2, 0.6]], dtype=np.float64)
+    vecmat_rule = program_ad_product_matmul_derivative_rule((2,), (2, 3))
+    vecmat_values = np.concatenate((row, right.reshape(-1)))
+    vecmat_tangent = np.concatenate((tangent_row, tangent_right.reshape(-1)))
+    vecmat_cotangent = np.array([0.25, -1.5, 2.0], dtype=np.float64)
+    np.testing.assert_allclose(vecmat_rule.value_fn(vecmat_values), row @ right)
+    np.testing.assert_allclose(
+        vecmat_rule.jvp_rule(vecmat_values, vecmat_tangent),
+        tangent_row @ right + row @ tangent_right,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        vecmat_rule.vjp_rule(vecmat_values, vecmat_cotangent),
+        np.concatenate((right @ vecmat_cotangent, np.outer(row, vecmat_cotangent).reshape(-1))),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    rectangular_left = np.array([[1.0, -2.0, 0.5], [0.75, 3.0, -1.25]], dtype=np.float64)
+    rectangular_right = np.array([[0.25, -1.0], [1.5, 0.75], [-0.5, 2.0]], dtype=np.float64)
+    rect_rule = program_ad_product_matmul_derivative_rule((2, 3), (3, 2))
+    assert rect_rule.name == "program_ad_product_matmul_2x3_by_3x2_direct_rule"
+    rect_values = np.concatenate((rectangular_left.reshape(-1), rectangular_right.reshape(-1)))
+    rect_cotangent = np.array([[1.25, -0.5], [0.75, 2.0]], dtype=np.float64)
+    np.testing.assert_allclose(
+        rect_rule.value_fn(rect_values),
+        (rectangular_left @ rectangular_right).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rect_rule.vjp_rule(rect_values, rect_cotangent.reshape(-1)),
+        np.concatenate(
+            (
+                (rect_cotangent @ rectangular_right.T).reshape(-1),
+                (rectangular_left.T @ rect_cotangent).reshape(-1),
+            )
+        ),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    with pytest.raises(ValueError, match="dimensions must align"):
+        program_ad_product_matmul_derivative_rule((2, 3), (2, 2))
+    with pytest.raises(ValueError, match="rank-1 or rank-2"):
+        program_ad_product_matmul_derivative_rule((1, 2, 3), (3,))
 
 
 def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
