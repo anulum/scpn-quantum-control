@@ -1496,6 +1496,10 @@ class TraceADArray:
                 cast(Sequence[object], args[0]),
                 self.context,
             )
+        if func is np.block:
+            if len(args) != 1 or kwargs:
+                raise ValueError("program AD np.block supports one nested block sequence")
+            return _trace_block(args[0], self.context)
         if func is np.clip:
             if len(args) < 3 or len(args) > 4 or kwargs:
                 raise ValueError("whole-program AD np.clip supports array, lower, and upper")
@@ -3567,6 +3571,35 @@ def _trace_stack_convenience(
     except ValueError as exc:
         raise ValueError(f"program AD np.{name} requires shape-compatible arrays") from exc
     raise ValueError(f"unsupported program AD stack convenience {name}")
+
+
+def _trace_block(
+    blocks: object,
+    context: _WholeProgramTraceContext,
+) -> TraceADArray:
+    flat_items: list[TraceADScalar] = []
+
+    def index_layout(node: object) -> object:
+        if isinstance(node, (list, tuple)):
+            if not node:
+                raise ValueError("program AD np.block requires non-empty nested sequences")
+            return [index_layout(item) for item in node]
+        array = _coerce_trace_array(node, context)
+        offset = len(flat_items)
+        flat_items.extend(array._items)
+        return np.arange(offset, offset + array.size, dtype=np.int64).reshape(array.shape)
+
+    try:
+        selected = np.block(cast(Any, index_layout(blocks)))
+    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            "program AD np.block requires a non-empty nested sequence of shape-compatible arrays"
+        ) from exc
+    selected_array = np.asarray(selected, dtype=np.int64)
+    items = tuple(flat_items[int(index)] for index in selected_array.reshape(-1))
+    return TraceADArray(
+        items, tuple(int(dimension) for dimension in selected_array.shape), context
+    )
 
 
 def _trace_concatenate(

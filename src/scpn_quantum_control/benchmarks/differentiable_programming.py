@@ -466,6 +466,7 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         vstacked = np.vstack((matrix[0], matrix[1]))
         column_stacked = np.column_stack((trace_values[:3], trace_values[3:]))
         dstacked = np.dstack((matrix[:, :2], matrix[:, 1:]))
+        blocked = np.block([[matrix[:, :2], matrix[:, 2:]], [matrix[1:, :2], matrix[:1, 1:2]]])
         column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
         depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
         flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
@@ -529,6 +530,14 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
                     dtype=np.float64,
                 )
             )
+            + 0.025
+            * np.sum(
+                blocked
+                * np.array(
+                    [[0.25, -0.5, 0.75], [1.0, -1.25, 1.5], [-0.75, 0.5, -1.0]],
+                    dtype=np.float64,
+                )
+            )
             + np.sum(column_assembled * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
             + np.sum(
                 depth_stacked
@@ -545,7 +554,7 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             )
         )
 
-    analytic = np.array([5.879, 4.4865, 4.923, 5.247, 8.3175, 12.1545], dtype=np.float64)
+    analytic = np.array([5.88525, 4.449, 4.94175, 5.25325, 8.29875, 12.192], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",

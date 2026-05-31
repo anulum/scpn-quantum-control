@@ -5856,6 +5856,46 @@ def test_program_ad_stack_conveniences_reject_incompatible_shapes() -> None:
         )
 
 
+def test_program_ad_block_preserves_nested_assembly_adjoint() -> None:
+    """Program AD np.block should preserve nested assembly adjoints exactly."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:4], (2, 2))
+        side = np.reshape(values[4:], (2, 1))
+        bottom_left = np.reshape(values[:2], (1, 2))
+        bottom_right = np.reshape(values[2:3], (1, 1))
+        assembled = np.block([[matrix, side], [bottom_left, bottom_right]])
+        weights = np.array(
+            [[0.5, -1.0, 2.0], [1.5, -0.25, 0.75], [-0.5, 1.25, -2.0]],
+            dtype=np.float64,
+        )
+        return np.sum(assembled * weights)
+
+    values = np.array([1.0, -2.0, 0.5, 3.0, -1.5, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([0.0, 0.25, -0.5, -0.25, 2.0, 0.75], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_block_rejects_incompatible_nested_layouts() -> None:
+    """Program AD np.block should fail closed on invalid nested layouts."""
+
+    with pytest.raises(ValueError, match="shape-compatible"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.block([[np.reshape(values[:4], (2, 2)), values[4:5]]])),
+            np.arange(1.0, 6.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 
