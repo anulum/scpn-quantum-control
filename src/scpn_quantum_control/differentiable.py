@@ -6846,6 +6846,236 @@ def _program_ad_elementwise_binary_vjp_for(name: str) -> CustomVJPRule:
     return lambda values, cotangent: _program_ad_elementwise_binary_vjp(name, values, cotangent)
 
 
+def _program_ad_elementwise_normalise_binary_static_shapes(
+    name: str,
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    if name not in _PROGRAM_AD_ELEMENTWISE_BINARY_NAMES:
+        raise ValueError(f"unsupported program AD elementwise binary primitive {name}")
+    left = tuple(int(dimension) for dimension in left_shape)
+    right = tuple(int(dimension) for dimension in right_shape)
+    if any(dimension < 0 for dimension in (*left, *right)):
+        raise ValueError(
+            f"program AD elementwise {name} direct rule requires non-negative dimensions"
+        )
+    try:
+        output = np.broadcast_shapes(left, right)
+    except ValueError as exc:
+        raise ValueError(
+            f"program AD elementwise {name} direct rule requires broadcast-compatible shapes"
+        ) from exc
+    return left, right, tuple(int(dimension) for dimension in output)
+
+
+def _program_ad_elementwise_binary_static_split(
+    name: str,
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD elementwise {name} {role}", values).reshape(-1)
+    left_size = _program_ad_shape_static_size(left_shape)
+    right_size = _program_ad_shape_static_size(right_shape)
+    if vector.size != left_size + right_size:
+        raise ValueError(
+            f"program AD elementwise {name} direct rule requires flattened left operand "
+            "followed by right operand"
+        )
+    return (
+        vector[:left_size].reshape(left_shape),
+        vector[left_size:].reshape(right_shape),
+    )
+
+
+def _program_ad_elementwise_unbroadcast(
+    values: NDArray[np.float64],
+    *,
+    target_shape: tuple[int, ...],
+) -> NDArray[np.float64]:
+    result = np.asarray(values, dtype=np.float64)
+    if target_shape == ():
+        return np.array([float(np.sum(result))], dtype=np.float64)
+    while result.ndim > len(target_shape):
+        result = np.sum(result, axis=0)
+    for axis, dimension in enumerate(target_shape):
+        if dimension == 1 and result.shape[axis] != 1:
+            result = np.sum(result, axis=axis, keepdims=True)
+    return _program_ad_float64_vector_result(result.reshape(target_shape))
+
+
+def _program_ad_elementwise_binary_static_value_array(
+    name: str,
+    left: NDArray[np.float64],
+    right: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    _program_ad_elementwise_require_binary_domain(name, left, right, derivative=False)
+    if name == "add":
+        return _program_ad_float64_vector_result(left + right)
+    if name == "subtract":
+        return _program_ad_float64_vector_result(left - right)
+    if name == "multiply":
+        return _program_ad_float64_vector_result(left * right)
+    if name == "divide":
+        return _program_ad_float64_vector_result(left / right)
+    if name == "power":
+        return _program_ad_float64_vector_result(left**right)
+    if name == "maximum":
+        return _program_ad_float64_vector_result(np.maximum(left, right))
+    if name == "minimum":
+        return _program_ad_float64_vector_result(np.minimum(left, right))
+    raise ValueError(f"unsupported program AD elementwise primitive {name}")
+
+
+def _program_ad_elementwise_binary_static_jvp_array(
+    name: str,
+    left: NDArray[np.float64],
+    right: NDArray[np.float64],
+    tangent_left: NDArray[np.float64],
+    tangent_right: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    _program_ad_elementwise_require_binary_domain(name, left, right, derivative=True)
+    if name == "add":
+        return _program_ad_float64_vector_result(tangent_left + tangent_right)
+    if name == "subtract":
+        return _program_ad_float64_vector_result(tangent_left - tangent_right)
+    if name == "multiply":
+        return _program_ad_float64_vector_result(tangent_left * right + left * tangent_right)
+    if name == "divide":
+        return _program_ad_float64_vector_result(
+            (tangent_left * right - left * tangent_right) / right**2
+        )
+    if name == "power":
+        return _program_ad_float64_vector_result(
+            left**right * (tangent_right * np.log(left) + right * tangent_left / left)
+        )
+    if name == "maximum":
+        return _program_ad_float64_vector_result(
+            np.where(left > right, tangent_left, tangent_right)
+        )
+    if name == "minimum":
+        return _program_ad_float64_vector_result(
+            np.where(left < right, tangent_left, tangent_right)
+        )
+    raise ValueError(f"unsupported program AD elementwise primitive {name}")
+
+
+def _program_ad_elementwise_binary_static_adjoint_arrays(
+    name: str,
+    left: NDArray[np.float64],
+    right: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    _program_ad_elementwise_require_binary_domain(name, left, right, derivative=True)
+    if name == "add":
+        return cotangent, cotangent
+    if name == "subtract":
+        return cotangent, -cotangent
+    if name == "multiply":
+        return cotangent * right, cotangent * left
+    if name == "divide":
+        return cotangent / right, -cotangent * left / right**2
+    if name == "power":
+        return (
+            cotangent * right * left ** (right - 1.0),
+            cotangent * left**right * np.log(left),
+        )
+    if name == "maximum":
+        return (
+            _program_ad_float64_vector_result(np.where(left > right, cotangent, 0.0)).reshape(
+                cotangent.shape
+            ),
+            _program_ad_float64_vector_result(np.where(left > right, 0.0, cotangent)).reshape(
+                cotangent.shape
+            ),
+        )
+    if name == "minimum":
+        return (
+            _program_ad_float64_vector_result(np.where(left < right, cotangent, 0.0)).reshape(
+                cotangent.shape
+            ),
+            _program_ad_float64_vector_result(np.where(left < right, 0.0, cotangent)).reshape(
+                cotangent.shape
+            ),
+        )
+    raise ValueError(f"unsupported program AD elementwise primitive {name}")
+
+
+def program_ad_elementwise_binary_derivative_rule(
+    name: str,
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed broadcasted binary primitive."""
+
+    left_static_shape, right_static_shape, output_shape = (
+        _program_ad_elementwise_normalise_binary_static_shapes(name, left_shape, right_shape)
+    )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_elementwise_binary_static_split(
+            name, "values", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        return _program_ad_elementwise_binary_static_value_array(name, left, right)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_elementwise_binary_static_split(
+            name, "values", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        tangent_left, tangent_right = _program_ad_elementwise_binary_static_split(
+            name,
+            "tangent",
+            tangent,
+            left_shape=left_static_shape,
+            right_shape=right_static_shape,
+        )
+        return _program_ad_elementwise_binary_static_jvp_array(
+            name, left, right, tangent_left, tangent_right
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        left, right = _program_ad_elementwise_binary_static_split(
+            name, "values", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        cotangent_vector = _as_real_numeric_array(
+            f"program AD elementwise {name} cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != _program_ad_shape_static_size(output_shape):
+            raise ValueError(
+                f"program AD elementwise {name} VJP cotangent shape must match output shape"
+            )
+        cotangent_array = cotangent_vector.reshape(output_shape)
+        left_adjoint, right_adjoint = _program_ad_elementwise_binary_static_adjoint_arrays(
+            name, left, right, cotangent_array
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate(
+                (
+                    _program_ad_elementwise_unbroadcast(
+                        left_adjoint, target_shape=left_static_shape
+                    ),
+                    _program_ad_elementwise_unbroadcast(
+                        right_adjoint, target_shape=right_static_shape
+                    ),
+                )
+            )
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_elementwise_{name}_{_program_ad_shape_signature(left_static_shape)}_by_"
+            f"{_program_ad_shape_signature(right_static_shape)}_broadcast_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_elementwise_derivative_rule(name: str) -> CustomDerivativeRule:
     if name in _PROGRAM_AD_ELEMENTWISE_UNARY_NAMES:
         return CustomDerivativeRule(
@@ -13603,6 +13833,7 @@ __all__ = [
     "program_ad_cumulative_cumprod_derivative_rule",
     "program_ad_cumulative_cumsum_derivative_rule",
     "program_ad_cumulative_diff_derivative_rule",
+    "program_ad_elementwise_binary_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",

@@ -147,6 +147,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_cumulative_cumprod_derivative_rule,
     program_ad_cumulative_cumsum_derivative_rule,
     program_ad_cumulative_diff_derivative_rule,
+    program_ad_elementwise_binary_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
@@ -4907,6 +4908,84 @@ def test_program_ad_binary_elementwise_primitives_validate_registry_rules_at_dis
         "maximum": {"shape", "dtype", "static"},
         "minimum": {"shape", "dtype", "static"},
     }
+
+
+def test_program_ad_elementwise_binary_static_factory_supports_broadcasting() -> None:
+    """Static binary elementwise factories should expose exact broadcast-aware VJPs."""
+
+    left = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], dtype=np.float64)
+    right = np.array([0.5, -1.5, 2.0], dtype=np.float64)
+    tangent_left = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
+    tangent_right = np.array([-0.25, 0.75, 1.25], dtype=np.float64)
+    values = np.concatenate((left.reshape(-1), right.reshape(-1)))
+    tangent = np.concatenate((tangent_left.reshape(-1), tangent_right.reshape(-1)))
+    cotangent = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.0]], dtype=np.float64)
+
+    multiply_rule = program_ad_elementwise_binary_derivative_rule("multiply", (2, 3), (3,))
+    assert multiply_rule.name == "program_ad_elementwise_multiply_2x3_by_3_broadcast_direct_rule"
+    assert multiply_rule.jvp_rule is not None
+    assert multiply_rule.vjp_rule is not None
+    np.testing.assert_allclose(multiply_rule.value_fn(values), (left * right).reshape(-1))
+    np.testing.assert_allclose(
+        multiply_rule.jvp_rule(values, tangent),
+        (tangent_left * right + left * tangent_right).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        multiply_rule.vjp_rule(values, cotangent.reshape(-1)),
+        np.concatenate(((cotangent * right).reshape(-1), np.sum(cotangent * left, axis=0))),
+    )
+
+    divide_rule = program_ad_elementwise_binary_derivative_rule("divide", (2, 3), (3,))
+    np.testing.assert_allclose(divide_rule.value_fn(values), (left / right).reshape(-1))
+    np.testing.assert_allclose(
+        divide_rule.vjp_rule(values, cotangent.reshape(-1)),
+        np.concatenate(
+            (
+                (cotangent / right).reshape(-1),
+                np.sum(-cotangent * left / right**2, axis=0),
+            )
+        ),
+    )
+
+    power_left = left + 2.0
+    power_right = np.array([1.25, 2.0, 0.5], dtype=np.float64)
+    power_values = np.concatenate((power_left.reshape(-1), power_right))
+    power_cotangent = cotangent.reshape(-1)
+    power_rule = program_ad_elementwise_binary_derivative_rule("power", (2, 3), (3,))
+    np.testing.assert_allclose(
+        power_rule.value_fn(power_values), (power_left**power_right).reshape(-1)
+    )
+    np.testing.assert_allclose(
+        power_rule.vjp_rule(power_values, power_cotangent),
+        np.concatenate(
+            (
+                (cotangent * power_right * power_left ** (power_right - 1.0)).reshape(-1),
+                np.sum(cotangent * power_left**power_right * np.log(power_left), axis=0),
+            )
+        ),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    scalar_add_rule = program_ad_elementwise_binary_derivative_rule("add", (2, 3), ())
+    scalar_values = np.concatenate((left.reshape(-1), np.array([2.5], dtype=np.float64)))
+    np.testing.assert_allclose(scalar_add_rule.value_fn(scalar_values), (left + 2.5).reshape(-1))
+    np.testing.assert_allclose(
+        scalar_add_rule.vjp_rule(scalar_values, cotangent.reshape(-1)),
+        np.concatenate((cotangent.reshape(-1), np.array([np.sum(cotangent)], dtype=np.float64))),
+    )
+
+    with pytest.raises(ValueError, match="broadcast"):
+        program_ad_elementwise_binary_derivative_rule("multiply", (2, 3), (2,))
+    with pytest.raises(ValueError, match="positive left operand"):
+        program_ad_elementwise_binary_derivative_rule("power", (2, 3), (3,)).value_fn(
+            np.concatenate(((-np.abs(left)).reshape(-1), power_right))
+        )
+    with pytest.raises(ValueError, match="undefined at equal operands"):
+        program_ad_elementwise_binary_derivative_rule("maximum", (2, 3), (3,)).vjp_rule(
+            np.concatenate((left.reshape(-1), left[0].reshape(-1))),
+            cotangent.reshape(-1),
+        )
 
 
 def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
