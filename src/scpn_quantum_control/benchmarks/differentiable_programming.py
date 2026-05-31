@@ -216,6 +216,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
     power_weights = np.array([[0.5, 0.0], [0.0, -0.25]], dtype=np.float64)
     multi_dot_left = np.array([0.75, -1.5], dtype=np.float64)
     multi_dot_right = np.array([1.25, 0.5], dtype=np.float64)
+    trace_weight = 0.375
+    diag_weights = np.array([-1.25, 0.5], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
         matrix = np.diag(trace_values[:2])
@@ -224,6 +226,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             np.linalg.det(matrix)
             + np.sum(np.linalg.inv(matrix) * inverse_weights)
             + np.sum(np.linalg.solve(matrix, rhs) * solve_weights)
+            + trace_weight * np.trace(matrix)
+            + np.sum(np.diag(matrix) * diag_weights)
             + np.sum(np.linalg.matrix_power(matrix, 2) * power_weights)
             + np.linalg.multi_dot((multi_dot_left, matrix, multi_dot_right))
         )
@@ -234,11 +238,15 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             x1
             - inverse_weights[0, 0] / (x0 * x0)
             - solve_weights[0] * rhs0 / (x0 * x0)
+            + trace_weight
+            + diag_weights[0]
             + 2.0 * power_weights[0, 0] * x0
             + multi_dot_left[0] * multi_dot_right[0],
             x0
             - inverse_weights[1, 1] / (x1 * x1)
             - solve_weights[1] * rhs1 / (x1 * x1)
+            + trace_weight
+            + diag_weights[1]
             + 2.0 * power_weights[1, 1] * x1
             + multi_dot_left[1] * multi_dot_right[1],
             solve_weights[0] / x0,

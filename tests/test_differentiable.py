@@ -148,9 +148,11 @@ from scpn_quantum_control.differentiable import (
     program_ad_cumulative_cumsum_derivative_rule,
     program_ad_cumulative_diff_derivative_rule,
     program_ad_elementwise_binary_derivative_rule,
+    program_ad_linalg_diag_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
+    program_ad_linalg_trace_derivative_rule,
     program_ad_product_matmul_derivative_rule,
     program_ad_reduction_mean_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
@@ -6257,6 +6259,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_linalg_solve_derivative_rule",
             "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2",
         ),
+        "scpn.program_ad.linalg:trace": (
+            "program_ad_linalg_trace_derivative_rule",
+            "matrix_shape:rank2;offset_axis_pair",
+        ),
+        "scpn.program_ad.linalg:diag": (
+            "program_ad_linalg_diag_derivative_rule",
+            "source_shape:rank1_or_rank2;k",
+        ),
     }
 
     for primitive, (factory, signature) in expected_factories.items():
@@ -6282,16 +6292,26 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
     solve_rule = custom_derivative_rule_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "solve", "1")
     )
+    trace_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "trace", "1")
+    )
+    diag_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "diag", "1")
+    )
 
     assert det_rule.name == "program_ad_linalg_det_direct_rule"
     assert inv_rule.name == "program_ad_linalg_inv_direct_rule"
     assert solve_rule.name == "program_ad_linalg_solve_direct_rule"
+    assert trace_rule.name == "program_ad_linalg_trace_direct_rule"
+    assert diag_rule.name == "program_ad_linalg_diag_trace_contract"
     assert det_rule.jvp_rule is not None
     assert inv_rule.jvp_rule is not None
     assert solve_rule.jvp_rule is not None
+    assert trace_rule.jvp_rule is not None
     assert det_rule.vjp_rule is not None
     assert inv_rule.vjp_rule is not None
     assert solve_rule.vjp_rule is not None
+    assert trace_rule.vjp_rule is not None
 
     np.testing.assert_allclose(det_rule.value_fn(matrix.reshape(-1)), [np.linalg.det(matrix)])
     cofactor = np.array([[matrix[1, 1], -matrix[1, 0]], [-matrix[0, 1], matrix[0, 0]]])
@@ -6342,6 +6362,22 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+
+    np.testing.assert_allclose(trace_rule.value_fn(matrix.reshape(-1)), [np.trace(matrix)])
+    np.testing.assert_allclose(
+        trace_rule.jvp_rule(matrix.reshape(-1), tangent_matrix.reshape(-1)),
+        [np.trace(tangent_matrix)],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        trace_rule.vjp_rule(matrix.reshape(-1), np.array([2.0])),
+        (2.0 * np.eye(2, dtype=np.float64)).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        diag_rule.value_fn(matrix.reshape(-1))
 
     matrix_power_rule = custom_derivative_rule_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
@@ -6446,6 +6482,72 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
         program_ad_linalg_matrix_power_derivative_rule(1.5)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="at least two shapes"):
         program_ad_linalg_multi_dot_derivative_rule(((2,),))
+
+    trace_rule = program_ad_linalg_trace_derivative_rule((2, 3), offset=1)
+    assert trace_rule.name == "program_ad_linalg_trace_2x3_offset_1_direct_rule"
+    assert trace_rule.jvp_rule is not None
+    assert trace_rule.vjp_rule is not None
+    rectangular = np.array([[2.0, -0.5, 1.0], [0.75, 1.5, -2.0]], dtype=np.float64)
+    rectangular_tangent = np.array([[0.1, -0.2, 0.3], [0.4, -0.5, 0.6]], dtype=np.float64)
+    np.testing.assert_allclose(trace_rule.value_fn(rectangular.reshape(-1)), [-2.5])
+    np.testing.assert_allclose(
+        trace_rule.jvp_rule(rectangular.reshape(-1), rectangular_tangent.reshape(-1)),
+        [0.4],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    expected_trace_vjp = np.zeros_like(rectangular)
+    expected_trace_vjp[0, 1] = 1.25
+    expected_trace_vjp[1, 2] = 1.25
+    np.testing.assert_allclose(
+        trace_rule.vjp_rule(rectangular.reshape(-1), np.array([1.25], dtype=np.float64)),
+        expected_trace_vjp.reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    vector_diag_rule = program_ad_linalg_diag_derivative_rule((3,), k=-1)
+    assert vector_diag_rule.name == "program_ad_linalg_diag_3_offset_-1_direct_rule"
+    assert vector_diag_rule.jvp_rule is not None
+    assert vector_diag_rule.vjp_rule is not None
+    vector = np.array([1.0, -2.0, 0.5], dtype=np.float64)
+    vector_tangent = np.array([0.25, 0.5, -0.75], dtype=np.float64)
+    vector_diag = np.diag(vector, k=-1)
+    np.testing.assert_allclose(vector_diag_rule.value_fn(vector), vector_diag.reshape(-1))
+    np.testing.assert_allclose(
+        vector_diag_rule.jvp_rule(vector, vector_tangent),
+        np.diag(vector_tangent, k=-1).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    cotangent_matrix = np.arange(vector_diag.size, dtype=np.float64).reshape(vector_diag.shape)
+    np.testing.assert_allclose(
+        vector_diag_rule.vjp_rule(vector, cotangent_matrix.reshape(-1)),
+        np.diag(cotangent_matrix, k=-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    matrix_diag_rule = program_ad_linalg_diag_derivative_rule((2, 3), k=1)
+    assert matrix_diag_rule.name == "program_ad_linalg_diag_2x3_offset_1_direct_rule"
+    np.testing.assert_allclose(
+        matrix_diag_rule.value_fn(rectangular.reshape(-1)),
+        np.diag(rectangular, k=1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    expected_diag_vjp = np.zeros_like(rectangular)
+    expected_diag_vjp[0, 1] = 1.5
+    expected_diag_vjp[1, 2] = -2.0
+    np.testing.assert_allclose(
+        matrix_diag_rule.vjp_rule(rectangular.reshape(-1), np.array([1.5, -2.0])),
+        expected_diag_vjp.reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    with pytest.raises(ValueError, match="rank-1 or rank-2"):
+        program_ad_linalg_diag_derivative_rule((2, 2, 2))
 
 
 def test_program_ad_linalg_solve_static_derivative_factory_supports_matrix_rhs() -> None:
@@ -8731,6 +8833,7 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.primitive_static_argument_rule_for is primitive_static_argument_rule_for
+    assert scpn.program_ad_linalg_diag_derivative_rule is program_ad_linalg_diag_derivative_rule
     assert (
         scpn.program_ad_linalg_matrix_power_derivative_rule
         is program_ad_linalg_matrix_power_derivative_rule
@@ -8739,6 +8842,7 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
         scpn.program_ad_linalg_multi_dot_derivative_rule
         is program_ad_linalg_multi_dot_derivative_rule
     )
+    assert scpn.program_ad_linalg_trace_derivative_rule is program_ad_linalg_trace_derivative_rule
     assert scpn.register_primitive_batching_rule is register_primitive_batching_rule
     assert scpn.register_primitive_lowering_rule is register_primitive_lowering_rule
     assert scpn.register_primitive_transform_rule is register_primitive_transform_rule

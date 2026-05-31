@@ -358,7 +358,7 @@ Runs the committed conformance rows:
 |------|----------|----------|
 | `loop_heavy_scalar` | loop-heavy | Executed Python loops with scalar ufuncs |
 | `matrix_heavy_linear_algebra` | matrix-heavy | Dot, outer, trace, tensordot, and einsum semantics |
-| `linalg_primitive_contracts` | linalg-primitive | Registry-gated linalg primitive contracts |
+| `linalg_primitive_contracts` | linalg-primitive | Registry-gated determinant, inverse, solve, trace, diagonal, matrix-power, and multi-dot contracts |
 | `indexing_static_gather_contracts` | indexing-heavy | Static slicing, `np.take`, and repeated adjoint accumulation |
 | `mutation_heavy_forward_only` | mutation-heavy | Static array mutation dataflow |
 | `transform_nesting_vmap_program_grad` | transform-nesting | `vmap` over program AD gradients |
