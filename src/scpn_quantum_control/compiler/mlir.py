@@ -323,6 +323,11 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "primitives": len(plan.statuses),
             "jvp_rules": sum(status.has_jvp for status in plan.statuses),
             "vjp_rules": sum(status.has_vjp for status in plan.statuses),
+            "shape_rules": sum(status.has_shape_rule for status in plan.statuses),
+            "dtype_rules": sum(status.has_dtype_rule for status in plan.statuses),
+            "static_argument_rules": sum(
+                status.has_static_argument_rule for status in plan.statuses
+            ),
             "static_derivative_factories": sum(
                 status.static_derivative_factory not in {"not_declared", "not_required"}
                 for status in plan.statuses
