@@ -5612,7 +5612,7 @@ def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
 def test_program_ad_linalg_det_fails_closed_invalid_matrix_contracts() -> None:
     """Program AD determinant should reject non-rank-2 and non-square inputs."""
 
-    with pytest.raises(ValueError, match="rank-2 matrices only"):
+    with pytest.raises(ValueError, match="shape rule requires a rank-2 matrix"):
         whole_program_value_and_grad(
             lambda values: np.linalg.det(values),
             np.array([1.0, 2.0, 3.0], dtype=np.float64),
@@ -5681,7 +5681,7 @@ def test_program_ad_linalg_inv_matches_inverse_differential() -> None:
 def test_program_ad_linalg_inv_fails_closed_invalid_matrix_contracts() -> None:
     """Program AD inverse should reject non-rank-2, non-square, and singular inputs."""
 
-    with pytest.raises(ValueError, match="rank-2 matrices only"):
+    with pytest.raises(ValueError, match="shape rule requires a rank-2 matrix"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.inv(values)),
             np.array([1.0, 2.0, 3.0], dtype=np.float64),
@@ -5768,12 +5768,12 @@ def test_program_ad_linalg_solve_matches_implicit_linear_system_differential() -
 def test_program_ad_linalg_solve_fails_closed_invalid_contracts() -> None:
     """Program AD solve should reject invalid matrix and right-hand side contracts."""
 
-    with pytest.raises(ValueError, match="matrix must be rank-2"):
+    with pytest.raises(ValueError, match="shape rule requires a rank-2 matrix"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.solve(values[:2], values[2:4])),
             np.arange(1.0, 5.0, dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="matrix must be square"):
+    with pytest.raises(ValueError, match="shape rule requires a square matrix"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.solve(np.reshape(values[:6], (2, 3)), values[6:8])),
             np.arange(1.0, 9.0, dtype=np.float64),
@@ -5830,7 +5830,7 @@ def test_program_ad_linalg_matrix_power_matches_exact_differential() -> None:
 def test_program_ad_linalg_matrix_power_fails_closed_invalid_contracts() -> None:
     """Program AD matrix_power should reject invalid matrices and powers."""
 
-    with pytest.raises(ValueError, match="rank-2 matrices only"):
+    with pytest.raises(ValueError, match="shape rule requires a rank-2 matrix"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.matrix_power(values, 2)),
             np.arange(1.0, 5.0, dtype=np.float64),
@@ -5840,7 +5840,7 @@ def test_program_ad_linalg_matrix_power_fails_closed_invalid_contracts() -> None
             lambda values: np.sum(np.linalg.matrix_power(np.reshape(values, (2, 3)), 2)),
             np.arange(1.0, 7.0, dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="exponent must be a static integer"):
+    with pytest.raises(ValueError, match="static rule requires an integer power"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.matrix_power(np.reshape(values, (2, 2)), 1.5)),
             np.arange(1.0, 5.0, dtype=np.float64),
