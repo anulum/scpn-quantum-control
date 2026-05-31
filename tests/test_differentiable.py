@@ -7495,6 +7495,53 @@ def test_program_ad_static_delete_preserves_gather_adjoint() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
+def test_program_ad_static_constant_pad_preserves_scatter_adjoint() -> None:
+    """Static constant padding should preserve exact source scatter adjoints."""
+
+    matrix_weights = np.array(
+        [
+            [0.5, -1.0, 2.0, -0.5, 1.0],
+            [1.25, -0.75, 1.5, -2.0, 0.25],
+            [-1.5, 2.5, 0.75, 3.0, -0.25],
+        ],
+        dtype=np.float64,
+    )
+    flat_weights = np.array([0.1, -0.5, 2.25, -1.25, 0.75, 1.0, -2.0], dtype=np.float64)
+    values = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
+
+    def objective(trace_values: np.ndarray) -> object:
+        matrix = np.reshape(trace_values, (2, 2))
+        matrix_padded = np.pad(
+            matrix,
+            ((1, 0), (2, 1)),
+            mode="constant",
+            constant_values=-2.0,
+        )
+        flat_padded = np.pad(
+            trace_values,
+            (1, 2),
+            mode="constant",
+            constant_values=(0.5, -1.0),
+        )
+        return np.sum(matrix_padded * matrix_weights) + np.sum(flat_padded * flat_weights)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    expected_value = float(
+        np.sum(
+            np.pad(values.reshape(2, 2), ((1, 0), (2, 1)), constant_values=-2.0) * matrix_weights
+        )
+        + np.sum(np.pad(values, (1, 2), constant_values=(0.5, -1.0)) * flat_weights)
+    )
+    assert result.value == pytest.approx(expected_value)
+    np.testing.assert_allclose(result.gradient, [1.0, 0.25, -0.5, 3.75])
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_static_take_rejects_dynamic_indices_and_modes() -> None:
     """Program AD take should fail closed outside static integer gather semantics."""
 
@@ -7516,6 +7563,26 @@ def test_program_ad_static_delete_rejects_dynamic_indices() -> None:
     with pytest.raises(ValueError, match="static integer"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.delete(values, values[0])),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_static_constant_pad_rejects_dynamic_parameters() -> None:
+    """Program AD pad should fail closed on derivative-carrying pad parameters."""
+
+    with pytest.raises(ValueError, match="static non-negative integer pad widths"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.pad(values, (values[0], 1))),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="static finite real constant_values"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.pad(values, (1, 0), constant_values=values[0])),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="constant mode"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.pad(values, (1, 0), mode="edge")),
             np.array([1.0, 2.0], dtype=np.float64),
         )
 
@@ -7922,6 +7989,18 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         None,
     )
 
+    pad_contract = primitive_contract_for("scpn.program_ad.array:pad")
+    assert pad_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "pad", "1")
+    assert pad_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.pad"
+    assert pad_contract.shape_rule is not None
+    assert pad_contract.shape_rule((matrix, ((1, 0), (0, 2)), "constant", -1.0)) == (3, 5)
+    assert pad_contract.static_argument_rule is not None
+    assert pad_contract.static_argument_rule((matrix, ((1, 0), (0, 2)), "constant", -1.0)) == (
+        ((1, 0), (0, 2)),
+        "constant",
+        -1.0,
+    )
+
 
 def test_program_ad_array_boundary_metadata_is_explicit() -> None:
     """Array-indexing contracts should expose fail-closed static gather boundaries."""
@@ -7931,6 +8010,7 @@ def test_program_ad_array_boundary_metadata_is_explicit() -> None:
         "take": "static_integer_gather_scatter_add",
         "take_along_axis": "static_along_axis_gather_scatter_add",
         "delete": "static_delete_gather_scatter_add",
+        "pad": "static_constant_pad_scatter_add",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(
@@ -8133,6 +8213,29 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
             np.arange(6.0), np.array([0.25, -0.75, 1.25, -1.5], dtype=np.float64)
         ),
         [0.25, 0.0, -0.75, 1.25, 0.0, -1.5],
+    )
+
+    pad_rule = differentiable_module.program_ad_array_pad_derivative_rule(
+        (2, 3), ((1, 0), (0, 1)), constant_values=-2.0
+    )
+    assert pad_rule.name == "program_ad_array_pad_2x3_static_constant_direct_rule"
+    assert pad_rule.jvp_rule is not None
+    assert pad_rule.vjp_rule is not None
+    expected_pad = np.pad(matrix, ((1, 0), (0, 1)), constant_values=-2.0)
+    expected_pad_tangent = np.pad(tangent.reshape(2, 3), ((1, 0), (0, 1)), constant_values=0.0)
+    np.testing.assert_allclose(pad_rule.value_fn(values), expected_pad.reshape(-1))
+    np.testing.assert_allclose(
+        pad_rule.jvp_rule(values, tangent), expected_pad_tangent.reshape(-1)
+    )
+    np.testing.assert_allclose(
+        pad_rule.vjp_rule(
+            values,
+            np.array(
+                [[0.5, -1.0, 2.0, 0.25], [1.5, -2.0, 0.75, 3.0], [-0.25, 0.5, 2.5, -1.5]],
+                dtype=np.float64,
+            ).reshape(-1),
+        ),
+        [1.5, -2.0, 0.75, -0.25, 0.5, 2.5],
     )
 
     along_indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)

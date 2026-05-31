@@ -1416,6 +1416,19 @@ class TraceADArray:
                 args[1],
                 axis=axis,
             )
+        if func is np.pad:
+            if len(args) < 2 or len(args) > 3 or kwargs.keys() - {"mode", "constant_values"}:
+                raise ValueError(
+                    "program AD np.pad supports array, pad_width, constant mode, "
+                    "and constant_values"
+                )
+            mode = args[2] if len(args) == 3 else kwargs.get("mode", "constant")
+            return _trace_pad(
+                _coerce_trace_array(args[0], self.context),
+                args[1],
+                mode=mode,
+                constant_values=kwargs.get("constant_values", 0.0),
+            )
         if func is np.transpose:
             if len(args) != 1 or kwargs.keys() - {"axes"}:
                 raise ValueError("whole-program AD np.transpose supports one array and axes")
@@ -2683,6 +2696,148 @@ def _trace_delete(
     selected_array = np.asarray(selected, dtype=np.int64)
     items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
+
+
+def _program_ad_contains_trace_value(value: object) -> bool:
+    if isinstance(value, (TraceADScalar, TraceADArray)):
+        return True
+    if isinstance(value, Mapping):
+        return any(
+            _program_ad_contains_trace_value(key) or _program_ad_contains_trace_value(item)
+            for key, item in value.items()
+        )
+    if isinstance(value, np.ndarray) and value.dtype == object:
+        return any(_program_ad_contains_trace_value(item) for item in value.reshape(-1))
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return any(_program_ad_contains_trace_value(item) for item in value)
+    return False
+
+
+def _program_ad_array_pad_mode(mode: object, *, context: str) -> str:
+    if not isinstance(mode, str) or mode != "constant":
+        raise ValueError(f"program AD array pad {context} supports constant mode only")
+    return "constant"
+
+
+def _program_ad_array_pad_width(
+    pad_width: object,
+    ndim: int,
+    *,
+    context: str,
+) -> tuple[tuple[int, int], ...]:
+    if _program_ad_contains_trace_value(pad_width):
+        raise ValueError(
+            f"program AD array pad {context} requires static non-negative integer pad widths"
+        )
+    raw_width = np.asarray(pad_width)
+    if raw_width.dtype.kind not in {"i", "u"}:
+        raise ValueError(
+            f"program AD array pad {context} requires static non-negative integer pad widths"
+        )
+    if ndim == 0:
+        if raw_width.size == 0:
+            return ()
+        raise ValueError("program AD array pad scalar sources require empty pad widths")
+    if raw_width.shape == ():
+        width = int(raw_width)
+        pairs = tuple((width, width) for _ in range(ndim))
+    elif raw_width.shape == (2,):
+        before, after = (int(item) for item in raw_width)
+        pairs = tuple((before, after) for _ in range(ndim))
+    elif raw_width.shape == (1, 2):
+        before, after = (int(item) for item in raw_width.reshape(2))
+        pairs = tuple((before, after) for _ in range(ndim))
+    elif raw_width.shape == (ndim, 2):
+        pairs = tuple((int(row[0]), int(row[1])) for row in raw_width)
+    else:
+        raise ValueError(
+            f"program AD array pad {context} requires scalar, pair, or per-axis pad widths"
+        )
+    if any(before < 0 or after < 0 for before, after in pairs):
+        raise ValueError(
+            f"program AD array pad {context} requires static non-negative integer pad widths"
+        )
+    return pairs
+
+
+def _program_ad_array_pad_constant_values(value: object, *, context: str) -> object:
+    if _program_ad_contains_trace_value(value):
+        raise ValueError(
+            f"program AD array pad {context} requires static finite real constant_values"
+        )
+    raw_value = np.asarray(value)
+    if raw_value.dtype.kind in {"O", "S", "U", "c"}:
+        raise ValueError(
+            f"program AD array pad {context} requires static finite real constant_values"
+        )
+    constants = np.asarray(raw_value, dtype=np.float64)
+    if not np.all(np.isfinite(constants)):
+        raise ValueError(
+            f"program AD array pad {context} requires static finite real constant_values"
+        )
+    return value
+
+
+def _program_ad_array_pad_layout(
+    source_shape: tuple[int, ...],
+    pad_width: object,
+    constant_values: object,
+    *,
+    context: str,
+) -> tuple[NDArray[np.int64], NDArray[np.float64], tuple[int, ...]]:
+    pairs = _program_ad_array_pad_width(pad_width, len(source_shape), context=context)
+    constants = _program_ad_array_pad_constant_values(constant_values, context=context)
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    source_zeros = np.zeros(source_shape, dtype=np.float64)
+    try:
+        padded_indices = np.pad(
+            source_indices,
+            pairs,
+            mode="constant",
+            constant_values=-1,
+        )
+        padded_constants = np.pad(
+            source_zeros,
+            pairs,
+            mode="constant",
+            constant_values=cast(Any, constants),
+        )
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array pad requires static pad widths and constant_values "
+            "compatible with the source rank"
+        ) from exc
+    return (
+        cast(NDArray[np.int64], np.asarray(padded_indices, dtype=np.int64).reshape(-1)),
+        cast(NDArray[np.float64], np.asarray(padded_constants, dtype=np.float64).reshape(-1)),
+        tuple(int(dimension) for dimension in np.asarray(padded_indices).shape),
+    )
+
+
+def _trace_pad(
+    array: TraceADArray,
+    pad_width: object,
+    *,
+    mode: object,
+    constant_values: object,
+) -> TraceADArray:
+    _require_program_ad_array_contract("pad", (array, pad_width, mode, constant_values))
+    _program_ad_array_pad_mode(mode, context="trace")
+    flat_indices, flat_constants, output_shape = _program_ad_array_pad_layout(
+        array.shape,
+        pad_width,
+        constant_values,
+        context="trace",
+    )
+    items = tuple(
+        array._items[int(index)]
+        if int(index) >= 0
+        else _trace_constant(float(flat_constants[position]), array.context)
+        for position, index in enumerate(flat_indices)
+    )
+    return TraceADArray(items, output_shape, array.context)
 
 
 def _raise_index_selection_boundary() -> NoReturn:
@@ -5716,7 +5871,7 @@ _PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE = "scpn.program_ad.array"
 _PROGRAM_AD_ARRAY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ARRAY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ARRAY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("getitem", "take", "take_along_axis", "delete")
+    for name in ("getitem", "take", "take_along_axis", "delete", "pad")
 }
 
 _PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE = "scpn.program_ad.shape"
@@ -6013,6 +6168,74 @@ def _program_ad_array_direct_scatter_vjp(
     return result
 
 
+def _program_ad_array_direct_pad_value(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+    flat_constants: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_array_vector(
+        primitive_name,
+        "values",
+        values,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    result = np.array(flat_constants, dtype=np.float64, copy=True)
+    source_mask = flat_indices >= 0
+    result[source_mask] = vector[flat_indices[source_mask]]
+    return result
+
+
+def _program_ad_array_direct_pad_jvp(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+) -> NDArray[np.float64]:
+    _program_ad_array_vector(
+        primitive_name,
+        "values",
+        values,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    tangent_vector = _program_ad_array_vector(
+        primitive_name,
+        "tangent",
+        tangent,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    result = np.zeros(int(flat_indices.size), dtype=np.float64)
+    source_mask = flat_indices >= 0
+    result[source_mask] = tangent_vector[flat_indices[source_mask]]
+    return result
+
+
+def _program_ad_array_direct_pad_vjp(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+) -> NDArray[np.float64]:
+    source_size = _program_ad_array_static_size(source_shape)
+    _program_ad_array_vector(primitive_name, "values", values, expected_size=source_size)
+    cotangent_vector = _program_ad_array_vector(
+        primitive_name,
+        "cotangent",
+        cotangent,
+        expected_size=int(flat_indices.size),
+    )
+    result = np.zeros(source_size, dtype=np.float64)
+    source_mask = flat_indices >= 0
+    np.add.at(result, flat_indices[source_mask], cotangent_vector[source_mask])
+    return result
+
+
 def program_ad_array_getitem_derivative_rule(
     source_shape: Sequence[int],
     index: object,
@@ -6202,6 +6425,62 @@ def program_ad_array_delete_derivative_rule(
         name=(
             "program_ad_array_delete_"
             f"{_program_ad_array_signature(source)}_axis_{axis_signature}_static_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_array_pad_derivative_rule(
+    source_shape: Sequence[int],
+    pad_width: object,
+    *,
+    constant_values: object = 0.0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static constant padding."""
+
+    source = _program_ad_array_normalise_static_shape("pad", source_shape)
+    flat_indices, flat_constants, _ = _program_ad_array_pad_layout(
+        source,
+        pad_width,
+        constant_values,
+        context="direct rule",
+    )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_value(
+            "pad",
+            values,
+            source_shape=source,
+            flat_indices=flat_indices,
+            flat_constants=flat_constants,
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_jvp(
+            "pad",
+            values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_vjp(
+            "pad",
+            values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_array_pad_"
+            f"{_program_ad_array_signature(source)}_static_constant_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -8953,6 +9232,22 @@ def _program_ad_array_delete_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return tuple(int(dimension) for dimension in np.asarray(selected).shape)
 
 
+def _program_ad_array_pad_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {2, 3, 4}:
+        raise ValueError(
+            "program AD array pad shape rule requires array, pad_width, mode, and constants"
+        )
+    mode = args[2] if len(args) >= 3 else "constant"
+    _program_ad_array_pad_mode(mode, context="shape rule")
+    _, _, output_shape = _program_ad_array_pad_layout(
+        _program_ad_array_shape_of(args[0]),
+        args[1],
+        args[3] if len(args) == 4 else 0.0,
+        context="shape rule",
+    )
+    return output_shape
+
+
 def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
     if not args:
         raise ValueError("program AD array dtype rule requires an array operand")
@@ -9344,6 +9639,37 @@ def _program_ad_array_delete_static_arguments(args: tuple[object, ...]) -> tuple
     return (_program_ad_array_delete_static_object(args[1]), normalised_axis)
 
 
+def _program_ad_array_pad_static_constants(value: object) -> object:
+    constants = _program_ad_array_pad_constant_values(value, context="static rule")
+    constant_array = np.asarray(constants, dtype=np.float64)
+    if constant_array.shape == ():
+        return float(constant_array)
+    return (
+        "static_pad_constants",
+        tuple(int(dimension) for dimension in constant_array.shape),
+        tuple(float(item) for item in constant_array.reshape(-1)),
+    )
+
+
+def _program_ad_array_pad_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {2, 3, 4}:
+        raise ValueError(
+            "program AD array pad static rule requires array, pad_width, mode, and constants"
+        )
+    mode = args[2] if len(args) >= 3 else "constant"
+    mode_name = _program_ad_array_pad_mode(mode, context="static rule")
+    pad_width = _program_ad_array_pad_width(
+        args[1],
+        len(_program_ad_array_shape_of(args[0])),
+        context="static rule",
+    )
+    return (
+        pad_width,
+        mode_name,
+        _program_ad_array_pad_static_constants(args[3] if len(args) == 4 else 0.0),
+    )
+
+
 def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD shape reshape static rule requires array and target shape")
@@ -9430,6 +9756,7 @@ _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "take": _program_ad_array_take_shape,
     "take_along_axis": _program_ad_array_take_along_axis_shape,
     "delete": _program_ad_array_delete_shape,
+    "pad": _program_ad_array_pad_shape,
 }
 
 _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
@@ -9437,6 +9764,7 @@ _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRul
     "take": _program_ad_array_take_static_arguments,
     "take_along_axis": _program_ad_array_take_along_axis_static_arguments,
     "delete": _program_ad_array_delete_static_arguments,
+    "pad": _program_ad_array_pad_static_arguments,
 }
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -9532,18 +9860,21 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
         "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
         "take_along_axis": "source_shape:ranked_tensor_shape;indices_shape_axis",
         "delete": "source_shape:ranked_tensor_shape;object_axis",
+        "pad": "source_shape:ranked_tensor_shape;pad_width_constant_values",
     }[name]
     static_factory = {
         "getitem": "program_ad_array_getitem_derivative_rule",
         "take": "program_ad_array_take_derivative_rule",
         "take_along_axis": "program_ad_array_take_along_axis_derivative_rule",
         "delete": "program_ad_array_delete_derivative_rule",
+        "pad": "program_ad_array_pad_derivative_rule",
     }[name]
     nondifferentiable_boundaries = {
         "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
         "take_along_axis": "static_along_axis_gather_scatter_add",
         "delete": "static_delete_gather_scatter_add",
+        "pad": "static_constant_pad_scatter_add",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -15622,6 +15953,7 @@ __all__ = [
     "primitive_static_argument_rule_for",
     "program_ad_array_delete_derivative_rule",
     "program_ad_array_getitem_derivative_rule",
+    "program_ad_array_pad_derivative_rule",
     "program_ad_array_take_along_axis_derivative_rule",
     "program_ad_array_take_derivative_rule",
     "program_ad_cumulative_cumprod_derivative_rule",
