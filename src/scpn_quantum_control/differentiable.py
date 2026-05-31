@@ -8530,6 +8530,11 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         if name == "matmul"
         else "none"
     )
+    nondifferentiable_boundaries = {
+        "dot": "inner_dimension_alignment",
+        "vdot": "flattened_size_alignment",
+        "matmul": "core_dimension_alignment",
+    }
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff product dialect interchange; executable lowering blocked",
@@ -8539,6 +8544,8 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_argument_rule": "none",
         "static_derivative_factory": static_factory,
         "static_signature": static_signature,
+        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
+        "nondifferentiable_boundary_policy": "fail_closed",
     }
 
 

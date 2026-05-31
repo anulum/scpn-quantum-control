@@ -5046,6 +5046,22 @@ def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
     assert matmul_contract.shape_rule((matrix, right_vector)) == (2,)
 
 
+def test_program_ad_product_boundary_metadata_is_explicit() -> None:
+    """Product contracts should expose fail-closed contraction boundaries."""
+
+    expected_boundaries = {
+        "dot": "inner_dimension_alignment",
+        "vdot": "flattened_size_alignment",
+        "matmul": "core_dimension_alignment",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.product", name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
 def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported product primitives must execute through registry validation rules."""
 
