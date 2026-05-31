@@ -326,6 +326,11 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             if status.static_signature != "none"
         },
         "transform": plan.transform,
+        "uncontracted_primitives": [
+            status.identity.key
+            for status in plan.statuses
+            if status.nondifferentiable_policy == "not_declared"
+        ],
     }
     encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
     lines.append(f'  scpn.metadata {{json = "{_escape_mlir_string(encoded)}"}}')
@@ -356,6 +361,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "static_derivative_signatures": sum(
                 status.static_signature != "none" for status in plan.statuses
+            ),
+            "uncontracted_primitives": sum(
+                status.nondifferentiable_policy == "not_declared" for status in plan.statuses
             ),
             "executable_backends": 0,
         },

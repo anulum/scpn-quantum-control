@@ -169,8 +169,10 @@ def test_compiler_ad_plan_does_not_count_uncontracted_policy_effect_coverage() -
     assert plan.statuses[0].effect == "pure"
     assert module.metadata["nondifferentiable_policies"] == {}
     assert module.metadata["effects"] == {}
+    assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:derivative_only@1"]
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["effects"] == 0
+    assert module.resource_counts["uncontracted_primitives"] == 1
 
 
 def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
