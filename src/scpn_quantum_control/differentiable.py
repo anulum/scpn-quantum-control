@@ -5063,6 +5063,8 @@ def _program_adjoint_node_contributions(
         "choose",
     }:
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eigvalsh:"):
+        return _program_adjoint_eigvalsh_contributions(node, node_by_name)
     raise ValueError(f"unsupported program AD adjoint op {node.op}")
 
 
@@ -5136,6 +5138,39 @@ def _program_adjoint_where_predicate_truth(predicate_name: str) -> bool:
     if predicate_name == "constant:False":
         return False
     raise ValueError("where adjoint requires recorded predicate branch")
+
+
+def _program_adjoint_eigvalsh_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for a distinct symmetric eigvalsh node."""
+
+    try:
+        eigenvalue_index = int(node.op.rsplit(":", 1)[1])
+    except ValueError as exc:
+        raise ValueError("eigvalsh adjoint requires an eigenvalue index") from exc
+    matrix_size = int(math.isqrt(len(node.inputs)))
+    if matrix_size * matrix_size != len(node.inputs):
+        raise ValueError("eigvalsh adjoint requires flattened square matrix inputs")
+    if eigenvalue_index < 0 or eigenvalue_index >= matrix_size:
+        raise ValueError("eigvalsh adjoint eigenvalue index is outside the spectrum")
+    matrix = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    ).reshape(matrix_size, matrix_size)
+    _program_ad_linalg_require_symmetric("eigvalsh adjoint replay", matrix)
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix)
+    _program_ad_linalg_require_distinct_eigenvalues(eigenvalues, "eigvalsh adjoint replay")
+    eigenvector = eigenvectors[:, eigenvalue_index]
+    return tuple(
+        (
+            node.inputs[row * matrix_size + col],
+            float(eigenvector[row] * eigenvector[col]),
+        )
+        for row in range(matrix_size)
+        for col in range(matrix_size)
+    )
 
 
 def _program_adjoint_input_value(

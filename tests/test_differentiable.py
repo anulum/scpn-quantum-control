@@ -11584,3 +11584,31 @@ def test_program_ad_linalg_eigvalsh_registry_contract_and_root_export():
     metadata = contract.lowering_metadata
     assert metadata["static_derivative_factory"] == "program_ad_linalg_eigvalsh_derivative_rule"
     assert metadata["nondifferentiable_boundary"] == "symmetric_matrix_distinct_eigenvalues"
+
+
+def test_program_ad_linalg_eigvalsh_reverse_adjoint_replay_matches_spectral_adjoint():
+    from scpn_quantum_control.differentiable import (
+        program_adjoint_gradient,
+        whole_program_value_and_grad,
+    )
+
+    values = np.array([2.0, 0.35, -0.2, 3.0], dtype=np.float64)
+    weights = np.array([0.75, -1.25], dtype=np.float64)
+
+    def objective(trace_values):
+        raw = np.reshape(trace_values, (2, 2))
+        matrix = 0.5 * (raw + raw.T)
+        return np.sum(np.linalg.eigvalsh(matrix) * weights)
+
+    result = whole_program_value_and_grad(objective, values)
+    raw = values.reshape(2, 2)
+    matrix = 0.5 * (raw + raw.T)
+    _eigenvalues, eigenvectors = np.linalg.eigh(matrix)
+    spectral_adjoint = eigenvectors @ np.diag(weights) @ eigenvectors.T
+    expected = (0.5 * (spectral_adjoint + spectral_adjoint.T)).reshape(-1)
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
