@@ -116,12 +116,13 @@ execution.
 `build_compiler_ad_transform_plan()` converts registered primitive identities
 into deterministic compiler AD transform metadata with explicit JVP/VJP/adjoint
 intent, MLIR dialect operation names, static-argument-rule presence, registry
-lowering metadata, executable MLIR-runtime availability when a lowering rule is
-registered, and fail-closed Rust/LLVM backend status. Static program-AD linalg
-contracts now expose MLIR metadata for fixed `matrix_power` powers and fixed
-`multi_dot` operand-shape signatures, including the direct derivative factory
-and optional verified MLIR-runtime lowering rule used by concrete static
-signatures. `compile_compiler_ad_transform_plan_to_mlir()`
+lowering metadata, promoted static derivative factory/signature contracts,
+executable MLIR-runtime availability when a lowering rule is registered, and
+fail-closed Rust/LLVM backend status. Static program-AD array, shape,
+elementwise, reduction, product, cumulative, and linalg contracts expose MLIR
+metadata for direct derivative factories and fixed signatures; concrete static
+linalg signatures can also bind optional verified MLIR-runtime lowering rules.
+`compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native Rust, LLVM, and JIT
 differentiated runtimes remain unavailable until backed by real lowering and
 runtime verification.

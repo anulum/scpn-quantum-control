@@ -196,6 +196,74 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert "blocked_until_executable_linalg_lowering" in module.text
 
 
+def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None:
+    """Compiler AD plans should expose static derivative factory contracts directly."""
+
+    primitive_keys = (
+        "scpn.program_ad.array:getitem",
+        "scpn.program_ad.shape:reshape",
+        "scpn.program_ad.elementwise:multiply",
+        "scpn.program_ad.product:matmul",
+        "scpn.program_ad.cumulative:diff",
+        "scpn.program_ad.linalg:solve",
+    )
+    expected_factories = {
+        "scpn.program_ad.array:getitem@1": "program_ad_array_getitem_derivative_rule",
+        "scpn.program_ad.shape:reshape@1": "program_ad_shape_reshape_derivative_rule",
+        "scpn.program_ad.elementwise:multiply@1": (
+            "program_ad_elementwise_binary_derivative_rule"
+        ),
+        "scpn.program_ad.product:matmul@1": "program_ad_product_matmul_derivative_rule",
+        "scpn.program_ad.cumulative:diff@1": "program_ad_cumulative_diff_derivative_rule",
+        "scpn.program_ad.linalg:solve@1": "program_ad_linalg_solve_derivative_rule",
+    }
+    expected_signatures = {
+        "scpn.program_ad.array:getitem@1": "source_shape:ranked_tensor_shape;index:basic_index",
+        "scpn.program_ad.shape:reshape@1": "source_shape:ranked_tensor_shape;target_shape",
+        "scpn.program_ad.elementwise:multiply@1": (
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+        ),
+        "scpn.program_ad.product:matmul@1": (
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+        ),
+        "scpn.program_ad.cumulative:diff@1": "source_shape:ranked_tensor_shape;order_axis",
+        "scpn.program_ad.linalg:solve@1": "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2",
+    }
+    registry = CustomDerivativeRegistry()
+    for key in primitive_keys:
+        contract = primitive_contract_for(key)
+        registry.register_transform(
+            PrimitiveTransformRule(
+                identity=contract.identity,
+                derivative_rule=contract.derivative_rule,
+                batching_rule=contract.batching_rule,
+                lowering_metadata=contract.lowering_metadata,
+                shape_rule=contract.shape_rule,
+                dtype_rule=contract.dtype_rule,
+                static_argument_rule=contract.static_argument_rule,
+                nondifferentiable_policy=contract.nondifferentiable_policy,
+                effect=contract.effect,
+            )
+        )
+
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+
+    statuses = {status.identity.key: status for status in plan.statuses}
+    assert {
+        key: status.static_derivative_factory for key, status in statuses.items()
+    } == expected_factories
+    assert {
+        key: status.static_signature for key, status in statuses.items()
+    } == expected_signatures
+    assert module.metadata["static_derivative_factories"] == expected_factories
+    assert module.metadata["static_derivative_signatures"] == expected_signatures
+    assert 'static_derivative_factory = "program_ad_array_getitem_derivative_rule"' in module.text
+    assert 'static_signature = "source_shape:ranked_tensor_shape;index:basic_index"' in module.text
+    assert 'static_derivative_factory = "program_ad_linalg_solve_derivative_rule"' in module.text
+    assert 'static_signature = "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2"' in module.text
+
+
 def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
     """Static linalg lowering factories should execute verified MLIR-runtime kernels."""
 

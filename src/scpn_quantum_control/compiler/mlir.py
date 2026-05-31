@@ -91,6 +91,8 @@ class PrimitiveLoweringStatus:
     has_dtype_rule: bool = False
     has_static_argument_rule: bool = False
     lowering_metadata: Mapping[str, str] = field(default_factory=dict)
+    static_derivative_factory: str = "not_declared"
+    static_signature: str = "none"
     nondifferentiable_policy: str = "not_declared"
     effect: str = "pure"
     mlir_lowering: str = "available: scpn_diff dialect interchange"
@@ -118,6 +120,13 @@ class PrimitiveLoweringStatus:
         if any(not isinstance(value, str) or not value for value in metadata.values()):
             raise ValueError("lowering metadata values must be non-empty strings")
         object.__setattr__(self, "lowering_metadata", MappingProxyType(metadata))
+        if (
+            not isinstance(self.static_derivative_factory, str)
+            or not self.static_derivative_factory
+        ):
+            raise ValueError("static_derivative_factory must be non-empty")
+        if not isinstance(self.static_signature, str) or not self.static_signature:
+            raise ValueError("static_signature must be non-empty")
         if not isinstance(self.nondifferentiable_policy, str) or not self.nondifferentiable_policy:
             raise ValueError("nondifferentiable_policy must be non-empty")
         if not isinstance(self.effect, str) or not self.effect:
@@ -198,6 +207,10 @@ def build_compiler_ad_transform_plan(
                 has_static_argument_rule=transform_rule is not None
                 and transform_rule.static_argument_rule is not None,
                 lowering_metadata=metadata,
+                static_derivative_factory=metadata.get(
+                    "static_derivative_factory", "not_declared"
+                ),
+                static_signature=metadata.get("static_signature", "none"),
                 nondifferentiable_policy="not_declared"
                 if transform_rule is None
                 else transform_rule.nondifferentiable_policy,
@@ -236,6 +249,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             f"shape_rule = {_fmt_bool(status.has_shape_rule)}, "
             f"dtype_rule = {_fmt_bool(status.has_dtype_rule)}, "
             f"static_argument_rule = {_fmt_bool(status.has_static_argument_rule)}, "
+            f'static_derivative_factory = "{_escape_mlir_string(status.static_derivative_factory)}", '
+            f'static_signature = "{_escape_mlir_string(status.static_signature)}", '
             f'policy = "{_escape_mlir_string(status.nondifferentiable_policy)}", '
             f'effect = "{_escape_mlir_string(status.effect)}"}}'
         )
@@ -267,6 +282,16 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         "static_argument_primitives": [
             status.identity.key for status in plan.statuses if status.has_static_argument_rule
         ],
+        "static_derivative_factories": {
+            status.identity.key: status.static_derivative_factory
+            for status in plan.statuses
+            if status.static_derivative_factory != "not_declared"
+        },
+        "static_derivative_signatures": {
+            status.identity.key: status.static_signature
+            for status in plan.statuses
+            if status.static_signature != "none"
+        },
         "transform": plan.transform,
     }
     encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
