@@ -141,6 +141,8 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.resource_counts["forward_incomplete_primitives"] == 1
     assert module.resource_counts["transform_contracts"] == 0
     assert module.resource_counts["transform_incomplete_primitives"] == 1
+    assert module.resource_counts["native_backend_contracts"] == 0
+    assert module.resource_counts["native_backend_incomplete_primitives"] == 1
     assert module.resource_counts["executable_backends"] == 0
     assert module.metadata["executable_backend"] == "none"
     assert module.metadata["jvp_rule_primitives"] == ["scpn.quantum:rx_expectation@1"]
@@ -155,6 +157,10 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
     assert module.metadata["forward_incomplete_primitives"] == ["scpn.quantum:rx_expectation@1"]
     assert module.metadata["transform_contract_primitives"] == []
     assert module.metadata["transform_incomplete_primitives"] == ["scpn.quantum:rx_expectation@1"]
+    assert module.metadata["native_backend_contract_primitives"] == []
+    assert module.metadata["native_backend_incomplete_primitives"] == [
+        "scpn.quantum:rx_expectation@1"
+    ]
     assert "scpn_diff.primitive" in module.text
     assert "scpn_diff.lowering_status" in module.text
     assert "batching_rule = false" in module.text
@@ -240,6 +246,10 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.metadata["forward_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.metadata["transform_contract_primitives"] == []
     assert module.metadata["transform_incomplete_primitives"] == ["scpn.quantum:policy_only@1"]
+    assert module.metadata["native_backend_contract_primitives"] == []
+    assert module.metadata["native_backend_incomplete_primitives"] == [
+        "scpn.quantum:policy_only@1"
+    ]
     assert module.metadata["uncontracted_primitives"] == ["scpn.quantum:policy_only@1"]
     assert module.resource_counts["boundary_contracts"] == 0
     assert module.resource_counts["registry_contracts"] == 0
@@ -251,6 +261,8 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["forward_incomplete_primitives"] == 1
     assert module.resource_counts["transform_contracts"] == 0
     assert module.resource_counts["transform_incomplete_primitives"] == 1
+    assert module.resource_counts["native_backend_contracts"] == 0
+    assert module.resource_counts["native_backend_incomplete_primitives"] == 1
     assert module.resource_counts["effects"] == 0
     assert module.resource_counts["nondifferentiable_policies"] == 0
     assert module.resource_counts["nondifferentiable_boundaries"] == 0
@@ -328,6 +340,17 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
         for status in plan.statuses
         if status.identity.key not in expected_transform_contracts
     ]
+    expected_native_contracts = [
+        status.identity.key
+        for status in plan.statuses
+        if "blocked" not in status.rust_lowering.lower()
+        and "blocked" not in status.llvm_lowering.lower()
+    ]
+    expected_native_incomplete = [
+        status.identity.key
+        for status in plan.statuses
+        if status.identity.key not in expected_native_contracts
+    ]
     assert statuses["matrix_power"].has_batching_rule is True
     assert statuses["multi_dot"].has_batching_rule is True
     assert statuses["matrix_power"].has_static_argument_rule is True
@@ -380,6 +403,8 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.metadata["forward_incomplete_primitives"] == expected_forward_incomplete
     assert module.metadata["transform_contract_primitives"] == expected_transform_contracts
     assert module.metadata["transform_incomplete_primitives"] == expected_transform_incomplete
+    assert module.metadata["native_backend_contract_primitives"] == expected_native_contracts
+    assert module.metadata["native_backend_incomplete_primitives"] == expected_native_incomplete
     assert module.resource_counts["batching_rules"] == 2
     assert module.resource_counts["boundary_contracts"] == 2
     assert module.resource_counts["registry_contracts"] == 2
@@ -398,6 +423,10 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     assert module.resource_counts["transform_contracts"] == len(expected_transform_contracts)
     assert module.resource_counts["transform_incomplete_primitives"] == len(
         expected_transform_incomplete
+    )
+    assert module.resource_counts["native_backend_contracts"] == len(expected_native_contracts)
+    assert module.resource_counts["native_backend_incomplete_primitives"] == len(
+        expected_native_incomplete
     )
     assert module.resource_counts["nondifferentiable_boundaries"] == 2
     assert module.resource_counts["nondifferentiable_boundary_policies"] == 2
