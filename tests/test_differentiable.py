@@ -151,6 +151,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_cumulative_diff_derivative_rule,
     program_ad_elementwise_binary_derivative_rule,
     program_ad_linalg_diag_derivative_rule,
+    program_ad_linalg_diagflat_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
@@ -6069,6 +6070,52 @@ def test_program_ad_diagonal_rejects_invalid_contracts() -> None:
         )
 
 
+def test_program_ad_diagflat_flattens_source_into_offset_diagonal_adjoint() -> None:
+    """Program AD np.diagflat should flatten sources before diagonal scatter adjoints."""
+
+    lower_weights = np.zeros((7, 7), dtype=np.float64)
+    lower_weights[1, 0] = 0.5
+    lower_weights[2, 1] = -1.0
+    lower_weights[3, 2] = 1.5
+    lower_weights[4, 3] = 2.0
+    lower_weights[5, 4] = -0.25
+    lower_weights[6, 5] = 0.75
+    upper_weights = np.zeros((5, 5), dtype=np.float64)
+    upper_weights[0, 2] = -2.0
+    upper_weights[1, 3] = 0.25
+    upper_weights[2, 4] = 1.25
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        lower = np.diagflat(matrix, k=-1)
+        upper = np.diagflat(values[:3], k=2)
+        return np.sum(lower * lower_weights) + np.sum(upper * upper_weights)
+
+    values = np.arange(1.0, 7.0, dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_gradient = np.array([-1.5, -0.75, 2.75, 2.0, -0.25, 0.75], dtype=np.float64)
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_diagflat_rejects_invalid_static_contracts() -> None:
+    """Program AD np.diagflat should fail closed on invalid static offset contracts."""
+
+    with pytest.raises(ValueError, match="integer offset"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.diagflat(values, k=0.5)),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 
@@ -6707,6 +6754,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_linalg_diag_derivative_rule",
             "source_shape:rank1_or_rank2;k",
         ),
+        "scpn.program_ad.linalg:diagflat": (
+            "program_ad_linalg_diagflat_derivative_rule",
+            "source_shape:ranked_tensor_shape;k",
+        ),
     }
 
     for primitive, (factory, signature) in expected_factories.items():
@@ -6738,12 +6789,16 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
     diag_rule = custom_derivative_rule_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "diag", "1")
     )
+    diagflat_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "diagflat", "1")
+    )
 
     assert det_rule.name == "program_ad_linalg_det_direct_rule"
     assert inv_rule.name == "program_ad_linalg_inv_direct_rule"
     assert solve_rule.name == "program_ad_linalg_solve_direct_rule"
     assert trace_rule.name == "program_ad_linalg_trace_direct_rule"
     assert diag_rule.name == "program_ad_linalg_diag_trace_contract"
+    assert diagflat_rule.name == "program_ad_linalg_diagflat_trace_contract"
     assert det_rule.jvp_rule is not None
     assert inv_rule.jvp_rule is not None
     assert solve_rule.jvp_rule is not None
@@ -6818,6 +6873,8 @@ def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> No
     )
     with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
         diag_rule.value_fn(matrix.reshape(-1))
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        diagflat_rule.value_fn(matrix.reshape(-1))
 
     matrix_power_rule = custom_derivative_rule_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
@@ -6988,6 +7045,35 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
 
     with pytest.raises(ValueError, match="rank-1 or rank-2"):
         program_ad_linalg_diag_derivative_rule((2, 2, 2))
+
+    diagflat_rule = program_ad_linalg_diagflat_derivative_rule((2, 3), k=-1)
+    assert diagflat_rule.name == "program_ad_linalg_diagflat_2x3_offset_-1_direct_rule"
+    assert diagflat_rule.jvp_rule is not None
+    assert diagflat_rule.vjp_rule is not None
+    rectangular_flat_diag = np.diagflat(rectangular, k=-1)
+    np.testing.assert_allclose(
+        diagflat_rule.value_fn(rectangular.reshape(-1)),
+        rectangular_flat_diag.reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        diagflat_rule.jvp_rule(rectangular.reshape(-1), rectangular_tangent.reshape(-1)),
+        np.diagflat(rectangular_tangent, k=-1).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    diagflat_cotangent = np.arange(rectangular_flat_diag.size, dtype=np.float64).reshape(
+        rectangular_flat_diag.shape
+    )
+    np.testing.assert_allclose(
+        diagflat_rule.vjp_rule(rectangular.reshape(-1), diagflat_cotangent.reshape(-1)),
+        np.diag(diagflat_cotangent, k=-1).reshape(rectangular.shape).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    with pytest.raises(ValueError, match="integer offset"):
+        program_ad_linalg_diagflat_derivative_rule((2, 3), k=1.5)  # type: ignore[arg-type]
 
 
 def test_program_ad_linalg_solve_static_derivative_factory_supports_matrix_rhs() -> None:
@@ -10030,6 +10116,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
         is program_ad_array_take_along_axis_derivative_rule
     )
     assert scpn.program_ad_linalg_diag_derivative_rule is program_ad_linalg_diag_derivative_rule
+    assert (
+        scpn.program_ad_linalg_diagflat_derivative_rule
+        is program_ad_linalg_diagflat_derivative_rule
+    )
     assert (
         scpn.program_ad_product_inner_derivative_rule is program_ad_product_inner_derivative_rule
     )

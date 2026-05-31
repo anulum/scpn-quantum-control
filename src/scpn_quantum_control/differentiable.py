@@ -1476,6 +1476,10 @@ class TraceADArray:
             if len(args) != 1 or kwargs.keys() - {"k"}:
                 raise ValueError("whole-program AD np.diag supports one vector or matrix")
             return _trace_diag(args[0], self.context, k=cast(int, kwargs.get("k", 0)))
+        if func is np.diagflat:
+            if len(args) != 1 or kwargs.keys() - {"k"}:
+                raise ValueError("program AD np.diagflat supports one array and k")
+            return _trace_diagflat(args[0], self.context, k=cast(int, kwargs.get("k", 0)))
         if func is np.diagonal:
             if len(args) < 1 or len(args) > 4 or kwargs.keys() - {"offset", "axis1", "axis2"}:
                 raise ValueError("program AD np.diagonal supports array, offset, axis1, and axis2")
@@ -3514,6 +3518,17 @@ def _trace_diag(
             raise ValueError("whole-program AD np.diag offset selects an empty diagonal")
         return TraceADArray(tuple(items), (len(items),), context)
     raise ValueError("whole-program AD np.diag supports vectors and matrices only")
+
+
+def _trace_diagflat(
+    values: object,
+    context: _WholeProgramTraceContext,
+    *,
+    k: int = 0,
+) -> TraceADArray:
+    array = _coerce_trace_array(values, context)
+    _require_program_ad_linalg_contract("diagflat", (array, k))
+    return _trace_diag(array.ravel(), context, k=k)
 
 
 def _trace_multiply_arrays(
@@ -6386,7 +6401,7 @@ _PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
 _PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("det", "inv", "solve", "trace", "diag", "matrix_power", "multi_dot")
+    for name in ("det", "inv", "solve", "trace", "diag", "diagflat", "matrix_power", "multi_dot")
 }
 
 
@@ -11801,6 +11816,65 @@ def program_ad_linalg_diag_derivative_rule(
     )
 
 
+def program_ad_linalg_diagflat_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    k: int | np.integer = 0,
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed diagflat primitive signature."""
+
+    static_shape = tuple(int(dimension) for dimension in source_shape)
+    if any(dimension <= 0 for dimension in static_shape):
+        raise ValueError("program AD linalg diagflat derivative rule dimensions must be positive")
+    source_size = _program_ad_shape_static_size(static_shape)
+    if source_size <= 0:
+        raise ValueError("program AD linalg diagflat derivative rule requires non-empty input")
+    offset = _program_ad_linalg_offset("diagflat", k)
+    output_shape = (source_size + abs(offset), source_size + abs(offset))
+    output_size = _program_ad_shape_static_size(output_shape)
+
+    def split_source(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _as_real_numeric_array(f"program AD linalg diagflat {name}", values).reshape(-1)
+        if vector.size != source_size:
+            raise ValueError("program AD linalg diagflat direct rule values size must match shape")
+        return vector.reshape(static_shape)
+
+    def split_output(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _as_real_numeric_array(f"program AD linalg diagflat {name}", values).reshape(-1)
+        if vector.size != output_size:
+            raise ValueError("program AD linalg diagflat VJP cotangent size must match output")
+        return vector.reshape(output_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        source = split_source("values", values)
+        return _program_ad_float64_vector_result(np.diagflat(source, k=offset))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        split_source("values", values)
+        tangent_source = split_source("tangent", tangent)
+        return _program_ad_float64_vector_result(np.diagflat(tangent_source, k=offset))
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        split_source("values", values)
+        cotangent_matrix = split_output("cotangent", cotangent)
+        adjoint_flat = np.diag(cotangent_matrix, k=offset)
+        if adjoint_flat.size != source_size:
+            raise ValueError("program AD linalg diagflat VJP diagonal size must match source")
+        return _program_ad_float64_vector_result(adjoint_flat.reshape(static_shape))
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_linalg_diagflat_"
+            f"{_program_ad_shape_signature(static_shape)}_offset_{offset}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "det":
         return CustomDerivativeRule(
@@ -11915,6 +11989,22 @@ def _program_ad_linalg_diag_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if any(dimension <= 0 for dimension in shape):
         raise ValueError("program AD linalg diag shape rule dimensions must be positive")
     return _program_ad_linalg_diag_shape_from_source(shape, offset)
+
+
+def _program_ad_linalg_diagflat_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError(
+            "program AD linalg diagflat shape rule requires source and optional offset"
+        )
+    shape = _program_ad_linalg_shape_of(args[0])
+    offset = 0
+    if len(args) == 2:
+        offset = _program_ad_linalg_offset("diagflat", cast(int | np.integer, args[1]))
+    source_size = int(np.prod(shape))
+    if source_size <= 0:
+        raise ValueError("program AD linalg diagflat shape rule requires non-empty input")
+    output_size = source_size + abs(offset)
+    return (output_size, output_size)
 
 
 def _program_ad_linalg_matrix_power_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -12042,6 +12132,20 @@ def _program_ad_linalg_diag_static_arguments(args: tuple[object, ...]) -> tuple[
     return (shape, offset)
 
 
+def _program_ad_linalg_diagflat_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError(
+            "program AD linalg diagflat static rule requires source and optional offset"
+        )
+    shape = _program_ad_linalg_shape_of(args[0])
+    offset = 0
+    if len(args) == 2:
+        offset = _program_ad_linalg_offset("diagflat", cast(int | np.integer, args[1]))
+    if int(np.prod(shape)) <= 0:
+        raise ValueError("program AD linalg diagflat static rule requires non-empty input")
+    return (shape, offset)
+
+
 def _program_ad_linalg_multi_dot_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 1:
         raise ValueError("program AD linalg multi_dot static rule requires one operand sequence")
@@ -12062,6 +12166,7 @@ _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "solve": _program_ad_linalg_solve_shape,
     "trace": _program_ad_linalg_trace_shape,
     "diag": _program_ad_linalg_diag_shape,
+    "diagflat": _program_ad_linalg_diagflat_shape,
     "matrix_power": _program_ad_linalg_matrix_power_shape,
     "multi_dot": _program_ad_linalg_multi_dot_shape,
 }
@@ -12072,6 +12177,7 @@ _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
     "solve": _program_ad_linalg_no_static_arguments,
     "trace": _program_ad_linalg_trace_static_arguments,
     "diag": _program_ad_linalg_diag_static_arguments,
+    "diagflat": _program_ad_linalg_diagflat_static_arguments,
     "matrix_power": _program_ad_linalg_matrix_power_static_arguments,
     "multi_dot": _program_ad_linalg_multi_dot_static_arguments,
 }
@@ -12128,6 +12234,7 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
         "solve": "singular_or_incompatible_linear_system",
         "trace": "static_diagonal_offset_axis_pair",
         "diag": "static_diagonal_offset_rank",
+        "diagflat": "static_flattened_diagonal_offset_rank",
         "matrix_power": "negative_power_singular_matrix",
         "multi_dot": "static_shape_alignment",
     }
@@ -12164,6 +12271,14 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
                 "static_argument_rule": "required",
                 "static_derivative_factory": "program_ad_linalg_diag_derivative_rule",
                 "static_signature": "source_shape:rank1_or_rank2;k",
+            }
+        )
+    elif name == "diagflat":
+        metadata.update(
+            {
+                "static_argument_rule": "required",
+                "static_derivative_factory": "program_ad_linalg_diagflat_derivative_rule",
+                "static_signature": "source_shape:ranked_tensor_shape;k",
             }
         )
     elif name == "matrix_power":
@@ -16518,6 +16633,7 @@ __all__ = [
     "program_ad_cumulative_diff_derivative_rule",
     "program_ad_elementwise_binary_derivative_rule",
     "program_ad_linalg_diag_derivative_rule",
+    "program_ad_linalg_diagflat_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",
