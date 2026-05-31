@@ -3035,6 +3035,7 @@ def _trace_where(
     shape = _broadcast_shape(x_array.shape, y_array.shape)
     x_array = _broadcast_trace_array(x_array, shape, context)
     y_array = _broadcast_trace_array(y_array, shape, context)
+    _require_program_ad_selection_contract("where", (condition, x_array, y_array))
     predicates = _coerce_trace_predicate_array(condition, shape, context)
     items = []
     for predicate, x_item, y_item in zip(
@@ -3044,13 +3045,17 @@ def _trace_where(
         items.append(
             context.make(
                 "where",
-                (predicate.label, x_item.name, y_item.name),
+                (_trace_predicate_ir_label(predicate), x_item.name, y_item.name),
                 chosen.primal,
                 chosen.tangent,
             )
         )
     result = tuple(items)
     return result[0] if shape == () else TraceADArray(result, shape, context)
+
+
+def _trace_predicate_ir_label(predicate: _TracePredicate) -> str:
+    return f"{predicate.label}:truth:{int(bool(predicate))}"
 
 
 def _trace_concatenate(
@@ -3108,6 +3113,7 @@ def _trace_clip(
     value_array = _coerce_trace_array(values, context)
     lower_array = _broadcast_trace_array(lower, value_array.shape, context)
     upper_array = _broadcast_trace_array(upper, value_array.shape, context)
+    _require_program_ad_selection_contract("clip", (value_array, lower_array, upper_array))
     items = []
     for value, lower_item, upper_item in zip(
         value_array._items, lower_array._items, upper_array._items, strict=True
@@ -3335,11 +3341,10 @@ def _program_adjoint_binary_or_selection_contributions(
     if node.op == "where":
         if len(node.inputs) != 3:
             raise ValueError("where adjoint requires predicate, true value, and false value")
+        predicate_truth = _program_adjoint_where_predicate_truth(node.inputs[0])
         left_name = node.inputs[1]
         right_name = node.inputs[2]
-        left = _program_adjoint_input_value(left_name, node_by_name)
-        right = _program_adjoint_input_value(right_name, node_by_name)
-        return ((left_name, 1.0),) if node.value == left else ((right_name, 1.0),)
+        return ((left_name, 1.0),) if predicate_truth else ((right_name, 1.0),)
     if node.op == "clip":
         if len(node.inputs) != 3:
             raise ValueError("clip adjoint requires value, lower, and upper inputs")
@@ -3383,6 +3388,18 @@ def _program_adjoint_binary_or_selection_contributions(
             raise ValueError("minimum adjoint is undefined at ties")
         return ((left_name, 1.0),) if node.value == left else ((right_name, 1.0),)
     raise ValueError(f"unsupported program AD adjoint op {node.op}")
+
+
+def _program_adjoint_where_predicate_truth(predicate_name: str) -> bool:
+    if predicate_name.endswith(":truth:1"):
+        return True
+    if predicate_name.endswith(":truth:0"):
+        return False
+    if predicate_name == "constant:True":
+        return True
+    if predicate_name == "constant:False":
+        return False
+    raise ValueError("where adjoint requires recorded predicate branch")
 
 
 def _program_adjoint_input_value(
@@ -5564,6 +5581,13 @@ _PROGRAM_AD_ELEMENTWISE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     for name in _PROGRAM_AD_ELEMENTWISE_NAMES
 }
 
+_PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.selection"
+_PROGRAM_AD_SELECTION_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_SELECTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("where", "clip")
+}
+
 _PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
 _PROGRAM_AD_PRODUCT_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_PRODUCT_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
@@ -7108,6 +7132,345 @@ def _program_ad_elementwise_derivative_rule(name: str) -> CustomDerivativeRule:
     )
 
 
+def _program_ad_selection_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD selection primitive contracts require static derivative factories "
+        "or operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_selection_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD selection primitive contracts require static derivative factories "
+        "or operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_selection_derivative_rule(name: str) -> CustomDerivativeRule:
+    return CustomDerivativeRule(
+        name=f"program_ad_selection_{name}_trace_contract",
+        value_fn=_program_ad_selection_direct_value,
+        jvp_rule=_program_ad_selection_direct_jvp,
+    )
+
+
+def _program_ad_selection_normalise_shapes(
+    primitive_name: str,
+    true_shape: Sequence[int],
+    false_shape: Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    true_static_shape = tuple(int(dimension) for dimension in true_shape)
+    false_static_shape = tuple(int(dimension) for dimension in false_shape)
+    if any(dimension < 0 for dimension in (*true_static_shape, *false_static_shape)):
+        raise ValueError(
+            f"program AD selection {primitive_name} direct rule requires non-negative dimensions"
+        )
+    try:
+        output_shape = np.broadcast_shapes(true_static_shape, false_static_shape)
+    except ValueError as exc:
+        raise ValueError(
+            f"program AD selection {primitive_name} direct rule requires "
+            "broadcast-compatible branch shapes"
+        ) from exc
+    return true_static_shape, false_static_shape, tuple(int(dim) for dim in output_shape)
+
+
+def _program_ad_selection_condition_mask(
+    condition: object,
+    output_shape: tuple[int, ...],
+) -> NDArray[np.bool_]:
+    raw_condition = np.asarray(condition)
+    if raw_condition.dtype.kind != "b":
+        raise ValueError("program AD selection where direct rule requires a boolean condition")
+    if tuple(raw_condition.shape) not in {(), output_shape}:
+        raise ValueError(
+            "program AD selection where direct rule requires scalar or output-shaped condition"
+        )
+    return np.broadcast_to(raw_condition, output_shape).astype(np.bool_, copy=False)
+
+
+def _program_ad_selection_split_pair(
+    primitive_name: str,
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    true_shape: tuple[int, ...],
+    false_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(
+        f"program AD selection {primitive_name} {role}", values
+    ).reshape(-1)
+    true_size = _program_ad_shape_static_size(true_shape)
+    false_size = _program_ad_shape_static_size(false_shape)
+    if vector.size != true_size + false_size:
+        raise ValueError(
+            f"program AD selection {primitive_name} direct rule requires flattened true branch "
+            "followed by false branch"
+        )
+    return (
+        vector[:true_size].reshape(true_shape),
+        vector[true_size:].reshape(false_shape),
+    )
+
+
+def program_ad_selection_where_derivative_rule(
+    condition: object,
+    true_shape: Sequence[int],
+    false_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed NumPy where signature."""
+
+    true_static_shape, false_static_shape, output_shape = _program_ad_selection_normalise_shapes(
+        "where", true_shape, false_shape
+    )
+    condition_mask = _program_ad_selection_condition_mask(condition, output_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        true_values, false_values = _program_ad_selection_split_pair(
+            "where",
+            "values",
+            values,
+            true_shape=true_static_shape,
+            false_shape=false_static_shape,
+        )
+        return _program_ad_float64_vector_result(
+            np.where(
+                condition_mask,
+                np.broadcast_to(true_values, output_shape),
+                np.broadcast_to(false_values, output_shape),
+            )
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_selection_split_pair(
+            "where",
+            "values",
+            values,
+            true_shape=true_static_shape,
+            false_shape=false_static_shape,
+        )
+        true_tangent, false_tangent = _program_ad_selection_split_pair(
+            "where",
+            "tangent",
+            tangent,
+            true_shape=true_static_shape,
+            false_shape=false_static_shape,
+        )
+        return _program_ad_float64_vector_result(
+            np.where(
+                condition_mask,
+                np.broadcast_to(true_tangent, output_shape),
+                np.broadcast_to(false_tangent, output_shape),
+            )
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_selection_split_pair(
+            "where",
+            "values",
+            values,
+            true_shape=true_static_shape,
+            false_shape=false_static_shape,
+        )
+        cotangent_array = _as_real_numeric_array(
+            "program AD selection where cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_array.size != _program_ad_shape_static_size(output_shape):
+            raise ValueError(
+                "program AD selection where VJP cotangent shape must match output shape"
+            )
+        cotangent_output = cotangent_array.reshape(output_shape)
+        true_adjoint = _program_ad_elementwise_unbroadcast(
+            np.where(condition_mask, cotangent_output, 0.0), target_shape=true_static_shape
+        )
+        false_adjoint = _program_ad_elementwise_unbroadcast(
+            np.where(condition_mask, 0.0, cotangent_output), target_shape=false_static_shape
+        )
+        return _program_ad_float64_vector_result(np.concatenate((true_adjoint, false_adjoint)))
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_selection_where_{_program_ad_shape_signature(true_static_shape)}_by_"
+            f"{_program_ad_shape_signature(false_static_shape)}_static_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_selection_normalise_clip_shapes(
+    source_shape: Sequence[int],
+    lower_shape: Sequence[int],
+    upper_shape: Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    source_static_shape = tuple(int(dimension) for dimension in source_shape)
+    lower_static_shape = tuple(int(dimension) for dimension in lower_shape)
+    upper_static_shape = tuple(int(dimension) for dimension in upper_shape)
+    if any(
+        dimension < 0
+        for dimension in (*source_static_shape, *lower_static_shape, *upper_static_shape)
+    ):
+        raise ValueError("program AD selection clip direct rule requires non-negative dimensions")
+    try:
+        lower_output = np.broadcast_shapes(source_static_shape, lower_static_shape)
+        upper_output = np.broadcast_shapes(source_static_shape, upper_static_shape)
+    except ValueError as exc:
+        raise ValueError(
+            "program AD selection clip direct rule requires bounds broadcastable to source shape"
+        ) from exc
+    if tuple(lower_output) != source_static_shape or tuple(upper_output) != source_static_shape:
+        raise ValueError(
+            "program AD selection clip direct rule requires bounds broadcastable to source shape"
+        )
+    return source_static_shape, lower_static_shape, upper_static_shape
+
+
+def _program_ad_selection_split_clip(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    lower_shape: tuple[int, ...],
+    upper_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD selection clip {role}", values).reshape(-1)
+    source_size = _program_ad_shape_static_size(source_shape)
+    lower_size = _program_ad_shape_static_size(lower_shape)
+    upper_size = _program_ad_shape_static_size(upper_shape)
+    if vector.size != source_size + lower_size + upper_size:
+        raise ValueError(
+            "program AD selection clip direct rule requires flattened source, lower, and upper"
+        )
+    lower_start = source_size
+    upper_start = source_size + lower_size
+    return (
+        vector[:source_size].reshape(source_shape),
+        vector[lower_start:upper_start].reshape(lower_shape),
+        vector[upper_start:].reshape(upper_shape),
+    )
+
+
+def _program_ad_selection_clip_domain(
+    values: NDArray[np.float64],
+    lower: NDArray[np.float64],
+    upper: NDArray[np.float64],
+    *,
+    derivative: bool,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    lower_broadcast = np.broadcast_to(lower, values.shape)
+    upper_broadcast = np.broadcast_to(upper, values.shape)
+    if np.any(lower_broadcast > upper_broadcast):
+        raise ValueError("program AD selection clip lower bound must not exceed upper bound")
+    if derivative and np.any((values == lower_broadcast) | (values == upper_broadcast)):
+        raise ValueError("program AD selection clip derivative is undefined at clipping boundary")
+    return lower_broadcast, upper_broadcast
+
+
+def program_ad_selection_clip_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    lower_shape: Sequence[int] = (),
+    upper_shape: Sequence[int] = (),
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed NumPy clip signature."""
+
+    source_static_shape, lower_static_shape, upper_static_shape = (
+        _program_ad_selection_normalise_clip_shapes(source_shape, lower_shape, upper_shape)
+    )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        source, lower, upper = _program_ad_selection_split_clip(
+            "values",
+            values,
+            source_shape=source_static_shape,
+            lower_shape=lower_static_shape,
+            upper_shape=upper_static_shape,
+        )
+        lower_broadcast, upper_broadcast = _program_ad_selection_clip_domain(
+            source, lower, upper, derivative=False
+        )
+        return _program_ad_float64_vector_result(np.clip(source, lower_broadcast, upper_broadcast))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        source, lower, upper = _program_ad_selection_split_clip(
+            "values",
+            values,
+            source_shape=source_static_shape,
+            lower_shape=lower_static_shape,
+            upper_shape=upper_static_shape,
+        )
+        source_tangent, lower_tangent, upper_tangent = _program_ad_selection_split_clip(
+            "tangent",
+            tangent,
+            source_shape=source_static_shape,
+            lower_shape=lower_static_shape,
+            upper_shape=upper_static_shape,
+        )
+        lower_broadcast, upper_broadcast = _program_ad_selection_clip_domain(
+            source, lower, upper, derivative=True
+        )
+        lower_tangent = np.broadcast_to(lower_tangent, source_static_shape)
+        upper_tangent = np.broadcast_to(upper_tangent, source_static_shape)
+        return _program_ad_float64_vector_result(
+            np.where(
+                source < lower_broadcast,
+                lower_tangent,
+                np.where(source > upper_broadcast, upper_tangent, source_tangent),
+            )
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        source, lower, upper = _program_ad_selection_split_clip(
+            "values",
+            values,
+            source_shape=source_static_shape,
+            lower_shape=lower_static_shape,
+            upper_shape=upper_static_shape,
+        )
+        cotangent_array = _as_real_numeric_array(
+            "program AD selection clip cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_array.size != _program_ad_shape_static_size(source_static_shape):
+            raise ValueError(
+                "program AD selection clip VJP cotangent shape must match output shape"
+            )
+        cotangent_output = cotangent_array.reshape(source_static_shape)
+        lower_broadcast, upper_broadcast = _program_ad_selection_clip_domain(
+            source, lower, upper, derivative=True
+        )
+        below = source < lower_broadcast
+        above = source > upper_broadcast
+        source_adjoint = np.where(~below & ~above, cotangent_output, 0.0)
+        lower_adjoint = _program_ad_elementwise_unbroadcast(
+            np.where(below, cotangent_output, 0.0), target_shape=lower_static_shape
+        )
+        upper_adjoint = _program_ad_elementwise_unbroadcast(
+            np.where(above, cotangent_output, 0.0), target_shape=upper_static_shape
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate((source_adjoint.reshape(-1), lower_adjoint, upper_adjoint))
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_selection_clip_{_program_ad_shape_signature(source_static_shape)}_bounds_"
+            f"{_program_ad_shape_signature(lower_static_shape)}_by_"
+            f"{_program_ad_shape_signature(upper_static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_elementwise_name(ufunc: np.ufunc) -> str:
     if ufunc is np.absolute:
         return "abs"
@@ -8298,6 +8661,60 @@ def _program_ad_elementwise_dtype_rule(args: tuple[object, ...]) -> str:
     return str(np.result_type(*dtypes))
 
 
+def _program_ad_selection_condition_shape(condition: object) -> tuple[int, ...]:
+    if isinstance(condition, _TracePredicate):
+        return ()
+    if isinstance(condition, TraceADPredicateArray):
+        return condition.shape
+    raw = np.asarray(condition)
+    if raw.dtype.kind != "b":
+        raise ValueError("program AD selection condition must be boolean")
+    return tuple(int(dimension) for dimension in raw.shape)
+
+
+def _program_ad_selection_where_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD selection where shape rule requires condition, true, false")
+    output_shape = _broadcast_shape(
+        _program_ad_array_shape_of(args[1]),
+        _program_ad_array_shape_of(args[2]),
+    )
+    condition_shape = _program_ad_selection_condition_shape(args[0])
+    if condition_shape not in {(), output_shape}:
+        raise ValueError(
+            "program AD selection where condition shape must be scalar or output-shaped"
+        )
+    return output_shape
+
+
+def _program_ad_selection_clip_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD selection clip shape rule requires source, lower, and upper")
+    source_shape = _program_ad_array_shape_of(args[0])
+    try:
+        lower_shape = np.broadcast_shapes(source_shape, _program_ad_array_shape_of(args[1]))
+        upper_shape = np.broadcast_shapes(source_shape, _program_ad_array_shape_of(args[2]))
+    except ValueError as exc:
+        raise ValueError("program AD selection clip bounds must broadcast to source") from exc
+    if tuple(lower_shape) != source_shape or tuple(upper_shape) != source_shape:
+        raise ValueError("program AD selection clip bounds must broadcast to source")
+    return source_shape
+
+
+def _program_ad_selection_where_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 3:
+        raise ValueError("program AD selection where dtype rule requires condition, true, false")
+    dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in args[1:])
+    return str(np.result_type(*dtypes))
+
+
+def _program_ad_selection_clip_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 3:
+        raise ValueError("program AD selection clip dtype rule requires source, lower, and upper")
+    dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in args)
+    return str(np.result_type(*dtypes))
+
+
 def _program_ad_product_matmul_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) != 2:
         raise ValueError("program AD product matmul shape rule requires two operands")
@@ -8481,6 +8898,33 @@ def _program_ad_elementwise_static_arguments(args: tuple[object, ...]) -> tuple[
     return ()
 
 
+def _program_ad_selection_where_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD selection where static rule requires condition, true, false")
+    condition = args[0]
+    output_shape = _program_ad_selection_where_shape(args)
+    if isinstance(condition, _TracePredicate):
+        return ("runtime_predicate", (), output_shape)
+    if isinstance(condition, TraceADPredicateArray):
+        return ("runtime_predicate", condition.shape, output_shape)
+    raw = np.asarray(condition)
+    if raw.dtype.kind != "b":
+        raise ValueError("program AD selection where static rule requires boolean condition")
+    if tuple(raw.shape) not in {(), output_shape}:
+        raise ValueError(
+            "program AD selection where condition shape must be scalar or output-shaped"
+        )
+    mask = np.broadcast_to(raw, output_shape).reshape(-1)
+    return ("static_condition", tuple(bool(item) for item in mask), output_shape)
+
+
+def _program_ad_selection_clip_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD selection clip static rule requires source, lower, and upper")
+    _program_ad_selection_clip_shape(args)
+    return ()
+
+
 def _program_ad_product_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD product static rule requires two operands")
@@ -8532,6 +8976,21 @@ _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
 
 _PROGRAM_AD_ELEMENTWISE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     name: _program_ad_elementwise_shape for name in _PROGRAM_AD_ELEMENTWISE_NAMES
+}
+
+_PROGRAM_AD_SELECTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "where": _program_ad_selection_where_shape,
+    "clip": _program_ad_selection_clip_shape,
+}
+
+_PROGRAM_AD_SELECTION_DTYPE_RULES: Mapping[str, PrimitiveDTypeRule] = {
+    "where": _program_ad_selection_where_dtype_rule,
+    "clip": _program_ad_selection_clip_dtype_rule,
+}
+
+_PROGRAM_AD_SELECTION_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "where": _program_ad_selection_where_static_arguments,
+    "clip": _program_ad_selection_clip_static_arguments,
 }
 
 _PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -8809,6 +9268,73 @@ def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
     return metadata
 
 
+def _program_ad_selection_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 3 or len(axes) != 3:
+        raise ValueError("program AD selection batching requires three operands and axes")
+    arrays = tuple(np.asarray(arg) for arg in args)
+    if all(axis is None for axis in axes):
+        return function(*args)
+    mapped_axes: list[int | None] = [
+        None if axis is None else _normalise_axis(f"axes[{index}]", axis, array.ndim)
+        for index, (axis, array) in enumerate(zip(axes, arrays, strict=True))
+    ]
+    batch_sizes = {
+        int(array.shape[axis])
+        for array, axis in zip(arrays, mapped_axes, strict=True)
+        if axis is not None
+    }
+    if len(batch_sizes) != 1:
+        raise ValueError("program AD selection batching axes must share one batch size")
+    batch_size = batch_sizes.pop()
+    outputs = []
+    for batch_index in range(batch_size):
+        sliced_args = tuple(
+            array if axis is None else np.take(array, batch_index, axis=axis)
+            for array, axis in zip(arrays, mapped_axes, strict=True)
+        )
+        outputs.append(np.asarray(function(*sliced_args)))
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
+    static_factories = {
+        "where": "program_ad_selection_where_derivative_rule",
+        "clip": "program_ad_selection_clip_derivative_rule",
+    }
+    static_signatures = {
+        "where": (
+            "condition:static_bool_mask;true_shape:ranked_tensor_shape;"
+            "false_shape:ranked_tensor_shape"
+        ),
+        "clip": (
+            "source_shape:ranked_tensor_shape;lower_shape:ranked_tensor_shape;"
+            "upper_shape:ranked_tensor_shape"
+        ),
+    }
+    nondifferentiable_boundaries = {
+        "where": "predicate_branch_boundary",
+        "clip": "clipping_boundary_and_bound_order",
+    }
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff selection dialect interchange; executable lowering blocked",
+        "mlir_op": f"scpn_diff.selection.{name}",
+        "llvm": "blocked_until_executable_selection_lowering",
+        "rust": "blocked_until_polyglot_selection_ad",
+        "static_argument_rule": "required" if name == "where" else "none",
+        "static_derivative_factory": static_factories[name],
+        "static_signature": static_signatures[name],
+        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
+        "nondifferentiable_boundary_policy": "fail_closed",
+    }
+
+
 def _program_ad_product_batching_rule(
     function: Callable[..., object],
     args: tuple[object, ...],
@@ -9018,6 +9544,25 @@ def _register_program_ad_elementwise_primitive_contracts() -> None:
         )
 
 
+def _register_program_ad_selection_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_SELECTION_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_selection_derivative_rule(name),
+                batching_rule=_program_ad_selection_batching_rule,
+                lowering_metadata=_program_ad_selection_lowering_metadata(name),
+                shape_rule=_PROGRAM_AD_SELECTION_SHAPE_RULES[name],
+                dtype_rule=_PROGRAM_AD_SELECTION_DTYPE_RULES[name],
+                static_argument_rule=_PROGRAM_AD_SELECTION_STATIC_ARGUMENT_RULES[name],
+                nondifferentiable_policy=_PROGRAM_AD_SELECTION_POLICY,
+                effect="pure",
+            )
+        )
+
+
 def _register_program_ad_product_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_PRODUCT_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -9151,6 +9696,23 @@ def _require_program_ad_elementwise_contract(
         raise ValueError(f"invalid program AD elementwise primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD elementwise primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
+def _require_program_ad_selection_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = _PROGRAM_AD_SELECTION_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD selection primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_SELECTION_POLICY:
+        raise ValueError(f"invalid program AD selection primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD selection primitive effect for {identity.key}")
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
@@ -10288,6 +10850,7 @@ _register_program_ad_array_primitive_contracts()
 _register_program_ad_shape_primitive_contracts()
 _register_program_ad_reduction_primitive_contracts()
 _register_program_ad_elementwise_primitive_contracts()
+_register_program_ad_selection_primitive_contracts()
 _register_program_ad_product_primitive_contracts()
 _register_program_ad_cumulative_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
@@ -14585,6 +15148,8 @@ __all__ = [
     "program_ad_reduction_mean_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",
+    "program_ad_selection_clip_derivative_rule",
+    "program_ad_selection_where_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",

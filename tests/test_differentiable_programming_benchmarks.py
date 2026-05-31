@@ -29,6 +29,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert [row.case_id for row in results] == [
         "loop_heavy_scalar",
         "matrix_heavy_linear_algebra",
+        "selection_piecewise_contracts",
         "linalg_primitive_contracts",
         "indexing_static_gather_contracts",
         "mutation_heavy_forward_only",
@@ -37,6 +38,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert {row.category for row in results} == {
         "loop-heavy",
         "matrix-heavy",
+        "selection-heavy",
         "linalg-primitive",
         "indexing-heavy",
         "mutation-heavy",
@@ -60,6 +62,10 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert linalg_row.adjoint_supported is True
     assert linalg_row.max_abs_adjoint_error is not None
     assert linalg_row.max_abs_adjoint_error <= 1.0e-12
+    selection_row = next(row for row in results if row.category == "selection-heavy")
+    assert selection_row.adjoint_supported is True
+    assert selection_row.max_abs_adjoint_error is not None
+    assert selection_row.max_abs_adjoint_error <= 1.0e-12
     indexing_row = next(row for row in results if row.category == "indexing-heavy")
     assert indexing_row.adjoint_supported is True
     assert indexing_row.max_abs_adjoint_error is not None

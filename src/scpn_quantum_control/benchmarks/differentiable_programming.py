@@ -123,6 +123,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
     return (
         _loop_heavy_case(),
         _matrix_heavy_case(),
+        _selection_heavy_case(),
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
@@ -257,6 +258,28 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
     return _program_ad_case(
         "linalg_primitive_contracts",
         "linalg-primitive",
+        objective,
+        values,
+        analytic,
+    )
+
+
+def _selection_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([-1.0, 0.4, 1.2], dtype=np.float64)
+    thresholds = np.array([-0.5, 0.0, 1.0], dtype=np.float64)
+    offsets = np.array([0.1, -0.2, 0.3], dtype=np.float64)
+    upper = np.array([0.5, 0.75, 2.0], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        return np.sum(
+            np.where(trace_values > thresholds, trace_values**2, -trace_values)
+            + np.clip(trace_values + offsets, -0.75, upper)
+        )
+
+    analytic = np.array([-1.0, 1.8, 3.4], dtype=np.float64)
+    return _program_ad_case(
+        "selection_piecewise_contracts",
+        "selection-heavy",
         objective,
         values,
         analytic,

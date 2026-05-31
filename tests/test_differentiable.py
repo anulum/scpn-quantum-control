@@ -159,6 +159,8 @@ from scpn_quantum_control.differentiable import (
     program_ad_reduction_mean_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
     program_ad_reduction_sum_derivative_rule,
+    program_ad_selection_clip_derivative_rule,
+    program_ad_selection_where_derivative_rule,
     program_ad_shape_ravel_derivative_rule,
     program_ad_shape_reshape_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
@@ -6356,6 +6358,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_elementwise_binary_derivative_rule",
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         ),
+        "scpn.program_ad.selection:where": (
+            "program_ad_selection_where_derivative_rule",
+            "condition:static_bool_mask;true_shape:ranked_tensor_shape;false_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.selection:clip": (
+            "program_ad_selection_clip_derivative_rule",
+            "source_shape:ranked_tensor_shape;lower_shape:ranked_tensor_shape;upper_shape:ranked_tensor_shape",
+        ),
         "scpn.program_ad.product:matmul": (
             "program_ad_product_matmul_derivative_rule",
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
@@ -6943,6 +6953,169 @@ def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_
         whole_program_value_and_grad(
             lambda values: np.sum(np.where(values >= 0.0, values, -values)),
             np.array([0.0, 1.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
+    """Where and clip should expose first-class primitive registry contracts."""
+
+    vector = np.array([-1.0, 0.25, 2.0], dtype=np.float64)
+    condition = np.array([True, False, True])
+    upper = np.array([0.5, 0.75, 2.0], dtype=np.float64)
+
+    where_contract = primitive_contract_for("scpn.program_ad.selection:where")
+    assert where_contract.identity == PrimitiveIdentity("scpn.program_ad.selection", "where", "1")
+    assert where_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert where_contract.effect == "pure"
+    assert where_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.where"
+    assert where_contract.shape_rule is not None
+    assert where_contract.shape_rule((condition, vector, 1.0)) == (3,)
+    assert where_contract.dtype_rule is not None
+    assert where_contract.dtype_rule((condition, vector, 1.0)) == "float64"
+    assert where_contract.static_argument_rule is not None
+    assert where_contract.static_argument_rule((condition, vector, 1.0)) == (
+        "static_condition",
+        (True, False, True),
+        (3,),
+    )
+
+    clip_contract = primitive_contract_for("scpn.program_ad.selection:clip")
+    assert clip_contract.identity == PrimitiveIdentity("scpn.program_ad.selection", "clip", "1")
+    assert clip_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert clip_contract.effect == "pure"
+    assert clip_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.clip"
+    assert clip_contract.shape_rule is not None
+    assert clip_contract.shape_rule((vector, -0.5, upper)) == (3,)
+    assert clip_contract.dtype_rule is not None
+    assert clip_contract.dtype_rule((vector, -0.5, upper)) == "float64"
+    assert clip_contract.static_argument_rule is not None
+    assert clip_contract.static_argument_rule((vector, -0.5, upper)) == ()
+
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(where_contract.identity)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(clip_contract.identity)
+
+
+def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
+    """Selection contracts should expose fail-closed branch and clipping boundaries."""
+
+    expected_boundaries = {
+        "where": "predicate_branch_boundary",
+        "clip": "clipping_boundary_and_bound_order",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.selection", name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
+def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Where and clip trace execution should validate registry shape, dtype, and static rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.selection:{name}")
+        for name in ("where", "clip")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+
+    try:
+        result = whole_program_value_and_grad(
+            lambda values: np.sum(
+                np.where(values > np.array([-0.5, 0.0, 1.0]), values**2, -values)
+                + np.clip(
+                    values + np.array([0.1, -0.2, 0.3]),
+                    -0.75,
+                    np.array([0.5, 0.75, 2.0]),
+                )
+            ),
+            np.array([-1.0, 0.4, 1.2], dtype=np.float64),
+        )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    np.testing.assert_allclose(result.gradient, np.array([-1.0, 1.8, 3.4]))
+    assert calls == {
+        "where": {"shape", "dtype", "static"},
+        "clip": {"shape", "dtype", "static"},
+    }
+
+
+def test_program_ad_selection_static_derivative_factories() -> None:
+    """Static where and clip factories should expose exact branch/clip adjoints."""
+
+    where_rule = program_ad_selection_where_derivative_rule(
+        np.array([True, False, True]), (3,), ()
+    )
+    assert where_rule.name == "program_ad_selection_where_3_by_scalar_static_direct_rule"
+    assert where_rule.jvp_rule is not None
+    assert where_rule.vjp_rule is not None
+    where_values = np.array([1.0, -2.0, 0.5, 0.25], dtype=np.float64)
+    where_tangent = np.array([0.1, 0.2, 0.3, 0.4], dtype=np.float64)
+    where_cotangent = np.array([1.5, -2.0, 0.75], dtype=np.float64)
+    np.testing.assert_allclose(where_rule.value_fn(where_values), [1.0, 0.25, 0.5])
+    np.testing.assert_allclose(where_rule.jvp_rule(where_values, where_tangent), [0.1, 0.4, 0.3])
+    np.testing.assert_allclose(
+        where_rule.vjp_rule(where_values, where_cotangent),
+        [1.5, 0.0, 0.75, -2.0],
+    )
+
+    clip_rule = program_ad_selection_clip_derivative_rule((3,), lower_shape=(), upper_shape=(3,))
+    assert clip_rule.name == "program_ad_selection_clip_3_bounds_scalar_by_3_direct_rule"
+    assert clip_rule.jvp_rule is not None
+    assert clip_rule.vjp_rule is not None
+    clip_values = np.array([-2.0, 0.25, 2.0, -1.0, 1.0, 1.0, 1.5], dtype=np.float64)
+    clip_tangent = np.array([0.2, -0.3, 0.5, 0.75, 0.1, 0.2, 0.3], dtype=np.float64)
+    clip_cotangent = np.array([1.5, -2.0, 0.75], dtype=np.float64)
+    np.testing.assert_allclose(clip_rule.value_fn(clip_values), [-1.0, 0.25, 1.5])
+    np.testing.assert_allclose(clip_rule.jvp_rule(clip_values, clip_tangent), [0.75, -0.3, 0.3])
+    np.testing.assert_allclose(
+        clip_rule.vjp_rule(clip_values, clip_cotangent),
+        [0.0, -2.0, 0.0, 1.5, 0.0, 0.0, 0.75],
+    )
+
+    with pytest.raises(ValueError, match="clipping boundary"):
+        clip_rule.jvp_rule(
+            np.array([-1.0, 0.25, 2.0, -1.0, 1.0, 1.0, 1.5], dtype=np.float64),
+            clip_tangent,
         )
 
 
@@ -8964,6 +9137,13 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     )
     assert (
         scpn.program_ad_product_outer_derivative_rule is program_ad_product_outer_derivative_rule
+    )
+    assert (
+        scpn.program_ad_selection_clip_derivative_rule is program_ad_selection_clip_derivative_rule
+    )
+    assert (
+        scpn.program_ad_selection_where_derivative_rule
+        is program_ad_selection_where_derivative_rule
     )
     assert (
         scpn.program_ad_linalg_matrix_power_derivative_rule
