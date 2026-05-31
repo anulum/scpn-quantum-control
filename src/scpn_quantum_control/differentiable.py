@@ -2264,6 +2264,7 @@ def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADSca
 
 
 def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
+    _require_program_ad_cumulative_contract("cumsum", (array, axis))
     if not array._items:
         raise ValueError("program AD cumulative sum requires at least one element")
     if axis is None:
@@ -2318,6 +2319,7 @@ def _trace_array_prod(
 
 
 def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray:
+    _require_program_ad_cumulative_contract("cumprod", (array, axis))
     if not array._items:
         raise ValueError("program AD cumulative product requires at least one element")
     if axis is None:
@@ -2342,6 +2344,7 @@ def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray
 
 
 def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
+    _require_program_ad_cumulative_contract("diff", (array, n, axis))
     if not isinstance(n, (int, np.integer)):
         raise ValueError("program AD np.diff requires non-negative integer n")
     order = int(n)
@@ -5558,6 +5561,13 @@ _PROGRAM_AD_PRODUCT_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     for name in ("dot", "vdot", "matmul")
 }
 
+_PROGRAM_AD_CUMULATIVE_PRIMITIVE_NAMESPACE = "scpn.program_ad.cumulative"
+_PROGRAM_AD_CUMULATIVE_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_CUMULATIVE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_CUMULATIVE_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("cumsum", "cumprod", "diff")
+}
+
 _PROGRAM_AD_LINALG_PRIMITIVE_NAMESPACE = "scpn.program_ad.linalg"
 _PROGRAM_AD_LINALG_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
@@ -5694,6 +5704,31 @@ def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
         name=f"program_ad_product_{name}_trace_contract",
         value_fn=_program_ad_product_direct_value,
         jvp_rule=_program_ad_product_direct_jvp,
+    )
+
+
+def _program_ad_cumulative_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD cumulative primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_cumulative_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD cumulative primitive contracts are executable only through "
+        "operator-intercepted trace dispatch"
+    )
+
+
+def _program_ad_cumulative_derivative_rule(name: str) -> CustomDerivativeRule:
+    return CustomDerivativeRule(
+        name=f"program_ad_cumulative_{name}_trace_contract",
+        value_fn=_program_ad_cumulative_direct_value,
+        jvp_rule=_program_ad_cumulative_direct_jvp,
     )
 
 
@@ -5900,6 +5935,58 @@ def _program_ad_product_dtype_rule(args: tuple[object, ...]) -> str:
     return str(np.result_type(*dtypes))
 
 
+def _program_ad_cumulative_axis(args: tuple[object, ...]) -> int | None:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD cumulative rule requires array and static parameters")
+    if len(args) == 1 or args[1] is None:
+        return None
+    axis = args[1]
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD cumulative axis must be a static integer or None")
+    return int(axis)
+
+
+def _program_ad_cumulative_diff_order(args: tuple[object, ...]) -> int:
+    if len(args) < 2:
+        return 1
+    order = args[1]
+    if isinstance(order, bool) or not isinstance(order, (int, np.integer)):
+        raise ValueError("program AD np.diff requires non-negative integer n")
+    order = int(order)
+    if order < 0:
+        raise ValueError("program AD np.diff requires non-negative integer n")
+    return order
+
+
+def _program_ad_cumulative_scan_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD cumulative scan shape rule requires array and axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    if int(np.prod(source_shape)) == 0:
+        raise ValueError("program AD cumulative scan requires at least one element")
+    axis = _program_ad_cumulative_axis(args)
+    return (int(np.prod(source_shape)),) if axis is None else source_shape
+
+
+def _program_ad_cumulative_diff_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD diff shape rule requires array, order, and axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    order = _program_ad_cumulative_diff_order(args)
+    axis = args[2] if len(args) == 3 else -1
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD diff axis must be a static integer")
+    axis_index = _normalise_axis("axis", int(axis), len(source_shape))
+    axis_size = max(source_shape[axis_index] - order, 0)
+    return source_shape[:axis_index] + (axis_size,) + source_shape[axis_index + 1 :]
+
+
+def _program_ad_cumulative_dtype_rule(args: tuple[object, ...]) -> str:
+    if not args:
+        raise ValueError("program AD cumulative dtype rule requires an array operand")
+    return _program_ad_array_dtype_of(args[0])
+
+
 def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD array getitem static rule requires array and index")
@@ -5967,6 +6054,21 @@ def _program_ad_product_static_arguments(args: tuple[object, ...]) -> tuple[obje
     return ()
 
 
+def _program_ad_cumulative_scan_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return (_program_ad_cumulative_axis(args),)
+
+
+def _program_ad_cumulative_diff_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    order = _program_ad_cumulative_diff_order(args)
+    axis = args[2] if len(args) == 3 else -1
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD diff axis must be a static integer")
+    axis_index = _normalise_axis("axis", int(axis), len(_program_ad_array_shape_of(args[0])))
+    return (order, axis_index)
+
+
 _PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "getitem": _program_ad_array_getitem_shape,
     "take": _program_ad_array_take_shape,
@@ -6003,6 +6105,18 @@ _PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "dot": _program_ad_product_dot_shape,
     "vdot": _program_ad_product_vdot_shape,
     "matmul": _program_ad_product_matmul_shape,
+}
+
+_PROGRAM_AD_CUMULATIVE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "cumsum": _program_ad_cumulative_scan_shape,
+    "cumprod": _program_ad_cumulative_scan_shape,
+    "diff": _program_ad_cumulative_diff_shape,
+}
+
+_PROGRAM_AD_CUMULATIVE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "cumsum": _program_ad_cumulative_scan_static_arguments,
+    "cumprod": _program_ad_cumulative_scan_static_arguments,
+    "diff": _program_ad_cumulative_diff_static_arguments,
 }
 
 
@@ -6243,6 +6357,46 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
     }
 
 
+def _program_ad_cumulative_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != len(axes):
+        raise ValueError("program AD cumulative batching axes must match argument count")
+    if not args:
+        raise ValueError("program AD cumulative batching requires an array operand")
+    array = _as_real_numeric_array("program AD cumulative batched operand", args[0])
+    batch_axis = axes[0]
+    if batch_axis is None:
+        return _as_real_numeric_array("program AD cumulative batched output", function(*args))
+    if any(item is not None for item in axes[1:]):
+        raise ValueError("program AD cumulative batching supports static parameters only")
+    batch_axis = _normalise_axis("axes[0]", batch_axis, array.ndim)
+    outputs = [
+        _as_real_numeric_array(
+            "program AD cumulative batched output",
+            function(np.take(array, batch_index, axis=batch_axis), *args[1:]),
+        )
+        for batch_index in range(int(array.shape[batch_axis]))
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff cumulative dialect interchange; executable lowering blocked",
+        "mlir_op": f"scpn_diff.cumulative.{name}",
+        "llvm": "blocked_until_executable_cumulative_lowering",
+        "rust": "blocked_until_polyglot_cumulative_ad",
+        "static_argument_rule": "required",
+        "static_signature": "order_axis" if name == "diff" else "axis",
+    }
+
+
 def _register_program_ad_array_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -6333,6 +6487,25 @@ def _register_program_ad_product_primitive_contracts() -> None:
                 dtype_rule=_program_ad_product_dtype_rule,
                 static_argument_rule=_program_ad_product_static_arguments,
                 nondifferentiable_policy=_PROGRAM_AD_PRODUCT_POLICY,
+                effect="pure",
+            )
+        )
+
+
+def _register_program_ad_cumulative_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_CUMULATIVE_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_cumulative_derivative_rule(name),
+                batching_rule=_program_ad_cumulative_batching_rule,
+                lowering_metadata=_program_ad_cumulative_lowering_metadata(name),
+                shape_rule=_PROGRAM_AD_CUMULATIVE_SHAPE_RULES[name],
+                dtype_rule=_program_ad_cumulative_dtype_rule,
+                static_argument_rule=_PROGRAM_AD_CUMULATIVE_STATIC_ARGUMENT_RULES[name],
+                nondifferentiable_policy=_PROGRAM_AD_CUMULATIVE_POLICY,
                 effect="pure",
             )
         )
@@ -6450,6 +6623,23 @@ def _require_program_ad_product_contract(
         raise ValueError(f"invalid program AD product primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD product primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
+def _require_program_ad_cumulative_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = _PROGRAM_AD_CUMULATIVE_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD cumulative primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_CUMULATIVE_POLICY:
+        raise ValueError(f"invalid program AD cumulative primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD cumulative primitive effect for {identity.key}")
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
@@ -7009,6 +7199,7 @@ _register_program_ad_shape_primitive_contracts()
 _register_program_ad_reduction_primitive_contracts()
 _register_program_ad_elementwise_primitive_contracts()
 _register_program_ad_product_primitive_contracts()
+_register_program_ad_cumulative_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
 
 
