@@ -485,6 +485,11 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     convolve_same_weights = np.array([1.0, -0.75, 0.5, -0.25, 0.125, -0.5], dtype=np.float64)
     convolve_static_signal = np.array([0.75, -1.25, 1.5, -0.5], dtype=np.float64)
     convolve_valid_weights = np.array([0.6, -0.4], dtype=np.float64)
+    correlate_full_weights = np.array([-0.15, 0.35, -0.55, 0.75, -0.95], dtype=np.float64)
+    correlate_same_reference = np.array([0.45, -0.3], dtype=np.float64)
+    correlate_same_weights = np.array([-0.6, 0.4, -0.2, 0.8, -1.0, 0.5], dtype=np.float64)
+    correlate_static_signal = np.array([1.2, -0.7, 0.9, -1.1], dtype=np.float64)
+    correlate_valid_weights = np.array([0.25, -0.85], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
         matrix = np.reshape(trace_values, (2, 3))
@@ -547,6 +552,17 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         static_kernel_convolution = np.convolve(trace_values, convolve_same_kernel, mode="same")
         static_signal_convolution = np.convolve(
             convolve_static_signal,
+            trace_values[3:],
+            mode="valid",
+        )
+        dynamic_correlation = np.correlate(trace_values[:3], trace_values[3:], mode="full")
+        static_reference_correlation = np.correlate(
+            trace_values,
+            correlate_same_reference,
+            mode="same",
+        )
+        static_signal_correlation = np.correlate(
+            correlate_static_signal,
             trace_values[3:],
             mode="valid",
         )
@@ -699,16 +715,19 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             + 0.023 * np.sum(dynamic_convolution * convolve_full_weights)
             + 0.019 * np.sum(static_kernel_convolution * convolve_same_weights)
             - 0.017 * np.sum(static_signal_convolution * convolve_valid_weights)
+            + 0.021 * np.sum(dynamic_correlation * correlate_full_weights)
+            - 0.016 * np.sum(static_reference_correlation * correlate_same_weights)
+            + 0.018 * np.sum(static_signal_correlation * correlate_valid_weights)
         )
 
     analytic = np.array(
         [
-            6.24385625,
-            4.2872666666666674,
-            5.029254166666667,
-            5.403745833333333,
-            8.330725000000001,
-            12.073062499999999,
+            6.18612125,
+            4.369901666666667,
+            4.915959166666667,
+            5.377870833333333,
+            8.34373,
+            12.0727175,
         ],
         dtype=np.float64,
     )
