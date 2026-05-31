@@ -158,6 +158,13 @@ class PrimitiveLoweringStatus:
         ):
             if not isinstance(status, str) or not status:
                 raise ValueError(f"{label} must be non-empty")
+        mlir_runtime_claimed = "MLIR-runtime" in self.mlir_lowering
+        if mlir_runtime_claimed and not self.has_lowering_rule:
+            raise ValueError(
+                "has_lowering_rule must be true when mlir_lowering claims MLIR-runtime"
+            )
+        if self.has_lowering_rule and not mlir_runtime_claimed:
+            raise ValueError("mlir_lowering must declare MLIR-runtime lowering")
 
 
 @dataclass(frozen=True)

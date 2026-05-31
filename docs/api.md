@@ -125,7 +125,8 @@ cannot be mistaken for complete compiler contracts. Static program-AD array,
 shape, elementwise, reduction, product, cumulative, and linalg contracts expose
 MLIR metadata for direct derivative factories and fixed signatures; concrete
 static linalg signatures can also bind optional verified MLIR-runtime lowering
-rules.
+rules, and MLIR-runtime availability fails closed unless the primitive has a
+registered lowering rule.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native Rust, LLVM, and JIT
 differentiated runtimes remain unavailable until backed by real lowering and

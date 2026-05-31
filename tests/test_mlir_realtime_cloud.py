@@ -436,6 +436,31 @@ def test_primitive_lowering_status_rejects_conflicting_static_metadata() -> None
             )
 
 
+def test_primitive_lowering_status_rejects_inconsistent_lowering_rule_provenance() -> None:
+    """Primitive lowering status should keep lowering-rule provenance consistent."""
+
+    identity = PrimitiveIdentity("scpn.test", "lowering_provenance", "1")
+    cases = (
+        (
+            False,
+            "available: executable scpn_diff MLIR-runtime primitive kernel",
+            "has_lowering_rule",
+        ),
+        (True, "available: scpn_diff dialect interchange", "mlir_lowering"),
+    )
+    for has_lowering_rule, mlir_lowering, message in cases:
+        with pytest.raises(ValueError, match=message):
+            PrimitiveLoweringStatus(
+                identity=identity,
+                rule_name="lowering_provenance_rule",
+                has_jvp=True,
+                has_vjp=False,
+                mlir_op="scpn_diff.lowering_provenance",
+                has_lowering_rule=has_lowering_rule,
+                mlir_lowering=mlir_lowering,
+            )
+
+
 def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
     """Static linalg lowering factories should execute verified MLIR-runtime kernels."""
 
