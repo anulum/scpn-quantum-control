@@ -84,6 +84,7 @@ from scpn_quantum_control import (
     compile_scalar_unary_elementwise_ad_to_native_llvm_jit,
     compile_vector_dot_ad_to_native_llvm_jit,
     compile_vector_squared_norm_ad_to_native_llvm_jit,
+    compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
 )
 
 module = compile_kuramoto_to_mlir(
@@ -206,6 +207,13 @@ native_solve_kernel = compile_matrix_2x2_solve_ad_to_native_llvm_jit(
 )
 native_solve_kernel.value(np.array([2.0, -1.0, 0.5, 3.0, 1.5, -2.0], dtype=np.float64))
 
+native_eigen_kernel = compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
+    rule,
+    sample_values=np.array([2.0, 0.5, 3.0], dtype=np.float64),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_eigen_kernel.value(np.array([2.0, 0.5, 3.0], dtype=np.float64))
+
 native_quadratic_form_kernel = compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule,
     dimension=2,
@@ -277,6 +285,11 @@ remain fail-closed.
 row-major `A x = b` primitive over concatenated `[A, b]` inputs with exact
 linear-solve value, JVP, and VJP kernels; singular matrices and the public
 vector-output gradient helper remain fail-closed.
+`compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit()` adds a bounded
+distinct-eigenvalue symmetric spectral primitive over upper-triangle
+`[a00, a01, a11]` inputs with exact closed-form value, JVP, and VJP kernels;
+repeated eigenvalues and the public vector-output gradient helper remain
+fail-closed.
 `compile_matrix_quadratic_form_ad_to_native_llvm_jit()` extends native compiler
 AD to rank-2 scalar linalg by compiling `x.T @ A @ x` over row-major
 concatenated `[A, x]` inputs with exact matrix-entry gradients
@@ -292,6 +305,7 @@ concatenated `[A, x]` inputs with exact matrix-entry gradients
 `make_matrix_2x2_determinant_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_inverse_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_solve_native_llvm_jit_lowering_rule()` and
+`make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule()` and
 `make_matrix_vector_product_native_llvm_jit_lowering_rule()` and
 `make_matrix_quadratic_form_native_llvm_jit_lowering_rule()` bind those native
 backends to primitive registry lowering metadata when the primitive has the
