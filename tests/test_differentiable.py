@@ -8446,13 +8446,17 @@ def test_primitive_registry_requires_complete_contract_for_compiler_consumers() 
         del args
         return "float64"
 
+    def static_argument_rule(args: tuple[object, ...]) -> tuple[object, ...]:
+        del args
+        return ()
+
     registry = CustomDerivativeRegistry({identity: rule})
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         registry.require_complete_contract(identity)
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(identity, registry=registry)
 
-    transform = PrimitiveTransformRule(
+    missing_boundary_transform = PrimitiveTransformRule(
         identity=identity,
         derivative_rule=rule,
         batching_rule=batching_rule,
@@ -8460,6 +8464,27 @@ def test_primitive_registry_requires_complete_contract_for_compiler_consumers() 
         lowering_metadata={"mlir_op": "scpn_diff.strict_contract"},
         shape_rule=shape_rule,
         dtype_rule=dtype_rule,
+        static_argument_rule=static_argument_rule,
+        nondifferentiable_policy="fail_closed_at_boundaries",
+        effect="pure",
+    )
+    registry.register_transform(missing_boundary_transform, overwrite=True)
+    with pytest.raises(ValueError, match="nondifferentiable_boundary"):
+        registry.require_complete_contract(identity)
+
+    transform = PrimitiveTransformRule(
+        identity=identity,
+        derivative_rule=rule,
+        batching_rule=batching_rule,
+        lowering_rule=lowering_rule,
+        lowering_metadata={
+            "mlir_op": "scpn_diff.strict_contract",
+            "nondifferentiable_boundary": "declared_test_boundary",
+            "nondifferentiable_boundary_policy": "fail_closed",
+        },
+        shape_rule=shape_rule,
+        dtype_rule=dtype_rule,
+        static_argument_rule=static_argument_rule,
         nondifferentiable_policy="fail_closed_at_boundaries",
         effect="pure",
     )
@@ -8472,6 +8497,7 @@ def test_primitive_registry_requires_complete_contract_for_compiler_consumers() 
     assert contract.lowering_metadata["mlir_op"] == "scpn_diff.strict_contract"
     assert contract.shape_rule is shape_rule
     assert contract.dtype_rule is dtype_rule
+    assert contract.static_argument_rule is static_argument_rule
     assert contract.nondifferentiable_policy == "fail_closed_at_boundaries"
     assert contract.effect == "pure"
     assert primitive_complete_contract_for(identity, registry=registry) == contract
@@ -9152,7 +9178,12 @@ def test_primitive_identity_and_contracts_fail_closed_on_malformed_metadata() ->
         derivative_rule=rule,
         batching_rule=lambda values, in_axes: (tuple(values), tuple(in_axes)),
         lowering_rule=lambda lowered_rule: {"name": lowered_rule.name},
-        lowering_metadata={"mlir_op": "scpn_diff.rx", "llvm": "blocked"},
+        lowering_metadata={
+            "mlir_op": "scpn_diff.rx",
+            "llvm": "blocked",
+            "nondifferentiable_boundary": "declared_test_boundary",
+            "nondifferentiable_boundary_policy": "fail_closed",
+        },
         shape_rule=lambda _args: (1,),
         dtype_rule=lambda _args: "float64",
         static_argument_rule=lambda args: args[:1],

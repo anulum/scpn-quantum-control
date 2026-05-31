@@ -5442,10 +5442,16 @@ class CustomDerivativeRegistry:
             missing.append("lowering_rule")
         if not contract.lowering_metadata:
             missing.append("lowering_metadata")
+        if not contract.lowering_metadata.get("nondifferentiable_boundary"):
+            missing.append("nondifferentiable_boundary")
+        if contract.lowering_metadata.get("nondifferentiable_boundary_policy") != "fail_closed":
+            missing.append("nondifferentiable_boundary_policy")
         if contract.shape_rule is None:
             missing.append("shape_rule")
         if contract.dtype_rule is None:
             missing.append("dtype_rule")
+        if contract.static_argument_rule is None:
+            missing.append("static_argument_rule")
         if contract.nondifferentiable_policy == "not_declared":
             missing.append("nondifferentiable_policy")
         if not contract.effect:
