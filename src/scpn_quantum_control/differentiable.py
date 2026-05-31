@@ -1488,6 +1488,14 @@ class TraceADArray:
                 self.context,
                 axis=cast(int, kwargs.get("axis", 0)),
             )
+        if func in {np.hstack, np.vstack, np.column_stack, np.dstack}:
+            if len(args) != 1 or kwargs:
+                raise ValueError(f"program AD np.{func.__name__} supports one array sequence")
+            return _trace_stack_convenience(
+                func.__name__,
+                cast(Sequence[object], args[0]),
+                self.context,
+            )
         if func is np.clip:
             if len(args) < 3 or len(args) > 4 or kwargs:
                 raise ValueError("whole-program AD np.clip supports array, lower, and upper")
@@ -3529,6 +3537,36 @@ def _trace_where(
 
 def _trace_predicate_ir_label(predicate: _TracePredicate) -> str:
     return f"{predicate.label}:truth:{int(bool(predicate))}"
+
+
+def _trace_stack_convenience(
+    name: str,
+    arrays: Sequence[object],
+    context: _WholeProgramTraceContext,
+) -> TraceADArray:
+    if not arrays:
+        raise ValueError(f"program AD np.{name} requires at least one array")
+    trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
+    try:
+        if name == "hstack":
+            operands = tuple(_trace_atleast_nd(array, rank=1) for array in trace_arrays)
+            axis = 0 if operands[0].ndim == 1 else 1
+            return _trace_concatenate(operands, context, axis=axis)
+        if name == "vstack":
+            operands = tuple(_trace_atleast_nd(array, rank=2) for array in trace_arrays)
+            return _trace_concatenate(operands, context, axis=0)
+        if name == "column_stack":
+            operands = tuple(
+                array.reshape((array.size, 1)) if array.ndim < 2 else array
+                for array in trace_arrays
+            )
+            return _trace_concatenate(operands, context, axis=1)
+        if name == "dstack":
+            operands = tuple(_trace_atleast_nd(array, rank=3) for array in trace_arrays)
+            return _trace_concatenate(operands, context, axis=2)
+    except ValueError as exc:
+        raise ValueError(f"program AD np.{name} requires shape-compatible arrays") from exc
+    raise ValueError(f"unsupported program AD stack convenience {name}")
 
 
 def _trace_concatenate(

@@ -5805,6 +5805,57 @@ def test_program_ad_vdot_fails_closed_size_mismatch() -> None:
         )
 
 
+def test_program_ad_stack_conveniences_preserve_assembly_adjoint() -> None:
+    """Program AD stack conveniences should lower to exact assembly adjoints."""
+
+    def objective(values: np.ndarray) -> object:
+        left = values[:2]
+        right = values[2:]
+        row_left = np.reshape(left, (1, 2))
+        row_right = np.reshape(right, (1, 2))
+        hstacked = np.hstack((left, right))
+        vstacked = np.vstack((left, right))
+        columned = np.column_stack((left, right))
+        dstacked = np.dstack((row_left, row_right))
+        return (
+            np.sum(hstacked * np.array([0.5, -1.0, 2.0, -0.25], dtype=np.float64))
+            + np.sum(vstacked * np.array([[1.5, -2.0], [0.25, 3.0]], dtype=np.float64))
+            + np.sum(columned * np.array([[-0.75, 1.25], [2.5, -1.5]], dtype=np.float64))
+            + np.sum(dstacked * np.array([[[0.2, -0.4], [0.6, -0.8]]], dtype=np.float64))
+        )
+
+    values = np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
+    )
+
+    expected_value = objective(values)
+    expected_gradient = np.array([1.45, 0.1, 3.1, 0.45], dtype=np.float64)
+    assert result.value == pytest.approx(float(expected_value))
+    np.testing.assert_allclose(result.gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_stack_conveniences_reject_incompatible_shapes() -> None:
+    """Program AD stack conveniences should fail closed on incompatible shapes."""
+
+    with pytest.raises(ValueError, match="shape-compatible"):
+        whole_program_value_and_grad(
+            lambda values: np.hstack((np.reshape(values[:4], (2, 2)), values[4:])),
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="shape-compatible"):
+        whole_program_value_and_grad(
+            lambda values: np.column_stack((values[:2], values[2:])),
+            np.arange(1.0, 6.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 

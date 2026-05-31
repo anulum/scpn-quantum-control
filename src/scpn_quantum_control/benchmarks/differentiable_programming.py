@@ -462,6 +462,10 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         inserted = np.insert(matrix, 1, np.array([-0.25, 0.5]), axis=1)
         axis_appended = np.append(matrix[:, :2], matrix[:, 2:], axis=1)
         flat_appended = np.append(trace_values[:3], trace_values[3:])
+        hstacked = np.hstack((trace_values[:3], trace_values[3:]))
+        vstacked = np.vstack((matrix[0], matrix[1]))
+        column_stacked = np.column_stack((trace_values[:3], trace_values[3:]))
+        dstacked = np.dstack((matrix[:, :2], matrix[:, 1:]))
         column_assembled = np.concatenate((matrix[:, 2:], matrix[:, :1], matrix[:, 1:2]), axis=1)
         depth_stacked = np.stack((matrix, matrix[:, ::-1]), axis=2)
         flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
@@ -506,6 +510,25 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             )
             + 0.07
             * np.sum(flat_appended * np.array([0.2, -0.4, 0.6, -0.8, 1.0, -1.2], dtype=np.float64))
+            + 0.03
+            * np.sum(hstacked * np.array([0.1, -0.2, 0.3, -0.4, 0.5, -0.6], dtype=np.float64))
+            + 0.04
+            * np.sum(
+                vstacked * np.array([[0.5, -1.0, 1.5], [-0.25, 0.75, -1.25]], dtype=np.float64)
+            )
+            + 0.02
+            * np.sum(
+                column_stacked
+                * np.array([[1.0, -0.5], [0.25, 1.5], [-1.0, 0.75]], dtype=np.float64)
+            )
+            + 0.01
+            * np.sum(
+                dstacked
+                * np.array(
+                    [[[0.2, -0.1], [0.4, -0.3]], [[0.5, -0.2], [0.7, -0.6]]],
+                    dtype=np.float64,
+                )
+            )
             + np.sum(column_assembled * np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
             + np.sum(
                 depth_stacked
@@ -522,7 +545,7 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             )
         )
 
-    analytic = np.array([5.834, 4.5245, 4.877, 5.274, 8.2375, 12.2135], dtype=np.float64)
+    analytic = np.array([5.879, 4.4865, 4.923, 5.247, 8.3175, 12.1545], dtype=np.float64)
     return _program_ad_case(
         "indexing_static_gather_contracts",
         "indexing-heavy",
