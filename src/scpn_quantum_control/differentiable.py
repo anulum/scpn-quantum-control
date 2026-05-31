@@ -6176,6 +6176,352 @@ def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
     raise ValueError(f"unsupported program AD reduction primitive {name}")
 
 
+def _program_ad_reduction_normalise_static_shape(
+    name: str,
+    source_shape: Sequence[int],
+) -> tuple[int, ...]:
+    shape = tuple(int(dimension) for dimension in source_shape)
+    if any(dimension < 0 for dimension in shape):
+        raise ValueError(
+            f"program AD reduction {name} direct rule requires non-negative dimensions"
+        )
+    if _program_ad_shape_static_size(shape) == 0:
+        raise ValueError(f"program AD reduction {name} direct rule requires at least one value")
+    return shape
+
+
+def _program_ad_reduction_axis_signature(axis: int | None) -> str:
+    return "flat" if axis is None else str(axis)
+
+
+def _program_ad_reduction_output_shape(
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> tuple[int, ...]:
+    if axis is None:
+        return ()
+    normalised_axis = _normalise_axis("axis", axis, len(source_shape))
+    return source_shape[:normalised_axis] + source_shape[normalised_axis + 1 :]
+
+
+def _program_ad_reduction_source_vector(
+    name: str,
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+) -> NDArray[np.float64]:
+    return _program_ad_shape_vector(
+        f"reduction {name}",
+        role,
+        values,
+        expected_size=_program_ad_shape_static_size(source_shape),
+    )
+
+
+def _program_ad_reduction_cotangent_array(
+    name: str,
+    cotangent: NDArray[np.float64],
+    *,
+    output_shape: tuple[int, ...],
+) -> NDArray[np.float64]:
+    cotangent_vector = _as_real_numeric_array(
+        f"program AD reduction {name} cotangent", cotangent
+    ).reshape(-1)
+    expected_size = _program_ad_shape_static_size(output_shape)
+    if cotangent_vector.size != expected_size:
+        raise ValueError(
+            f"program AD reduction {name} VJP requires cotangent with {expected_size} values"
+        )
+    return cotangent_vector.reshape(output_shape)
+
+
+def _program_ad_reduction_sum_static_value(
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_source_vector(
+        "sum", "values", values, source_shape=source_shape
+    )
+    return _program_ad_float64_vector_result(np.sum(vector.reshape(source_shape), axis=axis))
+
+
+def _program_ad_reduction_sum_static_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    _program_ad_reduction_source_vector("sum", "values", values, source_shape=source_shape)
+    tangent_vector = _program_ad_reduction_source_vector(
+        "sum", "tangent", tangent, source_shape=source_shape
+    )
+    return _program_ad_float64_vector_result(
+        np.sum(tangent_vector.reshape(source_shape), axis=axis)
+    )
+
+
+def _program_ad_reduction_sum_static_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    _program_ad_reduction_source_vector("sum", "values", values, source_shape=source_shape)
+    output_shape = _program_ad_reduction_output_shape(source_shape, axis)
+    cotangent_array = _program_ad_reduction_cotangent_array(
+        "sum", cotangent, output_shape=output_shape
+    )
+    if axis is None:
+        return np.full(_program_ad_shape_static_size(source_shape), float(cotangent_array))
+    expanded = np.expand_dims(cotangent_array, axis=axis)
+    return _program_ad_float64_vector_result(np.broadcast_to(expanded, source_shape))
+
+
+def _program_ad_reduction_mean_static_value(
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_source_vector(
+        "mean", "values", values, source_shape=source_shape
+    )
+    return _program_ad_float64_vector_result(np.mean(vector.reshape(source_shape), axis=axis))
+
+
+def _program_ad_reduction_mean_static_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    _program_ad_reduction_source_vector("mean", "values", values, source_shape=source_shape)
+    tangent_vector = _program_ad_reduction_source_vector(
+        "mean", "tangent", tangent, source_shape=source_shape
+    )
+    return _program_ad_float64_vector_result(
+        np.mean(tangent_vector.reshape(source_shape), axis=axis)
+    )
+
+
+def _program_ad_reduction_mean_static_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    scale = float(
+        _program_ad_shape_static_size(source_shape) if axis is None else source_shape[axis]
+    )
+    return (
+        _program_ad_reduction_sum_static_vjp(
+            values, cotangent, source_shape=source_shape, axis=axis
+        )
+        / scale
+    )
+
+
+def _program_ad_reduction_prod_static_value(
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_source_vector(
+        "prod", "values", values, source_shape=source_shape
+    )
+    return _program_ad_float64_vector_result(np.prod(vector.reshape(source_shape), axis=axis))
+
+
+def _program_ad_reduction_prod_static_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        "prod", "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    tangent_array = _program_ad_reduction_source_vector(
+        "prod", "tangent", tangent, source_shape=source_shape
+    ).reshape(source_shape)
+    derivative = np.zeros_like(value_array, dtype=np.float64)
+    for flat_index in range(value_array.size):
+        multi_index = np.unravel_index(flat_index, source_shape)
+        basis = np.zeros_like(value_array, dtype=np.float64)
+        basis[multi_index] = tangent_array[multi_index]
+        derivative[multi_index] = np.sum(
+            np.prod(np.where(basis != 0.0, basis, value_array), axis=axis)
+        )
+    if axis is None:
+        total = 0.0
+        flat_values = value_array.reshape(-1)
+        flat_tangent = tangent_array.reshape(-1)
+        for tangent_index in range(flat_values.size):
+            product = 1.0
+            for factor_index in range(flat_values.size):
+                product *= (
+                    flat_tangent[factor_index]
+                    if factor_index == tangent_index
+                    else flat_values[factor_index]
+                )
+            total += product
+        return np.array([float(total)], dtype=np.float64)
+    output = np.zeros(_program_ad_reduction_output_shape(source_shape, axis), dtype=np.float64)
+    for flat_index in range(value_array.size):
+        multi_index = np.unravel_index(flat_index, source_shape)
+        output_index = multi_index[:axis] + multi_index[axis + 1 :]
+        product = 1.0
+        for factor_index in range(source_shape[axis]):
+            candidate_index = multi_index[:axis] + (factor_index,) + multi_index[axis + 1 :]
+            product *= (
+                tangent_array[candidate_index]
+                if factor_index == multi_index[axis]
+                else value_array[candidate_index]
+            )
+        output[output_index] += product
+    return _program_ad_float64_vector_result(output)
+
+
+def _program_ad_reduction_prod_static_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        "prod", "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    output_shape = _program_ad_reduction_output_shape(source_shape, axis)
+    cotangent_array = _program_ad_reduction_cotangent_array(
+        "prod", cotangent, output_shape=output_shape
+    )
+    result = np.zeros_like(value_array, dtype=np.float64)
+    if axis is None:
+        scalar_cotangent = float(cotangent_array)
+        flat_values = value_array.reshape(-1)
+        flat_result = result.reshape(-1)
+        for tangent_index in range(flat_values.size):
+            product = 1.0
+            for factor_index in range(flat_values.size):
+                if factor_index != tangent_index:
+                    product *= flat_values[factor_index]
+            flat_result[tangent_index] = scalar_cotangent * product
+        return flat_result
+    for flat_index in range(value_array.size):
+        multi_index = np.unravel_index(flat_index, source_shape)
+        output_index = multi_index[:axis] + multi_index[axis + 1 :]
+        product = 1.0
+        for factor_index in range(source_shape[axis]):
+            candidate_index = multi_index[:axis] + (factor_index,) + multi_index[axis + 1 :]
+            if factor_index != multi_index[axis]:
+                product *= value_array[candidate_index]
+        result[multi_index] = cotangent_array[output_index] * product
+    return _program_ad_float64_vector_result(result)
+
+
+def _program_ad_reduction_static_rule(
+    name: str,
+    source_shape: Sequence[int],
+    axis: int | None,
+) -> CustomDerivativeRule:
+    source = _program_ad_reduction_normalise_static_shape(name, source_shape)
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        if name == "sum":
+            return _program_ad_reduction_sum_static_value(
+                values, source_shape=source, axis=normalised_axis
+            )
+        if name == "mean":
+            return _program_ad_reduction_mean_static_value(
+                values, source_shape=source, axis=normalised_axis
+            )
+        if name == "prod":
+            return _program_ad_reduction_prod_static_value(
+                values, source_shape=source, axis=normalised_axis
+            )
+        raise ValueError(f"unsupported program AD reduction primitive {name}")
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        if name == "sum":
+            return _program_ad_reduction_sum_static_jvp(
+                values, tangent, source_shape=source, axis=normalised_axis
+            )
+        if name == "mean":
+            return _program_ad_reduction_mean_static_jvp(
+                values, tangent, source_shape=source, axis=normalised_axis
+            )
+        if name == "prod":
+            return _program_ad_reduction_prod_static_jvp(
+                values, tangent, source_shape=source, axis=normalised_axis
+            )
+        raise ValueError(f"unsupported program AD reduction primitive {name}")
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        if name == "sum":
+            return _program_ad_reduction_sum_static_vjp(
+                values, cotangent, source_shape=source, axis=normalised_axis
+            )
+        if name == "mean":
+            return _program_ad_reduction_mean_static_vjp(
+                values, cotangent, source_shape=source, axis=normalised_axis
+            )
+        if name == "prod":
+            return _program_ad_reduction_prod_static_vjp(
+                values, cotangent, source_shape=source, axis=normalised_axis
+            )
+        raise ValueError(f"unsupported program AD reduction primitive {name}")
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_reduction_{name}_{_program_ad_shape_signature(source)}_axis_"
+            f"{_program_ad_reduction_axis_signature(normalised_axis)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_reduction_sum_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed sum reduction signature."""
+
+    return _program_ad_reduction_static_rule("sum", source_shape, axis)
+
+
+def program_ad_reduction_mean_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed mean reduction signature."""
+
+    return _program_ad_reduction_static_rule("mean", source_shape, axis)
+
+
+def program_ad_reduction_prod_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed product reduction signature."""
+
+    return _program_ad_reduction_static_rule("prod", source_shape, axis)
+
+
 def _program_ad_elementwise_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
     raise ValueError(
         "program AD elementwise primitive contracts are executable only through "
@@ -12700,6 +13046,9 @@ __all__ = [
     "program_ad_array_take_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
+    "program_ad_reduction_mean_derivative_rule",
+    "program_ad_reduction_prod_derivative_rule",
+    "program_ad_reduction_sum_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",

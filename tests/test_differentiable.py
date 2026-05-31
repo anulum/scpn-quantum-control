@@ -146,6 +146,9 @@ from scpn_quantum_control.differentiable import (
     program_ad_array_take_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
+    program_ad_reduction_mean_derivative_rule,
+    program_ad_reduction_prod_derivative_rule,
+    program_ad_reduction_sum_derivative_rule,
     program_ad_shape_ravel_derivative_rule,
     program_ad_shape_reshape_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
@@ -4407,6 +4410,73 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
         "prod": {"shape", "dtype", "static"},
         "mean": {"shape", "dtype", "static"},
     }
+
+
+def test_program_ad_reduction_static_derivative_factories_are_direct_kernels() -> None:
+    """Static reduction factories should expose exact axis-aware JVP and VJP rules."""
+
+    matrix = np.array([[1.0, 2.0, 3.0], [4.0, 0.0, -2.0]], dtype=np.float64)
+    values = matrix.reshape(-1)
+    tangent = np.array([0.5, -1.0, 0.25, 2.0, -0.75, 1.25], dtype=np.float64)
+    row_cotangent = np.array([1.5, -2.0], dtype=np.float64)
+
+    sum_rule = program_ad_reduction_sum_derivative_rule((2, 3), axis=1)
+    assert sum_rule.name == "program_ad_reduction_sum_2x3_axis_1_direct_rule"
+    assert sum_rule.jvp_rule is not None
+    assert sum_rule.vjp_rule is not None
+    np.testing.assert_allclose(sum_rule.value_fn(values), np.sum(matrix, axis=1))
+    np.testing.assert_allclose(
+        sum_rule.jvp_rule(values, tangent),
+        np.sum(tangent.reshape(2, 3), axis=1),
+    )
+    np.testing.assert_allclose(
+        sum_rule.vjp_rule(values, row_cotangent),
+        np.array([1.5, 1.5, 1.5, -2.0, -2.0, -2.0], dtype=np.float64),
+    )
+
+    mean_rule = program_ad_reduction_mean_derivative_rule((2, 3), axis=1)
+    assert mean_rule.name == "program_ad_reduction_mean_2x3_axis_1_direct_rule"
+    assert mean_rule.jvp_rule is not None
+    assert mean_rule.vjp_rule is not None
+    np.testing.assert_allclose(mean_rule.value_fn(values), np.mean(matrix, axis=1))
+    np.testing.assert_allclose(
+        mean_rule.jvp_rule(values, tangent),
+        np.mean(tangent.reshape(2, 3), axis=1),
+    )
+    np.testing.assert_allclose(
+        mean_rule.vjp_rule(values, row_cotangent),
+        np.array([0.5, 0.5, 0.5, -2.0 / 3.0, -2.0 / 3.0, -2.0 / 3.0]),
+    )
+
+    prod_rule = program_ad_reduction_prod_derivative_rule((2, 3), axis=1)
+    assert prod_rule.name == "program_ad_reduction_prod_2x3_axis_1_direct_rule"
+    assert prod_rule.jvp_rule is not None
+    assert prod_rule.vjp_rule is not None
+    np.testing.assert_allclose(prod_rule.value_fn(values), np.prod(matrix, axis=1))
+    np.testing.assert_allclose(
+        prod_rule.jvp_rule(values, tangent),
+        np.array(
+            [
+                tangent[0] * 2.0 * 3.0 + 1.0 * tangent[1] * 3.0 + 1.0 * 2.0 * tangent[2],
+                tangent[3] * 0.0 * -2.0 + 4.0 * tangent[4] * -2.0 + 4.0 * 0.0 * tangent[5],
+            ],
+            dtype=np.float64,
+        ),
+    )
+    np.testing.assert_allclose(
+        prod_rule.vjp_rule(values, row_cotangent),
+        np.array([9.0, 4.5, 3.0, 0.0, 16.0, 0.0], dtype=np.float64),
+    )
+
+    flat_rule = program_ad_reduction_sum_derivative_rule((2, 3), axis=None)
+    assert flat_rule.name == "program_ad_reduction_sum_2x3_axis_flat_direct_rule"
+    np.testing.assert_allclose(flat_rule.value_fn(values), [np.sum(matrix)])
+    np.testing.assert_allclose(flat_rule.vjp_rule(values, np.array([2.0])), np.full(6, 2.0))
+
+    with pytest.raises(ValueError, match="out of bounds"):
+        program_ad_reduction_sum_derivative_rule((2, 3), axis=2)
+    with pytest.raises(ValueError, match="at least one value"):
+        program_ad_reduction_mean_derivative_rule((0, 3), axis=None)
 
 
 def test_program_ad_reduction_primitives_expose_direct_value_jvp_kernels() -> None:
