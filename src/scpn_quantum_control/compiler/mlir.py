@@ -323,6 +323,12 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "primitives": len(plan.statuses),
             "jvp_rules": sum(status.has_jvp for status in plan.statuses),
             "vjp_rules": sum(status.has_vjp for status in plan.statuses),
+            "static_derivative_factories": sum(
+                status.static_derivative_factory != "not_declared" for status in plan.statuses
+            ),
+            "static_derivative_signatures": sum(
+                status.static_signature != "none" for status in plan.statuses
+            ),
             "executable_backends": 0,
         },
         metadata=metadata,

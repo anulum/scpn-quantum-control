@@ -258,6 +258,8 @@ def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None
     } == expected_signatures
     assert module.metadata["static_derivative_factories"] == expected_factories
     assert module.metadata["static_derivative_signatures"] == expected_signatures
+    assert module.resource_counts["static_derivative_factories"] == len(expected_factories)
+    assert module.resource_counts["static_derivative_signatures"] == len(expected_signatures)
     assert 'static_derivative_factory = "program_ad_array_getitem_derivative_rule"' in module.text
     assert 'static_signature = "source_shape:ranked_tensor_shape;index:basic_index"' in module.text
     assert 'static_derivative_factory = "program_ad_linalg_solve_derivative_rule"' in module.text
