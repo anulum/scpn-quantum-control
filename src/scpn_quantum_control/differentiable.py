@@ -8269,6 +8269,110 @@ def _program_ad_linalg_solve_vjp(
     )
 
 
+def _program_ad_linalg_normalise_solve_shapes(
+    matrix_shape: Sequence[int],
+    rhs_shape: Sequence[int],
+) -> tuple[tuple[int, int], tuple[int, ...]]:
+    matrix = tuple(int(dimension) for dimension in matrix_shape)
+    rhs = tuple(int(dimension) for dimension in rhs_shape)
+    if len(matrix) != 2 or matrix[0] != matrix[1]:
+        raise ValueError("program AD linalg solve direct rule requires a square matrix")
+    if any(dimension < 0 for dimension in (*matrix, *rhs)):
+        raise ValueError("program AD linalg solve direct rule requires non-negative dimensions")
+    if len(rhs) not in {1, 2}:
+        raise ValueError("program AD linalg solve direct rule requires rank-1 or rank-2 rhs")
+    if rhs[0] != matrix[0]:
+        raise ValueError(
+            "program AD linalg solve direct rule right-hand side rows must match matrix"
+        )
+    return cast(tuple[int, int], matrix), rhs
+
+
+def _program_ad_linalg_solve_static_split(
+    name: str,
+    values: NDArray[np.float64],
+    *,
+    matrix_shape: tuple[int, int],
+    rhs_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD linalg solve {name}", values).reshape(-1)
+    matrix_size = _program_ad_shape_static_size(matrix_shape)
+    rhs_size = _program_ad_shape_static_size(rhs_shape)
+    if vector.size != matrix_size + rhs_size:
+        raise ValueError(
+            "program AD linalg solve direct rule requires flattened matrix followed by rhs"
+        )
+    return (
+        vector[:matrix_size].reshape(matrix_shape),
+        vector[matrix_size:].reshape(rhs_shape),
+    )
+
+
+def program_ad_linalg_solve_derivative_rule(
+    matrix_shape: Sequence[int],
+    rhs_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed solve primitive signature."""
+
+    matrix_static_shape, rhs_static_shape = _program_ad_linalg_normalise_solve_shapes(
+        matrix_shape, rhs_shape
+    )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix, rhs = _program_ad_linalg_solve_static_split(
+            "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
+        )
+        return _program_ad_float64_vector_result(np.linalg.solve(matrix, rhs))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix, rhs = _program_ad_linalg_solve_static_split(
+            "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
+        )
+        tangent_matrix, tangent_rhs = _program_ad_linalg_solve_static_split(
+            "tangent", tangent, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
+        )
+        solution = np.linalg.solve(matrix, rhs)
+        return _program_ad_float64_vector_result(
+            np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        matrix, rhs = _program_ad_linalg_solve_static_split(
+            "values", values, matrix_shape=matrix_static_shape, rhs_shape=rhs_static_shape
+        )
+        cotangent_vector = _as_real_numeric_array(
+            "program AD linalg solve cotangent", cotangent
+        ).reshape(-1)
+        rhs_size = _program_ad_shape_static_size(rhs_static_shape)
+        if cotangent_vector.size != rhs_size:
+            raise ValueError(
+                "program AD linalg solve VJP cotangent shape must match solution shape"
+            )
+        cotangent_rhs = cotangent_vector.reshape(rhs_static_shape)
+        solution = np.linalg.solve(matrix, rhs)
+        rhs_adjoint = np.linalg.solve(matrix.T, cotangent_rhs)
+        if rhs_adjoint.ndim == 1:
+            matrix_adjoint = -np.outer(rhs_adjoint, solution)
+        else:
+            matrix_adjoint = -(rhs_adjoint @ solution.T)
+        return _program_ad_float64_vector_result(
+            np.concatenate((matrix_adjoint.reshape(-1), rhs_adjoint.reshape(-1)))
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_linalg_solve_"
+            f"{_program_ad_shape_signature(matrix_static_shape)}_rhs_"
+            f"{_program_ad_shape_signature(rhs_static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def program_ad_linalg_matrix_power_derivative_rule(
     power: int | np.integer,
 ) -> CustomDerivativeRule:
@@ -8702,7 +8806,14 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_derivative_factory": "not_required",
         "static_signature": "none",
     }
-    if name == "matrix_power":
+    if name == "solve":
+        metadata.update(
+            {
+                "static_derivative_factory": "program_ad_linalg_solve_derivative_rule",
+                "static_signature": "matrix_shape:rank2_square;rhs_shape:rank1_or_rank2",
+            }
+        )
+    elif name == "matrix_power":
         metadata.update(
             {
                 "static_argument_rule": "required",
@@ -13046,6 +13157,7 @@ __all__ = [
     "program_ad_array_take_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
+    "program_ad_linalg_solve_derivative_rule",
     "program_ad_reduction_mean_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",

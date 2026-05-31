@@ -146,6 +146,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_array_take_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
+    program_ad_linalg_solve_derivative_rule,
     program_ad_reduction_mean_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
     program_ad_reduction_sum_derivative_rule,
@@ -6032,6 +6033,57 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
         program_ad_linalg_matrix_power_derivative_rule(1.5)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="at least two shapes"):
         program_ad_linalg_multi_dot_derivative_rule(((2,),))
+
+
+def test_program_ad_linalg_solve_static_derivative_factory_supports_matrix_rhs() -> None:
+    """Static solve factories should expose exact matrix-RHS JVP and VJP rules."""
+
+    matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
+    rhs = np.array([[0.25, -1.0, 0.5], [1.25, 0.75, -0.25]], dtype=np.float64)
+    tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
+    tangent_rhs = np.array([[0.5, -0.25, 0.75], [1.0, -0.5, 0.25]], dtype=np.float64)
+    cotangent = np.array([[1.25, -0.5, 0.75], [-1.0, 0.25, 1.5]], dtype=np.float64)
+
+    solve_rule = program_ad_linalg_solve_derivative_rule((2, 2), (2, 3))
+    assert solve_rule.name == "program_ad_linalg_solve_2x2_rhs_2x3_direct_rule"
+    assert solve_rule.jvp_rule is not None
+    assert solve_rule.vjp_rule is not None
+
+    values = np.concatenate((matrix.reshape(-1), rhs.reshape(-1)))
+    tangent = np.concatenate((tangent_matrix.reshape(-1), tangent_rhs.reshape(-1)))
+    solution = np.linalg.solve(matrix, rhs)
+    rhs_adjoint = np.linalg.solve(matrix.T, cotangent)
+
+    np.testing.assert_allclose(
+        solve_rule.value_fn(values),
+        solution.reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        solve_rule.jvp_rule(values, tangent),
+        np.linalg.solve(matrix, tangent_rhs - tangent_matrix @ solution).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        solve_rule.vjp_rule(values, cotangent.reshape(-1)),
+        np.concatenate(((-(rhs_adjoint @ solution.T)).reshape(-1), rhs_adjoint.reshape(-1))),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    vector_rule = program_ad_linalg_solve_derivative_rule((2, 2), (2,))
+    assert vector_rule.name == "program_ad_linalg_solve_2x2_rhs_2_direct_rule"
+    vector_values = np.concatenate((matrix.reshape(-1), rhs[:, 0]))
+    np.testing.assert_allclose(
+        vector_rule.value_fn(vector_values), np.linalg.solve(matrix, rhs[:, 0])
+    )
+
+    with pytest.raises(ValueError, match="square matrix"):
+        program_ad_linalg_solve_derivative_rule((2, 3), (2,))
+    with pytest.raises(ValueError, match="right-hand side rows"):
+        program_ad_linalg_solve_derivative_rule((2, 2), (3,))
 
 
 def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
