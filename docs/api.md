@@ -127,6 +127,7 @@ coverage, batching-rule coverage, boundary-contracted policy/effect coverage,
 aggregate boundary-contract primitive coverage, complete registry-contract primitive coverage,
 reverse-contract primitive coverage, reverse-incomplete primitive identities,
 adjoint-contract primitive coverage, adjoint-incomplete primitive identities,
+transform-contract primitive coverage, transform-incomplete primitive identities,
 boundary-policy coverage, MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
 cannot be mistaken for complete compiler contracts. Static program-AD array,
