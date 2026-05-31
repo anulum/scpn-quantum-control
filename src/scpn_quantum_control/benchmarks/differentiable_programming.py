@@ -474,6 +474,8 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     axis_sort_weights = np.array([[0.3, -0.6, 0.9], [-1.1, 1.4, -1.7]], dtype=np.float64)
     trapz_x = np.array([0.0, 0.25, 1.0], dtype=np.float64)
     trapz_row_weights = np.array([0.35, -0.45], dtype=np.float64)
+    gradient_flat_weights = np.array([0.25, -0.5, 1.0, -1.5, 0.75, -0.25], dtype=np.float64)
+    gradient_axis_weights = np.array([[0.4, -0.6, 0.8], [-1.0, 1.2, -1.4]], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
         matrix = np.reshape(trace_values, (2, 3))
@@ -519,6 +521,13 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         axis_sorted = np.sort(matrix, axis=1)
         row_integrals = np.trapezoid(matrix, x=trapz_x, axis=1)
         flat_integral = np.trapezoid(trace_values, dx=0.2)
+        flat_gradient = np.gradient(trace_values, 0.5, edge_order=1)
+        axis_gradient = np.gradient(
+            matrix,
+            np.array([0.0, 0.5, 1.5], dtype=np.float64),
+            axis=1,
+            edge_order=2,
+        )
         return (
             np.sum(block * block_weights)
             + np.sum(gathered)
@@ -661,10 +670,12 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             + 0.055 * np.sum(axis_sorted * axis_sort_weights)
             + 0.09 * np.sum(row_integrals * trapz_row_weights)
             - 0.04 * flat_integral
+            + 0.031 * np.sum(flat_gradient * gradient_flat_weights)
+            + 0.027 * np.sum(axis_gradient * gradient_axis_weights)
         )
 
     analytic = np.array(
-        [6.1449875, 4.4235, 4.8416125, 5.4178875, 8.31815, 12.0710625],
+        [6.1665875, 4.3594, 4.8996125, 5.4040375, 8.35195, 12.0356125],
         dtype=np.float64,
     )
     return _program_ad_case(

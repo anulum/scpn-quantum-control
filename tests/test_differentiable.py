@@ -8688,6 +8688,105 @@ def test_program_ad_finite_differences_reject_boundary_extensions() -> None:
         )
 
 
+def test_program_ad_gradient_matches_static_spacing_adjoint() -> None:
+    """Program AD np.gradient should replay exact static finite-difference adjoints."""
+
+    row_grid = np.array([0.0, 0.5, 1.5], dtype=np.float64)
+    column_grid = np.array([-0.25, 0.0, 0.75, 1.25], dtype=np.float64)
+    row_weights = np.linspace(-1.5, 2.0, 12, dtype=np.float64).reshape(3, 4)
+    column_weights = np.linspace(0.5, -2.5, 12, dtype=np.float64).reshape(3, 4)
+    flat_weights = np.array([0.25, -0.5, 1.0, -1.5], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:12], (3, 4))
+        row_gradient, column_gradient = np.gradient(
+            matrix,
+            row_grid,
+            column_grid,
+            axis=(0, 1),
+            edge_order=2,
+        )
+        flat_gradient = np.gradient(values[12:], 0.5, edge_order=1)
+        return (
+            np.sum(row_gradient * row_weights)
+            + np.sum(column_gradient * column_weights)
+            + np.sum(flat_gradient * flat_weights)
+        )
+
+    values = np.array(
+        [1.0, -2.0, 0.5, 3.0, -1.5, 2.0, 4.0, -0.25, 0.75, -3.0, 1.5, 2.5, 0.5, -1.0, 2.0, 4.0],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros_like(values)
+    for source_index in range(12):
+        basis = np.zeros((3, 4), dtype=np.float64)
+        basis.reshape(-1)[source_index] = 1.0
+        basis_row_gradient, basis_column_gradient = np.gradient(
+            basis,
+            row_grid,
+            column_grid,
+            axis=(0, 1),
+            edge_order=2,
+        )
+        expected[source_index] = np.sum(basis_row_gradient * row_weights) + np.sum(
+            basis_column_gradient * column_weights
+        )
+    for source_index in range(4):
+        basis = np.zeros(4, dtype=np.float64)
+        basis[source_index] = 1.0
+        expected[12 + source_index] = np.sum(np.gradient(basis, 0.5, edge_order=1) * flat_weights)
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), expected, atol=1.0e-12)
+
+
+def test_program_ad_gradient_fails_closed_invalid_static_contracts() -> None:
+    """Program AD np.gradient should reject unsupported dynamic or singular grids."""
+
+    with pytest.raises(ValueError, match="spacing must be static"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.gradient(values, values)),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="edge_order must be 1 or 2"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.gradient(values, edge_order=3)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="axis must be a static integer"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.gradient(np.reshape(values, (2, 2)), axis=True)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="axes must be unique"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.gradient(np.reshape(values, (2, 2)), axis=(0, 0))[0]),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="strictly monotonic"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.gradient(values, np.array([0.0, 1.0, 1.0]))),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="at least 3 samples"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.gradient(values, edge_order=2)),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_trapezoid_matches_static_grid_adjoint() -> None:
     """Program AD trapezoidal integration should apply exact static-grid adjoints."""
 
