@@ -5707,29 +5707,93 @@ def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
     )
 
 
-def _program_ad_cumulative_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
-    raise ValueError(
-        "program AD cumulative primitive contracts are executable only through "
-        "operator-intercepted trace dispatch"
-    )
+def _program_ad_cumulative_cumsum_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
+    return np.cumsum(vector).astype(np.float64)
 
 
-def _program_ad_cumulative_direct_jvp(
-    _values: NDArray[np.float64],
-    _tangent: NDArray[np.float64],
+def _program_ad_cumulative_cumsum_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    raise ValueError(
-        "program AD cumulative primitive contracts are executable only through "
-        "operator-intercepted trace dispatch"
+    vector = _as_real_numeric_array("program AD cumulative cumsum values", values).reshape(-1)
+    tangent_vector = _as_real_numeric_array(
+        "program AD cumulative cumsum tangent", tangent
+    ).reshape(-1)
+    if tangent_vector.shape != vector.shape:
+        raise ValueError("program AD cumulative cumsum tangent shape must match values shape")
+    return np.cumsum(tangent_vector).astype(np.float64)
+
+
+def _program_ad_cumulative_cumprod_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
+    return np.cumprod(vector).astype(np.float64)
+
+
+def _program_ad_cumulative_cumprod_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative cumprod values", values).reshape(-1)
+    tangent_vector = _as_real_numeric_array(
+        "program AD cumulative cumprod tangent", tangent
+    ).reshape(-1)
+    if tangent_vector.shape != vector.shape:
+        raise ValueError("program AD cumulative cumprod tangent shape must match values shape")
+    result = np.zeros_like(vector, dtype=np.float64)
+    for output_index in range(vector.size):
+        total = 0.0
+        for tangent_index in range(output_index + 1):
+            product = 1.0
+            for factor_index in range(output_index + 1):
+                product *= (
+                    tangent_vector[factor_index]
+                    if factor_index == tangent_index
+                    else vector[factor_index]
+                )
+            total += product
+        result[output_index] = total
+    return result
+
+
+def _program_ad_cumulative_diff_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
+    return np.diff(vector).astype(np.float64)
+
+
+def _program_ad_cumulative_diff_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array("program AD cumulative diff values", values).reshape(-1)
+    tangent_vector = _as_real_numeric_array("program AD cumulative diff tangent", tangent).reshape(
+        -1
     )
+    if tangent_vector.shape != vector.shape:
+        raise ValueError("program AD cumulative diff tangent shape must match values shape")
+    return np.diff(tangent_vector).astype(np.float64)
 
 
 def _program_ad_cumulative_derivative_rule(name: str) -> CustomDerivativeRule:
-    return CustomDerivativeRule(
-        name=f"program_ad_cumulative_{name}_trace_contract",
-        value_fn=_program_ad_cumulative_direct_value,
-        jvp_rule=_program_ad_cumulative_direct_jvp,
-    )
+    if name == "cumsum":
+        return CustomDerivativeRule(
+            name="program_ad_cumulative_cumsum_direct_rule",
+            value_fn=_program_ad_cumulative_cumsum_value,
+            jvp_rule=_program_ad_cumulative_cumsum_jvp,
+        )
+    if name == "cumprod":
+        return CustomDerivativeRule(
+            name="program_ad_cumulative_cumprod_direct_rule",
+            value_fn=_program_ad_cumulative_cumprod_value,
+            jvp_rule=_program_ad_cumulative_cumprod_jvp,
+        )
+    if name == "diff":
+        return CustomDerivativeRule(
+            name="program_ad_cumulative_diff_direct_rule",
+            value_fn=_program_ad_cumulative_diff_value,
+            jvp_rule=_program_ad_cumulative_diff_jvp,
+        )
+    raise ValueError(f"unsupported program AD cumulative primitive {name}")
 
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:

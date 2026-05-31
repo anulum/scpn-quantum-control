@@ -4756,6 +4756,59 @@ def test_program_ad_cumulative_primitives_validate_registry_rules_at_dispatch() 
     }
 
 
+def test_program_ad_cumulative_primitives_expose_direct_value_jvp_kernels() -> None:
+    """Flat cumulative primitive contracts should expose exact direct value/JVP rules."""
+
+    values = np.array([2.0, 0.0, -3.0, 4.0], dtype=np.float64)
+    tangent = np.array([0.5, -1.0, 0.25, 2.0], dtype=np.float64)
+
+    cumsum_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "cumsum", "1")
+    )
+    cumprod_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "cumprod", "1")
+    )
+    diff_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "diff", "1")
+    )
+
+    assert cumsum_rule.name == "program_ad_cumulative_cumsum_direct_rule"
+    assert cumprod_rule.name == "program_ad_cumulative_cumprod_direct_rule"
+    assert diff_rule.name == "program_ad_cumulative_diff_direct_rule"
+    assert cumsum_rule.jvp_rule is not None
+    assert cumprod_rule.jvp_rule is not None
+    assert diff_rule.jvp_rule is not None
+
+    np.testing.assert_allclose(cumsum_rule.value_fn(values), np.cumsum(values))
+    np.testing.assert_allclose(cumsum_rule.jvp_rule(values, tangent), np.cumsum(tangent))
+
+    expected_cumprod = np.cumprod(values)
+    expected_cumprod_jvp = np.array(
+        [
+            tangent[0],
+            tangent[0] * values[1] + values[0] * tangent[1],
+            tangent[0] * values[1] * values[2]
+            + values[0] * tangent[1] * values[2]
+            + values[0] * values[1] * tangent[2],
+            tangent[0] * values[1] * values[2] * values[3]
+            + values[0] * tangent[1] * values[2] * values[3]
+            + values[0] * values[1] * tangent[2] * values[3]
+            + values[0] * values[1] * values[2] * tangent[3],
+        ],
+        dtype=np.float64,
+    )
+    np.testing.assert_allclose(cumprod_rule.value_fn(values), expected_cumprod)
+    np.testing.assert_allclose(
+        cumprod_rule.jvp_rule(values, tangent),
+        expected_cumprod_jvp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    np.testing.assert_allclose(diff_rule.value_fn(values), np.diff(values))
+    np.testing.assert_allclose(diff_rule.jvp_rule(values, tangent), np.diff(tangent))
+
+
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
     """Program AD vdot should apply exact flattened real inner-product semantics."""
 
