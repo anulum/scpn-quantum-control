@@ -484,6 +484,16 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "verdict": verdict,
         }
 
+    primitive_readiness_by_key = {
+        status.identity.key: primitive_readiness(status) for status in plan.statuses
+    }
+    primitive_readiness_verdict_counts: dict[str, int] = {}
+    for readiness in primitive_readiness_by_key.values():
+        verdict = str(readiness["verdict"])
+        primitive_readiness_verdict_counts[verdict] = (
+            primitive_readiness_verdict_counts.get(verdict, 0) + 1
+        )
+
     metadata = {
         "claim_boundary": plan.claim_boundary,
         "dialect": plan.dialect,
@@ -635,9 +645,8 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if status.mlir_runtime_verification.startswith("verified:")
         },
-        "primitive_readiness": {
-            status.identity.key: primitive_readiness(status) for status in plan.statuses
-        },
+        "primitive_readiness": primitive_readiness_by_key,
+        "primitive_readiness_verdict_counts": primitive_readiness_verdict_counts,
         "transform": plan.transform,
         "uncontracted_primitives": [
             status.identity.key
@@ -756,6 +765,21 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
                 for status in plan.statuses
             ),
             "primitive_readiness_verdicts": len(plan.statuses),
+            "primitive_readiness_registry_incomplete": primitive_readiness_verdict_counts.get(
+                "registry_incomplete", 0
+            ),
+            "primitive_readiness_forward_interchange_only": (
+                primitive_readiness_verdict_counts.get("forward_interchange_only", 0)
+            ),
+            "primitive_readiness_transform_interchange_only": (
+                primitive_readiness_verdict_counts.get("transform_interchange_only", 0)
+            ),
+            "primitive_readiness_mlir_runtime_verified": (
+                primitive_readiness_verdict_counts.get("mlir_runtime_verified", 0)
+            ),
+            "primitive_readiness_native_executable": primitive_readiness_verdict_counts.get(
+                "native_executable", 0
+            ),
             "uncontracted_primitives": sum(
                 status.nondifferentiable_policy == "not_declared"
                 or status.nondifferentiable_boundary == "not_declared"
