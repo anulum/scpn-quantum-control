@@ -144,6 +144,9 @@ from scpn_quantum_control.differentiable import (
     primitive_static_argument_rule_for,
     program_ad_array_getitem_derivative_rule,
     program_ad_array_take_derivative_rule,
+    program_ad_cumulative_cumprod_derivative_rule,
+    program_ad_cumulative_cumsum_derivative_rule,
+    program_ad_cumulative_diff_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
@@ -5365,6 +5368,79 @@ def test_program_ad_cumulative_primitives_expose_direct_value_jvp_kernels() -> N
             [-cotangent[0], cotangent[0] - cotangent[1], cotangent[1] - cotangent[2], cotangent[2]]
         ),
     )
+
+
+def test_program_ad_cumulative_static_derivative_factories_are_axis_aware() -> None:
+    """Static cumulative factories should expose exact axis-aware JVP and VJP rules."""
+
+    matrix = np.array([[1.0, 2.0, 0.5], [3.0, -1.0, 4.0]], dtype=np.float64)
+    tangent = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
+    values = matrix.reshape(-1)
+    tangent_values = tangent.reshape(-1)
+
+    cumsum_rule = program_ad_cumulative_cumsum_derivative_rule((2, 3), axis=1)
+    assert cumsum_rule.name == "program_ad_cumulative_cumsum_2x3_axis_1_direct_rule"
+    assert cumsum_rule.jvp_rule is not None
+    assert cumsum_rule.vjp_rule is not None
+    cumsum_cotangent = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.0]], dtype=np.float64)
+    np.testing.assert_allclose(cumsum_rule.value_fn(values), np.cumsum(matrix, axis=1).reshape(-1))
+    np.testing.assert_allclose(
+        cumsum_rule.jvp_rule(values, tangent_values),
+        np.cumsum(tangent, axis=1).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        cumsum_rule.vjp_rule(values, cumsum_cotangent.reshape(-1)),
+        np.flip(np.cumsum(np.flip(cumsum_cotangent, axis=1), axis=1), axis=1).reshape(-1),
+    )
+
+    cumprod_rule = program_ad_cumulative_cumprod_derivative_rule((2, 3), axis=1)
+    assert cumprod_rule.name == "program_ad_cumulative_cumprod_2x3_axis_1_direct_rule"
+    assert cumprod_rule.jvp_rule is not None
+    assert cumprod_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        cumprod_rule.value_fn(values), np.cumprod(matrix, axis=1).reshape(-1)
+    )
+    expected_cumprod_jvp = np.array(
+        [
+            [
+                0.25,
+                0.25 * 2.0 + 1.0 * -0.5,
+                0.25 * 2.0 * 0.5 + 1.0 * -0.5 * 0.5 + 1.0 * 2.0 * 1.0,
+            ],
+            [
+                1.5,
+                1.5 * -1.0 + 3.0 * -0.75,
+                1.5 * -1.0 * 4.0 + 3.0 * -0.75 * 4.0 + 3.0 * -1.0 * 0.5,
+            ],
+        ],
+        dtype=np.float64,
+    )
+    np.testing.assert_allclose(
+        cumprod_rule.jvp_rule(values, tangent_values),
+        expected_cumprod_jvp.reshape(-1),
+    )
+
+    diff_rule = program_ad_cumulative_diff_derivative_rule((2, 3), order=2, axis=1)
+    assert diff_rule.name == "program_ad_cumulative_diff_2x3_order_2_axis_1_direct_rule"
+    assert diff_rule.jvp_rule is not None
+    assert diff_rule.vjp_rule is not None
+    diff_cotangent = np.array([[1.5], [-2.0]], dtype=np.float64)
+    np.testing.assert_allclose(
+        diff_rule.value_fn(values), np.diff(matrix, n=2, axis=1).reshape(-1)
+    )
+    np.testing.assert_allclose(
+        diff_rule.jvp_rule(values, tangent_values),
+        np.diff(tangent, n=2, axis=1).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        diff_rule.vjp_rule(values, diff_cotangent.reshape(-1)),
+        np.array([[1.5, -3.0, 1.5], [-2.0, 4.0, -2.0]], dtype=np.float64).reshape(-1),
+    )
+
+    with pytest.raises(ValueError, match="out of bounds"):
+        program_ad_cumulative_cumsum_derivative_rule((2, 3), axis=2)
+    with pytest.raises(ValueError, match="non-negative integer"):
+        program_ad_cumulative_diff_derivative_rule((2, 3), order=-1, axis=1)
 
 
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:

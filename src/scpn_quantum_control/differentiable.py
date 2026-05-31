@@ -7319,6 +7319,317 @@ def _program_ad_cumulative_derivative_rule(name: str) -> CustomDerivativeRule:
     raise ValueError(f"unsupported program AD cumulative primitive {name}")
 
 
+def _program_ad_cumulative_normalise_static_shape(
+    name: str, source_shape: Sequence[int]
+) -> tuple[int, ...]:
+    shape = tuple(int(dimension) for dimension in source_shape)
+    if any(dimension < 0 for dimension in shape):
+        raise ValueError(
+            f"program AD cumulative {name} direct rule requires non-negative dimensions"
+        )
+    if _program_ad_shape_static_size(shape) == 0:
+        raise ValueError(f"program AD cumulative {name} direct rule requires at least one value")
+    return shape
+
+
+def _program_ad_cumulative_static_axis(
+    source_shape: tuple[int, ...], axis: int | None
+) -> int | None:
+    return None if axis is None else _normalise_axis("axis", axis, len(source_shape))
+
+
+def _program_ad_cumulative_axis_signature(axis: int | None) -> str:
+    return "flat" if axis is None else str(axis)
+
+
+def _program_ad_cumulative_source_array(
+    name: str,
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array(f"program AD cumulative {name} {role}", values).reshape(-1)
+    if vector.size != _program_ad_shape_static_size(source_shape):
+        raise ValueError(
+            f"program AD cumulative {name} direct rule requires {role} "
+            f"with {_program_ad_shape_static_size(source_shape)} values"
+        )
+    return vector.reshape(source_shape)
+
+
+def _program_ad_cumulative_cumsum_static_vjp(
+    cotangent_array: NDArray[np.float64],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    if axis is None:
+        vector = cotangent_array.reshape(-1)
+        return _program_ad_float64_vector_result(np.flip(np.cumsum(np.flip(vector))))
+    return _program_ad_float64_vector_result(
+        np.flip(np.cumsum(np.flip(cotangent_array, axis=axis), axis=axis), axis=axis)
+    )
+
+
+def _program_ad_cumulative_cumprod_static_jvp_array(
+    values_array: NDArray[np.float64],
+    tangent_array: NDArray[np.float64],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    if axis is None:
+        return _program_ad_cumulative_cumprod_jvp(
+            values_array.reshape(-1), tangent_array.reshape(-1)
+        ).reshape(values_array.shape)
+    result = np.zeros_like(values_array, dtype=np.float64)
+    axis_size = values_array.shape[axis]
+    output_shape = values_array.shape[:axis] + values_array.shape[axis + 1 :]
+    for output_index in np.ndindex(output_shape):
+        for end_index in range(axis_size):
+            total = 0.0
+            for tangent_index in range(end_index + 1):
+                product = 1.0
+                for factor_index in range(end_index + 1):
+                    full_index = output_index[:axis] + (factor_index,) + output_index[axis:]
+                    product *= (
+                        tangent_array[full_index]
+                        if factor_index == tangent_index
+                        else values_array[full_index]
+                    )
+                total += product
+            result[output_index[:axis] + (end_index,) + output_index[axis:]] = total
+    return result
+
+
+def _program_ad_cumulative_cumprod_static_vjp_array(
+    values_array: NDArray[np.float64],
+    cotangent_array: NDArray[np.float64],
+    axis: int | None,
+) -> NDArray[np.float64]:
+    if axis is None:
+        return _program_ad_cumulative_cumprod_vjp(
+            values_array.reshape(-1), cotangent_array.reshape(-1)
+        ).reshape(values_array.shape)
+    result = np.zeros_like(values_array, dtype=np.float64)
+    axis_size = values_array.shape[axis]
+    output_shape = values_array.shape[:axis] + values_array.shape[axis + 1 :]
+    for output_index in np.ndindex(output_shape):
+        for input_index in range(axis_size):
+            total = 0.0
+            for end_index in range(input_index, axis_size):
+                product = 1.0
+                for factor_index in range(end_index + 1):
+                    if factor_index != input_index:
+                        full_index = output_index[:axis] + (factor_index,) + output_index[axis:]
+                        product *= values_array[full_index]
+                full_output_index = output_index[:axis] + (end_index,) + output_index[axis:]
+                total += cotangent_array[full_output_index] * product
+            result[output_index[:axis] + (input_index,) + output_index[axis:]] = total
+    return result
+
+
+def _program_ad_cumulative_diff_once_vjp_axis(
+    cotangent_array: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int,
+) -> NDArray[np.float64]:
+    result = np.zeros(source_shape, dtype=np.float64)
+    source_axis_size = source_shape[axis]
+    output_shape = source_shape[:axis] + (source_axis_size - 1,) + source_shape[axis + 1 :]
+    for output_index in np.ndindex(output_shape):
+        lower_index = output_index
+        upper_index = output_index[:axis] + (output_index[axis] + 1,) + output_index[axis + 1 :]
+        result[lower_index] -= cotangent_array[output_index]
+        result[upper_index] += cotangent_array[output_index]
+    return result
+
+
+def _program_ad_cumulative_diff_static_vjp_array(
+    cotangent_array: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    order: int,
+    axis: int,
+) -> NDArray[np.float64]:
+    current = cotangent_array
+    current_source_shape = (
+        source_shape[:axis] + (source_shape[axis] - order,) + source_shape[axis + 1 :]
+    )
+    for step in range(order, 0, -1):
+        next_source_shape = (
+            source_shape[:axis] + (source_shape[axis] - step + 1,) + source_shape[axis + 1 :]
+        )
+        current = _program_ad_cumulative_diff_once_vjp_axis(
+            current, source_shape=next_source_shape, axis=axis
+        )
+        current_source_shape = next_source_shape
+    if current_source_shape != source_shape:
+        raise ValueError("program AD cumulative diff VJP internal shape mismatch")
+    return current
+
+
+def program_ad_cumulative_cumsum_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed cumsum signature."""
+
+    source = _program_ad_cumulative_normalise_static_shape("cumsum", source_shape)
+    normalised_axis = _program_ad_cumulative_static_axis(source, axis)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        values_array = _program_ad_cumulative_source_array(
+            "cumsum", "values", values, source_shape=source
+        )
+        return _program_ad_float64_vector_result(np.cumsum(values_array, axis=normalised_axis))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_cumulative_source_array("cumsum", "values", values, source_shape=source)
+        tangent_array = _program_ad_cumulative_source_array(
+            "cumsum", "tangent", tangent, source_shape=source
+        )
+        return _program_ad_float64_vector_result(np.cumsum(tangent_array, axis=normalised_axis))
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_cumulative_source_array("cumsum", "values", values, source_shape=source)
+        cotangent_array = _program_ad_cumulative_source_array(
+            "cumsum", "cotangent", cotangent, source_shape=source
+        )
+        return _program_ad_cumulative_cumsum_static_vjp(cotangent_array, normalised_axis)
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_cumulative_cumsum_{_program_ad_shape_signature(source)}_axis_"
+            f"{_program_ad_cumulative_axis_signature(normalised_axis)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_cumulative_cumprod_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed cumprod signature."""
+
+    source = _program_ad_cumulative_normalise_static_shape("cumprod", source_shape)
+    normalised_axis = _program_ad_cumulative_static_axis(source, axis)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        values_array = _program_ad_cumulative_source_array(
+            "cumprod", "values", values, source_shape=source
+        )
+        return _program_ad_float64_vector_result(np.cumprod(values_array, axis=normalised_axis))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        values_array = _program_ad_cumulative_source_array(
+            "cumprod", "values", values, source_shape=source
+        )
+        tangent_array = _program_ad_cumulative_source_array(
+            "cumprod", "tangent", tangent, source_shape=source
+        )
+        return _program_ad_float64_vector_result(
+            _program_ad_cumulative_cumprod_static_jvp_array(
+                values_array, tangent_array, normalised_axis
+            )
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        values_array = _program_ad_cumulative_source_array(
+            "cumprod", "values", values, source_shape=source
+        )
+        cotangent_array = _program_ad_cumulative_source_array(
+            "cumprod", "cotangent", cotangent, source_shape=source
+        )
+        return _program_ad_float64_vector_result(
+            _program_ad_cumulative_cumprod_static_vjp_array(
+                values_array, cotangent_array, normalised_axis
+            )
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_cumulative_cumprod_{_program_ad_shape_signature(source)}_axis_"
+            f"{_program_ad_cumulative_axis_signature(normalised_axis)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_cumulative_diff_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    order: int = 1,
+    axis: int = -1,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed diff signature."""
+
+    if isinstance(order, bool) or not isinstance(order, (int, np.integer)) or int(order) < 0:
+        raise ValueError(
+            "program AD cumulative diff direct rule requires non-negative integer order"
+        )
+    source = _program_ad_cumulative_normalise_static_shape("diff", source_shape)
+    normalised_order = int(order)
+    normalised_axis = _normalise_axis("axis", int(axis), len(source))
+    if normalised_order > source[normalised_axis]:
+        raise ValueError("program AD cumulative diff direct rule order exceeds axis length")
+    output_shape = (
+        source[:normalised_axis]
+        + (source[normalised_axis] - normalised_order,)
+        + source[normalised_axis + 1 :]
+    )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        values_array = _program_ad_cumulative_source_array(
+            "diff", "values", values, source_shape=source
+        )
+        return _program_ad_float64_vector_result(
+            np.diff(values_array, n=normalised_order, axis=normalised_axis)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_cumulative_source_array("diff", "values", values, source_shape=source)
+        tangent_array = _program_ad_cumulative_source_array(
+            "diff", "tangent", tangent, source_shape=source
+        )
+        return _program_ad_float64_vector_result(
+            np.diff(tangent_array, n=normalised_order, axis=normalised_axis)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_cumulative_source_array("diff", "values", values, source_shape=source)
+        cotangent_array = _program_ad_cumulative_source_array(
+            "diff", "cotangent", cotangent, source_shape=output_shape
+        )
+        return _program_ad_float64_vector_result(
+            _program_ad_cumulative_diff_static_vjp_array(
+                cotangent_array,
+                source_shape=source,
+                order=normalised_order,
+                axis=normalised_axis,
+            )
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_cumulative_diff_{_program_ad_shape_signature(source)}_order_"
+            f"{normalised_order}_axis_{normalised_axis}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     if isinstance(value, TraceADArray):
         return value.shape
@@ -13289,10 +13600,13 @@ __all__ = [
     "primitive_static_argument_rule_for",
     "program_ad_array_getitem_derivative_rule",
     "program_ad_array_take_derivative_rule",
-    "program_ad_product_matmul_derivative_rule",
+    "program_ad_cumulative_cumprod_derivative_rule",
+    "program_ad_cumulative_cumsum_derivative_rule",
+    "program_ad_cumulative_diff_derivative_rule",
     "program_ad_linalg_matrix_power_derivative_rule",
     "program_ad_linalg_multi_dot_derivative_rule",
     "program_ad_linalg_solve_derivative_rule",
+    "program_ad_product_matmul_derivative_rule",
     "program_ad_reduction_mean_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",
