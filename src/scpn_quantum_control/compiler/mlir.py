@@ -2870,6 +2870,124 @@ def _compile_matrix_frobenius_norm_squared_native_llvm_ir(
     return "\n".join(lines)
 
 
+def _compile_matrix_2x2_determinant_native_llvm_ir(rule_name: str) -> str:
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    return "\n".join(
+        [
+            f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+            '; primitive = "matrix_2x2_determinant"',
+            '; source = "native_matrix_2x2_determinant_ad_codegen"',
+            '; execution = "native_llvm_mcjit"',
+            "; dimension = 2",
+            "; value_count = 4",
+            f'target triple = "{_escape_mlir_string(triple)}"',
+            "",
+            f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+            "entry:",
+            "  %a00ptr = getelementptr double, double* %values, i64 0",
+            "  %a01ptr = getelementptr double, double* %values, i64 1",
+            "  %a10ptr = getelementptr double, double* %values, i64 2",
+            "  %a11ptr = getelementptr double, double* %values, i64 3",
+            "  %a00 = load double, double* %a00ptr",
+            "  %a01 = load double, double* %a01ptr",
+            "  %a10 = load double, double* %a10ptr",
+            "  %a11 = load double, double* %a11ptr",
+            "  %main_diag = fmul double %a00, %a11",
+            "  %off_diag = fmul double %a01, %a10",
+            "  %det = fsub double %main_diag, %off_diag",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  store double %det, double* %out0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+            "  %a00ptr_gradient = getelementptr double, double* %values, i64 0",
+            "  %a01ptr_gradient = getelementptr double, double* %values, i64 1",
+            "  %a10ptr_gradient = getelementptr double, double* %values, i64 2",
+            "  %a11ptr_gradient = getelementptr double, double* %values, i64 3",
+            "  %a00_gradient = load double, double* %a00ptr_gradient",
+            "  %a01_gradient = load double, double* %a01ptr_gradient",
+            "  %a10_gradient = load double, double* %a10ptr_gradient",
+            "  %a11_gradient = load double, double* %a11ptr_gradient",
+            "  %neg_a10_gradient = fsub double 0.0, %a10_gradient",
+            "  %neg_a01_gradient = fsub double 0.0, %a01_gradient",
+            "  %out_gradient0 = getelementptr double, double* %out, i64 0",
+            "  %out_gradient1 = getelementptr double, double* %out, i64 1",
+            "  %out_gradient2 = getelementptr double, double* %out, i64 2",
+            "  %out_gradient3 = getelementptr double, double* %out, i64 3",
+            "  store double %a11_gradient, double* %out_gradient0",
+            "  store double %neg_a10_gradient, double* %out_gradient1",
+            "  store double %neg_a01_gradient, double* %out_gradient2",
+            "  store double %a00_gradient, double* %out_gradient3",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_jvp(double* %values, double* %tangent, double* %out) {{",
+            "entry:",
+            "  %a00ptr_jvp = getelementptr double, double* %values, i64 0",
+            "  %a01ptr_jvp = getelementptr double, double* %values, i64 1",
+            "  %a10ptr_jvp = getelementptr double, double* %values, i64 2",
+            "  %a11ptr_jvp = getelementptr double, double* %values, i64 3",
+            "  %t00ptr_jvp = getelementptr double, double* %tangent, i64 0",
+            "  %t01ptr_jvp = getelementptr double, double* %tangent, i64 1",
+            "  %t10ptr_jvp = getelementptr double, double* %tangent, i64 2",
+            "  %t11ptr_jvp = getelementptr double, double* %tangent, i64 3",
+            "  %a00_jvp = load double, double* %a00ptr_jvp",
+            "  %a01_jvp = load double, double* %a01ptr_jvp",
+            "  %a10_jvp = load double, double* %a10ptr_jvp",
+            "  %a11_jvp = load double, double* %a11ptr_jvp",
+            "  %t00_jvp = load double, double* %t00ptr_jvp",
+            "  %t01_jvp = load double, double* %t01ptr_jvp",
+            "  %t10_jvp = load double, double* %t10ptr_jvp",
+            "  %t11_jvp = load double, double* %t11ptr_jvp",
+            "  %term0_jvp = fmul double %t00_jvp, %a11_jvp",
+            "  %term1_jvp = fmul double %a00_jvp, %t11_jvp",
+            "  %term2_jvp = fmul double %t01_jvp, %a10_jvp",
+            "  %term3_jvp = fmul double %a01_jvp, %t10_jvp",
+            "  %sum0_jvp = fadd double %term0_jvp, %term1_jvp",
+            "  %sum1_jvp = fsub double %sum0_jvp, %term2_jvp",
+            "  %sum2_jvp = fsub double %sum1_jvp, %term3_jvp",
+            "  %out_jvp0 = getelementptr double, double* %out, i64 0",
+            "  store double %sum2_jvp, double* %out_jvp0",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_vjp(double* %values, double* %cotangent, double* %out) {{",
+            "entry:",
+            "  %a00ptr_vjp = getelementptr double, double* %values, i64 0",
+            "  %a01ptr_vjp = getelementptr double, double* %values, i64 1",
+            "  %a10ptr_vjp = getelementptr double, double* %values, i64 2",
+            "  %a11ptr_vjp = getelementptr double, double* %values, i64 3",
+            "  %cotangent0ptr = getelementptr double, double* %cotangent, i64 0",
+            "  %a00_vjp = load double, double* %a00ptr_vjp",
+            "  %a01_vjp = load double, double* %a01ptr_vjp",
+            "  %a10_vjp = load double, double* %a10ptr_vjp",
+            "  %a11_vjp = load double, double* %a11ptr_vjp",
+            "  %cotangent0 = load double, double* %cotangent0ptr",
+            "  %neg_a10_vjp = fsub double 0.0, %a10_vjp",
+            "  %neg_a01_vjp = fsub double 0.0, %a01_vjp",
+            "  %scaled_vjp0 = fmul double %cotangent0, %a11_vjp",
+            "  %scaled_vjp1 = fmul double %cotangent0, %neg_a10_vjp",
+            "  %scaled_vjp2 = fmul double %cotangent0, %neg_a01_vjp",
+            "  %scaled_vjp3 = fmul double %cotangent0, %a00_vjp",
+            "  %out_vjp0 = getelementptr double, double* %out, i64 0",
+            "  %out_vjp1 = getelementptr double, double* %out, i64 1",
+            "  %out_vjp2 = getelementptr double, double* %out, i64 2",
+            "  %out_vjp3 = getelementptr double, double* %out, i64 3",
+            "  store double %scaled_vjp0, double* %out_vjp0",
+            "  store double %scaled_vjp1, double* %out_vjp1",
+            "  store double %scaled_vjp2, double* %out_vjp2",
+            "  store double %scaled_vjp3, double* %out_vjp3",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
+
+
 def _compile_native_llvm_jit_functions(
     llvm_ir: str,
     base_symbol: str,
@@ -3416,6 +3534,56 @@ def _call_native_matrix_frobenius_norm_squared_binary(
         raise ValueError(
             "native matrix Frobenius-squared LLVM/JIT output_size must be one or matrix-sized"
         )
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_2x2_determinant_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    if checked_values.size != 4:
+        raise ValueError("native 2x2 determinant LLVM/JIT kernel requires four matrix values")
+    if output_size not in {1, 4}:
+        raise ValueError("native 2x2 determinant LLVM/JIT output_size must be one or four")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_2x2_determinant_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_values.size != 4:
+        raise ValueError("native 2x2 determinant LLVM/JIT kernel requires four matrix values")
+    expected_vector_size = 4 if label == "tangent" else 1
+    if checked_vector.size != expected_vector_size:
+        raise ValueError(
+            "native 2x2 determinant LLVM/JIT kernel requires "
+            f"{expected_vector_size} {label} value(s)"
+        )
+    if output_size not in {1, 4}:
+        raise ValueError("native 2x2 determinant LLVM/JIT output_size must be one or four")
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -4773,6 +4941,152 @@ def make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile exact 2x2 determinant value/JVP/VJP/gradient kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native 2x2 determinant AD requires backend='native_llvm_jit'")
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != 4:
+        raise ValueError("native 2x2 determinant AD requires four sample values")
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_matrix_2x2_determinant_native_llvm_ir(rule.name)
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_2x2_determinant_unary(
+            native_functions["value"],
+            raw_values,
+            1,
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_2x2_determinant_binary(
+            native_functions["jvp"],
+            raw_values,
+            raw_tangent,
+            "tangent",
+            1,
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_2x2_determinant_binary(
+            native_functions["vjp"],
+            raw_values,
+            raw_cotangent,
+            "cotangent",
+            4,
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_gradient = _call_native_matrix_2x2_determinant_unary(
+            native_functions["gradient"],
+            values,
+            4,
+        )
+        reference_gradient = vjp_kernel(values, np.ones(1, dtype=np.float64))
+        if not np.allclose(
+            native_gradient,
+            reference_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError("native LLVM/JIT 2x2 determinant gradient verification failed")
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT 2x2 determinant value/JVP/VJP/gradient kernel; "
+            "unregistered primitives remain fail-closed"
+        ),
+    )
+
+
+def make_matrix_2x2_determinant_native_llvm_jit_lowering_rule(
+    *,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for exact 2x2 determinant native LLVM/JIT kernels."""
+
+    captured_values = (
+        None if sample_values is None else _as_finite_vector("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native 2x2 determinant lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
+            rule,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -5113,6 +5427,7 @@ __all__ = [
     "compile_custom_derivative_rule_to_mlir",
     "compile_custom_derivative_rule_to_executable",
     "compile_registered_primitive_to_executable",
+    "compile_matrix_2x2_determinant_ad_to_native_llvm_jit",
     "compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit",
     "compile_matrix_matrix_product_ad_to_native_llvm_jit",
     "compile_matrix_quadratic_form_ad_to_native_llvm_jit",
@@ -5125,6 +5440,7 @@ __all__ = [
     "compile_vector_squared_norm_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
+    "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule",
     "make_matrix_matrix_product_native_llvm_jit_lowering_rule",
     "make_matrix_quadratic_form_native_llvm_jit_lowering_rule",
