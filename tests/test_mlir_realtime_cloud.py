@@ -461,6 +461,30 @@ def test_primitive_lowering_status_rejects_inconsistent_lowering_rule_provenance
             )
 
 
+def test_primitive_lowering_status_rejects_native_backend_overclaims() -> None:
+    """Primitive lowering status should fail closed on native backend availability claims."""
+
+    identity = PrimitiveIdentity("scpn.test", "native_backend_overclaim", "1")
+    with pytest.raises(ValueError, match="rust_lowering"):
+        PrimitiveLoweringStatus(
+            identity=identity,
+            rule_name="native_backend_overclaim_rule",
+            has_jvp=True,
+            has_vjp=False,
+            mlir_op="scpn_diff.native_backend_overclaim",
+            rust_lowering="available: Rust differentiable backend",
+        )
+    with pytest.raises(ValueError, match="llvm_lowering"):
+        PrimitiveLoweringStatus(
+            identity=identity,
+            rule_name="native_backend_overclaim_rule",
+            has_jvp=True,
+            has_vjp=False,
+            mlir_op="scpn_diff.native_backend_overclaim",
+            llvm_lowering="available: LLVM/JIT differentiable backend",
+        )
+
+
 def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
     """Static linalg lowering factories should execute verified MLIR-runtime kernels."""
 

@@ -165,6 +165,10 @@ class PrimitiveLoweringStatus:
             )
         if self.has_lowering_rule and not mlir_runtime_claimed:
             raise ValueError("mlir_lowering must declare MLIR-runtime lowering")
+        if "blocked" not in self.rust_lowering.lower():
+            raise ValueError("rust_lowering must remain blocked until Rust AD lowering exists")
+        if "blocked" not in self.llvm_lowering.lower():
+            raise ValueError("llvm_lowering must remain blocked until LLVM/JIT AD lowering exists")
 
 
 @dataclass(frozen=True)
