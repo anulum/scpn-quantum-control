@@ -119,7 +119,7 @@ intent, MLIR dialect operation names, static-argument-rule presence, registry
 lowering metadata, promoted static derivative factory/signature contracts,
 promoted paired fail-closed nondifferentiable-boundary and boundary-policy contracts, executable MLIR-runtime availability when a lowering rule is registered, and
 fail-closed Rust/LLVM backend status. Its deterministic module metadata also
-lists rule-coverage, policy/effect coverage, boundary-contract coverage, MLIR-runtime lowering primitive
+lists rule-coverage, policy/effect coverage, boundary-contract and boundary-policy coverage, MLIR-runtime lowering primitive
 identities, and uncontracted primitive identities so derivative-only rules
 cannot be mistaken for complete compiler contracts. Static program-AD array,
 shape, elementwise, reduction, product, cumulative, and linalg contracts expose

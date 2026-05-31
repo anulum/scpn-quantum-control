@@ -425,6 +425,10 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             "nondifferentiable_boundaries": sum(
                 status.nondifferentiable_boundary != "not_declared" for status in plan.statuses
             ),
+            "nondifferentiable_boundary_policies": sum(
+                status.nondifferentiable_boundary_policy != "not_declared"
+                for status in plan.statuses
+            ),
             "mlir_runtime_lowerings": sum(status.has_lowering_rule for status in plan.statuses),
             "static_argument_rules": sum(
                 status.has_static_argument_rule for status in plan.statuses
