@@ -2292,6 +2292,185 @@ def _compile_matrix_quadratic_form_native_llvm_ir(rule_name: str, dimension: int
     return "\n".join(lines)
 
 
+def _compile_matrix_vector_product_native_llvm_ir(rule_name: str, dimension: int) -> str:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    value_count = _matrix_quadratic_form_value_count(checked_dimension)
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    lines = [
+        f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+        '; primitive = "matrix_vector_product"',
+        '; source = "native_matrix_vector_product_ad_codegen"',
+        '; execution = "native_llvm_mcjit"',
+        f"; dimension = {checked_dimension}",
+        f"; value_count = {value_count}",
+        f'target triple = "{_escape_mlir_string(triple)}"',
+        "",
+        f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+        "entry:",
+    ]
+    for row in range(checked_dimension):
+        previous_row_sum = "0.0"
+        for column in range(checked_dimension):
+            matrix_index = _matrix_quadratic_form_matrix_index(checked_dimension, row, column)
+            vector_index = _matrix_quadratic_form_vector_index(checked_dimension, column)
+            term = f"{row}_{column}"
+            lines.extend(
+                [
+                    f"  %aptr_value{term} = getelementptr double, double* %values, i64 {matrix_index}",
+                    f"  %xptr_value{term} = getelementptr double, double* %values, i64 {vector_index}",
+                    f"  %a_value{term} = load double, double* %aptr_value{term}",
+                    f"  %x_value{term} = load double, double* %xptr_value{term}",
+                    f"  %prod_value{term} = fmul double %a_value{term}, %x_value{term}",
+                    f"  %sum_value{term} = fadd double {previous_row_sum}, %prod_value{term}",
+                ]
+            )
+            previous_row_sum = f"%sum_value{term}"
+        lines.extend(
+            [
+                f"  %out_value{row} = getelementptr double, double* %out, i64 {row}",
+                f"  store double {previous_row_sum}, double* %out_value{row}",
+            ]
+        )
+    lines.extend(
+        [
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+        ]
+    )
+    for row in range(checked_dimension):
+        for column in range(checked_dimension):
+            matrix_index = _matrix_quadratic_form_matrix_index(checked_dimension, row, column)
+            vector_index = _matrix_quadratic_form_vector_index(checked_dimension, column)
+            term = f"{row}_{column}"
+            lines.extend(
+                [
+                    f"  %xptr_gradient{term} = getelementptr double, double* %values, i64 {vector_index}",
+                    f"  %x_gradient{term} = load double, double* %xptr_gradient{term}",
+                    f"  %out_matrix_gradient{term} = getelementptr double, double* %out, i64 {matrix_index}",
+                    f"  store double %x_gradient{term}, double* %out_matrix_gradient{term}",
+                ]
+            )
+    for column in range(checked_dimension):
+        previous_column_sum = "0.0"
+        for row in range(checked_dimension):
+            matrix_index = _matrix_quadratic_form_matrix_index(checked_dimension, row, column)
+            term = f"{row}_{column}"
+            lines.extend(
+                [
+                    f"  %aptr_gradient{term} = getelementptr double, double* %values, i64 {matrix_index}",
+                    f"  %a_gradient{term} = load double, double* %aptr_gradient{term}",
+                    f"  %sum_gradient{term} = fadd double {previous_column_sum}, %a_gradient{term}",
+                ]
+            )
+            previous_column_sum = f"%sum_gradient{term}"
+        output_index = _matrix_quadratic_form_vector_index(checked_dimension, column)
+        lines.extend(
+            [
+                f"  %out_vector_gradient{column} = getelementptr double, double* %out, i64 {output_index}",
+                f"  store double {previous_column_sum}, double* %out_vector_gradient{column}",
+            ]
+        )
+    lines.extend(
+        [
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_jvp(double* %values, double* %tangent, double* %out) {{",
+            "entry:",
+        ]
+    )
+    for row in range(checked_dimension):
+        previous_jvp_sum = "0.0"
+        for column in range(checked_dimension):
+            matrix_index = _matrix_quadratic_form_matrix_index(checked_dimension, row, column)
+            vector_index = _matrix_quadratic_form_vector_index(checked_dimension, column)
+            term = f"{row}_{column}"
+            lines.extend(
+                [
+                    f"  %aptr_jvp{term} = getelementptr double, double* %values, i64 {matrix_index}",
+                    f"  %xptr_jvp{term} = getelementptr double, double* %values, i64 {vector_index}",
+                    f"  %taptr_jvp{term} = getelementptr double, double* %tangent, i64 {matrix_index}",
+                    f"  %txptr_jvp{term} = getelementptr double, double* %tangent, i64 {vector_index}",
+                    f"  %a_jvp{term} = load double, double* %aptr_jvp{term}",
+                    f"  %x_jvp{term} = load double, double* %xptr_jvp{term}",
+                    f"  %ta_jvp{term} = load double, double* %taptr_jvp{term}",
+                    f"  %tx_jvp{term} = load double, double* %txptr_jvp{term}",
+                    f"  %left_jvp{term} = fmul double %ta_jvp{term}, %x_jvp{term}",
+                    f"  %right_jvp{term} = fmul double %a_jvp{term}, %tx_jvp{term}",
+                    f"  %term_jvp{term} = fadd double %left_jvp{term}, %right_jvp{term}",
+                    f"  %sum_jvp{term} = fadd double {previous_jvp_sum}, %term_jvp{term}",
+                ]
+            )
+            previous_jvp_sum = f"%sum_jvp{term}"
+        lines.extend(
+            [
+                f"  %out_jvp{row} = getelementptr double, double* %out, i64 {row}",
+                f"  store double {previous_jvp_sum}, double* %out_jvp{row}",
+            ]
+        )
+    lines.extend(
+        [
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_vjp(double* %values, double* %cotangent, double* %out) {{",
+            "entry:",
+        ]
+    )
+    for row in range(checked_dimension):
+        cotangent_ptr = f"%cotangent_ptr{row}"
+        cotangent_value = f"%cotangent{row}"
+        lines.extend(
+            [
+                f"  {cotangent_ptr} = getelementptr double, double* %cotangent, i64 {row}",
+                f"  {cotangent_value} = load double, double* {cotangent_ptr}",
+            ]
+        )
+        for column in range(checked_dimension):
+            matrix_index = _matrix_quadratic_form_matrix_index(checked_dimension, row, column)
+            vector_index = _matrix_quadratic_form_vector_index(checked_dimension, column)
+            term = f"{row}_{column}"
+            lines.extend(
+                [
+                    f"  %xptr_vjp{term} = getelementptr double, double* %values, i64 {vector_index}",
+                    f"  %x_vjp{term} = load double, double* %xptr_vjp{term}",
+                    f"  %matrix_grad_vjp{term} = fmul double {cotangent_value}, %x_vjp{term}",
+                    f"  %out_matrix_vjp{term} = getelementptr double, double* %out, i64 {matrix_index}",
+                    f"  store double %matrix_grad_vjp{term}, double* %out_matrix_vjp{term}",
+                ]
+            )
+    for column in range(checked_dimension):
+        previous_vector_sum = "0.0"
+        for row in range(checked_dimension):
+            matrix_index = _matrix_quadratic_form_matrix_index(checked_dimension, row, column)
+            term = f"{row}_{column}"
+            lines.extend(
+                [
+                    f"  %aptr_vjp{term} = getelementptr double, double* %values, i64 {matrix_index}",
+                    f"  %cotangent_ptr_vjp{term} = getelementptr double, double* %cotangent, i64 {row}",
+                    f"  %a_vjp{term} = load double, double* %aptr_vjp{term}",
+                    f"  %cotangent_vjp{term} = load double, double* %cotangent_ptr_vjp{term}",
+                    f"  %vector_term_vjp{term} = fmul double %a_vjp{term}, %cotangent_vjp{term}",
+                    f"  %vector_sum_vjp{term} = fadd double {previous_vector_sum}, %vector_term_vjp{term}",
+                ]
+            )
+            previous_vector_sum = f"%vector_sum_vjp{term}"
+        output_index = _matrix_quadratic_form_vector_index(checked_dimension, column)
+        lines.extend(
+            [
+                f"  %out_vector_vjp{column} = getelementptr double, double* %out, i64 {output_index}",
+                f"  store double {previous_vector_sum}, double* %out_vector_vjp{column}",
+            ]
+        )
+    lines.extend(["  ret void", "}", ""])
+    return "\n".join(lines)
+
+
 def _compile_native_llvm_jit_functions(
     llvm_ir: str,
     base_symbol: str,
@@ -2580,6 +2759,72 @@ def _call_native_matrix_quadratic_form_binary(
     if output_size not in {1, expected_value_count}:
         raise ValueError(
             "native matrix quadratic form LLVM/JIT output_size must be one or input-sized"
+        )
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_vector_product_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    if checked_values.size != expected_value_count:
+        raise ValueError(
+            "native matrix-vector product LLVM/JIT kernel requires "
+            "dimension * dimension + dimension values"
+        )
+    if output_size not in {checked_dimension, expected_value_count}:
+        raise ValueError(
+            "native matrix-vector product LLVM/JIT output_size must be dimension or input-sized"
+        )
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_vector_product_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    dimension: int,
+    output_size: int,
+) -> np.ndarray:
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
+    checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    if checked_values.size != expected_value_count:
+        raise ValueError(
+            "native matrix-vector product LLVM/JIT kernel requires "
+            "dimension * dimension + dimension values"
+        )
+    expected_vector_size = expected_value_count if label == "tangent" else checked_dimension
+    if checked_vector.size != expected_vector_size:
+        raise ValueError(
+            f"native matrix-vector product LLVM/JIT kernel requires "
+            f"{expected_vector_size} {label} value(s)"
+        )
+    if output_size not in {checked_dimension, expected_value_count}:
+        raise ValueError(
+            "native matrix-vector product LLVM/JIT output_size must be dimension or input-sized"
         )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
@@ -3319,6 +3564,159 @@ def make_vector_squared_norm_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_matrix_vector_product_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile matrix-vector value/JVP/VJP kernels to LLVM MCJIT."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native matrix-vector product AD requires backend='native_llvm_jit'")
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != expected_value_count:
+        raise ValueError(
+            "native matrix-vector product AD requires dimension * dimension + dimension "
+            "sample values"
+        )
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_matrix_vector_product_native_llvm_ir(rule.name, checked_dimension)
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_vector_product_unary(
+            native_functions["value"], raw_values, checked_dimension, checked_dimension
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_vector_product_binary(
+            native_functions["jvp"],
+            raw_values,
+            raw_tangent,
+            "tangent",
+            checked_dimension,
+            checked_dimension,
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_vector_product_binary(
+            native_functions["vjp"],
+            raw_values,
+            raw_cotangent,
+            "cotangent",
+            checked_dimension,
+            expected_value_count,
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_gradient = _call_native_matrix_vector_product_unary(
+            native_functions["gradient"], values, checked_dimension, expected_value_count
+        )
+        reference_gradient = vjp_kernel(values, np.ones(checked_dimension, dtype=np.float64))
+        if not np.allclose(
+            native_gradient,
+            reference_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError("native LLVM/JIT matrix-vector product gradient verification failed")
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT matrix-vector product value/JVP/VJP kernel; "
+            "gradient() remains fail-closed for vector-output kernels"
+        ),
+    )
+
+
+def make_matrix_vector_product_native_llvm_jit_lowering_rule(
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for matrix-vector native LLVM/JIT kernels."""
+
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    captured_values = (
+        None if sample_values is None else _as_finite_vector("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native matrix-vector product lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_matrix_vector_product_ad_to_native_llvm_jit(
+            rule,
+            dimension=checked_dimension,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -3660,6 +4058,7 @@ __all__ = [
     "compile_custom_derivative_rule_to_executable",
     "compile_registered_primitive_to_executable",
     "compile_matrix_quadratic_form_ad_to_native_llvm_jit",
+    "compile_matrix_vector_product_ad_to_native_llvm_jit",
     "compile_scalar_binary_elementwise_ad_to_native_llvm_jit",
     "compile_scalar_quadratic_ad_to_native_llvm_jit",
     "compile_scalar_unary_elementwise_ad_to_native_llvm_jit",
@@ -3668,6 +4067,7 @@ __all__ = [
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "make_matrix_quadratic_form_native_llvm_jit_lowering_rule",
+    "make_matrix_vector_product_native_llvm_jit_lowering_rule",
     "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule",
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
     "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
