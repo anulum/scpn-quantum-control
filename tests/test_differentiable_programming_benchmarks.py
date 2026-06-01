@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+import sys
+from types import ModuleType, SimpleNamespace
+
 import numpy as np
 import pytest
 
@@ -113,6 +116,42 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
             max_abs_adjoint_error=0.0,
             claim_boundary="diagnostic",
         )
+    with pytest.raises(ValueError, match="category"):
+        DifferentiableProgrammingBenchmarkResult(
+            case_id="case",
+            category="",
+            value=1.0,
+            gradient=valid_gradient,
+            analytic_gradient=valid_gradient,
+            max_abs_gradient_error=0.0,
+            adjoint_supported=True,
+            max_abs_adjoint_error=0.0,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="value"):
+        DifferentiableProgrammingBenchmarkResult(
+            case_id="case",
+            category="loop-heavy",
+            value=np.inf,
+            gradient=valid_gradient,
+            analytic_gradient=valid_gradient,
+            max_abs_gradient_error=0.0,
+            adjoint_supported=True,
+            max_abs_adjoint_error=0.0,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="gradient"):
+        DifferentiableProgrammingBenchmarkResult(
+            case_id="case",
+            category="loop-heavy",
+            value=1.0,
+            gradient=np.array([[1.0, 2.0]], dtype=np.float64),
+            analytic_gradient=valid_gradient,
+            max_abs_gradient_error=0.0,
+            adjoint_supported=True,
+            max_abs_adjoint_error=0.0,
+            claim_boundary="diagnostic",
+        )
     with pytest.raises(ValueError, match="finite and non-negative"):
         DifferentiableProgrammingBenchmarkResult(
             case_id="case",
@@ -124,6 +163,42 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
             adjoint_supported=True,
             max_abs_adjoint_error=0.0,
             claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="adjoint_supported"):
+        DifferentiableProgrammingBenchmarkResult(
+            case_id="case",
+            category="loop-heavy",
+            value=1.0,
+            gradient=valid_gradient,
+            analytic_gradient=valid_gradient,
+            max_abs_gradient_error=0.0,
+            adjoint_supported="yes",  # type: ignore[arg-type]
+            max_abs_adjoint_error=0.0,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="max_abs_adjoint_error"):
+        DifferentiableProgrammingBenchmarkResult(
+            case_id="case",
+            category="loop-heavy",
+            value=1.0,
+            gradient=valid_gradient,
+            analytic_gradient=valid_gradient,
+            max_abs_gradient_error=0.0,
+            adjoint_supported=True,
+            max_abs_adjoint_error=np.nan,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        DifferentiableProgrammingBenchmarkResult(
+            case_id="case",
+            category="loop-heavy",
+            value=1.0,
+            gradient=valid_gradient,
+            analytic_gradient=valid_gradient,
+            max_abs_gradient_error=0.0,
+            adjoint_supported=True,
+            max_abs_adjoint_error=0.0,
+            claim_boundary="",
         )
 
 
@@ -168,6 +243,71 @@ def test_differentiable_programming_external_reference_suite_uses_all_jax_rows(
     assert all(result.passed for result in results)
 
 
+def test_differentiable_programming_jax_reference_rows_use_contract_shims(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Optional JAX rows should construct explicit diagnostic records under backend shims."""
+
+    fake_jnp = ModuleType("jax.numpy")
+    fake_jnp.asarray = np.asarray
+    fake_jnp.diag = np.diag
+    fake_jnp.sin = np.sin
+    fake_jnp.sum = np.sum
+    fake_jnp.real = np.real
+    fake_jnp.linalg = np.linalg
+
+    def fake_vmap(function):
+        return lambda values: np.asarray([function(row) for row in values], dtype=np.float64)
+
+    def fake_grad(function):
+        def gradient(row):
+            _ = function(row)
+            row_array = np.asarray(row, dtype=np.float64)
+            return np.array([2.0 * row_array[0], np.cos(row_array[1])], dtype=np.float64)
+
+        return gradient
+
+    fake_jax = ModuleType("jax")
+    fake_jax.config = SimpleNamespace(update=lambda *_args, **_kwargs: None)
+    fake_jax.grad = fake_grad
+    fake_jax.vmap = fake_vmap
+    fake_jax.numpy = fake_jnp
+    monkeypatch.setitem(sys.modules, "jax", fake_jax)
+    monkeypatch.setitem(sys.modules, "jax.numpy", fake_jnp)
+
+    def fake_value_and_grad(objective, values):
+        objective(values)
+        return 1.0, np.ones(np.asarray(values, dtype=np.float64).size, dtype=np.float64)
+
+    def fake_program_value_and_grad(objective, values, **_kwargs):
+        objective(values)
+        return SimpleNamespace(
+            value=1.0,
+            gradient=np.ones(np.asarray(values, dtype=np.float64).size, dtype=np.float64),
+        )
+
+    monkeypatch.setattr(dp_benchmarks, "jax_value_and_grad", fake_value_and_grad)
+    monkeypatch.setattr(
+        dp_benchmarks,
+        "whole_program_value_and_grad",
+        fake_program_value_and_grad,
+    )
+
+    loop_row = dp_benchmarks._jax_loop_heavy_case()
+    linalg_row = dp_benchmarks._jax_linalg_primitive_case()
+    transform_row = dp_benchmarks._jax_transform_nesting_case()
+
+    assert [row.case_id for row in (loop_row, linalg_row, transform_row)] == [
+        "jax_loop_heavy_reference",
+        "jax_linalg_primitive_reference",
+        "jax_transform_nesting_reference",
+    ]
+    assert all(row.backend == "jax" for row in (loop_row, linalg_row, transform_row))
+    assert loop_row.passed
+    assert linalg_row.passed
+    assert transform_row.program_gradient.shape == transform_row.reference_gradient.shape
+
+
 def test_differentiable_programming_external_reference_result_validation_paths() -> None:
     """External-reference benchmark metadata should reject malformed rows."""
 
@@ -209,6 +349,42 @@ def test_differentiable_programming_external_reference_result_validation_paths()
             max_abs_gradient_error=0.0,
             claim_boundary="diagnostic",
         )
+    with pytest.raises(ValueError, match="case_id"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="",
+            backend="jax",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=gradient,
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="values"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="case",
+            backend="jax",
+            program_value=np.inf,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=gradient,
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="program_gradient"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="case",
+            backend="jax",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=np.array([1.0, np.nan], dtype=np.float64),
+            reference_gradient=gradient,
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="diagnostic",
+        )
     with pytest.raises(ValueError, match="value error"):
         DifferentiableProgrammingExternalReferenceResult(
             case_id="case",
@@ -220,6 +396,30 @@ def test_differentiable_programming_external_reference_result_validation_paths()
             max_abs_value_error=-1.0,
             max_abs_gradient_error=0.0,
             claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="gradient error"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="case",
+            backend="jax",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=gradient,
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=np.nan,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        DifferentiableProgrammingExternalReferenceResult(
+            case_id="case",
+            backend="jax",
+            program_value=1.0,
+            reference_value=1.0,
+            program_gradient=gradient,
+            reference_gradient=gradient,
+            max_abs_value_error=0.0,
+            max_abs_gradient_error=0.0,
+            claim_boundary="",
         )
 
 
@@ -243,3 +443,9 @@ def test_differentiable_programming_benchmark_exports_from_package_root() -> Non
         scpn.run_differentiable_programming_external_reference_suite
         is run_differentiable_programming_external_reference_suite
     )
+    assert dp_benchmarks.__all__ == [
+        "DifferentiableProgrammingBenchmarkResult",
+        "DifferentiableProgrammingExternalReferenceResult",
+        "run_differentiable_programming_benchmark_suite",
+        "run_differentiable_programming_external_reference_suite",
+    ]
