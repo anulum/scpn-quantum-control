@@ -152,6 +152,8 @@ gradient_rule.vjp(
     np.arange(6.0, dtype=np.float64),
     np.ones(6, dtype=np.float64),
 )
+# Exact for fixed-shape, static-spacing first- and second-order stencils.
+# Primitive batching maps only over non-differentiated outer axes.
 
 native_kernel = compile_scalar_quadratic_ad_to_native_llvm_jit(
     rule,
