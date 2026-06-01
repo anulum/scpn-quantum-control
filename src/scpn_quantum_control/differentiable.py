@@ -6258,6 +6258,7 @@ def _trace_concatenate(
     if not arrays:
         raise ValueError("whole-program AD np.concatenate requires at least one array")
     trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
+    _require_program_ad_assembly_contract("concatenate", (trace_arrays, axis))
     flat_items = tuple(item for array in trace_arrays for item in array._items)
     index_arrays: list[NDArray[np.int64]] = []
     offset = 0
@@ -9633,6 +9634,13 @@ _PROGRAM_AD_INTERPOLATION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_INTERPOLATION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_INTERPOLATION_PRIMITIVE_NAMESPACE, name, "1")
     for name in ("interp",)
+}
+
+_PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE = "scpn.program_ad.assembly"
+_PROGRAM_AD_ASSEMBLY_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("concatenate",)
 }
 
 _PROGRAM_AD_SIGNAL_PRIMITIVE_NAMESPACE = "scpn.program_ad.signal"
@@ -14360,6 +14368,192 @@ def _program_ad_interpolation_lowering_metadata(name: str) -> Mapping[str, str]:
     }
 
 
+def _program_ad_assembly_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD assembly primitive contracts are executable only through "
+        "operator-intercepted trace dispatch or fixed-shape derivative factories"
+    )
+
+
+def _program_ad_assembly_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD assembly primitive contracts are executable only through "
+        "operator-intercepted trace dispatch or fixed-shape derivative factories"
+    )
+
+
+def _program_ad_assembly_derivative_rule(name: str) -> CustomDerivativeRule:
+    if name == "concatenate":
+        return CustomDerivativeRule(
+            name="program_ad_assembly_concatenate_trace_contract",
+            value_fn=_program_ad_assembly_direct_value,
+            jvp_rule=_program_ad_assembly_direct_jvp,
+        )
+    raise ValueError(f"unsupported program AD assembly primitive {name}")
+
+
+def _program_ad_assembly_concatenate_operands(
+    args: tuple[object, ...],
+) -> tuple[tuple[object, ...], object]:
+    if len(args) != 2:
+        raise ValueError("program AD assembly concatenate requires operands and axis")
+    operands = args[0]
+    if not isinstance(operands, (tuple, list)):
+        raise ValueError("program AD assembly concatenate requires a static operand sequence")
+    operand_tuple = tuple(operands)
+    if not operand_tuple:
+        raise ValueError("program AD assembly concatenate requires operands")
+    return operand_tuple, args[1]
+
+
+def _program_ad_assembly_concatenate_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[tuple[int, ...], ...], int | None]:
+    operands, axis = _program_ad_assembly_concatenate_operands(args)
+    operand_shapes = tuple(_program_ad_array_shape_of(operand) for operand in operands)
+    if axis is None:
+        _program_ad_assembly_concatenate_output_shape(operand_shapes, None)
+        return operand_shapes, None
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD assembly concatenate requires a static integer axis or None")
+    normalised_axis = _program_ad_assembly_concatenate_axis(axis, rank=len(operand_shapes[0]))
+    _program_ad_assembly_concatenate_output_shape(operand_shapes, normalised_axis)
+    return operand_shapes, normalised_axis
+
+
+def _program_ad_assembly_concatenate_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    operand_shapes, axis = _program_ad_assembly_concatenate_static_parts(args)
+    return _program_ad_assembly_concatenate_output_shape(operand_shapes, axis)
+
+
+def _program_ad_assembly_concatenate_dtype_rule(args: tuple[object, ...]) -> str:
+    operands, _axis = _program_ad_assembly_concatenate_operands(args)
+    operand_dtypes = [np.dtype(_program_ad_array_dtype_of(operand)) for operand in operands]
+    return str(np.result_type(*operand_dtypes))
+
+
+def _program_ad_assembly_concatenate_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    operand_shapes, axis = _program_ad_assembly_concatenate_static_parts(args)
+    return operand_shapes, axis
+
+
+def _program_ad_assembly_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 2 or len(axes) != 2:
+        raise ValueError("program AD assembly concatenate batching requires operands and axis")
+    if axes[1] is not None:
+        raise ValueError("program AD assembly concatenate batching keeps axis static")
+    operands, axis = _program_ad_assembly_concatenate_operands(args)
+    operand_axes = cast(Any, axes[0])
+    if operand_axes is None:
+        return _as_real_numeric_array(
+            "program AD assembly concatenate batched output",
+            function(operands, axis),
+        )
+    if not isinstance(operand_axes, (tuple, list)) or len(operand_axes) != len(operands):
+        raise ValueError(
+            "program AD assembly concatenate batching requires one operand axis per operand"
+        )
+
+    mapped: list[tuple[NDArray[np.float64], int] | None] = []
+    batch_size: int | None = None
+    adjusted_axis: int | None
+    if axis is None:
+        adjusted_axis = None
+    elif isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD assembly concatenate batching keeps axis static")
+    else:
+        adjusted_axis = None
+
+    for operand_index, (operand, operand_axis) in enumerate(
+        zip(operands, operand_axes, strict=True)
+    ):
+        if operand_axis is None:
+            if axis is not None:
+                raise ValueError(
+                    "program AD assembly concatenate batching maps every operand for ranked axes"
+                )
+            mapped.append(None)
+            continue
+        array = _as_real_numeric_array(
+            f"program AD assembly concatenate batched operand {operand_index}",
+            operand,
+        )
+        batch_axis = _normalise_axis(f"axes[0][{operand_index}]", operand_axis, array.ndim)
+        size = int(array.shape[batch_axis])
+        if size <= 0:
+            raise ValueError("program AD assembly concatenate batching axes must be non-empty")
+        if batch_size is None:
+            batch_size = size
+        elif size != batch_size:
+            raise ValueError(
+                "program AD assembly concatenate batching axes must share one batch size"
+            )
+        if axis is not None:
+            axis_index = _normalise_axis("axis", int(axis), array.ndim)
+            if axis_index == batch_axis:
+                raise ValueError(
+                    "program AD assembly concatenate batching cannot map the concatenate axis"
+                )
+            operand_adjusted_axis = axis_index - 1 if axis_index > batch_axis else axis_index
+            if adjusted_axis is None:
+                adjusted_axis = operand_adjusted_axis
+            elif adjusted_axis != operand_adjusted_axis:
+                raise ValueError(
+                    "program AD assembly concatenate batching requires one adjusted axis"
+                )
+        mapped.append((array, batch_axis))
+    if batch_size is None:
+        return _as_real_numeric_array(
+            "program AD assembly concatenate batched output",
+            function(operands, axis),
+        )
+
+    outputs: list[NDArray[np.float64]] = []
+    for batch_index in range(batch_size):
+        sliced_operands: list[object] = []
+        for operand, mapped_operand in zip(operands, mapped, strict=True):
+            if mapped_operand is None:
+                sliced_operands.append(operand)
+                continue
+            array, batch_axis = mapped_operand
+            sliced_operands.append(np.take(array, batch_index, axis=batch_axis))
+        outputs.append(
+            _as_real_numeric_array(
+                "program AD assembly concatenate batched output",
+                function(tuple(sliced_operands), adjusted_axis),
+            )
+        )
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
+    if name != "concatenate":
+        raise ValueError(f"unsupported program AD assembly primitive {name}")
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff assembly dialect interchange; executable lowering blocked",
+        "mlir_op": "scpn_diff.assembly.concatenate",
+        "llvm": "blocked_until_executable_assembly_lowering",
+        "rust": "blocked_until_polyglot_assembly_ad",
+        "static_argument_rule": "required",
+        "static_derivative_factory": "program_ad_assembly_concatenate_derivative_rule",
+        "static_signature": "operand_shapes:ranked_tensor_shapes;axis",
+        "nondifferentiable_boundary": "static_operand_shape_axis_concatenate",
+        "nondifferentiable_boundary_policy": "fail_closed",
+    }
+
+
 def _program_ad_signal_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
     raise ValueError(
         "program AD signal primitive contracts are executable only through "
@@ -15189,6 +15383,25 @@ def _register_program_ad_interpolation_primitive_contracts() -> None:
         )
 
 
+def _register_program_ad_assembly_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_ASSEMBLY_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_assembly_derivative_rule(name),
+                batching_rule=_program_ad_assembly_batching_rule,
+                lowering_metadata=_program_ad_assembly_lowering_metadata(name),
+                shape_rule=_program_ad_assembly_concatenate_shape,
+                dtype_rule=_program_ad_assembly_concatenate_dtype_rule,
+                static_argument_rule=_program_ad_assembly_concatenate_static_arguments,
+                nondifferentiable_policy=_PROGRAM_AD_ASSEMBLY_POLICY,
+                effect="pure",
+            )
+        )
+
+
 def _register_program_ad_signal_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_SIGNAL_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -15383,6 +15596,23 @@ def _require_program_ad_interpolation_contract(
         raise ValueError(f"invalid program AD interpolation primitive policy for {identity.key}")
     if contract.effect != "pure":
         raise ValueError(f"invalid program AD interpolation primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
+def _require_program_ad_assembly_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = _PROGRAM_AD_ASSEMBLY_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD assembly primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_ASSEMBLY_POLICY:
+        raise ValueError(f"invalid program AD assembly primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD assembly primitive effect for {identity.key}")
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
@@ -15968,6 +16198,147 @@ def _program_ad_linalg_offset(name: str, offset: int | np.integer) -> int:
     if isinstance(offset, bool) or not isinstance(offset, (int, np.integer)):
         raise ValueError(f"program AD linalg {name} derivative rule requires integer offset")
     return int(offset)
+
+
+def _program_ad_assembly_concatenate_shapes(
+    operand_shapes: Sequence[Sequence[int]],
+) -> tuple[tuple[int, ...], ...]:
+    shapes = tuple(
+        _program_ad_array_normalise_static_shape("assembly concatenate operand", shape)
+        for shape in operand_shapes
+    )
+    if not shapes:
+        raise ValueError("program AD assembly concatenate direct rule requires operands")
+    return shapes
+
+
+def _program_ad_assembly_concatenate_axis(
+    axis: object,
+    *,
+    rank: int,
+) -> int | None:
+    if axis is None:
+        return None
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError(
+            "program AD assembly concatenate direct rule requires a static integer axis or None"
+        )
+    if rank <= 0:
+        raise ValueError("program AD assembly concatenate direct rule requires ranked operands")
+    return _normalise_axis("axis", int(axis), rank)
+
+
+def _program_ad_assembly_concatenate_output_shape(
+    operand_shapes: Sequence[Sequence[int]],
+    axis: object = 0,
+) -> tuple[int, ...]:
+    shapes = _program_ad_assembly_concatenate_shapes(operand_shapes)
+    if axis is None:
+        return (sum(_program_ad_array_static_size(shape) for shape in shapes),)
+    rank = len(shapes[0])
+    axis_index = _program_ad_assembly_concatenate_axis(axis, rank=rank)
+    if axis_index is None:
+        return (sum(_program_ad_array_static_size(shape) for shape in shapes),)
+    for shape in shapes:
+        if len(shape) != rank:
+            raise ValueError(
+                "program AD assembly concatenate direct rule requires equal operand ranks"
+            )
+        for dimension_index, dimension in enumerate(shape):
+            if dimension_index != axis_index and dimension != shapes[0][dimension_index]:
+                raise ValueError(
+                    "program AD assembly concatenate direct rule requires matching "
+                    "non-concatenate dimensions"
+                )
+    output = list(shapes[0])
+    output[axis_index] = sum(shape[axis_index] for shape in shapes)
+    return tuple(output)
+
+
+def _program_ad_assembly_concatenate_source_size(
+    operand_shapes: tuple[tuple[int, ...], ...],
+) -> int:
+    return sum(_program_ad_array_static_size(shape) for shape in operand_shapes)
+
+
+def _program_ad_assembly_concatenate_split_source(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    operand_shapes: tuple[tuple[int, ...], ...],
+) -> tuple[NDArray[np.float64], ...]:
+    vector = _program_ad_array_vector(
+        "concatenate",
+        role,
+        values,
+        expected_size=_program_ad_assembly_concatenate_source_size(operand_shapes),
+    )
+    operands: list[NDArray[np.float64]] = []
+    offset = 0
+    for shape in operand_shapes:
+        size = _program_ad_array_static_size(shape)
+        operands.append(vector[offset : offset + size].reshape(shape))
+        offset += size
+    return tuple(operands)
+
+
+def program_ad_assembly_concatenate_derivative_rule(
+    operand_shapes: Sequence[Sequence[int]],
+    *,
+    axis: object = 0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.concatenate`` operands."""
+
+    shapes = _program_ad_assembly_concatenate_shapes(operand_shapes)
+    axis_index = (
+        None if axis is None else _program_ad_assembly_concatenate_axis(axis, rank=len(shapes[0]))
+    )
+    output_shape = _program_ad_assembly_concatenate_output_shape(shapes, axis_index)
+    output_size = _program_ad_array_static_size(output_shape)
+    axis_signature = "flat" if axis_index is None else str(axis_index)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        operands = _program_ad_assembly_concatenate_split_source(
+            "values", values, operand_shapes=shapes
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate(operands, axis=axis_index).reshape(-1)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_assembly_concatenate_split_source("values", values, operand_shapes=shapes)
+        tangent_operands = _program_ad_assembly_concatenate_split_source(
+            "tangent", tangent, operand_shapes=shapes
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate(tangent_operands, axis=axis_index).reshape(-1)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_assembly_concatenate_split_source("values", values, operand_shapes=shapes)
+        cotangent_vector = _program_ad_array_vector(
+            "concatenate", "cotangent", cotangent, expected_size=output_size
+        )
+        if axis_index is None:
+            return _program_ad_float64_vector_result(cotangent_vector)
+        cotangent_array = cotangent_vector.reshape(output_shape)
+        split_points = np.cumsum([shape[axis_index] for shape in shapes[:-1]], dtype=np.int64)
+        split_adjoints = np.split(cotangent_array, split_points.tolist(), axis=axis_index)
+        return _program_ad_float64_vector_result(
+            np.concatenate([adjoint.reshape(-1) for adjoint in split_adjoints])
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_assembly_concatenate_"
+            f"{len(shapes)}_operands_axis{axis_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
 
 
 def _program_ad_linalg_rank2_shape(
@@ -17923,6 +18294,7 @@ def _require_program_ad_linalg_contract(
 
 _register_program_ad_array_primitive_contracts()
 _register_program_ad_interpolation_primitive_contracts()
+_register_program_ad_assembly_primitive_contracts()
 _register_program_ad_signal_primitive_contracts()
 _register_program_ad_shape_primitive_contracts()
 _register_program_ad_reduction_primitive_contracts()
@@ -22209,6 +22581,7 @@ __all__ = [
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
+    "program_ad_assembly_concatenate_derivative_rule",
     "program_ad_array_delete_derivative_rule",
     "program_ad_array_getitem_derivative_rule",
     "program_ad_array_insert_derivative_rule",
