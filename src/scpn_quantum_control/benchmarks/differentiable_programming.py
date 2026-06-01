@@ -552,6 +552,11 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
     block_weights = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float64)
     flat_sort_weights = np.array([-0.4, 0.8, -1.2, 1.6, -2.0, 2.4], dtype=np.float64)
     axis_sort_weights = np.array([[0.3, -0.6, 0.9], [-1.1, 1.4, -1.7]], dtype=np.float64)
+    median_weight = 0.033
+    quantile_weight = 0.041
+    quantile_row_weights = np.array([0.9, -0.35], dtype=np.float64)
+    percentile_weight = 0.026
+    percentile_column_weights = np.array([-0.7, 0.55, 1.1], dtype=np.float64)
     trapz_x = np.array([0.0, 0.25, 1.0], dtype=np.float64)
     trapz_row_weights = np.array([0.35, -0.45], dtype=np.float64)
     gradient_flat_weights = np.array([0.25, -0.5, 1.0, -1.5, 0.75, -0.25], dtype=np.float64)
@@ -613,6 +618,9 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         flat_assembled = np.concatenate((matrix[:, :1], matrix[:, 1:]), axis=None)
         flat_sorted = np.sort(trace_values, axis=None)
         axis_sorted = np.sort(matrix, axis=1)
+        flat_median = np.median(trace_values)
+        row_quantiles = np.quantile(matrix, 0.25, axis=1)
+        column_percentiles = np.percentile(matrix, 75.0, axis=0)
         row_integrals = np.trapezoid(matrix, x=trapz_x, axis=1)
         flat_integral = np.trapezoid(trace_values, dx=0.2)
         flat_gradient = np.gradient(trace_values, 0.5, edge_order=1)
@@ -786,6 +794,9 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             )
             + 0.075 * np.sum(flat_sorted * flat_sort_weights)
             + 0.055 * np.sum(axis_sorted * axis_sort_weights)
+            + median_weight * flat_median
+            + quantile_weight * np.sum(row_quantiles * quantile_row_weights)
+            + percentile_weight * np.sum(column_percentiles * percentile_column_weights)
             + 0.09 * np.sum(row_integrals * trapz_row_weights)
             - 0.04 * flat_integral
             + 0.031 * np.sum(flat_gradient * gradient_flat_weights)
@@ -802,12 +813,12 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
 
     analytic = np.array(
         [
-            6.18612125,
-            4.369901666666667,
-            4.915959166666667,
-            5.377870833333333,
-            8.34373,
-            12.0727175,
+            6.19807125,
+            4.391926666666667,
+            4.958059166666667,
+            5.364220833333333,
+            8.34728,
+            12.0869925,
         ],
         dtype=np.float64,
     )

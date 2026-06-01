@@ -1258,6 +1258,46 @@ class TraceADArray:
                 axis=cast(int | None, kwargs.get("axis")),
                 ddof=kwargs.get("ddof", 0),
             )
+        if func is np.median:
+            if len(args) < 1 or len(args) > 2 or kwargs.keys() - {"axis"}:
+                raise ValueError("program AD np.median supports one array and optional axis")
+            if len(args) == 2 and "axis" in kwargs:
+                raise ValueError("program AD np.median axis must be supplied once")
+            return _trace_order_statistic(
+                _coerce_trace_array(args[0], self.context),
+                q=0.5,
+                axis=args[1] if len(args) == 2 else kwargs.get("axis"),
+                op_name="np.median",
+            )
+        if func in {np.quantile, np.percentile}:
+            if (
+                len(args) < 2
+                or len(args) > 3
+                or kwargs.keys()
+                - {
+                    "axis",
+                    "method",
+                    "interpolation",
+                }
+            ):
+                raise ValueError(
+                    f"program AD np.{func.__name__} supports array, scalar q, axis, and method"
+                )
+            if len(args) == 3 and "axis" in kwargs:
+                raise ValueError(f"program AD np.{func.__name__} axis must be supplied once")
+            if "method" in kwargs and "interpolation" in kwargs:
+                raise ValueError(f"program AD np.{func.__name__} method must be supplied once")
+            method = kwargs.get("method", kwargs.get("interpolation", "linear"))
+            return _trace_order_statistic(
+                _coerce_trace_array(args[0], self.context),
+                q=_normalise_order_statistic_q(
+                    args[1],
+                    percentile=func is np.percentile,
+                ),
+                axis=args[2] if len(args) == 3 else kwargs.get("axis"),
+                method=method,
+                op_name=f"np.{func.__name__}",
+            )
         if func is np.max:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("program AD np.max supports one array and optional axis")
@@ -2371,6 +2411,114 @@ def _trace_sort(
         tuple(map(int, sorted_indices.shape)),
         array.context,
     )
+
+
+def _normalise_order_statistic_axis(axis: object, rank: int) -> int | None:
+    if axis is None:
+        return None
+    if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD order-statistic axis must be a static integer or None")
+    try:
+        return _normalise_axis("axis", int(axis), rank)
+    except ValueError as exc:
+        if "out of bounds" in str(exc):
+            raise ValueError("program AD order-statistic axis out of bounds") from exc
+        raise
+
+
+def _normalise_order_statistic_method(method: object) -> None:
+    if not isinstance(method, str):
+        raise ValueError("program AD order-statistic method must be static string")
+    if method != "linear":
+        raise ValueError("program AD order-statistic reductions only supports method='linear'")
+
+
+def _normalise_order_statistic_q(q: object, *, percentile: bool) -> float:
+    if isinstance(q, (TraceADArray, TraceADScalar)):
+        raise ValueError("program AD order-statistic q must be static")
+    raw = np.asarray(q)
+    if raw.shape != ():
+        raise ValueError("program AD order-statistic reductions require scalar q")
+    if raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError("program AD order-statistic q must be static real numeric")
+    q_value = _as_real_scalar("program AD order-statistic q", raw.item())
+    if not math.isfinite(q_value):
+        raise ValueError("program AD order-statistic q must be finite")
+    if percentile:
+        if q_value < 0.0 or q_value > 100.0:
+            raise ValueError("program AD np.percentile q must be in [0, 100]")
+        return q_value / 100.0
+    if q_value < 0.0 or q_value > 1.0:
+        raise ValueError("program AD np.quantile q must be in [0, 1]")
+    return q_value
+
+
+def _require_strict_order_statistic_values(values: NDArray[np.float64], op_name: str) -> None:
+    if values.size == 0:
+        raise ValueError(f"program AD {op_name} requires at least one element")
+    if not bool(np.all(np.isfinite(values))):
+        raise ValueError(f"program AD {op_name} requires finite values")
+    if values.size <= 1:
+        return
+    sorted_values = np.sort(values.reshape(-1))
+    if bool(np.any(np.diff(sorted_values) == 0.0)):
+        raise ValueError(
+            "program AD order-statistic reductions require strictly ordered values; "
+            "equal values form a nondifferentiable selection boundary"
+        )
+
+
+def _trace_order_statistic_items(
+    items: tuple[TraceADScalar, ...],
+    *,
+    q: float,
+    op_name: str,
+) -> TraceADScalar:
+    values = np.array([item.primal for item in items], dtype=np.float64)
+    _require_strict_order_statistic_values(values, op_name)
+    order = np.argsort(values, kind="stable")
+    position = q * float(len(items) - 1)
+    lower = int(math.floor(position))
+    upper = int(math.ceil(position))
+    upper_weight = position - float(lower)
+    lower_item = items[int(order[lower])]
+    if lower == upper:
+        return lower_item
+    upper_item = items[int(order[upper])]
+    return lower_item * (1.0 - upper_weight) + upper_item * upper_weight
+
+
+def _trace_order_statistic(
+    array: TraceADArray,
+    *,
+    q: float,
+    axis: object = None,
+    method: object = "linear",
+    op_name: str,
+) -> TraceADScalar | TraceADArray:
+    _normalise_order_statistic_method(method)
+    axis_index = _normalise_order_statistic_axis(axis, array.ndim)
+    if axis_index is None:
+        return _trace_order_statistic_items(tuple(array._items), q=q, op_name=op_name)
+    reduced_shape = array.shape[:axis_index] + array.shape[axis_index + 1 :]
+    if reduced_shape == ():
+        return _trace_order_statistic_items(tuple(array._items), q=q, op_name=op_name)
+    items: list[TraceADScalar] = []
+    for reduced_flat in range(int(np.prod(reduced_shape))):
+        reduced_index = np.unravel_index(reduced_flat, reduced_shape)
+        source_items = tuple(
+            array._items[
+                int(
+                    np.ravel_multi_index(
+                        reduced_index[:axis_index] + (axis_position,) + reduced_index[axis_index:],
+                        array.shape,
+                    )
+                )
+            ]
+            for axis_position in range(array.shape[axis_index])
+        )
+        items.append(_trace_order_statistic_items(source_items, q=q, op_name=op_name))
+    return TraceADArray(tuple(items), reduced_shape, array.context)
 
 
 def _trace_flipud(array: TraceADArray) -> TraceADArray:
