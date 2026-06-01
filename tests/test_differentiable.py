@@ -11936,3 +11936,101 @@ def test_program_ad_linalg_eigh_registry_contract_and_root_export():
     metadata = contract.lowering_metadata
     assert metadata["static_derivative_factory"] == "program_ad_linalg_eigh_derivative_rule"
     assert metadata["nondifferentiable_boundary"] == "symmetric_matrix_distinct_eigenvalues"
+
+
+def _expected_real_simple_eigvals_adjoint(matrix, cotangent):
+    eigenvalues, right_eigenvectors = np.linalg.eig(matrix)
+    assert np.max(np.abs(eigenvalues.imag)) <= 1.0e-12
+    assert np.max(np.abs(right_eigenvectors.imag)) <= 1.0e-12
+    right = right_eigenvectors.real
+    left_rows = np.linalg.inv(right)
+    adjoint = np.zeros_like(matrix, dtype=np.float64)
+    for index, weight in enumerate(cotangent):
+        adjoint += float(weight) * np.outer(left_rows[index, :], right[:, index])
+    return adjoint
+
+
+def test_program_ad_linalg_eigvals_gradient_and_adjoint_for_real_simple_spectrum():
+    from scpn_quantum_control.differentiable import (
+        program_adjoint_gradient,
+        whole_program_value_and_grad,
+    )
+
+    values = np.array([2.0, 0.4, 0.15, 3.0], dtype=np.float64)
+    weights = np.array([0.75, -1.25], dtype=np.float64)
+
+    def objective(trace_values):
+        matrix = np.reshape(trace_values, (2, 2))
+        return np.sum(np.linalg.eigvals(matrix) * weights)
+
+    result = whole_program_value_and_grad(objective, values)
+    matrix = values.reshape(2, 2)
+    expected = _expected_real_simple_eigvals_adjoint(matrix, weights).reshape(-1)
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
+    )
+
+
+def test_program_ad_linalg_eigvals_direct_rule_returns_value_jvp_and_vjp():
+    from scpn_quantum_control.differentiable import program_ad_linalg_eigvals_derivative_rule
+
+    rule = program_ad_linalg_eigvals_derivative_rule((2, 2))
+    matrix = np.array([[2.0, 0.4], [0.15, 3.0]], dtype=np.float64)
+    tangent = np.array([[0.2, -0.1], [0.35, 0.4]], dtype=np.float64)
+    cotangent = np.array([1.25, -0.5], dtype=np.float64)
+    eigenvalues, right_eigenvectors = np.linalg.eig(matrix)
+    right = right_eigenvectors.real
+    left_rows = np.linalg.inv(right)
+
+    expected_jvp = np.array(
+        [float(left_rows[index, :] @ tangent @ right[:, index]) for index in range(2)],
+        dtype=np.float64,
+    )
+    expected_vjp = _expected_real_simple_eigvals_adjoint(matrix, cotangent).reshape(-1)
+
+    np.testing.assert_allclose(rule.value_fn(matrix.reshape(-1)), eigenvalues.real)
+    np.testing.assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)), expected_jvp
+    )
+    np.testing.assert_allclose(rule.vjp_rule(matrix.reshape(-1), cotangent), expected_vjp)
+
+
+def test_program_ad_linalg_eigvals_fails_closed_on_complex_or_degenerate_spectrum():
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    complex_spectrum = np.array([0.0, -1.0, 1.0, 0.0], dtype=np.float64)
+    degenerate = np.eye(2, dtype=np.float64).reshape(-1)
+
+    with pytest.raises(ValueError, match="real eigenvalues"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(np.linalg.eigvals(np.reshape(trace_values, (2, 2)))),
+            complex_spectrum,
+        )
+
+    with pytest.raises(ValueError, match="distinct eigenvalues"):
+        whole_program_value_and_grad(
+            lambda trace_values: np.sum(np.linalg.eigvals(np.reshape(trace_values, (2, 2)))),
+            degenerate,
+        )
+
+
+def test_program_ad_linalg_eigvals_registry_contract_and_root_export():
+    import scpn_quantum_control as scpn
+    from scpn_quantum_control.differentiable import (
+        primitive_contract_for,
+        program_ad_linalg_eigvals_derivative_rule,
+    )
+
+    assert (
+        scpn.program_ad_linalg_eigvals_derivative_rule is program_ad_linalg_eigvals_derivative_rule
+    )
+    contract = primitive_contract_for("scpn.program_ad.linalg:eigvals")
+    assert contract is not None
+    assert contract.shape_rule((np.eye(3, dtype=np.float64),)) == (3,)
+    metadata = contract.lowering_metadata
+    assert metadata["static_derivative_factory"] == "program_ad_linalg_eigvals_derivative_rule"
+    assert metadata["nondifferentiable_boundary"] == "real_simple_diagonalizable_spectrum"
