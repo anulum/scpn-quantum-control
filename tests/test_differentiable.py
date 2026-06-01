@@ -158,6 +158,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
     program_ad_linalg_trace_derivative_rule,
+    program_ad_product_einsum_derivative_rule,
     program_ad_product_inner_derivative_rule,
     program_ad_product_matmul_derivative_rule,
     program_ad_product_outer_derivative_rule,
@@ -3900,6 +3901,60 @@ def test_program_ad_einsum_handles_explicit_ranked_tensor_contractions() -> None
     np.testing.assert_allclose(
         program_adjoint_gradient(result), expected.reshape(-1), rtol=1.0e-12, atol=1.0e-12
     )
+
+
+def test_program_ad_einsum_registry_contract_and_direct_rule() -> None:
+    """Program AD einsum should be registry-gated and expose exact fixed-shape rules."""
+
+    subscripts = "abc,c,ab->"
+    shapes = ((2, 2, 2), (2,), (2, 2))
+    tensor = np.arange(1.0, 9.0, dtype=np.float64).reshape(shapes[0])
+    vector = np.array([2.0, -0.25], dtype=np.float64)
+    weights = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    values = np.concatenate([tensor.reshape(-1), vector.reshape(-1), weights.reshape(-1)])
+    tangent = np.linspace(-0.4, 0.7, values.size, dtype=np.float64)
+    cotangent = np.array([1.25], dtype=np.float64)
+
+    contract = primitive_contract_for("scpn.program_ad.product:einsum")
+    assert contract is not None
+    assert contract.shape_rule is not None
+    assert contract.dtype_rule is not None
+    assert contract.static_argument_rule is not None
+    assert contract.lowering_metadata["static_derivative_factory"] == (
+        "program_ad_product_einsum_derivative_rule"
+    )
+    assert contract.shape_rule((subscripts, tensor, vector, weights)) == ()
+    assert contract.static_argument_rule((subscripts, tensor, vector, weights)) == (
+        subscripts,
+        shapes,
+        ("abc", "c", "ab"),
+        "",
+    )
+
+    rule = program_ad_product_einsum_derivative_rule(subscripts, shapes)
+    tangent_operands = (
+        tangent[: tensor.size].reshape(tensor.shape),
+        tangent[tensor.size : tensor.size + vector.size].reshape(vector.shape),
+        tangent[tensor.size + vector.size :].reshape(weights.shape),
+    )
+    expected_jvp = (
+        np.einsum(subscripts, tangent_operands[0], vector, weights)
+        + np.einsum(subscripts, tensor, tangent_operands[1], weights)
+        + np.einsum(subscripts, tensor, vector, tangent_operands[2])
+    )
+    expected_vjp = np.concatenate(
+        [
+            (cotangent[0] * vector[None, None, :] * weights[:, :, None]).reshape(-1),
+            (cotangent[0] * np.sum(tensor * weights[:, :, None], axis=(0, 1))).reshape(-1),
+            (cotangent[0] * np.sum(tensor * vector[None, None, :], axis=2)).reshape(-1),
+        ]
+    )
+
+    np.testing.assert_allclose(
+        rule.value_fn(values), [np.einsum(subscripts, tensor, vector, weights)]
+    )
+    np.testing.assert_allclose(rule.jvp_rule(values, tangent), [expected_jvp])
+    np.testing.assert_allclose(rule.vjp_rule(values, cotangent), expected_vjp)
 
 
 def test_program_ad_reciprocal_ufunc_matches_exact_adjoint() -> None:
@@ -11623,6 +11678,9 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     )
     assert (
         scpn.program_ad_product_inner_derivative_rule is program_ad_product_inner_derivative_rule
+    )
+    assert (
+        scpn.program_ad_product_einsum_derivative_rule is program_ad_product_einsum_derivative_rule
     )
     assert (
         scpn.program_ad_product_outer_derivative_rule is program_ad_product_outer_derivative_rule

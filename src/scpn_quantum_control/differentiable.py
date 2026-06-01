@@ -4126,9 +4126,9 @@ def _trace_tensordot(
     )
 
 
-def _parse_trace_einsum_subscripts(
+def _parse_static_einsum_subscripts(
     subscripts: str,
-    operands: Sequence[TraceADArray],
+    operand_shapes: Sequence[Sequence[int]],
 ) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...], dict[str, int]]:
     normalised = subscripts.replace(" ", "")
     if "..." in normalised:
@@ -4140,7 +4140,7 @@ def _parse_trace_einsum_subscripts(
     input_spec, output_spec = normalised.split("->", 1)
     input_labels = tuple(tuple(part) for part in input_spec.split(","))
     output_labels = tuple(output_spec)
-    if len(input_labels) != len(operands):
+    if len(input_labels) != len(operand_shapes):
         raise ValueError("whole-program AD np.einsum operand count must match subscripts")
     if len(set(output_labels)) != len(output_labels):
         raise ValueError("whole-program AD np.einsum output labels must be unique")
@@ -4151,11 +4151,14 @@ def _parse_trace_einsum_subscripts(
 
     dimensions: dict[str, int] = {}
     seen_labels: set[str] = set()
-    for labels, operand in zip(input_labels, operands, strict=True):
-        if len(labels) != operand.ndim:
+    for labels, raw_shape in zip(input_labels, operand_shapes, strict=True):
+        shape = tuple(int(dimension) for dimension in raw_shape)
+        if len(labels) != len(shape):
             raise ValueError("whole-program AD np.einsum labels must match operand rank")
         local_dimensions: dict[str, int] = {}
-        for label, dimension in zip(labels, operand.shape, strict=True):
+        for label, dimension in zip(labels, shape, strict=True):
+            if dimension <= 0:
+                raise ValueError("whole-program AD np.einsum operand dimensions must be positive")
             seen_labels.add(label)
             previous = dimensions.get(label)
             if previous is not None and previous != dimension:
@@ -4169,6 +4172,16 @@ def _parse_trace_einsum_subscripts(
     if missing_output:
         raise ValueError("whole-program AD np.einsum output labels must appear in operands")
     return output_labels, input_labels, dimensions
+
+
+def _parse_trace_einsum_subscripts(
+    subscripts: str,
+    operands: Sequence[TraceADArray],
+) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...], dict[str, int]]:
+    return _parse_static_einsum_subscripts(
+        subscripts,
+        tuple(operand.shape for operand in operands),
+    )
 
 
 def _trace_einsum_scalar_at(
@@ -4222,6 +4235,7 @@ def _trace_einsum(
     if normalised == "ii->i" and len(operands) == 1:
         return _trace_diag(operands[0], context)
     trace_operands = tuple(_coerce_trace_array(operand, context) for operand in operands)
+    _require_program_ad_product_contract("einsum", (normalised, *trace_operands))
     output_labels, input_labels, dimensions = _parse_trace_einsum_subscripts(
         normalised,
         trace_operands,
@@ -8942,7 +8956,7 @@ _PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
 _PROGRAM_AD_PRODUCT_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_PRODUCT_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("dot", "vdot", "inner", "outer", "matmul")
+    for name in ("dot", "vdot", "inner", "outer", "matmul", "einsum")
 }
 
 _PROGRAM_AD_CUMULATIVE_PRIMITIVE_NAMESPACE = "scpn.program_ad.cumulative"
@@ -11871,6 +11885,136 @@ def program_ad_product_outer_derivative_rule(
     )
 
 
+def _normalise_program_ad_product_einsum_shapes(
+    operand_shapes: Sequence[Sequence[int]],
+) -> tuple[tuple[int, ...], ...]:
+    shapes = tuple(tuple(int(dimension) for dimension in shape) for shape in operand_shapes)
+    if not shapes:
+        raise ValueError("program AD product einsum derivative rule requires operands")
+    if any(any(dimension <= 0 for dimension in shape) for shape in shapes):
+        raise ValueError("program AD product einsum derivative rule dimensions must be positive")
+    return shapes
+
+
+def _split_program_ad_product_einsum_operands(
+    name: str,
+    values: NDArray[np.float64],
+    shapes: tuple[tuple[int, ...], ...],
+) -> tuple[NDArray[np.float64], ...]:
+    vector = _as_real_numeric_array(f"program AD product einsum {name}", values).reshape(-1)
+    expected = sum(_program_ad_shape_static_size(shape) for shape in shapes)
+    if vector.size != expected:
+        raise ValueError("program AD product einsum direct rule values size must match shapes")
+    operands: list[NDArray[np.float64]] = []
+    offset = 0
+    for shape in shapes:
+        size = _program_ad_shape_static_size(shape)
+        operands.append(vector[offset : offset + size].reshape(shape))
+        offset += size
+    return tuple(operands)
+
+
+def program_ad_product_einsum_derivative_rule(
+    subscripts: str,
+    operand_shapes: Sequence[Sequence[int]],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for fixed explicit ``np.einsum`` signatures."""
+
+    shapes = _normalise_program_ad_product_einsum_shapes(operand_shapes)
+    normalised = subscripts.replace(" ", "")
+    output_labels, input_labels, dimensions = _parse_static_einsum_subscripts(
+        normalised,
+        shapes,
+    )
+    output_shape = tuple(dimensions[label] for label in output_labels)
+    output_size = _program_ad_shape_static_size(output_shape)
+
+    def flat_einsum(operands: tuple[NDArray[np.float64], ...]) -> NDArray[np.float64]:
+        result = np.einsum(normalised, *operands)
+        return _program_ad_float64_vector_result(result)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        operands = _split_program_ad_product_einsum_operands("values", values, shapes)
+        return flat_einsum(operands)
+
+    def jvp_rule(
+        values: NDArray[np.float64],
+        tangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        operands = _split_program_ad_product_einsum_operands("values", values, shapes)
+        tangent_operands = _split_program_ad_product_einsum_operands("tangent", tangent, shapes)
+        total = np.zeros(output_size, dtype=np.float64)
+        for operand_index, tangent_operand in enumerate(tangent_operands):
+            varied = operands[:operand_index] + (tangent_operand,) + operands[operand_index + 1 :]
+            total += flat_einsum(varied)
+        return _program_ad_float64_vector_result(total)
+
+    def vjp_rule(
+        values: NDArray[np.float64],
+        cotangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        operands = _split_program_ad_product_einsum_operands("values", values, shapes)
+        cotangent_vector = _as_real_numeric_array(
+            "program AD product einsum cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != output_size:
+            raise ValueError(
+                "program AD product einsum VJP cotangent size must match output shape"
+            )
+        adjoints: list[NDArray[np.float64]] = []
+        for operand_index, operand in enumerate(operands):
+            operand_adjoint = np.zeros_like(operand, dtype=np.float64)
+            for element_index in np.ndindex(operand.shape):
+                basis = np.zeros_like(operand, dtype=np.float64)
+                basis[element_index] = 1.0
+                varied = operands[:operand_index] + (basis,) + operands[operand_index + 1 :]
+                operand_adjoint[element_index] = float(
+                    np.dot(cotangent_vector, flat_einsum(varied))
+                )
+            adjoints.append(operand_adjoint.reshape(-1))
+        return _program_ad_float64_vector_result(np.concatenate(adjoints))
+
+    label_signature = "_".join(
+        "".join(labels) for labels in (*input_labels, ("".join(output_labels),))
+    )
+    shape_signature = "_by_".join(_program_ad_shape_signature(shape) for shape in shapes)
+    return CustomDerivativeRule(
+        name=f"program_ad_product_einsum_{label_signature}_{shape_signature}_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_product_einsum_unconfigured_value(
+    values: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    del values
+    raise ValueError(
+        "program AD product einsum direct rule requires fixed subscripts and operand shapes"
+    )
+
+
+def _program_ad_product_einsum_unconfigured_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    del values, tangent
+    raise ValueError(
+        "program AD product einsum JVP rule requires fixed subscripts and operand shapes"
+    )
+
+
+def _program_ad_product_einsum_unconfigured_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    del values, cotangent
+    raise ValueError(
+        "program AD product einsum VJP rule requires fixed subscripts and operand shapes"
+    )
+
+
 def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "dot":
         return CustomDerivativeRule(
@@ -11906,6 +12050,13 @@ def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
             value_fn=_program_ad_product_matmul_value,
             jvp_rule=_program_ad_product_matmul_jvp,
             vjp_rule=_program_ad_product_matmul_vjp,
+        )
+    if name == "einsum":
+        return CustomDerivativeRule(
+            name="program_ad_product_einsum_static_signature_required_rule",
+            value_fn=_program_ad_product_einsum_unconfigured_value,
+            jvp_rule=_program_ad_product_einsum_unconfigured_jvp,
+            vjp_rule=_program_ad_product_einsum_unconfigured_vjp,
         )
     raise ValueError(f"unsupported program AD product primitive {name}")
 
@@ -12742,10 +12893,24 @@ def _program_ad_product_outer_shape(args: tuple[object, ...]) -> tuple[int, ...]
     return (lhs_size, rhs_size)
 
 
+def _program_ad_product_einsum_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) < 2:
+        raise ValueError("program AD product einsum shape rule requires subscripts and operands")
+    if not isinstance(args[0], str):
+        raise ValueError("program AD product einsum shape rule requires static subscripts")
+    operand_shapes = tuple(_program_ad_array_shape_of(arg) for arg in args[1:])
+    output_labels, _input_labels, dimensions = _parse_static_einsum_subscripts(
+        args[0],
+        operand_shapes,
+    )
+    return tuple(dimensions[label] for label in output_labels)
+
+
 def _program_ad_product_dtype_rule(args: tuple[object, ...]) -> str:
-    if len(args) != 2:
-        raise ValueError("program AD product dtype rule requires two operands")
-    dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in args)
+    product_args = args[1:] if args and isinstance(args[0], str) else args
+    if not product_args:
+        raise ValueError("program AD product dtype rule requires operands")
+    dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in product_args)
     return str(np.result_type(*dtypes))
 
 
@@ -13061,6 +13226,18 @@ def _program_ad_selection_clip_static_arguments(args: tuple[object, ...]) -> tup
 
 
 def _program_ad_product_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if args and isinstance(args[0], str):
+        operand_shapes = tuple(_program_ad_array_shape_of(arg) for arg in args[1:])
+        output_labels, input_labels, _dimensions = _parse_static_einsum_subscripts(
+            args[0],
+            operand_shapes,
+        )
+        return (
+            args[0].replace(" ", ""),
+            operand_shapes,
+            tuple("".join(labels) for labels in input_labels),
+            "".join(output_labels),
+        )
     if len(args) != 2:
         raise ValueError("program AD product static rule requires two operands")
     return ()
@@ -13143,6 +13320,7 @@ _PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "inner": _program_ad_product_inner_shape,
     "outer": _program_ad_product_outer_shape,
     "matmul": _program_ad_product_matmul_shape,
+    "einsum": _program_ad_product_einsum_shape,
 }
 
 _PROGRAM_AD_CUMULATIVE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -13515,6 +13693,50 @@ def _program_ad_product_batching_rule(
     axes: tuple[int | None, ...],
     out_axes: int,
 ) -> object:
+    if args and isinstance(args[0], str):
+        if len(args) != len(axes):
+            raise ValueError("program AD product einsum batching axes must match arguments")
+        if axes[0] is not None:
+            raise ValueError("program AD product einsum batching requires static subscripts")
+        arrays = tuple(
+            _as_real_numeric_array(f"program AD product einsum batched operand {index}", arg)
+            for index, arg in enumerate(args[1:])
+        )
+        if not arrays:
+            raise ValueError("program AD product einsum batching requires operands")
+        if all(axis is None for axis in axes[1:]):
+            return _as_real_numeric_array(
+                "program AD product einsum batched output", function(*args)
+            )
+        einsum_mapped_axes: list[int | None] = [
+            None if axis is None else _normalise_axis(f"axes[{index + 1}]", axis, array.ndim)
+            for index, (axis, array) in enumerate(zip(axes[1:], arrays, strict=True))
+        ]
+        batch_sizes = {
+            int(array.shape[axis])
+            for array, axis in zip(arrays, einsum_mapped_axes, strict=True)
+            if axis is not None
+        }
+        if len(batch_sizes) != 1:
+            raise ValueError("program AD product einsum batching axes must share one batch size")
+        batch_size = batch_sizes.pop()
+        outputs = []
+        for batch_index in range(batch_size):
+            sliced_args = (
+                args[0],
+                *(
+                    array if axis is None else np.take(array, batch_index, axis=axis)
+                    for array, axis in zip(arrays, einsum_mapped_axes, strict=True)
+                ),
+            )
+            outputs.append(
+                _as_real_numeric_array(
+                    "program AD product einsum batched output",
+                    function(*sliced_args),
+                )
+            )
+        stacked = np.stack(outputs, axis=0)
+        return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
     if len(args) != 2 or len(axes) != 2:
         raise ValueError("program AD product batching requires two operands and two axes")
     arrays = tuple(
@@ -13555,6 +13777,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "inner": "program_ad_product_inner_derivative_rule",
         "outer": "program_ad_product_outer_derivative_rule",
         "matmul": "program_ad_product_matmul_derivative_rule",
+        "einsum": "program_ad_product_einsum_derivative_rule",
     }
     static_signatures = {
         "dot": "none",
@@ -13562,6 +13785,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "inner": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         "outer": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         "matmul": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        "einsum": "subscripts:explicit_static;operand_shapes:ranked_tensor_shapes",
     }
     nondifferentiable_boundaries = {
         "dot": "inner_dimension_alignment",
@@ -13569,6 +13793,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "inner": "last_dimension_alignment",
         "outer": "flattened_outer_product",
         "matmul": "core_dimension_alignment",
+        "einsum": "explicit_static_tensor_contraction",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -13576,7 +13801,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir_op": f"scpn_diff.product.{name}",
         "llvm": "blocked_until_executable_product_lowering",
         "rust": "blocked_until_polyglot_product_ad",
-        "static_argument_rule": "none",
+        "static_argument_rule": "required" if name == "einsum" else "none",
         "static_derivative_factory": static_factories[name],
         "static_signature": static_signatures[name],
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],
@@ -20446,6 +20671,7 @@ __all__ = [
     "program_ad_linalg_solve_derivative_rule",
     "program_ad_linalg_svdvals_derivative_rule",
     "program_ad_linalg_trace_derivative_rule",
+    "program_ad_product_einsum_derivative_rule",
     "program_ad_product_inner_derivative_rule",
     "program_ad_product_matmul_derivative_rule",
     "program_ad_product_outer_derivative_rule",
