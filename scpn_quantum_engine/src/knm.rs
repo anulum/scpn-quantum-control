@@ -44,12 +44,8 @@ pub fn build_knm_inner(n: usize, k_base: f64, alpha: f64) -> Array2<f64> {
     }
 
     // Calibration anchors (Paper 27 Table 2)
-    let anchors: [(usize, usize, f64); 4] = [
-        (0, 1, 0.302),
-        (1, 2, 0.201),
-        (2, 3, 0.252),
-        (3, 4, 0.154),
-    ];
+    let anchors: [(usize, usize, f64); 4] =
+        [(0, 1, 0.302), (1, 2, 0.201), (2, 3, 0.252), (3, 4, 0.154)];
     for &(i, j, val) in &anchors {
         if i < n && j < n {
             k[[i, j]] = val;

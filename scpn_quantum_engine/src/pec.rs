@@ -56,7 +56,13 @@ pub fn pec_sample_parallel(
     crate::validation::validate_n(n_gates, "n_gates")?;
     crate::validation::validate_n(n_samples, "n_samples")?;
 
-    Ok(pec_sample_parallel_inner(gate_error_rate, n_gates, n_samples, base_exp_z, seed))
+    Ok(pec_sample_parallel_inner(
+        gate_error_rate,
+        n_gates,
+        n_samples,
+        base_exp_z,
+        seed,
+    ))
 }
 
 /// Pure Rust PEC sampling (no PyO3).
@@ -157,13 +163,7 @@ mod tests {
     #[test]
     fn test_pec_sample_parallel_zero_error() {
         let (val, overhead, _) = pec_sample_parallel_inner(0.0, 5, 1000, 0.8, 42);
-        assert!(
-            (overhead - 1.0).abs() < 1e-12,
-            "zero error → overhead = 1"
-        );
-        assert!(
-            (val - 0.8).abs() < 1e-6,
-            "zero error → mitigated ≈ base"
-        );
+        assert!((overhead - 1.0).abs() < 1e-12, "zero error → overhead = 1");
+        assert!((val - 0.8).abs() < 1e-6, "zero error → mitigated ≈ base");
     }
 }

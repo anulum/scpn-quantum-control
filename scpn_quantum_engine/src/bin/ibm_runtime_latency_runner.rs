@@ -5,10 +5,10 @@
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
 
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
-use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderValue};
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
@@ -99,7 +99,10 @@ fn build_headers(token: &str, service_crn: &str) -> Result<HeaderMap> {
     let mut headers = HeaderMap::new();
     headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
     headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-    headers.insert("User-Agent", HeaderValue::from_static("python-requests/2.32.5"));
+    headers.insert(
+        "User-Agent",
+        HeaderValue::from_static("python-requests/2.32.5"),
+    );
     headers.insert("IBM-API-Version", HeaderValue::from_static(IBM_API_VERSION));
     headers.insert(
         "Service-CRN",
@@ -113,7 +116,12 @@ fn build_headers(token: &str, service_crn: &str) -> Result<HeaderMap> {
     Ok(headers)
 }
 
-fn submit_job(client: &Client, base_url: &str, headers: &HeaderMap, payload: &Value) -> Result<String> {
+fn submit_job(
+    client: &Client,
+    base_url: &str,
+    headers: &HeaderMap,
+    payload: &Value,
+) -> Result<String> {
     let response = client
         .post(format!("{}/jobs", base_url.trim_end_matches('/')))
         .headers(headers.clone())

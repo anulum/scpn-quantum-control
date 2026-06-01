@@ -50,9 +50,7 @@ pub fn hs_inner_real(a: &Array2<C64>, b: &Array2<C64>) -> f64 {
 pub fn ct_matvec(a: &Array2<C64>, x: &Array1<C64>) -> Array1<C64> {
     let (m, n) = a.dim();
     Array1::from_shape_fn(n, |col| {
-        (0..m)
-            .map(|row| a[[row, col]].conj() * x[row])
-            .sum::<C64>()
+        (0..m).map(|row| a[[row, col]].conj() * x[row]).sum::<C64>()
     })
 }
 
@@ -72,12 +70,7 @@ mod tests {
     fn test_conj_transpose_hermitian() {
         let a = Array2::from_shape_vec(
             (2, 2),
-            vec![
-                c64(1.0, 0.0),
-                c64(2.0, 3.0),
-                c64(2.0, -3.0),
-                c64(4.0, 0.0),
-            ],
+            vec![c64(1.0, 0.0), c64(2.0, 3.0), c64(2.0, -3.0), c64(4.0, 0.0)],
         )
         .unwrap();
         let ah = conj_transpose(&a);
@@ -91,13 +84,16 @@ mod tests {
     #[test]
     fn test_hs_inner_real_identity() {
         let d = 2;
-        let id = Array2::from_shape_fn((d, d), |(i, j)| {
-            if i == j {
-                c64(1.0, 0.0)
-            } else {
-                c64(0.0, 0.0)
-            }
-        });
+        let id = Array2::from_shape_fn(
+            (d, d),
+            |(i, j)| {
+                if i == j {
+                    c64(1.0, 0.0)
+                } else {
+                    c64(0.0, 0.0)
+                }
+            },
+        );
         let ip = hs_inner_real(&id, &id);
         assert!((ip - 1.0).abs() < 1e-12);
     }
@@ -106,22 +102,12 @@ mod tests {
     fn test_hs_inner_real_orthogonal_paulis() {
         let x = Array2::from_shape_vec(
             (2, 2),
-            vec![
-                c64(0.0, 0.0),
-                c64(1.0, 0.0),
-                c64(1.0, 0.0),
-                c64(0.0, 0.0),
-            ],
+            vec![c64(0.0, 0.0), c64(1.0, 0.0), c64(1.0, 0.0), c64(0.0, 0.0)],
         )
         .unwrap();
         let z = Array2::from_shape_vec(
             (2, 2),
-            vec![
-                c64(1.0, 0.0),
-                c64(0.0, 0.0),
-                c64(0.0, 0.0),
-                c64(-1.0, 0.0),
-            ],
+            vec![c64(1.0, 0.0), c64(0.0, 0.0), c64(0.0, 0.0), c64(-1.0, 0.0)],
         )
         .unwrap();
         let ip = hs_inner_real(&x, &z);
@@ -130,13 +116,16 @@ mod tests {
 
     #[test]
     fn test_ct_matvec_identity() {
-        let id = Array2::from_shape_fn((2, 2), |(i, j)| {
-            if i == j {
-                c64(1.0, 0.0)
-            } else {
-                c64(0.0, 0.0)
-            }
-        });
+        let id = Array2::from_shape_fn(
+            (2, 2),
+            |(i, j)| {
+                if i == j {
+                    c64(1.0, 0.0)
+                } else {
+                    c64(0.0, 0.0)
+                }
+            },
+        );
         let x = Array1::from_vec(vec![c64(1.0, 2.0), c64(3.0, 4.0)]);
         let result = ct_matvec(&id, &x);
         // I† = I, so result should equal x

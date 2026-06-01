@@ -165,7 +165,8 @@ pub fn qpetri_campaign_aggregate<'py>(
     }
 
     let outputs = validate_contiguous_slice(&output_markings_flat, "output_markings_flat")?;
-    let activity = validate_contiguous_slice(&transition_activity_flat, "transition_activity_flat")?;
+    let activity =
+        validate_contiguous_slice(&transition_activity_flat, "transition_activity_flat")?;
     let entropy = validate_contiguous_slice(&entropies, "entropies")?;
     let purity = validate_contiguous_slice(&purities, "purities")?;
 
