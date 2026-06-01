@@ -84,6 +84,7 @@ from scpn_quantum_control import (
     DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
     PrimitiveLoweringStatus,
+    program_ad_interpolation_interp_derivative_rule,
     program_ad_stencil_gradient_derivative_rule,
     build_compiler_ad_transform_plan,
     compile_compiler_ad_transform_plan_to_mlir,
@@ -141,6 +142,16 @@ kernel = compile_custom_derivative_rule_to_executable(
     CompilerADExecutableConfig(),
 )
 kernel.jvp(values, tangent)
+
+interp_rule = program_ad_interpolation_interp_derivative_rule(
+    sample_shape=(3,),
+    xp=np.array([0.0, 1.0, 2.5, 4.0], dtype=np.float64),
+    value_shape=(4,),
+)
+interp_rule.vjp(
+    np.array([0.25, 1.75, 4.5, -1.0, 2.0, 0.5, 3.0], dtype=np.float64),
+    np.ones(3, dtype=np.float64),
+)
 
 gradient_rule = program_ad_stencil_gradient_derivative_rule(
     source_shape=(2, 3),

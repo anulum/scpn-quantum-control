@@ -151,6 +151,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_cumulative_cumsum_derivative_rule,
     program_ad_cumulative_diff_derivative_rule,
     program_ad_elementwise_binary_derivative_rule,
+    program_ad_interpolation_interp_derivative_rule,
     program_ad_linalg_diag_derivative_rule,
     program_ad_linalg_diagflat_derivative_rule,
     program_ad_linalg_eig_derivative_rule,
@@ -7775,6 +7776,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_array_take_along_axis_derivative_rule",
             "source_shape:ranked_tensor_shape;indices_shape_axis",
         ),
+        "scpn.program_ad.interpolation:interp": (
+            "program_ad_interpolation_interp_derivative_rule",
+            "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period",
+        ),
         "scpn.program_ad.shape:reshape": (
             "program_ad_shape_reshape_derivative_rule",
             "source_shape:ranked_tensor_shape;target_shape",
@@ -9894,6 +9899,108 @@ def test_program_ad_interp_fails_closed_invalid_static_contracts() -> None:
         )
 
 
+def test_program_ad_interp_primitive_contract_and_direct_rule() -> None:
+    """Static interpolation contracts should expose exact piecewise JVP/VJP rules."""
+
+    samples = np.array([0.25, 1.75, 4.5], dtype=np.float64)
+    grid = np.array([0.0, 1.0, 2.5, 4.0], dtype=np.float64)
+    values = np.array([-1.0, 2.0, 0.5, 3.0], dtype=np.float64)
+    tangent_samples = np.array([0.5, -0.25, 1.0], dtype=np.float64)
+    tangent_values = np.array([1.25, -0.75, 0.5, -1.5], dtype=np.float64)
+    cotangent = np.array([1.5, -0.5, 2.0], dtype=np.float64)
+    contract = primitive_contract_for("scpn.program_ad.interpolation:interp")
+
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.interpolation", "interp", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.interpolation.interp"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_interpolation_interp_derivative_rule"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((samples, grid, values, None, None, None)) == samples.shape
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((samples, grid, values, None, None, None)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((samples, grid, values, None, None, None)) == (
+        samples.shape,
+        ("xp", (4,), (0.0, 1.0, 2.5, 4.0)),
+        (4,),
+        None,
+        None,
+        None,
+    )
+
+    rule = program_ad_interpolation_interp_derivative_rule(samples.shape, grid, values.shape)
+    assert rule.name == "program_ad_interpolation_interp_x3_grid4_static_direct_rule"
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    source = np.concatenate([samples, values])
+    tangent = np.concatenate([tangent_samples, tangent_values])
+    np.testing.assert_allclose(rule.value_fn(source), np.interp(samples, grid, values))
+
+    expected_jvp = np.array(
+        [
+            3.0 * tangent_samples[0] + 0.75 * tangent_values[0] + 0.25 * tangent_values[1],
+            -1.0 * tangent_samples[1] + 0.5 * tangent_values[1] + 0.5 * tangent_values[2],
+            tangent_values[-1],
+        ],
+        dtype=np.float64,
+    )
+    np.testing.assert_allclose(rule.jvp_rule(source, tangent), expected_jvp)
+
+    expected_vjp = np.zeros_like(source)
+    expected_vjp[0] += cotangent[0] * 3.0
+    expected_vjp[3] += cotangent[0] * 0.75
+    expected_vjp[4] += cotangent[0] * 0.25
+    expected_vjp[1] += cotangent[1] * -1.0
+    expected_vjp[4] += cotangent[1] * 0.5
+    expected_vjp[5] += cotangent[1] * 0.5
+    expected_vjp[6] += cotangent[2]
+    np.testing.assert_allclose(rule.vjp_rule(source, cotangent), expected_vjp)
+
+
+def test_program_ad_interp_batching_rule_maps_sample_batches() -> None:
+    """Interpolation batching should map sample batches while keeping grid data static."""
+
+    samples = np.array([[0.25, 1.75], [0.5, 3.25]], dtype=np.float64)
+    grid = np.array([0.0, 1.0, 2.5, 4.0], dtype=np.float64)
+    values = np.array([-1.0, 2.0, 0.5, 3.0], dtype=np.float64)
+    contract = primitive_contract_for("scpn.program_ad.interpolation:interp")
+    assert contract.batching_rule is not None
+
+    def interp_fn(
+        x: np.ndarray,
+        xp: np.ndarray,
+        fp: np.ndarray,
+        left: float | None,
+        right: float | None,
+        period: float | None,
+    ) -> np.ndarray:
+        return np.interp(x, xp, fp, left=left, right=right, period=period)
+
+    batched = contract.batching_rule(
+        interp_fn,
+        (samples, grid, values, None, None, None),
+        (0, None, None, None, None, None),
+        0,
+    )
+    expected = np.stack(
+        [np.interp(samples[index], grid, values) for index in range(samples.shape[0])],
+        axis=0,
+    )
+    np.testing.assert_allclose(batched, expected, rtol=1.0e-12, atol=1.0e-12)
+
+    with pytest.raises(ValueError, match="keeps xp, fp, left, right, and period static"):
+        contract.batching_rule(
+            interp_fn,
+            (samples, grid, values, None, None, None),
+            (0, None, 0, None, None, None),
+            0,
+        )
+
+
 def test_program_ad_convolve_matches_signal_kernel_adjoint() -> None:
     """Program AD np.convolve should replay exact signal and kernel adjoints."""
 
@@ -11959,6 +12066,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert (
         scpn.program_ad_stencil_gradient_derivative_rule
         is program_ad_stencil_gradient_derivative_rule
+    )
+    assert (
+        scpn.program_ad_interpolation_interp_derivative_rule
+        is program_ad_interpolation_interp_derivative_rule
     )
     assert (
         scpn.program_ad_array_take_along_axis_derivative_rule
