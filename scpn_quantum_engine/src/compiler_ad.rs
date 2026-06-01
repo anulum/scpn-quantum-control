@@ -541,6 +541,80 @@ pub fn matrix_frobenius_norm_squared_gradient_inner(
     Ok(values.iter().map(|value| 2.0 * value).collect())
 }
 
+fn checked_matrix_2x2_determinant_values(
+    values: &[f64],
+    label: &str,
+    primitive: &str,
+) -> Result<[f64; 4], String> {
+    if values.len() != 4 {
+        return Err(format!(
+            "{primitive} requires row-major 2x2 matrix {label} values"
+        ));
+    }
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{label}[{index}] is not finite ({value})"));
+        }
+    }
+    Ok([values[0], values[1], values[2], values[3]])
+}
+
+/// Evaluate det(A) for a row-major finite real 2x2 matrix.
+pub fn matrix_2x2_determinant_value_inner(values: &[f64]) -> Result<[f64; 1], String> {
+    let [a00, a01, a10, a11] = checked_matrix_2x2_determinant_values(
+        values,
+        "values",
+        "native matrix 2x2 determinant Rust value kernel",
+    )?;
+    Ok([a00 * a11 - a01 * a10])
+}
+
+/// Apply the exact JVP for det(A) over row-major 2x2 matrices.
+pub fn matrix_2x2_determinant_jvp_inner(
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 1], String> {
+    let [a00, a01, a10, a11] = checked_matrix_2x2_determinant_values(
+        values,
+        "values",
+        "native matrix 2x2 determinant Rust JVP kernel",
+    )?;
+    let [t00, t01, t10, t11] = checked_matrix_2x2_determinant_values(
+        tangent,
+        "tangent",
+        "native matrix 2x2 determinant Rust JVP kernel",
+    )?;
+    Ok([t00 * a11 + a00 * t11 - t01 * a10 - a01 * t10])
+}
+
+/// Apply the exact VJP for det(A) over row-major 2x2 matrices.
+pub fn matrix_2x2_determinant_vjp_inner(
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<[f64; 4], String> {
+    let [a00, a01, a10, a11] = checked_matrix_2x2_determinant_values(
+        values,
+        "values",
+        "native matrix 2x2 determinant Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<1>(
+        cotangent,
+        "cotangent",
+        "native matrix 2x2 determinant Rust VJP kernel",
+    )?;
+    Ok([
+        cotangent[0] * a11,
+        -cotangent[0] * a10,
+        -cotangent[0] * a01,
+        cotangent[0] * a00,
+    ])
+}
+
+/// Return the scalar-output adjugate gradient for det(A).
+pub fn matrix_2x2_determinant_gradient_inner(values: &[f64]) -> Result<[f64; 4], String> {
+    matrix_2x2_determinant_vjp_inner(values, &[1.0])
+}
+
 fn checked_vector_dot_values(
     dimension: usize,
     values: &[f64],
@@ -972,6 +1046,60 @@ pub fn matrix_frobenius_norm_squared_gradient<'py>(
     Ok(PyArray1::from_vec(py, result))
 }
 
+/// PyO3 wrapper for Rust 2x2 determinant value evaluation.
+#[pyfunction]
+pub fn matrix_2x2_determinant_value<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_2x2_determinant_value_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust 2x2 determinant JVP evaluation.
+#[pyfunction]
+pub fn matrix_2x2_determinant_jvp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = matrix_2x2_determinant_jvp_inner(values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust 2x2 determinant VJP evaluation.
+#[pyfunction]
+pub fn matrix_2x2_determinant_vjp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = matrix_2x2_determinant_vjp_inner(values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust 2x2 determinant gradient evaluation.
+#[pyfunction]
+pub fn matrix_2x2_determinant_gradient<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_2x2_determinant_gradient_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
 /// PyO3 wrapper for Rust vector dot value evaluation.
 #[pyfunction]
 pub fn vector_dot_value<'py>(
@@ -1279,6 +1407,45 @@ mod tests {
         assert!(cotangent_count.contains("requires 1 cotangent value"));
         let zero_dimension = matrix_frobenius_norm_squared_value_inner(0, &[1.0]).unwrap_err();
         assert!(zero_dimension.contains("dimension must be positive"));
+    }
+
+    #[test]
+    fn matrix_2x2_determinant_value_jvp_vjp_and_gradient_match_closed_form() {
+        let values = [2.0, -1.0, 0.5, 3.0];
+        let tangent = [0.1, -0.2, 0.3, 0.4];
+        let cotangent = [1.25];
+
+        assert_close(
+            &matrix_2x2_determinant_value_inner(&values).unwrap(),
+            &[6.5],
+        );
+        assert_close(
+            &matrix_2x2_determinant_jvp_inner(&values, &tangent).unwrap(),
+            &[1.5],
+        );
+        assert_close(
+            &matrix_2x2_determinant_vjp_inner(&values, &cotangent).unwrap(),
+            &[3.75, -0.625, 1.25, 2.5],
+        );
+        assert_close(
+            &matrix_2x2_determinant_gradient_inner(&values).unwrap(),
+            &[3.0, -0.5, 1.0, 2.0],
+        );
+    }
+
+    #[test]
+    fn matrix_2x2_determinant_boundaries_fail_closed() {
+        let wrong_count = matrix_2x2_determinant_value_inner(&[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("row-major 2x2 matrix values"));
+        let non_finite =
+            matrix_2x2_determinant_gradient_inner(&[2.0, f64::NAN, 0.5, 3.0]).unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let tangent_count =
+            matrix_2x2_determinant_jvp_inner(&[2.0, -1.0, 0.5, 3.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("row-major 2x2 matrix tangent values"));
+        let cotangent_count =
+            matrix_2x2_determinant_vjp_inner(&[2.0, -1.0, 0.5, 3.0], &[1.0, 2.0]).unwrap_err();
+        assert!(cotangent_count.contains("requires 1 cotangent value"));
     }
 
     #[test]

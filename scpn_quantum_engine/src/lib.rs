@@ -195,6 +195,22 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_determinant_value,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_determinant_jvp,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_determinant_vjp,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_determinant_gradient,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
         compiler_ad::matrix_quadratic_form_value,
         m
     )?)?;

@@ -89,6 +89,7 @@ from scpn_quantum_control import (
     compile_vector_squared_norm_ad_to_native_llvm_jit,
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
+    make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
     make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
     make_matrix_trace_native_llvm_jit_primitive_transform,
@@ -311,6 +312,15 @@ row-major matrix inputs with exact `2*A` JVP, VJP, and gradient output.
 `compile_matrix_2x2_determinant_ad_to_native_llvm_jit()` adds a fixed-size
 polynomial determinant primitive for row-major 2x2 matrices with exact
 adjugate-gradient JVP, VJP, and gradient output.
+The optional `scpn_quantum_engine` Rust extension mirrors this determinant
+primitive through `matrix_2x2_determinant_value()`,
+`matrix_2x2_determinant_jvp()`, `matrix_2x2_determinant_vjp()`, and
+`matrix_2x2_determinant_gradient()`. The
+`make_matrix_2x2_determinant_native_llvm_jit_primitive_transform()` helper
+binds the determinant into the primitive registry with shape, dtype,
+static-signature, batching, native LLVM/JIT, and verified Rust PyO3 metadata so
+the planner clears the Rust backend hard gap only for that exact row-major 2x2
+polynomial signature.
 `compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit()` adds a bounded
 real-simple nonsymmetric 2x2 spectral primitive over row-major matrix inputs
 with exact closed-form eigenvalue, JVP, and VJP kernels; complex spectra,
