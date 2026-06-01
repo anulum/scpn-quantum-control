@@ -90,6 +90,7 @@ from scpn_quantum_control import (
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
     make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
+    make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
     make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
     make_matrix_trace_native_llvm_jit_primitive_transform,
@@ -352,6 +353,14 @@ verified Rust metadata and lowering contract.
 nonsingular row-major 2x2 inverse primitive with exact rational value, JVP,
 and VJP kernels; singular matrices and the public vector-output gradient helper
 remain fail-closed.
+The optional `scpn_quantum_engine` Rust extension mirrors this inverse
+primitive through `matrix_2x2_inverse_value()`, `matrix_2x2_inverse_jvp()`,
+`matrix_2x2_inverse_vjp()`, and `matrix_2x2_inverse_sum_gradient()`. The
+`make_matrix_2x2_inverse_native_llvm_jit_primitive_transform()` helper binds
+the inverse into the primitive registry with the same nonsingular fail-closed
+boundary, native LLVM/JIT lowering, primitive batching, and verified Rust PyO3
+metadata. The Rust sum-gradient export is provenance for the vector-output
+kernel; public `gradient()` remains scalar-output fail-closed.
 `compile_matrix_2x2_solve_ad_to_native_llvm_jit()` adds a bounded nonsingular
 row-major `A x = b` primitive over concatenated `[A, b]` inputs with exact
 linear-solve value, JVP, and VJP kernels; singular matrices and the public

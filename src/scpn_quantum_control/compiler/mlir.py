@@ -7330,6 +7330,90 @@ def make_matrix_2x2_inverse_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def make_matrix_2x2_inverse_native_llvm_jit_primitive_transform(
+    identity: PrimitiveIdentity | str,
+    rule: CustomDerivativeRule,
+    *,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> PrimitiveTransformRule:
+    """Create a complete Rust/PyO3 + native LLVM/JIT nonsingular 2x2 inverse contract."""
+
+    primitive_identity = PrimitiveIdentity.parse(identity)
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError(
+            "native 2x2 inverse primitive transform requires backend='native_llvm_jit'"
+        )
+    values = _as_native_matrix_2x2_inverse_values("sample_values", sample_values)
+    tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+    kernel = compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
+        rule,
+        sample_values=values,
+        config=compile_config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+    static_signature = "primitive:inverse;dimension:2;layout:row_major"
+    return PrimitiveTransformRule(
+        identity=primitive_identity,
+        derivative_rule=rule,
+        batching_rule=make_executable_ad_kernel_batching_rule(kernel, method="value"),
+        lowering_rule=make_matrix_2x2_inverse_native_llvm_jit_lowering_rule(
+            sample_values=values,
+            config=compile_config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        ),
+        lowering_metadata={
+            "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+            "mlir_op": "scpn_diff.native_matrix_2x2_inverse",
+            "mlir_runtime_verification": "verified: native LLVM/JIT 2x2 inverse JVP",
+            "rust": (
+                "available: Rust PyO3 nonsingular 2x2 inverse value/JVP/VJP/sum-gradient kernel"
+            ),
+            "rust_backend": "rust_pyo3",
+            "rust_backend_verification": (
+                "verified: scpn_quantum_engine matrix_2x2_inverse "
+                "value/JVP/VJP/sum-gradient parity"
+            ),
+            "rust_backend_signature": static_signature,
+            "rust_backend_functions": (
+                "matrix_2x2_inverse_value,matrix_2x2_inverse_jvp,"
+                "matrix_2x2_inverse_vjp,matrix_2x2_inverse_sum_gradient"
+            ),
+            "llvm": "available: native LLVM MCJIT 2x2 inverse AD kernel",
+            "jit": "available: native LLVM MCJIT 2x2 inverse AD kernel",
+            "native_backend": "native_llvm_jit",
+            "native_backend_verification": (
+                "verified: native LLVM MCJIT 2x2 inverse value/JVP/VJP"
+            ),
+            "static_derivative_factory": "native_matrix_2x2_inverse_llvm_jit",
+            "static_signature": static_signature,
+            "nondifferentiable_boundary": "singular_matrix_2x2_inverse",
+            "nondifferentiable_boundary_policy": "fail_closed",
+        },
+        shape_rule=lambda _args: (4,),
+        dtype_rule=lambda _args: "float64",
+        static_argument_rule=lambda args: args,
+        nondifferentiable_policy="nonsingular_matrix_2x2_inverse_real_domain",
+        effect="pure",
+    )
+
+
 def compile_matrix_2x2_solve_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -8634,6 +8718,7 @@ __all__ = [
     "make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform",
     "make_matrix_2x2_inverse_native_llvm_jit_lowering_rule",
+    "make_matrix_2x2_inverse_native_llvm_jit_primitive_transform",
     "make_matrix_2x2_solve_native_llvm_jit_lowering_rule",
     "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule",
     "make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform",

@@ -3439,6 +3439,51 @@ def test_native_llvm_jit_matrix_2x2_inverse_kernel_executes_and_marks_plan_nativ
     assert module.metadata["primitive_readiness"][identity.key]["verdict"] == "native_executable"
     assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
 
+    rust_registry = CustomDerivativeRegistry()
+    rust_registry.register_transform(
+        compiler_mlir.make_matrix_2x2_inverse_native_llvm_jit_primitive_transform(
+            identity,
+            rule,
+            sample_values=values,
+            config=config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        )
+    )
+    rust_plan = build_compiler_ad_transform_plan(rust_registry)
+    rust_module = compile_compiler_ad_transform_plan_to_mlir(rust_plan)
+    rust_registered_kernel = compile_registered_primitive_to_executable(
+        rust_registry,
+        identity,
+        values,
+    )
+
+    assert (
+        scpn.make_matrix_2x2_inverse_native_llvm_jit_primitive_transform
+        is compiler_mlir.make_matrix_2x2_inverse_native_llvm_jit_primitive_transform
+    )
+    assert rust_registered_kernel.backend == "native_llvm_jit"
+    assert rust_module.resource_counts["native_backend_contracts"] == 1
+    assert rust_module.resource_counts["rust_backend_contracts"] == 1
+    assert rust_module.resource_counts["primitive_readiness_native_executable"] == 1
+    assert rust_module.resource_counts["primitive_hard_gaps"] == 0
+    assert rust_module.metadata["primitive_hard_gaps"][identity.key] == []
+    assert rust_module.metadata["rust_backend_contract_primitives"] == [identity.key]
+    assert rust_module.metadata["rust_backend_signatures"] == {
+        identity.key: "primitive:inverse;dimension:2;layout:row_major"
+    }
+    assert rust_module.metadata["rust_backend_functions"] == {
+        identity.key: (
+            "matrix_2x2_inverse_value,matrix_2x2_inverse_jvp,"
+            "matrix_2x2_inverse_vjp,matrix_2x2_inverse_sum_gradient"
+        )
+    }
+    assert rust_module.metadata["rust_backend_verification_primitives"] == {
+        identity.key: (
+            "verified: scpn_quantum_engine matrix_2x2_inverse value/JVP/VJP/sum-gradient parity"
+        )
+    }
+
 
 def test_native_llvm_jit_matrix_2x2_solve_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT solve AD kernels should execute exact nonsingular linear solves."""

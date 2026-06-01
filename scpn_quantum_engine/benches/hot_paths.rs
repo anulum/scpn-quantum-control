@@ -26,6 +26,7 @@ use scpn_quantum_engine::compiler_ad::{
     matrix_2x2_determinant_jvp_inner, matrix_2x2_determinant_value_inner,
     matrix_2x2_determinant_vjp_inner, matrix_2x2_eigensystem_jvp_inner,
     matrix_2x2_eigensystem_value_inner, matrix_2x2_eigensystem_vjp_inner,
+    matrix_2x2_inverse_jvp_inner, matrix_2x2_inverse_value_inner, matrix_2x2_inverse_vjp_inner,
     matrix_frobenius_norm_squared_jvp_inner, matrix_frobenius_norm_squared_value_inner,
     matrix_frobenius_norm_squared_vjp_inner, matrix_quadratic_form_jvp_inner,
     matrix_quadratic_form_value_inner, matrix_quadratic_form_vjp_inner, matrix_trace_jvp_inner,
@@ -301,6 +302,27 @@ fn bench_matrix_2x2_determinant_ad(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_matrix_2x2_inverse_ad(c: &mut Criterion) {
+    let values = [2.0, -1.0, 0.5, 3.0];
+    let tangent = [0.1, -0.2, 0.3, 0.4];
+    let cotangent = [0.75, -1.25, 0.5, 2.0];
+    let mut group = c.benchmark_group("matrix_2x2_inverse_ad");
+    group.bench_function("value", |bench| {
+        bench.iter(|| matrix_2x2_inverse_value_inner(black_box(&values)).unwrap());
+    });
+    group.bench_function("jvp", |bench| {
+        bench.iter(|| {
+            matrix_2x2_inverse_jvp_inner(black_box(&values), black_box(&tangent)).unwrap()
+        });
+    });
+    group.bench_function("vjp", |bench| {
+        bench.iter(|| {
+            matrix_2x2_inverse_vjp_inner(black_box(&values), black_box(&cotangent)).unwrap()
+        });
+    });
+    group.finish();
+}
+
 criterion_group!(
     hot_paths,
     bench_build_knm,
@@ -310,6 +332,7 @@ criterion_group!(
     bench_biological_decode_inner,
     bench_matrix_2x2_eigensystem_ad,
     bench_matrix_2x2_determinant_ad,
+    bench_matrix_2x2_inverse_ad,
     bench_matrix_quadratic_form_ad,
     bench_matrix_frobenius_norm_squared_ad,
     bench_matrix_trace_ad,

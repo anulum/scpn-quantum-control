@@ -16,6 +16,7 @@ use crate::validation::{validate_contiguous_slice, validate_finite};
 
 const DISCRIMINANT_EPS: f64 = 1.0e-24;
 const UPPER_CHART_EPS: f64 = 1.0e-12;
+const MATRIX_2X2_DETERMINANT_EPS: f64 = 1.0e-12;
 
 fn py_value_error(error: String) -> PyErr {
     PyValueError::new_err(error)
@@ -615,6 +616,96 @@ pub fn matrix_2x2_determinant_gradient_inner(values: &[f64]) -> Result<[f64; 4],
     matrix_2x2_determinant_vjp_inner(values, &[1.0])
 }
 
+fn checked_matrix_2x2_inverse_values(
+    values: &[f64],
+    label: &str,
+    primitive: &str,
+) -> Result<([f64; 4], f64), String> {
+    let checked = checked_matrix_2x2_determinant_values(values, label, primitive)?;
+    let determinant = checked[0] * checked[3] - checked[1] * checked[2];
+    if !determinant.is_finite() || determinant.abs() <= MATRIX_2X2_DETERMINANT_EPS {
+        return Err(format!(
+            "{primitive} requires a nonsingular row-major 2x2 matrix"
+        ));
+    }
+    Ok((checked, determinant))
+}
+
+fn inverse_2x2_from_checked(values: &[f64; 4], determinant: f64) -> [f64; 4] {
+    [
+        values[3] / determinant,
+        -values[1] / determinant,
+        -values[2] / determinant,
+        values[0] / determinant,
+    ]
+}
+
+fn matmul_2x2(left: &[f64; 4], right: &[f64; 4]) -> [f64; 4] {
+    [
+        left[0] * right[0] + left[1] * right[2],
+        left[0] * right[1] + left[1] * right[3],
+        left[2] * right[0] + left[3] * right[2],
+        left[2] * right[1] + left[3] * right[3],
+    ]
+}
+
+fn transpose_2x2(values: &[f64; 4]) -> [f64; 4] {
+    [values[0], values[2], values[1], values[3]]
+}
+
+/// Evaluate inv(A) for a nonsingular row-major finite real 2x2 matrix.
+pub fn matrix_2x2_inverse_value_inner(values: &[f64]) -> Result<[f64; 4], String> {
+    let (checked, determinant) = checked_matrix_2x2_inverse_values(
+        values,
+        "values",
+        "native matrix 2x2 inverse Rust value kernel",
+    )?;
+    Ok(inverse_2x2_from_checked(&checked, determinant))
+}
+
+/// Apply the exact JVP -A^-1 dA A^-1 for row-major 2x2 inverse.
+pub fn matrix_2x2_inverse_jvp_inner(values: &[f64], tangent: &[f64]) -> Result<[f64; 4], String> {
+    let (checked, determinant) = checked_matrix_2x2_inverse_values(
+        values,
+        "values",
+        "native matrix 2x2 inverse Rust JVP kernel",
+    )?;
+    let tangent = checked_matrix_2x2_determinant_values(
+        tangent,
+        "tangent",
+        "native matrix 2x2 inverse Rust JVP kernel",
+    )?;
+    let inverse = inverse_2x2_from_checked(&checked, determinant);
+    let product = matmul_2x2(&matmul_2x2(&inverse, &tangent), &inverse);
+    Ok([-product[0], -product[1], -product[2], -product[3]])
+}
+
+/// Apply the exact VJP -A^-T C A^-T for row-major 2x2 inverse.
+pub fn matrix_2x2_inverse_vjp_inner(values: &[f64], cotangent: &[f64]) -> Result<[f64; 4], String> {
+    let (checked, determinant) = checked_matrix_2x2_inverse_values(
+        values,
+        "values",
+        "native matrix 2x2 inverse Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<4>(
+        cotangent,
+        "cotangent",
+        "native matrix 2x2 inverse Rust VJP kernel",
+    )?;
+    let inverse = inverse_2x2_from_checked(&checked, determinant);
+    let inverse_transpose = transpose_2x2(&inverse);
+    let product = matmul_2x2(
+        &matmul_2x2(&inverse_transpose, &cotangent),
+        &inverse_transpose,
+    );
+    Ok([-product[0], -product[1], -product[2], -product[3]])
+}
+
+/// Return the sum-output gradient provenance for the vector-output 2x2 inverse.
+pub fn matrix_2x2_inverse_sum_gradient_inner(values: &[f64]) -> Result<[f64; 4], String> {
+    matrix_2x2_inverse_vjp_inner(values, &[1.0; 4])
+}
+
 fn checked_vector_dot_values(
     dimension: usize,
     values: &[f64],
@@ -1100,6 +1191,60 @@ pub fn matrix_2x2_determinant_gradient<'py>(
     Ok(PyArray1::from_vec(py, result.to_vec()))
 }
 
+/// PyO3 wrapper for bounded Rust 2x2 inverse value evaluation.
+#[pyfunction]
+pub fn matrix_2x2_inverse_value<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_2x2_inverse_value_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust 2x2 inverse JVP evaluation.
+#[pyfunction]
+pub fn matrix_2x2_inverse_jvp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = matrix_2x2_inverse_jvp_inner(values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust 2x2 inverse VJP evaluation.
+#[pyfunction]
+pub fn matrix_2x2_inverse_vjp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = matrix_2x2_inverse_vjp_inner(values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust 2x2 inverse sum-output gradient provenance.
+#[pyfunction]
+pub fn matrix_2x2_inverse_sum_gradient<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_2x2_inverse_sum_gradient_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
 /// PyO3 wrapper for Rust vector dot value evaluation.
 #[pyfunction]
 pub fn vector_dot_value<'py>(
@@ -1446,6 +1591,67 @@ mod tests {
         let cotangent_count =
             matrix_2x2_determinant_vjp_inner(&[2.0, -1.0, 0.5, 3.0], &[1.0, 2.0]).unwrap_err();
         assert!(cotangent_count.contains("requires 1 cotangent value"));
+    }
+
+    #[test]
+    fn matrix_2x2_inverse_value_jvp_vjp_and_sum_gradient_match_closed_form() {
+        let values = [2.0, -1.0, 0.5, 3.0];
+        let tangent = [0.1, -0.2, 0.3, 0.4];
+        let cotangent = [0.75, -1.25, 0.5, 2.0];
+
+        assert_close(
+            &matrix_2x2_inverse_value_inner(&values).unwrap(),
+            &[
+                0.461_538_461_538_461_56,
+                0.153_846_153_846_153_85,
+                -0.076_923_076_923_076_93,
+                0.307_692_307_692_307_7,
+            ],
+        );
+        assert_close(
+            &matrix_2x2_inverse_jvp_inner(&values, &tangent).unwrap(),
+            &[
+                -0.044_970_414_201_183_43,
+                -0.004_733_727_810_650_887,
+                -0.028_402_366_863_905_325,
+                -0.055_621_301_775_147_93,
+            ],
+        );
+        assert_close(
+            &matrix_2x2_inverse_vjp_inner(&values, &cotangent).unwrap(),
+            &[
+                -0.029_585_798_816_568_046,
+                0.248_520_710_059_171_6,
+                -0.189_349_112_426_035_5,
+                -0.109_467_455_621_301_78,
+            ],
+        );
+        assert_close(
+            &matrix_2x2_inverse_sum_gradient_inner(&values).unwrap(),
+            &[
+                -0.236_686_390_532_544_37,
+                -0.088_757_396_449_704_14,
+                -0.284_023_668_639_053_26,
+                -0.106_508_875_739_644_97,
+            ],
+        );
+    }
+
+    #[test]
+    fn matrix_2x2_inverse_boundaries_fail_closed() {
+        let wrong_count = matrix_2x2_inverse_value_inner(&[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("row-major 2x2 matrix values"));
+        let non_finite =
+            matrix_2x2_inverse_sum_gradient_inner(&[2.0, f64::NAN, 0.5, 3.0]).unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let singular = matrix_2x2_inverse_value_inner(&[1.0, 2.0, 2.0, 4.0]).unwrap_err();
+        assert!(singular.contains("nonsingular row-major 2x2 matrix"));
+        let tangent_count =
+            matrix_2x2_inverse_jvp_inner(&[2.0, -1.0, 0.5, 3.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("row-major 2x2 matrix tangent values"));
+        let cotangent_count =
+            matrix_2x2_inverse_vjp_inner(&[2.0, -1.0, 0.5, 3.0], &[1.0, 2.0]).unwrap_err();
+        assert!(cotangent_count.contains("requires 4 cotangent value"));
     }
 
     #[test]
