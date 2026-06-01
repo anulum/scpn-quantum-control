@@ -89,6 +89,7 @@ from scpn_quantum_control import (
     compile_vector_squared_norm_ad_to_native_llvm_jit,
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
+    make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
 )
 
 module = compile_kuramoto_to_mlir(
@@ -355,6 +356,14 @@ fail-closed.
 AD to rank-2 scalar linalg by compiling `x.T @ A @ x` over row-major
 concatenated `[A, x]` inputs with exact matrix-entry gradients
 `outer(x, x)` and vector gradients `(A + A.T) @ x`.
+`make_matrix_quadratic_form_native_llvm_jit_primitive_transform()` binds that
+same scalar energy primitive into the registry with one-call shape, dtype,
+batching, MLIR-runtime, native LLVM/JIT, and Rust/PyO3 parity metadata. The
+optional `scpn_quantum_engine` Rust extension mirrors the value, JVP, VJP, and
+gradient helpers through `matrix_quadratic_form_value()`,
+`matrix_quadratic_form_jvp()`, `matrix_quadratic_form_vjp()`, and
+`matrix_quadratic_form_gradient()` with the same static
+`primitive:quadratic_form;dimension:N;layout:matrix_then_vector` signature.
 `make_scalar_quadratic_native_llvm_jit_lowering_rule()` and
 `make_scalar_unary_elementwise_native_llvm_jit_lowering_rule()` and
 `make_scalar_binary_elementwise_native_llvm_jit_lowering_rule()` and
@@ -419,8 +428,8 @@ only for primitives that carry verified Rust backend metadata with exact
 static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
-fail-closed outside the bounded `rust_pyo3` eigensystem contract until native
-Rust lowering is implemented for each primitive.
+fail-closed outside the bounded `rust_pyo3` eigensystem and quadratic-form
+contracts until native Rust lowering is implemented for each primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native LLVM/JIT
 differentiated runtimes are marked executable only for verified native lowering

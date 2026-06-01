@@ -7878,6 +7878,99 @@ def make_matrix_quadratic_form_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def make_matrix_quadratic_form_native_llvm_jit_primitive_transform(
+    identity: PrimitiveIdentity | str,
+    rule: CustomDerivativeRule,
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> PrimitiveTransformRule:
+    """Create a complete Rust/PyO3 + native LLVM/JIT quadratic-form contract."""
+
+    primitive_identity = PrimitiveIdentity.parse(identity)
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError(
+            "native matrix quadratic form primitive transform requires backend='native_llvm_jit'"
+        )
+    values = _as_finite_vector("sample_values", sample_values)
+    expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
+    if values.size != expected_value_count:
+        raise ValueError(
+            "native matrix quadratic form primitive transform requires dimension * "
+            "dimension + dimension sample values"
+        )
+    tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+    kernel = compile_matrix_quadratic_form_ad_to_native_llvm_jit(
+        rule,
+        dimension=checked_dimension,
+        sample_values=values,
+        config=compile_config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+    static_signature = (
+        f"primitive:quadratic_form;dimension:{checked_dimension};layout:matrix_then_vector"
+    )
+    return PrimitiveTransformRule(
+        identity=primitive_identity,
+        derivative_rule=rule,
+        batching_rule=make_executable_ad_kernel_batching_rule(kernel, method="value"),
+        lowering_rule=make_matrix_quadratic_form_native_llvm_jit_lowering_rule(
+            dimension=checked_dimension,
+            sample_values=values,
+            config=compile_config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        ),
+        lowering_metadata={
+            "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+            "mlir_op": "scpn_diff.native_matrix_quadratic_form",
+            "mlir_runtime_verification": ("verified: native LLVM/JIT matrix quadratic form JVP"),
+            "rust": "available: Rust PyO3 matrix quadratic form value/JVP/VJP/gradient kernel",
+            "rust_backend": "rust_pyo3",
+            "rust_backend_verification": (
+                "verified: scpn_quantum_engine matrix_quadratic_form value/JVP/VJP/gradient parity"
+            ),
+            "rust_backend_signature": static_signature,
+            "rust_backend_functions": (
+                "matrix_quadratic_form_value,matrix_quadratic_form_jvp,"
+                "matrix_quadratic_form_vjp,matrix_quadratic_form_gradient"
+            ),
+            "llvm": "available: native LLVM MCJIT matrix quadratic form AD kernel",
+            "jit": "available: native LLVM MCJIT matrix quadratic form AD kernel",
+            "native_backend": "native_llvm_jit",
+            "native_backend_verification": (
+                "verified: native LLVM MCJIT matrix quadratic form value/JVP/VJP/gradient"
+            ),
+            "static_derivative_factory": "native_matrix_quadratic_form_llvm_jit",
+            "static_signature": static_signature,
+            "nondifferentiable_boundary": "none_smooth_matrix_quadratic_form",
+            "nondifferentiable_boundary_policy": "fail_closed",
+        },
+        shape_rule=lambda _args: (1,),
+        dtype_rule=lambda _args: "float64",
+        static_argument_rule=lambda args: args,
+        nondifferentiable_policy="smooth_matrix_quadratic_form_real_domain",
+        effect="pure",
+    )
+
+
 def _safe_llvm_symbol(value: str) -> str:
     symbol = "".join(
         character if character.isalnum() or character == "_" else "_" for character in value
@@ -8094,6 +8187,7 @@ __all__ = [
     "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule",
     "make_matrix_matrix_product_native_llvm_jit_lowering_rule",
     "make_matrix_quadratic_form_native_llvm_jit_lowering_rule",
+    "make_matrix_quadratic_form_native_llvm_jit_primitive_transform",
     "make_matrix_trace_native_llvm_jit_lowering_rule",
     "make_matrix_vector_product_native_llvm_jit_lowering_rule",
     "make_scalar_binary_elementwise_native_llvm_jit_lowering_rule",

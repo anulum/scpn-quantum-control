@@ -207,6 +207,159 @@ pub fn matrix_2x2_eigensystem_sum_gradient_inner(values: &[f64]) -> Result<[f64;
     matrix_2x2_eigensystem_vjp_inner(values, &[1.0; 6])
 }
 
+fn checked_matrix_quadratic_form_values(
+    dimension: usize,
+    values: &[f64],
+    primitive: &str,
+) -> Result<(), String> {
+    if dimension == 0 {
+        return Err(format!("{primitive} dimension must be positive"));
+    }
+    let expected = dimension * dimension + dimension;
+    if values.len() != expected {
+        return Err(format!(
+            "{primitive} requires dimension * dimension + dimension values"
+        ));
+    }
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("values[{index}] is not finite ({value})"));
+        }
+    }
+    Ok(())
+}
+
+fn checked_matrix_quadratic_form_vector<'a>(
+    dimension: usize,
+    values: &'a [f64],
+    label: &str,
+    primitive: &str,
+) -> Result<&'a [f64], String> {
+    checked_matrix_quadratic_form_values(dimension, values, primitive)?;
+    if label != "values" {
+        for (index, value) in values.iter().enumerate() {
+            if !value.is_finite() {
+                return Err(format!("{label}[{index}] is not finite ({value})"));
+            }
+        }
+    }
+    Ok(values)
+}
+
+fn matrix_quadratic_form_value_count(dimension: usize) -> usize {
+    dimension * dimension + dimension
+}
+
+fn matrix_quadratic_form_matrix_index(dimension: usize, row: usize, column: usize) -> usize {
+    row * dimension + column
+}
+
+fn matrix_quadratic_form_vector_index(dimension: usize, index: usize) -> usize {
+    dimension * dimension + index
+}
+
+/// Evaluate x^T A x for row-major A followed by vector x.
+pub fn matrix_quadratic_form_value_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_matrix_quadratic_form_values(
+        dimension,
+        values,
+        "native matrix quadratic form Rust value kernel",
+    )?;
+    let mut total = 0.0;
+    for row in 0..dimension {
+        let x_row = values[matrix_quadratic_form_vector_index(dimension, row)];
+        for column in 0..dimension {
+            let a = values[matrix_quadratic_form_matrix_index(dimension, row, column)];
+            let x_column = values[matrix_quadratic_form_vector_index(dimension, column)];
+            total += x_row * a * x_column;
+        }
+    }
+    Ok([total])
+}
+
+/// Apply the exact JVP for x^T A x over row-major [A, x].
+pub fn matrix_quadratic_form_jvp_inner(
+    dimension: usize,
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_matrix_quadratic_form_values(
+        dimension,
+        values,
+        "native matrix quadratic form Rust JVP kernel",
+    )?;
+    checked_matrix_quadratic_form_vector(
+        dimension,
+        tangent,
+        "tangent",
+        "native matrix quadratic form Rust JVP kernel",
+    )?;
+    let gradient = matrix_quadratic_form_gradient_inner(dimension, values)?;
+    let mut total = 0.0;
+    for index in 0..matrix_quadratic_form_value_count(dimension) {
+        total += gradient[index] * tangent[index];
+    }
+    Ok([total])
+}
+
+/// Apply the exact VJP for x^T A x over row-major [A, x].
+pub fn matrix_quadratic_form_vjp_inner(
+    dimension: usize,
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_quadratic_form_values(
+        dimension,
+        values,
+        "native matrix quadratic form Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<1>(
+        cotangent,
+        "cotangent",
+        "native matrix quadratic form Rust VJP kernel",
+    )?;
+    let mut gradient = matrix_quadratic_form_gradient_inner(dimension, values)?;
+    for value in &mut gradient {
+        *value *= cotangent[0];
+    }
+    Ok(gradient)
+}
+
+/// Return the scalar-output gradient of x^T A x over row-major [A, x].
+pub fn matrix_quadratic_form_gradient_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_quadratic_form_values(
+        dimension,
+        values,
+        "native matrix quadratic form Rust gradient kernel",
+    )?;
+    let mut gradient = vec![0.0; matrix_quadratic_form_value_count(dimension)];
+    for row in 0..dimension {
+        let x_row = values[matrix_quadratic_form_vector_index(dimension, row)];
+        for column in 0..dimension {
+            let x_column = values[matrix_quadratic_form_vector_index(dimension, column)];
+            let matrix_index = matrix_quadratic_form_matrix_index(dimension, row, column);
+            gradient[matrix_index] = x_row * x_column;
+        }
+    }
+    for row in 0..dimension {
+        let mut vector_gradient = 0.0;
+        for column in 0..dimension {
+            let row_value = values[matrix_quadratic_form_matrix_index(dimension, row, column)];
+            let column_value = values[matrix_quadratic_form_matrix_index(dimension, column, row)];
+            let x_column = values[matrix_quadratic_form_vector_index(dimension, column)];
+            vector_gradient += (row_value + column_value) * x_column;
+        }
+        gradient[matrix_quadratic_form_vector_index(dimension, row)] = vector_gradient;
+    }
+    Ok(gradient)
+}
+
 /// PyO3 wrapper for bounded Rust eigensystem value evaluation.
 #[pyfunction]
 pub fn matrix_2x2_eigensystem_value<'py>(
@@ -259,6 +412,66 @@ pub fn matrix_2x2_eigensystem_sum_gradient<'py>(
     validate_finite(values, "values")?;
     let result = matrix_2x2_eigensystem_sum_gradient_inner(values).map_err(py_value_error)?;
     Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust matrix quadratic-form value evaluation.
+#[pyfunction]
+pub fn matrix_quadratic_form_value<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_quadratic_form_value_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust matrix quadratic-form JVP evaluation.
+#[pyfunction]
+pub fn matrix_quadratic_form_jvp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result =
+        matrix_quadratic_form_jvp_inner(dimension, values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust matrix quadratic-form VJP evaluation.
+#[pyfunction]
+pub fn matrix_quadratic_form_vjp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result =
+        matrix_quadratic_form_vjp_inner(dimension, values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust matrix quadratic-form gradient evaluation.
+#[pyfunction]
+pub fn matrix_quadratic_form_gradient<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_quadratic_form_gradient_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
 }
 
 #[cfg(test)]
@@ -334,5 +547,42 @@ mod tests {
         assert!(repeated.contains("real distinct eigenvalues"));
         let zero_chart = matrix_2x2_eigensystem_value_inner(&[2.0, 0.0, 1.0, 1.0]).unwrap_err();
         assert!(zero_chart.contains("upper off-diagonal eigenvector chart"));
+    }
+
+    #[test]
+    fn matrix_quadratic_form_value_jvp_vjp_and_gradient_match_closed_form() {
+        let values = [2.0, -1.0, 0.5, 3.0, 1.5, -2.0];
+        let tangent = [0.1, -0.2, 0.3, 0.4, -0.5, 0.25];
+        let cotangent = [1.25];
+
+        assert_close(
+            &matrix_quadratic_form_value_inner(2, &values).unwrap(),
+            &[18.0],
+        );
+        assert_close(
+            &matrix_quadratic_form_jvp_inner(2, &values, &tangent).unwrap(),
+            &[-5.1625],
+        );
+        assert_close(
+            &matrix_quadratic_form_vjp_inner(2, &values, &cotangent).unwrap(),
+            &[2.8125, -3.75, -3.75, 5.0, 8.75, -15.9375],
+        );
+        assert_close(
+            &matrix_quadratic_form_gradient_inner(2, &values).unwrap(),
+            &[2.25, -3.0, -3.0, 4.0, 7.0, -12.75],
+        );
+    }
+
+    #[test]
+    fn matrix_quadratic_form_boundaries_fail_closed() {
+        let wrong_count = matrix_quadratic_form_value_inner(2, &[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("dimension * dimension + dimension"));
+        let non_finite =
+            matrix_quadratic_form_gradient_inner(2, &[2.0, -1.0, 0.5, 3.0, f64::NAN, -2.0])
+                .unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let zero_dimension =
+            matrix_quadratic_form_value_inner(0, &[2.0, -1.0, 0.5, 3.0, 1.5, -2.0]).unwrap_err();
+        assert!(zero_dimension.contains("dimension must be positive"));
     }
 }
