@@ -26,6 +26,22 @@ Recommended researcher quick path:
 - `20_quantum_persistent_homology.py` for topology diagnostics.
 - `22_quantum_neuromorphic_bridge.py` for the QSNN LIF/STDP/dynamic-coupling bridge.
 
+## Route by Goal
+
+| Goal | Example |
+|---|---|
+| Understand the core physics | `02_kuramoto_xy_demo.py` |
+| Compare ansatze and optimisation behaviour | `05_vqe_ansatz_comparison.py` |
+| Inspect no-credential error mitigation | `06_zne_demo.py` |
+| Compare classical and quantum execution surfaces | `09_classical_vs_quantum_benchmark.py` |
+| Exercise a control-facing domain lane | `13_iter_disruption_demo.py` |
+| Run the full packaged workflow | `18_end_to_end_pipeline.py` |
+| Inspect synchronisation observables | `19_sync_witness_operator.py` |
+| Inspect topology diagnostics | `20_quantum_persistent_homology.py` |
+
+Examples are onboarding aids. Reusable production logic belongs in `src/`,
+scripts, committed fixtures, and release gates.
+
 ## 01_qlif_demo.py — Quantum LIF Neuron
 
 Constructs a quantum leaky integrate-and-fire neuron that encodes membrane

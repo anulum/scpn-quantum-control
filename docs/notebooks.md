@@ -16,6 +16,23 @@ dual protection on ibm_fez.*
 
 ---
 
+## How to Use the Notebooks
+
+Use notebooks for guided exploration and figures, not as the source of truth
+for release claims. Production logic lives in `src/`, examples, scripts,
+committed fixtures, and release gates. If a notebook result is later cited in a
+paper, README, website, or release note, promote the underlying data through
+the hardware ledger or the relevant no-QPU release gate first.
+
+Recommended first path:
+
+1. `01_kuramoto_xy_dynamics.ipynb` for the Kuramoto-XY mapping.
+2. `02_vqe_ground_state.ipynb` for variational ground states.
+3. `03_error_mitigation.ipynb` for ZNE concepts.
+4. `13_cross_repo_bridges.ipynb` for integration boundaries.
+
+For a non-notebook entry point, use [Quickstart](quickstart.md).
+
 ## Notebook Map
 
 The notebooks form a directed learning graph. Earlier notebooks provide the

@@ -10,6 +10,20 @@
 
 All examples run on the local AerSimulator — no IBM credentials needed.
 
+## What You Are About to Run
+
+The first path uses a small oscillator network and the Kuramoto-XY mapping:
+
+1. build a coupling matrix `K_nm`;
+2. build natural frequencies `omega`;
+3. compile the matching XY Hamiltonian;
+4. Trotterise the evolution locally;
+5. read the synchronisation order parameter `R(t)`.
+
+Use this page when you want a working run in minutes. Use
+[Onboarding](onboarding.md) first if you need the business, application, and
+claim-boundary overview.
+
 ## 1. Kuramoto dynamics (4 oscillators)
 
 ```python
@@ -45,7 +59,9 @@ print(f"Exact energy: {sol['exact_energy']:.6f}")
 print(f"Error:        {sol['energy_gap']:.6f}")
 ```
 
-On IBM hardware this achieves 0.05% error (4 qubits).
+The repository contains a legacy 4-qubit hardware row with 0.05% VQE
+ground-state error. Cite it only through the hardware ledger and artefact path,
+not as a broad hardware-validation claim.
 
 ## 3. Run a hardware experiment on simulator
 
@@ -120,6 +136,38 @@ for name in sorted(ALL_EXPERIMENTS):
 ```
 
 See [Experiment Roadmap](EXPERIMENT_ROADMAP.md) for the full plan.
+
+## Differentiable primitive smoke path
+
+Supported compiler-AD primitives can be exercised without QPU access. This is
+useful when optimisation code needs an executable gradient-bearing kernel:
+
+```python
+import numpy as np
+
+from scpn_quantum_control import (
+    CompilerADExecutableConfig,
+    CustomDerivativeRule,
+    compile_matrix_matrix_product_ad_to_native_llvm_jit,
+)
+
+rule = CustomDerivativeRule(
+    name="matmul_demo",
+    value=lambda values: values,
+    derivative=lambda values, tangent: tangent,
+)
+kernel = compile_matrix_matrix_product_ad_to_native_llvm_jit(
+    rule,
+    dimension=2,
+    sample_values=np.array([1.0, -2.0, 0.5, 3.0, 4.0, -1.0, 2.0, 0.25]),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+print(kernel.value(np.array([1.0, -2.0, 0.5, 3.0, 4.0, -1.0, 2.0, 0.25])))
+```
+
+This lane is intentionally bounded: supported primitive kernels execute; a
+general arbitrary-program MLIR/LLVM AD compiler remains an open engineering
+frontier.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

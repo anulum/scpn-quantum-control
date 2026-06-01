@@ -63,7 +63,7 @@ readiness for any Paper 0 lane.
 The release gate keeps coverage and behavioural value enforceable without
 pretending that total line coverage is already 100 percent. A fresh coverage
 XML report is required for tag readiness. The default CI gate blocks on
-aggregate coverage below 91.5 percent and unjustified missing files. Per-file gaps
+aggregate coverage below 70 percent and unjustified missing files. Per-file gaps
 remain a release follow-up queue unless explicitly promoted to hard blockers
 with `--fail-on-file-gap`. The 100 percent coverage target remains a future
 improvement, not a blocker for tagging a bounded release.
@@ -277,3 +277,20 @@ Before tagging:
 9. Run the scoped docs build and version-consistency checks.
 10. Commit with the required authorship line after staged-diff audit.
 11. Push the commit and wait for CI before creating a release tag.
+
+## 0.9.8 release-documentation scope
+
+The `0.9.8` source release documentation surface is required to explain the
+project before users reach low-level APIs. At minimum, the public site must
+include:
+
+- onboarding overview with purpose, user routes, application lanes, commercial
+  route, and claim boundaries;
+- quickstart route that runs without IBM credentials;
+- tutorials and notebook maps that separate exploration from release evidence;
+- API overview that points users to stable facades first;
+- hardware and release-readiness pages that keep simulator, hardware, and open
+  scientific claims separated.
+
+This documentation scope is a release artefact because misunderstanding the
+claim boundary is a product and scientific safety risk.

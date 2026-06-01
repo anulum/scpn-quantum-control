@@ -22,6 +22,27 @@ Quantum simulation of coupled Kuramoto oscillator networks on IBM superconductin
 hardware, with a hardware evidence ledger separating theory, simulator,
 unmitigated hardware, mitigated hardware, and noise-limited claims.
 
+## Start Here
+
+If you are new to the repository, read these pages in order:
+
+1. [Onboarding](onboarding.md) — what the software is, who it serves, what is
+   mature, and what remains claim-bound.
+2. [Quickstart](quickstart.md) — run a local no-credential Kuramoto-XY
+   simulation.
+3. [Tutorials](tutorials.md) — follow the learning path from first simulation
+   to research workflow.
+4. [Stable Facades API](stable_facades_api.md) — use supported public entry
+   points before advanced internals.
+5. [Hardware Status Ledger](hardware_status_ledger.md) — understand which
+   hardware and scientific claims are promoted, bounded, or blocked.
+
+The short version: provide a coupling matrix `K_nm` and natural frequencies
+`omega`; the package validates the problem, compiles the XY Hamiltonian,
+builds circuits, runs local or provider-backed execution when allowed, and
+analyses synchronisation, entanglement, topology, and control observables under
+explicit evidence boundaries.
+
 ## Status Snapshot — 2026-05-18
 
 | Area | Public status |
@@ -60,6 +81,11 @@ This package provides three things:
    generated validation modules, spec loaders, fixtures, and tests preserve
    ledger-bounded Paper 0 claims under an explicit non-hardware, non-external
    validation boundary.
+
+5. **A differentiable computation lane** for supported scalar, vector, and
+   matrix primitive kernels, including compiler-AD metadata and native Rust
+   backend parity for selected primitives. Unsupported compiler and program-AD
+   paths fail closed rather than silently fabricating gradients.
 
 Think of it as a quantum microscope for synchronization. Classical Kuramoto tells you
 *when* oscillators lock in step. This package tells you *what the quantum state looks
@@ -145,6 +171,7 @@ for name, w in results.items():
 
 ## Documentation
 
+- [Onboarding](onboarding.md) — project purpose, user routes, application value, and claim boundaries
 - [Installation](installation.md) — pip install + all optional extras
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
 - [Kuramoto Core Facade](kuramoto_core_facade.md) — stable `K_nm`/`omega` compiler entry point

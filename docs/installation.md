@@ -8,6 +8,10 @@
 
 # Installation
 
+For a non-technical orientation before installing, read
+[Onboarding](onboarding.md). For the fastest working run after installation,
+continue with [Quickstart](quickstart.md).
+
 ## From PyPI
 
 ```bash
@@ -139,6 +143,16 @@ python tools/check_dependency_drift.py
 python -c "import scpn_quantum_control; print('OK')"
 pytest tests/ -x -q  # full suite should pass
 ```
+
+For documentation contributors:
+
+```bash
+pip install -e ".[docs]"
+mkdocs build --strict
+```
+
+For release candidates, pair the docs build with the release-readiness audit in
+[Release Readiness Gate](release_readiness.md).
 
 ## IBM Quantum setup (optional)
 

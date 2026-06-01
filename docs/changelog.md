@@ -12,6 +12,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## [0.9.8] - 2026-06-01
+
+### Added
+- Public onboarding route covering project purpose, user routes, application
+  lanes, commercial route, evidence boundaries, and release-documentation scope.
+- Refreshed first-path docs across README, documentation index, quickstart,
+  tutorials, notebook guide, API overview, examples guide, installation guide,
+  MkDocs navigation, and release-readiness page.
+
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)

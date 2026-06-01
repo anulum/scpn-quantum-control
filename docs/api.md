@@ -14,6 +14,12 @@ for public facades such as `scpn_quantum_control.kuramoto_core`. The lower-level
 sections below are advanced module references for maintainers, extension authors,
 and researchers who need direct subsystem access.
 
+If you are evaluating what the software is for before choosing an API surface,
+start with [Onboarding](onboarding.md). The API hierarchy below is intentionally
+layered: stable facades for users, workflow guides for common tasks, source
+registers for Paper 0 artefacts, runtime contracts for persisted QPU data, and
+advanced references for subsystem extension.
+
 ## Reference Levels
 
 | Level | Start here | Use when |
@@ -23,6 +29,18 @@ and researchers who need direct subsystem access.
 | Source-validation register | [Paper 0 Validation Register](paper0/paper0_validation_register.md) | Inspecting generated Paper 0 source-accounting specs, fixtures, and validation modules under their explicit claim boundary. |
 | Runtime contract | [QPU Data Artifact](qpu_data_artifact.md), [Pipeline Runtime Contract](pipeline_runtime_contract.md) | Exchanging persisted QPU results or compute-unit metadata. |
 | Advanced module reference | This page and [Auto-Generated Module Index](autodoc.md) | Auditing, extending, or debugging subsystem internals. |
+
+## API Selection Rules
+
+- Prefer `scpn_quantum_control.kuramoto_core` for user-facing `K_nm`/`omega`
+  workflows.
+- Prefer `scpn_quantum_control.paper0` only for source-register inspection and
+  generated fixture validation, not for hardware or external-validation claims.
+- Prefer `scpn_quantum_control.compiler.mlir` when using supported bounded
+  differentiable primitives.
+- Drop into lower-level packages only when you need a named subsystem contract
+  that the stable facade does not expose.
+- Treat unsupported AD, hardware, and promotion paths as fail-closed.
 
 ## stable facades
 

@@ -78,6 +78,59 @@ Evidence boundary: this snapshot is a static inventory. Performance, coverage, h
 For claim classes, raw-artefact pointers, and promotion rules, see the
 [Hardware Status Ledger](docs/hardware_status_ledger.md).
 
+## Plain-Language Summary
+
+`scpn-quantum-control` turns a coupled-oscillator network into quantum
+circuits, simulator workflows, hardware-result ledgers, and analysis tools.
+The first supported physics lane is the Kuramoto-XY mapping: provide a coupling
+matrix `K_nm` and oscillator frequencies `omega`, then compile the matching XY
+Hamiltonian, run local or provider-backed circuits, measure synchronisation,
+and compare the result against classical and exact-simulation baselines.
+
+The repository is not only a circuit generator. It also carries the operational
+surfaces needed to use the software responsibly:
+
+- stable public facades for notebooks and integrations;
+- Rust acceleration for hot numerical kernels;
+- differentiable-programming kernels for supported scalar, vector, and matrix
+  primitives;
+- no-QPU release gates and hardware-result pack verifiers;
+- source-bounded Paper 0 validation fixtures;
+- claim-boundary documentation that separates simulator, hardware, and open
+  scientific questions.
+
+## Who It Is For
+
+| User | Primary value | Start here |
+|---|---|---|
+| Quantum algorithm researcher | Compile oscillator networks into XY circuits and inspect synchronisation, entanglement, topology, and control observables. | [Quickstart](docs/quickstart.md), [Tutorials](docs/tutorials.md) |
+| Applied physicist or control engineer | Convert domain coupling graphs into reproducible quantum/simulator experiments while retaining classical baselines. | [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md), [Application Benchmark Plugins](docs/application_benchmarks.md) |
+| Hardware experiment operator | Run or replay provider-backed campaigns only when the evidence ledger, raw counts, and release gates permit the claim. | [Hardware Guide](docs/hardware_guide.md), [Hardware Result Packs](docs/hardware_result_packs.md) |
+| Software integrator | Use stable facade APIs instead of binding to internal package layout. | [Stable Facades API](docs/stable_facades_api.md), [API Overview](docs/api.md) |
+| Commercial evaluator | Assess the route from research prototype to product lane: reproducible simulations, hardware-result governance, Rust kernels, and dual licensing. | [Onboarding](docs/onboarding.md), [Release Readiness Gate](docs/release_readiness.md) |
+
+## Application and Commercial Value
+
+The practical value is a disciplined bridge between coupled-system physics,
+quantum hardware experimentation, and control-facing software:
+
+- **Synchronisation diagnostics:** explore where oscillator networks lock,
+  decohere, or separate into sectors.
+- **Control prototyping:** map power-grid, plasma, EEG/MEG, Josephson-array,
+  and other coupled-system candidates into common `K_nm`/`omega` workflows.
+- **Hardware evidence management:** keep raw-count evidence, simulator output,
+  and open claims separated before public release or paper citation.
+- **Differentiable computation:** use supported compiler-AD primitives for
+  gradient-bearing scalar, vector, and matrix kernels while unsupported paths
+  fail closed.
+- **Product route:** AGPL use is available for open research; proprietary
+  deployment uses the commercial licence route described below.
+
+Open boundaries remain explicit: the package does not claim broad quantum
+advantage, clinical validation, or externally validated SCPN biology. It
+provides a reproducible computational workbench and the governance required to
+promote claims only when the evidence exists.
+
 ## Richer Presentation
 
 For a richer presentation of the Phase 1 hardware results, methodology
@@ -88,6 +141,9 @@ project website:
 
 Direct entry points:
 
+- [Onboarding](docs/onboarding.md)
+  — what the project is, who should use it, what is mature, and what remains
+  claim-bound
 - [Hardware Status Ledger](docs/hardware_status_ledger.md)
   — claim classes, campaign evidence paths, and publication hygiene rules
 - [Hardware Result Packs](docs/hardware_result_packs.md)
@@ -615,6 +671,7 @@ Optional:
 
 Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)**:
 
+- [Onboarding](docs/onboarding.md) — project purpose, user routes, application value, and claim boundaries
 - [Installation](docs/installation.md) — pip install + all optional extras
 - [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials

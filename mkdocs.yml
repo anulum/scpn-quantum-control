@@ -49,6 +49,7 @@ theme:
 
 nav:
   - Home: index.md
+  - Onboarding: onboarding.md
   - Installation: installation.md
   - Quickstart: quickstart.md
   - Theory:

@@ -19,6 +19,8 @@ understanding through hands-on computation to original research.
 New users who do not need SCPN-specific layers should start with
 [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md). It introduces the
 generic `K_nm`/`omega` compiler path before any domain-specific benchmark.
+If you first need the product, application, and claim-boundary overview, start
+with [Onboarding](onboarding.md).
 
 ```mermaid
 graph TD
@@ -77,6 +79,19 @@ graph TD
 | 4: Frontier Physics | Gold | "What has never been done before?" | Open-ended |
 
 ---
+
+## Route by Audience
+
+| Audience | Recommended route |
+|---|---|
+| First-time user | Onboarding -> Quickstart -> Tutorial 1 -> Tutorial 2 |
+| Researcher with a custom network | Physics-First Kuramoto-XY -> Tutorial 7 -> Research Tools |
+| Hardware operator | Hardware Status Ledger -> Hardware Guide -> Hardware Result Packs -> Release Readiness Gate |
+| API integrator | Stable Facades API -> API Overview -> Kuramoto Core Facade |
+| Optimisation or AD user | API Overview compiler-AD section -> differentiable primitive tests -> release gates before public claims |
+
+Every route keeps the same rule: simulator output, hardware evidence, and open
+scientific claims are separate evidence classes.
 
 ## Level 1: Foundations
 

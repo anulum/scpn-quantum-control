@@ -7,7 +7,7 @@
 # SCPN Quantum Control — Cargo Configuration
 [package]
 name = "scpn-quantum-engine"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "AGPL-3.0-or-later"
 

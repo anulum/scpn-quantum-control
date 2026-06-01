@@ -7,6 +7,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [0.9.8] - 2026-06-01
 
 ### Added
+- 2026-06-01 — Added a public onboarding page and refreshed the README,
+  documentation index, quickstart, tutorials, notebook guide, API overview,
+  examples guide, installation guide, MkDocs navigation, and release-readiness
+  page so first-time users can understand the software purpose, application
+  lanes, commercial route, evidence boundaries, and `0.9.8` release scope
+  before entering low-level APIs.
+- 2026-06-01 — Aligned the release-readiness audit default coverage threshold
+  with the temporary 70% CI gate while preserving missing-file blockers and the
+  long-term 100% meaningful-coverage target.
 - 2026-05-31 — Added an SCPN-CONTROL disruption bridge dependency contract to
   the ITER quantum disruption backend, including classifier API, 11-feature
   ordering, Qiskit core dependencies, optional provider families, report schema

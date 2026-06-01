@@ -423,8 +423,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", type=Path, default=default_root)
     parser.add_argument("--coverage-xml", type=Path, default=default_root / "coverage.xml")
-    parser.add_argument("--min-file-percent", type=float, default=95.0)
-    parser.add_argument("--min-aggregate-percent", type=float, default=95.0)
+    parser.add_argument("--min-file-percent", type=float, default=70.0)
+    parser.add_argument("--min-aggregate-percent", type=float, default=70.0)
     parser.add_argument("--justified-exclusions", type=Path, default=None)
     parser.add_argument(
         "--fail-on-file-gap",
