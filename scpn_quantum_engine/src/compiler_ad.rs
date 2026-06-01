@@ -360,6 +360,106 @@ pub fn matrix_quadratic_form_gradient_inner(
     Ok(gradient)
 }
 
+fn checked_vector_dot_values(
+    dimension: usize,
+    values: &[f64],
+    label: &str,
+    primitive: &str,
+) -> Result<(), String> {
+    if dimension == 0 {
+        return Err(format!("{primitive} dimension must be positive"));
+    }
+    let expected = 2 * dimension;
+    if values.len() != expected {
+        return Err(format!(
+            "{primitive} requires 2 * dimension {label} value(s)"
+        ));
+    }
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{label}[{index}] is not finite ({value})"));
+        }
+    }
+    Ok(())
+}
+
+/// Evaluate dot(x, y) over concatenated [x, y] finite real vectors.
+pub fn vector_dot_value_inner(dimension: usize, values: &[f64]) -> Result<[f64; 1], String> {
+    checked_vector_dot_values(
+        dimension,
+        values,
+        "values",
+        "native vector dot Rust value kernel",
+    )?;
+    let total = (0..dimension)
+        .map(|index| values[index] * values[dimension + index])
+        .sum();
+    Ok([total])
+}
+
+/// Apply the exact JVP for dot(x, y) over concatenated [x, y].
+pub fn vector_dot_jvp_inner(
+    dimension: usize,
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_vector_dot_values(
+        dimension,
+        values,
+        "values",
+        "native vector dot Rust JVP kernel",
+    )?;
+    checked_vector_dot_values(
+        dimension,
+        tangent,
+        "tangent",
+        "native vector dot Rust JVP kernel",
+    )?;
+    let total = (0..dimension)
+        .map(|index| {
+            values[dimension + index] * tangent[index] + values[index] * tangent[dimension + index]
+        })
+        .sum();
+    Ok([total])
+}
+
+/// Apply the exact VJP for dot(x, y) over concatenated [x, y].
+pub fn vector_dot_vjp_inner(
+    dimension: usize,
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_vector_dot_values(
+        dimension,
+        values,
+        "values",
+        "native vector dot Rust VJP kernel",
+    )?;
+    let cotangent =
+        checked_vector::<1>(cotangent, "cotangent", "native vector dot Rust VJP kernel")?;
+    let mut gradient = vector_dot_gradient_inner(dimension, values)?;
+    for value in &mut gradient {
+        *value *= cotangent[0];
+    }
+    Ok(gradient)
+}
+
+/// Return the scalar-output gradient [y, x] for dot(x, y).
+pub fn vector_dot_gradient_inner(dimension: usize, values: &[f64]) -> Result<Vec<f64>, String> {
+    checked_vector_dot_values(
+        dimension,
+        values,
+        "values",
+        "native vector dot Rust gradient kernel",
+    )?;
+    let mut gradient = vec![0.0; 2 * dimension];
+    for index in 0..dimension {
+        gradient[index] = values[dimension + index];
+        gradient[dimension + index] = values[index];
+    }
+    Ok(gradient)
+}
+
 fn checked_vector_squared_norm_values(
     dimension: usize,
     values: &[f64],
@@ -571,6 +671,64 @@ pub fn matrix_quadratic_form_gradient<'py>(
     Ok(PyArray1::from_vec(py, result))
 }
 
+/// PyO3 wrapper for Rust vector dot value evaluation.
+#[pyfunction]
+pub fn vector_dot_value<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = vector_dot_value_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust vector dot JVP evaluation.
+#[pyfunction]
+pub fn vector_dot_jvp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = vector_dot_jvp_inner(dimension, values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust vector dot VJP evaluation.
+#[pyfunction]
+pub fn vector_dot_vjp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = vector_dot_vjp_inner(dimension, values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust vector dot gradient evaluation.
+#[pyfunction]
+pub fn vector_dot_gradient<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = vector_dot_gradient_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
 /// PyO3 wrapper for Rust vector squared-norm value evaluation.
 #[pyfunction]
 pub fn vector_squared_norm_value<'py>(
@@ -740,6 +898,42 @@ mod tests {
         assert!(non_finite.contains("not finite"));
         let zero_dimension =
             matrix_quadratic_form_value_inner(0, &[2.0, -1.0, 0.5, 3.0, 1.5, -2.0]).unwrap_err();
+        assert!(zero_dimension.contains("dimension must be positive"));
+    }
+
+    #[test]
+    fn vector_dot_value_jvp_vjp_and_gradient_match_closed_form() {
+        let values = [1.0, 2.0, -3.0, 4.0];
+        let tangent = [0.5, -1.0, 2.0, -0.25];
+        let cotangent = [1.25];
+
+        assert_close(&vector_dot_value_inner(2, &values).unwrap(), &[5.0]);
+        assert_close(
+            &vector_dot_jvp_inner(2, &values, &tangent).unwrap(),
+            &[-4.0],
+        );
+        assert_close(
+            &vector_dot_vjp_inner(2, &values, &cotangent).unwrap(),
+            &[-3.75, 5.0, 1.25, 2.5],
+        );
+        assert_close(
+            &vector_dot_gradient_inner(2, &values).unwrap(),
+            &[-3.0, 4.0, 1.0, 2.0],
+        );
+    }
+
+    #[test]
+    fn vector_dot_boundaries_fail_closed() {
+        let wrong_count = vector_dot_value_inner(2, &[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("2 * dimension values"));
+        let non_finite = vector_dot_gradient_inner(2, &[1.0, f64::NAN, -3.0, 4.0]).unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let tangent_count = vector_dot_jvp_inner(2, &[1.0, 2.0, -3.0, 4.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("2 * dimension tangent value"));
+        let cotangent_count =
+            vector_dot_vjp_inner(2, &[1.0, 2.0, -3.0, 4.0], &[1.0, 2.0]).unwrap_err();
+        assert!(cotangent_count.contains("requires 1 cotangent value"));
+        let zero_dimension = vector_dot_value_inner(0, &[1.0]).unwrap_err();
         assert!(zero_dimension.contains("dimension must be positive"));
     }
 

@@ -114,6 +114,7 @@ from .compiler.mlir import (
     make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule,
     make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule,
     make_vector_dot_native_llvm_jit_lowering_rule,
+    make_vector_dot_native_llvm_jit_primitive_transform,
     make_vector_squared_norm_native_llvm_jit_lowering_rule,
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
 )
@@ -714,6 +715,7 @@ __all__ = [
     "make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule",
     "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_lowering_rule",
+    "make_vector_dot_native_llvm_jit_primitive_transform",
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_primitive_transform",
     "compile_whole_program_ad_trace_to_mlir",

@@ -2052,6 +2052,53 @@ def test_native_llvm_jit_vector_dot_kernel_executes_and_marks_plan_native() -> N
     assert module.metadata["primitive_readiness"][identity.key]["verdict"] == "native_executable"
     assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
 
+    rust_registry = CustomDerivativeRegistry()
+    rust_registry.register_transform(
+        compiler_mlir.make_vector_dot_native_llvm_jit_primitive_transform(
+            identity,
+            rule,
+            dimension=2,
+            sample_values=values,
+            config=config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        )
+    )
+    rust_plan = build_compiler_ad_transform_plan(rust_registry)
+    rust_module = compile_compiler_ad_transform_plan_to_mlir(rust_plan)
+    rust_registered_kernel = compile_registered_primitive_to_executable(
+        rust_registry,
+        identity,
+        values,
+    )
+
+    assert (
+        scpn.make_vector_dot_native_llvm_jit_primitive_transform
+        is compiler_mlir.make_vector_dot_native_llvm_jit_primitive_transform
+    )
+    assert rust_registered_kernel.backend == "native_llvm_jit"
+    assert rust_module.resource_counts["native_backend_contracts"] == 1
+    assert rust_module.resource_counts["rust_backend_contracts"] == 1
+    assert rust_module.resource_counts["primitive_readiness_native_executable"] == 1
+    assert rust_module.resource_counts["primitive_hard_gaps"] == 0
+    assert rust_module.metadata["primitive_hard_gaps"][identity.key] == []
+    assert rust_module.metadata["rust_backend_contract_primitives"] == [identity.key]
+    assert rust_module.metadata["rust_backend_signatures"] == {
+        identity.key: "primitive:dot;dimension:2;layout:x_then_y"
+    }
+    assert rust_module.metadata["rust_backend_functions"] == {
+        identity.key: "vector_dot_value,vector_dot_jvp,vector_dot_vjp,vector_dot_gradient"
+    }
+    assert rust_module.metadata["rust_backend_verification_primitives"] == {
+        identity.key: "verified: scpn_quantum_engine vector_dot value/JVP/VJP/gradient parity"
+    }
+    np.testing.assert_allclose(
+        rust_registered_kernel.gradient(values),
+        [-3.0, 4.0, 1.0, 2.0],
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
 
 def test_native_llvm_jit_matrix_quadratic_form_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT matrix quadratic-form AD kernels should execute."""

@@ -204,6 +204,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         compiler_ad::matrix_quadratic_form_gradient,
         m
     )?)?;
+    m.add_function(wrap_pyfunction!(compiler_ad::vector_dot_value, m)?)?;
+    m.add_function(wrap_pyfunction!(compiler_ad::vector_dot_jvp, m)?)?;
+    m.add_function(wrap_pyfunction!(compiler_ad::vector_dot_vjp, m)?)?;
+    m.add_function(wrap_pyfunction!(compiler_ad::vector_dot_gradient, m)?)?;
     m.add_function(wrap_pyfunction!(compiler_ad::vector_squared_norm_value, m)?)?;
     m.add_function(wrap_pyfunction!(compiler_ad::vector_squared_norm_jvp, m)?)?;
     m.add_function(wrap_pyfunction!(compiler_ad::vector_squared_norm_vjp, m)?)?;

@@ -90,6 +90,7 @@ from scpn_quantum_control import (
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
+    make_vector_dot_native_llvm_jit_primitive_transform,
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
 )
 
@@ -372,6 +373,13 @@ optional Rust extension mirrors the value, JVP, VJP, and gradient helpers
 through `vector_squared_norm_value()`, `vector_squared_norm_jvp()`,
 `vector_squared_norm_vjp()`, and `vector_squared_norm_gradient()` with the
 static `primitive:squared_norm;dimension:N` signature.
+`make_vector_dot_native_llvm_jit_primitive_transform()` binds the bilinear
+vector-dot primitive into the registry with one-call shape, dtype, batching,
+MLIR-runtime, native LLVM/JIT, and Rust/PyO3 parity metadata. The optional
+Rust extension mirrors `dot(x, y)` over concatenated `[x, y]` inputs through
+`vector_dot_value()`, `vector_dot_jvp()`, `vector_dot_vjp()`, and
+`vector_dot_gradient()` with the static
+`primitive:dot;dimension:N;layout:x_then_y` signature.
 `make_scalar_quadratic_native_llvm_jit_lowering_rule()` and
 `make_scalar_unary_elementwise_native_llvm_jit_lowering_rule()` and
 `make_scalar_binary_elementwise_native_llvm_jit_lowering_rule()` and
@@ -437,8 +445,8 @@ static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
 fail-closed outside the bounded `rust_pyo3` eigensystem and quadratic-form
-and vector squared-norm contracts until native Rust lowering is implemented for
-each primitive.
+and vector squared-norm and vector-dot contracts until native Rust lowering is
+implemented for each primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native LLVM/JIT
 differentiated runtimes are marked executable only for verified native lowering
