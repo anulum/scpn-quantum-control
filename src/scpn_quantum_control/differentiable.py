@@ -6299,6 +6299,7 @@ def _trace_append(
     ):
         raise ValueError("program AD np.append requires a static integer axis or None")
     trace_values = _coerce_trace_array(values, context)
+    _require_program_ad_assembly_contract("append", (array, trace_values, axis))
     operands = (array.ravel(), trace_values.ravel()) if axis is None else (array, trace_values)
     try:
         return _trace_concatenate(
@@ -9641,7 +9642,7 @@ _PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE = "scpn.program_ad.assembly"
 _PROGRAM_AD_ASSEMBLY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("concatenate", "stack")
+    for name in ("concatenate", "stack", "append")
 }
 
 _PROGRAM_AD_SIGNAL_PRIMITIVE_NAMESPACE = "scpn.program_ad.signal"
@@ -14485,6 +14486,52 @@ def _program_ad_assembly_stack_static_arguments(
     return operand_shapes, axis
 
 
+def _program_ad_assembly_append_operands(
+    args: tuple[object, ...],
+) -> tuple[object, object, object]:
+    if len(args) != 3:
+        raise ValueError("program AD assembly append requires source, values, and axis")
+    return args[0], args[1], args[2]
+
+
+def _program_ad_assembly_append_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], tuple[int, ...], int | None]:
+    source, values, axis = _program_ad_assembly_append_operands(args)
+    source_shape = _program_ad_array_shape_of(source)
+    values_shape = _program_ad_array_shape_of(values)
+    if axis is None:
+        _program_ad_assembly_append_output_shape(source_shape, values_shape, axis=None)
+        return source_shape, values_shape, None
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD assembly append requires a static integer axis or None")
+    normalised_axis = _program_ad_assembly_concatenate_axis(axis, rank=len(source_shape))
+    _program_ad_assembly_append_output_shape(source_shape, values_shape, axis=normalised_axis)
+    return source_shape, values_shape, normalised_axis
+
+
+def _program_ad_assembly_append_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape, values_shape, axis = _program_ad_assembly_append_static_parts(args)
+    return _program_ad_assembly_append_output_shape(source_shape, values_shape, axis=axis)
+
+
+def _program_ad_assembly_append_dtype_rule(args: tuple[object, ...]) -> str:
+    source, values, _axis = _program_ad_assembly_append_operands(args)
+    return str(
+        np.result_type(
+            np.dtype(_program_ad_array_dtype_of(source)),
+            np.dtype(_program_ad_array_dtype_of(values)),
+        )
+    )
+
+
+def _program_ad_assembly_append_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    source_shape, values_shape, axis = _program_ad_assembly_append_static_parts(args)
+    return source_shape, values_shape, axis
+
+
 def _program_ad_assembly_batching_rule(
     function: Callable[..., object],
     args: tuple[object, ...],
@@ -14580,6 +14627,77 @@ def _program_ad_assembly_batching_rule(
     return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
+def _program_ad_assembly_append_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 3 or len(axes) != 3:
+        raise ValueError("program AD assembly append batching requires source, values, and axis")
+    if axes[2] is not None:
+        raise ValueError("program AD assembly append batching keeps axis static")
+    source, values, axis = _program_ad_assembly_append_operands(args)
+    if axis is not None and (isinstance(axis, bool) or not isinstance(axis, (int, np.integer))):
+        raise ValueError("program AD assembly append batching keeps axis static")
+    arrays = (
+        _as_real_numeric_array("program AD assembly append batched source", source),
+        _as_real_numeric_array("program AD assembly append batched values", values),
+    )
+    mapped: list[tuple[NDArray[np.float64], int] | None] = []
+    batch_size: int | None = None
+    adjusted_axis: int | None = None
+    for operand_index, (array, operand_axis) in enumerate(zip(arrays, axes[:2], strict=True)):
+        if operand_axis is None:
+            if axis is not None:
+                raise ValueError(
+                    "program AD assembly append batching maps source and values for ranked axes"
+                )
+            mapped.append(None)
+            continue
+        batch_axis = _normalise_axis(f"axes[{operand_index}]", operand_axis, array.ndim)
+        size = int(array.shape[batch_axis])
+        if size <= 0:
+            raise ValueError("program AD assembly append batching axes must be non-empty")
+        if batch_size is None:
+            batch_size = size
+        elif size != batch_size:
+            raise ValueError("program AD assembly append batching axes must share one batch size")
+        if axis is not None:
+            axis_index = _normalise_axis("axis", int(axis), array.ndim)
+            if axis_index == batch_axis:
+                raise ValueError("program AD assembly append batching cannot map the append axis")
+            operand_adjusted_axis = axis_index - 1 if axis_index > batch_axis else axis_index
+            if adjusted_axis is None:
+                adjusted_axis = operand_adjusted_axis
+            elif adjusted_axis != operand_adjusted_axis:
+                raise ValueError("program AD assembly append batching requires one adjusted axis")
+        mapped.append((array, batch_axis))
+    if batch_size is None:
+        return _as_real_numeric_array(
+            "program AD assembly append batched output",
+            function(source, values, axis),
+        )
+
+    outputs: list[NDArray[np.float64]] = []
+    for batch_index in range(batch_size):
+        sliced_args: list[object] = []
+        for original, mapped_operand in zip((source, values), mapped, strict=True):
+            if mapped_operand is None:
+                sliced_args.append(original)
+                continue
+            array, batch_axis = mapped_operand
+            sliced_args.append(np.take(array, batch_index, axis=batch_axis))
+        outputs.append(
+            _as_real_numeric_array(
+                "program AD assembly append batched output",
+                function(sliced_args[0], sliced_args[1], adjusted_axis),
+            )
+        )
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
 def _program_ad_assembly_stack_batching_rule(
     function: Callable[..., object],
     args: tuple[object, ...],
@@ -14665,12 +14783,19 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
     if name not in _PROGRAM_AD_ASSEMBLY_IDENTITIES:
         raise ValueError(f"unsupported program AD assembly primitive {name}")
     factory_names = {
+        "append": "program_ad_assembly_append_derivative_rule",
         "concatenate": "program_ad_assembly_concatenate_derivative_rule",
         "stack": "program_ad_assembly_stack_derivative_rule",
     }
     boundaries = {
+        "append": "static_source_values_shape_axis_append",
         "concatenate": "static_operand_shape_axis_concatenate",
         "stack": "static_operand_shape_axis_stack",
+    }
+    static_signatures = {
+        "append": "source_shape:ranked_tensor_shape;values_shape:ranked_tensor_shape;axis",
+        "concatenate": "operand_shapes:ranked_tensor_shapes;axis",
+        "stack": "operand_shapes:ranked_tensor_shapes;axis",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -14680,7 +14805,7 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "rust": "blocked_until_polyglot_assembly_ad",
         "static_argument_rule": "required",
         "static_derivative_factory": factory_names[name],
-        "static_signature": "operand_shapes:ranked_tensor_shapes;axis",
+        "static_signature": static_signatures[name],
         "nondifferentiable_boundary": boundaries[name],
         "nondifferentiable_boundary_policy": "fail_closed",
     }
@@ -15517,18 +15642,22 @@ def _register_program_ad_interpolation_primitive_contracts() -> None:
 
 def _register_program_ad_assembly_primitive_contracts() -> None:
     batching_rules: Mapping[str, PrimitiveBatchingRule] = {
+        "append": _program_ad_assembly_append_batching_rule,
         "concatenate": _program_ad_assembly_batching_rule,
         "stack": _program_ad_assembly_stack_batching_rule,
     }
     shape_rules: Mapping[str, PrimitiveShapeRule] = {
+        "append": _program_ad_assembly_append_shape,
         "concatenate": _program_ad_assembly_concatenate_shape,
         "stack": _program_ad_assembly_stack_shape,
     }
     dtype_rules: Mapping[str, PrimitiveDTypeRule] = {
+        "append": _program_ad_assembly_append_dtype_rule,
         "concatenate": _program_ad_assembly_concatenate_dtype_rule,
         "stack": _program_ad_assembly_stack_dtype_rule,
     }
     static_argument_rules: Mapping[str, PrimitiveStaticArgumentRule] = {
+        "append": _program_ad_assembly_append_static_arguments,
         "concatenate": _program_ad_assembly_concatenate_static_arguments,
         "stack": _program_ad_assembly_stack_static_arguments,
     }
@@ -16597,6 +16726,124 @@ def program_ad_assembly_stack_derivative_rule(
 
     return CustomDerivativeRule(
         name=f"program_ad_assembly_stack_{len(shapes)}_operands_axis{axis_index}_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_assembly_append_shapes(
+    source_shape: Sequence[int],
+    values_shape: Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    source = _program_ad_array_normalise_static_shape("assembly append source", source_shape)
+    values = _program_ad_array_normalise_static_shape("assembly append values", values_shape)
+    return source, values
+
+
+def _program_ad_assembly_append_output_shape(
+    source_shape: Sequence[int],
+    values_shape: Sequence[int],
+    *,
+    axis: object = None,
+) -> tuple[int, ...]:
+    source, values = _program_ad_assembly_append_shapes(source_shape, values_shape)
+    if axis is None:
+        return (_program_ad_array_static_size(source) + _program_ad_array_static_size(values),)
+    axis_index = _program_ad_assembly_concatenate_axis(axis, rank=len(source))
+    return _program_ad_assembly_concatenate_output_shape((source, values), axis_index)
+
+
+def _program_ad_assembly_append_source_size(
+    source_shape: tuple[int, ...],
+    values_shape: tuple[int, ...],
+) -> int:
+    return _program_ad_array_static_size(source_shape) + _program_ad_array_static_size(
+        values_shape
+    )
+
+
+def _program_ad_assembly_append_split_source(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    values_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _program_ad_array_vector(
+        "append",
+        role,
+        values,
+        expected_size=_program_ad_assembly_append_source_size(source_shape, values_shape),
+    )
+    source_size = _program_ad_array_static_size(source_shape)
+    return (
+        vector[:source_size].reshape(source_shape),
+        vector[source_size:].reshape(values_shape),
+    )
+
+
+def program_ad_assembly_append_derivative_rule(
+    source_shape: Sequence[int],
+    values_shape: Sequence[int],
+    *,
+    axis: object = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.append`` operands."""
+
+    source_static, values_static = _program_ad_assembly_append_shapes(source_shape, values_shape)
+    axis_index = (
+        None
+        if axis is None
+        else _program_ad_assembly_concatenate_axis(axis, rank=len(source_static))
+    )
+    output_shape = _program_ad_assembly_append_output_shape(
+        source_static, values_static, axis=axis_index
+    )
+    output_size = _program_ad_array_static_size(output_shape)
+    axis_signature = "flat" if axis_index is None else str(axis_index)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        source_operand, values_operand = _program_ad_assembly_append_split_source(
+            "values", values, source_shape=source_static, values_shape=values_static
+        )
+        return _program_ad_float64_vector_result(
+            np.append(source_operand, values_operand, axis=axis_index).reshape(-1)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_assembly_append_split_source(
+            "values", values, source_shape=source_static, values_shape=values_static
+        )
+        tangent_source, tangent_values = _program_ad_assembly_append_split_source(
+            "tangent", tangent, source_shape=source_static, values_shape=values_static
+        )
+        return _program_ad_float64_vector_result(
+            np.append(tangent_source, tangent_values, axis=axis_index).reshape(-1)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_assembly_append_split_source(
+            "values", values, source_shape=source_static, values_shape=values_static
+        )
+        cotangent_vector = _program_ad_array_vector(
+            "append", "cotangent", cotangent, expected_size=output_size
+        )
+        if axis_index is None:
+            return _program_ad_float64_vector_result(cotangent_vector)
+        cotangent_array = cotangent_vector.reshape(output_shape)
+        source_extent = source_static[axis_index]
+        source_adjoint, values_adjoint = np.split(
+            cotangent_array, [source_extent], axis=axis_index
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate([source_adjoint.reshape(-1), values_adjoint.reshape(-1)])
+        )
+
+    return CustomDerivativeRule(
+        name=f"program_ad_assembly_append_axis{axis_signature}_direct_rule",
         value_fn=value_fn,
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
@@ -22843,6 +23090,7 @@ __all__ = [
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
+    "program_ad_assembly_append_derivative_rule",
     "program_ad_assembly_concatenate_derivative_rule",
     "program_ad_assembly_stack_derivative_rule",
     "program_ad_array_delete_derivative_rule",
