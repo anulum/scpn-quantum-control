@@ -6321,6 +6321,7 @@ def _trace_stack(
     if not arrays:
         raise ValueError("whole-program AD np.stack requires at least one array")
     trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
+    _require_program_ad_assembly_contract("stack", (trace_arrays, axis))
     shape = trace_arrays[0].shape
     if any(array.shape != shape for array in trace_arrays):
         raise ValueError("whole-program AD np.stack operands must have matching shapes")
@@ -9640,7 +9641,7 @@ _PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE = "scpn.program_ad.assembly"
 _PROGRAM_AD_ASSEMBLY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("concatenate",)
+    for name in ("concatenate", "stack")
 }
 
 _PROGRAM_AD_SIGNAL_PRIMITIVE_NAMESPACE = "scpn.program_ad.signal"
@@ -14386,9 +14387,9 @@ def _program_ad_assembly_direct_jvp(
 
 
 def _program_ad_assembly_derivative_rule(name: str) -> CustomDerivativeRule:
-    if name == "concatenate":
+    if name in _PROGRAM_AD_ASSEMBLY_IDENTITIES:
         return CustomDerivativeRule(
-            name="program_ad_assembly_concatenate_trace_contract",
+            name=f"program_ad_assembly_{name}_trace_contract",
             value_fn=_program_ad_assembly_direct_value,
             jvp_rule=_program_ad_assembly_direct_jvp,
         )
@@ -14439,6 +14440,48 @@ def _program_ad_assembly_concatenate_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     operand_shapes, axis = _program_ad_assembly_concatenate_static_parts(args)
+    return operand_shapes, axis
+
+
+def _program_ad_assembly_stack_operands(
+    args: tuple[object, ...],
+) -> tuple[tuple[object, ...], object]:
+    if len(args) != 2:
+        raise ValueError("program AD assembly stack requires operands and axis")
+    operands = args[0]
+    if not isinstance(operands, (tuple, list)):
+        raise ValueError("program AD assembly stack requires a static operand sequence")
+    operand_tuple = tuple(operands)
+    if not operand_tuple:
+        raise ValueError("program AD assembly stack requires operands")
+    return operand_tuple, args[1]
+
+
+def _program_ad_assembly_stack_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[tuple[int, ...], ...], int]:
+    operands, axis = _program_ad_assembly_stack_operands(args)
+    operand_shapes = tuple(_program_ad_array_shape_of(operand) for operand in operands)
+    normalised_axis = _program_ad_assembly_stack_axis(axis, rank=len(operand_shapes[0]))
+    _program_ad_assembly_stack_output_shape(operand_shapes, normalised_axis)
+    return operand_shapes, normalised_axis
+
+
+def _program_ad_assembly_stack_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    operand_shapes, axis = _program_ad_assembly_stack_static_parts(args)
+    return _program_ad_assembly_stack_output_shape(operand_shapes, axis)
+
+
+def _program_ad_assembly_stack_dtype_rule(args: tuple[object, ...]) -> str:
+    operands, _axis = _program_ad_assembly_stack_operands(args)
+    operand_dtypes = [np.dtype(_program_ad_array_dtype_of(operand)) for operand in operands]
+    return str(np.result_type(*operand_dtypes))
+
+
+def _program_ad_assembly_stack_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    operand_shapes, axis = _program_ad_assembly_stack_static_parts(args)
     return operand_shapes, axis
 
 
@@ -14537,19 +14580,108 @@ def _program_ad_assembly_batching_rule(
     return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
+def _program_ad_assembly_stack_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 2 or len(axes) != 2:
+        raise ValueError("program AD assembly stack batching requires operands and axis")
+    if axes[1] is not None:
+        raise ValueError("program AD assembly stack batching keeps axis static")
+    operands, axis = _program_ad_assembly_stack_operands(args)
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD assembly stack batching keeps axis static")
+    operand_axes = cast(Any, axes[0])
+    if operand_axes is None:
+        return _as_real_numeric_array(
+            "program AD assembly stack batched output",
+            function(operands, axis),
+        )
+    if not isinstance(operand_axes, (tuple, list)) or len(operand_axes) != len(operands):
+        raise ValueError(
+            "program AD assembly stack batching requires one operand axis per operand"
+        )
+
+    mapped: list[tuple[NDArray[np.float64], int] | None] = []
+    batch_size: int | None = None
+    adjusted_axis: int | None = None
+    for operand_index, (operand, operand_axis) in enumerate(
+        zip(operands, operand_axes, strict=True)
+    ):
+        if operand_axis is None:
+            mapped.append(None)
+            continue
+        array = _as_real_numeric_array(
+            f"program AD assembly stack batched operand {operand_index}",
+            operand,
+        )
+        batch_axis = _normalise_axis(f"axes[0][{operand_index}]", operand_axis, array.ndim)
+        size = int(array.shape[batch_axis])
+        if size <= 0:
+            raise ValueError("program AD assembly stack batching axes must be non-empty")
+        if batch_size is None:
+            batch_size = size
+        elif size != batch_size:
+            raise ValueError("program AD assembly stack batching axes must share one batch size")
+        axis_index = _normalise_axis("axis", int(axis), array.ndim + 1)
+        if axis_index == batch_axis:
+            raise ValueError("program AD assembly stack batching cannot map the stack axis")
+        operand_adjusted_axis = axis_index - 1 if axis_index > batch_axis else axis_index
+        if adjusted_axis is None:
+            adjusted_axis = operand_adjusted_axis
+        elif adjusted_axis != operand_adjusted_axis:
+            raise ValueError("program AD assembly stack batching requires one adjusted axis")
+        mapped.append((array, batch_axis))
+    if batch_size is None:
+        return _as_real_numeric_array(
+            "program AD assembly stack batched output",
+            function(operands, axis),
+        )
+    if adjusted_axis is None:
+        raise ValueError("program AD assembly stack batching requires a mapped operand axis")
+
+    outputs: list[NDArray[np.float64]] = []
+    for batch_index in range(batch_size):
+        sliced_operands: list[object] = []
+        for operand, mapped_operand in zip(operands, mapped, strict=True):
+            if mapped_operand is None:
+                sliced_operands.append(operand)
+                continue
+            array, batch_axis = mapped_operand
+            sliced_operands.append(np.take(array, batch_index, axis=batch_axis))
+        outputs.append(
+            _as_real_numeric_array(
+                "program AD assembly stack batched output",
+                function(tuple(sliced_operands), adjusted_axis),
+            )
+        )
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
 def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
-    if name != "concatenate":
+    if name not in _PROGRAM_AD_ASSEMBLY_IDENTITIES:
         raise ValueError(f"unsupported program AD assembly primitive {name}")
+    factory_names = {
+        "concatenate": "program_ad_assembly_concatenate_derivative_rule",
+        "stack": "program_ad_assembly_stack_derivative_rule",
+    }
+    boundaries = {
+        "concatenate": "static_operand_shape_axis_concatenate",
+        "stack": "static_operand_shape_axis_stack",
+    }
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff assembly dialect interchange; executable lowering blocked",
-        "mlir_op": "scpn_diff.assembly.concatenate",
+        "mlir_op": f"scpn_diff.assembly.{name}",
         "llvm": "blocked_until_executable_assembly_lowering",
         "rust": "blocked_until_polyglot_assembly_ad",
         "static_argument_rule": "required",
-        "static_derivative_factory": "program_ad_assembly_concatenate_derivative_rule",
+        "static_derivative_factory": factory_names[name],
         "static_signature": "operand_shapes:ranked_tensor_shapes;axis",
-        "nondifferentiable_boundary": "static_operand_shape_axis_concatenate",
+        "nondifferentiable_boundary": boundaries[name],
         "nondifferentiable_boundary_policy": "fail_closed",
     }
 
@@ -15384,6 +15516,22 @@ def _register_program_ad_interpolation_primitive_contracts() -> None:
 
 
 def _register_program_ad_assembly_primitive_contracts() -> None:
+    batching_rules: Mapping[str, PrimitiveBatchingRule] = {
+        "concatenate": _program_ad_assembly_batching_rule,
+        "stack": _program_ad_assembly_stack_batching_rule,
+    }
+    shape_rules: Mapping[str, PrimitiveShapeRule] = {
+        "concatenate": _program_ad_assembly_concatenate_shape,
+        "stack": _program_ad_assembly_stack_shape,
+    }
+    dtype_rules: Mapping[str, PrimitiveDTypeRule] = {
+        "concatenate": _program_ad_assembly_concatenate_dtype_rule,
+        "stack": _program_ad_assembly_stack_dtype_rule,
+    }
+    static_argument_rules: Mapping[str, PrimitiveStaticArgumentRule] = {
+        "concatenate": _program_ad_assembly_concatenate_static_arguments,
+        "stack": _program_ad_assembly_stack_static_arguments,
+    }
     for name, identity in _PROGRAM_AD_ASSEMBLY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
@@ -15391,11 +15539,11 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
             PrimitiveTransformRule(
                 identity=identity,
                 derivative_rule=_program_ad_assembly_derivative_rule(name),
-                batching_rule=_program_ad_assembly_batching_rule,
+                batching_rule=batching_rules[name],
                 lowering_metadata=_program_ad_assembly_lowering_metadata(name),
-                shape_rule=_program_ad_assembly_concatenate_shape,
-                dtype_rule=_program_ad_assembly_concatenate_dtype_rule,
-                static_argument_rule=_program_ad_assembly_concatenate_static_arguments,
+                shape_rule=shape_rules[name],
+                dtype_rule=dtype_rules[name],
+                static_argument_rule=static_argument_rules[name],
                 nondifferentiable_policy=_PROGRAM_AD_ASSEMBLY_POLICY,
                 effect="pure",
             )
@@ -16335,6 +16483,120 @@ def program_ad_assembly_concatenate_derivative_rule(
             "program_ad_assembly_concatenate_"
             f"{len(shapes)}_operands_axis{axis_signature}_direct_rule"
         ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_assembly_stack_shapes(
+    operand_shapes: Sequence[Sequence[int]],
+) -> tuple[tuple[int, ...], ...]:
+    shapes = tuple(
+        _program_ad_array_normalise_static_shape("assembly stack operand", shape)
+        for shape in operand_shapes
+    )
+    if not shapes:
+        raise ValueError("program AD assembly stack direct rule requires operands")
+    reference = shapes[0]
+    for shape in shapes:
+        if shape != reference:
+            raise ValueError(
+                "program AD assembly stack direct rule requires matching operand shapes"
+            )
+    return shapes
+
+
+def _program_ad_assembly_stack_axis(
+    axis: object,
+    *,
+    rank: int,
+) -> int:
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD assembly stack direct rule requires a static integer axis")
+    output_rank = rank + 1
+    return _normalise_axis("axis", int(axis), output_rank)
+
+
+def _program_ad_assembly_stack_output_shape(
+    operand_shapes: Sequence[Sequence[int]],
+    axis: object = 0,
+) -> tuple[int, ...]:
+    shapes = _program_ad_assembly_stack_shapes(operand_shapes)
+    axis_index = _program_ad_assembly_stack_axis(axis, rank=len(shapes[0]))
+    output = list(shapes[0])
+    output.insert(axis_index, len(shapes))
+    return tuple(output)
+
+
+def _program_ad_assembly_stack_source_size(
+    operand_shapes: tuple[tuple[int, ...], ...],
+) -> int:
+    return sum(_program_ad_array_static_size(shape) for shape in operand_shapes)
+
+
+def _program_ad_assembly_stack_split_source(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    operand_shapes: tuple[tuple[int, ...], ...],
+) -> tuple[NDArray[np.float64], ...]:
+    vector = _program_ad_array_vector(
+        "stack",
+        role,
+        values,
+        expected_size=_program_ad_assembly_stack_source_size(operand_shapes),
+    )
+    operands: list[NDArray[np.float64]] = []
+    offset = 0
+    for shape in operand_shapes:
+        size = _program_ad_array_static_size(shape)
+        operands.append(vector[offset : offset + size].reshape(shape))
+        offset += size
+    return tuple(operands)
+
+
+def program_ad_assembly_stack_derivative_rule(
+    operand_shapes: Sequence[Sequence[int]],
+    *,
+    axis: object = 0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.stack`` operands."""
+
+    shapes = _program_ad_assembly_stack_shapes(operand_shapes)
+    axis_index = _program_ad_assembly_stack_axis(axis, rank=len(shapes[0]))
+    output_shape = _program_ad_assembly_stack_output_shape(shapes, axis_index)
+    output_size = _program_ad_array_static_size(output_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        operands = _program_ad_assembly_stack_split_source("values", values, operand_shapes=shapes)
+        return _program_ad_float64_vector_result(np.stack(operands, axis=axis_index).reshape(-1))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_assembly_stack_split_source("values", values, operand_shapes=shapes)
+        tangent_operands = _program_ad_assembly_stack_split_source(
+            "tangent", tangent, operand_shapes=shapes
+        )
+        return _program_ad_float64_vector_result(
+            np.stack(tangent_operands, axis=axis_index).reshape(-1)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_assembly_stack_split_source("values", values, operand_shapes=shapes)
+        cotangent_vector = _program_ad_array_vector(
+            "stack", "cotangent", cotangent, expected_size=output_size
+        )
+        cotangent_array = cotangent_vector.reshape(output_shape)
+        adjoints = [
+            np.take(cotangent_array, operand_index, axis=axis_index).reshape(-1)
+            for operand_index in range(len(shapes))
+        ]
+        return _program_ad_float64_vector_result(np.concatenate(adjoints))
+
+    return CustomDerivativeRule(
+        name=f"program_ad_assembly_stack_{len(shapes)}_operands_axis{axis_index}_direct_rule",
         value_fn=value_fn,
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
@@ -22582,6 +22844,7 @@ __all__ = [
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
     "program_ad_assembly_concatenate_derivative_rule",
+    "program_ad_assembly_stack_derivative_rule",
     "program_ad_array_delete_derivative_rule",
     "program_ad_array_getitem_derivative_rule",
     "program_ad_array_insert_derivative_rule",

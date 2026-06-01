@@ -148,6 +148,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_array_take_along_axis_derivative_rule,
     program_ad_array_take_derivative_rule,
     program_ad_assembly_concatenate_derivative_rule,
+    program_ad_assembly_stack_derivative_rule,
     program_ad_cumulative_cumprod_derivative_rule,
     program_ad_cumulative_cumsum_derivative_rule,
     program_ad_cumulative_diff_derivative_rule,
@@ -7787,6 +7788,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_assembly_concatenate_derivative_rule",
             "operand_shapes:ranked_tensor_shapes;axis",
         ),
+        "scpn.program_ad.assembly:stack": (
+            "program_ad_assembly_stack_derivative_rule",
+            "operand_shapes:ranked_tensor_shapes;axis",
+        ),
         "scpn.program_ad.signal:convolve": (
             "program_ad_signal_convolve_derivative_rule",
             "left_shape:rank1;right_shape:rank1;mode",
@@ -10178,6 +10183,125 @@ def test_program_ad_assembly_concatenate_batching_rule_maps_operand_batches() ->
         )
 
 
+def test_program_ad_assembly_stack_contract_and_direct_rule() -> None:
+    """np.stack should expose a fail-closed assembly primitive direct rule."""
+
+    left = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    right = np.array([[0.25, -0.75], [1.5, -2.5]], dtype=np.float64)
+    tangent_left = np.array([[0.1, -0.2], [0.3, -0.4]], dtype=np.float64)
+    tangent_right = np.array([[-0.5, 0.25], [0.75, -0.125]], dtype=np.float64)
+    cotangent = np.array(
+        [[[0.2, -0.4], [0.6, -0.8]], [[1.0, -1.2], [1.4, -1.6]]],
+        dtype=np.float64,
+    )
+    values = np.concatenate([left.reshape(-1), right.reshape(-1)])
+    tangent = np.concatenate([tangent_left.reshape(-1), tangent_right.reshape(-1)])
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:stack")
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.assembly", "stack", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.assembly.stack"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_assembly_stack_derivative_rule"
+    )
+    assert (
+        contract.lowering_metadata["static_signature"]
+        == "operand_shapes:ranked_tensor_shapes;axis"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule(((left, right), 1)) == (2, 2, 2)
+    assert contract.shape_rule(((left, right), -1)) == (2, 2, 2)
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule(((left, right), 1)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule(((left, right), 1)) == (((2, 2), (2, 2)), 1)
+    assert contract.static_argument_rule(((left, right), -1)) == (((2, 2), (2, 2)), 2)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(contract.identity)
+
+    rule = program_ad_assembly_stack_derivative_rule((left.shape, right.shape), axis=1)
+    assert rule.name == "program_ad_assembly_stack_2_operands_axis1_direct_rule"
+    np.testing.assert_allclose(
+        rule.value_fn(values),
+        np.stack([left, right], axis=1).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rule.jvp_rule(values, tangent),
+        np.stack([tangent_left, tangent_right], axis=1).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rule.vjp_rule(values, cotangent.reshape(-1)),
+        np.concatenate([cotangent[:, 0, :].reshape(-1), cotangent[:, 1, :].reshape(-1)]),
+    )
+
+
+def test_program_ad_assembly_stack_batching_rule_maps_operand_batches() -> None:
+    """Stack batching should map operand batches and keep the inserted axis static."""
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:stack")
+    assert contract.batching_rule is not None
+
+    def stack_fn(operands: tuple[np.ndarray, ...], axis: int) -> np.ndarray:
+        return np.stack(operands, axis=axis)
+
+    left_batch = np.array(
+        [
+            [[1.0, -2.0], [0.5, 3.0]],
+            [[-1.5, 0.25], [2.0, -0.75]],
+        ],
+        dtype=np.float64,
+    )
+    right_batch = np.array(
+        [
+            [[0.25, -0.75], [1.5, -2.5]],
+            [[0.5, -1.25], [2.5, -3.0]],
+        ],
+        dtype=np.float64,
+    )
+    expected = np.stack(
+        [
+            np.stack([left_batch[index], right_batch[index]], axis=1)
+            for index in range(left_batch.shape[0])
+        ],
+        axis=0,
+    )
+
+    np.testing.assert_allclose(
+        contract.batching_rule(
+            stack_fn,
+            ((left_batch, right_batch), 2),
+            ((0, 0), None),
+            0,
+        ),
+        expected,
+    )
+    np.testing.assert_allclose(
+        contract.batching_rule(
+            stack_fn,
+            ((left_batch, right_batch), 2),
+            ((0, 0), None),
+            1,
+        ),
+        np.moveaxis(expected, 0, 1),
+    )
+    with pytest.raises(ValueError, match="keeps axis static"):
+        contract.batching_rule(
+            stack_fn,
+            ((left_batch, right_batch), 2),
+            ((0, 0), 0),
+            0,
+        )
+    with pytest.raises(ValueError, match="cannot map the stack axis"):
+        contract.batching_rule(
+            stack_fn,
+            ((left_batch, right_batch), 0),
+            ((0, 0), None),
+            0,
+        )
+
+
 def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
     """np.convolve should expose a fail-closed signal primitive direct rule."""
 
@@ -12421,6 +12545,9 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert (
         scpn.program_ad_assembly_concatenate_derivative_rule
         is program_ad_assembly_concatenate_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_stack_derivative_rule is program_ad_assembly_stack_derivative_rule
     )
     assert (
         scpn.program_ad_signal_convolve_derivative_rule
