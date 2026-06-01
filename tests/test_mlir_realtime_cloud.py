@@ -2360,6 +2360,43 @@ def test_native_llvm_jit_vector_squared_norm_kernel_executes_and_marks_plan_nati
     assert module.metadata["primitive_readiness"][identity.key]["verdict"] == "native_executable"
     assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
 
+    rust_registry = CustomDerivativeRegistry()
+    rust_registry.register_transform(
+        compiler_mlir.make_vector_squared_norm_native_llvm_jit_primitive_transform(
+            identity,
+            rule,
+            dimension=3,
+            sample_values=values,
+            config=config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        )
+    )
+    rust_plan = build_compiler_ad_transform_plan(rust_registry)
+    rust_module = compile_compiler_ad_transform_plan_to_mlir(rust_plan)
+
+    assert (
+        scpn.make_vector_squared_norm_native_llvm_jit_primitive_transform
+        is compiler_mlir.make_vector_squared_norm_native_llvm_jit_primitive_transform
+    )
+    assert rust_module.resource_counts["native_backend_contracts"] == 1
+    assert rust_module.resource_counts["rust_backend_contracts"] == 1
+    assert rust_module.resource_counts["primitive_readiness_native_executable"] == 1
+    assert rust_module.metadata["primitive_readiness"][identity.key]["verdict"] == (
+        "native_executable"
+    )
+    assert rust_module.metadata["primitive_hard_gaps"][identity.key] == []
+    assert rust_module.metadata["rust_backend_contract_primitives"] == [identity.key]
+    assert rust_module.metadata["rust_backend_signatures"] == {
+        identity.key: "primitive:squared_norm;dimension:3"
+    }
+    assert rust_module.metadata["rust_backend_functions"] == {
+        identity.key: (
+            "vector_squared_norm_value,vector_squared_norm_jvp,"
+            "vector_squared_norm_vjp,vector_squared_norm_gradient"
+        )
+    }
+
 
 def test_native_llvm_jit_matrix_vector_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT matrix-vector AD kernels should execute vector-output AD."""

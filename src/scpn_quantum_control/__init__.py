@@ -115,6 +115,7 @@ from .compiler.mlir import (
     make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule,
     make_vector_dot_native_llvm_jit_lowering_rule,
     make_vector_squared_norm_native_llvm_jit_lowering_rule,
+    make_vector_squared_norm_native_llvm_jit_primitive_transform,
 )
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
@@ -714,6 +715,7 @@ __all__ = [
     "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
+    "make_vector_squared_norm_native_llvm_jit_primitive_transform",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "MonotonicRealtimeClock",

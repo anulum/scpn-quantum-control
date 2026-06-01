@@ -90,6 +90,7 @@ from scpn_quantum_control import (
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
+    make_vector_squared_norm_native_llvm_jit_primitive_transform,
 )
 
 module = compile_kuramoto_to_mlir(
@@ -364,6 +365,13 @@ gradient helpers through `matrix_quadratic_form_value()`,
 `matrix_quadratic_form_jvp()`, `matrix_quadratic_form_vjp()`, and
 `matrix_quadratic_form_gradient()` with the same static
 `primitive:quadratic_form;dimension:N;layout:matrix_then_vector` signature.
+`make_vector_squared_norm_native_llvm_jit_primitive_transform()` binds the
+same squared-norm primitive into the registry with one-call shape, dtype,
+batching, MLIR-runtime, native LLVM/JIT, and Rust/PyO3 parity metadata. The
+optional Rust extension mirrors the value, JVP, VJP, and gradient helpers
+through `vector_squared_norm_value()`, `vector_squared_norm_jvp()`,
+`vector_squared_norm_vjp()`, and `vector_squared_norm_gradient()` with the
+static `primitive:squared_norm;dimension:N` signature.
 `make_scalar_quadratic_native_llvm_jit_lowering_rule()` and
 `make_scalar_unary_elementwise_native_llvm_jit_lowering_rule()` and
 `make_scalar_binary_elementwise_native_llvm_jit_lowering_rule()` and
@@ -429,7 +437,8 @@ static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
 fail-closed outside the bounded `rust_pyo3` eigensystem and quadratic-form
-contracts until native Rust lowering is implemented for each primitive.
+and vector squared-norm contracts until native Rust lowering is implemented for
+each primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native LLVM/JIT
 differentiated runtimes are marked executable only for verified native lowering

@@ -5968,6 +5968,96 @@ def make_vector_squared_norm_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def make_vector_squared_norm_native_llvm_jit_primitive_transform(
+    identity: PrimitiveIdentity | str,
+    rule: CustomDerivativeRule,
+    *,
+    dimension: int | np.integer,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> PrimitiveTransformRule:
+    """Create a complete Rust/PyO3 + native LLVM/JIT squared-norm contract."""
+
+    primitive_identity = PrimitiveIdentity.parse(identity)
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    checked_dimension = _validate_vector_dot_dimension(dimension)
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError(
+            "native vector squared norm primitive transform requires backend='native_llvm_jit'"
+        )
+    values = _as_finite_vector("sample_values", sample_values)
+    if values.size != checked_dimension:
+        raise ValueError(
+            "native vector squared norm primitive transform requires exactly dimension "
+            "sample values"
+        )
+    tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+    kernel = compile_vector_squared_norm_ad_to_native_llvm_jit(
+        rule,
+        dimension=checked_dimension,
+        sample_values=values,
+        config=compile_config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+    static_signature = f"primitive:squared_norm;dimension:{checked_dimension}"
+    return PrimitiveTransformRule(
+        identity=primitive_identity,
+        derivative_rule=rule,
+        batching_rule=make_executable_ad_kernel_batching_rule(kernel, method="value"),
+        lowering_rule=make_vector_squared_norm_native_llvm_jit_lowering_rule(
+            dimension=checked_dimension,
+            sample_values=values,
+            config=compile_config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        ),
+        lowering_metadata={
+            "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+            "mlir_op": "scpn_diff.native_vector_squared_norm",
+            "mlir_runtime_verification": "verified: native LLVM/JIT vector squared norm JVP",
+            "rust": "available: Rust PyO3 vector squared norm value/JVP/VJP/gradient kernel",
+            "rust_backend": "rust_pyo3",
+            "rust_backend_verification": (
+                "verified: scpn_quantum_engine vector_squared_norm value/JVP/VJP/gradient parity"
+            ),
+            "rust_backend_signature": static_signature,
+            "rust_backend_functions": (
+                "vector_squared_norm_value,vector_squared_norm_jvp,"
+                "vector_squared_norm_vjp,vector_squared_norm_gradient"
+            ),
+            "llvm": "available: native LLVM MCJIT vector squared norm AD kernel",
+            "jit": "available: native LLVM MCJIT vector squared norm AD kernel",
+            "native_backend": "native_llvm_jit",
+            "native_backend_verification": (
+                "verified: native LLVM MCJIT vector squared norm value/JVP/VJP/gradient"
+            ),
+            "static_derivative_factory": "native_vector_squared_norm_llvm_jit",
+            "static_signature": static_signature,
+            "nondifferentiable_boundary": "none_smooth_vector_squared_norm",
+            "nondifferentiable_boundary_policy": "fail_closed",
+        },
+        shape_rule=lambda _args: (1,),
+        dtype_rule=lambda _args: "float64",
+        static_argument_rule=lambda args: args,
+        nondifferentiable_policy="smooth_vector_squared_norm_real_domain",
+        effect="pure",
+    )
+
+
 def compile_matrix_vector_product_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -8197,4 +8287,5 @@ __all__ = [
     "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
+    "make_vector_squared_norm_native_llvm_jit_primitive_transform",
 ]

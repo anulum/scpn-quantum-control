@@ -26,6 +26,7 @@ use scpn_quantum_engine::compiler_ad::{
     matrix_2x2_eigensystem_jvp_inner, matrix_2x2_eigensystem_value_inner,
     matrix_2x2_eigensystem_vjp_inner, matrix_quadratic_form_jvp_inner,
     matrix_quadratic_form_value_inner, matrix_quadratic_form_vjp_inner,
+    vector_squared_norm_jvp_inner, vector_squared_norm_value_inner, vector_squared_norm_vjp_inner,
 };
 use scpn_quantum_engine::dla::{commutator_dense, is_independent_fast};
 use scpn_quantum_engine::knm::build_knm_inner;
@@ -176,6 +177,29 @@ fn bench_matrix_quadratic_form_ad(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_vector_squared_norm_ad(c: &mut Criterion) {
+    let values = [1.5, -2.0, 0.25];
+    let tangent = [-0.5, 0.75, 2.0];
+    let cotangent = [1.25];
+    let mut group = c.benchmark_group("vector_squared_norm_ad");
+    group.bench_function("value", |bench| {
+        bench.iter(|| vector_squared_norm_value_inner(black_box(3), black_box(&values)).unwrap());
+    });
+    group.bench_function("jvp", |bench| {
+        bench.iter(|| {
+            vector_squared_norm_jvp_inner(black_box(3), black_box(&values), black_box(&tangent))
+                .unwrap()
+        });
+    });
+    group.bench_function("vjp", |bench| {
+        bench.iter(|| {
+            vector_squared_norm_vjp_inner(black_box(3), black_box(&values), black_box(&cotangent))
+                .unwrap()
+        });
+    });
+    group.finish();
+}
+
 criterion_group!(
     hot_paths,
     bench_build_knm,
@@ -184,6 +208,7 @@ criterion_group!(
     bench_is_independent_fast,
     bench_biological_decode_inner,
     bench_matrix_2x2_eigensystem_ad,
-    bench_matrix_quadratic_form_ad
+    bench_matrix_quadratic_form_ad,
+    bench_vector_squared_norm_ad
 );
 criterion_main!(hot_paths);

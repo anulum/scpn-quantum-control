@@ -360,6 +360,103 @@ pub fn matrix_quadratic_form_gradient_inner(
     Ok(gradient)
 }
 
+fn checked_vector_squared_norm_values(
+    dimension: usize,
+    values: &[f64],
+    label: &str,
+    primitive: &str,
+) -> Result<(), String> {
+    if dimension == 0 {
+        return Err(format!("{primitive} dimension must be positive"));
+    }
+    if values.len() != dimension {
+        return Err(format!("{primitive} requires dimension {label} value(s)"));
+    }
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{label}[{index}] is not finite ({value})"));
+        }
+    }
+    Ok(())
+}
+
+/// Evaluate sum_i x_i^2 for finite real vectors.
+pub fn vector_squared_norm_value_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_vector_squared_norm_values(
+        dimension,
+        values,
+        "values",
+        "native vector squared norm Rust value kernel",
+    )?;
+    Ok([values.iter().map(|value| value * value).sum()])
+}
+
+/// Apply the exact JVP for sum_i x_i^2.
+pub fn vector_squared_norm_jvp_inner(
+    dimension: usize,
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_vector_squared_norm_values(
+        dimension,
+        values,
+        "values",
+        "native vector squared norm Rust JVP kernel",
+    )?;
+    checked_vector_squared_norm_values(
+        dimension,
+        tangent,
+        "tangent",
+        "native vector squared norm Rust JVP kernel",
+    )?;
+    let total = values
+        .iter()
+        .zip(tangent.iter())
+        .map(|(value, tangent)| 2.0 * value * tangent)
+        .sum();
+    Ok([total])
+}
+
+/// Apply the exact VJP for sum_i x_i^2.
+pub fn vector_squared_norm_vjp_inner(
+    dimension: usize,
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_vector_squared_norm_values(
+        dimension,
+        values,
+        "values",
+        "native vector squared norm Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<1>(
+        cotangent,
+        "cotangent",
+        "native vector squared norm Rust VJP kernel",
+    )?;
+    Ok(values
+        .iter()
+        .map(|value| 2.0 * value * cotangent[0])
+        .collect())
+}
+
+/// Return the scalar-output gradient of sum_i x_i^2.
+pub fn vector_squared_norm_gradient_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_vector_squared_norm_values(
+        dimension,
+        values,
+        "values",
+        "native vector squared norm Rust gradient kernel",
+    )?;
+    Ok(values.iter().map(|value| 2.0 * value).collect())
+}
+
 /// PyO3 wrapper for bounded Rust eigensystem value evaluation.
 #[pyfunction]
 pub fn matrix_2x2_eigensystem_value<'py>(
@@ -474,6 +571,66 @@ pub fn matrix_quadratic_form_gradient<'py>(
     Ok(PyArray1::from_vec(py, result))
 }
 
+/// PyO3 wrapper for Rust vector squared-norm value evaluation.
+#[pyfunction]
+pub fn vector_squared_norm_value<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = vector_squared_norm_value_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust vector squared-norm JVP evaluation.
+#[pyfunction]
+pub fn vector_squared_norm_jvp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result =
+        vector_squared_norm_jvp_inner(dimension, values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust vector squared-norm VJP evaluation.
+#[pyfunction]
+pub fn vector_squared_norm_vjp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result =
+        vector_squared_norm_vjp_inner(dimension, values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust vector squared-norm gradient evaluation.
+#[pyfunction]
+pub fn vector_squared_norm_gradient<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = vector_squared_norm_gradient_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -583,6 +740,45 @@ mod tests {
         assert!(non_finite.contains("not finite"));
         let zero_dimension =
             matrix_quadratic_form_value_inner(0, &[2.0, -1.0, 0.5, 3.0, 1.5, -2.0]).unwrap_err();
+        assert!(zero_dimension.contains("dimension must be positive"));
+    }
+
+    #[test]
+    fn vector_squared_norm_value_jvp_vjp_and_gradient_match_closed_form() {
+        let values = [1.5, -2.0, 0.25];
+        let tangent = [-0.5, 0.75, 2.0];
+        let cotangent = [1.25];
+
+        assert_close(
+            &vector_squared_norm_value_inner(3, &values).unwrap(),
+            &[6.3125],
+        );
+        assert_close(
+            &vector_squared_norm_jvp_inner(3, &values, &tangent).unwrap(),
+            &[-3.5],
+        );
+        assert_close(
+            &vector_squared_norm_vjp_inner(3, &values, &cotangent).unwrap(),
+            &[3.75, -5.0, 0.625],
+        );
+        assert_close(
+            &vector_squared_norm_gradient_inner(3, &values).unwrap(),
+            &[3.0, -4.0, 0.5],
+        );
+    }
+
+    #[test]
+    fn vector_squared_norm_boundaries_fail_closed() {
+        let wrong_count = vector_squared_norm_value_inner(3, &[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("requires dimension values"));
+        let non_finite = vector_squared_norm_gradient_inner(3, &[1.0, f64::NAN, 2.0]).unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let tangent_count = vector_squared_norm_jvp_inner(3, &[1.0, 2.0, 3.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("requires dimension tangent value"));
+        let cotangent_count =
+            vector_squared_norm_vjp_inner(3, &[1.0, 2.0, 3.0], &[1.0, 2.0]).unwrap_err();
+        assert!(cotangent_count.contains("requires 1 cotangent value"));
+        let zero_dimension = vector_squared_norm_value_inner(0, &[1.0]).unwrap_err();
         assert!(zero_dimension.contains("dimension must be positive"));
     }
 }
