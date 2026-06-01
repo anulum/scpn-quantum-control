@@ -32,11 +32,13 @@ use scpn_quantum_engine::compiler_ad::{
     matrix_frobenius_norm_squared_value_inner, matrix_frobenius_norm_squared_vjp_inner,
     matrix_quadratic_form_jvp_inner, matrix_quadratic_form_value_inner,
     matrix_quadratic_form_vjp_inner, matrix_trace_jvp_inner, matrix_trace_value_inner,
-    matrix_trace_vjp_inner, symmetric_2x2_cholesky_jvp_inner, symmetric_2x2_cholesky_value_inner,
-    symmetric_2x2_cholesky_vjp_inner, symmetric_2x2_eigenvalues_jvp_inner,
-    symmetric_2x2_eigenvalues_value_inner, symmetric_2x2_eigenvalues_vjp_inner,
-    vector_dot_jvp_inner, vector_dot_value_inner, vector_dot_vjp_inner,
-    vector_squared_norm_jvp_inner, vector_squared_norm_value_inner, vector_squared_norm_vjp_inner,
+    matrix_trace_vjp_inner, matrix_vector_product_jvp_inner, matrix_vector_product_value_inner,
+    matrix_vector_product_vjp_inner, symmetric_2x2_cholesky_jvp_inner,
+    symmetric_2x2_cholesky_value_inner, symmetric_2x2_cholesky_vjp_inner,
+    symmetric_2x2_eigenvalues_jvp_inner, symmetric_2x2_eigenvalues_value_inner,
+    symmetric_2x2_eigenvalues_vjp_inner, vector_dot_jvp_inner, vector_dot_value_inner,
+    vector_dot_vjp_inner, vector_squared_norm_jvp_inner, vector_squared_norm_value_inner,
+    vector_squared_norm_vjp_inner,
 };
 use scpn_quantum_engine::dla::{commutator_dense, is_independent_fast};
 use scpn_quantum_engine::knm::build_knm_inner;
@@ -306,6 +308,29 @@ fn bench_matrix_frobenius_norm_squared_ad(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_matrix_vector_product_ad(c: &mut Criterion) {
+    let values = [2.0, -1.0, 0.5, 3.0, 1.5, -2.0];
+    let tangent = [0.1, -0.2, 0.3, 0.4, -0.5, 0.25];
+    let cotangent = [1.25, -0.5];
+    let mut group = c.benchmark_group("matrix_vector_product_ad");
+    group.bench_function("value", |bench| {
+        bench.iter(|| matrix_vector_product_value_inner(black_box(2), black_box(&values)).unwrap());
+    });
+    group.bench_function("jvp", |bench| {
+        bench.iter(|| {
+            matrix_vector_product_jvp_inner(black_box(2), black_box(&values), black_box(&tangent))
+                .unwrap()
+        });
+    });
+    group.bench_function("vjp", |bench| {
+        bench.iter(|| {
+            matrix_vector_product_vjp_inner(black_box(2), black_box(&values), black_box(&cotangent))
+                .unwrap()
+        });
+    });
+    group.finish();
+}
+
 fn bench_matrix_2x2_determinant_ad(c: &mut Criterion) {
     let values = [2.0, -1.0, 0.5, 3.0];
     let tangent = [0.1, -0.2, 0.3, 0.4];
@@ -429,6 +454,7 @@ criterion_group!(
     bench_symmetric_2x2_eigenvalues_ad,
     bench_matrix_quadratic_form_ad,
     bench_matrix_frobenius_norm_squared_ad,
+    bench_matrix_vector_product_ad,
     bench_matrix_trace_ad,
     bench_vector_dot_ad,
     bench_vector_squared_norm_ad

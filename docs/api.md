@@ -96,6 +96,7 @@ from scpn_quantum_control import (
     make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
     make_matrix_trace_native_llvm_jit_primitive_transform,
+    make_matrix_vector_product_native_llvm_jit_primitive_transform,
     make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform,
     make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform,
     make_vector_dot_native_llvm_jit_primitive_transform,
@@ -304,6 +305,14 @@ reductions by compiling `sum(x_i**2)` with scalar value/JVP and exact
 native linalg by compiling `A @ x` over row-major concatenated `[A, x]`
 inputs with exact JVP and VJP output; `gradient()` remains fail-closed because
 the public gradient helper is scalar-output only.
+The optional `scpn_quantum_engine` Rust extension mirrors this smooth
+matrix-vector primitive through `matrix_vector_product_value()`,
+`matrix_vector_product_jvp()`, `matrix_vector_product_vjp()`, and
+`matrix_vector_product_sum_gradient()`. The
+`make_matrix_vector_product_native_llvm_jit_primitive_transform()` helper binds
+that static dimension and `[A, x]` layout into the compiler registry with
+shape, dtype, batching, native LLVM/JIT, and verified Rust PyO3 backend
+metadata.
 `compile_matrix_matrix_product_ad_to_native_llvm_jit()` extends native linalg
 coverage to square `A @ B` over concatenated `[A, B]` inputs with exact
 matrix-output JVP and VJP; `gradient()` remains fail-closed for the same
@@ -471,6 +480,7 @@ Rust extension mirrors `dot(x, y)` over concatenated `[x, y]` inputs through
 `make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule()` and
 `make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule()` and
 `make_matrix_vector_product_native_llvm_jit_lowering_rule()` and
+`make_matrix_vector_product_native_llvm_jit_primitive_transform()` and
 `make_matrix_quadratic_form_native_llvm_jit_lowering_rule()` bind those native
 backends to primitive registry lowering metadata when the primitive has the
 matching static signature. Other primitive families remain fail-closed for
@@ -520,8 +530,9 @@ static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
 fail-closed outside the bounded `rust_pyo3` eigenvalue, eigensystem, quadratic-form,
-matrix-trace, Frobenius-squared, vector squared-norm, and vector-dot contracts
-until native Rust lowering is implemented for each primitive.
+matrix-vector, matrix-trace, Frobenius-squared, vector squared-norm, and
+vector-dot contracts until native Rust lowering is implemented for each
+primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native LLVM/JIT
 differentiated runtimes are marked executable only for verified native lowering
