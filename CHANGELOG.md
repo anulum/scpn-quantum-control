@@ -4,12 +4,27 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-06-01
+
 ### Added
 - 2026-05-31 — Added an SCPN-CONTROL disruption bridge dependency contract to
   the ITER quantum disruption backend, including classifier API, 11-feature
   ordering, Qiskit core dependencies, optional provider families, report schema
   awareness, downstream non-admission policy, and tamper-evident contract
   digests for future backend hardening.
+- 2026-06-01 — Added compact differentiable-programming reverse replay for
+  determinant, inverse, solve, trace, diagonal extraction/construction,
+  flattened diagonal construction, static matrix powers, and static
+  multi-operand matrix chains so supported program-AD linalg traces now
+  propagate exact adjoints instead of expanding every scalar operation.
+- 2026-06-01 — Documented the current compiler-backed AD boundary honestly:
+  MLIR-runtime scalar kernels and LLVM-style provenance are available for
+  supported scalar paths, while general Rust/LLVM/JIT executable program-AD
+  lowering remains fail-closed until real polyglot compiler backends exist.
+- 2026-06-01 — Aligned public release metadata, citation metadata, Zenodo
+  metadata, README status, documentation index, hardware ledger, API guide,
+  reproducibility guide, adopter snippets, dataset guide, and publication
+  readiness pages for the 0.9.8 source release.
 
 ## [0.9.7] - 2026-05-19
 
