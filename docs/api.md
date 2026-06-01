@@ -89,6 +89,7 @@ from scpn_quantum_control import (
     compile_vector_squared_norm_ad_to_native_llvm_jit,
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
+    make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
     make_matrix_trace_native_llvm_jit_primitive_transform,
     make_vector_dot_native_llvm_jit_primitive_transform,
@@ -373,6 +374,15 @@ MLIR-runtime, native LLVM/JIT, and Rust/PyO3 parity metadata. The optional
 Rust extension mirrors `trace(A)` through `matrix_trace_value()`,
 `matrix_trace_jvp()`, `matrix_trace_vjp()`, and `matrix_trace_gradient()` with
 the static `primitive:trace;dimension:N;layout:row_major` signature.
+`make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform()`
+binds the row-major Frobenius-squared primitive into the registry with
+one-call shape, dtype, batching, MLIR-runtime, native LLVM/JIT, and Rust/PyO3
+parity metadata. The optional Rust extension mirrors `sum(A_ij**2)` through
+`matrix_frobenius_norm_squared_value()`,
+`matrix_frobenius_norm_squared_jvp()`,
+`matrix_frobenius_norm_squared_vjp()`, and
+`matrix_frobenius_norm_squared_gradient()` with the static
+`primitive:frobenius_norm_squared;dimension:N;layout:row_major` signature.
 `make_vector_squared_norm_native_llvm_jit_primitive_transform()` binds the
 same squared-norm primitive into the registry with one-call shape, dtype,
 batching, MLIR-runtime, native LLVM/JIT, and Rust/PyO3 parity metadata. The
@@ -451,9 +461,9 @@ only for primitives that carry verified Rust backend metadata with exact
 static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
-fail-closed outside the bounded `rust_pyo3` eigensystem and quadratic-form
-and matrix-trace and vector squared-norm and vector-dot contracts until native
-Rust lowering is implemented for each primitive.
+fail-closed outside the bounded `rust_pyo3` eigensystem, quadratic-form,
+matrix-trace, Frobenius-squared, vector squared-norm, and vector-dot contracts
+until native Rust lowering is implemented for each primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native LLVM/JIT
 differentiated runtimes are marked executable only for verified native lowering

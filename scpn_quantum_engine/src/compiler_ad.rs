@@ -464,6 +464,83 @@ pub fn matrix_trace_gradient_inner(dimension: usize, values: &[f64]) -> Result<V
     Ok(gradient)
 }
 
+/// Evaluate sum_ij A_ij^2 over row-major finite real square matrices.
+pub fn matrix_frobenius_norm_squared_value_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix Frobenius-squared Rust value kernel",
+    )?;
+    Ok([values.iter().map(|value| value * value).sum()])
+}
+
+/// Apply the exact JVP for sum_ij A_ij^2.
+pub fn matrix_frobenius_norm_squared_jvp_inner(
+    dimension: usize,
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix Frobenius-squared Rust JVP kernel",
+    )?;
+    checked_matrix_square_values(
+        dimension,
+        tangent,
+        "tangent",
+        "native matrix Frobenius-squared Rust JVP kernel",
+    )?;
+    let total = values
+        .iter()
+        .zip(tangent.iter())
+        .map(|(value, tangent)| 2.0 * value * tangent)
+        .sum();
+    Ok([total])
+}
+
+/// Apply the exact VJP for sum_ij A_ij^2.
+pub fn matrix_frobenius_norm_squared_vjp_inner(
+    dimension: usize,
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix Frobenius-squared Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<1>(
+        cotangent,
+        "cotangent",
+        "native matrix Frobenius-squared Rust VJP kernel",
+    )?;
+    Ok(values
+        .iter()
+        .map(|value| 2.0 * value * cotangent[0])
+        .collect())
+}
+
+/// Return the scalar-output gradient of sum_ij A_ij^2.
+pub fn matrix_frobenius_norm_squared_gradient_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix Frobenius-squared Rust gradient kernel",
+    )?;
+    Ok(values.iter().map(|value| 2.0 * value).collect())
+}
+
 fn checked_vector_dot_values(
     dimension: usize,
     values: &[f64],
@@ -833,6 +910,68 @@ pub fn matrix_trace_gradient<'py>(
     Ok(PyArray1::from_vec(py, result))
 }
 
+/// PyO3 wrapper for Rust matrix Frobenius-squared value evaluation.
+#[pyfunction]
+pub fn matrix_frobenius_norm_squared_value<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result =
+        matrix_frobenius_norm_squared_value_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust matrix Frobenius-squared JVP evaluation.
+#[pyfunction]
+pub fn matrix_frobenius_norm_squared_jvp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = matrix_frobenius_norm_squared_jvp_inner(dimension, values, tangent)
+        .map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust matrix Frobenius-squared VJP evaluation.
+#[pyfunction]
+pub fn matrix_frobenius_norm_squared_vjp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = matrix_frobenius_norm_squared_vjp_inner(dimension, values, cotangent)
+        .map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust matrix Frobenius-squared gradient evaluation.
+#[pyfunction]
+pub fn matrix_frobenius_norm_squared_gradient<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result =
+        matrix_frobenius_norm_squared_gradient_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
 /// PyO3 wrapper for Rust vector dot value evaluation.
 #[pyfunction]
 pub fn vector_dot_value<'py>(
@@ -1096,6 +1235,49 @@ mod tests {
             matrix_trace_vjp_inner(2, &[2.0, -1.0, 0.5, 3.0], &[1.0, 2.0]).unwrap_err();
         assert!(cotangent_count.contains("requires 1 cotangent value"));
         let zero_dimension = matrix_trace_value_inner(0, &[1.0]).unwrap_err();
+        assert!(zero_dimension.contains("dimension must be positive"));
+    }
+
+    #[test]
+    fn matrix_frobenius_norm_squared_value_jvp_vjp_and_gradient_match_closed_form() {
+        let values = [2.0, -1.0, 0.5, 3.0];
+        let tangent = [0.1, -0.2, 0.3, 0.4];
+        let cotangent = [1.25];
+
+        assert_close(
+            &matrix_frobenius_norm_squared_value_inner(2, &values).unwrap(),
+            &[14.25],
+        );
+        assert_close(
+            &matrix_frobenius_norm_squared_jvp_inner(2, &values, &tangent).unwrap(),
+            &[3.5],
+        );
+        assert_close(
+            &matrix_frobenius_norm_squared_vjp_inner(2, &values, &cotangent).unwrap(),
+            &[5.0, -2.5, 1.25, 7.5],
+        );
+        assert_close(
+            &matrix_frobenius_norm_squared_gradient_inner(2, &values).unwrap(),
+            &[4.0, -2.0, 1.0, 6.0],
+        );
+    }
+
+    #[test]
+    fn matrix_frobenius_norm_squared_boundaries_fail_closed() {
+        let wrong_count = matrix_frobenius_norm_squared_value_inner(2, &[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("dimension * dimension values"));
+        let non_finite =
+            matrix_frobenius_norm_squared_gradient_inner(2, &[2.0, f64::NAN, 0.5, 3.0])
+                .unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let tangent_count =
+            matrix_frobenius_norm_squared_jvp_inner(2, &[2.0, -1.0, 0.5, 3.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("dimension * dimension tangent value"));
+        let cotangent_count =
+            matrix_frobenius_norm_squared_vjp_inner(2, &[2.0, -1.0, 0.5, 3.0], &[1.0, 2.0])
+                .unwrap_err();
+        assert!(cotangent_count.contains("requires 1 cotangent value"));
+        let zero_dimension = matrix_frobenius_norm_squared_value_inner(0, &[1.0]).unwrap_err();
         assert!(zero_dimension.contains("dimension must be positive"));
     }
 
