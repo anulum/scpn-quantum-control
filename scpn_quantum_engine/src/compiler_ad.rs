@@ -360,6 +360,110 @@ pub fn matrix_quadratic_form_gradient_inner(
     Ok(gradient)
 }
 
+fn checked_matrix_square_values(
+    dimension: usize,
+    values: &[f64],
+    label: &str,
+    primitive: &str,
+) -> Result<(), String> {
+    if dimension == 0 {
+        return Err(format!("{primitive} dimension must be positive"));
+    }
+    let expected = dimension * dimension;
+    if values.len() != expected {
+        return Err(format!(
+            "{primitive} requires dimension * dimension {label} value(s)"
+        ));
+    }
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{label}[{index}] is not finite ({value})"));
+        }
+    }
+    Ok(())
+}
+
+fn matrix_square_index(dimension: usize, row: usize, column: usize) -> usize {
+    row * dimension + column
+}
+
+/// Evaluate trace(A) over row-major finite real square matrices.
+pub fn matrix_trace_value_inner(dimension: usize, values: &[f64]) -> Result<[f64; 1], String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix trace Rust value kernel",
+    )?;
+    let total = (0..dimension)
+        .map(|index| values[matrix_square_index(dimension, index, index)])
+        .sum();
+    Ok([total])
+}
+
+/// Apply the exact JVP for trace(A).
+pub fn matrix_trace_jvp_inner(
+    dimension: usize,
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 1], String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix trace Rust JVP kernel",
+    )?;
+    checked_matrix_square_values(
+        dimension,
+        tangent,
+        "tangent",
+        "native matrix trace Rust JVP kernel",
+    )?;
+    let total = (0..dimension)
+        .map(|index| tangent[matrix_square_index(dimension, index, index)])
+        .sum();
+    Ok([total])
+}
+
+/// Apply the exact VJP for trace(A).
+pub fn matrix_trace_vjp_inner(
+    dimension: usize,
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix trace Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<1>(
+        cotangent,
+        "cotangent",
+        "native matrix trace Rust VJP kernel",
+    )?;
+    let mut gradient = matrix_trace_gradient_inner(dimension, values)?;
+    for value in &mut gradient {
+        *value *= cotangent[0];
+    }
+    Ok(gradient)
+}
+
+/// Return the scalar-output identity-mask gradient for trace(A).
+pub fn matrix_trace_gradient_inner(dimension: usize, values: &[f64]) -> Result<Vec<f64>, String> {
+    checked_matrix_square_values(
+        dimension,
+        values,
+        "values",
+        "native matrix trace Rust gradient kernel",
+    )?;
+    let mut gradient = vec![0.0; dimension * dimension];
+    for index in 0..dimension {
+        gradient[matrix_square_index(dimension, index, index)] = 1.0;
+    }
+    Ok(gradient)
+}
+
 fn checked_vector_dot_values(
     dimension: usize,
     values: &[f64],
@@ -671,6 +775,64 @@ pub fn matrix_quadratic_form_gradient<'py>(
     Ok(PyArray1::from_vec(py, result))
 }
 
+/// PyO3 wrapper for Rust matrix trace value evaluation.
+#[pyfunction]
+pub fn matrix_trace_value<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_trace_value_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust matrix trace JVP evaluation.
+#[pyfunction]
+pub fn matrix_trace_jvp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = matrix_trace_jvp_inner(dimension, values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for Rust matrix trace VJP evaluation.
+#[pyfunction]
+pub fn matrix_trace_vjp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = matrix_trace_vjp_inner(dimension, values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust matrix trace gradient evaluation.
+#[pyfunction]
+pub fn matrix_trace_gradient<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_trace_gradient_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
 /// PyO3 wrapper for Rust vector dot value evaluation.
 #[pyfunction]
 pub fn vector_dot_value<'py>(
@@ -898,6 +1060,42 @@ mod tests {
         assert!(non_finite.contains("not finite"));
         let zero_dimension =
             matrix_quadratic_form_value_inner(0, &[2.0, -1.0, 0.5, 3.0, 1.5, -2.0]).unwrap_err();
+        assert!(zero_dimension.contains("dimension must be positive"));
+    }
+
+    #[test]
+    fn matrix_trace_value_jvp_vjp_and_gradient_match_closed_form() {
+        let values = [2.0, -1.0, 0.5, 3.0];
+        let tangent = [0.1, -0.2, 0.3, 0.4];
+        let cotangent = [1.25];
+
+        assert_close(&matrix_trace_value_inner(2, &values).unwrap(), &[5.0]);
+        assert_close(
+            &matrix_trace_jvp_inner(2, &values, &tangent).unwrap(),
+            &[0.5],
+        );
+        assert_close(
+            &matrix_trace_vjp_inner(2, &values, &cotangent).unwrap(),
+            &[1.25, 0.0, 0.0, 1.25],
+        );
+        assert_close(
+            &matrix_trace_gradient_inner(2, &values).unwrap(),
+            &[1.0, 0.0, 0.0, 1.0],
+        );
+    }
+
+    #[test]
+    fn matrix_trace_boundaries_fail_closed() {
+        let wrong_count = matrix_trace_value_inner(2, &[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("dimension * dimension values"));
+        let non_finite = matrix_trace_gradient_inner(2, &[2.0, f64::NAN, 0.5, 3.0]).unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let tangent_count = matrix_trace_jvp_inner(2, &[2.0, -1.0, 0.5, 3.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("dimension * dimension tangent value"));
+        let cotangent_count =
+            matrix_trace_vjp_inner(2, &[2.0, -1.0, 0.5, 3.0], &[1.0, 2.0]).unwrap_err();
+        assert!(cotangent_count.contains("requires 1 cotangent value"));
+        let zero_dimension = matrix_trace_value_inner(0, &[1.0]).unwrap_err();
         assert!(zero_dimension.contains("dimension must be positive"));
     }
 

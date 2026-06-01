@@ -90,6 +90,7 @@ from scpn_quantum_control import (
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
+    make_matrix_trace_native_llvm_jit_primitive_transform,
     make_vector_dot_native_llvm_jit_primitive_transform,
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
 )
@@ -366,6 +367,12 @@ gradient helpers through `matrix_quadratic_form_value()`,
 `matrix_quadratic_form_jvp()`, `matrix_quadratic_form_vjp()`, and
 `matrix_quadratic_form_gradient()` with the same static
 `primitive:quadratic_form;dimension:N;layout:matrix_then_vector` signature.
+`make_matrix_trace_native_llvm_jit_primitive_transform()` binds the row-major
+matrix-trace primitive into the registry with one-call shape, dtype, batching,
+MLIR-runtime, native LLVM/JIT, and Rust/PyO3 parity metadata. The optional
+Rust extension mirrors `trace(A)` through `matrix_trace_value()`,
+`matrix_trace_jvp()`, `matrix_trace_vjp()`, and `matrix_trace_gradient()` with
+the static `primitive:trace;dimension:N;layout:row_major` signature.
 `make_vector_squared_norm_native_llvm_jit_primitive_transform()` binds the
 same squared-norm primitive into the registry with one-call shape, dtype,
 batching, MLIR-runtime, native LLVM/JIT, and Rust/PyO3 parity metadata. The
@@ -445,8 +452,8 @@ static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
 fail-closed outside the bounded `rust_pyo3` eigensystem and quadratic-form
-and vector squared-norm and vector-dot contracts until native Rust lowering is
-implemented for each primitive.
+and matrix-trace and vector squared-norm and vector-dot contracts until native
+Rust lowering is implemented for each primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native LLVM/JIT
 differentiated runtimes are marked executable only for verified native lowering
