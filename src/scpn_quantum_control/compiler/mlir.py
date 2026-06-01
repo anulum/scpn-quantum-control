@@ -3948,6 +3948,283 @@ def _compile_matrix_2x2_eigenvalues_native_llvm_ir(rule_name: str) -> str:
     )
 
 
+def _compile_matrix_2x2_eigensystem_native_llvm_ir(rule_name: str) -> str:
+    llvm = _load_llvmlite_binding()
+    triple = llvm.get_default_triple()
+    base_symbol = _safe_llvm_symbol(rule_name)
+    return "\n".join(
+        [
+            f'; scpn.compiler_ad = "{_escape_mlir_string(rule_name)}"',
+            '; primitive = "matrix_2x2_eigensystem"',
+            '; source = "native_matrix_2x2_eigensystem_ad_codegen"',
+            '; execution = "native_llvm_mcjit"',
+            "; dimension = 2",
+            "; value_count = 4",
+            "; output_count = 6",
+            f'target triple = "{_escape_mlir_string(triple)}"',
+            "",
+            "declare double @llvm.sqrt.f64(double)",
+            "",
+            f"define void @{base_symbol}_value(double* %values, double* %out) {{",
+            "entry:",
+            "  %aptr = getelementptr double, double* %values, i64 0",
+            "  %bptr = getelementptr double, double* %values, i64 1",
+            "  %cptr = getelementptr double, double* %values, i64 2",
+            "  %dptr = getelementptr double, double* %values, i64 3",
+            "  %a = load double, double* %aptr",
+            "  %b = load double, double* %bptr",
+            "  %c = load double, double* %cptr",
+            "  %d = load double, double* %dptr",
+            "  %trace = fadd double %a, %d",
+            "  %delta = fsub double %a, %d",
+            "  %delta_square = fmul double %delta, %delta",
+            "  %bc = fmul double %b, %c",
+            "  %four_bc = fmul double 4.0, %bc",
+            "  %discriminant = fadd double %delta_square, %four_bc",
+            "  %root = call double @llvm.sqrt.f64(double %discriminant)",
+            "  %lower_num = fsub double %trace, %root",
+            "  %upper_num = fadd double %trace, %root",
+            "  %lower = fmul double 5.0e-1, %lower_num",
+            "  %upper = fmul double 5.0e-1, %upper_num",
+            "  %neg_delta = fsub double 0.0, %delta",
+            "  %q_lower_num = fsub double %neg_delta, %root",
+            "  %q_upper_num = fadd double %neg_delta, %root",
+            "  %q_lower = fmul double 5.0e-1, %q_lower_num",
+            "  %q_upper = fmul double 5.0e-1, %q_upper_num",
+            "  %b_square_lower = fmul double %b, %b",
+            "  %q_lower_square = fmul double %q_lower, %q_lower",
+            "  %norm_lower_square = fadd double %b_square_lower, %q_lower_square",
+            "  %norm_lower = call double @llvm.sqrt.f64(double %norm_lower_square)",
+            "  %b_square_upper = fmul double %b, %b",
+            "  %q_upper_square = fmul double %q_upper, %q_upper",
+            "  %norm_upper_square = fadd double %b_square_upper, %q_upper_square",
+            "  %norm_upper = call double @llvm.sqrt.f64(double %norm_upper_square)",
+            "  %v_lower0 = fdiv double %b, %norm_lower",
+            "  %v_lower1 = fdiv double %q_lower, %norm_lower",
+            "  %v_upper0 = fdiv double %b, %norm_upper",
+            "  %v_upper1 = fdiv double %q_upper, %norm_upper",
+            "  %out0 = getelementptr double, double* %out, i64 0",
+            "  %out1 = getelementptr double, double* %out, i64 1",
+            "  %out2 = getelementptr double, double* %out, i64 2",
+            "  %out3 = getelementptr double, double* %out, i64 3",
+            "  %out4 = getelementptr double, double* %out, i64 4",
+            "  %out5 = getelementptr double, double* %out, i64 5",
+            "  store double %lower, double* %out0",
+            "  store double %upper, double* %out1",
+            "  store double %v_lower0, double* %out2",
+            "  store double %v_upper0, double* %out3",
+            "  store double %v_lower1, double* %out4",
+            "  store double %v_upper1, double* %out5",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_gradient(double* %values, double* %out) {{",
+            "entry:",
+            "  %cotangent = alloca [6 x double]",
+            "  %cotangent0 = getelementptr [6 x double], [6 x double]* %cotangent, i64 0, i64 0",
+            "  %cotangent1 = getelementptr [6 x double], [6 x double]* %cotangent, i64 0, i64 1",
+            "  %cotangent2 = getelementptr [6 x double], [6 x double]* %cotangent, i64 0, i64 2",
+            "  %cotangent3 = getelementptr [6 x double], [6 x double]* %cotangent, i64 0, i64 3",
+            "  %cotangent4 = getelementptr [6 x double], [6 x double]* %cotangent, i64 0, i64 4",
+            "  %cotangent5 = getelementptr [6 x double], [6 x double]* %cotangent, i64 0, i64 5",
+            "  store double 1.0, double* %cotangent0",
+            "  store double 1.0, double* %cotangent1",
+            "  store double 1.0, double* %cotangent2",
+            "  store double 1.0, double* %cotangent3",
+            "  store double 1.0, double* %cotangent4",
+            "  store double 1.0, double* %cotangent5",
+            f"  call void @{base_symbol}_vjp(double* %values, double* %cotangent0, double* %out)",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_jvp(double* %values, double* %tangent, double* %out) {{",
+            "entry:",
+            "  %aptr_jvp = getelementptr double, double* %values, i64 0",
+            "  %bptr_jvp = getelementptr double, double* %values, i64 1",
+            "  %cptr_jvp = getelementptr double, double* %values, i64 2",
+            "  %dptr_jvp = getelementptr double, double* %values, i64 3",
+            "  %taptr_jvp = getelementptr double, double* %tangent, i64 0",
+            "  %tbptr_jvp = getelementptr double, double* %tangent, i64 1",
+            "  %tcptr_jvp = getelementptr double, double* %tangent, i64 2",
+            "  %tdptr_jvp = getelementptr double, double* %tangent, i64 3",
+            "  %a_jvp = load double, double* %aptr_jvp",
+            "  %b_jvp = load double, double* %bptr_jvp",
+            "  %c_jvp = load double, double* %cptr_jvp",
+            "  %d_jvp = load double, double* %dptr_jvp",
+            "  %ta_jvp = load double, double* %taptr_jvp",
+            "  %tb_jvp = load double, double* %tbptr_jvp",
+            "  %tc_jvp = load double, double* %tcptr_jvp",
+            "  %td_jvp = load double, double* %tdptr_jvp",
+            "  %trace_tangent_jvp = fadd double %ta_jvp, %td_jvp",
+            "  %delta_jvp = fsub double %a_jvp, %d_jvp",
+            "  %delta_tangent_jvp = fsub double %ta_jvp, %td_jvp",
+            "  %delta_square_jvp = fmul double %delta_jvp, %delta_jvp",
+            "  %bc_jvp = fmul double %b_jvp, %c_jvp",
+            "  %four_bc_jvp = fmul double 4.0, %bc_jvp",
+            "  %discriminant_jvp = fadd double %delta_square_jvp, %four_bc_jvp",
+            "  %root_jvp = call double @llvm.sqrt.f64(double %discriminant_jvp)",
+            "  %disc_tangent_delta = fmul double 2.0, %delta_jvp",
+            "  %disc_tangent_delta_scaled = fmul double %disc_tangent_delta, %delta_tangent_jvp",
+            "  %tb_c = fmul double %tb_jvp, %c_jvp",
+            "  %b_tc = fmul double %b_jvp, %tc_jvp",
+            "  %offdiag_tangent_sum = fadd double %tb_c, %b_tc",
+            "  %offdiag_disc_tangent = fmul double 4.0, %offdiag_tangent_sum",
+            "  %disc_tangent = fadd double %disc_tangent_delta_scaled, %offdiag_disc_tangent",
+            "  %two_root_jvp = fmul double 2.0, %root_jvp",
+            "  %root_tangent = fdiv double %disc_tangent, %two_root_jvp",
+            "  %lower_tangent_num = fsub double %trace_tangent_jvp, %root_tangent",
+            "  %upper_tangent_num = fadd double %trace_tangent_jvp, %root_tangent",
+            "  %lower_tangent = fmul double 5.0e-1, %lower_tangent_num",
+            "  %upper_tangent = fmul double 5.0e-1, %upper_tangent_num",
+            "  %neg_delta_jvp = fsub double 0.0, %delta_jvp",
+            "  %q_lower_num_jvp = fsub double %neg_delta_jvp, %root_jvp",
+            "  %q_upper_num_jvp = fadd double %neg_delta_jvp, %root_jvp",
+            "  %q_lower_jvp = fmul double 5.0e-1, %q_lower_num_jvp",
+            "  %q_upper_jvp = fmul double 5.0e-1, %q_upper_num_jvp",
+            "  %q_lower_tangent = fsub double %lower_tangent, %ta_jvp",
+            "  %q_upper_tangent = fsub double %upper_tangent, %ta_jvp",
+            "  %b_square_lower_jvp = fmul double %b_jvp, %b_jvp",
+            "  %q_lower_square_jvp = fmul double %q_lower_jvp, %q_lower_jvp",
+            "  %norm_lower_square_jvp = fadd double %b_square_lower_jvp, %q_lower_square_jvp",
+            "  %norm_lower_jvp = call double @llvm.sqrt.f64(double %norm_lower_square_jvp)",
+            "  %b_square_upper_jvp = fmul double %b_jvp, %b_jvp",
+            "  %q_upper_square_jvp = fmul double %q_upper_jvp, %q_upper_jvp",
+            "  %norm_upper_square_jvp = fadd double %b_square_upper_jvp, %q_upper_square_jvp",
+            "  %norm_upper_jvp = call double @llvm.sqrt.f64(double %norm_upper_square_jvp)",
+            "  %v_lower0_jvp = fdiv double %b_jvp, %norm_lower_jvp",
+            "  %v_lower1_jvp = fdiv double %q_lower_jvp, %norm_lower_jvp",
+            "  %v_upper0_jvp = fdiv double %b_jvp, %norm_upper_jvp",
+            "  %v_upper1_jvp = fdiv double %q_upper_jvp, %norm_upper_jvp",
+            "  %vl_dot_term0 = fmul double %v_lower0_jvp, %tb_jvp",
+            "  %vl_dot_term1 = fmul double %v_lower1_jvp, %q_lower_tangent",
+            "  %vl_dot = fadd double %vl_dot_term0, %vl_dot_term1",
+            "  %vl_proj0 = fmul double %v_lower0_jvp, %vl_dot",
+            "  %vl_proj1 = fmul double %v_lower1_jvp, %vl_dot",
+            "  %vl_raw0 = fsub double %tb_jvp, %vl_proj0",
+            "  %vl_raw1 = fsub double %q_lower_tangent, %vl_proj1",
+            "  %vl_tangent0 = fdiv double %vl_raw0, %norm_lower_jvp",
+            "  %vl_tangent1 = fdiv double %vl_raw1, %norm_lower_jvp",
+            "  %vu_dot_term0 = fmul double %v_upper0_jvp, %tb_jvp",
+            "  %vu_dot_term1 = fmul double %v_upper1_jvp, %q_upper_tangent",
+            "  %vu_dot = fadd double %vu_dot_term0, %vu_dot_term1",
+            "  %vu_proj0 = fmul double %v_upper0_jvp, %vu_dot",
+            "  %vu_proj1 = fmul double %v_upper1_jvp, %vu_dot",
+            "  %vu_raw0 = fsub double %tb_jvp, %vu_proj0",
+            "  %vu_raw1 = fsub double %q_upper_tangent, %vu_proj1",
+            "  %vu_tangent0 = fdiv double %vu_raw0, %norm_upper_jvp",
+            "  %vu_tangent1 = fdiv double %vu_raw1, %norm_upper_jvp",
+            "  %out_jvp0 = getelementptr double, double* %out, i64 0",
+            "  %out_jvp1 = getelementptr double, double* %out, i64 1",
+            "  %out_jvp2 = getelementptr double, double* %out, i64 2",
+            "  %out_jvp3 = getelementptr double, double* %out, i64 3",
+            "  %out_jvp4 = getelementptr double, double* %out, i64 4",
+            "  %out_jvp5 = getelementptr double, double* %out, i64 5",
+            "  store double %lower_tangent, double* %out_jvp0",
+            "  store double %upper_tangent, double* %out_jvp1",
+            "  store double %vl_tangent0, double* %out_jvp2",
+            "  store double %vu_tangent0, double* %out_jvp3",
+            "  store double %vl_tangent1, double* %out_jvp4",
+            "  store double %vu_tangent1, double* %out_jvp5",
+            "  ret void",
+            "}",
+            "",
+            f"define void @{base_symbol}_vjp(double* %values, double* %cotangent, double* %out) {{",
+            "entry:",
+            "  %aptr_vjp = getelementptr double, double* %values, i64 0",
+            "  %bptr_vjp = getelementptr double, double* %values, i64 1",
+            "  %cptr_vjp = getelementptr double, double* %values, i64 2",
+            "  %dptr_vjp = getelementptr double, double* %values, i64 3",
+            "  %clptr_vjp = getelementptr double, double* %cotangent, i64 0",
+            "  %cuptr_vjp = getelementptr double, double* %cotangent, i64 1",
+            "  %cvl0ptr_vjp = getelementptr double, double* %cotangent, i64 2",
+            "  %cvu0ptr_vjp = getelementptr double, double* %cotangent, i64 3",
+            "  %cvl1ptr_vjp = getelementptr double, double* %cotangent, i64 4",
+            "  %cvu1ptr_vjp = getelementptr double, double* %cotangent, i64 5",
+            "  %a_vjp = load double, double* %aptr_vjp",
+            "  %b_vjp = load double, double* %bptr_vjp",
+            "  %c_vjp = load double, double* %cptr_vjp",
+            "  %d_vjp = load double, double* %dptr_vjp",
+            "  %cl_vjp = load double, double* %clptr_vjp",
+            "  %cu_vjp = load double, double* %cuptr_vjp",
+            "  %cvl0_vjp = load double, double* %cvl0ptr_vjp",
+            "  %cvu0_vjp = load double, double* %cvu0ptr_vjp",
+            "  %cvl1_vjp = load double, double* %cvl1ptr_vjp",
+            "  %cvu1_vjp = load double, double* %cvu1ptr_vjp",
+            "  %delta_vjp = fsub double %a_vjp, %d_vjp",
+            "  %delta_square_vjp = fmul double %delta_vjp, %delta_vjp",
+            "  %bc_vjp = fmul double %b_vjp, %c_vjp",
+            "  %four_bc_vjp = fmul double 4.0, %bc_vjp",
+            "  %discriminant_vjp = fadd double %delta_square_vjp, %four_bc_vjp",
+            "  %root_vjp = call double @llvm.sqrt.f64(double %discriminant_vjp)",
+            "  %neg_delta_vjp = fsub double 0.0, %delta_vjp",
+            "  %q_lower_num_vjp = fsub double %neg_delta_vjp, %root_vjp",
+            "  %q_upper_num_vjp = fadd double %neg_delta_vjp, %root_vjp",
+            "  %q_lower_vjp = fmul double 5.0e-1, %q_lower_num_vjp",
+            "  %q_upper_vjp = fmul double 5.0e-1, %q_upper_num_vjp",
+            "  %b_square_lower_vjp = fmul double %b_vjp, %b_vjp",
+            "  %q_lower_square_vjp = fmul double %q_lower_vjp, %q_lower_vjp",
+            "  %norm_lower_square_vjp = fadd double %b_square_lower_vjp, %q_lower_square_vjp",
+            "  %norm_lower_vjp = call double @llvm.sqrt.f64(double %norm_lower_square_vjp)",
+            "  %b_square_upper_vjp = fmul double %b_vjp, %b_vjp",
+            "  %q_upper_square_vjp = fmul double %q_upper_vjp, %q_upper_vjp",
+            "  %norm_upper_square_vjp = fadd double %b_square_upper_vjp, %q_upper_square_vjp",
+            "  %norm_upper_vjp = call double @llvm.sqrt.f64(double %norm_upper_square_vjp)",
+            "  %vl0_vjp = fdiv double %b_vjp, %norm_lower_vjp",
+            "  %vl1_vjp = fdiv double %q_lower_vjp, %norm_lower_vjp",
+            "  %vu0_vjp = fdiv double %b_vjp, %norm_upper_vjp",
+            "  %vu1_vjp = fdiv double %q_upper_vjp, %norm_upper_vjp",
+            "  %vl_eta_dot0 = fmul double %vl0_vjp, %cvl0_vjp",
+            "  %vl_eta_dot1 = fmul double %vl1_vjp, %cvl1_vjp",
+            "  %vl_eta_dot = fadd double %vl_eta_dot0, %vl_eta_dot1",
+            "  %vl_eta_proj0 = fmul double %vl0_vjp, %vl_eta_dot",
+            "  %vl_eta_proj1 = fmul double %vl1_vjp, %vl_eta_dot",
+            "  %vl_gu0_num = fsub double %cvl0_vjp, %vl_eta_proj0",
+            "  %vl_gu1_num = fsub double %cvl1_vjp, %vl_eta_proj1",
+            "  %vl_gu0 = fdiv double %vl_gu0_num, %norm_lower_vjp",
+            "  %vl_gu1 = fdiv double %vl_gu1_num, %norm_lower_vjp",
+            "  %vu_eta_dot0 = fmul double %vu0_vjp, %cvu0_vjp",
+            "  %vu_eta_dot1 = fmul double %vu1_vjp, %cvu1_vjp",
+            "  %vu_eta_dot = fadd double %vu_eta_dot0, %vu_eta_dot1",
+            "  %vu_eta_proj0 = fmul double %vu0_vjp, %vu_eta_dot",
+            "  %vu_eta_proj1 = fmul double %vu1_vjp, %vu_eta_dot",
+            "  %vu_gu0_num = fsub double %cvu0_vjp, %vu_eta_proj0",
+            "  %vu_gu1_num = fsub double %cvu1_vjp, %vu_eta_proj1",
+            "  %vu_gu0 = fdiv double %vu_gu0_num, %norm_upper_vjp",
+            "  %vu_gu1 = fdiv double %vu_gu1_num, %norm_upper_vjp",
+            "  %glambda_lower = fadd double %cl_vjp, %vl_gu1",
+            "  %glambda_upper = fadd double %cu_vjp, %vu_gu1",
+            "  %cotangent_sum = fadd double %glambda_lower, %glambda_upper",
+            "  %alpha = fmul double 5.0e-1, %cotangent_sum",
+            "  %cotangent_diff = fsub double %glambda_upper, %glambda_lower",
+            "  %four_root_vjp = fmul double 4.0, %root_vjp",
+            "  %beta = fdiv double %cotangent_diff, %four_root_vjp",
+            "  %two_delta = fmul double 2.0, %delta_vjp",
+            "  %a_disc_term = fmul double %two_delta, %beta",
+            "  %adj_a_eig = fadd double %alpha, %a_disc_term",
+            "  %adj_d_eig = fsub double %alpha, %a_disc_term",
+            "  %four_c = fmul double 4.0, %c_vjp",
+            "  %four_b = fmul double 4.0, %b_vjp",
+            "  %adj_b_eig = fmul double %four_c, %beta",
+            "  %adj_c_eig = fmul double %four_b, %beta",
+            "  %gu1_sum = fadd double %vl_gu1, %vu_gu1",
+            "  %adj_a_chart = fsub double %adj_a_eig, %gu1_sum",
+            "  %gu0_sum = fadd double %vl_gu0, %vu_gu0",
+            "  %adj_b_chart = fadd double %adj_b_eig, %gu0_sum",
+            "  %out_vjp0 = getelementptr double, double* %out, i64 0",
+            "  %out_vjp1 = getelementptr double, double* %out, i64 1",
+            "  %out_vjp2 = getelementptr double, double* %out, i64 2",
+            "  %out_vjp3 = getelementptr double, double* %out, i64 3",
+            "  store double %adj_a_chart, double* %out_vjp0",
+            "  store double %adj_b_chart, double* %out_vjp1",
+            "  store double %adj_c_eig, double* %out_vjp2",
+            "  store double %adj_d_eig, double* %out_vjp3",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
+
+
 def _compile_native_llvm_jit_functions(
     llvm_ir: str,
     base_symbol: str,
@@ -4850,6 +5127,65 @@ def _call_native_matrix_2x2_eigenvalues_binary(
         )
     if output_size not in {2, 4}:
         raise ValueError("native matrix 2x2 eigenvalue LLVM/JIT output_size must be two or four")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_vector.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _as_native_matrix_2x2_eigensystem_values(
+    label: str,
+    values: Sequence[float] | np.ndarray,
+) -> np.ndarray:
+    checked_values = _as_native_matrix_2x2_eigenvalues_values(label, values)
+    if abs(float(checked_values[1])) <= 1.0e-12:
+        raise ValueError(
+            "native matrix 2x2 eigensystem LLVM/JIT kernel requires a non-zero "
+            "upper off-diagonal eigenvector chart"
+        )
+    return checked_values
+
+
+def _call_native_matrix_2x2_eigensystem_unary(
+    function: Callable[[Any, Any], None],
+    values: np.ndarray,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = _as_native_matrix_2x2_eigensystem_values("values", values)
+    if output_size not in {4, 6}:
+        raise ValueError("native matrix 2x2 eigensystem LLVM/JIT output_size must be four or six")
+    output = np.zeros(output_size, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        output.ctypes.data_as(double_pointer),
+    )
+    return output
+
+
+def _call_native_matrix_2x2_eigensystem_binary(
+    function: Callable[[Any, Any, Any], None],
+    values: np.ndarray,
+    tangent_or_cotangent: np.ndarray,
+    label: str,
+    output_size: int,
+) -> np.ndarray:
+    checked_values = _as_native_matrix_2x2_eigensystem_values("values", values)
+    checked_vector = np.ascontiguousarray(
+        _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
+    )
+    expected_vector_size = 4 if label == "tangent" else 6
+    if checked_vector.size != expected_vector_size:
+        raise ValueError(
+            "native matrix 2x2 eigensystem LLVM/JIT kernel requires "
+            f"{expected_vector_size} {label} value(s)"
+        )
+    if output_size not in {4, 6}:
+        raise ValueError("native matrix 2x2 eigensystem LLVM/JIT output_size must be four or six")
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -7097,6 +7433,156 @@ def make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
+    rule: CustomDerivativeRule,
+    *,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> ExecutableCompilerADKernel:
+    """Compile real-simple nonsymmetric 2x2 eigensystem value/JVP/VJP kernels."""
+
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError("native matrix 2x2 eigensystem AD requires backend='native_llvm_jit'")
+    values = _as_native_matrix_2x2_eigensystem_values("sample_values", sample_values)
+    mlir_module = compile_custom_derivative_rule_to_mlir(
+        rule,
+        values,
+        compile_config.mlir_config,
+    )
+    llvm_ir = _compile_matrix_2x2_eigensystem_native_llvm_ir(rule.name)
+    native_functions = _compile_native_llvm_jit_functions(
+        llvm_ir,
+        _safe_llvm_symbol(rule.name),
+    )
+
+    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_2x2_eigensystem_unary(
+            native_functions["value"],
+            raw_values,
+            6,
+        )
+
+    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_2x2_eigensystem_binary(
+            native_functions["jvp"],
+            raw_values,
+            raw_tangent,
+            "tangent",
+            6,
+        )
+
+    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+        return _call_native_matrix_2x2_eigensystem_binary(
+            native_functions["vjp"],
+            raw_values,
+            raw_cotangent,
+            "cotangent",
+            4,
+        )
+
+    verification = _verify_executable_ad_kernel(
+        rule,
+        values,
+        value_kernel,
+        jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel if rule.vjp_rule is not None else None,
+        compile_config,
+        sample_tangent=sample_tangent,
+        sample_cotangent=sample_cotangent,
+    )
+    if rule.vjp_rule is not None:
+        native_sum_gradient = _call_native_matrix_2x2_eigensystem_unary(
+            native_functions["gradient"],
+            values,
+            4,
+        )
+        reference_sum_gradient = vjp_kernel(values, np.ones(6, dtype=np.float64))
+        if not np.allclose(
+            native_sum_gradient,
+            reference_sum_gradient,
+            atol=compile_config.atol,
+            rtol=compile_config.rtol,
+        ):
+            raise ValueError(
+                "native LLVM/JIT matrix 2x2 eigensystem sum-gradient provenance verification failed"
+            )
+    return ExecutableCompilerADKernel(
+        rule_name=rule.name,
+        backend=compile_config.backend,
+        mlir_module=mlir_module,
+        value_kernel=value_kernel,
+        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
+        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        verification=verification,
+        llvm_gradient_ir=llvm_ir,
+        claim_boundary=(
+            "verified native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem "
+            "value/JVP/VJP kernel with sum-output gradient provenance; complex "
+            "spectra, repeated eigenvalues, and zero upper off-diagonal eigenvector "
+            "charts remain fail-closed"
+        ),
+    )
+
+
+def make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
+    *,
+    sample_values: Sequence[float] | np.ndarray | None = None,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> Callable[..., ExecutableCompilerADKernel]:
+    """Create a lowering rule for real-simple nonsymmetric 2x2 eigensystem kernels."""
+
+    captured_values = (
+        None
+        if sample_values is None
+        else _as_native_matrix_2x2_eigensystem_values("sample_values", sample_values)
+    )
+    captured_tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    captured_cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+
+    def lowering_rule(
+        rule: CustomDerivativeRule,
+        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_config: CompilerADExecutableConfig | None = None,
+        *,
+        sample_tangent: Sequence[float] | np.ndarray | None = None,
+        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    ) -> ExecutableCompilerADKernel:
+        effective_values = runtime_sample_values
+        if effective_values is None:
+            effective_values = captured_values
+        if effective_values is None:
+            raise ValueError("native matrix 2x2 eigensystem lowering requires sample_values")
+        effective_config = runtime_config if runtime_config is not None else config
+        effective_tangent = sample_tangent if sample_tangent is not None else captured_tangent
+        effective_cotangent = (
+            sample_cotangent if sample_cotangent is not None else captured_cotangent
+        )
+        return compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
+            rule,
+            sample_values=effective_values,
+            config=effective_config,
+            sample_tangent=effective_tangent,
+            sample_cotangent=effective_cotangent,
+        )
+
+    return lowering_rule
+
+
 def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -7439,6 +7925,7 @@ __all__ = [
     "compile_registered_primitive_to_executable",
     "compile_matrix_2x2_determinant_ad_to_native_llvm_jit",
     "compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit",
+    "compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit",
     "compile_matrix_2x2_inverse_ad_to_native_llvm_jit",
     "compile_matrix_2x2_solve_ad_to_native_llvm_jit",
     "compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit",
@@ -7458,6 +7945,7 @@ __all__ = [
     "make_executable_ad_kernel_batching_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule",
+    "make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_inverse_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_solve_native_llvm_jit_lowering_rule",
     "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule",

@@ -3658,6 +3658,195 @@ def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_n
     assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
 
 
+def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_native() -> None:
+    """Bounded 2x2 nonsymmetric eigensystem AD must execute as native LLVM/JIT."""
+
+    def eigensystem(values: np.ndarray) -> np.ndarray:
+        a00, a01, a10, a11 = values
+        trace = a00 + a11
+        delta = a00 - a11
+        discriminant = delta * delta + 4.0 * a01 * a10
+        root = float(np.sqrt(discriminant))
+        lower = 0.5 * (trace - root)
+        upper = 0.5 * (trace + root)
+        q_lower = 0.5 * (-delta - root)
+        q_upper = 0.5 * (-delta + root)
+        lower_vec = np.array([a01, q_lower], dtype=np.float64)
+        upper_vec = np.array([a01, q_upper], dtype=np.float64)
+        lower_vec = lower_vec / np.linalg.norm(lower_vec)
+        upper_vec = upper_vec / np.linalg.norm(upper_vec)
+        return np.array(
+            [lower, upper, lower_vec[0], upper_vec[0], lower_vec[1], upper_vec[1]],
+            dtype=np.float64,
+        )
+
+    def eigensystem_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+        a00, a01, a10, a11 = values
+        t00, t01, t10, t11 = tangent
+        trace_t = t00 + t11
+        delta = a00 - a11
+        delta_t = t00 - t11
+        discriminant = delta * delta + 4.0 * a01 * a10
+        root = float(np.sqrt(discriminant))
+        discriminant_t = 2.0 * delta * delta_t + 4.0 * (t01 * a10 + a01 * t10)
+        root_t = discriminant_t / (2.0 * root)
+        lower_t = 0.5 * (trace_t - root_t)
+        upper_t = 0.5 * (trace_t + root_t)
+        q_lower = 0.5 * (-(a00 - a11) - root)
+        q_upper = 0.5 * (-(a00 - a11) + root)
+        q_lower_t = lower_t - t00
+        q_upper_t = upper_t - t00
+
+        def vector_tangent(q_value: float, q_tangent: float) -> np.ndarray:
+            raw = np.array([a01, q_value], dtype=np.float64)
+            raw_tangent = np.array([t01, q_tangent], dtype=np.float64)
+            norm = np.linalg.norm(raw)
+            vector = raw / norm
+            return (raw_tangent - vector * float(vector @ raw_tangent)) / norm
+
+        lower_vec_t = vector_tangent(float(q_lower), float(q_lower_t))
+        upper_vec_t = vector_tangent(float(q_upper), float(q_upper_t))
+        return np.array(
+            [
+                lower_t,
+                upper_t,
+                lower_vec_t[0],
+                upper_vec_t[0],
+                lower_vec_t[1],
+                upper_vec_t[1],
+            ],
+            dtype=np.float64,
+        )
+
+    def eigensystem_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+        adjoint = np.zeros(4, dtype=np.float64)
+        for index in range(4):
+            basis = np.zeros(4, dtype=np.float64)
+            basis[index] = 1.0
+            adjoint[index] = float(cotangent @ eigensystem_jvp(values, basis))
+        return adjoint
+
+    import scpn_quantum_control as scpn
+
+    identity = PrimitiveIdentity(
+        "scpn.compiler_ad.native",
+        "matrix_2x2_eigensystem",
+        "1",
+    )
+    rule = CustomDerivativeRule(
+        "native_matrix_2x2_eigensystem_rule",
+        eigensystem,
+        eigensystem_jvp,
+        eigensystem_vjp,
+        parameter_names=("a00", "a01", "a10", "a11"),
+        trainable=(True, True, True, True),
+    )
+    values = np.array([2.0, 0.25, 0.75, 1.0], dtype=np.float64)
+    tangent = np.array([0.1, -0.2, 0.4, -0.3], dtype=np.float64)
+    cotangent = np.array([1.25, -0.75, 0.5, -0.25, 0.3, -0.6], dtype=np.float64)
+    config = CompilerADExecutableConfig(backend="native_llvm_jit")
+
+    kernel = compiler_mlir.compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
+        rule,
+        sample_values=values,
+        config=config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+
+    assert kernel.backend == "native_llvm_jit"
+    assert kernel.verification.value_close is True
+    assert kernel.verification.jvp_close is True
+    assert kernel.verification.vjp_close is True
+    assert kernel.verification.gradient_close is None
+    assert kernel.claim_boundary == (
+        "verified native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem value/JVP/VJP "
+        "kernel with sum-output gradient provenance; complex spectra, repeated eigenvalues, "
+        "and zero upper off-diagonal eigenvector charts remain fail-closed"
+    )
+    assert "matrix_2x2_eigensystem" in (kernel.llvm_gradient_ir or "")
+    np.testing.assert_allclose(kernel.value(values), eigensystem(values), rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(
+        kernel.jvp(values, tangent),
+        eigensystem_jvp(values, tangent),
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        kernel.vjp(values, cotangent),
+        eigensystem_vjp(values, cotangent),
+        rtol=1e-12,
+        atol=1e-12,
+    )
+    with pytest.raises(ValueError, match="scalar output"):
+        kernel.gradient(values)
+    with pytest.raises(ValueError, match="real distinct eigenvalues"):
+        kernel.value(np.array([0.0, -1.0, 1.0, 0.0], dtype=np.float64))
+    with pytest.raises(ValueError, match="real distinct eigenvalues"):
+        kernel.value(np.array([1.0, 0.0, 0.0, 1.0], dtype=np.float64))
+    with pytest.raises(ValueError, match="upper off-diagonal eigenvector chart"):
+        kernel.value(np.array([2.0, 0.0, 1.0, 1.0], dtype=np.float64))
+
+    registry = CustomDerivativeRegistry()
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=identity,
+            derivative_rule=rule,
+            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            lowering_rule=compiler_mlir.make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
+                sample_values=values,
+                config=config,
+                sample_tangent=tangent,
+                sample_cotangent=cotangent,
+            ),
+            lowering_metadata={
+                "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+                "mlir_op": "scpn_diff.native_matrix_2x2_eigensystem",
+                "mlir_runtime_verification": (
+                    "verified: native LLVM/JIT real-simple nonsymmetric 2x2 eigensystem JVP"
+                ),
+                "llvm": "available: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem AD kernel",
+                "jit": "available: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem AD kernel",
+                "native_backend": "native_llvm_jit",
+                "native_backend_verification": (
+                    "verified: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem value/JVP/VJP"
+                ),
+                "static_derivative_factory": "native_matrix_2x2_eigensystem_llvm_jit",
+                "static_signature": (
+                    "primitive:eig;dimension:2;layout:row_major;domain:real_simple_upper_chart"
+                ),
+                "nondifferentiable_boundary": (
+                    "nonreal_repeated_or_zero_upper_chart_matrix_2x2_eigensystem"
+                ),
+                "nondifferentiable_boundary_policy": "fail_closed",
+            },
+            shape_rule=lambda _args: (6,),
+            dtype_rule=lambda _args: "float64",
+            static_argument_rule=lambda args: args,
+            nondifferentiable_policy="real_simple_upper_chart_matrix_2x2_eigensystem_domain",
+            effect="pure",
+        )
+    )
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+    registered_kernel = compile_registered_primitive_to_executable(registry, identity, values)
+
+    assert registered_kernel.backend == "native_llvm_jit"
+    assert plan.executable_backend == "native_llvm_jit"
+    assert module.metadata["executable_backend"] == "native_llvm_jit"
+    assert module.resource_counts["native_backend_contracts"] == 1
+    assert module.resource_counts["primitive_readiness_native_executable"] == 1
+    assert scpn.compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit is (
+        compiler_mlir.compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit
+    )
+    assert scpn.make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule is (
+        compiler_mlir.make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule
+    )
+    assert module.metadata["native_backend_contract_primitives"] == [identity.key]
+    assert module.metadata["primitive_readiness"][identity.key]["verdict"] == "native_executable"
+    assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
+
+
 def test_differentiable_mlir_rejects_executable_target_claims() -> None:
     """LLVM/JIT target names must fail until backed by a real executable backend."""
 
