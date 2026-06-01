@@ -323,6 +323,13 @@ eigensystem chart through `matrix_2x2_eigensystem_value()`,
 `matrix_2x2_eigensystem_sum_gradient()` so the native compiler-AD lane has a
 typed polyglot parity surface. The Rust path uses the same real-distinct and
 upper off-diagonal chart boundary; it does not claim arbitrary eigensystem AD.
+`make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform()` binds that
+same bounded eigensystem primitive into the compiler registry with complete
+shape, dtype, static-signature, batching, native LLVM/JIT, and verified Rust
+PyO3 backend metadata. The planner only clears the Rust backend hard gap for
+this explicit transform; all other Rust differentiated backends remain
+fail-closed unless they provide their own verified Rust metadata and lowering
+contract.
 `compile_matrix_2x2_inverse_ad_to_native_llvm_jit()` adds a bounded
 nonsingular row-major 2x2 inverse primitive with exact rational value, JVP,
 and VJP kernels; singular matrices and the public vector-output gradient helper
@@ -404,16 +411,17 @@ shape, elementwise, reduction, product, cumulative, and linalg contracts expose
 MLIR metadata for direct derivative factories and fixed signatures; concrete
 static linalg signatures can also bind optional verified MLIR-runtime lowering
 rules, MLIR-runtime availability fails closed unless the primitive has a
-registered lowering rule, and Rust native backend availability remains blocked
-until executable differentiated backends exist. LLVM/JIT native backend
-availability is recognized only for primitives that carry verified
+registered lowering rule, and Rust native backend availability is recognized
+only for primitives that carry verified Rust backend metadata. LLVM/JIT native
+backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
-fail-closed until native Rust lowering is implemented.
+fail-closed outside the bounded `rust_pyo3` eigensystem contract until native
+Rust lowering is implemented for each primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`
 emits that plan as MLIR-style interchange; executable native LLVM/JIT
 differentiated runtimes are marked executable only for verified native lowering
-metadata, and native Rust differentiated runtime remains unavailable until
-backed by lowering and runtime verification.
+metadata, and native Rust differentiated runtime is marked available only when
+the primitive includes verified Rust backend provenance.
 
 ### `control.realtime_runtime`
 

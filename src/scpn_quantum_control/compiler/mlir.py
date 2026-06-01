@@ -34,6 +34,7 @@ from ..differentiable import (
     CustomDerivativeRule,
     PrimitiveBatchingRule,
     PrimitiveIdentity,
+    PrimitiveTransformRule,
     WholeProgramADResult,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
@@ -227,8 +228,14 @@ class PrimitiveLoweringStatus:
             raise ValueError(
                 "has_lowering_rule must be true when mlir_runtime_verification is verified"
             )
-        if "blocked" not in self.rust_lowering.lower():
-            raise ValueError("rust_lowering must remain blocked until Rust AD lowering exists")
+        rust_available = "blocked" not in self.rust_lowering.lower()
+        if rust_available:
+            rust_backend = metadata.get("rust_backend", "")
+            rust_backend_verification = metadata.get("rust_backend_verification", "")
+            if rust_backend not in {"rust_pyo3"}:
+                raise ValueError("rust_lowering requires rust_backend='rust_pyo3' metadata")
+            if not rust_backend_verification.startswith("verified:"):
+                raise ValueError("rust_lowering requires verified Rust backend metadata")
         native_backend = metadata.get("native_backend")
         native_backend_verification = metadata.get("native_backend_verification", "")
         native_llvm_jit_verified = (
@@ -252,6 +259,15 @@ def _status_has_native_llvm_jit_backend(status: PrimitiveLoweringStatus) -> bool
         and metadata.get("native_backend_verification", "").startswith("verified:")
         and "blocked" not in status.llvm_lowering.lower()
         and "blocked" not in status.jit_lowering.lower()
+    )
+
+
+def _status_has_verified_rust_backend(status: PrimitiveLoweringStatus) -> bool:
+    metadata = status.lowering_metadata
+    return (
+        metadata.get("rust_backend") == "rust_pyo3"
+        and metadata.get("rust_backend_verification", "").startswith("verified:")
+        and "blocked" not in status.rust_lowering.lower()
     )
 
 
@@ -476,7 +492,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
         )
 
     def has_rust_backend_contract(status: PrimitiveLoweringStatus) -> bool:
-        return "blocked" not in status.rust_lowering.lower()
+        return _status_has_verified_rust_backend(status)
 
     def has_native_llvm_jit_proof(status: PrimitiveLoweringStatus) -> bool:
         return _status_has_native_llvm_jit_backend(status)
@@ -7583,6 +7599,97 @@ def make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform(
+    identity: PrimitiveIdentity | str,
+    rule: CustomDerivativeRule,
+    *,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> PrimitiveTransformRule:
+    """Create a complete Rust/PyO3 + native LLVM/JIT eigensystem contract.
+
+    The contract is intentionally narrow: row-major real nonsymmetric 2x2
+    matrices whose spectra are real and distinct and whose eigenvector chart
+    uses a non-zero upper off-diagonal entry. All other eigensystem domains
+    remain fail-closed.
+    """
+
+    primitive_identity = PrimitiveIdentity.parse(identity)
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError(
+            "native matrix 2x2 eigensystem primitive transform requires backend='native_llvm_jit'"
+        )
+    values = _as_native_matrix_2x2_eigensystem_values("sample_values", sample_values)
+    tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+    kernel = compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
+        rule,
+        sample_values=values,
+        config=compile_config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+    return PrimitiveTransformRule(
+        identity=primitive_identity,
+        derivative_rule=rule,
+        batching_rule=make_executable_ad_kernel_batching_rule(kernel),
+        lowering_rule=make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
+            sample_values=values,
+            config=compile_config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        ),
+        lowering_metadata={
+            "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+            "mlir_op": "scpn_diff.native_matrix_2x2_eigensystem",
+            "mlir_runtime_verification": (
+                "verified: native LLVM/JIT real-simple nonsymmetric 2x2 eigensystem JVP"
+            ),
+            "rust": (
+                "available: Rust PyO3 real-simple nonsymmetric 2x2 eigensystem "
+                "value/JVP/VJP/sum-gradient kernel"
+            ),
+            "rust_backend": "rust_pyo3",
+            "rust_backend_verification": (
+                "verified: scpn_quantum_engine matrix_2x2_eigensystem "
+                "value/JVP/VJP/sum-gradient parity"
+            ),
+            "llvm": "available: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem AD kernel",
+            "jit": "available: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem AD kernel",
+            "native_backend": "native_llvm_jit",
+            "native_backend_verification": (
+                "verified: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem value/JVP/VJP"
+            ),
+            "static_derivative_factory": "native_matrix_2x2_eigensystem_llvm_jit",
+            "static_signature": (
+                "primitive:eig;dimension:2;layout:row_major;domain:real_simple_upper_chart"
+            ),
+            "nondifferentiable_boundary": (
+                "nonreal_repeated_or_zero_upper_chart_matrix_2x2_eigensystem"
+            ),
+            "nondifferentiable_boundary_policy": "fail_closed",
+        },
+        shape_rule=lambda _args: (6,),
+        dtype_rule=lambda _args: "float64",
+        static_argument_rule=lambda args: args,
+        nondifferentiable_policy="real_simple_upper_chart_matrix_2x2_eigensystem_domain",
+        effect="pure",
+    )
+
+
 def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -7946,6 +8053,7 @@ __all__ = [
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule",
+    "make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform",
     "make_matrix_2x2_inverse_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_solve_native_llvm_jit_lowering_rule",
     "make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule",
