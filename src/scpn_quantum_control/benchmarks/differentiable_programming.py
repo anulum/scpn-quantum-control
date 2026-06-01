@@ -179,6 +179,9 @@ def _matrix_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         left = trace_values[:2]
         right = trace_values[2:4]
         matrix = np.reshape(trace_values, (2, 2))
+        tensor = np.reshape(trace_values, (2, 2, 1))
+        tensor_weights = np.array([[0.5, -1.0], [1.25, 0.75]], dtype=np.float64)
+        tensor_vector = np.array([2.0], dtype=np.float64)
         return (
             np.inner(left, right)
             + np.sum(np.outer(left, right))
@@ -190,14 +193,15 @@ def _matrix_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
             + np.sum(np.einsum("i,j->ij", left, right))
             + np.sum(np.einsum("ij,j->i", matrix, left))
             + np.einsum("ii->", matrix)
+            + np.einsum("abc,c,ab->", tensor, tensor_vector, tensor_weights)
         )
 
     analytic = np.array(
         [
-            7.0 * values[2] + 3.0 * values[3] + 2.0 * values[0] + 3.0,
-            3.0 * values[2] + 7.0 * values[3] + 2.0 * values[1],
-            7.0 * values[0] + 3.0 * values[1],
-            3.0 * values[0] + 7.0 * values[1] + 3.0,
+            7.0 * values[2] + 3.0 * values[3] + 2.0 * values[0] + 4.0,
+            3.0 * values[2] + 7.0 * values[3] + 2.0 * values[1] - 2.0,
+            7.0 * values[0] + 3.0 * values[1] + 2.5,
+            3.0 * values[0] + 7.0 * values[1] + 4.5,
         ],
         dtype=np.float64,
     )

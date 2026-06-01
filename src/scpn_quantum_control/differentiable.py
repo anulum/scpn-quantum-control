@@ -4126,6 +4126,81 @@ def _trace_tensordot(
     )
 
 
+def _parse_trace_einsum_subscripts(
+    subscripts: str,
+    operands: Sequence[TraceADArray],
+) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...], dict[str, int]]:
+    normalised = subscripts.replace(" ", "")
+    if "..." in normalised:
+        raise ValueError("whole-program AD np.einsum ellipsis forms require explicit expansion")
+    if "->" not in normalised:
+        raise ValueError("whole-program AD np.einsum requires an explicit output subscript")
+    if normalised.count("->") != 1:
+        raise ValueError("whole-program AD np.einsum requires one explicit output separator")
+    input_spec, output_spec = normalised.split("->", 1)
+    input_labels = tuple(tuple(part) for part in input_spec.split(","))
+    output_labels = tuple(output_spec)
+    if len(input_labels) != len(operands):
+        raise ValueError("whole-program AD np.einsum operand count must match subscripts")
+    if len(set(output_labels)) != len(output_labels):
+        raise ValueError("whole-program AD np.einsum output labels must be unique")
+    if any(not label.isalpha() for labels in input_labels for label in labels) or any(
+        not label.isalpha() for label in output_labels
+    ):
+        raise ValueError("whole-program AD np.einsum supports alphabetic labels only")
+
+    dimensions: dict[str, int] = {}
+    seen_labels: set[str] = set()
+    for labels, operand in zip(input_labels, operands, strict=True):
+        if len(labels) != operand.ndim:
+            raise ValueError("whole-program AD np.einsum labels must match operand rank")
+        local_dimensions: dict[str, int] = {}
+        for label, dimension in zip(labels, operand.shape, strict=True):
+            seen_labels.add(label)
+            previous = dimensions.get(label)
+            if previous is not None and previous != dimension:
+                raise ValueError("whole-program AD np.einsum label dimensions must agree")
+            local_previous = local_dimensions.get(label)
+            if local_previous is not None and local_previous != dimension:
+                raise ValueError("whole-program AD np.einsum repeated-label dimensions must agree")
+            dimensions[label] = dimension
+            local_dimensions[label] = dimension
+    missing_output = set(output_labels) - seen_labels
+    if missing_output:
+        raise ValueError("whole-program AD np.einsum output labels must appear in operands")
+    return output_labels, input_labels, dimensions
+
+
+def _trace_einsum_scalar_at(
+    operands: Sequence[TraceADArray],
+    input_labels: Sequence[tuple[str, ...]],
+    dimensions: Mapping[str, int],
+    assignment: Mapping[str, int],
+    contraction_labels: tuple[str, ...],
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar:
+    total = _coerce_trace_scalar(0.0, context)
+    contraction_shape = tuple(dimensions[label] for label in contraction_labels)
+    contraction_indices = np.ndindex(contraction_shape) if contraction_shape else iter(((),))
+    for contraction_index in contraction_indices:
+        label_indices = dict(assignment)
+        label_indices.update(
+            {
+                label: int(index)
+                for label, index in zip(contraction_labels, contraction_index, strict=True)
+            }
+        )
+        term: TraceADScalar | None = None
+        for operand, labels in zip(operands, input_labels, strict=True):
+            item_index = tuple(label_indices[label] for label in labels)
+            item = operand._items[int(np.ravel_multi_index(item_index, operand.shape))]
+            term = item if term is None else term * item
+        if term is None:
+            raise ValueError("whole-program AD np.einsum requires at least one operand")
+        total = total + term
+    return total
+
+
 def _trace_einsum(
     subscripts: str,
     operands: Sequence[object],
@@ -4146,9 +4221,36 @@ def _trace_einsum(
         return _trace_trace(operands[0], context)
     if normalised == "ii->i" and len(operands) == 1:
         return _trace_diag(operands[0], context)
-    raise ValueError(
-        "whole-program AD np.einsum supports explicit dot, outer, matmul, trace, and diag forms"
+    trace_operands = tuple(_coerce_trace_array(operand, context) for operand in operands)
+    output_labels, input_labels, dimensions = _parse_trace_einsum_subscripts(
+        normalised,
+        trace_operands,
     )
+    contraction_labels = tuple(
+        label
+        for label in dict.fromkeys(label for labels in input_labels for label in labels)
+        if label not in output_labels
+    )
+    output_shape = tuple(dimensions[label] for label in output_labels)
+    output_items: list[TraceADScalar] = []
+    output_indices = np.ndindex(output_shape) if output_shape else iter(((),))
+    for output_index in output_indices:
+        assignment = {
+            label: int(index) for label, index in zip(output_labels, output_index, strict=True)
+        }
+        output_items.append(
+            _trace_einsum_scalar_at(
+                trace_operands,
+                input_labels,
+                dimensions,
+                assignment,
+                contraction_labels,
+                context,
+            )
+        )
+    if output_shape == ():
+        return output_items[0]
+    return TraceADArray(tuple(output_items), output_shape, context)
 
 
 def _trace_matmul(

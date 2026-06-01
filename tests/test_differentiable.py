@@ -3865,6 +3865,43 @@ def test_whole_program_ad_handles_numpy_linear_algebra_primitives() -> None:
     )
 
 
+def test_program_ad_einsum_handles_explicit_ranked_tensor_contractions() -> None:
+    """Program AD np.einsum should support explicit static tensor contractions."""
+
+    weights = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    vector = np.array([2.0, -0.25], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        tensor = values.reshape((2, 2, 2))
+        contracted = np.einsum("abc,c,ab->", tensor, vector, weights)
+        projected = np.einsum("abc,c->ab", tensor, vector)
+        diagonal = np.einsum("aab,b->a", tensor, vector)
+        return contracted + np.sum(projected * weights) + np.sum(diagonal)
+
+    values = np.array([0.5, -0.25, 1.0, -1.5, 2.0, 0.75, -0.5, 1.25], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros((2, 2, 2), dtype=np.float64)
+    for a_index in range(2):
+        for b_index in range(2):
+            for c_index in range(2):
+                expected[a_index, b_index, c_index] += (
+                    2.0 * weights[a_index, b_index] * vector[c_index]
+                )
+                if a_index == b_index:
+                    expected[a_index, b_index, c_index] += vector[c_index]
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected.reshape(-1), rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected.reshape(-1), rtol=1.0e-12, atol=1.0e-12
+    )
+
+
 def test_program_ad_reciprocal_ufunc_matches_exact_adjoint() -> None:
     """Program AD reciprocal should preserve exact inverse derivatives and adjoints."""
 
@@ -4030,9 +4067,19 @@ def test_program_ad_arcsin_arccos_fail_closed_at_domain_boundaries() -> None:
 def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
     """Unsupported NumPy linear algebra modes should fail closed with explicit diagnostics."""
 
-    with pytest.raises(ValueError, match="einsum supports explicit"):
+    with pytest.raises(ValueError, match="output labels must appear"):
         whole_program_value_and_grad(
-            lambda values: np.einsum("i->", values),
+            lambda values: np.einsum("i->j", values),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="explicit output"):
+        whole_program_value_and_grad(
+            lambda values: np.einsum("i,i", values, values),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="ellipsis"):
+        whole_program_value_and_grad(
+            lambda values: np.einsum("...i->i", values.reshape((1, 2))),
             np.array([1.0, 2.0], dtype=np.float64),
         )
     with pytest.raises(ValueError, match="tensordot supports axes"):
