@@ -4420,25 +4420,44 @@ def _trace_matrix_power(
     if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
         raise ValueError("program AD np.linalg.matrix_power exponent must be a static integer")
     exponent = int(power)
-    if exponent == 0:
-        return _trace_identity_matrix(rows, context)
-    base = _trace_inv(array, context) if exponent < 0 else array
-    exponent = abs(exponent)
-    result = _trace_identity_matrix(rows, context)
-    factor = base
-    while exponent:
-        if exponent & 1:
-            product = _trace_matmul(result, factor, context)
-            if not isinstance(product, TraceADArray):
-                raise ValueError("program AD np.linalg.matrix_power expected matrix product")
-            result = product
-        exponent >>= 1
-        if exponent:
-            product = _trace_matmul(factor, factor, context)
-            if not isinstance(product, TraceADArray):
-                raise ValueError("program AD np.linalg.matrix_power expected matrix product")
-            factor = product
-    return result
+    rule = program_ad_linalg_matrix_power_derivative_rule(exponent)
+    if rule.jvp_rule is None:
+        raise ValueError("program AD np.linalg.matrix_power requires a JVP rule")
+    flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
+    try:
+        output_flat = np.asarray(rule.value_fn(flat_values), dtype=np.float64).reshape(-1)
+        flat_tangent = np.stack([item.tangent for item in array._items], axis=0)
+        if context.parameter_count:
+            tangent_outputs = np.array(
+                [
+                    rule.jvp_rule(flat_values, flat_tangent[:, parameter_index])
+                    for parameter_index in range(context.parameter_count)
+                ],
+                dtype=np.float64,
+            ).T
+        else:
+            tangent_outputs = np.zeros((rows * cols, 0), dtype=np.float64)
+    except np.linalg.LinAlgError as exc:
+        raise ValueError(
+            "program AD np.linalg.matrix_power requires a nonsingular matrix"
+        ) from exc
+    if not np.all(np.isfinite(output_flat)):
+        raise ValueError("program AD np.linalg.matrix_power requires finite outputs")
+    input_names = tuple(item.name for item in array._items)
+    items: list[TraceADScalar] = []
+    for row in range(rows):
+        for col in range(cols):
+            flat_index = row * cols + col
+            items.append(
+                context.make(
+                    f"linalg:matrix_power:{_trace_shape_label(array.shape)}:"
+                    f"power:{exponent}:{row}:{col}",
+                    input_names,
+                    float(output_flat[flat_index]),
+                    tangent_outputs[flat_index, :],
+                )
+            )
+    return TraceADArray(tuple(items), array.shape, context)
 
 
 def _trace_multi_dot(
@@ -4457,12 +4476,60 @@ def _trace_multi_dot(
             raise ValueError("program AD np.linalg.multi_dot supports rank-1 and rank-2 operands")
         if 0 < index < len(arrays) - 1 and array.ndim != 2:
             raise ValueError("program AD np.linalg.multi_dot middle operands must be rank-2")
-    result: TraceADScalar | TraceADArray = arrays[0]
-    for operand in arrays[1:]:
-        if isinstance(result, TraceADScalar):
-            raise ValueError("program AD np.linalg.multi_dot encountered scalar intermediate")
-        result = _trace_matmul(result, operand, context)
-    return result
+    operand_shapes = tuple(array.shape for array in arrays)
+    rule = program_ad_linalg_multi_dot_derivative_rule(operand_shapes)
+    if rule.jvp_rule is None:
+        raise ValueError("program AD np.linalg.multi_dot requires a JVP rule")
+    primal_operands = tuple(
+        np.array([item.primal for item in array._items], dtype=np.float64).reshape(array.shape)
+        for array in arrays
+    )
+    try:
+        output = np.asarray(np.linalg.multi_dot(primal_operands), dtype=np.float64)
+    except ValueError as exc:
+        raise ValueError("program AD np.linalg.multi_dot dimensions must align") from exc
+    output_shape = tuple(int(dimension) for dimension in output.shape)
+    output_flat = output.reshape(-1)
+    flat_values = np.concatenate(
+        [operand.reshape(-1) for operand in primal_operands], dtype=np.float64
+    )
+    flat_tangent = np.concatenate(
+        [np.stack([item.tangent for item in array._items], axis=0) for array in arrays],
+        axis=0,
+        dtype=np.float64,
+    )
+    if context.parameter_count:
+        tangent_outputs = np.array(
+            [
+                rule.jvp_rule(flat_values, flat_tangent[:, parameter_index])
+                for parameter_index in range(context.parameter_count)
+            ],
+            dtype=np.float64,
+        ).T
+    else:
+        tangent_outputs = np.zeros((output_flat.size, 0), dtype=np.float64)
+    if not np.all(np.isfinite(output_flat)):
+        raise ValueError("program AD np.linalg.multi_dot requires finite outputs")
+    input_names = tuple(item.name for array in arrays for item in array._items)
+    shape_signature = "__".join(_trace_shape_label(shape) for shape in operand_shapes)
+    if output_shape == ():
+        return context.make(
+            f"linalg:multi_dot:{shape_signature}:out:scalar",
+            input_names,
+            float(output_flat[0]),
+            tangent_outputs[0, :],
+        )
+    output_label = _trace_shape_label(output_shape)
+    items = tuple(
+        context.make(
+            f"linalg:multi_dot:{shape_signature}:out:{output_label}:{flat_index}",
+            input_names,
+            float(output_flat[flat_index]),
+            tangent_outputs[flat_index, :],
+        )
+        for flat_index in range(output_flat.size)
+    )
+    return TraceADArray(items, output_shape, context)
 
 
 def _trace_eigvalsh(
@@ -5799,6 +5866,10 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_diag_contributions(node)
     if node.op.startswith("linalg:diagflat:"):
         return _program_adjoint_diagflat_contributions(node)
+    if node.op.startswith("linalg:matrix_power:"):
+        return _program_adjoint_matrix_power_contributions(node, node_by_name)
+    if node.op.startswith("linalg:multi_dot:"):
+        return _program_adjoint_multi_dot_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvalue:"):
         return _program_adjoint_eigh_eigenvalue_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvector:"):
@@ -6047,6 +6118,99 @@ def _program_adjoint_parse_shape_label(label: str) -> tuple[int, ...]:
     if any(dimension < 0 for dimension in shape):
         raise ValueError("shape dimensions must be non-negative")
     return shape
+
+
+def _program_adjoint_matrix_power_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one matrix-power output node."""
+
+    parts = node.op.split(":")
+    if len(parts) != 7 or parts[3] != "power":
+        raise ValueError("matrix_power adjoint requires shape, power, and output-index metadata")
+    try:
+        shape = _program_adjoint_parse_shape_label(parts[2])
+        exponent = int(parts[4])
+        output_row = int(parts[5])
+        output_col = int(parts[6])
+    except ValueError as exc:
+        raise ValueError("matrix_power adjoint metadata is malformed") from exc
+    if len(shape) != 2 or shape[0] != shape[1] or shape[0] <= 0:
+        raise ValueError("matrix_power adjoint requires non-empty square matrix metadata")
+    rows, cols = shape
+    if len(node.inputs) != rows * cols:
+        raise ValueError("matrix_power adjoint inputs must contain one flattened square matrix")
+    if output_row < 0 or output_row >= rows or output_col < 0 or output_col >= cols:
+        raise ValueError("matrix_power adjoint output index is outside matrix shape")
+    flat_values = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    )
+    cotangent = np.zeros((rows, cols), dtype=np.float64)
+    cotangent[output_row, output_col] = 1.0
+    rule = program_ad_linalg_matrix_power_derivative_rule(exponent)
+    if rule.vjp_rule is None:
+        raise ValueError("matrix_power adjoint requires a VJP rule")
+    try:
+        local_adjoint = np.asarray(
+            rule.vjp_rule(flat_values, cotangent.reshape(-1)), dtype=np.float64
+        ).reshape(-1)
+    except np.linalg.LinAlgError as exc:
+        raise ValueError("matrix_power adjoint requires a nonsingular matrix") from exc
+    return tuple(
+        (name, float(value)) for name, value in zip(node.inputs, local_adjoint, strict=True)
+    )
+
+
+def _program_adjoint_multi_dot_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one multi-dot output node."""
+
+    parts = node.op.split(":")
+    if len(parts) not in {5, 6} or parts[3] != "out":
+        raise ValueError("multi_dot adjoint requires operand-shape and output metadata")
+    try:
+        operand_shapes = tuple(
+            _program_adjoint_parse_shape_label(label) for label in parts[2].split("__")
+        )
+        output_shape, output_index = _program_adjoint_multi_dot_output_metadata(parts[4:])
+    except ValueError as exc:
+        raise ValueError("multi_dot adjoint metadata is malformed") from exc
+    expected_inputs = sum(int(np.prod(shape, dtype=np.int64)) for shape in operand_shapes)
+    if len(node.inputs) != expected_inputs:
+        raise ValueError("multi_dot adjoint inputs must match flattened operand shapes")
+    output_size = int(np.prod(output_shape, dtype=np.int64)) if output_shape else 1
+    if output_index < 0 or output_index >= output_size:
+        raise ValueError("multi_dot adjoint output index is outside result shape")
+    flat_values = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    )
+    cotangent = np.zeros(output_size, dtype=np.float64)
+    cotangent[output_index] = 1.0
+    rule = program_ad_linalg_multi_dot_derivative_rule(operand_shapes)
+    if rule.vjp_rule is None:
+        raise ValueError("multi_dot adjoint requires a VJP rule")
+    local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
+    return tuple(
+        (name, float(value)) for name, value in zip(node.inputs, local_adjoint, strict=True)
+    )
+
+
+def _program_adjoint_multi_dot_output_metadata(parts: list[str]) -> tuple[tuple[int, ...], int]:
+    """Parse multi-dot output shape and flat index metadata."""
+
+    if len(parts) == 1 and parts[0] == "scalar":
+        return (), 0
+    if len(parts) != 2:
+        raise ValueError("multi_dot output metadata must be scalar or shape plus index")
+    shape = _program_adjoint_parse_shape_label(parts[0])
+    if not shape:
+        raise ValueError("multi_dot non-scalar output shape must not be empty")
+    return shape, int(parts[1])
 
 
 def _program_adjoint_binary_or_selection_contributions(
