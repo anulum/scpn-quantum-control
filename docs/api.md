@@ -91,6 +91,7 @@ from scpn_quantum_control import (
     make_executable_ad_kernel_batching_rule,
     make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
     make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
+    make_matrix_2x2_solve_native_llvm_jit_primitive_transform,
     make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
     make_matrix_trace_native_llvm_jit_primitive_transform,
@@ -365,6 +366,14 @@ kernel; public `gradient()` remains scalar-output fail-closed.
 row-major `A x = b` primitive over concatenated `[A, b]` inputs with exact
 linear-solve value, JVP, and VJP kernels; singular matrices and the public
 vector-output gradient helper remain fail-closed.
+The optional `scpn_quantum_engine` Rust extension mirrors this solve primitive
+through `matrix_2x2_solve_value()`, `matrix_2x2_solve_jvp()`,
+`matrix_2x2_solve_vjp()`, and `matrix_2x2_solve_sum_gradient()`. The
+`make_matrix_2x2_solve_native_llvm_jit_primitive_transform()` helper binds the
+solve into the primitive registry with the same nonsingular fail-closed
+boundary, native LLVM/JIT lowering, primitive batching, and verified Rust PyO3
+metadata. The Rust sum-gradient export is provenance for the vector-output
+kernel; public `gradient()` remains scalar-output fail-closed.
 `compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit()` adds a bounded
 positive-definite symmetric factorisation primitive over upper-triangle
 `[a00, a01, a11]` inputs with exact lower-triangle value, JVP, and VJP

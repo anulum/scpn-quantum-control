@@ -217,6 +217,13 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         compiler_ad::matrix_2x2_inverse_sum_gradient,
         m
     )?)?;
+    m.add_function(wrap_pyfunction!(compiler_ad::matrix_2x2_solve_value, m)?)?;
+    m.add_function(wrap_pyfunction!(compiler_ad::matrix_2x2_solve_jvp, m)?)?;
+    m.add_function(wrap_pyfunction!(compiler_ad::matrix_2x2_solve_vjp, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_solve_sum_gradient,
+        m
+    )?)?;
     m.add_function(wrap_pyfunction!(
         compiler_ad::matrix_quadratic_form_value,
         m
