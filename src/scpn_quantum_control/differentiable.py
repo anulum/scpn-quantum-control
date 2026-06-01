@@ -1672,15 +1672,19 @@ class TraceADArray:
                 raise ValueError("whole-program AD np.clip supports array, lower, and upper")
             return _trace_clip(args[0], args[1], args[2], self.context)
         if func is np.linalg.norm:
-            if len(args) != 1 or kwargs.keys() - {"ord", "axis"}:
+            if len(args) < 1 or len(args) > 3 or kwargs.keys() - {"ord", "axis"}:
                 raise ValueError(
-                    "whole-program AD np.linalg.norm supports one array and optional ord/axis"
+                    "whole-program AD np.linalg.norm supports array, optional ord, and optional axis"
                 )
+            if len(args) >= 2 and "ord" in kwargs:
+                raise ValueError("whole-program AD np.linalg.norm ord must be supplied once")
+            if len(args) >= 3 and "axis" in kwargs:
+                raise ValueError("whole-program AD np.linalg.norm axis must be supplied once")
             return _trace_norm(
                 args[0],
                 self.context,
-                ord_value=kwargs.get("ord"),
-                axis=cast(int | None, kwargs.get("axis")),
+                ord_value=args[1] if len(args) >= 2 else kwargs.get("ord"),
+                axis=args[2] if len(args) >= 3 else kwargs.get("axis"),
             )
         if func is np.linalg.det:
             if len(args) != 1 or kwargs:
@@ -5176,20 +5180,44 @@ def _trace_norm(
     context: _WholeProgramTraceContext,
     *,
     ord_value: object = None,
-    axis: int | None = None,
-) -> TraceADScalar:
-    if axis is not None:
-        raise ValueError("whole-program AD np.linalg.norm supports flattened norms only")
+    axis: object | None = None,
+) -> TraceADScalar | TraceADArray:
     if ord_value not in {None, 2, 2.0}:
         raise ValueError("whole-program AD np.linalg.norm supports only Euclidean norm")
     array = _coerce_trace_array(values, context)
-    squared = array._items[0] * array._items[0]
-    for item in array._items[1:]:
-        squared = squared + item * item
-    norm = np.sqrt(squared)
-    if not isinstance(norm, TraceADScalar):
-        raise ValueError("whole-program AD norm must return a scalar")
-    return norm
+
+    def norm_from_items(items: tuple[TraceADScalar, ...]) -> TraceADScalar:
+        if not items:
+            raise ValueError("whole-program AD np.linalg.norm requires at least one element")
+        squared = items[0] * items[0]
+        for item in items[1:]:
+            squared = squared + item * item
+        if squared.primal <= 0.0:
+            raise ValueError("whole-program AD np.linalg.norm requires non-zero Euclidean norms")
+        norm = np.sqrt(squared)
+        if not isinstance(norm, TraceADScalar):
+            raise ValueError("whole-program AD norm must return a scalar")
+        return norm
+
+    if axis is None:
+        return norm_from_items(tuple(array._items))
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("whole-program AD np.linalg.norm axis must be a static integer")
+    axis_index = _normalise_axis("whole-program AD np.linalg.norm axis", int(axis), array.ndim)
+    reduced_shape = array.shape[:axis_index] + array.shape[axis_index + 1 :]
+    if reduced_shape == ():
+        return norm_from_items(tuple(array._items))
+    items: list[TraceADScalar] = []
+    for reduced_flat in range(int(np.prod(reduced_shape))):
+        reduced_index = np.unravel_index(reduced_flat, reduced_shape)
+        axis_items = []
+        for axis_position in range(array.shape[axis_index]):
+            source_index = (
+                reduced_index[:axis_index] + (axis_position,) + reduced_index[axis_index:]
+            )
+            axis_items.append(array._items[int(np.ravel_multi_index(source_index, array.shape))])
+        items.append(norm_from_items(tuple(axis_items)))
+    return TraceADArray(tuple(items), reduced_shape, context)
 
 
 def whole_program_grad(

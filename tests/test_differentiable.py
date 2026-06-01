@@ -8659,6 +8659,63 @@ def test_program_ad_variance_and_std_reject_invalid_ddof() -> None:
         )
 
 
+def test_program_ad_axis_norms_match_euclidean_adjoint() -> None:
+    """Program AD axis-aware Euclidean norms should replay exact vector adjoints."""
+
+    row_weights = np.array([1.25, -0.5], dtype=np.float64)
+    column_weights = np.array([0.75, -1.5, 0.25], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        row_norms = np.linalg.norm(matrix, 2, axis=1)
+        column_norms = np.linalg.norm(matrix, None, 0)
+        flat_norm = np.linalg.norm(values)
+        return (
+            np.sum(row_norms * row_weights)
+            + np.sum(column_norms * column_weights)
+            + 0.125 * flat_norm
+        )
+
+    values = np.array([1.0, 2.0, 2.0, 4.0, -1.0, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    matrix = values.reshape(2, 3)
+    expected = np.zeros_like(matrix)
+    expected += row_weights[:, None] * matrix / np.linalg.norm(matrix, axis=1)[:, None]
+    expected += column_weights[None, :] * matrix / np.linalg.norm(matrix, axis=0)[None, :]
+    expected += 0.125 * matrix / np.linalg.norm(values)
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected.reshape(-1), atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected.reshape(-1), atol=1.0e-12
+    )
+
+
+def test_program_ad_axis_norms_fail_closed_on_unsupported_contracts() -> None:
+    """Program AD axis norms should reject non-Euclidean, dynamic, and singular contracts."""
+
+    with pytest.raises(ValueError, match="Euclidean norm"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.norm(np.reshape(values, (2, 2)), ord=1, axis=1)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="axis must be a static integer"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.norm(np.reshape(values, (2, 2)), axis=True)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires non-zero Euclidean norms"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.linalg.norm(np.reshape(values, (2, 2)), axis=1)),
+            np.array([0.0, 0.0, 3.0, 4.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_cumulative_sum_matches_prefix_adjoint() -> None:
     """Program AD cumulative sums should accumulate prefix adjoints exactly."""
 
