@@ -4320,7 +4320,80 @@ def _trace_solve(
             raise ValueError("program AD np.linalg.solve right-hand matrix rows must match matrix")
     else:
         raise ValueError("program AD np.linalg.solve right-hand side must be rank-1 or rank-2")
-    return _trace_matmul(_trace_inv(lhs, context), right, context)
+    matrix_primal = np.array([item.primal for item in lhs._items], dtype=np.float64).reshape(
+        rows, cols
+    )
+    rhs_primal = np.array([item.primal for item in right._items], dtype=np.float64).reshape(
+        right.shape
+    )
+    try:
+        solution = np.linalg.solve(matrix_primal, rhs_primal)
+    except np.linalg.LinAlgError as exc:
+        raise ValueError("program AD np.linalg.solve requires a nonsingular matrix") from exc
+    if not np.all(np.isfinite(solution)):
+        raise ValueError("program AD np.linalg.solve requires a finite solution")
+    matrix_tangent = np.stack([item.tangent for item in lhs._items], axis=0).reshape(
+        rows, cols, context.parameter_count
+    )
+    rhs_tangent = np.stack([item.tangent for item in right._items], axis=0).reshape(
+        (*right.shape, context.parameter_count)
+    )
+    input_names = tuple(item.name for item in lhs._items) + tuple(
+        item.name for item in right._items
+    )
+    solution_array = np.asarray(solution, dtype=np.float64)
+    items: list[TraceADScalar] = []
+    if right.ndim == 1:
+        if context.parameter_count:
+            tangent_solution = np.array(
+                [
+                    np.linalg.solve(
+                        matrix_primal,
+                        rhs_tangent[:, parameter_index]
+                        - matrix_tangent[:, :, parameter_index] @ solution_array,
+                    )
+                    for parameter_index in range(context.parameter_count)
+                ],
+                dtype=np.float64,
+            ).T
+        else:
+            tangent_solution = np.zeros((rows, 0), dtype=np.float64)
+        for row in range(rows):
+            items.append(
+                context.make(
+                    f"linalg:solve:{rows}x{cols}:rhs:{right.shape[0]}:{row}",
+                    input_names,
+                    float(solution_array[row]),
+                    tangent_solution[row, :],
+                )
+            )
+        return TraceADArray(tuple(items), right.shape, context)
+    rhs_cols = right.shape[1]
+    if context.parameter_count:
+        tangent_solution_matrix = np.array(
+            [
+                np.linalg.solve(
+                    matrix_primal,
+                    rhs_tangent[:, :, parameter_index]
+                    - matrix_tangent[:, :, parameter_index] @ solution_array,
+                )
+                for parameter_index in range(context.parameter_count)
+            ],
+            dtype=np.float64,
+        ).transpose(1, 2, 0)
+    else:
+        tangent_solution_matrix = np.zeros((rows, rhs_cols, 0), dtype=np.float64)
+    for row in range(rows):
+        for col in range(rhs_cols):
+            items.append(
+                context.make(
+                    f"linalg:solve:{rows}x{cols}:rhs:{right.shape[0]}x{rhs_cols}:{row}:{col}",
+                    input_names,
+                    float(solution_array[row, col]),
+                    tangent_solution_matrix[row, col, :],
+                )
+            )
+    return TraceADArray(tuple(items), solution_array.shape, context)
 
 
 def _trace_identity_matrix(size: int, context: _WholeProgramTraceContext) -> TraceADArray:
@@ -5654,6 +5727,8 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_det_contributions(node, node_by_name)
     if node.op.startswith("linalg:inv:"):
         return _program_adjoint_inv_contributions(node, node_by_name)
+    if node.op.startswith("linalg:solve:"):
+        return _program_adjoint_solve_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvalue:"):
         return _program_adjoint_eigh_eigenvalue_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvector:"):
@@ -5742,6 +5817,80 @@ def _program_adjoint_inv_contributions(
         )
         for row in range(rows)
         for col in range(cols)
+    )
+
+
+def _program_adjoint_solve_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one linear-solve output node."""
+
+    parts = node.op.split(":")
+    if len(parts) not in {6, 7} or parts[3] != "rhs":
+        raise ValueError("solve adjoint requires shape, rhs, and output-index metadata")
+    try:
+        rows, cols = (int(part) for part in parts[2].split("x", maxsplit=1))
+        rhs_shape = tuple(int(part) for part in parts[4].split("x"))
+        output_row = int(parts[5])
+        output_col = int(parts[6]) if len(parts) == 7 else -1
+    except ValueError as exc:
+        raise ValueError("solve adjoint metadata is malformed") from exc
+    if rows != cols or rows <= 0:
+        raise ValueError("solve adjoint requires a non-empty square matrix")
+    if len(rhs_shape) == 1:
+        if len(parts) != 6 or rhs_shape[0] != rows:
+            raise ValueError("solve vector adjoint rhs shape is incompatible with matrix")
+        if output_row < 0 or output_row >= rows:
+            raise ValueError("solve adjoint output row is outside solution shape")
+    elif len(rhs_shape) == 2:
+        if len(parts) != 7 or rhs_shape[0] != rows or rhs_shape[1] <= 0:
+            raise ValueError("solve matrix adjoint rhs shape is incompatible with matrix")
+        if output_row < 0 or output_row >= rows or output_col < 0 or output_col >= rhs_shape[1]:
+            raise ValueError("solve adjoint output index is outside solution shape")
+    else:
+        raise ValueError("solve adjoint rhs shape must be rank-1 or rank-2")
+    rhs_size = int(np.prod(rhs_shape, dtype=np.int64))
+    matrix_size = rows * cols
+    if len(node.inputs) != matrix_size + rhs_size:
+        raise ValueError("solve adjoint inputs must contain matrix followed by rhs")
+    matrix_input_names = node.inputs[:matrix_size]
+    rhs_input_names = node.inputs[matrix_size:]
+    matrix = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in matrix_input_names],
+        dtype=np.float64,
+    ).reshape(rows, cols)
+    rhs = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in rhs_input_names],
+        dtype=np.float64,
+    ).reshape(rhs_shape)
+    try:
+        solution = np.linalg.solve(matrix, rhs)
+    except np.linalg.LinAlgError as exc:
+        raise ValueError("solve adjoint requires a nonsingular matrix") from exc
+    cotangent = np.zeros_like(solution, dtype=np.float64)
+    if len(rhs_shape) == 1:
+        cotangent[output_row] = 1.0
+        rhs_adjoint = np.linalg.solve(matrix.T, cotangent)
+        matrix_adjoint = -np.outer(rhs_adjoint, solution)
+    else:
+        cotangent[output_row, output_col] = 1.0
+        rhs_adjoint = np.linalg.solve(matrix.T, cotangent)
+        matrix_adjoint = -(rhs_adjoint @ solution.T)
+    flat_rhs_adjoint = np.asarray(rhs_adjoint, dtype=np.float64).reshape(-1)
+    return tuple(
+        (
+            matrix_input_names[row * cols + col],
+            float(matrix_adjoint[row, col]),
+        )
+        for row in range(rows)
+        for col in range(cols)
+    ) + tuple(
+        (
+            rhs_input_names[index],
+            float(flat_rhs_adjoint[index]),
+        )
+        for index in range(rhs_size)
     )
 
 

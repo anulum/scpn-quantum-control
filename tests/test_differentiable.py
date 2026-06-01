@@ -6659,6 +6659,64 @@ def test_program_ad_linalg_inv_fails_closed_invalid_matrix_contracts() -> None:
         )
 
 
+def test_program_ad_linalg_solve_uses_primitive_adjoint_replay_ir() -> None:
+    """Program AD solve should emit compact primitive nodes for adjoint replay."""
+
+    vector_weights = np.array([0.4, -1.1], dtype=np.float64)
+    matrix_weights = np.array([[0.25, -0.75], [1.5, 0.5]], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:4], (2, 2))
+        vector_rhs = values[4:6]
+        matrix_rhs = np.reshape(values[6:], (2, 2))
+        vector_solution = np.linalg.solve(matrix, vector_rhs)
+        matrix_solution = np.linalg.solve(matrix, matrix_rhs)
+        return np.sum(vector_solution * vector_weights) + np.sum(matrix_solution * matrix_weights)
+
+    values = np.array(
+        [2.0, -0.5, 0.25, 1.5, 1.25, -0.75, 0.5, 1.0, -1.5, 0.25],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"s{index}") for index in range(values.size)),
+    )
+
+    matrix = values[:4].reshape(2, 2)
+    vector_rhs = values[4:6]
+    matrix_rhs = values[6:].reshape(2, 2)
+    vector_solution = np.linalg.solve(matrix, vector_rhs)
+    matrix_solution = np.linalg.solve(matrix, matrix_rhs)
+    vector_adjoint = np.linalg.solve(matrix.T, vector_weights)
+    matrix_adjoint = np.linalg.solve(matrix.T, matrix_weights)
+    expected = np.zeros_like(values)
+    expected[:4] = (
+        -np.outer(vector_adjoint, vector_solution) - matrix_adjoint @ matrix_solution.T
+    ).reshape(-1)
+    expected[4:6] = vector_adjoint
+    expected[6:] = matrix_adjoint.reshape(-1)
+
+    assert [node.op for node in result.ir_nodes if node.op.startswith("linalg:solve:")] == [
+        "linalg:solve:2x2:rhs:2:0",
+        "linalg:solve:2x2:rhs:2:1",
+        "linalg:solve:2x2:rhs:2x2:0:0",
+        "linalg:solve:2x2:rhs:2x2:0:1",
+        "linalg:solve:2x2:rhs:2x2:1:0",
+        "linalg:solve:2x2:rhs:2x2:1:1",
+    ]
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    assert result.adjoint_result.unsupported_ops == ()
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result),
+        expected,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_program_ad_linalg_solve_matches_implicit_linear_system_differential() -> None:
     """Program AD solve should match exact linear-system differential semantics."""
 
