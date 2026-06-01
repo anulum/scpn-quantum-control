@@ -4764,10 +4764,25 @@ def _trace_trace(
     if (axis1, axis2) != (0, 1):
         raise ValueError("whole-program AD np.trace supports axis1=0 and axis2=1")
     _require_program_ad_linalg_contract("trace", (array, offset, axis1, axis2))
-    diag = _trace_diag(array, context, k=offset)
-    if not isinstance(diag, TraceADArray):
-        raise ValueError("whole-program AD np.trace diagonal extraction must return an array")
-    return cast(TraceADScalar, diag.sum())
+    offset_value = int(offset)
+    rows, cols = array.shape
+    selected_items = tuple(
+        array._items[row * cols + row + offset_value]
+        for row in range(rows)
+        if 0 <= row + offset_value < cols
+    )
+    if not selected_items:
+        raise ValueError("whole-program AD np.trace offset selects an empty diagonal")
+    tangent = sum(
+        (item.tangent for item in selected_items),
+        np.zeros(context.parameter_count, dtype=np.float64),
+    )
+    return context.make(
+        f"linalg:trace:{_trace_shape_label(array.shape)}:offset:{offset_value}",
+        tuple(item.name for item in selected_items),
+        float(sum(item.primal for item in selected_items)),
+        tangent,
+    )
 
 
 def _trace_diag(
@@ -4778,23 +4793,44 @@ def _trace_diag(
 ) -> TraceADArray:
     array = _coerce_trace_array(values, context)
     _require_program_ad_linalg_contract("diag", (array, k))
+    offset = int(k)
+    source_shape = _trace_shape_label(array.shape)
     if array.ndim == 1:
-        size = array.shape[0] + abs(k)
+        size = array.shape[0] + abs(offset)
         zero = _trace_constant(0.0, context)
         items: list[TraceADScalar] = []
         for row in range(size):
             for col in range(size):
-                source_index = row if k >= 0 else col
-                on_diag = (col - row) == k
-                items.append(array._items[source_index] if on_diag else zero)
+                source_index = row if offset >= 0 else col
+                on_diag = (col - row) == offset
+                if on_diag:
+                    source = array._items[source_index]
+                    items.append(
+                        context.make(
+                            f"linalg:diag:{source_shape}:offset:{offset}:construct:{source_index}",
+                            (source.name,),
+                            source.primal,
+                            source.tangent,
+                        )
+                    )
+                else:
+                    items.append(zero)
         return TraceADArray(tuple(items), (size, size), context)
     if array.ndim == 2:
         rows, cols = array.shape
         items = []
         for row in range(rows):
-            col = row + k
+            col = row + offset
             if 0 <= col < cols:
-                items.append(array._items[row * cols + col])
+                source = array._items[row * cols + col]
+                items.append(
+                    context.make(
+                        f"linalg:diag:{source_shape}:offset:{offset}:extract:{len(items)}",
+                        (source.name,),
+                        source.primal,
+                        source.tangent,
+                    )
+                )
         if not items:
             raise ValueError("whole-program AD np.diag offset selects an empty diagonal")
         return TraceADArray(tuple(items), (len(items),), context)
@@ -4809,7 +4845,35 @@ def _trace_diagflat(
 ) -> TraceADArray:
     array = _coerce_trace_array(values, context)
     _require_program_ad_linalg_contract("diagflat", (array, k))
-    return _trace_diag(array.ravel(), context, k=k)
+    offset = int(k)
+    flattened = array.ravel()
+    size = flattened.shape[0] + abs(offset)
+    zero = _trace_constant(0.0, context)
+    source_shape = _trace_shape_label(array.shape)
+    items: list[TraceADScalar] = []
+    for row in range(size):
+        for col in range(size):
+            source_index = row if offset >= 0 else col
+            on_diag = (col - row) == offset
+            if on_diag:
+                source = flattened._items[source_index]
+                items.append(
+                    context.make(
+                        f"linalg:diagflat:{source_shape}:offset:{offset}:construct:{source_index}",
+                        (source.name,),
+                        source.primal,
+                        source.tangent,
+                    )
+                )
+            else:
+                items.append(zero)
+    return TraceADArray(tuple(items), (size, size), context)
+
+
+def _trace_shape_label(shape: tuple[int, ...]) -> str:
+    """Return a compact static shape label for primitive IR metadata."""
+
+    return "x".join(str(int(dimension)) for dimension in shape)
 
 
 def _trace_multiply_arrays(
@@ -5729,6 +5793,12 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_inv_contributions(node, node_by_name)
     if node.op.startswith("linalg:solve:"):
         return _program_adjoint_solve_contributions(node, node_by_name)
+    if node.op.startswith("linalg:trace:"):
+        return _program_adjoint_trace_contributions(node)
+    if node.op.startswith("linalg:diag:"):
+        return _program_adjoint_diag_contributions(node)
+    if node.op.startswith("linalg:diagflat:"):
+        return _program_adjoint_diagflat_contributions(node)
     if node.op.startswith("linalg:eigh:eigenvalue:"):
         return _program_adjoint_eigh_eigenvalue_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvector:"):
@@ -5892,6 +5962,91 @@ def _program_adjoint_solve_contributions(
         )
         for index in range(rhs_size)
     )
+
+
+def _program_adjoint_trace_contributions(
+    node: WholeProgramIRNode,
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for a trace primitive node."""
+
+    parts = node.op.split(":")
+    if len(parts) != 5 or parts[3] != "offset":
+        raise ValueError("trace adjoint requires shape and offset metadata")
+    try:
+        shape = _program_adjoint_parse_shape_label(parts[2])
+        offset = int(parts[4])
+    except ValueError as exc:
+        raise ValueError("trace adjoint metadata is malformed") from exc
+    if len(shape) != 2:
+        raise ValueError("trace adjoint requires rank-2 matrix metadata")
+    rows, cols = shape
+    diagonal_length = sum(1 for row in range(rows) if 0 <= row + offset < cols)
+    if diagonal_length <= 0 or len(node.inputs) != diagonal_length:
+        raise ValueError("trace adjoint inputs must match the selected diagonal")
+    return tuple((name, 1.0) for name in node.inputs)
+
+
+def _program_adjoint_diag_contributions(
+    node: WholeProgramIRNode,
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one diag primitive output node."""
+
+    parts = node.op.split(":")
+    if len(parts) != 7 or parts[3] != "offset" or parts[5] not in {"construct", "extract"}:
+        raise ValueError("diag adjoint requires shape, offset, mode, and index metadata")
+    if len(node.inputs) != 1:
+        raise ValueError("diag adjoint primitive outputs must have one source input")
+    try:
+        shape = _program_adjoint_parse_shape_label(parts[2])
+        offset = int(parts[4])
+        source_index = int(parts[6])
+    except ValueError as exc:
+        raise ValueError("diag adjoint metadata is malformed") from exc
+    mode = parts[5]
+    if mode == "construct":
+        if len(shape) != 1 or source_index < 0 or source_index >= shape[0]:
+            raise ValueError("diag construct adjoint source index is outside vector shape")
+    else:
+        if len(shape) != 2:
+            raise ValueError("diag extract adjoint requires rank-2 source metadata")
+        rows, cols = shape
+        diagonal_length = sum(1 for row in range(rows) if 0 <= row + offset < cols)
+        if source_index < 0 or source_index >= diagonal_length:
+            raise ValueError("diag extract adjoint output index is outside diagonal shape")
+    return ((node.inputs[0], 1.0),)
+
+
+def _program_adjoint_diagflat_contributions(
+    node: WholeProgramIRNode,
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one diagflat primitive output node."""
+
+    parts = node.op.split(":")
+    if len(parts) != 7 or parts[3] != "offset" or parts[5] != "construct":
+        raise ValueError("diagflat adjoint requires shape, offset, construct, and index metadata")
+    if len(node.inputs) != 1:
+        raise ValueError("diagflat adjoint primitive outputs must have one source input")
+    try:
+        shape = _program_adjoint_parse_shape_label(parts[2])
+        int(parts[4])
+        source_index = int(parts[6])
+    except ValueError as exc:
+        raise ValueError("diagflat adjoint metadata is malformed") from exc
+    source_size = int(np.prod(shape, dtype=np.int64))
+    if source_index < 0 or source_index >= source_size:
+        raise ValueError("diagflat adjoint source index is outside flattened source shape")
+    return ((node.inputs[0], 1.0),)
+
+
+def _program_adjoint_parse_shape_label(label: str) -> tuple[int, ...]:
+    """Parse static primitive shape metadata from compact IR labels."""
+
+    if not label:
+        raise ValueError("shape label must not be empty")
+    shape = tuple(int(part) for part in label.split("x"))
+    if any(dimension < 0 for dimension in shape):
+        raise ValueError("shape dimensions must be non-negative")
+    return shape
 
 
 def _program_adjoint_binary_or_selection_contributions(

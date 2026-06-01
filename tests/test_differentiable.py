@@ -6477,6 +6477,74 @@ def test_program_ad_diagflat_rejects_invalid_static_contracts() -> None:
         )
 
 
+def test_program_ad_linalg_diagonal_family_uses_primitive_adjoint_replay_ir() -> None:
+    """Program AD diagonal-family linalg calls should emit compact primitive replay IR."""
+
+    vector_diag_weights = np.zeros((4, 4), dtype=np.float64)
+    vector_diag_weights[1, 0] = 0.25
+    vector_diag_weights[2, 1] = -0.75
+    vector_diag_weights[3, 2] = 1.5
+    diagflat_weights = np.zeros((5, 5), dtype=np.float64)
+    diagflat_weights[0, 1] = -1.0
+    diagflat_weights[1, 2] = 0.5
+    diagflat_weights[2, 3] = 2.0
+    diagflat_weights[3, 4] = -0.25
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values[:6], (2, 3))
+        vector = values[6:9]
+        source = np.reshape(values[9:], (2, 2))
+        return (
+            1.75 * np.trace(matrix, offset=1)
+            + 0.5 * np.sum(np.diag(matrix, k=-1))
+            + np.sum(np.diag(vector, k=-1) * vector_diag_weights)
+            + np.sum(np.diagflat(source, k=1) * diagflat_weights)
+        )
+
+    values = np.array(
+        [2.0, -0.5, 1.0, 0.75, 1.5, -2.0, -1.25, 0.5, 2.25, 1.0, -0.75, 1.5, 0.25],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"d{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros_like(values)
+    expected[1] = 1.75
+    expected[5] = 1.75
+    expected[3] = 0.5
+    expected[6:9] = np.array([0.25, -0.75, 1.5], dtype=np.float64)
+    expected[9:] = np.array([-1.0, 0.5, 2.0, -0.25], dtype=np.float64)
+
+    assert [node.op for node in result.ir_nodes if node.op.startswith("linalg:trace:")] == [
+        "linalg:trace:2x3:offset:1"
+    ]
+    assert [node.op for node in result.ir_nodes if node.op.startswith("linalg:diag:")] == [
+        "linalg:diag:2x3:offset:-1:extract:0",
+        "linalg:diag:3:offset:-1:construct:0",
+        "linalg:diag:3:offset:-1:construct:1",
+        "linalg:diag:3:offset:-1:construct:2",
+    ]
+    assert [node.op for node in result.ir_nodes if node.op.startswith("linalg:diagflat:")] == [
+        "linalg:diagflat:2x2:offset:1:construct:0",
+        "linalg:diagflat:2x2:offset:1:construct:1",
+        "linalg:diagflat:2x2:offset:1:construct:2",
+        "linalg:diagflat:2x2:offset:1:construct:3",
+    ]
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    assert result.adjoint_result.unsupported_ops == ()
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result),
+        expected,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 
