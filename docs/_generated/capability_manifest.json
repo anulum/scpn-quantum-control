@@ -14,7 +14,7 @@
     "python_model_source_modules": 767,
     "rust_pyo3_model_wrappers": 59,
     "rust_source_modules": 28,
-    "test_files": 1875
+    "test_files": 1876
   },
   "documentation": {
     "examples": [
@@ -9718,6 +9718,7 @@
       "tests/test_phase_artifact_fuzz.py",
       "tests/test_phase_diagram.py",
       "tests/test_phase_dynamics_contracts.py",
+      "tests/test_phase_results.py",
       "tests/test_phase_vqe.py",
       "tests/test_physics_accuracy.py",
       "tests/test_physics_first_tutorial.py",
