@@ -4209,7 +4209,23 @@ def _trace_det(matrix: object, context: _WholeProgramTraceContext) -> TraceADSca
     rows, cols = array.shape
     if rows != cols:
         raise ValueError("program AD np.linalg.det requires a square matrix")
-    return _trace_det_items(tuple(array._items), rows, context)
+    if rows == 0:
+        return _coerce_trace_scalar(1.0, context)
+    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
+    determinant = float(np.linalg.det(primal))
+    if not np.isfinite(determinant):
+        raise ValueError("program AD np.linalg.det requires a finite determinant")
+    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+        rows, cols, context.parameter_count
+    )
+    cofactors = _program_ad_linalg_det_cofactor_matrix(primal)
+    tangent = np.einsum("ij,ijp->p", cofactors, tangent_tensor)
+    return context.make(
+        f"linalg:det:{rows}x{cols}",
+        tuple(item.name for item in array._items),
+        determinant,
+        np.asarray(tangent, dtype=np.float64),
+    )
 
 
 def _trace_det_items(
@@ -5623,6 +5639,8 @@ def _program_adjoint_node_contributions(
         "choose",
     }:
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
+    if node.op.startswith("linalg:det:"):
+        return _program_adjoint_det_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvalue:"):
         return _program_adjoint_eigh_eigenvalue_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvector:"):
@@ -5640,6 +5658,38 @@ def _program_adjoint_node_contributions(
     if node.op.startswith("linalg:pinv:"):
         return _program_adjoint_pinv_contributions(node, node_by_name)
     raise ValueError(f"unsupported program AD adjoint op {node.op}")
+
+
+def _program_adjoint_det_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for a determinant primitive node."""
+
+    parts = node.op.split(":")
+    if len(parts) != 3:
+        raise ValueError("det adjoint requires shape-qualified determinant metadata")
+    try:
+        rows, cols = (int(part) for part in parts[2].split("x", maxsplit=1))
+    except ValueError as exc:
+        raise ValueError("det adjoint metadata is malformed") from exc
+    if rows != cols or rows < 0 or rows * cols != len(node.inputs):
+        raise ValueError("det adjoint requires flattened square matrix inputs")
+    if rows == 0:
+        return ()
+    matrix = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    ).reshape(rows, cols)
+    cofactors = _program_ad_linalg_det_cofactor_matrix(matrix)
+    return tuple(
+        (
+            node.inputs[row * cols + col],
+            float(cofactors[row, col]),
+        )
+        for row in range(rows)
+        for col in range(cols)
+    )
 
 
 def _program_adjoint_binary_or_selection_contributions(

@@ -6521,6 +6521,13 @@ def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
             minor = np.delete(np.delete(three_by_three, row, axis=0), col, axis=1)
             expected[4 + row * 3 + col] = 0.5 * ((-1.0) ** (row + col)) * np.linalg.det(minor)
 
+    assert [node.op for node in result.ir_nodes if node.op.startswith("linalg:det:")] == [
+        "linalg:det:2x2",
+        "linalg:det:3x3",
+    ]
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    assert result.adjoint_result.unsupported_ops == ()
     np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
     np.testing.assert_allclose(
         program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
