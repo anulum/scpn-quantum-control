@@ -6549,6 +6549,42 @@ def test_program_ad_linalg_det_fails_closed_invalid_matrix_contracts() -> None:
         )
 
 
+def test_program_ad_linalg_inv_uses_primitive_adjoint_replay_ir() -> None:
+    """Program AD inverse should emit compact primitive nodes for adjoint replay."""
+
+    weights = np.array([[0.5, -1.25], [2.0, 0.75]], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return np.sum(np.linalg.inv(matrix) * weights)
+
+    values = np.array([2.0, -0.5, 0.25, 1.5], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"a{index}") for index in range(values.size)),
+    )
+
+    inverse = np.linalg.inv(values.reshape(2, 2))
+    expected = -(inverse.T @ weights @ inverse.T).reshape(-1)
+    assert [node.op for node in result.ir_nodes if node.op.startswith("linalg:inv:")] == [
+        "linalg:inv:2x2:0:0",
+        "linalg:inv:2x2:0:1",
+        "linalg:inv:2x2:1:0",
+        "linalg:inv:2x2:1:1",
+    ]
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    assert result.adjoint_result.unsupported_ops == ()
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result),
+        expected,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_program_ad_linalg_inv_matches_inverse_differential() -> None:
     """Program AD inverse should match the exact matrix inverse differential."""
 

@@ -4268,24 +4268,35 @@ def _trace_inv(matrix: object, context: _WholeProgramTraceContext) -> TraceADArr
         raise ValueError("program AD np.linalg.inv requires a square matrix")
     if rows == 0:
         return TraceADArray((), (0, 0), context)
-    determinant = _trace_det_items(tuple(array._items), rows, context)
-    if determinant.primal == 0.0:
+    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
+    try:
+        inverse = np.linalg.inv(primal)
+    except np.linalg.LinAlgError as exc:
+        raise ValueError("program AD np.linalg.inv requires a nonsingular matrix") from exc
+    if not np.all(np.isfinite(inverse)):
         raise ValueError("program AD np.linalg.inv requires a nonsingular matrix")
-    if rows == 1:
-        return TraceADArray((_coerce_trace_scalar(1.0, context) / determinant,), (1, 1), context)
+    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+        rows, cols, context.parameter_count
+    )
+    input_names = tuple(item.name for item in array._items)
     inverse_items: list[TraceADScalar] = []
     for row in range(rows):
         for col in range(cols):
-            minor_items = tuple(
-                array._items[minor_row * rows + minor_col]
-                for minor_row in range(rows)
-                for minor_col in range(cols)
-                if minor_row != col and minor_col != row
+            tangent = np.array(
+                [
+                    -(inverse @ tangent_tensor[:, :, parameter_index] @ inverse)[row, col]
+                    for parameter_index in range(context.parameter_count)
+                ],
+                dtype=np.float64,
             )
-            cofactor = _trace_det_items(minor_items, rows - 1, context)
-            if (row + col) % 2:
-                cofactor = -cofactor
-            inverse_items.append(cofactor / determinant)
+            inverse_items.append(
+                context.make(
+                    f"linalg:inv:{rows}x{cols}:{row}:{col}",
+                    input_names,
+                    float(inverse[row, col]),
+                    tangent,
+                )
+            )
     return TraceADArray(tuple(inverse_items), (rows, cols), context)
 
 
@@ -5641,6 +5652,8 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
     if node.op.startswith("linalg:det:"):
         return _program_adjoint_det_contributions(node, node_by_name)
+    if node.op.startswith("linalg:inv:"):
+        return _program_adjoint_inv_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvalue:"):
         return _program_adjoint_eigh_eigenvalue_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvector:"):
@@ -5686,6 +5699,46 @@ def _program_adjoint_det_contributions(
         (
             node.inputs[row * cols + col],
             float(cofactors[row, col]),
+        )
+        for row in range(rows)
+        for col in range(cols)
+    )
+
+
+def _program_adjoint_inv_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one inverse-output primitive node."""
+
+    parts = node.op.split(":")
+    if len(parts) != 5:
+        raise ValueError("inverse adjoint requires shape and output-index metadata")
+    try:
+        rows, cols = (int(part) for part in parts[2].split("x", maxsplit=1))
+        output_row = int(parts[3])
+        output_col = int(parts[4])
+    except ValueError as exc:
+        raise ValueError("inverse adjoint metadata is malformed") from exc
+    if rows != cols or rows <= 0 or rows * cols != len(node.inputs):
+        raise ValueError("inverse adjoint requires flattened square matrix inputs")
+    if output_row < 0 or output_row >= rows or output_col < 0 or output_col >= cols:
+        raise ValueError("inverse adjoint output index is outside inverse shape")
+    matrix = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    ).reshape(rows, cols)
+    try:
+        inverse = np.linalg.inv(matrix)
+    except np.linalg.LinAlgError as exc:
+        raise ValueError("inverse adjoint requires a nonsingular matrix") from exc
+    cotangent = np.zeros((rows, cols), dtype=np.float64)
+    cotangent[output_row, output_col] = 1.0
+    local_adjoint = -(inverse.T @ cotangent @ inverse.T)
+    return tuple(
+        (
+            node.inputs[row * cols + col],
+            float(local_adjoint[row, col]),
         )
         for row in range(rows)
         for col in range(cols)
