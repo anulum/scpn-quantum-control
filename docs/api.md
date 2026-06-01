@@ -326,10 +326,13 @@ upper off-diagonal chart boundary; it does not claim arbitrary eigensystem AD.
 `make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform()` binds that
 same bounded eigensystem primitive into the compiler registry with complete
 shape, dtype, static-signature, batching, native LLVM/JIT, and verified Rust
-PyO3 backend metadata. The planner only clears the Rust backend hard gap for
-this explicit transform; all other Rust differentiated backends remain
-fail-closed unless they provide their own verified Rust metadata and lowering
-contract.
+PyO3 backend metadata. Rust backend readiness is signature-bound: the Rust
+metadata must repeat the exact compiler static signature, list the exported
+Rust value/JVP/VJP/sum-gradient functions, and carry verified parity
+provenance before the planner clears the Rust backend hard gap. The planner
+only clears the Rust backend hard gap for this explicit transform; all other
+Rust differentiated backends remain fail-closed unless they provide their own
+verified Rust metadata and lowering contract.
 `compile_matrix_2x2_inverse_ad_to_native_llvm_jit()` adds a bounded
 nonsingular row-major 2x2 inverse primitive with exact rational value, JVP,
 and VJP kernels; singular matrices and the public vector-output gradient helper
@@ -412,7 +415,8 @@ MLIR metadata for direct derivative factories and fixed signatures; concrete
 static linalg signatures can also bind optional verified MLIR-runtime lowering
 rules, MLIR-runtime availability fails closed unless the primitive has a
 registered lowering rule, and Rust native backend availability is recognized
-only for primitives that carry verified Rust backend metadata. LLVM/JIT native
+only for primitives that carry verified Rust backend metadata with exact
+static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
 fail-closed outside the bounded `rust_pyo3` eigensystem contract until native

@@ -232,10 +232,18 @@ class PrimitiveLoweringStatus:
         if rust_available:
             rust_backend = metadata.get("rust_backend", "")
             rust_backend_verification = metadata.get("rust_backend_verification", "")
+            rust_backend_signature = metadata.get("rust_backend_signature", "")
+            rust_backend_functions = metadata.get("rust_backend_functions", "")
             if rust_backend not in {"rust_pyo3"}:
                 raise ValueError("rust_lowering requires rust_backend='rust_pyo3' metadata")
             if not rust_backend_verification.startswith("verified:"):
                 raise ValueError("rust_lowering requires verified Rust backend metadata")
+            if not rust_backend_signature:
+                raise ValueError("rust_lowering requires rust_backend_signature metadata")
+            if rust_backend_signature != self.static_signature:
+                raise ValueError("rust_backend_signature must match static_signature")
+            if not rust_backend_functions:
+                raise ValueError("rust_lowering requires rust_backend_functions metadata")
         native_backend = metadata.get("native_backend")
         native_backend_verification = metadata.get("native_backend_verification", "")
         native_llvm_jit_verified = (
@@ -267,6 +275,8 @@ def _status_has_verified_rust_backend(status: PrimitiveLoweringStatus) -> bool:
     return (
         metadata.get("rust_backend") == "rust_pyo3"
         and metadata.get("rust_backend_verification", "").startswith("verified:")
+        and metadata.get("rust_backend_signature") == status.static_signature
+        and bool(metadata.get("rust_backend_functions"))
         and "blocked" not in status.rust_lowering.lower()
     )
 
@@ -709,6 +719,21 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             for status in plan.statuses
             if "blocked" in status.rust_lowering.lower()
         },
+        "rust_backend_signatures": {
+            status.identity.key: status.lowering_metadata["rust_backend_signature"]
+            for status in plan.statuses
+            if has_rust_backend_contract(status)
+        },
+        "rust_backend_functions": {
+            status.identity.key: status.lowering_metadata["rust_backend_functions"]
+            for status in plan.statuses
+            if has_rust_backend_contract(status)
+        },
+        "rust_backend_verification_primitives": {
+            status.identity.key: status.lowering_metadata["rust_backend_verification"]
+            for status in plan.statuses
+            if has_rust_backend_contract(status)
+        },
         "llvm_backend_contract_primitives": [
             status.identity.key for status in plan.statuses if has_llvm_backend_contract(status)
         ],
@@ -839,6 +864,9 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
             ),
             "rust_backend_blockers": sum(
                 "blocked" in status.rust_lowering.lower() for status in plan.statuses
+            ),
+            "rust_backend_verifications": sum(
+                has_rust_backend_contract(status) for status in plan.statuses
             ),
             "llvm_backend_contracts": sum(
                 has_llvm_backend_contract(status) for status in plan.statuses
@@ -7666,6 +7694,13 @@ def make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform(
             "rust_backend_verification": (
                 "verified: scpn_quantum_engine matrix_2x2_eigensystem "
                 "value/JVP/VJP/sum-gradient parity"
+            ),
+            "rust_backend_signature": (
+                "primitive:eig;dimension:2;layout:row_major;domain:real_simple_upper_chart"
+            ),
+            "rust_backend_functions": (
+                "matrix_2x2_eigensystem_value,matrix_2x2_eigensystem_jvp,"
+                "matrix_2x2_eigensystem_vjp,matrix_2x2_eigensystem_sum_gradient"
             ),
             "llvm": "available: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem AD kernel",
             "jit": "available: native LLVM MCJIT real-simple nonsymmetric 2x2 eigensystem AD kernel",

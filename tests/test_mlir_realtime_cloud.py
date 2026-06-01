@@ -444,6 +444,73 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     assert module.resource_counts["uncontracted_primitives"] == 1
 
 
+def test_compiler_ad_rust_backend_metadata_requires_static_signature_parity() -> None:
+    """Rust backend claims should fail closed unless they bind the same static contract."""
+
+    identity = PrimitiveIdentity("scpn.compiler_ad.native", "rust_signature_guard", "1")
+    base_kwargs = {
+        "identity": identity,
+        "rule_name": "rust_signature_guard_rule",
+        "has_jvp": True,
+        "has_vjp": True,
+        "mlir_op": "scpn_diff.rust_signature_guard",
+        "has_batching_rule": True,
+        "has_shape_rule": True,
+        "has_dtype_rule": True,
+        "has_static_argument_rule": True,
+        "has_lowering_rule": True,
+        "static_derivative_factory": "native_rust_signature_guard_llvm_jit",
+        "static_signature": "primitive:eig;dimension:2;layout:row_major",
+        "nondifferentiable_policy": "real_simple_domain",
+        "nondifferentiable_boundary": "real_simple_boundary",
+        "nondifferentiable_boundary_policy": "fail_closed",
+        "mlir_lowering": "available: executable scpn_diff MLIR-runtime primitive kernel",
+        "mlir_runtime_verification": "verified: rust signature guard JVP",
+        "rust_lowering": "available: Rust PyO3 rust signature guard kernel",
+        "llvm_lowering": "available: native LLVM MCJIT rust signature guard AD kernel",
+        "jit_lowering": "available: native LLVM MCJIT rust signature guard AD kernel",
+    }
+    base_metadata = {
+        "native_backend": "native_llvm_jit",
+        "native_backend_verification": "verified: native rust signature guard value/JVP/VJP",
+        "static_derivative_factory": "native_rust_signature_guard_llvm_jit",
+        "static_signature": "primitive:eig;dimension:2;layout:row_major",
+        "nondifferentiable_boundary": "real_simple_boundary",
+        "nondifferentiable_boundary_policy": "fail_closed",
+        "rust_backend": "rust_pyo3",
+        "rust_backend_verification": "verified: Rust PyO3 rust signature guard parity",
+        "rust_backend_functions": "rust_signature_guard_value,rust_signature_guard_jvp",
+    }
+
+    with pytest.raises(ValueError, match="rust_backend_signature"):
+        PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=base_metadata)
+
+    missing_functions_metadata = {
+        **base_metadata,
+        "rust_backend_signature": "primitive:eig;dimension:2;layout:row_major",
+    }
+    del missing_functions_metadata["rust_backend_functions"]
+    with pytest.raises(ValueError, match="rust_backend_functions"):
+        PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=missing_functions_metadata)
+
+    mismatched_metadata = {
+        **base_metadata,
+        "rust_backend_signature": "primitive:determinant;dimension:2;layout:row_major",
+    }
+    with pytest.raises(ValueError, match="rust_backend_signature must match static_signature"):
+        PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=mismatched_metadata)
+
+    valid_metadata = {
+        **base_metadata,
+        "rust_backend_signature": "primitive:eig;dimension:2;layout:row_major",
+    }
+    status = PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=valid_metadata)
+
+    assert status.lowering_metadata["rust_backend"] == "rust_pyo3"
+    assert status.lowering_metadata["rust_backend_signature"] == status.static_signature
+    assert status.lowering_metadata["rust_backend_verification"].startswith("verified:")
+
+
 def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     """Compiler AD planning should expose static linalg signatures without native overclaim."""
 
@@ -3875,6 +3942,22 @@ def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_n
     assert rust_module.metadata["rust_backend_contract_primitives"] == [identity.key]
     assert rust_module.metadata["rust_backend_incomplete_primitives"] == []
     assert rust_module.metadata["rust_backend_blockers"] == {}
+    assert rust_module.metadata["rust_backend_signatures"] == {
+        identity.key: "primitive:eig;dimension:2;layout:row_major;domain:real_simple_upper_chart"
+    }
+    assert rust_module.metadata["rust_backend_functions"] == {
+        identity.key: (
+            "matrix_2x2_eigensystem_value,matrix_2x2_eigensystem_jvp,"
+            "matrix_2x2_eigensystem_vjp,matrix_2x2_eigensystem_sum_gradient"
+        )
+    }
+    assert rust_module.metadata["rust_backend_verification_primitives"] == {
+        identity.key: (
+            "verified: scpn_quantum_engine matrix_2x2_eigensystem "
+            "value/JVP/VJP/sum-gradient parity"
+        )
+    }
+    assert rust_module.resource_counts["rust_backend_verifications"] == 1
     assert rust_module.metadata["primitive_hard_gaps"][identity.key] == []
     assert identity.key not in rust_module.metadata["primitive_next_hard_gap"]
     assert rust_module.metadata["primitive_readiness"][identity.key] == {
