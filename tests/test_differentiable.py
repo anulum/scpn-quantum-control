@@ -172,6 +172,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_shape_ravel_derivative_rule,
     program_ad_shape_reshape_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
+    program_ad_stencil_gradient_derivative_rule,
     program_adjoint_gradient,
     program_adjoint_result,
     register_custom_derivative_rule,
@@ -4894,6 +4895,62 @@ def test_program_ad_trapezoid_static_derivative_factory_is_axis_aware() -> None:
     )
 
 
+def test_program_ad_stencil_gradient_contract_and_direct_rule() -> None:
+    """Static gradient stencils should expose exact linear JVP/VJP rules."""
+
+    matrix = np.array([[1.0, 2.0, 4.0], [0.5, -1.5, 3.0]], dtype=np.float64)
+    tangent = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
+    x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
+    cotangent = np.array([[1.5, -2.0, 0.75], [-0.25, 0.5, 1.25]], dtype=np.float64)
+    contract = primitive_contract_for("scpn.program_ad.stencil:gradient")
+
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.stencil", "gradient", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.stencil.gradient"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_stencil_gradient_derivative_rule"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((matrix, (x_grid,), 1, 1)) == matrix.shape
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((matrix, (x_grid,), 1, 1)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((matrix, (x_grid,), 1, 1)) == (
+        matrix.shape,
+        (("coordinates", (3,), (0.0, 0.25, 1.0)),),
+        (1,),
+        1,
+    )
+
+    rule = program_ad_stencil_gradient_derivative_rule(matrix.shape, (x_grid,), axis=1)
+    assert rule.name == "program_ad_stencil_gradient_2x3_axes_1_edge_1_direct_rule"
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        rule.value_fn(matrix.reshape(-1)),
+        np.gradient(matrix, x_grid, axis=1).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)),
+        np.gradient(tangent, x_grid, axis=1).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    expected_vjp = np.zeros(matrix.size, dtype=np.float64)
+    for source_index in range(matrix.size):
+        basis = np.zeros_like(matrix)
+        basis.reshape(-1)[source_index] = 1.0
+        expected_vjp[source_index] = float(np.sum(np.gradient(basis, x_grid, axis=1) * cotangent))
+    np.testing.assert_allclose(
+        rule.vjp_rule(matrix.reshape(-1), cotangent.reshape(-1)),
+        expected_vjp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
 def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported reduction primitives must execute through registry validation rules."""
 
@@ -7630,6 +7687,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.reduction:mean": (
             "program_ad_reduction_mean_derivative_rule",
             "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.stencil:gradient": (
+            "program_ad_stencil_gradient_derivative_rule",
+            "source_shape:ranked_tensor_shape;spacing_axis_edge_order",
         ),
         "scpn.program_ad.elementwise:multiply": (
             "program_ad_elementwise_binary_derivative_rule",
@@ -11784,6 +11845,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.primitive_static_argument_rule_for is primitive_static_argument_rule_for
+    assert (
+        scpn.program_ad_stencil_gradient_derivative_rule
+        is program_ad_stencil_gradient_derivative_rule
+    )
     assert (
         scpn.program_ad_array_take_along_axis_derivative_rule
         is program_ad_array_take_along_axis_derivative_rule

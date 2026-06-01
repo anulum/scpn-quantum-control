@@ -3089,11 +3089,197 @@ def _trace_gradient(
     edge = _normalise_gradient_edge_order(edge_order)
     axes = _normalise_gradient_axes(axis, array.ndim)
     spacing_specs = _normalise_gradient_spacings(spacings, axes, array.shape)
+    _require_program_ad_stencil_contract("gradient", (array, spacings, axis, edge))
     gradients = [
         _trace_gradient_axis(array, axis=axis_index, spacing=spacing, edge_order=edge)
         for axis_index, spacing in zip(axes, spacing_specs, strict=True)
     ]
     return gradients[0] if len(gradients) == 1 else gradients
+
+
+def _program_ad_stencil_gradient_source_vector(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+) -> NDArray[np.float64]:
+    vector = _as_real_numeric_array(f"program AD stencil gradient {role}", values).reshape(-1)
+    expected_size = int(np.prod(source_shape, dtype=np.int64))
+    if vector.size != expected_size:
+        raise ValueError(
+            f"program AD stencil gradient direct rule requires {expected_size} {role} values"
+        )
+    return vector
+
+
+def _program_ad_stencil_gradient_flat_components(
+    source: NDArray[np.float64],
+    *,
+    axes: tuple[int, ...],
+    spacings: tuple[_GradientSpacing, ...],
+    edge_order: int,
+) -> tuple[NDArray[np.float64], ...]:
+    components: list[NDArray[np.float64]] = []
+    for axis_index, spacing in zip(axes, spacings, strict=True):
+        component = np.zeros_like(source, dtype=np.float64)
+        for flat_index in range(source.size):
+            target_index = np.unravel_index(flat_index, source.shape)
+            total = 0.0
+            for source_axis_index, coefficient in _gradient_axis_coefficients(
+                int(target_index[axis_index]),
+                int(source.shape[axis_index]),
+                spacing,
+                edge_order,
+            ):
+                source_index = (
+                    target_index[:axis_index]
+                    + (source_axis_index,)
+                    + target_index[axis_index + 1 :]
+                )
+                total += float(source[source_index]) * coefficient
+            component[target_index] = total
+        components.append(component.reshape(-1))
+    return tuple(components)
+
+
+def _program_ad_stencil_gradient_flat_value(
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axes: tuple[int, ...],
+    spacings: tuple[_GradientSpacing, ...],
+    edge_order: int,
+) -> NDArray[np.float64]:
+    source = _program_ad_stencil_gradient_source_vector(
+        "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    components = _program_ad_stencil_gradient_flat_components(
+        source,
+        axes=axes,
+        spacings=spacings,
+        edge_order=edge_order,
+    )
+    return np.concatenate(components).astype(np.float64, copy=False)
+
+
+def _program_ad_stencil_gradient_flat_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axes: tuple[int, ...],
+    spacings: tuple[_GradientSpacing, ...],
+    edge_order: int,
+) -> NDArray[np.float64]:
+    _program_ad_stencil_gradient_source_vector("values", values, source_shape=source_shape)
+    source_size = int(np.prod(source_shape, dtype=np.int64))
+    cotangent_vector = _as_real_numeric_array(
+        "program AD stencil gradient cotangent", cotangent
+    ).reshape(-1)
+    expected_cotangent_size = source_size * len(axes)
+    if cotangent_vector.size != expected_cotangent_size:
+        raise ValueError(
+            f"program AD stencil gradient VJP requires {expected_cotangent_size} cotangent values"
+        )
+    adjoint = np.zeros(source_shape, dtype=np.float64)
+    cotangent_components = cotangent_vector.reshape((len(axes), source_size))
+    for component_cotangent, axis_index, spacing in zip(
+        cotangent_components,
+        axes,
+        spacings,
+        strict=True,
+    ):
+        cotangent_array = component_cotangent.reshape(source_shape)
+        for flat_index in range(source_size):
+            target_index = np.unravel_index(flat_index, source_shape)
+            scalar_cotangent = float(cotangent_array[target_index])
+            for source_axis_index, coefficient in _gradient_axis_coefficients(
+                int(target_index[axis_index]),
+                int(source_shape[axis_index]),
+                spacing,
+                edge_order,
+            ):
+                source_index = (
+                    target_index[:axis_index]
+                    + (source_axis_index,)
+                    + target_index[axis_index + 1 :]
+                )
+                adjoint[source_index] += scalar_cotangent * coefficient
+    return adjoint.reshape(-1)
+
+
+def _program_ad_gradient_spacing_signature(
+    spacing: _GradientSpacing,
+) -> tuple[str, float] | tuple[str, tuple[int, ...], tuple[float, ...]]:
+    if spacing[0] == "scalar":
+        return ("scalar", float(spacing[1]))
+    coordinates = np.asarray(spacing[1], dtype=np.float64)
+    return (
+        "coordinates",
+        tuple(int(dimension) for dimension in coordinates.shape),
+        tuple(float(value) for value in coordinates.reshape(-1)),
+    )
+
+
+def program_ad_stencil_gradient_derivative_rule(
+    source_shape: Sequence[int],
+    spacings: Sequence[object] = (),
+    *,
+    axis: object = None,
+    edge_order: object = 1,
+) -> CustomDerivativeRule:
+    """Return an exact fixed-shape derivative rule for ``np.gradient`` stencils."""
+
+    source = tuple(int(dimension) for dimension in source_shape)
+    if any(dimension <= 0 for dimension in source):
+        raise ValueError(
+            "program AD stencil gradient direct rule requires positive source dimensions"
+        )
+    edge = _normalise_gradient_edge_order(edge_order)
+    axes = _normalise_gradient_axes(axis, len(source))
+    spacing_specs = _normalise_gradient_spacings(tuple(spacings), axes, source)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_stencil_gradient_flat_value(
+            values,
+            source_shape=source,
+            axes=axes,
+            spacings=spacing_specs,
+            edge_order=edge,
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_stencil_gradient_source_vector("values", values, source_shape=source)
+        return _program_ad_stencil_gradient_flat_value(
+            tangent,
+            source_shape=source,
+            axes=axes,
+            spacings=spacing_specs,
+            edge_order=edge,
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_stencil_gradient_flat_vjp(
+            values,
+            cotangent,
+            source_shape=source,
+            axes=axes,
+            spacings=spacing_specs,
+            edge_order=edge,
+        )
+
+    axes_signature = "_".join(str(axis_index) for axis_index in axes)
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_stencil_gradient_"
+            f"{_program_ad_shape_signature(source)}_axes_{axes_signature}_edge_{edge}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
 
 
 def _normalise_interp_grid(xp: object) -> NDArray[np.float64]:
@@ -8922,6 +9108,13 @@ _PROGRAM_AD_REDUCTION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_REDUCTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE, name, "1")
     for name in ("sum", "prod", "mean", "trapezoid")
+}
+
+_PROGRAM_AD_STENCIL_PRIMITIVE_NAMESPACE = "scpn.program_ad.stencil"
+_PROGRAM_AD_STENCIL_POLICY = "program_ad_trace_exact_fail_closed"
+_PROGRAM_AD_STENCIL_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
+    name: PrimitiveIdentity(_PROGRAM_AD_STENCIL_PRIMITIVE_NAMESPACE, name, "1")
+    for name in ("gradient",)
 }
 
 _PROGRAM_AD_ELEMENTWISE_PRIMITIVE_NAMESPACE = "scpn.program_ad.elementwise"
@@ -16425,6 +16618,207 @@ def _program_ad_linalg_multi_dot_static_arguments(args: tuple[object, ...]) -> t
     return shapes
 
 
+def _program_ad_stencil_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD stencil primitive contracts are executable only through "
+        "operator-intercepted trace dispatch or fixed-shape derivative factories"
+    )
+
+
+def _program_ad_stencil_direct_jvp(
+    _values: NDArray[np.float64],
+    _tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    raise ValueError(
+        "program AD stencil primitive contracts are executable only through "
+        "operator-intercepted trace dispatch or fixed-shape derivative factories"
+    )
+
+
+def _program_ad_stencil_derivative_rule(name: str) -> CustomDerivativeRule:
+    if name == "gradient":
+        return CustomDerivativeRule(
+            name="program_ad_stencil_gradient_trace_contract",
+            value_fn=_program_ad_stencil_direct_value,
+            jvp_rule=_program_ad_stencil_direct_jvp,
+        )
+    raise ValueError(f"unsupported program AD stencil primitive {name}")
+
+
+def _program_ad_stencil_shape_of(arg: object) -> tuple[int, ...]:
+    if isinstance(arg, TraceADArray):
+        shape = tuple(int(dimension) for dimension in arg.shape)
+    else:
+        shape = tuple(
+            int(dimension)
+            for dimension in _as_real_numeric_array("program AD stencil source", arg).shape
+        )
+    if any(dimension <= 0 for dimension in shape):
+        raise ValueError("program AD stencil gradient requires positive source dimensions")
+    return shape
+
+
+def _program_ad_stencil_spacings_arg(arg: object) -> tuple[object, ...]:
+    if isinstance(arg, tuple):
+        return arg
+    if isinstance(arg, list):
+        return tuple(arg)
+    raise ValueError("program AD stencil gradient static rule requires spacing values as a tuple")
+
+
+def _program_ad_stencil_gradient_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], tuple[_GradientSpacing, ...], tuple[int, ...], int]:
+    if len(args) != 4:
+        raise ValueError(
+            "program AD stencil gradient static rule requires source, spacings, axis, and edge_order"
+        )
+    source_shape = _program_ad_stencil_shape_of(args[0])
+    edge = _normalise_gradient_edge_order(args[3])
+    axes = _normalise_gradient_axes(args[2], len(source_shape))
+    spacing_specs = _normalise_gradient_spacings(
+        _program_ad_stencil_spacings_arg(args[1]),
+        axes,
+        source_shape,
+    )
+    return source_shape, spacing_specs, axes, edge
+
+
+def _program_ad_stencil_gradient_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape, _spacing_specs, axes, _edge = _program_ad_stencil_gradient_static_parts(args)
+    if len(axes) == 1:
+        return source_shape
+    return (len(axes), *source_shape)
+
+
+def _program_ad_stencil_dtype_rule(_args: tuple[object, ...]) -> str:
+    return "float64"
+
+
+def _program_ad_stencil_gradient_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    source_shape, spacing_specs, axes, edge = _program_ad_stencil_gradient_static_parts(args)
+    return (
+        source_shape,
+        tuple(_program_ad_gradient_spacing_signature(spacing) for spacing in spacing_specs),
+        axes,
+        edge,
+    )
+
+
+def _program_ad_stencil_array_output(value: object) -> NDArray[np.float64]:
+    if isinstance(value, (list, tuple)):
+        if not value:
+            raise ValueError("program AD stencil batched output must not be empty")
+        return np.stack(
+            [
+                _as_real_numeric_array("program AD stencil batched output", component)
+                for component in value
+            ],
+            axis=0,
+        )
+    return _as_real_numeric_array("program AD stencil batched output", value)
+
+
+def _program_ad_stencil_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 4 or len(axes) != 4:
+        raise ValueError(
+            "program AD stencil gradient batching requires source, spacings, axis, and edge_order"
+        )
+    if any(axis is not None for axis in axes[1:]):
+        raise ValueError(
+            "program AD stencil gradient batching keeps spacing, axis, and edge_order static"
+        )
+    if axes[0] is None:
+        raise ValueError("program AD stencil gradient batching requires a mapped source axis")
+
+    source = _as_real_numeric_array("program AD stencil batched source", args[0])
+    batch_axis = _normalise_axis("axes[0]", axes[0], source.ndim)
+    gradient_axes = _normalise_gradient_axes(args[2], source.ndim)
+    if batch_axis in gradient_axes:
+        raise ValueError("program AD stencil gradient cannot batch over a differentiated axis")
+    adjusted_gradient_axes = tuple(
+        axis_index - 1 if axis_index > batch_axis else axis_index for axis_index in gradient_axes
+    )
+    adjusted_axis_arg: object = (
+        adjusted_gradient_axes[0] if len(adjusted_gradient_axes) == 1 else adjusted_gradient_axes
+    )
+
+    outputs = [
+        _program_ad_stencil_array_output(
+            function(
+                np.take(source, batch_index, axis=batch_axis),
+                args[1],
+                adjusted_axis_arg,
+                args[3],
+            )
+        )
+        for batch_index in range(source.shape[batch_axis])
+    ]
+    stacked = np.stack(outputs, axis=0)
+    axis_index = _normalise_axis("out_axes", out_axes, stacked.ndim)
+    return np.moveaxis(stacked, 0, axis_index)
+
+
+def _program_ad_stencil_lowering_metadata(name: str) -> Mapping[str, str]:
+    if name != "gradient":
+        raise ValueError(f"unsupported program AD stencil primitive {name}")
+    return {
+        "program_ad": "operator_intercepted_trace",
+        "mlir": "available: scpn_diff stencil dialect interchange; executable lowering blocked",
+        "mlir_op": "scpn_diff.stencil.gradient",
+        "llvm": "blocked_until_executable_stencil_lowering",
+        "rust": "blocked_until_polyglot_stencil_ad",
+        "nondifferentiable_boundary": "static_spacing_axis_edge_order",
+        "nondifferentiable_boundary_policy": "fail_closed",
+        "static_argument_rule": "required",
+        "static_derivative_factory": "program_ad_stencil_gradient_derivative_rule",
+        "static_signature": "source_shape:ranked_tensor_shape;spacing_axis_edge_order",
+    }
+
+
+def _register_program_ad_stencil_primitive_contracts() -> None:
+    for name, identity in _PROGRAM_AD_STENCIL_IDENTITIES.items():
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
+            continue
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=identity,
+                derivative_rule=_program_ad_stencil_derivative_rule(name),
+                batching_rule=_program_ad_stencil_batching_rule,
+                lowering_metadata=_program_ad_stencil_lowering_metadata(name),
+                shape_rule=_program_ad_stencil_gradient_shape,
+                dtype_rule=_program_ad_stencil_dtype_rule,
+                static_argument_rule=_program_ad_stencil_gradient_static_arguments,
+                nondifferentiable_policy=_PROGRAM_AD_STENCIL_POLICY,
+                effect="pure",
+            )
+        )
+
+
+def _require_program_ad_stencil_contract(
+    name: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = _PROGRAM_AD_STENCIL_IDENTITIES.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD stencil primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != _PROGRAM_AD_STENCIL_POLICY:
+        raise ValueError(f"invalid program AD stencil primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD stencil primitive effect for {identity.key}")
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
 _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "det": _program_ad_linalg_det_shape,
     "inv": _program_ad_linalg_inv_shape,
@@ -16665,6 +17059,7 @@ def _require_program_ad_linalg_contract(
 _register_program_ad_array_primitive_contracts()
 _register_program_ad_shape_primitive_contracts()
 _register_program_ad_reduction_primitive_contracts()
+_register_program_ad_stencil_primitive_contracts()
 _register_program_ad_elementwise_primitive_contracts()
 _register_program_ad_selection_primitive_contracts()
 _register_program_ad_product_primitive_contracts()
@@ -20983,6 +21378,7 @@ __all__ = [
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",
+    "program_ad_stencil_gradient_derivative_rule",
     "program_adjoint_gradient",
     "program_adjoint_result",
     "registered_custom_jacobian",
