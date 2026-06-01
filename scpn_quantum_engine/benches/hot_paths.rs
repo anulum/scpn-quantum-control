@@ -22,6 +22,10 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use scpn_quantum_engine::biological_qec::biological_decode_inner;
+use scpn_quantum_engine::compiler_ad::{
+    matrix_2x2_eigensystem_jvp_inner, matrix_2x2_eigensystem_value_inner,
+    matrix_2x2_eigensystem_vjp_inner,
+};
 use scpn_quantum_engine::dla::{commutator_dense, is_independent_fast};
 use scpn_quantum_engine::knm::build_knm_inner;
 use scpn_quantum_engine::kuramoto::order_parameter_inner;
@@ -127,12 +131,34 @@ fn bench_biological_decode_inner(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_matrix_2x2_eigensystem_ad(c: &mut Criterion) {
+    let values = [2.0, 0.25, 0.75, 1.0];
+    let tangent = [0.1, -0.2, 0.4, -0.3];
+    let cotangent = [1.25, -0.75, 0.5, -0.25, 0.3, -0.6];
+    let mut group = c.benchmark_group("matrix_2x2_eigensystem_ad");
+    group.bench_function("value", |bench| {
+        bench.iter(|| matrix_2x2_eigensystem_value_inner(black_box(&values)).unwrap());
+    });
+    group.bench_function("jvp", |bench| {
+        bench.iter(|| {
+            matrix_2x2_eigensystem_jvp_inner(black_box(&values), black_box(&tangent)).unwrap()
+        });
+    });
+    group.bench_function("vjp", |bench| {
+        bench.iter(|| {
+            matrix_2x2_eigensystem_vjp_inner(black_box(&values), black_box(&cotangent)).unwrap()
+        });
+    });
+    group.finish();
+}
+
 criterion_group!(
     hot_paths,
     bench_build_knm,
     bench_order_parameter,
     bench_commutator_dense,
     bench_is_independent_fast,
-    bench_biological_decode_inner
+    bench_biological_decode_inner,
+    bench_matrix_2x2_eigensystem_ad
 );
 criterion_main!(hot_paths);

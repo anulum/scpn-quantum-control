@@ -31,6 +31,7 @@ use pyo3::prelude::*;
 pub mod analog;
 pub mod biological_qec;
 pub mod community;
+pub mod compiler_ad;
 pub mod complex_utils;
 pub mod concat_qec;
 pub mod dla;
@@ -175,6 +176,24 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Community scoring (DynQ)
     m.add_function(wrap_pyfunction!(community::score_regions_batch, m)?)?;
+
+    // Compiler-backed AD native parity
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigensystem_value,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigensystem_jvp,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigensystem_vjp,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigensystem_sum_gradient,
+        m
+    )?)?;
 
     // Pulse shaping (hypergeometric + ICI)
     m.add_function(wrap_pyfunction!(

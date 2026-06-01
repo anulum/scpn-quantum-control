@@ -317,6 +317,12 @@ chart with exact closed-form eigenvalue/right-eigenvector value, JVP, and VJP
 kernels; complex spectra, repeated eigenvalues, zero upper off-diagonal
 eigenvector charts, and the public vector-output gradient helper remain
 fail-closed.
+The optional `scpn_quantum_engine` Rust extension now mirrors this bounded
+eigensystem chart through `matrix_2x2_eigensystem_value()`,
+`matrix_2x2_eigensystem_jvp()`, `matrix_2x2_eigensystem_vjp()`, and
+`matrix_2x2_eigensystem_sum_gradient()` so the native compiler-AD lane has a
+typed polyglot parity surface. The Rust path uses the same real-distinct and
+upper off-diagonal chart boundary; it does not claim arbitrary eigensystem AD.
 `compile_matrix_2x2_inverse_ad_to_native_llvm_jit()` adds a bounded
 nonsingular row-major 2x2 inverse primitive with exact rational value, JVP,
 and VJP kernels; singular matrices and the public vector-output gradient helper
