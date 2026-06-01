@@ -174,6 +174,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_shape_reshape_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
     program_ad_signal_convolve_derivative_rule,
+    program_ad_signal_correlate_derivative_rule,
     program_ad_stencil_gradient_derivative_rule,
     program_adjoint_gradient,
     program_adjoint_result,
@@ -7785,6 +7786,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_signal_convolve_derivative_rule",
             "left_shape:rank1;right_shape:rank1;mode",
         ),
+        "scpn.program_ad.signal:correlate": (
+            "program_ad_signal_correlate_derivative_rule",
+            "left_shape:rank1;right_shape:rank1;mode",
+        ),
         "scpn.program_ad.shape:reshape": (
             "program_ad_shape_reshape_derivative_rule",
             "source_shape:ranked_tensor_shape;target_shape",
@@ -10232,6 +10237,114 @@ def test_program_ad_correlate_matches_signal_reference_adjoint() -> None:
     np.testing.assert_allclose(program_adjoint_gradient(result), expected, atol=1.0e-12)
 
 
+def test_program_ad_signal_correlate_contract_and_direct_rule() -> None:
+    """np.correlate should expose a fail-closed signal primitive direct rule."""
+
+    left = np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)
+    right = np.array([0.25, -0.75, 1.5], dtype=np.float64)
+    tangent_left = np.array([0.1, -0.2, 0.3, -0.4], dtype=np.float64)
+    tangent_right = np.array([-0.5, 0.25, 0.75], dtype=np.float64)
+    cotangent = np.array([0.2, -0.4, 0.6, -0.8], dtype=np.float64)
+    values = np.concatenate([left, right])
+    tangent = np.concatenate([tangent_left, tangent_right])
+
+    contract = primitive_contract_for("scpn.program_ad.signal:correlate")
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.signal", "correlate", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.signal.correlate"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_signal_correlate_derivative_rule"
+    )
+    assert (
+        contract.lowering_metadata["static_signature"] == "left_shape:rank1;right_shape:rank1;mode"
+    )
+    assert contract.shape_rule is not None
+    assert (
+        contract.shape_rule((left, right, "same")) == np.correlate(left, right, mode="same").shape
+    )
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((left, right, "same")) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((left, right, "same")) == ((4,), (3,), "same")
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(contract.identity)
+
+    rule = program_ad_signal_correlate_derivative_rule(left.shape, right.shape, mode="same")
+    assert rule.name == "program_ad_signal_correlate_left4_right3_mode_same_direct_rule"
+    np.testing.assert_allclose(rule.value_fn(values), np.correlate(left, right, mode="same"))
+    np.testing.assert_allclose(
+        rule.jvp_rule(values, tangent),
+        np.correlate(tangent_left, right, mode="same")
+        + np.correlate(left, tangent_right, mode="same"),
+    )
+
+    expected_vjp = np.zeros(values.size, dtype=np.float64)
+    for source_index in range(values.size):
+        basis_left = np.zeros(left.size, dtype=np.float64)
+        basis_right = np.zeros(right.size, dtype=np.float64)
+        if source_index < left.size:
+            basis_left[source_index] = 1.0
+        else:
+            basis_right[source_index - left.size] = 1.0
+        expected_vjp[source_index] = np.sum(
+            (
+                np.correlate(basis_left, right, mode="same")
+                + np.correlate(left, basis_right, mode="same")
+            )
+            * cotangent
+        )
+    np.testing.assert_allclose(rule.vjp_rule(values, cotangent), expected_vjp)
+
+
+def test_program_ad_signal_correlate_batching_rule_maps_outer_axis() -> None:
+    """Signal correlate batching should map left operands with static references."""
+
+    contract = primitive_contract_for("scpn.program_ad.signal:correlate")
+    assert contract.batching_rule is not None
+
+    def correlate_fn(left: np.ndarray, right: np.ndarray, mode: str) -> np.ndarray:
+        return np.correlate(left, right, mode=mode)
+
+    left_batch = np.array(
+        [[1.0, -2.0, 0.5, 3.0], [-1.5, 0.25, 2.0, -0.75]],
+        dtype=np.float64,
+    )
+    right = np.array([0.25, -0.75, 1.5], dtype=np.float64)
+    expected = np.stack(
+        [np.correlate(row, right, mode="valid") for row in left_batch],
+        axis=0,
+    )
+
+    np.testing.assert_allclose(
+        contract.batching_rule(
+            correlate_fn,
+            (left_batch, right, "valid"),
+            (0, None, None),
+            0,
+        ),
+        expected,
+    )
+    np.testing.assert_allclose(
+        contract.batching_rule(
+            correlate_fn,
+            (left_batch, right, "valid"),
+            (0, None, None),
+            1,
+        ),
+        expected.T,
+    )
+
+    with pytest.raises(ValueError, match="keeps right operand and mode static"):
+        contract.batching_rule(
+            correlate_fn,
+            (left_batch, right, "valid"),
+            (0, 0, None),
+            0,
+        )
+
+
 def test_program_ad_correlate_fails_closed_invalid_contracts() -> None:
     """Program AD np.correlate should reject invalid rank, mode, and empty operands."""
 
@@ -12187,6 +12300,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert (
         scpn.program_ad_signal_convolve_derivative_rule
         is program_ad_signal_convolve_derivative_rule
+    )
+    assert (
+        scpn.program_ad_signal_correlate_derivative_rule
+        is program_ad_signal_correlate_derivative_rule
     )
     assert (
         scpn.program_ad_array_take_along_axis_derivative_rule

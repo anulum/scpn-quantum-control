@@ -3826,6 +3826,149 @@ def program_ad_signal_convolve_derivative_rule(
     )
 
 
+def _program_ad_signal_correlate_static_shape(role: str, shape: Sequence[int]) -> tuple[int, ...]:
+    normalised = _program_ad_array_normalise_static_shape(f"signal correlate {role}", shape)
+    if len(normalised) != 1:
+        raise ValueError("program AD signal correlate direct rule requires rank-1 operands")
+    if normalised[0] <= 0:
+        raise ValueError("program AD signal correlate direct rule requires non-empty operands")
+    return normalised
+
+
+def _program_ad_signal_correlate_split_source(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    vector = _as_real_numeric_array(f"program AD signal correlate {role}", values).reshape(-1)
+    left_size = _program_ad_array_static_size(left_shape)
+    expected_size = _program_ad_signal_convolve_source_size(left_shape, right_shape)
+    if vector.size != expected_size:
+        raise ValueError(
+            f"program AD signal correlate direct rule requires {expected_size} {role} values"
+        )
+    return vector[:left_size], vector[left_size:]
+
+
+def _program_ad_signal_correlate_output_size(
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+    mode: Literal["full", "same", "valid"],
+) -> int:
+    left = np.zeros(left_shape[0], dtype=np.float64)
+    right = np.zeros(right_shape[0], dtype=np.float64)
+    return int(np.correlate(left, right, mode=mode).size)
+
+
+def _program_ad_signal_correlate_direct_value(
+    values: NDArray[np.float64],
+    *,
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+    mode: Literal["full", "same", "valid"],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_signal_correlate_split_source(
+        "values", values, left_shape=left_shape, right_shape=right_shape
+    )
+    return np.correlate(left, right, mode=mode).astype(np.float64, copy=False)
+
+
+def _program_ad_signal_correlate_direct_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+    mode: Literal["full", "same", "valid"],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_signal_correlate_split_source(
+        "values", values, left_shape=left_shape, right_shape=right_shape
+    )
+    tangent_left, tangent_right = _program_ad_signal_correlate_split_source(
+        "tangent", tangent, left_shape=left_shape, right_shape=right_shape
+    )
+    return (
+        np.correlate(tangent_left, right, mode=mode) + np.correlate(left, tangent_right, mode=mode)
+    ).astype(np.float64, copy=False)
+
+
+def _program_ad_signal_correlate_direct_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    left_shape: tuple[int, ...],
+    right_shape: tuple[int, ...],
+    mode: Literal["full", "same", "valid"],
+) -> NDArray[np.float64]:
+    left, right = _program_ad_signal_correlate_split_source(
+        "values", values, left_shape=left_shape, right_shape=right_shape
+    )
+    cotangent_vector = _as_real_numeric_array(
+        "program AD signal correlate cotangent", cotangent
+    ).reshape(-1)
+    output_size = _program_ad_signal_correlate_output_size(left_shape, right_shape, mode)
+    if cotangent_vector.size != output_size:
+        raise ValueError("program AD signal correlate VJP requires cotangent matching output size")
+
+    left_adjoint = np.zeros(left.size, dtype=np.float64)
+    right_adjoint = np.zeros(right.size, dtype=np.float64)
+    for index in range(left.size):
+        basis = np.zeros(left.size, dtype=np.float64)
+        basis[index] = 1.0
+        left_adjoint[index] = float(
+            np.sum(np.correlate(basis, right, mode=mode) * cotangent_vector)
+        )
+    for index in range(right.size):
+        basis = np.zeros(right.size, dtype=np.float64)
+        basis[index] = 1.0
+        right_adjoint[index] = float(
+            np.sum(np.correlate(left, basis, mode=mode) * cotangent_vector)
+        )
+    return np.concatenate([left_adjoint, right_adjoint])
+
+
+def program_ad_signal_correlate_derivative_rule(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+    *,
+    mode: object = "valid",
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.correlate`` operands."""
+
+    left = _program_ad_signal_correlate_static_shape("left", left_shape)
+    right = _program_ad_signal_correlate_static_shape("right", right_shape)
+    mode_value = _normalise_correlate_mode(mode)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_signal_correlate_direct_value(
+            values, left_shape=left, right_shape=right, mode=mode_value
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_signal_correlate_direct_jvp(
+            values, tangent, left_shape=left, right_shape=right, mode=mode_value
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_signal_correlate_direct_vjp(
+            values, cotangent, left_shape=left, right_shape=right, mode=mode_value
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_signal_correlate_"
+            f"left{left[0]}_right{right[0]}_mode_{mode_value}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def _normalise_correlate_mode(mode: object) -> Literal["full", "same", "valid"]:
     if not isinstance(mode, str) or mode not in {"full", "same", "valid"}:
         raise ValueError("program AD np.correlate mode must be 'full', 'same', or 'valid'")
@@ -3861,6 +4004,7 @@ def _trace_correlate(
     mode: object = "valid",
 ) -> TraceADArray:
     mode_value = _normalise_correlate_mode(mode)
+    _require_program_ad_signal_contract("correlate", (left, right, mode_value))
     left_values = _normalise_correlate_operand("left", left, context)
     right_values = tuple(reversed(_normalise_correlate_operand("right", right, context)))
     full_items: list[TraceADScalar] = []
@@ -9495,7 +9639,7 @@ _PROGRAM_AD_SIGNAL_PRIMITIVE_NAMESPACE = "scpn.program_ad.signal"
 _PROGRAM_AD_SIGNAL_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_SIGNAL_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SIGNAL_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("convolve",)
+    for name in ("convolve", "correlate")
 }
 
 _PROGRAM_AD_ELEMENTWISE_PRIMITIVE_NAMESPACE = "scpn.program_ad.elementwise"
@@ -14234,9 +14378,9 @@ def _program_ad_signal_direct_jvp(
 
 
 def _program_ad_signal_derivative_rule(name: str) -> CustomDerivativeRule:
-    if name == "convolve":
+    if name in {"convolve", "correlate"}:
         return CustomDerivativeRule(
-            name="program_ad_signal_convolve_trace_contract",
+            name=f"program_ad_signal_{name}_trace_contract",
             value_fn=_program_ad_signal_direct_value,
             jvp_rule=_program_ad_signal_direct_jvp,
         )
@@ -14286,6 +14430,29 @@ def _program_ad_signal_convolve_static_arguments(
     return left_shape, right_shape, mode
 
 
+def _program_ad_signal_correlate_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], tuple[int, ...], Literal["full", "same", "valid"]]:
+    if len(args) != 3:
+        raise ValueError("program AD signal correlate requires left, right, and mode")
+    left_shape = _program_ad_signal_shape_of("correlate", args[0])
+    right_shape = _program_ad_signal_shape_of("correlate", args[1])
+    mode = _normalise_correlate_mode(args[2])
+    return left_shape, right_shape, mode
+
+
+def _program_ad_signal_correlate_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    left_shape, right_shape, mode = _program_ad_signal_correlate_static_parts(args)
+    return (_program_ad_signal_correlate_output_size(left_shape, right_shape, mode),)
+
+
+def _program_ad_signal_correlate_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    left_shape, right_shape, mode = _program_ad_signal_correlate_static_parts(args)
+    return left_shape, right_shape, mode
+
+
 def _program_ad_signal_batching_rule(
     function: Callable[..., object],
     args: tuple[object, ...],
@@ -14313,20 +14480,35 @@ def _program_ad_signal_batching_rule(
 
 
 def _program_ad_signal_lowering_metadata(name: str) -> Mapping[str, str]:
-    if name != "convolve":
+    factory_names = {
+        "convolve": "program_ad_signal_convolve_derivative_rule",
+        "correlate": "program_ad_signal_correlate_derivative_rule",
+    }
+    if name not in factory_names:
         raise ValueError(f"unsupported program AD signal primitive {name}")
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff signal dialect interchange; executable lowering blocked",
-        "mlir_op": "scpn_diff.signal.convolve",
+        "mlir_op": f"scpn_diff.signal.{name}",
         "llvm": "blocked_until_executable_signal_lowering",
         "rust": "blocked_until_polyglot_signal_ad",
         "static_argument_rule": "required",
-        "static_derivative_factory": "program_ad_signal_convolve_derivative_rule",
+        "static_derivative_factory": factory_names[name],
         "static_signature": "left_shape:rank1;right_shape:rank1;mode",
         "nondifferentiable_boundary": "rank1_nonempty_static_mode_window",
         "nondifferentiable_boundary_policy": "fail_closed",
     }
+
+
+_PROGRAM_AD_SIGNAL_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "convolve": _program_ad_signal_convolve_shape,
+    "correlate": _program_ad_signal_correlate_shape,
+}
+
+_PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "convolve": _program_ad_signal_convolve_static_arguments,
+    "correlate": _program_ad_signal_correlate_static_arguments,
+}
 
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -15017,9 +15199,9 @@ def _register_program_ad_signal_primitive_contracts() -> None:
                 derivative_rule=_program_ad_signal_derivative_rule(name),
                 batching_rule=_program_ad_signal_batching_rule,
                 lowering_metadata=_program_ad_signal_lowering_metadata(name),
-                shape_rule=_program_ad_signal_convolve_shape,
+                shape_rule=_PROGRAM_AD_SIGNAL_SHAPE_RULES[name],
                 dtype_rule=_program_ad_signal_convolve_dtype_rule,
-                static_argument_rule=_program_ad_signal_convolve_static_arguments,
+                static_argument_rule=_PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES[name],
                 nondifferentiable_policy=_PROGRAM_AD_SIGNAL_POLICY,
                 effect="pure",
             )
@@ -22039,6 +22221,7 @@ __all__ = [
     "program_ad_elementwise_binary_derivative_rule",
     "program_ad_interpolation_interp_derivative_rule",
     "program_ad_signal_convolve_derivative_rule",
+    "program_ad_signal_correlate_derivative_rule",
     "program_ad_linalg_diag_derivative_rule",
     "program_ad_linalg_diagflat_derivative_rule",
     "program_ad_linalg_eig_derivative_rule",
