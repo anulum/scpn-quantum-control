@@ -15,7 +15,7 @@
 | Python modules | 766 |
 | Rust crate | 1 (PyO3 0.25, **55 bindings**, 27 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
-| Tests | CI-gated suite (97%+ coverage) |
+| Tests | CI-gated suite (91.5% aggregate coverage gate) |
 | Lines of code | ~30,000 |
 | Subpackages | 28 domain package families |
 | Research gems | See generated capability inventory and module-level docs |

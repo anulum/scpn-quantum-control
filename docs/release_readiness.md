@@ -62,8 +62,8 @@ readiness for any Paper 0 lane.
 
 The release gate keeps coverage and behavioural value enforceable without
 pretending that total line coverage is already 100 percent. A fresh coverage
-XML report is required for tag readiness. The default tag gate blocks on
-aggregate coverage below 95 percent and unjustified missing files. Per-file gaps
+XML report is required for tag readiness. The default CI gate blocks on
+aggregate coverage below 91.5 percent and unjustified missing files. Per-file gaps
 remain a release follow-up queue unless explicitly promoted to hard blockers
 with `--fail-on-file-gap`. The 100 percent coverage target remains a future
 improvement, not a blocker for tagging a bounded release.

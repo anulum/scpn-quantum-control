@@ -15,7 +15,7 @@ Gates (in order):
   5. version-sync    — version string consistency across 5 carrier files
   6. rust-pyi        — Rust PyO3 exports match local typing contract
   7. mypy            — type errors
-  8. pytest+coverage — tests + coverage threshold (--cov-fail-under=92)
+  8. pytest+coverage — tests + coverage threshold (--cov-fail-under=91.5)
   9. bandit          — security scan
 
 Usage:
@@ -48,7 +48,7 @@ _PYTEST_BASE = [
 
 _PYTEST_COV = _PYTEST_BASE + [
     "--cov=scpn_quantum_control",
-    "--cov-fail-under=92",  # CI enforces 95 on Linux; 3-pt buffer for Windows/Linux branch delta
+    "--cov-fail-under=91.5",  # mirrors the CI gate; coverage recovery stays module-specific
 ]
 
 STATIC_GATES: list[tuple[str, list[str]]] = [

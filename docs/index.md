@@ -77,7 +77,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Research modules | See generated capability inventory for current package counts |
 | IBM hardware evidence | Legacy ibm_fez artifact rows + 342-circuit ibm_kingston Phase 1 DLA-parity raw-count dataset |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6, reproduced from `data/phase1_dla_parity/` |
-| Test suite | CI-gated suite, 97%+ coverage |
+| Test suite | CI-gated suite, 91.5% aggregate coverage gate |
 | Python modules | 766 Python source modules + 1 Rust crate (55 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map

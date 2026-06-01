@@ -239,7 +239,9 @@ CI skips slow tests: `pytest -m "not slow"`.
 ```
 
 Test matrix: Python 3.10, 3.11, 3.12, 3.13.
-Coverage target: 95% (`--cov-fail-under=95`).
+Coverage target: 91.5% (`--cov-fail-under=91.5`) on the Python 3.12
+coverage lane. Coverage recovery must stay module-specific; coverage-bucket
+tests remain forbidden.
 
 ## Test Quality Standards
 

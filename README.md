@@ -33,7 +33,7 @@
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
 **Version:** 0.9.7
-**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | generated capability inventory below | 97%+ coverage | IBM Heron r2 evidence ledgered
+**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | generated capability inventory below | CI coverage gate 91.5% | IBM Heron r2 evidence ledgered
 
 <!-- capability-snapshot:start -->
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
@@ -229,7 +229,7 @@ information scrambles*, and *whether the system thermalises*.
 | Source package surface | **697** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers; **470** of these are generated Paper 0 source-accounting validation modules. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and Paper 0 validation families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
-| Test suite | CI-gated suite with 97%+ coverage; current tracked test-function count is **9,139** by `tests/test_*.py` collection. |
+| Test suite | CI-gated suite with a 91.5% aggregate coverage gate after module-specific test-policy cleanup; current tracked test-function count is **9,139** by `tests/test_*.py` collection. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 
 ### Exact-Simulation Wall-Time (Not broad quantum-advantage claim)
