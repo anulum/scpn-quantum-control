@@ -90,6 +90,7 @@ from scpn_quantum_control import (
     compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit,
     make_executable_ad_kernel_batching_rule,
     make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
+    make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform,
     make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
     make_matrix_2x2_solve_native_llvm_jit_primitive_transform,
     make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
@@ -330,6 +331,15 @@ real-simple nonsymmetric 2x2 spectral primitive over row-major matrix inputs
 with exact closed-form eigenvalue, JVP, and VJP kernels; complex spectra,
 repeated eigenvalues, and the public vector-output gradient helper remain
 fail-closed.
+The optional `scpn_quantum_engine` Rust extension mirrors this bounded
+eigenvalue primitive through `matrix_2x2_eigenvalues_value()`,
+`matrix_2x2_eigenvalues_jvp()`, `matrix_2x2_eigenvalues_vjp()`, and
+`matrix_2x2_eigenvalues_sum_gradient()`. The
+`make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform()` helper
+binds the same real-simple row-major 2x2 signature into the compiler registry
+with shape, dtype, static-signature, batching, native LLVM/JIT, and verified
+Rust PyO3 metadata. Complex spectra and repeated eigenvalues remain
+fail-closed for both compiler and Rust backend claims.
 `compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit()` extends that native
 spectral compiler lane to the bounded real-simple nonsymmetric 2x2 eigensystem
 chart with exact closed-form eigenvalue/right-eigenvector value, JVP, and VJP
@@ -509,7 +519,7 @@ only for primitives that carry verified Rust backend metadata with exact
 static-signature parity and explicit Rust function metadata. LLVM/JIT native
 backend availability is recognized only for primitives that carry verified
 `native_llvm_jit` lowering metadata. Rust differentiated backend claims remain
-fail-closed outside the bounded `rust_pyo3` eigensystem, quadratic-form,
+fail-closed outside the bounded `rust_pyo3` eigenvalue, eigensystem, quadratic-form,
 matrix-trace, Frobenius-squared, vector squared-norm, and vector-dot contracts
 until native Rust lowering is implemented for each primitive.
 `compile_compiler_ad_transform_plan_to_mlir()`

@@ -179,6 +179,22 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Compiler-backed AD native parity
     m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigenvalues_value,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigenvalues_jvp,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigenvalues_vjp,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        compiler_ad::matrix_2x2_eigenvalues_sum_gradient,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
         compiler_ad::matrix_2x2_eigensystem_value,
         m
     )?)?;

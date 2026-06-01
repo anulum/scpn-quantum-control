@@ -24,11 +24,12 @@ fn py_value_error(error: String) -> PyErr {
     PyValueError::new_err(error)
 }
 
-fn checked_matrix_2x2_values(values: &[f64]) -> Result<[f64; 4], String> {
+fn checked_matrix_2x2_eigenvalues_values(
+    values: &[f64],
+    primitive: &str,
+) -> Result<[f64; 4], String> {
     if values.len() != 4 {
-        return Err(
-            "native matrix 2x2 eigensystem Rust kernel requires row-major matrix values".into(),
-        );
+        return Err(format!("{primitive} requires row-major matrix values"));
     }
     for (index, value) in values.iter().enumerate() {
         if !value.is_finite() {
@@ -39,10 +40,14 @@ fn checked_matrix_2x2_values(values: &[f64]) -> Result<[f64; 4], String> {
     let delta = checked[0] - checked[3];
     let discriminant = delta * delta + 4.0 * checked[1] * checked[2];
     if !discriminant.is_finite() || discriminant <= DISCRIMINANT_EPS {
-        return Err(
-            "native matrix 2x2 eigensystem Rust kernel requires real distinct eigenvalues".into(),
-        );
+        return Err(format!("{primitive} requires real distinct eigenvalues"));
     }
+    Ok(checked)
+}
+
+fn checked_matrix_2x2_values(values: &[f64]) -> Result<[f64; 4], String> {
+    let checked =
+        checked_matrix_2x2_eigenvalues_values(values, "native matrix 2x2 eigensystem Rust kernel")?;
     if checked[1].abs() <= UPPER_CHART_EPS {
         return Err(
             "native matrix 2x2 eigensystem Rust kernel requires a non-zero upper off-diagonal eigenvector chart"
@@ -91,6 +96,86 @@ fn eigensystem_geometry(values: &[f64; 4]) -> ([f64; 2], [[f64; 2]; 2], [f64; 2]
         [q_lower, q_upper],
         root,
     )
+}
+
+fn eigenvalues_geometry(values: &[f64; 4]) -> ([f64; 2], f64, f64) {
+    let [a, b, c, d] = *values;
+    let trace = a + d;
+    let delta = a - d;
+    let discriminant = delta * delta + 4.0 * b * c;
+    let root = discriminant.sqrt();
+    ([0.5 * (trace - root), 0.5 * (trace + root)], delta, root)
+}
+
+/// Evaluate bounded real-simple nonsymmetric 2x2 eigenvalues.
+pub fn matrix_2x2_eigenvalues_value_inner(values: &[f64]) -> Result<[f64; 2], String> {
+    let checked = checked_matrix_2x2_eigenvalues_values(
+        values,
+        "native matrix 2x2 eigenvalue Rust value kernel",
+    )?;
+    let (eigenvalues, _, _) = eigenvalues_geometry(&checked);
+    Ok(eigenvalues)
+}
+
+/// Apply the exact JVP for bounded real-simple nonsymmetric 2x2 eigenvalues.
+pub fn matrix_2x2_eigenvalues_jvp_inner(
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 2], String> {
+    let checked = checked_matrix_2x2_eigenvalues_values(
+        values,
+        "native matrix 2x2 eigenvalue Rust JVP kernel",
+    )?;
+    let tangent = checked_vector::<4>(
+        tangent,
+        "tangent",
+        "native matrix 2x2 eigenvalue Rust JVP kernel",
+    )?;
+    let [a, b, c, d] = checked;
+    let [ta, tb, tc, td] = tangent;
+    let trace_tangent = ta + td;
+    let delta = a - d;
+    let delta_tangent = ta - td;
+    let discriminant = delta * delta + 4.0 * b * c;
+    let root = discriminant.sqrt();
+    let discriminant_tangent = 2.0 * delta * delta_tangent + 4.0 * (tb * c + b * tc);
+    let root_tangent = discriminant_tangent / (2.0 * root);
+    Ok([
+        0.5 * (trace_tangent - root_tangent),
+        0.5 * (trace_tangent + root_tangent),
+    ])
+}
+
+/// Apply the exact VJP for bounded real-simple nonsymmetric 2x2 eigenvalues.
+pub fn matrix_2x2_eigenvalues_vjp_inner(
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<[f64; 4], String> {
+    let checked = checked_matrix_2x2_eigenvalues_values(
+        values,
+        "native matrix 2x2 eigenvalue Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<2>(
+        cotangent,
+        "cotangent",
+        "native matrix 2x2 eigenvalue Rust VJP kernel",
+    )?;
+    let [_, b, c, _] = checked;
+    let (_, delta, root) = eigenvalues_geometry(&checked);
+    let alpha = 0.5 * (cotangent[0] + cotangent[1]);
+    let beta = (cotangent[1] - cotangent[0]) / (4.0 * root);
+    let delta_term = 2.0 * delta * beta;
+    Ok([
+        alpha + delta_term,
+        4.0 * c * beta,
+        4.0 * b * beta,
+        alpha - delta_term,
+    ])
+}
+
+/// Sum-output gradient provenance helper for the vector-output eigenvalue primitive.
+pub fn matrix_2x2_eigenvalues_sum_gradient_inner(values: &[f64]) -> Result<[f64; 4], String> {
+    matrix_2x2_eigenvalues_vjp_inner(values, &[1.0; 2])
 }
 
 /// Evaluate the bounded real-simple nonsymmetric 2x2 eigensystem chart.
@@ -1211,6 +1296,60 @@ pub fn vector_squared_norm_gradient_inner(
     Ok(values.iter().map(|value| 2.0 * value).collect())
 }
 
+/// PyO3 wrapper for bounded Rust eigenvalue evaluation.
+#[pyfunction]
+pub fn matrix_2x2_eigenvalues_value<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_2x2_eigenvalues_value_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust eigenvalue JVP evaluation.
+#[pyfunction]
+pub fn matrix_2x2_eigenvalues_jvp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = matrix_2x2_eigenvalues_jvp_inner(values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust eigenvalue VJP evaluation.
+#[pyfunction]
+pub fn matrix_2x2_eigenvalues_vjp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = matrix_2x2_eigenvalues_vjp_inner(values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust eigenvalue sum-output gradient provenance.
+#[pyfunction]
+pub fn matrix_2x2_eigenvalues_sum_gradient<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_2x2_eigenvalues_sum_gradient_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
 /// PyO3 wrapper for bounded Rust eigensystem value evaluation.
 #[pyfunction]
 pub fn matrix_2x2_eigensystem_value<'py>(
@@ -1845,6 +1984,43 @@ mod tests {
                 "index {index}: left={left}, right={right}"
             );
         }
+    }
+
+    #[test]
+    fn matrix_2x2_eigenvalues_value_jvp_vjp_and_sum_gradient_match_closed_form() {
+        let values = [2.0, 0.25, 0.75, 1.0];
+        let tangent = [0.1, -0.2, 0.4, -0.3];
+        let cotangent = [1.25, -0.75];
+
+        assert_close(
+            &matrix_2x2_eigenvalues_value_inner(&values).unwrap(),
+            &[0.838_562_172_233_852_3, 2.161_437_827_766_147_5],
+        );
+        assert_close(
+            &matrix_2x2_eigenvalues_jvp_inner(&values, &tangent).unwrap(),
+            &[-0.213_389_341_902_768_15, 0.013_389_341_902_768_165],
+        );
+        assert_close(
+            &matrix_2x2_eigenvalues_vjp_inner(&values, &cotangent).unwrap(),
+            &[
+                -0.505_928_946_018_454_4,
+                -1.133_893_419_027_681_7,
+                -0.377_964_473_009_227_2,
+                1.005_928_946_018_454_4,
+            ],
+        );
+        assert_close(
+            &matrix_2x2_eigenvalues_sum_gradient_inner(&values).unwrap(),
+            &[1.0, 0.0, 0.0, 1.0],
+        );
+    }
+
+    #[test]
+    fn matrix_2x2_eigenvalues_boundaries_fail_closed() {
+        let nonreal = matrix_2x2_eigenvalues_value_inner(&[0.0, -1.0, 1.0, 0.0]).unwrap_err();
+        assert!(nonreal.contains("real distinct eigenvalues"));
+        let repeated = matrix_2x2_eigenvalues_value_inner(&[1.0, 0.0, 0.0, 1.0]).unwrap_err();
+        assert!(repeated.contains("real distinct eigenvalues"));
     }
 
     #[test]
