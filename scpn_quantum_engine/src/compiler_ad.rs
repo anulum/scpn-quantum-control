@@ -17,6 +17,7 @@ use crate::validation::{validate_contiguous_slice, validate_finite};
 const DISCRIMINANT_EPS: f64 = 1.0e-24;
 const UPPER_CHART_EPS: f64 = 1.0e-12;
 const MATRIX_2X2_DETERMINANT_EPS: f64 = 1.0e-12;
+const SYMMETRIC_2X2_SPD_EPS: f64 = 1.0e-12;
 
 fn py_value_error(error: String) -> PyErr {
     PyValueError::new_err(error)
@@ -820,6 +821,102 @@ pub fn matrix_2x2_solve_sum_gradient_inner(values: &[f64]) -> Result<[f64; 6], S
     matrix_2x2_solve_vjp_inner(values, &[1.0; 2])
 }
 
+fn checked_symmetric_2x2_values(
+    values: &[f64],
+    label: &str,
+    primitive: &str,
+) -> Result<[f64; 3], String> {
+    if values.len() != 3 {
+        return Err(format!(
+            "{primitive} requires upper-triangle symmetric 2x2 {label} values"
+        ));
+    }
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{primitive} {label} value {index} is not finite"));
+        }
+    }
+    Ok([values[0], values[1], values[2]])
+}
+
+fn cholesky_2x2_from_checked(values: &[f64; 3], primitive: &str) -> Result<[f64; 3], String> {
+    if values[0] <= SYMMETRIC_2X2_SPD_EPS {
+        return Err(format!(
+            "{primitive} requires a positive definite symmetric 2x2 matrix"
+        ));
+    }
+    let l00 = values[0].sqrt();
+    let l10 = values[1] / l00;
+    let schur = values[2] - l10 * l10;
+    if !schur.is_finite() || schur <= SYMMETRIC_2X2_SPD_EPS {
+        return Err(format!(
+            "{primitive} requires a positive definite symmetric 2x2 matrix"
+        ));
+    }
+    Ok([l00, l10, schur.sqrt()])
+}
+
+/// Evaluate lower-triangle Cholesky factors for an SPD symmetric 2x2 matrix.
+pub fn symmetric_2x2_cholesky_value_inner(values: &[f64]) -> Result<[f64; 3], String> {
+    let checked = checked_symmetric_2x2_values(
+        values,
+        "values",
+        "native symmetric 2x2 Cholesky Rust value kernel",
+    )?;
+    cholesky_2x2_from_checked(&checked, "native symmetric 2x2 Cholesky Rust value kernel")
+}
+
+/// Apply the exact JVP for SPD symmetric 2x2 Cholesky factors.
+pub fn symmetric_2x2_cholesky_jvp_inner(
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 3], String> {
+    let checked = checked_symmetric_2x2_values(
+        values,
+        "values",
+        "native symmetric 2x2 Cholesky Rust JVP kernel",
+    )?;
+    let tangent = checked_symmetric_2x2_values(
+        tangent,
+        "tangent",
+        "native symmetric 2x2 Cholesky Rust JVP kernel",
+    )?;
+    let [l00, l10, l11] =
+        cholesky_2x2_from_checked(&checked, "native symmetric 2x2 Cholesky Rust JVP kernel")?;
+    let tangent_l00 = tangent[0] / (2.0 * l00);
+    let tangent_l10 = tangent[1] / l00 - l10 * tangent_l00 / l00;
+    let tangent_l11 = (tangent[2] - 2.0 * l10 * tangent_l10) / (2.0 * l11);
+    Ok([tangent_l00, tangent_l10, tangent_l11])
+}
+
+/// Apply the exact VJP for SPD symmetric 2x2 Cholesky factors.
+pub fn symmetric_2x2_cholesky_vjp_inner(
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<[f64; 3], String> {
+    let checked = checked_symmetric_2x2_values(
+        values,
+        "values",
+        "native symmetric 2x2 Cholesky Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<3>(
+        cotangent,
+        "cotangent",
+        "native symmetric 2x2 Cholesky Rust VJP kernel",
+    )?;
+    let [l00, l10, l11] =
+        cholesky_2x2_from_checked(&checked, "native symmetric 2x2 Cholesky Rust VJP kernel")?;
+    let adjoint_schur = cotangent[2] / (2.0 * l11);
+    let adjoint_l10 = cotangent[1] - 2.0 * l10 * adjoint_schur;
+    let adjoint_l00 = cotangent[0] - adjoint_l10 * checked[1] / (l00 * l00);
+    Ok([adjoint_l00 / (2.0 * l00), adjoint_l10 / l00, adjoint_schur])
+}
+
+/// Return the sum-output gradient provenance for the vector-output 2x2 Cholesky.
+pub fn symmetric_2x2_cholesky_sum_gradient_inner(values: &[f64]) -> Result<[f64; 3], String> {
+    symmetric_2x2_cholesky_vjp_inner(values, &[1.0; 3])
+}
+
 fn checked_vector_dot_values(
     dimension: usize,
     values: &[f64],
@@ -1413,6 +1510,60 @@ pub fn matrix_2x2_solve_sum_gradient<'py>(
     Ok(PyArray1::from_vec(py, result.to_vec()))
 }
 
+/// PyO3 wrapper for bounded Rust SPD symmetric 2x2 Cholesky value evaluation.
+#[pyfunction]
+pub fn symmetric_2x2_cholesky_value<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = symmetric_2x2_cholesky_value_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust SPD symmetric 2x2 Cholesky JVP evaluation.
+#[pyfunction]
+pub fn symmetric_2x2_cholesky_jvp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = symmetric_2x2_cholesky_jvp_inner(values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust SPD symmetric 2x2 Cholesky VJP evaluation.
+#[pyfunction]
+pub fn symmetric_2x2_cholesky_vjp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = symmetric_2x2_cholesky_vjp_inner(values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust SPD symmetric 2x2 Cholesky sum-gradient provenance.
+#[pyfunction]
+pub fn symmetric_2x2_cholesky_sum_gradient<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = symmetric_2x2_cholesky_sum_gradient_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
 /// PyO3 wrapper for Rust vector dot value evaluation.
 #[pyfunction]
 pub fn vector_dot_value<'py>(
@@ -1876,6 +2027,54 @@ mod tests {
         let cotangent_count =
             matrix_2x2_solve_vjp_inner(&[2.0, -1.0, 0.5, 3.0, 1.5, -2.0], &[1.0]).unwrap_err();
         assert!(cotangent_count.contains("requires 2 cotangent value"));
+    }
+
+    #[test]
+    fn symmetric_2x2_cholesky_value_jvp_vjp_and_sum_gradient_match_closed_form() {
+        let values = [4.0, 1.0, 3.0];
+        let tangent = [0.2, -0.3, 0.4];
+        let cotangent = [1.25, -0.75, 0.5];
+
+        assert_close(
+            &symmetric_2x2_cholesky_value_inner(&values).unwrap(),
+            &[2.0, 0.5, 1.658_312_395_177_7],
+        );
+        assert_close(
+            &symmetric_2x2_cholesky_jvp_inner(&values, &tangent).unwrap(),
+            &[0.05, -0.162_5, 0.169_600_131_324_992_05],
+        );
+        assert_close(
+            &symmetric_2x2_cholesky_vjp_inner(&values, &cotangent).unwrap(),
+            &[
+                0.368_797_229_518_055_1,
+                -0.450_377_836_144_440_94,
+                0.150_755_672_288_881_81,
+            ],
+        );
+        assert_close(
+            &symmetric_2x2_cholesky_sum_gradient_inner(&values).unwrap(),
+            &[
+                0.206_344_459_036_110_23,
+                0.349_244_327_711_118_2,
+                0.301_511_344_577_763_63,
+            ],
+        );
+    }
+
+    #[test]
+    fn symmetric_2x2_cholesky_boundaries_fail_closed() {
+        let wrong_count = symmetric_2x2_cholesky_value_inner(&[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("upper-triangle symmetric 2x2 values"));
+        let non_finite =
+            symmetric_2x2_cholesky_sum_gradient_inner(&[4.0, f64::NAN, 3.0]).unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let non_spd = symmetric_2x2_cholesky_value_inner(&[1.0, 2.0, 1.0]).unwrap_err();
+        assert!(non_spd.contains("positive definite symmetric 2x2 matrix"));
+        let tangent_count = symmetric_2x2_cholesky_jvp_inner(&[4.0, 1.0, 3.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("upper-triangle symmetric 2x2 tangent values"));
+        let cotangent_count =
+            symmetric_2x2_cholesky_vjp_inner(&[4.0, 1.0, 3.0], &[1.0]).unwrap_err();
+        assert!(cotangent_count.contains("requires 3 cotangent value"));
     }
 
     #[test]

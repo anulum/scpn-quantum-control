@@ -7791,6 +7791,92 @@ def make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule(
     return lowering_rule
 
 
+def make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform(
+    identity: PrimitiveIdentity | str,
+    rule: CustomDerivativeRule,
+    *,
+    sample_values: Sequence[float] | np.ndarray,
+    config: CompilerADExecutableConfig | None = None,
+    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+) -> PrimitiveTransformRule:
+    """Create a complete Rust/PyO3 + native LLVM/JIT SPD 2x2 Cholesky contract."""
+
+    primitive_identity = PrimitiveIdentity.parse(identity)
+    if not isinstance(rule, CustomDerivativeRule):
+        raise ValueError("rule must be a CustomDerivativeRule")
+    compile_config = (
+        CompilerADExecutableConfig(backend="native_llvm_jit") if config is None else config
+    )
+    if compile_config.backend != "native_llvm_jit":
+        raise ValueError(
+            "native symmetric 2x2 Cholesky primitive transform requires backend='native_llvm_jit'"
+        )
+    values = _as_native_symmetric_2x2_cholesky_values("sample_values", sample_values)
+    tangent = (
+        None if sample_tangent is None else _as_finite_vector("sample_tangent", sample_tangent)
+    )
+    cotangent = (
+        None
+        if sample_cotangent is None
+        else _as_finite_vector("sample_cotangent", sample_cotangent)
+    )
+    kernel = compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
+        rule,
+        sample_values=values,
+        config=compile_config,
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+    static_signature = "primitive:cholesky;dimension:2;layout:upper_triangle"
+    return PrimitiveTransformRule(
+        identity=primitive_identity,
+        derivative_rule=rule,
+        batching_rule=make_executable_ad_kernel_batching_rule(kernel, method="value"),
+        lowering_rule=make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule(
+            sample_values=values,
+            config=compile_config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        ),
+        lowering_metadata={
+            "mlir": "available: executable scpn_diff MLIR-runtime primitive kernel",
+            "mlir_op": "scpn_diff.native_symmetric_2x2_cholesky",
+            "mlir_runtime_verification": (
+                "verified: native LLVM/JIT SPD symmetric 2x2 Cholesky JVP"
+            ),
+            "rust": (
+                "available: Rust PyO3 SPD symmetric 2x2 Cholesky value/JVP/VJP/sum-gradient kernel"
+            ),
+            "rust_backend": "rust_pyo3",
+            "rust_backend_verification": (
+                "verified: scpn_quantum_engine symmetric_2x2_cholesky "
+                "value/JVP/VJP/sum-gradient parity"
+            ),
+            "rust_backend_signature": static_signature,
+            "rust_backend_functions": (
+                "symmetric_2x2_cholesky_value,symmetric_2x2_cholesky_jvp,"
+                "symmetric_2x2_cholesky_vjp,symmetric_2x2_cholesky_sum_gradient"
+            ),
+            "llvm": "available: native LLVM MCJIT SPD symmetric 2x2 Cholesky AD kernel",
+            "jit": "available: native LLVM MCJIT SPD symmetric 2x2 Cholesky AD kernel",
+            "native_backend": "native_llvm_jit",
+            "native_backend_verification": (
+                "verified: native LLVM MCJIT SPD symmetric 2x2 Cholesky value/JVP/VJP"
+            ),
+            "static_derivative_factory": "native_symmetric_2x2_cholesky_llvm_jit",
+            "static_signature": static_signature,
+            "nondifferentiable_boundary": "non_spd_symmetric_2x2_cholesky",
+            "nondifferentiable_boundary_policy": "fail_closed",
+        },
+        shape_rule=lambda _args: (3,),
+        dtype_rule=lambda _args: "float64",
+        static_argument_rule=lambda args: args,
+        nondifferentiable_policy="symmetric_2x2_spd_cholesky_real_domain",
+        effect="pure",
+    )
+
+
 def compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
@@ -8812,6 +8898,7 @@ __all__ = [
     "make_scalar_quadratic_native_llvm_jit_lowering_rule",
     "make_scalar_unary_elementwise_native_llvm_jit_lowering_rule",
     "make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule",
+    "make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform",
     "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_primitive_transform",

@@ -95,6 +95,7 @@ from scpn_quantum_control import (
     make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform,
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
     make_matrix_trace_native_llvm_jit_primitive_transform,
+    make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform,
     make_vector_dot_native_llvm_jit_primitive_transform,
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
 )
@@ -379,6 +380,15 @@ positive-definite symmetric factorisation primitive over upper-triangle
 `[a00, a01, a11]` inputs with exact lower-triangle value, JVP, and VJP
 kernels; non-positive-definite matrices and the public vector-output gradient
 helper remain fail-closed.
+The optional `scpn_quantum_engine` Rust extension mirrors this Cholesky
+primitive through `symmetric_2x2_cholesky_value()`,
+`symmetric_2x2_cholesky_jvp()`, `symmetric_2x2_cholesky_vjp()`, and
+`symmetric_2x2_cholesky_sum_gradient()`. The
+`make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform()` helper binds
+the SPD Cholesky primitive into the registry with native LLVM/JIT lowering,
+primitive batching, positive-definite fail-closed boundaries, and verified Rust
+PyO3 metadata. The Rust sum-gradient export is provenance for the vector-output
+kernel; public `gradient()` remains scalar-output fail-closed.
 `compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit()` adds a bounded
 distinct-eigenvalue symmetric spectral primitive over upper-triangle
 `[a00, a01, a11]` inputs with exact closed-form value, JVP, and VJP kernels;
