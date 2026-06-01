@@ -153,6 +153,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_elementwise_binary_derivative_rule,
     program_ad_linalg_diag_derivative_rule,
     program_ad_linalg_diagflat_derivative_rule,
+    program_ad_linalg_eig_derivative_rule,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
     program_ad_linalg_solve_derivative_rule,
@@ -6865,22 +6866,80 @@ def test_program_ad_linalg_multi_dot_fails_closed_invalid_contracts() -> None:
         )
 
 
-def test_program_ad_linalg_spectral_operations_fail_closed_policy_boundary() -> None:
-    """Unsupported spectral linalg should require explicit primitive policies."""
+def test_program_ad_linalg_eig_matches_real_simple_eigensystem_differential() -> None:
+    """Program AD eig should differentiate real simple eigenvalues and eigenvectors."""
 
-    values = np.array([2.0, -0.5, -0.5, 1.5], dtype=np.float64)
+    matrix = np.array([[2.0, 0.25], [0.5, 1.25]], dtype=np.float64)
+    weights = np.array([[0.75, -1.25], [1.5, 0.5]], dtype=np.float64)
+    value_weights = np.array([1.25, -0.5], dtype=np.float64)
+    values = matrix.reshape(-1)
 
-    with pytest.raises(ValueError, match="spectral semantics require an explicit"):
+    eigenvalues, right_eigenvectors = np.linalg.eig(matrix)
+    eigenvalues = np.real(eigenvalues)
+    right_eigenvectors = np.real(right_eigenvectors)
+    left_eigenvector_rows = np.linalg.inv(right_eigenvectors)
+    expected = np.zeros_like(matrix)
+    for index, value_weight in enumerate(value_weights):
+        expected = expected + float(value_weight) * np.outer(
+            left_eigenvector_rows[index, :], right_eigenvectors[:, index]
+        )
+    for row in range(matrix.shape[0]):
+        for col in range(matrix.shape[1]):
+            basis = np.zeros_like(matrix)
+            basis[row, col] = 1.0
+            eigenvector_jvp = np.zeros_like(right_eigenvectors)
+            for column in range(matrix.shape[0]):
+                source = right_eigenvectors[:, column]
+                raw_column = np.zeros(matrix.shape[0], dtype=np.float64)
+                for other in range(matrix.shape[0]):
+                    if other == column:
+                        continue
+                    scale = float(left_eigenvector_rows[other, :] @ basis @ source) / float(
+                        eigenvalues[column] - eigenvalues[other]
+                    )
+                    raw_column = raw_column + scale * right_eigenvectors[:, other]
+                eigenvector_jvp[:, column] = raw_column - source * float(source.T @ raw_column)
+            expected[row, col] += float(np.sum(weights * eigenvector_jvp))
+
+    result = whole_program_value_and_grad(
+        lambda flat_values: (
+            value_weights @ np.linalg.eig(np.reshape(flat_values, (2, 2)))[0]
+            + np.sum(weights * np.linalg.eig(np.reshape(flat_values, (2, 2)))[1])
+        ),
+        values,
+    )
+
+    np.testing.assert_allclose(result.gradient, expected.reshape(-1), rtol=1.0e-10, atol=1.0e-10)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected.reshape(-1), rtol=1.0e-10, atol=1.0e-10
+    )
+
+
+def test_program_ad_linalg_eig_fails_closed_invalid_spectral_contracts() -> None:
+    """Program AD eig should reject complex, repeated, and defective spectra."""
+
+    with pytest.raises(ValueError, match="requires real eigenvalues"):
         whole_program_value_and_grad(
             lambda flat_values: np.sum(np.linalg.eig(np.reshape(flat_values, (2, 2)))[0]),
-            values,
+            np.array([0.0, -1.0, 1.0, 0.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires distinct eigenvalues"):
+        whole_program_value_and_grad(
+            lambda flat_values: np.sum(np.linalg.eig(np.reshape(flat_values, (2, 2)))[0]),
+            np.eye(2, dtype=np.float64).reshape(-1),
+        )
+
+    with pytest.raises(ValueError, match="requires a square matrix"):
+        whole_program_value_and_grad(
+            lambda flat_values: np.sum(np.linalg.eig(np.reshape(flat_values, (2, 3)))[0]),
+            np.arange(1.0, 7.0, dtype=np.float64),
         )
 
 
 def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
     """Supported program AD linalg primitives should expose registry contracts."""
 
-    for name in ("det", "inv", "solve", "matrix_power", "multi_dot"):
+    for name in ("det", "inv", "solve", "matrix_power", "multi_dot", "eig"):
         identity = PrimitiveIdentity("scpn.program_ad.linalg", name, "1")
         contract = primitive_contract_for(identity)
         assert contract.identity == identity
@@ -6920,6 +6979,7 @@ def test_program_ad_linalg_nondifferentiable_boundary_metadata_is_explicit() -> 
         "solve": "singular_or_incompatible_linear_system",
         "matrix_power": "negative_power_singular_matrix",
         "multi_dot": "static_shape_alignment",
+        "eig": "real_simple_diagonalizable_eigensystem",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(f"scpn.program_ad.linalg:{name}").lowering_metadata
@@ -7328,6 +7388,57 @@ def test_program_ad_linalg_static_derivative_factories_are_direct_kernels() -> N
         program_ad_linalg_matrix_power_derivative_rule(1.5)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="at least two shapes"):
         program_ad_linalg_multi_dot_derivative_rule(((2,),))
+
+    eig_rule = program_ad_linalg_eig_derivative_rule((2, 2))
+    assert eig_rule.vjp_rule is not None
+    eig_matrix = np.array([[2.0, 0.25], [0.5, 1.25]], dtype=np.float64)
+    eig_tangent = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
+    eig_values, eig_vectors = np.linalg.eig(eig_matrix)
+    eig_values = np.real(eig_values)
+    eig_vectors = np.real(eig_vectors)
+    left_rows = np.linalg.inv(eig_vectors)
+    expected_eig_jvp = []
+    for index in range(eig_matrix.shape[0]):
+        expected_eig_jvp.append(float(left_rows[index, :] @ eig_tangent @ eig_vectors[:, index]))
+    expected_eig_vector_jvp = np.zeros_like(eig_vectors, dtype=np.float64)
+    for column in range(eig_matrix.shape[0]):
+        source = np.real(eig_vectors[:, column])
+        raw_column = np.zeros(eig_matrix.shape[0], dtype=np.float64)
+        for other in range(eig_matrix.shape[0]):
+            if other == column:
+                continue
+            scale = float(left_rows[other, :] @ eig_tangent @ source) / float(
+                eig_values[column] - eig_values[other]
+            )
+            raw_column = raw_column + scale * np.real(eig_vectors[:, other])
+        expected_eig_vector_jvp[:, column] = raw_column - source * float(source.T @ raw_column)
+    np.testing.assert_allclose(
+        eig_rule.value_fn(eig_matrix.reshape(-1)),
+        np.concatenate((np.real(eig_values), np.real(eig_vectors).reshape(-1))),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        eig_rule.jvp_rule(eig_matrix.reshape(-1), eig_tangent.reshape(-1)),
+        np.concatenate((np.array(expected_eig_jvp), expected_eig_vector_jvp.reshape(-1))),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    eig_cotangent = np.array([0.5, -1.25, 0.75, -0.25, 1.5, 0.25], dtype=np.float64)
+    expected_eig_vjp = np.zeros_like(eig_matrix)
+    for row in range(eig_matrix.shape[0]):
+        for col in range(eig_matrix.shape[1]):
+            basis = np.zeros_like(eig_matrix)
+            basis[row, col] = 1.0
+            expected_eig_vjp[row, col] = float(
+                eig_rule.jvp_rule(eig_matrix.reshape(-1), basis.reshape(-1)) @ eig_cotangent
+            )
+    np.testing.assert_allclose(
+        eig_rule.vjp_rule(eig_matrix.reshape(-1), eig_cotangent),
+        expected_eig_vjp.reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
 
     trace_rule = program_ad_linalg_trace_derivative_rule((2, 3), offset=1)
     assert trace_rule.name == "program_ad_linalg_trace_2x3_offset_1_direct_rule"

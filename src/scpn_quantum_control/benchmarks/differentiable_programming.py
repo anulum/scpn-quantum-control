@@ -219,6 +219,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
     multi_dot_right = np.array([1.25, 0.5], dtype=np.float64)
     eigh_weights = np.array([0.1, -0.2], dtype=np.float64)
     eigh_vector_weights = np.array([[0.05, -0.1], [0.2, 0.15]], dtype=np.float64)
+    eig_weights = np.array([0.025, -0.035], dtype=np.float64)
+    eig_vector_weights = np.array([[0.04, -0.02], [0.03, 0.05]], dtype=np.float64)
     eigvals_weights = np.array([0.05, -0.07], dtype=np.float64)
     eigvalsh_weights = np.array([0.2, -0.3], dtype=np.float64)
     svd_weights = np.array([0.15, -0.25], dtype=np.float64)
@@ -230,6 +232,7 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
         matrix = np.diag(trace_values[:2])
         rhs = trace_values[2:4]
         eigh_values, eigh_vectors = np.linalg.eigh(matrix)
+        eig_values, eig_vectors = np.linalg.eig(matrix)
         return (
             np.linalg.det(matrix)
             + np.sum(np.linalg.inv(matrix) * inverse_weights)
@@ -240,6 +243,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + np.linalg.multi_dot((multi_dot_left, matrix, multi_dot_right))
             + np.sum(eigh_values * eigh_weights)
             + np.sum(eigh_vectors * eigh_vector_weights)
+            + np.sum(eig_values * eig_weights)
+            + np.sum(eig_vectors * eig_vector_weights)
             + np.sum(np.linalg.eigvals(matrix) * eigvals_weights)
             + np.sum(np.linalg.eigvalsh(matrix) * eigvalsh_weights)
             + np.sum(np.linalg.svd(matrix, compute_uv=False) * svd_weights)
@@ -257,6 +262,7 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + 2.0 * power_weights[0, 0] * x0
             + multi_dot_left[0] * multi_dot_right[0]
             + eigh_weights[0]
+            + eig_weights[0]
             + eigvals_weights[0]
             + eigvalsh_weights[0]
             + svd_weights[1]
@@ -269,6 +275,7 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + 2.0 * power_weights[1, 1] * x1
             + multi_dot_left[1] * multi_dot_right[1]
             + eigh_weights[1]
+            + eig_weights[1]
             + eigvals_weights[1]
             + eigvalsh_weights[1]
             + svd_weights[0]
@@ -388,6 +395,8 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
     power_weights = np.array([[0.5, 0.0], [0.0, -0.25]], dtype=np.float64)
     eigh_weights = np.array([0.1, -0.2], dtype=np.float64)
     eigh_vector_weights = np.array([[0.05, -0.1], [0.2, 0.15]], dtype=np.float64)
+    eig_weights = np.array([0.025, -0.035], dtype=np.float64)
+    eig_vector_weights = np.array([[0.04, -0.02], [0.03, 0.05]], dtype=np.float64)
     eigvals_weights = np.array([0.05, -0.07], dtype=np.float64)
     eigvalsh_weights = np.array([0.2, -0.3], dtype=np.float64)
     svd_weights = np.array([0.15, -0.25], dtype=np.float64)
@@ -397,6 +406,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
         matrix = np.diag(trace_values[:2])
         rhs = trace_values[2:4]
         eigh_values, eigh_vectors = np.linalg.eigh(matrix)
+        eig_values, eig_vectors = np.linalg.eig(matrix)
         return (
             np.linalg.det(matrix)
             + np.sum(np.linalg.inv(matrix) * inverse_weights)
@@ -404,6 +414,8 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
             + np.sum(np.linalg.matrix_power(matrix, 2) * power_weights)
             + np.sum(eigh_values * eigh_weights)
             + np.sum(eigh_vectors * eigh_vector_weights)
+            + np.sum(eig_values * eig_weights)
+            + np.sum(eig_vectors * eig_vector_weights)
             + np.sum(np.linalg.eigvals(matrix) * eigvals_weights)
             + np.sum(np.linalg.eigvalsh(matrix) * eigvalsh_weights)
             + np.sum(np.linalg.svd(matrix, compute_uv=False) * svd_weights)
@@ -414,6 +426,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
         matrix = jnp.diag(raw_values[:2])
         rhs = raw_values[2:4]
         eigh_values, eigh_vectors = jnp.linalg.eigh(matrix)
+        eig_values, eig_vectors = jnp.linalg.eig(matrix)
         return (
             jnp.linalg.det(matrix)
             + jnp.sum(jnp.linalg.inv(matrix) * jnp.asarray(inverse_weights))
@@ -421,6 +434,8 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
             + jnp.sum(jnp.linalg.matrix_power(matrix, 2) * jnp.asarray(power_weights))
             + jnp.sum(eigh_values * jnp.asarray(eigh_weights))
             + jnp.sum(eigh_vectors * jnp.asarray(eigh_vector_weights))
+            + jnp.sum(jnp.real(eig_values) * jnp.asarray(eig_weights))
+            + jnp.sum(jnp.real(eig_vectors) * jnp.asarray(eig_vector_weights))
             + jnp.sum(jnp.real(jnp.linalg.eigvals(matrix)) * jnp.asarray(eigvals_weights))
             + jnp.sum(jnp.linalg.eigvalsh(matrix) * jnp.asarray(eigvalsh_weights))
             + jnp.sum(jnp.linalg.svd(matrix, compute_uv=False) * jnp.asarray(svd_weights))

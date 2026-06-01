@@ -1707,6 +1707,11 @@ class TraceADArray:
                 raise ValueError("program AD np.linalg.multi_dot supports one operand sequence")
             _require_program_ad_linalg_contract("multi_dot", args)
             return _trace_multi_dot(args[0], self.context)
+        if func is np.linalg.eig:
+            if len(args) != 1 or kwargs:
+                raise ValueError("program AD np.linalg.eig supports one matrix")
+            _require_program_ad_linalg_contract("eig", (args[0],))
+            return _trace_eig(args[0], self.context)
         if func is np.linalg.eigh:
             if len(args) == 2 and not kwargs:
                 matrix, uplo = args
@@ -1779,8 +1784,6 @@ class TraceADArray:
             cutoff = _program_ad_linalg_normalise_rcond(rtol if rtol is not None else rcond)
             _require_program_ad_linalg_contract("pinv", (matrix,))
             return _trace_pinv(matrix, self.context, rcond=cutoff)
-        if func in {np.linalg.eig}:
-            _raise_spectral_linalg_boundary(func.__name__)
         if func in {np.argmax, np.argmin}:
             _raise_index_selection_boundary()
         if func is np.sort:
@@ -4278,6 +4281,90 @@ def _trace_eigvals(matrix: object, context: _WholeProgramTraceContext) -> TraceA
     return TraceADArray(tuple(items), (rows,), context)
 
 
+def _program_ad_linalg_eig_eigenvector_jvp_matrix(
+    eigenvalues: NDArray[np.float64],
+    right_eigenvectors: NDArray[np.float64],
+    left_eigenvector_rows: NDArray[np.float64],
+    tangent_matrix: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    size = eigenvalues.size
+    tangent = np.zeros_like(right_eigenvectors, dtype=np.float64)
+    for column in range(size):
+        source: NDArray[np.float64] = np.asarray(right_eigenvectors[:, column], dtype=np.float64)
+        raw_column: NDArray[np.float64] = np.zeros(size, dtype=np.float64)
+        for other in range(size):
+            if other == column:
+                continue
+            scale = float(left_eigenvector_rows[other, :] @ tangent_matrix @ source) / float(
+                eigenvalues[column] - eigenvalues[other]
+            )
+            raw_column = raw_column + scale * np.asarray(
+                right_eigenvectors[:, other], dtype=np.float64
+            )
+        tangent[:, column] = raw_column - source * float(source.T @ raw_column)
+    return tangent
+
+
+def _trace_eig(
+    matrix: object, context: _WholeProgramTraceContext
+) -> tuple[TraceADArray, TraceADArray]:
+    array = _coerce_trace_array(matrix, context)
+    if array.ndim != 2:
+        raise ValueError("program AD np.linalg.eig requires a rank-2 matrix")
+    rows, cols = array.shape
+    if rows != cols:
+        raise ValueError("program AD np.linalg.eig requires a square matrix")
+    primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
+    eigenvalues, right_eigenvectors, left_eigenvector_rows = (
+        _program_ad_linalg_real_simple_eig_decomposition_from_matrix("eig", primal)
+    )
+    tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
+        rows, cols, context.parameter_count
+    )
+    input_names = tuple(item.name for item in array._items)
+    eigenvalue_items: list[TraceADScalar] = []
+    eigenvector_tangents = tuple(
+        _program_ad_linalg_eig_eigenvector_jvp_matrix(
+            eigenvalues, right_eigenvectors, left_eigenvector_rows, tangent_tensor[:, :, index]
+        )
+        for index in range(context.parameter_count)
+    )
+    for index, eigenvalue in enumerate(eigenvalues):
+        tangent = np.einsum(
+            "i,j,ijp->p",
+            left_eigenvector_rows[index, :],
+            right_eigenvectors[:, index],
+            tangent_tensor,
+        )
+        eigenvalue_items.append(
+            context.make(
+                f"linalg:eig:eigenvalue:{rows}x{cols}:{index}",
+                input_names,
+                float(eigenvalue),
+                np.asarray(tangent, dtype=np.float64),
+            )
+        )
+    eigenvector_items: list[TraceADScalar] = []
+    for row in range(rows):
+        for col in range(cols):
+            tangent = np.array(
+                [eigenvector_tangent[row, col] for eigenvector_tangent in eigenvector_tangents],
+                dtype=np.float64,
+            )
+            eigenvector_items.append(
+                context.make(
+                    f"linalg:eig:eigenvector:{rows}x{cols}:{col}:{row}",
+                    input_names,
+                    float(right_eigenvectors[row, col]),
+                    tangent,
+                )
+            )
+    return (
+        TraceADArray(tuple(eigenvalue_items), (rows,), context),
+        TraceADArray(tuple(eigenvector_items), (rows, cols), context),
+    )
+
+
 def _trace_eigh(
     matrix: object, context: _WholeProgramTraceContext, *, uplo: str = "L"
 ) -> tuple[TraceADArray, TraceADArray]:
@@ -5288,6 +5375,10 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_eigh_eigenvalue_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigh:eigenvector:"):
         return _program_adjoint_eigh_eigenvector_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eig:eigenvalue:"):
+        return _program_adjoint_eig_eigenvalue_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eig:eigenvector:"):
+        return _program_adjoint_eig_eigenvector_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigvalsh:"):
         return _program_adjoint_eigvalsh_contributions(node, node_by_name)
     if node.op.startswith("linalg:eigvals:"):
@@ -5442,6 +5533,136 @@ def _program_adjoint_eigvals_contributions(
         for row in range(rows)
         for col in range(rows)
     )
+
+
+def _program_adjoint_eig_eigenvalue_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one real-simple eig eigenvalue."""
+
+    matrix, _eigenvalues, right_eigenvectors, left_eigenvector_rows, eigenvalue_index = cast(
+        tuple[
+            NDArray[np.float64],
+            NDArray[np.float64],
+            NDArray[np.float64],
+            NDArray[np.float64],
+            int,
+        ],
+        _program_adjoint_eig_metadata(node, node_by_name, expect_eigenvector=False),
+    )
+    del matrix, _eigenvalues
+    size = right_eigenvectors.shape[0]
+    local_adjoint = np.outer(
+        left_eigenvector_rows[eigenvalue_index, :], right_eigenvectors[:, eigenvalue_index]
+    )
+    return tuple(
+        (
+            node.inputs[row * size + col],
+            float(local_adjoint[row, col]),
+        )
+        for row in range(size)
+        for col in range(size)
+    )
+
+
+def _program_adjoint_eig_eigenvector_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one real-simple eig eigenvector element."""
+
+    matrix, eigenvalues, right_eigenvectors, left_eigenvector_rows, eigenvalue_index, row_index = (
+        cast(
+            tuple[
+                NDArray[np.float64],
+                NDArray[np.float64],
+                NDArray[np.float64],
+                NDArray[np.float64],
+                int,
+                int,
+            ],
+            _program_adjoint_eig_metadata(node, node_by_name, expect_eigenvector=True),
+        )
+    )
+    del matrix
+    size = right_eigenvectors.shape[0]
+    local_adjoint = np.zeros((size, size), dtype=np.float64)
+    for tangent_row in range(size):
+        for tangent_col in range(size):
+            tangent_matrix = np.zeros((size, size), dtype=np.float64)
+            tangent_matrix[tangent_row, tangent_col] = 1.0
+            eigenvector_tangent = _program_ad_linalg_eig_eigenvector_jvp_matrix(
+                eigenvalues, right_eigenvectors, left_eigenvector_rows, tangent_matrix
+            )
+            local_adjoint[tangent_row, tangent_col] = eigenvector_tangent[
+                row_index, eigenvalue_index
+            ]
+    return tuple(
+        (
+            node.inputs[row * size + col],
+            float(local_adjoint[row, col]),
+        )
+        for row in range(size)
+        for col in range(size)
+    )
+
+
+def _program_adjoint_eig_metadata(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+    *,
+    expect_eigenvector: bool,
+) -> (
+    tuple[
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        int,
+    ]
+    | tuple[
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        int,
+        int,
+    ]
+):
+    parts = node.op.split(":")
+    expected_length = 6 if expect_eigenvector else 5
+    if len(parts) != expected_length:
+        raise ValueError("eig adjoint requires shape-qualified spectral metadata")
+    try:
+        rows, cols = (int(part) for part in parts[3].split("x", maxsplit=1))
+        eigenvalue_index = int(parts[4])
+        row_index = int(parts[5]) if expect_eigenvector else -1
+    except ValueError as exc:
+        raise ValueError("eig adjoint metadata is malformed") from exc
+    if rows != cols or rows <= 0 or rows * cols != len(node.inputs):
+        raise ValueError("eig adjoint requires flattened square matrix inputs")
+    if eigenvalue_index < 0 or eigenvalue_index >= rows:
+        raise ValueError("eig adjoint eigenvalue index is outside the spectrum")
+    if expect_eigenvector and (row_index < 0 or row_index >= rows):
+        raise ValueError("eig adjoint eigenvector row index is outside the matrix")
+    matrix = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    ).reshape(rows, cols)
+    eigenvalues, right_eigenvectors, left_eigenvector_rows = (
+        _program_ad_linalg_real_simple_eig_decomposition_from_matrix("eig adjoint replay", matrix)
+    )
+    if expect_eigenvector:
+        return (
+            matrix,
+            eigenvalues,
+            right_eigenvectors,
+            left_eigenvector_rows,
+            eigenvalue_index,
+            row_index,
+        )
+    return matrix, eigenvalues, right_eigenvectors, left_eigenvector_rows, eigenvalue_index
 
 
 def _program_adjoint_eigh_eigenvalue_contributions(
@@ -7819,6 +8040,7 @@ _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "diagflat",
         "matrix_power",
         "multi_dot",
+        "eig",
         "eigh",
         "eigvals",
         "eigvalsh",
@@ -13790,6 +14012,134 @@ def _program_ad_linalg_eigvals_vjp(
     return _program_ad_float64_vector_result(adjoint)
 
 
+def _program_ad_linalg_eig_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    _matrix, eigenvalues, right_eigenvectors, _left_eigenvector_rows = (
+        _program_ad_linalg_real_simple_eig_decomposition("eig", values)
+    )
+    return _program_ad_float64_vector_result(
+        np.concatenate((eigenvalues, right_eigenvectors.reshape(-1)))
+    )
+
+
+def _program_ad_linalg_eig_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix, eigenvalues, right_eigenvectors, left_eigenvector_rows = (
+        _program_ad_linalg_real_simple_eig_decomposition("eig", values)
+    )
+    tangent_matrix = _program_ad_linalg_square_matrix("eig tangent", tangent)
+    if tangent_matrix.shape != matrix.shape:
+        raise ValueError("program AD linalg eig tangent shape must match matrix shape")
+    eigenvalue_tangent = np.array(
+        [
+            float(left_eigenvector_rows[index, :] @ tangent_matrix @ right_eigenvectors[:, index])
+            for index in range(matrix.shape[0])
+        ],
+        dtype=np.float64,
+    )
+    eigenvector_tangent = _program_ad_linalg_eig_eigenvector_jvp_matrix(
+        eigenvalues, right_eigenvectors, left_eigenvector_rows, tangent_matrix
+    )
+    return _program_ad_float64_vector_result(
+        np.concatenate((eigenvalue_tangent, eigenvector_tangent.reshape(-1)))
+    )
+
+
+def _program_ad_linalg_eig_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    matrix = _program_ad_linalg_square_matrix("eig", values)
+    cotangent_vector = _as_real_numeric_array(
+        "program AD linalg eig cotangent", cotangent
+    ).reshape(-1)
+    output_size = matrix.shape[0] + matrix.size
+    if cotangent_vector.size != output_size:
+        raise ValueError("program AD linalg eig VJP cotangent size must match output")
+    adjoint = np.zeros_like(matrix, dtype=np.float64)
+    for row in range(matrix.shape[0]):
+        for col in range(matrix.shape[1]):
+            basis = np.zeros_like(matrix, dtype=np.float64)
+            basis[row, col] = 1.0
+            jvp = _program_ad_linalg_eig_jvp(values, basis.reshape(-1))
+            adjoint[row, col] = float(jvp @ cotangent_vector)
+    return _program_ad_float64_vector_result(adjoint)
+
+
+def program_ad_linalg_eig_derivative_rule(
+    matrix_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed real-simple eig primitive."""
+
+    static_shape = _program_ad_linalg_rank2_shape("eig", matrix_shape)
+    if static_shape[0] != static_shape[1]:
+        raise ValueError("program AD linalg eig derivative rule requires a square matrix")
+    matrix_size = _program_ad_shape_static_size(static_shape)
+    output_size = static_shape[0] + matrix_size
+
+    def split(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _as_real_numeric_array(f"program AD linalg eig {name}", values).reshape(-1)
+        if vector.size != matrix_size:
+            raise ValueError("program AD linalg eig direct rule values size must match shape")
+        return vector.reshape(static_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix = split("values", values)
+        eigenvalues, right_eigenvectors, _left_eigenvector_rows = (
+            _program_ad_linalg_real_simple_eig_decomposition_from_matrix("eig", matrix)
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate((eigenvalues, right_eigenvectors.reshape(-1)))
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        matrix = split("values", values)
+        tangent_matrix = split("tangent", tangent)
+        eigenvalues, right_eigenvectors, left_eigenvector_rows = (
+            _program_ad_linalg_real_simple_eig_decomposition_from_matrix("eig", matrix)
+        )
+        eigenvalue_tangent = np.array(
+            [
+                float(
+                    left_eigenvector_rows[index, :] @ tangent_matrix @ right_eigenvectors[:, index]
+                )
+                for index in range(static_shape[0])
+            ],
+            dtype=np.float64,
+        )
+        eigenvector_tangent = _program_ad_linalg_eig_eigenvector_jvp_matrix(
+            eigenvalues, right_eigenvectors, left_eigenvector_rows, tangent_matrix
+        )
+        return _program_ad_float64_vector_result(
+            np.concatenate((eigenvalue_tangent, eigenvector_tangent.reshape(-1)))
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        split("values", values)
+        cotangent_vector = _as_real_numeric_array(
+            "program AD linalg eig cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != output_size:
+            raise ValueError("program AD linalg eig VJP cotangent size must match output")
+        adjoint = np.zeros(static_shape, dtype=np.float64)
+        for row in range(static_shape[0]):
+            for col in range(static_shape[1]):
+                basis = np.zeros(static_shape, dtype=np.float64)
+                basis[row, col] = 1.0
+                adjoint[row, col] = float(jvp_rule(values, basis.reshape(-1)) @ cotangent_vector)
+        return _program_ad_float64_vector_result(adjoint)
+
+    return CustomDerivativeRule(
+        name=(f"program_ad_linalg_eig_{_program_ad_shape_signature(static_shape)}_direct_rule"),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def program_ad_linalg_eigvals_derivative_rule(
     matrix_shape: Sequence[int],
 ) -> CustomDerivativeRule:
@@ -14284,6 +14634,13 @@ def _program_ad_linalg_derivative_rule(name: str) -> CustomDerivativeRule:
             jvp_rule=_program_ad_linalg_trace_jvp,
             vjp_rule=_program_ad_linalg_trace_vjp,
         )
+    if name == "eig":
+        return CustomDerivativeRule(
+            name="program_ad_linalg_eig_direct_rule",
+            value_fn=_program_ad_linalg_eig_value,
+            jvp_rule=_program_ad_linalg_eig_jvp,
+            vjp_rule=_program_ad_linalg_eig_vjp,
+        )
     if name == "eigh":
         return CustomDerivativeRule(
             name="program_ad_linalg_eigh_direct_rule",
@@ -14478,6 +14835,13 @@ def _program_ad_linalg_eigh_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return (rows, rows, rows)
 
 
+def _program_ad_linalg_eig_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD linalg eig shape rule requires one matrix")
+    rows, _cols = _program_ad_linalg_require_matrix_shape("eig", args[0])
+    return (rows, rows, rows)
+
+
 def _program_ad_linalg_eigvalsh_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) != 1:
         raise ValueError("program AD linalg eigvalsh shape rule requires one matrix")
@@ -14622,6 +14986,7 @@ _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "diagflat": _program_ad_linalg_diagflat_shape,
     "matrix_power": _program_ad_linalg_matrix_power_shape,
     "multi_dot": _program_ad_linalg_multi_dot_shape,
+    "eig": _program_ad_linalg_eig_shape,
     "eigh": _program_ad_linalg_eigh_shape,
     "eigvals": _program_ad_linalg_eigvals_shape,
     "eigvalsh": _program_ad_linalg_eigvalsh_shape,
@@ -14638,6 +15003,7 @@ _PROGRAM_AD_LINALG_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
     "diagflat": _program_ad_linalg_diagflat_static_arguments,
     "matrix_power": _program_ad_linalg_matrix_power_static_arguments,
     "multi_dot": _program_ad_linalg_multi_dot_static_arguments,
+    "eig": _program_ad_linalg_no_static_arguments,
     "eigh": _program_ad_linalg_no_static_arguments,
     "eigvals": _program_ad_linalg_no_static_arguments,
     "eigvalsh": _program_ad_linalg_no_static_arguments,
@@ -14700,6 +15066,7 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
         "diagflat": "static_flattened_diagonal_offset_rank",
         "matrix_power": "negative_power_singular_matrix",
         "multi_dot": "static_shape_alignment",
+        "eig": "real_simple_diagonalizable_eigensystem",
         "eigh": "symmetric_matrix_distinct_eigenvalues",
         "eigvals": "real_simple_diagonalizable_spectrum",
         "eigvalsh": "symmetric_matrix_distinct_eigenvalues",
@@ -14763,6 +15130,13 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
                 "static_argument_rule": "required",
                 "static_derivative_factory": "program_ad_linalg_multi_dot_derivative_rule",
                 "static_signature": "operand_shapes:ranked_tensor_shape_sequence",
+            }
+        )
+    elif name == "eig":
+        metadata.update(
+            {
+                "static_derivative_factory": "program_ad_linalg_eig_derivative_rule",
+                "static_signature": "matrix_shape:rank2_square_real_simple_eigensystem",
             }
         )
     elif name == "eigh":
@@ -19137,6 +19511,7 @@ __all__ = [
     "program_ad_elementwise_binary_derivative_rule",
     "program_ad_linalg_diag_derivative_rule",
     "program_ad_linalg_diagflat_derivative_rule",
+    "program_ad_linalg_eig_derivative_rule",
     "program_ad_linalg_eigh_derivative_rule",
     "program_ad_linalg_eigvals_derivative_rule",
     "program_ad_linalg_eigvalsh_derivative_rule",
