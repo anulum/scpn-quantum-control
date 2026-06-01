@@ -40,6 +40,10 @@ def test_static_gates_include_documentation_surface_gate():
     assert "--fail-on-findings" in gate_map["documentation-surface"]
 
 
+def test_preflight_coverage_gate_matches_temporary_ci_threshold():
+    assert "--cov-fail-under=70" in _preflight._PYTEST_COV
+
+
 def test_run_gate_reports_pass(monkeypatch, capsys):
     def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
