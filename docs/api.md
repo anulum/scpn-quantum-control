@@ -96,6 +96,7 @@ from scpn_quantum_control import (
     make_matrix_quadratic_form_native_llvm_jit_primitive_transform,
     make_matrix_trace_native_llvm_jit_primitive_transform,
     make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform,
+    make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform,
     make_vector_dot_native_llvm_jit_primitive_transform,
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
 )
@@ -394,6 +395,15 @@ distinct-eigenvalue symmetric spectral primitive over upper-triangle
 `[a00, a01, a11]` inputs with exact closed-form value, JVP, and VJP kernels;
 repeated eigenvalues and the public vector-output gradient helper remain
 fail-closed.
+The optional `scpn_quantum_engine` Rust extension mirrors this symmetric
+eigenvalue primitive through `symmetric_2x2_eigenvalues_value()`,
+`symmetric_2x2_eigenvalues_jvp()`, `symmetric_2x2_eigenvalues_vjp()`, and
+`symmetric_2x2_eigenvalues_sum_gradient()`. The
+`make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform()` helper
+binds the distinct-spectrum primitive into the registry with native LLVM/JIT
+lowering, primitive batching, repeated-eigenvalue fail-closed boundaries, and
+verified Rust PyO3 metadata. The Rust sum-gradient export is provenance for the
+vector-output kernel; public `gradient()` remains scalar-output fail-closed.
 `compile_matrix_quadratic_form_ad_to_native_llvm_jit()` extends native compiler
 AD to rank-2 scalar linalg by compiling `x.T @ A @ x` over row-major
 concatenated `[A, x]` inputs with exact matrix-entry gradients

@@ -18,6 +18,7 @@ const DISCRIMINANT_EPS: f64 = 1.0e-24;
 const UPPER_CHART_EPS: f64 = 1.0e-12;
 const MATRIX_2X2_DETERMINANT_EPS: f64 = 1.0e-12;
 const SYMMETRIC_2X2_SPD_EPS: f64 = 1.0e-12;
+const SYMMETRIC_2X2_EIGENVALUE_GAP_EPS: f64 = 1.0e-12;
 
 fn py_value_error(error: String) -> PyErr {
     PyValueError::new_err(error)
@@ -917,6 +918,102 @@ pub fn symmetric_2x2_cholesky_sum_gradient_inner(values: &[f64]) -> Result<[f64;
     symmetric_2x2_cholesky_vjp_inner(values, &[1.0; 3])
 }
 
+fn symmetric_2x2_eigenvalue_geometry(
+    values: &[f64; 3],
+    primitive: &str,
+) -> Result<(f64, f64, f64), String> {
+    let centre = 0.5 * (values[0] + values[2]);
+    let half_delta = 0.5 * (values[0] - values[2]);
+    let radius_squared = half_delta * half_delta + values[1] * values[1];
+    if !radius_squared.is_finite() || radius_squared <= SYMMETRIC_2X2_EIGENVALUE_GAP_EPS {
+        return Err(format!(
+            "{primitive} requires distinct symmetric 2x2 eigenvalues"
+        ));
+    }
+    let radius = radius_squared.sqrt();
+    if !radius.is_finite() || radius <= SYMMETRIC_2X2_EIGENVALUE_GAP_EPS {
+        return Err(format!(
+            "{primitive} requires distinct symmetric 2x2 eigenvalues"
+        ));
+    }
+    Ok((centre, half_delta, radius))
+}
+
+/// Evaluate ordered eigenvalues for a distinct symmetric 2x2 matrix.
+pub fn symmetric_2x2_eigenvalues_value_inner(values: &[f64]) -> Result<[f64; 2], String> {
+    let checked = checked_symmetric_2x2_values(
+        values,
+        "values",
+        "native symmetric 2x2 eigenvalue Rust value kernel",
+    )?;
+    let (centre, _, radius) = symmetric_2x2_eigenvalue_geometry(
+        &checked,
+        "native symmetric 2x2 eigenvalue Rust value kernel",
+    )?;
+    Ok([centre - radius, centre + radius])
+}
+
+/// Apply the exact JVP for distinct symmetric 2x2 eigenvalues.
+pub fn symmetric_2x2_eigenvalues_jvp_inner(
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<[f64; 2], String> {
+    let checked = checked_symmetric_2x2_values(
+        values,
+        "values",
+        "native symmetric 2x2 eigenvalue Rust JVP kernel",
+    )?;
+    let tangent = checked_symmetric_2x2_values(
+        tangent,
+        "tangent",
+        "native symmetric 2x2 eigenvalue Rust JVP kernel",
+    )?;
+    let (_, half_delta, radius) = symmetric_2x2_eigenvalue_geometry(
+        &checked,
+        "native symmetric 2x2 eigenvalue Rust JVP kernel",
+    )?;
+    let tangent_centre = 0.5 * (tangent[0] + tangent[2]);
+    let tangent_half_delta = 0.5 * (tangent[0] - tangent[2]);
+    let tangent_radius = (half_delta * tangent_half_delta + checked[1] * tangent[1]) / radius;
+    Ok([
+        tangent_centre - tangent_radius,
+        tangent_centre + tangent_radius,
+    ])
+}
+
+/// Apply the exact VJP for distinct symmetric 2x2 eigenvalues.
+pub fn symmetric_2x2_eigenvalues_vjp_inner(
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<[f64; 3], String> {
+    let checked = checked_symmetric_2x2_values(
+        values,
+        "values",
+        "native symmetric 2x2 eigenvalue Rust VJP kernel",
+    )?;
+    let cotangent = checked_vector::<2>(
+        cotangent,
+        "cotangent",
+        "native symmetric 2x2 eigenvalue Rust VJP kernel",
+    )?;
+    let (_, half_delta, radius) = symmetric_2x2_eigenvalue_geometry(
+        &checked,
+        "native symmetric 2x2 eigenvalue Rust VJP kernel",
+    )?;
+    let half_term = half_delta / (2.0 * radius);
+    let offdiag_term = checked[1] / radius;
+    Ok([
+        cotangent[0] * (0.5 - half_term) + cotangent[1] * (0.5 + half_term),
+        (cotangent[1] - cotangent[0]) * offdiag_term,
+        cotangent[0] * (0.5 + half_term) + cotangent[1] * (0.5 - half_term),
+    ])
+}
+
+/// Return the sum-output gradient provenance for vector-output symmetric 2x2 eigenvalues.
+pub fn symmetric_2x2_eigenvalues_sum_gradient_inner(values: &[f64]) -> Result<[f64; 3], String> {
+    symmetric_2x2_eigenvalues_vjp_inner(values, &[1.0; 2])
+}
+
 fn checked_vector_dot_values(
     dimension: usize,
     values: &[f64],
@@ -1564,6 +1661,60 @@ pub fn symmetric_2x2_cholesky_sum_gradient<'py>(
     Ok(PyArray1::from_vec(py, result.to_vec()))
 }
 
+/// PyO3 wrapper for bounded Rust distinct symmetric 2x2 eigenvalue evaluation.
+#[pyfunction]
+pub fn symmetric_2x2_eigenvalues_value<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = symmetric_2x2_eigenvalues_value_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust distinct symmetric 2x2 eigenvalue JVP evaluation.
+#[pyfunction]
+pub fn symmetric_2x2_eigenvalues_jvp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result = symmetric_2x2_eigenvalues_jvp_inner(values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust distinct symmetric 2x2 eigenvalue VJP evaluation.
+#[pyfunction]
+pub fn symmetric_2x2_eigenvalues_vjp<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result = symmetric_2x2_eigenvalues_vjp_inner(values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
+/// PyO3 wrapper for bounded Rust symmetric 2x2 eigenvalue sum-gradient provenance.
+#[pyfunction]
+pub fn symmetric_2x2_eigenvalues_sum_gradient<'py>(
+    py: Python<'py>,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = symmetric_2x2_eigenvalues_sum_gradient_inner(values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result.to_vec()))
+}
+
 /// PyO3 wrapper for Rust vector dot value evaluation.
 #[pyfunction]
 pub fn vector_dot_value<'py>(
@@ -2075,6 +2226,51 @@ mod tests {
         let cotangent_count =
             symmetric_2x2_cholesky_vjp_inner(&[4.0, 1.0, 3.0], &[1.0]).unwrap_err();
         assert!(cotangent_count.contains("requires 3 cotangent value"));
+    }
+
+    #[test]
+    fn symmetric_2x2_eigenvalues_value_jvp_vjp_and_sum_gradient_match_closed_form() {
+        let values = [2.0, 0.5, 3.0];
+        let tangent = [0.1, -0.2, 0.4];
+        let cotangent = [1.25, -0.75];
+
+        assert_close(
+            &symmetric_2x2_eigenvalues_value_inner(&values).unwrap(),
+            &[1.792_893_218_813_452_5, 3.207_106_781_186_547_5],
+        );
+        assert_close(
+            &symmetric_2x2_eigenvalues_jvp_inner(&values, &tangent).unwrap(),
+            &[0.285_355_339_059_327_36, 0.214_644_660_940_672_64],
+        );
+        assert_close(
+            &symmetric_2x2_eigenvalues_vjp_inner(&values, &cotangent).unwrap(),
+            &[
+                0.957_106_781_186_547_5,
+                -1.414_213_562_373_095,
+                -0.457_106_781_186_547_4,
+            ],
+        );
+        assert_close(
+            &symmetric_2x2_eigenvalues_sum_gradient_inner(&values).unwrap(),
+            &[1.0, 0.0, 1.0],
+        );
+    }
+
+    #[test]
+    fn symmetric_2x2_eigenvalues_boundaries_fail_closed() {
+        let wrong_count = symmetric_2x2_eigenvalues_value_inner(&[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("upper-triangle symmetric 2x2 values"));
+        let non_finite =
+            symmetric_2x2_eigenvalues_sum_gradient_inner(&[2.0, f64::NAN, 3.0]).unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let repeated = symmetric_2x2_eigenvalues_value_inner(&[1.0, 0.0, 1.0]).unwrap_err();
+        assert!(repeated.contains("distinct symmetric 2x2 eigenvalues"));
+        let tangent_count =
+            symmetric_2x2_eigenvalues_jvp_inner(&[2.0, 0.5, 3.0], &[1.0]).unwrap_err();
+        assert!(tangent_count.contains("upper-triangle symmetric 2x2 tangent values"));
+        let cotangent_count =
+            symmetric_2x2_eigenvalues_vjp_inner(&[2.0, 0.5, 3.0], &[1.0]).unwrap_err();
+        assert!(cotangent_count.contains("requires 2 cotangent value"));
     }
 
     #[test]
