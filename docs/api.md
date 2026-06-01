@@ -72,6 +72,7 @@ from scpn_quantum_control import (
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
     compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
+    compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit,
     compile_matrix_2x2_inverse_ad_to_native_llvm_jit,
     compile_matrix_2x2_solve_ad_to_native_llvm_jit,
     compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit,
@@ -195,6 +196,13 @@ native_det_kernel = compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
 )
 native_det_kernel.gradient(np.array([2.0, -1.0, 0.5, 3.0], dtype=np.float64))
 
+native_matrix_eigen_kernel = compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit(
+    rule,
+    sample_values=np.array([2.0, 0.25, 0.75, 1.0], dtype=np.float64),
+    config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+)
+native_matrix_eigen_kernel.value(np.array([2.0, 0.25, 0.75, 1.0], dtype=np.float64))
+
 native_inverse_kernel = compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
     rule,
     sample_values=np.array([2.0, -1.0, 0.5, 3.0], dtype=np.float64),
@@ -288,6 +296,11 @@ row-major matrix inputs with exact `2*A` JVP, VJP, and gradient output.
 `compile_matrix_2x2_determinant_ad_to_native_llvm_jit()` adds a fixed-size
 polynomial determinant primitive for row-major 2x2 matrices with exact
 adjugate-gradient JVP, VJP, and gradient output.
+`compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit()` adds a bounded
+real-simple nonsymmetric 2x2 spectral primitive over row-major matrix inputs
+with exact closed-form eigenvalue, JVP, and VJP kernels; complex spectra,
+repeated eigenvalues, and the public vector-output gradient helper remain
+fail-closed.
 `compile_matrix_2x2_inverse_ad_to_native_llvm_jit()` adds a bounded
 nonsingular row-major 2x2 inverse primitive with exact rational value, JVP,
 and VJP kernels; singular matrices and the public vector-output gradient helper
@@ -319,6 +332,7 @@ concatenated `[A, x]` inputs with exact matrix-entry gradients
 `make_matrix_trace_native_llvm_jit_lowering_rule()` and
 `make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_determinant_native_llvm_jit_lowering_rule()` and
+`make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_inverse_native_llvm_jit_lowering_rule()` and
 `make_matrix_2x2_solve_native_llvm_jit_lowering_rule()` and
 `make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule()` and
