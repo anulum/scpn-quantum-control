@@ -774,6 +774,143 @@ pub fn matrix_vector_product_sum_gradient_inner(
     matrix_vector_product_vjp_inner(dimension, values, &cotangent)
 }
 
+fn checked_matrix_matrix_product_values(
+    dimension: usize,
+    values: &[f64],
+    label: &str,
+    primitive: &str,
+) -> Result<(), String> {
+    if dimension == 0 {
+        return Err(format!("{primitive} dimension must be positive"));
+    }
+    let expected = 2 * dimension * dimension;
+    if values.len() != expected {
+        return Err(format!(
+            "{primitive} requires 2 * dimension * dimension {label} value(s)"
+        ));
+    }
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{label}[{index}] is not finite ({value})"));
+        }
+    }
+    Ok(())
+}
+
+fn matrix_matrix_product_right_index(dimension: usize, row: usize, column: usize) -> usize {
+    dimension * dimension + matrix_square_index(dimension, row, column)
+}
+
+/// Evaluate A @ B over row-major finite real square matrix pairs.
+pub fn matrix_matrix_product_value_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_matrix_product_values(
+        dimension,
+        values,
+        "values",
+        "native matrix-matrix product Rust value kernel",
+    )?;
+    let mut output = vec![0.0; dimension * dimension];
+    for row in 0..dimension {
+        for column in 0..dimension {
+            let mut total = 0.0;
+            for inner in 0..dimension {
+                total += values[matrix_square_index(dimension, row, inner)]
+                    * values[matrix_matrix_product_right_index(dimension, inner, column)];
+            }
+            output[matrix_square_index(dimension, row, column)] = total;
+        }
+    }
+    Ok(output)
+}
+
+/// Apply the exact JVP for A @ B.
+pub fn matrix_matrix_product_jvp_inner(
+    dimension: usize,
+    values: &[f64],
+    tangent: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_matrix_product_values(
+        dimension,
+        values,
+        "values",
+        "native matrix-matrix product Rust JVP kernel",
+    )?;
+    checked_matrix_matrix_product_values(
+        dimension,
+        tangent,
+        "tangent",
+        "native matrix-matrix product Rust JVP kernel",
+    )?;
+    let mut output = vec![0.0; dimension * dimension];
+    for row in 0..dimension {
+        for column in 0..dimension {
+            let mut total = 0.0;
+            for inner in 0..dimension {
+                let left_index = matrix_square_index(dimension, row, inner);
+                let right_index = matrix_matrix_product_right_index(dimension, inner, column);
+                total += tangent[left_index] * values[right_index];
+                total += values[left_index] * tangent[right_index];
+            }
+            output[matrix_square_index(dimension, row, column)] = total;
+        }
+    }
+    Ok(output)
+}
+
+/// Apply the exact VJP for A @ B.
+pub fn matrix_matrix_product_vjp_inner(
+    dimension: usize,
+    values: &[f64],
+    cotangent: &[f64],
+) -> Result<Vec<f64>, String> {
+    checked_matrix_matrix_product_values(
+        dimension,
+        values,
+        "values",
+        "native matrix-matrix product Rust VJP kernel",
+    )?;
+    checked_matrix_square_values(
+        dimension,
+        cotangent,
+        "cotangent",
+        "native matrix-matrix product Rust VJP kernel",
+    )?;
+    let mut gradient = vec![0.0; 2 * dimension * dimension];
+    for row in 0..dimension {
+        for inner in 0..dimension {
+            let mut left_gradient = 0.0;
+            for column in 0..dimension {
+                left_gradient += cotangent[matrix_square_index(dimension, row, column)]
+                    * values[matrix_matrix_product_right_index(dimension, inner, column)];
+            }
+            gradient[matrix_square_index(dimension, row, inner)] = left_gradient;
+        }
+    }
+    for inner in 0..dimension {
+        for column in 0..dimension {
+            let mut right_gradient = 0.0;
+            for row in 0..dimension {
+                right_gradient += values[matrix_square_index(dimension, row, inner)]
+                    * cotangent[matrix_square_index(dimension, row, column)];
+            }
+            gradient[matrix_matrix_product_right_index(dimension, inner, column)] = right_gradient;
+        }
+    }
+    Ok(gradient)
+}
+
+/// Sum-output gradient provenance helper for the matrix-output matrix-matrix primitive.
+pub fn matrix_matrix_product_sum_gradient_inner(
+    dimension: usize,
+    values: &[f64],
+) -> Result<Vec<f64>, String> {
+    let cotangent = vec![1.0; dimension * dimension];
+    matrix_matrix_product_vjp_inner(dimension, values, &cotangent)
+}
+
 fn checked_matrix_2x2_determinant_values(
     values: &[f64],
     label: &str,
@@ -1790,6 +1927,67 @@ pub fn matrix_vector_product_sum_gradient<'py>(
     Ok(PyArray1::from_vec(py, result))
 }
 
+/// PyO3 wrapper for Rust matrix-matrix product value evaluation.
+#[pyfunction]
+pub fn matrix_matrix_product_value<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result = matrix_matrix_product_value_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust matrix-matrix product JVP evaluation.
+#[pyfunction]
+pub fn matrix_matrix_product_jvp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    tangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let tangent = validate_contiguous_slice(&tangent, "tangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(tangent, "tangent")?;
+    let result =
+        matrix_matrix_product_jvp_inner(dimension, values, tangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust matrix-matrix product VJP evaluation.
+#[pyfunction]
+pub fn matrix_matrix_product_vjp<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+    cotangent: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    let cotangent = validate_contiguous_slice(&cotangent, "cotangent")?;
+    validate_finite(values, "values")?;
+    validate_finite(cotangent, "cotangent")?;
+    let result =
+        matrix_matrix_product_vjp_inner(dimension, values, cotangent).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
+/// PyO3 wrapper for Rust matrix-matrix product sum-output gradient provenance.
+#[pyfunction]
+pub fn matrix_matrix_product_sum_gradient<'py>(
+    py: Python<'py>,
+    dimension: usize,
+    values: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let values = validate_contiguous_slice(&values, "values")?;
+    validate_finite(values, "values")?;
+    let result =
+        matrix_matrix_product_sum_gradient_inner(dimension, values).map_err(py_value_error)?;
+    Ok(PyArray1::from_vec(py, result))
+}
+
 /// PyO3 wrapper for Rust 2x2 determinant value evaluation.
 #[pyfunction]
 pub fn matrix_2x2_determinant_value<'py>(
@@ -2447,6 +2645,58 @@ mod tests {
                 .unwrap_err();
         assert!(cotangent_count.contains("requires 2 cotangent value"));
         let zero_dimension = matrix_vector_product_value_inner(0, &[1.0]).unwrap_err();
+        assert!(zero_dimension.contains("dimension must be positive"));
+    }
+
+    #[test]
+    fn matrix_matrix_product_value_jvp_vjp_and_sum_gradient_match_closed_form() {
+        let values = [1.0, -2.0, 0.5, 3.0, 4.0, -1.0, 2.0, 0.25];
+        let tangent = [0.2, -0.1, 0.3, 0.4, -0.5, 0.75, 0.25, -0.2];
+        let cotangent = [1.25, -0.5, 0.75, 2.0];
+
+        assert_close(
+            &matrix_matrix_product_value_inner(2, &values).unwrap(),
+            &[0.0, -1.5, 8.0, 0.25],
+        );
+        assert_close(
+            &matrix_matrix_product_jvp_inner(2, &values, &tangent).unwrap(),
+            &[-0.4, 0.925, 2.5, -0.425],
+        );
+        assert_close(
+            &matrix_matrix_product_vjp_inner(2, &values, &cotangent).unwrap(),
+            &[5.5, 2.375, 1.0, 2.0, 1.625, 0.5, -0.25, 7.0],
+        );
+        assert_close(
+            &matrix_matrix_product_sum_gradient_inner(2, &values).unwrap(),
+            &[3.0, 2.25, 3.0, 2.25, 1.5, 1.5, 1.0, 1.0],
+        );
+    }
+
+    #[test]
+    fn matrix_matrix_product_boundaries_fail_closed() {
+        let wrong_count = matrix_matrix_product_value_inner(2, &[1.0, 2.0]).unwrap_err();
+        assert!(wrong_count.contains("2 * dimension * dimension values"));
+        let non_finite = matrix_matrix_product_sum_gradient_inner(
+            2,
+            &[1.0, f64::NAN, 0.5, 3.0, 4.0, -1.0, 2.0, 0.25],
+        )
+        .unwrap_err();
+        assert!(non_finite.contains("not finite"));
+        let tangent_count = matrix_matrix_product_jvp_inner(
+            2,
+            &[1.0, -2.0, 0.5, 3.0, 4.0, -1.0, 2.0, 0.25],
+            &[1.0],
+        )
+        .unwrap_err();
+        assert!(tangent_count.contains("2 * dimension * dimension tangent value"));
+        let cotangent_count = matrix_matrix_product_vjp_inner(
+            2,
+            &[1.0, -2.0, 0.5, 3.0, 4.0, -1.0, 2.0, 0.25],
+            &[1.0],
+        )
+        .unwrap_err();
+        assert!(cotangent_count.contains("dimension * dimension cotangent value"));
+        let zero_dimension = matrix_matrix_product_value_inner(0, &[1.0]).unwrap_err();
         assert!(zero_dimension.contains("dimension must be positive"));
     }
 

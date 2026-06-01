@@ -2770,6 +2770,81 @@ def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -
     assert module.metadata["primitive_readiness"][identity.key]["verdict"] == "native_executable"
     assert module.metadata["primitive_hard_gaps"][identity.key] == ["rust_backend_contract"]
 
+    rust_registry = CustomDerivativeRegistry()
+    rust_registry.register_transform(
+        compiler_mlir.make_matrix_matrix_product_native_llvm_jit_primitive_transform(
+            identity,
+            rule,
+            dimension=2,
+            sample_values=values,
+            config=config,
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        )
+    )
+    rust_plan = build_compiler_ad_transform_plan(rust_registry)
+    rust_module = compile_compiler_ad_transform_plan_to_mlir(rust_plan)
+    rust_registered_kernel = compile_registered_primitive_to_executable(
+        rust_registry,
+        identity,
+        values,
+    )
+
+    assert rust_registered_kernel.backend == "native_llvm_jit"
+    assert rust_plan.executable_backend == "native_llvm_jit"
+    assert rust_module.metadata["executable_backend"] == "native_llvm_jit"
+    assert rust_module.resource_counts["rust_backend_contracts"] == 1
+    assert rust_module.resource_counts["rust_backend_incomplete_primitives"] == 0
+    assert rust_module.resource_counts["rust_backend_blockers"] == 0
+    assert rust_module.resource_counts["primitive_hard_gaps"] == 0
+    assert rust_module.metadata["rust_backend_contract_primitives"] == [identity.key]
+    assert rust_module.metadata["rust_backend_incomplete_primitives"] == []
+    assert rust_module.metadata["rust_backend_blockers"] == {}
+    assert rust_module.metadata["rust_backend_signatures"] == {
+        identity.key: "primitive:matmul;dimension:2;layout:left_then_right"
+    }
+    assert rust_module.metadata["rust_backend_functions"] == {
+        identity.key: (
+            "matrix_matrix_product_value,matrix_matrix_product_jvp,"
+            "matrix_matrix_product_vjp,matrix_matrix_product_sum_gradient"
+        )
+    }
+    assert rust_module.metadata["rust_backend_verification_primitives"] == {
+        identity.key: (
+            "verified: scpn_quantum_engine matrix_matrix_product value/JVP/VJP/sum-gradient parity"
+        )
+    }
+    assert rust_module.resource_counts["rust_backend_verifications"] == 1
+    assert rust_module.metadata["primitive_hard_gaps"][identity.key] == []
+    assert identity.key not in rust_module.metadata["primitive_next_hard_gap"]
+    assert rust_module.metadata["primitive_readiness"][identity.key] == {
+        "adjoint_contract": True,
+        "forward_contract": True,
+        "jit_backend_contract": True,
+        "llvm_backend_contract": True,
+        "mlir_runtime_contract": True,
+        "native_backend_contract": True,
+        "registry_contract": True,
+        "reverse_contract": True,
+        "rust_backend_contract": True,
+        "transform_contract": True,
+        "verdict": "native_executable",
+    }
+    batched_value = vmap(
+        lambda row: row,
+        primitive_identity=identity,
+        registry=rust_registry,
+    )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2, 0.3, -0.4, 0.2, 0.1])]))
+    np.testing.assert_allclose(
+        batched_value[0],
+        rust_registered_kernel.value(values),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    assert scpn.make_matrix_matrix_product_native_llvm_jit_primitive_transform is (
+        compiler_mlir.make_matrix_matrix_product_native_llvm_jit_primitive_transform
+    )
+
 
 def test_native_llvm_jit_matrix_trace_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT matrix trace AD kernels should execute scalar-output AD."""
