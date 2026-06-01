@@ -5182,42 +5182,118 @@ def _trace_norm(
     ord_value: object = None,
     axis: object | None = None,
 ) -> TraceADScalar | TraceADArray:
-    if ord_value not in {None, 2, 2.0}:
-        raise ValueError("whole-program AD np.linalg.norm supports only Euclidean norm")
     array = _coerce_trace_array(values, context)
 
-    def norm_from_items(items: tuple[TraceADScalar, ...]) -> TraceADScalar:
+    def norm_from_items(
+        items: tuple[TraceADScalar, ...],
+        *,
+        zero_boundary_message: str,
+    ) -> TraceADScalar:
         if not items:
             raise ValueError("whole-program AD np.linalg.norm requires at least one element")
         squared = items[0] * items[0]
         for item in items[1:]:
             squared = squared + item * item
         if squared.primal <= 0.0:
-            raise ValueError("whole-program AD np.linalg.norm requires non-zero Euclidean norms")
+            raise ValueError(zero_boundary_message)
         norm = np.sqrt(squared)
         if not isinstance(norm, TraceADScalar):
             raise ValueError("whole-program AD norm must return a scalar")
         return norm
 
     if axis is None:
-        return norm_from_items(tuple(array._items))
+        if ord_value not in {None, 2, 2.0, "fro"}:
+            raise ValueError("whole-program AD np.linalg.norm supports only Euclidean norm")
+        if ord_value == "fro" and array.ndim < 2:
+            raise ValueError("whole-program AD np.linalg.norm matrix norms require rank >= 2")
+        return norm_from_items(
+            tuple(array._items),
+            zero_boundary_message=(
+                "whole-program AD np.linalg.norm requires non-zero Frobenius norms"
+                if ord_value == "fro"
+                else "whole-program AD np.linalg.norm requires non-zero Euclidean norms"
+            ),
+        )
+    if isinstance(axis, tuple):
+        if len(axis) != 2:
+            raise ValueError("whole-program AD np.linalg.norm matrix axes must have length two")
+        if ord_value not in {None, "fro"}:
+            raise ValueError("whole-program AD np.linalg.norm matrix norms support only Frobenius")
+        if any(isinstance(item, bool) or not isinstance(item, (int, np.integer)) for item in axis):
+            raise ValueError("whole-program AD np.linalg.norm axes must be static integers")
+        axes = tuple(
+            _normalise_axis("whole-program AD np.linalg.norm matrix axis", int(item), array.ndim)
+            for item in axis
+        )
+        if axes[0] == axes[1]:
+            raise ValueError("whole-program AD np.linalg.norm axes must be distinct")
+        reduced_axes = tuple(index for index in range(array.ndim) if index not in axes)
+        reduced_shape = tuple(array.shape[index] for index in reduced_axes)
+        if reduced_shape == ():
+            return norm_from_items(
+                tuple(array._items),
+                zero_boundary_message=(
+                    "whole-program AD np.linalg.norm requires non-zero Frobenius norms"
+                ),
+            )
+        frobenius_items: list[TraceADScalar] = []
+        for reduced_flat in range(int(np.prod(reduced_shape))):
+            reduced_index = np.unravel_index(reduced_flat, reduced_shape)
+            source_items: list[TraceADScalar] = []
+            for first in range(array.shape[axes[0]]):
+                for second in range(array.shape[axes[1]]):
+                    frobenius_source_index = [0] * array.ndim
+                    for position, dimension in enumerate(reduced_axes):
+                        frobenius_source_index[dimension] = int(reduced_index[position])
+                    frobenius_source_index[axes[0]] = first
+                    frobenius_source_index[axes[1]] = second
+                    source_items.append(
+                        array._items[
+                            int(np.ravel_multi_index(tuple(frobenius_source_index), array.shape))
+                        ]
+                    )
+            frobenius_items.append(
+                norm_from_items(
+                    tuple(source_items),
+                    zero_boundary_message=(
+                        "whole-program AD np.linalg.norm requires non-zero Frobenius norms"
+                    ),
+                )
+            )
+        return TraceADArray(tuple(frobenius_items), reduced_shape, context)
+    if ord_value not in {None, 2, 2.0}:
+        raise ValueError("whole-program AD np.linalg.norm supports only Euclidean norm")
     if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
         raise ValueError("whole-program AD np.linalg.norm axis must be a static integer")
     axis_index = _normalise_axis("whole-program AD np.linalg.norm axis", int(axis), array.ndim)
     reduced_shape = array.shape[:axis_index] + array.shape[axis_index + 1 :]
     if reduced_shape == ():
-        return norm_from_items(tuple(array._items))
-    items: list[TraceADScalar] = []
+        return norm_from_items(
+            tuple(array._items),
+            zero_boundary_message=(
+                "whole-program AD np.linalg.norm requires non-zero Euclidean norms"
+            ),
+        )
+    euclidean_items: list[TraceADScalar] = []
     for reduced_flat in range(int(np.prod(reduced_shape))):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
-        axis_items = []
+        axis_items: list[TraceADScalar] = []
         for axis_position in range(array.shape[axis_index]):
-            source_index = (
+            euclidean_source_index = (
                 reduced_index[:axis_index] + (axis_position,) + reduced_index[axis_index:]
             )
-            axis_items.append(array._items[int(np.ravel_multi_index(source_index, array.shape))])
-        items.append(norm_from_items(tuple(axis_items)))
-    return TraceADArray(tuple(items), reduced_shape, context)
+            axis_items.append(
+                array._items[int(np.ravel_multi_index(euclidean_source_index, array.shape))]
+            )
+        euclidean_items.append(
+            norm_from_items(
+                tuple(axis_items),
+                zero_boundary_message=(
+                    "whole-program AD np.linalg.norm requires non-zero Euclidean norms"
+                ),
+            )
+        )
+    return TraceADArray(tuple(euclidean_items), reduced_shape, context)
 
 
 def whole_program_grad(

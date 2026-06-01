@@ -227,6 +227,7 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
     pinv_weights = np.array([[0.35, 0.0], [0.0, -0.45]], dtype=np.float64)
     norm_row_weights = np.array([0.45, -0.65], dtype=np.float64)
     norm_column_weights = np.array([0.15, 0.2], dtype=np.float64)
+    frobenius_weight = 0.175
     trace_weight = 0.375
     diag_weights = np.array([-1.25, 0.5], dtype=np.float64)
 
@@ -253,9 +254,11 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + np.sum(np.linalg.pinv(matrix) * pinv_weights)
             + np.sum(np.linalg.norm(matrix, 2, axis=1) * norm_row_weights)
             + np.sum(np.linalg.norm(matrix, None, 0) * norm_column_weights)
+            + frobenius_weight * np.linalg.norm(matrix, "fro", axis=(0, 1))
         )
 
     x0, x1, rhs0, rhs1 = values
+    frobenius_norm = math.sqrt(x0 * x0 + x1 * x1)
     analytic = np.array(
         [
             x1
@@ -272,7 +275,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + svd_weights[1]
             - pinv_weights[0, 0] / (x0 * x0)
             + norm_row_weights[0]
-            + norm_column_weights[0],
+            + norm_column_weights[0]
+            + frobenius_weight * x0 / frobenius_norm,
             x0
             - inverse_weights[1, 1] / (x1 * x1)
             - solve_weights[1] * rhs1 / (x1 * x1)
@@ -287,7 +291,8 @@ def _linalg_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             + svd_weights[0]
             - pinv_weights[1, 1] / (x1 * x1)
             + norm_row_weights[1]
-            + norm_column_weights[1],
+            + norm_column_weights[1]
+            + frobenius_weight * x1 / frobenius_norm,
             solve_weights[0] / x0,
             solve_weights[1] / x1,
         ],
@@ -411,6 +416,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
     pinv_weights = np.array([[0.35, 0.0], [0.0, -0.45]], dtype=np.float64)
     norm_row_weights = np.array([0.45, -0.65], dtype=np.float64)
     norm_column_weights = np.array([0.15, 0.2], dtype=np.float64)
+    frobenius_weight = 0.175
 
     def program_objective(trace_values: Any) -> object:
         matrix = np.diag(trace_values[:2])
@@ -432,6 +438,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
             + np.sum(np.linalg.pinv(matrix) * pinv_weights)
             + np.sum(np.linalg.norm(matrix, 2, axis=1) * norm_row_weights)
             + np.sum(np.linalg.norm(matrix, None, 0) * norm_column_weights)
+            + frobenius_weight * np.linalg.norm(matrix, "fro", axis=(0, 1))
         )
 
     def reference_objective(raw_values: Any) -> object:
@@ -454,6 +461,7 @@ def _jax_linalg_primitive_case() -> DifferentiableProgrammingExternalReferenceRe
             + jnp.sum(jnp.linalg.pinv(matrix) * jnp.asarray(pinv_weights))
             + jnp.sum(jnp.linalg.norm(matrix, ord=2, axis=1) * jnp.asarray(norm_row_weights))
             + jnp.sum(jnp.linalg.norm(matrix, ord=2, axis=0) * jnp.asarray(norm_column_weights))
+            + frobenius_weight * jnp.linalg.norm(matrix, ord="fro", axis=(0, 1))
         )
 
     program_result = whole_program_value_and_grad(

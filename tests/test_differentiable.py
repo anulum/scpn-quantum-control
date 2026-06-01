@@ -8716,6 +8716,59 @@ def test_program_ad_axis_norms_fail_closed_on_unsupported_contracts() -> None:
         )
 
 
+def test_program_ad_frobenius_matrix_norms_match_exact_adjoint() -> None:
+    """Program AD Frobenius matrix norms should replay exact static two-axis adjoints."""
+
+    batch_weights = np.array([0.75, -1.25], dtype=np.float64)
+
+    def objective(values: np.ndarray) -> object:
+        tensor = np.reshape(values, (2, 2, 3))
+        batched_norms = np.linalg.norm(tensor, "fro", axis=(1, 2))
+        leading_matrix_norm = np.linalg.norm(tensor[0], None, axis=(-2, -1))
+        return np.sum(batched_norms * batch_weights) + 0.5 * leading_matrix_norm
+
+    values = np.array(
+        [1.0, -2.0, 2.0, 0.5, -1.5, 2.5, 3.0, -1.0, 4.0, -2.0, 0.75, 1.25],
+        dtype=np.float64,
+    )
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    tensor = values.reshape(2, 2, 3)
+    norms = np.linalg.norm(tensor, ord="fro", axis=(1, 2))
+    expected = batch_weights[:, None, None] * tensor / norms[:, None, None]
+    expected[0] += 0.5 * tensor[0] / norms[0]
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(result.gradient, expected.reshape(-1), atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result), expected.reshape(-1), atol=1.0e-12
+    )
+
+
+def test_program_ad_frobenius_matrix_norms_fail_closed_on_unsupported_contracts() -> None:
+    """Program AD Frobenius norms should reject unsupported matrix-norm boundaries."""
+
+    with pytest.raises(ValueError, match="matrix norms support only Frobenius"):
+        whole_program_value_and_grad(
+            lambda values: np.linalg.norm(np.reshape(values, (2, 2)), ord=1, axis=(0, 1)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="axes must be distinct"):
+        whole_program_value_and_grad(
+            lambda values: np.linalg.norm(np.reshape(values, (2, 2)), ord="fro", axis=(1, 1)),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="requires non-zero Frobenius norms"):
+        whole_program_value_and_grad(
+            lambda values: np.linalg.norm(np.reshape(values, (2, 2)), ord="fro", axis=(0, 1)),
+            np.zeros(4, dtype=np.float64),
+        )
+
+
 def test_program_ad_cumulative_sum_matches_prefix_adjoint() -> None:
     """Program AD cumulative sums should accumulate prefix adjoints exactly."""
 
