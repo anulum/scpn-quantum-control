@@ -162,6 +162,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_product_inner_derivative_rule,
     program_ad_product_matmul_derivative_rule,
     program_ad_product_outer_derivative_rule,
+    program_ad_product_tensordot_derivative_rule,
     program_ad_reduction_mean_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
     program_ad_reduction_sum_derivative_rule,
@@ -5948,6 +5949,118 @@ def test_program_ad_product_inner_outer_static_derivative_factories() -> None:
         program_ad_product_inner_derivative_rule((2, 3), (2, 2))
 
 
+def test_program_ad_product_tensordot_registry_contract_and_direct_rule() -> None:
+    """Static tensordot contracts should expose exact contraction JVP/VJP rules."""
+
+    left = np.linspace(-0.7, 1.6, 24, dtype=np.float64).reshape(2, 3, 4)
+    right = np.linspace(1.2, -0.5, 24, dtype=np.float64).reshape(4, 3, 2)
+    tangent_left = np.linspace(0.3, -0.2, 24, dtype=np.float64).reshape(left.shape)
+    tangent_right = np.linspace(-0.4, 0.6, 24, dtype=np.float64).reshape(right.shape)
+    axes = ((2, 1), (0, 1))
+    values = np.concatenate((left.reshape(-1), right.reshape(-1)))
+    tangent = np.concatenate((tangent_left.reshape(-1), tangent_right.reshape(-1)))
+    cotangent = np.array([[0.5, -1.25], [1.75, 0.25]], dtype=np.float64)
+
+    contract = primitive_contract_for(
+        PrimitiveIdentity("scpn.program_ad.product", "tensordot", "1")
+    )
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.product", "tensordot", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.product.tensordot"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_product_tensordot_derivative_rule"
+    )
+    assert (
+        contract.lowering_metadata["static_signature"]
+        == "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape;axes"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((left, right, axes)) == (2, 2)
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((left, right, axes)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((left, right, axes)) == (
+        left.shape,
+        right.shape,
+        ((2, 1), (0, 1)),
+    )
+
+    rule = program_ad_product_tensordot_derivative_rule(left.shape, right.shape, axes=axes)
+    assert rule.name == "program_ad_product_tensordot_2x3x4_by_4x3x2_axes_2_1_by_0_1_direct_rule"
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        rule.value_fn(values), np.tensordot(left, right, axes=axes).reshape(-1)
+    )
+    np.testing.assert_allclose(
+        rule.jvp_rule(values, tangent),
+        (
+            np.tensordot(tangent_left, right, axes=axes)
+            + np.tensordot(left, tangent_right, axes=axes)
+        ).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    expected_adjoint = np.zeros(values.size, dtype=np.float64)
+    for index in range(values.size):
+        basis = np.zeros_like(values)
+        basis[index] = 1.0
+        basis_left = basis[: left.size].reshape(left.shape)
+        basis_right = basis[left.size :].reshape(right.shape)
+        basis_result = np.tensordot(basis_left, right, axes=axes) + np.tensordot(
+            left,
+            basis_right,
+            axes=axes,
+        )
+        expected_adjoint[index] = float(np.sum(basis_result * cotangent))
+    np.testing.assert_allclose(
+        rule.vjp_rule(values, cotangent.reshape(-1)),
+        expected_adjoint,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_tensordot_static_axes_preserves_high_rank_adjoint() -> None:
+    """Program AD should differentiate static high-rank tensordot contractions exactly."""
+
+    left_shape = (2, 3, 2)
+    right_shape = (2, 3, 2)
+    axes = ((2, 1), (0, 1))
+    weights = np.array([[0.5, -1.25], [1.75, 0.25]], dtype=np.float64)
+    values = np.linspace(-0.8, 1.5, 24, dtype=np.float64)
+
+    def objective(trace_values: np.ndarray) -> object:
+        left = np.reshape(trace_values[:12], left_shape)
+        right = np.reshape(trace_values[12:], right_shape)
+        return np.sum(np.tensordot(left, right, axes=axes) * weights)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    expected = np.zeros_like(values)
+    for index in range(values.size):
+        basis = np.zeros_like(values)
+        basis[index] = 1.0
+        basis_left = basis[:12].reshape(left_shape)
+        basis_right = basis[12:].reshape(right_shape)
+        left = values[:12].reshape(left_shape)
+        right = values[12:].reshape(right_shape)
+        expected[index] = np.sum(
+            (
+                np.tensordot(basis_left, right, axes=axes)
+                + np.tensordot(left, basis_right, axes=axes)
+            )
+            * weights
+        )
+    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+
+
 def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     """Cumsum, cumprod, and diff should expose primitive registry contracts."""
 
@@ -7533,6 +7646,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.product:matmul": (
             "program_ad_product_matmul_derivative_rule",
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.product:tensordot": (
+            "program_ad_product_tensordot_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape;axes",
         ),
         "scpn.program_ad.product:inner": (
             "program_ad_product_inner_derivative_rule",
@@ -11684,6 +11801,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     )
     assert (
         scpn.program_ad_product_outer_derivative_rule is program_ad_product_outer_derivative_rule
+    )
+    assert (
+        scpn.program_ad_product_tensordot_derivative_rule
+        is program_ad_product_tensordot_derivative_rule
     )
     assert (
         scpn.program_ad_selection_clip_derivative_rule is program_ad_selection_clip_derivative_rule

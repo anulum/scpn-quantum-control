@@ -4104,26 +4104,42 @@ def _trace_tensordot(
     *,
     axes: object,
 ) -> TraceADScalar | TraceADArray:
-    if axes == 0:
-        lhs = _coerce_trace_array(left, context)
-        rhs = _coerce_trace_array(right, context)
-        items = tuple(
-            left_item * right_item for left_item in lhs._items for right_item in rhs._items
-        )
-        return TraceADArray(items, lhs.shape + rhs.shape, context)
-    if axes == 1:
-        lhs = _coerce_trace_array(left, context)
-        rhs = _coerce_trace_array(right, context)
-        if lhs.ndim == 1 and rhs.ndim == 1:
-            return _trace_dot(lhs, rhs, context)
-        return _trace_matmul(lhs, rhs, context)
-    if axes == ((1,), (0,)):
-        return _trace_matmul(left, right, context)
-    if axes == ((0,), (0,)):
-        return _trace_inner(left, right, context)
-    raise ValueError(
-        "whole-program AD np.tensordot supports axes 0, axes 1, and one-axis rank<=2 contractions"
+    lhs = _coerce_trace_array(left, context)
+    rhs = _coerce_trace_array(right, context)
+    _require_program_ad_product_contract("tensordot", (lhs, rhs, axes))
+    _left_shape, _right_shape, left_axes, right_axes, output_shape = (
+        _normalise_program_ad_product_tensordot_signature(lhs.shape, rhs.shape, axes)
     )
+    left_free_axes = tuple(axis for axis in range(lhs.ndim) if axis not in left_axes)
+    right_free_axes = tuple(axis for axis in range(rhs.ndim) if axis not in right_axes)
+    contraction_shape = tuple(lhs.shape[axis] for axis in left_axes)
+    output_items: list[TraceADScalar] = []
+    output_indices = np.ndindex(output_shape) if output_shape else iter(((),))
+    contraction_indices = tuple(np.ndindex(contraction_shape)) if contraction_shape else ((),)
+    for output_index in output_indices:
+        output_tuple = tuple(int(index) for index in output_index)
+        left_free_index = output_tuple[: len(left_free_axes)]
+        right_free_index = output_tuple[len(left_free_axes) :]
+        total = _coerce_trace_scalar(0.0, context)
+        for contraction_index in contraction_indices:
+            left_index = [0 for _ in range(lhs.ndim)]
+            right_index = [0 for _ in range(rhs.ndim)]
+            for axis, index in zip(left_free_axes, left_free_index, strict=True):
+                left_index[axis] = index
+            for axis, index in zip(right_free_axes, right_free_index, strict=True):
+                right_index[axis] = index
+            for left_axis, right_axis, index in zip(
+                left_axes, right_axes, contraction_index, strict=True
+            ):
+                left_index[left_axis] = int(index)
+                right_index[right_axis] = int(index)
+            lhs_item = lhs._items[int(np.ravel_multi_index(tuple(left_index), lhs.shape))]
+            rhs_item = rhs._items[int(np.ravel_multi_index(tuple(right_index), rhs.shape))]
+            total = total + lhs_item * rhs_item
+        output_items.append(total)
+    if output_shape == ():
+        return output_items[0]
+    return TraceADArray(tuple(output_items), output_shape, context)
 
 
 def _parse_static_einsum_subscripts(
@@ -8956,7 +8972,7 @@ _PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
 _PROGRAM_AD_PRODUCT_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_PRODUCT_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("dot", "vdot", "inner", "outer", "matmul", "einsum")
+    for name in ("dot", "vdot", "inner", "outer", "matmul", "tensordot", "einsum")
 }
 
 _PROGRAM_AD_CUMULATIVE_PRIMITIVE_NAMESPACE = "scpn.program_ad.cumulative"
@@ -11727,6 +11743,180 @@ def _program_ad_product_static_split_pair(
     )
 
 
+def _normalise_program_ad_product_tensordot_axis_sequence(
+    label: str,
+    axes: object,
+    rank: int,
+) -> tuple[int, ...]:
+    if isinstance(axes, (bool, np.bool_)):
+        raise ValueError(f"program AD product tensordot {label} axes must be static integers")
+    if isinstance(axes, (int, np.integer)):
+        return (_normalise_axis(label, int(axes), rank),)
+    if isinstance(axes, np.ndarray):
+        raw_axes = tuple(axes.reshape(-1).tolist())
+    elif isinstance(axes, Sequence) and not isinstance(axes, (str, bytes)):
+        raw_axes = tuple(axes)
+    else:
+        raise ValueError(f"program AD product tensordot {label} axes must be static integers")
+    normalised: list[int] = []
+    for raw_axis in raw_axes:
+        if isinstance(raw_axis, (bool, np.bool_)) or not isinstance(raw_axis, (int, np.integer)):
+            raise ValueError(f"program AD product tensordot {label} axes must be static integers")
+        normalised.append(_normalise_axis(label, int(raw_axis), rank))
+    if len(set(normalised)) != len(normalised):
+        raise ValueError(f"program AD product tensordot {label} axes must be unique")
+    return tuple(normalised)
+
+
+def _normalise_program_ad_product_tensordot_shape(shape: Sequence[int]) -> tuple[int, ...]:
+    static_shape = tuple(int(dimension) for dimension in shape)
+    if any(dimension <= 0 for dimension in static_shape):
+        raise ValueError("program AD product tensordot dimensions must be positive")
+    return static_shape
+
+
+def _normalise_program_ad_product_tensordot_signature(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+    axes: object,
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    left = _normalise_program_ad_product_tensordot_shape(left_shape)
+    right = _normalise_program_ad_product_tensordot_shape(right_shape)
+    if isinstance(axes, (bool, np.bool_)):
+        raise ValueError("program AD product tensordot axes must be a static integer or pair")
+    if isinstance(axes, (int, np.integer)):
+        axis_count = int(axes)
+        if axis_count < 0:
+            raise ValueError("program AD product tensordot axis count must be non-negative")
+        if axis_count > min(len(left), len(right)):
+            raise ValueError("program AD product tensordot axis count exceeds operand rank")
+        left_axes = tuple(range(len(left) - axis_count, len(left)))
+        right_axes = tuple(range(axis_count))
+    elif isinstance(axes, Sequence) and not isinstance(axes, (str, bytes)) and len(axes) == 2:
+        left_axes = _normalise_program_ad_product_tensordot_axis_sequence(
+            "left",
+            axes[0],
+            len(left),
+        )
+        right_axes = _normalise_program_ad_product_tensordot_axis_sequence(
+            "right",
+            axes[1],
+            len(right),
+        )
+    else:
+        raise ValueError("program AD product tensordot axes must be a static integer or pair")
+    if len(left_axes) != len(right_axes):
+        raise ValueError("program AD product tensordot axis lists must have equal length")
+    for left_axis, right_axis in zip(left_axes, right_axes, strict=True):
+        if left[left_axis] != right[right_axis]:
+            raise ValueError("program AD product tensordot contracted dimensions must align")
+    left_free = tuple(axis for axis in range(len(left)) if axis not in left_axes)
+    right_free = tuple(axis for axis in range(len(right)) if axis not in right_axes)
+    output_shape = tuple(left[axis] for axis in left_free) + tuple(
+        right[axis] for axis in right_free
+    )
+    return left, right, left_axes, right_axes, output_shape
+
+
+def _program_ad_product_tensordot_axes_signature(
+    left_axes: tuple[int, ...],
+    right_axes: tuple[int, ...],
+) -> str:
+    left = "_".join(str(axis) for axis in left_axes) if left_axes else "none"
+    right = "_".join(str(axis) for axis in right_axes) if right_axes else "none"
+    return f"{left}_by_{right}"
+
+
+def program_ad_product_tensordot_derivative_rule(
+    left_shape: Sequence[int],
+    right_shape: Sequence[int],
+    *,
+    axes: object = 2,
+) -> CustomDerivativeRule:
+    """Build a direct value/JVP/VJP rule for a fixed ``np.tensordot`` signature."""
+
+    left_static_shape, right_static_shape, left_axes, right_axes, output_shape = (
+        _normalise_program_ad_product_tensordot_signature(left_shape, right_shape, axes)
+    )
+    output_size = _program_ad_shape_static_size(output_shape)
+    normalised_axes = (left_axes, right_axes)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "tensordot", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        return _program_ad_float64_vector_result(np.tensordot(left, right, axes=normalised_axes))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "tensordot", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        tangent_left, tangent_right = _program_ad_product_static_split_pair(
+            "tensordot tangent",
+            tangent,
+            left_shape=left_static_shape,
+            right_shape=right_static_shape,
+        )
+        return _program_ad_float64_vector_result(
+            np.tensordot(tangent_left, right, axes=normalised_axes)
+            + np.tensordot(left, tangent_right, axes=normalised_axes)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64],
+        cotangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        left, right = _program_ad_product_static_split_pair(
+            "tensordot", values, left_shape=left_static_shape, right_shape=right_static_shape
+        )
+        cotangent_vector = _as_real_numeric_array(
+            "program AD product tensordot cotangent", cotangent
+        ).reshape(-1)
+        if cotangent_vector.size != output_size:
+            raise ValueError(
+                "program AD product tensordot VJP cotangent size must match output shape"
+            )
+        left_adjoint = np.zeros_like(left, dtype=np.float64)
+        right_adjoint = np.zeros_like(right, dtype=np.float64)
+        for element_index in np.ndindex(left.shape):
+            basis = np.zeros_like(left, dtype=np.float64)
+            basis[element_index] = 1.0
+            left_adjoint[element_index] = float(
+                np.dot(
+                    cotangent_vector,
+                    _program_ad_float64_vector_result(
+                        np.tensordot(basis, right, axes=normalised_axes)
+                    ),
+                )
+            )
+        for element_index in np.ndindex(right.shape):
+            basis = np.zeros_like(right, dtype=np.float64)
+            basis[element_index] = 1.0
+            right_adjoint[element_index] = float(
+                np.dot(
+                    cotangent_vector,
+                    _program_ad_float64_vector_result(
+                        np.tensordot(left, basis, axes=normalised_axes)
+                    ),
+                )
+            )
+        return _program_ad_float64_vector_result(
+            np.concatenate((left_adjoint.reshape(-1), right_adjoint.reshape(-1)))
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_product_tensordot_"
+            f"{_program_ad_shape_signature(left_static_shape)}_by_"
+            f"{_program_ad_shape_signature(right_static_shape)}_axes_"
+            f"{_program_ad_product_tensordot_axes_signature(left_axes, right_axes)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
 def program_ad_product_inner_derivative_rule(
     left_shape: Sequence[int],
     right_shape: Sequence[int],
@@ -12015,6 +12205,29 @@ def _program_ad_product_einsum_unconfigured_vjp(
     )
 
 
+def _program_ad_product_tensordot_unconfigured_value(
+    values: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    del values
+    raise ValueError("program AD product tensordot direct rule requires fixed shapes and axes")
+
+
+def _program_ad_product_tensordot_unconfigured_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    del values, tangent
+    raise ValueError("program AD product tensordot JVP rule requires fixed shapes and axes")
+
+
+def _program_ad_product_tensordot_unconfigured_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    del values, cotangent
+    raise ValueError("program AD product tensordot VJP rule requires fixed shapes and axes")
+
+
 def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
     if name == "dot":
         return CustomDerivativeRule(
@@ -12050,6 +12263,13 @@ def _program_ad_product_derivative_rule(name: str) -> CustomDerivativeRule:
             value_fn=_program_ad_product_matmul_value,
             jvp_rule=_program_ad_product_matmul_jvp,
             vjp_rule=_program_ad_product_matmul_vjp,
+        )
+    if name == "tensordot":
+        return CustomDerivativeRule(
+            name="program_ad_product_tensordot_static_signature_required_rule",
+            value_fn=_program_ad_product_tensordot_unconfigured_value,
+            jvp_rule=_program_ad_product_tensordot_unconfigured_jvp,
+            vjp_rule=_program_ad_product_tensordot_unconfigured_vjp,
         )
     if name == "einsum":
         return CustomDerivativeRule(
@@ -12906,8 +13126,26 @@ def _program_ad_product_einsum_shape(args: tuple[object, ...]) -> tuple[int, ...
     return tuple(dimensions[label] for label in output_labels)
 
 
+def _program_ad_product_tensordot_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD product tensordot shape rule requires two operands and axes")
+    _left, _right, _left_axes, _right_axes, output_shape = (
+        _normalise_program_ad_product_tensordot_signature(
+            _program_ad_array_shape_of(args[0]),
+            _program_ad_array_shape_of(args[1]),
+            args[2],
+        )
+    )
+    return output_shape
+
+
 def _program_ad_product_dtype_rule(args: tuple[object, ...]) -> str:
-    product_args = args[1:] if args and isinstance(args[0], str) else args
+    if args and isinstance(args[0], str):
+        product_args = args[1:]
+    elif len(args) == 3:
+        product_args = args[:2]
+    else:
+        product_args = args
     if not product_args:
         raise ValueError("program AD product dtype rule requires operands")
     dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in product_args)
@@ -13238,6 +13476,17 @@ def _program_ad_product_static_arguments(args: tuple[object, ...]) -> tuple[obje
             tuple("".join(labels) for labels in input_labels),
             "".join(output_labels),
         )
+    if len(args) == 3:
+        left_shape = _program_ad_array_shape_of(args[0])
+        right_shape = _program_ad_array_shape_of(args[1])
+        _left, _right, left_axes, right_axes, _output_shape = (
+            _normalise_program_ad_product_tensordot_signature(
+                left_shape,
+                right_shape,
+                args[2],
+            )
+        )
+        return (left_shape, right_shape, (left_axes, right_axes))
     if len(args) != 2:
         raise ValueError("program AD product static rule requires two operands")
     return ()
@@ -13320,6 +13569,7 @@ _PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "inner": _program_ad_product_inner_shape,
     "outer": _program_ad_product_outer_shape,
     "matmul": _program_ad_product_matmul_shape,
+    "tensordot": _program_ad_product_tensordot_shape,
     "einsum": _program_ad_product_einsum_shape,
 }
 
@@ -13737,6 +13987,51 @@ def _program_ad_product_batching_rule(
             )
         stacked = np.stack(outputs, axis=0)
         return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+    if len(args) == 3:
+        if len(axes) != 3:
+            raise ValueError("program AD product tensordot batching axes must match arguments")
+        if axes[2] is not None:
+            raise ValueError("program AD product tensordot batching requires static axes")
+        arrays = tuple(
+            _as_real_numeric_array(f"program AD product tensordot batched operand {index}", arg)
+            for index, arg in enumerate(args[:2])
+        )
+        if all(axis is None for axis in axes[:2]):
+            return _as_real_numeric_array(
+                "program AD product tensordot batched output",
+                function(*arrays, args[2]),
+            )
+        tensordot_mapped_axes: list[int | None] = [
+            None if axis is None else _normalise_axis(f"axes[{index}]", axis, array.ndim)
+            for index, (axis, array) in enumerate(zip(axes[:2], arrays, strict=True))
+        ]
+        batch_sizes = {
+            int(array.shape[axis])
+            for array, axis in zip(arrays, tensordot_mapped_axes, strict=True)
+            if axis is not None
+        }
+        if len(batch_sizes) != 1:
+            raise ValueError(
+                "program AD product tensordot batching axes must share one batch size"
+            )
+        batch_size = batch_sizes.pop()
+        outputs = []
+        for batch_index in range(batch_size):
+            sliced_args = (
+                *(
+                    array if axis is None else np.take(array, batch_index, axis=axis)
+                    for array, axis in zip(arrays, tensordot_mapped_axes, strict=True)
+                ),
+                args[2],
+            )
+            outputs.append(
+                _as_real_numeric_array(
+                    "program AD product tensordot batched output",
+                    function(*sliced_args),
+                )
+            )
+        stacked = np.stack(outputs, axis=0)
+        return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
     if len(args) != 2 or len(axes) != 2:
         raise ValueError("program AD product batching requires two operands and two axes")
     arrays = tuple(
@@ -13777,6 +14072,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "inner": "program_ad_product_inner_derivative_rule",
         "outer": "program_ad_product_outer_derivative_rule",
         "matmul": "program_ad_product_matmul_derivative_rule",
+        "tensordot": "program_ad_product_tensordot_derivative_rule",
         "einsum": "program_ad_product_einsum_derivative_rule",
     }
     static_signatures = {
@@ -13785,6 +14081,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "inner": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         "outer": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         "matmul": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        "tensordot": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape;axes",
         "einsum": "subscripts:explicit_static;operand_shapes:ranked_tensor_shapes",
     }
     nondifferentiable_boundaries = {
@@ -13793,6 +14090,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "inner": "last_dimension_alignment",
         "outer": "flattened_outer_product",
         "matmul": "core_dimension_alignment",
+        "tensordot": "static_axes_tensor_contraction",
         "einsum": "explicit_static_tensor_contraction",
     }
     return {
@@ -13801,7 +14099,7 @@ def _program_ad_product_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir_op": f"scpn_diff.product.{name}",
         "llvm": "blocked_until_executable_product_lowering",
         "rust": "blocked_until_polyglot_product_ad",
-        "static_argument_rule": "required" if name == "einsum" else "none",
+        "static_argument_rule": "required" if name in {"einsum", "tensordot"} else "none",
         "static_derivative_factory": static_factories[name],
         "static_signature": static_signatures[name],
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],
@@ -20675,6 +20973,7 @@ __all__ = [
     "program_ad_product_inner_derivative_rule",
     "program_ad_product_matmul_derivative_rule",
     "program_ad_product_outer_derivative_rule",
+    "program_ad_product_tensordot_derivative_rule",
     "program_ad_reduction_mean_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",
