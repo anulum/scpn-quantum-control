@@ -148,6 +148,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_array_take_along_axis_derivative_rule,
     program_ad_array_take_derivative_rule,
     program_ad_assembly_append_derivative_rule,
+    program_ad_assembly_block_derivative_rule,
     program_ad_assembly_concatenate_derivative_rule,
     program_ad_assembly_stack_derivative_rule,
     program_ad_cumulative_cumprod_derivative_rule,
@@ -7797,6 +7798,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_assembly_append_derivative_rule",
             "source_shape:ranked_tensor_shape;values_shape:ranked_tensor_shape;axis",
         ),
+        "scpn.program_ad.assembly:block": (
+            "program_ad_assembly_block_derivative_rule",
+            "layout_shapes:nested_ranked_tensor_shapes",
+        ),
         "scpn.program_ad.signal:convolve": (
             "program_ad_signal_convolve_derivative_rule",
             "left_shape:rank1;right_shape:rank1;mode",
@@ -10419,6 +10424,144 @@ def test_program_ad_assembly_append_batching_rule_maps_operand_batches() -> None
         contract.batching_rule(append_fn, (source_batch, values_batch, 0), (0, 0, None), 0)
 
 
+def test_program_ad_assembly_block_contract_and_direct_rule() -> None:
+    """np.block should expose a fail-closed nested assembly primitive direct rule."""
+
+    top_left = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    top_right = np.array([[0.25], [-0.75]], dtype=np.float64)
+    bottom_left = np.array([[1.5, -2.5]], dtype=np.float64)
+    bottom_right = np.array([[0.125]], dtype=np.float64)
+    tangent_top_left = np.array([[0.1, -0.2], [0.3, -0.4]], dtype=np.float64)
+    tangent_top_right = np.array([[-0.5], [0.25]], dtype=np.float64)
+    tangent_bottom_left = np.array([[0.75, -0.125]], dtype=np.float64)
+    tangent_bottom_right = np.array([[0.625]], dtype=np.float64)
+    cotangent = np.array(
+        [[0.2, -0.4, 0.6], [-0.8, 1.0, -1.2], [1.4, -1.6, 1.8]],
+        dtype=np.float64,
+    )
+    layout = ((top_left, top_right), (bottom_left, bottom_right))
+    layout_shapes = (
+        (top_left.shape, top_right.shape),
+        (bottom_left.shape, bottom_right.shape),
+    )
+    values = np.concatenate([array.reshape(-1) for row in layout for array in row])
+    tangent = np.concatenate(
+        [
+            tangent_top_left.reshape(-1),
+            tangent_top_right.reshape(-1),
+            tangent_bottom_left.reshape(-1),
+            tangent_bottom_right.reshape(-1),
+        ]
+    )
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:block")
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.assembly", "block", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.assembly.block"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_assembly_block_derivative_rule"
+    )
+    assert (
+        contract.lowering_metadata["static_signature"]
+        == "layout_shapes:nested_ranked_tensor_shapes"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((layout,)) == (3, 3)
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((layout,)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((layout,)) == (((2, 2), (2, 1)), ((1, 2), (1, 1)))
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(contract.identity)
+
+    rule = program_ad_assembly_block_derivative_rule(layout_shapes)
+    assert rule.name == "program_ad_assembly_block_4_operands_direct_rule"
+    np.testing.assert_allclose(
+        rule.value_fn(values),
+        np.block([[top_left, top_right], [bottom_left, bottom_right]]).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rule.jvp_rule(values, tangent),
+        np.block(
+            [
+                [tangent_top_left, tangent_top_right],
+                [tangent_bottom_left, tangent_bottom_right],
+            ]
+        ).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rule.vjp_rule(values, cotangent.reshape(-1)),
+        np.concatenate(
+            [
+                cotangent[:2, :2].reshape(-1),
+                cotangent[:2, 2:].reshape(-1),
+                cotangent[2:, :2].reshape(-1),
+                cotangent[2:, 2:].reshape(-1),
+            ]
+        ),
+    )
+
+
+def test_program_ad_assembly_block_batching_rule_maps_nested_batches() -> None:
+    """Block batching should map nested block leaves with matching axes."""
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:block")
+    assert contract.batching_rule is not None
+
+    def block_fn(layout: tuple[tuple[np.ndarray, ...], ...]) -> np.ndarray:
+        return np.block(layout)
+
+    top_left_batch = np.array(
+        [
+            [[1.0, -2.0], [0.5, 3.0]],
+            [[-1.5, 0.25], [2.0, -0.75]],
+        ],
+        dtype=np.float64,
+    )
+    top_right_batch = np.array(
+        [
+            [[0.25], [-0.75]],
+            [[1.5], [-2.5]],
+        ],
+        dtype=np.float64,
+    )
+    bottom_left_batch = np.array(
+        [
+            [[1.5, -2.5]],
+            [[0.75, -1.25]],
+        ],
+        dtype=np.float64,
+    )
+    bottom_right_batch = np.array([[[0.125]], [[-0.625]]], dtype=np.float64)
+    layout = (
+        (top_left_batch, top_right_batch),
+        (bottom_left_batch, bottom_right_batch),
+    )
+    axes = (((0, 0), (0, 0)),)
+    expected = np.stack(
+        [
+            np.block(
+                [
+                    [top_left_batch[index], top_right_batch[index]],
+                    [bottom_left_batch[index], bottom_right_batch[index]],
+                ]
+            )
+            for index in range(top_left_batch.shape[0])
+        ],
+        axis=0,
+    )
+
+    np.testing.assert_allclose(contract.batching_rule(block_fn, (layout,), axes, 0), expected)
+    np.testing.assert_allclose(
+        contract.batching_rule(block_fn, (layout,), axes, 1),
+        np.moveaxis(expected, 0, 1),
+    )
+    with pytest.raises(ValueError, match="axes matching layout"):
+        contract.batching_rule(block_fn, (layout,), (((0,),),), 0)
+
+
 def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
     """np.convolve should expose a fail-closed signal primitive direct rule."""
 
@@ -12666,6 +12809,9 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert (
         scpn.program_ad_assembly_append_derivative_rule
         is program_ad_assembly_append_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_block_derivative_rule is program_ad_assembly_block_derivative_rule
     )
     assert (
         scpn.program_ad_assembly_stack_derivative_rule is program_ad_assembly_stack_derivative_rule

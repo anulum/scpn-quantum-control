@@ -6120,6 +6120,7 @@ def _trace_block(
         raise ValueError(
             "program AD np.block requires a non-empty nested sequence of shape-compatible arrays"
         ) from exc
+    _require_program_ad_assembly_contract("block", (blocks,))
     selected_array = np.asarray(selected, dtype=np.int64)
     items = tuple(flat_items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(
@@ -9642,7 +9643,7 @@ _PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE = "scpn.program_ad.assembly"
 _PROGRAM_AD_ASSEMBLY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("concatenate", "stack", "append")
+    for name in ("concatenate", "stack", "append", "block")
 }
 
 _PROGRAM_AD_SIGNAL_PRIMITIVE_NAMESPACE = "scpn.program_ad.signal"
@@ -14532,6 +14533,74 @@ def _program_ad_assembly_append_static_arguments(
     return source_shape, values_shape, axis
 
 
+def _program_ad_assembly_block_layout(args: tuple[object, ...]) -> object:
+    if len(args) != 1:
+        raise ValueError("program AD assembly block requires one nested layout argument")
+    layout = args[0]
+    if not isinstance(layout, (tuple, list)):
+        raise ValueError("program AD assembly block requires a nested layout")
+    if not layout:
+        raise ValueError("program AD assembly block requires a non-empty nested layout")
+    return layout
+
+
+def _program_ad_assembly_block_shape_layout_from_operands(layout: object) -> tuple[object, ...]:
+    if isinstance(layout, (tuple, list)):
+        if not layout:
+            raise ValueError("program AD assembly block requires a non-empty nested layout")
+        return tuple(
+            _program_ad_assembly_block_shape_layout_from_operands(item) for item in layout
+        )
+    return _program_ad_array_shape_of(layout)
+
+
+def _program_ad_assembly_block_dtype_leaves(layout: object) -> tuple[np.dtype[Any], ...]:
+    if isinstance(layout, (tuple, list)):
+        if not layout:
+            raise ValueError("program AD assembly block requires a non-empty nested layout")
+        dtypes: list[np.dtype[Any]] = []
+        for item in layout:
+            dtypes.extend(_program_ad_assembly_block_dtype_leaves(item))
+        return tuple(dtypes)
+    return (np.dtype(_program_ad_array_dtype_of(layout)),)
+
+
+def _program_ad_assembly_block_numpy_layout(layout: object) -> object:
+    if isinstance(layout, (tuple, list)):
+        if not layout:
+            raise ValueError("program AD assembly block requires a non-empty nested layout")
+        return [_program_ad_assembly_block_numpy_layout(item) for item in layout]
+    return layout
+
+
+def _program_ad_assembly_block_static_parts(args: tuple[object, ...]) -> tuple[object, ...]:
+    layout = _program_ad_assembly_block_layout(args)
+    layout_shapes = _program_ad_assembly_block_shape_layout_from_operands(layout)
+    _program_ad_assembly_block_output_shape(layout_shapes)
+    return layout_shapes
+
+
+def _program_ad_assembly_block_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    return _program_ad_assembly_block_output_shape(_program_ad_assembly_block_static_parts(args))
+
+
+def _program_ad_assembly_block_dtype_rule(args: tuple[object, ...]) -> str:
+    layout = _program_ad_assembly_block_layout(args)
+    return str(np.result_type(*_program_ad_assembly_block_dtype_leaves(layout)))
+
+
+def _program_ad_assembly_block_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return _program_ad_assembly_block_static_parts(args)
+
+
+@dataclass(frozen=True)
+class _ProgramADAssemblyBlockMappedLeaf:
+    array: NDArray[np.float64]
+    axis: int
+
+
 def _program_ad_assembly_batching_rule(
     function: Callable[..., object],
     args: tuple[object, ...],
@@ -14698,6 +14767,82 @@ def _program_ad_assembly_append_batching_rule(
     return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
+def _program_ad_assembly_block_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[object, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 1 or len(axes) != 1:
+        raise ValueError("program AD assembly block batching requires one nested layout argument")
+    layout = _program_ad_assembly_block_layout(args)
+    layout_axes = axes[0]
+    if layout_axes is None:
+        return _as_real_numeric_array(
+            "program AD assembly block batched output",
+            function(_program_ad_assembly_block_numpy_layout(layout)),
+        )
+
+    batch_size: int | None = None
+
+    def map_layout(
+        node: object,
+        axis_node: object,
+        path: str,
+    ) -> object:
+        nonlocal batch_size
+        if isinstance(node, (tuple, list)):
+            if not isinstance(axis_node, (tuple, list)) or len(axis_node) != len(node):
+                raise ValueError(
+                    "program AD assembly block batching requires axes matching layout"
+                )
+            if not node:
+                raise ValueError("program AD assembly block requires a non-empty nested layout")
+            return tuple(
+                map_layout(child, child_axis, f"{path}.{index}")
+                for index, (child, child_axis) in enumerate(zip(node, axis_node, strict=True))
+            )
+        if axis_node is None:
+            return node
+        if isinstance(axis_node, bool) or not isinstance(axis_node, (int, np.integer)):
+            raise ValueError("program AD assembly block batching requires axes matching layout")
+        array = _as_real_numeric_array(
+            "program AD assembly block batched leaf",
+            node,
+        )
+        axis_index = _normalise_axis(f"{path} axis", int(axis_node), array.ndim)
+        current_batch_size = int(array.shape[axis_index])
+        if batch_size is None:
+            batch_size = current_batch_size
+        elif batch_size != current_batch_size:
+            raise ValueError("program AD assembly block batching requires equal batch sizes")
+        return _ProgramADAssemblyBlockMappedLeaf(array=array, axis=axis_index)
+
+    mapped_layout = map_layout(layout, layout_axes, "layout")
+    if batch_size is None:
+        return _as_real_numeric_array(
+            "program AD assembly block batched output",
+            function(_program_ad_assembly_block_numpy_layout(layout)),
+        )
+
+    def slice_layout(node: object, index: int) -> object:
+        if isinstance(node, _ProgramADAssemblyBlockMappedLeaf):
+            return np.take(node.array, index, axis=node.axis)
+        if isinstance(node, tuple):
+            return [slice_layout(child, index) for child in node]
+        return node
+
+    outputs = [
+        _as_real_numeric_array(
+            "program AD assembly block batched output",
+            function(slice_layout(mapped_layout, batch_index)),
+        )
+        for batch_index in range(batch_size)
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
 def _program_ad_assembly_stack_batching_rule(
     function: Callable[..., object],
     args: tuple[object, ...],
@@ -14784,16 +14929,19 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         raise ValueError(f"unsupported program AD assembly primitive {name}")
     factory_names = {
         "append": "program_ad_assembly_append_derivative_rule",
+        "block": "program_ad_assembly_block_derivative_rule",
         "concatenate": "program_ad_assembly_concatenate_derivative_rule",
         "stack": "program_ad_assembly_stack_derivative_rule",
     }
     boundaries = {
         "append": "static_source_values_shape_axis_append",
+        "block": "static_nested_block_shape_layout",
         "concatenate": "static_operand_shape_axis_concatenate",
         "stack": "static_operand_shape_axis_stack",
     }
     static_signatures = {
         "append": "source_shape:ranked_tensor_shape;values_shape:ranked_tensor_shape;axis",
+        "block": "layout_shapes:nested_ranked_tensor_shapes",
         "concatenate": "operand_shapes:ranked_tensor_shapes;axis",
         "stack": "operand_shapes:ranked_tensor_shapes;axis",
     }
@@ -15643,21 +15791,25 @@ def _register_program_ad_interpolation_primitive_contracts() -> None:
 def _register_program_ad_assembly_primitive_contracts() -> None:
     batching_rules: Mapping[str, PrimitiveBatchingRule] = {
         "append": _program_ad_assembly_append_batching_rule,
+        "block": _program_ad_assembly_block_batching_rule,
         "concatenate": _program_ad_assembly_batching_rule,
         "stack": _program_ad_assembly_stack_batching_rule,
     }
     shape_rules: Mapping[str, PrimitiveShapeRule] = {
         "append": _program_ad_assembly_append_shape,
+        "block": _program_ad_assembly_block_shape,
         "concatenate": _program_ad_assembly_concatenate_shape,
         "stack": _program_ad_assembly_stack_shape,
     }
     dtype_rules: Mapping[str, PrimitiveDTypeRule] = {
         "append": _program_ad_assembly_append_dtype_rule,
+        "block": _program_ad_assembly_block_dtype_rule,
         "concatenate": _program_ad_assembly_concatenate_dtype_rule,
         "stack": _program_ad_assembly_stack_dtype_rule,
     }
     static_argument_rules: Mapping[str, PrimitiveStaticArgumentRule] = {
         "append": _program_ad_assembly_append_static_arguments,
+        "block": _program_ad_assembly_block_static_arguments,
         "concatenate": _program_ad_assembly_concatenate_static_arguments,
         "stack": _program_ad_assembly_stack_static_arguments,
     }
@@ -16844,6 +16996,156 @@ def program_ad_assembly_append_derivative_rule(
 
     return CustomDerivativeRule(
         name=f"program_ad_assembly_append_axis{axis_signature}_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_assembly_block_is_static_shape(value: object) -> bool:
+    return isinstance(value, (tuple, list)) and all(
+        not isinstance(dimension, bool) and isinstance(dimension, (int, np.integer))
+        for dimension in value
+    )
+
+
+def _program_ad_assembly_block_shapes(layout_shapes: object) -> tuple[object, ...]:
+    if _program_ad_assembly_block_is_static_shape(layout_shapes):
+        raise ValueError("program AD assembly block direct rule requires nested layout shapes")
+    if not isinstance(layout_shapes, (tuple, list)) or not layout_shapes:
+        raise ValueError("program AD assembly block direct rule requires nested layout shapes")
+
+    def normalise(node: object) -> object:
+        if _program_ad_assembly_block_is_static_shape(node):
+            return _program_ad_array_normalise_static_shape(
+                "assembly block operand", cast(Any, node)
+            )
+        if not isinstance(node, (tuple, list)) or not node:
+            raise ValueError("program AD assembly block direct rule requires nested layout shapes")
+        return tuple(normalise(item) for item in node)
+
+    return cast(tuple[object, ...], tuple(normalise(item) for item in layout_shapes))
+
+
+def _program_ad_assembly_block_shape_leaves(layout_shapes: object) -> tuple[tuple[int, ...], ...]:
+    if _program_ad_assembly_block_is_static_shape(layout_shapes):
+        return (tuple(int(dimension) for dimension in cast(Sequence[int], layout_shapes)),)
+    leaves: list[tuple[int, ...]] = []
+    if not isinstance(layout_shapes, (tuple, list)) or not layout_shapes:
+        raise ValueError("program AD assembly block direct rule requires nested layout shapes")
+    for item in layout_shapes:
+        leaves.extend(_program_ad_assembly_block_shape_leaves(item))
+    return tuple(leaves)
+
+
+def _program_ad_assembly_block_probe_layout(layout_shapes: object) -> object:
+    if _program_ad_assembly_block_is_static_shape(layout_shapes):
+        return np.empty(tuple(int(dimension) for dimension in cast(Sequence[int], layout_shapes)))
+    if not isinstance(layout_shapes, (tuple, list)) or not layout_shapes:
+        raise ValueError("program AD assembly block direct rule requires nested layout shapes")
+    return [_program_ad_assembly_block_probe_layout(item) for item in layout_shapes]
+
+
+def _program_ad_assembly_block_output_shape(layout_shapes: object) -> tuple[int, ...]:
+    shapes = _program_ad_assembly_block_shapes(layout_shapes)
+    try:
+        output = np.block(cast(Any, _program_ad_assembly_block_probe_layout(shapes)))
+    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            "program AD assembly block direct rule requires shape-compatible nested layout"
+        ) from exc
+    return tuple(int(dimension) for dimension in output.shape)
+
+
+def _program_ad_assembly_block_source_size(layout_shapes: object) -> int:
+    return sum(
+        _program_ad_array_static_size(shape)
+        for shape in _program_ad_assembly_block_shape_leaves(layout_shapes)
+    )
+
+
+def _program_ad_assembly_block_split_source(
+    role: str,
+    values: NDArray[np.float64],
+    *,
+    layout_shapes: tuple[object, ...],
+) -> object:
+    vector = _program_ad_array_vector(
+        "block",
+        role,
+        values,
+        expected_size=_program_ad_assembly_block_source_size(layout_shapes),
+    )
+    offset = 0
+
+    def split(node: object) -> object:
+        nonlocal offset
+        if _program_ad_assembly_block_is_static_shape(node):
+            shape = tuple(int(dimension) for dimension in cast(Sequence[int], node))
+            size = _program_ad_array_static_size(shape)
+            operand = vector[offset : offset + size].reshape(shape)
+            offset += size
+            return operand
+        if not isinstance(node, tuple):
+            raise ValueError("program AD assembly block direct rule requires nested layout shapes")
+        return [split(item) for item in node]
+
+    return split(layout_shapes)
+
+
+def _program_ad_assembly_block_index_layout(layout_shapes: tuple[object, ...]) -> object:
+    offset = 0
+
+    def build(node: object) -> object:
+        nonlocal offset
+        if _program_ad_assembly_block_is_static_shape(node):
+            shape = tuple(int(dimension) for dimension in cast(Sequence[int], node))
+            size = _program_ad_array_static_size(shape)
+            indices = np.arange(offset, offset + size, dtype=np.int64).reshape(shape)
+            offset += size
+            return indices
+        if not isinstance(node, tuple):
+            raise ValueError("program AD assembly block direct rule requires nested layout shapes")
+        return [build(item) for item in node]
+
+    return build(layout_shapes)
+
+
+def program_ad_assembly_block_derivative_rule(layout_shapes: object) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.block`` layouts."""
+
+    shapes = _program_ad_assembly_block_shapes(layout_shapes)
+    output_shape = _program_ad_assembly_block_output_shape(shapes)
+    output_size = _program_ad_array_static_size(output_shape)
+    source_size = _program_ad_assembly_block_source_size(shapes)
+    operand_count = len(_program_ad_assembly_block_shape_leaves(shapes))
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        layout = _program_ad_assembly_block_split_source("values", values, layout_shapes=shapes)
+        return _program_ad_float64_vector_result(np.block(cast(Any, layout)).reshape(-1))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_assembly_block_split_source("values", values, layout_shapes=shapes)
+        tangent_layout = _program_ad_assembly_block_split_source(
+            "tangent", tangent, layout_shapes=shapes
+        )
+        return _program_ad_float64_vector_result(np.block(cast(Any, tangent_layout)).reshape(-1))
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_assembly_block_split_source("values", values, layout_shapes=shapes)
+        cotangent_vector = _program_ad_array_vector(
+            "block", "cotangent", cotangent, expected_size=output_size
+        )
+        selected = np.asarray(np.block(cast(Any, _program_ad_assembly_block_index_layout(shapes))))
+        cotangent_array = cotangent_vector.reshape(output_shape)
+        adjoint = np.zeros(source_size, dtype=np.float64)
+        np.add.at(adjoint, selected.reshape(-1), cotangent_array.reshape(-1))
+        return _program_ad_float64_vector_result(adjoint)
+
+    return CustomDerivativeRule(
+        name=f"program_ad_assembly_block_{operand_count}_operands_direct_rule",
         value_fn=value_fn,
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
@@ -23091,6 +23393,7 @@ __all__ = [
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
     "program_ad_assembly_append_derivative_rule",
+    "program_ad_assembly_block_derivative_rule",
     "program_ad_assembly_concatenate_derivative_rule",
     "program_ad_assembly_stack_derivative_rule",
     "program_ad_array_delete_derivative_rule",
