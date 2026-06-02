@@ -5040,65 +5040,99 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
     """Native program AD lowering should report replay-supported ops that lack LLVM lowering."""
 
     def objective(values: np.ndarray) -> object:
-        return np.linalg.det(values[0:36].reshape((6, 6))) + np.sin(values[36])
+        matrix = np.diag(values[:12])
+        return np.linalg.det(matrix) + np.sin(values[12])
 
-    sample = np.array(
-        [
-            1.2,
-            0.1,
-            -0.2,
-            0.3,
-            0.0,
-            1.4,
-            0.5,
-            -0.1,
-            0.2,
-            -0.3,
-            1.1,
-            0.4,
-            -0.1,
-            0.2,
-            0.3,
-            1.3,
-            0.2,
-            -0.1,
-            0.3,
-            0.0,
-            1.1,
-            -0.2,
-            0.4,
-            -0.3,
-            0.1,
-            0.2,
-            -0.4,
-            1.2,
-            0.3,
-            -0.1,
-            0.5,
-            -0.2,
-            0.6,
-            0.0,
-            0.4,
-            1.4,
-            0.75,
-        ],
-        dtype=np.float64,
-    )
-    parameters = tuple(Parameter(f"x{index}") for index in range(37))
+    sample = np.linspace(1.1, 1.7, 13, dtype=np.float64)
+    parameters = tuple(Parameter(f"x{index}") for index in range(13))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert isinstance(report, WholeProgramADNativeLoweringReport)
     assert report.supported is False
-    assert report.unsupported_ops == ("linalg:det:6x6",)
+    assert report.unsupported_ops == ("linalg:det:12x12",)
     assert report.unsupported_operation_count == 1
     assert report.lowerable_operation_count == len(result.ir_nodes) - 1
-    assert "unsupported native ops: linalg:det:6x6" in report.fail_closed_reason
+    assert "unsupported native ops: linalg:det:12x12" in report.fail_closed_reason
     assert report.as_metadata()["unsupported_ops"] == report.unsupported_ops
 
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:det:6x6"):
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:det:12x12"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+
+
+def test_whole_program_ad_trace_native_llvm_jit_lowers_wide_determinants() -> None:
+    """Native program AD should lower helper-backed 6x6 and 8x8 determinants."""
+
+    for size in (6, 8):
+
+        def objective(
+            values: np.ndarray,
+            *,
+            matrix_size: int = size,
+        ) -> object:
+            matrix = np.diag(values[:matrix_size])
+            return (
+                np.linalg.det(matrix)
+                + 0.01 * values[matrix_size] * values[0]
+                - np.sin(values[matrix_size - 1])
+            )
+
+        sample = np.linspace(1.1, 1.6, size + 1, dtype=np.float64)
+        replay = np.linspace(1.7, 1.2, size + 1, dtype=np.float64)
+        parameters = tuple(Parameter(f"x{index}") for index in range(size + 1))
+
+        result = whole_program_value_and_grad(objective, sample, parameters)
+        report = analyse_whole_program_ad_native_lowering(result)
+        kernel = compile_whole_program_ad_trace_to_native_llvm_jit(
+            objective,
+            sample,
+            parameters,
+        )
+        reference_value, reference_gradient = program_adjoint_value_and_grad(
+            objective,
+            replay,
+            parameters,
+        )
+        det_op = f"linalg:det:{size}x{size}"
+
+        assert report.supported is True
+        assert report.unsupported_ops == ()
+        assert det_op in report.lowerable_ops
+        assert det_op in kernel.supported_ops
+        assert f"det{size}_fl" in kernel.llvm_ir
+        assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+        assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+        assert kernel.value(replay) == pytest.approx(reference_value, rel=1.0e-9, abs=1.0e-9)
+        np.testing.assert_allclose(
+            kernel.gradient(replay),
+            reference_gradient,
+            rtol=1.0e-8,
+            atol=1.0e-8,
+        )
+        batch = np.vstack(
+            [
+                sample,
+                replay,
+                np.linspace(1.25, 1.75, size + 1, dtype=np.float64),
+            ]
+        )
+        batch_reference = [
+            program_adjoint_value_and_grad(objective, row, parameters) for row in batch
+        ]
+        batch_result = kernel.batch_value_and_grad(batch)
+        np.testing.assert_allclose(
+            batch_result.values,
+            np.array([item[0] for item in batch_reference], dtype=np.float64),
+            rtol=1.0e-8,
+            atol=1.0e-8,
+        )
+        np.testing.assert_allclose(
+            batch_result.gradients,
+            np.vstack([item[1] for item in batch_reference]),
+            rtol=1.0e-8,
+            atol=1.0e-8,
+        )
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_5x5_determinant() -> None:

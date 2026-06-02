@@ -10001,6 +10001,7 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
         "linalg:solve:2x2:rhs:2:1",
     }
 )
+_WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset({6, 8})
 
 
 def analyse_whole_program_ad_native_lowering(
@@ -10056,6 +10057,8 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
     if op in _WHOLE_PROGRAM_NATIVE_BINARY_OPS:
         return True
     if op in _WHOLE_PROGRAM_NATIVE_LINALG_OPS:
+        return True
+    if _whole_program_native_wide_det_size(op) is not None:
         return True
     if _whole_program_native_trace_input_count(op) is not None:
         return True
@@ -10794,6 +10797,21 @@ def _emit_whole_program_native_operation(
             raise ValueError("native linalg:det:5x5 expects twenty-five matrix inputs")
         _emit_whole_program_native_det5(lines, result, node, value_name, inputs)
         return
+    wide_det_size = _whole_program_native_wide_det_size(node.op)
+    if wide_det_size is not None:
+        expected_inputs = wide_det_size * wide_det_size
+        if len(inputs) != expected_inputs:
+            raise ValueError(f"native {node.op} expects {expected_inputs} matrix inputs")
+        _emit_whole_program_native_det_faddeev_leverrier(
+            lines,
+            result,
+            node,
+            value_name,
+            inputs,
+            size=wide_det_size,
+            prefix=f"det{wide_det_size}",
+        )
+        return
     trace_input_count = _whole_program_native_trace_input_count(node.op)
     if trace_input_count is not None:
         if len(inputs) != trace_input_count:
@@ -11421,6 +11439,191 @@ def _emit_whole_program_native_det5(
     )
 
 
+def _emit_whole_program_native_det_faddeev_leverrier(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+    *,
+    size: int,
+    prefix: str,
+) -> None:
+    """Emit native determinant and exact derivative code using Faddeev-LeVerrier."""
+
+    parameter_count = int(result.gradient.size)
+    matrix = tuple(
+        tuple(_whole_program_native_operand(inputs[row * size + col]) for col in range(size))
+        for row in range(size)
+    )
+    matrix_derivatives = tuple(
+        tuple(
+            tuple(
+                _whole_program_native_derivative_operand(
+                    inputs[row * size + col],
+                    derivative_index,
+                )
+                for col in range(size)
+            )
+            for row in range(size)
+        )
+        for derivative_index in range(parameter_count)
+    )
+    identity = tuple(
+        tuple(_fmt_llvm_float(1.0 if row == col else 0.0) for col in range(size))
+        for row in range(size)
+    )
+    zero_matrix = tuple(tuple(_fmt_llvm_float(0.0) for _ in range(size)) for _ in range(size))
+    b_matrix = identity
+    b_derivatives = tuple(zero_matrix for _ in range(parameter_count))
+    coefficient = _fmt_llvm_float(0.0)
+    coefficient_derivatives = tuple(_fmt_llvm_float(0.0) for _ in range(parameter_count))
+
+    for step in range(1, size + 1):
+        product_matrix: list[list[str]] = []
+        product_derivatives: list[list[list[str]]] = [[] for _ in range(parameter_count)]
+        for row in range(size):
+            product_row: list[str] = []
+            derivative_rows: list[list[str]] = [[] for _ in range(parameter_count)]
+            for col in range(size):
+                product_terms: list[str] = []
+                for inner in range(size):
+                    product_term = f"%{prefix}_fl_s{step}_{row}_{col}_{inner}"
+                    lines.append(
+                        f"  {product_term} = fmul double "
+                        f"{matrix[row][inner]}, {b_matrix[inner][col]}"
+                    )
+                    product_terms.append(product_term)
+                product_value = f"%{prefix}_fl_s{step}_{row}_{col}"
+                _emit_whole_program_native_sum_operands(
+                    lines,
+                    product_terms,
+                    product_value,
+                )
+                product_row.append(product_value)
+
+                for derivative_index in range(parameter_count):
+                    derivative_terms: list[str] = []
+                    for inner in range(size):
+                        left_term = (
+                            f"%d{node.index}_{derivative_index}_{prefix}_fl_s"
+                            f"{step}_{row}_{col}_{inner}_left"
+                        )
+                        right_term = (
+                            f"%d{node.index}_{derivative_index}_{prefix}_fl_s"
+                            f"{step}_{row}_{col}_{inner}_right"
+                        )
+                        lines.extend(
+                            [
+                                f"  {left_term} = fmul double "
+                                f"{matrix_derivatives[derivative_index][row][inner]}, "
+                                f"{b_matrix[inner][col]}",
+                                f"  {right_term} = fmul double {matrix[row][inner]}, "
+                                f"{b_derivatives[derivative_index][inner][col]}",
+                            ]
+                        )
+                        derivative_terms.extend((left_term, right_term))
+                    product_derivative = (
+                        f"%d{node.index}_{derivative_index}_{prefix}_fl_s{step}_{row}_{col}"
+                    )
+                    _emit_whole_program_native_sum_operands(
+                        lines,
+                        derivative_terms,
+                        product_derivative,
+                    )
+                    derivative_rows[derivative_index].append(product_derivative)
+            product_matrix.append(product_row)
+            for derivative_index, derivative_row in enumerate(derivative_rows):
+                product_derivatives[derivative_index].append(derivative_row)
+
+        trace_terms = [product_matrix[index][index] for index in range(size)]
+        trace_value = f"%{prefix}_fl_s{step}_trace"
+        _emit_whole_program_native_sum_operands(lines, trace_terms, trace_value)
+        coefficient = f"%{prefix}_fl_s{step}_coeff"
+        lines.append(
+            f"  {coefficient} = fmul double {_fmt_llvm_float(-1.0 / step)}, {trace_value}"
+        )
+
+        next_coefficient_derivatives: list[str] = []
+        for derivative_index in range(parameter_count):
+            derivative_trace_terms = [
+                product_derivatives[derivative_index][index][index] for index in range(size)
+            ]
+            derivative_trace = f"%d{node.index}_{derivative_index}_{prefix}_fl_s{step}_trace"
+            _emit_whole_program_native_sum_operands(
+                lines,
+                derivative_trace_terms,
+                derivative_trace,
+            )
+            derivative_coefficient = f"%d{node.index}_{derivative_index}_{prefix}_fl_s{step}_coeff"
+            lines.append(
+                f"  {derivative_coefficient} = fmul double "
+                f"{_fmt_llvm_float(-1.0 / step)}, {derivative_trace}"
+            )
+            next_coefficient_derivatives.append(derivative_coefficient)
+        coefficient_derivatives = tuple(next_coefficient_derivatives)
+
+        next_b_matrix: list[list[str]] = []
+        next_b_derivatives: list[list[list[str]]] = [[] for _ in range(parameter_count)]
+        for row in range(size):
+            next_b_row: list[str] = []
+            next_derivative_rows: list[list[str]] = [[] for _ in range(parameter_count)]
+            for col in range(size):
+                if row == col:
+                    next_b_value = f"%{prefix}_fl_s{step}_b_{row}_{col}"
+                    lines.append(
+                        f"  {next_b_value} = fadd double {product_matrix[row][col]}, {coefficient}"
+                    )
+                    for derivative_index in range(parameter_count):
+                        next_derivative = (
+                            f"%d{node.index}_{derivative_index}_{prefix}_fl_s{step}_b_{row}_{col}"
+                        )
+                        lines.append(
+                            f"  {next_derivative} = fadd double "
+                            f"{product_derivatives[derivative_index][row][col]}, "
+                            f"{coefficient_derivatives[derivative_index]}"
+                        )
+                        next_derivative_rows[derivative_index].append(next_derivative)
+                else:
+                    next_b_value = product_matrix[row][col]
+                    for derivative_index in range(parameter_count):
+                        next_derivative_rows[derivative_index].append(
+                            product_derivatives[derivative_index][row][col]
+                        )
+                next_b_row.append(next_b_value)
+            next_b_matrix.append(next_b_row)
+            for derivative_index, derivative_row in enumerate(next_derivative_rows):
+                next_b_derivatives[derivative_index].append(derivative_row)
+        b_matrix = tuple(tuple(row) for row in next_b_matrix)
+        b_derivatives = tuple(
+            tuple(tuple(row) for row in derivative_matrix)
+            for derivative_matrix in next_b_derivatives
+        )
+
+    if size % 2 == 0:
+        lines.append(f"  {value_name} = fadd double {coefficient}, {_fmt_llvm_float(0.0)}")
+        for derivative_index, derivative_coefficient in enumerate(coefficient_derivatives):
+            derivative_name = _whole_program_native_derivative_name(
+                node.index,
+                derivative_index,
+            )
+            lines.append(
+                f"  {derivative_name} = fadd double "
+                f"{derivative_coefficient}, {_fmt_llvm_float(0.0)}"
+            )
+    else:
+        lines.append(f"  {value_name} = fsub double {_fmt_llvm_float(0.0)}, {coefficient}")
+        for derivative_index, derivative_coefficient in enumerate(coefficient_derivatives):
+            derivative_name = _whole_program_native_derivative_name(
+                node.index,
+                derivative_index,
+            )
+            lines.append(
+                f"  {derivative_name} = fsub double "
+                f"{_fmt_llvm_float(0.0)}, {derivative_coefficient}"
+            )
+
+
 def _emit_whole_program_native_det_fixed(
     lines: list[str],
     result: WholeProgramADResult,
@@ -11527,6 +11730,28 @@ def _emit_whole_program_native_det_expression(
     return accumulator
 
 
+def _emit_whole_program_native_sum_operands(
+    lines: list[str],
+    operands: Sequence[str],
+    result_name: str,
+) -> None:
+    """Emit a deterministic native sum into an existing LLVM result name."""
+
+    if not operands:
+        lines.append(
+            f"  {result_name} = fadd double {_fmt_llvm_float(0.0)}, {_fmt_llvm_float(0.0)}"
+        )
+        return
+    if len(operands) == 1:
+        lines.append(f"  {result_name} = fadd double {operands[0]}, {_fmt_llvm_float(0.0)}")
+        return
+    accumulator = operands[0]
+    for offset, operand in enumerate(operands[1:], start=1):
+        target = result_name if offset == len(operands) - 1 else f"{result_name}_sum_{offset}"
+        lines.append(f"  {target} = fadd double {accumulator}, {operand}")
+        accumulator = target
+
+
 def _whole_program_native_det_minor(
     matrix: tuple[tuple[str, ...], ...],
     row_index: int,
@@ -11539,6 +11764,24 @@ def _whole_program_native_det_minor(
         for current_row_index, row_values in enumerate(matrix)
         if current_row_index != row_index
     )
+
+
+def _whole_program_native_wide_det_size(op: str) -> int | None:
+    """Return supported helper-backed determinant sizes for compact det ops."""
+
+    prefix = "linalg:det:"
+    if not op.startswith(prefix):
+        return None
+    shape = op[len(prefix) :]
+    try:
+        row_text, col_text = shape.split("x", 1)
+        rows = int(row_text)
+        cols = int(col_text)
+    except ValueError:
+        return None
+    if rows != cols or rows not in _WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES:
+        return None
+    return rows
 
 
 def _whole_program_native_trace_input_count(op: str) -> int | None:
