@@ -190,6 +190,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_shape_rot90_derivative_rule,
     program_ad_shape_squeeze_derivative_rule,
     program_ad_shape_swapaxes_derivative_rule,
+    program_ad_shape_tile_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
     program_ad_signal_convolve_derivative_rule,
     program_ad_signal_correlate_derivative_rule,
@@ -4658,6 +4659,7 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     assert scpn.program_ad_shape_rot90_derivative_rule is program_ad_shape_rot90_derivative_rule
     assert scpn.program_ad_shape_flip_derivative_rule is program_ad_shape_flip_derivative_rule
     assert scpn.program_ad_shape_repeat_derivative_rule is program_ad_shape_repeat_derivative_rule
+    assert scpn.program_ad_shape_tile_derivative_rule is program_ad_shape_tile_derivative_rule
 
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     cube = np.arange(24.0, dtype=np.float64).reshape(2, 3, 4)
@@ -4789,6 +4791,17 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(repeat_contract.identity)
 
+    tile_contract = primitive_contract_for("scpn.program_ad.shape:tile")
+    assert tile_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "tile", "1")
+    assert tile_contract.shape_rule is not None
+    assert tile_contract.shape_rule((matrix, (2, 1))) == (4, 3)
+    assert tile_contract.dtype_rule is not None
+    assert tile_contract.dtype_rule((matrix, (2, 1))) == "float64"
+    assert tile_contract.static_argument_rule is not None
+    assert tile_contract.static_argument_rule((matrix, (2, 1))) == ((2, 1),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(tile_contract.identity)
+
 
 def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
     """Shape contracts should expose fail-closed static-layout boundaries."""
@@ -4803,6 +4816,7 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         "ravel": "contiguous_flat_view_shape",
         "squeeze": "static_singleton_axis_removal",
         "swapaxes": "static_axis_swap_permutation",
+        "tile": "static_tile_scatter_add",
         "transpose": "static_axis_permutation",
         "moveaxis": "static_axis_move_permutation",
     }
@@ -4831,6 +4845,7 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             "squeeze",
             "swapaxes",
             "moveaxis",
+            "tile",
         )
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
@@ -4874,7 +4889,8 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             swapped = np.swapaxes(reshaped, 0, 1)
             moved = np.moveaxis(swapped, 0, 1)
             repeated = np.repeat(moved, repeats=(1, 1), axis=0)
-            rolled = np.roll(repeated, shift=(1, -1), axis=(0, 1))
+            tiled = np.tile(repeated, reps=(1, 1))
+            rolled = np.roll(tiled, shift=(1, -1), axis=(0, 1))
             rotated = np.rot90(rolled, k=1, axes=(0, 1))
             flipped = np.flip(rotated, axis=(0, 1))
             flattened = np.ravel(np.transpose(flipped))
@@ -4903,6 +4919,7 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
         "squeeze": {"shape", "dtype", "static"},
         "swapaxes": {"shape", "dtype", "static"},
         "moveaxis": {"shape", "dtype", "static"},
+        "tile": {"shape", "dtype", "static"},
     }
 
 
@@ -5189,6 +5206,33 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
     np.testing.assert_allclose(
         repeat_rule.vjp_rule(values, repeat_cotangent),
         expected_repeat_adjoint,
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    tile_rule = program_ad_shape_tile_derivative_rule((2, 3), reps=(2, 1))
+    assert tile_rule.name == "program_ad_shape_tile_2x3_reps_2_1_direct_rule"
+    assert tile_rule.jvp_rule is not None
+    assert tile_rule.vjp_rule is not None
+    tile_cotangent = np.arange(1.0, 13.0, dtype=np.float64)
+    tiled_indices = np.tile(source_indices, (2, 1)).reshape(-1)
+    expected_tile_adjoint = np.zeros(matrix.size, dtype=np.float64)
+    np.add.at(expected_tile_adjoint, tiled_indices, tile_cotangent)
+    np.testing.assert_allclose(
+        tile_rule.value_fn(values),
+        np.tile(matrix, (2, 1)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        tile_rule.jvp_rule(values, tangent),
+        np.tile(tangent.reshape(2, 3), (2, 1)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        tile_rule.vjp_rule(values, tile_cotangent),
+        expected_tile_adjoint,
         rtol=0.0,
         atol=0.0,
     )
@@ -8269,6 +8313,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.shape:rot90": (
             "program_ad_shape_rot90_derivative_rule",
             "source_shape:ranked_tensor_shape;k_axes",
+        ),
+        "scpn.program_ad.shape:repeat": (
+            "program_ad_shape_repeat_derivative_rule",
+            "source_shape:ranked_tensor_shape;repeats_axis",
+        ),
+        "scpn.program_ad.shape:tile": (
+            "program_ad_shape_tile_derivative_rule",
+            "source_shape:ranked_tensor_shape;reps",
         ),
         "scpn.program_ad.reduction:sum": (
             "program_ad_reduction_sum_derivative_rule",

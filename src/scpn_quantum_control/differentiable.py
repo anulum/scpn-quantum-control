@@ -2262,6 +2262,7 @@ def _normalise_tile_reps(reps: object) -> tuple[int, ...]:
 
 
 def _trace_tile(array: TraceADArray, *, reps: object) -> TraceADArray:
+    _require_program_ad_shape_contract("tile", (array, reps))
     reps_tuple = _normalise_tile_reps(reps)
     rank = max(array.ndim, len(reps_tuple))
     source_shape = (1,) * (rank - array.ndim) + array.shape
@@ -9642,6 +9643,7 @@ _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "rot90",
         "squeeze",
         "swapaxes",
+        "tile",
         "transpose",
     )
 }
@@ -11149,6 +11151,68 @@ def program_ad_shape_repeat_derivative_rule(
             "program_ad_shape_repeat_"
             f"{_program_ad_shape_signature(source)}_repeats_{repeat_signature}_"
             f"axis_{axis_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_normalise_tile_signature(
+    source_shape: tuple[int, ...],
+    reps: object,
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    reps_tuple = _normalise_tile_reps(reps)
+    rank = max(len(source_shape), len(reps_tuple))
+    source_aligned = (1,) * (rank - len(source_shape)) + source_shape
+    reps_aligned = (1,) * (rank - len(reps_tuple)) + reps_tuple
+    target = tuple(int(size * rep) for size, rep in zip(source_aligned, reps_aligned))
+    return reps_tuple, reps_aligned, target
+
+
+def program_ad_shape_tile_derivative_rule(
+    source_shape: Sequence[int],
+    reps: object,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static tile signatures."""
+
+    source = _program_ad_shape_normalise_static_shape("tile", source_shape)
+    reps_tuple, _, target = _program_ad_shape_normalise_tile_signature(source, reps)
+    source_size = _program_ad_shape_static_size(source)
+    target_size = _program_ad_shape_static_size(target)
+    source_indices = np.arange(source_size, dtype=np.int64).reshape(source)
+    tiled_indices = np.tile(source_indices, reps_tuple).reshape(-1)
+
+    def _tile_flat(vector: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_float64_vector_result(np.tile(vector.reshape(source), reps_tuple))
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("tile", "values", values, expected_size=source_size)
+        return _tile_flat(vector)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("tile", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "tile", "tangent", tangent, expected_size=source_size
+        )
+        return _tile_flat(tangent_vector)
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("tile", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "tile", "cotangent", cotangent, expected_size=target_size
+        )
+        adjoint = np.zeros(source_size, dtype=np.float64)
+        np.add.at(adjoint, tiled_indices, cotangent_vector)
+        return _program_ad_float64_vector_result(adjoint)
+
+    reps_signature = "_".join(str(value) for value in reps_tuple)
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_tile_"
+            f"{_program_ad_shape_signature(source)}_reps_{reps_signature}_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -14358,6 +14422,14 @@ def _program_ad_shape_repeat_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return target_shape
 
 
+def _program_ad_shape_tile_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD shape tile rule requires array and reps")
+    source_shape = _program_ad_array_shape_of(args[0])
+    _, _, target_shape = _program_ad_shape_normalise_tile_signature(source_shape, args[1])
+    return target_shape
+
+
 def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape squeeze rule requires array and optional axis")
@@ -14914,6 +14986,14 @@ def _program_ad_shape_repeat_static_arguments(args: tuple[object, ...]) -> tuple
         source_shape, args[1], args[2] if len(args) == 3 else None
     )
     return repeat_counts, axis_index
+
+
+def _program_ad_shape_tile_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD shape tile static rule requires array and reps")
+    source_shape = _program_ad_array_shape_of(args[0])
+    reps_tuple, _, _ = _program_ad_shape_normalise_tile_signature(source_shape, args[1])
+    return (reps_tuple,)
 
 
 def _program_ad_shape_squeeze_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -16469,6 +16549,7 @@ _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "rot90": _program_ad_shape_rot90_shape,
     "squeeze": _program_ad_shape_squeeze_shape,
     "swapaxes": _program_ad_shape_swapaxes_shape,
+    "tile": _program_ad_shape_tile_shape,
     "transpose": _program_ad_shape_transpose_shape,
 }
 
@@ -16483,6 +16564,7 @@ _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRul
     "rot90": _program_ad_shape_rot90_static_arguments,
     "squeeze": _program_ad_shape_squeeze_static_arguments,
     "swapaxes": _program_ad_shape_swapaxes_static_arguments,
+    "tile": _program_ad_shape_tile_static_arguments,
     "transpose": _program_ad_shape_transpose_static_arguments,
 }
 
@@ -16643,6 +16725,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "rot90": "program_ad_shape_rot90_derivative_rule",
         "squeeze": "program_ad_shape_squeeze_derivative_rule",
         "swapaxes": "program_ad_shape_swapaxes_derivative_rule",
+        "tile": "program_ad_shape_tile_derivative_rule",
         "transpose": "program_ad_shape_transpose_derivative_rule",
     }[name]
     static_signature = {
@@ -16656,6 +16739,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "rot90": "source_shape:ranked_tensor_shape;k_axes",
         "squeeze": "source_shape:ranked_tensor_shape;axis",
         "swapaxes": "source_shape:ranked_tensor_shape;axis1_axis2",
+        "tile": "source_shape:ranked_tensor_shape;reps",
         "transpose": "source_shape:ranked_tensor_shape;axes",
     }[name]
     nondifferentiable_boundaries = {
@@ -16669,6 +16753,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "rot90": "static_quarter_turn_axis_permutation",
         "squeeze": "static_singleton_axis_removal",
         "swapaxes": "static_axis_swap_permutation",
+        "tile": "static_tile_scatter_add",
         "transpose": "static_axis_permutation",
     }
     return {
@@ -25256,6 +25341,7 @@ __all__ = [
     "program_ad_shape_rot90_derivative_rule",
     "program_ad_shape_squeeze_derivative_rule",
     "program_ad_shape_swapaxes_derivative_rule",
+    "program_ad_shape_tile_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",
     "program_ad_stencil_gradient_derivative_rule",
     "program_adjoint_gradient",
