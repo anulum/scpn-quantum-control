@@ -10055,6 +10055,10 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
         return True
     if op in _WHOLE_PROGRAM_NATIVE_LINALG_OPS:
         return True
+    if op.startswith("linalg:matrix_power:2x2:power:2:"):
+        return True
+    if op.startswith("linalg:multi_dot:2x2__2x2:out:2x2:"):
+        return True
     return bool(op.startswith("branch:"))
 
 
@@ -10787,6 +10791,66 @@ def _emit_whole_program_native_operation(
                 f"  {derivative_name} = fadd double {first_derivative}, {second_derivative}"
             )
         return
+    if node.op.startswith("linalg:matrix_power:2x2:power:2:"):
+        if len(inputs) != 4:
+            raise ValueError("native linalg:matrix_power:2x2:power:2 expects four inputs")
+        output_inputs = {
+            "linalg:matrix_power:2x2:power:2:0:0": (inputs[0], inputs[0], inputs[1], inputs[2]),
+            "linalg:matrix_power:2x2:power:2:0:1": (inputs[0], inputs[1], inputs[1], inputs[3]),
+            "linalg:matrix_power:2x2:power:2:1:0": (inputs[2], inputs[0], inputs[3], inputs[2]),
+            "linalg:matrix_power:2x2:power:2:1:1": (inputs[2], inputs[1], inputs[3], inputs[3]),
+        }.get(node.op)
+        if output_inputs is None:
+            raise ValueError(f"native whole-program AD lowering does not support op {node.op}")
+        _emit_whole_program_native_product_sum2(
+            lines,
+            result,
+            node,
+            value_name,
+            output_inputs,
+            "matrix_power2",
+        )
+        return
+    if node.op.startswith("linalg:multi_dot:2x2__2x2:out:2x2:"):
+        if len(inputs) != 8:
+            raise ValueError("native linalg:multi_dot:2x2__2x2 expects eight inputs")
+        output_inputs = {
+            "linalg:multi_dot:2x2__2x2:out:2x2:0": (
+                inputs[0],
+                inputs[4],
+                inputs[1],
+                inputs[6],
+            ),
+            "linalg:multi_dot:2x2__2x2:out:2x2:1": (
+                inputs[0],
+                inputs[5],
+                inputs[1],
+                inputs[7],
+            ),
+            "linalg:multi_dot:2x2__2x2:out:2x2:2": (
+                inputs[2],
+                inputs[4],
+                inputs[3],
+                inputs[6],
+            ),
+            "linalg:multi_dot:2x2__2x2:out:2x2:3": (
+                inputs[2],
+                inputs[5],
+                inputs[3],
+                inputs[7],
+            ),
+        }.get(node.op)
+        if output_inputs is None:
+            raise ValueError(f"native whole-program AD lowering does not support op {node.op}")
+        _emit_whole_program_native_product_sum2(
+            lines,
+            result,
+            node,
+            value_name,
+            output_inputs,
+            "multi_dot2",
+        )
+        return
     if node.op.startswith("linalg:inv:2x2:"):
         if len(inputs) != 4:
             raise ValueError("native linalg:inv:2x2 expects four matrix inputs")
@@ -11152,6 +11216,64 @@ def _emit_whole_program_native_operation(
             )
         else:
             lines.append(f"  {derivative_name} = fmul double {scaled_factor}, {left_derivative}")
+
+
+def _emit_whole_program_native_product_sum2(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: tuple[str, str, str, str],
+    prefix: str,
+) -> None:
+    """Emit native value and derivative code for x*y + z*w."""
+
+    parameter_count = int(result.gradient.size)
+    first_left_token, first_right_token, second_left_token, second_right_token = inputs
+    first_left = _whole_program_native_operand(first_left_token)
+    first_right = _whole_program_native_operand(first_right_token)
+    second_left = _whole_program_native_operand(second_left_token)
+    second_right = _whole_program_native_operand(second_right_token)
+    first_product = f"%{prefix}_first_{node.index}"
+    second_product = f"%{prefix}_second_{node.index}"
+    lines.extend(
+        [
+            f"  {first_product} = fmul double {first_left}, {first_right}",
+            f"  {second_product} = fmul double {second_left}, {second_right}",
+            f"  {value_name} = fadd double {first_product}, {second_product}",
+        ]
+    )
+    for derivative_index in range(parameter_count):
+        first_left_derivative = _whole_program_native_derivative_operand(
+            first_left_token, derivative_index
+        )
+        first_right_derivative = _whole_program_native_derivative_operand(
+            first_right_token, derivative_index
+        )
+        second_left_derivative = _whole_program_native_derivative_operand(
+            second_left_token, derivative_index
+        )
+        second_right_derivative = _whole_program_native_derivative_operand(
+            second_right_token, derivative_index
+        )
+        first_left_term = f"%d{node.index}_{derivative_index}_{prefix}_first_left"
+        first_right_term = f"%d{node.index}_{derivative_index}_{prefix}_first_right"
+        first_derivative = f"%d{node.index}_{derivative_index}_{prefix}_first"
+        second_left_term = f"%d{node.index}_{derivative_index}_{prefix}_second_left"
+        second_right_term = f"%d{node.index}_{derivative_index}_{prefix}_second_right"
+        second_derivative = f"%d{node.index}_{derivative_index}_{prefix}_second"
+        derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+        lines.extend(
+            [
+                f"  {first_left_term} = fmul double {first_left_derivative}, {first_right}",
+                f"  {first_right_term} = fmul double {first_left}, {first_right_derivative}",
+                f"  {first_derivative} = fadd double {first_left_term}, {first_right_term}",
+                f"  {second_left_term} = fmul double {second_left_derivative}, {second_right}",
+                f"  {second_right_term} = fmul double {second_left}, {second_right_derivative}",
+                f"  {second_derivative} = fadd double {second_left_term}, {second_right_term}",
+                f"  {derivative_name} = fadd double {first_derivative}, {second_derivative}",
+            ]
+        )
 
 
 def _emit_whole_program_native_where_predicate(

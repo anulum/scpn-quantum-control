@@ -5156,6 +5156,89 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_inverse_and_solve() -
         kernel.gradient(singular)
 
 
+def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_product_linalg_ops() -> None:
+    """Native program AD should lower scalar 2x2 matrix_power and multi_dot nodes."""
+
+    def objective(values: np.ndarray) -> object:
+        left = values[0:4].reshape((2, 2))
+        right = values[4:8].reshape((2, 2))
+        return (
+            np.linalg.matrix_power(left, 2).sum()
+            + 0.5 * np.linalg.multi_dot((left, right)).sum()
+            + values[8] * values[0]
+            - np.sin(values[7])
+        )
+
+    sample = np.array([1.0, 0.2, 0.3, 1.5, 0.4, -0.2, 0.6, 0.9, 0.75], dtype=np.float64)
+    replay = np.array([1.5, -0.4, 0.6, 2.0, -0.25, 0.7, -0.5, 1.25, -0.2], dtype=np.float64)
+    parameters = (
+        Parameter("left00"),
+        Parameter("left01"),
+        Parameter("left10"),
+        Parameter("left11"),
+        Parameter("right00"),
+        Parameter("right01"),
+        Parameter("right10"),
+        Parameter("right11"),
+        Parameter("scale"),
+    )
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        replay,
+        parameters,
+    )
+
+    assert report.supported is True
+    assert report.unsupported_ops == ()
+    assert {
+        "linalg:matrix_power:2x2:power:2:0:0",
+        "linalg:matrix_power:2x2:power:2:0:1",
+        "linalg:matrix_power:2x2:power:2:1:0",
+        "linalg:matrix_power:2x2:power:2:1:1",
+        "linalg:multi_dot:2x2__2x2:out:2x2:0",
+        "linalg:multi_dot:2x2__2x2:out:2x2:1",
+        "linalg:multi_dot:2x2__2x2:out:2x2:2",
+        "linalg:multi_dot:2x2__2x2:out:2x2:3",
+    }.issubset(report.lowerable_ops)
+    assert "matrix_power2_first" in kernel.llvm_ir
+    assert "multi_dot2_first" in kernel.llvm_ir
+    assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+    assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+    assert kernel.value(replay) == pytest.approx(reference_value)
+    np.testing.assert_allclose(
+        kernel.gradient(replay),
+        reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    batch = np.array(
+        [
+            sample,
+            replay,
+            [2.0, 0.1, -0.2, 1.25, 0.5, -0.35, 0.2, 1.1, 0.4],
+        ],
+        dtype=np.float64,
+    )
+    batch_reference = [program_adjoint_value_and_grad(objective, row, parameters) for row in batch]
+    batch_result = kernel.batch_value_and_grad(batch)
+    np.testing.assert_allclose(
+        batch_result.values,
+        np.array([item[0] for item in batch_reference], dtype=np.float64),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.gradients,
+        np.vstack([item[1] for item in batch_reference]),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+
+
 def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_linalg_scalar_ops() -> None:
     """Native program AD should lower scalar 2x2 det and trace linalg nodes."""
 
