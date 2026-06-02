@@ -6273,6 +6273,11 @@ def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
     assert dot_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
     assert dot_contract.effect == "pure"
     assert dot_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.dot"
+    assert dot_contract.lowering_metadata["static_derivative_factory"] == "not_required"
+    assert dot_contract.lowering_metadata["static_signature"] == "none"
+    assert dot_contract.lowering_metadata["nondifferentiable_boundary"] == (
+        "inner_dimension_alignment"
+    )
     assert dot_contract.shape_rule is not None
     assert dot_contract.shape_rule((left_vector, right_vector)) == ()
     assert dot_contract.dtype_rule is not None
@@ -6285,6 +6290,11 @@ def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
     vdot_contract = primitive_contract_for("scpn.program_ad.product:vdot")
     assert vdot_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "vdot", "1")
     assert vdot_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.vdot"
+    assert vdot_contract.lowering_metadata["static_derivative_factory"] == "not_required"
+    assert vdot_contract.lowering_metadata["static_signature"] == "none"
+    assert vdot_contract.lowering_metadata["nondifferentiable_boundary"] == (
+        "flattened_size_alignment"
+    )
     assert vdot_contract.shape_rule is not None
     assert vdot_contract.shape_rule((matrix, np.arange(6.0, dtype=np.float64))) == ()
 
