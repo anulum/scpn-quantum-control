@@ -9987,6 +9987,12 @@ _WHOLE_PROGRAM_NATIVE_BINARY_OPS = frozenset(
         "where",
     }
 )
+_WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
+    {
+        "linalg:det:2x2",
+        "linalg:trace:2x2:offset:0",
+    }
+)
 
 
 def analyse_whole_program_ad_native_lowering(
@@ -10040,6 +10046,8 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
     if op in _WHOLE_PROGRAM_NATIVE_UNARY_OPS:
         return True
     if op in _WHOLE_PROGRAM_NATIVE_BINARY_OPS:
+        return True
+    if op in _WHOLE_PROGRAM_NATIVE_LINALG_OPS:
         return True
     return bool(op.startswith("branch:"))
 
@@ -10710,6 +10718,65 @@ def _emit_whole_program_native_operation(
             lines.append(
                 f"  {_whole_program_native_derivative_name(node.index, derivative_index)} = "
                 f"fmul double {local_factor}, {argument_derivative}"
+            )
+        return
+    if node.op == "linalg:det:2x2":
+        if len(inputs) != 4:
+            raise ValueError("native linalg:det:2x2 expects four matrix inputs")
+        a_value = _whole_program_native_operand(inputs[0])
+        b_value = _whole_program_native_operand(inputs[1])
+        c_value = _whole_program_native_operand(inputs[2])
+        d_value = _whole_program_native_operand(inputs[3])
+        diagonal_product = f"%det2_diag_{node.index}"
+        off_diagonal_product = f"%det2_offdiag_{node.index}"
+        lines.extend(
+            [
+                f"  {diagonal_product} = fmul double {a_value}, {d_value}",
+                f"  {off_diagonal_product} = fmul double {b_value}, {c_value}",
+                f"  {value_name} = fsub double {diagonal_product}, {off_diagonal_product}",
+            ]
+        )
+        for derivative_index in range(parameter_count):
+            a_derivative = _whole_program_native_derivative_operand(inputs[0], derivative_index)
+            b_derivative = _whole_program_native_derivative_operand(inputs[1], derivative_index)
+            c_derivative = _whole_program_native_derivative_operand(inputs[2], derivative_index)
+            d_derivative = _whole_program_native_derivative_operand(inputs[3], derivative_index)
+            left_a = f"%d{node.index}_{derivative_index}_det2_a"
+            left_d = f"%d{node.index}_{derivative_index}_det2_d"
+            right_b = f"%d{node.index}_{derivative_index}_det2_b"
+            right_c = f"%d{node.index}_{derivative_index}_det2_c"
+            diagonal_derivative = f"%d{node.index}_{derivative_index}_det2_diag"
+            off_diagonal_derivative = f"%d{node.index}_{derivative_index}_det2_offdiag"
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            lines.extend(
+                [
+                    f"  {left_a} = fmul double {a_derivative}, {d_value}",
+                    f"  {left_d} = fmul double {a_value}, {d_derivative}",
+                    f"  {diagonal_derivative} = fadd double {left_a}, {left_d}",
+                    f"  {right_b} = fmul double {b_derivative}, {c_value}",
+                    f"  {right_c} = fmul double {b_value}, {c_derivative}",
+                    f"  {off_diagonal_derivative} = fadd double {right_b}, {right_c}",
+                    f"  {derivative_name} = fsub double {diagonal_derivative}, "
+                    f"{off_diagonal_derivative}",
+                ]
+            )
+        return
+    if node.op == "linalg:trace:2x2:offset:0":
+        if len(inputs) != 2:
+            raise ValueError("native linalg:trace:2x2:offset:0 expects two diagonal inputs")
+        first_diagonal = _whole_program_native_operand(inputs[0])
+        second_diagonal = _whole_program_native_operand(inputs[1])
+        lines.append(f"  {value_name} = fadd double {first_diagonal}, {second_diagonal}")
+        for derivative_index in range(parameter_count):
+            first_derivative = _whole_program_native_derivative_operand(
+                inputs[0], derivative_index
+            )
+            second_derivative = _whole_program_native_derivative_operand(
+                inputs[1], derivative_index
+            )
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            lines.append(
+                f"  {derivative_name} = fadd double {first_derivative}, {second_derivative}"
             )
         return
     if node.op not in {
