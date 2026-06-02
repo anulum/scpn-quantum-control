@@ -10033,6 +10033,16 @@ def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
             "solve_matrix_max_rhs_columns": _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS,
             "solve_rhs_policy": "static_vector_or_matrix_rhs",
             "solve_fail_closed_from": max(_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES) + 1,
+            "quotient_linalg_helper_sizes": tuple(
+                sorted(_WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES)
+            ),
+            "quotient_linalg_unsuitable_from": max(
+                _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+            )
+            + 1,
+            "quotient_linalg_unsuitable_reason": (
+                "full_output_inverse_and_matrix_rhs_solve_require_shared_factorisation_helper"
+            ),
             "trace_policy": "static_square_or_rectangular_fixed_offset",
             "unsupported_policy": "fail_closed_report_before_compile",
         }

@@ -104,6 +104,11 @@ coupled dynamics matter:
   engineering frontier; supported primitives and supported scalar traces
   execute through bounded kernels, and unsupported paths report the blocked
   operation before failing closed.
+- Native quotient-linalg full-output inverse and matrix-RHS solve traces at
+  `7x7` and wider are intentionally unsuitable for the current native path.
+  They fail closed until a shared factorisation helper replaces repeated
+  per-output quotient replay; this limitation is useful research evidence, not
+  a silent runtime fallback.
 - Paper 0 ingestion records source structure and generated fixtures; it is not
   an external validation of the propositions.
 

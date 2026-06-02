@@ -233,6 +233,22 @@ other wider linalg,
 and shape-changing linalg traces still report unsupported native ops before
 failing closed.
 
+Unsupported native quotient-linalg scenarios are intentionally documented
+because they carry research and engineering value:
+
+- Full-output inverse and matrix-RHS solve traces at `7x7` and wider are not
+  lowered by the native quotient-linalg path. The compact determinant-partials
+  helper removes recursive minor expansion, but the current trace still emits
+  one quotient replay per requested output entry. That is unsuitable for the
+  industrial focused gate until a shared factorisation helper reuses one
+  factorisation across all requested outputs and derivatives.
+- Matrix-RHS solve traces with more than four RHS columns fail closed. They need
+  a batched/shared solve helper rather than repeated column-wise quotient
+  lowering.
+- Shape-changing linalg traces and dynamic-size linalg calls fail closed. Native
+  lowering requires static shapes so the lowering report can name every
+  supported and unsupported primitive before compilation.
+
 ## GUESS error mitigation in 5 lines (added April 2026)
 
 For any XY Hamiltonian run on hardware, the conserved total magnetisation

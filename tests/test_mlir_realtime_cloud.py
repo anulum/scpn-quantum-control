@@ -5189,6 +5189,11 @@ def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_bound
     assert support["solve_matrix_max_rhs_columns"] == 4
     assert support["solve_rhs_policy"] == "static_vector_or_matrix_rhs"
     assert support["solve_fail_closed_from"] == 7
+    assert support["quotient_linalg_helper_sizes"] == (5, 6)
+    assert support["quotient_linalg_unsuitable_from"] == 7
+    assert support["quotient_linalg_unsuitable_reason"] == (
+        "full_output_inverse_and_matrix_rhs_solve_require_shared_factorisation_helper"
+    )
     assert support["unsupported_policy"] == "fail_closed_report_before_compile"
 
 
