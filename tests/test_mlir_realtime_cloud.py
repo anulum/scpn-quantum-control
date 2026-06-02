@@ -5751,6 +5751,84 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_trace_ops() -> Non
     )
 
 
+def test_whole_program_ad_trace_native_llvm_jit_lowers_static_diagonal_ops() -> None:
+    """Native program AD should lower static diagonal gather/scatter nodes."""
+
+    def objective(values: np.ndarray) -> object:
+        rectangle = values[0:12].reshape((3, 4))
+        diagonal = values[12:16]
+        flattened = values[16:20]
+        return (
+            np.diag(rectangle, k=1).sum()
+            + 0.5 * np.diag(diagonal, k=-1).sum()
+            + 0.25 * np.diagflat(flattened, k=2).sum()
+            + values[20] * values[0]
+            - np.sin(values[19])
+        )
+
+    sample = np.linspace(-0.8, 0.6, 21, dtype=np.float64)
+    replay = np.linspace(0.7, -0.9, 21, dtype=np.float64)
+    parameters = tuple(Parameter(f"x{index}") for index in range(21))
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        replay,
+        parameters,
+    )
+
+    expected_ops = {
+        "linalg:diag:3x4:offset:1:extract:0",
+        "linalg:diag:3x4:offset:1:extract:1",
+        "linalg:diag:3x4:offset:1:extract:2",
+        "linalg:diag:4:offset:-1:construct:0",
+        "linalg:diag:4:offset:-1:construct:1",
+        "linalg:diag:4:offset:-1:construct:2",
+        "linalg:diag:4:offset:-1:construct:3",
+        "linalg:diagflat:4:offset:2:construct:0",
+        "linalg:diagflat:4:offset:2:construct:1",
+        "linalg:diagflat:4:offset:2:construct:2",
+        "linalg:diagflat:4:offset:2:construct:3",
+    }
+    assert report.supported is True
+    assert report.unsupported_ops == ()
+    assert expected_ops.issubset(report.lowerable_ops)
+    assert expected_ops.issubset(kernel.supported_ops)
+    assert "diag_" in kernel.llvm_ir
+    assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+    assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+    assert kernel.value(replay) == pytest.approx(reference_value)
+    np.testing.assert_allclose(
+        kernel.gradient(replay),
+        reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    batch = np.vstack(
+        [
+            sample,
+            replay,
+            np.linspace(-0.25, 1.25, 21, dtype=np.float64),
+        ]
+    )
+    batch_reference = [program_adjoint_value_and_grad(objective, row, parameters) for row in batch]
+    batch_result = kernel.batch_value_and_grad(batch)
+    np.testing.assert_allclose(
+        batch_result.values,
+        np.array([item[0] for item in batch_reference], dtype=np.float64),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.gradients,
+        np.vstack([item[1] for item in batch_reference]),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+
+
 def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_where() -> None:
     """Native program AD should lower scalar np.where selection traces."""
 

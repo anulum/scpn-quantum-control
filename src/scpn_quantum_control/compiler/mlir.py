@@ -10059,6 +10059,8 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
         return True
     if _whole_program_native_trace_input_count(op) is not None:
         return True
+    if _whole_program_native_diag_input_count(op) is not None:
+        return True
     if op.startswith("linalg:matrix_power:2x2:power:2:"):
         return True
     if op.startswith("linalg:multi_dot:2x2__2x2:out:2x2:"):
@@ -10805,6 +10807,19 @@ def _emit_whole_program_native_operation(
             "trace",
         )
         return
+    diag_input_count = _whole_program_native_diag_input_count(node.op)
+    if diag_input_count is not None:
+        if len(inputs) != diag_input_count:
+            raise ValueError(f"native {node.op} expects {diag_input_count} diagonal input")
+        _emit_whole_program_native_sum(
+            lines,
+            result,
+            node,
+            value_name,
+            inputs,
+            "diag",
+        )
+        return
     if node.op.startswith("linalg:matrix_power:2x2:power:2:"):
         if len(inputs) != 4:
             raise ValueError("native linalg:matrix_power:2x2:power:2 expects four inputs")
@@ -11322,7 +11337,13 @@ def _emit_whole_program_native_sum(
     parameter_count = int(result.gradient.size)
     value_operands = tuple(_whole_program_native_operand(token) for token in inputs)
     if len(value_operands) == 1:
-        lines.append(f"  {value_name} = fadd double {value_operands[0]}, {_fmt_llvm_float(0.0)}")
+        identity_value = f"%{prefix}_{node.index}_0"
+        lines.extend(
+            [
+                f"  {identity_value} = fadd double {value_operands[0]}, {_fmt_llvm_float(0.0)}",
+                f"  {value_name} = fadd double {identity_value}, {_fmt_llvm_float(0.0)}",
+            ]
+        )
     else:
         accumulator = value_operands[0]
         for offset, operand in enumerate(value_operands[1:], start=1):
@@ -11340,9 +11361,13 @@ def _emit_whole_program_native_sum(
         )
         derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
         if len(derivative_operands) == 1:
+            identity_derivative = f"%d{node.index}_{derivative_index}_{prefix}_0"
             lines.append(
-                f"  {derivative_name} = fadd double {derivative_operands[0]}, "
+                f"  {identity_derivative} = fadd double {derivative_operands[0]}, "
                 f"{_fmt_llvm_float(0.0)}"
+            )
+            lines.append(
+                f"  {derivative_name} = fadd double {identity_derivative}, {_fmt_llvm_float(0.0)}"
             )
             continue
         accumulator = derivative_operands[0]
@@ -11538,6 +11563,35 @@ def _whole_program_native_trace_input_count(op: str) -> int | None:
     if count <= 0:
         return None
     return count
+
+
+def _whole_program_native_diag_input_count(op: str) -> int | None:
+    """Return the scalar input count for compact diag/diagflat passthrough nodes."""
+
+    parts = op.split(":")
+    if len(parts) != 7 or parts[0] != "linalg":
+        return None
+    primitive = parts[1]
+    if primitive not in {"diag", "diagflat"}:
+        return None
+    if parts[3] != "offset":
+        return None
+    try:
+        dimensions = tuple(int(dimension) for dimension in parts[2].split("x"))
+        int(parts[4])
+        output_index = int(parts[6])
+    except ValueError:
+        return None
+    if not dimensions or any(dimension <= 0 for dimension in dimensions):
+        return None
+    mode = parts[5]
+    if primitive == "diag" and mode not in {"extract", "construct"}:
+        return None
+    if primitive == "diagflat" and mode != "construct":
+        return None
+    if output_index < 0:
+        return None
+    return 1
 
 
 def _emit_whole_program_native_product_sum2(

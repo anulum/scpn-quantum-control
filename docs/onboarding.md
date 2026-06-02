@@ -88,7 +88,8 @@ coupled dynamics matter:
   inspectable native program-AD lowering reports for supported scalar traces
   with strict no-tie native `where`/selection/`clip` support,
   2x2/3x3/4x4/5x5 determinant native lowering, static square/rectangular trace
-  native lowering, and 2x2 inverse/solve/product native lowering.
+  native lowering, static diagonal gather/scatter native lowering, and 2x2
+  inverse/solve/product native lowering.
 
 ## What Remains Bounded
 

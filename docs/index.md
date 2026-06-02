@@ -88,7 +88,8 @@ This package provides three things:
    expose native lowering reports before LLVM/JIT compilation, with strict
    no-tie native selection lowering for `np.where`, `maximum`, `minimum`, and
    `clip`, plus scalar 2x2/3x3/4x4/5x5 determinant, static square/rectangular
-   trace, and 2x2 inverse, solve, and product lowering.
+   trace, static diagonal gather/scatter, and 2x2 inverse, solve, and product
+   lowering.
    Unsupported compiler and program-AD paths fail closed rather than silently
    fabricating gradients.
 
