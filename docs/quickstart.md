@@ -224,10 +224,10 @@ arithmetic expressions; static dense 6x6 through 16x16 determinants lower
 through compact loop-helper native LLVM/JIT value-and-partials kernels and are
 regression-tested on non-diagonal dense matrices. Static
 square/rectangular trace nodes with fixed offsets, static diagonal
-gather/scatter nodes, static dense inverse through 5x5, static vector and
-matrix-RHS linear solves through 5x5, 2x2 square via `matrix_power(..., 2)`,
+gather/scatter nodes, static dense inverse through 6x6, static vector and
+matrix-RHS linear solves through 6x6, 2x2 square via `matrix_power(..., 2)`,
 and 2x2-by-2x2 `multi_dot` program-AD nodes also lower to native LLVM/JIT
-arithmetic kernels; 17x17 and wider determinant traces, 6x6 and wider
+arithmetic kernels; 17x17 and wider determinant traces, 7x7 and wider
 inverse/solve traces, matrix-RHS traces with more than four RHS columns,
 other wider linalg,
 and shape-changing linalg traces still report unsupported native ops before

@@ -90,8 +90,8 @@ coupled dynamics matter:
   2x2/3x3/4x4/5x5 expression determinant native lowering, helper-backed
   6x6 through 16x16 determinant native lowering, static square/rectangular trace
   native lowering, static diagonal gather/scatter native lowering, static dense
-  inverse native lowering through 5x5, static vector and matrix-RHS solve
-  native lowering through 5x5, 2x2 product native lowering, and an
+  inverse native lowering through 6x6, static vector and matrix-RHS solve
+  native lowering through 6x6, 2x2 product native lowering, and an
   introspectable native linalg support contract for service gating.
 
 ## What Remains Bounded

@@ -5182,13 +5182,13 @@ def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_bound
     assert support["determinant_fail_closed_from"] == 17
     assert support["determinant_derivative"] == "exact_forward_partials"
     assert support["determinant_policy"] == "static_dense_native_or_fail_closed"
-    assert support["inverse_sizes"] == (2, 3, 4, 5)
-    assert support["inverse_fail_closed_from"] == 6
-    assert support["solve_sizes"] == (2, 3, 4, 5)
-    assert support["solve_matrix_sizes"] == (2, 3, 4, 5)
+    assert support["inverse_sizes"] == tuple(range(2, 7))
+    assert support["inverse_fail_closed_from"] == 7
+    assert support["solve_sizes"] == tuple(range(2, 7))
+    assert support["solve_matrix_sizes"] == tuple(range(2, 7))
     assert support["solve_matrix_max_rhs_columns"] == 4
     assert support["solve_rhs_policy"] == "static_vector_or_matrix_rhs"
-    assert support["solve_fail_closed_from"] == 6
+    assert support["solve_fail_closed_from"] == 7
     assert support["unsupported_policy"] == "fail_closed_report_before_compile"
 
 
@@ -5819,7 +5819,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_linalg_scalar_ops() -
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_inverse_ops() -> None:
     """Native program AD should lower bounded static dense inverse nodes."""
 
-    for size in (3, 4, 5):
+    for size in (3, 4, 5, 6):
         weights = np.linspace(0.15, 0.85, size * size, dtype=np.float64).reshape(size, size)
 
         def objective(
@@ -5898,26 +5898,26 @@ def test_whole_program_ad_native_lowering_report_blocks_wider_inverse_ops() -> N
     """Native program AD inverse support should fail closed beyond the bounded helper range."""
 
     def objective(values: np.ndarray) -> object:
-        matrix = values[:36].reshape((6, 6))
+        matrix = values[:49].reshape((7, 7))
         return np.linalg.inv(matrix).sum()
 
-    sample = _dense_solve_values(6, shift=0.0)[:36]
-    parameters = tuple(Parameter(f"inv6_x{index}") for index in range(sample.size))
+    sample = _dense_solve_values(7, shift=0.0)[:49]
+    parameters = tuple(Parameter(f"inv7_x{index}") for index in range(sample.size))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert report.supported is False
-    assert "linalg:inv:6x6:0:0" in report.unsupported_ops
-    assert "unsupported native ops: linalg:inv:6x6:0:0" in report.fail_closed_reason
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:inv:6x6:0:0"):
+    assert "linalg:inv:7x7:0:0" in report.unsupported_ops
+    assert "unsupported native ops: linalg:inv:7x7:0:0" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:inv:7x7:0:0"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_vector_ops() -> None:
     """Native program AD should lower bounded static dense vector solve nodes."""
 
-    for size in (3, 4, 5):
+    for size in (3, 4, 5, 6):
         weights = np.linspace(0.2, 0.8, size, dtype=np.float64)
 
         def objective(
@@ -5992,7 +5992,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_vector_ops()
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_matrix_ops() -> None:
     """Native program AD should lower bounded static dense matrix-RHS solve nodes."""
 
-    for size, rhs_cols in ((2, 2), (3, 2), (4, 3), (5, 2)):
+    for size, rhs_cols in ((2, 2), (3, 2), (4, 3), (5, 2), (6, 2)):
         weights = np.linspace(0.12, 0.72, size * rhs_cols, dtype=np.float64).reshape(
             size,
             rhs_cols,
@@ -6083,20 +6083,20 @@ def test_whole_program_ad_native_lowering_report_blocks_wider_solve_matrix_ops()
     """Native program AD matrix-RHS solve should fail closed beyond the bounded range."""
 
     def objective(values: np.ndarray) -> object:
-        matrix = values[:36].reshape((6, 6))
-        rhs = values[36:48].reshape((6, 2))
+        matrix = values[:49].reshape((7, 7))
+        rhs = values[49:63].reshape((7, 2))
         return np.linalg.solve(matrix, rhs).sum()
 
-    sample = _dense_solve_matrix_values(6, 2, shift=0.0)
-    parameters = tuple(Parameter(f"solve6m2_x{index}") for index in range(sample.size))
+    sample = _dense_solve_matrix_values(7, 2, shift=0.0)
+    parameters = tuple(Parameter(f"solve7m2_x{index}") for index in range(sample.size))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert report.supported is False
-    assert "linalg:solve:6x6:rhs:6x2:0:0" in report.unsupported_ops
-    assert "unsupported native ops: linalg:solve:6x6:rhs:6x2:0:0" in report.fail_closed_reason
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:6x6:rhs:6x2:0:0"):
+    assert "linalg:solve:7x7:rhs:7x2:0:0" in report.unsupported_ops
+    assert "unsupported native ops: linalg:solve:7x7:rhs:7x2:0:0" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:7x7:rhs:7x2:0:0"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
@@ -6104,20 +6104,20 @@ def test_whole_program_ad_native_lowering_report_blocks_wider_solve_ops() -> Non
     """Native program AD solve support should fail closed beyond the bounded helper range."""
 
     def objective(values: np.ndarray) -> object:
-        matrix = values[:36].reshape((6, 6))
-        rhs = values[36:42]
+        matrix = values[:49].reshape((7, 7))
+        rhs = values[49:56]
         return np.linalg.solve(matrix, rhs).sum()
 
-    sample = _dense_solve_values(6, shift=0.0)
-    parameters = tuple(Parameter(f"solve6_x{index}") for index in range(sample.size))
+    sample = _dense_solve_values(7, shift=0.0)
+    parameters = tuple(Parameter(f"solve7_x{index}") for index in range(sample.size))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert report.supported is False
-    assert "linalg:solve:6x6:rhs:6:0" in report.unsupported_ops
-    assert "unsupported native ops: linalg:solve:6x6:rhs:6:0" in report.fail_closed_reason
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:6x6:rhs:6:0"):
+    assert "linalg:solve:7x7:rhs:7:0" in report.unsupported_ops
+    assert "unsupported native ops: linalg:solve:7x7:rhs:7:0" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:7x7:rhs:7:0"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
