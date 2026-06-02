@@ -25,6 +25,8 @@ from scpn_quantum_control.compiler.mlir import (
     MLIRCompileConfig,
     NativeWholeProgramADKernel,
     PrimitiveLoweringStatus,
+    WholeProgramADNativeLoweringReport,
+    analyse_whole_program_ad_native_lowering,
     build_compiler_ad_transform_plan,
     clear_native_whole_program_ad_compile_cache,
     compile_compiler_ad_transform_plan_to_mlir,
@@ -4896,7 +4898,25 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
     assert kernel.mlir_module.resource_counts["native_whole_program_kernels"] == 1
     assert kernel.mlir_module.resource_counts["native_whole_program_batch_kernels"] == 1
     assert kernel.mlir_module.resource_counts["native_whole_program_batch_transform_kernels"] == 2
+    assert kernel.mlir_module.resource_counts["native_lowerable_ops"] == len(
+        kernel.lowering_report.lowerable_ops
+    )
+    assert kernel.mlir_module.resource_counts["native_unsupported_ops"] == 0
     assert kernel.mlir_module.metadata["native_backend"] == "native_llvm_jit"
+    assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+    assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+    assert isinstance(kernel.lowering_report, WholeProgramADNativeLoweringReport)
+    assert kernel.lowering_report.supported is True
+    assert kernel.lowering_report.unsupported_ops == ()
+    assert kernel.lowering_report.operation_count == len(kernel.source_result.ir_nodes)
+    assert set(kernel.lowering_report.lowerable_ops) >= {
+        "parameter",
+        "mul",
+        "sin",
+        "log",
+        "pow",
+        "sub",
+    }
     assert kernel.mlir_module.metadata["polyglot_targets"]["llvm"].startswith("available")
     assert "scpn_diff.native_llvm_jit" in kernel.mlir_module.text
     assert "_batch_value_gradient" in kernel.llvm_ir
@@ -5014,6 +5034,30 @@ def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     assert third.cache_key == first.cache_key
     assert third.native_functions["engine"] is not first.native_functions["engine"]
     assert clear_native_whole_program_ad_compile_cache() == 1
+
+
+def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> None:
+    """Native program AD lowering should report replay-supported ops that lack LLVM lowering."""
+
+    def objective(values: np.ndarray) -> object:
+        return np.maximum(values[0], values[1]) + np.sin(values[2])
+
+    sample = np.array([1.25, -0.25, 0.5], dtype=np.float64)
+    parameters = (Parameter("left"), Parameter("right"), Parameter("phase"))
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+
+    assert isinstance(report, WholeProgramADNativeLoweringReport)
+    assert report.supported is False
+    assert report.unsupported_ops == ("maximum",)
+    assert report.unsupported_operation_count == 1
+    assert report.lowerable_operation_count == len(result.ir_nodes) - 1
+    assert "unsupported native ops: maximum" in report.fail_closed_reason
+    assert report.as_metadata()["unsupported_ops"] == ("maximum",)
+
+    with pytest.raises(ValueError, match="unsupported native ops: maximum"):
+        compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
 def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() -> None:
@@ -5327,6 +5371,10 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
     assert scpn.ExecutableWholeProgramADKernel is ExecutableWholeProgramADKernel
     assert scpn.MLIRCompileConfig is MLIRCompileConfig
     assert scpn.NativeWholeProgramADKernel is NativeWholeProgramADKernel
+    assert scpn.WholeProgramADNativeLoweringReport is WholeProgramADNativeLoweringReport
+    assert (
+        scpn.analyse_whole_program_ad_native_lowering is analyse_whole_program_ad_native_lowering
+    )
     assert scpn.PrimitiveLoweringStatus is PrimitiveLoweringStatus
     assert scpn.build_compiler_ad_transform_plan is build_compiler_ad_transform_plan
     assert (

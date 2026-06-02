@@ -84,8 +84,10 @@ This package provides three things:
 
 5. **A differentiable computation lane** for supported scalar, vector, and
    matrix primitive kernels, including compiler-AD metadata and native Rust
-   backend parity for selected primitives. Unsupported compiler and program-AD
-   paths fail closed rather than silently fabricating gradients.
+   backend parity for selected primitives. Supported scalar program traces also
+   expose native lowering reports before LLVM/JIT compilation. Unsupported
+   compiler and program-AD paths fail closed rather than silently fabricating
+   gradients.
 
 Think of it as a quantum microscope for synchronization. Classical Kuramoto tells you
 *when* oscillators lock in step. This package tells you *what the quantum state looks

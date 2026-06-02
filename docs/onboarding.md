@@ -84,7 +84,8 @@ coupled dynamics matter:
 - Rust acceleration for selected hot paths.
 - Release-readiness and hardware-result-pack gates.
 - Source-bounded Paper 0 register and generated fixtures.
-- Supported differentiable scalar, vector, and matrix primitive surfaces.
+- Supported differentiable scalar, vector, and matrix primitive surfaces, plus
+  inspectable native program-AD lowering reports for supported scalar traces.
 
 ## What Remains Bounded
 
@@ -93,8 +94,9 @@ coupled dynamics matter:
 - Hardware evidence must name committed raw-count artefacts and pass the
   relevant ledger gates before promotion.
 - General native MLIR/LLVM/JIT AD over arbitrary programs is still an open
-  engineering frontier; supported primitives execute through bounded kernels
-  and unsupported paths fail closed.
+  engineering frontier; supported primitives and supported scalar traces
+  execute through bounded kernels, and unsupported paths report the blocked
+  operation before failing closed.
 - Paper 0 ingestion records source structure and generated fixtures; it is not
   an external validation of the propositions.
 

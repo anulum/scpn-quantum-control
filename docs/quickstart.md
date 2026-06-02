@@ -200,7 +200,11 @@ executed branch paths can be lowered further with
 `compile_whole_program_ad_trace_to_native_llvm_jit(...)`. That path emits
 deterministic MLIR provenance plus executable LLVM/JIT value, gradient, JVP,
 VJP, compiled batched value/gradient kernels, and compiled batched JVP/VJP
-kernels. Repeated identical compilations reuse a verified process-local native
+kernels. Use `analyse_whole_program_ad_native_lowering(...)` on the captured
+`WholeProgramADResult` when a service needs to inspect the native boundary
+before compilation; the report lists lowerable operations, unsupported
+operations, control-flow evidence, effect kinds, and the exact fail-closed
+reason. Repeated identical compilations reuse a verified process-local native
 compile cache keyed by deterministic trace and LLVM provenance; use
 `native_whole_program_ad_compile_cache_stats()` and
 `clear_native_whole_program_ad_compile_cache()` for long-running service

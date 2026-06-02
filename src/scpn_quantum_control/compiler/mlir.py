@@ -9248,6 +9248,63 @@ class _NativeWholeProgramADCacheEntry:
     native_functions: Mapping[str, Any]
     verification: CompilerADKernelVerification
     supported_ops: tuple[str, ...]
+    lowering_report: WholeProgramADNativeLoweringReport
+
+
+@dataclass(frozen=True)
+class WholeProgramADNativeLoweringReport:
+    """Fail-closed native lowering audit for one captured program AD trace."""
+
+    supported: bool
+    lowerable_ops: tuple[str, ...]
+    unsupported_ops: tuple[str, ...]
+    control_flow_ops: tuple[str, ...]
+    effect_kinds: tuple[str, ...]
+    operation_count: int
+    lowerable_operation_count: int
+    unsupported_operation_count: int
+    fail_closed_reason: str
+
+    def __post_init__(self) -> None:
+        for field_name, values in (
+            ("lowerable_ops", self.lowerable_ops),
+            ("unsupported_ops", self.unsupported_ops),
+            ("control_flow_ops", self.control_flow_ops),
+            ("effect_kinds", self.effect_kinds),
+        ):
+            if any(not isinstance(item, str) or not item for item in values):
+                raise ValueError(f"{field_name} entries must be non-empty strings")
+        if self.operation_count < 1:
+            raise ValueError("operation_count must be positive")
+        if self.lowerable_operation_count < 0:
+            raise ValueError("lowerable_operation_count must be non-negative")
+        if self.unsupported_operation_count < 0:
+            raise ValueError("unsupported_operation_count must be non-negative")
+        if self.operation_count != (
+            self.lowerable_operation_count + self.unsupported_operation_count
+        ):
+            raise ValueError("operation counts must partition the native lowering report")
+        if self.supported != (self.unsupported_operation_count == 0):
+            raise ValueError("supported must match unsupported_operation_count")
+        if not self.fail_closed_reason:
+            raise ValueError("fail_closed_reason must be non-empty")
+
+    def as_metadata(self) -> Mapping[str, object]:
+        """Return deterministic MLIR-serialisable native lowering metadata."""
+
+        return MappingProxyType(
+            {
+                "supported": self.supported,
+                "lowerable_ops": self.lowerable_ops,
+                "unsupported_ops": self.unsupported_ops,
+                "control_flow_ops": self.control_flow_ops,
+                "effect_kinds": self.effect_kinds,
+                "operation_count": self.operation_count,
+                "lowerable_operation_count": self.lowerable_operation_count,
+                "unsupported_operation_count": self.unsupported_operation_count,
+                "fail_closed_reason": self.fail_closed_reason,
+            }
+        )
 
 
 _NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK = threading.RLock()
@@ -9270,6 +9327,7 @@ class NativeWholeProgramADKernel:
     parameter_shape: tuple[int, ...]
     trace_signature: tuple[str, ...]
     supported_ops: tuple[str, ...]
+    lowering_report: WholeProgramADNativeLoweringReport
     cache_key: str
     cache_hit: bool
     backend: str = "native_llvm_jit"
@@ -9334,6 +9392,12 @@ class NativeWholeProgramADKernel:
             raise ValueError("trace_signature must match source_result")
         if any(not isinstance(item, str) or not item for item in self.supported_ops):
             raise ValueError("supported_ops entries must be non-empty strings")
+        if not isinstance(self.lowering_report, WholeProgramADNativeLoweringReport):
+            raise ValueError("lowering_report must be a WholeProgramADNativeLoweringReport")
+        if not self.lowering_report.supported:
+            raise ValueError("lowering_report must describe a supported native trace")
+        if self.supported_ops != self.lowering_report.lowerable_ops:
+            raise ValueError("supported_ops must match lowering_report lowerable_ops")
         if len(self.cache_key) != 64:
             raise ValueError("cache_key must be a sha256 hex digest")
         if not isinstance(self.cache_hit, bool):
@@ -9802,10 +9866,10 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
         parameters=parameters,
         trace=trace,
     )
-    if _whole_program_has_unsupported_native_control_flow(source_result):
+    lowering_report = analyse_whole_program_ad_native_lowering(source_result)
+    if not lowering_report.supported:
         raise ValueError(
-            "native whole-program AD lowering supports only executed branch traces; "
-            "loop/control-flow joins require replay"
+            f"native whole-program AD lowering failed closed: {lowering_report.fail_closed_reason}"
         )
     program_adjoint_gradient(source_result)
     base_symbol = f"whole_program_ad_{source_result.gradient.size}_{source_result.evaluations}"
@@ -9840,6 +9904,7 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
             native_functions=native_functions,
             verification=verification,
             supported_ops=_whole_program_native_supported_ops(source_result),
+            lowering_report=lowering_report,
         )
         _store_native_whole_program_ad_cache_entry(cache_key, cached_entry)
     else:
@@ -9869,6 +9934,7 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
         parameter_shape=source_result.gradient.shape,
         trace_signature=_whole_program_replay_signature(source_result),
         supported_ops=cached_entry.supported_ops,
+        lowering_report=cached_entry.lowering_report,
         cache_key=cache_key,
         cache_hit=cache_hit,
     )
@@ -9882,8 +9948,100 @@ def _whole_program_has_unsupported_native_control_flow(result: WholeProgramADRes
     return any(node.op.startswith(("loop:", "control:")) for node in result.ir_nodes)
 
 
+_WHOLE_PROGRAM_NATIVE_STRUCTURAL_OPS = frozenset({"parameter", "constant"})
+_WHOLE_PROGRAM_NATIVE_UNARY_OPS = frozenset(
+    {
+        "sin",
+        "cos",
+        "exp",
+        "expm1",
+        "log",
+        "log1p",
+        "sqrt",
+        "tan",
+        "tanh",
+        "arcsin",
+        "arccos",
+        "reciprocal",
+        "square",
+        "abs",
+        "neg",
+        "negative",
+    }
+)
+_WHOLE_PROGRAM_NATIVE_BINARY_OPS = frozenset(
+    {
+        "add",
+        "sub",
+        "subtract",
+        "mul",
+        "multiply",
+        "div",
+        "divide",
+        "truediv",
+        "pow",
+        "power",
+    }
+)
+
+
+def analyse_whole_program_ad_native_lowering(
+    result: WholeProgramADResult,
+) -> WholeProgramADNativeLoweringReport:
+    """Return the fail-closed native LLVM/JIT lowering audit for a program AD trace."""
+
+    if not isinstance(result, WholeProgramADResult):
+        raise ValueError("native lowering analysis requires a WholeProgramADResult")
+    if not result.ir_nodes:
+        raise ValueError("native lowering analysis requires captured IR nodes")
+    lowerable_count = 0
+    unsupported: list[str] = []
+    lowerable: list[str] = []
+    control_flow: list[str] = []
+    for node in result.ir_nodes:
+        if node.op.startswith(("branch:", "loop:", "control:")):
+            control_flow.append(node.op)
+        if _whole_program_native_node_is_lowerable(node.op):
+            lowerable_count += 1
+            lowerable.append(node.op)
+        else:
+            unsupported.append(node.op)
+    unsupported_ops = tuple(dict.fromkeys(unsupported))
+    lowerable_ops = tuple(dict.fromkeys(lowerable))
+    effect_kinds: tuple[str, ...]
+    if result.program_ir is None:
+        effect_kinds = ()
+    else:
+        effect_kinds = tuple(dict.fromkeys(effect.kind for effect in result.program_ir.effects))
+    if unsupported_ops:
+        reason = "unsupported native ops: " + ", ".join(unsupported_ops)
+    else:
+        reason = "supported native LLVM/JIT lowering surface"
+    return WholeProgramADNativeLoweringReport(
+        supported=not unsupported_ops,
+        lowerable_ops=lowerable_ops,
+        unsupported_ops=unsupported_ops,
+        control_flow_ops=tuple(dict.fromkeys(control_flow)),
+        effect_kinds=effect_kinds,
+        operation_count=len(result.ir_nodes),
+        lowerable_operation_count=lowerable_count,
+        unsupported_operation_count=len(result.ir_nodes) - lowerable_count,
+        fail_closed_reason=reason,
+    )
+
+
+def _whole_program_native_node_is_lowerable(op: str) -> bool:
+    if op in _WHOLE_PROGRAM_NATIVE_STRUCTURAL_OPS:
+        return True
+    if op in _WHOLE_PROGRAM_NATIVE_UNARY_OPS:
+        return True
+    if op in _WHOLE_PROGRAM_NATIVE_BINARY_OPS:
+        return True
+    return bool(op.startswith("branch:"))
+
+
 def _whole_program_native_supported_ops(result: WholeProgramADResult) -> tuple[str, ...]:
-    return tuple(dict.fromkeys(node.op for node in result.ir_nodes))
+    return analyse_whole_program_ad_native_lowering(result).lowerable_ops
 
 
 def _native_whole_program_ad_cache_key(
@@ -9995,8 +10153,11 @@ def _compile_whole_program_ad_native_llvm_ir(
 ) -> str:
     if result.gradient.ndim != 1 or result.gradient.size < 1:
         raise ValueError("native whole-program AD lowering requires parameters")
-    if _whole_program_has_unsupported_native_control_flow(result):
-        raise ValueError("native whole-program AD lowering does not support loop/control joins")
+    lowering_report = analyse_whole_program_ad_native_lowering(result)
+    if not lowering_report.supported:
+        raise ValueError(
+            f"native whole-program AD lowering failed closed: {lowering_report.fail_closed_reason}"
+        )
     computation_lines, final_value, final_derivatives = _emit_whole_program_native_computation(
         result,
         values_pointer="%values",
@@ -10840,6 +11001,7 @@ def _annotate_whole_program_native_mlir(
     result: WholeProgramADResult,
 ) -> MLIRModule:
     llvm_sha256 = hashlib.sha256(llvm_ir.encode("utf-8")).hexdigest()
+    lowering_report = analyse_whole_program_ad_native_lowering(result)
     if not module.text.endswith("}\n"):
         raise ValueError("whole-program MLIR module must end with a module terminator")
     text = (
@@ -10853,10 +11015,12 @@ def _annotate_whole_program_native_mlir(
     resource_counts["native_whole_program_kernels"] = 1
     resource_counts["native_whole_program_batch_kernels"] = 1
     resource_counts["native_whole_program_batch_transform_kernels"] = 2
-    resource_counts["native_supported_ops"] = len(_whole_program_native_supported_ops(result))
+    resource_counts["native_supported_ops"] = len(lowering_report.lowerable_ops)
+    resource_counts["native_lowerable_ops"] = len(lowering_report.lowerable_ops)
+    resource_counts["native_unsupported_ops"] = len(lowering_report.unsupported_ops)
     resource_counts["native_supported_elementary_ops"] = sum(
         1
-        for op in _whole_program_native_supported_ops(result)
+        for op in lowering_report.lowerable_ops
         if op
         in {
             "sin",
@@ -10894,7 +11058,11 @@ def _annotate_whole_program_native_mlir(
             ),
             "llvm_ir_sha256": llvm_sha256,
             "native_backend": "native_llvm_jit",
-            "native_supported_ops": _whole_program_native_supported_ops(result),
+            "native_supported_ops": lowering_report.lowerable_ops,
+            "native_lowering_report": lowering_report.as_metadata(),
+            "native_lowerable_ops": lowering_report.lowerable_ops,
+            "native_unsupported_ops": lowering_report.unsupported_ops,
+            "native_fail_closed_reason": lowering_report.fail_closed_reason,
             "polyglot_targets": polyglot_targets,
         }
     )
@@ -10975,7 +11143,9 @@ __all__ = [
     "MLIRCompileConfig",
     "NativeWholeProgramADKernel",
     "PrimitiveLoweringStatus",
+    "WholeProgramADNativeLoweringReport",
     "MLIRModule",
+    "analyse_whole_program_ad_native_lowering",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",
     "compile_custom_derivative_rule_to_mlir",
