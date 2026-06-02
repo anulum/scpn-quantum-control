@@ -9992,6 +9992,7 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
         "linalg:det:2x2",
         "linalg:det:3x3",
         "linalg:det:4x4",
+        "linalg:det:5x5",
         "linalg:inv:2x2:0:0",
         "linalg:inv:2x2:0:1",
         "linalg:inv:2x2:1:0",
@@ -10785,6 +10786,11 @@ def _emit_whole_program_native_operation(
             raise ValueError("native linalg:det:4x4 expects sixteen matrix inputs")
         _emit_whole_program_native_det4(lines, result, node, value_name, inputs)
         return
+    if node.op == "linalg:det:5x5":
+        if len(inputs) != 25:
+            raise ValueError("native linalg:det:5x5 expects twenty-five matrix inputs")
+        _emit_whole_program_native_det5(lines, result, node, value_name, inputs)
+        return
     if node.op == "linalg:trace:2x2:offset:0":
         if len(inputs) != 2:
             raise ValueError("native linalg:trace:2x2:offset:0 expects two diagonal inputs")
@@ -11314,27 +11320,70 @@ def _emit_whole_program_native_det4(
 ) -> None:
     """Emit native 4x4 determinant value and exact cofactor adjoint code."""
 
+    _emit_whole_program_native_det_fixed(
+        lines,
+        result,
+        node,
+        value_name,
+        inputs,
+        size=4,
+        prefix="det4",
+    )
+
+
+def _emit_whole_program_native_det5(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+) -> None:
+    """Emit native 5x5 determinant value and exact cofactor adjoint code."""
+
+    _emit_whole_program_native_det_fixed(
+        lines,
+        result,
+        node,
+        value_name,
+        inputs,
+        size=5,
+        prefix="det5",
+    )
+
+
+def _emit_whole_program_native_det_fixed(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+    *,
+    size: int,
+    prefix: str,
+) -> None:
+    """Emit native fixed-size determinant value and exact cofactor adjoint code."""
+
     parameter_count = int(result.gradient.size)
     entries = tuple(_whole_program_native_operand(token) for token in inputs)
-    matrix = tuple(tuple(entries[row * 4 + col] for col in range(4)) for row in range(4))
+    matrix = tuple(tuple(entries[row * size + col] for col in range(size)) for row in range(size))
     determinant = _emit_whole_program_native_det_expression(
         lines,
         matrix,
-        f"det4_value_{node.index}",
+        f"{prefix}_value_{node.index}",
     )
     lines.append(f"  {value_name} = fadd double {determinant}, {_fmt_llvm_float(0.0)}")
 
     cofactors: list[str] = []
-    for row in range(4):
-        for col in range(4):
+    for row in range(size):
+        for col in range(size):
             minor = _whole_program_native_det_minor(matrix, row, col)
             cofactor = _emit_whole_program_native_det_expression(
                 lines,
                 minor,
-                f"det4_cofactor_{row}{col}_{node.index}",
+                f"{prefix}_cofactor_{row}{col}_{node.index}",
             )
             if (row + col) % 2:
-                signed_cofactor = f"%det4_cofactor_{row}{col}_signed_{node.index}"
+                signed_cofactor = f"%{prefix}_cofactor_{row}{col}_signed_{node.index}"
                 lines.append(
                     f"  {signed_cofactor} = fsub double {_fmt_llvm_float(0.0)}, {cofactor}"
                 )
@@ -11349,7 +11398,7 @@ def _emit_whole_program_native_det4(
                 inputs[entry_index],
                 derivative_index,
             )
-            gradient_term = f"%d{node.index}_{derivative_index}_det4_entry_{entry_index}"
+            gradient_term = f"%d{node.index}_{derivative_index}_{prefix}_entry_{entry_index}"
             lines.append(f"  {gradient_term} = fmul double {entry_derivative}, {cofactor}")
             gradient_terms.append(gradient_term)
 
@@ -11359,7 +11408,7 @@ def _emit_whole_program_native_det4(
             target = (
                 derivative_name
                 if term_offset == len(gradient_terms) - 1
-                else f"%d{node.index}_{derivative_index}_det4_acc_{term_offset}"
+                else f"%d{node.index}_{derivative_index}_{prefix}_acc_{term_offset}"
             )
             lines.append(f"  {target} = fadd double {accumulator}, {gradient_term}")
             accumulator = target

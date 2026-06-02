@@ -86,9 +86,9 @@ coupled dynamics matter:
 - Source-bounded Paper 0 register and generated fixtures.
 - Supported differentiable scalar, vector, and matrix primitive surfaces, plus
   inspectable native program-AD lowering reports for supported scalar traces
-  with strict no-tie native `where`/selection/`clip` support, 2x2/3x3/4x4
-  determinant native lowering, and 2x2 trace/inverse/solve/product native
-  lowering.
+  with strict no-tie native `where`/selection/`clip` support,
+  2x2/3x3/4x4/5x5 determinant native lowering, and 2x2
+  trace/inverse/solve/product native lowering.
 
 ## What Remains Bounded
 
