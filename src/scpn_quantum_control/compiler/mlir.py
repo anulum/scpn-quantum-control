@@ -10003,9 +10003,10 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
 )
 _WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset(range(6, 17))
 _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset(range(6, 17))
-_WHOLE_PROGRAM_NATIVE_INVERSE_SIZES = frozenset({3, 4})
+_WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES = frozenset({5})
+_WHOLE_PROGRAM_NATIVE_INVERSE_SIZES = frozenset({3, 4, 5})
 _WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES = frozenset({3, 4, 5})
-_WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES = frozenset({2, 3, 4})
+_WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES = frozenset({2, 3, 4, 5})
 _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS = 4
 
 
@@ -10253,16 +10254,16 @@ def _compile_whole_program_native_helper_definitions(
 ) -> list[str]:
     """Emit compact native helper functions required by the captured trace."""
 
-    helper_sizes = sorted(
-        {
-            size
-            for node in result.ir_nodes
-            for size in (_whole_program_native_wide_det_size(node.op),)
-            if size in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES
-        }
-    )
+    helper_sizes: set[int] = set()
+    for node in result.ir_nodes:
+        wide_det_size = _whole_program_native_wide_det_size(node.op)
+        if wide_det_size in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES:
+            helper_sizes.add(wide_det_size)
+        derivative_helper_size = _whole_program_native_det_derivative_helper_size(node.op)
+        if derivative_helper_size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+            helper_sizes.add(derivative_helper_size)
     lines: list[str] = []
-    for size in helper_sizes:
+    for size in sorted(helper_sizes):
         if lines:
             lines.append("")
         lines.extend(_compile_whole_program_native_det_loop_helper_llvm_ir(size))
@@ -10272,7 +10273,10 @@ def _compile_whole_program_native_helper_definitions(
 def _compile_whole_program_native_det_loop_helper_llvm_ir(size: int) -> list[str]:
     """Emit a loop-based Faddeev-LeVerrier determinant/partial helper."""
 
-    if size not in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES:
+    if size not in (
+        _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES
+        | _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+    ):
         raise ValueError("native determinant loop helper requested for unsupported size")
     total = size * size
     symbol = _whole_program_native_det_loop_helper_symbol(size)
@@ -12058,6 +12062,13 @@ def _emit_whole_program_native_det_with_derivatives(
     size = len(matrix)
     if size < 1 or any(len(row) != size for row in matrix):
         raise ValueError("native determinant derivative helper requires a square matrix")
+    if size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+        return _emit_whole_program_native_det_helper_with_derivatives(
+            lines,
+            matrix,
+            derivative_matrices,
+            prefix=prefix,
+        )
     determinant = _emit_whole_program_native_det_expression(lines, matrix, f"{prefix}_det")
     derivatives: list[str] = []
     zero = _fmt_llvm_float(0.0)
@@ -12085,6 +12096,91 @@ def _emit_whole_program_native_det_with_derivatives(
                 terms.append(term)
         derivative_name = f"%{prefix}_d{derivative_index}"
         _emit_whole_program_native_sum_operands(lines, terms, derivative_name)
+        derivatives.append(derivative_name)
+    return determinant, tuple(derivatives)
+
+
+def _emit_whole_program_native_det_helper_with_derivatives(
+    lines: list[str],
+    matrix: tuple[tuple[str, ...], ...],
+    derivative_matrices: Sequence[tuple[tuple[str, ...], ...]],
+    *,
+    prefix: str,
+) -> tuple[str, tuple[str, ...]]:
+    """Emit compact determinant helper call plus exact first derivatives."""
+
+    size = len(matrix)
+    if size not in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+        raise ValueError("native determinant derivative helper requested for unsupported size")
+    if any(len(row) != size for row in matrix):
+        raise ValueError("native determinant derivative helper requires a square matrix")
+    total = size * size
+    output_total = total + 1
+    matrix_alloca = f"%{prefix}_helper_matrix"
+    output_alloca = f"%{prefix}_helper_output"
+    matrix_base = f"%{prefix}_helper_matrix_base"
+    output_base = f"%{prefix}_helper_output_base"
+    determinant = f"%{prefix}_helper_det"
+    symbol = _whole_program_native_det_loop_helper_symbol(size)
+    lines.extend(
+        [
+            f"  {matrix_alloca} = alloca [{total} x double]",
+            f"  {output_alloca} = alloca [{output_total} x double]",
+        ]
+    )
+    for row in range(size):
+        for col in range(size):
+            entry_index = row * size + col
+            matrix_ptr = f"%{prefix}_helper_matrix_ptr_{entry_index}"
+            lines.extend(
+                [
+                    f"  {matrix_ptr} = getelementptr [{total} x double], "
+                    f"[{total} x double]* {matrix_alloca}, i64 0, i64 {entry_index}",
+                    f"  store double {matrix[row][col]}, double* {matrix_ptr}",
+                ]
+            )
+    lines.extend(
+        [
+            f"  {matrix_base} = getelementptr [{total} x double], "
+            f"[{total} x double]* {matrix_alloca}, i64 0, i64 0",
+            f"  {output_base} = getelementptr [{output_total} x double], "
+            f"[{output_total} x double]* {output_alloca}, i64 0, i64 0",
+            f"  call void @{symbol}(double* {matrix_base}, double* {output_base})",
+            f"  %{prefix}_helper_det_ptr = getelementptr [{output_total} x double], "
+            f"[{output_total} x double]* {output_alloca}, i64 0, i64 0",
+            f"  {determinant} = load double, double* %{prefix}_helper_det_ptr",
+        ]
+    )
+    partials: list[str] = []
+    for entry_index in range(total):
+        partial_ptr = f"%{prefix}_helper_partial_ptr_{entry_index}"
+        partial_value = f"%{prefix}_helper_partial_{entry_index}"
+        lines.extend(
+            [
+                f"  {partial_ptr} = getelementptr [{output_total} x double], "
+                f"[{output_total} x double]* {output_alloca}, i64 0, i64 {entry_index + 1}",
+                f"  {partial_value} = load double, double* {partial_ptr}",
+            ]
+        )
+        partials.append(partial_value)
+
+    zero = _fmt_llvm_float(0.0)
+    derivatives: list[str] = []
+    for derivative_index, derivative_matrix in enumerate(derivative_matrices):
+        if len(derivative_matrix) != size or any(len(row) != size for row in derivative_matrix):
+            raise ValueError("native determinant derivative matrix shape mismatch")
+        derivative_terms: list[str] = []
+        for row in range(size):
+            for col in range(size):
+                entry_index = row * size + col
+                entry_derivative = derivative_matrix[row][col]
+                if entry_derivative == zero:
+                    continue
+                term = f"%{prefix}_helper_d{derivative_index}_term_{entry_index}"
+                lines.append(f"  {term} = fmul double {partials[entry_index]}, {entry_derivative}")
+                derivative_terms.append(term)
+        derivative_name = f"%{prefix}_d{derivative_index}"
+        _emit_whole_program_native_sum_operands(lines, derivative_terms, derivative_name)
         derivatives.append(derivative_name)
     return determinant, tuple(derivatives)
 
@@ -12515,6 +12611,30 @@ def _whole_program_native_solve_matrix_spec(op: str) -> tuple[int, int, int, int
     ):
         return None
     return rows, rhs_cols, output_row, output_col
+
+
+def _whole_program_native_det_derivative_helper_size(op: str) -> int | None:
+    """Return determinant-partial helper size required by supported quotient linalg ops."""
+
+    inverse_spec = _whole_program_native_inverse_spec(op)
+    if (
+        inverse_spec is not None
+        and inverse_spec[0] in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+    ):
+        return inverse_spec[0]
+    solve_vector_spec = _whole_program_native_solve_vector_spec(op)
+    if (
+        solve_vector_spec is not None
+        and solve_vector_spec[0] in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+    ):
+        return solve_vector_spec[0]
+    solve_matrix_spec = _whole_program_native_solve_matrix_spec(op)
+    if (
+        solve_matrix_spec is not None
+        and solve_matrix_spec[0] in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+    ):
+        return solve_matrix_spec[0]
+    return None
 
 
 def _whole_program_native_trace_input_count(op: str) -> int | None:
