@@ -9179,6 +9179,47 @@ def compile_whole_program_ad_trace_to_mlir(
 
 
 @dataclass(frozen=True)
+class ExecutableWholeProgramADBatchResult:
+    """Batched replay result from an executable whole-program AD kernel."""
+
+    values: NDArray[np.float64]
+    gradients: NDArray[np.float64]
+    parameter_names: tuple[str, ...]
+    row_signatures: tuple[tuple[str, ...], ...]
+    mlir_sha256: str
+    backend: str = "program_ad_trace_replay"
+    claim_boundary: str = (
+        "batched executable replay of supported captured scalar program AD IR; "
+        "each row must preserve the compiled branch/signature contract"
+    )
+
+    def __post_init__(self) -> None:
+        values = _as_finite_vector("batch values", self.values)
+        gradients = np.asarray(self.gradients, dtype=np.float64)
+        if gradients.ndim != 2:
+            raise ValueError("batch gradients must be two-dimensional")
+        if gradients.shape[0] != values.size:
+            raise ValueError("batch gradients row count must match batch values")
+        if gradients.shape[1] != len(self.parameter_names):
+            raise ValueError("batch gradients column count must match parameter_names")
+        if not np.all(np.isfinite(gradients)):
+            raise ValueError("batch gradients must contain only finite values")
+        if len(self.row_signatures) != values.size:
+            raise ValueError("row_signatures count must match batch values")
+        for signature in self.row_signatures:
+            if any(not isinstance(item, str) or not item for item in signature):
+                raise ValueError("row_signatures entries must be non-empty strings")
+        if not self.mlir_sha256:
+            raise ValueError("mlir_sha256 must be non-empty")
+        if self.backend != "program_ad_trace_replay":
+            raise ValueError("backend must be 'program_ad_trace_replay'")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "gradients", gradients.copy())
+
+
+@dataclass(frozen=True)
 class ExecutableWholeProgramADKernel:
     """Executable replay kernel for a supported captured program AD trace.
 
@@ -9242,6 +9283,24 @@ class ExecutableWholeProgramADKernel:
             )
         return checked
 
+    def _checked_batch_values(
+        self,
+        values: Sequence[Sequence[float]] | np.ndarray,
+    ) -> NDArray[np.float64]:
+        checked = np.asarray(values, dtype=np.float64)
+        if checked.ndim != 2:
+            raise ValueError("batch values must be two-dimensional")
+        if checked.shape[0] < 1:
+            raise ValueError("batch values must contain at least one row")
+        if checked.shape[1:] != self.parameter_shape:
+            raise ValueError(
+                "batch values shape must be (batch, parameters) with parameter shape "
+                f"{self.parameter_shape}"
+            )
+        if not np.all(np.isfinite(checked)):
+            raise ValueError("batch values must contain only finite values")
+        return cast(NDArray[np.float64], checked.copy())
+
     def _recapture(self, values: Sequence[float] | np.ndarray) -> WholeProgramADResult:
         checked = self._checked_values(values)
         result = whole_program_value_and_grad(
@@ -9276,6 +9335,47 @@ class ExecutableWholeProgramADKernel:
         """Execute reverse-mode adjoint replay for the captured program AD trace."""
 
         return self.value_and_grad(values)[1]
+
+    def batch_value_and_grad(
+        self,
+        values: Sequence[Sequence[float]] | np.ndarray,
+    ) -> ExecutableWholeProgramADBatchResult:
+        """Execute same-branch batched value and reverse-adjoint gradient replay."""
+
+        batch = self._checked_batch_values(values)
+        row_values: list[float] = []
+        row_gradients: list[NDArray[np.float64]] = []
+        row_signatures: list[tuple[str, ...]] = []
+        for row_index, row in enumerate(batch):
+            result = self._recapture(row)
+            signature = _whole_program_replay_signature(result)
+            if signature != self.branch_signature:
+                raise ValueError(
+                    f"whole-program executable AD batch row {row_index} branch signature changed"
+                )
+            row_values.append(result.value)
+            row_gradients.append(program_adjoint_gradient(result))
+            row_signatures.append(signature)
+        return ExecutableWholeProgramADBatchResult(
+            values=np.asarray(row_values, dtype=np.float64),
+            gradients=np.vstack(row_gradients).astype(np.float64, copy=False),
+            parameter_names=self.parameter_names,
+            row_signatures=tuple(row_signatures),
+            mlir_sha256=self.mlir_module.sha256,
+        )
+
+    def batch_value(self, values: Sequence[Sequence[float]] | np.ndarray) -> NDArray[np.float64]:
+        """Execute batched value replay for rows preserving the compiled branch path."""
+
+        return self.batch_value_and_grad(values).values
+
+    def batch_gradient(
+        self,
+        values: Sequence[Sequence[float]] | np.ndarray,
+    ) -> NDArray[np.float64]:
+        """Execute batched reverse-adjoint replay for rows preserving the branch path."""
+
+        return self.batch_value_and_grad(values).gradients
 
 
 def compile_whole_program_ad_trace_to_executable(
@@ -9330,7 +9430,7 @@ def _whole_program_replay_signature(result: WholeProgramADResult) -> tuple[str, 
     """Return a stable non-numeric signature for supported program AD replay."""
 
     control_signature = tuple(
-        f"{node.index}:{node.op}:{','.join(node.inputs)}:{_fmt_float(node.value)}"
+        f"{node.index}:{node.op}:{','.join(node.inputs)}"
         for node in result.ir_nodes
         if node.op.startswith(("branch:", "loop:", "control:"))
     )
@@ -9389,6 +9489,7 @@ __all__ = [
     "CompilerADKernelVerification",
     "DifferentiableMLIRCompileConfig",
     "ExecutableCompilerADKernel",
+    "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
     "MLIRCompileConfig",
     "PrimitiveLoweringStatus",

@@ -20,6 +20,7 @@ from scpn_quantum_control.compiler.mlir import (
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     ExecutableCompilerADKernel,
+    ExecutableWholeProgramADBatchResult,
     ExecutableWholeProgramADKernel,
     MLIRCompileConfig,
     PrimitiveLoweringStatus,
@@ -4788,6 +4789,64 @@ def test_whole_program_ad_trace_executable_replays_supported_scalar_ir() -> None
         kernel.value_and_grad(np.array([1.25, np.nan, 0.5], dtype=np.float64))
 
 
+def test_whole_program_ad_trace_executable_batches_same_branch_rows() -> None:
+    """Executable program AD trace kernels should batch same-signature rows."""
+
+    def objective(values: np.ndarray) -> object:
+        branch = values[0] if values[0] > values[1] else values[1]
+        return np.sin(values[0] * values[1]) + np.log(values[2] + 4.0) + branch * values[2]
+
+    sample = np.array([1.25, -0.25, 0.5], dtype=np.float64)
+    batch = np.array(
+        [
+            [1.25, -0.25, 0.5],
+            [1.1, -0.4, 0.75],
+            [2.0, 0.5, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    parameters = (Parameter("x"), Parameter("y"), Parameter("z"))
+    kernel = compile_whole_program_ad_trace_to_executable(objective, sample, parameters)
+
+    result = kernel.batch_value_and_grad(batch)
+    reference = [program_adjoint_value_and_grad(objective, row, parameters) for row in batch]
+
+    assert isinstance(result, ExecutableWholeProgramADBatchResult)
+    assert result.backend == "program_ad_trace_replay"
+    assert result.parameter_names == ("x", "y", "z")
+    assert result.mlir_sha256 == kernel.mlir_module.sha256
+    assert result.row_signatures == (kernel.branch_signature,) * batch.shape[0]
+    np.testing.assert_allclose(
+        result.values,
+        np.array([item[0] for item in reference], dtype=np.float64),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        result.gradients,
+        np.vstack([item[1] for item in reference]),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(kernel.batch_value(batch), result.values)
+    np.testing.assert_allclose(kernel.batch_gradient(batch), result.gradients)
+
+    branch_drift_batch = batch.copy()
+    branch_drift_batch[1] = np.array([-0.25, 1.25, 0.5], dtype=np.float64)
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.batch_value_and_grad(branch_drift_batch)
+    with pytest.raises(ValueError, match="two-dimensional"):
+        kernel.batch_value_and_grad(sample)
+    with pytest.raises(ValueError, match="at least one row"):
+        kernel.batch_value_and_grad(np.empty((0, 3), dtype=np.float64))
+    with pytest.raises(ValueError, match="parameter shape"):
+        kernel.batch_value_and_grad(np.ones((2, 2), dtype=np.float64))
+    with pytest.raises(ValueError, match="finite"):
+        kernel.batch_value_and_grad(
+            np.array([[1.25, -0.25, 0.5], [1.0, np.nan, 0.5]], dtype=np.float64)
+        )
+
+
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
     """Realtime runtime should account for deterministic deadline misses."""
 
@@ -4942,6 +5001,7 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
     assert scpn.CompilerADTransformPlan is CompilerADTransformPlan
     assert scpn.DifferentiableMLIRCompileConfig is DifferentiableMLIRCompileConfig
     assert scpn.ExecutableCompilerADKernel is ExecutableCompilerADKernel
+    assert scpn.ExecutableWholeProgramADBatchResult is ExecutableWholeProgramADBatchResult
     assert scpn.ExecutableWholeProgramADKernel is ExecutableWholeProgramADKernel
     assert scpn.MLIRCompileConfig is MLIRCompileConfig
     assert scpn.PrimitiveLoweringStatus is PrimitiveLoweringStatus

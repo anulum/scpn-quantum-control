@@ -118,7 +118,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.compiler.mlir
     options:
-      members: [MLIRCompileConfig, DifferentiableMLIRCompileConfig, CompilerADExecutableConfig, CompilerADKernelVerification, ExecutableCompilerADKernel, ExecutableWholeProgramADKernel, MLIRModule, compile_kuramoto_to_mlir, compile_custom_derivative_rule_to_mlir, compile_custom_derivative_rule_to_executable, compile_registered_primitive_to_executable, compile_whole_program_ad_trace_to_executable, compile_whole_program_ad_trace_to_mlir]
+      members: [MLIRCompileConfig, DifferentiableMLIRCompileConfig, CompilerADExecutableConfig, CompilerADKernelVerification, ExecutableCompilerADKernel, ExecutableWholeProgramADBatchResult, ExecutableWholeProgramADKernel, MLIRModule, compile_kuramoto_to_mlir, compile_custom_derivative_rule_to_mlir, compile_custom_derivative_rule_to_executable, compile_registered_primitive_to_executable, compile_whole_program_ad_trace_to_executable, compile_whole_program_ad_trace_to_mlir]
 
 ## Real-Time Runtime
 
