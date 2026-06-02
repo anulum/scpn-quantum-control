@@ -208,7 +208,10 @@ reason. Repeated identical compilations reuse a verified process-local native
 compile cache keyed by deterministic trace and LLVM provenance; use
 `native_whole_program_ad_compile_cache_stats()` and
 `clear_native_whole_program_ad_compile_cache()` for long-running service
-diagnostics and explicit invalidation. Strict scalar `np.where`, `maximum`,
+diagnostics and explicit invalidation. Use
+`native_whole_program_ad_linalg_support()` when a service needs the exact
+static-dense determinant, inverse, solve, trace, dtype, derivative, and
+fail-closed support contract without compiling a trace. Strict scalar `np.where`, `maximum`,
 `minimum`, and `clip` selection operations lower to native ordered compare/select kernels
 and still replay the trace at runtime to reject equality ties before returning
 an undefined selection or clipping adjoint. Runtime rows that change the compiled
@@ -218,7 +221,8 @@ shape changes fail closed and should use the replay executable until a native
 lowering rule exists.
 Strict scalar 2x2, 3x3, 4x4, and 5x5 determinants lower through explicit native
 arithmetic expressions; static dense 6x6 through 16x16 determinants lower
-through compact loop-helper native LLVM/JIT value-and-partials kernels. Static
+through compact loop-helper native LLVM/JIT value-and-partials kernels and are
+regression-tested on non-diagonal dense matrices. Static
 square/rectangular trace nodes with fixed offsets, static diagonal
 gather/scatter nodes, 2x2 inverse, 2x2 linear solve, 2x2 square via
 `matrix_power(..., 2)`, and 2x2-by-2x2 `multi_dot` program-AD nodes also lower

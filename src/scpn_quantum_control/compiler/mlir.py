@@ -10005,6 +10005,30 @@ _WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset(range(6, 17))
 _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset(range(6, 17))
 
 
+def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
+    """Return the native whole-program AD linalg support contract."""
+
+    expression_determinant_sizes = tuple(range(2, 6))
+    helper_determinant_sizes = tuple(sorted(_WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES))
+    determinant_sizes = expression_determinant_sizes + helper_determinant_sizes
+    return MappingProxyType(
+        {
+            "determinant_expression_sizes": expression_determinant_sizes,
+            "determinant_helper_sizes": helper_determinant_sizes,
+            "determinant_static_dense_sizes": determinant_sizes,
+            "determinant_fail_closed_from": max(determinant_sizes) + 1,
+            "determinant_layout": "row_major",
+            "determinant_dtype": "float64",
+            "determinant_derivative": "exact_forward_partials",
+            "determinant_policy": "static_dense_native_or_fail_closed",
+            "inverse_sizes": (2,),
+            "solve_sizes": (2,),
+            "trace_policy": "static_square_or_rectangular_fixed_offset",
+            "unsupported_policy": "fail_closed_report_before_compile",
+        }
+    )
+
+
 def analyse_whole_program_ad_native_lowering(
     result: WholeProgramADResult,
 ) -> WholeProgramADNativeLoweringReport:
@@ -12720,4 +12744,5 @@ __all__ = [
     "make_vector_dot_native_llvm_jit_primitive_transform",
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_primitive_transform",
+    "native_whole_program_ad_linalg_support",
 ]

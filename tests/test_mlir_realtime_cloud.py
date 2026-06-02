@@ -40,6 +40,7 @@ from scpn_quantum_control.compiler.mlir import (
     make_program_ad_linalg_matrix_power_executable_lowering_rule,
     make_program_ad_linalg_multi_dot_executable_lowering_rule,
     native_whole_program_ad_compile_cache_stats,
+    native_whole_program_ad_linalg_support,
 )
 from scpn_quantum_control.control.realtime_runtime import (
     RealtimeRuntimeConfig,
@@ -68,6 +69,16 @@ from scpn_quantum_control.differentiable import (
     whole_program_value_and_grad,
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
+
+
+def _dense_determinant_offsets(size: int) -> np.ndarray:
+    """Return a deterministic non-diagonal perturbation for native determinant tests."""
+
+    rows = np.arange(size, dtype=np.float64).reshape(size, 1) + 1.0
+    cols = np.arange(size, dtype=np.float64).reshape(1, size) + 1.0
+    offsets = 0.011 * np.sin(rows * (cols + 0.5)) + 0.007 * np.cos(rows + 2.0 * cols)
+    np.fill_diagonal(offsets, 0.0)
+    return offsets
 
 
 def _problem():
@@ -5131,6 +5142,70 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_wide_determinants() -> No
         np.testing.assert_allclose(
             batch_result.gradients,
             np.vstack([item[1] for item in batch_reference]),
+            rtol=1.0e-8,
+            atol=1.0e-8,
+        )
+
+
+def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_boundary() -> None:
+    """Native linalg support contracts should expose exact fail-closed determinant limits."""
+
+    support = native_whole_program_ad_linalg_support()
+
+    assert scpn.native_whole_program_ad_linalg_support is native_whole_program_ad_linalg_support
+    assert compiler_mlir.native_whole_program_ad_linalg_support is (
+        native_whole_program_ad_linalg_support
+    )
+    assert support["determinant_expression_sizes"] == (2, 3, 4, 5)
+    assert support["determinant_helper_sizes"] == tuple(range(6, 17))
+    assert support["determinant_static_dense_sizes"] == tuple(range(2, 17))
+    assert support["determinant_fail_closed_from"] == 17
+    assert support["determinant_derivative"] == "exact_forward_partials"
+    assert support["determinant_policy"] == "static_dense_native_or_fail_closed"
+    assert support["unsupported_policy"] == "fail_closed_report_before_compile"
+
+
+def test_whole_program_ad_trace_native_llvm_jit_lowers_dense_wide_determinants() -> None:
+    """Native wide determinant helpers should match replay AD on non-diagonal matrices."""
+
+    for size in (7, 9, 11, 13, 15, 16):
+        offsets = _dense_determinant_offsets(size)
+
+        def objective(
+            values: np.ndarray,
+            *,
+            matrix_size: int = size,
+            dense_offsets: np.ndarray = offsets,
+        ) -> object:
+            matrix = np.diag(values[:matrix_size]) + dense_offsets
+            return np.linalg.det(matrix) + 0.005 * values[0] * values[matrix_size - 1]
+
+        sample = np.linspace(1.25, 1.75, size, dtype=np.float64)
+        replay = np.linspace(1.8, 1.3, size, dtype=np.float64)
+        parameters = tuple(Parameter(f"dense_x{index}") for index in range(size))
+        det_op = f"linalg:det:{size}x{size}"
+
+        result = whole_program_value_and_grad(objective, sample, parameters)
+        report = analyse_whole_program_ad_native_lowering(result)
+        kernel = compile_whole_program_ad_trace_to_native_llvm_jit(
+            objective,
+            sample,
+            parameters,
+        )
+        reference_value, reference_gradient = program_adjoint_value_and_grad(
+            objective,
+            replay,
+            parameters,
+        )
+
+        assert report.supported is True
+        assert det_op in report.lowerable_ops
+        assert report.unsupported_ops == ()
+        assert f"scpn_det{size}_fl_value_partials" in kernel.llvm_ir
+        assert kernel.value(replay) == pytest.approx(reference_value, rel=1.0e-9, abs=1.0e-9)
+        np.testing.assert_allclose(
+            kernel.gradient(replay),
+            reference_gradient,
             rtol=1.0e-8,
             atol=1.0e-8,
         )

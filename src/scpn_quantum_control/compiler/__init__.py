@@ -68,6 +68,7 @@ from .mlir import (
     make_vector_dot_native_llvm_jit_lowering_rule,
     make_vector_squared_norm_native_llvm_jit_lowering_rule,
     native_whole_program_ad_compile_cache_stats,
+    native_whole_program_ad_linalg_support,
 )
 
 __all__ = [
@@ -131,4 +132,5 @@ __all__ = [
     "make_vector_dot_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
     "native_whole_program_ad_compile_cache_stats",
+    "native_whole_program_ad_linalg_support",
 ]

@@ -90,6 +90,8 @@ This package provides three things:
    `clip`, plus scalar 2x2/3x3/4x4/5x5 expression determinant,
    helper-backed 6x6 through 16x16 determinant, static square/rectangular trace,
    static diagonal gather/scatter, and 2x2 inverse, solve, and product lowering.
+   The native linalg support contract is introspectable before compilation, and
+   wide determinant helpers are regression-tested on non-diagonal dense matrices.
    Unsupported compiler and program-AD paths fail closed rather than silently
    fabricating gradients.
 

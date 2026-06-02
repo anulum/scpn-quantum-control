@@ -136,6 +136,7 @@ from .compiler.mlir import (
     make_vector_squared_norm_native_llvm_jit_lowering_rule,
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
     native_whole_program_ad_compile_cache_stats,
+    native_whole_program_ad_linalg_support,
 )
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
@@ -790,6 +791,7 @@ __all__ = [
     "compile_whole_program_ad_trace_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "native_whole_program_ad_compile_cache_stats",
+    "native_whole_program_ad_linalg_support",
     "compile_kuramoto_to_mlir",
     "MonotonicRealtimeClock",
     "RealtimeRunResult",
