@@ -5040,13 +5040,14 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
     """Native program AD lowering should report replay-supported ops that lack LLVM lowering."""
 
     def objective(values: np.ndarray) -> object:
-        return np.clip(values[0:1], values[1:2], values[2:3]).sum() + np.sin(values[3])
+        return np.linalg.det(values[0:4].reshape((2, 2))) + np.sin(values[4])
 
-    sample = np.array([0.25, -0.5, 1.5, 0.75], dtype=np.float64)
+    sample = np.array([1.0, 0.2, 0.3, 1.5, 0.75], dtype=np.float64)
     parameters = (
-        Parameter("value"),
-        Parameter("lower"),
-        Parameter("upper"),
+        Parameter("a00"),
+        Parameter("a01"),
+        Parameter("a10"),
+        Parameter("a11"),
         Parameter("phase"),
     )
 
@@ -5055,13 +5056,13 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
 
     assert isinstance(report, WholeProgramADNativeLoweringReport)
     assert report.supported is False
-    assert report.unsupported_ops == ("clip",)
+    assert report.unsupported_ops == ("linalg:det:2x2",)
     assert report.unsupported_operation_count == 1
     assert report.lowerable_operation_count == len(result.ir_nodes) - 1
-    assert "unsupported native ops: clip" in report.fail_closed_reason
-    assert report.as_metadata()["unsupported_ops"] == ("clip",)
+    assert "unsupported native ops: linalg:det:2x2" in report.fail_closed_reason
+    assert report.as_metadata()["unsupported_ops"] == ("linalg:det:2x2",)
 
-    with pytest.raises(ValueError, match="unsupported native ops: clip"):
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:det:2x2"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
@@ -5123,6 +5124,81 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_where() -> None:
     )
     with pytest.raises(ValueError, match="non-differentiable at equality"):
         kernel.gradient(np.array([1.0, 1.0, 0.5], dtype=np.float64))
+
+
+def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_clip() -> None:
+    """Native program AD should lower strict scalar np.clip selection traces."""
+
+    def objective(values: np.ndarray) -> object:
+        clipped = np.clip(values[0:1], values[1:2], values[2:3])
+        return clipped.sum() + values[3] * values[0]
+
+    sample = np.array([0.25, -0.5, 1.5, 2.0], dtype=np.float64)
+    lower_replay = np.array([-1.0, -0.5, 1.5, 2.0], dtype=np.float64)
+    upper_replay = np.array([2.0, -0.5, 1.5, -0.25], dtype=np.float64)
+    parameters = (
+        Parameter("value"),
+        Parameter("lower"),
+        Parameter("upper"),
+        Parameter("scale"),
+    )
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    lower_value, lower_gradient = program_adjoint_value_and_grad(
+        objective,
+        lower_replay,
+        parameters,
+    )
+    upper_value, upper_gradient = program_adjoint_value_and_grad(
+        objective,
+        upper_replay,
+        parameters,
+    )
+
+    assert report.supported is True
+    assert report.unsupported_ops == ()
+    assert "clip" in report.lowerable_ops
+    assert "clip" in kernel.supported_ops
+    assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+    assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+    assert "fcmp olt" in kernel.llvm_ir
+    assert "fcmp ogt" in kernel.llvm_ir
+    assert "select i1" in kernel.llvm_ir
+    assert kernel.value(lower_replay) == pytest.approx(lower_value)
+    np.testing.assert_allclose(
+        kernel.gradient(lower_replay),
+        lower_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    assert kernel.value(upper_replay) == pytest.approx(upper_value)
+    np.testing.assert_allclose(
+        kernel.gradient(upper_replay),
+        upper_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    batch = np.vstack([sample, lower_replay, upper_replay])
+    batch_reference = [program_adjoint_value_and_grad(objective, row, parameters) for row in batch]
+    batch_result = kernel.batch_value_and_grad(batch)
+    np.testing.assert_allclose(
+        batch_result.values,
+        np.array([item[0] for item in batch_reference], dtype=np.float64),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.gradients,
+        np.vstack([item[1] for item in batch_reference]),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    with pytest.raises(ValueError, match="clipping boundary"):
+        kernel.gradient(np.array([-0.5, -0.5, 1.5, 2.0], dtype=np.float64))
+    with pytest.raises(ValueError, match="lower bound"):
+        kernel.value(np.array([0.0, 2.0, 1.0, 2.0], dtype=np.float64))
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_strict_selection_ops() -> None:

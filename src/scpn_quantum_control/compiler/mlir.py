@@ -9983,6 +9983,7 @@ _WHOLE_PROGRAM_NATIVE_BINARY_OPS = frozenset(
         "power",
         "maximum",
         "minimum",
+        "clip",
         "where",
     }
 )
@@ -10045,7 +10046,7 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
 
 def _whole_program_native_requires_runtime_recapture(result: WholeProgramADResult) -> bool:
     return _whole_program_has_control_flow(result) or any(
-        node.op in {"maximum", "minimum", "where"} for node in result.ir_nodes
+        node.op in {"maximum", "minimum", "clip", "where"} for node in result.ir_nodes
     )
 
 
@@ -10724,6 +10725,7 @@ def _emit_whole_program_native_operation(
         "power",
         "maximum",
         "minimum",
+        "clip",
         "where",
     }:
         raise ValueError(f"native whole-program AD lowering does not support op {node.op}")
@@ -10747,6 +10749,54 @@ def _emit_whole_program_native_operation(
             lines.append(
                 f"  {derivative_name} = select i1 {predicate}, "
                 f"double {true_derivative}, double {false_derivative}"
+            )
+        return
+    if node.op == "clip":
+        if len(inputs) != 3:
+            raise ValueError("native operation clip expects value, lower, and upper")
+        source_value = _whole_program_native_operand(inputs[0])
+        lower_value = _whole_program_native_operand(inputs[1])
+        upper_value = _whole_program_native_operand(inputs[2])
+        below_predicate = f"%clip_below_pred_{node.index}"
+        above_predicate = f"%clip_above_pred_{node.index}"
+        lower_stage = f"%clip_lower_stage_{node.index}"
+        lines.extend(
+            [
+                f"  {below_predicate} = fcmp olt double {source_value}, {lower_value}",
+                f"  {above_predicate} = fcmp ogt double {source_value}, {upper_value}",
+                (
+                    f"  {lower_stage} = select i1 {below_predicate}, "
+                    f"double {lower_value}, double {source_value}"
+                ),
+                (
+                    f"  {value_name} = select i1 {above_predicate}, "
+                    f"double {upper_value}, double {lower_stage}"
+                ),
+            ]
+        )
+        for derivative_index in range(parameter_count):
+            source_derivative = _whole_program_native_derivative_operand(
+                inputs[0], derivative_index
+            )
+            lower_derivative = _whole_program_native_derivative_operand(
+                inputs[1], derivative_index
+            )
+            upper_derivative = _whole_program_native_derivative_operand(
+                inputs[2], derivative_index
+            )
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            derivative_lower_stage = f"%d{node.index}_{derivative_index}_clip_lower_stage"
+            lines.extend(
+                [
+                    (
+                        f"  {derivative_lower_stage} = select i1 {below_predicate}, "
+                        f"double {lower_derivative}, double {source_derivative}"
+                    ),
+                    (
+                        f"  {derivative_name} = select i1 {above_predicate}, "
+                        f"double {upper_derivative}, double {derivative_lower_stage}"
+                    ),
+                ]
             )
         return
     if len(inputs) != 2:

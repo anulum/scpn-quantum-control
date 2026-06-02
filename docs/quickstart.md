@@ -208,10 +208,10 @@ reason. Repeated identical compilations reuse a verified process-local native
 compile cache keyed by deterministic trace and LLVM provenance; use
 `native_whole_program_ad_compile_cache_stats()` and
 `clear_native_whole_program_ad_compile_cache()` for long-running service
-diagnostics and explicit invalidation. Strict scalar `np.where`, `maximum`, and
-`minimum` selection operations lower to native ordered compare/select kernels
+diagnostics and explicit invalidation. Strict scalar `np.where`, `maximum`,
+`minimum`, and `clip` selection operations lower to native ordered compare/select kernels
 and still replay the trace at runtime to reject equality ties before returning
-an undefined selection adjoint. Runtime rows that change the compiled
+an undefined selection or clipping adjoint. Runtime rows that change the compiled
 branch/signature, cross unsupported primitive domains, hit
 nondifferentiable boundaries, use unsupported operations, loop/control joins, or
 shape changes fail closed and should use the replay executable until a native
