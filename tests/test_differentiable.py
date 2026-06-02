@@ -8547,6 +8547,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_linalg_diagflat_derivative_rule",
             "source_shape:ranked_tensor_shape;k",
         ),
+        "scpn.program_ad.linalg:matrix_power": (
+            "program_ad_linalg_matrix_power_derivative_rule",
+            "power:i64",
+        ),
+        "scpn.program_ad.linalg:multi_dot": (
+            "program_ad_linalg_multi_dot_derivative_rule",
+            "operand_shapes:ranked_tensor_shape_sequence",
+        ),
     }
 
     for primitive, (factory, signature) in expected_factories.items():
