@@ -2061,8 +2061,6 @@ def _normalise_shape_transform_axes(
     name: str, axis: int | tuple[int, ...], *, output_rank: int
 ) -> tuple[int, ...]:
     axes = (axis,) if isinstance(axis, (int, np.integer)) else tuple(axis)
-    if not axes:
-        raise ValueError(f"program AD {name} requires at least one axis")
     normalised: list[int] = []
     for item in axes:
         if isinstance(item, bool) or not isinstance(item, (int, np.integer)):
@@ -2081,6 +2079,7 @@ def _normalise_shape_transform_axes(
 def _trace_squeeze(
     array: TraceADArray, *, axis: int | tuple[int, ...] | None = None
 ) -> TraceADArray:
+    _require_program_ad_shape_contract("squeeze", (array,) if axis is None else (array, axis))
     if axis is None:
         target_shape = tuple(dimension for dimension in array.shape if dimension != 1)
         return TraceADArray(tuple(array._items), target_shape, array.context)
@@ -2095,6 +2094,7 @@ def _trace_squeeze(
 
 
 def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> TraceADArray:
+    _require_program_ad_shape_contract("expand_dims", (array, axis))
     axis_tuple = (axis,) if isinstance(axis, (int, np.integer)) else tuple(axis)
     output_rank = array.ndim + len(axis_tuple)
     axes = _normalise_shape_transform_axes("expand_dims", axis_tuple, output_rank=output_rank)
@@ -9620,7 +9620,7 @@ _PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE = "scpn.program_ad.shape"
 _PROGRAM_AD_SHAPE_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("reshape", "ravel", "transpose")
+    for name in ("expand_dims", "reshape", "ravel", "squeeze", "transpose")
 }
 
 _PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.reduction"
@@ -10546,6 +10546,148 @@ def program_ad_shape_transpose_derivative_rule(
     return CustomDerivativeRule(
         name=(
             "program_ad_shape_transpose_"
+            f"{_program_ad_shape_signature(source)}_axes_{axes_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_insert_singleton_axes(
+    source_shape: tuple[int, ...],
+    axes: tuple[int, ...],
+) -> tuple[int, ...]:
+    target_shape = list(source_shape)
+    for axis in axes:
+        target_shape.insert(axis, 1)
+    return tuple(target_shape)
+
+
+def _program_ad_shape_normalise_expand_dims_axes(
+    source_shape: tuple[int, ...],
+    axis: int | Sequence[int],
+) -> tuple[int, ...]:
+    raw_axes = (axis,) if isinstance(axis, (int, np.integer)) else tuple(axis)
+    output_rank = len(source_shape) + len(raw_axes)
+    return _normalise_shape_transform_axes("expand_dims", raw_axes, output_rank=output_rank)
+
+
+def program_ad_shape_expand_dims_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | Sequence[int],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed singleton-axis insertion."""
+
+    source = _program_ad_shape_normalise_static_shape("expand_dims", source_shape)
+    axes = _program_ad_shape_normalise_expand_dims_axes(source, axis)
+    target = _program_ad_shape_insert_singleton_axes(source, axes)
+    source_size = _program_ad_shape_static_size(source)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector(
+            "expand_dims", "values", values, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(np.expand_dims(vector.reshape(source), axes))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("expand_dims", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "expand_dims", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.expand_dims(tangent_vector.reshape(source), axes)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("expand_dims", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "expand_dims", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(cotangent_vector.reshape(target).reshape(source))
+
+    axes_signature = "_".join(str(axis_item) for axis_item in axes)
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_expand_dims_"
+            f"{_program_ad_shape_signature(source)}_axes_{axes_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_normalise_squeeze_axes(
+    source_shape: tuple[int, ...],
+    axis: int | Sequence[int] | None,
+) -> tuple[int, ...]:
+    if axis is None:
+        return tuple(index for index, dimension in enumerate(source_shape) if dimension == 1)
+    raw_axes = (axis,) if isinstance(axis, (int, np.integer)) else tuple(axis)
+    axes = _normalise_shape_transform_axes("squeeze", raw_axes, output_rank=len(source_shape))
+    if any(source_shape[axis_item] != 1 for axis_item in axes):
+        raise ValueError("program AD shape squeeze direct rule requires singleton axes")
+    return axes
+
+
+def _program_ad_shape_remove_axes(
+    source_shape: tuple[int, ...],
+    axes: tuple[int, ...],
+) -> tuple[int, ...]:
+    return tuple(
+        dimension for index, dimension in enumerate(source_shape) if index not in set(axes)
+    )
+
+
+def program_ad_shape_squeeze_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | Sequence[int] | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed singleton-axis removal."""
+
+    source = _program_ad_shape_normalise_static_shape("squeeze", source_shape)
+    axes = _program_ad_shape_normalise_squeeze_axes(source, axis)
+    target = _program_ad_shape_remove_axes(source, axes)
+    source_size = _program_ad_shape_static_size(source)
+    numpy_axis: tuple[int, ...] | None = None if axis is None else axes
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("squeeze", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(
+            np.squeeze(vector.reshape(source), axis=numpy_axis)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("squeeze", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "squeeze", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.squeeze(tangent_vector.reshape(source), axis=numpy_axis)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("squeeze", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "squeeze", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(cotangent_vector.reshape(target).reshape(source))
+
+    axes_signature = (
+        "all"
+        if axis is None
+        else "none"
+        if not axes
+        else "_".join(str(axis_item) for axis_item in axes)
+    )
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_squeeze_"
             f"{_program_ad_shape_signature(source)}_axes_{axes_signature}_direct_rule"
         ),
         value_fn=value_fn,
@@ -13645,6 +13787,14 @@ def _program_ad_shape_reshape_shape(args: tuple[object, ...]) -> tuple[int, ...]
     return _normalise_trace_reshape_shape(args[1], int(np.prod(source_shape)))
 
 
+def _program_ad_shape_expand_dims_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD shape expand_dims rule requires array and axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axes = _program_ad_shape_normalise_expand_dims_axes(source_shape, cast(Any, args[1]))
+    return _program_ad_shape_insert_singleton_axes(source_shape, axes)
+
+
 def _program_ad_shape_ravel_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) != 1:
         raise ValueError("program AD shape ravel rule requires one array")
@@ -13682,6 +13832,16 @@ def _program_ad_shape_transpose_shape(args: tuple[object, ...]) -> tuple[int, ..
     if not axes:
         return source_shape
     return tuple(source_shape[axis] for axis in axes)
+
+
+def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD shape squeeze rule requires array and optional axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axes = _program_ad_shape_normalise_squeeze_axes(
+        source_shape, cast(Any, args[1]) if len(args) == 2 else None
+    )
+    return _program_ad_shape_remove_axes(source_shape, axes)
 
 
 def _program_ad_shape_dtype_rule(args: tuple[object, ...]) -> str:
@@ -14143,6 +14303,15 @@ def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tupl
     return (_normalise_trace_reshape_shape(args[1], int(np.prod(source_shape))),)
 
 
+def _program_ad_shape_expand_dims_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD shape expand_dims static rule requires array and axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    return (_program_ad_shape_normalise_expand_dims_axes(source_shape, cast(Any, args[1])),)
+
+
 def _program_ad_shape_no_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 1:
         raise ValueError("program AD shape static rule requires one array")
@@ -14157,6 +14326,17 @@ def _program_ad_shape_transpose_static_arguments(args: tuple[object, ...]) -> tu
         source_shape, args[1] if len(args) == 2 else None
     )
     return () if not axes else (axes,)
+
+
+def _program_ad_shape_squeeze_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD shape squeeze static rule requires array and optional axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    return (
+        _program_ad_shape_normalise_squeeze_axes(
+            source_shape, cast(Any, args[1]) if len(args) == 2 else None
+        ),
+    )
 
 
 def _program_ad_reduction_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -15691,14 +15871,18 @@ _PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
 
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "expand_dims": _program_ad_shape_expand_dims_shape,
     "reshape": _program_ad_shape_reshape_shape,
     "ravel": _program_ad_shape_ravel_shape,
+    "squeeze": _program_ad_shape_squeeze_shape,
     "transpose": _program_ad_shape_transpose_shape,
 }
 
 _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "expand_dims": _program_ad_shape_expand_dims_static_arguments,
     "reshape": _program_ad_shape_reshape_static_arguments,
     "ravel": _program_ad_shape_no_static_arguments,
+    "squeeze": _program_ad_shape_squeeze_static_arguments,
     "transpose": _program_ad_shape_transpose_static_arguments,
 }
 
@@ -15849,18 +16033,24 @@ def _program_ad_shape_batching_rule(
 
 def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
     static_factory = {
+        "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
         "reshape": "program_ad_shape_reshape_derivative_rule",
         "ravel": "program_ad_shape_ravel_derivative_rule",
+        "squeeze": "program_ad_shape_squeeze_derivative_rule",
         "transpose": "program_ad_shape_transpose_derivative_rule",
     }[name]
     static_signature = {
+        "expand_dims": "source_shape:ranked_tensor_shape;axis",
         "reshape": "source_shape:ranked_tensor_shape;target_shape",
         "ravel": "source_shape:ranked_tensor_shape",
+        "squeeze": "source_shape:ranked_tensor_shape;axis",
         "transpose": "source_shape:ranked_tensor_shape;axes",
     }[name]
     nondifferentiable_boundaries = {
+        "expand_dims": "static_singleton_axis_insertion",
         "reshape": "element_count_preserving_static_shape",
         "ravel": "contiguous_flat_view_shape",
+        "squeeze": "static_singleton_axis_removal",
         "transpose": "static_axis_permutation",
     }
     return {
@@ -24438,8 +24628,10 @@ __all__ = [
     "program_ad_reduction_trapezoid_derivative_rule",
     "program_ad_selection_clip_derivative_rule",
     "program_ad_selection_where_derivative_rule",
+    "program_ad_shape_expand_dims_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
+    "program_ad_shape_squeeze_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",
     "program_ad_stencil_gradient_derivative_rule",
     "program_adjoint_gradient",
