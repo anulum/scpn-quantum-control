@@ -12392,6 +12392,13 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
     pad_contract = primitive_contract_for("scpn.program_ad.array:pad")
     assert pad_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "pad", "1")
     assert pad_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.pad"
+    assert (
+        pad_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_array_pad_derivative_rule"
+    )
+    assert pad_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;pad_width_constant_values"
+    )
     assert pad_contract.shape_rule is not None
     assert pad_contract.shape_rule((matrix, ((1, 0), (0, 2)), "constant", -1.0)) == (3, 5)
     assert pad_contract.static_argument_rule is not None
