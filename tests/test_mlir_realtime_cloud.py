@@ -4931,13 +4931,86 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
     with pytest.raises(ValueError, match="parameter shape"):
         kernel.batch_value_and_grad(np.ones((2, 2), dtype=np.float64))
 
-    def branched(values: np.ndarray) -> object:
-        if values[0] > 0.0:
-            return values[0] ** 2
-        return values[1]
 
-    with pytest.raises(ValueError, match="branchless trace"):
-        compile_whole_program_ad_trace_to_native_llvm_jit(branched, sample, parameters)
+def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() -> None:
+    """Native LLVM/JIT program AD should execute stable branch traces and reject drift."""
+
+    def objective(values: np.ndarray) -> object:
+        if values[0] > values[1]:
+            return np.sin(values[0] * values[1]) + values[2]
+        return np.cos(values[0] - values[1]) - values[2]
+
+    sample = np.array([1.25, -0.25, 0.5], dtype=np.float64)
+    same_branch = np.array(
+        [
+            [1.25, -0.25, 0.5],
+            [1.1, -0.4, 0.75],
+            [2.0, 0.5, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    parameters = (Parameter("x"), Parameter("y"), Parameter("z"))
+
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(
+        objective,
+        sample,
+        parameters,
+    )
+    ref_value, ref_gradient = program_adjoint_value_and_grad(
+        objective,
+        sample,
+        parameters,
+    )
+    value, gradient = kernel.value_and_grad(sample)
+
+    assert kernel.backend == "native_llvm_jit"
+    assert any(item.startswith("branch:") for item in kernel.supported_ops)
+    assert "stable executed branch signatures" in kernel.claim_boundary
+    assert "stable executed branch signatures" in kernel.mlir_module.metadata["claim_boundary"]
+    assert value == pytest.approx(ref_value)
+    assert kernel.value(sample) == pytest.approx(ref_value)
+    np.testing.assert_allclose(gradient, ref_gradient, rtol=1e-10, atol=1e-10)
+
+    tangent = np.array([0.25, -0.5, 1.5], dtype=np.float64)
+    assert kernel.jvp(sample, tangent) == pytest.approx(float(np.dot(ref_gradient, tangent)))
+    np.testing.assert_allclose(
+        kernel.vjp(sample, np.array([2.0], dtype=np.float64)),
+        2.0 * ref_gradient,
+        rtol=1e-10,
+        atol=1e-10,
+    )
+
+    batch_result = kernel.batch_value_and_grad(same_branch)
+    batch_reference = [
+        program_adjoint_value_and_grad(objective, row, parameters) for row in same_branch
+    ]
+    np.testing.assert_allclose(
+        batch_result.values,
+        np.array([item[0] for item in batch_reference], dtype=np.float64),
+        rtol=1e-10,
+        atol=1e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.gradients,
+        np.vstack([item[1] for item in batch_reference]),
+        rtol=1e-10,
+        atol=1e-10,
+    )
+
+    branch_drift = np.array([-0.25, 1.25, 0.5], dtype=np.float64)
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.value(branch_drift)
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.gradient(branch_drift)
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.jvp(branch_drift, tangent)
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.vjp(branch_drift, np.array([1.0], dtype=np.float64))
+
+    drift_batch = same_branch.copy()
+    drift_batch[1] = branch_drift
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.batch_value_and_grad(drift_batch)
 
 
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:

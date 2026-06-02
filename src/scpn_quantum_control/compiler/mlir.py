@@ -9221,7 +9221,7 @@ class ExecutableWholeProgramADBatchResult:
 
 @dataclass(frozen=True)
 class NativeWholeProgramADKernel:
-    """Native LLVM/JIT kernel for a supported branchless program AD trace."""
+    """Native LLVM/JIT kernel for a supported scalar program AD trace."""
 
     objective: Callable[[Any], object]
     source_result: WholeProgramADResult
@@ -9236,9 +9236,9 @@ class NativeWholeProgramADKernel:
     supported_ops: tuple[str, ...]
     backend: str = "native_llvm_jit"
     claim_boundary: str = (
-        "native LLVM/JIT execution for supported branchless scalar program AD "
-        "traces; control flow, mutation-dependent path changes, and unsupported "
-        "operations fail closed"
+        "native LLVM/JIT execution for supported scalar program AD traces with "
+        "stable executed branch signatures; unsupported control flow, "
+        "mutation-dependent path changes, and unsupported operations fail closed"
     )
 
     def __post_init__(self) -> None:
@@ -9308,12 +9308,30 @@ class NativeWholeProgramADKernel:
             raise ValueError("batch values must contain only finite values")
         return np.ascontiguousarray(checked, dtype=np.float64)
 
+    def _validate_trace_signature(self, values: NDArray[np.float64]) -> None:
+        if not _whole_program_has_control_flow(self.source_result):
+            return
+        result = whole_program_value_and_grad(
+            self.objective,
+            values,
+            parameters=self.parameters,
+            trace=False,
+        )
+        signature = _whole_program_replay_signature(result)
+        if signature != self.trace_signature:
+            raise ValueError(
+                "native whole-program AD kernel branch signature changed; "
+                "recompile with representative sample values"
+            )
+
     def value(self, values: Sequence[float] | np.ndarray) -> float:
         """Execute the native scalar value kernel."""
 
+        checked = self._checked_values(values)
+        self._validate_trace_signature(checked)
         output = _call_native_whole_program_unary(
             self.native_functions["value"],
-            self._checked_values(values),
+            checked,
             1,
         )
         return float(output[0])
@@ -9321,9 +9339,11 @@ class NativeWholeProgramADKernel:
     def gradient(self, values: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
         """Execute the native scalar-output gradient kernel."""
 
+        checked = self._checked_values(values)
+        self._validate_trace_signature(checked)
         return _call_native_whole_program_unary(
             self.native_functions["gradient"],
-            self._checked_values(values),
+            checked,
             self.parameter_shape[0],
         )
 
@@ -9334,7 +9354,18 @@ class NativeWholeProgramADKernel:
         """Execute native value and gradient kernels."""
 
         checked = self._checked_values(values)
-        return self.value(checked), self.gradient(checked)
+        self._validate_trace_signature(checked)
+        value = _call_native_whole_program_unary(
+            self.native_functions["value"],
+            checked,
+            1,
+        )
+        gradient = _call_native_whole_program_unary(
+            self.native_functions["gradient"],
+            checked,
+            self.parameter_shape[0],
+        )
+        return float(value[0]), gradient
 
     def jvp(
         self,
@@ -9347,6 +9378,7 @@ class NativeWholeProgramADKernel:
         checked_tangent = _as_finite_vector("tangent", tangent)
         if checked_tangent.shape != self.parameter_shape:
             raise ValueError("tangent shape must match parameter_shape")
+        self._validate_trace_signature(checked_values)
         output = _call_native_whole_program_binary(
             self.native_functions["jvp"],
             checked_values,
@@ -9365,9 +9397,11 @@ class NativeWholeProgramADKernel:
         checked_cotangent = _as_finite_vector("cotangent", cotangent)
         if checked_cotangent.shape != (1,):
             raise ValueError("cotangent must contain exactly one scalar")
+        checked_values = self._checked_values(values)
+        self._validate_trace_signature(checked_values)
         return _call_native_whole_program_binary(
             self.native_functions["vjp"],
-            self._checked_values(values),
+            checked_values,
             checked_cotangent,
             self.parameter_shape[0],
         )
@@ -9393,8 +9427,8 @@ class NativeWholeProgramADKernel:
             mlir_sha256=self.mlir_module.sha256,
             backend=self.backend,
             claim_boundary=(
-                "batched native LLVM/JIT execution for supported branchless scalar "
-                "program AD traces"
+                "batched native LLVM/JIT execution for supported scalar program AD "
+                "traces preserving compiled branch signatures"
             ),
         )
 
@@ -9627,7 +9661,7 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
     *,
     trace: bool = True,
 ) -> NativeWholeProgramADKernel:
-    """Compile a supported branchless program AD trace to native LLVM/JIT kernels."""
+    """Compile a supported scalar program AD trace to native LLVM/JIT kernels."""
 
     if not callable(objective):
         raise ValueError("whole-program native AD objective must be callable")
@@ -9638,8 +9672,11 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
         parameters=parameters,
         trace=trace,
     )
-    if _whole_program_has_control_flow(source_result):
-        raise ValueError("native whole-program AD lowering requires a branchless trace")
+    if _whole_program_has_unsupported_native_control_flow(source_result):
+        raise ValueError(
+            "native whole-program AD lowering supports only executed branch traces; "
+            "loop/control-flow joins require replay"
+        )
     program_adjoint_gradient(source_result)
     base_symbol = f"whole_program_ad_{source_result.gradient.size}_{source_result.evaluations}"
     base_symbol = f"{base_symbol}_{source_result.method}"
@@ -9684,6 +9721,10 @@ def _whole_program_has_control_flow(result: WholeProgramADResult) -> bool:
     return any(node.op.startswith(("branch:", "loop:", "control:")) for node in result.ir_nodes)
 
 
+def _whole_program_has_unsupported_native_control_flow(result: WholeProgramADResult) -> bool:
+    return any(node.op.startswith(("loop:", "control:")) for node in result.ir_nodes)
+
+
 def _whole_program_native_supported_ops(result: WholeProgramADResult) -> tuple[str, ...]:
     return tuple(dict.fromkeys(node.op for node in result.ir_nodes))
 
@@ -9694,8 +9735,8 @@ def _compile_whole_program_ad_native_llvm_ir(
 ) -> str:
     if result.gradient.ndim != 1 or result.gradient.size < 1:
         raise ValueError("native whole-program AD lowering requires parameters")
-    if _whole_program_has_control_flow(result):
-        raise ValueError("native whole-program AD lowering requires a branchless trace")
+    if _whole_program_has_unsupported_native_control_flow(result):
+        raise ValueError("native whole-program AD lowering does not support loop/control joins")
     computation_lines, final_value, final_derivatives = _emit_whole_program_native_computation(
         result
     )
@@ -9805,6 +9846,18 @@ def _emit_whole_program_native_computation(
                 )
             continue
         if node.op == "constant":
+            lines.append(
+                f"  {value_name} = fadd double {_fmt_llvm_float(0.0)}, {_fmt_llvm_float(node.value)}"
+            )
+            for derivative_index in range(parameter_count):
+                lines.append(
+                    f"  {_whole_program_native_derivative_name(node.index, derivative_index)} = "
+                    f"fadd double {_fmt_llvm_float(0.0)}, {_fmt_llvm_float(0.0)}"
+                )
+            continue
+        if node.op.startswith("branch:"):
+            if node.inputs:
+                raise ValueError("native whole-program AD branch node must be signature-only")
             lines.append(
                 f"  {value_name} = fadd double {_fmt_llvm_float(0.0)}, {_fmt_llvm_float(node.value)}"
             )
@@ -10092,13 +10145,17 @@ def _annotate_whole_program_native_mlir(
     resource_counts["native_supported_ops"] = len(_whole_program_native_supported_ops(result))
     metadata = dict(module.metadata)
     polyglot_targets = dict(metadata.get("polyglot_targets", {}))
-    polyglot_targets["llvm"] = "available: native_llvm_jit branchless scalar program AD"
-    polyglot_targets["jit"] = "available: native_llvm_jit branchless scalar program AD"
+    polyglot_targets["llvm"] = (
+        "available: native_llvm_jit scalar program AD with stable executed branch signatures"
+    )
+    polyglot_targets["jit"] = (
+        "available: native_llvm_jit scalar program AD with stable executed branch signatures"
+    )
     metadata.update(
         {
             "claim_boundary": (
                 "whole-program AD trace interchange plus native LLVM/JIT lowering "
-                "for supported branchless scalar traces"
+                "for supported scalar traces with stable executed branch signatures"
             ),
             "llvm_ir_sha256": llvm_sha256,
             "native_backend": "native_llvm_jit",
