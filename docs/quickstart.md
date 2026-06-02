@@ -193,13 +193,16 @@ rows preserve the compiled branch/signature contract. It remains a bounded
 supported-trace executable path, not an arbitrary source compiler or native
 LLVM/JIT implementation for all Python.
 
-Supported scalar traces over arithmetic, elementary functions, and stable
+Supported scalar traces over arithmetic, expanded elementary functions
+(`sin`, `cos`, `tan`, `tanh`, `exp`, `expm1`, `log`, `log1p`, `sqrt`,
+`arcsin`, `arccos`, `reciprocal`, `square`, and nonzero `abs`), and stable
 executed branch paths can be lowered further with
 `compile_whole_program_ad_trace_to_native_llvm_jit(...)`. That path emits
 deterministic MLIR provenance plus executable LLVM/JIT value, gradient, JVP,
-and VJP kernels. Runtime rows that change the compiled branch/signature,
-unsupported operations, loop/control joins, or shape changes fail closed and
-should use the replay executable until a native lowering rule exists.
+and VJP kernels. Runtime rows that change the compiled branch/signature, cross
+unsupported primitive domains, hit nondifferentiable boundaries, use unsupported
+operations, loop/control joins, or shape changes fail closed and should use the
+replay executable until a native lowering rule exists.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

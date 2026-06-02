@@ -5013,6 +5013,74 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() ->
         kernel.batch_value_and_grad(drift_batch)
 
 
+def test_whole_program_ad_trace_native_llvm_jit_lowers_elementary_ops() -> None:
+    """Native LLVM/JIT program AD should lower adjoint-supported scalar primitives."""
+
+    def objective(values: np.ndarray) -> object:
+        return (
+            np.tan(values[0])
+            + np.tanh(values[1])
+            + np.expm1(values[0] * values[1])
+            + np.log1p(values[2])
+            + np.arcsin(values[0])
+            - np.arccos(values[1])
+            + np.reciprocal(values[3])
+            + np.square(values[2])
+            + np.abs(values[1])
+        )
+
+    sample = np.array([0.2, -0.3, 0.4, 1.5], dtype=np.float64)
+    parameters = (
+        Parameter("angle"),
+        Parameter("offset"),
+        Parameter("positive"),
+        Parameter("denominator"),
+    )
+    tangent = np.array([0.5, -1.0, 1.5, -0.25], dtype=np.float64)
+
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(
+        objective,
+        sample,
+        parameters,
+    )
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        sample,
+        parameters,
+    )
+    value, gradient = kernel.value_and_grad(sample)
+
+    assert kernel.backend == "native_llvm_jit"
+    assert kernel.mlir_module.resource_counts["native_supported_elementary_ops"] >= 9
+    assert "expanded elementary ops" in kernel.mlir_module.metadata["claim_boundary"]
+    for op in (
+        "tan",
+        "tanh",
+        "expm1",
+        "log1p",
+        "arcsin",
+        "arccos",
+        "reciprocal",
+        "square",
+        "abs",
+    ):
+        assert op in kernel.supported_ops
+    assert value == pytest.approx(reference_value)
+    np.testing.assert_allclose(gradient, reference_gradient, rtol=1.0e-10, atol=1.0e-10)
+    assert kernel.jvp(sample, tangent) == pytest.approx(float(np.dot(reference_gradient, tangent)))
+    np.testing.assert_allclose(
+        kernel.vjp(sample, np.array([1.75], dtype=np.float64)),
+        1.75 * reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+
+    abs_boundary = sample.copy()
+    abs_boundary[1] = 0.0
+    with pytest.raises(ValueError, match="output must be finite"):
+        kernel.gradient(abs_boundary)
+
+
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
     """Realtime runtime should account for deterministic deadline misses."""
 

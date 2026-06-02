@@ -9237,8 +9237,9 @@ class NativeWholeProgramADKernel:
     backend: str = "native_llvm_jit"
     claim_boundary: str = (
         "native LLVM/JIT execution for supported scalar program AD traces with "
-        "stable executed branch signatures; unsupported control flow, "
-        "mutation-dependent path changes, and unsupported operations fail closed"
+        "stable executed branch signatures and finite supported primitive domains; "
+        "unsupported control flow, mutation-dependent path changes, and unsupported "
+        "operations fail closed"
     )
 
     def __post_init__(self) -> None:
@@ -9428,7 +9429,7 @@ class NativeWholeProgramADKernel:
             backend=self.backend,
             claim_boundary=(
                 "batched native LLVM/JIT execution for supported scalar program AD "
-                "traces preserving compiled branch signatures"
+                "traces preserving compiled branch signatures and finite primitive domains"
             ),
         )
 
@@ -9748,6 +9749,8 @@ def _compile_whole_program_ad_native_llvm_ir(
         "declare double @llvm.log.f64(double)",
         "declare double @llvm.sqrt.f64(double)",
         "declare double @llvm.pow.f64(double, double)",
+        "declare double @llvm.asin.f64(double)",
+        "declare double @llvm.acos.f64(double)",
         "",
         f"define void @{base_symbol}_value(double* %values, double* %out) {{",
         *computation_lines,
@@ -9889,7 +9892,24 @@ def _emit_whole_program_native_operation(
     parameter_count = int(result.gradient.size)
     value_name = _whole_program_native_value_name(node.index)
     inputs = tuple(node.inputs)
-    if node.op in {"sin", "cos", "exp", "log", "sqrt", "neg", "negative"}:
+    if node.op in {
+        "sin",
+        "cos",
+        "exp",
+        "expm1",
+        "log",
+        "log1p",
+        "sqrt",
+        "tan",
+        "tanh",
+        "arcsin",
+        "arccos",
+        "reciprocal",
+        "square",
+        "abs",
+        "neg",
+        "negative",
+    }:
         if len(inputs) != 1:
             raise ValueError(f"native operation {node.op} expects one input")
         argument = _whole_program_native_operand(inputs[0])
@@ -9907,16 +9927,115 @@ def _emit_whole_program_native_operation(
         elif node.op == "exp":
             lines.append(f"  {value_name} = call double @llvm.exp.f64(double {argument})")
             local_factor = value_name
+        elif node.op == "expm1":
+            exp_value = f"%exp_{node.index}"
+            lines.append(f"  {exp_value} = call double @llvm.exp.f64(double {argument})")
+            lines.append(f"  {value_name} = fsub double {exp_value}, {_fmt_llvm_float(1.0)}")
+            local_factor = exp_value
         elif node.op == "log":
             lines.append(f"  {value_name} = call double @llvm.log.f64(double {argument})")
             local_factor = f"%factor_{node.index}"
             lines.append(f"  {local_factor} = fdiv double {_fmt_llvm_float(1.0)}, {argument}")
+        elif node.op == "log1p":
+            shifted = f"%log1p_shifted_{node.index}"
+            lines.append(f"  {shifted} = fadd double {_fmt_llvm_float(1.0)}, {argument}")
+            lines.append(f"  {value_name} = call double @llvm.log.f64(double {shifted})")
+            local_factor = f"%factor_{node.index}"
+            lines.append(f"  {local_factor} = fdiv double {_fmt_llvm_float(1.0)}, {shifted}")
         elif node.op == "sqrt":
             lines.append(f"  {value_name} = call double @llvm.sqrt.f64(double {argument})")
             local_factor = f"%factor_{node.index}"
             denominator = f"%sqrt_denominator_{node.index}"
             lines.append(f"  {denominator} = fmul double {_fmt_llvm_float(2.0)}, {value_name}")
             lines.append(f"  {local_factor} = fdiv double {_fmt_llvm_float(1.0)}, {denominator}")
+        elif node.op == "tan":
+            sin_value = f"%tan_sin_{node.index}"
+            cos_value = f"%tan_cos_{node.index}"
+            cos_squared = f"%tan_cos_squared_{node.index}"
+            lines.extend(
+                [
+                    f"  {sin_value} = call double @llvm.sin.f64(double {argument})",
+                    f"  {cos_value} = call double @llvm.cos.f64(double {argument})",
+                    f"  {value_name} = fdiv double {sin_value}, {cos_value}",
+                    f"  {cos_squared} = fmul double {cos_value}, {cos_value}",
+                ]
+            )
+            local_factor = f"%factor_{node.index}"
+            lines.append(f"  {local_factor} = fdiv double {_fmt_llvm_float(1.0)}, {cos_squared}")
+        elif node.op == "tanh":
+            doubled = f"%tanh_doubled_{node.index}"
+            exp_value = f"%tanh_exp_{node.index}"
+            numerator = f"%tanh_numerator_{node.index}"
+            denominator = f"%tanh_denominator_{node.index}"
+            squared = f"%tanh_squared_{node.index}"
+            lines.extend(
+                [
+                    f"  {doubled} = fmul double {_fmt_llvm_float(2.0)}, {argument}",
+                    f"  {exp_value} = call double @llvm.exp.f64(double {doubled})",
+                    f"  {numerator} = fsub double {exp_value}, {_fmt_llvm_float(1.0)}",
+                    f"  {denominator} = fadd double {exp_value}, {_fmt_llvm_float(1.0)}",
+                    f"  {value_name} = fdiv double {numerator}, {denominator}",
+                    f"  {squared} = fmul double {value_name}, {value_name}",
+                ]
+            )
+            local_factor = f"%factor_{node.index}"
+            lines.append(f"  {local_factor} = fsub double {_fmt_llvm_float(1.0)}, {squared}")
+        elif node.op == "arcsin":
+            argument_squared = f"%arcsin_argument_squared_{node.index}"
+            radicand = f"%arcsin_radicand_{node.index}"
+            root = f"%arcsin_root_{node.index}"
+            lines.extend(
+                [
+                    f"  {value_name} = call double @llvm.asin.f64(double {argument})",
+                    f"  {argument_squared} = fmul double {argument}, {argument}",
+                    f"  {radicand} = fsub double {_fmt_llvm_float(1.0)}, {argument_squared}",
+                    f"  {root} = call double @llvm.sqrt.f64(double {radicand})",
+                ]
+            )
+            local_factor = f"%factor_{node.index}"
+            lines.append(f"  {local_factor} = fdiv double {_fmt_llvm_float(1.0)}, {root}")
+        elif node.op == "arccos":
+            argument_squared = f"%arccos_argument_squared_{node.index}"
+            radicand = f"%arccos_radicand_{node.index}"
+            root = f"%arccos_root_{node.index}"
+            positive_factor = f"%arccos_positive_factor_{node.index}"
+            lines.extend(
+                [
+                    f"  {value_name} = call double @llvm.acos.f64(double {argument})",
+                    f"  {argument_squared} = fmul double {argument}, {argument}",
+                    f"  {radicand} = fsub double {_fmt_llvm_float(1.0)}, {argument_squared}",
+                    f"  {root} = call double @llvm.sqrt.f64(double {radicand})",
+                    f"  {positive_factor} = fdiv double {_fmt_llvm_float(1.0)}, {root}",
+                ]
+            )
+            local_factor = f"%factor_{node.index}"
+            lines.append(
+                f"  {local_factor} = fsub double {_fmt_llvm_float(0.0)}, {positive_factor}"
+            )
+        elif node.op == "reciprocal":
+            denominator = f"%reciprocal_denominator_{node.index}"
+            lines.extend(
+                [
+                    f"  {value_name} = fdiv double {_fmt_llvm_float(1.0)}, {argument}",
+                    f"  {denominator} = fmul double {argument}, {argument}",
+                ]
+            )
+            local_factor = f"%factor_{node.index}"
+            lines.append(f"  {local_factor} = fdiv double {_fmt_llvm_float(-1.0)}, {denominator}")
+        elif node.op == "square":
+            lines.append(f"  {value_name} = fmul double {argument}, {argument}")
+            local_factor = f"%factor_{node.index}"
+            lines.append(f"  {local_factor} = fmul double {_fmt_llvm_float(2.0)}, {argument}")
+        elif node.op == "abs":
+            squared = f"%abs_squared_{node.index}"
+            lines.extend(
+                [
+                    f"  {squared} = fmul double {argument}, {argument}",
+                    f"  {value_name} = call double @llvm.sqrt.f64(double {squared})",
+                ]
+            )
+            local_factor = f"%factor_{node.index}"
+            lines.append(f"  {local_factor} = fdiv double {argument}, {value_name}")
         else:
             lines.append(f"  {value_name} = fsub double {_fmt_llvm_float(0.0)}, {argument}")
             local_factor = _fmt_llvm_float(-1.0)
@@ -10063,6 +10182,8 @@ def _call_native_whole_program_unary(
         checked_values.ctypes.data_as(double_pointer),
         output.ctypes.data_as(double_pointer),
     )
+    if not np.all(np.isfinite(output)):
+        raise ValueError("native whole-program AD output must be finite")
     return cast(NDArray[np.float64], output)
 
 
@@ -10083,6 +10204,8 @@ def _call_native_whole_program_binary(
         checked_vector.ctypes.data_as(double_pointer),
         output.ctypes.data_as(double_pointer),
     )
+    if not np.all(np.isfinite(output)):
+        raise ValueError("native whole-program AD output must be finite")
     return cast(NDArray[np.float64], output)
 
 
@@ -10143,19 +10266,43 @@ def _annotate_whole_program_native_mlir(
     resource_counts = dict(module.resource_counts)
     resource_counts["native_whole_program_kernels"] = 1
     resource_counts["native_supported_ops"] = len(_whole_program_native_supported_ops(result))
+    resource_counts["native_supported_elementary_ops"] = sum(
+        1
+        for op in _whole_program_native_supported_ops(result)
+        if op
+        in {
+            "sin",
+            "cos",
+            "exp",
+            "expm1",
+            "log",
+            "log1p",
+            "sqrt",
+            "tan",
+            "tanh",
+            "arcsin",
+            "arccos",
+            "reciprocal",
+            "square",
+            "abs",
+        }
+    )
     metadata = dict(module.metadata)
     polyglot_targets = dict(metadata.get("polyglot_targets", {}))
     polyglot_targets["llvm"] = (
-        "available: native_llvm_jit scalar program AD with stable executed branch signatures"
+        "available: native_llvm_jit scalar program AD with expanded elementary ops "
+        "and stable executed branch signatures"
     )
     polyglot_targets["jit"] = (
-        "available: native_llvm_jit scalar program AD with stable executed branch signatures"
+        "available: native_llvm_jit scalar program AD with expanded elementary ops "
+        "and stable executed branch signatures"
     )
     metadata.update(
         {
             "claim_boundary": (
                 "whole-program AD trace interchange plus native LLVM/JIT lowering "
-                "for supported scalar traces with stable executed branch signatures"
+                "for supported scalar traces with expanded elementary ops and stable "
+                "executed branch signatures"
             ),
             "llvm_ir_sha256": llvm_sha256,
             "native_backend": "native_llvm_jit",
