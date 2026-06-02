@@ -12437,6 +12437,10 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         ("static_insert_values", (2,), (-2.0, 3.0)),
         1,
     )
+    assert insert_contract.dtype_rule is not None
+    assert insert_contract.dtype_rule((matrix, 1, np.array([-2.0, 3.0]), 1)) == "float64"
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(insert_contract.identity)
 
 
 def test_program_ad_array_boundary_metadata_is_explicit() -> None:
