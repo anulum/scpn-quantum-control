@@ -14045,6 +14045,62 @@ def test_transform_algebra_nested_batch_jacobian_and_adjoint_contracts() -> None
     )
 
 
+def test_transform_algebra_batched_hessian_blocks_match_nested_jacobians() -> None:
+    """vmap(hessian(f)) and jacfwd/jacrev(vmap(grad(f))) should agree blockwise."""
+
+    def sample_loss(row: np.ndarray) -> float:
+        return float(row[0] ** 3 + row[0] * row[1] + 0.5 * row[1] ** 2)
+
+    def sample_gradient(row: np.ndarray) -> np.ndarray:
+        return np.array([3.0 * row[0] ** 2 + row[1], row[0] + row[1]], dtype=np.float64)
+
+    def sample_hessian(row: np.ndarray) -> np.ndarray:
+        return np.array([[6.0 * row[0], 1.0], [1.0, 1.0]], dtype=np.float64)
+
+    values = np.array([[0.6, -0.4], [-1.3, 0.8], [1.1, 0.25]], dtype=np.float64)
+    flat_values = values.reshape(-1)
+    expected_hessians = np.stack([sample_hessian(row) for row in values])
+    expected_block_hessian = np.zeros((flat_values.size, flat_values.size), dtype=np.float64)
+    expected_gradient_jacobian = np.zeros((flat_values.size, flat_values.size), dtype=np.float64)
+
+    for row_index, row in enumerate(values):
+        block = slice(2 * row_index, 2 * row_index + 2)
+        expected_block_hessian[block, block] = sample_hessian(row)
+        expected_gradient_jacobian[block, block] = sample_hessian(row)
+
+    per_sample_hessians = vmap(lambda row: hessian(sample_loss, row, step=1.0e-4))(values)
+
+    def batched_gradient(flat: np.ndarray) -> np.ndarray:
+        rows = flat.reshape(values.shape)
+        return vmap(lambda row: grad(sample_loss, row, method="finite_difference", step=1.0e-6))(
+            rows
+        ).reshape(-1)
+
+    forward_nested = jacfwd(batched_gradient, flat_values, step=1.0e-5)
+    reverse_nested = jacrev(batched_gradient, flat_values, step=1.0e-5)
+
+    np.testing.assert_allclose(per_sample_hessians, expected_hessians, rtol=1.0e-4, atol=1.0e-4)
+    np.testing.assert_allclose(
+        forward_nested, expected_gradient_jacobian, rtol=5.0e-4, atol=5.0e-4
+    )
+    np.testing.assert_allclose(
+        reverse_nested, expected_gradient_jacobian, rtol=5.0e-4, atol=5.0e-4
+    )
+    np.testing.assert_allclose(
+        forward_nested,
+        expected_block_hessian,
+        rtol=5.0e-4,
+        atol=5.0e-4,
+    )
+    np.testing.assert_allclose(reverse_nested, forward_nested, rtol=1.0e-9, atol=1.0e-9)
+    np.testing.assert_allclose(
+        batched_gradient(flat_values),
+        np.vstack([sample_gradient(row) for row in values]).reshape(-1),
+        rtol=1.0e-6,
+        atol=1.0e-6,
+    )
+
+
 def test_canonical_jvp_vjp_transforms_compose_with_vmap_and_jacobians() -> None:
     """Canonical JVP/VJP names should compose with vmap, jacfwd, jacrev, and hessian."""
 
