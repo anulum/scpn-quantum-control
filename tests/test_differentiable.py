@@ -4164,7 +4164,7 @@ def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
             lambda values: np.einsum("...i->i", values.reshape((1, 2))),
             np.array([1.0, 2.0], dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="tensordot supports axes"):
+    with pytest.raises(ValueError, match="axis count exceeds operand rank"):
         whole_program_value_and_grad(
             lambda values: np.tensordot(values, values, axes=2),
             np.array([1.0, 2.0], dtype=np.float64),
@@ -10175,7 +10175,7 @@ def test_program_ad_append_rejects_dynamic_or_incompatible_axes() -> None:
             lambda values: np.sum(np.append(values[:1], values[1:], axis=values[0])),
             np.array([1.0, 2.0], dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="axis-compatible"):
+    with pytest.raises(ValueError, match="equal operand ranks"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.append(np.reshape(values, (2, 2)), values[:2], axis=0)),
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
