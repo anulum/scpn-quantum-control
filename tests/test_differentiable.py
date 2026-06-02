@@ -11743,6 +11743,9 @@ def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
         2,
         ((1, 2, 1), (1, 2, 2)),
     )
+    for split_contract in (hsplit_contract, vsplit_contract, dsplit_contract):
+        with pytest.raises(ValueError, match="incomplete primitive contract"):
+            primitive_complete_contract_for(split_contract.identity)
 
 
 def test_program_ad_assembly_split_variant_boundaries_are_explicit() -> None:
