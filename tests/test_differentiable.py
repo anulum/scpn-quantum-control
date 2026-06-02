@@ -11711,11 +11711,38 @@ def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
         )
     assert hsplit_contract.shape_rule is not None
     assert hsplit_contract.shape_rule((matrix, [1, 2], 1)) == (6,)
+    assert hsplit_contract.dtype_rule is not None
+    assert hsplit_contract.dtype_rule((matrix, [1, 2], 1)) == "float64"
+    assert hsplit_contract.static_argument_rule is not None
+    assert hsplit_contract.static_argument_rule((matrix, [1, 2], 1)) == (
+        (2, 3),
+        (1, 2),
+        1,
+        ((2, 1), (2, 1), (2, 1)),
+    )
     assert vsplit_contract.shape_rule is not None
     assert vsplit_contract.shape_rule((matrix, 2, 0)) == (6,)
+    assert vsplit_contract.dtype_rule is not None
+    assert vsplit_contract.dtype_rule((matrix, 2, 0)) == "float64"
+    assert vsplit_contract.static_argument_rule is not None
+    assert vsplit_contract.static_argument_rule((matrix, 2, 0)) == (
+        (2, 3),
+        2,
+        0,
+        ((1, 3), (1, 3)),
+    )
     cube = matrix.reshape(1, 2, 3)
     assert dsplit_contract.shape_rule is not None
     assert dsplit_contract.shape_rule((cube, [1], 2)) == (6,)
+    assert dsplit_contract.dtype_rule is not None
+    assert dsplit_contract.dtype_rule((cube, [1], 2)) == "float64"
+    assert dsplit_contract.static_argument_rule is not None
+    assert dsplit_contract.static_argument_rule((cube, [1], 2)) == (
+        (1, 2, 3),
+        (1,),
+        2,
+        ((1, 2, 1), (1, 2, 2)),
+    )
 
 
 def test_program_ad_assembly_split_variant_boundaries_are_explicit() -> None:
