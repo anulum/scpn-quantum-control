@@ -9990,6 +9990,12 @@ _WHOLE_PROGRAM_NATIVE_BINARY_OPS = frozenset(
 _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
     {
         "linalg:det:2x2",
+        "linalg:inv:2x2:0:0",
+        "linalg:inv:2x2:0:1",
+        "linalg:inv:2x2:1:0",
+        "linalg:inv:2x2:1:1",
+        "linalg:solve:2x2:rhs:2:0",
+        "linalg:solve:2x2:rhs:2:1",
         "linalg:trace:2x2:offset:0",
     }
 )
@@ -10054,7 +10060,9 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
 
 def _whole_program_native_requires_runtime_recapture(result: WholeProgramADResult) -> bool:
     return _whole_program_has_control_flow(result) or any(
-        node.op in {"maximum", "minimum", "clip", "where"} for node in result.ir_nodes
+        node.op in {"maximum", "minimum", "clip", "where"}
+        or node.op.startswith(("linalg:inv:2x2", "linalg:solve:2x2"))
+        for node in result.ir_nodes
     )
 
 
@@ -10777,6 +10785,208 @@ def _emit_whole_program_native_operation(
             derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
             lines.append(
                 f"  {derivative_name} = fadd double {first_derivative}, {second_derivative}"
+            )
+        return
+    if node.op.startswith("linalg:inv:2x2:"):
+        if len(inputs) != 4:
+            raise ValueError("native linalg:inv:2x2 expects four matrix inputs")
+        a_value = _whole_program_native_operand(inputs[0])
+        b_value = _whole_program_native_operand(inputs[1])
+        c_value = _whole_program_native_operand(inputs[2])
+        d_value = _whole_program_native_operand(inputs[3])
+        determinant = f"%inv2_det_{node.index}"
+        diagonal_product = f"%inv2_diag_{node.index}"
+        off_diagonal_product = f"%inv2_offdiag_{node.index}"
+        numerator = f"%inv2_num_{node.index}"
+        lines.extend(
+            [
+                f"  {diagonal_product} = fmul double {a_value}, {d_value}",
+                f"  {off_diagonal_product} = fmul double {b_value}, {c_value}",
+                f"  {determinant} = fsub double {diagonal_product}, {off_diagonal_product}",
+            ]
+        )
+        if node.op == "linalg:inv:2x2:0:0":
+            lines.append(f"  {numerator} = fadd double {d_value}, {_fmt_llvm_float(0.0)}")
+            numerator_input = inputs[3]
+            numerator_sign = 1.0
+        elif node.op == "linalg:inv:2x2:0:1":
+            lines.append(f"  {numerator} = fsub double {_fmt_llvm_float(0.0)}, {b_value}")
+            numerator_input = inputs[1]
+            numerator_sign = -1.0
+        elif node.op == "linalg:inv:2x2:1:0":
+            lines.append(f"  {numerator} = fsub double {_fmt_llvm_float(0.0)}, {c_value}")
+            numerator_input = inputs[2]
+            numerator_sign = -1.0
+        elif node.op == "linalg:inv:2x2:1:1":
+            lines.append(f"  {numerator} = fadd double {a_value}, {_fmt_llvm_float(0.0)}")
+            numerator_input = inputs[0]
+            numerator_sign = 1.0
+        else:
+            raise ValueError(f"native whole-program AD lowering does not support op {node.op}")
+        lines.append(f"  {value_name} = fdiv double {numerator}, {determinant}")
+        determinant_squared = f"%inv2_det_sq_{node.index}"
+        lines.append(f"  {determinant_squared} = fmul double {determinant}, {determinant}")
+        for derivative_index in range(parameter_count):
+            a_derivative = _whole_program_native_derivative_operand(inputs[0], derivative_index)
+            b_derivative = _whole_program_native_derivative_operand(inputs[1], derivative_index)
+            c_derivative = _whole_program_native_derivative_operand(inputs[2], derivative_index)
+            d_derivative = _whole_program_native_derivative_operand(inputs[3], derivative_index)
+            numerator_derivative_base = _whole_program_native_derivative_operand(
+                numerator_input, derivative_index
+            )
+            numerator_derivative = f"%d{node.index}_{derivative_index}_inv2_num"
+            if numerator_sign < 0.0:
+                lines.append(
+                    f"  {numerator_derivative} = fsub double {_fmt_llvm_float(0.0)}, "
+                    f"{numerator_derivative_base}"
+                )
+            else:
+                lines.append(
+                    f"  {numerator_derivative} = fadd double {numerator_derivative_base}, "
+                    f"{_fmt_llvm_float(0.0)}"
+                )
+            det_left_a = f"%d{node.index}_{derivative_index}_inv2_det_a"
+            det_left_d = f"%d{node.index}_{derivative_index}_inv2_det_d"
+            det_right_b = f"%d{node.index}_{derivative_index}_inv2_det_b"
+            det_right_c = f"%d{node.index}_{derivative_index}_inv2_det_c"
+            det_diag_derivative = f"%d{node.index}_{derivative_index}_inv2_det_diag"
+            det_offdiag_derivative = f"%d{node.index}_{derivative_index}_inv2_det_offdiag"
+            determinant_derivative = f"%d{node.index}_{derivative_index}_inv2_det"
+            numerator_term = f"%d{node.index}_{derivative_index}_inv2_quot_num"
+            denominator_term = f"%d{node.index}_{derivative_index}_inv2_quot_den"
+            quotient_numerator = f"%d{node.index}_{derivative_index}_inv2_quotient_num"
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            lines.extend(
+                [
+                    f"  {det_left_a} = fmul double {a_derivative}, {d_value}",
+                    f"  {det_left_d} = fmul double {a_value}, {d_derivative}",
+                    f"  {det_diag_derivative} = fadd double {det_left_a}, {det_left_d}",
+                    f"  {det_right_b} = fmul double {b_derivative}, {c_value}",
+                    f"  {det_right_c} = fmul double {b_value}, {c_derivative}",
+                    f"  {det_offdiag_derivative} = fadd double {det_right_b}, {det_right_c}",
+                    f"  {determinant_derivative} = fsub double {det_diag_derivative}, "
+                    f"{det_offdiag_derivative}",
+                    f"  {numerator_term} = fmul double {numerator_derivative}, {determinant}",
+                    f"  {denominator_term} = fmul double {numerator}, {determinant_derivative}",
+                    f"  {quotient_numerator} = fsub double {numerator_term}, {denominator_term}",
+                    f"  {derivative_name} = fdiv double {quotient_numerator}, "
+                    f"{determinant_squared}",
+                ]
+            )
+        return
+    if node.op.startswith("linalg:solve:2x2:rhs:2:"):
+        if len(inputs) != 6:
+            raise ValueError("native linalg:solve:2x2:rhs:2 expects matrix and rhs inputs")
+        a_value = _whole_program_native_operand(inputs[0])
+        b_value = _whole_program_native_operand(inputs[1])
+        c_value = _whole_program_native_operand(inputs[2])
+        d_value = _whole_program_native_operand(inputs[3])
+        rhs0_value = _whole_program_native_operand(inputs[4])
+        rhs1_value = _whole_program_native_operand(inputs[5])
+        determinant = f"%solve2_det_{node.index}"
+        diagonal_product = f"%solve2_diag_{node.index}"
+        off_diagonal_product = f"%solve2_offdiag_{node.index}"
+        numerator = f"%solve2_num_{node.index}"
+        first_product = f"%solve2_num_first_{node.index}"
+        second_product = f"%solve2_num_second_{node.index}"
+        lines.extend(
+            [
+                f"  {diagonal_product} = fmul double {a_value}, {d_value}",
+                f"  {off_diagonal_product} = fmul double {b_value}, {c_value}",
+                f"  {determinant} = fsub double {diagonal_product}, {off_diagonal_product}",
+            ]
+        )
+        if node.op == "linalg:solve:2x2:rhs:2:0":
+            lines.extend(
+                [
+                    f"  {first_product} = fmul double {d_value}, {rhs0_value}",
+                    f"  {second_product} = fmul double {b_value}, {rhs1_value}",
+                ]
+            )
+            first_inputs = (inputs[3], inputs[4], d_value, rhs0_value)
+            second_inputs = (inputs[1], inputs[5], b_value, rhs1_value)
+        elif node.op == "linalg:solve:2x2:rhs:2:1":
+            lines.extend(
+                [
+                    f"  {first_product} = fmul double {a_value}, {rhs1_value}",
+                    f"  {second_product} = fmul double {c_value}, {rhs0_value}",
+                ]
+            )
+            first_inputs = (inputs[0], inputs[5], a_value, rhs1_value)
+            second_inputs = (inputs[2], inputs[4], c_value, rhs0_value)
+        else:
+            raise ValueError(f"native whole-program AD lowering does not support op {node.op}")
+        lines.extend(
+            [
+                f"  {numerator} = fsub double {first_product}, {second_product}",
+                f"  {value_name} = fdiv double {numerator}, {determinant}",
+            ]
+        )
+        determinant_squared = f"%solve2_det_sq_{node.index}"
+        lines.append(f"  {determinant_squared} = fmul double {determinant}, {determinant}")
+        for derivative_index in range(parameter_count):
+            a_derivative = _whole_program_native_derivative_operand(inputs[0], derivative_index)
+            b_derivative = _whole_program_native_derivative_operand(inputs[1], derivative_index)
+            c_derivative = _whole_program_native_derivative_operand(inputs[2], derivative_index)
+            d_derivative = _whole_program_native_derivative_operand(inputs[3], derivative_index)
+            first_left_derivative = _whole_program_native_derivative_operand(
+                first_inputs[0], derivative_index
+            )
+            first_right_derivative = _whole_program_native_derivative_operand(
+                first_inputs[1], derivative_index
+            )
+            second_left_derivative = _whole_program_native_derivative_operand(
+                second_inputs[0], derivative_index
+            )
+            second_right_derivative = _whole_program_native_derivative_operand(
+                second_inputs[1], derivative_index
+            )
+            first_left_term = f"%d{node.index}_{derivative_index}_solve2_first_left"
+            first_right_term = f"%d{node.index}_{derivative_index}_solve2_first_right"
+            first_derivative = f"%d{node.index}_{derivative_index}_solve2_first"
+            second_left_term = f"%d{node.index}_{derivative_index}_solve2_second_left"
+            second_right_term = f"%d{node.index}_{derivative_index}_solve2_second_right"
+            second_derivative = f"%d{node.index}_{derivative_index}_solve2_second"
+            numerator_derivative = f"%d{node.index}_{derivative_index}_solve2_num"
+            det_left_a = f"%d{node.index}_{derivative_index}_solve2_det_a"
+            det_left_d = f"%d{node.index}_{derivative_index}_solve2_det_d"
+            det_right_b = f"%d{node.index}_{derivative_index}_solve2_det_b"
+            det_right_c = f"%d{node.index}_{derivative_index}_solve2_det_c"
+            det_diag_derivative = f"%d{node.index}_{derivative_index}_solve2_det_diag"
+            det_offdiag_derivative = f"%d{node.index}_{derivative_index}_solve2_det_offdiag"
+            determinant_derivative = f"%d{node.index}_{derivative_index}_solve2_det"
+            numerator_term = f"%d{node.index}_{derivative_index}_solve2_quot_num"
+            denominator_term = f"%d{node.index}_{derivative_index}_solve2_quot_den"
+            quotient_numerator = f"%d{node.index}_{derivative_index}_solve2_quotient_num"
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            lines.extend(
+                [
+                    f"  {first_left_term} = fmul double {first_left_derivative}, "
+                    f"{first_inputs[3]}",
+                    f"  {first_right_term} = fmul double {first_inputs[2]}, "
+                    f"{first_right_derivative}",
+                    f"  {first_derivative} = fadd double {first_left_term}, {first_right_term}",
+                    f"  {second_left_term} = fmul double {second_left_derivative}, "
+                    f"{second_inputs[3]}",
+                    f"  {second_right_term} = fmul double {second_inputs[2]}, "
+                    f"{second_right_derivative}",
+                    f"  {second_derivative} = fadd double {second_left_term}, {second_right_term}",
+                    f"  {numerator_derivative} = fsub double {first_derivative}, "
+                    f"{second_derivative}",
+                    f"  {det_left_a} = fmul double {a_derivative}, {d_value}",
+                    f"  {det_left_d} = fmul double {a_value}, {d_derivative}",
+                    f"  {det_diag_derivative} = fadd double {det_left_a}, {det_left_d}",
+                    f"  {det_right_b} = fmul double {b_derivative}, {c_value}",
+                    f"  {det_right_c} = fmul double {b_value}, {c_derivative}",
+                    f"  {det_offdiag_derivative} = fadd double {det_right_b}, {det_right_c}",
+                    f"  {determinant_derivative} = fsub double {det_diag_derivative}, "
+                    f"{det_offdiag_derivative}",
+                    f"  {numerator_term} = fmul double {numerator_derivative}, {determinant}",
+                    f"  {denominator_term} = fmul double {numerator}, {determinant_derivative}",
+                    f"  {quotient_numerator} = fsub double {numerator_term}, {denominator_term}",
+                    f"  {derivative_name} = fdiv double {quotient_numerator}, "
+                    f"{determinant_squared}",
+                ]
             )
         return
     if node.op not in {
