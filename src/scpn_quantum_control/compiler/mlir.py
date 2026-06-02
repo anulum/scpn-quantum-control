@@ -10001,8 +10001,8 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
         "linalg:solve:2x2:rhs:2:1",
     }
 )
-_WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset({6, 8, 12})
-_WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset({12})
+_WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset(range(6, 17))
+_WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset(range(6, 17))
 
 
 def analyse_whole_program_ad_native_lowering(
@@ -10360,7 +10360,8 @@ def _compile_whole_program_native_det_loop_helper_llvm_ir(size: int) -> list[str
                     "  br label %partial_cond",
                     "",
                     "partial_cond:",
-                    "  %partial_i = phi i64 [0, %s12_trace_exit], [%partial_next, %partial_body]",
+                    f"  %partial_i = phi i64 [0, %s{step}_trace_exit], "
+                    "[%partial_next, %partial_body]",
                     f"  %partial_more = icmp slt i64 %partial_i, {total}",
                     "  br i1 %partial_more, label %partial_body, label %partial_exit",
                     "",
@@ -11748,6 +11749,8 @@ def _emit_whole_program_native_det_loop_helper_call(
         derivative_terms: list[str] = []
         for input_index, token in enumerate(inputs):
             input_derivative = _whole_program_native_derivative_operand(token, derivative_index)
+            if input_derivative == _fmt_llvm_float(0.0):
+                continue
             term = f"%d{node.index}_{derivative_index}_{prefix}_helper_term_{input_index}"
             lines.append(f"  {term} = fmul double {partials[input_index]}, {input_derivative}")
             derivative_terms.append(term)
