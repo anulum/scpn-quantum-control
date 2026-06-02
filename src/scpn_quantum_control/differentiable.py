@@ -2105,6 +2105,9 @@ def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> T
 
 
 def _trace_atleast_nd(array: TraceADArray, *, rank: int) -> TraceADArray:
+    if rank not in {1, 2, 3}:
+        raise ValueError("program AD atleast rank must be 1, 2, or 3")
+    _require_program_ad_shape_contract(f"atleast_{rank}d", (array,))
     if rank == 1:
         shape = array.shape if array.ndim >= 1 else (1,)
     elif rank == 2:
@@ -2123,8 +2126,6 @@ def _trace_atleast_nd(array: TraceADArray, *, rank: int) -> TraceADArray:
             shape = (array.shape[0], array.shape[1], 1)
         else:
             shape = array.shape
-    else:
-        raise ValueError("program AD atleast rank must be 1, 2, or 3")
     return TraceADArray(tuple(array._items), shape, array.context)
 
 
@@ -9633,6 +9634,9 @@ _PROGRAM_AD_SHAPE_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE, name, "1")
     for name in (
+        "atleast_1d",
+        "atleast_2d",
+        "atleast_3d",
         "expand_dims",
         "flip",
         "moveaxis",
@@ -11218,6 +11222,95 @@ def program_ad_shape_tile_derivative_rule(
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
     )
+
+
+def _program_ad_shape_atleast_target_shape(
+    source_shape: tuple[int, ...],
+    rank: Literal[1, 2, 3],
+) -> tuple[int, ...]:
+    if rank == 1:
+        return source_shape if len(source_shape) >= 1 else (1,)
+    if rank == 2:
+        if len(source_shape) == 0:
+            return (1, 1)
+        if len(source_shape) == 1:
+            return (1, source_shape[0])
+        return source_shape
+    if len(source_shape) == 0:
+        return (1, 1, 1)
+    if len(source_shape) == 1:
+        return (1, source_shape[0], 1)
+    if len(source_shape) == 2:
+        return (source_shape[0], source_shape[1], 1)
+    return source_shape
+
+
+def _program_ad_shape_atleast_derivative_rule(
+    source_shape: Sequence[int],
+    rank: Literal[1, 2, 3],
+) -> CustomDerivativeRule:
+    name = f"atleast_{rank}d"
+    source = _program_ad_shape_normalise_static_shape(name, source_shape)
+    target = _program_ad_shape_atleast_target_shape(source, rank)
+    source_size = _program_ad_shape_static_size(source)
+
+    def _reshape_to_target(vector: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_float64_vector_result(vector.reshape(target))
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector(name, "values", values, expected_size=source_size)
+        return _reshape_to_target(vector)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector(name, "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            name, "tangent", tangent, expected_size=source_size
+        )
+        return _reshape_to_target(tangent_vector)
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector(name, "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            name, "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(cotangent_vector.reshape(source_size))
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_shape_{name}_"
+            f"{_program_ad_shape_signature(source)}_to_"
+            f"{_program_ad_shape_signature(target)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_shape_atleast_1d_derivative_rule(
+    source_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static atleast-1D promotion."""
+
+    return _program_ad_shape_atleast_derivative_rule(source_shape, 1)
+
+
+def program_ad_shape_atleast_2d_derivative_rule(
+    source_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static atleast-2D promotion."""
+
+    return _program_ad_shape_atleast_derivative_rule(source_shape, 2)
+
+
+def program_ad_shape_atleast_3d_derivative_rule(
+    source_shape: Sequence[int],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static atleast-3D promotion."""
+
+    return _program_ad_shape_atleast_derivative_rule(source_shape, 3)
 
 
 def _program_ad_reduction_vector(name: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -14358,6 +14451,26 @@ def _program_ad_shape_transpose_shape(args: tuple[object, ...]) -> tuple[int, ..
     return tuple(source_shape[axis] for axis in axes)
 
 
+def _program_ad_shape_atleast_rank_shape(
+    args: tuple[object, ...], *, rank: Literal[1, 2, 3]
+) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError(f"program AD shape atleast_{rank}d rule requires one array")
+    return _program_ad_shape_atleast_target_shape(_program_ad_array_shape_of(args[0]), rank)
+
+
+def _program_ad_shape_atleast_1d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    return _program_ad_shape_atleast_rank_shape(args, rank=1)
+
+
+def _program_ad_shape_atleast_2d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    return _program_ad_shape_atleast_rank_shape(args, rank=2)
+
+
+def _program_ad_shape_atleast_3d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    return _program_ad_shape_atleast_rank_shape(args, rank=3)
+
+
 def _program_ad_shape_swapaxes_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) != 3:
         raise ValueError("program AD shape swapaxes rule requires array, axis1, and axis2")
@@ -14911,6 +15024,12 @@ def _program_ad_shape_expand_dims_static_arguments(
 def _program_ad_shape_no_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 1:
         raise ValueError("program AD shape static rule requires one array")
+    return ()
+
+
+def _program_ad_shape_atleast_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD shape atleast static rule requires one array")
     return ()
 
 
@@ -16539,6 +16658,9 @@ _PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
 
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
+    "atleast_1d": _program_ad_shape_atleast_1d_shape,
+    "atleast_2d": _program_ad_shape_atleast_2d_shape,
+    "atleast_3d": _program_ad_shape_atleast_3d_shape,
     "expand_dims": _program_ad_shape_expand_dims_shape,
     "flip": _program_ad_shape_flip_shape,
     "moveaxis": _program_ad_shape_moveaxis_shape,
@@ -16554,6 +16676,9 @@ _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
 }
 
 _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "atleast_1d": _program_ad_shape_atleast_static_arguments,
+    "atleast_2d": _program_ad_shape_atleast_static_arguments,
+    "atleast_3d": _program_ad_shape_atleast_static_arguments,
     "expand_dims": _program_ad_shape_expand_dims_static_arguments,
     "flip": _program_ad_shape_flip_static_arguments,
     "moveaxis": _program_ad_shape_moveaxis_static_arguments,
@@ -16715,6 +16840,9 @@ def _program_ad_shape_batching_rule(
 
 def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
     static_factory = {
+        "atleast_1d": "program_ad_shape_atleast_1d_derivative_rule",
+        "atleast_2d": "program_ad_shape_atleast_2d_derivative_rule",
+        "atleast_3d": "program_ad_shape_atleast_3d_derivative_rule",
         "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
         "flip": "program_ad_shape_flip_derivative_rule",
         "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
@@ -16729,6 +16857,9 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "transpose": "program_ad_shape_transpose_derivative_rule",
     }[name]
     static_signature = {
+        "atleast_1d": "source_shape:ranked_tensor_shape",
+        "atleast_2d": "source_shape:ranked_tensor_shape",
+        "atleast_3d": "source_shape:ranked_tensor_shape",
         "expand_dims": "source_shape:ranked_tensor_shape;axis",
         "flip": "source_shape:ranked_tensor_shape;axis",
         "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
@@ -16743,6 +16874,9 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "transpose": "source_shape:ranked_tensor_shape;axes",
     }[name]
     nondifferentiable_boundaries = {
+        "atleast_1d": "static_rank_promotion",
+        "atleast_2d": "static_rank_promotion",
+        "atleast_3d": "static_rank_promotion",
         "expand_dims": "static_singleton_axis_insertion",
         "flip": "static_axis_flip_permutation",
         "moveaxis": "static_axis_move_permutation",
@@ -25285,6 +25419,9 @@ __all__ = [
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
+    "program_ad_shape_atleast_1d_derivative_rule",
+    "program_ad_shape_atleast_2d_derivative_rule",
+    "program_ad_shape_atleast_3d_derivative_rule",
     "program_ad_assembly_append_derivative_rule",
     "program_ad_assembly_block_derivative_rule",
     "program_ad_assembly_broadcast_arrays_derivative_rule",

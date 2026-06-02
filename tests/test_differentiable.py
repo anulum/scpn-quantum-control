@@ -180,6 +180,9 @@ from scpn_quantum_control.differentiable import (
     program_ad_reduction_trapezoid_derivative_rule,
     program_ad_selection_clip_derivative_rule,
     program_ad_selection_where_derivative_rule,
+    program_ad_shape_atleast_1d_derivative_rule,
+    program_ad_shape_atleast_2d_derivative_rule,
+    program_ad_shape_atleast_3d_derivative_rule,
     program_ad_shape_expand_dims_derivative_rule,
     program_ad_shape_flip_derivative_rule,
     program_ad_shape_moveaxis_derivative_rule,
@@ -4660,7 +4663,18 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     assert scpn.program_ad_shape_flip_derivative_rule is program_ad_shape_flip_derivative_rule
     assert scpn.program_ad_shape_repeat_derivative_rule is program_ad_shape_repeat_derivative_rule
     assert scpn.program_ad_shape_tile_derivative_rule is program_ad_shape_tile_derivative_rule
+    assert scpn.program_ad_shape_atleast_1d_derivative_rule is (
+        program_ad_shape_atleast_1d_derivative_rule
+    )
+    assert scpn.program_ad_shape_atleast_2d_derivative_rule is (
+        program_ad_shape_atleast_2d_derivative_rule
+    )
+    assert scpn.program_ad_shape_atleast_3d_derivative_rule is (
+        program_ad_shape_atleast_3d_derivative_rule
+    )
 
+    scalar = np.array(2.0, dtype=np.float64)
+    vector = np.arange(3.0, dtype=np.float64)
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     cube = np.arange(24.0, dtype=np.float64).reshape(2, 3, 4)
     singleton = matrix.reshape(1, 2, 3, 1)
@@ -4802,11 +4816,47 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(tile_contract.identity)
 
+    atleast_1d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_1d")
+    assert atleast_1d_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "atleast_1d", "1"
+    )
+    assert atleast_1d_contract.shape_rule is not None
+    assert atleast_1d_contract.shape_rule((scalar,)) == (1,)
+    assert atleast_1d_contract.static_argument_rule is not None
+    assert atleast_1d_contract.static_argument_rule((scalar,)) == ()
+
+    atleast_2d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_2d")
+    assert atleast_2d_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "atleast_2d", "1"
+    )
+    assert atleast_2d_contract.shape_rule is not None
+    assert atleast_2d_contract.shape_rule((vector,)) == (1, 3)
+    assert atleast_2d_contract.dtype_rule is not None
+    assert atleast_2d_contract.dtype_rule((vector,)) == "float64"
+    assert atleast_2d_contract.static_argument_rule is not None
+    assert atleast_2d_contract.static_argument_rule((vector,)) == ()
+
+    atleast_3d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_3d")
+    assert atleast_3d_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "atleast_3d", "1"
+    )
+    assert atleast_3d_contract.shape_rule is not None
+    assert atleast_3d_contract.shape_rule((matrix,)) == (2, 3, 1)
+    assert atleast_3d_contract.dtype_rule is not None
+    assert atleast_3d_contract.dtype_rule((matrix,)) == "float64"
+    assert atleast_3d_contract.static_argument_rule is not None
+    assert atleast_3d_contract.static_argument_rule((matrix,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(atleast_3d_contract.identity)
+
 
 def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
     """Shape contracts should expose fail-closed static-layout boundaries."""
 
     expected_boundaries = {
+        "atleast_1d": "static_rank_promotion",
+        "atleast_2d": "static_rank_promotion",
+        "atleast_3d": "static_rank_promotion",
         "expand_dims": "static_singleton_axis_insertion",
         "flip": "static_axis_flip_permutation",
         "roll": "static_integer_roll_permutation",
@@ -4846,6 +4896,9 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             "swapaxes",
             "moveaxis",
             "tile",
+            "atleast_1d",
+            "atleast_2d",
+            "atleast_3d",
         )
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
@@ -4894,7 +4947,8 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             rotated = np.rot90(rolled, k=1, axes=(0, 1))
             flipped = np.flip(rotated, axis=(0, 1))
             flattened = np.ravel(np.transpose(flipped))
-            return np.sum(np.squeeze(np.expand_dims(flattened, axis=(0, -1)), axis=(0, -1)))
+            promoted = np.atleast_3d(np.atleast_2d(np.atleast_1d(flattened)))
+            return np.sum(np.squeeze(np.expand_dims(promoted, axis=0), axis=0))
 
         result = whole_program_value_and_grad(
             objective,
@@ -4920,6 +4974,9 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
         "swapaxes": {"shape", "dtype", "static"},
         "moveaxis": {"shape", "dtype", "static"},
         "tile": {"shape", "dtype", "static"},
+        "atleast_1d": {"shape", "dtype", "static"},
+        "atleast_2d": {"shape", "dtype", "static"},
+        "atleast_3d": {"shape", "dtype", "static"},
     }
 
 
@@ -5233,6 +5290,51 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
     np.testing.assert_allclose(
         tile_rule.vjp_rule(values, tile_cotangent),
         expected_tile_adjoint,
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    vector_values = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+    vector_tangent = np.array([0.1, 0.2, 0.3], dtype=np.float64)
+    atleast_1d_rule = program_ad_shape_atleast_1d_derivative_rule((3,))
+    assert atleast_1d_rule.name == "program_ad_shape_atleast_1d_3_to_3_direct_rule"
+    np.testing.assert_allclose(atleast_1d_rule.value_fn(vector_values), vector_values)
+    np.testing.assert_allclose(
+        atleast_1d_rule.jvp_rule(vector_values, vector_tangent), vector_tangent
+    )
+
+    atleast_2d_rule = program_ad_shape_atleast_2d_derivative_rule((3,))
+    assert atleast_2d_rule.name == "program_ad_shape_atleast_2d_3_to_1x3_direct_rule"
+    np.testing.assert_allclose(
+        atleast_2d_rule.value_fn(vector_values),
+        np.atleast_2d(vector_values).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        atleast_2d_rule.jvp_rule(vector_values, vector_tangent),
+        np.atleast_2d(vector_tangent).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        atleast_2d_rule.vjp_rule(vector_values, np.arange(1.0, 4.0, dtype=np.float64)),
+        np.arange(1.0, 4.0, dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    atleast_3d_rule = program_ad_shape_atleast_3d_derivative_rule((2, 3))
+    assert atleast_3d_rule.name == "program_ad_shape_atleast_3d_2x3_to_2x3x1_direct_rule"
+    np.testing.assert_allclose(
+        atleast_3d_rule.value_fn(values),
+        np.atleast_3d(matrix).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        atleast_3d_rule.jvp_rule(values, tangent),
+        np.atleast_3d(tangent.reshape(2, 3)).reshape(-1),
         rtol=0.0,
         atol=0.0,
     )
@@ -8321,6 +8423,18 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.shape:tile": (
             "program_ad_shape_tile_derivative_rule",
             "source_shape:ranked_tensor_shape;reps",
+        ),
+        "scpn.program_ad.shape:atleast_1d": (
+            "program_ad_shape_atleast_1d_derivative_rule",
+            "source_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.shape:atleast_2d": (
+            "program_ad_shape_atleast_2d_derivative_rule",
+            "source_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.shape:atleast_3d": (
+            "program_ad_shape_atleast_3d_derivative_rule",
+            "source_shape:ranked_tensor_shape",
         ),
         "scpn.program_ad.reduction:sum": (
             "program_ad_reduction_sum_derivative_rule",
