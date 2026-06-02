@@ -2325,6 +2325,7 @@ def _normalise_rot90_axes(axes: object, *, rank: int) -> tuple[int, int]:
 
 
 def _trace_rot90(array: TraceADArray, *, k: object = 1, axes: object = (0, 1)) -> TraceADArray:
+    _require_program_ad_shape_contract("rot90", (array, k, axes))
     k_value = _normalise_rot90_k(k)
     axes_value = _normalise_rot90_axes(axes, rank=array.ndim)
     rotated = np.rot90(
@@ -9633,6 +9634,7 @@ _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "reshape",
         "ravel",
         "roll",
+        "rot90",
         "squeeze",
         "swapaxes",
         "transpose",
@@ -10985,6 +10987,70 @@ def program_ad_shape_flip_derivative_rule(
         name=(
             "program_ad_shape_flip_"
             f"{_program_ad_shape_signature(source)}_axis_{axis_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_rot90_target_shape(
+    source_shape: tuple[int, ...],
+    k: int,
+    axes: tuple[int, int],
+) -> tuple[int, ...]:
+    target = list(source_shape)
+    if k % 2:
+        first, second = axes
+        target[first], target[second] = target[second], target[first]
+    return tuple(target)
+
+
+def program_ad_shape_rot90_derivative_rule(
+    source_shape: Sequence[int],
+    k: object = 1,
+    axes: object = (0, 1),
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static quarter-turns."""
+
+    source = _program_ad_shape_normalise_static_shape("rot90", source_shape)
+    k_value = _normalise_rot90_k(k)
+    axes_value = _normalise_rot90_axes(axes, rank=len(source))
+    target = _program_ad_shape_rot90_target_shape(source, k_value, axes_value)
+    source_size = _program_ad_shape_static_size(source)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("rot90", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(
+            np.rot90(vector.reshape(source), k=k_value, axes=axes_value)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("rot90", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "rot90", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.rot90(tangent_vector.reshape(source), k=k_value, axes=axes_value)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("rot90", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "rot90", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.rot90(cotangent_vector.reshape(target), k=-k_value, axes=axes_value)
+        )
+
+    axes_signature = "_".join(str(axis) for axis in axes_value)
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_rot90_"
+            f"{_program_ad_shape_signature(source)}_k_{k_value}_"
+            f"axes_{axes_signature}_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -14173,6 +14239,17 @@ def _program_ad_shape_flip_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return source_shape
 
 
+def _program_ad_shape_rot90_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD shape rot90 rule requires array, k, and axes")
+    source_shape = _program_ad_array_shape_of(args[0])
+    k_value = _normalise_rot90_k(args[1] if len(args) >= 2 else 1)
+    axes_value = _normalise_rot90_axes(
+        args[2] if len(args) == 3 else (0, 1), rank=len(source_shape)
+    )
+    return _program_ad_shape_rot90_target_shape(source_shape, k_value, axes_value)
+
+
 def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape squeeze rule requires array and optional axis")
@@ -14706,6 +14783,16 @@ def _program_ad_shape_flip_static_arguments(args: tuple[object, ...]) -> tuple[o
     source_shape = _program_ad_array_shape_of(args[0])
     return (
         _program_ad_shape_normalise_flip_axis(source_shape, args[1] if len(args) == 2 else None),
+    )
+
+
+def _program_ad_shape_rot90_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD shape rot90 static rule requires array, k, and axes")
+    source_shape = _program_ad_array_shape_of(args[0])
+    return (
+        _normalise_rot90_k(args[1] if len(args) >= 2 else 1),
+        _normalise_rot90_axes(args[2] if len(args) == 3 else (0, 1), rank=len(source_shape)),
     )
 
 
@@ -16258,6 +16345,7 @@ _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "reshape": _program_ad_shape_reshape_shape,
     "ravel": _program_ad_shape_ravel_shape,
     "roll": _program_ad_shape_roll_shape,
+    "rot90": _program_ad_shape_rot90_shape,
     "squeeze": _program_ad_shape_squeeze_shape,
     "swapaxes": _program_ad_shape_swapaxes_shape,
     "transpose": _program_ad_shape_transpose_shape,
@@ -16270,6 +16358,7 @@ _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRul
     "reshape": _program_ad_shape_reshape_static_arguments,
     "ravel": _program_ad_shape_no_static_arguments,
     "roll": _program_ad_shape_roll_static_arguments,
+    "rot90": _program_ad_shape_rot90_static_arguments,
     "squeeze": _program_ad_shape_squeeze_static_arguments,
     "swapaxes": _program_ad_shape_swapaxes_static_arguments,
     "transpose": _program_ad_shape_transpose_static_arguments,
@@ -16428,6 +16517,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "reshape": "program_ad_shape_reshape_derivative_rule",
         "ravel": "program_ad_shape_ravel_derivative_rule",
         "roll": "program_ad_shape_roll_derivative_rule",
+        "rot90": "program_ad_shape_rot90_derivative_rule",
         "squeeze": "program_ad_shape_squeeze_derivative_rule",
         "swapaxes": "program_ad_shape_swapaxes_derivative_rule",
         "transpose": "program_ad_shape_transpose_derivative_rule",
@@ -16439,6 +16529,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "reshape": "source_shape:ranked_tensor_shape;target_shape",
         "ravel": "source_shape:ranked_tensor_shape",
         "roll": "source_shape:ranked_tensor_shape;shift_axis",
+        "rot90": "source_shape:ranked_tensor_shape;k_axes",
         "squeeze": "source_shape:ranked_tensor_shape;axis",
         "swapaxes": "source_shape:ranked_tensor_shape;axis1_axis2",
         "transpose": "source_shape:ranked_tensor_shape;axes",
@@ -16450,6 +16541,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "reshape": "element_count_preserving_static_shape",
         "ravel": "contiguous_flat_view_shape",
         "roll": "static_integer_roll_permutation",
+        "rot90": "static_quarter_turn_axis_permutation",
         "squeeze": "static_singleton_axis_removal",
         "swapaxes": "static_axis_swap_permutation",
         "transpose": "static_axis_permutation",
@@ -25035,6 +25127,7 @@ __all__ = [
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
     "program_ad_shape_roll_derivative_rule",
+    "program_ad_shape_rot90_derivative_rule",
     "program_ad_shape_squeeze_derivative_rule",
     "program_ad_shape_swapaxes_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",

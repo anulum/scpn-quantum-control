@@ -186,6 +186,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_shape_ravel_derivative_rule,
     program_ad_shape_reshape_derivative_rule,
     program_ad_shape_roll_derivative_rule,
+    program_ad_shape_rot90_derivative_rule,
     program_ad_shape_squeeze_derivative_rule,
     program_ad_shape_swapaxes_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
@@ -4653,6 +4654,7 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
         scpn.program_ad_shape_moveaxis_derivative_rule is program_ad_shape_moveaxis_derivative_rule
     )
     assert scpn.program_ad_shape_roll_derivative_rule is program_ad_shape_roll_derivative_rule
+    assert scpn.program_ad_shape_rot90_derivative_rule is program_ad_shape_rot90_derivative_rule
     assert scpn.program_ad_shape_flip_derivative_rule is program_ad_shape_flip_derivative_rule
 
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
@@ -4763,6 +4765,17 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(flip_contract.identity)
 
+    rot90_contract = primitive_contract_for("scpn.program_ad.shape:rot90")
+    assert rot90_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "rot90", "1")
+    assert rot90_contract.shape_rule is not None
+    assert rot90_contract.shape_rule((matrix, 1, (0, 1))) == (3, 2)
+    assert rot90_contract.dtype_rule is not None
+    assert rot90_contract.dtype_rule((matrix, 1, (0, 1))) == "float64"
+    assert rot90_contract.static_argument_rule is not None
+    assert rot90_contract.static_argument_rule((matrix, 1, (0, 1))) == (1, (0, 1))
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(rot90_contract.identity)
+
 
 def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
     """Shape contracts should expose fail-closed static-layout boundaries."""
@@ -4771,6 +4784,7 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         "expand_dims": "static_singleton_axis_insertion",
         "flip": "static_axis_flip_permutation",
         "roll": "static_integer_roll_permutation",
+        "rot90": "static_quarter_turn_axis_permutation",
         "reshape": "element_count_preserving_static_shape",
         "ravel": "contiguous_flat_view_shape",
         "squeeze": "static_singleton_axis_removal",
@@ -4797,6 +4811,7 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             "transpose",
             "expand_dims",
             "roll",
+            "rot90",
             "flip",
             "squeeze",
             "swapaxes",
@@ -4844,7 +4859,8 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             swapped = np.swapaxes(reshaped, 0, 1)
             moved = np.moveaxis(swapped, 0, 1)
             rolled = np.roll(moved, shift=(1, -1), axis=(0, 1))
-            flipped = np.flip(rolled, axis=(0, 1))
+            rotated = np.rot90(rolled, k=1, axes=(0, 1))
+            flipped = np.flip(rotated, axis=(0, 1))
             flattened = np.ravel(np.transpose(flipped))
             return np.sum(np.squeeze(np.expand_dims(flattened, axis=(0, -1)), axis=(0, -1)))
 
@@ -4865,6 +4881,7 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
         "transpose": {"shape", "dtype", "static"},
         "expand_dims": {"shape", "dtype", "static"},
         "roll": {"shape", "dtype", "static"},
+        "rot90": {"shape", "dtype", "static"},
         "flip": {"shape", "dtype", "static"},
         "squeeze": {"shape", "dtype", "static"},
         "swapaxes": {"shape", "dtype", "static"},
@@ -5103,6 +5120,30 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
     np.testing.assert_allclose(
         flip_rule.vjp_rule(cube_values, cube_tangent),
         np.flip(cube_tangent.reshape(2, 3, 4), axis=(0, -1)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    rot90_cotangent = np.arange(1.0, 7.0, dtype=np.float64).reshape(3, 2)
+    rot90_rule = program_ad_shape_rot90_derivative_rule((2, 3), k=1, axes=(0, 1))
+    assert rot90_rule.name == "program_ad_shape_rot90_2x3_k_1_axes_0_1_direct_rule"
+    assert rot90_rule.jvp_rule is not None
+    assert rot90_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        rot90_rule.value_fn(values),
+        np.rot90(matrix, k=1, axes=(0, 1)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        rot90_rule.jvp_rule(values, tangent),
+        np.rot90(tangent.reshape(2, 3), k=1, axes=(0, 1)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        rot90_rule.vjp_rule(values, rot90_cotangent.reshape(-1)),
+        np.rot90(rot90_cotangent, k=-1, axes=(0, 1)).reshape(-1),
         rtol=0.0,
         atol=0.0,
     )
@@ -8179,6 +8220,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.shape:flip": (
             "program_ad_shape_flip_derivative_rule",
             "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.shape:rot90": (
+            "program_ad_shape_rot90_derivative_rule",
+            "source_shape:ranked_tensor_shape;k_axes",
         ),
         "scpn.program_ad.reduction:sum": (
             "program_ad_reduction_sum_derivative_rule",
