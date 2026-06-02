@@ -8571,6 +8571,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_linalg_eigvalsh_derivative_rule",
             "matrix_shape:rank2_square_symmetric_distinct_spectrum",
         ),
+        "scpn.program_ad.linalg:svd": (
+            "program_ad_linalg_svdvals_derivative_rule",
+            "matrix_shape:rank2;compute_uv:false;hermitian:false",
+        ),
+        "scpn.program_ad.linalg:pinv": (
+            "program_ad_linalg_pinv_derivative_rule",
+            "matrix_shape:rank2_full_rank;rcond:static_f64",
+        ),
     }
 
     for primitive, (factory, signature) in expected_factories.items():
