@@ -150,6 +150,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_assembly_append_derivative_rule,
     program_ad_assembly_block_derivative_rule,
     program_ad_assembly_concatenate_derivative_rule,
+    program_ad_assembly_split_derivative_rule,
     program_ad_assembly_stack_derivative_rule,
     program_ad_cumulative_cumprod_derivative_rule,
     program_ad_cumulative_cumsum_derivative_rule,
@@ -7802,6 +7803,26 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_assembly_block_derivative_rule",
             "layout_shapes:nested_ranked_tensor_shapes",
         ),
+        "scpn.program_ad.assembly:split": (
+            "program_ad_assembly_split_derivative_rule",
+            "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        ),
+        "scpn.program_ad.assembly:array_split": (
+            "program_ad_assembly_split_derivative_rule",
+            "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        ),
+        "scpn.program_ad.assembly:hsplit": (
+            "program_ad_assembly_split_derivative_rule",
+            "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        ),
+        "scpn.program_ad.assembly:vsplit": (
+            "program_ad_assembly_split_derivative_rule",
+            "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        ),
+        "scpn.program_ad.assembly:dsplit": (
+            "program_ad_assembly_split_derivative_rule",
+            "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        ),
         "scpn.program_ad.signal:convolve": (
             "program_ad_signal_convolve_derivative_rule",
             "left_shape:rank1;right_shape:rank1;mode",
@@ -10562,6 +10583,136 @@ def test_program_ad_assembly_block_batching_rule_maps_nested_batches() -> None:
         contract.batching_rule(block_fn, (layout,), (((0,),),), 0)
 
 
+def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
+    """Split-family calls should expose fail-closed assembly primitive direct rules."""
+
+    matrix = np.array([[1.0, -2.0, 0.5], [3.0, -1.5, 2.0]], dtype=np.float64)
+    tangent = np.array([[0.25, -0.5, 0.75], [-1.0, 1.25, -1.5]], dtype=np.float64)
+    cotangent = np.array([0.2, -0.4, 0.6, -0.8, 1.0, -1.2], dtype=np.float64)
+    source_indices = np.arange(matrix.size, dtype=np.int64).reshape(matrix.shape)
+
+    split_contract = primitive_contract_for("scpn.program_ad.assembly:split")
+    assert split_contract.identity == PrimitiveIdentity("scpn.program_ad.assembly", "split", "1")
+    assert split_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert split_contract.effect == "pure"
+    assert split_contract.lowering_metadata["mlir_op"] == "scpn_diff.assembly.split"
+    assert (
+        split_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_assembly_split_derivative_rule"
+    )
+    assert (
+        split_contract.lowering_metadata["static_signature"]
+        == "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes"
+    )
+    assert split_contract.shape_rule is not None
+    assert split_contract.shape_rule((matrix, [1, 2], 1)) == (6,)
+    assert split_contract.dtype_rule is not None
+    assert split_contract.dtype_rule((matrix, [1, 2], 1)) == "float64"
+    assert split_contract.static_argument_rule is not None
+    assert split_contract.static_argument_rule((matrix, [1, 2], 1)) == (
+        (2, 3),
+        (1, 2),
+        1,
+        ((2, 1), (2, 1), (2, 1)),
+    )
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(split_contract.identity)
+
+    rule = program_ad_assembly_split_derivative_rule(matrix.shape, [1, 2], axis=1)
+    assert rule.name == "program_ad_assembly_split_axis1_3_parts_direct_rule"
+    expected_parts = np.split(matrix, [1, 2], axis=1)
+    expected_tangent_parts = np.split(tangent, [1, 2], axis=1)
+    expected_indices = np.concatenate(
+        [part.reshape(-1) for part in np.split(source_indices, [1, 2], axis=1)]
+    )
+    expected_adjoint = np.zeros(matrix.size, dtype=np.float64)
+    np.add.at(expected_adjoint, expected_indices, cotangent)
+    np.testing.assert_allclose(
+        rule.value_fn(matrix.reshape(-1)),
+        np.concatenate([part.reshape(-1) for part in expected_parts]),
+    )
+    np.testing.assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)),
+        np.concatenate([part.reshape(-1) for part in expected_tangent_parts]),
+    )
+    np.testing.assert_allclose(rule.vjp_rule(matrix.reshape(-1), cotangent), expected_adjoint)
+
+    array_split_contract = primitive_contract_for("scpn.program_ad.assembly:array_split")
+    assert array_split_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.assembly", "array_split", "1"
+    )
+    assert array_split_contract.shape_rule is not None
+    assert array_split_contract.shape_rule((matrix.reshape(-1), 4, 0)) == (6,)
+    assert array_split_contract.static_argument_rule is not None
+    assert array_split_contract.static_argument_rule((matrix.reshape(-1), 4, 0)) == (
+        (6,),
+        4,
+        0,
+        ((2,), (2,), (1,), (1,)),
+    )
+    array_rule = program_ad_assembly_split_derivative_rule((6,), 4, split_name="array_split")
+    assert array_rule.name == "program_ad_assembly_array_split_axis0_4_parts_direct_rule"
+    np.testing.assert_allclose(array_rule.value_fn(matrix.reshape(-1)), matrix.reshape(-1))
+    np.testing.assert_allclose(
+        array_rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)), tangent.reshape(-1)
+    )
+    np.testing.assert_allclose(array_rule.vjp_rule(matrix.reshape(-1), cotangent), cotangent)
+
+    hsplit_contract = primitive_contract_for("scpn.program_ad.assembly:hsplit")
+    vsplit_contract = primitive_contract_for("scpn.program_ad.assembly:vsplit")
+    dsplit_contract = primitive_contract_for("scpn.program_ad.assembly:dsplit")
+    assert hsplit_contract.shape_rule is not None
+    assert hsplit_contract.shape_rule((matrix, [1, 2], 1)) == (6,)
+    assert vsplit_contract.shape_rule is not None
+    assert vsplit_contract.shape_rule((matrix, 2, 0)) == (6,)
+    cube = matrix.reshape(1, 2, 3)
+    assert dsplit_contract.shape_rule is not None
+    assert dsplit_contract.shape_rule((cube, [1], 2)) == (6,)
+
+
+def test_program_ad_assembly_split_batching_rule_maps_partition_outputs() -> None:
+    """Split batching should map source batches and preserve partition structure."""
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:split")
+    assert contract.batching_rule is not None
+
+    def split_fn(
+        source: np.ndarray, indices_or_sections: object, axis: int
+    ) -> tuple[np.ndarray, ...]:
+        return tuple(np.split(source, indices_or_sections, axis=axis))
+
+    batch = np.array(
+        [
+            [[1.0, -2.0, 0.5], [3.0, -1.5, 2.0]],
+            [[-0.25, 0.75, -1.25], [1.5, -2.5, 3.5]],
+        ],
+        dtype=np.float64,
+    )
+    expected = tuple(
+        np.stack(
+            [parts[part_index] for parts in (np.split(item, [1, 2], axis=1) for item in batch)],
+            axis=0,
+        )
+        for part_index in range(3)
+    )
+
+    result = contract.batching_rule(split_fn, (batch, [1, 2], 2), (0, None, None), 0)
+    assert isinstance(result, tuple)
+    assert len(result) == 3
+    for observed, expected_part in zip(result, expected, strict=True):
+        np.testing.assert_allclose(observed, expected_part)
+
+    moved = contract.batching_rule(split_fn, (batch, [1, 2], 2), (0, None, None), 1)
+    assert isinstance(moved, tuple)
+    for observed, expected_part in zip(moved, expected, strict=True):
+        np.testing.assert_allclose(observed, np.moveaxis(expected_part, 0, 1))
+
+    with pytest.raises(ValueError, match="keeps split metadata static"):
+        contract.batching_rule(split_fn, (batch, [1, 2], 2), (0, 0, None), 0)
+    with pytest.raises(ValueError, match="cannot map the split axis"):
+        contract.batching_rule(split_fn, (batch, [1, 2], 0), (0, None, None), 0)
+
+
 def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
     """np.convolve should expose a fail-closed signal primitive direct rule."""
 
@@ -12812,6 +12963,9 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     )
     assert (
         scpn.program_ad_assembly_block_derivative_rule is program_ad_assembly_block_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_split_derivative_rule is program_ad_assembly_split_derivative_rule
     )
     assert (
         scpn.program_ad_assembly_stack_derivative_rule is program_ad_assembly_stack_derivative_rule

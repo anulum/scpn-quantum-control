@@ -6171,6 +6171,7 @@ def _trace_split(
         raise ValueError(
             f"program AD np.{name} requires static split sections compatible with array shape"
         ) from exc
+    _require_program_ad_assembly_contract(name, (array, indices_or_sections, axis_value))
     result: list[TraceADArray] = []
     for part in selected:
         part_array = np.asarray(part, dtype=np.int64)
@@ -9643,8 +9644,21 @@ _PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE = "scpn.program_ad.assembly"
 _PROGRAM_AD_ASSEMBLY_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_ASSEMBLY_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("concatenate", "stack", "append", "block")
+    for name in (
+        "concatenate",
+        "stack",
+        "append",
+        "block",
+        "split",
+        "array_split",
+        "hsplit",
+        "vsplit",
+        "dsplit",
+    )
 }
+_PROGRAM_AD_ASSEMBLY_SPLIT_NAMES = frozenset(
+    ("split", "array_split", "hsplit", "vsplit", "dsplit")
+)
 
 _PROGRAM_AD_SIGNAL_PRIMITIVE_NAMESPACE = "scpn.program_ad.signal"
 _PROGRAM_AD_SIGNAL_POLICY = "program_ad_trace_exact_fail_closed"
@@ -14601,6 +14615,182 @@ class _ProgramADAssemblyBlockMappedLeaf:
     axis: int
 
 
+def _program_ad_assembly_split_sections(indices_or_sections: object) -> int | tuple[int, ...]:
+    if isinstance(indices_or_sections, bool):
+        raise ValueError("program AD assembly split requires static integer sections")
+    if isinstance(indices_or_sections, (int, np.integer)):
+        sections = int(indices_or_sections)
+        if sections <= 0:
+            raise ValueError("program AD assembly split requires positive static sections")
+        return sections
+    array = np.asarray(indices_or_sections)
+    if array.ndim != 1 or not np.issubdtype(array.dtype, np.integer):
+        raise ValueError("program AD assembly split requires static integer split indices")
+    return tuple(int(index) for index in array.tolist())
+
+
+def _program_ad_assembly_split_axis(axis: object, *, rank: int) -> int:
+    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
+        raise ValueError("program AD assembly split requires a static integer axis")
+    if rank <= 0:
+        raise ValueError("program AD assembly split requires ranked source arrays")
+    return _normalise_axis("axis", int(axis), rank)
+
+
+def _program_ad_assembly_split_selected_indices(
+    split_name: str,
+    source_shape: Sequence[int],
+    indices_or_sections: object,
+    *,
+    axis: object,
+) -> tuple[NDArray[np.int64], ...]:
+    if split_name not in _PROGRAM_AD_ASSEMBLY_SPLIT_NAMES:
+        raise ValueError(f"unsupported program AD assembly split primitive {split_name}")
+    shape = _program_ad_array_normalise_static_shape("assembly split source", source_shape)
+    axis_index = _program_ad_assembly_split_axis(axis, rank=len(shape))
+    sections = _program_ad_assembly_split_sections(indices_or_sections)
+    index_array = np.arange(_program_ad_array_static_size(shape), dtype=np.int64).reshape(shape)
+    try:
+        if split_name == "array_split":
+            selected = np.array_split(index_array, cast(Any, sections), axis=axis_index)
+        else:
+            selected = np.split(index_array, cast(Any, sections), axis=axis_index)
+    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            "program AD assembly split requires static split sections compatible with source shape"
+        ) from exc
+    return tuple(np.asarray(part, dtype=np.int64) for part in selected)
+
+
+def _program_ad_assembly_split_static_parts(
+    split_name: str,
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], int | tuple[int, ...], int, tuple[tuple[int, ...], ...]]:
+    if len(args) != 3:
+        raise ValueError("program AD assembly split requires source, sections, and axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = _program_ad_assembly_split_axis(args[2], rank=len(source_shape))
+    sections = _program_ad_assembly_split_sections(args[1])
+    selected = _program_ad_assembly_split_selected_indices(
+        split_name,
+        source_shape,
+        sections,
+        axis=axis,
+    )
+    part_shapes = tuple(tuple(int(dimension) for dimension in part.shape) for part in selected)
+    return source_shape, sections, axis, part_shapes
+
+
+def _program_ad_assembly_split_shape_rule_for(split_name: str) -> PrimitiveShapeRule:
+    def shape_rule(args: tuple[object, ...]) -> tuple[int, ...]:
+        source_shape, _sections, _axis, _part_shapes = _program_ad_assembly_split_static_parts(
+            split_name, args
+        )
+        return (_program_ad_array_static_size(source_shape),)
+
+    return shape_rule
+
+
+def _program_ad_assembly_split_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 3:
+        raise ValueError("program AD assembly split requires source, sections, and axis")
+    return str(np.dtype(_program_ad_array_dtype_of(args[0])))
+
+
+def _program_ad_assembly_split_static_arguments_rule_for(
+    split_name: str,
+) -> PrimitiveStaticArgumentRule:
+    def static_argument_rule(args: tuple[object, ...]) -> tuple[object, ...]:
+        return _program_ad_assembly_split_static_parts(split_name, args)
+
+    return static_argument_rule
+
+
+def _program_ad_assembly_split_move_output_batch_axis(output: object, out_axes: int) -> object:
+    if isinstance(output, tuple):
+        return tuple(
+            _program_ad_assembly_split_move_output_batch_axis(item, out_axes) for item in output
+        )
+    if isinstance(output, list):
+        return [
+            _program_ad_assembly_split_move_output_batch_axis(item, out_axes) for item in output
+        ]
+    array = _as_real_numeric_array("program AD assembly split batched output", output)
+    return np.moveaxis(array, 0, _normalise_axis("out_axes", out_axes, array.ndim))
+
+
+def _program_ad_assembly_split_stack_outputs(outputs: Sequence[object], out_axes: int) -> object:
+    if not outputs:
+        raise ValueError("program AD assembly split batching requires non-empty outputs")
+    first = outputs[0]
+    if isinstance(first, tuple):
+        if any(not isinstance(output, tuple) or len(output) != len(first) for output in outputs):
+            raise ValueError(
+                "program AD assembly split batching requires stable output partitions"
+            )
+        return tuple(
+            _program_ad_assembly_split_stack_outputs(
+                [cast(tuple[object, ...], output)[index] for output in outputs],
+                out_axes,
+            )
+            for index in range(len(first))
+        )
+    if isinstance(first, list):
+        if any(not isinstance(output, list) or len(output) != len(first) for output in outputs):
+            raise ValueError(
+                "program AD assembly split batching requires stable output partitions"
+            )
+        return [
+            _program_ad_assembly_split_stack_outputs(
+                [cast(list[object], output)[index] for output in outputs],
+                out_axes,
+            )
+            for index in range(len(first))
+        ]
+    arrays = [
+        _as_real_numeric_array("program AD assembly split batched output", output)
+        for output in outputs
+    ]
+    stacked = np.stack(arrays, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_assembly_split_batching_rule_for(split_name: str) -> PrimitiveBatchingRule:
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        if len(args) != 3 or len(axes) != 3:
+            raise ValueError(
+                "program AD assembly split batching requires source, sections, and axis"
+            )
+        if axes[1] is not None or axes[2] is not None:
+            raise ValueError("program AD assembly split batching keeps split metadata static")
+        source = _as_real_numeric_array("program AD assembly split batched source", args[0])
+        sections = _program_ad_assembly_split_sections(args[1])
+        split_axis = _program_ad_assembly_split_axis(args[2], rank=source.ndim)
+        source_axis = axes[0]
+        if source_axis is None:
+            return function(source, sections, split_axis)
+        source_axis_index = _normalise_axis("source axis", source_axis, source.ndim)
+        if source_axis_index == split_axis:
+            raise ValueError("program AD assembly split batching cannot map the split axis")
+        adjusted_split_axis = split_axis - 1 if source_axis_index < split_axis else split_axis
+        outputs = [
+            function(
+                np.take(source, batch_index, axis=source_axis_index),
+                sections,
+                adjusted_split_axis,
+            )
+            for batch_index in range(int(source.shape[source_axis_index]))
+        ]
+        return _program_ad_assembly_split_stack_outputs(outputs, out_axes)
+
+    return batching_rule
+
+
 def _program_ad_assembly_batching_rule(
     function: Callable[..., object],
     args: tuple[object, ...],
@@ -14931,18 +15121,33 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "append": "program_ad_assembly_append_derivative_rule",
         "block": "program_ad_assembly_block_derivative_rule",
         "concatenate": "program_ad_assembly_concatenate_derivative_rule",
+        "split": "program_ad_assembly_split_derivative_rule",
+        "array_split": "program_ad_assembly_split_derivative_rule",
+        "hsplit": "program_ad_assembly_split_derivative_rule",
+        "vsplit": "program_ad_assembly_split_derivative_rule",
+        "dsplit": "program_ad_assembly_split_derivative_rule",
         "stack": "program_ad_assembly_stack_derivative_rule",
     }
     boundaries = {
         "append": "static_source_values_shape_axis_append",
         "block": "static_nested_block_shape_layout",
         "concatenate": "static_operand_shape_axis_concatenate",
+        "split": "static_split_sections_gather_scatter",
+        "array_split": "static_array_split_sections_gather_scatter",
+        "hsplit": "static_hsplit_sections_gather_scatter",
+        "vsplit": "static_vsplit_sections_gather_scatter",
+        "dsplit": "static_dsplit_sections_gather_scatter",
         "stack": "static_operand_shape_axis_stack",
     }
     static_signatures = {
         "append": "source_shape:ranked_tensor_shape;values_shape:ranked_tensor_shape;axis",
         "block": "layout_shapes:nested_ranked_tensor_shapes",
         "concatenate": "operand_shapes:ranked_tensor_shapes;axis",
+        "split": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        "array_split": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        "hsplit": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        "vsplit": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
+        "dsplit": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "stack": "operand_shapes:ranked_tensor_shapes;axis",
     }
     return {
@@ -15793,24 +15998,44 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "append": _program_ad_assembly_append_batching_rule,
         "block": _program_ad_assembly_block_batching_rule,
         "concatenate": _program_ad_assembly_batching_rule,
+        "split": _program_ad_assembly_split_batching_rule_for("split"),
+        "array_split": _program_ad_assembly_split_batching_rule_for("array_split"),
+        "hsplit": _program_ad_assembly_split_batching_rule_for("hsplit"),
+        "vsplit": _program_ad_assembly_split_batching_rule_for("vsplit"),
+        "dsplit": _program_ad_assembly_split_batching_rule_for("dsplit"),
         "stack": _program_ad_assembly_stack_batching_rule,
     }
     shape_rules: Mapping[str, PrimitiveShapeRule] = {
         "append": _program_ad_assembly_append_shape,
         "block": _program_ad_assembly_block_shape,
         "concatenate": _program_ad_assembly_concatenate_shape,
+        "split": _program_ad_assembly_split_shape_rule_for("split"),
+        "array_split": _program_ad_assembly_split_shape_rule_for("array_split"),
+        "hsplit": _program_ad_assembly_split_shape_rule_for("hsplit"),
+        "vsplit": _program_ad_assembly_split_shape_rule_for("vsplit"),
+        "dsplit": _program_ad_assembly_split_shape_rule_for("dsplit"),
         "stack": _program_ad_assembly_stack_shape,
     }
     dtype_rules: Mapping[str, PrimitiveDTypeRule] = {
         "append": _program_ad_assembly_append_dtype_rule,
         "block": _program_ad_assembly_block_dtype_rule,
         "concatenate": _program_ad_assembly_concatenate_dtype_rule,
+        "split": _program_ad_assembly_split_dtype_rule,
+        "array_split": _program_ad_assembly_split_dtype_rule,
+        "hsplit": _program_ad_assembly_split_dtype_rule,
+        "vsplit": _program_ad_assembly_split_dtype_rule,
+        "dsplit": _program_ad_assembly_split_dtype_rule,
         "stack": _program_ad_assembly_stack_dtype_rule,
     }
     static_argument_rules: Mapping[str, PrimitiveStaticArgumentRule] = {
         "append": _program_ad_assembly_append_static_arguments,
         "block": _program_ad_assembly_block_static_arguments,
         "concatenate": _program_ad_assembly_concatenate_static_arguments,
+        "split": _program_ad_assembly_split_static_arguments_rule_for("split"),
+        "array_split": _program_ad_assembly_split_static_arguments_rule_for("array_split"),
+        "hsplit": _program_ad_assembly_split_static_arguments_rule_for("hsplit"),
+        "vsplit": _program_ad_assembly_split_static_arguments_rule_for("vsplit"),
+        "dsplit": _program_ad_assembly_split_static_arguments_rule_for("dsplit"),
         "stack": _program_ad_assembly_stack_static_arguments,
     }
     for name, identity in _PROGRAM_AD_ASSEMBLY_IDENTITIES.items():
@@ -17146,6 +17371,87 @@ def program_ad_assembly_block_derivative_rule(layout_shapes: object) -> CustomDe
 
     return CustomDerivativeRule(
         name=f"program_ad_assembly_block_{operand_count}_operands_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_assembly_split_source_shape(source_shape: Sequence[int]) -> tuple[int, ...]:
+    shape = _program_ad_array_normalise_static_shape("assembly split source", source_shape)
+    if not shape:
+        raise ValueError("program AD assembly split direct rule requires ranked source arrays")
+    return shape
+
+
+def program_ad_assembly_split_derivative_rule(
+    source_shape: Sequence[int],
+    indices_or_sections: object,
+    *,
+    axis: object = 0,
+    split_name: str = "split",
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static split-family layouts."""
+
+    if split_name not in _PROGRAM_AD_ASSEMBLY_SPLIT_NAMES:
+        raise ValueError(f"unsupported program AD assembly split primitive {split_name}")
+    shape = _program_ad_assembly_split_source_shape(source_shape)
+    axis_index = _program_ad_assembly_split_axis(axis, rank=len(shape))
+    sections = _program_ad_assembly_split_sections(indices_or_sections)
+    selected_indices = _program_ad_assembly_split_selected_indices(
+        split_name,
+        shape,
+        sections,
+        axis=axis_index,
+    )
+    source_size = _program_ad_array_static_size(shape)
+    part_count = len(selected_indices)
+
+    def split_array(source: NDArray[np.float64]) -> tuple[NDArray[np.float64], ...]:
+        if split_name == "array_split":
+            parts = np.array_split(source, cast(Any, sections), axis=axis_index)
+        else:
+            parts = np.split(source, cast(Any, sections), axis=axis_index)
+        return tuple(np.asarray(part, dtype=np.float64) for part in parts)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        source = _program_ad_array_vector("split", "values", values, expected_size=source_size)
+        parts = split_array(source.reshape(shape))
+        return _program_ad_float64_vector_result(
+            np.concatenate([part.reshape(-1) for part in parts])
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_array_vector("split", "values", values, expected_size=source_size)
+        tangent_source = _program_ad_array_vector(
+            "split", "tangent", tangent, expected_size=source_size
+        )
+        tangent_parts = split_array(tangent_source.reshape(shape))
+        return _program_ad_float64_vector_result(
+            np.concatenate([part.reshape(-1) for part in tangent_parts])
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_array_vector("split", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_array_vector(
+            "split", "cotangent", cotangent, expected_size=source_size
+        )
+        adjoint = np.zeros(source_size, dtype=np.float64)
+        offset = 0
+        for index_part in selected_indices:
+            part_size = int(index_part.size)
+            np.add.at(
+                adjoint,
+                index_part.reshape(-1),
+                cotangent_vector[offset : offset + part_size],
+            )
+            offset += part_size
+        return _program_ad_float64_vector_result(adjoint)
+
+    return CustomDerivativeRule(
+        name=f"program_ad_assembly_{split_name}_axis{axis_index}_{part_count}_parts_direct_rule",
         value_fn=value_fn,
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
@@ -23395,6 +23701,7 @@ __all__ = [
     "program_ad_assembly_append_derivative_rule",
     "program_ad_assembly_block_derivative_rule",
     "program_ad_assembly_concatenate_derivative_rule",
+    "program_ad_assembly_split_derivative_rule",
     "program_ad_assembly_stack_derivative_rule",
     "program_ad_array_delete_derivative_rule",
     "program_ad_array_getitem_derivative_rule",
