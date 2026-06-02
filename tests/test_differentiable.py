@@ -5453,6 +5453,14 @@ def test_program_ad_stencil_gradient_contract_and_direct_rule() -> None:
         contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_stencil_gradient_derivative_rule"
     )
+    assert contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;spacing_axis_edge_order"
+    )
+    assert (
+        contract.lowering_metadata["nondifferentiable_boundary"]
+        == "static_spacing_axis_edge_order"
+    )
+    assert contract.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
     assert contract.shape_rule is not None
     assert contract.shape_rule((matrix, (x_grid,), 1, 1)) == matrix.shape
     assert contract.dtype_rule is not None
