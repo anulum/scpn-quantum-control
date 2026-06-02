@@ -17643,174 +17643,184 @@ def _validate_program_ad_primitive_contract_dispatch(
         )
 
 
+def _require_program_ad_runtime_contract(
+    name: str,
+    *,
+    family: str,
+    identities: Mapping[str, PrimitiveIdentity],
+    expected_policy: str,
+    args: tuple[object, ...] | None = None,
+) -> PrimitiveContract:
+    identity = identities.get(name)
+    if identity is None:
+        raise ValueError(f"no program AD {family} primitive identity registered for {name}")
+    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
+    if contract.nondifferentiable_policy != expected_policy:
+        raise ValueError(f"invalid program AD {family} primitive policy for {identity.key}")
+    if contract.effect != "pure":
+        raise ValueError(f"invalid program AD {family} primitive effect for {identity.key}")
+
+    missing: list[str] = []
+    if contract.batching_rule is None:
+        missing.append("batching_rule")
+    if not contract.lowering_metadata:
+        missing.append("lowering_metadata")
+    if not contract.lowering_metadata.get("mlir_op"):
+        missing.append("mlir_op")
+    has_boundary_metadata = (
+        "nondifferentiable_boundary" in contract.lowering_metadata
+        or "nondifferentiable_boundary_policy" in contract.lowering_metadata
+    )
+    if has_boundary_metadata:
+        if not contract.lowering_metadata.get("nondifferentiable_boundary"):
+            missing.append("nondifferentiable_boundary")
+        if contract.lowering_metadata.get("nondifferentiable_boundary_policy") != "fail_closed":
+            missing.append("nondifferentiable_boundary_policy")
+    if contract.shape_rule is None:
+        missing.append("shape_rule")
+    if contract.dtype_rule is None:
+        missing.append("dtype_rule")
+    if contract.static_argument_rule is None:
+        missing.append("static_argument_rule")
+    if missing:
+        joined = ", ".join(missing)
+        raise ValueError(
+            f"incomplete program AD {family} primitive runtime contract for "
+            f"{identity.key}: missing {joined}"
+        )
+    if args is not None:
+        _validate_program_ad_primitive_contract_dispatch(contract, args)
+    return contract
+
+
 def _require_program_ad_array_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_ARRAY_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD array primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_ARRAY_POLICY:
-        raise ValueError(f"invalid program AD array primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD array primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="array",
+        identities=_PROGRAM_AD_ARRAY_IDENTITIES,
+        expected_policy=_PROGRAM_AD_ARRAY_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_interpolation_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_INTERPOLATION_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD interpolation primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_INTERPOLATION_POLICY:
-        raise ValueError(f"invalid program AD interpolation primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD interpolation primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="interpolation",
+        identities=_PROGRAM_AD_INTERPOLATION_IDENTITIES,
+        expected_policy=_PROGRAM_AD_INTERPOLATION_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_assembly_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_ASSEMBLY_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD assembly primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_ASSEMBLY_POLICY:
-        raise ValueError(f"invalid program AD assembly primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD assembly primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="assembly",
+        identities=_PROGRAM_AD_ASSEMBLY_IDENTITIES,
+        expected_policy=_PROGRAM_AD_ASSEMBLY_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_signal_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_SIGNAL_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD signal primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_SIGNAL_POLICY:
-        raise ValueError(f"invalid program AD signal primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD signal primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="signal",
+        identities=_PROGRAM_AD_SIGNAL_IDENTITIES,
+        expected_policy=_PROGRAM_AD_SIGNAL_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_shape_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_SHAPE_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD shape primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_SHAPE_POLICY:
-        raise ValueError(f"invalid program AD shape primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD shape primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="shape",
+        identities=_PROGRAM_AD_SHAPE_IDENTITIES,
+        expected_policy=_PROGRAM_AD_SHAPE_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_reduction_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_REDUCTION_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD reduction primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_REDUCTION_POLICY:
-        raise ValueError(f"invalid program AD reduction primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD reduction primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="reduction",
+        identities=_PROGRAM_AD_REDUCTION_IDENTITIES,
+        expected_policy=_PROGRAM_AD_REDUCTION_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_elementwise_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_ELEMENTWISE_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD elementwise primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_ELEMENTWISE_POLICY:
-        raise ValueError(f"invalid program AD elementwise primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD elementwise primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="elementwise",
+        identities=_PROGRAM_AD_ELEMENTWISE_IDENTITIES,
+        expected_policy=_PROGRAM_AD_ELEMENTWISE_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_selection_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_SELECTION_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD selection primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_SELECTION_POLICY:
-        raise ValueError(f"invalid program AD selection primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD selection primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="selection",
+        identities=_PROGRAM_AD_SELECTION_IDENTITIES,
+        expected_policy=_PROGRAM_AD_SELECTION_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_product_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_PRODUCT_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD product primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_PRODUCT_POLICY:
-        raise ValueError(f"invalid program AD product primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD product primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="product",
+        identities=_PROGRAM_AD_PRODUCT_IDENTITIES,
+        expected_policy=_PROGRAM_AD_PRODUCT_POLICY,
+        args=args,
+    )
 
 
 def _require_program_ad_cumulative_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_CUMULATIVE_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD cumulative primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_CUMULATIVE_POLICY:
-        raise ValueError(f"invalid program AD cumulative primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD cumulative primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="cumulative",
+        identities=_PROGRAM_AD_CUMULATIVE_IDENTITIES,
+        expected_policy=_PROGRAM_AD_CUMULATIVE_POLICY,
+        args=args,
+    )
 
 
 def _program_ad_linalg_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -20880,17 +20890,13 @@ def _require_program_ad_stencil_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_STENCIL_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD stencil primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_STENCIL_POLICY:
-        raise ValueError(f"invalid program AD stencil primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD stencil primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="stencil",
+        identities=_PROGRAM_AD_STENCIL_IDENTITIES,
+        expected_policy=_PROGRAM_AD_STENCIL_POLICY,
+        args=args,
+    )
 
 
 _PROGRAM_AD_LINALG_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -21117,17 +21123,13 @@ def _require_program_ad_linalg_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    identity = _PROGRAM_AD_LINALG_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD linalg primitive identity registered for {name}")
-    contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
-    if contract.nondifferentiable_policy != _PROGRAM_AD_LINALG_POLICY:
-        raise ValueError(f"invalid program AD linalg primitive policy for {identity.key}")
-    if contract.effect != "pure":
-        raise ValueError(f"invalid program AD linalg primitive effect for {identity.key}")
-    if args is not None:
-        _validate_program_ad_primitive_contract_dispatch(contract, args)
-    return contract
+    return _require_program_ad_runtime_contract(
+        name,
+        family="linalg",
+        identities=_PROGRAM_AD_LINALG_IDENTITIES,
+        expected_policy=_PROGRAM_AD_LINALG_POLICY,
+        args=args,
+    )
 
 
 _register_program_ad_array_primitive_contracts()

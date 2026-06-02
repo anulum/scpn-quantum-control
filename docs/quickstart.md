@@ -169,6 +169,13 @@ This lane is intentionally bounded: supported primitive kernels execute; a
 general arbitrary-program MLIR/LLVM AD compiler remains an open engineering
 frontier.
 
+Program AD execution is registry-gated. Supported traced NumPy primitives must
+resolve through a primitive identity with derivative, batching, shape, dtype,
+static-argument, policy/effect, and lowering-provenance metadata before the
+operator-intercepted program path executes. Smooth primitives may omit
+nondifferentiable-boundary metadata; primitives that declare a boundary must
+also declare the boundary policy as fail-closed.
+
 ## GUESS error mitigation in 5 lines (added April 2026)
 
 For any XY Hamiltonian run on hardware, the conserved total magnetisation

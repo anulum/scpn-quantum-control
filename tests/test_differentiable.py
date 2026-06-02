@@ -12784,6 +12784,89 @@ def _transform_rule_from_contract(contract):
     )
 
 
+def test_program_ad_runtime_dispatch_requires_complete_registry_contracts() -> None:
+    """Program AD execution should fail closed when any runtime registry facet is missing."""
+
+    scenarios = (
+        (
+            "scpn.program_ad.reduction:sum",
+            lambda values: np.sum(values),
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+            {"batching_rule": None},
+            "batching_rule",
+        ),
+        (
+            "scpn.program_ad.shape:reshape",
+            lambda values: np.sum(np.reshape(values, (2, 2))),
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+            {
+                "lowering_metadata": {
+                    "mlir_op": "scpn_diff.shape.reshape",
+                    "nondifferentiable_boundary_policy": "fail_closed",
+                }
+            },
+            "nondifferentiable_boundary",
+        ),
+        (
+            "scpn.program_ad.product:matmul",
+            lambda values: np.sum(
+                np.matmul(np.reshape(values, (2, 2)), np.reshape(values, (2, 2)))
+            ),
+            np.array([1.0, 0.25, -0.5, 2.0], dtype=np.float64),
+            {
+                "lowering_metadata": {
+                    "nondifferentiable_boundary": "rank2_broadcast_contract",
+                    "nondifferentiable_boundary_policy": "fail_closed",
+                }
+            },
+            "mlir_op",
+        ),
+        (
+            "scpn.program_ad.linalg:trace",
+            lambda values: np.trace(np.reshape(values, (2, 2))),
+            np.array([1.0, 0.25, -0.5, 2.0], dtype=np.float64),
+            {"dtype_rule": None},
+            "dtype_rule",
+        ),
+        (
+            "scpn.program_ad.selection:clip",
+            lambda values: np.sum(np.clip(values, -0.5, 0.5)),
+            np.array([-1.0, 0.25, 2.0], dtype=np.float64),
+            {"static_argument_rule": None},
+            "static_argument_rule",
+        ),
+    )
+
+    for identity, objective, values, overrides, missing in scenarios:
+        original = primitive_contract_for(identity)
+        payload = {
+            "identity": original.identity,
+            "derivative_rule": original.derivative_rule,
+            "batching_rule": original.batching_rule,
+            "lowering_rule": original.lowering_rule,
+            "lowering_metadata": original.lowering_metadata,
+            "shape_rule": original.shape_rule,
+            "dtype_rule": original.dtype_rule,
+            "static_argument_rule": original.static_argument_rule,
+            "nondifferentiable_policy": original.nondifferentiable_policy,
+            "effect": original.effect,
+        }
+        payload.update(overrides)
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(**payload), overwrite=True
+        )
+        try:
+            with pytest.raises(
+                ValueError,
+                match=rf"incomplete program AD .* runtime contract.*{missing}",
+            ):
+                whole_program_value_and_grad(objective, values, trace=False)
+        finally:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+
 def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported assembly primitives must execute through registry validation rules."""
 
