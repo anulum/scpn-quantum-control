@@ -12372,6 +12372,13 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
     delete_contract = primitive_contract_for("scpn.program_ad.array:delete")
     assert delete_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "delete", "1")
     assert delete_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.delete"
+    assert (
+        delete_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_array_delete_derivative_rule"
+    )
+    assert delete_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;object_axis"
+    )
     assert delete_contract.shape_rule is not None
     assert delete_contract.shape_rule((matrix, np.array([1]), 1)) == (2, 2)
     assert delete_contract.shape_rule((matrix, np.array([1, 4]), None)) == (4,)
