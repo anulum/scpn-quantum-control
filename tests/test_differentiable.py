@@ -13279,52 +13279,109 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
 def test_program_ad_linalg_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported linalg primitives must execute through registry validation rules."""
 
-    original = primitive_contract_for("scpn.program_ad.linalg:det")
-    calls: list[str] = []
-
-    assert original.shape_rule is not None
-    assert original.dtype_rule is not None
-    assert original.static_argument_rule is not None
-
-    def shape_rule(args):
-        calls.append("shape")
-        return original.shape_rule(args)
-
-    def dtype_rule(args):
-        calls.append("dtype")
-        return original.dtype_rule(args)
-
-    def static_argument_rule(args):
-        calls.append("static")
-        return original.static_argument_rule(args)
-
-    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
-        PrimitiveTransformRule(
-            identity=original.identity,
-            derivative_rule=original.derivative_rule,
-            batching_rule=original.batching_rule,
-            lowering_rule=original.lowering_rule,
-            lowering_metadata=original.lowering_metadata,
-            shape_rule=shape_rule,
-            dtype_rule=dtype_rule,
-            static_argument_rule=static_argument_rule,
-            nondifferentiable_policy=original.nondifferentiable_policy,
-            effect=original.effect,
-        ),
-        overwrite=True,
-    )
-    try:
-        result = whole_program_value_and_grad(
-            lambda values: np.linalg.det(np.reshape(values, (2, 2))),
-            np.array([1.0, 2.0, 3.0, 5.0], dtype=np.float64),
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.linalg:{name}")
+        for name in (
+            "det",
+            "diag",
+            "diagflat",
+            "eig",
+            "eigh",
+            "eigvals",
+            "eigvalsh",
+            "inv",
+            "matrix_power",
+            "multi_dot",
+            "pinv",
+            "solve",
+            "svd",
+            "trace",
         )
-    finally:
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
         DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
-            _transform_rule_from_contract(original), overwrite=True
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
         )
 
-    assert result.value == pytest.approx(-1.0)
-    assert set(calls) == {"shape", "dtype", "static"}
+    def objective(values):
+        raw_matrix = np.reshape(values, (2, 2))
+        matrix = 0.5 * (raw_matrix + np.transpose(raw_matrix))
+        rhs = values[:2]
+        eig_values, _eig_vectors = np.linalg.eig(matrix)
+        eigh_values, _eigh_vectors = np.linalg.eigh(matrix)
+        return (
+            np.linalg.det(matrix)
+            + np.sum(np.linalg.inv(matrix))
+            + np.sum(np.linalg.solve(matrix, rhs))
+            + np.trace(matrix)
+            + np.sum(np.diag(matrix))
+            + np.sum(np.diagflat(rhs))
+            + np.sum(np.linalg.matrix_power(matrix, 2))
+            + np.linalg.multi_dot((rhs, matrix, values[2:]))
+            + np.sum(eig_values)
+            + np.sum(eigh_values)
+            + np.sum(np.linalg.eigvals(matrix))
+            + np.sum(np.linalg.eigvalsh(matrix))
+            + np.sum(np.linalg.svd(matrix, compute_uv=False))
+            + np.sum(np.linalg.pinv(matrix, rcond=1.0e-12))
+        )
+
+    values = np.array([2.0, 0.25, 0.25, 1.5], dtype=np.float64)
+    try:
+        result = whole_program_value_and_grad(objective, values)
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert result.value == pytest.approx(float(objective(values)))
+    assert calls == {
+        "det": {"shape", "dtype", "static"},
+        "diag": {"shape", "dtype", "static"},
+        "diagflat": {"shape", "dtype", "static"},
+        "eig": {"shape", "dtype", "static"},
+        "eigh": {"shape", "dtype", "static"},
+        "eigvals": {"shape", "dtype", "static"},
+        "eigvalsh": {"shape", "dtype", "static"},
+        "inv": {"shape", "dtype", "static"},
+        "matrix_power": {"shape", "dtype", "static"},
+        "multi_dot": {"shape", "dtype", "static"},
+        "pinv": {"shape", "dtype", "static"},
+        "solve": {"shape", "dtype", "static"},
+        "svd": {"shape", "dtype", "static"},
+        "trace": {"shape", "dtype", "static"},
+    }
 
 
 def test_program_ad_advanced_indexing_fails_closed() -> None:
