@@ -5040,7 +5040,8 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
     """Native program AD lowering should report replay-supported ops that lack LLVM lowering."""
 
     def objective(values: np.ndarray) -> object:
-        return np.maximum(values[0], values[1]) + np.sin(values[2])
+        selected = np.where(values[0] > values[1], values[0:1] ** 2, values[1:2] ** 2)
+        return selected.sum() + np.sin(values[2])
 
     sample = np.array([1.25, -0.25, 0.5], dtype=np.float64)
     parameters = (Parameter("left"), Parameter("right"), Parameter("phase"))
@@ -5050,14 +5051,75 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
 
     assert isinstance(report, WholeProgramADNativeLoweringReport)
     assert report.supported is False
-    assert report.unsupported_ops == ("maximum",)
+    assert report.unsupported_ops == ("where",)
     assert report.unsupported_operation_count == 1
     assert report.lowerable_operation_count == len(result.ir_nodes) - 1
-    assert "unsupported native ops: maximum" in report.fail_closed_reason
-    assert report.as_metadata()["unsupported_ops"] == ("maximum",)
+    assert "unsupported native ops: where" in report.fail_closed_reason
+    assert report.as_metadata()["unsupported_ops"] == ("where",)
 
-    with pytest.raises(ValueError, match="unsupported native ops: maximum"):
+    with pytest.raises(ValueError, match="unsupported native ops: where"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+
+
+def test_whole_program_ad_trace_native_llvm_jit_lowers_strict_selection_ops() -> None:
+    """Native program AD should lower strict no-tie maximum/minimum selection ops."""
+
+    def objective(values: np.ndarray) -> object:
+        return (
+            np.maximum(values[0], values[1])
+            + np.minimum(values[2], values[3])
+            + values[4] * values[0]
+        )
+
+    sample = np.array([1.25, -0.25, 0.5, 1.5, 2.0], dtype=np.float64)
+    replay = np.array([-0.5, 1.0, 2.0, -1.0, 0.25], dtype=np.float64)
+    parameters = (
+        Parameter("left"),
+        Parameter("right"),
+        Parameter("lower"),
+        Parameter("upper"),
+        Parameter("scale"),
+    )
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        replay,
+        parameters,
+    )
+
+    assert report.supported is True
+    assert report.unsupported_ops == ()
+    assert {"maximum", "minimum"}.issubset(report.lowerable_ops)
+    assert kernel.lowering_report.lowerable_ops == report.lowerable_ops
+    assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+    assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+    assert "maximum" in kernel.supported_ops
+    assert "minimum" in kernel.supported_ops
+    assert "fcmp ogt" in kernel.llvm_ir
+    assert "fcmp olt" in kernel.llvm_ir
+    assert "select i1" in kernel.llvm_ir
+    assert kernel.value(replay) == pytest.approx(reference_value)
+    np.testing.assert_allclose(
+        kernel.gradient(replay),
+        reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    with pytest.raises(ValueError, match="non-differentiable at equal inputs"):
+        kernel.gradient(np.array([1.0, 1.0, 0.5, 1.5, 2.0], dtype=np.float64))
+    with pytest.raises(ValueError, match="non-differentiable at equal inputs"):
+        kernel.batch_value_and_grad(
+            np.array(
+                [
+                    [1.25, -0.25, 0.5, 1.5, 2.0],
+                    [1.0, 1.0, 0.5, 1.5, 2.0],
+                ],
+                dtype=np.float64,
+            )
+        )
 
 
 def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() -> None:

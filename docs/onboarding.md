@@ -85,7 +85,8 @@ coupled dynamics matter:
 - Release-readiness and hardware-result-pack gates.
 - Source-bounded Paper 0 register and generated fixtures.
 - Supported differentiable scalar, vector, and matrix primitive surfaces, plus
-  inspectable native program-AD lowering reports for supported scalar traces.
+  inspectable native program-AD lowering reports for supported scalar traces
+  with strict no-tie native selection support.
 
 ## What Remains Bounded
 

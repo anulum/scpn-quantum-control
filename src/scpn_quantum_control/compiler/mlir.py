@@ -9465,7 +9465,9 @@ class NativeWholeProgramADKernel:
         return np.ascontiguousarray(checked, dtype=np.float64)
 
     def _validate_trace_signature(self, values: NDArray[np.float64]) -> None:
-        if not _whole_program_has_control_flow(self.source_result):
+        if not _whole_program_has_control_flow(
+            self.source_result
+        ) and not _whole_program_native_requires_runtime_domain_check(self.source_result):
             return
         result = whole_program_value_and_grad(
             self.objective,
@@ -9981,6 +9983,8 @@ _WHOLE_PROGRAM_NATIVE_BINARY_OPS = frozenset(
         "truediv",
         "pow",
         "power",
+        "maximum",
+        "minimum",
     }
 )
 
@@ -10038,6 +10042,10 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
     if op in _WHOLE_PROGRAM_NATIVE_BINARY_OPS:
         return True
     return bool(op.startswith("branch:"))
+
+
+def _whole_program_native_requires_runtime_domain_check(result: WholeProgramADResult) -> bool:
+    return any(node.op in {"maximum", "minimum"} for node in result.ir_nodes)
 
 
 def _whole_program_native_supported_ops(result: WholeProgramADResult) -> tuple[str, ...]:
@@ -10671,6 +10679,8 @@ def _emit_whole_program_native_operation(
         "truediv",
         "pow",
         "power",
+        "maximum",
+        "minimum",
     }:
         raise ValueError(f"native whole-program AD lowering does not support op {node.op}")
     if len(inputs) != 2:
@@ -10685,6 +10695,14 @@ def _emit_whole_program_native_operation(
         lines.append(f"  {value_name} = fmul double {left}, {right}")
     elif node.op in {"div", "divide", "truediv"}:
         lines.append(f"  {value_name} = fdiv double {left}, {right}")
+    elif node.op == "maximum":
+        predicate = f"%select_pred_{node.index}"
+        lines.append(f"  {predicate} = fcmp ogt double {left}, {right}")
+        lines.append(f"  {value_name} = select i1 {predicate}, double {left}, double {right}")
+    elif node.op == "minimum":
+        predicate = f"%select_pred_{node.index}"
+        lines.append(f"  {predicate} = fcmp olt double {left}, {right}")
+        lines.append(f"  {value_name} = select i1 {predicate}, double {left}, double {right}")
     else:
         exponent = _whole_program_native_constant(inputs[1])
         if exponent is None:
@@ -10732,6 +10750,12 @@ def _emit_whole_program_native_operation(
                     f"  {denominator} = fmul double {right}, {right}",
                     f"  {derivative_name} = fdiv double {numerator}, {denominator}",
                 ]
+            )
+        elif node.op in {"maximum", "minimum"}:
+            predicate = f"%select_pred_{node.index}"
+            lines.append(
+                f"  {derivative_name} = select i1 {predicate}, "
+                f"double {left_derivative}, double {right_derivative}"
             )
         else:
             lines.append(f"  {derivative_name} = fmul double {scaled_factor}, {left_derivative}")
