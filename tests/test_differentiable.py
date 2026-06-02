@@ -4696,8 +4696,12 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     assert ravel_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "ravel", "1")
     assert ravel_contract.shape_rule is not None
     assert ravel_contract.shape_rule((matrix,)) == (6,)
+    assert ravel_contract.dtype_rule is not None
+    assert ravel_contract.dtype_rule((matrix,)) == "float64"
     assert ravel_contract.static_argument_rule is not None
     assert ravel_contract.static_argument_rule((matrix,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(ravel_contract.identity)
 
     transpose_contract = primitive_contract_for("scpn.program_ad.shape:transpose")
     assert transpose_contract.identity == PrimitiveIdentity(
@@ -4705,8 +4709,12 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     )
     assert transpose_contract.shape_rule is not None
     assert transpose_contract.shape_rule((matrix, (1, 0))) == (3, 2)
+    assert transpose_contract.dtype_rule is not None
+    assert transpose_contract.dtype_rule((matrix, (1, 0))) == "float64"
     assert transpose_contract.static_argument_rule is not None
     assert transpose_contract.static_argument_rule((matrix, (1, 0))) == ((1, 0),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(transpose_contract.identity)
 
     expand_contract = primitive_contract_for("scpn.program_ad.shape:expand_dims")
     assert expand_contract.identity == PrimitiveIdentity(
@@ -4822,8 +4830,12 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     )
     assert atleast_1d_contract.shape_rule is not None
     assert atleast_1d_contract.shape_rule((scalar,)) == (1,)
+    assert atleast_1d_contract.dtype_rule is not None
+    assert atleast_1d_contract.dtype_rule((scalar,)) == "float64"
     assert atleast_1d_contract.static_argument_rule is not None
     assert atleast_1d_contract.static_argument_rule((scalar,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(atleast_1d_contract.identity)
 
     atleast_2d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_2d")
     assert atleast_2d_contract.identity == PrimitiveIdentity(
@@ -4835,6 +4847,8 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     assert atleast_2d_contract.dtype_rule((vector,)) == "float64"
     assert atleast_2d_contract.static_argument_rule is not None
     assert atleast_2d_contract.static_argument_rule((vector,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(atleast_2d_contract.identity)
 
     atleast_3d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_3d")
     assert atleast_3d_contract.identity == PrimitiveIdentity(
