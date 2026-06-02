@@ -5349,6 +5349,16 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
         "prod": (2,),
         "mean": (2,),
     }
+    expected_factories = {
+        "sum": "program_ad_reduction_sum_derivative_rule",
+        "prod": "program_ad_reduction_prod_derivative_rule",
+        "mean": "program_ad_reduction_mean_derivative_rule",
+    }
+    expected_boundaries = {
+        "sum": "static_axis_and_stable_output_shape",
+        "prod": "static_axis_zero_factor_sensitive",
+        "mean": "static_axis_nonempty_reduction",
+    }
 
     for name, expected_shape in expected_shapes.items():
         contract = primitive_contract_for(f"scpn.program_ad.reduction:{name}")
@@ -5356,6 +5366,14 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
         assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
         assert contract.effect == "pure"
         assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.reduction.{name}"
+        assert contract.lowering_metadata["static_derivative_factory"] == expected_factories[name]
+        assert contract.lowering_metadata["static_signature"] == (
+            "source_shape:ranked_tensor_shape;axis"
+        )
+        assert (
+            contract.lowering_metadata["nondifferentiable_boundary"] == expected_boundaries[name]
+        )
+        assert contract.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
         assert contract.shape_rule is not None
         assert contract.shape_rule((matrix, 1)) == expected_shape
         assert contract.shape_rule((matrix, None)) == ()
