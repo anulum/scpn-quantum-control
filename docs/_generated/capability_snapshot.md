@@ -5,10 +5,10 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.8 |
-| Public API exports | 558 |
+| Package version | 0.9.9 |
+| Public API exports | 570 |
 | Python source modules | 767 |
-| Public Python classes | 1501 |
+| Public Python classes | 1505 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -18,7 +18,7 @@
 | Example files | 23 |
 | Optional extras | 40 |
 | Python test files | 1876 |
-| Public documentation pages | 236 |
+| Public documentation pages | 240 |
 | GitHub Actions workflows | 18 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artifacts.
