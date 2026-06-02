@@ -26,6 +26,7 @@ from scpn_quantum_control.compiler.mlir import (
     NativeWholeProgramADKernel,
     PrimitiveLoweringStatus,
     build_compiler_ad_transform_plan,
+    clear_native_whole_program_ad_compile_cache,
     compile_compiler_ad_transform_plan_to_mlir,
     compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
@@ -36,6 +37,7 @@ from scpn_quantum_control.compiler.mlir import (
     compile_whole_program_ad_trace_to_native_llvm_jit,
     make_program_ad_linalg_matrix_power_executable_lowering_rule,
     make_program_ad_linalg_multi_dot_executable_lowering_rule,
+    native_whole_program_ad_compile_cache_stats,
 )
 from scpn_quantum_control.control.realtime_runtime import (
     RealtimeRuntimeConfig,
@@ -4963,6 +4965,9 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
 def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     """Native program AD should reuse verified compile artefacts deterministically."""
 
+    clear_native_whole_program_ad_compile_cache()
+    assert native_whole_program_ad_compile_cache_stats()["entries"] == 0
+
     def objective(values: np.ndarray) -> object:
         return np.log1p(values[0] * values[0]) + np.tanh(values[1]) + values[2] ** 3
 
@@ -4971,7 +4976,9 @@ def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     parameters = (Parameter("cache_x"), Parameter("cache_y"), Parameter("cache_z"))
 
     first = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    first_stats = native_whole_program_ad_compile_cache_stats()
     second = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    second_stats = native_whole_program_ad_compile_cache_stats()
     reference_value, reference_gradient = program_adjoint_value_and_grad(
         objective,
         replay,
@@ -4985,6 +4992,11 @@ def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     assert second.mlir_module.metadata["native_compile_cache_key"] == second.cache_key
     assert first.mlir_module.metadata["native_compile_cache_hit"] is False
     assert second.mlir_module.metadata["native_compile_cache_hit"] is True
+    assert first_stats["entries"] == 1
+    assert first_stats["max_size"] >= 1
+    assert first_stats["keys"] == (first.cache_key,)
+    assert second_stats["entries"] == 1
+    assert second_stats["keys"] == (first.cache_key,)
     assert first.mlir_module.resource_counts["native_compile_cache_hit"] == 0
     assert second.mlir_module.resource_counts["native_compile_cache_hit"] == 1
     assert first.native_functions["engine"] is second.native_functions["engine"]
@@ -4994,6 +5006,14 @@ def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     value, gradient = second.value_and_grad(replay)
     assert value == pytest.approx(reference_value)
     np.testing.assert_allclose(gradient, reference_gradient, rtol=1.0e-10, atol=1.0e-10)
+
+    assert clear_native_whole_program_ad_compile_cache() == 1
+    assert native_whole_program_ad_compile_cache_stats()["entries"] == 0
+    third = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    assert third.cache_hit is False
+    assert third.cache_key == first.cache_key
+    assert third.native_functions["engine"] is not first.native_functions["engine"]
+    assert clear_native_whole_program_ad_compile_cache() == 1
 
 
 def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() -> None:
@@ -5329,6 +5349,14 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
     assert (
         scpn.compile_whole_program_ad_trace_to_native_llvm_jit
         is compile_whole_program_ad_trace_to_native_llvm_jit
+    )
+    assert (
+        scpn.native_whole_program_ad_compile_cache_stats
+        is native_whole_program_ad_compile_cache_stats
+    )
+    assert (
+        scpn.clear_native_whole_program_ad_compile_cache
+        is clear_native_whole_program_ad_compile_cache
     )
     assert scpn.compile_kuramoto_to_mlir is compile_kuramoto_to_mlir
     assert (

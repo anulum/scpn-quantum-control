@@ -201,8 +201,11 @@ executed branch paths can be lowered further with
 deterministic MLIR provenance plus executable LLVM/JIT value, gradient, JVP,
 VJP, compiled batched value/gradient kernels, and compiled batched JVP/VJP
 kernels. Repeated identical compilations reuse a verified process-local native
-compile cache keyed by deterministic trace and LLVM provenance. Runtime rows
-that change the compiled branch/signature, cross unsupported primitive domains, hit
+compile cache keyed by deterministic trace and LLVM provenance; use
+`native_whole_program_ad_compile_cache_stats()` and
+`clear_native_whole_program_ad_compile_cache()` for long-running service
+diagnostics and explicit invalidation. Runtime rows that change the compiled
+branch/signature, cross unsupported primitive domains, hit
 nondifferentiable boundaries, use unsupported operations, loop/control joins, or
 shape changes fail closed and should use the replay executable until a native
 lowering rule exists.

@@ -20,6 +20,7 @@ from .mlir import (
     NativeWholeProgramADKernel,
     PrimitiveLoweringStatus,
     build_compiler_ad_transform_plan,
+    clear_native_whole_program_ad_compile_cache,
     compile_compiler_ad_transform_plan_to_mlir,
     compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
@@ -64,6 +65,7 @@ from .mlir import (
     make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule,
     make_vector_dot_native_llvm_jit_lowering_rule,
     make_vector_squared_norm_native_llvm_jit_lowering_rule,
+    native_whole_program_ad_compile_cache_stats,
 )
 
 __all__ = [
@@ -103,6 +105,7 @@ __all__ = [
     "compile_whole_program_ad_trace_to_executable",
     "compile_whole_program_ad_trace_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
+    "clear_native_whole_program_ad_compile_cache",
     "compile_kuramoto_to_mlir",
     "make_executable_ad_kernel_batching_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
@@ -123,4 +126,5 @@ __all__ = [
     "make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule",
     "make_vector_dot_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
+    "native_whole_program_ad_compile_cache_stats",
 ]

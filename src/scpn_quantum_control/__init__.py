@@ -73,6 +73,7 @@ from .compiler.mlir import (
     NativeWholeProgramADKernel,
     PrimitiveLoweringStatus,
     build_compiler_ad_transform_plan,
+    clear_native_whole_program_ad_compile_cache,
     compile_compiler_ad_transform_plan_to_mlir,
     compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
@@ -132,6 +133,7 @@ from .compiler.mlir import (
     make_vector_dot_native_llvm_jit_primitive_transform,
     make_vector_squared_norm_native_llvm_jit_lowering_rule,
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
+    native_whole_program_ad_compile_cache_stats,
 )
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
@@ -724,6 +726,7 @@ __all__ = [
     "PrimitiveLoweringStatus",
     "MLIRModule",
     "build_compiler_ad_transform_plan",
+    "clear_native_whole_program_ad_compile_cache",
     "compile_compiler_ad_transform_plan_to_mlir",
     "compile_custom_derivative_rule_to_executable",
     "compile_custom_derivative_rule_to_mlir",
@@ -782,6 +785,7 @@ __all__ = [
     "compile_whole_program_ad_trace_to_executable",
     "compile_whole_program_ad_trace_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
+    "native_whole_program_ad_compile_cache_stats",
     "compile_kuramoto_to_mlir",
     "MonotonicRealtimeClock",
     "RealtimeRunResult",

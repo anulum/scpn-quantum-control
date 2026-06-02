@@ -9947,6 +9947,28 @@ def _store_native_whole_program_ad_cache_entry(
         _NATIVE_WHOLE_PROGRAM_AD_CACHE[cache_key] = entry
 
 
+def native_whole_program_ad_compile_cache_stats() -> Mapping[str, object]:
+    """Return bounded process-local native whole-program AD compile-cache metadata."""
+
+    with _NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK:
+        return MappingProxyType(
+            {
+                "entries": len(_NATIVE_WHOLE_PROGRAM_AD_CACHE),
+                "max_size": _NATIVE_WHOLE_PROGRAM_AD_CACHE_MAXSIZE,
+                "keys": tuple(_NATIVE_WHOLE_PROGRAM_AD_CACHE.keys()),
+            }
+        )
+
+
+def clear_native_whole_program_ad_compile_cache() -> int:
+    """Clear verified native whole-program AD compile-cache entries and return count."""
+
+    with _NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK:
+        removed = len(_NATIVE_WHOLE_PROGRAM_AD_CACHE)
+        _NATIVE_WHOLE_PROGRAM_AD_CACHE.clear()
+        return removed
+
+
 def _with_native_whole_program_cache_metadata(
     module: MLIRModule,
     *,
