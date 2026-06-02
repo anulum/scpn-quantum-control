@@ -8494,6 +8494,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_product_outer_derivative_rule",
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         ),
+        "scpn.program_ad.product:einsum": (
+            "program_ad_product_einsum_derivative_rule",
+            "subscripts:explicit_static;operand_shapes:ranked_tensor_shapes",
+        ),
         "scpn.program_ad.cumulative:cumsum": (
             "program_ad_cumulative_cumsum_derivative_rule",
             "source_shape:ranked_tensor_shape;axis",
