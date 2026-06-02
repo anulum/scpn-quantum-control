@@ -5040,25 +5040,89 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
     """Native program AD lowering should report replay-supported ops that lack LLVM lowering."""
 
     def objective(values: np.ndarray) -> object:
-        selected = np.where(values[0] > values[1], values[0:1] ** 2, values[1:2] ** 2)
-        return selected.sum() + np.sin(values[2])
+        return np.clip(values[0:1], values[1:2], values[2:3]).sum() + np.sin(values[3])
 
-    sample = np.array([1.25, -0.25, 0.5], dtype=np.float64)
-    parameters = (Parameter("left"), Parameter("right"), Parameter("phase"))
+    sample = np.array([0.25, -0.5, 1.5, 0.75], dtype=np.float64)
+    parameters = (
+        Parameter("value"),
+        Parameter("lower"),
+        Parameter("upper"),
+        Parameter("phase"),
+    )
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert isinstance(report, WholeProgramADNativeLoweringReport)
     assert report.supported is False
-    assert report.unsupported_ops == ("where",)
+    assert report.unsupported_ops == ("clip",)
     assert report.unsupported_operation_count == 1
     assert report.lowerable_operation_count == len(result.ir_nodes) - 1
-    assert "unsupported native ops: where" in report.fail_closed_reason
-    assert report.as_metadata()["unsupported_ops"] == ("where",)
+    assert "unsupported native ops: clip" in report.fail_closed_reason
+    assert report.as_metadata()["unsupported_ops"] == ("clip",)
 
-    with pytest.raises(ValueError, match="unsupported native ops: where"):
+    with pytest.raises(ValueError, match="unsupported native ops: clip"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+
+
+def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_where() -> None:
+    """Native program AD should lower scalar np.where selection traces."""
+
+    def objective(values: np.ndarray) -> object:
+        selected = np.where(values[0] > values[1], values[0:1] ** 2, values[1:2] ** 2)
+        return selected.sum() + values[2] * values[0]
+
+    sample = np.array([1.25, -0.25, 0.5], dtype=np.float64)
+    replay = np.array([-0.5, 1.0, 2.0], dtype=np.float64)
+    parameters = (Parameter("left"), Parameter("right"), Parameter("scale"))
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        replay,
+        parameters,
+    )
+
+    assert report.supported is True
+    assert report.unsupported_ops == ()
+    assert "where" in report.lowerable_ops
+    assert "where" in kernel.supported_ops
+    assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+    assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+    assert "select i1" in kernel.llvm_ir
+    assert kernel.value(replay) == pytest.approx(reference_value)
+    np.testing.assert_allclose(
+        kernel.gradient(replay),
+        reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    batch = np.array(
+        [
+            [1.25, -0.25, 0.5],
+            [-0.5, 1.0, 2.0],
+            [2.0, -1.0, -0.25],
+        ],
+        dtype=np.float64,
+    )
+    batch_reference = [program_adjoint_value_and_grad(objective, row, parameters) for row in batch]
+    batch_result = kernel.batch_value_and_grad(batch)
+    np.testing.assert_allclose(
+        batch_result.values,
+        np.array([item[0] for item in batch_reference], dtype=np.float64),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.gradients,
+        np.vstack([item[1] for item in batch_reference]),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    with pytest.raises(ValueError, match="non-differentiable at equality"):
+        kernel.gradient(np.array([1.0, 1.0, 0.5], dtype=np.float64))
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_strict_selection_ops() -> None:

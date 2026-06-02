@@ -86,7 +86,7 @@ coupled dynamics matter:
 - Source-bounded Paper 0 register and generated fixtures.
 - Supported differentiable scalar, vector, and matrix primitive surfaces, plus
   inspectable native program-AD lowering reports for supported scalar traces
-  with strict no-tie native selection support.
+  with strict no-tie native `where`/selection support.
 
 ## What Remains Bounded
 

@@ -9465,9 +9465,7 @@ class NativeWholeProgramADKernel:
         return np.ascontiguousarray(checked, dtype=np.float64)
 
     def _validate_trace_signature(self, values: NDArray[np.float64]) -> None:
-        if not _whole_program_has_control_flow(
-            self.source_result
-        ) and not _whole_program_native_requires_runtime_domain_check(self.source_result):
+        if not _whole_program_native_requires_runtime_recapture(self.source_result):
             return
         result = whole_program_value_and_grad(
             self.objective,
@@ -9475,8 +9473,8 @@ class NativeWholeProgramADKernel:
             parameters=self.parameters,
             trace=False,
         )
-        signature = _whole_program_replay_signature(result)
-        if signature != self.trace_signature:
+        signature = _whole_program_native_replay_signature(result)
+        if signature != _whole_program_native_replay_signature(self.source_result):
             raise ValueError(
                 "native whole-program AD kernel branch signature changed; "
                 "recompile with representative sample values"
@@ -9985,6 +9983,7 @@ _WHOLE_PROGRAM_NATIVE_BINARY_OPS = frozenset(
         "power",
         "maximum",
         "minimum",
+        "where",
     }
 )
 
@@ -10044,8 +10043,52 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
     return bool(op.startswith("branch:"))
 
 
-def _whole_program_native_requires_runtime_domain_check(result: WholeProgramADResult) -> bool:
-    return any(node.op in {"maximum", "minimum"} for node in result.ir_nodes)
+def _whole_program_native_requires_runtime_recapture(result: WholeProgramADResult) -> bool:
+    return _whole_program_has_control_flow(result) or any(
+        node.op in {"maximum", "minimum", "where"} for node in result.ir_nodes
+    )
+
+
+def _whole_program_native_replay_signature(result: WholeProgramADResult) -> tuple[str, ...]:
+    where_branch_ops = {
+        branch_op
+        for node in result.ir_nodes
+        if node.op == "where" and node.inputs
+        for branch_op in (_whole_program_native_where_branch_op(node.inputs[0]),)
+        if branch_op is not None
+    }
+    control_signature = tuple(
+        f"{node.index}:{node.op}:{','.join(node.inputs)}"
+        for node in result.ir_nodes
+        if node.op.startswith(("branch:", "loop:", "control:")) and node.op not in where_branch_ops
+    )
+    if control_signature:
+        return control_signature
+    return tuple(
+        f"{node.index}:{node.op}:{','.join(_whole_program_native_signature_inputs(node))}"
+        for node in result.ir_nodes
+        if not (node.op.startswith("branch:") and node.op in where_branch_ops)
+    )
+
+
+def _whole_program_native_signature_inputs(node: Any) -> tuple[str, ...]:
+    if node.op != "where" or not node.inputs:
+        return tuple(node.inputs)
+    return (
+        _whole_program_native_where_predicate_body(node.inputs[0]),
+        *tuple(node.inputs[1:]),
+    )
+
+
+def _whole_program_native_where_branch_op(predicate: str) -> str | None:
+    if ":truth:" not in predicate:
+        return None
+    label, truth = predicate.rsplit(":truth:", 1)
+    if truth == "1":
+        return f"branch:{label}:True"
+    if truth == "0":
+        return f"branch:{label}:False"
+    return None
 
 
 def _whole_program_native_supported_ops(result: WholeProgramADResult) -> tuple[str, ...]:
@@ -10681,8 +10724,31 @@ def _emit_whole_program_native_operation(
         "power",
         "maximum",
         "minimum",
+        "where",
     }:
         raise ValueError(f"native whole-program AD lowering does not support op {node.op}")
+    if node.op == "where":
+        if len(inputs) != 3:
+            raise ValueError(
+                "native operation where expects predicate, true value, and false value"
+            )
+        predicate = _emit_whole_program_native_where_predicate(lines, node.index, inputs[0])
+        true_value = _whole_program_native_operand(inputs[1])
+        false_value = _whole_program_native_operand(inputs[2])
+        lines.append(
+            f"  {value_name} = select i1 {predicate}, double {true_value}, double {false_value}"
+        )
+        for derivative_index in range(parameter_count):
+            true_derivative = _whole_program_native_derivative_operand(inputs[1], derivative_index)
+            false_derivative = _whole_program_native_derivative_operand(
+                inputs[2], derivative_index
+            )
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            lines.append(
+                f"  {derivative_name} = select i1 {predicate}, "
+                f"double {true_derivative}, double {false_derivative}"
+            )
+        return
     if len(inputs) != 2:
         raise ValueError(f"native operation {node.op} expects two inputs")
     left = _whole_program_native_operand(inputs[0])
@@ -10759,6 +10825,42 @@ def _emit_whole_program_native_operation(
             )
         else:
             lines.append(f"  {derivative_name} = fmul double {scaled_factor}, {left_derivative}")
+
+
+def _emit_whole_program_native_where_predicate(
+    lines: list[str],
+    node_index: int,
+    predicate: str,
+) -> str:
+    predicate_body = _whole_program_native_where_predicate_body(predicate)
+    parts = predicate_body.split(":")
+    if len(parts) != 3:
+        raise ValueError("native whole-program AD where predicate is malformed")
+    left_token, op, right_token = parts
+    predicate_name = f"%where_pred_{node_index}"
+    llvm_predicate = {
+        "gt": "ogt",
+        "ge": "oge",
+        "lt": "olt",
+        "le": "ole",
+        "eq": "oeq",
+        "ne": "one",
+    }.get(op)
+    if llvm_predicate is None:
+        raise ValueError(f"native whole-program AD where predicate op {op} is unsupported")
+    left = _whole_program_native_operand(left_token)
+    right = _whole_program_native_operand(right_token)
+    lines.append(f"  {predicate_name} = fcmp {llvm_predicate} double {left}, {right}")
+    return predicate_name
+
+
+def _whole_program_native_where_predicate_body(predicate: str) -> str:
+    if ":truth:" not in predicate:
+        raise ValueError("native whole-program AD where predicate requires recorded truth")
+    body, truth = predicate.rsplit(":truth:", 1)
+    if truth not in {"0", "1"}:
+        raise ValueError("native whole-program AD where predicate truth must be 0 or 1")
+    return body
 
 
 def _whole_program_native_operand(token: str) -> str:

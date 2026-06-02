@@ -86,9 +86,9 @@ This package provides three things:
    matrix primitive kernels, including compiler-AD metadata and native Rust
    backend parity for selected primitives. Supported scalar program traces also
    expose native lowering reports before LLVM/JIT compilation, with strict
-   no-tie native selection lowering for `maximum` and `minimum`. Unsupported
-   compiler and program-AD paths fail closed rather than silently fabricating
-   gradients.
+   no-tie native selection lowering for `np.where`, `maximum`, and `minimum`.
+   Unsupported compiler and program-AD paths fail closed rather than silently
+   fabricating gradients.
 
 Think of it as a quantum microscope for synchronization. Classical Kuramoto tells you
 *when* oscillators lock in step. This package tells you *what the quantum state looks
