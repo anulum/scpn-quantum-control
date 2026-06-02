@@ -5190,9 +5190,12 @@ def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_bound
     assert support["solve_rhs_policy"] == "static_vector_or_matrix_rhs"
     assert support["solve_fail_closed_from"] == 7
     assert support["quotient_linalg_helper_sizes"] == (5, 6)
+    assert support["quotient_linalg_reuse_policy"] == (
+        "shared_determinant_adjugate_per_static_matrix"
+    )
     assert support["quotient_linalg_unsuitable_from"] == 7
     assert support["quotient_linalg_unsuitable_reason"] == (
-        "full_output_inverse_and_matrix_rhs_solve_require_shared_factorisation_helper"
+        "full_output_inverse_and_matrix_rhs_solve_require_native_factorisation_helper"
     )
     assert support["unsupported_policy"] == "fail_closed_report_before_compile"
 
@@ -5867,6 +5870,8 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_inverse_ops() -> N
         assert expected_ops.issubset(report.lowerable_ops)
         assert expected_ops.issubset(kernel.supported_ops)
         assert f"inv{size}_" in kernel.llvm_ir
+        if size >= 5:
+            assert f"inv{size}_shared_" in kernel.llvm_ir
         assert kernel.value(replay) == pytest.approx(reference_value, rel=1.0e-9, abs=1.0e-9)
         np.testing.assert_allclose(
             kernel.gradient(replay),
@@ -5962,6 +5967,8 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_vector_ops()
         assert expected_ops.issubset(report.lowerable_ops)
         assert expected_ops.issubset(kernel.supported_ops)
         assert f"solve{size}_" in kernel.llvm_ir
+        if size >= 5:
+            assert f"solve{size}_shared_" in kernel.llvm_ir
         assert kernel.value(replay) == pytest.approx(reference_value, rel=1.0e-9, abs=1.0e-9)
         np.testing.assert_allclose(
             kernel.gradient(replay),
@@ -6052,6 +6059,8 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_matrix_ops()
         assert expected_ops.issubset(report.lowerable_ops)
         assert expected_ops.issubset(kernel.supported_ops)
         assert f"solve{size}m{rhs_cols}_" in kernel.llvm_ir
+        if size >= 5:
+            assert f"solve{size}m{rhs_cols}_shared_" in kernel.llvm_ir
         assert kernel.value(replay) == pytest.approx(reference_value, rel=1.0e-9, abs=1.0e-9)
         np.testing.assert_allclose(
             kernel.gradient(replay),

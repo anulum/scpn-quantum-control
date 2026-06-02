@@ -106,9 +106,11 @@ coupled dynamics matter:
   operation before failing closed.
 - Native quotient-linalg full-output inverse and matrix-RHS solve traces at
   `7x7` and wider are intentionally unsuitable for the current native path.
-  They fail closed until a shared factorisation helper replaces repeated
-  per-output quotient replay; this limitation is useful research evidence, not
-  a silent runtime fallback.
+  `5x5` through `6x6` reuse one determinant/adjugate helper per static matrix;
+  the `7x7` full-output promotion attempt exceeded the focused native gate, so
+  wider traces fail closed until a native factorisation helper replaces
+  adjugate replay. This limitation is useful research evidence, not a silent
+  runtime fallback.
 - Paper 0 ingestion records source structure and generated fixtures; it is not
   an external validation of the propositions.
 

@@ -10010,6 +10010,35 @@ _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES = frozenset(range(2, 7))
 _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS = 4
 
 
+@dataclass
+class _WholeProgramNativeInverseHelper:
+    """Shared determinant/adjugate values for one static matrix in a native kernel."""
+
+    determinant: str
+    inverse_entries: tuple[tuple[str, ...], ...]
+
+
+@dataclass
+class _WholeProgramNativeSolveHelper:
+    """Shared solution values for one static matrix/RHS column in a native kernel."""
+
+    solution_entries: tuple[str, ...]
+
+
+@dataclass
+class _WholeProgramNativeEmissionState:
+    """Per-kernel native lowering state for reusable linalg helper emissions."""
+
+    inverse_helpers: dict[
+        tuple[int, tuple[str, ...]],
+        _WholeProgramNativeInverseHelper,
+    ] = field(default_factory=dict)
+    solve_helpers: dict[
+        tuple[int, tuple[str, ...], tuple[str, ...]],
+        _WholeProgramNativeSolveHelper,
+    ] = field(default_factory=dict)
+
+
 def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
     """Return the native whole-program AD linalg support contract."""
 
@@ -10036,12 +10065,13 @@ def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
             "quotient_linalg_helper_sizes": tuple(
                 sorted(_WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES)
             ),
+            "quotient_linalg_reuse_policy": "shared_determinant_adjugate_per_static_matrix",
             "quotient_linalg_unsuitable_from": max(
                 _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
             )
             + 1,
             "quotient_linalg_unsuitable_reason": (
-                "full_output_inverse_and_matrix_rhs_solve_require_shared_factorisation_helper"
+                "full_output_inverse_and_matrix_rhs_solve_require_native_factorisation_helper"
             ),
             "trace_policy": "static_square_or_rectangular_fixed_offset",
             "unsupported_policy": "fail_closed_report_before_compile",
@@ -10801,6 +10831,7 @@ def _emit_whole_program_native_computation(
     parameter_count = int(result.gradient.size)
     lines: list[str] = []
     names = set(result.parameter_names)
+    emission_state = _WholeProgramNativeEmissionState()
     for node in result.ir_nodes:
         value_name = _whole_program_native_value_name(node.index)
         if node.op == "parameter":
@@ -10849,7 +10880,7 @@ def _emit_whole_program_native_computation(
                     f"fadd double {_fmt_llvm_float(0.0)}, {_fmt_llvm_float(0.0)}"
                 )
             continue
-        _emit_whole_program_native_operation(lines, result, node)
+        _emit_whole_program_native_operation(lines, result, node, emission_state)
     if not result.ir_nodes:
         raise ValueError("native whole-program AD lowering requires IR nodes")
     final_index = result.ir_nodes[-1].index
@@ -10867,6 +10898,7 @@ def _emit_whole_program_native_operation(
     lines: list[str],
     result: WholeProgramADResult,
     node: Any,
+    emission_state: _WholeProgramNativeEmissionState,
 ) -> None:
     parameter_count = int(result.gradient.size)
     value_name = _whole_program_native_value_name(node.index)
@@ -11298,6 +11330,7 @@ def _emit_whole_program_native_operation(
             output_row=output_row,
             output_col=output_col,
             prefix=f"inv{inverse_size}",
+            emission_state=emission_state,
         )
         return
     if node.op.startswith("linalg:solve:2x2:rhs:2:"):
@@ -11430,6 +11463,7 @@ def _emit_whole_program_native_operation(
             size=solve_size,
             output_row=output_row,
             prefix=f"solve{solve_size}",
+            emission_state=emission_state,
         )
         return
     solve_matrix_spec = _whole_program_native_solve_matrix_spec(node.op)
@@ -11451,6 +11485,7 @@ def _emit_whole_program_native_operation(
             size=solve_size,
             output_row=output_row,
             prefix=f"solve{solve_size}m{rhs_cols}",
+            emission_state=emission_state,
         )
         return
     if node.op not in {
@@ -11870,6 +11905,143 @@ def _emit_whole_program_native_det_loop_helper_call(
         )
 
 
+def _emit_whole_program_native_inverse_helper(
+    lines: list[str],
+    matrix_tokens: Sequence[str],
+    *,
+    size: int,
+    prefix: str,
+    emission_state: _WholeProgramNativeEmissionState,
+) -> _WholeProgramNativeInverseHelper:
+    """Emit or reuse one shared adjugate inverse helper for a static matrix."""
+
+    if size not in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+        raise ValueError("native shared inverse helper requested for unsupported size")
+    matrix_key = (size, tuple(matrix_tokens))
+    cached = emission_state.inverse_helpers.get(matrix_key)
+    if cached is not None:
+        return cached
+
+    helper_index = len(emission_state.inverse_helpers)
+    helper_prefix = f"{prefix}_shared_{helper_index}"
+    total = size * size
+    output_total = total + 1
+    matrix_alloca = f"%{helper_prefix}_matrix"
+    output_alloca = f"%{helper_prefix}_output"
+    matrix_base = f"%{helper_prefix}_matrix_base"
+    output_base = f"%{helper_prefix}_output_base"
+    determinant = f"%{helper_prefix}_det"
+    symbol = _whole_program_native_det_loop_helper_symbol(size)
+
+    lines.extend(
+        [
+            f"  {matrix_alloca} = alloca [{total} x double]",
+            f"  {output_alloca} = alloca [{output_total} x double]",
+        ]
+    )
+    for input_index, token in enumerate(matrix_tokens):
+        matrix_ptr = f"%{helper_prefix}_matrix_ptr_{input_index}"
+        lines.extend(
+            [
+                f"  {matrix_ptr} = getelementptr [{total} x double], "
+                f"[{total} x double]* {matrix_alloca}, i64 0, i64 {input_index}",
+                f"  store double {_whole_program_native_operand(token)}, double* {matrix_ptr}",
+            ]
+        )
+    lines.extend(
+        [
+            f"  {matrix_base} = getelementptr [{total} x double], "
+            f"[{total} x double]* {matrix_alloca}, i64 0, i64 0",
+            f"  {output_base} = getelementptr [{output_total} x double], "
+            f"[{output_total} x double]* {output_alloca}, i64 0, i64 0",
+            f"  call void @{symbol}(double* {matrix_base}, double* {output_base})",
+            f"  %{helper_prefix}_det_ptr = getelementptr [{output_total} x double], "
+            f"[{output_total} x double]* {output_alloca}, i64 0, i64 0",
+            f"  {determinant} = load double, double* %{helper_prefix}_det_ptr",
+        ]
+    )
+
+    partials: list[list[str]] = []
+    for row in range(size):
+        partial_row: list[str] = []
+        for col in range(size):
+            entry_index = row * size + col
+            partial_ptr = f"%{helper_prefix}_partial_ptr_{entry_index}"
+            partial_value = f"%{helper_prefix}_partial_{entry_index}"
+            lines.extend(
+                [
+                    f"  {partial_ptr} = getelementptr [{output_total} x double], "
+                    f"[{output_total} x double]* {output_alloca}, i64 0, i64 {entry_index + 1}",
+                    f"  {partial_value} = load double, double* {partial_ptr}",
+                ]
+            )
+            partial_row.append(partial_value)
+        partials.append(partial_row)
+
+    inverse_entries: list[list[str]] = []
+    for row in range(size):
+        inverse_row: list[str] = []
+        for col in range(size):
+            inverse_entry = f"%{helper_prefix}_inverse_{row}_{col}"
+            lines.append(f"  {inverse_entry} = fdiv double {partials[col][row]}, {determinant}")
+            inverse_row.append(inverse_entry)
+        inverse_entries.append(inverse_row)
+
+    helper = _WholeProgramNativeInverseHelper(
+        determinant=determinant,
+        inverse_entries=tuple(tuple(row) for row in inverse_entries),
+    )
+    emission_state.inverse_helpers[matrix_key] = helper
+    return helper
+
+
+def _emit_whole_program_native_solve_helper(
+    lines: list[str],
+    matrix_tokens: Sequence[str],
+    rhs_tokens: Sequence[str],
+    *,
+    size: int,
+    prefix: str,
+    emission_state: _WholeProgramNativeEmissionState,
+) -> _WholeProgramNativeSolveHelper:
+    """Emit or reuse one shared solve helper for a static matrix/RHS column."""
+
+    if len(rhs_tokens) != size:
+        raise ValueError("native shared solve helper requires one RHS column")
+    solve_key = (size, tuple(matrix_tokens), tuple(rhs_tokens))
+    cached = emission_state.solve_helpers.get(solve_key)
+    if cached is not None:
+        return cached
+
+    helper_index = len(emission_state.solve_helpers)
+    helper_prefix = f"{prefix}_shared_{helper_index}"
+    inverse_helper = _emit_whole_program_native_inverse_helper(
+        lines,
+        matrix_tokens,
+        size=size,
+        prefix=f"{helper_prefix}_inverse",
+        emission_state=emission_state,
+    )
+    rhs_values = tuple(_whole_program_native_operand(token) for token in rhs_tokens)
+    solution_entries: list[str] = []
+    for row in range(size):
+        row_terms: list[str] = []
+        for col in range(size):
+            term = f"%{helper_prefix}_solution_term_{row}_{col}"
+            lines.append(
+                f"  {term} = fmul double {inverse_helper.inverse_entries[row][col]}, "
+                f"{rhs_values[col]}"
+            )
+            row_terms.append(term)
+        solution_entry = f"%{helper_prefix}_solution_{row}"
+        _emit_whole_program_native_sum_operands(lines, row_terms, solution_entry)
+        solution_entries.append(solution_entry)
+
+    helper = _WholeProgramNativeSolveHelper(solution_entries=tuple(solution_entries))
+    emission_state.solve_helpers[solve_key] = helper
+    return helper
+
+
 def _emit_whole_program_native_inverse_fixed(
     lines: list[str],
     result: WholeProgramADResult,
@@ -11881,6 +12053,7 @@ def _emit_whole_program_native_inverse_fixed(
     output_row: int,
     output_col: int,
     prefix: str,
+    emission_state: _WholeProgramNativeEmissionState,
 ) -> None:
     """Emit native fixed-size inverse entry value and exact derivative code."""
 
@@ -11890,6 +12063,46 @@ def _emit_whole_program_native_inverse_fixed(
         raise ValueError("native fixed inverse output index is outside the matrix")
     parameter_count = int(result.gradient.size)
     matrix_tokens = tuple(inputs[: size * size])
+    if size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+        helper = _emit_whole_program_native_inverse_helper(
+            lines,
+            matrix_tokens,
+            size=size,
+            prefix=prefix,
+            emission_state=emission_state,
+        )
+        lines.append(
+            f"  {value_name} = fadd double "
+            f"{helper.inverse_entries[output_row][output_col]}, {_fmt_llvm_float(0.0)}"
+        )
+        zero = _fmt_llvm_float(0.0)
+        for derivative_index in range(parameter_count):
+            derivative_terms: list[str] = []
+            for row in range(size):
+                for col in range(size):
+                    entry_derivative = _whole_program_native_derivative_operand(
+                        matrix_tokens[row * size + col],
+                        derivative_index,
+                    )
+                    if entry_derivative == zero:
+                        continue
+                    left_term = f"%d{node.index}_{derivative_index}_{prefix}_left_{row}_{col}"
+                    product_term = f"%d{node.index}_{derivative_index}_{prefix}_prod_{row}_{col}"
+                    lines.extend(
+                        [
+                            f"  {left_term} = fmul double "
+                            f"{helper.inverse_entries[output_row][row]}, {entry_derivative}",
+                            f"  {product_term} = fmul double {left_term}, "
+                            f"{helper.inverse_entries[col][output_col]}",
+                        ]
+                    )
+                    derivative_terms.append(product_term)
+            derivative_sum = f"%d{node.index}_{derivative_index}_{prefix}_sum"
+            _emit_whole_program_native_sum_operands(lines, derivative_terms, derivative_sum)
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            lines.append(f"  {derivative_name} = fsub double {zero}, {derivative_sum}")
+        return
+
     matrix = tuple(
         tuple(
             _whole_program_native_operand(matrix_tokens[row * size + col]) for col in range(size)
@@ -11976,6 +12189,7 @@ def _emit_whole_program_native_solve_fixed(
     size: int,
     output_row: int,
     prefix: str,
+    emission_state: _WholeProgramNativeEmissionState,
 ) -> None:
     """Emit native fixed-size solve-column value and exact derivative code."""
 
@@ -11988,6 +12202,69 @@ def _emit_whole_program_native_solve_fixed(
     parameter_count = int(result.gradient.size)
     matrix_tokens = tuple(inputs[: size * size])
     rhs_tokens = tuple(inputs[size * size :])
+    if size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+        inverse_helper = _emit_whole_program_native_inverse_helper(
+            lines,
+            matrix_tokens,
+            size=size,
+            prefix=f"{prefix}_inverse",
+            emission_state=emission_state,
+        )
+        solve_helper = _emit_whole_program_native_solve_helper(
+            lines,
+            matrix_tokens,
+            rhs_tokens,
+            size=size,
+            prefix=prefix,
+            emission_state=emission_state,
+        )
+        lines.append(
+            f"  {value_name} = fadd double "
+            f"{solve_helper.solution_entries[output_row]}, {_fmt_llvm_float(0.0)}"
+        )
+        zero = _fmt_llvm_float(0.0)
+        for derivative_index in range(parameter_count):
+            derivative_terms: list[str] = []
+            for row in range(size):
+                residual_terms: list[str] = []
+                for col in range(size):
+                    matrix_derivative = _whole_program_native_derivative_operand(
+                        matrix_tokens[row * size + col],
+                        derivative_index,
+                    )
+                    if matrix_derivative == zero:
+                        continue
+                    residual_term = f"%d{node.index}_{derivative_index}_{prefix}_res_{row}_{col}"
+                    lines.append(
+                        f"  {residual_term} = fmul double {matrix_derivative}, "
+                        f"{solve_helper.solution_entries[col]}"
+                    )
+                    residual_terms.append(residual_term)
+                residual_matrix_sum = f"%d{node.index}_{derivative_index}_{prefix}_res_sum_{row}"
+                _emit_whole_program_native_sum_operands(
+                    lines,
+                    residual_terms,
+                    residual_matrix_sum,
+                )
+                rhs_derivative = _whole_program_native_derivative_operand(
+                    rhs_tokens[row],
+                    derivative_index,
+                )
+                residual = f"%d{node.index}_{derivative_index}_{prefix}_rhs_minus_ax_{row}"
+                lines.append(f"  {residual} = fsub double {rhs_derivative}, {residual_matrix_sum}")
+                derivative_term = f"%d{node.index}_{derivative_index}_{prefix}_term_{row}"
+                lines.append(
+                    f"  {derivative_term} = fmul double "
+                    f"{inverse_helper.inverse_entries[output_row][row]}, {residual}"
+                )
+                derivative_terms.append(derivative_term)
+            _emit_whole_program_native_sum_operands(
+                lines,
+                derivative_terms,
+                _whole_program_native_derivative_name(node.index, derivative_index),
+            )
+        return
+
     matrix = tuple(
         tuple(
             _whole_program_native_operand(matrix_tokens[row * size + col]) for col in range(size)

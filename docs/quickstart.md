@@ -237,11 +237,12 @@ Unsupported native quotient-linalg scenarios are intentionally documented
 because they carry research and engineering value:
 
 - Full-output inverse and matrix-RHS solve traces at `7x7` and wider are not
-  lowered by the native quotient-linalg path. The compact determinant-partials
-  helper removes recursive minor expansion, but the current trace still emits
-  one quotient replay per requested output entry. That is unsuitable for the
-  industrial focused gate until a shared factorisation helper reuses one
-  factorisation across all requested outputs and derivatives.
+  lowered by the native quotient-linalg path. The `5x5` through `6x6` path
+  shares one determinant/adjugate helper per static matrix and reuses it across
+  inverse, vector-solve, and bounded matrix-RHS solve entries. A `7x7`
+  full-output promotion attempt still exceeded the focused native gate, so the
+  wider path remains unsuitable until a native factorisation helper replaces
+  adjugate replay with a better shared factorisation and derivative kernel.
 - Matrix-RHS solve traces with more than four RHS columns fail closed. They need
   a batched/shared solve helper rather than repeated column-wise quotient
   lowering.
