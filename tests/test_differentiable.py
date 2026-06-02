@@ -8351,6 +8351,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_array_take_along_axis_derivative_rule",
             "source_shape:ranked_tensor_shape;indices_shape_axis",
         ),
+        "scpn.program_ad.array:delete": (
+            "program_ad_array_delete_derivative_rule",
+            "source_shape:ranked_tensor_shape;object_axis",
+        ),
         "scpn.program_ad.interpolation:interp": (
             "program_ad_interpolation_interp_derivative_rule",
             "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period",
