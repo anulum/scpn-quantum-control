@@ -5827,6 +5827,8 @@ def test_program_ad_elementwise_primitives_are_registry_policy_gated() -> None:
         assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
         assert contract.effect == "pure"
         assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.elementwise.{name}"
+        assert contract.lowering_metadata["static_derivative_factory"] == "not_required"
+        assert contract.lowering_metadata["static_signature"] == "none"
         assert contract.shape_rule is not None
         assert contract.shape_rule((vector,)) == (3,)
         assert contract.dtype_rule is not None
