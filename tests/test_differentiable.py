@@ -8491,6 +8491,30 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_elementwise_binary_derivative_rule",
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
         ),
+        "scpn.program_ad.elementwise:add": (
+            "program_ad_elementwise_binary_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.elementwise:subtract": (
+            "program_ad_elementwise_binary_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.elementwise:divide": (
+            "program_ad_elementwise_binary_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.elementwise:power": (
+            "program_ad_elementwise_binary_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.elementwise:maximum": (
+            "program_ad_elementwise_binary_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.elementwise:minimum": (
+            "program_ad_elementwise_binary_derivative_rule",
+            "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        ),
         "scpn.program_ad.selection:where": (
             "program_ad_selection_where_derivative_rule",
             "condition:static_bool_mask;true_shape:ranked_tensor_shape;false_shape:ranked_tensor_shape",
