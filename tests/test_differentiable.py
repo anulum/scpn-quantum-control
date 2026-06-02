@@ -8555,6 +8555,22 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_linalg_multi_dot_derivative_rule",
             "operand_shapes:ranked_tensor_shape_sequence",
         ),
+        "scpn.program_ad.linalg:eig": (
+            "program_ad_linalg_eig_derivative_rule",
+            "matrix_shape:rank2_square_real_simple_eigensystem",
+        ),
+        "scpn.program_ad.linalg:eigh": (
+            "program_ad_linalg_eigh_derivative_rule",
+            "matrix_shape:rank2_square_symmetric_distinct_spectrum",
+        ),
+        "scpn.program_ad.linalg:eigvals": (
+            "program_ad_linalg_eigvals_derivative_rule",
+            "matrix_shape:rank2_square_real_simple_spectrum",
+        ),
+        "scpn.program_ad.linalg:eigvalsh": (
+            "program_ad_linalg_eigvalsh_derivative_rule",
+            "matrix_shape:rank2_square_symmetric_distinct_spectrum",
+        ),
     }
 
     for primitive, (factory, signature) in expected_factories.items():
