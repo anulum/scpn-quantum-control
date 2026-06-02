@@ -150,8 +150,11 @@ from scpn_quantum_control.differentiable import (
     program_ad_assembly_append_derivative_rule,
     program_ad_assembly_block_derivative_rule,
     program_ad_assembly_concatenate_derivative_rule,
+    program_ad_assembly_diagonal_derivative_rule,
     program_ad_assembly_split_derivative_rule,
     program_ad_assembly_stack_derivative_rule,
+    program_ad_assembly_tril_derivative_rule,
+    program_ad_assembly_triu_derivative_rule,
     program_ad_cumulative_cumprod_derivative_rule,
     program_ad_cumulative_cumsum_derivative_rule,
     program_ad_cumulative_diff_derivative_rule,
@@ -7803,6 +7806,18 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_assembly_block_derivative_rule",
             "layout_shapes:nested_ranked_tensor_shapes",
         ),
+        "scpn.program_ad.assembly:tril": (
+            "program_ad_assembly_tril_derivative_rule",
+            "source_shape:rank_ge_2;k",
+        ),
+        "scpn.program_ad.assembly:triu": (
+            "program_ad_assembly_triu_derivative_rule",
+            "source_shape:rank_ge_2;k",
+        ),
+        "scpn.program_ad.assembly:diagonal": (
+            "program_ad_assembly_diagonal_derivative_rule",
+            "source_shape:rank_ge_2;offset_axis_pair;output_shape",
+        ),
         "scpn.program_ad.assembly:split": (
             "program_ad_assembly_split_derivative_rule",
             "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
@@ -10583,6 +10598,157 @@ def test_program_ad_assembly_block_batching_rule_maps_nested_batches() -> None:
         contract.batching_rule(block_fn, (layout,), (((0,),),), 0)
 
 
+def test_program_ad_assembly_triangular_contracts_and_direct_rules() -> None:
+    """np.tril and np.triu should expose exact static triangular mask contracts."""
+
+    matrix = np.array([[1.0, -2.0, 0.5], [3.0, -1.5, 2.0]], dtype=np.float64)
+    tangent = np.array([[0.25, -0.5, 0.75], [-1.0, 1.25, -1.5]], dtype=np.float64)
+    cotangent = np.array([[0.2, -0.4, 0.6], [-0.8, 1.0, -1.2]], dtype=np.float64)
+
+    for name, k, factory, numpy_fn in (
+        ("tril", -1, program_ad_assembly_tril_derivative_rule, np.tril),
+        ("triu", 1, program_ad_assembly_triu_derivative_rule, np.triu),
+    ):
+        contract = primitive_contract_for(f"scpn.program_ad.assembly:{name}")
+        assert contract.identity == PrimitiveIdentity("scpn.program_ad.assembly", name, "1")
+        assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+        assert contract.effect == "pure"
+        assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.assembly.{name}"
+        assert (
+            contract.lowering_metadata["static_derivative_factory"]
+            == f"program_ad_assembly_{name}_derivative_rule"
+        )
+        assert contract.lowering_metadata["static_signature"] == "source_shape:rank_ge_2;k"
+        assert contract.shape_rule is not None
+        assert contract.shape_rule((matrix, k)) == matrix.shape
+        assert contract.dtype_rule is not None
+        assert contract.dtype_rule((matrix, k)) == "float64"
+        assert contract.static_argument_rule is not None
+        assert contract.static_argument_rule((matrix, k)) == (matrix.shape, k)
+        with pytest.raises(ValueError, match="incomplete primitive contract"):
+            primitive_complete_contract_for(contract.identity)
+
+        rule = factory(matrix.shape, k=k)
+        assert rule.name == f"program_ad_assembly_{name}_k{k}_direct_rule"
+        np.testing.assert_allclose(
+            rule.value_fn(matrix.reshape(-1)),
+            numpy_fn(matrix, k=k).reshape(-1),
+        )
+        np.testing.assert_allclose(
+            rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)),
+            numpy_fn(tangent, k=k).reshape(-1),
+        )
+        np.testing.assert_allclose(
+            rule.vjp_rule(matrix.reshape(-1), cotangent.reshape(-1)),
+            numpy_fn(cotangent, k=k).reshape(-1),
+        )
+
+
+def test_program_ad_assembly_diagonal_contract_and_direct_rule() -> None:
+    """np.diagonal should expose exact static gather and scatter-add adjoints."""
+
+    matrix = np.arange(12, dtype=np.float64).reshape(3, 4) - 2.0
+    tangent = np.linspace(-0.5, 0.6, num=12, dtype=np.float64).reshape(3, 4)
+    cotangent = np.array([0.25, -0.75, 1.5], dtype=np.float64)
+    source_indices = np.arange(matrix.size, dtype=np.int64).reshape(matrix.shape)
+    selected_indices = np.diagonal(source_indices, offset=1, axis1=0, axis2=1).reshape(-1)
+    expected_adjoint = np.zeros(matrix.size, dtype=np.float64)
+    np.add.at(expected_adjoint, selected_indices, cotangent)
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:diagonal")
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.assembly", "diagonal", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.assembly.diagonal"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_assembly_diagonal_derivative_rule"
+    )
+    assert (
+        contract.lowering_metadata["static_signature"]
+        == "source_shape:rank_ge_2;offset_axis_pair;output_shape"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((matrix, 1, 0, 1)) == (3,)
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((matrix, 1, 0, 1)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((matrix, 1, 0, 1)) == (matrix.shape, 1, 0, 1, (3,))
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(contract.identity)
+
+    rule = program_ad_assembly_diagonal_derivative_rule(matrix.shape, offset=1, axis1=0, axis2=1)
+    assert rule.name == "program_ad_assembly_diagonal_offset1_axis0_1_direct_rule"
+    np.testing.assert_allclose(
+        rule.value_fn(matrix.reshape(-1)),
+        np.diagonal(matrix, offset=1, axis1=0, axis2=1).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)),
+        np.diagonal(tangent, offset=1, axis1=0, axis2=1).reshape(-1),
+    )
+    np.testing.assert_allclose(rule.vjp_rule(matrix.reshape(-1), cotangent), expected_adjoint)
+
+
+def test_program_ad_assembly_triangular_and_diagonal_batching_rules_map_outer_axes() -> None:
+    """Triangular and diagonal batching should map only non-structural outer axes."""
+
+    triangular_contract = primitive_contract_for("scpn.program_ad.assembly:tril")
+    diagonal_contract = primitive_contract_for("scpn.program_ad.assembly:diagonal")
+    assert triangular_contract.batching_rule is not None
+    assert diagonal_contract.batching_rule is not None
+
+    def tril_fn(source: np.ndarray, k: int) -> np.ndarray:
+        return np.tril(source, k=k)
+
+    def diagonal_fn(source: np.ndarray, offset: int, axis1: int, axis2: int) -> np.ndarray:
+        return np.diagonal(source, offset=offset, axis1=axis1, axis2=axis2)
+
+    triangular_batch = np.array(
+        [
+            [[1.0, -2.0, 0.5], [3.0, -1.5, 2.0]],
+            [[-0.25, 0.75, -1.25], [1.5, -2.5, 3.5]],
+        ],
+        dtype=np.float64,
+    )
+    expected_triangular = np.stack(
+        [np.tril(triangular_batch[index], k=-1) for index in range(2)],
+        axis=0,
+    )
+    np.testing.assert_allclose(
+        triangular_contract.batching_rule(tril_fn, (triangular_batch, -1), (0, None), 0),
+        expected_triangular,
+    )
+    np.testing.assert_allclose(
+        triangular_contract.batching_rule(tril_fn, (triangular_batch, -1), (0, None), 1),
+        np.moveaxis(expected_triangular, 0, 1),
+    )
+    with pytest.raises(ValueError, match="matrix axes"):
+        triangular_contract.batching_rule(tril_fn, (triangular_batch, -1), (1, None), 0)
+
+    diagonal_batch = np.arange(24, dtype=np.float64).reshape(2, 3, 4)
+    expected_diagonal = np.stack(
+        [np.diagonal(diagonal_batch[index], offset=1, axis1=0, axis2=1) for index in range(2)],
+        axis=0,
+    )
+    np.testing.assert_allclose(
+        diagonal_contract.batching_rule(
+            diagonal_fn,
+            (diagonal_batch, 1, 1, 2),
+            (0, None, None, None),
+            0,
+        ),
+        expected_diagonal,
+    )
+    with pytest.raises(ValueError, match="diagonal axes"):
+        diagonal_contract.batching_rule(
+            diagonal_fn,
+            (diagonal_batch, 1, 1, 2),
+            (1, None, None, None),
+            0,
+        )
+
+
 def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
     """Split-family calls should expose fail-closed assembly primitive direct rules."""
 
@@ -12956,6 +13122,16 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert (
         scpn.program_ad_assembly_concatenate_derivative_rule
         is program_ad_assembly_concatenate_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_tril_derivative_rule is program_ad_assembly_tril_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_triu_derivative_rule is program_ad_assembly_triu_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_diagonal_derivative_rule
+        is program_ad_assembly_diagonal_derivative_rule
     )
     assert (
         scpn.program_ad_assembly_append_derivative_rule

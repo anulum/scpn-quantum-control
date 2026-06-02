@@ -6197,6 +6197,7 @@ def _trace_triangular_mask(
         raise ValueError(f"program AD np.{name} requires rank >= 2")
     if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
         raise ValueError(f"program AD np.{name} requires static integer k")
+    _require_program_ad_assembly_contract(name, (array, int(k)))
     rows, cols = array.shape[-2:]
     row_index, col_index = np.ogrid[:rows, :cols]
     if lower:
@@ -6231,6 +6232,9 @@ def _trace_diagonal(
     axis2_value = _normalise_axis("axis2", int(axis2), array.ndim)
     if axis1_value == axis2_value:
         raise ValueError("program AD np.diagonal requires distinct axes")
+    _require_program_ad_assembly_contract(
+        "diagonal", (array, int(offset), axis1_value, axis2_value)
+    )
     index_array = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     try:
         selected = np.diagonal(
@@ -9649,6 +9653,9 @@ _PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "stack",
         "append",
         "block",
+        "tril",
+        "triu",
+        "diagonal",
         "split",
         "array_split",
         "hsplit",
@@ -14706,6 +14713,96 @@ def _program_ad_assembly_split_static_arguments_rule_for(
     return static_argument_rule
 
 
+def _program_ad_assembly_triangular_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], int]:
+    if len(args) != 2:
+        raise ValueError("program AD assembly triangular mask requires source and k")
+    source_shape = _program_ad_array_shape_of(args[0])
+    if len(source_shape) < 2:
+        raise ValueError("program AD assembly triangular mask requires rank >= 2")
+    k = args[1]
+    if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+        raise ValueError("program AD assembly triangular mask requires static integer k")
+    return source_shape, int(k)
+
+
+def _program_ad_assembly_triangular_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape, _k = _program_ad_assembly_triangular_static_parts(args)
+    return source_shape
+
+
+def _program_ad_assembly_triangular_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 2:
+        raise ValueError("program AD assembly triangular mask requires source and k")
+    return str(np.dtype(_program_ad_array_dtype_of(args[0])))
+
+
+def _program_ad_assembly_triangular_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return _program_ad_assembly_triangular_static_parts(args)
+
+
+def _program_ad_assembly_diagonal_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], int, int, int, tuple[int, ...]]:
+    if len(args) != 4:
+        raise ValueError("program AD assembly diagonal requires source, offset, axis1, and axis2")
+    source_shape = _program_ad_array_shape_of(args[0])
+    if len(source_shape) < 2:
+        raise ValueError("program AD assembly diagonal requires rank >= 2")
+    offset, axis1, axis2 = args[1], args[2], args[3]
+    if isinstance(offset, bool) or not isinstance(offset, (int, np.integer)):
+        raise ValueError("program AD assembly diagonal requires static integer offset")
+    if isinstance(axis1, bool) or not isinstance(axis1, (int, np.integer)):
+        raise ValueError("program AD assembly diagonal requires static integer axes")
+    if isinstance(axis2, bool) or not isinstance(axis2, (int, np.integer)):
+        raise ValueError("program AD assembly diagonal requires static integer axes")
+    axis1_value = _normalise_axis("axis1", int(axis1), len(source_shape))
+    axis2_value = _normalise_axis("axis2", int(axis2), len(source_shape))
+    if axis1_value == axis2_value:
+        raise ValueError("program AD assembly diagonal requires distinct axes")
+    try:
+        output = np.diagonal(
+            np.empty(source_shape, dtype=np.float64),
+            offset=int(offset),
+            axis1=axis1_value,
+            axis2=axis2_value,
+        )
+    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
+        raise ValueError(
+            "program AD assembly diagonal requires static offset and axes "
+            "compatible with source shape"
+        ) from exc
+    return (
+        source_shape,
+        int(offset),
+        axis1_value,
+        axis2_value,
+        tuple(int(dimension) for dimension in output.shape),
+    )
+
+
+def _program_ad_assembly_diagonal_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    _source_shape, _offset, _axis1, _axis2, output_shape = (
+        _program_ad_assembly_diagonal_static_parts(args)
+    )
+    return output_shape
+
+
+def _program_ad_assembly_diagonal_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 4:
+        raise ValueError("program AD assembly diagonal requires source, offset, axis1, and axis2")
+    return str(np.dtype(_program_ad_array_dtype_of(args[0])))
+
+
+def _program_ad_assembly_diagonal_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return _program_ad_assembly_diagonal_static_parts(args)
+
+
 def _program_ad_assembly_split_move_output_batch_axis(output: object, out_axes: int) -> object:
     if isinstance(output, tuple):
         return tuple(
@@ -14789,6 +14886,107 @@ def _program_ad_assembly_split_batching_rule_for(split_name: str) -> PrimitiveBa
         return _program_ad_assembly_split_stack_outputs(outputs, out_axes)
 
     return batching_rule
+
+
+def _program_ad_assembly_triangular_batching_rule_for(name: str) -> PrimitiveBatchingRule:
+    if name not in {"tril", "triu"}:
+        raise ValueError(f"unsupported program AD assembly triangular primitive {name}")
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        if len(args) != 2 or len(axes) != 2:
+            raise ValueError(f"program AD assembly {name} batching requires source and k")
+        source, k = args
+        source_axis, k_axis = axes
+        if k_axis is not None:
+            raise ValueError(f"program AD assembly {name} batching keeps k static")
+        if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+            raise ValueError(f"program AD assembly {name} batching requires static integer k")
+        if source_axis is None:
+            return function(source, int(k))
+        source_array = _as_real_numeric_array(f"program AD assembly {name} batched source", source)
+        if source_array.ndim < 3:
+            raise ValueError(
+                f"program AD assembly {name} batching requires an outer batch axis "
+                "separate from matrix axes"
+            )
+        axis_index = _normalise_axis("source axis", source_axis, source_array.ndim)
+        if axis_index >= source_array.ndim - 2:
+            raise ValueError(f"program AD assembly {name} batching cannot map matrix axes")
+        moved = np.moveaxis(source_array, axis_index, 0)
+        outputs = [
+            _as_real_numeric_array(
+                f"program AD assembly {name} batched output",
+                function(moved[index], int(k)),
+            )
+            for index in range(moved.shape[0])
+        ]
+        stacked = np.stack(outputs, axis=0)
+        return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+    return batching_rule
+
+
+def _program_ad_assembly_diagonal_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 4 or len(axes) != 4:
+        raise ValueError(
+            "program AD assembly diagonal batching requires source, offset, axis1, and axis2"
+        )
+    source, offset, axis1, axis2 = args
+    source_axis, offset_axis, axis1_axis, axis2_axis = axes
+    if offset_axis is not None or axis1_axis is not None or axis2_axis is not None:
+        raise ValueError("program AD assembly diagonal batching keeps offset and axes static")
+    if isinstance(offset, bool) or not isinstance(offset, (int, np.integer)):
+        raise ValueError("program AD assembly diagonal batching requires static integer offset")
+    if isinstance(axis1, bool) or not isinstance(axis1, (int, np.integer)):
+        raise ValueError("program AD assembly diagonal batching requires static integer axes")
+    if isinstance(axis2, bool) or not isinstance(axis2, (int, np.integer)):
+        raise ValueError("program AD assembly diagonal batching requires static integer axes")
+    if source_axis is None:
+        return function(source, int(offset), int(axis1), int(axis2))
+    source_array = _as_real_numeric_array("program AD assembly diagonal batched source", source)
+    if source_array.ndim < 3:
+        raise ValueError(
+            "program AD assembly diagonal batching requires an outer batch axis "
+            "separate from diagonal axes"
+        )
+    batch_axis = _normalise_axis("source axis", source_axis, source_array.ndim)
+    axis1_value = _normalise_axis("axis1", int(axis1), source_array.ndim)
+    axis2_value = _normalise_axis("axis2", int(axis2), source_array.ndim)
+    if axis1_value == axis2_value:
+        raise ValueError("program AD assembly diagonal batching requires distinct diagonal axes")
+    if batch_axis in {axis1_value, axis2_value}:
+        raise ValueError("program AD assembly diagonal batching cannot map diagonal axes")
+
+    def adjusted_axis(axis: int) -> int:
+        if batch_axis < axis:
+            return axis - 1
+        return axis
+
+    moved = np.moveaxis(source_array, batch_axis, 0)
+    outputs = [
+        _as_real_numeric_array(
+            "program AD assembly diagonal batched output",
+            function(
+                moved[index],
+                int(offset),
+                adjusted_axis(axis1_value),
+                adjusted_axis(axis2_value),
+            ),
+        )
+        for index in range(moved.shape[0])
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
 def _program_ad_assembly_batching_rule(
@@ -15121,34 +15319,43 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "append": "program_ad_assembly_append_derivative_rule",
         "block": "program_ad_assembly_block_derivative_rule",
         "concatenate": "program_ad_assembly_concatenate_derivative_rule",
+        "diagonal": "program_ad_assembly_diagonal_derivative_rule",
         "split": "program_ad_assembly_split_derivative_rule",
         "array_split": "program_ad_assembly_split_derivative_rule",
         "hsplit": "program_ad_assembly_split_derivative_rule",
         "vsplit": "program_ad_assembly_split_derivative_rule",
         "dsplit": "program_ad_assembly_split_derivative_rule",
         "stack": "program_ad_assembly_stack_derivative_rule",
+        "tril": "program_ad_assembly_tril_derivative_rule",
+        "triu": "program_ad_assembly_triu_derivative_rule",
     }
     boundaries = {
         "append": "static_source_values_shape_axis_append",
         "block": "static_nested_block_shape_layout",
         "concatenate": "static_operand_shape_axis_concatenate",
+        "diagonal": "static_diagonal_offset_axis_gather_scatter",
         "split": "static_split_sections_gather_scatter",
         "array_split": "static_array_split_sections_gather_scatter",
         "hsplit": "static_hsplit_sections_gather_scatter",
         "vsplit": "static_vsplit_sections_gather_scatter",
         "dsplit": "static_dsplit_sections_gather_scatter",
         "stack": "static_operand_shape_axis_stack",
+        "tril": "static_lower_triangular_mask",
+        "triu": "static_upper_triangular_mask",
     }
     static_signatures = {
         "append": "source_shape:ranked_tensor_shape;values_shape:ranked_tensor_shape;axis",
         "block": "layout_shapes:nested_ranked_tensor_shapes",
         "concatenate": "operand_shapes:ranked_tensor_shapes;axis",
+        "diagonal": "source_shape:rank_ge_2;offset_axis_pair;output_shape",
         "split": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "array_split": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "hsplit": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "vsplit": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "dsplit": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "stack": "operand_shapes:ranked_tensor_shapes;axis",
+        "tril": "source_shape:rank_ge_2;k",
+        "triu": "source_shape:rank_ge_2;k",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -15998,45 +16205,57 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "append": _program_ad_assembly_append_batching_rule,
         "block": _program_ad_assembly_block_batching_rule,
         "concatenate": _program_ad_assembly_batching_rule,
+        "diagonal": _program_ad_assembly_diagonal_batching_rule,
         "split": _program_ad_assembly_split_batching_rule_for("split"),
         "array_split": _program_ad_assembly_split_batching_rule_for("array_split"),
         "hsplit": _program_ad_assembly_split_batching_rule_for("hsplit"),
         "vsplit": _program_ad_assembly_split_batching_rule_for("vsplit"),
         "dsplit": _program_ad_assembly_split_batching_rule_for("dsplit"),
         "stack": _program_ad_assembly_stack_batching_rule,
+        "tril": _program_ad_assembly_triangular_batching_rule_for("tril"),
+        "triu": _program_ad_assembly_triangular_batching_rule_for("triu"),
     }
     shape_rules: Mapping[str, PrimitiveShapeRule] = {
         "append": _program_ad_assembly_append_shape,
         "block": _program_ad_assembly_block_shape,
         "concatenate": _program_ad_assembly_concatenate_shape,
+        "diagonal": _program_ad_assembly_diagonal_shape,
         "split": _program_ad_assembly_split_shape_rule_for("split"),
         "array_split": _program_ad_assembly_split_shape_rule_for("array_split"),
         "hsplit": _program_ad_assembly_split_shape_rule_for("hsplit"),
         "vsplit": _program_ad_assembly_split_shape_rule_for("vsplit"),
         "dsplit": _program_ad_assembly_split_shape_rule_for("dsplit"),
         "stack": _program_ad_assembly_stack_shape,
+        "tril": _program_ad_assembly_triangular_shape,
+        "triu": _program_ad_assembly_triangular_shape,
     }
     dtype_rules: Mapping[str, PrimitiveDTypeRule] = {
         "append": _program_ad_assembly_append_dtype_rule,
         "block": _program_ad_assembly_block_dtype_rule,
         "concatenate": _program_ad_assembly_concatenate_dtype_rule,
+        "diagonal": _program_ad_assembly_diagonal_dtype_rule,
         "split": _program_ad_assembly_split_dtype_rule,
         "array_split": _program_ad_assembly_split_dtype_rule,
         "hsplit": _program_ad_assembly_split_dtype_rule,
         "vsplit": _program_ad_assembly_split_dtype_rule,
         "dsplit": _program_ad_assembly_split_dtype_rule,
         "stack": _program_ad_assembly_stack_dtype_rule,
+        "tril": _program_ad_assembly_triangular_dtype_rule,
+        "triu": _program_ad_assembly_triangular_dtype_rule,
     }
     static_argument_rules: Mapping[str, PrimitiveStaticArgumentRule] = {
         "append": _program_ad_assembly_append_static_arguments,
         "block": _program_ad_assembly_block_static_arguments,
         "concatenate": _program_ad_assembly_concatenate_static_arguments,
+        "diagonal": _program_ad_assembly_diagonal_static_arguments,
         "split": _program_ad_assembly_split_static_arguments_rule_for("split"),
         "array_split": _program_ad_assembly_split_static_arguments_rule_for("array_split"),
         "hsplit": _program_ad_assembly_split_static_arguments_rule_for("hsplit"),
         "vsplit": _program_ad_assembly_split_static_arguments_rule_for("vsplit"),
         "dsplit": _program_ad_assembly_split_static_arguments_rule_for("dsplit"),
         "stack": _program_ad_assembly_stack_static_arguments,
+        "tril": _program_ad_assembly_triangular_static_arguments,
+        "triu": _program_ad_assembly_triangular_static_arguments,
     }
     for name, identity in _PROGRAM_AD_ASSEMBLY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -17452,6 +17671,144 @@ def program_ad_assembly_split_derivative_rule(
 
     return CustomDerivativeRule(
         name=f"program_ad_assembly_{split_name}_axis{axis_index}_{part_count}_parts_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_assembly_triangular_source_shape(
+    source_shape: Sequence[int],
+) -> tuple[int, ...]:
+    shape = _program_ad_array_normalise_static_shape(
+        "assembly triangular mask source", source_shape
+    )
+    if len(shape) < 2:
+        raise ValueError("program AD assembly triangular mask direct rule requires rank >= 2")
+    return shape
+
+
+def _program_ad_assembly_triangular_k(name: str, k: object) -> int:
+    if isinstance(k, bool) or not isinstance(k, (int, np.integer)):
+        raise ValueError(f"program AD assembly {name} direct rule requires static integer k")
+    return int(k)
+
+
+def _program_ad_assembly_triangular_derivative_rule(
+    name: str,
+    source_shape: Sequence[int],
+    *,
+    k: object = 0,
+) -> CustomDerivativeRule:
+    shape = _program_ad_assembly_triangular_source_shape(source_shape)
+    k_value = _program_ad_assembly_triangular_k(name, k)
+    source_size = _program_ad_array_static_size(shape)
+    numpy_fn = np.tril if name == "tril" else np.triu
+
+    def masked_array(values: NDArray[np.float64], role: str) -> NDArray[np.float64]:
+        vector = _program_ad_array_vector(name, role, values, expected_size=source_size)
+        return cast(NDArray[np.float64], numpy_fn(vector.reshape(shape), k=k_value))
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_float64_vector_result(masked_array(values, "values"))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_array_vector(name, "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(masked_array(tangent, "tangent"))
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_array_vector(name, "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(masked_array(cotangent, "cotangent"))
+
+    return CustomDerivativeRule(
+        name=f"program_ad_assembly_{name}_k{k_value}_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_assembly_tril_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    k: object = 0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.tril`` masks."""
+
+    return _program_ad_assembly_triangular_derivative_rule("tril", source_shape, k=k)
+
+
+def program_ad_assembly_triu_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    k: object = 0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.triu`` masks."""
+
+    return _program_ad_assembly_triangular_derivative_rule("triu", source_shape, k=k)
+
+
+def program_ad_assembly_diagonal_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    offset: object = 0,
+    axis1: object = 0,
+    axis2: object = 1,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.diagonal`` gathers."""
+
+    source = np.empty(
+        _program_ad_array_normalise_static_shape("assembly diagonal source", source_shape),
+        dtype=np.float64,
+    )
+    shape, offset_value, axis1_value, axis2_value, output_shape = (
+        _program_ad_assembly_diagonal_static_parts((source, offset, axis1, axis2))
+    )
+    source_size = _program_ad_array_static_size(shape)
+    output_size = _program_ad_array_static_size(output_shape)
+    source_indices = np.arange(source_size, dtype=np.int64).reshape(shape)
+    selected_indices = np.asarray(
+        np.diagonal(source_indices, offset=offset_value, axis1=axis1_value, axis2=axis2_value),
+        dtype=np.int64,
+    ).reshape(-1)
+
+    def gather_array(values: NDArray[np.float64], role: str) -> NDArray[np.float64]:
+        vector = _program_ad_array_vector("diagonal", role, values, expected_size=source_size)
+        return np.asarray(
+            np.diagonal(
+                vector.reshape(shape),
+                offset=offset_value,
+                axis1=axis1_value,
+                axis2=axis2_value,
+            ),
+            dtype=np.float64,
+        )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_float64_vector_result(gather_array(values, "values"))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_array_vector("diagonal", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(gather_array(tangent, "tangent"))
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_array_vector("diagonal", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_array_vector(
+            "diagonal", "cotangent", cotangent, expected_size=output_size
+        )
+        adjoint = np.zeros(source_size, dtype=np.float64)
+        np.add.at(adjoint, selected_indices, cotangent_vector)
+        return _program_ad_float64_vector_result(adjoint)
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_assembly_diagonal_"
+            f"offset{offset_value}_axis{axis1_value}_{axis2_value}_direct_rule"
+        ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
@@ -23714,6 +24071,9 @@ __all__ = [
     "program_ad_cumulative_diff_derivative_rule",
     "program_ad_elementwise_binary_derivative_rule",
     "program_ad_interpolation_interp_derivative_rule",
+    "program_ad_assembly_diagonal_derivative_rule",
+    "program_ad_assembly_tril_derivative_rule",
+    "program_ad_assembly_triu_derivative_rule",
     "program_ad_signal_convolve_derivative_rule",
     "program_ad_signal_correlate_derivative_rule",
     "program_ad_linalg_diag_derivative_rule",
