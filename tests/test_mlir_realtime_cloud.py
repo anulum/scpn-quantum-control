@@ -81,6 +81,15 @@ def _dense_determinant_offsets(size: int) -> np.ndarray:
     return offsets
 
 
+def _dense_solve_values(size: int, *, shift: float) -> np.ndarray:
+    """Return deterministic nonsingular matrix and vector entries for solve tests."""
+
+    matrix = np.diag(np.linspace(1.7 + shift, 2.5 + shift, size))
+    matrix = matrix + _dense_determinant_offsets(size) * (1.0 + shift)
+    rhs = np.linspace(0.25 + shift, 0.95 + shift, size)
+    return np.concatenate((matrix.reshape(-1), rhs)).astype(np.float64)
+
+
 def _problem():
     return build_kuramoto_problem(
         np.array(
@@ -5162,6 +5171,9 @@ def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_bound
     assert support["determinant_fail_closed_from"] == 17
     assert support["determinant_derivative"] == "exact_forward_partials"
     assert support["determinant_policy"] == "static_dense_native_or_fail_closed"
+    assert support["solve_sizes"] == (2, 3, 4)
+    assert support["solve_rhs_policy"] == "static_vector_rhs"
+    assert support["solve_fail_closed_from"] == 5
     assert support["unsupported_policy"] == "fail_closed_report_before_compile"
 
 
@@ -5787,6 +5799,102 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_linalg_scalar_ops() -
         rtol=1.0e-10,
         atol=1.0e-10,
     )
+
+
+def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_vector_ops() -> None:
+    """Native program AD should lower bounded static dense vector solve nodes."""
+
+    for size in (3, 4):
+        weights = np.linspace(0.2, 0.8, size, dtype=np.float64)
+
+        def objective(
+            values: np.ndarray,
+            *,
+            matrix_size: int = size,
+            solution_weights: np.ndarray = weights,
+        ) -> object:
+            matrix = values[: matrix_size * matrix_size].reshape((matrix_size, matrix_size))
+            rhs = values[matrix_size * matrix_size : matrix_size * matrix_size + matrix_size]
+            solution = np.linalg.solve(matrix, rhs)
+            weighted_solution = sum(
+                solution_weights[index] * solution[index] for index in range(matrix_size)
+            )
+            return weighted_solution + 0.015 * values[0] * values[-1] - np.sin(solution[-1])
+
+        sample = _dense_solve_values(size, shift=0.0)
+        replay = _dense_solve_values(size, shift=0.35)
+        parameters = tuple(Parameter(f"solve{size}_x{index}") for index in range(sample.size))
+
+        result = whole_program_value_and_grad(objective, sample, parameters)
+        report = analyse_whole_program_ad_native_lowering(result)
+        kernel = compile_whole_program_ad_trace_to_native_llvm_jit(
+            objective,
+            sample,
+            parameters,
+        )
+        reference_value, reference_gradient = program_adjoint_value_and_grad(
+            objective,
+            replay,
+            parameters,
+        )
+        expected_ops = {f"linalg:solve:{size}x{size}:rhs:{size}:{row}" for row in range(size)}
+
+        assert report.supported is True
+        assert report.unsupported_ops == ()
+        assert expected_ops.issubset(report.lowerable_ops)
+        assert expected_ops.issubset(kernel.supported_ops)
+        assert f"solve{size}_" in kernel.llvm_ir
+        assert kernel.value(replay) == pytest.approx(reference_value, rel=1.0e-9, abs=1.0e-9)
+        np.testing.assert_allclose(
+            kernel.gradient(replay),
+            reference_gradient,
+            rtol=1.0e-8,
+            atol=1.0e-8,
+        )
+        batch = np.vstack(
+            [
+                sample,
+                replay,
+                _dense_solve_values(size, shift=0.15),
+            ]
+        )
+        batch_reference = [
+            program_adjoint_value_and_grad(objective, row, parameters) for row in batch
+        ]
+        batch_result = kernel.batch_value_and_grad(batch)
+        np.testing.assert_allclose(
+            batch_result.values,
+            np.array([item[0] for item in batch_reference], dtype=np.float64),
+            rtol=1.0e-8,
+            atol=1.0e-8,
+        )
+        np.testing.assert_allclose(
+            batch_result.gradients,
+            np.vstack([item[1] for item in batch_reference]),
+            rtol=1.0e-8,
+            atol=1.0e-8,
+        )
+
+
+def test_whole_program_ad_native_lowering_report_blocks_wider_solve_ops() -> None:
+    """Native program AD solve support should fail closed beyond the bounded helper range."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = values[:25].reshape((5, 5))
+        rhs = values[25:30]
+        return np.linalg.solve(matrix, rhs).sum()
+
+    sample = _dense_solve_values(5, shift=0.0)
+    parameters = tuple(Parameter(f"solve5_x{index}") for index in range(sample.size))
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+
+    assert report.supported is False
+    assert "linalg:solve:5x5:rhs:5:0" in report.unsupported_ops
+    assert "unsupported native ops: linalg:solve:5x5:rhs:5:0" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:5x5:rhs:5:0"):
+        compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_trace_ops() -> None:

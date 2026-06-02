@@ -10003,6 +10003,7 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
 )
 _WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset(range(6, 17))
 _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset(range(6, 17))
+_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES = frozenset({3, 4})
 
 
 def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
@@ -10022,7 +10023,9 @@ def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
             "determinant_derivative": "exact_forward_partials",
             "determinant_policy": "static_dense_native_or_fail_closed",
             "inverse_sizes": (2,),
-            "solve_sizes": (2,),
+            "solve_sizes": (2, *tuple(sorted(_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES))),
+            "solve_rhs_policy": "static_vector_rhs",
+            "solve_fail_closed_from": max(_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES) + 1,
             "trace_policy": "static_square_or_rectangular_fixed_offset",
             "unsupported_policy": "fail_closed_report_before_compile",
         }
@@ -10085,6 +10088,8 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
         return True
     if _whole_program_native_wide_det_size(op) is not None:
         return True
+    if _whole_program_native_solve_vector_spec(op) is not None:
+        return True
     if _whole_program_native_trace_input_count(op) is not None:
         return True
     if _whole_program_native_diag_input_count(op) is not None:
@@ -10099,7 +10104,7 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
 def _whole_program_native_requires_runtime_recapture(result: WholeProgramADResult) -> bool:
     return _whole_program_has_control_flow(result) or any(
         node.op in {"maximum", "minimum", "clip", "where"}
-        or node.op.startswith(("linalg:inv:2x2", "linalg:solve:2x2"))
+        or node.op.startswith(("linalg:inv:2x2", "linalg:solve:"))
         for node in result.ir_nodes
     )
 
@@ -11368,6 +11373,23 @@ def _emit_whole_program_native_operation(
                 ]
             )
         return
+    solve_spec = _whole_program_native_solve_vector_spec(node.op)
+    if solve_spec is not None:
+        solve_size, output_row = solve_spec
+        expected_inputs = solve_size * solve_size + solve_size
+        if len(inputs) != expected_inputs:
+            raise ValueError(f"native {node.op} expects matrix and rhs inputs")
+        _emit_whole_program_native_solve_fixed(
+            lines,
+            result,
+            node,
+            value_name,
+            inputs,
+            size=solve_size,
+            output_row=output_row,
+            prefix=f"solve{solve_size}",
+        )
+        return
     if node.op not in {
         "add",
         "sub",
@@ -11785,6 +11807,141 @@ def _emit_whole_program_native_det_loop_helper_call(
         )
 
 
+def _emit_whole_program_native_solve_fixed(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+    *,
+    size: int,
+    output_row: int,
+    prefix: str,
+) -> None:
+    """Emit native fixed-size vector solve value and exact derivative code."""
+
+    if size not in _WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES:
+        raise ValueError("native fixed solve requested for unsupported size")
+    if output_row < 0 or output_row >= size:
+        raise ValueError("native fixed solve output row is outside the solution")
+    parameter_count = int(result.gradient.size)
+    matrix_tokens = tuple(inputs[: size * size])
+    rhs_tokens = tuple(inputs[size * size :])
+    matrix = tuple(
+        tuple(
+            _whole_program_native_operand(matrix_tokens[row * size + col]) for col in range(size)
+        )
+        for row in range(size)
+    )
+    rhs = tuple(_whole_program_native_operand(token) for token in rhs_tokens)
+    numerator_matrix = tuple(
+        tuple(rhs[row] if col == output_row else matrix[row][col] for col in range(size))
+        for row in range(size)
+    )
+    matrix_derivatives = tuple(
+        tuple(
+            tuple(
+                _whole_program_native_derivative_operand(
+                    matrix_tokens[row * size + col],
+                    derivative_index,
+                )
+                for col in range(size)
+            )
+            for row in range(size)
+        )
+        for derivative_index in range(parameter_count)
+    )
+    numerator_derivatives = tuple(
+        tuple(
+            tuple(
+                _whole_program_native_derivative_operand(rhs_tokens[row], derivative_index)
+                if col == output_row
+                else matrix_derivatives[derivative_index][row][col]
+                for col in range(size)
+            )
+            for row in range(size)
+        )
+        for derivative_index in range(parameter_count)
+    )
+    denominator, denominator_derivatives = _emit_whole_program_native_det_with_derivatives(
+        lines,
+        matrix,
+        matrix_derivatives,
+        prefix=f"{prefix}_{node.index}_den",
+    )
+    numerator, numerator_derivative_values = _emit_whole_program_native_det_with_derivatives(
+        lines,
+        numerator_matrix,
+        numerator_derivatives,
+        prefix=f"{prefix}_{node.index}_row{output_row}_num",
+    )
+    denominator_squared = f"%{prefix}_{node.index}_den_sq"
+    lines.extend(
+        [
+            f"  {value_name} = fdiv double {numerator}, {denominator}",
+            f"  {denominator_squared} = fmul double {denominator}, {denominator}",
+        ]
+    )
+    for derivative_index in range(parameter_count):
+        numerator_term = f"%d{node.index}_{derivative_index}_{prefix}_quot_num"
+        denominator_term = f"%d{node.index}_{derivative_index}_{prefix}_quot_den"
+        quotient_numerator = f"%d{node.index}_{derivative_index}_{prefix}_quotient_num"
+        derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+        lines.extend(
+            [
+                f"  {numerator_term} = fmul double "
+                f"{numerator_derivative_values[derivative_index]}, {denominator}",
+                f"  {denominator_term} = fmul double {numerator}, "
+                f"{denominator_derivatives[derivative_index]}",
+                f"  {quotient_numerator} = fsub double {numerator_term}, {denominator_term}",
+                f"  {derivative_name} = fdiv double {quotient_numerator}, {denominator_squared}",
+            ]
+        )
+
+
+def _emit_whole_program_native_det_with_derivatives(
+    lines: list[str],
+    matrix: tuple[tuple[str, ...], ...],
+    derivative_matrices: Sequence[tuple[tuple[str, ...], ...]],
+    *,
+    prefix: str,
+) -> tuple[str, tuple[str, ...]]:
+    """Emit a fixed determinant plus exact first derivatives for each matrix tangent."""
+
+    size = len(matrix)
+    if size < 1 or any(len(row) != size for row in matrix):
+        raise ValueError("native determinant derivative helper requires a square matrix")
+    determinant = _emit_whole_program_native_det_expression(lines, matrix, f"{prefix}_det")
+    derivatives: list[str] = []
+    zero = _fmt_llvm_float(0.0)
+    for derivative_index, derivative_matrix in enumerate(derivative_matrices):
+        if len(derivative_matrix) != size or any(len(row) != size for row in derivative_matrix):
+            raise ValueError("native determinant derivative matrix shape mismatch")
+        terms: list[str] = []
+        for row in range(size):
+            for col in range(size):
+                entry_derivative = derivative_matrix[row][col]
+                if entry_derivative == zero:
+                    continue
+                minor = _whole_program_native_det_minor(matrix, row, col)
+                cofactor = _emit_whole_program_native_det_expression(
+                    lines,
+                    minor,
+                    f"{prefix}_d{derivative_index}_minor_{row}_{col}",
+                )
+                if (row + col) % 2:
+                    signed_cofactor = f"%{prefix}_d{derivative_index}_cofactor_{row}_{col}"
+                    lines.append(f"  {signed_cofactor} = fsub double {zero}, {cofactor}")
+                    cofactor = signed_cofactor
+                term = f"%{prefix}_d{derivative_index}_term_{row}_{col}"
+                lines.append(f"  {term} = fmul double {cofactor}, {entry_derivative}")
+                terms.append(term)
+        derivative_name = f"%{prefix}_d{derivative_index}"
+        _emit_whole_program_native_sum_operands(lines, terms, derivative_name)
+        derivatives.append(derivative_name)
+    return determinant, tuple(derivatives)
+
+
 def _emit_whole_program_native_det_faddeev_leverrier(
     lines: list[str],
     result: WholeProgramADResult,
@@ -12128,6 +12285,31 @@ def _whole_program_native_wide_det_size(op: str) -> int | None:
     if rows != cols or rows not in _WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES:
         return None
     return rows
+
+
+def _whole_program_native_solve_vector_spec(op: str) -> tuple[int, int] | None:
+    """Return supported static vector solve shape and output row."""
+
+    parts = op.split(":")
+    if len(parts) != 6 or parts[0] != "linalg" or parts[1] != "solve" or parts[3] != "rhs":
+        return None
+    try:
+        row_text, col_text = parts[2].split("x", 1)
+        rows = int(row_text)
+        cols = int(col_text)
+        rhs_rows = int(parts[4])
+        output_row = int(parts[5])
+    except ValueError:
+        return None
+    if (
+        rows != cols
+        or rows not in _WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES
+        or rhs_rows != rows
+        or output_row < 0
+        or output_row >= rows
+    ):
+        return None
+    return rows, output_row
 
 
 def _whole_program_native_trace_input_count(op: str) -> int | None:
