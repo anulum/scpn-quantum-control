@@ -10005,6 +10005,8 @@ _WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset(range(6, 17))
 _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset(range(6, 17))
 _WHOLE_PROGRAM_NATIVE_INVERSE_SIZES = frozenset({3, 4})
 _WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES = frozenset({3, 4})
+_WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES = frozenset({2, 3, 4})
+_WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS = 4
 
 
 def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
@@ -10026,7 +10028,9 @@ def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
             "inverse_sizes": (2, *tuple(sorted(_WHOLE_PROGRAM_NATIVE_INVERSE_SIZES))),
             "inverse_fail_closed_from": max(_WHOLE_PROGRAM_NATIVE_INVERSE_SIZES) + 1,
             "solve_sizes": (2, *tuple(sorted(_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES))),
-            "solve_rhs_policy": "static_vector_rhs",
+            "solve_matrix_sizes": tuple(sorted(_WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES)),
+            "solve_matrix_max_rhs_columns": _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS,
+            "solve_rhs_policy": "static_vector_or_matrix_rhs",
             "solve_fail_closed_from": max(_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES) + 1,
             "trace_policy": "static_square_or_rectangular_fixed_offset",
             "unsupported_policy": "fail_closed_report_before_compile",
@@ -10093,6 +10097,8 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
     if _whole_program_native_inverse_spec(op) is not None:
         return True
     if _whole_program_native_solve_vector_spec(op) is not None:
+        return True
+    if _whole_program_native_solve_matrix_spec(op) is not None:
         return True
     if _whole_program_native_trace_input_count(op) is not None:
         return True
@@ -11412,6 +11418,27 @@ def _emit_whole_program_native_operation(
             prefix=f"solve{solve_size}",
         )
         return
+    solve_matrix_spec = _whole_program_native_solve_matrix_spec(node.op)
+    if solve_matrix_spec is not None:
+        solve_size, rhs_cols, output_row, output_col = solve_matrix_spec
+        matrix_size = solve_size * solve_size
+        expected_inputs = matrix_size + solve_size * rhs_cols
+        if len(inputs) != expected_inputs:
+            raise ValueError(f"native {node.op} expects matrix and rhs matrix inputs")
+        rhs_column = tuple(
+            inputs[matrix_size + row * rhs_cols + output_col] for row in range(solve_size)
+        )
+        _emit_whole_program_native_solve_fixed(
+            lines,
+            result,
+            node,
+            value_name,
+            (*inputs[:matrix_size], *rhs_column),
+            size=solve_size,
+            output_row=output_row,
+            prefix=f"solve{solve_size}m{rhs_cols}",
+        )
+        return
     if node.op not in {
         "add",
         "sub",
@@ -11936,9 +11963,11 @@ def _emit_whole_program_native_solve_fixed(
     output_row: int,
     prefix: str,
 ) -> None:
-    """Emit native fixed-size vector solve value and exact derivative code."""
+    """Emit native fixed-size solve-column value and exact derivative code."""
 
-    if size not in _WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES:
+    if size not in (
+        _WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES | _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES
+    ):
         raise ValueError("native fixed solve requested for unsupported size")
     if output_row < 0 or output_row >= size:
         raise ValueError("native fixed solve output row is outside the solution")
@@ -12454,6 +12483,38 @@ def _whole_program_native_solve_vector_spec(op: str) -> tuple[int, int] | None:
     ):
         return None
     return rows, output_row
+
+
+def _whole_program_native_solve_matrix_spec(op: str) -> tuple[int, int, int, int] | None:
+    """Return supported static matrix-RHS solve shape and output coordinates."""
+
+    parts = op.split(":")
+    if len(parts) != 7 or parts[0] != "linalg" or parts[1] != "solve" or parts[3] != "rhs":
+        return None
+    try:
+        row_text, col_text = parts[2].split("x", 1)
+        rows = int(row_text)
+        cols = int(col_text)
+        rhs_row_text, rhs_col_text = parts[4].split("x", 1)
+        rhs_rows = int(rhs_row_text)
+        rhs_cols = int(rhs_col_text)
+        output_row = int(parts[5])
+        output_col = int(parts[6])
+    except ValueError:
+        return None
+    if (
+        rows != cols
+        or rows not in _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES
+        or rhs_rows != rows
+        or rhs_cols < 1
+        or rhs_cols > _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS
+        or output_row < 0
+        or output_row >= rows
+        or output_col < 0
+        or output_col >= rhs_cols
+    ):
+        return None
+    return rows, rhs_cols, output_row, output_col
 
 
 def _whole_program_native_trace_input_count(op: str) -> int | None:
