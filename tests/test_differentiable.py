@@ -6493,7 +6493,7 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
 
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.product:{name}")
-        for name in ("dot", "vdot", "inner", "outer", "matmul")
+        for name in ("dot", "vdot", "inner", "outer", "matmul", "tensordot", "einsum")
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
 
@@ -6537,6 +6537,20 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
                 + np.inner(values[:3], np.array([0.5, -2.0, 1.5]))
                 + np.sum(np.outer(values[:2], values[2:4]) * np.array([[1.0, -0.5], [0.25, 2.0]]))
                 + np.sum(np.matmul(np.reshape(values, (2, 3)), np.array([1.0, 2.0, -1.0])))
+                + np.sum(
+                    np.tensordot(
+                        np.reshape(values, (2, 3)),
+                        np.array([[0.5, -1.0], [1.5, 0.25], [-0.75, 2.0]]),
+                        axes=([1], [0]),
+                    )
+                )
+                + np.sum(
+                    np.einsum(
+                        "ij,ij->i",
+                        np.reshape(values, (2, 3)),
+                        np.array([[1.0, -2.0, 0.5], [0.25, 1.5, -1.0]]),
+                    )
+                )
             ),
             np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64),
         )
@@ -6553,6 +6567,20 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
         + np.inner(values[:3], np.array([0.5, -2.0, 1.5]))
         + np.sum(np.outer(values[:2], values[2:4]) * np.array([[1.0, -0.5], [0.25, 2.0]]))
         + np.sum(np.matmul(np.reshape(values, (2, 3)), np.array([1.0, 2.0, -1.0])))
+        + np.sum(
+            np.tensordot(
+                np.reshape(values, (2, 3)),
+                np.array([[0.5, -1.0], [1.5, 0.25], [-0.75, 2.0]]),
+                axes=([1], [0]),
+            )
+        )
+        + np.sum(
+            np.einsum(
+                "ij,ij->i",
+                np.reshape(values, (2, 3)),
+                np.array([[1.0, -2.0, 0.5], [0.25, 1.5, -1.0]]),
+            )
+        )
     )
     assert result.value == pytest.approx(expected_value)
     assert calls == {
@@ -6561,6 +6589,8 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
         "inner": {"shape", "dtype", "static"},
         "outer": {"shape", "dtype", "static"},
         "matmul": {"shape", "dtype", "static"},
+        "tensordot": {"shape", "dtype", "static"},
+        "einsum": {"shape", "dtype", "static"},
     }
 
 
