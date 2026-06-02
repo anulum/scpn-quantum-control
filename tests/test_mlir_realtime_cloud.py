@@ -23,6 +23,7 @@ from scpn_quantum_control.compiler.mlir import (
     ExecutableWholeProgramADBatchResult,
     ExecutableWholeProgramADKernel,
     MLIRCompileConfig,
+    NativeWholeProgramADKernel,
     PrimitiveLoweringStatus,
     build_compiler_ad_transform_plan,
     compile_compiler_ad_transform_plan_to_mlir,
@@ -32,6 +33,7 @@ from scpn_quantum_control.compiler.mlir import (
     compile_registered_primitive_to_executable,
     compile_whole_program_ad_trace_to_executable,
     compile_whole_program_ad_trace_to_mlir,
+    compile_whole_program_ad_trace_to_native_llvm_jit,
     make_program_ad_linalg_matrix_power_executable_lowering_rule,
     make_program_ad_linalg_multi_dot_executable_lowering_rule,
 )
@@ -4847,6 +4849,97 @@ def test_whole_program_ad_trace_executable_batches_same_branch_rows() -> None:
         )
 
 
+def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() -> None:
+    """Native whole-program AD lowering should execute supported branchless traces."""
+
+    def objective(values: np.ndarray) -> object:
+        return (
+            np.sin(values[0] * values[1])
+            + np.log(values[2] + 4.0)
+            + values[0] ** 2
+            - values[1] / 2.0
+        )
+
+    sample = np.array([1.25, -0.25, 0.5], dtype=np.float64)
+    batch = np.array(
+        [
+            [1.25, -0.25, 0.5],
+            [1.1, -0.4, 0.75],
+            [2.0, 0.5, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    tangent = np.array([0.5, -1.0, 2.0], dtype=np.float64)
+    parameters = (Parameter("x"), Parameter("y"), Parameter("z"))
+
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        sample,
+        parameters,
+    )
+    value, gradient = kernel.value_and_grad(sample)
+    batch_reference = [program_adjoint_value_and_grad(objective, row, parameters) for row in batch]
+    batch_result = kernel.batch_value_and_grad(batch)
+
+    assert isinstance(kernel, NativeWholeProgramADKernel)
+    assert kernel.backend == "native_llvm_jit"
+    assert kernel.verification.passed
+    assert kernel.verification.gradient_close is True
+    assert kernel.mlir_module.resource_counts["native_whole_program_kernels"] == 1
+    assert kernel.mlir_module.metadata["native_backend"] == "native_llvm_jit"
+    assert kernel.mlir_module.metadata["polyglot_targets"]["llvm"].startswith("available")
+    assert "scpn_diff.native_llvm_jit" in kernel.mlir_module.text
+    assert "native LLVM/JIT execution" in kernel.claim_boundary
+    assert value == pytest.approx(reference_value)
+    assert kernel.value(sample) == pytest.approx(reference_value)
+    np.testing.assert_allclose(gradient, reference_gradient, rtol=1.0e-10, atol=1.0e-10)
+    np.testing.assert_allclose(
+        kernel.gradient(sample),
+        reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    assert kernel.jvp(sample, tangent) == pytest.approx(float(np.dot(reference_gradient, tangent)))
+    np.testing.assert_allclose(
+        kernel.vjp(sample, np.array([2.0], dtype=np.float64)),
+        2.0 * reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.values,
+        np.array([item[0] for item in batch_reference], dtype=np.float64),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.gradients,
+        np.vstack([item[1] for item in batch_reference]),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(kernel.batch_value(batch), batch_result.values)
+    np.testing.assert_allclose(kernel.batch_gradient(batch), batch_result.gradients)
+
+    with pytest.raises(ValueError, match="tangent shape"):
+        kernel.jvp(sample, np.ones(2, dtype=np.float64))
+    with pytest.raises(ValueError, match="cotangent"):
+        kernel.vjp(sample, np.ones(2, dtype=np.float64))
+    with pytest.raises(ValueError, match="two-dimensional"):
+        kernel.batch_value_and_grad(sample)
+    with pytest.raises(ValueError, match="parameter shape"):
+        kernel.batch_value_and_grad(np.ones((2, 2), dtype=np.float64))
+
+    def branched(values: np.ndarray) -> object:
+        if values[0] > 0.0:
+            return values[0] ** 2
+        return values[1]
+
+    with pytest.raises(ValueError, match="branchless trace"):
+        compile_whole_program_ad_trace_to_native_llvm_jit(branched, sample, parameters)
+
+
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
     """Realtime runtime should account for deterministic deadline misses."""
 
@@ -5004,6 +5097,7 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
     assert scpn.ExecutableWholeProgramADBatchResult is ExecutableWholeProgramADBatchResult
     assert scpn.ExecutableWholeProgramADKernel is ExecutableWholeProgramADKernel
     assert scpn.MLIRCompileConfig is MLIRCompileConfig
+    assert scpn.NativeWholeProgramADKernel is NativeWholeProgramADKernel
     assert scpn.PrimitiveLoweringStatus is PrimitiveLoweringStatus
     assert scpn.build_compiler_ad_transform_plan is build_compiler_ad_transform_plan
     assert (
@@ -5022,6 +5116,10 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
     assert (
         scpn.compile_whole_program_ad_trace_to_executable
         is compile_whole_program_ad_trace_to_executable
+    )
+    assert (
+        scpn.compile_whole_program_ad_trace_to_native_llvm_jit
+        is compile_whole_program_ad_trace_to_native_llvm_jit
     )
     assert scpn.compile_kuramoto_to_mlir is compile_kuramoto_to_mlir
     assert (
