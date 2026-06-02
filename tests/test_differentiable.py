@@ -198,8 +198,10 @@ from scpn_quantum_control.differentiable import (
     program_ad_signal_convolve_derivative_rule,
     program_ad_signal_correlate_derivative_rule,
     program_ad_stencil_gradient_derivative_rule,
+    program_adjoint_grad,
     program_adjoint_gradient,
     program_adjoint_result,
+    program_adjoint_value_and_grad,
     register_custom_derivative_rule,
     register_primitive_batching_rule,
     register_primitive_lowering_rule,
@@ -9843,10 +9845,54 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
     assert scpn.WholeProgramSourceIRFeature is WholeProgramSourceIRFeature
     assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
+    assert scpn.program_adjoint_grad is program_adjoint_grad
     assert scpn.program_adjoint_gradient is program_adjoint_gradient
     assert scpn.program_adjoint_result is program_adjoint_result
+    assert scpn.program_adjoint_value_and_grad is program_adjoint_value_and_grad
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
+
+
+def test_program_adjoint_value_and_grad_api_returns_reverse_replay_gradient() -> None:
+    """First-class program adjoint API should return reverse replay gradients."""
+
+    def objective(values: np.ndarray) -> object:
+        x, y, z = values
+        return np.sin(x * y) + np.log(z + 4.0) + np.sqrt(x + 3.0) + y**2
+
+    values = np.array([0.75, -1.25, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+        trace=False,
+    )
+    value, reverse_gradient = program_adjoint_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+        trace=False,
+    )
+
+    assert value == pytest.approx(result.value)
+    assert result.adjoint_result is not None
+    np.testing.assert_allclose(reverse_gradient, result.adjoint_result.gradient, atol=1.0e-12)
+    np.testing.assert_allclose(
+        program_adjoint_grad(objective, values, trace=False), result.gradient
+    )
+
+
+def test_program_adjoint_grad_api_respects_trainable_mask() -> None:
+    """Program adjoint gradient API should preserve frozen-parameter semantics."""
+
+    gradient = program_adjoint_grad(
+        lambda values: values[0] ** 2 + values[1] ** 2 + values[0] * values[1],
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("trainable"), Parameter("frozen", trainable=False)),
+        trace=False,
+    )
+
+    np.testing.assert_allclose(gradient, [7.0, 0.0], atol=1.0e-12)
 
 
 def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() -> None:

@@ -176,6 +176,13 @@ operator-intercepted program path executes. Smooth primitives may omit
 nondifferentiable-boundary metadata; primitives that declare a boundary must
 also declare the boundary policy as fail-closed.
 
+Reverse-mode program gradients are available through
+`program_adjoint_grad(...)` and `program_adjoint_value_and_grad(...)`. These
+functions execute program capture, then require supported adjoint replay over
+the captured scalar IR. Unsupported replay operations fail closed; the API does
+not substitute finite differences or claim a general arbitrary-Python
+MLIR/LLVM compiler.
+
 ## GUESS error mitigation in 5 lines (added April 2026)
 
 For any XY Hamiltonian run on hardware, the conserved total magnetisation
