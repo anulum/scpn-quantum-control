@@ -6326,6 +6326,8 @@ def test_program_ad_product_boundary_metadata_is_explicit() -> None:
         "inner": "last_dimension_alignment",
         "outer": "flattened_outer_product",
         "matmul": "core_dimension_alignment",
+        "tensordot": "static_axes_tensor_contraction",
+        "einsum": "explicit_static_tensor_contraction",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(
