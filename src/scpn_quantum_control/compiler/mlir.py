@@ -4297,6 +4297,13 @@ def _compile_native_llvm_jit_functions(
         double_pointer,
         double_pointer,
     )
+    batch_binary_function = ctypes.CFUNCTYPE(
+        None,
+        double_pointer,
+        double_pointer,
+        ctypes.c_int64,
+        double_pointer,
+    )
     functions: dict[str, Any] = {"engine": engine}
     for name, signature in (
         ("value", unary_function),
@@ -4311,6 +4318,10 @@ def _compile_native_llvm_jit_functions(
     batch_address = engine.get_function_address(f"{base_symbol}_batch_value_gradient")
     if batch_address != 0:
         functions["batch_value_gradient"] = batch_value_gradient_function(batch_address)
+    for name in ("batch_jvp", "batch_vjp"):
+        address = engine.get_function_address(f"{base_symbol}_{name}")
+        if address != 0:
+            functions[name] = batch_binary_function(address)
     return MappingProxyType(functions)
 
 
@@ -9248,7 +9259,8 @@ class NativeWholeProgramADKernel:
     claim_boundary: str = (
         "native LLVM/JIT execution for supported scalar program AD traces with "
         "stable executed branch signatures and finite supported primitive domains; "
-        "compiled batch value/gradient execution for matching row signatures; "
+        "compiled batch value/gradient, JVP, and VJP execution for matching row "
+        "signatures; "
         "unsupported control flow, mutation-dependent path changes, and unsupported "
         "operations fail closed"
     )
@@ -9262,10 +9274,27 @@ class NativeWholeProgramADKernel:
             raise ValueError("mlir_module must be an MLIRModule")
         if not self.llvm_ir.strip():
             raise ValueError("llvm_ir must be non-empty")
-        for name in ("value", "gradient", "jvp", "vjp", "batch_value_gradient", "engine"):
+        for name in (
+            "value",
+            "gradient",
+            "jvp",
+            "vjp",
+            "batch_value_gradient",
+            "batch_jvp",
+            "batch_vjp",
+            "engine",
+        ):
             if name not in self.native_functions:
                 raise ValueError(f"native_functions missing {name}")
-        for name in ("value", "gradient", "jvp", "vjp", "batch_value_gradient"):
+        for name in (
+            "value",
+            "gradient",
+            "jvp",
+            "vjp",
+            "batch_value_gradient",
+            "batch_jvp",
+            "batch_vjp",
+        ):
             if not callable(self.native_functions[name]):
                 raise ValueError(f"native function {name} must be callable")
         if not isinstance(self.verification, CompilerADKernelVerification):
@@ -9318,6 +9347,36 @@ class NativeWholeProgramADKernel:
             )
         if not np.all(np.isfinite(checked)):
             raise ValueError("batch values must contain only finite values")
+        return np.ascontiguousarray(checked, dtype=np.float64)
+
+    def _checked_batch_tangents(
+        self,
+        tangents: Sequence[Sequence[float]] | np.ndarray,
+        row_count: int,
+    ) -> NDArray[np.float64]:
+        checked = np.asarray(tangents, dtype=np.float64)
+        if checked.ndim != 2:
+            raise ValueError("batch tangents must be two-dimensional")
+        if checked.shape != (row_count, self.parameter_shape[0]):
+            raise ValueError("batch tangents shape must match batch values shape")
+        if not np.all(np.isfinite(checked)):
+            raise ValueError("batch tangents must contain only finite values")
+        return np.ascontiguousarray(checked, dtype=np.float64)
+
+    @staticmethod
+    def _checked_batch_cotangents(
+        cotangents: Sequence[float] | Sequence[Sequence[float]] | np.ndarray,
+        row_count: int,
+    ) -> NDArray[np.float64]:
+        checked = np.asarray(cotangents, dtype=np.float64)
+        if checked.ndim == 2 and checked.shape[1:] == (1,):
+            checked = checked.reshape(-1)
+        if checked.ndim != 1:
+            raise ValueError("batch cotangents must be one-dimensional")
+        if checked.shape != (row_count,):
+            raise ValueError("batch cotangents row count must match batch values")
+        if not np.all(np.isfinite(checked)):
+            raise ValueError("batch cotangents must contain only finite values")
         return np.ascontiguousarray(checked, dtype=np.float64)
 
     def _validate_trace_signature(self, values: NDArray[np.float64]) -> None:
@@ -9458,6 +9517,42 @@ class NativeWholeProgramADKernel:
         """Execute native gradient kernels over a two-dimensional batch."""
 
         return self.batch_value_and_grad(values).gradients
+
+    def batch_jvp(
+        self,
+        values: Sequence[Sequence[float]] | np.ndarray,
+        tangents: Sequence[Sequence[float]] | np.ndarray,
+    ) -> NDArray[np.float64]:
+        """Execute the compiled native JVP kernel over a two-dimensional batch."""
+
+        batch = self._checked_batch_values(values)
+        checked_tangents = self._checked_batch_tangents(tangents, batch.shape[0])
+        for row in batch:
+            self._validate_trace_signature(row)
+        return _call_native_whole_program_batch_jvp(
+            self.native_functions["batch_jvp"],
+            batch,
+            checked_tangents,
+            self.parameter_shape[0],
+        )
+
+    def batch_vjp(
+        self,
+        values: Sequence[Sequence[float]] | np.ndarray,
+        cotangents: Sequence[float] | Sequence[Sequence[float]] | np.ndarray,
+    ) -> NDArray[np.float64]:
+        """Execute the compiled native VJP kernel over a two-dimensional batch."""
+
+        batch = self._checked_batch_values(values)
+        checked_cotangents = self._checked_batch_cotangents(cotangents, batch.shape[0])
+        for row in batch:
+            self._validate_trace_signature(row)
+        return _call_native_whole_program_batch_vjp(
+            self.native_functions["batch_vjp"],
+            batch,
+            checked_cotangents,
+            self.parameter_shape[0],
+        )
 
 
 @dataclass(frozen=True)
@@ -9890,7 +9985,133 @@ def _compile_whole_program_ad_native_llvm_ir(
             "",
         ]
     )
+    lines.extend(
+        _emit_whole_program_native_batch_jvp(
+            result,
+            base_symbol,
+            batch_computation_lines,
+            batch_final_derivatives,
+        )
+    )
+    lines.extend(
+        _emit_whole_program_native_batch_vjp(
+            result,
+            base_symbol,
+            batch_computation_lines,
+            batch_final_derivatives,
+        )
+    )
     return "\n".join(lines)
+
+
+def _emit_whole_program_native_batch_jvp(
+    result: WholeProgramADResult,
+    base_symbol: str,
+    computation_lines: Sequence[str],
+    final_derivatives: Sequence[str],
+) -> list[str]:
+    parameter_count = len(result.parameter_names)
+    lines = [
+        (
+            f"define void @{base_symbol}_batch_jvp(double* %values, double* %tangents, "
+            "i64 %rows, double* %out) {"
+        ),
+        "entry:",
+        "  br label %batch_jvp_loop",
+        "batch_jvp_loop:",
+        "  %batch_jvp_i = phi i64 [0, %entry], [%batch_jvp_next, %batch_jvp_continue]",
+        "  %batch_jvp_done = icmp eq i64 %batch_jvp_i, %rows",
+        "  br i1 %batch_jvp_done, label %batch_jvp_exit, label %batch_jvp_body",
+        "batch_jvp_body:",
+        f"  %batch_jvp_row_offset = mul i64 %batch_jvp_i, {_fmt_llvm_int(parameter_count)}",
+        "  %row_values = getelementptr double, double* %values, i64 %batch_jvp_row_offset",
+        "  %row_tangents = getelementptr double, double* %tangents, i64 %batch_jvp_row_offset",
+        *computation_lines,
+    ]
+    accumulator = _fmt_llvm_float(0.0)
+    for index, derivative in enumerate(final_derivatives):
+        tangent_ptr = f"%batch_jvp_tangent_ptr_{index}"
+        tangent_value = f"%batch_jvp_tangent_{index}"
+        term = f"%batch_jvp_term_{index}"
+        next_accumulator = f"%batch_jvp_acc_{index}"
+        lines.extend(
+            [
+                f"  {tangent_ptr} = getelementptr double, double* %row_tangents, i64 {index}",
+                f"  {tangent_value} = load double, double* {tangent_ptr}",
+                f"  {term} = fmul double {derivative}, {tangent_value}",
+                f"  {next_accumulator} = fadd double {accumulator}, {term}",
+            ]
+        )
+        accumulator = next_accumulator
+    lines.extend(
+        [
+            "  %batch_jvp_out_ptr = getelementptr double, double* %out, i64 %batch_jvp_i",
+            f"  store double {accumulator}, double* %batch_jvp_out_ptr",
+            "  br label %batch_jvp_continue",
+            "batch_jvp_continue:",
+            "  %batch_jvp_next = add i64 %batch_jvp_i, 1",
+            "  br label %batch_jvp_loop",
+            "batch_jvp_exit:",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
+    return lines
+
+
+def _emit_whole_program_native_batch_vjp(
+    result: WholeProgramADResult,
+    base_symbol: str,
+    computation_lines: Sequence[str],
+    final_derivatives: Sequence[str],
+) -> list[str]:
+    parameter_count = len(result.parameter_names)
+    lines = [
+        (
+            f"define void @{base_symbol}_batch_vjp(double* %values, double* %cotangents, "
+            "i64 %rows, double* %out) {"
+        ),
+        "entry:",
+        "  br label %batch_vjp_loop",
+        "batch_vjp_loop:",
+        "  %batch_vjp_i = phi i64 [0, %entry], [%batch_vjp_next, %batch_vjp_continue]",
+        "  %batch_vjp_done = icmp eq i64 %batch_vjp_i, %rows",
+        "  br i1 %batch_vjp_done, label %batch_vjp_exit, label %batch_vjp_body",
+        "batch_vjp_body:",
+        f"  %batch_vjp_row_offset = mul i64 %batch_vjp_i, {_fmt_llvm_int(parameter_count)}",
+        "  %row_values = getelementptr double, double* %values, i64 %batch_vjp_row_offset",
+        *computation_lines,
+        "  %batch_vjp_cotangent_ptr = getelementptr double, double* %cotangents, i64 %batch_vjp_i",
+        "  %batch_vjp_cotangent = load double, double* %batch_vjp_cotangent_ptr",
+        f"  %batch_vjp_gradient_row_offset = mul i64 %batch_vjp_i, {_fmt_llvm_int(parameter_count)}",
+    ]
+    for index, derivative in enumerate(final_derivatives):
+        vjp_value = f"%batch_vjp_value_{index}"
+        lines.extend(
+            [
+                f"  {vjp_value} = fmul double {derivative}, %batch_vjp_cotangent",
+                f"  %batch_vjp_offset_{index} = add i64 %batch_vjp_gradient_row_offset, {index}",
+                (
+                    f"  %batch_vjp_out_ptr_{index} = getelementptr double, "
+                    f"double* %out, i64 %batch_vjp_offset_{index}"
+                ),
+                f"  store double {vjp_value}, double* %batch_vjp_out_ptr_{index}",
+            ]
+        )
+    lines.extend(
+        [
+            "  br label %batch_vjp_continue",
+            "batch_vjp_continue:",
+            "  %batch_vjp_next = add i64 %batch_vjp_i, 1",
+            "  br label %batch_vjp_loop",
+            "batch_vjp_exit:",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
+    return lines
 
 
 def _emit_whole_program_native_computation(
@@ -10326,6 +10547,70 @@ def _call_native_whole_program_batch_value_gradient(
     )
 
 
+def _call_native_whole_program_batch_jvp(
+    function: Callable[[Any, Any, int, Any], None],
+    values: np.ndarray,
+    tangents: np.ndarray,
+    parameter_count: int,
+) -> NDArray[np.float64]:
+    checked_values = np.ascontiguousarray(np.asarray(values, dtype=np.float64))
+    checked_tangents = np.ascontiguousarray(np.asarray(tangents, dtype=np.float64))
+    if checked_values.ndim != 2:
+        raise ValueError("native whole-program AD batch values must be two-dimensional")
+    if checked_values.shape[0] < 1:
+        raise ValueError("native whole-program AD batch values must contain at least one row")
+    if checked_values.shape != checked_tangents.shape:
+        raise ValueError("native whole-program AD batch tangents must match values shape")
+    if checked_values.shape[1] != parameter_count:
+        raise ValueError("native whole-program AD batch parameter count mismatch")
+    if not np.all(np.isfinite(checked_values)) or not np.all(np.isfinite(checked_tangents)):
+        raise ValueError("native whole-program AD batch JVP inputs must be finite")
+    rows = int(checked_values.shape[0])
+    output = np.zeros(rows, dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_tangents.ctypes.data_as(double_pointer),
+        rows,
+        output.ctypes.data_as(double_pointer),
+    )
+    if not np.all(np.isfinite(output)):
+        raise ValueError("native whole-program AD batch JVP output must be finite")
+    return cast(NDArray[np.float64], output)
+
+
+def _call_native_whole_program_batch_vjp(
+    function: Callable[[Any, Any, int, Any], None],
+    values: np.ndarray,
+    cotangents: np.ndarray,
+    parameter_count: int,
+) -> NDArray[np.float64]:
+    checked_values = np.ascontiguousarray(np.asarray(values, dtype=np.float64))
+    checked_cotangents = np.ascontiguousarray(np.asarray(cotangents, dtype=np.float64))
+    if checked_values.ndim != 2:
+        raise ValueError("native whole-program AD batch values must be two-dimensional")
+    if checked_values.shape[0] < 1:
+        raise ValueError("native whole-program AD batch values must contain at least one row")
+    if checked_values.shape[1] != parameter_count:
+        raise ValueError("native whole-program AD batch parameter count mismatch")
+    if checked_cotangents.shape != (checked_values.shape[0],):
+        raise ValueError("native whole-program AD batch cotangent row count mismatch")
+    if not np.all(np.isfinite(checked_values)) or not np.all(np.isfinite(checked_cotangents)):
+        raise ValueError("native whole-program AD batch VJP inputs must be finite")
+    rows = int(checked_values.shape[0])
+    output = np.zeros((rows, parameter_count), dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        checked_cotangents.ctypes.data_as(double_pointer),
+        rows,
+        output.ctypes.data_as(double_pointer),
+    )
+    if not np.all(np.isfinite(output)):
+        raise ValueError("native whole-program AD batch VJP output must be finite")
+    return cast(NDArray[np.float64], output)
+
+
 def _verify_native_whole_program_ad_kernel(
     result: WholeProgramADResult,
     native_functions: Mapping[str, Any],
@@ -10351,6 +10636,18 @@ def _verify_native_whole_program_ad_kernel(
         sample_values.reshape(1, -1),
         int(result.gradient.size),
     )
+    batch_jvp = _call_native_whole_program_batch_jvp(
+        native_functions["batch_jvp"],
+        sample_values.reshape(1, -1),
+        tangent.reshape(1, -1),
+        int(result.gradient.size),
+    )
+    batch_vjp = _call_native_whole_program_batch_vjp(
+        native_functions["batch_vjp"],
+        sample_values.reshape(1, -1),
+        cotangent,
+        int(result.gradient.size),
+    )
     expected_value = np.array([result.value], dtype=np.float64)
     expected_jvp = np.array([float(np.dot(result.gradient, tangent))], dtype=np.float64)
     expected_vjp = result.gradient.copy()
@@ -10361,11 +10658,19 @@ def _verify_native_whole_program_ad_kernel(
         _max_abs_error(vjp, expected_vjp),
         _max_abs_error(batch_values, expected_value),
         _max_abs_error(batch_gradients, result.gradient.reshape(1, -1)),
+        _max_abs_error(batch_jvp, expected_jvp),
+        _max_abs_error(batch_vjp, result.gradient.reshape(1, -1)),
     )
     return CompilerADKernelVerification(
         value_close=bool(np.allclose(value, expected_value, rtol=1.0e-10, atol=1.0e-10)),
-        jvp_close=bool(np.allclose(jvp, expected_jvp, rtol=1.0e-10, atol=1.0e-10)),
-        vjp_close=bool(np.allclose(vjp, expected_vjp, rtol=1.0e-10, atol=1.0e-10)),
+        jvp_close=bool(
+            np.allclose(jvp, expected_jvp, rtol=1.0e-10, atol=1.0e-10)
+            and np.allclose(batch_jvp, expected_jvp, rtol=1.0e-10, atol=1.0e-10)
+        ),
+        vjp_close=bool(
+            np.allclose(vjp, expected_vjp, rtol=1.0e-10, atol=1.0e-10)
+            and np.allclose(batch_vjp, result.gradient.reshape(1, -1), rtol=1.0e-10, atol=1.0e-10)
+        ),
         gradient_close=bool(
             np.allclose(gradient, result.gradient, rtol=1.0e-10, atol=1.0e-10)
             and np.allclose(
@@ -10396,6 +10701,7 @@ def _annotate_whole_program_native_mlir(
     resource_counts = dict(module.resource_counts)
     resource_counts["native_whole_program_kernels"] = 1
     resource_counts["native_whole_program_batch_kernels"] = 1
+    resource_counts["native_whole_program_batch_transform_kernels"] = 2
     resource_counts["native_supported_ops"] = len(_whole_program_native_supported_ops(result))
     resource_counts["native_supported_elementary_ops"] = sum(
         1

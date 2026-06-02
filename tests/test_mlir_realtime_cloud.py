@@ -4885,14 +4885,21 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
     assert isinstance(kernel, NativeWholeProgramADKernel)
     assert kernel.backend == "native_llvm_jit"
     assert callable(kernel.native_functions["batch_value_gradient"])
+    assert callable(kernel.native_functions["batch_jvp"])
+    assert callable(kernel.native_functions["batch_vjp"])
     assert kernel.verification.passed
     assert kernel.verification.gradient_close is True
+    assert kernel.verification.jvp_close is True
+    assert kernel.verification.vjp_close is True
     assert kernel.mlir_module.resource_counts["native_whole_program_kernels"] == 1
     assert kernel.mlir_module.resource_counts["native_whole_program_batch_kernels"] == 1
+    assert kernel.mlir_module.resource_counts["native_whole_program_batch_transform_kernels"] == 2
     assert kernel.mlir_module.metadata["native_backend"] == "native_llvm_jit"
     assert kernel.mlir_module.metadata["polyglot_targets"]["llvm"].startswith("available")
     assert "scpn_diff.native_llvm_jit" in kernel.mlir_module.text
     assert "_batch_value_gradient" in kernel.llvm_ir
+    assert "_batch_jvp" in kernel.llvm_ir
+    assert "_batch_vjp" in kernel.llvm_ir
     assert "native LLVM/JIT execution" in kernel.claim_boundary
     assert value == pytest.approx(reference_value)
     assert kernel.value(sample) == pytest.approx(reference_value)
@@ -4923,6 +4930,23 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
         atol=1.0e-10,
     )
     assert "compiled batched native LLVM/JIT" in batch_result.claim_boundary
+    batch_tangents = np.vstack([tangent, 0.5 * tangent, -tangent])
+    batch_cotangents = np.array([1.0, 2.0, -0.5], dtype=np.float64)
+    np.testing.assert_allclose(
+        kernel.batch_jvp(batch, batch_tangents),
+        np.array(
+            [float(np.dot(item[1], row)) for item, row in zip(batch_reference, batch_tangents)],
+            dtype=np.float64,
+        ),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        kernel.batch_vjp(batch, batch_cotangents),
+        np.vstack([scale * item[1] for scale, item in zip(batch_cotangents, batch_reference)]),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
     np.testing.assert_allclose(kernel.batch_value(batch), batch_result.values)
     np.testing.assert_allclose(kernel.batch_gradient(batch), batch_result.gradients)
 
@@ -5015,6 +5039,10 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() ->
     drift_batch[1] = branch_drift
     with pytest.raises(ValueError, match="branch signature"):
         kernel.batch_value_and_grad(drift_batch)
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.batch_jvp(drift_batch, np.vstack([tangent, tangent, tangent]))
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.batch_vjp(drift_batch, np.ones(3, dtype=np.float64))
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_elementary_ops() -> None:
