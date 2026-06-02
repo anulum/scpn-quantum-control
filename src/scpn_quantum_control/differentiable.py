@@ -10658,7 +10658,7 @@ def _program_ad_shape_normalise_squeeze_axes(
     raw_axes = (axis,) if isinstance(axis, (int, np.integer)) else tuple(axis)
     axes = _normalise_shape_transform_axes("squeeze", raw_axes, output_rank=len(source_shape))
     if any(source_shape[axis_item] != 1 for axis_item in axes):
-        raise ValueError("program AD shape squeeze direct rule requires singleton axes")
+        raise ValueError("program AD squeeze axis must have length one")
     return axes
 
 

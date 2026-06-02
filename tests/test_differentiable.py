@@ -5099,7 +5099,7 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
         atol=0.0,
     )
 
-    with pytest.raises(ValueError, match="singleton"):
+    with pytest.raises(ValueError, match="length one"):
         program_ad_shape_squeeze_derivative_rule((2, 3), 0)
 
     empty_axis_squeeze = program_ad_shape_squeeze_derivative_rule((1, 2, 1), ())
@@ -8428,6 +8428,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.shape:transpose": (
             "program_ad_shape_transpose_derivative_rule",
             "source_shape:ranked_tensor_shape;axes",
+        ),
+        "scpn.program_ad.shape:expand_dims": (
+            "program_ad_shape_expand_dims_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.shape:squeeze": (
+            "program_ad_shape_squeeze_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
         ),
         "scpn.program_ad.shape:swapaxes": (
             "program_ad_shape_swapaxes_derivative_rule",
