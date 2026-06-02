@@ -217,13 +217,14 @@ nondifferentiable boundaries, use unsupported operations, loop/control joins, or
 shape changes fail closed and should use the replay executable until a native
 lowering rule exists.
 Strict scalar 2x2, 3x3, 4x4, and 5x5 determinants lower through explicit native
-arithmetic expressions; 6x6 and 8x8 determinants lower through a helper-backed
-Faddeev-LeVerrier native arithmetic path. Static square/rectangular trace nodes
-with fixed offsets, static diagonal gather/scatter nodes, 2x2 inverse, 2x2
-linear solve, 2x2 square via `matrix_power(..., 2)`, and 2x2-by-2x2
-`multi_dot` program-AD nodes also lower to native LLVM/JIT arithmetic kernels;
-other wider linalg and shape-changing linalg traces still report unsupported
-native ops before failing closed.
+arithmetic expressions; 6x6 and 8x8 determinants lower through straight-line
+Faddeev-LeVerrier native arithmetic; 12x12 determinants lower through a compact
+loop-helper native LLVM/JIT value-and-partials kernel. Static square/rectangular
+trace nodes with fixed offsets, static diagonal gather/scatter nodes, 2x2
+inverse, 2x2 linear solve, 2x2 square via `matrix_power(..., 2)`, and
+2x2-by-2x2 `multi_dot` program-AD nodes also lower to native LLVM/JIT
+arithmetic kernels; other wider linalg and shape-changing linalg traces still
+report unsupported native ops before failing closed.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

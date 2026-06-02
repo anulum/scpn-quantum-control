@@ -10001,7 +10001,8 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
         "linalg:solve:2x2:rhs:2:1",
     }
 )
-_WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset({6, 8})
+_WHOLE_PROGRAM_NATIVE_WIDE_DET_SIZES = frozenset({6, 8, 12})
+_WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset({12})
 
 
 def analyse_whole_program_ad_native_lowering(
@@ -10208,6 +10209,234 @@ def clear_native_whole_program_ad_compile_cache() -> int:
         return removed
 
 
+def _compile_whole_program_native_helper_definitions(
+    result: WholeProgramADResult,
+) -> list[str]:
+    """Emit compact native helper functions required by the captured trace."""
+
+    helper_sizes = sorted(
+        {
+            size
+            for node in result.ir_nodes
+            for size in (_whole_program_native_wide_det_size(node.op),)
+            if size in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES
+        }
+    )
+    lines: list[str] = []
+    for size in helper_sizes:
+        if lines:
+            lines.append("")
+        lines.extend(_compile_whole_program_native_det_loop_helper_llvm_ir(size))
+    return lines
+
+
+def _compile_whole_program_native_det_loop_helper_llvm_ir(size: int) -> list[str]:
+    """Emit a loop-based Faddeev-LeVerrier determinant/partial helper."""
+
+    if size not in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES:
+        raise ValueError("native determinant loop helper requested for unsupported size")
+    total = size * size
+    symbol = _whole_program_native_det_loop_helper_symbol(size)
+    det_value = "%det_value" if size % 2 == 0 else "%det_value_signed"
+    partial_value = "%partial_value" if size % 2 == 1 else "%partial_value_signed"
+    lines = [
+        f"define internal void @{symbol}(double* %matrix, double* %out) {{",
+        "entry:",
+        f"  %b = alloca [{total} x double]",
+        f"  %product = alloca [{total} x double]",
+        "  br label %init_cond",
+        "",
+        "init_cond:",
+        "  %init_i = phi i64 [0, %entry], [%init_next, %init_body]",
+        f"  %init_more = icmp slt i64 %init_i, {total}",
+        "  br i1 %init_more, label %init_body, label %s1_entry",
+        "",
+        "init_body:",
+        f"  %init_row = sdiv i64 %init_i, {size}",
+        f"  %init_col = srem i64 %init_i, {size}",
+        "  %init_diag = icmp eq i64 %init_row, %init_col",
+        "  %init_value = select i1 %init_diag, double 1.00000000000000000e+00, "
+        "double 0.00000000000000000e+00",
+        f"  %init_ptr = getelementptr [{total} x double], [{total} x double]* %b, "
+        "i64 0, i64 %init_i",
+        "  store double %init_value, double* %init_ptr",
+        "  %init_next = add i64 %init_i, 1",
+        "  br label %init_cond",
+        "",
+    ]
+    for step in range(1, size + 1):
+        entry_label = f"s{step}_entry"
+        product_cond = f"s{step}_product_cond"
+        product_body = f"s{step}_product_body"
+        inner_cond = f"s{step}_inner_cond"
+        inner_body = f"s{step}_inner_body"
+        inner_exit = f"s{step}_inner_exit"
+        trace_cond = f"s{step}_trace_cond"
+        trace_body = f"s{step}_trace_body"
+        trace_exit = f"s{step}_trace_exit"
+        coefficient = f"%s{step}_coefficient"
+        lines.extend(
+            [
+                f"{entry_label}:",
+                f"  br label %{product_cond}",
+                "",
+                f"{product_cond}:",
+                f"  %s{step}_product_i = phi i64 [0, %{entry_label}], "
+                f"[%s{step}_product_next, %{inner_exit}]",
+                f"  %s{step}_product_more = icmp slt i64 %s{step}_product_i, {total}",
+                f"  br i1 %s{step}_product_more, label %{product_body}, label %{trace_cond}",
+                "",
+                f"{product_body}:",
+                f"  %s{step}_row = sdiv i64 %s{step}_product_i, {size}",
+                f"  %s{step}_col = srem i64 %s{step}_product_i, {size}",
+                f"  br label %{inner_cond}",
+                "",
+                f"{inner_cond}:",
+                f"  %s{step}_inner_i = phi i64 [0, %{product_body}], "
+                f"[%s{step}_inner_next, %{inner_body}]",
+                f"  %s{step}_inner_sum = phi double [0.00000000000000000e+00, "
+                f"%{product_body}], [%s{step}_inner_sum_next, %{inner_body}]",
+                f"  %s{step}_inner_more = icmp slt i64 %s{step}_inner_i, {size}",
+                f"  br i1 %s{step}_inner_more, label %{inner_body}, label %{inner_exit}",
+                "",
+                f"{inner_body}:",
+                f"  %s{step}_matrix_row_offset = mul i64 %s{step}_row, {size}",
+                f"  %s{step}_matrix_index = add i64 %s{step}_matrix_row_offset, %s{step}_inner_i",
+                f"  %s{step}_b_row_offset = mul i64 %s{step}_inner_i, {size}",
+                f"  %s{step}_b_index = add i64 %s{step}_b_row_offset, %s{step}_col",
+                f"  %s{step}_matrix_ptr = getelementptr double, double* %matrix, "
+                f"i64 %s{step}_matrix_index",
+                f"  %s{step}_matrix_value = load double, double* %s{step}_matrix_ptr",
+                f"  %s{step}_b_ptr = getelementptr [{total} x double], "
+                f"[{total} x double]* %b, i64 0, i64 %s{step}_b_index",
+                f"  %s{step}_b_value = load double, double* %s{step}_b_ptr",
+                f"  %s{step}_term = fmul double %s{step}_matrix_value, %s{step}_b_value",
+                f"  %s{step}_inner_sum_next = fadd double %s{step}_inner_sum, %s{step}_term",
+                f"  %s{step}_inner_next = add i64 %s{step}_inner_i, 1",
+                f"  br label %{inner_cond}",
+                "",
+                f"{inner_exit}:",
+                f"  %s{step}_product_ptr = getelementptr [{total} x double], "
+                f"[{total} x double]* %product, i64 0, i64 %s{step}_product_i",
+                f"  store double %s{step}_inner_sum, double* %s{step}_product_ptr",
+                f"  %s{step}_product_next = add i64 %s{step}_product_i, 1",
+                f"  br label %{product_cond}",
+                "",
+                f"{trace_cond}:",
+                f"  %s{step}_trace_i = phi i64 [0, %{product_cond}], "
+                f"[%s{step}_trace_next, %{trace_body}]",
+                f"  %s{step}_trace_sum = phi double [0.00000000000000000e+00, "
+                f"%{product_cond}], [%s{step}_trace_sum_next, %{trace_body}]",
+                f"  %s{step}_trace_more = icmp slt i64 %s{step}_trace_i, {size}",
+                f"  br i1 %s{step}_trace_more, label %{trace_body}, label %{trace_exit}",
+                "",
+                f"{trace_body}:",
+                f"  %s{step}_trace_row_offset = mul i64 %s{step}_trace_i, {size}",
+                f"  %s{step}_trace_index = add i64 %s{step}_trace_row_offset, %s{step}_trace_i",
+                f"  %s{step}_trace_ptr = getelementptr [{total} x double], "
+                f"[{total} x double]* %product, i64 0, i64 %s{step}_trace_index",
+                f"  %s{step}_trace_value = load double, double* %s{step}_trace_ptr",
+                f"  %s{step}_trace_sum_next = fadd double %s{step}_trace_sum, "
+                f"%s{step}_trace_value",
+                f"  %s{step}_trace_next = add i64 %s{step}_trace_i, 1",
+                f"  br label %{trace_cond}",
+                "",
+                f"{trace_exit}:",
+                f"  {coefficient} = fmul double {_fmt_llvm_float(-1.0 / step)}, "
+                f"%s{step}_trace_sum",
+            ]
+        )
+        if step == size:
+            if size % 2 == 0:
+                lines.append(f"  %det_value = fadd double {coefficient}, 0.00000000000000000e+00")
+            else:
+                lines.append(
+                    f"  %det_value_signed = fsub double 0.00000000000000000e+00, {coefficient}"
+                )
+            lines.extend(
+                [
+                    "  %det_out_ptr = getelementptr double, double* %out, i64 0",
+                    f"  store double {det_value}, double* %det_out_ptr",
+                    "  br label %partial_cond",
+                    "",
+                    "partial_cond:",
+                    "  %partial_i = phi i64 [0, %s12_trace_exit], [%partial_next, %partial_body]",
+                    f"  %partial_more = icmp slt i64 %partial_i, {total}",
+                    "  br i1 %partial_more, label %partial_body, label %partial_exit",
+                    "",
+                    "partial_body:",
+                    f"  %partial_row = sdiv i64 %partial_i, {size}",
+                    f"  %partial_col = srem i64 %partial_i, {size}",
+                    f"  %partial_b_row_offset = mul i64 %partial_col, {size}",
+                    "  %partial_b_index = add i64 %partial_b_row_offset, %partial_row",
+                    f"  %partial_b_ptr = getelementptr [{total} x double], "
+                    f"[{total} x double]* %b, i64 0, i64 %partial_b_index",
+                    "  %partial_b_value = load double, double* %partial_b_ptr",
+                ]
+            )
+            if size % 2 == 0:
+                lines.append(
+                    "  %partial_value_signed = fsub double "
+                    "0.00000000000000000e+00, %partial_b_value"
+                )
+            else:
+                lines.append(
+                    "  %partial_value = fadd double %partial_b_value, 0.00000000000000000e+00"
+                )
+            lines.extend(
+                [
+                    "  %partial_out_index = add i64 %partial_i, 1",
+                    "  %partial_out_ptr = getelementptr double, double* %out, "
+                    "i64 %partial_out_index",
+                    f"  store double {partial_value}, double* %partial_out_ptr",
+                    "  %partial_next = add i64 %partial_i, 1",
+                    "  br label %partial_cond",
+                    "",
+                    "partial_exit:",
+                    "  ret void",
+                    "}",
+                ]
+            )
+            continue
+        update_cond = f"s{step}_update_cond"
+        update_body = f"s{step}_update_body"
+        next_entry = f"s{step + 1}_entry"
+        lines.extend(
+            [
+                f"  br label %{update_cond}",
+                "",
+                f"{update_cond}:",
+                f"  %s{step}_update_i = phi i64 [0, %{trace_exit}], "
+                f"[%s{step}_update_next, %{update_body}]",
+                f"  %s{step}_update_more = icmp slt i64 %s{step}_update_i, {total}",
+                f"  br i1 %s{step}_update_more, label %{update_body}, label %{next_entry}",
+                "",
+                f"{update_body}:",
+                f"  %s{step}_update_row = sdiv i64 %s{step}_update_i, {size}",
+                f"  %s{step}_update_col = srem i64 %s{step}_update_i, {size}",
+                f"  %s{step}_update_diag = icmp eq i64 %s{step}_update_row, %s{step}_update_col",
+                f"  %s{step}_update_coeff = select i1 %s{step}_update_diag, "
+                f"double {coefficient}, double 0.00000000000000000e+00",
+                f"  %s{step}_update_product_ptr = getelementptr [{total} x double], "
+                f"[{total} x double]* %product, i64 0, i64 %s{step}_update_i",
+                f"  %s{step}_update_product = load double, double* %s{step}_update_product_ptr",
+                f"  %s{step}_update_value = fadd double %s{step}_update_product, "
+                f"%s{step}_update_coeff",
+                f"  %s{step}_update_b_ptr = getelementptr [{total} x double], "
+                f"[{total} x double]* %b, i64 0, i64 %s{step}_update_i",
+                f"  store double %s{step}_update_value, double* %s{step}_update_b_ptr",
+                f"  %s{step}_update_next = add i64 %s{step}_update_i, 1",
+                f"  br label %{update_cond}",
+                "",
+            ]
+        )
+    return lines
+
+
+def _whole_program_native_det_loop_helper_symbol(size: int) -> str:
+    return f"scpn_det{size}_fl_value_partials"
+
+
 def _with_native_whole_program_cache_metadata(
     module: MLIRModule,
     *,
@@ -10251,6 +10480,7 @@ def _compile_whole_program_ad_native_llvm_ir(
         result,
         values_pointer="%row_values",
     )
+    helper_lines = _compile_whole_program_native_helper_definitions(result)
 
     lines = [
         "declare double @llvm.sin.f64(double)",
@@ -10261,6 +10491,8 @@ def _compile_whole_program_ad_native_llvm_ir(
         "declare double @llvm.pow.f64(double, double)",
         "declare double @llvm.asin.f64(double)",
         "declare double @llvm.acos.f64(double)",
+        "",
+        *helper_lines,
         "",
         f"define void @{base_symbol}_value(double* %values, double* %out) {{",
         *computation_lines,
@@ -10802,15 +11034,26 @@ def _emit_whole_program_native_operation(
         expected_inputs = wide_det_size * wide_det_size
         if len(inputs) != expected_inputs:
             raise ValueError(f"native {node.op} expects {expected_inputs} matrix inputs")
-        _emit_whole_program_native_det_faddeev_leverrier(
-            lines,
-            result,
-            node,
-            value_name,
-            inputs,
-            size=wide_det_size,
-            prefix=f"det{wide_det_size}",
-        )
+        if wide_det_size in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES:
+            _emit_whole_program_native_det_loop_helper_call(
+                lines,
+                result,
+                node,
+                value_name,
+                inputs,
+                size=wide_det_size,
+                prefix=f"det{wide_det_size}",
+            )
+        else:
+            _emit_whole_program_native_det_faddeev_leverrier(
+                lines,
+                result,
+                node,
+                value_name,
+                inputs,
+                size=wide_det_size,
+                prefix=f"det{wide_det_size}",
+            )
         return
     trace_input_count = _whole_program_native_trace_input_count(node.op)
     if trace_input_count is not None:
@@ -11437,6 +11680,82 @@ def _emit_whole_program_native_det5(
         size=5,
         prefix="det5",
     )
+
+
+def _emit_whole_program_native_det_loop_helper_call(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+    *,
+    size: int,
+    prefix: str,
+) -> None:
+    """Emit a compact native helper call plus exact chain-rule derivative code."""
+
+    if size not in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES:
+        raise ValueError("native determinant helper call requested for unsupported size")
+    parameter_count = int(result.gradient.size)
+    total = size * size
+    output_total = total + 1
+    matrix_alloca = f"%{prefix}_helper_matrix_{node.index}"
+    output_alloca = f"%{prefix}_helper_output_{node.index}"
+    matrix_base = f"%{prefix}_helper_matrix_base_{node.index}"
+    output_base = f"%{prefix}_helper_output_base_{node.index}"
+    symbol = _whole_program_native_det_loop_helper_symbol(size)
+    lines.extend(
+        [
+            f"  {matrix_alloca} = alloca [{total} x double]",
+            f"  {output_alloca} = alloca [{output_total} x double]",
+        ]
+    )
+    for input_index, token in enumerate(inputs):
+        matrix_ptr = f"%{prefix}_helper_matrix_ptr_{node.index}_{input_index}"
+        lines.extend(
+            [
+                f"  {matrix_ptr} = getelementptr [{total} x double], "
+                f"[{total} x double]* {matrix_alloca}, i64 0, i64 {input_index}",
+                f"  store double {_whole_program_native_operand(token)}, double* {matrix_ptr}",
+            ]
+        )
+    lines.extend(
+        [
+            f"  {matrix_base} = getelementptr [{total} x double], "
+            f"[{total} x double]* {matrix_alloca}, i64 0, i64 0",
+            f"  {output_base} = getelementptr [{output_total} x double], "
+            f"[{output_total} x double]* {output_alloca}, i64 0, i64 0",
+            f"  call void @{symbol}(double* {matrix_base}, double* {output_base})",
+            f"  %{prefix}_helper_value_ptr_{node.index} = getelementptr "
+            f"[{output_total} x double], [{output_total} x double]* {output_alloca}, "
+            "i64 0, i64 0",
+            f"  {value_name} = load double, double* %{prefix}_helper_value_ptr_{node.index}",
+        ]
+    )
+    partials: list[str] = []
+    for input_index in range(total):
+        partial_ptr = f"%{prefix}_helper_partial_ptr_{node.index}_{input_index}"
+        partial_value = f"%{prefix}_helper_partial_{node.index}_{input_index}"
+        lines.extend(
+            [
+                f"  {partial_ptr} = getelementptr [{output_total} x double], "
+                f"[{output_total} x double]* {output_alloca}, i64 0, i64 {input_index + 1}",
+                f"  {partial_value} = load double, double* {partial_ptr}",
+            ]
+        )
+        partials.append(partial_value)
+    for derivative_index in range(parameter_count):
+        derivative_terms: list[str] = []
+        for input_index, token in enumerate(inputs):
+            input_derivative = _whole_program_native_derivative_operand(token, derivative_index)
+            term = f"%d{node.index}_{derivative_index}_{prefix}_helper_term_{input_index}"
+            lines.append(f"  {term} = fmul double {partials[input_index]}, {input_derivative}")
+            derivative_terms.append(term)
+        _emit_whole_program_native_sum_operands(
+            lines,
+            derivative_terms,
+            _whole_program_native_derivative_name(node.index, derivative_index),
+        )
 
 
 def _emit_whole_program_native_det_faddeev_leverrier(
