@@ -9999,7 +9999,6 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
         "linalg:inv:2x2:1:1",
         "linalg:solve:2x2:rhs:2:0",
         "linalg:solve:2x2:rhs:2:1",
-        "linalg:trace:2x2:offset:0",
     }
 )
 
@@ -10057,6 +10056,8 @@ def _whole_program_native_node_is_lowerable(op: str) -> bool:
     if op in _WHOLE_PROGRAM_NATIVE_BINARY_OPS:
         return True
     if op in _WHOLE_PROGRAM_NATIVE_LINALG_OPS:
+        return True
+    if _whole_program_native_trace_input_count(op) is not None:
         return True
     if op.startswith("linalg:matrix_power:2x2:power:2:"):
         return True
@@ -10791,23 +10792,18 @@ def _emit_whole_program_native_operation(
             raise ValueError("native linalg:det:5x5 expects twenty-five matrix inputs")
         _emit_whole_program_native_det5(lines, result, node, value_name, inputs)
         return
-    if node.op == "linalg:trace:2x2:offset:0":
-        if len(inputs) != 2:
-            raise ValueError("native linalg:trace:2x2:offset:0 expects two diagonal inputs")
-        first_diagonal = _whole_program_native_operand(inputs[0])
-        second_diagonal = _whole_program_native_operand(inputs[1])
-        lines.append(f"  {value_name} = fadd double {first_diagonal}, {second_diagonal}")
-        for derivative_index in range(parameter_count):
-            first_derivative = _whole_program_native_derivative_operand(
-                inputs[0], derivative_index
-            )
-            second_derivative = _whole_program_native_derivative_operand(
-                inputs[1], derivative_index
-            )
-            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
-            lines.append(
-                f"  {derivative_name} = fadd double {first_derivative}, {second_derivative}"
-            )
+    trace_input_count = _whole_program_native_trace_input_count(node.op)
+    if trace_input_count is not None:
+        if len(inputs) != trace_input_count:
+            raise ValueError(f"native {node.op} expects {trace_input_count} diagonal inputs")
+        _emit_whole_program_native_sum(
+            lines,
+            result,
+            node,
+            value_name,
+            inputs,
+            "trace",
+        )
         return
     if node.op.startswith("linalg:matrix_power:2x2:power:2:"):
         if len(inputs) != 4:
@@ -11311,6 +11307,55 @@ def _emit_whole_program_native_det3(
             accumulator = target
 
 
+def _emit_whole_program_native_sum(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+    prefix: str,
+) -> None:
+    """Emit native value and derivative code for a fixed input sum."""
+
+    if not inputs:
+        raise ValueError(f"native {prefix} sum requires at least one input")
+    parameter_count = int(result.gradient.size)
+    value_operands = tuple(_whole_program_native_operand(token) for token in inputs)
+    if len(value_operands) == 1:
+        lines.append(f"  {value_name} = fadd double {value_operands[0]}, {_fmt_llvm_float(0.0)}")
+    else:
+        accumulator = value_operands[0]
+        for offset, operand in enumerate(value_operands[1:], start=1):
+            target = (
+                value_name
+                if offset == len(value_operands) - 1
+                else f"%{prefix}_{node.index}_{offset}"
+            )
+            lines.append(f"  {target} = fadd double {accumulator}, {operand}")
+            accumulator = target
+
+    for derivative_index in range(parameter_count):
+        derivative_operands = tuple(
+            _whole_program_native_derivative_operand(token, derivative_index) for token in inputs
+        )
+        derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+        if len(derivative_operands) == 1:
+            lines.append(
+                f"  {derivative_name} = fadd double {derivative_operands[0]}, "
+                f"{_fmt_llvm_float(0.0)}"
+            )
+            continue
+        accumulator = derivative_operands[0]
+        for offset, operand in enumerate(derivative_operands[1:], start=1):
+            target = (
+                derivative_name
+                if offset == len(derivative_operands) - 1
+                else f"%d{node.index}_{derivative_index}_{prefix}_{offset}"
+            )
+            lines.append(f"  {target} = fadd double {accumulator}, {operand}")
+            accumulator = target
+
+
 def _emit_whole_program_native_det4(
     lines: list[str],
     result: WholeProgramADResult,
@@ -11469,6 +11514,30 @@ def _whole_program_native_det_minor(
         for current_row_index, row_values in enumerate(matrix)
         if current_row_index != row_index
     )
+
+
+def _whole_program_native_trace_input_count(op: str) -> int | None:
+    """Return the number of statically captured diagonal inputs for a trace op."""
+
+    prefix = "linalg:trace:"
+    if not op.startswith(prefix):
+        return None
+    try:
+        shape_part, offset_part = op[len(prefix) :].split(":offset:", 1)
+        row_text, col_text = shape_part.split("x", 1)
+        rows = int(row_text)
+        cols = int(col_text)
+        offset = int(offset_part)
+    except ValueError:
+        return None
+    if rows <= 0 or cols <= 0:
+        return None
+    start_row = max(0, -offset)
+    start_col = max(0, offset)
+    count = min(rows - start_row, cols - start_col)
+    if count <= 0:
+        return None
+    return count
 
 
 def _emit_whole_program_native_product_sum2(

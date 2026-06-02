@@ -5679,6 +5679,78 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_linalg_scalar_ops() -
     )
 
 
+def test_whole_program_ad_trace_native_llvm_jit_lowers_static_trace_ops() -> None:
+    """Native program AD should lower static square and rectangular trace nodes."""
+
+    def objective(values: np.ndarray) -> object:
+        rectangle = values[0:20].reshape((4, 5))
+        square = values[20:45].reshape((5, 5))
+        return (
+            np.trace(rectangle, offset=1)
+            + 0.5 * np.trace(rectangle, offset=-1)
+            + 0.25 * np.trace(square)
+            + values[45] * values[0]
+            - np.cos(values[44])
+        )
+
+    sample = np.linspace(-0.6, 0.9, 46, dtype=np.float64)
+    replay = np.linspace(0.8, -0.7, 46, dtype=np.float64)
+    parameters = tuple(Parameter(f"x{index}") for index in range(46))
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+    kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        replay,
+        parameters,
+    )
+
+    assert report.supported is True
+    assert report.unsupported_ops == ()
+    assert {
+        "linalg:trace:4x5:offset:1",
+        "linalg:trace:4x5:offset:-1",
+        "linalg:trace:5x5:offset:0",
+    }.issubset(report.lowerable_ops)
+    assert {
+        "linalg:trace:4x5:offset:1",
+        "linalg:trace:4x5:offset:-1",
+        "linalg:trace:5x5:offset:0",
+    }.issubset(kernel.supported_ops)
+    assert "trace_" in kernel.llvm_ir
+    assert kernel.mlir_module.metadata["native_lowering_report"]["supported"] is True
+    assert kernel.mlir_module.metadata["native_lowering_report"]["unsupported_ops"] == ()
+    assert kernel.value(replay) == pytest.approx(reference_value)
+    np.testing.assert_allclose(
+        kernel.gradient(replay),
+        reference_gradient,
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    batch = np.vstack(
+        [
+            sample,
+            replay,
+            np.linspace(-0.25, 1.25, 46, dtype=np.float64),
+        ]
+    )
+    batch_reference = [program_adjoint_value_and_grad(objective, row, parameters) for row in batch]
+    batch_result = kernel.batch_value_and_grad(batch)
+    np.testing.assert_allclose(
+        batch_result.values,
+        np.array([item[0] for item in batch_reference], dtype=np.float64),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+    np.testing.assert_allclose(
+        batch_result.gradients,
+        np.vstack([item[1] for item in batch_reference]),
+        rtol=1.0e-10,
+        atol=1.0e-10,
+    )
+
+
 def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_where() -> None:
     """Native program AD should lower scalar np.where selection traces."""
 

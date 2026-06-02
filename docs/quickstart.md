@@ -216,11 +216,11 @@ branch/signature, cross unsupported primitive domains, hit
 nondifferentiable boundaries, use unsupported operations, loop/control joins, or
 shape changes fail closed and should use the replay executable until a native
 lowering rule exists.
-Strict scalar 2x2, 3x3, 4x4, and 5x5 determinants, zero-offset 2x2 trace,
-2x2 inverse, 2x2 linear solve, 2x2 square via `matrix_power(..., 2)`, and
-2x2-by-2x2 `multi_dot` program-AD nodes also lower to native LLVM/JIT
-arithmetic kernels; wider linalg and shape-changing linalg traces still report
-unsupported native ops before failing closed.
+Strict scalar 2x2, 3x3, 4x4, and 5x5 determinants, static square/rectangular
+trace nodes with fixed offsets, 2x2 inverse, 2x2 linear solve, 2x2 square via
+`matrix_power(..., 2)`, and 2x2-by-2x2 `multi_dot` program-AD nodes also lower
+to native LLVM/JIT arithmetic kernels; wider linalg and shape-changing linalg
+traces still report unsupported native ops before failing closed.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 
