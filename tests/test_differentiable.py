@@ -12411,6 +12411,13 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
     insert_contract = primitive_contract_for("scpn.program_ad.array:insert")
     assert insert_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "insert", "1")
     assert insert_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.insert"
+    assert (
+        insert_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_array_insert_derivative_rule"
+    )
+    assert insert_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;object_values_axis"
+    )
     assert insert_contract.shape_rule is not None
     assert insert_contract.shape_rule((matrix, 1, np.array([-2.0, 3.0]), 1)) == (2, 4)
     assert insert_contract.shape_rule((matrix, np.array([1, 4]), np.array([0.5, -1.5]), None)) == (
