@@ -2221,6 +2221,10 @@ def _normalise_repeat_counts(repeats: object, selected_size: int) -> int | tuple
 def _trace_repeat(
     array: TraceADArray, *, repeats: object, axis: int | None = None
 ) -> TraceADArray:
+    if axis is None:
+        _require_program_ad_shape_contract("repeat", (array, repeats))
+    else:
+        _require_program_ad_shape_contract("repeat", (array, repeats, axis))
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     if axis is None:
         repeat_counts = _normalise_repeat_counts(repeats, array.size)
@@ -9633,6 +9637,7 @@ _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "moveaxis",
         "reshape",
         "ravel",
+        "repeat",
         "roll",
         "rot90",
         "squeeze",
@@ -11051,6 +11056,99 @@ def program_ad_shape_rot90_derivative_rule(
             "program_ad_shape_rot90_"
             f"{_program_ad_shape_signature(source)}_k_{k_value}_"
             f"axes_{axes_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_normalise_repeat_signature(
+    source_shape: tuple[int, ...],
+    repeats: object,
+    axis: object,
+) -> tuple[int | tuple[int, ...], int | None, tuple[int, ...]]:
+    if axis is None:
+        repeat_counts = _normalise_repeat_counts(
+            repeats, _program_ad_shape_static_size(source_shape)
+        )
+        target_size = (
+            sum(repeat_counts)
+            if isinstance(repeat_counts, tuple)
+            else _program_ad_shape_static_size(source_shape) * repeat_counts
+        )
+        return repeat_counts, None, (int(target_size),)
+
+    axis_index = _normalise_axis_permutation_axis("repeat", axis, rank=len(source_shape))
+    repeat_counts = _normalise_repeat_counts(repeats, source_shape[axis_index])
+    target = list(source_shape)
+    target[axis_index] = int(
+        sum(repeat_counts)
+        if isinstance(repeat_counts, tuple)
+        else source_shape[axis_index] * repeat_counts
+    )
+    return repeat_counts, axis_index, tuple(target)
+
+
+def program_ad_shape_repeat_derivative_rule(
+    source_shape: Sequence[int],
+    repeats: object,
+    axis: object = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static repeat signatures."""
+
+    source = _program_ad_shape_normalise_static_shape("repeat", source_shape)
+    repeat_counts, axis_index, target = _program_ad_shape_normalise_repeat_signature(
+        source, repeats, axis
+    )
+    source_size = _program_ad_shape_static_size(source)
+    target_size = _program_ad_shape_static_size(target)
+    source_indices = np.arange(source_size, dtype=np.int64).reshape(source)
+    if axis_index is None:
+        repeated_indices = np.repeat(source_indices.reshape(-1), repeat_counts).reshape(-1)
+    else:
+        repeated_indices = np.repeat(source_indices, repeat_counts, axis=axis_index).reshape(-1)
+
+    def _repeat_flat(vector: NDArray[np.float64]) -> NDArray[np.float64]:
+        if axis_index is None:
+            return _program_ad_float64_vector_result(np.repeat(vector, repeat_counts))
+        return _program_ad_float64_vector_result(
+            np.repeat(vector.reshape(source), repeat_counts, axis=axis_index)
+        )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("repeat", "values", values, expected_size=source_size)
+        return _repeat_flat(vector)
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("repeat", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "repeat", "tangent", tangent, expected_size=source_size
+        )
+        return _repeat_flat(tangent_vector)
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("repeat", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "repeat", "cotangent", cotangent, expected_size=target_size
+        )
+        adjoint = np.zeros(source_size, dtype=np.float64)
+        np.add.at(adjoint, repeated_indices, cotangent_vector)
+        return _program_ad_float64_vector_result(adjoint)
+
+    repeat_signature = (
+        "_".join(str(value) for value in repeat_counts)
+        if isinstance(repeat_counts, tuple)
+        else str(repeat_counts)
+    )
+    axis_signature = "flat" if axis_index is None else str(axis_index)
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_repeat_"
+            f"{_program_ad_shape_signature(source)}_repeats_{repeat_signature}_"
+            f"axis_{axis_signature}_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -14250,6 +14348,16 @@ def _program_ad_shape_rot90_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return _program_ad_shape_rot90_target_shape(source_shape, k_value, axes_value)
 
 
+def _program_ad_shape_repeat_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {2, 3}:
+        raise ValueError("program AD shape repeat rule requires array, repeats, and optional axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    _, _, target_shape = _program_ad_shape_normalise_repeat_signature(
+        source_shape, args[1], args[2] if len(args) == 3 else None
+    )
+    return target_shape
+
+
 def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape squeeze rule requires array and optional axis")
@@ -14794,6 +14902,18 @@ def _program_ad_shape_rot90_static_arguments(args: tuple[object, ...]) -> tuple[
         _normalise_rot90_k(args[1] if len(args) >= 2 else 1),
         _normalise_rot90_axes(args[2] if len(args) == 3 else (0, 1), rank=len(source_shape)),
     )
+
+
+def _program_ad_shape_repeat_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {2, 3}:
+        raise ValueError(
+            "program AD shape repeat static rule requires array, repeats, and optional axis"
+        )
+    source_shape = _program_ad_array_shape_of(args[0])
+    repeat_counts, axis_index, _ = _program_ad_shape_normalise_repeat_signature(
+        source_shape, args[1], args[2] if len(args) == 3 else None
+    )
+    return repeat_counts, axis_index
 
 
 def _program_ad_shape_squeeze_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -16344,6 +16464,7 @@ _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "moveaxis": _program_ad_shape_moveaxis_shape,
     "reshape": _program_ad_shape_reshape_shape,
     "ravel": _program_ad_shape_ravel_shape,
+    "repeat": _program_ad_shape_repeat_shape,
     "roll": _program_ad_shape_roll_shape,
     "rot90": _program_ad_shape_rot90_shape,
     "squeeze": _program_ad_shape_squeeze_shape,
@@ -16357,6 +16478,7 @@ _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRul
     "moveaxis": _program_ad_shape_moveaxis_static_arguments,
     "reshape": _program_ad_shape_reshape_static_arguments,
     "ravel": _program_ad_shape_no_static_arguments,
+    "repeat": _program_ad_shape_repeat_static_arguments,
     "roll": _program_ad_shape_roll_static_arguments,
     "rot90": _program_ad_shape_rot90_static_arguments,
     "squeeze": _program_ad_shape_squeeze_static_arguments,
@@ -16514,6 +16636,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
         "flip": "program_ad_shape_flip_derivative_rule",
         "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
+        "repeat": "program_ad_shape_repeat_derivative_rule",
         "reshape": "program_ad_shape_reshape_derivative_rule",
         "ravel": "program_ad_shape_ravel_derivative_rule",
         "roll": "program_ad_shape_roll_derivative_rule",
@@ -16526,6 +16649,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "expand_dims": "source_shape:ranked_tensor_shape;axis",
         "flip": "source_shape:ranked_tensor_shape;axis",
         "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
+        "repeat": "source_shape:ranked_tensor_shape;repeats_axis",
         "reshape": "source_shape:ranked_tensor_shape;target_shape",
         "ravel": "source_shape:ranked_tensor_shape",
         "roll": "source_shape:ranked_tensor_shape;shift_axis",
@@ -16538,6 +16662,7 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "expand_dims": "static_singleton_axis_insertion",
         "flip": "static_axis_flip_permutation",
         "moveaxis": "static_axis_move_permutation",
+        "repeat": "static_repeat_scatter_add",
         "reshape": "element_count_preserving_static_shape",
         "ravel": "contiguous_flat_view_shape",
         "roll": "static_integer_roll_permutation",
@@ -25125,6 +25250,7 @@ __all__ = [
     "program_ad_shape_flip_derivative_rule",
     "program_ad_shape_moveaxis_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
+    "program_ad_shape_repeat_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
     "program_ad_shape_roll_derivative_rule",
     "program_ad_shape_rot90_derivative_rule",
