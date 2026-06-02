@@ -14032,6 +14032,18 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
         scpn.program_ad_array_take_along_axis_derivative_rule
         is program_ad_array_take_along_axis_derivative_rule
     )
+    assert (
+        scpn.program_ad_array_delete_derivative_rule
+        is differentiable_module.program_ad_array_delete_derivative_rule
+    )
+    assert (
+        scpn.program_ad_array_pad_derivative_rule
+        is differentiable_module.program_ad_array_pad_derivative_rule
+    )
+    assert (
+        scpn.program_ad_array_insert_derivative_rule
+        is differentiable_module.program_ad_array_insert_derivative_rule
+    )
     assert scpn.program_ad_linalg_diag_derivative_rule is program_ad_linalg_diag_derivative_rule
     assert (
         scpn.program_ad_linalg_diagflat_derivative_rule
