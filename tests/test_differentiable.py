@@ -4853,6 +4853,40 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
 def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
     """Shape contracts should expose fail-closed static-layout boundaries."""
 
+    expected_factories = {
+        "atleast_1d": "program_ad_shape_atleast_1d_derivative_rule",
+        "atleast_2d": "program_ad_shape_atleast_2d_derivative_rule",
+        "atleast_3d": "program_ad_shape_atleast_3d_derivative_rule",
+        "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
+        "flip": "program_ad_shape_flip_derivative_rule",
+        "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
+        "repeat": "program_ad_shape_repeat_derivative_rule",
+        "reshape": "program_ad_shape_reshape_derivative_rule",
+        "ravel": "program_ad_shape_ravel_derivative_rule",
+        "roll": "program_ad_shape_roll_derivative_rule",
+        "rot90": "program_ad_shape_rot90_derivative_rule",
+        "squeeze": "program_ad_shape_squeeze_derivative_rule",
+        "swapaxes": "program_ad_shape_swapaxes_derivative_rule",
+        "tile": "program_ad_shape_tile_derivative_rule",
+        "transpose": "program_ad_shape_transpose_derivative_rule",
+    }
+    expected_static_signatures = {
+        "atleast_1d": "source_shape:ranked_tensor_shape",
+        "atleast_2d": "source_shape:ranked_tensor_shape",
+        "atleast_3d": "source_shape:ranked_tensor_shape",
+        "expand_dims": "source_shape:ranked_tensor_shape;axis",
+        "flip": "source_shape:ranked_tensor_shape;axis",
+        "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
+        "repeat": "source_shape:ranked_tensor_shape;repeats_axis",
+        "reshape": "source_shape:ranked_tensor_shape;target_shape",
+        "ravel": "source_shape:ranked_tensor_shape",
+        "roll": "source_shape:ranked_tensor_shape;shift_axis",
+        "rot90": "source_shape:ranked_tensor_shape;k_axes",
+        "squeeze": "source_shape:ranked_tensor_shape;axis",
+        "swapaxes": "source_shape:ranked_tensor_shape;axis1_axis2",
+        "tile": "source_shape:ranked_tensor_shape;reps",
+        "transpose": "source_shape:ranked_tensor_shape;axes",
+    }
     expected_boundaries = {
         "atleast_1d": "static_rank_promotion",
         "atleast_2d": "static_rank_promotion",
@@ -4874,6 +4908,8 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         metadata = primitive_contract_for(
             PrimitiveIdentity("scpn.program_ad.shape", name, "1")
         ).lowering_metadata
+        assert metadata["static_derivative_factory"] == expected_factories[name]
+        assert metadata["static_signature"] == expected_static_signatures[name]
         assert metadata["nondifferentiable_boundary"] == boundary
         assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
@@ -6323,31 +6359,102 @@ def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
     assert vdot_contract.lowering_metadata["nondifferentiable_boundary"] == (
         "flattened_size_alignment"
     )
+    assert vdot_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert vdot_contract.effect == "pure"
     assert vdot_contract.shape_rule is not None
     assert vdot_contract.shape_rule((matrix, np.arange(6.0, dtype=np.float64))) == ()
+    assert vdot_contract.dtype_rule is not None
+    assert vdot_contract.dtype_rule((matrix, np.arange(6.0, dtype=np.float64))) == "float64"
+    assert vdot_contract.static_argument_rule is not None
+    assert vdot_contract.static_argument_rule((matrix, np.arange(6.0, dtype=np.float64))) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(vdot_contract.identity)
 
     inner_contract = primitive_contract_for("scpn.program_ad.product:inner")
     assert inner_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "inner", "1")
+    assert inner_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert inner_contract.effect == "pure"
     assert inner_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.inner"
+    assert (
+        inner_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_product_inner_derivative_rule"
+    )
+    assert inner_contract.lowering_metadata["static_signature"] == (
+        "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+    )
     assert inner_contract.shape_rule is not None
     assert inner_contract.shape_rule((matrix, matrix)) == (2, 2)
+    assert inner_contract.dtype_rule is not None
+    assert inner_contract.dtype_rule((matrix, matrix)) == "float64"
+    assert inner_contract.static_argument_rule is not None
+    assert inner_contract.static_argument_rule((matrix, matrix)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(inner_contract.identity)
 
     outer_contract = primitive_contract_for("scpn.program_ad.product:outer")
     assert outer_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "outer", "1")
+    assert outer_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert outer_contract.effect == "pure"
     assert outer_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.outer"
+    assert (
+        outer_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_product_outer_derivative_rule"
+    )
+    assert outer_contract.lowering_metadata["static_signature"] == (
+        "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+    )
     assert outer_contract.shape_rule is not None
     assert outer_contract.shape_rule((left_vector, matrix)) == (3, 6)
+    assert outer_contract.dtype_rule is not None
+    assert outer_contract.dtype_rule((left_vector, matrix)) == "float64"
+    assert outer_contract.static_argument_rule is not None
+    assert outer_contract.static_argument_rule((left_vector, matrix)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(outer_contract.identity)
 
     matmul_contract = primitive_contract_for("scpn.program_ad.product:matmul")
     assert matmul_contract.identity == PrimitiveIdentity("scpn.program_ad.product", "matmul", "1")
+    assert matmul_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert matmul_contract.effect == "pure"
     assert matmul_contract.lowering_metadata["mlir_op"] == "scpn_diff.product.matmul"
+    assert (
+        matmul_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_product_matmul_derivative_rule"
+    )
+    assert matmul_contract.lowering_metadata["static_signature"] == (
+        "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
+    )
     assert matmul_contract.shape_rule is not None
     assert matmul_contract.shape_rule((matrix, right_vector)) == (2,)
+    assert matmul_contract.dtype_rule is not None
+    assert matmul_contract.dtype_rule((matrix, right_vector)) == "float64"
+    assert matmul_contract.static_argument_rule is not None
+    assert matmul_contract.static_argument_rule((matrix, right_vector)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(matmul_contract.identity)
 
 
 def test_program_ad_product_boundary_metadata_is_explicit() -> None:
     """Product contracts should expose fail-closed contraction boundaries."""
 
+    expected_factories = {
+        "dot": "not_required",
+        "vdot": "not_required",
+        "inner": "program_ad_product_inner_derivative_rule",
+        "outer": "program_ad_product_outer_derivative_rule",
+        "matmul": "program_ad_product_matmul_derivative_rule",
+        "tensordot": "program_ad_product_tensordot_derivative_rule",
+        "einsum": "program_ad_product_einsum_derivative_rule",
+    }
+    expected_static_signatures = {
+        "dot": "none",
+        "vdot": "none",
+        "inner": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        "outer": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        "matmul": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
+        "tensordot": "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape;axes",
+        "einsum": "subscripts:explicit_static;operand_shapes:ranked_tensor_shapes",
+    }
     expected_boundaries = {
         "dot": "inner_dimension_alignment",
         "vdot": "flattened_size_alignment",
@@ -6361,6 +6468,8 @@ def test_program_ad_product_boundary_metadata_is_explicit() -> None:
         metadata = primitive_contract_for(
             PrimitiveIdentity("scpn.program_ad.product", name, "1")
         ).lowering_metadata
+        assert metadata["static_derivative_factory"] == expected_factories[name]
+        assert metadata["static_signature"] == expected_static_signatures[name]
         assert metadata["nondifferentiable_boundary"] == boundary
         assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
