@@ -11693,6 +11693,22 @@ def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
     hsplit_contract = primitive_contract_for("scpn.program_ad.assembly:hsplit")
     vsplit_contract = primitive_contract_for("scpn.program_ad.assembly:vsplit")
     dsplit_contract = primitive_contract_for("scpn.program_ad.assembly:dsplit")
+    for split_name, split_contract in (
+        ("hsplit", hsplit_contract),
+        ("vsplit", vsplit_contract),
+        ("dsplit", dsplit_contract),
+    ):
+        assert split_contract.identity == PrimitiveIdentity(
+            "scpn.program_ad.assembly", split_name, "1"
+        )
+        assert split_contract.lowering_metadata["mlir_op"] == (f"scpn_diff.assembly.{split_name}")
+        assert (
+            split_contract.lowering_metadata["static_derivative_factory"]
+            == "program_ad_assembly_split_derivative_rule"
+        )
+        assert split_contract.lowering_metadata["static_signature"] == (
+            "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes"
+        )
     assert hsplit_contract.shape_rule is not None
     assert hsplit_contract.shape_rule((matrix, [1, 2], 1)) == (6,)
     assert vsplit_contract.shape_rule is not None
