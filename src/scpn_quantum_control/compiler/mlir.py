@@ -9990,6 +9990,7 @@ _WHOLE_PROGRAM_NATIVE_BINARY_OPS = frozenset(
 _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
     {
         "linalg:det:2x2",
+        "linalg:det:3x3",
         "linalg:inv:2x2:0:0",
         "linalg:inv:2x2:0:1",
         "linalg:inv:2x2:1:0",
@@ -10773,6 +10774,11 @@ def _emit_whole_program_native_operation(
                 ]
             )
         return
+    if node.op == "linalg:det:3x3":
+        if len(inputs) != 9:
+            raise ValueError("native linalg:det:3x3 expects nine matrix inputs")
+        _emit_whole_program_native_det3(lines, result, node, value_name, inputs)
+        return
     if node.op == "linalg:trace:2x2:offset:0":
         if len(inputs) != 2:
             raise ValueError("native linalg:trace:2x2:offset:0 expects two diagonal inputs")
@@ -11216,6 +11222,81 @@ def _emit_whole_program_native_operation(
             )
         else:
             lines.append(f"  {derivative_name} = fmul double {scaled_factor}, {left_derivative}")
+
+
+def _emit_whole_program_native_det3(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+) -> None:
+    """Emit native 3x3 determinant value and exact cofactor adjoint code."""
+
+    parameter_count = int(result.gradient.size)
+    a_value, b_value, c_value, d_value, e_value, f_value, g_value, h_value, i_value = (
+        _whole_program_native_operand(token) for token in inputs
+    )
+    cofactor_specs = (
+        ("00", e_value, i_value, f_value, h_value),
+        ("01", f_value, g_value, d_value, i_value),
+        ("02", d_value, h_value, e_value, g_value),
+        ("10", c_value, h_value, b_value, i_value),
+        ("11", a_value, i_value, c_value, g_value),
+        ("12", b_value, g_value, a_value, h_value),
+        ("20", b_value, f_value, c_value, e_value),
+        ("21", c_value, d_value, a_value, f_value),
+        ("22", a_value, e_value, b_value, d_value),
+    )
+    cofactors: list[str] = []
+    for label, positive_left, positive_right, negative_left, negative_right in cofactor_specs:
+        positive_product = f"%det3_cofactor_{label}_positive_{node.index}"
+        negative_product = f"%det3_cofactor_{label}_negative_{node.index}"
+        cofactor = f"%det3_cofactor_{label}_{node.index}"
+        lines.extend(
+            [
+                f"  {positive_product} = fmul double {positive_left}, {positive_right}",
+                f"  {negative_product} = fmul double {negative_left}, {negative_right}",
+                f"  {cofactor} = fsub double {positive_product}, {negative_product}",
+            ]
+        )
+        cofactors.append(cofactor)
+
+    value_term_0 = f"%det3_value_term_{node.index}_0"
+    value_term_1 = f"%det3_value_term_{node.index}_1"
+    value_term_2 = f"%det3_value_term_{node.index}_2"
+    value_sum = f"%det3_value_sum_{node.index}"
+    lines.extend(
+        [
+            f"  {value_term_0} = fmul double {a_value}, {cofactors[0]}",
+            f"  {value_term_1} = fmul double {b_value}, {cofactors[1]}",
+            f"  {value_term_2} = fmul double {c_value}, {cofactors[2]}",
+            f"  {value_sum} = fadd double {value_term_0}, {value_term_1}",
+            f"  {value_name} = fadd double {value_sum}, {value_term_2}",
+        ]
+    )
+
+    for derivative_index in range(parameter_count):
+        gradient_terms: list[str] = []
+        for entry_index, cofactor in enumerate(cofactors):
+            entry_derivative = _whole_program_native_derivative_operand(
+                inputs[entry_index],
+                derivative_index,
+            )
+            gradient_term = f"%d{node.index}_{derivative_index}_det3_entry_{entry_index}"
+            lines.append(f"  {gradient_term} = fmul double {entry_derivative}, {cofactor}")
+            gradient_terms.append(gradient_term)
+
+        derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+        accumulator = gradient_terms[0]
+        for term_offset, gradient_term in enumerate(gradient_terms[1:], start=1):
+            target = (
+                derivative_name
+                if term_offset == len(gradient_terms) - 1
+                else f"%d{node.index}_{derivative_index}_det3_acc_{term_offset}"
+            )
+            lines.append(f"  {target} = fadd double {accumulator}, {gradient_term}")
+            accumulator = target
 
 
 def _emit_whole_program_native_product_sum2(

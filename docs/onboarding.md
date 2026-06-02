@@ -87,7 +87,7 @@ coupled dynamics matter:
 - Supported differentiable scalar, vector, and matrix primitive surfaces, plus
   inspectable native program-AD lowering reports for supported scalar traces
   with strict no-tie native `where`/selection/`clip` support and scalar 2x2
-  determinant/trace/inverse/solve/product native lowering.
+  2x2/3x3 determinant and 2x2 trace/inverse/solve/product native lowering.
 
 ## What Remains Bounded
 

@@ -87,8 +87,8 @@ This package provides three things:
    backend parity for selected primitives. Supported scalar program traces also
    expose native lowering reports before LLVM/JIT compilation, with strict
    no-tie native selection lowering for `np.where`, `maximum`, `minimum`, and
-   `clip`, plus scalar 2x2 determinant, trace, inverse, solve, and product
-   lowering.
+   `clip`, plus scalar 2x2/3x3 determinant and 2x2 trace, inverse, solve, and
+   product lowering.
    Unsupported compiler and program-AD paths fail closed rather than silently
    fabricating gradients.
 
