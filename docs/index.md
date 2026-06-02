@@ -47,7 +47,7 @@ explicit evidence boundaries.
 
 | Area | Public status |
 |---|---|
-| Package line | Version `0.9.8`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
+| Package line | Version `0.9.9`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Paper 0 source-validation register | Fully promoted through the source-accounting register from `P0R00001` through `P0R06211`; the planner reports `0` remaining work orders and `0` remaining records. This is source-bounded ingestion and fixture preservation, not external validation evidence. |
@@ -95,6 +95,12 @@ This package provides three things:
    wide determinant helpers are regression-tested on non-diagonal dense matrices.
    Unsupported compiler and program-AD paths fail closed rather than silently
    fabricating gradients.
+
+6. **A documented quantum-gradient route** that starts from parameter-shift VQE
+   and extends toward backend-aware gradient planning, gradient tapes,
+   framework adapters, QNN/QGNN/QSNN workflows, analog oscillator mapping,
+   open-system gradients, and benchmark evidence. Current capabilities and
+   planned surfaces are separated in the support documentation.
 
 Think of it as a quantum microscope for synchronization. Classical Kuramoto tells you
 *when* oscillators lock in step. This package tells you *what the quantum state looks
@@ -186,6 +192,10 @@ for name, w in results.items():
 - [Kuramoto Core Facade](kuramoto_core_facade.md) — stable `K_nm`/`omega` compiler entry point
 - [Stable Facades API](stable_facades_api.md) — mkdocstrings reference for first-path public facades
 - [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
+- [Differentiable Programming](differentiable_programming.md) — current AD capabilities, boundaries, and user routes
+- [Quantum Gradients](quantum_gradients.md) — parameter-shift gradients, VQE convergence route, and verification evidence
+- [Differentiable API](differentiable_api.md) — public `scpn_quantum_control.differentiable` namespace map
+- [Differentiable Roadmap](differentiable_roadmap.md) — staged plan for framework adapters, advanced gradients, benchmarks, verification, and dashboards
 - [API Overview](api.md) — stable facade route first, advanced module references second
 - [Paper 0 Validation Register](paper0/paper0_validation_register.md) — completed Paper 0 source-accounting register and generated API contract
 - [Paper 0 Processing Methodology](paper0/paper0_processing_methodology.md) — repeatable extraction, ledger, fixture, gate, and claim-boundary method for future Book II papers

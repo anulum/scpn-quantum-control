@@ -1,6 +1,6 @@
 {
   "title": "scpn-quantum-control: Quantum-Native SCPN Phase Dynamics and Control",
-  "description": "Domain-specific synchronisation and Kuramoto-XY control framework with Paper 0 source-accounting artefacts, deterministic replay gates, capability-manifest inventory, IBM raw-count evidence ledgers, and explicit claim-boundary controls.",
+  "description": "Domain-specific synchronisation and Kuramoto-XY control framework with Paper 0 source-accounting artefacts, deterministic replay gates, capability-manifest inventory, IBM raw-count evidence ledgers, differentiable-programming documentation, and explicit claim-boundary controls.",
   "creators": [
     {
       "name": "Sotek, Miroslav",
@@ -9,8 +9,8 @@
     }
   ],
   "upload_type": "software",
-  "version": "0.9.8",
-  "publication_date": "2026-06-01",
+  "version": "0.9.9",
+  "publication_date": "2026-06-02",
   "access_right": "open",
   "license": "AGPL-3.0-or-later",
   "language": "eng",

@@ -8,6 +8,21 @@
 
 # API Reference
 
+## Differentiable programming entry points
+
+The differentiable-programming surface has its own public guide and API map:
+
+- [Differentiable Programming](differentiable_programming.md)
+- [Quantum Gradients](quantum_gradients.md)
+- [Differentiable API](differentiable_api.md)
+- [Differentiable Roadmap](differentiable_roadmap.md)
+
+Use these pages when you need gradient-bearing optimisation, parameter-shift
+VQE, compiler/program AD kernels, primitive derivative registries, or planned
+ML-framework adapters. Unsupported gradient modes must fail closed with an
+explicit support reason; do not infer production support from an internal
+symbol alone.
+
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
 for public facades such as `scpn_quantum_control.kuramoto_core`. The lower-level
@@ -619,7 +634,7 @@ from scpn_quantum_control import generate_cloud_manifests
 bundle = generate_cloud_manifests(
     CloudDeploymentSpec(
         name="scpn-qc",
-        image="registry.example/scpn-quantum-control:0.9.8",
+        image="registry.example/scpn-quantum-control:0.9.9",
         command=("scpn-bench", "stable-core-contract-gate"),
         resources=ContainerResources(cpu="1000m", memory="1Gi"),
         env={"SCPN_EXECUTION_MODE": "offline"},

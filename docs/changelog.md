@@ -12,6 +12,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## [0.9.9] - 2026-06-02
+
+### Added
+- Public differentiable-programming documentation route covering quantum
+  gradients, current compiler/program AD boundaries, public differentiable API
+  entry points, notebooks, tutorials, planned framework adapters, benchmark
+  evidence, and fail-closed unsupported scenarios.
+
 ## [0.9.8] - 2026-06-01
 
 ### Added

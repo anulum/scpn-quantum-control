@@ -64,7 +64,7 @@ or directly:
   title   = {scpn-quantum-control: Quantum-Native SCPN Phase Dynamics
              and Control},
   year    = {2026},
-  version = {0.9.8},
+  version = {0.9.9},
   doi     = {10.5281/zenodo.18821929},
   url     = {https://github.com/anulum/scpn-quantum-control}
 }

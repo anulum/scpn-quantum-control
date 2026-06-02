@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.9.9] - 2026-06-02
+
+### Added
+- 2026-06-02 — Added a public differentiable-programming documentation route
+  with current quantum-gradient support, compiler/program AD boundaries,
+  public API entry points, tutorial and notebook plans, benchmark-evidence
+  expectations, framework-adapter roadmap, and fail-closed unsupported
+  scenarios.
+- 2026-06-02 — Updated README, documentation index, onboarding, quickstart,
+  tutorials, notebook guide, API overview, MkDocs navigation, release
+  readiness, citation metadata, Zenodo metadata, and release-version surfaces
+  for the 0.9.9 documentation release.
+
 ## [0.9.8] - 2026-06-01
 
 ### Added

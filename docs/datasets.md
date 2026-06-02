@@ -34,7 +34,7 @@ A `data/<campaign>/` directory must have:
 - A reproducer test that loads the JSON and asserts every number
   cited elsewhere in the repo.
 - A row in `docs/results.md` with a one-line summary and links.
-- An entry in the campaign's pre-registration (from v0.9.8
+- An entry in the campaign's pre-registration (from v0.9.9
   onward — see `docs/preregistration.md`).
 
 Example that already conforms: `data/phase1_dla_parity/` +

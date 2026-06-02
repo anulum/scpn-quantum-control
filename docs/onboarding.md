@@ -41,7 +41,7 @@ a common route for those systems:
 | Kuramoto-XY compiler | Converts arbitrary `K_nm` and `omega` into Hamiltonians, dense matrices, circuits, and order-parameter measurements. | `scpn_quantum_control.kuramoto_core` |
 | Hardware evidence ledger | Separates theory, simulator output, raw-count hardware evidence, mitigated evidence, and unpromoted artefacts. | `docs/hardware_status_ledger.md` |
 | Rust acceleration | Speeds up selected Hamiltonian, expectation, pulse, symmetry, and compiler-AD hot paths. | `scpn-quantum-engine` |
-| Differentiable programming | Provides supported scalar, vector, and matrix AD primitives with fail-closed unsupported boundaries. | `scpn_quantum_control.compiler.mlir` and `scpn_quantum_control.differentiable` |
+| Differentiable programming | Provides parameter-shift VQE building blocks, supported scalar/vector/matrix AD primitives, native lowering reports, and fail-closed unsupported boundaries. | `scpn_quantum_control.phase.param_shift`, `scpn_quantum_control.compiler.mlir`, and `scpn_quantum_control.differentiable` |
 | Paper 0 source register | Preserves source-bounded validation fixtures and claim boundaries for Paper 0. | `scpn_quantum_control.paper0` |
 | Release gates | Make public release decisions repeatable instead of narrative. | `tools/audit_release_readiness.py` and `scpn-bench` gates |
 
@@ -53,6 +53,7 @@ a common route for those systems:
 | Understand the learning sequence | [Tutorials](tutorials.md) |
 | Use the stable API | [Stable Facades API](stable_facades_api.md) |
 | Bring a custom oscillator network | [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) |
+| Train or inspect gradients | [Differentiable Programming](differentiable_programming.md), [Quantum Gradients](quantum_gradients.md), and [Differentiable API](differentiable_api.md) |
 | Inspect notebooks | [Interactive Notebooks](notebooks.md) |
 | Build or install the Rust engine | [Rust Engine](rust_engine.md) |
 | Evaluate release readiness | [Release Readiness Gate](release_readiness.md) |
@@ -74,7 +75,8 @@ coupled dynamics matter:
 - **Quantum hardware operations:** raw-count evidence packs, provider
   readiness, and no-QPU gates before new hardware spend.
 - **Differentiable computation:** gradient-bearing primitive kernels used for
-  optimisation and transform-composition experiments.
+  optimisation, VQE training experiments, compiler-backed AD, and future
+  ML-framework adapters.
 
 ## What Is Mature
 
@@ -93,6 +95,8 @@ coupled dynamics matter:
   inverse native lowering through 6x6, static vector and matrix-RHS solve
   native lowering through 6x6, 2x2 product native lowering, and an
   introspectable native linalg support contract for service gating.
+- Parameter-shift gradient helpers for callable expectation objectives and
+  gradient-descent VQE examples.
 
 ## What Remains Bounded
 
@@ -111,6 +115,11 @@ coupled dynamics matter:
   wider traces fail closed until a native factorisation helper replaces
   adjugate replay. This limitation is useful research evidence, not a silent
   runtime fallback.
+- Full gradient tape semantics, public JAX/PyTorch/TensorFlow adapters,
+  PennyLane/Qiskit migration bridges, backend-aware hardware gradient
+  planning, QNN/QGNN/QSNN production examples, and analog oscillator mapping
+  are planned roadmap surfaces until their tests, docs, and support matrix
+  entries are complete.
 - Paper 0 ingestion records source structure and generated fixtures; it is not
   an external validation of the propositions.
 

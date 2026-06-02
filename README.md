@@ -32,8 +32,8 @@
 > artifacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
-**Version:** 0.9.8
-**Status:** Kuramoto-XY compiler + hardware runners + analysis stack | generated capability inventory below | CI coverage gate 91.5% | IBM Heron r2 evidence ledgered
+**Version:** 0.9.9
+**Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 91.5% | IBM Heron r2 evidence ledgered
 
 <!-- capability-snapshot:start -->
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
@@ -43,7 +43,7 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.8 |
+| Package version | 0.9.9 |
 | Public API exports | 558 |
 | Python source modules | 767 |
 | Public Python classes | 1501 |
@@ -123,6 +123,10 @@ quantum hardware experimentation, and control-facing software:
 - **Differentiable computation:** use supported compiler-AD primitives for
   gradient-bearing scalar, vector, and matrix kernels while unsupported paths
   fail closed.
+- **Gradient-informed quantum optimisation:** use the current
+  parameter-shift VQE building blocks and compiler/program-AD kernels as the
+  base for gradient-trained Kuramoto-XY objectives, quantum neural networks,
+  and future framework adapters.
 - **Product route:** AGPL use is available for open research; proprietary
   deployment uses the commercial licence route described below.
 
@@ -130,6 +134,38 @@ Open boundaries remain explicit: the package does not claim broad quantum
 advantage, clinical validation, or externally validated SCPN biology. It
 provides a reproducible computational workbench and the governance required to
 promote claims only when the evidence exists.
+
+## Differentiable Programming Route
+
+The differentiable-programming lane is now documented as a first-path product
+surface because gradient evidence is central to quantum optimisation, machine
+learning integration, and control. The current repository contains three
+layers:
+
+| Layer | Current status | Where to start |
+|---|---|---|
+| Quantum parameter-shift | Supported through `scpn_quantum_control.phase.param_shift` for callable expectation objectives and gradient-descent VQE examples. | [Quantum Gradients](docs/quantum_gradients.md), [Variational Methods](docs/variational.md) |
+| Program and compiler AD | Supported for registered scalar, vector, and matrix primitives with native lowering reports and fail-closed unsupported boundaries. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
+| ML framework and tape roadmap | JAX, PyTorch, TensorFlow, PennyLane, Qiskit, gradient tape, QNN, QGNN, QSNN, and backend gradient planners are planned as staged public surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
+
+This matters commercially because optimisation users do not only need circuits.
+They need gradients, convergence evidence, framework interop, reproducible
+benchmarks, and clear failure modes. The SCPN route aims to combine
+Kuramoto-XY physics, quantum-control objectives, hardware-result governance,
+and compiler-backed AD under one support matrix.
+
+The first production-grade differentiable workflows are deliberately bounded:
+
+1. train small VQE objectives with parameter-shift gradients;
+2. verify gradients against finite differences and analytic references;
+3. use compiler/program-AD kernels for supported classical objectives;
+4. document unsupported gates, backends, shapes, and dynamic program paths
+   before they can mislead users.
+
+Future releases will extend this route toward backend-aware quantum gradients,
+JAX/PyTorch/TensorFlow adapters, PennyLane/Qiskit migration bridges,
+quantum neural networks, analog oscillator mappings, open-system gradients,
+benchmark leaderboards, and real-time feedback control.
 
 ## Richer Presentation
 
@@ -150,6 +186,16 @@ Direct entry points:
   — offline manifest and integrity verifier for promoted IBM raw-count datasets
 - [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md)
   — start from arbitrary oscillator networks before SCPN-specific layers
+- [Differentiable Programming](docs/differentiable_programming.md)
+  — current AD surface, support boundaries, and user routes
+- [Quantum Gradients](docs/quantum_gradients.md)
+  — parameter-shift, VQE gradients, verification tests, and planned backend
+  gradient planner
+- [Differentiable API](docs/differentiable_api.md)
+  — public `scpn_quantum_control.differentiable` reference and usage map
+- [Differentiable Roadmap](docs/differentiable_roadmap.md)
+  — staged plan for tape, framework adapters, QNN/QGNN/QSNN, analog mapping,
+  benchmarks, verification, and dashboards
 - [Stable Facades API](docs/stable_facades_api.md)
   — mkdocstrings reference for first-path public facades
 - [Paper 0 Validation Register](docs/paper0/paper0_validation_register.md)
@@ -674,6 +720,10 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Onboarding](docs/onboarding.md) — project purpose, user routes, application value, and claim boundaries
 - [Installation](docs/installation.md) — pip install + all optional extras
 - [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
+- [Differentiable Programming](docs/differentiable_programming.md) — bounded AD surface, gradients, compiler kernels, and roadmap boundaries
+- [Quantum Gradients](docs/quantum_gradients.md) — parameter-shift and gradient-evidence route for VQE and quantum-control objectives
+- [Differentiable API](docs/differentiable_api.md) — public differentiable namespace and support matrix
+- [Differentiable Roadmap](docs/differentiable_roadmap.md) — staged gradient, adapter, benchmark, verification, and control roadmap
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
 - [Stable Facades API](docs/stable_facades_api.md) — first-path public API for notebooks, tutorials, and integrations
 - [API Overview](docs/api.md) — stable facade route first, advanced module references second

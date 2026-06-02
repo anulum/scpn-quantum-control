@@ -278,6 +278,14 @@ Before tagging:
 10. Commit with the required authorship line after staged-diff audit.
 11. Push the commit and wait for CI before creating a release tag.
 
+## 0.9.9 release-documentation scope
+
+The `0.9.9` source release documentation surface adds a public
+differentiable-programming route. The release docs must explain parameter-shift
+gradient support, compiler/program AD boundaries, public API entry points,
+planned tape/framework-adapter work, notebooks, benchmarks, and fail-closed
+unsupported scenarios without promoting roadmap items as completed features.
+
 ## 0.9.8 release-documentation scope
 
 The `0.9.8` source release documentation surface is required to explain the

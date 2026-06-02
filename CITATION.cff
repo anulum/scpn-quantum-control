@@ -13,16 +13,17 @@ authors:
     given-names: "Miroslav"
     orcid: "https://orcid.org/0009-0009-3560-0851"
     affiliation: "ANULUM CH & LI"
-version: "0.9.8"
-date-released: "2026-06-01"
+version: "0.9.9"
+date-released: "2026-06-02"
 license: "AGPL-3.0-or-later"
 doi: "10.5281/zenodo.18821929"
 repository-code: "https://github.com/anulum/scpn-quantum-control"
 url: "https://www.anulum.li"
 abstract: >-
-  Compiles SCPN Kuramoto coupling matrices into Qiskit circuits and
-  validates them on IBM Heron r2 hardware. Achieves 0.05% VQE
-  ground-state error on 4-qubit XY Hamiltonian.
+  Compiles SCPN Kuramoto coupling matrices into quantum circuits,
+  simulator workflows, hardware-evidence ledgers, differentiable
+  programming surfaces, and bounded release artefacts for coupled
+  oscillator research and control-facing experimentation.
 keywords:
   - quantum computing
   - Kuramoto model

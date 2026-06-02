@@ -63,6 +63,33 @@ The repository contains a legacy 4-qubit hardware row with 0.05% VQE
 ground-state error. Cite it only through the hardware ledger and artefact path,
 not as a broad hardware-validation claim.
 
+## 2a. Parameter-shift gradient smoke path
+
+Use this path when you need visible gradient evidence before moving into
+hardware, notebooks, or larger optimisation loops. It runs locally and uses a
+callable scalar objective:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
+
+
+def expectation(params: np.ndarray) -> float:
+    return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
+
+
+params = np.array([0.2, -0.4], dtype=float)
+grad = parameter_shift_gradient(expectation, params)
+print(grad)
+```
+
+For Pauli-rotation expectation objectives, the parameter-shift rule evaluates
+the objective at `theta + pi/2` and `theta - pi/2` for each trainable
+parameter. For general Python callables that are not sinusoidal quantum
+expectations, use finite-difference checks as a diagnostic rather than a
+claim of exact quantum-gradient semantics.
+
 ## 3. Run a hardware experiment on simulator
 
 ```python
@@ -249,6 +276,13 @@ because they carry research and engineering value:
 - Shape-changing linalg traces and dynamic-size linalg calls fail closed. Native
   lowering requires static shapes so the lowering report can name every
   supported and unsupported primitive before compilation.
+
+Next differentiable-programming pages:
+
+- [Differentiable Programming](differentiable_programming.md)
+- [Quantum Gradients](quantum_gradients.md)
+- [Differentiable API](differentiable_api.md)
+- [Differentiable Roadmap](differentiable_roadmap.md)
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 
