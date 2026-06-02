@@ -224,12 +224,12 @@ arithmetic expressions; static dense 6x6 through 16x16 determinants lower
 through compact loop-helper native LLVM/JIT value-and-partials kernels and are
 regression-tested on non-diagonal dense matrices. Static
 square/rectangular trace nodes with fixed offsets, static diagonal
-gather/scatter nodes, 2x2 inverse, static vector linear solves through 4x4,
-2x2 square via `matrix_power(..., 2)`, and 2x2-by-2x2 `multi_dot` program-AD
-nodes also lower to native LLVM/JIT arithmetic kernels; 17x17 and wider
-determinant traces, 5x5 and wider solve traces, other wider linalg, matrix-RHS
-solve traces, and shape-changing linalg traces still report unsupported native
-ops before failing closed.
+gather/scatter nodes, static dense inverse through 4x4, static vector linear
+solves through 4x4, 2x2 square via `matrix_power(..., 2)`, and 2x2-by-2x2
+`multi_dot` program-AD nodes also lower to native LLVM/JIT arithmetic kernels;
+17x17 and wider determinant traces, 5x5 and wider inverse/solve traces, other
+wider linalg, matrix-RHS solve traces, and shape-changing linalg traces still
+report unsupported native ops before failing closed.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

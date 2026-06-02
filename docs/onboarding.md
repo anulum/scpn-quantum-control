@@ -89,10 +89,10 @@ coupled dynamics matter:
   with strict no-tie native `where`/selection/`clip` support,
   2x2/3x3/4x4/5x5 expression determinant native lowering, helper-backed
   6x6 through 16x16 determinant native lowering, static square/rectangular trace
-  native lowering, static diagonal gather/scatter native lowering, 2x2 inverse
-  native lowering, static vector solve native lowering through 4x4, 2x2 product
-  native lowering, and an introspectable native linalg support contract for
-  service gating.
+  native lowering, static diagonal gather/scatter native lowering, static dense
+  inverse native lowering through 4x4, static vector solve native lowering
+  through 4x4, 2x2 product native lowering, and an introspectable native linalg
+  support contract for service gating.
 
 ## What Remains Bounded
 
