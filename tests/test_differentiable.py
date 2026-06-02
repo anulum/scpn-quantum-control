@@ -12568,8 +12568,17 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
     take_contract = primitive_contract_for("scpn.program_ad.array:take")
     assert take_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "take", "1")
     assert take_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.take"
+    assert (
+        take_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_array_take_derivative_rule"
+    )
+    assert take_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;indices_axis_mode"
+    )
     assert take_contract.shape_rule is not None
     assert take_contract.shape_rule((matrix, np.array([1, 0]), 1)) == (2, 2)
+    assert take_contract.dtype_rule is not None
+    assert take_contract.dtype_rule((matrix, np.array([1, 0]), 1)) == "float64"
     assert take_contract.static_argument_rule is not None
     assert take_contract.static_argument_rule((matrix, np.array([1, 0]), 1)) == (
         (1, 0),
@@ -12588,23 +12597,36 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         1,
         "clip",
     )
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(take_contract.identity)
 
     along_contract = primitive_contract_for("scpn.program_ad.array:take_along_axis")
     assert along_contract.identity == PrimitiveIdentity(
         "scpn.program_ad.array", "take_along_axis", "1"
     )
     assert along_contract.lowering_metadata["mlir_op"] == "scpn_diff.array.take_along_axis"
+    assert (
+        along_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_array_take_along_axis_derivative_rule"
+    )
+    assert along_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;indices_shape_axis"
+    )
     assert along_contract.shape_rule is not None
     assert along_contract.shape_rule((matrix, np.array([[2, 0, 2], [1, 1, 0]]), 1)) == (
         2,
         3,
     )
+    assert along_contract.dtype_rule is not None
+    assert along_contract.dtype_rule((matrix, np.array([[2, 0, 2], [1, 1, 0]]), 1)) == "float64"
     assert along_contract.static_argument_rule is not None
     assert along_contract.static_argument_rule((matrix, np.array([[2, 0, 2], [1, 1, 0]]), 1)) == (
         (2, 0, 2, 1, 1, 0),
         (2, 3),
         1,
     )
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(along_contract.identity)
 
     delete_contract = primitive_contract_for("scpn.program_ad.array:delete")
     assert delete_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "delete", "1")
@@ -12683,6 +12705,22 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
 def test_program_ad_array_boundary_metadata_is_explicit() -> None:
     """Array-indexing contracts should expose fail-closed static gather boundaries."""
 
+    expected_factories = {
+        "getitem": "program_ad_array_getitem_derivative_rule",
+        "take": "program_ad_array_take_derivative_rule",
+        "take_along_axis": "program_ad_array_take_along_axis_derivative_rule",
+        "delete": "program_ad_array_delete_derivative_rule",
+        "pad": "program_ad_array_pad_derivative_rule",
+        "insert": "program_ad_array_insert_derivative_rule",
+    }
+    expected_static_signatures = {
+        "getitem": "source_shape:ranked_tensor_shape;index:static_gather_index",
+        "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
+        "take_along_axis": "source_shape:ranked_tensor_shape;indices_shape_axis",
+        "delete": "source_shape:ranked_tensor_shape;object_axis",
+        "pad": "source_shape:ranked_tensor_shape;pad_width_constant_values",
+        "insert": "source_shape:ranked_tensor_shape;object_values_axis",
+    }
     expected_boundaries = {
         "getitem": "static_gather_index_scatter_add",
         "take": "static_integer_gather_scatter_add",
@@ -12695,6 +12733,8 @@ def test_program_ad_array_boundary_metadata_is_explicit() -> None:
         metadata = primitive_contract_for(
             PrimitiveIdentity("scpn.program_ad.array", name, "1")
         ).lowering_metadata
+        assert metadata["static_derivative_factory"] == expected_factories[name]
+        assert metadata["static_signature"] == expected_static_signatures[name]
         assert metadata["nondifferentiable_boundary"] == boundary
         assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
@@ -12717,52 +12757,75 @@ def _transform_rule_from_contract(contract):
 def test_program_ad_array_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported array primitives must execute through registry validation rules."""
 
-    original = primitive_contract_for("scpn.program_ad.array:getitem")
-    calls: list[str] = []
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.array:{name}")
+        for name in ("getitem", "take", "take_along_axis", "delete", "pad", "insert")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
 
-    assert original.shape_rule is not None
-    assert original.dtype_rule is not None
-    assert original.static_argument_rule is not None
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
 
-    def shape_rule(args):
-        calls.append("shape")
-        return original.shape_rule(args)
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
 
-    def dtype_rule(args):
-        calls.append("dtype")
-        return original.dtype_rule(args)
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
 
-    def static_argument_rule(args):
-        calls.append("static")
-        return original.static_argument_rule(args)
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
 
-    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
-        PrimitiveTransformRule(
-            identity=original.identity,
-            derivative_rule=original.derivative_rule,
-            batching_rule=original.batching_rule,
-            lowering_rule=original.lowering_rule,
-            lowering_metadata=original.lowering_metadata,
-            shape_rule=shape_rule,
-            dtype_rule=dtype_rule,
-            static_argument_rule=static_argument_rule,
-            nondifferentiable_policy=original.nondifferentiable_policy,
-            effect=original.effect,
-        ),
-        overwrite=True,
-    )
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
     try:
+
+        def objective(values):
+            matrix = np.reshape(values, (2, 3))
+            sliced = matrix[:, 1:]
+            taken = np.take(sliced, np.array([1, 0]), axis=1)
+            along = np.take_along_axis(taken, np.array([[1, 0], [0, 1]]), axis=1)
+            deleted = np.delete(along, np.array([0]), axis=0)
+            padded = np.pad(deleted, ((0, 1), (1, 0)), mode="constant", constant_values=0.5)
+            inserted = np.insert(padded, 1, np.array([2.0, -1.0]), axis=1)
+            return np.sum(inserted)
+
         result = whole_program_value_and_grad(
-            lambda values: np.sum(np.reshape(values, (2, 2))[:, 1:]),
-            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+            objective,
+            np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
         )
     finally:
-        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
-            _transform_rule_from_contract(original), overwrite=True
-        )
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
 
-    assert result.value == pytest.approx(6.0)
-    assert set(calls) == {"shape", "dtype", "static"}
+    assert result.value == pytest.approx(14.0)
+    assert calls == {
+        "getitem": {"shape", "dtype", "static"},
+        "take": {"shape", "dtype", "static"},
+        "take_along_axis": {"shape", "dtype", "static"},
+        "delete": {"shape", "dtype", "static"},
+        "pad": {"shape", "dtype", "static"},
+        "insert": {"shape", "dtype", "static"},
+    }
 
 
 def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> None:
