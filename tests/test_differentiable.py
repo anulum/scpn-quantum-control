@@ -11838,6 +11838,10 @@ def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
     assert (
         contract.lowering_metadata["static_signature"] == "left_shape:rank1;right_shape:rank1;mode"
     )
+    assert contract.lowering_metadata["nondifferentiable_boundary"] == (
+        "rank1_nonempty_static_mode_window"
+    )
+    assert contract.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
     assert contract.shape_rule is not None
     assert (
         contract.shape_rule((left, right, "same")) == np.convolve(left, right, mode="same").shape
@@ -11932,7 +11936,7 @@ def test_program_ad_convolve_fails_closed_invalid_contracts() -> None:
             np.array([1.0, 2.0, 3.0], dtype=np.float64),
         )
 
-    with pytest.raises(ValueError, match="one-dimensional"):
+    with pytest.raises(ValueError, match="rank-1 operands"):
         whole_program_value_and_grad(
             lambda values: np.sum(
                 np.convolve(np.reshape(values[:4], (2, 2)), np.array([1.0, -0.5]))
@@ -12018,6 +12022,10 @@ def test_program_ad_signal_correlate_contract_and_direct_rule() -> None:
     assert (
         contract.lowering_metadata["static_signature"] == "left_shape:rank1;right_shape:rank1;mode"
     )
+    assert contract.lowering_metadata["nondifferentiable_boundary"] == (
+        "rank1_nonempty_static_mode_window"
+    )
+    assert contract.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
     assert contract.shape_rule is not None
     assert (
         contract.shape_rule((left, right, "same")) == np.correlate(left, right, mode="same").shape
@@ -12112,7 +12120,7 @@ def test_program_ad_correlate_fails_closed_invalid_contracts() -> None:
             np.array([1.0, 2.0, 3.0], dtype=np.float64),
         )
 
-    with pytest.raises(ValueError, match="one-dimensional"):
+    with pytest.raises(ValueError, match="rank-1 operands"):
         whole_program_value_and_grad(
             lambda values: np.sum(
                 np.correlate(np.reshape(values[:4], (2, 2)), np.array([1.0, -0.5]))
