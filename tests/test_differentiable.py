@@ -8202,6 +8202,17 @@ def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
         with pytest.raises(ValueError, match="incomplete primitive contract"):
             primitive_complete_contract_for(identity)
 
+    expected_default_factories = {
+        "det": "singular_matrix_rank_drop",
+        "inv": "singular_matrix_inverse",
+    }
+    for name, boundary in expected_default_factories.items():
+        metadata = primitive_contract_for(f"scpn.program_ad.linalg:{name}").lowering_metadata
+        assert metadata["static_derivative_factory"] == "not_required"
+        assert metadata["static_signature"] == "none"
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
     values = np.array([2.0, -0.5, 0.75, 1.5], dtype=np.float64)
     result = whole_program_value_and_grad(
         lambda flat_values: np.linalg.det(np.reshape(flat_values, (2, 2))),
