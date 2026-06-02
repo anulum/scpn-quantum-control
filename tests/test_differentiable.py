@@ -8458,6 +8458,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_reduction_mean_derivative_rule",
             "source_shape:ranked_tensor_shape;axis",
         ),
+        "scpn.program_ad.reduction:trapezoid": (
+            "program_ad_reduction_trapezoid_derivative_rule",
+            "source_shape:ranked_tensor_shape;x_or_dx;axis",
+        ),
         "scpn.program_ad.stencil:gradient": (
             "program_ad_stencil_gradient_derivative_rule",
             "source_shape:ranked_tensor_shape;spacing_axis_edge_order",
