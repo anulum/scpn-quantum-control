@@ -8359,6 +8359,10 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_array_pad_derivative_rule",
             "source_shape:ranked_tensor_shape;pad_width_constant_values",
         ),
+        "scpn.program_ad.array:insert": (
+            "program_ad_array_insert_derivative_rule",
+            "source_shape:ranked_tensor_shape;object_values_axis",
+        ),
         "scpn.program_ad.interpolation:interp": (
             "program_ad_interpolation_interp_derivative_rule",
             "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period",
