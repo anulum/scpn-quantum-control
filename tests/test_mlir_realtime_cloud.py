@@ -4884,12 +4884,15 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
 
     assert isinstance(kernel, NativeWholeProgramADKernel)
     assert kernel.backend == "native_llvm_jit"
+    assert callable(kernel.native_functions["batch_value_gradient"])
     assert kernel.verification.passed
     assert kernel.verification.gradient_close is True
     assert kernel.mlir_module.resource_counts["native_whole_program_kernels"] == 1
+    assert kernel.mlir_module.resource_counts["native_whole_program_batch_kernels"] == 1
     assert kernel.mlir_module.metadata["native_backend"] == "native_llvm_jit"
     assert kernel.mlir_module.metadata["polyglot_targets"]["llvm"].startswith("available")
     assert "scpn_diff.native_llvm_jit" in kernel.mlir_module.text
+    assert "_batch_value_gradient" in kernel.llvm_ir
     assert "native LLVM/JIT execution" in kernel.claim_boundary
     assert value == pytest.approx(reference_value)
     assert kernel.value(sample) == pytest.approx(reference_value)
@@ -4919,6 +4922,7 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
         rtol=1.0e-10,
         atol=1.0e-10,
     )
+    assert "compiled batched native LLVM/JIT" in batch_result.claim_boundary
     np.testing.assert_allclose(kernel.batch_value(batch), batch_result.values)
     np.testing.assert_allclose(kernel.batch_gradient(batch), batch_result.gradients)
 

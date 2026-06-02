@@ -4290,6 +4290,13 @@ def _compile_native_llvm_jit_functions(
     double_pointer = ctypes.POINTER(ctypes.c_double)
     unary_function = ctypes.CFUNCTYPE(None, double_pointer, double_pointer)
     binary_function = ctypes.CFUNCTYPE(None, double_pointer, double_pointer, double_pointer)
+    batch_value_gradient_function = ctypes.CFUNCTYPE(
+        None,
+        double_pointer,
+        ctypes.c_int64,
+        double_pointer,
+        double_pointer,
+    )
     functions: dict[str, Any] = {"engine": engine}
     for name, signature in (
         ("value", unary_function),
@@ -4301,6 +4308,9 @@ def _compile_native_llvm_jit_functions(
         if address == 0:
             raise ValueError(f"native_llvm_jit symbol {base_symbol}_{name} was not emitted")
         functions[name] = signature(address)
+    batch_address = engine.get_function_address(f"{base_symbol}_batch_value_gradient")
+    if batch_address != 0:
+        functions["batch_value_gradient"] = batch_value_gradient_function(batch_address)
     return MappingProxyType(functions)
 
 
@@ -9238,6 +9248,7 @@ class NativeWholeProgramADKernel:
     claim_boundary: str = (
         "native LLVM/JIT execution for supported scalar program AD traces with "
         "stable executed branch signatures and finite supported primitive domains; "
+        "compiled batch value/gradient execution for matching row signatures; "
         "unsupported control flow, mutation-dependent path changes, and unsupported "
         "operations fail closed"
     )
@@ -9251,10 +9262,10 @@ class NativeWholeProgramADKernel:
             raise ValueError("mlir_module must be an MLIRModule")
         if not self.llvm_ir.strip():
             raise ValueError("llvm_ir must be non-empty")
-        for name in ("value", "gradient", "jvp", "vjp", "engine"):
+        for name in ("value", "gradient", "jvp", "vjp", "batch_value_gradient", "engine"):
             if name not in self.native_functions:
                 raise ValueError(f"native_functions missing {name}")
-        for name in ("value", "gradient", "jvp", "vjp"):
+        for name in ("value", "gradient", "jvp", "vjp", "batch_value_gradient"):
             if not callable(self.native_functions[name]):
                 raise ValueError(f"native function {name} must be callable")
         if not isinstance(self.verification, CompilerADKernelVerification):
@@ -9414,22 +9425,24 @@ class NativeWholeProgramADKernel:
         """Execute native value and gradient kernels over a two-dimensional batch."""
 
         batch = self._checked_batch_values(values)
-        row_values: list[float] = []
-        row_gradients: list[NDArray[np.float64]] = []
         for row in batch:
-            value, gradient = self.value_and_grad(row)
-            row_values.append(value)
-            row_gradients.append(gradient)
+            self._validate_trace_signature(row)
+        row_values, row_gradients = _call_native_whole_program_batch_value_gradient(
+            self.native_functions["batch_value_gradient"],
+            batch,
+            self.parameter_shape[0],
+        )
         return ExecutableWholeProgramADBatchResult(
-            values=np.asarray(row_values, dtype=np.float64),
-            gradients=np.vstack(row_gradients).astype(np.float64, copy=False),
+            values=row_values,
+            gradients=row_gradients,
             parameter_names=self.parameter_names,
             row_signatures=(self.trace_signature,) * batch.shape[0],
             mlir_sha256=self.mlir_module.sha256,
             backend=self.backend,
             claim_boundary=(
-                "batched native LLVM/JIT execution for supported scalar program AD "
-                "traces preserving compiled branch signatures and finite primitive domains"
+                "compiled batched native LLVM/JIT value/gradient execution for supported "
+                "scalar program AD traces preserving compiled branch signatures and finite "
+                "primitive domains"
             ),
         )
 
@@ -9739,7 +9752,16 @@ def _compile_whole_program_ad_native_llvm_ir(
     if _whole_program_has_unsupported_native_control_flow(result):
         raise ValueError("native whole-program AD lowering does not support loop/control joins")
     computation_lines, final_value, final_derivatives = _emit_whole_program_native_computation(
-        result
+        result,
+        values_pointer="%values",
+    )
+    (
+        batch_computation_lines,
+        batch_final_value,
+        batch_final_derivatives,
+    ) = _emit_whole_program_native_computation(
+        result,
+        values_pointer="%row_values",
     )
 
     lines = [
@@ -9815,12 +9837,66 @@ def _compile_whole_program_ad_native_llvm_ir(
                 f"  store double {vjp_value}, double* %vjp_out_ptr_{index}",
             ]
         )
-    lines.extend(["  ret void", "}", ""])
+    lines.extend(
+        [
+            "  ret void",
+            "}",
+            "",
+            (
+                f"define void @{base_symbol}_batch_value_gradient(double* %values, "
+                "i64 %rows, double* %value_out, double* %gradient_out) {"
+            ),
+            "entry:",
+            "  br label %batch_loop",
+            "batch_loop:",
+            "  %batch_i = phi i64 [0, %entry], [%batch_next, %batch_continue]",
+            "  %batch_done = icmp eq i64 %batch_i, %rows",
+            "  br i1 %batch_done, label %batch_exit, label %batch_body",
+            "batch_body:",
+            (
+                f"  %batch_row_offset = mul i64 %batch_i, "
+                f"{_fmt_llvm_int(len(result.parameter_names))}"
+            ),
+            "  %row_values = getelementptr double, double* %values, i64 %batch_row_offset",
+            *batch_computation_lines,
+            "  %batch_value_out_ptr = getelementptr double, double* %value_out, i64 %batch_i",
+            f"  store double {batch_final_value}, double* %batch_value_out_ptr",
+            (
+                f"  %batch_gradient_row_offset = mul i64 %batch_i, "
+                f"{_fmt_llvm_int(len(result.parameter_names))}"
+            ),
+        ]
+    )
+    for index, derivative in enumerate(batch_final_derivatives):
+        lines.extend(
+            [
+                f"  %batch_gradient_offset_{index} = add i64 %batch_gradient_row_offset, {index}",
+                (
+                    f"  %batch_gradient_out_ptr_{index} = getelementptr double, "
+                    f"double* %gradient_out, i64 %batch_gradient_offset_{index}"
+                ),
+                f"  store double {derivative}, double* %batch_gradient_out_ptr_{index}",
+            ]
+        )
+    lines.extend(
+        [
+            "  br label %batch_continue",
+            "batch_continue:",
+            "  %batch_next = add i64 %batch_i, 1",
+            "  br label %batch_loop",
+            "batch_exit:",
+            "  ret void",
+            "}",
+            "",
+        ]
+    )
     return "\n".join(lines)
 
 
 def _emit_whole_program_native_computation(
     result: WholeProgramADResult,
+    *,
+    values_pointer: str,
 ) -> tuple[list[str], str, tuple[str, ...]]:
     parameter_count = int(result.gradient.size)
     lines: list[str] = []
@@ -9833,7 +9909,10 @@ def _emit_whole_program_native_computation(
             parameter_index = result.parameter_names.index(node.inputs[0])
             lines.extend(
                 [
-                    f"  %param_ptr_{node.index} = getelementptr double, double* %values, i64 {parameter_index}",
+                    (
+                        f"  %param_ptr_{node.index} = getelementptr double, "
+                        f"double* {values_pointer}, i64 {parameter_index}"
+                    ),
                     f"  {value_name} = load double, double* %param_ptr_{node.index}",
                 ]
             )
@@ -10168,6 +10247,12 @@ def _fmt_llvm_float(value: float) -> str:
     return format(float(value), ".17e")
 
 
+def _fmt_llvm_int(value: int) -> str:
+    if int(value) < 1:
+        raise ValueError("LLVM integer constants must be positive")
+    return str(int(value))
+
+
 def _call_native_whole_program_unary(
     function: Callable[[Any, Any], None],
     values: np.ndarray,
@@ -10209,6 +10294,38 @@ def _call_native_whole_program_binary(
     return cast(NDArray[np.float64], output)
 
 
+def _call_native_whole_program_batch_value_gradient(
+    function: Callable[[Any, int, Any, Any], None],
+    values: np.ndarray,
+    parameter_count: int,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    checked_values = np.ascontiguousarray(np.asarray(values, dtype=np.float64))
+    if checked_values.ndim != 2:
+        raise ValueError("native whole-program AD batch values must be two-dimensional")
+    if checked_values.shape[0] < 1:
+        raise ValueError("native whole-program AD batch values must contain at least one row")
+    if checked_values.shape[1] != parameter_count:
+        raise ValueError("native whole-program AD batch parameter count mismatch")
+    if not np.all(np.isfinite(checked_values)):
+        raise ValueError("native whole-program AD batch values must be finite")
+    rows = int(checked_values.shape[0])
+    value_output = np.zeros(rows, dtype=np.float64)
+    gradient_output = np.zeros((rows, parameter_count), dtype=np.float64)
+    double_pointer = ctypes.POINTER(ctypes.c_double)
+    function(
+        checked_values.ctypes.data_as(double_pointer),
+        rows,
+        value_output.ctypes.data_as(double_pointer),
+        gradient_output.ctypes.data_as(double_pointer),
+    )
+    if not np.all(np.isfinite(value_output)) or not np.all(np.isfinite(gradient_output)):
+        raise ValueError("native whole-program AD batch output must be finite")
+    return (
+        cast(NDArray[np.float64], value_output),
+        cast(NDArray[np.float64], gradient_output),
+    )
+
+
 def _verify_native_whole_program_ad_kernel(
     result: WholeProgramADResult,
     native_functions: Mapping[str, Any],
@@ -10229,6 +10346,11 @@ def _verify_native_whole_program_ad_kernel(
         cotangent,
         int(result.gradient.size),
     )
+    batch_values, batch_gradients = _call_native_whole_program_batch_value_gradient(
+        native_functions["batch_value_gradient"],
+        sample_values.reshape(1, -1),
+        int(result.gradient.size),
+    )
     expected_value = np.array([result.value], dtype=np.float64)
     expected_jvp = np.array([float(np.dot(result.gradient, tangent))], dtype=np.float64)
     expected_vjp = result.gradient.copy()
@@ -10237,12 +10359,20 @@ def _verify_native_whole_program_ad_kernel(
         _max_abs_error(gradient, result.gradient),
         _max_abs_error(jvp, expected_jvp),
         _max_abs_error(vjp, expected_vjp),
+        _max_abs_error(batch_values, expected_value),
+        _max_abs_error(batch_gradients, result.gradient.reshape(1, -1)),
     )
     return CompilerADKernelVerification(
         value_close=bool(np.allclose(value, expected_value, rtol=1.0e-10, atol=1.0e-10)),
         jvp_close=bool(np.allclose(jvp, expected_jvp, rtol=1.0e-10, atol=1.0e-10)),
         vjp_close=bool(np.allclose(vjp, expected_vjp, rtol=1.0e-10, atol=1.0e-10)),
-        gradient_close=bool(np.allclose(gradient, result.gradient, rtol=1.0e-10, atol=1.0e-10)),
+        gradient_close=bool(
+            np.allclose(gradient, result.gradient, rtol=1.0e-10, atol=1.0e-10)
+            and np.allclose(
+                batch_gradients, result.gradient.reshape(1, -1), rtol=1.0e-10, atol=1.0e-10
+            )
+            and np.allclose(batch_values, expected_value, rtol=1.0e-10, atol=1.0e-10)
+        ),
         max_abs_error=max(errors),
         samples=1,
     )
@@ -10265,6 +10395,7 @@ def _annotate_whole_program_native_mlir(
     )
     resource_counts = dict(module.resource_counts)
     resource_counts["native_whole_program_kernels"] = 1
+    resource_counts["native_whole_program_batch_kernels"] = 1
     resource_counts["native_supported_ops"] = len(_whole_program_native_supported_ops(result))
     resource_counts["native_supported_elementary_ops"] = sum(
         1
