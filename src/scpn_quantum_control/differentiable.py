@@ -2158,6 +2158,7 @@ def _normalise_axis_permutation_axes(
 
 
 def _trace_swapaxes(array: TraceADArray, *, axis1: int, axis2: int) -> TraceADArray:
+    _require_program_ad_shape_contract("swapaxes", (array, axis1, axis2))
     first = _normalise_axis_permutation_axis("swapaxes", axis1, rank=array.ndim)
     second = _normalise_axis_permutation_axis("swapaxes", axis2, rank=array.ndim)
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
@@ -2175,6 +2176,7 @@ def _trace_moveaxis(
     source: int | tuple[int, ...],
     destination: int | tuple[int, ...],
 ) -> TraceADArray:
+    _require_program_ad_shape_contract("moveaxis", (array, source, destination))
     source_axes = _normalise_axis_permutation_axes(
         "moveaxis", source, rank=array.ndim, role="source"
     )
@@ -9620,7 +9622,15 @@ _PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE = "scpn.program_ad.shape"
 _PROGRAM_AD_SHAPE_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("expand_dims", "reshape", "ravel", "squeeze", "transpose")
+    for name in (
+        "expand_dims",
+        "moveaxis",
+        "reshape",
+        "ravel",
+        "squeeze",
+        "swapaxes",
+        "transpose",
+    )
 }
 
 _PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.reduction"
@@ -10689,6 +10699,140 @@ def program_ad_shape_squeeze_derivative_rule(
         name=(
             "program_ad_shape_squeeze_"
             f"{_program_ad_shape_signature(source)}_axes_{axes_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_shape_swapaxes_derivative_rule(
+    source_shape: Sequence[int],
+    axis1: int,
+    axis2: int,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed two-axis exchange."""
+
+    source = _program_ad_shape_normalise_static_shape("swapaxes", source_shape)
+    first = _normalise_axis_permutation_axis("swapaxes", axis1, rank=len(source))
+    second = _normalise_axis_permutation_axis("swapaxes", axis2, rank=len(source))
+    target_shape = list(source)
+    target_shape[first], target_shape[second] = target_shape[second], target_shape[first]
+    target = tuple(target_shape)
+    source_size = _program_ad_shape_static_size(source)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("swapaxes", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(
+            np.swapaxes(vector.reshape(source), first, second)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("swapaxes", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "swapaxes", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.swapaxes(tangent_vector.reshape(source), first, second)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("swapaxes", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "swapaxes", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.swapaxes(cotangent_vector.reshape(target), first, second)
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_swapaxes_"
+            f"{_program_ad_shape_signature(source)}_axes_{first}_{second}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_moveaxis_order(
+    rank: int,
+    source_axes: tuple[int, ...],
+    destination_axes: tuple[int, ...],
+) -> tuple[int, ...]:
+    order = [axis for axis in range(rank) if axis not in set(source_axes)]
+    for destination_axis, source_axis in sorted(zip(destination_axes, source_axes)):
+        order.insert(destination_axis, source_axis)
+    return tuple(order)
+
+
+def _program_ad_shape_normalise_moveaxis_axes(
+    source_shape: tuple[int, ...],
+    source: int | Sequence[int],
+    destination: int | Sequence[int],
+) -> tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]]:
+    source_axes = _normalise_axis_permutation_axes(
+        "moveaxis", source, rank=len(source_shape), role="source"
+    )
+    destination_axes = _normalise_axis_permutation_axes(
+        "moveaxis", destination, rank=len(source_shape), role="destination"
+    )
+    if len(source_axes) != len(destination_axes):
+        raise ValueError("program AD moveaxis source and destination lengths must match")
+    order = _program_ad_shape_moveaxis_order(len(source_shape), source_axes, destination_axes)
+    return source_axes, destination_axes, order
+
+
+def program_ad_shape_moveaxis_derivative_rule(
+    source_shape: Sequence[int],
+    source: int | Sequence[int],
+    destination: int | Sequence[int],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed axis relocation."""
+
+    source_shape_tuple = _program_ad_shape_normalise_static_shape("moveaxis", source_shape)
+    source_axes, destination_axes, order = _program_ad_shape_normalise_moveaxis_axes(
+        source_shape_tuple, source, destination
+    )
+    target = tuple(source_shape_tuple[axis] for axis in order)
+    source_size = _program_ad_shape_static_size(source_shape_tuple)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("moveaxis", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(
+            np.moveaxis(vector.reshape(source_shape_tuple), source_axes, destination_axes)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("moveaxis", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "moveaxis", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.moveaxis(tangent_vector.reshape(source_shape_tuple), source_axes, destination_axes)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("moveaxis", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "moveaxis", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.moveaxis(cotangent_vector.reshape(target), destination_axes, source_axes)
+        )
+
+    source_signature = "_".join(str(axis) for axis in source_axes) or "none"
+    destination_signature = "_".join(str(axis) for axis in destination_axes) or "none"
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_moveaxis_"
+            f"{_program_ad_shape_signature(source_shape_tuple)}_"
+            f"source_{source_signature}_destination_{destination_signature}_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -13834,6 +13978,31 @@ def _program_ad_shape_transpose_shape(args: tuple[object, ...]) -> tuple[int, ..
     return tuple(source_shape[axis] for axis in axes)
 
 
+def _program_ad_shape_swapaxes_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD shape swapaxes rule requires array, axis1, and axis2")
+    source_shape = _program_ad_array_shape_of(args[0])
+    first = _normalise_axis_permutation_axis(
+        "swapaxes", cast(int, args[1]), rank=len(source_shape)
+    )
+    second = _normalise_axis_permutation_axis(
+        "swapaxes", cast(int, args[2]), rank=len(source_shape)
+    )
+    target = list(source_shape)
+    target[first], target[second] = target[second], target[first]
+    return tuple(target)
+
+
+def _program_ad_shape_moveaxis_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD shape moveaxis rule requires array, source, and destination")
+    source_shape = _program_ad_array_shape_of(args[0])
+    _, _, order = _program_ad_shape_normalise_moveaxis_axes(
+        source_shape, cast(Any, args[1]), cast(Any, args[2])
+    )
+    return tuple(source_shape[axis] for axis in order)
+
+
 def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape squeeze rule requires array and optional axis")
@@ -14326,6 +14495,28 @@ def _program_ad_shape_transpose_static_arguments(args: tuple[object, ...]) -> tu
         source_shape, args[1] if len(args) == 2 else None
     )
     return () if not axes else (axes,)
+
+
+def _program_ad_shape_swapaxes_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 3:
+        raise ValueError("program AD shape swapaxes static rule requires array, axis1, and axis2")
+    source_shape = _program_ad_array_shape_of(args[0])
+    return (
+        _normalise_axis_permutation_axis("swapaxes", cast(int, args[1]), rank=len(source_shape)),
+        _normalise_axis_permutation_axis("swapaxes", cast(int, args[2]), rank=len(source_shape)),
+    )
+
+
+def _program_ad_shape_moveaxis_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 3:
+        raise ValueError(
+            "program AD shape moveaxis static rule requires array, source, and destination"
+        )
+    source_shape = _program_ad_array_shape_of(args[0])
+    source_axes, destination_axes, _ = _program_ad_shape_normalise_moveaxis_axes(
+        source_shape, cast(Any, args[1]), cast(Any, args[2])
+    )
+    return source_axes, destination_axes
 
 
 def _program_ad_shape_squeeze_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -15872,17 +16063,21 @@ _PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "expand_dims": _program_ad_shape_expand_dims_shape,
+    "moveaxis": _program_ad_shape_moveaxis_shape,
     "reshape": _program_ad_shape_reshape_shape,
     "ravel": _program_ad_shape_ravel_shape,
     "squeeze": _program_ad_shape_squeeze_shape,
+    "swapaxes": _program_ad_shape_swapaxes_shape,
     "transpose": _program_ad_shape_transpose_shape,
 }
 
 _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
     "expand_dims": _program_ad_shape_expand_dims_static_arguments,
+    "moveaxis": _program_ad_shape_moveaxis_static_arguments,
     "reshape": _program_ad_shape_reshape_static_arguments,
     "ravel": _program_ad_shape_no_static_arguments,
     "squeeze": _program_ad_shape_squeeze_static_arguments,
+    "swapaxes": _program_ad_shape_swapaxes_static_arguments,
     "transpose": _program_ad_shape_transpose_static_arguments,
 }
 
@@ -16034,23 +16229,29 @@ def _program_ad_shape_batching_rule(
 def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
     static_factory = {
         "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
+        "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
         "reshape": "program_ad_shape_reshape_derivative_rule",
         "ravel": "program_ad_shape_ravel_derivative_rule",
         "squeeze": "program_ad_shape_squeeze_derivative_rule",
+        "swapaxes": "program_ad_shape_swapaxes_derivative_rule",
         "transpose": "program_ad_shape_transpose_derivative_rule",
     }[name]
     static_signature = {
         "expand_dims": "source_shape:ranked_tensor_shape;axis",
+        "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
         "reshape": "source_shape:ranked_tensor_shape;target_shape",
         "ravel": "source_shape:ranked_tensor_shape",
         "squeeze": "source_shape:ranked_tensor_shape;axis",
+        "swapaxes": "source_shape:ranked_tensor_shape;axis1_axis2",
         "transpose": "source_shape:ranked_tensor_shape;axes",
     }[name]
     nondifferentiable_boundaries = {
         "expand_dims": "static_singleton_axis_insertion",
+        "moveaxis": "static_axis_move_permutation",
         "reshape": "element_count_preserving_static_shape",
         "ravel": "contiguous_flat_view_shape",
         "squeeze": "static_singleton_axis_removal",
+        "swapaxes": "static_axis_swap_permutation",
         "transpose": "static_axis_permutation",
     }
     return {
@@ -24629,9 +24830,11 @@ __all__ = [
     "program_ad_selection_clip_derivative_rule",
     "program_ad_selection_where_derivative_rule",
     "program_ad_shape_expand_dims_derivative_rule",
+    "program_ad_shape_moveaxis_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
     "program_ad_shape_squeeze_derivative_rule",
+    "program_ad_shape_swapaxes_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",
     "program_ad_stencil_gradient_derivative_rule",
     "program_adjoint_gradient",

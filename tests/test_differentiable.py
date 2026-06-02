@@ -181,9 +181,11 @@ from scpn_quantum_control.differentiable import (
     program_ad_selection_clip_derivative_rule,
     program_ad_selection_where_derivative_rule,
     program_ad_shape_expand_dims_derivative_rule,
+    program_ad_shape_moveaxis_derivative_rule,
     program_ad_shape_ravel_derivative_rule,
     program_ad_shape_reshape_derivative_rule,
     program_ad_shape_squeeze_derivative_rule,
+    program_ad_shape_swapaxes_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
     program_ad_signal_convolve_derivative_rule,
     program_ad_signal_correlate_derivative_rule,
@@ -4642,8 +4644,15 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     assert (
         scpn.program_ad_shape_squeeze_derivative_rule is program_ad_shape_squeeze_derivative_rule
     )
+    assert (
+        scpn.program_ad_shape_swapaxes_derivative_rule is program_ad_shape_swapaxes_derivative_rule
+    )
+    assert (
+        scpn.program_ad_shape_moveaxis_derivative_rule is program_ad_shape_moveaxis_derivative_rule
+    )
 
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    cube = np.arange(24.0, dtype=np.float64).reshape(2, 3, 4)
     singleton = matrix.reshape(1, 2, 3, 1)
     reshape_contract = primitive_contract_for("scpn.program_ad.shape:reshape")
     assert reshape_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "reshape", "1")
@@ -4699,6 +4708,35 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(squeeze_contract.identity)
 
+    swapaxes_contract = primitive_contract_for("scpn.program_ad.shape:swapaxes")
+    assert swapaxes_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "swapaxes", "1"
+    )
+    assert swapaxes_contract.shape_rule is not None
+    assert swapaxes_contract.shape_rule((cube, 0, -1)) == (4, 3, 2)
+    assert swapaxes_contract.dtype_rule is not None
+    assert swapaxes_contract.dtype_rule((cube, 0, -1)) == "float64"
+    assert swapaxes_contract.static_argument_rule is not None
+    assert swapaxes_contract.static_argument_rule((cube, 0, -1)) == (0, 2)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(swapaxes_contract.identity)
+
+    moveaxis_contract = primitive_contract_for("scpn.program_ad.shape:moveaxis")
+    assert moveaxis_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "moveaxis", "1"
+    )
+    assert moveaxis_contract.shape_rule is not None
+    assert moveaxis_contract.shape_rule((cube, (0, 2), (2, 0))) == (4, 3, 2)
+    assert moveaxis_contract.dtype_rule is not None
+    assert moveaxis_contract.dtype_rule((cube, (0, 2), (2, 0))) == "float64"
+    assert moveaxis_contract.static_argument_rule is not None
+    assert moveaxis_contract.static_argument_rule((cube, (0, 2), (2, 0))) == (
+        (0, 2),
+        (2, 0),
+    )
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(moveaxis_contract.identity)
+
 
 def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
     """Shape contracts should expose fail-closed static-layout boundaries."""
@@ -4708,7 +4746,9 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         "reshape": "element_count_preserving_static_shape",
         "ravel": "contiguous_flat_view_shape",
         "squeeze": "static_singleton_axis_removal",
+        "swapaxes": "static_axis_swap_permutation",
         "transpose": "static_axis_permutation",
+        "moveaxis": "static_axis_move_permutation",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(
@@ -4723,7 +4763,15 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
 
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.shape:{name}")
-        for name in ("reshape", "ravel", "transpose", "expand_dims", "squeeze")
+        for name in (
+            "reshape",
+            "ravel",
+            "transpose",
+            "expand_dims",
+            "squeeze",
+            "swapaxes",
+            "moveaxis",
+        )
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
 
@@ -4760,16 +4808,16 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             overwrite=True,
         )
     try:
+
+        def objective(values):
+            reshaped = np.reshape(values, (2, 2))
+            swapped = np.swapaxes(reshaped, 0, 1)
+            moved = np.moveaxis(swapped, 0, 1)
+            flattened = np.ravel(np.transpose(moved))
+            return np.sum(np.squeeze(np.expand_dims(flattened, axis=(0, -1)), axis=(0, -1)))
+
         result = whole_program_value_and_grad(
-            lambda values: np.sum(
-                np.squeeze(
-                    np.expand_dims(
-                        np.ravel(np.transpose(np.reshape(values, (2, 2)))),
-                        axis=(0, -1),
-                    ),
-                    axis=(0, -1),
-                )
-            ),
+            objective,
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
         )
     finally:
@@ -4785,6 +4833,8 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
         "transpose": {"shape", "dtype", "static"},
         "expand_dims": {"shape", "dtype", "static"},
         "squeeze": {"shape", "dtype", "static"},
+        "swapaxes": {"shape", "dtype", "static"},
+        "moveaxis": {"shape", "dtype", "static"},
     }
 
 
@@ -4919,6 +4969,63 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
         rtol=0.0,
         atol=0.0,
     )
+
+    cube = np.arange(24.0, dtype=np.float64).reshape(2, 3, 4)
+    cube_values = cube.reshape(-1)
+    cube_tangent = np.linspace(-1.0, 1.0, cube.size, dtype=np.float64)
+    cube_cotangent = np.linspace(0.25, 2.25, cube.size, dtype=np.float64).reshape(4, 3, 2)
+
+    swapaxes_rule = program_ad_shape_swapaxes_derivative_rule((2, 3, 4), 0, -1)
+    assert swapaxes_rule.name == "program_ad_shape_swapaxes_2x3x4_axes_0_2_direct_rule"
+    assert swapaxes_rule.jvp_rule is not None
+    assert swapaxes_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        swapaxes_rule.value_fn(cube_values),
+        np.swapaxes(cube, 0, -1).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        swapaxes_rule.jvp_rule(cube_values, cube_tangent),
+        np.swapaxes(cube_tangent.reshape(2, 3, 4), 0, -1).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        swapaxes_rule.vjp_rule(cube_values, cube_cotangent.reshape(-1)),
+        np.swapaxes(cube_cotangent, 0, -1).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    moveaxis_rule = program_ad_shape_moveaxis_derivative_rule((2, 3, 4), (0, 2), (2, 0))
+    assert (
+        moveaxis_rule.name
+        == "program_ad_shape_moveaxis_2x3x4_source_0_2_destination_2_0_direct_rule"
+    )
+    assert moveaxis_rule.jvp_rule is not None
+    assert moveaxis_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        moveaxis_rule.value_fn(cube_values),
+        np.moveaxis(cube, (0, 2), (2, 0)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        moveaxis_rule.jvp_rule(cube_values, cube_tangent),
+        np.moveaxis(cube_tangent.reshape(2, 3, 4), (0, 2), (2, 0)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        moveaxis_rule.vjp_rule(cube_values, cube_cotangent.reshape(-1)),
+        np.moveaxis(cube_cotangent, (2, 0), (0, 2)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    with pytest.raises(ValueError, match="lengths must match"):
+        program_ad_shape_moveaxis_derivative_rule((2, 3, 4), (0, 1), (2,))
 
 
 def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
@@ -7976,6 +8083,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.shape:transpose": (
             "program_ad_shape_transpose_derivative_rule",
             "source_shape:ranked_tensor_shape;axes",
+        ),
+        "scpn.program_ad.shape:swapaxes": (
+            "program_ad_shape_swapaxes_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis1_axis2",
+        ),
+        "scpn.program_ad.shape:moveaxis": (
+            "program_ad_shape_moveaxis_derivative_rule",
+            "source_shape:ranked_tensor_shape;source_destination",
         ),
         "scpn.program_ad.reduction:sum": (
             "program_ad_reduction_sum_derivative_rule",
