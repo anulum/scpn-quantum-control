@@ -8164,7 +8164,17 @@ def test_program_ad_linalg_eig_fails_closed_invalid_spectral_contracts() -> None
 def test_program_ad_linalg_primitives_are_registry_policy_gated() -> None:
     """Supported program AD linalg primitives should expose registry contracts."""
 
-    for name in ("det", "inv", "solve", "matrix_power", "multi_dot", "eig"):
+    for name in (
+        "det",
+        "inv",
+        "solve",
+        "trace",
+        "diag",
+        "diagflat",
+        "matrix_power",
+        "multi_dot",
+        "eig",
+    ):
         identity = PrimitiveIdentity("scpn.program_ad.linalg", name, "1")
         contract = primitive_contract_for(identity)
         assert contract.identity == identity
