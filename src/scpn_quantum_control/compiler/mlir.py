@@ -32,13 +32,16 @@ from numpy.typing import NDArray
 from ..differentiable import (
     CustomDerivativeRegistry,
     CustomDerivativeRule,
+    Parameter,
     PrimitiveBatchingRule,
     PrimitiveIdentity,
     PrimitiveTransformRule,
     WholeProgramADResult,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
+    program_adjoint_gradient,
     value_and_custom_jacobian,
+    whole_program_value_and_grad,
 )
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
 
@@ -9175,6 +9178,167 @@ def compile_whole_program_ad_trace_to_mlir(
     )
 
 
+@dataclass(frozen=True)
+class ExecutableWholeProgramADKernel:
+    """Executable replay kernel for a supported captured program AD trace.
+
+    The kernel is intentionally bounded: it replays the original Python
+    objective through the supported operator-intercepted program AD IR, checks
+    the one-dimensional parameter shape, checks the captured control/signature
+    surface, and computes gradients through reverse-mode adjoint replay. It is
+    executable and deterministic for the supported captured trace contract; it
+    does not claim arbitrary source compilation or native LLVM/JIT lowering for
+    arbitrary Python programs.
+    """
+
+    objective: Callable[[Any], object]
+    source_result: WholeProgramADResult
+    parameters: tuple[Parameter, ...]
+    mlir_module: MLIRModule
+    parameter_names: tuple[str, ...]
+    parameter_shape: tuple[int, ...]
+    branch_signature: tuple[str, ...]
+    backend: str = "program_ad_trace_replay"
+    claim_boundary: str = (
+        "executable replay of supported captured scalar program AD IR with "
+        "deterministic MLIR provenance; branch/signature changes fail closed; "
+        "no arbitrary source compiler or native LLVM/JIT claim"
+    )
+
+    def __post_init__(self) -> None:
+        if not callable(self.objective):
+            raise ValueError("objective must be callable")
+        if not isinstance(self.source_result, WholeProgramADResult):
+            raise ValueError("source_result must be a WholeProgramADResult")
+        if not isinstance(self.mlir_module, MLIRModule):
+            raise ValueError("mlir_module must be an MLIRModule")
+        if not self.parameters or any(
+            not isinstance(parameter, Parameter) for parameter in self.parameters
+        ):
+            raise ValueError("parameters must be a non-empty tuple of Parameter objects")
+        if self.parameter_names != tuple(parameter.name for parameter in self.parameters):
+            raise ValueError("parameter_names must match parameters")
+        if self.parameter_names != self.source_result.parameter_names:
+            raise ValueError("parameter_names must match source_result")
+        if self.parameter_shape != (len(self.parameters),):
+            raise ValueError("parameter_shape must match parameter count")
+        if self.source_result.gradient.shape != self.parameter_shape:
+            raise ValueError("source_result gradient shape must match parameter_shape")
+        if any(not isinstance(item, str) or not item for item in self.branch_signature):
+            raise ValueError("branch_signature entries must be non-empty strings")
+        if self.branch_signature != _whole_program_replay_signature(self.source_result):
+            raise ValueError("branch_signature must match source_result")
+        if self.backend != "program_ad_trace_replay":
+            raise ValueError("backend must be 'program_ad_trace_replay'")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+
+    def _checked_values(self, values: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
+        checked = _as_finite_vector("values", values)
+        if checked.shape != self.parameter_shape:
+            raise ValueError(
+                "values shape must match executable whole-program AD parameter shape "
+                f"{self.parameter_shape}"
+            )
+        return checked
+
+    def _recapture(self, values: Sequence[float] | np.ndarray) -> WholeProgramADResult:
+        checked = self._checked_values(values)
+        result = whole_program_value_and_grad(
+            self.objective,
+            checked,
+            parameters=self.parameters,
+            trace=False,
+        )
+        signature = _whole_program_replay_signature(result)
+        if signature != self.branch_signature:
+            raise ValueError(
+                "whole-program executable AD kernel branch signature changed; "
+                "recompile with representative sample values"
+            )
+        return result
+
+    def value_and_grad(
+        self,
+        values: Sequence[float] | np.ndarray,
+    ) -> tuple[float, NDArray[np.float64]]:
+        """Execute value replay and reverse-mode adjoint gradient replay."""
+
+        result = self._recapture(values)
+        return result.value, program_adjoint_gradient(result)
+
+    def value(self, values: Sequence[float] | np.ndarray) -> float:
+        """Execute value replay for the captured program AD trace."""
+
+        return self.value_and_grad(values)[0]
+
+    def gradient(self, values: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
+        """Execute reverse-mode adjoint replay for the captured program AD trace."""
+
+        return self.value_and_grad(values)[1]
+
+
+def compile_whole_program_ad_trace_to_executable(
+    objective: Callable[[Any], object],
+    sample_values: Sequence[float] | np.ndarray,
+    parameters: Sequence[Parameter] | None = None,
+    config: DifferentiableMLIRCompileConfig | None = None,
+    *,
+    trace: bool = True,
+) -> ExecutableWholeProgramADKernel:
+    """Compile a supported captured program AD trace to an executable replay kernel.
+
+    This is the executable compiler boundary for whole-program AD today: it
+    captures the supported scalar program IR, verifies reverse adjoint replay is
+    available, emits deterministic MLIR provenance, then returns a fail-closed
+    replay kernel. Shape drift, non-finite inputs, and branch/signature drift
+    raise errors instead of silently changing the differentiated program.
+    """
+
+    if not callable(objective):
+        raise ValueError("whole-program executable AD objective must be callable")
+    checked_sample = _as_finite_vector("sample_values", sample_values)
+    source_result = whole_program_value_and_grad(
+        objective,
+        checked_sample,
+        parameters=parameters,
+        trace=trace,
+    )
+    program_adjoint_gradient(source_result)
+    compile_config = DifferentiableMLIRCompileConfig() if config is None else config
+    mlir_module = compile_whole_program_ad_trace_to_mlir(source_result, compile_config)
+    replay_parameters = tuple(
+        Parameter(name, trainable=trainable)
+        for name, trainable in zip(
+            source_result.parameter_names,
+            source_result.trainable,
+            strict=True,
+        )
+    )
+    return ExecutableWholeProgramADKernel(
+        objective=objective,
+        source_result=source_result,
+        parameters=replay_parameters,
+        mlir_module=mlir_module,
+        parameter_names=source_result.parameter_names,
+        parameter_shape=source_result.gradient.shape,
+        branch_signature=_whole_program_replay_signature(source_result),
+    )
+
+
+def _whole_program_replay_signature(result: WholeProgramADResult) -> tuple[str, ...]:
+    """Return a stable non-numeric signature for supported program AD replay."""
+
+    control_signature = tuple(
+        f"{node.index}:{node.op}:{','.join(node.inputs)}:{_fmt_float(node.value)}"
+        for node in result.ir_nodes
+        if node.op.startswith(("branch:", "loop:", "control:"))
+    )
+    if control_signature:
+        return control_signature
+    return tuple(f"{node.index}:{node.op}:{','.join(node.inputs)}" for node in result.ir_nodes)
+
+
 def _coupling_terms(K_nm: np.ndarray) -> tuple[tuple[int, int, float], ...]:
     terms: list[tuple[int, int, float]] = []
     n_oscillators = K_nm.shape[0]
@@ -9225,6 +9389,7 @@ __all__ = [
     "CompilerADKernelVerification",
     "DifferentiableMLIRCompileConfig",
     "ExecutableCompilerADKernel",
+    "ExecutableWholeProgramADKernel",
     "MLIRCompileConfig",
     "PrimitiveLoweringStatus",
     "MLIRModule",
@@ -9233,6 +9398,7 @@ __all__ = [
     "compile_custom_derivative_rule_to_mlir",
     "compile_custom_derivative_rule_to_executable",
     "compile_registered_primitive_to_executable",
+    "compile_whole_program_ad_trace_to_executable",
     "compile_matrix_2x2_determinant_ad_to_native_llvm_jit",
     "compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit",
     "compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit",

@@ -183,6 +183,13 @@ the captured scalar IR. Unsupported replay operations fail closed; the API does
 not substitute finite differences or claim a general arbitrary-Python
 MLIR/LLVM compiler.
 
+Supported captured scalar program traces can also be promoted to an executable
+replay kernel with `compile_whole_program_ad_trace_to_executable(...)`. The
+kernel carries deterministic MLIR provenance, checks parameter shape and
+branch/signature stability on every replay, and returns reverse-adjoint
+gradients. It remains a bounded supported-trace executable path, not an
+arbitrary source compiler or native LLVM/JIT implementation for all Python.
+
 ## GUESS error mitigation in 5 lines (added April 2026)
 
 For any XY Hamiltonian run on hardware, the conserved total magnetisation

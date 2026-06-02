@@ -20,6 +20,7 @@ from scpn_quantum_control.compiler.mlir import (
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     ExecutableCompilerADKernel,
+    ExecutableWholeProgramADKernel,
     MLIRCompileConfig,
     PrimitiveLoweringStatus,
     build_compiler_ad_transform_plan,
@@ -28,6 +29,7 @@ from scpn_quantum_control.compiler.mlir import (
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
     compile_registered_primitive_to_executable,
+    compile_whole_program_ad_trace_to_executable,
     compile_whole_program_ad_trace_to_mlir,
     make_program_ad_linalg_matrix_power_executable_lowering_rule,
     make_program_ad_linalg_multi_dot_executable_lowering_rule,
@@ -54,6 +56,7 @@ from scpn_quantum_control.differentiable import (
     primitive_contract_for,
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
+    program_adjoint_value_and_grad,
     vmap,
     whole_program_value_and_grad,
 )
@@ -4741,6 +4744,50 @@ def test_whole_program_ad_mlir_exports_trace_and_polyglot_status() -> None:
     assert 'execution = "python_whole_program_ad_interchange"' in module.text
 
 
+def test_whole_program_ad_trace_executable_replays_supported_scalar_ir() -> None:
+    """Executable program AD trace kernels should replay gradients fail-closed."""
+
+    def objective(values: np.ndarray) -> object:
+        branch = values[0] if values[0] > values[1] else values[1]
+        return np.sin(values[0] * values[1]) + np.log(values[2] + 4.0) + branch * values[2]
+
+    values = np.array([1.25, -0.25, 0.5], dtype=np.float64)
+    parameters = (Parameter("x"), Parameter("y"), Parameter("z"))
+
+    kernel = compile_whole_program_ad_trace_to_executable(objective, values, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        values,
+        parameters,
+    )
+    value, gradient = kernel.value_and_grad(values)
+
+    assert isinstance(kernel, ExecutableWholeProgramADKernel)
+    assert kernel.backend == "program_ad_trace_replay"
+    assert kernel.parameter_names == ("x", "y", "z")
+    assert kernel.parameter_shape == (3,)
+    assert kernel.mlir_module.resource_counts["parameters"] == 3
+    assert "whole_program_ad" in kernel.mlir_module.text
+    assert "branch/signature changes fail closed" in kernel.claim_boundary
+    assert kernel.mlir_module.metadata["polyglot_targets"]["llvm"].startswith("blocked")
+    assert value == pytest.approx(reference_value)
+    assert kernel.value(values) == pytest.approx(reference_value)
+    np.testing.assert_allclose(gradient, reference_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        kernel.gradient(values),
+        reference_gradient,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+    with pytest.raises(ValueError, match="branch signature"):
+        kernel.value_and_grad(np.array([-0.25, 1.25, 0.5], dtype=np.float64))
+    with pytest.raises(ValueError, match="one-dimensional"):
+        kernel.value_and_grad(np.array([[1.25, -0.25, 0.5]], dtype=np.float64))
+    with pytest.raises(ValueError, match="finite"):
+        kernel.value_and_grad(np.array([1.25, np.nan, 0.5], dtype=np.float64))
+
+
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
     """Realtime runtime should account for deterministic deadline misses."""
 
@@ -4895,6 +4942,7 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
     assert scpn.CompilerADTransformPlan is CompilerADTransformPlan
     assert scpn.DifferentiableMLIRCompileConfig is DifferentiableMLIRCompileConfig
     assert scpn.ExecutableCompilerADKernel is ExecutableCompilerADKernel
+    assert scpn.ExecutableWholeProgramADKernel is ExecutableWholeProgramADKernel
     assert scpn.MLIRCompileConfig is MLIRCompileConfig
     assert scpn.PrimitiveLoweringStatus is PrimitiveLoweringStatus
     assert scpn.build_compiler_ad_transform_plan is build_compiler_ad_transform_plan
@@ -4910,6 +4958,10 @@ def test_compiler_realtime_and_deployment_api_exported_from_package_root() -> No
     assert (
         scpn.compile_registered_primitive_to_executable
         is compile_registered_primitive_to_executable
+    )
+    assert (
+        scpn.compile_whole_program_ad_trace_to_executable
+        is compile_whole_program_ad_trace_to_executable
     )
     assert scpn.compile_kuramoto_to_mlir is compile_kuramoto_to_mlir
     assert (
