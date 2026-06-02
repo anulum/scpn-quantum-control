@@ -6803,6 +6803,13 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert cumsum_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
     assert cumsum_contract.effect == "pure"
     assert cumsum_contract.lowering_metadata["mlir_op"] == "scpn_diff.cumulative.cumsum"
+    assert (
+        cumsum_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_cumulative_cumsum_derivative_rule"
+    )
+    assert cumsum_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;axis"
+    )
     assert cumsum_contract.shape_rule is not None
     assert cumsum_contract.shape_rule((matrix, None)) == (6,)
     assert cumsum_contract.shape_rule((matrix, 1)) == (2, 3)
@@ -6817,17 +6824,46 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert cumprod_contract.identity == PrimitiveIdentity(
         "scpn.program_ad.cumulative", "cumprod", "1"
     )
+    assert cumprod_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert cumprod_contract.effect == "pure"
     assert cumprod_contract.lowering_metadata["mlir_op"] == "scpn_diff.cumulative.cumprod"
+    assert (
+        cumprod_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_cumulative_cumprod_derivative_rule"
+    )
+    assert cumprod_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;axis"
+    )
     assert cumprod_contract.shape_rule is not None
     assert cumprod_contract.shape_rule((matrix, None)) == (6,)
+    assert cumprod_contract.shape_rule((matrix, 1)) == (2, 3)
+    assert cumprod_contract.dtype_rule is not None
+    assert cumprod_contract.dtype_rule((matrix, 1)) == "float64"
+    assert cumprod_contract.static_argument_rule is not None
+    assert cumprod_contract.static_argument_rule((matrix, 1)) == (1,)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(cumprod_contract.identity)
 
     diff_contract = primitive_contract_for("scpn.program_ad.cumulative:diff")
     assert diff_contract.identity == PrimitiveIdentity("scpn.program_ad.cumulative", "diff", "1")
+    assert diff_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert diff_contract.effect == "pure"
     assert diff_contract.lowering_metadata["mlir_op"] == "scpn_diff.cumulative.diff"
+    assert (
+        diff_contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_cumulative_diff_derivative_rule"
+    )
+    assert diff_contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;order_axis"
+    )
     assert diff_contract.shape_rule is not None
     assert diff_contract.shape_rule((matrix, 2, 1)) == (2, 1)
+    assert diff_contract.dtype_rule is not None
+    assert diff_contract.dtype_rule((matrix, 2, 1)) == "float64"
     assert diff_contract.static_argument_rule is not None
     assert diff_contract.static_argument_rule((matrix, 2, 1)) == (2, 1)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(diff_contract.identity)
 
 
 def test_program_ad_cumulative_boundary_metadata_is_explicit() -> None:
