@@ -2290,6 +2290,9 @@ def _normalise_roll_shift_tuple(shift: object, axis_count: int) -> tuple[int, ..
 
 
 def _trace_roll(array: TraceADArray, *, shift: object, axis: object = None) -> TraceADArray:
+    _require_program_ad_shape_contract(
+        "roll", (array, shift) if axis is None else (array, shift, axis)
+    )
     if axis is None:
         flat_shift = _normalise_roll_shift_scalar(shift)
         rolled = np.roll(np.arange(array.size, dtype=np.int64), flat_shift).reshape(array.shape)
@@ -2337,6 +2340,7 @@ def _trace_rot90(array: TraceADArray, *, k: object = 1, axes: object = (0, 1)) -
 
 
 def _trace_flip(array: TraceADArray, *, axis: object = None) -> TraceADArray:
+    _require_program_ad_shape_contract("flip", (array,) if axis is None else (array, axis))
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     if axis is None:
         flipped = np.flip(source)
@@ -9624,9 +9628,11 @@ _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SHAPE_PRIMITIVE_NAMESPACE, name, "1")
     for name in (
         "expand_dims",
+        "flip",
         "moveaxis",
         "reshape",
         "ravel",
+        "roll",
         "squeeze",
         "swapaxes",
         "transpose",
@@ -10833,6 +10839,152 @@ def program_ad_shape_moveaxis_derivative_rule(
             "program_ad_shape_moveaxis_"
             f"{_program_ad_shape_signature(source_shape_tuple)}_"
             f"source_{source_signature}_destination_{destination_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_normalise_roll_signature(
+    source_shape: tuple[int, ...],
+    shift: object,
+    axis: object,
+) -> tuple[int | tuple[int, ...], tuple[int, ...] | None]:
+    if axis is None:
+        return _normalise_roll_shift_scalar(shift), None
+    axes = _normalise_axis_permutation_axes("roll", axis, rank=len(source_shape), role="axis")
+    return _normalise_roll_shift_tuple(shift, len(axes)), axes
+
+
+def _program_ad_shape_negate_roll_shift(
+    shift: int | tuple[int, ...],
+) -> int | tuple[int, ...]:
+    if isinstance(shift, tuple):
+        return tuple(-item for item in shift)
+    return -shift
+
+
+def program_ad_shape_roll_derivative_rule(
+    source_shape: Sequence[int],
+    shift: object,
+    axis: object = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed integer roll permutations."""
+
+    source = _program_ad_shape_normalise_static_shape("roll", source_shape)
+    normalised_shift, normalised_axis = _program_ad_shape_normalise_roll_signature(
+        source, shift, axis
+    )
+    inverse_shift = _program_ad_shape_negate_roll_shift(normalised_shift)
+    source_size = _program_ad_shape_static_size(source)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("roll", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(
+            np.roll(vector.reshape(source), normalised_shift, axis=normalised_axis)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("roll", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "roll", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.roll(tangent_vector.reshape(source), normalised_shift, axis=normalised_axis)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("roll", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "roll", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.roll(cotangent_vector.reshape(source), inverse_shift, axis=normalised_axis)
+        )
+
+    shift_signature = (
+        "_".join(str(item) for item in normalised_shift)
+        if isinstance(normalised_shift, tuple)
+        else str(normalised_shift)
+    )
+    axis_signature = (
+        "flat"
+        if normalised_axis is None
+        else "none"
+        if not normalised_axis
+        else "_".join(str(item) for item in normalised_axis)
+    )
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_roll_"
+            f"{_program_ad_shape_signature(source)}_"
+            f"shift_{shift_signature}_axis_{axis_signature}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_shape_normalise_flip_axis(
+    source_shape: tuple[int, ...],
+    axis: object,
+) -> tuple[int, ...] | None:
+    if axis is None:
+        return None
+    return _normalise_axis_permutation_axes("flip", axis, rank=len(source_shape), role="axis")
+
+
+def program_ad_shape_flip_derivative_rule(
+    source_shape: Sequence[int],
+    axis: object = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed axis-flip permutations."""
+
+    source = _program_ad_shape_normalise_static_shape("flip", source_shape)
+    normalised_axis = _program_ad_shape_normalise_flip_axis(source, axis)
+    source_size = _program_ad_shape_static_size(source)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        vector = _program_ad_shape_vector("flip", "values", values, expected_size=source_size)
+        return _program_ad_float64_vector_result(
+            np.flip(vector.reshape(source), axis=normalised_axis)
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_shape_vector("flip", "values", values, expected_size=source_size)
+        tangent_vector = _program_ad_shape_vector(
+            "flip", "tangent", tangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.flip(tangent_vector.reshape(source), axis=normalised_axis)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_shape_vector("flip", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_shape_vector(
+            "flip", "cotangent", cotangent, expected_size=source_size
+        )
+        return _program_ad_float64_vector_result(
+            np.flip(cotangent_vector.reshape(source), axis=normalised_axis)
+        )
+
+    axis_signature = (
+        "all"
+        if normalised_axis is None
+        else "none"
+        if not normalised_axis
+        else "_".join(str(item) for item in normalised_axis)
+    )
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_shape_flip_"
+            f"{_program_ad_shape_signature(source)}_axis_{axis_signature}_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,
@@ -14003,6 +14155,24 @@ def _program_ad_shape_moveaxis_shape(args: tuple[object, ...]) -> tuple[int, ...
     return tuple(source_shape[axis] for axis in order)
 
 
+def _program_ad_shape_roll_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {2, 3}:
+        raise ValueError("program AD shape roll rule requires array, shift, and optional axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    _program_ad_shape_normalise_roll_signature(
+        source_shape, args[1], args[2] if len(args) == 3 else None
+    )
+    return source_shape
+
+
+def _program_ad_shape_flip_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD shape flip rule requires array and optional axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    _program_ad_shape_normalise_flip_axis(source_shape, args[1] if len(args) == 2 else None)
+    return source_shape
+
+
 def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape squeeze rule requires array and optional axis")
@@ -14517,6 +14687,26 @@ def _program_ad_shape_moveaxis_static_arguments(args: tuple[object, ...]) -> tup
         source_shape, cast(Any, args[1]), cast(Any, args[2])
     )
     return source_axes, destination_axes
+
+
+def _program_ad_shape_roll_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {2, 3}:
+        raise ValueError(
+            "program AD shape roll static rule requires array, shift, and optional axis"
+        )
+    source_shape = _program_ad_array_shape_of(args[0])
+    return _program_ad_shape_normalise_roll_signature(
+        source_shape, args[1], args[2] if len(args) == 3 else None
+    )
+
+
+def _program_ad_shape_flip_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD shape flip static rule requires array and optional axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    return (
+        _program_ad_shape_normalise_flip_axis(source_shape, args[1] if len(args) == 2 else None),
+    )
 
 
 def _program_ad_shape_squeeze_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -16063,9 +16253,11 @@ _PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
 
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "expand_dims": _program_ad_shape_expand_dims_shape,
+    "flip": _program_ad_shape_flip_shape,
     "moveaxis": _program_ad_shape_moveaxis_shape,
     "reshape": _program_ad_shape_reshape_shape,
     "ravel": _program_ad_shape_ravel_shape,
+    "roll": _program_ad_shape_roll_shape,
     "squeeze": _program_ad_shape_squeeze_shape,
     "swapaxes": _program_ad_shape_swapaxes_shape,
     "transpose": _program_ad_shape_transpose_shape,
@@ -16073,9 +16265,11 @@ _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
 
 _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
     "expand_dims": _program_ad_shape_expand_dims_static_arguments,
+    "flip": _program_ad_shape_flip_static_arguments,
     "moveaxis": _program_ad_shape_moveaxis_static_arguments,
     "reshape": _program_ad_shape_reshape_static_arguments,
     "ravel": _program_ad_shape_no_static_arguments,
+    "roll": _program_ad_shape_roll_static_arguments,
     "squeeze": _program_ad_shape_squeeze_static_arguments,
     "swapaxes": _program_ad_shape_swapaxes_static_arguments,
     "transpose": _program_ad_shape_transpose_static_arguments,
@@ -16229,27 +16423,33 @@ def _program_ad_shape_batching_rule(
 def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
     static_factory = {
         "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
+        "flip": "program_ad_shape_flip_derivative_rule",
         "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
         "reshape": "program_ad_shape_reshape_derivative_rule",
         "ravel": "program_ad_shape_ravel_derivative_rule",
+        "roll": "program_ad_shape_roll_derivative_rule",
         "squeeze": "program_ad_shape_squeeze_derivative_rule",
         "swapaxes": "program_ad_shape_swapaxes_derivative_rule",
         "transpose": "program_ad_shape_transpose_derivative_rule",
     }[name]
     static_signature = {
         "expand_dims": "source_shape:ranked_tensor_shape;axis",
+        "flip": "source_shape:ranked_tensor_shape;axis",
         "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
         "reshape": "source_shape:ranked_tensor_shape;target_shape",
         "ravel": "source_shape:ranked_tensor_shape",
+        "roll": "source_shape:ranked_tensor_shape;shift_axis",
         "squeeze": "source_shape:ranked_tensor_shape;axis",
         "swapaxes": "source_shape:ranked_tensor_shape;axis1_axis2",
         "transpose": "source_shape:ranked_tensor_shape;axes",
     }[name]
     nondifferentiable_boundaries = {
         "expand_dims": "static_singleton_axis_insertion",
+        "flip": "static_axis_flip_permutation",
         "moveaxis": "static_axis_move_permutation",
         "reshape": "element_count_preserving_static_shape",
         "ravel": "contiguous_flat_view_shape",
+        "roll": "static_integer_roll_permutation",
         "squeeze": "static_singleton_axis_removal",
         "swapaxes": "static_axis_swap_permutation",
         "transpose": "static_axis_permutation",
@@ -24830,9 +25030,11 @@ __all__ = [
     "program_ad_selection_clip_derivative_rule",
     "program_ad_selection_where_derivative_rule",
     "program_ad_shape_expand_dims_derivative_rule",
+    "program_ad_shape_flip_derivative_rule",
     "program_ad_shape_moveaxis_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_reshape_derivative_rule",
+    "program_ad_shape_roll_derivative_rule",
     "program_ad_shape_squeeze_derivative_rule",
     "program_ad_shape_swapaxes_derivative_rule",
     "program_ad_shape_transpose_derivative_rule",
