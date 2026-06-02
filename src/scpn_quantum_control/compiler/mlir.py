@@ -21,8 +21,9 @@ import ctypes
 import hashlib
 import importlib
 import json
+import threading
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, is_dataclass
 from types import MappingProxyType
 from typing import Any, cast
 
@@ -9241,6 +9242,20 @@ class ExecutableWholeProgramADBatchResult:
 
 
 @dataclass(frozen=True)
+class _NativeWholeProgramADCacheEntry:
+    mlir_module: MLIRModule
+    llvm_ir: str
+    native_functions: Mapping[str, Any]
+    verification: CompilerADKernelVerification
+    supported_ops: tuple[str, ...]
+
+
+_NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK = threading.RLock()
+_NATIVE_WHOLE_PROGRAM_AD_CACHE: dict[str, _NativeWholeProgramADCacheEntry] = {}
+_NATIVE_WHOLE_PROGRAM_AD_CACHE_MAXSIZE = 32
+
+
+@dataclass(frozen=True)
 class NativeWholeProgramADKernel:
     """Native LLVM/JIT kernel for a supported scalar program AD trace."""
 
@@ -9255,6 +9270,8 @@ class NativeWholeProgramADKernel:
     parameter_shape: tuple[int, ...]
     trace_signature: tuple[str, ...]
     supported_ops: tuple[str, ...]
+    cache_key: str
+    cache_hit: bool
     backend: str = "native_llvm_jit"
     claim_boundary: str = (
         "native LLVM/JIT execution for supported scalar program AD traces with "
@@ -9317,6 +9334,10 @@ class NativeWholeProgramADKernel:
             raise ValueError("trace_signature must match source_result")
         if any(not isinstance(item, str) or not item for item in self.supported_ops):
             raise ValueError("supported_ops entries must be non-empty strings")
+        if len(self.cache_key) != 64:
+            raise ValueError("cache_key must be a sha256 hex digest")
+        if not isinstance(self.cache_hit, bool):
+            raise ValueError("cache_hit must be a bool")
         if self.backend != "native_llvm_jit":
             raise ValueError("backend must be 'native_llvm_jit'")
         if not self.claim_boundary:
@@ -9791,17 +9812,42 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
     base_symbol = f"{base_symbol}_{source_result.method}"
     base_symbol = _safe_llvm_symbol(base_symbol)
     llvm_ir = _compile_whole_program_ad_native_llvm_ir(source_result, base_symbol)
-    native_functions = _compile_native_llvm_jit_functions(llvm_ir, base_symbol)
-    verification = _verify_native_whole_program_ad_kernel(
-        source_result,
-        native_functions,
-        checked_sample,
-    )
     compile_config = DifferentiableMLIRCompileConfig() if config is None else config
-    mlir_module = _annotate_whole_program_native_mlir(
-        compile_whole_program_ad_trace_to_mlir(source_result, compile_config),
-        llvm_ir,
+    cache_key = _native_whole_program_ad_cache_key(
         source_result,
+        checked_sample,
+        compile_config,
+        llvm_ir,
+    )
+    cache_hit = False
+    with _NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK:
+        cached_entry = _NATIVE_WHOLE_PROGRAM_AD_CACHE.get(cache_key)
+    if cached_entry is None:
+        native_functions = _compile_native_llvm_jit_functions(llvm_ir, base_symbol)
+        verification = _verify_native_whole_program_ad_kernel(
+            source_result,
+            native_functions,
+            checked_sample,
+        )
+        mlir_module = _annotate_whole_program_native_mlir(
+            compile_whole_program_ad_trace_to_mlir(source_result, compile_config),
+            llvm_ir,
+            source_result,
+        )
+        cached_entry = _NativeWholeProgramADCacheEntry(
+            mlir_module=mlir_module,
+            llvm_ir=llvm_ir,
+            native_functions=native_functions,
+            verification=verification,
+            supported_ops=_whole_program_native_supported_ops(source_result),
+        )
+        _store_native_whole_program_ad_cache_entry(cache_key, cached_entry)
+    else:
+        cache_hit = True
+    mlir_module = _with_native_whole_program_cache_metadata(
+        cached_entry.mlir_module,
+        cache_key=cache_key,
+        cache_hit=cache_hit,
     )
     replay_parameters = tuple(
         Parameter(name, trainable=trainable)
@@ -9816,13 +9862,15 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
         source_result=source_result,
         parameters=replay_parameters,
         mlir_module=mlir_module,
-        llvm_ir=llvm_ir,
-        native_functions=native_functions,
-        verification=verification,
+        llvm_ir=cached_entry.llvm_ir,
+        native_functions=cached_entry.native_functions,
+        verification=cached_entry.verification,
         parameter_names=source_result.parameter_names,
         parameter_shape=source_result.gradient.shape,
         trace_signature=_whole_program_replay_signature(source_result),
-        supported_ops=_whole_program_native_supported_ops(source_result),
+        supported_ops=cached_entry.supported_ops,
+        cache_key=cache_key,
+        cache_hit=cache_hit,
     )
 
 
@@ -9836,6 +9884,87 @@ def _whole_program_has_unsupported_native_control_flow(result: WholeProgramADRes
 
 def _whole_program_native_supported_ops(result: WholeProgramADResult) -> tuple[str, ...]:
     return tuple(dict.fromkeys(node.op for node in result.ir_nodes))
+
+
+def _native_whole_program_ad_cache_key(
+    result: WholeProgramADResult,
+    sample_values: NDArray[np.float64],
+    config: DifferentiableMLIRCompileConfig,
+    llvm_ir: str,
+) -> str:
+    payload = {
+        "format": "native_whole_program_ad_cache.v1",
+        "parameter_names": result.parameter_names,
+        "trainable": result.trainable,
+        "trace_signature": _whole_program_replay_signature(result),
+        "method": result.method,
+        "evaluations": result.evaluations,
+        "ir_nodes": [
+            {
+                "index": node.index,
+                "op": node.op,
+                "inputs": node.inputs,
+                "value": _fmt_llvm_float(node.value),
+            }
+            for node in result.ir_nodes
+        ],
+        "sample_values": [_fmt_llvm_float(value) for value in sample_values],
+        "config": _jsonable_cache_payload(config),
+        "llvm_ir_sha256": hashlib.sha256(llvm_ir.encode("utf-8")).hexdigest(),
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _jsonable_cache_payload(value: object) -> object:
+    if is_dataclass(value):
+        return _jsonable_cache_payload(vars(value))
+    if isinstance(value, Mapping):
+        return {str(key): _jsonable_cache_payload(item) for key, item in value.items()}
+    if isinstance(value, tuple | list):
+        return [_jsonable_cache_payload(item) for item in value]
+    if isinstance(value, np.ndarray):
+        return _jsonable_cache_payload(value.tolist())
+    if isinstance(value, np.generic):
+        return _jsonable_cache_payload(value.item())
+    if isinstance(value, float):
+        return _fmt_llvm_float(value)
+    if isinstance(value, str | int | bool) or value is None:
+        return value
+    return repr(value)
+
+
+def _store_native_whole_program_ad_cache_entry(
+    cache_key: str,
+    entry: _NativeWholeProgramADCacheEntry,
+) -> None:
+    with _NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK:
+        if cache_key in _NATIVE_WHOLE_PROGRAM_AD_CACHE:
+            return
+        if len(_NATIVE_WHOLE_PROGRAM_AD_CACHE) >= _NATIVE_WHOLE_PROGRAM_AD_CACHE_MAXSIZE:
+            oldest_key = next(iter(_NATIVE_WHOLE_PROGRAM_AD_CACHE))
+            del _NATIVE_WHOLE_PROGRAM_AD_CACHE[oldest_key]
+        _NATIVE_WHOLE_PROGRAM_AD_CACHE[cache_key] = entry
+
+
+def _with_native_whole_program_cache_metadata(
+    module: MLIRModule,
+    *,
+    cache_key: str,
+    cache_hit: bool,
+) -> MLIRModule:
+    metadata = dict(module.metadata)
+    metadata["native_compile_cache_key"] = cache_key
+    metadata["native_compile_cache_hit"] = cache_hit
+    resource_counts = dict(module.resource_counts)
+    resource_counts["native_compile_cache_hit"] = int(cache_hit)
+    return MLIRModule(
+        text=module.text,
+        sha256=module.sha256,
+        dialect=module.dialect,
+        resource_counts=resource_counts,
+        metadata=metadata,
+    )
 
 
 def _compile_whole_program_ad_native_llvm_ir(

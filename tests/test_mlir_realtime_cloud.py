@@ -4960,6 +4960,42 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
         kernel.batch_value_and_grad(np.ones((2, 2), dtype=np.float64))
 
 
+def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
+    """Native program AD should reuse verified compile artefacts deterministically."""
+
+    def objective(values: np.ndarray) -> object:
+        return np.log1p(values[0] * values[0]) + np.tanh(values[1]) + values[2] ** 3
+
+    sample = np.array([0.125, -0.375, 0.75], dtype=np.float64)
+    replay = np.array([0.2, -0.25, 0.5], dtype=np.float64)
+    parameters = (Parameter("cache_x"), Parameter("cache_y"), Parameter("cache_z"))
+
+    first = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    second = compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+    reference_value, reference_gradient = program_adjoint_value_and_grad(
+        objective,
+        replay,
+        parameters,
+    )
+
+    assert first.cache_hit is False
+    assert second.cache_hit is True
+    assert first.cache_key == second.cache_key
+    assert first.mlir_module.metadata["native_compile_cache_key"] == first.cache_key
+    assert second.mlir_module.metadata["native_compile_cache_key"] == second.cache_key
+    assert first.mlir_module.metadata["native_compile_cache_hit"] is False
+    assert second.mlir_module.metadata["native_compile_cache_hit"] is True
+    assert first.mlir_module.resource_counts["native_compile_cache_hit"] == 0
+    assert second.mlir_module.resource_counts["native_compile_cache_hit"] == 1
+    assert first.native_functions["engine"] is second.native_functions["engine"]
+    assert first.native_functions["value"] is second.native_functions["value"]
+    assert first.native_functions["batch_jvp"] is second.native_functions["batch_jvp"]
+
+    value, gradient = second.value_and_grad(replay)
+    assert value == pytest.approx(reference_value)
+    np.testing.assert_allclose(gradient, reference_gradient, rtol=1.0e-10, atol=1.0e-10)
+
+
 def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() -> None:
     """Native LLVM/JIT program AD should execute stable branch traces and reject drift."""
 
