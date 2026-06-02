@@ -1399,11 +1399,10 @@ class TraceADArray:
                 raise ValueError("program AD np.broadcast_to supports array, shape, and subok")
             if kwargs.get("subok", False):
                 raise ValueError("program AD np.broadcast_to does not support subok")
-            return _broadcast_trace_array(
-                args[0],
-                _normalise_trace_broadcast_shape(args[1]),
-                self.context,
-            )
+            trace_array = _coerce_trace_array(args[0], self.context)
+            output_shape = _normalise_trace_broadcast_shape(args[1])
+            _require_program_ad_assembly_contract("broadcast_to", (trace_array, output_shape))
+            return _broadcast_trace_array(trace_array, output_shape, self.context)
         if func is np.broadcast_arrays:
             if not args or kwargs.keys() - {"subok"}:
                 raise ValueError("program AD np.broadcast_arrays supports operands and subok")
@@ -2624,6 +2623,7 @@ def _trace_broadcast_arrays(
 ) -> list[TraceADArray]:
     arrays = tuple(_coerce_trace_array(value, context) for value in values)
     shape = _broadcast_shape(*(array.shape for array in arrays))
+    _require_program_ad_assembly_contract("broadcast_arrays", arrays)
     return [_broadcast_trace_array(array, shape, context) for array in arrays]
 
 
@@ -9653,6 +9653,8 @@ _PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "stack",
         "append",
         "block",
+        "broadcast_to",
+        "broadcast_arrays",
         "tril",
         "triu",
         "diagonal",
@@ -14616,6 +14618,81 @@ def _program_ad_assembly_block_static_arguments(
     return _program_ad_assembly_block_static_parts(args)
 
 
+def _program_ad_assembly_broadcast_to_shapes(
+    source_shape: Sequence[int],
+    output_shape: object,
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    source = _program_ad_array_normalise_static_shape("assembly broadcast_to source", source_shape)
+    output = _normalise_trace_broadcast_shape(output_shape)
+    try:
+        np.broadcast_to(np.empty(source, dtype=np.float64), output)
+    except ValueError as exc:
+        raise ValueError(
+            "program AD assembly broadcast_to requires output shape compatible "
+            "with source broadcasting rules"
+        ) from exc
+    return source, output
+
+
+def _program_ad_assembly_broadcast_to_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    if len(args) != 2:
+        raise ValueError("program AD assembly broadcast_to requires source and output shape")
+    return _program_ad_assembly_broadcast_to_shapes(_program_ad_array_shape_of(args[0]), args[1])
+
+
+def _program_ad_assembly_broadcast_to_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    _source_shape, output_shape = _program_ad_assembly_broadcast_to_static_parts(args)
+    return output_shape
+
+
+def _program_ad_assembly_broadcast_to_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) != 2:
+        raise ValueError("program AD assembly broadcast_to requires source and output shape")
+    return str(np.dtype(_program_ad_array_dtype_of(args[0])))
+
+
+def _program_ad_assembly_broadcast_to_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return _program_ad_assembly_broadcast_to_static_parts(args)
+
+
+def _program_ad_assembly_broadcast_arrays_static_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[tuple[int, ...], ...], tuple[int, ...]]:
+    if not args:
+        raise ValueError("program AD assembly broadcast_arrays requires at least one operand")
+    operand_shapes = tuple(_program_ad_array_shape_of(arg) for arg in args)
+    try:
+        output_shape = tuple(int(dimension) for dimension in np.broadcast_shapes(*operand_shapes))
+    except ValueError as exc:
+        raise ValueError(
+            "program AD assembly broadcast_arrays requires operands compatible "
+            "with broadcasting rules"
+        ) from exc
+    return operand_shapes, output_shape
+
+
+def _program_ad_assembly_broadcast_arrays_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    operand_shapes, output_shape = _program_ad_assembly_broadcast_arrays_static_parts(args)
+    return (len(operand_shapes) * _program_ad_array_static_size(output_shape),)
+
+
+def _program_ad_assembly_broadcast_arrays_dtype_rule(args: tuple[object, ...]) -> str:
+    if not args:
+        raise ValueError("program AD assembly broadcast_arrays requires at least one operand")
+    operand_dtypes = [np.dtype(_program_ad_array_dtype_of(arg)) for arg in args]
+    return str(np.result_type(*operand_dtypes))
+
+
+def _program_ad_assembly_broadcast_arrays_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return _program_ad_assembly_broadcast_arrays_static_parts(args)
+
+
 @dataclass(frozen=True)
 class _ProgramADAssemblyBlockMappedLeaf:
     array: NDArray[np.float64]
@@ -14886,6 +14963,91 @@ def _program_ad_assembly_split_batching_rule_for(split_name: str) -> PrimitiveBa
         return _program_ad_assembly_split_stack_outputs(outputs, out_axes)
 
     return batching_rule
+
+
+def _program_ad_assembly_broadcast_to_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != 2 or len(axes) != 2:
+        raise ValueError(
+            "program AD assembly broadcast_to batching requires source and output shape"
+        )
+    source, output_shape_arg = args
+    source_axis, output_shape_axis = axes
+    if output_shape_axis is not None:
+        raise ValueError("program AD assembly broadcast_to batching keeps output shape static")
+    output_shape = _normalise_trace_broadcast_shape(output_shape_arg)
+    if source_axis is None:
+        return function(source, output_shape)
+    source_array = _as_real_numeric_array(
+        "program AD assembly broadcast_to batched source", source
+    )
+    axis_index = _normalise_axis("source axis", source_axis, source_array.ndim)
+    moved = np.moveaxis(source_array, axis_index, 0)
+    outputs = [
+        _as_real_numeric_array(
+            "program AD assembly broadcast_to batched output",
+            function(moved[index], output_shape),
+        )
+        for index in range(moved.shape[0])
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_assembly_broadcast_arrays_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if not args:
+        raise ValueError("program AD assembly broadcast_arrays batching requires operands")
+    if len(args) != len(axes):
+        raise ValueError(
+            "program AD assembly broadcast_arrays batching requires one axis per operand"
+        )
+    moved_args: list[object] = []
+    batch_size: int | None = None
+    for operand_index, (arg, axis) in enumerate(zip(args, axes, strict=True)):
+        if axis is None:
+            moved_args.append(arg)
+            continue
+        operand = _as_real_numeric_array(
+            f"program AD assembly broadcast_arrays operand {operand_index}", arg
+        )
+        axis_index = _normalise_axis("operand axis", axis, operand.ndim)
+        moved = np.moveaxis(operand, axis_index, 0)
+        if batch_size is None:
+            batch_size = int(moved.shape[0])
+        elif int(moved.shape[0]) != batch_size:
+            raise ValueError(
+                "program AD assembly broadcast_arrays batching requires same batch size"
+            )
+        moved_args.append(moved)
+    if batch_size is None:
+        return function(*args)
+    outputs: list[tuple[NDArray[np.float64], ...]] = []
+    for batch_index in range(batch_size):
+        sliced_args = tuple(
+            cast(NDArray[np.float64], arg)[batch_index] if axis is not None else arg
+            for arg, axis in zip(moved_args, axes, strict=True)
+        )
+        result = function(*sliced_args)
+        if not isinstance(result, (tuple, list)):
+            raise ValueError(
+                "program AD assembly broadcast_arrays batching requires tuple/list outputs"
+            )
+        outputs.append(
+            tuple(
+                _as_real_numeric_array("program AD assembly broadcast_arrays batched output", item)
+                for item in result
+            )
+        )
+    return _program_ad_assembly_split_stack_outputs(outputs, out_axes)
 
 
 def _program_ad_assembly_triangular_batching_rule_for(name: str) -> PrimitiveBatchingRule:
@@ -15318,6 +15480,8 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
     factory_names = {
         "append": "program_ad_assembly_append_derivative_rule",
         "block": "program_ad_assembly_block_derivative_rule",
+        "broadcast_arrays": "program_ad_assembly_broadcast_arrays_derivative_rule",
+        "broadcast_to": "program_ad_assembly_broadcast_to_derivative_rule",
         "concatenate": "program_ad_assembly_concatenate_derivative_rule",
         "diagonal": "program_ad_assembly_diagonal_derivative_rule",
         "split": "program_ad_assembly_split_derivative_rule",
@@ -15332,6 +15496,8 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
     boundaries = {
         "append": "static_source_values_shape_axis_append",
         "block": "static_nested_block_shape_layout",
+        "broadcast_arrays": "static_operand_shape_broadcast_arrays",
+        "broadcast_to": "static_source_shape_broadcast_to",
         "concatenate": "static_operand_shape_axis_concatenate",
         "diagonal": "static_diagonal_offset_axis_gather_scatter",
         "split": "static_split_sections_gather_scatter",
@@ -15346,6 +15512,8 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
     static_signatures = {
         "append": "source_shape:ranked_tensor_shape;values_shape:ranked_tensor_shape;axis",
         "block": "layout_shapes:nested_ranked_tensor_shapes",
+        "broadcast_arrays": "operand_shapes:ranked_tensor_shapes;output_shape",
+        "broadcast_to": "source_shape:ranked_tensor_shape;output_shape",
         "concatenate": "operand_shapes:ranked_tensor_shapes;axis",
         "diagonal": "source_shape:rank_ge_2;offset_axis_pair;output_shape",
         "split": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
@@ -16204,6 +16372,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
     batching_rules: Mapping[str, PrimitiveBatchingRule] = {
         "append": _program_ad_assembly_append_batching_rule,
         "block": _program_ad_assembly_block_batching_rule,
+        "broadcast_arrays": _program_ad_assembly_broadcast_arrays_batching_rule,
+        "broadcast_to": _program_ad_assembly_broadcast_to_batching_rule,
         "concatenate": _program_ad_assembly_batching_rule,
         "diagonal": _program_ad_assembly_diagonal_batching_rule,
         "split": _program_ad_assembly_split_batching_rule_for("split"),
@@ -16218,6 +16388,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
     shape_rules: Mapping[str, PrimitiveShapeRule] = {
         "append": _program_ad_assembly_append_shape,
         "block": _program_ad_assembly_block_shape,
+        "broadcast_arrays": _program_ad_assembly_broadcast_arrays_shape,
+        "broadcast_to": _program_ad_assembly_broadcast_to_shape,
         "concatenate": _program_ad_assembly_concatenate_shape,
         "diagonal": _program_ad_assembly_diagonal_shape,
         "split": _program_ad_assembly_split_shape_rule_for("split"),
@@ -16232,6 +16404,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
     dtype_rules: Mapping[str, PrimitiveDTypeRule] = {
         "append": _program_ad_assembly_append_dtype_rule,
         "block": _program_ad_assembly_block_dtype_rule,
+        "broadcast_arrays": _program_ad_assembly_broadcast_arrays_dtype_rule,
+        "broadcast_to": _program_ad_assembly_broadcast_to_dtype_rule,
         "concatenate": _program_ad_assembly_concatenate_dtype_rule,
         "diagonal": _program_ad_assembly_diagonal_dtype_rule,
         "split": _program_ad_assembly_split_dtype_rule,
@@ -16246,6 +16420,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
     static_argument_rules: Mapping[str, PrimitiveStaticArgumentRule] = {
         "append": _program_ad_assembly_append_static_arguments,
         "block": _program_ad_assembly_block_static_arguments,
+        "broadcast_arrays": _program_ad_assembly_broadcast_arrays_static_arguments,
+        "broadcast_to": _program_ad_assembly_broadcast_to_static_arguments,
         "concatenate": _program_ad_assembly_concatenate_static_arguments,
         "diagonal": _program_ad_assembly_diagonal_static_arguments,
         "split": _program_ad_assembly_split_static_arguments_rule_for("split"),
@@ -17671,6 +17847,167 @@ def program_ad_assembly_split_derivative_rule(
 
     return CustomDerivativeRule(
         name=f"program_ad_assembly_{split_name}_axis{axis_index}_{part_count}_parts_direct_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_assembly_broadcast_adjoint(
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+) -> NDArray[np.float64]:
+    adjoint = np.asarray(cotangent, dtype=np.float64)
+    if not source_shape:
+        return np.asarray(float(np.sum(adjoint)), dtype=np.float64).reshape(())
+    if adjoint.ndim > len(source_shape):
+        leading_axes = tuple(range(adjoint.ndim - len(source_shape)))
+        adjoint = np.sum(adjoint, axis=leading_axes)
+    if adjoint.ndim != len(source_shape):
+        raise ValueError("program AD assembly broadcast adjoint rank mismatch")
+    for axis, dimension in enumerate(source_shape):
+        if dimension == 1 and adjoint.shape[axis] != 1:
+            adjoint = np.sum(adjoint, axis=axis, keepdims=True)
+        elif dimension != adjoint.shape[axis]:
+            raise ValueError("program AD assembly broadcast adjoint shape mismatch")
+    return np.asarray(adjoint, dtype=np.float64).reshape(source_shape)
+
+
+def program_ad_assembly_broadcast_to_derivative_rule(
+    source_shape: Sequence[int],
+    output_shape: object,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.broadcast_to``."""
+
+    source_static_shape, output_static_shape = _program_ad_assembly_broadcast_to_shapes(
+        source_shape, output_shape
+    )
+    source_size = _program_ad_array_static_size(source_static_shape)
+    output_size = _program_ad_array_static_size(output_static_shape)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        source = _program_ad_array_vector(
+            "broadcast_to", "values", values, expected_size=source_size
+        ).reshape(source_static_shape)
+        return _program_ad_float64_vector_result(np.broadcast_to(source, output_static_shape))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_array_vector("broadcast_to", "values", values, expected_size=source_size)
+        tangent_source = _program_ad_array_vector(
+            "broadcast_to", "tangent", tangent, expected_size=source_size
+        ).reshape(source_static_shape)
+        return _program_ad_float64_vector_result(
+            np.broadcast_to(tangent_source, output_static_shape)
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_array_vector("broadcast_to", "values", values, expected_size=source_size)
+        cotangent_array = _program_ad_array_vector(
+            "broadcast_to", "cotangent", cotangent, expected_size=output_size
+        ).reshape(output_static_shape)
+        return _program_ad_float64_vector_result(
+            _program_ad_assembly_broadcast_adjoint(
+                cotangent_array,
+                source_shape=source_static_shape,
+            )
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_assembly_broadcast_to_"
+            f"{_program_ad_array_signature(source_static_shape)}_to_"
+            f"{_program_ad_array_signature(output_static_shape)}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def _program_ad_assembly_broadcast_arrays_shapes(
+    operand_shapes: Sequence[Sequence[int]],
+) -> tuple[tuple[tuple[int, ...], ...], tuple[int, ...]]:
+    shapes = tuple(
+        _program_ad_array_normalise_static_shape("assembly broadcast_arrays operand", shape)
+        for shape in operand_shapes
+    )
+    if not shapes:
+        raise ValueError("program AD assembly broadcast_arrays direct rule requires operands")
+    try:
+        output_shape = tuple(int(dimension) for dimension in np.broadcast_shapes(*shapes))
+    except ValueError as exc:
+        raise ValueError(
+            "program AD assembly broadcast_arrays direct rule requires broadcast-compatible operands"
+        ) from exc
+    return shapes, output_shape
+
+
+def program_ad_assembly_broadcast_arrays_derivative_rule(
+    operand_shapes: Sequence[Sequence[int]],
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed static ``np.broadcast_arrays``."""
+
+    shapes, output_shape = _program_ad_assembly_broadcast_arrays_shapes(operand_shapes)
+    source_sizes = tuple(_program_ad_array_static_size(shape) for shape in shapes)
+    source_size = sum(source_sizes)
+    output_size = _program_ad_array_static_size(output_shape)
+    flat_output_size = len(shapes) * output_size
+
+    def split_sources(
+        role: str,
+        values: NDArray[np.float64],
+    ) -> tuple[NDArray[np.float64], ...]:
+        vector = _program_ad_array_vector(
+            "broadcast_arrays", role, values, expected_size=source_size
+        )
+        offset = 0
+        operands: list[NDArray[np.float64]] = []
+        for shape, size in zip(shapes, source_sizes, strict=True):
+            operands.append(vector[offset : offset + size].reshape(shape))
+            offset += size
+        return tuple(operands)
+
+    def broadcast_flat(operands: tuple[NDArray[np.float64], ...]) -> NDArray[np.float64]:
+        return _program_ad_float64_vector_result(
+            np.concatenate(
+                [
+                    np.asarray(item, dtype=np.float64).reshape(-1)
+                    for item in np.broadcast_arrays(*operands)
+                ]
+            )
+        )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return broadcast_flat(split_sources("values", values))
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        _program_ad_array_vector("broadcast_arrays", "values", values, expected_size=source_size)
+        return broadcast_flat(split_sources("tangent", tangent))
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        _program_ad_array_vector("broadcast_arrays", "values", values, expected_size=source_size)
+        cotangent_vector = _program_ad_array_vector(
+            "broadcast_arrays", "cotangent", cotangent, expected_size=flat_output_size
+        )
+        adjoints: list[NDArray[np.float64]] = []
+        offset = 0
+        for shape in shapes:
+            cotangent_array = cotangent_vector[offset : offset + output_size].reshape(output_shape)
+            adjoints.append(
+                _program_ad_assembly_broadcast_adjoint(cotangent_array, source_shape=shape)
+            )
+            offset += output_size
+        return _program_ad_float64_vector_result(
+            np.concatenate([item.reshape(-1) for item in adjoints])
+        )
+
+    return CustomDerivativeRule(
+        name=f"program_ad_assembly_broadcast_arrays_{len(shapes)}_operands_direct_rule",
         value_fn=value_fn,
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
@@ -24057,6 +24394,8 @@ __all__ = [
     "primitive_static_argument_rule_for",
     "program_ad_assembly_append_derivative_rule",
     "program_ad_assembly_block_derivative_rule",
+    "program_ad_assembly_broadcast_arrays_derivative_rule",
+    "program_ad_assembly_broadcast_to_derivative_rule",
     "program_ad_assembly_concatenate_derivative_rule",
     "program_ad_assembly_split_derivative_rule",
     "program_ad_assembly_stack_derivative_rule",

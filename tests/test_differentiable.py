@@ -149,6 +149,8 @@ from scpn_quantum_control.differentiable import (
     program_ad_array_take_derivative_rule,
     program_ad_assembly_append_derivative_rule,
     program_ad_assembly_block_derivative_rule,
+    program_ad_assembly_broadcast_arrays_derivative_rule,
+    program_ad_assembly_broadcast_to_derivative_rule,
     program_ad_assembly_concatenate_derivative_rule,
     program_ad_assembly_diagonal_derivative_rule,
     program_ad_assembly_split_derivative_rule,
@@ -7806,6 +7808,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_assembly_block_derivative_rule",
             "layout_shapes:nested_ranked_tensor_shapes",
         ),
+        "scpn.program_ad.assembly:broadcast_to": (
+            "program_ad_assembly_broadcast_to_derivative_rule",
+            "source_shape:ranked_tensor_shape;output_shape",
+        ),
+        "scpn.program_ad.assembly:broadcast_arrays": (
+            "program_ad_assembly_broadcast_arrays_derivative_rule",
+            "operand_shapes:ranked_tensor_shapes;output_shape",
+        ),
         "scpn.program_ad.assembly:tril": (
             "program_ad_assembly_tril_derivative_rule",
             "source_shape:rank_ge_2;k",
@@ -10598,6 +10608,175 @@ def test_program_ad_assembly_block_batching_rule_maps_nested_batches() -> None:
         contract.batching_rule(block_fn, (layout,), (((0,),),), 0)
 
 
+def test_program_ad_assembly_broadcast_to_contract_and_direct_rule() -> None:
+    """np.broadcast_to should expose exact static broadcast adjoint contracts."""
+
+    values = np.array([1.0, -2.0], dtype=np.float64)
+    tangent = np.array([0.25, -0.5], dtype=np.float64)
+    cotangent = np.array([[0.2, -0.4], [0.6, -0.8], [1.0, -1.2]], dtype=np.float64)
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:broadcast_to")
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.assembly", "broadcast_to", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.assembly.broadcast_to"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_assembly_broadcast_to_derivative_rule"
+    )
+    assert (
+        contract.lowering_metadata["static_signature"]
+        == "source_shape:ranked_tensor_shape;output_shape"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((values, (3, 2))) == (3, 2)
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((values, (3, 2))) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((values, (3, 2))) == (values.shape, (3, 2))
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(contract.identity)
+
+    rule = program_ad_assembly_broadcast_to_derivative_rule(values.shape, (3, 2))
+    assert rule.name == "program_ad_assembly_broadcast_to_2_to_3x2_direct_rule"
+    np.testing.assert_allclose(rule.value_fn(values), np.broadcast_to(values, (3, 2)).reshape(-1))
+    np.testing.assert_allclose(
+        rule.jvp_rule(values, tangent),
+        np.broadcast_to(tangent, (3, 2)).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        rule.vjp_rule(values, cotangent.reshape(-1)),
+        np.sum(cotangent, axis=0),
+    )
+
+
+def test_program_ad_assembly_broadcast_arrays_contract_and_direct_rule() -> None:
+    """np.broadcast_arrays should expose exact per-operand scatter adjoints."""
+
+    column = np.array([[1.0], [-2.0]], dtype=np.float64)
+    row = np.array([0.25, -0.5, 0.75], dtype=np.float64)
+    scalar = np.array(1.5, dtype=np.float64)
+    tangent_column = np.array([[0.1], [-0.2]], dtype=np.float64)
+    tangent_row = np.array([0.3, -0.4, 0.5], dtype=np.float64)
+    tangent_scalar = np.array(-0.6, dtype=np.float64)
+    values = np.concatenate([column.reshape(-1), row.reshape(-1), scalar.reshape(-1)])
+    tangent = np.concatenate(
+        [tangent_column.reshape(-1), tangent_row.reshape(-1), tangent_scalar.reshape(-1)]
+    )
+    cotangents = (
+        np.array([[0.1, -0.2, 0.3], [-0.4, 0.5, -0.6]], dtype=np.float64),
+        np.array([[0.7, -0.8, 0.9], [-1.0, 1.1, -1.2]], dtype=np.float64),
+        np.array([[1.3, -1.4, 1.5], [-1.6, 1.7, -1.8]], dtype=np.float64),
+    )
+    cotangent = np.concatenate([item.reshape(-1) for item in cotangents])
+
+    contract = primitive_contract_for("scpn.program_ad.assembly:broadcast_arrays")
+    assert contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.assembly", "broadcast_arrays", "1"
+    )
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.assembly.broadcast_arrays"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_assembly_broadcast_arrays_derivative_rule"
+    )
+    assert (
+        contract.lowering_metadata["static_signature"]
+        == "operand_shapes:ranked_tensor_shapes;output_shape"
+    )
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((column, row, scalar)) == (18,)
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((column, row, scalar)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((column, row, scalar)) == (
+        (column.shape, row.shape, scalar.shape),
+        (2, 3),
+    )
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(contract.identity)
+
+    rule = program_ad_assembly_broadcast_arrays_derivative_rule(
+        (column.shape, row.shape, scalar.shape)
+    )
+    assert rule.name == "program_ad_assembly_broadcast_arrays_3_operands_direct_rule"
+    expected_values = np.concatenate(
+        [item.reshape(-1) for item in np.broadcast_arrays(column, row, scalar)]
+    )
+    expected_tangent = np.concatenate(
+        [
+            item.reshape(-1)
+            for item in np.broadcast_arrays(tangent_column, tangent_row, tangent_scalar)
+        ]
+    )
+    expected_adjoint = np.concatenate(
+        [
+            np.sum(cotangents[0], axis=1, keepdims=True).reshape(-1),
+            np.sum(cotangents[1], axis=0).reshape(-1),
+            np.array([np.sum(cotangents[2])], dtype=np.float64),
+        ]
+    )
+    np.testing.assert_allclose(rule.value_fn(values), expected_values)
+    np.testing.assert_allclose(rule.jvp_rule(values, tangent), expected_tangent)
+    np.testing.assert_allclose(rule.vjp_rule(values, cotangent), expected_adjoint)
+
+
+def test_program_ad_assembly_broadcast_batching_rules_map_outer_axes() -> None:
+    """Broadcast batching should map data axes and keep shape metadata static."""
+
+    broadcast_to_contract = primitive_contract_for("scpn.program_ad.assembly:broadcast_to")
+    broadcast_arrays_contract = primitive_contract_for("scpn.program_ad.assembly:broadcast_arrays")
+    assert broadcast_to_contract.batching_rule is not None
+    assert broadcast_arrays_contract.batching_rule is not None
+
+    def broadcast_to_fn(source: np.ndarray, shape: tuple[int, ...]) -> np.ndarray:
+        return np.broadcast_to(source, shape)
+
+    source_batch = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
+    expected_to = np.stack([np.broadcast_to(source_batch[index], (3, 2)) for index in range(2)])
+    np.testing.assert_allclose(
+        broadcast_to_contract.batching_rule(broadcast_to_fn, (source_batch, (3, 2)), (0, None), 0),
+        expected_to,
+    )
+    np.testing.assert_allclose(
+        broadcast_to_contract.batching_rule(broadcast_to_fn, (source_batch, (3, 2)), (0, None), 1),
+        np.moveaxis(expected_to, 0, 1),
+    )
+    with pytest.raises(ValueError, match="keeps output shape static"):
+        broadcast_to_contract.batching_rule(broadcast_to_fn, (source_batch, (3, 2)), (0, 0), 0)
+
+    def broadcast_arrays_fn(*operands: np.ndarray) -> list[np.ndarray]:
+        return list(np.broadcast_arrays(*operands))
+
+    column_batch = np.array([[[1.0], [-2.0]], [[0.5], [3.0]]], dtype=np.float64)
+    row = np.array([0.25, -0.5, 0.75], dtype=np.float64)
+    scalar_batch = np.array([1.5, -2.5], dtype=np.float64)
+    outputs = [
+        np.broadcast_arrays(column_batch[index], row, scalar_batch[index]) for index in range(2)
+    ]
+    expected_arrays = tuple(
+        np.stack([outputs[index][operand_index] for index in range(2)], axis=0)
+        for operand_index in range(3)
+    )
+    result = broadcast_arrays_contract.batching_rule(
+        broadcast_arrays_fn,
+        (column_batch, row, scalar_batch),
+        (0, None, 0),
+        0,
+    )
+    assert isinstance(result, tuple)
+    for actual, expected in zip(result, expected_arrays, strict=True):
+        np.testing.assert_allclose(actual, expected)
+    with pytest.raises(ValueError, match="same batch size"):
+        broadcast_arrays_contract.batching_rule(
+            broadcast_arrays_fn,
+            (column_batch, row, np.array([1.0, 2.0, 3.0], dtype=np.float64)),
+            (0, None, 0),
+            0,
+        )
+
+
 def test_program_ad_assembly_triangular_contracts_and_direct_rules() -> None:
     """np.tril and np.triu should expose exact static triangular mask contracts."""
 
@@ -13122,6 +13301,14 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert (
         scpn.program_ad_assembly_concatenate_derivative_rule
         is program_ad_assembly_concatenate_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_broadcast_to_derivative_rule
+        is program_ad_assembly_broadcast_to_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_broadcast_arrays_derivative_rule
+        is program_ad_assembly_broadcast_arrays_derivative_rule
     )
     assert (
         scpn.program_ad_assembly_tril_derivative_rule is program_ad_assembly_tril_derivative_rule
