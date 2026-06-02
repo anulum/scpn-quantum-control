@@ -11718,6 +11718,22 @@ def test_program_ad_assembly_split_family_contract_and_direct_rule() -> None:
     assert dsplit_contract.shape_rule((cube, [1], 2)) == (6,)
 
 
+def test_program_ad_assembly_split_variant_boundaries_are_explicit() -> None:
+    """Split-family contracts should expose fail-closed static partition boundaries."""
+
+    expected_boundaries = {
+        "hsplit": "static_hsplit_sections_gather_scatter",
+        "vsplit": "static_vsplit_sections_gather_scatter",
+        "dsplit": "static_dsplit_sections_gather_scatter",
+    }
+    for split_name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.assembly", split_name, "1")
+        ).lowering_metadata
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
 def test_program_ad_assembly_split_batching_rule_maps_partition_outputs() -> None:
     """Split batching should map source batches and preserve partition structure."""
 
