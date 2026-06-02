@@ -8327,6 +8327,7 @@ def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None
     assert contracts["matrix_power"].shape_rule is not None
     assert contracts["multi_dot"].shape_rule is not None
     assert contracts["det"].dtype_rule is not None
+    assert contracts["inv"].dtype_rule is not None
 
     assert contracts["det"].shape_rule((matrix,)) == ()
     assert contracts["inv"].shape_rule((matrix,)) == (2, 2)
@@ -8335,6 +8336,7 @@ def test_program_ad_linalg_primitive_shape_dtype_rules_are_specialized() -> None
     assert contracts["matrix_power"].shape_rule((matrix, 3)) == (2, 2)
     assert contracts["multi_dot"].shape_rule(((rhs_vector, matrix, right),)) == (3,)
     assert contracts["det"].dtype_rule((matrix,)) == "float64"
+    assert contracts["inv"].dtype_rule((matrix,)) == "float64"
 
     with pytest.raises(ValueError, match="requires a square matrix"):
         contracts["det"].shape_rule((np.reshape(np.arange(6.0), (2, 3)),))
@@ -8357,8 +8359,11 @@ def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
         name: primitive_contract_for(PrimitiveIdentity("scpn.program_ad.linalg", name, "1"))
         for name in ("matrix_power", "multi_dot")
     }
-    no_static = primitive_static_argument_rule_for(
+    det_static = primitive_static_argument_rule_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "det", "1")
+    )
+    inv_static = primitive_static_argument_rule_for(
+        PrimitiveIdentity("scpn.program_ad.linalg", "inv", "1")
     )
     matrix_power_static = primitive_static_argument_rule_for(
         PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
@@ -8367,7 +8372,8 @@ def test_program_ad_linalg_static_argument_rules_are_specialized() -> None:
         PrimitiveIdentity("scpn.program_ad.linalg", "multi_dot", "1")
     )
 
-    assert no_static((matrix,)) == ()
+    assert det_static((matrix,)) == ()
+    assert inv_static((matrix,)) == ()
     assert matrix_power_static((matrix, np.int64(-2))) == (-2,)
     assert multi_dot_static(((vector, matrix, right),)) == ((2,), (2, 2), (2, 3))
     assert (
