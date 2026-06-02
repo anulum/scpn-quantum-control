@@ -12411,6 +12411,10 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
         "constant",
         -1.0,
     )
+    assert pad_contract.dtype_rule is not None
+    assert pad_contract.dtype_rule((matrix, ((1, 0), (0, 2)), "constant", -1.0)) == "float64"
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(pad_contract.identity)
 
     insert_contract = primitive_contract_for("scpn.program_ad.array:insert")
     assert insert_contract.identity == PrimitiveIdentity("scpn.program_ad.array", "insert", "1")
