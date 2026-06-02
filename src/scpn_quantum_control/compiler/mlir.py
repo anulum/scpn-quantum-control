@@ -9991,6 +9991,7 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
     {
         "linalg:det:2x2",
         "linalg:det:3x3",
+        "linalg:det:4x4",
         "linalg:inv:2x2:0:0",
         "linalg:inv:2x2:0:1",
         "linalg:inv:2x2:1:0",
@@ -10779,6 +10780,11 @@ def _emit_whole_program_native_operation(
             raise ValueError("native linalg:det:3x3 expects nine matrix inputs")
         _emit_whole_program_native_det3(lines, result, node, value_name, inputs)
         return
+    if node.op == "linalg:det:4x4":
+        if len(inputs) != 16:
+            raise ValueError("native linalg:det:4x4 expects sixteen matrix inputs")
+        _emit_whole_program_native_det4(lines, result, node, value_name, inputs)
+        return
     if node.op == "linalg:trace:2x2:offset:0":
         if len(inputs) != 2:
             raise ValueError("native linalg:trace:2x2:offset:0 expects two diagonal inputs")
@@ -11297,6 +11303,123 @@ def _emit_whole_program_native_det3(
             )
             lines.append(f"  {target} = fadd double {accumulator}, {gradient_term}")
             accumulator = target
+
+
+def _emit_whole_program_native_det4(
+    lines: list[str],
+    result: WholeProgramADResult,
+    node: Any,
+    value_name: str,
+    inputs: Sequence[str],
+) -> None:
+    """Emit native 4x4 determinant value and exact cofactor adjoint code."""
+
+    parameter_count = int(result.gradient.size)
+    entries = tuple(_whole_program_native_operand(token) for token in inputs)
+    matrix = tuple(tuple(entries[row * 4 + col] for col in range(4)) for row in range(4))
+    determinant = _emit_whole_program_native_det_expression(
+        lines,
+        matrix,
+        f"det4_value_{node.index}",
+    )
+    lines.append(f"  {value_name} = fadd double {determinant}, {_fmt_llvm_float(0.0)}")
+
+    cofactors: list[str] = []
+    for row in range(4):
+        for col in range(4):
+            minor = _whole_program_native_det_minor(matrix, row, col)
+            cofactor = _emit_whole_program_native_det_expression(
+                lines,
+                minor,
+                f"det4_cofactor_{row}{col}_{node.index}",
+            )
+            if (row + col) % 2:
+                signed_cofactor = f"%det4_cofactor_{row}{col}_signed_{node.index}"
+                lines.append(
+                    f"  {signed_cofactor} = fsub double {_fmt_llvm_float(0.0)}, {cofactor}"
+                )
+                cofactors.append(signed_cofactor)
+            else:
+                cofactors.append(cofactor)
+
+    for derivative_index in range(parameter_count):
+        gradient_terms: list[str] = []
+        for entry_index, cofactor in enumerate(cofactors):
+            entry_derivative = _whole_program_native_derivative_operand(
+                inputs[entry_index],
+                derivative_index,
+            )
+            gradient_term = f"%d{node.index}_{derivative_index}_det4_entry_{entry_index}"
+            lines.append(f"  {gradient_term} = fmul double {entry_derivative}, {cofactor}")
+            gradient_terms.append(gradient_term)
+
+        derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+        accumulator = gradient_terms[0]
+        for term_offset, gradient_term in enumerate(gradient_terms[1:], start=1):
+            target = (
+                derivative_name
+                if term_offset == len(gradient_terms) - 1
+                else f"%d{node.index}_{derivative_index}_det4_acc_{term_offset}"
+            )
+            lines.append(f"  {target} = fadd double {accumulator}, {gradient_term}")
+            accumulator = target
+
+
+def _emit_whole_program_native_det_expression(
+    lines: list[str],
+    matrix: tuple[tuple[str, ...], ...],
+    prefix: str,
+) -> str:
+    """Emit a small fixed determinant expression and return the final LLVM operand."""
+
+    size = len(matrix)
+    if size == 1:
+        return matrix[0][0]
+    if size == 2:
+        diagonal_product = f"%{prefix}_diag"
+        off_diagonal_product = f"%{prefix}_offdiag"
+        determinant = f"%{prefix}_det"
+        lines.extend(
+            [
+                f"  {diagonal_product} = fmul double {matrix[0][0]}, {matrix[1][1]}",
+                f"  {off_diagonal_product} = fmul double {matrix[0][1]}, {matrix[1][0]}",
+                f"  {determinant} = fsub double {diagonal_product}, {off_diagonal_product}",
+            ]
+        )
+        return determinant
+
+    accumulator = ""
+    for col, entry in enumerate(matrix[0]):
+        minor = _whole_program_native_det_minor(matrix, 0, col)
+        minor_det = _emit_whole_program_native_det_expression(
+            lines,
+            minor,
+            f"{prefix}_minor_{col}",
+        )
+        term = f"%{prefix}_term_{col}"
+        lines.append(f"  {term} = fmul double {entry}, {minor_det}")
+        if col == 0:
+            accumulator = term
+            continue
+        updated_accumulator = f"%{prefix}_acc_{col}"
+        operation = "fadd" if col % 2 == 0 else "fsub"
+        lines.append(f"  {updated_accumulator} = {operation} double {accumulator}, {term}")
+        accumulator = updated_accumulator
+    return accumulator
+
+
+def _whole_program_native_det_minor(
+    matrix: tuple[tuple[str, ...], ...],
+    row_index: int,
+    col_index: int,
+) -> tuple[tuple[str, ...], ...]:
+    """Return the fixed determinant minor matrix for native code generation."""
+
+    return tuple(
+        tuple(value for col, value in enumerate(row_values) if col != col_index)
+        for current_row_index, row_values in enumerate(matrix)
+        if current_row_index != row_index
+    )
 
 
 def _emit_whole_program_native_product_sum2(
