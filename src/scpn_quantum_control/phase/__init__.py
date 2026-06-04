@@ -192,6 +192,15 @@ from .qnn_conformance import (
     run_parameter_shift_qnn_conformance_suite,
     summarize_parameter_shift_qnn_unsuitable_scenarios,
 )
+from .qnn_framework_agreement import (
+    FrameworkGradientCaseMap,
+    FrameworkGradientMap,
+    ParameterShiftQNNFrameworkAgreementResult,
+    ParameterShiftQNNFrameworkAgreementSuiteResult,
+    ParameterShiftQNNFrameworkGradientAgreement,
+    run_parameter_shift_qnn_framework_agreement_suite,
+    verify_parameter_shift_qnn_framework_agreement,
+)
 from .qnn_optimizer_benchmark import (
     DerivativeFreeCandidateMap,
     ParameterShiftQNNOptimizerBenchmarkCaseResult,
@@ -353,6 +362,13 @@ __all__ = [
     "ParameterShiftQNNUnsupportedScenario",
     "run_parameter_shift_qnn_conformance_suite",
     "summarize_parameter_shift_qnn_unsuitable_scenarios",
+    "FrameworkGradientCaseMap",
+    "FrameworkGradientMap",
+    "ParameterShiftQNNFrameworkAgreementResult",
+    "ParameterShiftQNNFrameworkAgreementSuiteResult",
+    "ParameterShiftQNNFrameworkGradientAgreement",
+    "run_parameter_shift_qnn_framework_agreement_suite",
+    "verify_parameter_shift_qnn_framework_agreement",
     "DerivativeFreeCandidateMap",
     "ParameterShiftQNNOptimizerBenchmarkCaseResult",
     "ParameterShiftQNNOptimizerBenchmarkSuiteResult",

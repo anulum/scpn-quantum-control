@@ -129,6 +129,37 @@ This is a local curvature diagnostic for small supported objectives. It is not a
 claim of universal quantum Fisher information, arbitrary-circuit adjoint
 curvature, or hardware-efficient Hessian estimation.
 
+## Bounded QNN framework-gradient agreement
+
+The bounded phase-QNN route now has a dedicated framework-agreement surface:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    parameter_shift_qnn_classifier_gradient,
+    verify_parameter_shift_qnn_framework_agreement,
+)
+
+features = np.array([[0.0], [np.pi]], dtype=float)
+labels = np.array([0.0, 1.0], dtype=float)
+params = np.array([0.45], dtype=float)
+expected = parameter_shift_qnn_classifier_gradient(features, labels, params)
+
+agreement = verify_parameter_shift_qnn_framework_agreement(
+    features,
+    labels,
+    params,
+    framework_gradients={"jax": lambda _values: expected.copy()},
+)
+print(agreement.passed, agreement.framework_count)
+```
+
+This is reviewer-facing agreement evidence for named, caller-supplied
+framework-style gradients. It is not a native autodiff-through-simulator claim;
+native framework kernels still need their own adapter, round-trip, device, and
+host-boundary tests before promotion.
+
 ## Kuramoto-XY VQE route
 
 `PhaseVQE` exposes a direct parameter-shift path for its K_nm-informed
