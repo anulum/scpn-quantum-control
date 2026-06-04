@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 574,
     "public_documentation_pages": 240,
-    "python_model_classes": 1565,
-    "python_model_source_modules": 786,
+    "python_model_classes": 1567,
+    "python_model_source_modules": 787,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1896
+    "test_files": 1897
   },
   "documentation": {
     "examples": [
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 48
+        "python_modules": 49
       },
       {
         "package": "psi_field",
@@ -4361,6 +4361,14 @@
         "path": "src/scpn_quantum_control/phase/natural_gradient.py"
       },
       {
+        "name": "ParameterShiftQNNPredictionResult",
+        "path": "src/scpn_quantum_control/phase/qnn_training.py"
+      },
+      {
+        "name": "ParameterShiftQNNTrainingResult",
+        "path": "src/scpn_quantum_control/phase/qnn_training.py"
+      },
+      {
         "name": "ParameterShiftRule",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -8014,6 +8022,7 @@
       "src/scpn_quantum_control/phase/provider_gradient_audit.py",
       "src/scpn_quantum_control/phase/pulse_shaping.py",
       "src/scpn_quantum_control/phase/qiskit_bridge.py",
+      "src/scpn_quantum_control/phase/qnn_training.py",
       "src/scpn_quantum_control/phase/qsvt_evolution.py",
       "src/scpn_quantum_control/phase/results.py",
       "src/scpn_quantum_control/phase/structured_ansatz.py",
@@ -10131,6 +10140,7 @@
       "tests/test_phase_provider_gradient.py",
       "tests/test_phase_provider_gradient_audit.py",
       "tests/test_phase_qiskit_bridge.py",
+      "tests/test_phase_qnn_training.py",
       "tests/test_phase_results.py",
       "tests/test_phase_transform_nesting.py",
       "tests/test_phase_vqe.py",

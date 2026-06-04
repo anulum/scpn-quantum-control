@@ -23,6 +23,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
 | `scpn_quantum_control.phase.coupling_learning` | Differentiable coupling inference from observation models with convergence and finite-difference agreement certificates. |
 | `scpn_quantum_control.phase.gradient_descent` | Generic parameter-shift gradient descent with line-search traces and convergence certificates. |
+| `scpn_quantum_control.phase.qnn_training` | Bounded data-reuploading phase-QNN classifier training with multi-frequency parameter-shift descent, prediction evidence, and accuracy certificates. |
 | `scpn_quantum_control.phase.natural_gradient` | Metric-aware parameter-shift descent with damped solves, metric validation, line-search traces, and convergence certificates. |
 | `scpn_quantum_control.phase.optimizer_audit` | Multi-start optimizer comparison evidence for parameter-shift descent and natural-gradient descent. |
 | `scpn_quantum_control.phase.objectives` | Composable differentiable phase-control objectives with term-wise gradients and fail-closed parameter-shift compatibility. |
@@ -52,7 +53,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Gradient support matrix | `GradientSupportCapability`, `GradientSupportPlan`, `GradientSupportMatrixAuditResult`, `gradient_support_capability`, `list_gradient_support_capabilities`, `plan_gradient_support`, `assert_gradient_support`, `run_gradient_support_matrix_audit` | Decide whether a gate, observable, backend, transform, and adapter combination is supported before execution; blocked combinations carry reasons and alternatives. |
 | Transform nesting | `GradientTransformNestingPlan`, `GradientTransformNestingAuditResult`, `plan_gradient_transform_nesting`, `assert_gradient_transform_nesting_supported`, `run_gradient_transform_nesting_audit` | Decide whether transform stacks such as `grad`, `value_and_grad`, `hessian`, `grad` of `grad`, tape, `vmap`, JVP/VJP, adapter bridges, or hardware routes are safe before execution. |
 | Gradient audit evidence | `DifferentiableQuantumAuditReport`, `DifferentiableWorkflowAuditSuiteResult`, `FiniteShotGradientAuditResult`, `MLFrameworkGradientAuditSuiteResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `ProviderGradientReadinessAuditResult`, `run_differentiable_workflow_audit_suite`, `run_finite_shot_gradient_uncertainty_audit`, `run_ml_framework_gradient_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite`, `run_provider_gradient_readiness_audit` | Bundle finite-difference agreement, finite-shot uncertainty containment, optional ML-framework parity, analytic-gradient agreement, convergence evidence, coupling-learning checks, provider-readiness checks, and multi-case phase-gradient conformance into reviewer-facing reports. |
-| Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParameterShiftNaturalGradientResult`, `ParameterShiftNaturalGradientCertificate`, `OptimizerComparisonSuiteResult`, `OptimizerConvergenceRecord`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, metric-aware descent, optimizer comparison evidence, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
+| Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParameterShiftNaturalGradientResult`, `ParameterShiftNaturalGradientCertificate`, `ParameterShiftQNNTrainingResult`, `ParameterShiftQNNPredictionResult`, `OptimizerComparisonSuiteResult`, `OptimizerConvergenceRecord`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, metric-aware descent, bounded phase-QNN classification, optimizer comparison evidence, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Objective composition | `ComposedPhaseObjective`, `ObjectiveTerm`, `ObjectiveGradientEvaluation`, `ComposedObjectiveTrainingResult`, `ComposedObjectiveGradientAgreement`, `ComposedObjectiveAuditSuiteResult`, `ComposedObjectiveExecutionPlan`, `ComposedObjectivePlannerAuditResult`, `build_phase_control_objective`, `train_composed_phase_objective`, `verify_composed_objective_gradient`, `run_composed_objective_audit_suite`, `plan_composed_objective_execution`, `run_composed_objective_planner_audit` | Combine energy, fidelity, periodic regularization, symmetry, and smooth safety penalties without misclassifying analytic classical penalties as parameter-shift quantum terms. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
@@ -165,6 +166,38 @@ multiple starts through ordinary parameter-shift descent and natural-gradient
 descent, records certificates for every route, and checks whether the metric
 route is no worse than the baseline under the declared tolerance. It is not a
 hardware benchmark, throughput result, or proof of global optimality.
+
+## Minimal bounded phase-QNN classifier
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import train_parameter_shift_qnn_classifier
+
+
+features = np.array([[0.0], [np.pi]], dtype=float)
+labels = np.array([0.0, 1.0], dtype=float)
+
+run = train_parameter_shift_qnn_classifier(
+    features,
+    labels,
+    initial_params=np.array([0.8], dtype=float),
+    learning_rate=0.7,
+    max_steps=80,
+    target_loss=0.0,
+    target_loss_tolerance=1e-4,
+)
+
+assert run.prediction.accuracy == 1.0
+assert run.certificate.monotone_accepted_values
+```
+
+This is a deliberately bounded local classifier. Each feature column is encoded
+as a phase offset, each trainable parameter is a phase response, and the
+full-batch MSE loss is trained with an explicit `[1, 2]` multi-frequency
+parameter-shift rule because MSE introduces second harmonics. It is not an
+unrestricted QNN framework, live provider execution path, or proof that
+arbitrary feature maps are differentiable.
 
 ## Minimal gradient support matrix
 

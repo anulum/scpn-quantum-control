@@ -184,6 +184,12 @@ from .qiskit_bridge import (
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
 )
+from .qnn_training import (
+    ParameterShiftQNNPredictionResult,
+    ParameterShiftQNNTrainingResult,
+    predict_parameter_shift_qnn_classifier,
+    train_parameter_shift_qnn_classifier,
+)
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
@@ -322,6 +328,10 @@ __all__ = [
     "ProviderGradientReadinessAuditResult",
     "default_provider_gradient_readiness_scenarios",
     "run_provider_gradient_readiness_audit",
+    "ParameterShiftQNNPredictionResult",
+    "ParameterShiftQNNTrainingResult",
+    "predict_parameter_shift_qnn_classifier",
+    "train_parameter_shift_qnn_classifier",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
     "execute_qiskit_finite_shot_parameter_shift",

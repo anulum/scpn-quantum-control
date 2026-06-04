@@ -473,6 +473,37 @@ future policy enables them, non-finite objectives are rejected, and line-search
 failure is recorded as `reason="line_search_failed"` instead of being promoted
 as convergence.
 
+## Bounded phase-QNN classifier
+
+For users who need a small trainable quantum neural classifier rather than a
+VQE objective, the phase namespace includes a deterministic data-reuploading
+classifier:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import train_parameter_shift_qnn_classifier
+
+
+run = train_parameter_shift_qnn_classifier(
+    np.array([[0.0], [np.pi]], dtype=float),
+    np.array([0.0, 1.0], dtype=float),
+    initial_params=np.array([0.8], dtype=float),
+    learning_rate=0.7,
+    max_steps=80,
+    target_loss=0.0,
+    target_loss_tolerance=1e-4,
+)
+
+print(run.prediction.probabilities, run.prediction.accuracy)
+```
+
+The route is intentionally narrow and auditable: one trainable phase per
+feature column, full-batch binary MSE, deterministic local execution, explicit
+multi-frequency parameter-shift descent, and fail-closed hardware policy. It is
+the current production QNN foothold, not a claim of unrestricted arbitrary
+QNN/QGNN/QSNN training.
+
 ## Parameter-shift natural gradient
 
 For metric-aware training, the phase namespace now exposes a bounded natural
