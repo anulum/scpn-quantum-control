@@ -272,6 +272,41 @@ def _shot_vector(shots: int | ArrayLike, width: int) -> FloatArray:
     return values
 
 
+def _finite_shift_sample_matrix(
+    name: str,
+    values: ArrayLike,
+    *,
+    term_count: int,
+) -> FloatArray:
+    array = np.asarray(values, dtype=float)
+    if term_count == 1 and array.ndim == 1:
+        array = array.reshape(1, array.size)
+    elif array.ndim != 2:
+        raise ValueError(f"{name} must have shape (n_terms, n_parameters)")
+    if array.shape[0] != term_count:
+        raise ValueError(f"{name} first dimension must match parameter-shift terms")
+    if array.shape[1] < 1:
+        raise ValueError(f"{name} must contain at least one parameter column")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values")
+    return array.astype(np.float64, copy=True)
+
+
+def _shot_matrix(shots: int | ArrayLike, *, term_count: int, width: int) -> FloatArray:
+    if isinstance(shots, bool):
+        raise ValueError("shots must be a positive integer or shot-count array")
+    if isinstance(shots, int):
+        if shots <= 0:
+            raise ValueError("shots must be positive")
+        return np.full((term_count, width), float(shots), dtype=np.float64)
+    array = _finite_shift_sample_matrix("shots", shots, term_count=term_count)
+    if array.shape[1] != width:
+        raise ValueError("shots parameter width must match plus_values")
+    if not np.all(array > 0.0) or not np.allclose(array, np.round(array)):
+        raise ValueError("shots must contain positive integers")
+    return array
+
+
 def _validate_non_negative_threshold(name: str, value: float | None) -> float | None:
     if value is None:
         return None
@@ -750,11 +785,18 @@ def parameter_shift_gradient_with_uncertainty(
     confidence_z: float = 1.959963984540054,
 ) -> StochasticGradientResult:
     """Return finite-shot parameter-shift gradients with propagated uncertainty."""
-    plus = _as_finite_vector("plus_values", plus_values)
-    shot_counts = _shot_vector(shots, plus.size)
+    resolved_rule = rule or ParameterShiftRule()
+    term_count = len(resolved_rule.terms)
+    plus = _finite_shift_sample_matrix(
+        "plus_values",
+        plus_values,
+        term_count=term_count,
+    )
+    shot_counts = _shot_matrix(shots, term_count=term_count, width=plus.shape[1])
     plan = plan_quantum_gradient_backend(
         backend,
-        n_params=plus.size,
+        n_params=plus.shape[1],
+        shift_terms=term_count,
         method="stochastic_parameter_shift",
         shots=int(np.max(shot_counts)),
         finite_shot=True,
@@ -763,15 +805,17 @@ def parameter_shift_gradient_with_uncertainty(
     if plan.fail_closed:
         joined = "; ".join(plan.reasons)
         raise ValueError(f"backend gradient plan is unsupported: {joined}")
+    core_plus: ArrayLike = plus[0] if term_count == 1 else plus
+    core_shots: ArrayLike = shot_counts[0] if term_count == 1 else shot_counts
     return _core_parameter_shift_gradient_with_uncertainty(
-        plus,
+        core_plus,
         minus_values,
         plus_variances,
         minus_variances,
-        shot_counts,
+        core_shots,
         value=value,
         parameters=parameters,
-        rule=rule,
+        rule=resolved_rule,
         confidence_level=confidence_level,
         confidence_z=confidence_z,
     )
@@ -782,6 +826,8 @@ def plan_parameter_shift_shots(
     minus_variances: ArrayLike,
     *,
     target_standard_error: float,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
     min_shots: int = 1,
     max_shots_per_evaluation: int | None = None,
 ) -> ShotAllocationResult:
@@ -790,6 +836,8 @@ def plan_parameter_shift_shots(
         plus_variances,
         minus_variances,
         target_standard_error=target_standard_error,
+        parameters=parameters,
+        rule=rule,
         min_shots=min_shots,
         max_shots_per_evaluation=max_shots_per_evaluation,
     )

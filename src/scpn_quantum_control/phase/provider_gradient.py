@@ -74,6 +74,9 @@ class ProviderParameterShiftRecord:
     """One plus/minus parameter-shift record for a provider callback."""
 
     parameter_index: int
+    shift_index: int
+    shift: float
+    coefficient: float
     plus_parameters: FloatArray
     minus_parameters: FloatArray
     plus: ProviderExpectationSample
@@ -85,6 +88,10 @@ class ProviderParameterShiftRecord:
     def __post_init__(self) -> None:
         if isinstance(self.parameter_index, bool) or self.parameter_index < 0:
             raise ValueError("parameter_index must be a non-negative integer")
+        if isinstance(self.shift_index, bool) or self.shift_index < 0:
+            raise ValueError("shift_index must be a non-negative integer")
+        shift = _as_positive_scalar("shift", self.shift)
+        coefficient = _as_finite_scalar("coefficient", self.coefficient)
         plus_parameters = _as_finite_vector("plus_parameters", self.plus_parameters)
         minus_parameters = _as_finite_vector("minus_parameters", self.minus_parameters)
         if plus_parameters.shape != minus_parameters.shape:
@@ -92,6 +99,8 @@ class ProviderParameterShiftRecord:
         gradient = _as_finite_scalar("gradient", self.gradient)
         standard_error = _as_non_negative_scalar("standard_error", self.standard_error)
         confidence_radius = _as_non_negative_scalar("confidence_radius", self.confidence_radius)
+        object.__setattr__(self, "shift", shift)
+        object.__setattr__(self, "coefficient", coefficient)
         object.__setattr__(self, "plus_parameters", plus_parameters)
         object.__setattr__(self, "minus_parameters", minus_parameters)
         object.__setattr__(self, "gradient", gradient)
@@ -102,6 +111,9 @@ class ProviderParameterShiftRecord:
         """Return JSON-compatible shift record metadata."""
         return {
             "parameter_index": self.parameter_index,
+            "shift_index": self.shift_index,
+            "shift": self.shift,
+            "coefficient": self.coefficient,
             "plus_parameters": self.plus_parameters.tolist(),
             "minus_parameters": self.minus_parameters.tolist(),
             "plus": self.plus.to_dict(),
@@ -163,6 +175,7 @@ class ProviderGradientExecutionResult:
                 "family": self.plan.family,
                 "method": self.plan.method,
                 "supported": self.plan.supported,
+                "shift_terms": self.plan.shift_terms,
                 "evaluations": self.plan.evaluations,
                 "shots": self.plan.shots,
                 "finite_shot": self.plan.finite_shot,
@@ -195,11 +208,12 @@ def execute_provider_parameter_shift_gradient(
     and the backend planner declares the route supported.
     """
     values_vector = _as_finite_vector("values", values)
-    shift_value, coefficient = _parameter_shift_rule(rule, shift)
+    terms = _parameter_shift_terms(rule, shift)
     z_value = _as_non_negative_scalar("confidence_z", confidence_z)
     plan = plan_quantum_gradient_backend(
         backend,
         n_params=values_vector.size,
+        shift_terms=len(terms),
         shots=shots,
         finite_shot=shots is not None,
         confidence_level=confidence_level,
@@ -211,58 +225,62 @@ def execute_provider_parameter_shift_gradient(
 
     records: list[ProviderParameterShiftRecord] = []
     gradient = np.zeros(values_vector.size, dtype=np.float64)
-    standard_error = np.zeros(values_vector.size, dtype=np.float64)
-    confidence_radius = np.zeros(values_vector.size, dtype=np.float64)
+    variance = np.zeros(values_vector.size, dtype=np.float64)
     total_shots = 0
     saw_shots = False
 
     for index in range(values_vector.size):
-        plus_parameters = values_vector.copy()
-        minus_parameters = values_vector.copy()
-        plus_parameters[index] += shift_value
-        minus_parameters[index] -= shift_value
-        plus = _sample_provider(sampler, plus_parameters, plan.shots)
-        minus = _sample_provider(sampler, minus_parameters, plan.shots)
-        if plan.finite_shot and (plus.variance is None or minus.variance is None):
-            raise ValueError("finite-shot provider gradients require sample variance")
+        for shift_index, (shift_value, coefficient) in enumerate(terms):
+            plus_parameters = values_vector.copy()
+            minus_parameters = values_vector.copy()
+            plus_parameters[index] += shift_value
+            minus_parameters[index] -= shift_value
+            plus = _sample_provider(sampler, plus_parameters, plan.shots)
+            minus = _sample_provider(sampler, minus_parameters, plan.shots)
+            if plan.finite_shot and (plus.variance is None or minus.variance is None):
+                raise ValueError("finite-shot provider gradients require sample variance")
 
-        gradient_value = coefficient * (plus.value - minus.value)
-        standard_error_value = _standard_error(
-            plus,
-            minus,
-            coefficient=coefficient,
-            require_variance=plan.finite_shot,
-        )
-        confidence_radius_value = z_value * standard_error_value
-        gradient[index] = gradient_value
-        standard_error[index] = standard_error_value
-        confidence_radius[index] = confidence_radius_value
-        record = ProviderParameterShiftRecord(
-            parameter_index=index,
-            plus_parameters=plus_parameters,
-            minus_parameters=minus_parameters,
-            plus=plus,
-            minus=minus,
-            gradient=gradient_value,
-            standard_error=standard_error_value,
-            confidence_radius=confidence_radius_value,
-        )
-        records.append(record)
-        for sample in (plus, minus):
-            if sample.shots is not None:
-                saw_shots = True
-                total_shots += sample.shots
+            gradient_value = coefficient * (plus.value - minus.value)
+            standard_error_value = _standard_error(
+                plus,
+                minus,
+                coefficient=coefficient,
+                require_variance=plan.finite_shot,
+            )
+            confidence_radius_value = z_value * standard_error_value
+            gradient[index] += gradient_value
+            variance[index] += standard_error_value**2
+            record = ProviderParameterShiftRecord(
+                parameter_index=index,
+                shift_index=shift_index,
+                shift=shift_value,
+                coefficient=coefficient,
+                plus_parameters=plus_parameters,
+                minus_parameters=minus_parameters,
+                plus=plus,
+                minus=minus,
+                gradient=gradient_value,
+                standard_error=standard_error_value,
+                confidence_radius=confidence_radius_value,
+            )
+            records.append(record)
+            for sample in (plus, minus):
+                if sample.shots is not None:
+                    saw_shots = True
+                    total_shots += sample.shots
+    standard_error = np.sqrt(variance).astype(np.float64, copy=False)
+    confidence_radius = (z_value * standard_error).astype(np.float64, copy=False)
 
     return ProviderGradientExecutionResult(
         backend=plan.backend,
-        method=plan.method,
+        method=_result_method(plan.method, len(terms)),
         values=values_vector,
         gradient=gradient,
         standard_error=standard_error,
         confidence_radius=confidence_radius,
         records=tuple(records),
         plan=plan,
-        total_evaluations=2 * values_vector.size,
+        total_evaluations=2 * len(records),
         total_shots=total_shots if saw_shots else None,
         claim_boundary=(
             "provider callback parameter-shift execution with explicit sampling, "
@@ -303,20 +321,33 @@ def _standard_error(
     )
 
 
-def _parameter_shift_rule(
+def _parameter_shift_terms(
     rule: ParameterShiftRule | None,
     shift: float,
-) -> tuple[float, float]:
+) -> tuple[tuple[float, float], ...]:
     if rule is not None:
-        return _as_positive_scalar("rule.shift", rule.shift), _as_finite_scalar(
-            "rule.coefficient",
-            rule.coefficient,
+        return tuple(
+            (
+                _as_positive_scalar("rule.shift", shift_value),
+                _as_finite_scalar("rule.coefficient", coefficient),
+            )
+            for shift_value, coefficient in rule.terms
         )
     shift_value = _as_positive_scalar("shift", shift)
     denominator = 2.0 * np.sin(shift_value)
     if abs(denominator) <= 1.0e-15:
         raise ValueError("shift must not make the parameter-shift denominator singular")
-    return shift_value, float(1.0 / denominator)
+    return ((shift_value, float(1.0 / denominator)),)
+
+
+def _result_method(plan_method: str, term_count: int) -> str:
+    if term_count == 1:
+        return plan_method
+    if plan_method == "stochastic_parameter_shift":
+        return "multi_frequency_stochastic_parameter_shift"
+    if plan_method == "parameter_shift":
+        return "multi_frequency_parameter_shift"
+    return plan_method
 
 
 def _as_finite_vector(name: str, value: ArrayLike) -> FloatArray:

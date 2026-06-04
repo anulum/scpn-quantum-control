@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.phase import (
+    multi_frequency_parameter_shift_rule,
     plan_parameter_shift_shots,
     plan_quantum_gradient_backend,
 )
@@ -29,6 +30,14 @@ def test_statevector_backend_auto_selects_deterministic_parameter_shift() -> Non
     assert plan.evaluations == 6
     assert plan.shots is None
     assert not plan.finite_shot
+
+
+def test_backend_plan_accounts_for_multi_frequency_shift_terms() -> None:
+    plan = plan_quantum_gradient_backend("statevector", n_params=3, shift_terms=4)
+
+    assert plan.supported
+    assert plan.shift_terms == 4
+    assert plan.evaluations == 24
 
 
 def test_finite_shot_backend_auto_selects_stochastic_parameter_shift() -> None:
@@ -71,6 +80,8 @@ def test_planner_rejects_invalid_method_and_shape_controls() -> None:
         plan_quantum_gradient_backend("statevector", n_params=2, method="adjoint")
     with pytest.raises(ValueError, match="n_params"):
         plan_quantum_gradient_backend("statevector", n_params=0)
+    with pytest.raises(ValueError, match="shift_terms"):
+        plan_quantum_gradient_backend("statevector", n_params=2, shift_terms=0)
     with pytest.raises(ValueError, match="shots"):
         plan_quantum_gradient_backend("qasm_simulator", n_params=2, shots=0)
 
@@ -90,6 +101,33 @@ def test_parameter_shift_uncertainty_propagates_finite_shot_noise() -> None:
     assert result.shots.shape == (2, 2)
     assert np.all(result.standard_error > 0.0)
     assert np.all(result.confidence_radius >= result.standard_error)
+
+
+def test_phase_uncertainty_wrapper_accepts_multi_frequency_records() -> None:
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+    result = parameter_shift_gradient_with_uncertainty(
+        plus_values=np.array([[1.2], [0.8]], dtype=float),
+        minus_values=np.array([[0.4], [0.1]], dtype=float),
+        plus_variances=np.array([[0.04], [0.09]], dtype=float),
+        minus_variances=np.array([[0.05], [0.10]], dtype=float),
+        shots=np.array([[400], [500]], dtype=float),
+        rule=rule,
+        backend="qasm_simulator",
+    )
+
+    expected_gradient = sum(
+        coefficient * (plus - minus)
+        for (plus, minus), (_shift, coefficient) in zip(
+            [(1.2, 0.4), (0.8, 0.1)],
+            rule.terms,
+            strict=True,
+        )
+    )
+
+    assert result.method == "multi_frequency_parameter_shift_shot_noise"
+    assert result.shots.shape == (len(rule.terms), 2, 1)
+    np.testing.assert_allclose(result.gradient, np.array([expected_gradient]))
+    assert result.standard_error[0] > 0.0
 
 
 def test_parameter_shift_uncertainty_fails_closed_for_hardware_backend() -> None:
@@ -117,3 +155,18 @@ def test_parameter_shift_shot_allocation_bounds_variance_target() -> None:
     assert np.all(allocation.shots >= 10)
     assert np.all(allocation.shots <= 1000)
     assert np.all(allocation.predicted_standard_error <= 0.02)
+
+
+def test_phase_shot_allocation_accepts_multi_frequency_rule() -> None:
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+    allocation = plan_parameter_shift_shots(
+        plus_variances=np.array([[0.04], [0.09]], dtype=float),
+        minus_variances=np.array([[0.04], [0.09]], dtype=float),
+        target_standard_error=0.03,
+        rule=rule,
+        min_shots=10,
+    )
+
+    assert allocation.method == "multi_frequency_parameter_shift_target_se"
+    assert allocation.shots.shape == (len(rule.terms), 2, 1)
+    assert allocation.predicted_standard_error[0] <= 0.03

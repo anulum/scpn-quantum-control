@@ -210,6 +210,14 @@ errors, confidence radii, and a claim boundary. Hardware aliases still fail
 closed unless an explicit hardware policy enables them through the backend
 planner.
 
+Multi-frequency rules are provider-safe on the same callback contract. The
+executor plans `2 * n_terms * n_parameters` samples, stores each
+`(parameter_index, shift_index)` record with the exact shift and coefficient,
+and aggregates independent term variances into the reported per-parameter
+standard error. Finite-shot callbacks must therefore return value, variance,
+and shot metadata for every shifted term instead of supplying a collapsed
+gradient estimate.
+
 ## Qiskit shifted-circuit generation
 
 For Qiskit-native circuits, the phase namespace can generate fully bound

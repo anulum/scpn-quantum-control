@@ -46,6 +46,7 @@ class QuantumGradientPlan:
     method: str
     supported: bool
     n_params: int
+    shift_terms: int
     evaluations: int
     shots: int | None
     seed: int | None
@@ -210,6 +211,7 @@ def plan_quantum_gradient_backend(
     backend: str,
     *,
     n_params: int,
+    shift_terms: int = 1,
     method: str = "auto",
     shots: int | None = None,
     seed: int | None = None,
@@ -220,6 +222,8 @@ def plan_quantum_gradient_backend(
     """Plan a quantum-gradient method with fail-closed backend boundaries."""
     if isinstance(n_params, bool) or not isinstance(n_params, int) or n_params <= 0:
         raise ValueError("n_params must be a positive integer")
+    if isinstance(shift_terms, bool) or not isinstance(shift_terms, int) or shift_terms <= 0:
+        raise ValueError("shift_terms must be a positive integer")
     shot_count = _positive_int("shots", shots)
     seed_value = _non_negative_seed(seed)
     confidence = _positive_confidence(confidence_level)
@@ -238,6 +242,7 @@ def plan_quantum_gradient_backend(
             method="unsupported",
             supported=False,
             n_params=n_params,
+            shift_terms=shift_terms,
             evaluations=0,
             shots=shot_count,
             seed=seed_value,
@@ -255,6 +260,7 @@ def plan_quantum_gradient_backend(
             method="unsupported",
             supported=False,
             n_params=n_params,
+            shift_terms=shift_terms,
             evaluations=0,
             shots=shot_count,
             seed=seed_value,
@@ -284,7 +290,8 @@ def plan_quantum_gradient_backend(
                 method="parameter_shift",
                 supported=True,
                 n_params=n_params,
-                evaluations=2 * n_params,
+                shift_terms=shift_terms,
+                evaluations=2 * shift_terms * n_params,
                 shots=None,
                 seed=seed_value,
                 finite_shot=False,
@@ -309,7 +316,8 @@ def plan_quantum_gradient_backend(
                     method="stochastic_parameter_shift",
                     supported=True,
                     n_params=n_params,
-                    evaluations=2 * n_params,
+                    shift_terms=shift_terms,
+                    evaluations=2 * shift_terms * n_params,
                     shots=selected_shots,
                     seed=seed_value,
                     finite_shot=True,
@@ -328,6 +336,7 @@ def plan_quantum_gradient_backend(
                 method="spsa",
                 supported=True,
                 n_params=n_params,
+                shift_terms=shift_terms,
                 evaluations=2,
                 shots=selected_shots,
                 seed=seed_value,
@@ -354,6 +363,7 @@ def plan_quantum_gradient_backend(
         method="unsupported",
         supported=False,
         n_params=n_params,
+        shift_terms=shift_terms,
         evaluations=0,
         shots=selected_shots,
         seed=seed_value,

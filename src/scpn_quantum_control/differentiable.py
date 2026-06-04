@@ -8527,9 +8527,9 @@ class ShotAllocationResult:
             raise ValueError("total_shots must equal allocated shot sum")
         if not self.method:
             raise ValueError("shot allocation method must be non-empty")
-        if len(self.parameter_names) != shots.shape[1]:
+        if len(self.parameter_names) != parameter_count:
             raise ValueError("parameter_names length must match shot columns")
-        if len(self.trainable) != shots.shape[1]:
+        if len(self.trainable) != parameter_count:
             raise ValueError("trainable mask length must match shot columns")
         if any(not isinstance(name, str) or not name for name in self.parameter_names):
             raise ValueError("parameter_names must contain non-empty strings")
