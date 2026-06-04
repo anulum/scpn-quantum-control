@@ -155,6 +155,40 @@ Current planner behaviour:
 | `hardware_qpu` | `unsupported` | Fails closed unless a later hardware policy explicitly enables execution. |
 | Unknown backend | `unsupported` | Fails closed and suggests local simulator alternatives. |
 
+## Gradient support matrix
+
+`plan_gradient_support(...)` combines the backend plan with registered gate,
+observable, transform, and adapter contracts:
+
+```python
+from scpn_quantum_control.phase import plan_gradient_support
+
+plan = plan_gradient_support(
+    gate="ry",
+    observable="pauli_expectation",
+    backend="statevector",
+    transform="grad",
+    adapter="native",
+    n_params=2,
+)
+print(plan.supported, plan.recommended_method)
+```
+
+The matrix currently supports bounded local and host-bridge routes:
+
+| Component family | Supported examples | Blocked examples |
+|---|---|---|
+| Gates | `rx`, `ry`, `rz`, `phase_rotation`, `controlled_phase`, fixed `cz` topology | `arbitrary_unitary` |
+| Observables | `pauli_expectation`, `sparse_pauli_sum`, `kuramoto_xy_energy` | `arbitrary_povm` |
+| Backends | `statevector`, `qasm_simulator` with shots and variance metadata | `hardware` without explicit policy, unknown provider families |
+| Transforms | `grad`, `value_and_grad`, deterministic local `hessian`, `gradient_tape` | `vmap`, finite-shot `hessian`, unregistered transform nesting |
+| Adapters | `native`, `jax`, `pytorch`, `tensorflow`, `pennylane`, `qiskit` on their declared bridge surfaces | unregistered ML/provider adapters |
+
+Use `run_gradient_support_matrix_audit()` for a built-in executable support
+matrix. It checks four supported combinations and five blocked combinations,
+then returns JSON-ready plans with blocked reasons, warnings, alternatives, and
+claim boundaries.
+
 Finite-shot uncertainty can be propagated from plus/minus expectation variances:
 
 ```python

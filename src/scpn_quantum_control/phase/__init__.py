@@ -52,6 +52,16 @@ from .gradient_descent import (
     parameter_shift_gradient_descent,
     validate_parameter_shift_training,
 )
+from .gradient_support_matrix import (
+    GradientSupportCapability,
+    GradientSupportMatrixAuditResult,
+    GradientSupportPlan,
+    assert_gradient_support,
+    gradient_support_capability,
+    list_gradient_support_capabilities,
+    plan_gradient_support,
+    run_gradient_support_matrix_audit,
+)
 from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
 from .jax_bridge import (
     PhaseJAXGradientAgreementResult,
@@ -236,6 +246,14 @@ __all__ = [
     "plan_quantum_gradient_backend",
     "QuantumGradientBackendCapability",
     "QuantumGradientPlan",
+    "GradientSupportCapability",
+    "GradientSupportPlan",
+    "GradientSupportMatrixAuditResult",
+    "gradient_support_capability",
+    "list_gradient_support_capabilities",
+    "plan_gradient_support",
+    "assert_gradient_support",
+    "run_gradient_support_matrix_audit",
     "parameter_shift_gradient_descent",
     "validate_parameter_shift_training",
     "ParameterShiftTrainingCertificate",

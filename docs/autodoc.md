@@ -112,6 +112,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ComposedObjectiveExecutionPlan, ComposedObjectivePlannerAuditResult, plan_composed_objective_execution, assert_composed_objective_execution_supported, run_composed_objective_planner_audit]
 
+::: scpn_quantum_control.phase.gradient_support_matrix
+    options:
+      members: [GradientSupportCapability, GradientSupportPlan, GradientSupportMatrixAuditResult, gradient_support_capability, list_gradient_support_capabilities, plan_gradient_support, assert_gradient_support, run_gradient_support_matrix_audit]
+
 ::: scpn_quantum_control.phase.provider_gradient_audit
     options:
       members: [ProviderGradientReadinessScenario, ProviderGradientReadinessRecord, ProviderGradientReadinessAuditResult, default_provider_gradient_readiness_scenarios, run_provider_gradient_readiness_audit]
