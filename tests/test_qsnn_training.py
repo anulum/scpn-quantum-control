@@ -8,9 +8,10 @@
 """Tests for qsnn/training.py."""
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
-from scpn_quantum_control.qsnn.training import QSNNTrainer
+from scpn_quantum_control.qsnn.training import QSNNTrainer, QSNNTrainingRun
 
 
 def test_trainer_init():
@@ -61,6 +62,42 @@ def test_train_returns_history():
     history = trainer.train(X, y, epochs=3)
     assert len(history) == 3
     assert all(np.isfinite(h) for h in history)
+
+
+def test_train_with_diagnostics_returns_convergence_certificate():
+    layer = QuantumDenseLayer(1, 2, seed=42)
+    trainer = QSNNTrainer(layer, lr=0.2)
+    X = np.array([[0.8, 0.2], [0.2, 0.8]])
+    y = np.array([[0.9], [0.1]])
+
+    result = trainer.train_with_diagnostics(X, y, epochs=4)
+
+    assert isinstance(result, QSNNTrainingRun)
+    assert result.epochs == 4
+    assert len(result.loss_history) == 4
+    assert result.n_samples == 2
+    assert result.parameter_shift_evaluations == 4 * 2 * 5
+    assert result.diagnostics.best_improved
+    assert result.diagnostics.best_loss <= result.diagnostics.initial_loss
+    assert result.diagnostics.final_loss >= 0.0
+    assert result.to_dict()["parameter_shift_evaluations"] == result.parameter_shift_evaluations
+
+
+def test_qsnn_trainer_rejects_mismatched_or_empty_dataset():
+    layer = QuantumDenseLayer(1, 2, seed=42)
+    trainer = QSNNTrainer(layer, lr=0.2)
+
+    with pytest.raises(ValueError, match="same sample count"):
+        trainer.train_with_diagnostics(
+            np.array([[0.8, 0.2], [0.2, 0.8]]),
+            np.array([[0.9]]),
+        )
+
+    with pytest.raises(ValueError, match="at least one sample"):
+        trainer.train_with_diagnostics(
+            np.empty((0, 2)),
+            np.empty((0, 1)),
+        )
 
 
 def test_train_loss_trend():

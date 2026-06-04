@@ -886,11 +886,15 @@ QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01)
     .parameter_shift_gradient(inputs, target) -> np.ndarray
     .train_epoch(X, y) -> float  # mean loss
     .train(X, y, epochs=10) -> list[float]  # loss history
+    .train_with_diagnostics(X, y, epochs=10) -> QSNNTrainingRun
 ```
 
 `QSNNTrainer.parameter_shift_gradient()` delegates to the native
 `scpn_quantum_control.differentiable` parameter-shift primitive. The training
 demo is therefore no longer a separate manual-gradient implementation.
+`train_with_diagnostics()` returns a structured `QSNNTrainingRun` with loss
+history, monotonicity/best-loss diagnostics, sample count, learning rate, and
+parameter-shift evaluation accounting.
 
 ## differentiable
 

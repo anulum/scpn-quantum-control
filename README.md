@@ -127,6 +127,8 @@ quantum hardware experimentation, and control-facing software:
   parameter-shift VQE building blocks and compiler/program-AD kernels as the
   base for gradient-trained Kuramoto-XY objectives, quantum neural networks,
   and future framework adapters.
+- QSNN training now exposes structured convergence diagnostics and
+  parameter-shift evaluation accounting through `QSNNTrainer.train_with_diagnostics(...)`.
 - **Product route:** AGPL use is available for open research; proprietary
   deployment uses the commercial licence route described below.
 

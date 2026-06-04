@@ -12,6 +12,8 @@ Uses (f(w+pi/2) - f(w-pi/2)) / 2 per CRy angle on MSE loss.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
@@ -24,6 +26,77 @@ from ..differentiable import (
 )
 from .qlayer import QuantumDenseLayer
 from .qsynapse import QuantumSynapse
+
+
+@dataclass(frozen=True)
+class QSNNTrainingDiagnostics:
+    """Machine-checkable convergence evidence for QSNN parameter-shift training."""
+
+    initial_loss: float
+    final_loss: float
+    best_loss: float
+    loss_decrease: float
+    max_loss_increase: float
+    monotone_loss: bool
+    best_improved: bool
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable training diagnostics."""
+        return {
+            "initial_loss": self.initial_loss,
+            "final_loss": self.final_loss,
+            "best_loss": self.best_loss,
+            "loss_decrease": self.loss_decrease,
+            "max_loss_increase": self.max_loss_increase,
+            "monotone_loss": self.monotone_loss,
+            "best_improved": self.best_improved,
+        }
+
+
+@dataclass(frozen=True)
+class QSNNTrainingRun:
+    """Structured QSNN training result with parameter-shift evaluation accounting."""
+
+    loss_history: tuple[float, ...]
+    diagnostics: QSNNTrainingDiagnostics
+    epochs: int
+    n_samples: int
+    learning_rate: float
+    parameter_shift_evaluations: int
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable training evidence."""
+        return {
+            "loss_history": list(self.loss_history),
+            "diagnostics": self.diagnostics.to_dict(),
+            "epochs": self.epochs,
+            "n_samples": self.n_samples,
+            "learning_rate": self.learning_rate,
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+        }
+
+
+def _training_diagnostics(loss_history: tuple[float, ...]) -> QSNNTrainingDiagnostics:
+    if not loss_history:
+        raise ValueError("loss_history must contain at least one epoch")
+    losses = np.asarray(loss_history, dtype=float)
+    if not np.all(np.isfinite(losses)):
+        raise ValueError("loss_history must contain only finite losses")
+    deltas = np.diff(losses)
+    max_increase = float(np.max(deltas)) if deltas.size else 0.0
+    max_increase = max(0.0, max_increase)
+    initial = float(losses[0])
+    final = float(losses[-1])
+    best = float(np.min(losses))
+    return QSNNTrainingDiagnostics(
+        initial_loss=initial,
+        final_loss=final,
+        best_loss=best,
+        loss_decrease=initial - best,
+        max_loss_increase=max_increase,
+        monotone_loss=bool(max_increase <= 1e-12),
+        best_improved=bool(best <= initial + 1e-12),
+    )
 
 
 class QSNNTrainer:
@@ -73,6 +146,39 @@ class QSNNTrainer:
             ]
         )
         return probs
+
+    def _validate_dataset(self, X: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Return finite two-dimensional training arrays with compatible shapes."""
+        features = np.asarray(X, dtype=float)
+        targets = np.asarray(y, dtype=float)
+        if features.ndim != 2:
+            raise ValueError("X must be a two-dimensional array")
+        if targets.ndim != 2:
+            raise ValueError("y must be a two-dimensional array")
+        if features.shape[0] == 0:
+            raise ValueError("QSNN training requires at least one sample")
+        if features.shape[0] != targets.shape[0]:
+            raise ValueError("X and y must have the same sample count")
+        if features.shape[1] != self.layer.n_inputs:
+            raise ValueError(
+                f"X must have {self.layer.n_inputs} input columns, got {features.shape[1]}"
+            )
+        if targets.shape[1] != self.layer.n_neurons:
+            raise ValueError(
+                f"y must have {self.layer.n_neurons} target columns, got {targets.shape[1]}"
+            )
+        if not np.all(np.isfinite(features)):
+            raise ValueError("X must contain only finite values")
+        if not np.all(np.isfinite(targets)):
+            raise ValueError("y must contain only finite values")
+        return features.astype(np.float64, copy=True), targets.astype(np.float64, copy=True)
+
+    @staticmethod
+    def _validate_epochs(epochs: int) -> int:
+        epoch_count = int(epochs)
+        if epoch_count <= 0:
+            raise ValueError("epochs must be positive")
+        return epoch_count
 
     @staticmethod
     def _set_synapse_theta(synapse: QuantumSynapse, theta: float) -> None:
@@ -140,6 +246,7 @@ class QSNNTrainer:
 
     def train_epoch(self, X: np.ndarray, y: np.ndarray) -> float:
         """One epoch over dataset. Returns mean loss."""
+        X, y = self._validate_dataset(X, y)
         total_loss = 0.0
         for xi, yi in zip(X, y):
             pred = self._forward_probs(xi)
@@ -183,7 +290,28 @@ class QSNNTrainer:
 
     def train(self, X: np.ndarray, y: np.ndarray, epochs: int = 10) -> list[float]:
         """Train for multiple epochs. Returns loss history."""
+        epoch_count = self._validate_epochs(epochs)
         history: list[float] = []
-        for _ in range(epochs):
+        for _ in range(epoch_count):
             history.append(self.train_epoch(X, y))
         return history
+
+    def train_with_diagnostics(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        epochs: int = 10,
+    ) -> QSNNTrainingRun:
+        """Train and return structured convergence plus evaluation evidence."""
+        X, y = self._validate_dataset(X, y)
+        epoch_count = self._validate_epochs(epochs)
+        history = tuple(float(value) for value in self.train(X, y, epochs=epoch_count))
+        n_parameters = self.layer.n_neurons * self.layer.n_inputs
+        return QSNNTrainingRun(
+            loss_history=history,
+            diagnostics=_training_diagnostics(history),
+            epochs=epoch_count,
+            n_samples=int(X.shape[0]),
+            learning_rate=float(self.lr),
+            parameter_shift_evaluations=epoch_count * int(X.shape[0]) * (1 + 2 * n_parameters),
+        )
