@@ -13,10 +13,14 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.phase import (
+    ParameterShiftQNNGradientVerificationResult,
     ParameterShiftQNNPredictionResult,
     ParameterShiftQNNTrainingResult,
+    parameter_shift_qnn_classifier_gradient,
+    parameter_shift_qnn_classifier_loss,
     predict_parameter_shift_qnn_classifier,
     train_parameter_shift_qnn_classifier,
+    verify_parameter_shift_qnn_classifier_gradient,
 )
 
 
@@ -72,6 +76,78 @@ def test_parameter_shift_qnn_prediction_is_bounded_and_thresholded() -> None:
     assert prediction.to_dict()["n_samples"] == 2
 
 
+def test_parameter_shift_qnn_gradient_matches_finite_difference_reference() -> None:
+    features = np.array(
+        [
+            [0.2, -0.4],
+            [1.1, 0.7],
+            [-0.8, 0.3],
+        ],
+        dtype=float,
+    )
+    labels = np.array([0.0, 1.0, 0.25], dtype=float)
+    params = np.array([0.4, -0.2], dtype=float)
+
+    loss = parameter_shift_qnn_classifier_loss(features, labels, params)
+    gradient = parameter_shift_qnn_classifier_gradient(features, labels, params)
+    verification = verify_parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params,
+        finite_difference_step=1e-6,
+        tolerance=2e-6,
+    )
+
+    assert loss == pytest.approx(0.20112073737315475)
+    assert isinstance(verification, ParameterShiftQNNGradientVerificationResult)
+    assert verification.loss == pytest.approx(loss)
+    np.testing.assert_allclose(
+        verification.parameter_shift_gradient,
+        gradient,
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        verification.parameter_shift_gradient,
+        verification.finite_difference_gradient,
+        rtol=0.0,
+        atol=2e-6,
+    )
+    assert verification.passed
+    assert verification.max_abs_error <= 2e-6
+    assert verification.shift_terms == 2
+    assert verification.method == "multi_frequency_parameter_shift_qnn_gradient"
+    payload = verification.to_dict()
+    assert payload["passed"] is True
+    assert payload["shift_terms"] == 2
+
+
+def test_parameter_shift_qnn_gradient_records_external_agreements() -> None:
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.45], dtype=float)
+    expected = parameter_shift_qnn_classifier_gradient(features, labels, params)
+
+    verification = verify_parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params,
+        tolerance=1e-6,
+        external_gradients={
+            "jax": lambda _values: expected.copy(),
+            "pennylane": lambda _values: expected + np.array([5e-8], dtype=float),
+        },
+    )
+
+    assert verification.passed
+    assert tuple(agreement.name for agreement in verification.external_agreements) == (
+        "jax",
+        "pennylane",
+    )
+    assert all(agreement.passed for agreement in verification.external_agreements)
+    assert verification.to_dict()["external_agreements"]
+
+
 def test_parameter_shift_qnn_training_fails_closed_for_hardware() -> None:
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
@@ -115,4 +191,20 @@ def test_parameter_shift_qnn_rejects_invalid_inputs() -> None:
             features,
             np.array([0.0, np.nan], dtype=float),
             initial_params=np.array([0.5], dtype=float),
+        )
+
+    with pytest.raises(ValueError, match="finite_difference_step"):
+        verify_parameter_shift_qnn_classifier_gradient(
+            features,
+            labels,
+            np.array([0.5], dtype=float),
+            finite_difference_step=0.0,
+        )
+
+    with pytest.raises(ValueError, match="external gradient"):
+        verify_parameter_shift_qnn_classifier_gradient(
+            features,
+            labels,
+            np.array([0.5], dtype=float),
+            external_gradients={"jax": lambda _values: np.array([0.1, 0.2], dtype=float)},
         )

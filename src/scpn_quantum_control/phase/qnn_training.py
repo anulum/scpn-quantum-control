@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
@@ -21,10 +22,11 @@ from .gradient_descent import (
     parameter_shift_gradient_descent,
     validate_parameter_shift_training,
 )
-from .param_shift import multi_frequency_parameter_shift_rule
+from .param_shift import multi_frequency_parameter_shift_rule, parameter_shift_gradient
 
 FloatArray: TypeAlias = NDArray[np.float64]
 IntArray: TypeAlias = NDArray[np.int_]
+GradientCallable: TypeAlias = Callable[[FloatArray], ArrayLike]
 
 
 @dataclass(frozen=True)
@@ -97,6 +99,62 @@ class ParameterShiftQNNTrainingResult:
         }
 
 
+@dataclass(frozen=True)
+class ParameterShiftQNNExternalGradientAgreement:
+    """Agreement evidence for a named external QNN gradient source."""
+
+    name: str
+    gradient: FloatArray
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready external-gradient agreement evidence."""
+        return {
+            "name": self.name,
+            "gradient": self.gradient.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+        }
+
+
+@dataclass(frozen=True)
+class ParameterShiftQNNGradientVerificationResult:
+    """QNN gradient verification against finite differences and adapters."""
+
+    loss: float
+    parameter_shift_gradient: FloatArray
+    finite_difference_gradient: FloatArray
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    finite_difference_step: float
+    passed: bool
+    external_agreements: tuple[ParameterShiftQNNExternalGradientAgreement, ...]
+    method: str
+    shift_terms: int
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready QNN gradient verification evidence."""
+        return {
+            "loss": self.loss,
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "finite_difference_gradient": self.finite_difference_gradient.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "finite_difference_step": self.finite_difference_step,
+            "passed": self.passed,
+            "external_agreements": [agreement.to_dict() for agreement in self.external_agreements],
+            "method": self.method,
+            "shift_terms": self.shift_terms,
+        }
+
+
 def _as_feature_matrix(features: ArrayLike) -> FloatArray:
     matrix = np.asarray(features, dtype=float)
     if matrix.ndim != 2:
@@ -145,6 +203,38 @@ def _as_threshold(decision_threshold: float) -> float:
     return threshold
 
 
+def _as_positive_step(finite_difference_step: float) -> float:
+    step = float(finite_difference_step)
+    if not np.isfinite(step) or step <= 0.0:
+        raise ValueError("finite_difference_step must be a finite positive scalar")
+    return step
+
+
+def _as_non_negative_tolerance(tolerance: float) -> float:
+    value = float(tolerance)
+    if not np.isfinite(value) or value < 0.0:
+        raise ValueError("tolerance must be finite and non-negative")
+    return value
+
+
+def _as_external_gradient_name(name: str) -> str:
+    normalized = str(name).strip().lower()
+    if not normalized:
+        raise ValueError("external gradient name must be non-empty")
+    if any(character.isspace() for character in normalized):
+        raise ValueError("external gradient name must not contain whitespace")
+    return normalized
+
+
+def _as_external_gradient(name: str, values: ArrayLike, *, width: int) -> FloatArray:
+    gradient = np.asarray(values, dtype=float)
+    if gradient.ndim != 1 or gradient.shape != (width,):
+        raise ValueError(f"external gradient {name!r} must have shape ({width},)")
+    if not np.all(np.isfinite(gradient)):
+        raise ValueError(f"external gradient {name!r} must contain only finite values")
+    return gradient.astype(np.float64, copy=True)
+
+
 def _phase_qnn_probabilities(features: FloatArray, params: FloatArray) -> FloatArray:
     if params.shape != (features.shape[1],):
         raise ValueError("initial_params must match the feature width")
@@ -152,6 +242,32 @@ def _phase_qnn_probabilities(features: FloatArray, params: FloatArray) -> FloatA
     averaged = np.mean(probabilities, axis=1)
     clipped = np.clip(averaged, 0.0, 1.0).astype(np.float64, copy=False)
     return cast(FloatArray, clipped)
+
+
+def _qnn_classifier_loss(
+    feature_matrix: FloatArray,
+    label_vector: FloatArray,
+    parameters: FloatArray,
+) -> float:
+    probabilities = _phase_qnn_probabilities(feature_matrix, parameters)
+    residual = probabilities - label_vector
+    return float(np.mean(residual * residual))
+
+
+def _central_finite_difference_gradient(
+    objective: Callable[[FloatArray], float],
+    params: FloatArray,
+    *,
+    step: float,
+) -> FloatArray:
+    gradient = np.zeros_like(params, dtype=np.float64)
+    for index in range(params.size):
+        forward = params.copy()
+        backward = params.copy()
+        forward[index] += step
+        backward[index] -= step
+        gradient[index] = (objective(forward) - objective(backward)) / (2.0 * step)
+    return gradient
 
 
 def predict_parameter_shift_qnn_classifier(
@@ -192,6 +308,120 @@ def predict_parameter_shift_qnn_classifier(
     )
 
 
+def parameter_shift_qnn_classifier_loss(
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike,
+) -> float:
+    """Return the full-batch MSE loss for the bounded phase QNN classifier."""
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameters = _as_parameter_vector(params, n_features=feature_matrix.shape[1])
+    return _qnn_classifier_loss(feature_matrix, label_vector, parameters)
+
+
+def parameter_shift_qnn_classifier_gradient(
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike,
+) -> FloatArray:
+    """Return the multi-frequency parameter-shift gradient for QNN MSE loss."""
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameters = _as_parameter_vector(params, n_features=feature_matrix.shape[1])
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(candidate: FloatArray) -> float:
+        return _qnn_classifier_loss(feature_matrix, label_vector, candidate)
+
+    return cast(FloatArray, parameter_shift_gradient(objective, parameters, rule=rule))
+
+
+def verify_parameter_shift_qnn_classifier_gradient(
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike,
+    *,
+    finite_difference_step: float = 1e-6,
+    tolerance: float = 1e-5,
+    external_gradients: Mapping[str, GradientCallable] | None = None,
+    external_tolerance: float | None = None,
+) -> ParameterShiftQNNGradientVerificationResult:
+    """Verify bounded phase-QNN gradients against independent references.
+
+    The primary reference is a central finite-difference replay of the same
+    deterministic QNN loss. Optional named external-gradient callables can be
+    used to record JAX, PennyLane, PyTorch, TensorFlow, or other adapter
+    agreement without claiming automatic conversion into those frameworks.
+    """
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameters = _as_parameter_vector(params, n_features=feature_matrix.shape[1])
+    step = _as_positive_step(finite_difference_step)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    external_tolerance_value = (
+        tolerance_value
+        if external_tolerance is None
+        else _as_non_negative_tolerance(external_tolerance)
+    )
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(candidate: FloatArray) -> float:
+        return _qnn_classifier_loss(feature_matrix, label_vector, candidate)
+
+    shift_gradient = cast(
+        FloatArray,
+        parameter_shift_gradient(objective, parameters, rule=rule),
+    )
+    finite_difference_gradient = _central_finite_difference_gradient(
+        objective,
+        parameters,
+        step=step,
+    )
+    delta = shift_gradient - finite_difference_gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta, ord=2))
+
+    agreements: list[ParameterShiftQNNExternalGradientAgreement] = []
+    for raw_name, gradient_callable in (external_gradients or {}).items():
+        name = _as_external_gradient_name(raw_name)
+        external_gradient = _as_external_gradient(
+            name,
+            gradient_callable(parameters.copy()),
+            width=parameters.size,
+        )
+        external_delta = shift_gradient - external_gradient
+        external_max_abs_error = (
+            float(np.max(np.abs(external_delta))) if external_delta.size else 0.0
+        )
+        agreements.append(
+            ParameterShiftQNNExternalGradientAgreement(
+                name=name,
+                gradient=external_gradient,
+                max_abs_error=external_max_abs_error,
+                l2_error=float(np.linalg.norm(external_delta, ord=2)),
+                tolerance=external_tolerance_value,
+                passed=external_max_abs_error <= external_tolerance_value,
+            )
+        )
+
+    return ParameterShiftQNNGradientVerificationResult(
+        loss=objective(parameters),
+        parameter_shift_gradient=shift_gradient,
+        finite_difference_gradient=finite_difference_gradient,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        finite_difference_step=step,
+        passed=bool(
+            max_abs_error <= tolerance_value and all(agreement.passed for agreement in agreements)
+        ),
+        external_agreements=tuple(agreements),
+        method="multi_frequency_parameter_shift_qnn_gradient",
+        shift_terms=len(rule.terms),
+    )
+
+
 def train_parameter_shift_qnn_classifier(
     features: ArrayLike,
     labels: ArrayLike,
@@ -223,9 +453,7 @@ def train_parameter_shift_qnn_classifier(
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
     def objective(candidate: FloatArray) -> float:
-        probabilities = _phase_qnn_probabilities(feature_matrix, candidate)
-        residual = probabilities - label_vector
-        return float(np.mean(residual * residual))
+        return _qnn_classifier_loss(feature_matrix, label_vector, candidate)
 
     training = parameter_shift_gradient_descent(
         objective,
@@ -262,8 +490,13 @@ def train_parameter_shift_qnn_classifier(
 
 
 __all__ = [
+    "ParameterShiftQNNExternalGradientAgreement",
+    "ParameterShiftQNNGradientVerificationResult",
     "ParameterShiftQNNPredictionResult",
     "ParameterShiftQNNTrainingResult",
+    "parameter_shift_qnn_classifier_gradient",
+    "parameter_shift_qnn_classifier_loss",
     "predict_parameter_shift_qnn_classifier",
     "train_parameter_shift_qnn_classifier",
+    "verify_parameter_shift_qnn_classifier_gradient",
 ]

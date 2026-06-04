@@ -172,7 +172,10 @@ hardware benchmark, throughput result, or proof of global optimality.
 ```python
 import numpy as np
 
-from scpn_quantum_control.phase import train_parameter_shift_qnn_classifier
+from scpn_quantum_control.phase import (
+    train_parameter_shift_qnn_classifier,
+    verify_parameter_shift_qnn_classifier_gradient,
+)
 
 
 features = np.array([[0.0], [np.pi]], dtype=float)
@@ -190,14 +193,23 @@ run = train_parameter_shift_qnn_classifier(
 
 assert run.prediction.accuracy == 1.0
 assert run.certificate.monotone_accepted_values
+
+verification = verify_parameter_shift_qnn_classifier_gradient(
+    features,
+    labels,
+    run.best_params,
+)
+assert verification.passed
 ```
 
 This is a deliberately bounded local classifier. Each feature column is encoded
 as a phase offset, each trainable parameter is a phase response, and the
 full-batch MSE loss is trained with an explicit `[1, 2]` multi-frequency
-parameter-shift rule because MSE introduces second harmonics. It is not an
-unrestricted QNN framework, live provider execution path, or proof that
-arbitrary feature maps are differentiable.
+parameter-shift rule because MSE introduces second harmonics. The verification
+helper replays the same bounded loss against central finite differences and can
+record caller-supplied external gradients under names such as `jax` or
+`pennylane`. It is not an unrestricted QNN framework, live provider execution
+path, or proof that arbitrary feature maps are differentiable.
 
 ## Minimal gradient support matrix
 

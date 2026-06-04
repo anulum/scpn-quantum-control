@@ -482,7 +482,10 @@ classifier:
 ```python
 import numpy as np
 
-from scpn_quantum_control.phase import train_parameter_shift_qnn_classifier
+from scpn_quantum_control.phase import (
+    train_parameter_shift_qnn_classifier,
+    verify_parameter_shift_qnn_classifier_gradient,
+)
 
 
 run = train_parameter_shift_qnn_classifier(
@@ -496,13 +499,22 @@ run = train_parameter_shift_qnn_classifier(
 )
 
 print(run.prediction.probabilities, run.prediction.accuracy)
+
+verification = verify_parameter_shift_qnn_classifier_gradient(
+    np.array([[0.0], [np.pi]], dtype=float),
+    np.array([0.0, 1.0], dtype=float),
+    run.best_params,
+)
+print(verification.passed, verification.max_abs_error)
 ```
 
 The route is intentionally narrow and auditable: one trainable phase per
 feature column, full-batch binary MSE, deterministic local execution, explicit
-multi-frequency parameter-shift descent, and fail-closed hardware policy. It is
-the current production QNN foothold, not a claim of unrestricted arbitrary
-QNN/QGNN/QSNN training.
+multi-frequency parameter-shift descent, finite-difference gradient replay, and
+fail-closed hardware policy. Optional external-gradient callables can be named
+in the verification report to record JAX, PennyLane, or other adapter agreement
+without claiming automatic framework conversion. It is the current production
+QNN foothold, not a claim of unrestricted arbitrary QNN/QGNN/QSNN training.
 
 ## Parameter-shift natural gradient
 

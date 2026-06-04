@@ -185,10 +185,15 @@ from .qiskit_bridge import (
     generate_qiskit_parameter_shift_circuits,
 )
 from .qnn_training import (
+    ParameterShiftQNNExternalGradientAgreement,
+    ParameterShiftQNNGradientVerificationResult,
     ParameterShiftQNNPredictionResult,
     ParameterShiftQNNTrainingResult,
+    parameter_shift_qnn_classifier_gradient,
+    parameter_shift_qnn_classifier_loss,
     predict_parameter_shift_qnn_classifier,
     train_parameter_shift_qnn_classifier,
+    verify_parameter_shift_qnn_classifier_gradient,
 )
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
@@ -330,8 +335,13 @@ __all__ = [
     "run_provider_gradient_readiness_audit",
     "ParameterShiftQNNPredictionResult",
     "ParameterShiftQNNTrainingResult",
+    "ParameterShiftQNNExternalGradientAgreement",
+    "ParameterShiftQNNGradientVerificationResult",
+    "parameter_shift_qnn_classifier_loss",
+    "parameter_shift_qnn_classifier_gradient",
     "predict_parameter_shift_qnn_classifier",
     "train_parameter_shift_qnn_classifier",
+    "verify_parameter_shift_qnn_classifier_gradient",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
     "execute_qiskit_finite_shot_parameter_shift",

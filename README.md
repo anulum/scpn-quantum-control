@@ -46,7 +46,7 @@
 | Package version | 0.9.10 |
 | Public API exports | 574 |
 | Python source modules | 787 |
-| Public Python classes | 1567 |
+| Public Python classes | 1569 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -131,6 +131,10 @@ quantum hardware experimentation, and control-facing software:
   diagnostics and parameter-shift evaluation accounting through
   `train_parameter_shift_qnn_classifier(...)` and
   `QSNNTrainer.train_with_diagnostics(...)`.
+- The bounded phase-QNN route also exposes its MSE loss, multi-frequency
+  parameter-shift gradient, finite-difference verification, and named
+  external-gradient agreement records through
+  `verify_parameter_shift_qnn_classifier_gradient(...)`.
 - **Product route:** AGPL use is available for open research; proprietary
   deployment uses the commercial licence route described below.
 
@@ -170,7 +174,7 @@ layers:
 | Gradient support matrix | Executable support planning now covers registered gates, observables, backends, transforms, and ML/provider adapters with explicit blocked reasons and alternatives. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Transform nesting governance | Executable planning now separates supported local `grad`, `value_and_grad`, `hessian`, nested-grad, and tape routes from blocked vectorized, adapter-nested, finite-shot curvature, and hardware nesting routes. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Provider-gradient readiness | Executable audit evidence distinguishes deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, and malformed finite-shot samples. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
-| Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, and convergence certificates. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
+| Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, and optional named external-gradient agreement records. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | ML framework and tape roadmap | Gradient tape, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, and PyTorch/TensorFlow host-boundary tensor bridges are available. Full PennyLane/Qiskit migration bridges, arbitrary QNNs, QGNNs, and unrestricted QSNN training remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
@@ -183,7 +187,7 @@ The first production-grade differentiable workflows are deliberately bounded:
 
 1. train small VQE objectives with parameter-shift gradients through `PhaseVQE.solve(gradient_method="parameter_shift")`;
 2. verify gradients against finite differences and analytic references through `verify_parameter_shift_gradient(...)` and `verify_vqe_parameter_shift_gradient(...)`;
-3. train bounded phase-QNN classifiers through `train_parameter_shift_qnn_classifier(...)`;
+3. train bounded phase-QNN classifiers through `train_parameter_shift_qnn_classifier(...)` and verify their QNN-specific gradients through `verify_parameter_shift_qnn_classifier_gradient(...)`;
 4. use compiler/program-AD kernels for supported classical objectives;
 5. document unsupported gates, backends, shapes, and dynamic program paths
    before they can mislead users.

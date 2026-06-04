@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 574,
     "public_documentation_pages": 240,
-    "python_model_classes": 1567,
+    "python_model_classes": 1569,
     "python_model_source_modules": 787,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
@@ -4359,6 +4359,14 @@
       {
         "name": "ParameterShiftNaturalGradientStep",
         "path": "src/scpn_quantum_control/phase/natural_gradient.py"
+      },
+      {
+        "name": "ParameterShiftQNNExternalGradientAgreement",
+        "path": "src/scpn_quantum_control/phase/qnn_training.py"
+      },
+      {
+        "name": "ParameterShiftQNNGradientVerificationResult",
+        "path": "src/scpn_quantum_control/phase/qnn_training.py"
       },
       {
         "name": "ParameterShiftQNNPredictionResult",
