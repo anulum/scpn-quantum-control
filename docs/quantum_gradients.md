@@ -189,6 +189,34 @@ matrix. It checks four supported combinations and five blocked combinations,
 then returns JSON-ready plans with blocked reasons, warnings, alternatives, and
 claim boundaries.
 
+## Transform nesting governance
+
+`plan_gradient_transform_nesting(...)` adds a second planning layer for nested
+transforms:
+
+```python
+from scpn_quantum_control.phase import plan_gradient_transform_nesting
+
+plan = plan_gradient_transform_nesting(("grad", "grad"), n_params=2)
+print(plan.supported, plan.strategy)
+```
+
+Current behaviour:
+
+| Transform stack | Status |
+|---|---|
+| `grad` | Supported on registered local or declared single-adapter routes. |
+| `value_and_grad` | Supported on local and declared single-adapter bridge routes. |
+| `hessian` | Supported as deterministic local curvature diagnostic only. |
+| `grad` then `grad` | Supported as deterministic native nested-gradient Hessian route. |
+| `gradient_tape` | Supported as phase-gradient record/replay evidence. |
+| `vmap`, `jvp`, `vjp`, `jacfwd`, `jacrev` | Fail closed until executable transform algebra is implemented. |
+| nested ML/provider adapters | Fail closed; adapters expose only declared single-transform bridge surfaces. |
+| finite-shot curvature or hardware curvature | Fail closed; second-order routes require deterministic local expectations. |
+
+Use `run_gradient_transform_nesting_audit()` to produce JSON-ready evidence for
+six supported routes and seven blocked routes.
+
 Finite-shot uncertainty can be propagated from plus/minus expectation variances:
 
 ```python

@@ -29,6 +29,7 @@ This repository now documents those questions directly. Current support is delib
 | Objective evidence | Available for composed phase-control objectives through finite-difference agreement, compatibility-gate checks, and local training certificates. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Objective execution planning | Available for composed objectives through fail-closed routing between pure parameter-shift, hybrid term-gradient, hardware-blocked, and unsupported backend routes. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Gradient support matrix | Available for executable planning across registered gates, observables, backends, transforms, and adapters with explicit alternatives for blocked combinations. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
+| Transform nesting governance | Available for bounded first-order, value-and-gradient, deterministic local Hessian, nested-grad Hessian, single-adapter bridge, and tape routes, with fail-closed vectorization and hardware boundaries. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Provider-gradient readiness | Available as an executable support matrix for deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, and malformed samples. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Compiler/program AD | Available for supported scalar, vector, and matrix primitives with registry contracts, lowering reports, and native executable kernels on bounded paths. | [Differentiable API](differentiable_api.md), [Quickstart](quickstart.md) |
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
@@ -44,7 +45,7 @@ This repository now documents those questions directly. Current support is delib
 | Train a small VQE objective | `phase.param_shift` -> [Quantum Gradients](quantum_gradients.md) -> [Variational Methods](variational.md) |
 | Inspect compiler-backed AD | [Quickstart](quickstart.md) differentiable primitive path -> [Differentiable API](differentiable_api.md) |
 | Build a custom primitive | `CustomDerivativeRule` -> `CustomDerivativeRegistry` -> primitive contract tests |
-| Decide whether a gradient stack can run | `plan_gradient_support(...)`, `plan_quantum_gradient_backend(...)`, and `run_provider_gradient_readiness_audit(...)` |
+| Decide whether a gradient stack can run | `plan_gradient_support(...)`, `plan_gradient_transform_nesting(...)`, `plan_quantum_gradient_backend(...)`, and `run_provider_gradient_readiness_audit(...)` |
 | Prepare ML-framework integration | Follow [Differentiable Roadmap](differentiable_roadmap.md) until adapter tests land |
 
 ## Design principles
@@ -66,7 +67,7 @@ The next differentiable-programming implementation rounds should prioritise:
 4. PennyLane adapter round-trip tests;
 5. QSNN training convergence tests;
 6. public tutorials for Kuramoto-XY VQE gradients and coupling learning;
-7. adapter-specific hardening for every currently blocked transform combination in the support matrix.
+7. executable implementations for currently blocked `vmap`, `jvp`, `vjp`, `jacfwd`, and `jacrev` routes where the physics contract is clear.
 
 ## Unsupported boundaries
 
@@ -79,6 +80,7 @@ Unsupported does not mean ignored. Current public boundaries include:
 - hardware gradient jobs without explicit backend policy;
 - provider callbacks that omit finite-shot variance or shifted-sample provenance;
 - unsupported gate, observable, transform, adapter, or backend combinations returned by `plan_gradient_support(...)`;
+- unsupported transform nesting returned by `plan_gradient_transform_nesting(...)`;
 - gates without registered generator spectra;
 - dynamic topology changes that invalidate parameter indexing;
 - wide native quotient-linalg traces beyond the documented support profile.

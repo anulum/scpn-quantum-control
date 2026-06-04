@@ -197,6 +197,13 @@ from .torch_bridge import (
     is_phase_torch_available,
     torch_parameter_shift_value_and_grad,
 )
+from .transform_nesting import (
+    GradientTransformNestingAuditResult,
+    GradientTransformNestingPlan,
+    assert_gradient_transform_nesting_supported,
+    plan_gradient_transform_nesting,
+    run_gradient_transform_nesting_audit,
+)
 from .trotter_error import trotter_error_norm, trotter_error_sweep
 from .trotter_upde import QuantumUPDESolver
 from .varqite import VarQITEResult, varqite_ground_state
@@ -323,6 +330,11 @@ __all__ = [
     "is_phase_torch_available",
     "torch_parameter_shift_value_and_grad",
     "PhaseTorchParameterShiftResult",
+    "GradientTransformNestingPlan",
+    "GradientTransformNestingAuditResult",
+    "plan_gradient_transform_nesting",
+    "assert_gradient_transform_nesting_supported",
+    "run_gradient_transform_nesting_audit",
     "is_phase_tensorflow_available",
     "tensorflow_parameter_shift_value_and_grad",
     "PhaseTensorFlowParameterShiftResult",
