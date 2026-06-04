@@ -393,6 +393,7 @@ from scpn_quantum_control.phase import (
     run_differentiable_workflow_audit_suite,
     run_finite_shot_gradient_uncertainty_audit,
     run_known_phase_gradient_audit,
+    run_ml_framework_gradient_audit,
     run_phase_gradient_benchmark_suite,
 )
 
@@ -405,11 +406,13 @@ finite_shot = run_finite_shot_gradient_uncertainty_audit(
     target_standard_error=0.02,
 )
 workflow = run_differentiable_workflow_audit_suite()
+ml = run_ml_framework_gradient_audit()
 
 print(report.passed, report.max_gradient_error, report.best_value)
 print(suite.passed, suite.benchmark_names, suite.worst_gradient_error)
 print(finite_shot.passed, finite_shot.max_standard_error)
 print(workflow.passed, workflow.workflow_names)
+print(ml.audit_passed, ml.executed_frameworks, ml.unavailable_frameworks)
 ```
 
 The report combines three independent checks: parameter-shift versus central
@@ -430,6 +433,10 @@ tasks.
 The workflow audit is the broadest current supported evidence path: it combines
 phase conformance, finite-shot uncertainty, coupling-gradient verification, and
 coupling-learning training certificates in one serialisable report.
+The ML-framework audit records JAX, PyTorch, TensorFlow, and PennyLane parity
+status against the native parameter-shift reference. It executes available
+adapters, records missing optional dependencies as unavailable, and blocks
+PennyLane execution until a caller supplies a QNode gradient callable.
 
 Coupling learning uses the same optimizer for inverse oscillator problems:
 

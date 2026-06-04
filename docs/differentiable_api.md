@@ -36,7 +36,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
-| Gradient audit evidence | `DifferentiableQuantumAuditReport`, `DifferentiableWorkflowAuditSuiteResult`, `FiniteShotGradientAuditResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `run_differentiable_workflow_audit_suite`, `run_finite_shot_gradient_uncertainty_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite` | Bundle finite-difference agreement, finite-shot uncertainty containment, analytic-gradient agreement, convergence evidence, coupling-learning checks, and multi-case phase-gradient conformance into reviewer-facing reports. |
+| Gradient audit evidence | `DifferentiableQuantumAuditReport`, `DifferentiableWorkflowAuditSuiteResult`, `FiniteShotGradientAuditResult`, `MLFrameworkGradientAuditSuiteResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `run_differentiable_workflow_audit_suite`, `run_finite_shot_gradient_uncertainty_audit`, `run_ml_framework_gradient_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite` | Bundle finite-difference agreement, finite-shot uncertainty containment, optional ML-framework parity, analytic-gradient agreement, convergence evidence, coupling-learning checks, and multi-case phase-gradient conformance into reviewer-facing reports. |
 | Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
@@ -207,6 +207,28 @@ entry point for the supported differentiable-programming surface. It does not
 claim arbitrary Python reverse-mode AD, live provider calibration, dynamic
 circuit topology, classical regressors without generator spectra, or
 mutation-heavy program IR semantics.
+
+For optional ML-framework parity status:
+
+```python
+from scpn_quantum_control.phase import run_ml_framework_gradient_audit
+
+
+ml = run_ml_framework_gradient_audit()
+
+print(ml.audit_passed)
+print(ml.executed_frameworks)
+print(ml.unavailable_frameworks)
+print(ml.blocked_frameworks)
+print(ml.failed_frameworks)
+```
+
+This report checks JAX, PyTorch, TensorFlow, and PennyLane routes without
+requiring those optional dependencies in the base installation. Importable
+adapters are compared against the native parameter-shift reference; missing
+dependencies are recorded as fail-closed unavailable. PennyLane remains blocked
+unless the caller supplies a QNode gradient callable, because a meaningful
+round-trip requires caller-owned circuit semantics.
 
 For finite-shot uncertainty evidence:
 

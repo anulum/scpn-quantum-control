@@ -9,22 +9,33 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import numpy as np
 import pytest
 
+import scpn_quantum_control.phase.differentiable_audit as audit_module
 from scpn_quantum_control.phase import (
     DifferentiableQuantumAuditReport,
     DifferentiableWorkflowAuditSuiteResult,
     FiniteShotGradientAuditResult,
+    MLFrameworkGradientAuditSuiteResult,
     ParameterShiftAnalyticAgreement,
     PhaseGradientBenchmarkSuiteResult,
     run_differentiable_workflow_audit_suite,
     run_finite_shot_gradient_uncertainty_audit,
     run_known_phase_gradient_audit,
+    run_ml_framework_gradient_audit,
     run_parameter_shift_audit_suite,
     run_phase_gradient_benchmark_suite,
     verify_parameter_shift_analytic_gradient,
 )
+
+
+@dataclass(frozen=True)
+class _FakeAdapterResult:
+    value: float
+    gradient: np.ndarray
 
 
 def test_run_known_phase_gradient_audit_passes_all_evidence_checks() -> None:
@@ -119,6 +130,57 @@ def test_run_differentiable_workflow_audit_suite_passes_supported_lanes() -> Non
     assert payload["passed"] is True
     assert "arbitrary Python program reverse-mode AD" in payload["unsupported_scenarios"]
     assert "coupling_learning" in payload
+
+
+def test_run_ml_framework_gradient_audit_records_unavailable_dependencies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(audit_module, "is_phase_jax_available", lambda: False)
+    monkeypatch.setattr(audit_module, "is_phase_torch_available", lambda: False)
+    monkeypatch.setattr(audit_module, "is_phase_tensorflow_available", lambda: False)
+    monkeypatch.setattr(audit_module, "is_phase_pennylane_available", lambda: False)
+
+    suite = run_ml_framework_gradient_audit()
+
+    assert isinstance(suite, MLFrameworkGradientAuditSuiteResult)
+    assert suite.audit_passed
+    assert suite.executed_frameworks == ()
+    assert suite.unavailable_frameworks == ("jax", "torch", "tensorflow", "pennylane")
+    assert suite.failed_frameworks == ()
+    payload = suite.to_dict()
+    assert payload["audit_passed"] is True
+    assert payload["unavailable_frameworks"] == ["jax", "torch", "tensorflow", "pennylane"]
+
+
+def test_run_ml_framework_gradient_audit_executes_available_adapter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(audit_module, "is_phase_jax_available", lambda: True)
+    monkeypatch.setattr(audit_module, "is_phase_torch_available", lambda: False)
+    monkeypatch.setattr(audit_module, "is_phase_tensorflow_available", lambda: False)
+    monkeypatch.setattr(audit_module, "is_phase_pennylane_available", lambda: False)
+
+    def fake_jax_adapter(
+        objective: audit_module.ScalarObjective,
+        values: np.ndarray,
+        **_kwargs: object,
+    ) -> _FakeAdapterResult:
+        params = np.asarray(values, dtype=float)
+        return _FakeAdapterResult(
+            value=float(objective(params)),
+            gradient=(np.sin(params) / params.size).astype(float),
+        )
+
+    monkeypatch.setattr(audit_module, "jax_parameter_shift_value_and_grad", fake_jax_adapter)
+
+    suite = run_ml_framework_gradient_audit()
+
+    assert suite.audit_passed
+    assert suite.executed_frameworks == ("jax",)
+    assert suite.failed_frameworks == ()
+    assert suite.records[0].status == "passed"
+    assert suite.records[0].max_abs_error is not None
+    assert suite.records[0].max_abs_error < 1e-12
 
 
 def test_run_phase_gradient_benchmark_suite_passes_all_cases() -> None:

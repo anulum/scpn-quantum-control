@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import cast
+from typing import Protocol, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -29,6 +29,7 @@ from .gradient_descent import (
     parameter_shift_gradient_descent,
     validate_parameter_shift_training,
 )
+from .jax_bridge import is_phase_jax_available, jax_parameter_shift_value_and_grad
 from .param_shift import (
     GradientVerificationResult,
     multi_frequency_parameter_shift_rule,
@@ -37,10 +38,24 @@ from .param_shift import (
     plan_parameter_shift_shots,
     verify_parameter_shift_gradient,
 )
+from .pennylane_bridge import is_phase_pennylane_available
+from .tensorflow_bridge import (
+    is_phase_tensorflow_available,
+    tensorflow_parameter_shift_value_and_grad,
+)
+from .torch_bridge import is_phase_torch_available, torch_parameter_shift_value_and_grad
 
 FloatArray = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
 AnalyticGradient = Callable[[FloatArray], ArrayLike]
+
+
+class _GradientAdapterResult(Protocol):
+    @property
+    def value(self) -> float: ...
+
+    @property
+    def gradient(self) -> FloatArray: ...
 
 
 def _as_finite_vector(name: str, values: ArrayLike) -> FloatArray:
@@ -180,6 +195,19 @@ def _shot_allocation_to_dict(result: ShotAllocationResult) -> dict[str, object]:
         "parameter_names": list(result.parameter_names),
         "trainable": list(result.trainable),
     }
+
+
+def _result_value_and_gradient(
+    result: _GradientAdapterResult,
+    *,
+    framework: str,
+) -> tuple[float, FloatArray]:
+    value = _as_finite_scalar(f"{framework} adapter value", result.value)
+    gradient = _as_finite_vector(
+        f"{framework} adapter gradient",
+        result.gradient,
+    )
+    return value, gradient
 
 
 @dataclass(frozen=True)
@@ -477,6 +505,144 @@ class FiniteShotGradientAuditResult:
         }
 
 
+@dataclass(frozen=True)
+class MLFrameworkGradientAuditRecord:
+    """Per-framework parity evidence for optional ML gradient adapters."""
+
+    framework: str
+    available: bool
+    executed: bool
+    status: str
+    reason: str
+    value: float | None
+    gradient: FloatArray | None
+    reference_gradient: FloatArray
+    abs_error: FloatArray | None
+    max_abs_error: float | None
+    tolerance: float
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.framework:
+            raise ValueError("framework must be non-empty")
+        if not isinstance(self.available, bool) or not isinstance(self.executed, bool):
+            raise ValueError("available and executed must be booleans")
+        if self.status not in {"passed", "failed", "unavailable", "blocked"}:
+            raise ValueError("status must be passed, failed, unavailable, or blocked")
+        if not self.reason:
+            raise ValueError("reason must be non-empty")
+        reference = _as_finite_vector("reference_gradient", self.reference_gradient)
+        tolerance = _as_finite_scalar("tolerance", self.tolerance)
+        if tolerance < 0.0:
+            raise ValueError("tolerance must be finite and non-negative")
+        value = None if self.value is None else _as_finite_scalar("adapter value", self.value)
+        gradient = (
+            None if self.gradient is None else _as_finite_vector("adapter gradient", self.gradient)
+        )
+        abs_error = (
+            None if self.abs_error is None else _as_finite_vector("abs_error", self.abs_error)
+        )
+        if gradient is not None and gradient.shape != reference.shape:
+            raise ValueError("adapter gradient shape must match reference_gradient")
+        if abs_error is not None and abs_error.shape != reference.shape:
+            raise ValueError("abs_error shape must match reference_gradient")
+        max_abs_error = (
+            None
+            if self.max_abs_error is None
+            else _as_finite_scalar("max_abs_error", self.max_abs_error)
+        )
+        if max_abs_error is not None and max_abs_error < 0.0:
+            raise ValueError("max_abs_error must be non-negative")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "reference_gradient", reference)
+        object.__setattr__(self, "tolerance", tolerance)
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "abs_error", abs_error)
+        object.__setattr__(self, "max_abs_error", max_abs_error)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready per-framework ML parity evidence."""
+        return {
+            "framework": self.framework,
+            "available": self.available,
+            "executed": self.executed,
+            "status": self.status,
+            "reason": self.reason,
+            "value": self.value,
+            "gradient": None if self.gradient is None else self.gradient.tolist(),
+            "reference_gradient": self.reference_gradient.tolist(),
+            "abs_error": None if self.abs_error is None else self.abs_error.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "tolerance": self.tolerance,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class MLFrameworkGradientAuditSuiteResult:
+    """Fail-closed parity report for optional ML gradient adapters."""
+
+    records: tuple[MLFrameworkGradientAuditRecord, ...]
+    audit_passed: bool
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.records:
+            raise ValueError("records must be non-empty")
+        frameworks = [record.framework for record in self.records]
+        if len(frameworks) != len(set(frameworks)):
+            raise ValueError("framework records must be unique")
+        if not isinstance(self.audit_passed, bool):
+            raise ValueError("audit_passed must be a boolean")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+
+    @property
+    def executed_frameworks(self) -> tuple[str, ...]:
+        """Return frameworks whose adapters were executed."""
+        return tuple(record.framework for record in self.records if record.executed)
+
+    @property
+    def unavailable_frameworks(self) -> tuple[str, ...]:
+        """Return frameworks whose optional dependencies were unavailable."""
+        return tuple(record.framework for record in self.records if record.status == "unavailable")
+
+    @property
+    def blocked_frameworks(self) -> tuple[str, ...]:
+        """Return frameworks available but not executable without caller-owned objects."""
+        return tuple(record.framework for record in self.records if record.status == "blocked")
+
+    @property
+    def failed_frameworks(self) -> tuple[str, ...]:
+        """Return frameworks that executed and failed parity."""
+        return tuple(record.framework for record in self.records if record.status == "failed")
+
+    @property
+    def worst_executed_error(self) -> float:
+        """Return the largest error across executed ML adapters."""
+        errors = [
+            record.max_abs_error
+            for record in self.records
+            if record.executed and record.max_abs_error is not None
+        ]
+        return max(errors) if errors else 0.0
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready ML framework parity evidence."""
+        return {
+            "records": [record.to_dict() for record in self.records],
+            "audit_passed": self.audit_passed,
+            "executed_frameworks": list(self.executed_frameworks),
+            "unavailable_frameworks": list(self.unavailable_frameworks),
+            "blocked_frameworks": list(self.blocked_frameworks),
+            "failed_frameworks": list(self.failed_frameworks),
+            "worst_executed_error": self.worst_executed_error,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def verify_parameter_shift_analytic_gradient(
     objective: ScalarObjective,
     analytic_gradient: AnalyticGradient,
@@ -509,6 +675,206 @@ def verify_parameter_shift_analytic_gradient(
         claim_boundary=(
             "analytic-gradient agreement for smooth parameter-shift-compatible "
             "objectives with caller-supplied closed-form gradients"
+        ),
+    )
+
+
+def _ml_record_unavailable(
+    framework: str,
+    reference_gradient: FloatArray,
+    tolerance: float,
+    reason: str,
+) -> MLFrameworkGradientAuditRecord:
+    return MLFrameworkGradientAuditRecord(
+        framework=framework,
+        available=False,
+        executed=False,
+        status="unavailable",
+        reason=reason,
+        value=None,
+        gradient=None,
+        reference_gradient=reference_gradient,
+        abs_error=None,
+        max_abs_error=None,
+        tolerance=tolerance,
+        claim_boundary=(
+            "optional ML-framework dependency was absent; audit records a "
+            "fail-closed unavailable status instead of pretending parity"
+        ),
+    )
+
+
+def _ml_record_blocked(
+    framework: str,
+    reference_gradient: FloatArray,
+    tolerance: float,
+    reason: str,
+) -> MLFrameworkGradientAuditRecord:
+    return MLFrameworkGradientAuditRecord(
+        framework=framework,
+        available=True,
+        executed=False,
+        status="blocked",
+        reason=reason,
+        value=None,
+        gradient=None,
+        reference_gradient=reference_gradient,
+        abs_error=None,
+        max_abs_error=None,
+        tolerance=tolerance,
+        claim_boundary=(
+            "framework is importable but this audit requires caller-owned "
+            "objects before parity execution can be meaningful"
+        ),
+    )
+
+
+def _ml_record_executed(
+    framework: str,
+    reference_gradient: FloatArray,
+    tolerance: float,
+    value: float,
+    gradient: FloatArray,
+) -> MLFrameworkGradientAuditRecord:
+    if gradient.shape != reference_gradient.shape:
+        raise ValueError(f"{framework} adapter gradient shape must match reference")
+    abs_error = np.abs(gradient - reference_gradient)
+    max_abs_error = float(np.max(abs_error)) if abs_error.size else 0.0
+    passed = max_abs_error <= tolerance
+    return MLFrameworkGradientAuditRecord(
+        framework=framework,
+        available=True,
+        executed=True,
+        status="passed" if passed else "failed",
+        reason="adapter gradient matched native parameter-shift reference"
+        if passed
+        else "adapter gradient differed from native parameter-shift reference",
+        value=value,
+        gradient=gradient,
+        reference_gradient=reference_gradient,
+        abs_error=abs_error,
+        max_abs_error=max_abs_error,
+        tolerance=tolerance,
+        claim_boundary=(
+            "adapter parity for a smooth local parameter-shift objective; not "
+            "a full training-loop, accelerator, or graph-compilation certificate"
+        ),
+    )
+
+
+def run_ml_framework_gradient_audit(
+    objective: ScalarObjective | None = None,
+    initial_values: ArrayLike | None = None,
+    *,
+    rule: ParameterShiftRule | None = None,
+    tolerance: float = 1.0e-8,
+    pennylane_gradient: AnalyticGradient | None = None,
+) -> MLFrameworkGradientAuditSuiteResult:
+    """Run fail-closed parity checks for optional ML gradient adapters."""
+    values = (
+        np.array([0.3, -0.2], dtype=np.float64)
+        if initial_values is None
+        else _as_finite_vector("initial_values", initial_values)
+    )
+    tolerance_value = _as_finite_scalar("tolerance", tolerance)
+    if tolerance_value < 0.0:
+        raise ValueError("tolerance must be finite and non-negative")
+
+    def default_objective(theta: FloatArray) -> float:
+        return float(np.mean(1.0 - np.cos(theta)))
+
+    selected_objective = default_objective if objective is None else objective
+    reference_gradient = parameter_shift_gradient(selected_objective, values, rule=rule)
+    records: list[MLFrameworkGradientAuditRecord] = []
+
+    if is_phase_jax_available():
+        value, gradient = _result_value_and_gradient(
+            jax_parameter_shift_value_and_grad(selected_objective, values, rule=rule),
+            framework="jax",
+        )
+        records.append(
+            _ml_record_executed("jax", reference_gradient, tolerance_value, value, gradient)
+        )
+    else:
+        records.append(
+            _ml_record_unavailable(
+                "jax",
+                reference_gradient,
+                tolerance_value,
+                "JAX is not importable in this environment",
+            )
+        )
+
+    if is_phase_torch_available():
+        value, gradient = _result_value_and_gradient(
+            torch_parameter_shift_value_and_grad(selected_objective, values, rule=rule),
+            framework="torch",
+        )
+        records.append(
+            _ml_record_executed("torch", reference_gradient, tolerance_value, value, gradient)
+        )
+    else:
+        records.append(
+            _ml_record_unavailable(
+                "torch",
+                reference_gradient,
+                tolerance_value,
+                "PyTorch is not importable in this environment",
+            )
+        )
+
+    if is_phase_tensorflow_available():
+        value, gradient = _result_value_and_gradient(
+            tensorflow_parameter_shift_value_and_grad(selected_objective, values, rule=rule),
+            framework="tensorflow",
+        )
+        records.append(
+            _ml_record_executed("tensorflow", reference_gradient, tolerance_value, value, gradient)
+        )
+    else:
+        records.append(
+            _ml_record_unavailable(
+                "tensorflow",
+                reference_gradient,
+                tolerance_value,
+                "TensorFlow is not importable in this environment",
+            )
+        )
+
+    if not is_phase_pennylane_available():
+        records.append(
+            _ml_record_unavailable(
+                "pennylane",
+                reference_gradient,
+                tolerance_value,
+                "PennyLane is not importable in this environment",
+            )
+        )
+    elif pennylane_gradient is None:
+        records.append(
+            _ml_record_blocked(
+                "pennylane",
+                reference_gradient,
+                tolerance_value,
+                "PennyLane parity requires a caller-supplied QNode gradient callable",
+            )
+        )
+    else:
+        gradient = _as_finite_vector("pennylane_gradient", pennylane_gradient(values.copy()))
+        value = _as_finite_scalar("pennylane objective value", selected_objective(values.copy()))
+        records.append(
+            _ml_record_executed("pennylane", reference_gradient, tolerance_value, value, gradient)
+        )
+
+    audit_passed = all(record.status != "failed" for record in records)
+    return MLFrameworkGradientAuditSuiteResult(
+        records=tuple(records),
+        audit_passed=audit_passed,
+        claim_boundary=(
+            "optional ML-framework parity audit for smooth local "
+            "parameter-shift objectives; unavailable dependencies are recorded "
+            "fail-closed, and this is not a full accelerator, autograd graph, "
+            "or framework-native training-loop certificate"
         ),
     )
 
@@ -903,12 +1269,15 @@ __all__ = [
     "DifferentiableQuantumAuditReport",
     "DifferentiableWorkflowAuditSuiteResult",
     "FiniteShotGradientAuditResult",
+    "MLFrameworkGradientAuditRecord",
+    "MLFrameworkGradientAuditSuiteResult",
     "ParameterShiftAnalyticAgreement",
     "PhaseGradientBenchmarkSuiteResult",
     "ScalarObjective",
     "run_differentiable_workflow_audit_suite",
     "run_finite_shot_gradient_uncertainty_audit",
     "run_known_phase_gradient_audit",
+    "run_ml_framework_gradient_audit",
     "run_parameter_shift_audit_suite",
     "run_phase_gradient_benchmark_suite",
     "verify_parameter_shift_analytic_gradient",
