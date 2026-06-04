@@ -462,6 +462,25 @@ terms; the objective can train them with exact term-wise gradients, but it
 fails closed if a caller requires a pure parameter-shift objective. This keeps
 hybrid quantum-control objectives useful without overstating the gradient mode.
 
+Use the built-in audit when documentation, notebooks, or reviews need visible
+evidence:
+
+```python
+from scpn_quantum_control.phase import run_composed_objective_audit_suite
+
+
+audit = run_composed_objective_audit_suite()
+
+print(audit.passed)
+print(audit.pure_gradient.max_abs_error)
+print(audit.hybrid_parameter_shift_gate_failed)
+```
+
+The audit verifies exact term-wise gradients against finite differences for a
+pure periodic objective and a hybrid objective with an analytic safety term,
+then trains both with exact term gradients. It also records why the hybrid
+objective is unsuitable for pure parameter-shift execution.
+
 The QSNN trainer composes with the same route for full-batch quantum neural
 network training:
 

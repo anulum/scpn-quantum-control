@@ -81,6 +81,12 @@ from .natural_gradient import (
     solve_natural_gradient_direction,
     validate_natural_gradient_training,
 )
+from .objective_audit import (
+    ComposedObjectiveAuditSuiteResult,
+    ComposedObjectiveGradientAgreement,
+    run_composed_objective_audit_suite,
+    verify_composed_objective_gradient,
+)
 from .objectives import (
     ComposedObjectiveTrainingCertificate,
     ComposedObjectiveTrainingResult,
@@ -246,6 +252,10 @@ __all__ = [
     "ComposedObjectiveTrainingStep",
     "ComposedObjectiveTrainingResult",
     "ComposedObjectiveTrainingCertificate",
+    "verify_composed_objective_gradient",
+    "run_composed_objective_audit_suite",
+    "ComposedObjectiveGradientAgreement",
+    "ComposedObjectiveAuditSuiteResult",
     "gradient_tape",
     "QuantumGradientTape",
     "TapeGradientRecord",
