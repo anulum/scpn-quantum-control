@@ -367,6 +367,51 @@ future policy enables them, non-finite objectives are rejected, and line-search
 failure is recorded as `reason="line_search_failed"` instead of being promoted
 as convergence.
 
+## Parameter-shift natural gradient
+
+For metric-aware training, the phase namespace now exposes a bounded natural
+gradient route. It computes native parameter-shift gradients, validates an
+explicit metric tensor or callable metric, solves the damped system
+`(metric + damping I) direction = gradient`, and then applies the same
+fail-closed Armijo line-search discipline used by the ordinary descent route:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    parameter_shift_natural_gradient_descent,
+    validate_natural_gradient_training,
+)
+
+
+def objective(params: np.ndarray) -> float:
+    return float((1.0 - np.cos(params[0])) + 0.05 * (1.0 - np.cos(params[1])))
+
+
+metric = np.diag(np.array([1.0, 0.05]))
+run = parameter_shift_natural_gradient_descent(
+    objective,
+    np.array([0.8, 0.8]),
+    metric_tensor=metric,
+    learning_rate=0.4,
+    max_steps=20,
+)
+certificate = validate_natural_gradient_training(
+    run,
+    min_decrease=0.1,
+)
+
+print(run.best_value, certificate.monotone_accepted_values)
+```
+
+`ParameterShiftNaturalGradientResult` records metric source, damping,
+condition-number limits, accepted/rejected steps, backend plan, shift-term
+count, final Euclidean and natural-gradient norms, and a claim boundary. The
+identity metric is allowed as a reproducible preconditioner baseline, but it is
+labelled as such and is not a claim of quantum Fisher extraction. Non-symmetric
+metrics, wrong shapes, non-finite entries, singular regularised systems, unsafe
+hardware backends, and non-descent metrics fail closed.
+
 The QSNN trainer composes with the same route for full-batch quantum neural
 network training:
 

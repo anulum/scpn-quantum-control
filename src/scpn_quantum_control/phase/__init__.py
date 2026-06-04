@@ -72,6 +72,15 @@ from .kuramoto_variants import (
     simulate_pt_symmetric_kuramoto,
 )
 from .lindblad_engine import LindbladSyncEngine
+from .natural_gradient import (
+    NaturalGradientDirection,
+    ParameterShiftNaturalGradientCertificate,
+    ParameterShiftNaturalGradientResult,
+    ParameterShiftNaturalGradientStep,
+    parameter_shift_natural_gradient_descent,
+    solve_natural_gradient_direction,
+    validate_natural_gradient_training,
+)
 from .param_shift import (
     GradientVerificationResult,
     HessianVerificationResult,
@@ -190,6 +199,13 @@ __all__ = [
     "ParameterShiftTrainingCertificate",
     "ParameterShiftTrainingResult",
     "ParameterShiftTrainingStep",
+    "parameter_shift_natural_gradient_descent",
+    "validate_natural_gradient_training",
+    "solve_natural_gradient_direction",
+    "NaturalGradientDirection",
+    "ParameterShiftNaturalGradientCertificate",
+    "ParameterShiftNaturalGradientResult",
+    "ParameterShiftNaturalGradientStep",
     "gradient_tape",
     "QuantumGradientTape",
     "TapeGradientRecord",

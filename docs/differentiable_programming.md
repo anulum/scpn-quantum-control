@@ -25,11 +25,11 @@ This repository now documents those questions directly. Current support is delib
 
 | Surface | Status | Evidence route |
 |---|---|---|
-| Parameter-shift gradients | Available for callable scalar objectives, structured `PhaseVQE` gradients, and local gradient-descent VQE examples through `scpn_quantum_control.phase.param_shift`. | [Quantum Gradients](quantum_gradients.md), [Variational Methods](variational.md) |
+| Parameter-shift gradients | Available for callable scalar objectives, structured `PhaseVQE` gradients, local gradient-descent VQE examples, and metric-aware natural-gradient descent through `scpn_quantum_control.phase`. | [Quantum Gradients](quantum_gradients.md), [Variational Methods](variational.md) |
 | Compiler/program AD | Available for supported scalar, vector, and matrix primitives with registry contracts, lowering reports, and native executable kernels on bounded paths. | [Differentiable API](differentiable_api.md), [Quickstart](quickstart.md) |
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
-| JAX, PyTorch, TensorFlow adapters | Planned staged surfaces, not production-complete. | [Differentiable Roadmap](differentiable_roadmap.md) |
+| JAX, PyTorch, TensorFlow adapters | Optional parameter-shift value-and-gradient bridges plus a fail-closed ML parity audit are available for supported phase objectives; native framework autodiff through arbitrary simulators remains open. | [Differentiable Roadmap](differentiable_roadmap.md), [Quantum Gradients](quantum_gradients.md) |
 | Gradient tape | MVP available for supported phase parameter-shift records; arbitrary Python and programme-IR tape semantics remain open. | [Quantum Gradients](quantum_gradients.md), [Differentiable Roadmap](differentiable_roadmap.md) |
 | QNN/QGNN/QSNN training lane | Partly represented in existing QSNN and neural-state work; production convergence notebooks remain planned. | [Notebooks](notebooks.md) |
 
@@ -56,7 +56,7 @@ This repository now documents those questions directly. Current support is delib
 The next differentiable-programming implementation rounds should prioritise:
 
 1. broader finite-difference verification for larger circuits;
-2. multi-start convergence studies on known ground states;
+2. multi-start convergence studies on known ground states, including natural-gradient and derivative-free baselines;
 3. JAX agreement with manual parameter-shift;
 4. PennyLane adapter round-trip tests;
 5. QSNN training convergence tests;
