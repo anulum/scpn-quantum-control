@@ -20,12 +20,22 @@ from ..differentiable import (
     GradientResult,
     Parameter,
     ParameterShiftRule,
+    ShotAllocationResult,
+    StochasticGradientResult,
+    allocate_parameter_shift_shots,
     value_and_parameter_shift_grad,
 )
 from ..differentiable import (
     parameter_shift_gradient as _core_parameter_shift_gradient,
 )
+from ..differentiable import (
+    parameter_shift_gradient_with_uncertainty as _core_parameter_shift_gradient_with_uncertainty,
+)
 from ..hardware.classical import classical_exact_diag
+from .gradient_backend import (
+    QuantumGradientPlan,
+    plan_quantum_gradient_backend,
+)
 from .phase_vqe import PhaseVQE
 
 FloatArray = NDArray[np.float64]
@@ -112,6 +122,19 @@ def _normalise_iteration_count(
     return int(count)
 
 
+def _shot_vector(shots: int | ArrayLike, width: int) -> FloatArray:
+    if isinstance(shots, bool):
+        raise ValueError("shots must be a positive integer or one-dimensional shot array")
+    if isinstance(shots, int):
+        if shots <= 0:
+            raise ValueError("shots must be positive")
+        return np.full(width, float(shots), dtype=np.float64)
+    values = _as_finite_vector("shots", shots, width=width)
+    if not np.all(values > 0.0) or not np.allclose(values, np.round(values)):
+        raise ValueError("shots must contain positive integers")
+    return values
+
+
 def parameter_shift_gradient(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -139,6 +162,66 @@ def parameter_shift_gradient(
         values,
         parameters=parameters,
         rule=rule,
+    )
+
+
+def parameter_shift_gradient_with_uncertainty(
+    plus_values: ArrayLike,
+    minus_values: ArrayLike,
+    plus_variances: ArrayLike,
+    minus_variances: ArrayLike,
+    *,
+    shots: int | ArrayLike,
+    backend: str = "finite_shot_simulator",
+    value: float = 0.0,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+    confidence_level: float = 0.95,
+    confidence_z: float = 1.959963984540054,
+) -> StochasticGradientResult:
+    """Return finite-shot parameter-shift gradients with propagated uncertainty."""
+    plus = _as_finite_vector("plus_values", plus_values)
+    shot_counts = _shot_vector(shots, plus.size)
+    plan = plan_quantum_gradient_backend(
+        backend,
+        n_params=plus.size,
+        method="stochastic_parameter_shift",
+        shots=int(np.max(shot_counts)),
+        finite_shot=True,
+        confidence_level=confidence_level,
+    )
+    if plan.fail_closed:
+        joined = "; ".join(plan.reasons)
+        raise ValueError(f"backend gradient plan is unsupported: {joined}")
+    return _core_parameter_shift_gradient_with_uncertainty(
+        plus,
+        minus_values,
+        plus_variances,
+        minus_variances,
+        shot_counts,
+        value=value,
+        parameters=parameters,
+        rule=rule,
+        confidence_level=confidence_level,
+        confidence_z=confidence_z,
+    )
+
+
+def plan_parameter_shift_shots(
+    plus_variances: ArrayLike,
+    minus_variances: ArrayLike,
+    *,
+    target_standard_error: float,
+    min_shots: int = 1,
+    max_shots_per_evaluation: int | None = None,
+) -> ShotAllocationResult:
+    """Plan finite-shot allocations for parameter-shift gradients."""
+    return allocate_parameter_shift_shots(
+        plus_variances,
+        minus_variances,
+        target_standard_error=target_standard_error,
+        min_shots=min_shots,
+        max_shots_per_evaluation=max_shots_per_evaluation,
     )
 
 
@@ -264,7 +347,13 @@ __all__ = [
     "ParamShiftVQEResult",
     "Parameter",
     "ParameterShiftRule",
+    "QuantumGradientPlan",
+    "ShotAllocationResult",
+    "StochasticGradientResult",
     "parameter_shift_gradient",
+    "parameter_shift_gradient_with_uncertainty",
+    "plan_parameter_shift_shots",
+    "plan_quantum_gradient_backend",
     "value_and_parameter_shift_grad",
     "value_and_vqe_grad",
     "vqe_with_param_shift",

@@ -17,6 +17,7 @@ from scpn_quantum_control.phase import vqe_with_param_shift
 from scpn_quantum_control.phase.param_shift import (
     ParamShiftVQEResult,
     parameter_shift_gradient,
+    plan_quantum_gradient_backend,
     value_and_vqe_grad,
 )
 from scpn_quantum_control.phase.phase_vqe import PhaseVQE
@@ -47,6 +48,13 @@ def test_phase_param_shift_module_exports_core_gradient() -> None:
     grad = parameter_shift_gradient(objective, params, shift=np.pi / 2.0)
     expected = np.array([-np.sin(params[0]), 0.25 * np.cos(params[1])], dtype=float)
     np.testing.assert_allclose(grad, expected, atol=1e-12)
+
+
+def test_phase_param_shift_module_exports_backend_planner() -> None:
+    plan = plan_quantum_gradient_backend("statevector_simulator", n_params=2)
+
+    assert plan.supported
+    assert plan.method == "parameter_shift"
 
 
 def test_phase_vqe_parameter_shift_matches_finite_difference() -> None:

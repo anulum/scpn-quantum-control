@@ -16,6 +16,7 @@ This page maps the public differentiable-programming namespace and the related q
 |---|---|
 | `scpn_quantum_control.differentiable` | AD data structures, primitive registry contracts, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
+| `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, and support-profile reports. |
 
 ## Common objects
@@ -26,7 +27,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Forward and reverse AD results | `GradientResult`, `JacobianResult`, `HessianResult`, `JVPResult`, `HVPResult`, `ProgramADAdjointResult` | Return structured derivative outputs and diagnostics. |
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
-| Backend and shot planning | `ShotAllocationResult`, support-profile records | Prepare future finite-shot and backend-aware gradient execution. |
+| Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
 
 ## Minimal parameter-shift call
 
@@ -60,6 +61,25 @@ print(result["gradient_method"], result["n_grad_evals"])
 The solver switches derivative-free defaults to a gradient-aware local
 optimiser for this mode and returns gradient evaluation counts plus the final
 gradient norm.
+
+## Minimal backend gradient plan
+
+```python
+from scpn_quantum_control.phase import plan_quantum_gradient_backend
+
+plan = plan_quantum_gradient_backend("statevector", n_params=4)
+assert plan.method == "parameter_shift"
+```
+
+For finite-shot simulator diagnostics:
+
+```python
+plan = plan_quantum_gradient_backend("qasm_simulator", n_params=4, shots=4096)
+assert plan.method == "stochastic_parameter_shift"
+```
+
+Hardware backends intentionally return an unsupported plan by default. That is a
+safety boundary, not a missing exception.
 
 ## Minimal custom primitive route
 

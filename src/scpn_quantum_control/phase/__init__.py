@@ -16,6 +16,12 @@ from .ansatz_methodology import AnsatzBenchmarkResult
 from .avqds import AVQDSResult, avqds_simulate
 from .cross_domain_transfer import TransferResult, build_systems, transfer_experiment
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
+from .gradient_backend import (
+    QuantumGradientBackendCapability,
+    QuantumGradientPlan,
+    plan_quantum_gradient_backend,
+    quantum_gradient_backend_capability,
+)
 from .kuramoto_variants import (
     HigherOrderKuramotoSpec,
     KuramotoVariant,
@@ -31,6 +37,8 @@ from .lindblad_engine import LindbladSyncEngine
 from .param_shift import (
     ParamShiftVQEResult,
     parameter_shift_gradient,
+    parameter_shift_gradient_with_uncertainty,
+    plan_parameter_shift_shots,
     value_and_parameter_shift_grad,
     value_and_vqe_grad,
     vqe_with_param_shift,
@@ -76,9 +84,15 @@ __all__ = [
     "floquet_evolve",
     "scan_drive_amplitude",
     "FloquetResult",
+    "quantum_gradient_backend_capability",
+    "plan_quantum_gradient_backend",
+    "QuantumGradientBackendCapability",
+    "QuantumGradientPlan",
     "build_structured_ansatz",
     "LindbladSyncEngine",
     "parameter_shift_gradient",
+    "parameter_shift_gradient_with_uncertainty",
+    "plan_parameter_shift_shots",
     "value_and_parameter_shift_grad",
     "value_and_vqe_grad",
     "vqe_with_param_shift",

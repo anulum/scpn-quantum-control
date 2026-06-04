@@ -59,6 +59,44 @@ The implementation is local-simulator backed. Hardware gradients remain
 fail-closed until backend policy, shot allocation, and uncertainty reporting are
 registered for the target provider.
 
+## Backend gradient planner
+
+The phase namespace includes a fail-closed planner for quantum-gradient method
+selection:
+
+```python
+from scpn_quantum_control.phase import plan_quantum_gradient_backend
+
+plan = plan_quantum_gradient_backend("qasm_simulator", n_params=4, shots=4096)
+print(plan.method, plan.evaluations, plan.shots)
+```
+
+Current planner behaviour:
+
+| Backend family | Default method | Status |
+|---|---|---|
+| `statevector_simulator` | `parameter_shift` | Supported for deterministic local expectations. |
+| `finite_shot_simulator` | `stochastic_parameter_shift` | Supported with explicit shots and uncertainty metadata. |
+| `hardware_qpu` | `unsupported` | Fails closed unless a later hardware policy explicitly enables execution. |
+| Unknown backend | `unsupported` | Fails closed and suggests local simulator alternatives. |
+
+Finite-shot uncertainty can be propagated from plus/minus expectation variances:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import parameter_shift_gradient_with_uncertainty
+
+result = parameter_shift_gradient_with_uncertainty(
+    plus_values=np.array([1.2, -0.3]),
+    minus_values=np.array([0.8, -0.7]),
+    plus_variances=np.array([0.04, 0.09]),
+    minus_variances=np.array([0.04, 0.09]),
+    shots=4096,
+)
+print(result.gradient, result.standard_error)
+```
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:
@@ -71,9 +109,9 @@ Before a new quantum-gradient path is promoted, it needs visible evidence:
 | Cross-framework agreement | Compares against JAX, PennyLane, Qiskit, PyTorch, or TensorFlow where applicable. |
 | Unsupported-operation tests | Confirms fail-closed behaviour for gates, backends, and observables without valid gradient rules. |
 
-## Planned backend gradient planner
+## Backend gradient methods
 
-The backend planner should eventually classify each execution path as one of:
+The backend planner classifies each execution path as one of:
 
 - analytic parameter-shift;
 - generalized parameter-shift;
@@ -83,7 +121,8 @@ The backend planner should eventually classify each execution path as one of:
 - SPSA-style fallback;
 - unsupported fail-closed mode.
 
-Each gradient result should report the selected method, backend, shots, seed, estimator uncertainty, unsupported alternatives, and transformation provenance.
+Each gradient plan reports the selected method, backend, shots, seed, estimator
+uncertainty policy, unsupported alternatives, and fail-closed reasons.
 
 ## Suitable and unsuitable scenarios
 
@@ -91,7 +130,7 @@ Each gradient result should report the selected method, backend, shots, seed, es
 |---|---|
 | Small Pauli-rotation expectation objective | Suitable for parameter-shift. |
 | Gradient-trained Kuramoto-XY VQE | Current implementation route; convergence evidence must be attached. |
-| Noisy finite-shot backend | Requires variance estimates and explicit shot policy. |
+| Noisy finite-shot backend | Supported for uncertainty propagation when plus/minus variances and shots are supplied. |
 | Hardware execution | Must remain disabled by default until a hardware-safe gradient policy exists. |
 | Gate without registered generator spectrum | Unsupported; fail closed. |
 | Dynamic circuit topology or parameter count | Unsupported unless the trace records stable parameter identity. |
