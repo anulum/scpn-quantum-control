@@ -36,7 +36,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
-| Gradient audit evidence | `DifferentiableQuantumAuditReport`, `ParameterShiftAnalyticAgreement`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite` | Bundle finite-difference agreement, analytic-gradient agreement, and convergence evidence into reviewer-facing reports. |
+| Gradient audit evidence | `DifferentiableQuantumAuditReport`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite` | Bundle finite-difference agreement, analytic-gradient agreement, convergence evidence, and multi-case phase-gradient conformance into reviewer-facing reports. |
 | Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
@@ -164,6 +164,26 @@ certificate. The built-in benchmark is a smooth phase-rotation objective,
 `mean(1 - cos(theta_i))`, with exact gradient `sin(theta_i) / n`.
 Discontinuous objectives, stochastic hardware shots, arbitrary regressors, and
 undeclared generator spectra are explicitly outside this report boundary.
+
+For a wider built-in conformance pass, use the benchmark suite:
+
+```python
+from scpn_quantum_control.phase import run_phase_gradient_benchmark_suite
+
+
+suite = run_phase_gradient_benchmark_suite()
+
+print(suite.passed)
+print(suite.benchmark_names)
+print(suite.worst_gradient_error)
+print(suite.unsupported_scenarios)
+```
+
+The suite currently covers single-frequency phase rotations, multi-frequency
+phase rotations using a declared shift rule, and a coupled pair phase loss.
+This is the recommended CI and paper-table entry point when users need visible
+evidence that the differentiable-programming surface handles more than one
+toy gradient.
 
 ## Minimal differentiable coupling learning
 

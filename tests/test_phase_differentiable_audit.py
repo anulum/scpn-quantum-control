@@ -15,8 +15,10 @@ import pytest
 from scpn_quantum_control.phase import (
     DifferentiableQuantumAuditReport,
     ParameterShiftAnalyticAgreement,
+    PhaseGradientBenchmarkSuiteResult,
     run_known_phase_gradient_audit,
     run_parameter_shift_audit_suite,
+    run_phase_gradient_benchmark_suite,
     verify_parameter_shift_analytic_gradient,
 )
 
@@ -56,6 +58,29 @@ def test_verify_parameter_shift_analytic_gradient_matches_closed_form() -> None:
     assert certificate.max_abs_error < 1e-12
     assert certificate.evaluations == 4
     assert certificate.to_dict()["method"] == "parameter_shift_vs_analytic_gradient"
+
+
+def test_run_phase_gradient_benchmark_suite_passes_all_cases() -> None:
+    suite = run_phase_gradient_benchmark_suite()
+
+    assert isinstance(suite, PhaseGradientBenchmarkSuiteResult)
+    assert suite.passed
+    assert suite.benchmark_names == (
+        "single_frequency_phase_rotation",
+        "multi_frequency_phase_rotation",
+        "coupled_pair_phase_rotation",
+    )
+    assert len(suite.reports) == 3
+    assert suite.worst_gradient_error < 1e-5
+    assert all(value < 1e-8 for value in suite.best_values)
+    payload = suite.to_dict()
+    assert payload["passed"] is True
+    assert payload["benchmark_names"] == list(suite.benchmark_names)
+    assert len(payload["reports"]) == 3
+    assert (
+        "shot-noisy hardware gradients without uncertainty certificates"
+        in payload["unsupported_scenarios"]
+    )
 
 
 def test_run_parameter_shift_audit_suite_rejects_bad_analytic_shape() -> None:

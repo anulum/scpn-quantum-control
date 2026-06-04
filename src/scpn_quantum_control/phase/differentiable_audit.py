@@ -24,6 +24,7 @@ from .gradient_descent import (
 )
 from .param_shift import (
     GradientVerificationResult,
+    multi_frequency_parameter_shift_rule,
     parameter_shift_gradient,
     verify_parameter_shift_gradient,
 )
@@ -166,6 +167,58 @@ class DifferentiableQuantumAuditReport:
             "task": self.task,
             "best_value": self.best_value,
             "max_gradient_error": self.max_gradient_error,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseGradientBenchmarkSuiteResult:
+    """Aggregate result for the built-in phase-gradient conformance suite."""
+
+    benchmark_names: tuple[str, ...]
+    reports: tuple[DifferentiableQuantumAuditReport, ...]
+    unsupported_scenarios: tuple[str, ...]
+    passed: bool
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.benchmark_names:
+            raise ValueError("benchmark_names must be non-empty")
+        if len(self.benchmark_names) != len(self.reports):
+            raise ValueError("benchmark_names length must match reports length")
+        if any(not name for name in self.benchmark_names):
+            raise ValueError("benchmark_names must contain non-empty names")
+        if not self.unsupported_scenarios:
+            raise ValueError("unsupported_scenarios must be non-empty")
+        if any(not item for item in self.unsupported_scenarios):
+            raise ValueError("unsupported_scenarios must contain non-empty items")
+        if not isinstance(self.passed, bool):
+            raise ValueError("passed must be a boolean")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+
+    @property
+    def worst_gradient_error(self) -> float:
+        """Return the largest gradient error across all benchmark reports."""
+        return max(report.max_gradient_error for report in self.reports)
+
+    @property
+    def best_values(self) -> tuple[float, ...]:
+        """Return best objective values for each benchmark case."""
+        return tuple(report.best_value for report in self.reports)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready benchmark-suite evidence."""
+        return {
+            "benchmark_names": list(self.benchmark_names),
+            "reports": [
+                {"name": name, "report": report.to_dict()}
+                for name, report in zip(self.benchmark_names, self.reports, strict=True)
+            ],
+            "unsupported_scenarios": list(self.unsupported_scenarios),
+            "passed": self.passed,
+            "worst_gradient_error": self.worst_gradient_error,
+            "best_values": list(self.best_values),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -317,12 +370,120 @@ def run_known_phase_gradient_audit(
     )
 
 
+def run_phase_gradient_benchmark_suite(
+    *,
+    learning_rate: float = 0.35,
+    max_steps: int = 100,
+    finite_difference_step: float = 1.0e-6,
+    finite_difference_tolerance: float = 1.0e-5,
+    analytic_tolerance: float = 1.0e-9,
+    target_value_tolerance: float = 1.0e-8,
+) -> PhaseGradientBenchmarkSuiteResult:
+    """Run built-in deterministic phase-gradient conformance benchmarks."""
+
+    def single_frequency_objective(params: FloatArray) -> float:
+        return float(np.mean(1.0 - np.cos(params)))
+
+    def single_frequency_gradient(params: FloatArray) -> FloatArray:
+        return (np.sin(params) / params.size).astype(np.float64, copy=False)
+
+    def multi_frequency_objective(params: FloatArray) -> float:
+        return float(np.mean((1.0 - np.cos(params)) + 0.05 * (1.0 - np.cos(2.0 * params))))
+
+    def multi_frequency_gradient(params: FloatArray) -> FloatArray:
+        return ((np.sin(params) + 0.1 * np.sin(2.0 * params)) / params.size).astype(
+            np.float64,
+            copy=False,
+        )
+
+    def coupled_phase_objective(params: FloatArray) -> float:
+        return float(
+            0.5
+            * (
+                (1.0 - np.cos(params[0]))
+                + (1.0 - np.cos(params[1]))
+                + 0.25 * (1.0 - np.cos(params[0] - params[1]))
+            )
+        )
+
+    def coupled_phase_gradient(params: FloatArray) -> FloatArray:
+        coupling = np.sin(params[0] - params[1])
+        return np.array(
+            [
+                0.5 * (np.sin(params[0]) + 0.25 * coupling),
+                0.5 * (np.sin(params[1]) - 0.25 * coupling),
+            ],
+            dtype=np.float64,
+        )
+
+    report_single = run_parameter_shift_audit_suite(
+        single_frequency_objective,
+        single_frequency_gradient,
+        np.array([0.8, -0.5, 0.3], dtype=np.float64),
+        learning_rate=learning_rate,
+        max_steps=max_steps,
+        finite_difference_step=finite_difference_step,
+        finite_difference_tolerance=finite_difference_tolerance,
+        analytic_tolerance=analytic_tolerance,
+        target_value_tolerance=target_value_tolerance,
+        min_loss_decrease=0.1,
+    )
+    report_multi = run_parameter_shift_audit_suite(
+        multi_frequency_objective,
+        multi_frequency_gradient,
+        np.array([0.45, -0.35, 0.25], dtype=np.float64),
+        rule=multi_frequency_parameter_shift_rule([1.0, 2.0]),
+        learning_rate=learning_rate,
+        max_steps=max_steps,
+        finite_difference_step=finite_difference_step,
+        finite_difference_tolerance=finite_difference_tolerance,
+        analytic_tolerance=analytic_tolerance,
+        target_value_tolerance=target_value_tolerance,
+        min_loss_decrease=0.1,
+    )
+    report_coupled = run_parameter_shift_audit_suite(
+        coupled_phase_objective,
+        coupled_phase_gradient,
+        np.array([0.55, -0.35], dtype=np.float64),
+        learning_rate=learning_rate,
+        max_steps=max_steps,
+        finite_difference_step=finite_difference_step,
+        finite_difference_tolerance=finite_difference_tolerance,
+        analytic_tolerance=analytic_tolerance,
+        target_value_tolerance=target_value_tolerance,
+        min_loss_decrease=0.1,
+    )
+    reports = (report_single, report_multi, report_coupled)
+    return PhaseGradientBenchmarkSuiteResult(
+        benchmark_names=(
+            "single_frequency_phase_rotation",
+            "multi_frequency_phase_rotation",
+            "coupled_pair_phase_rotation",
+        ),
+        reports=reports,
+        unsupported_scenarios=(
+            "discontinuous objective surfaces",
+            "shot-noisy hardware gradients without uncertainty certificates",
+            "arbitrary classical regressors without declared generator spectra",
+            "objectives with non-finite values or shape-drifting gradients",
+        ),
+        passed=all(report.passed for report in reports),
+        claim_boundary=(
+            "deterministic local phase-gradient conformance for smooth "
+            "parameter-shift-compatible objectives; not a blanket hardware, "
+            "stochastic, or arbitrary-program AD certificate"
+        ),
+    )
+
+
 __all__ = [
     "AnalyticGradient",
     "DifferentiableQuantumAuditReport",
     "ParameterShiftAnalyticAgreement",
+    "PhaseGradientBenchmarkSuiteResult",
     "ScalarObjective",
     "run_known_phase_gradient_audit",
     "run_parameter_shift_audit_suite",
+    "run_phase_gradient_benchmark_suite",
     "verify_parameter_shift_analytic_gradient",
 ]

@@ -389,12 +389,17 @@ For reviewer-facing correctness evidence, run the bundled gradient audit:
 ```python
 import numpy as np
 
-from scpn_quantum_control.phase import run_known_phase_gradient_audit
+from scpn_quantum_control.phase import (
+    run_known_phase_gradient_audit,
+    run_phase_gradient_benchmark_suite,
+)
 
 
 report = run_known_phase_gradient_audit(np.array([0.8, -0.5, 0.3]))
+suite = run_phase_gradient_benchmark_suite()
 
 print(report.passed, report.max_gradient_error, report.best_value)
+print(suite.passed, suite.benchmark_names, suite.worst_gradient_error)
 ```
 
 The report combines three independent checks: parameter-shift versus central
@@ -403,6 +408,10 @@ gradient, and deterministic parameter-shift gradient-descent convergence. It is
 designed for local smooth phase-rotation objectives and CI/paper evidence
 tables. It does not certify discontinuous losses, shot-noisy hardware
 gradients, arbitrary regression models, or undeclared generator spectra.
+The suite extends the same report format across single-frequency,
+multi-frequency, and coupled-pair phase objectives so evidence tables can show
+broader coverage without claiming full arbitrary-program AD or hardware
+gradient completeness.
 
 Coupling learning uses the same optimizer for inverse oscillator problems:
 

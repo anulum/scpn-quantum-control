@@ -25,8 +25,10 @@ from .cross_domain_transfer import TransferResult, build_systems, transfer_exper
 from .differentiable_audit import (
     DifferentiableQuantumAuditReport,
     ParameterShiftAnalyticAgreement,
+    PhaseGradientBenchmarkSuiteResult,
     run_known_phase_gradient_audit,
     run_parameter_shift_audit_suite,
+    run_phase_gradient_benchmark_suite,
     verify_parameter_shift_analytic_gradient,
 )
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
@@ -155,9 +157,11 @@ __all__ = [
     "CouplingLearningResult",
     "run_known_phase_gradient_audit",
     "run_parameter_shift_audit_suite",
+    "run_phase_gradient_benchmark_suite",
     "verify_parameter_shift_analytic_gradient",
     "DifferentiableQuantumAuditReport",
     "ParameterShiftAnalyticAgreement",
+    "PhaseGradientBenchmarkSuiteResult",
     "varqite_ground_state",
     "VarQITEResult",
     "floquet_evolve",

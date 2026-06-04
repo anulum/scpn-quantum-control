@@ -1234,6 +1234,7 @@ verify_coupling_parameter_shift_gradient(observation_model, target_observations,
 verify_parameter_shift_analytic_gradient(objective, analytic_gradient, values, rule=None, tolerance=1e-8) -> ParameterShiftAnalyticAgreement
 run_parameter_shift_audit_suite(objective, analytic_gradient, initial_values, rule=None, finite_difference_step=1e-6, finite_difference_tolerance=1e-5, analytic_tolerance=1e-8, learning_rate=0.35, max_steps=80) -> DifferentiableQuantumAuditReport
 run_known_phase_gradient_audit(initial_values=None, learning_rate=0.35, max_steps=80) -> DifferentiableQuantumAuditReport
+run_phase_gradient_benchmark_suite(learning_rate=0.35, max_steps=100, finite_difference_step=1e-6, finite_difference_tolerance=1e-5, analytic_tolerance=1e-9) -> PhaseGradientBenchmarkSuiteResult
 parameter_shift_gradient_descent(objective, initial_params, parameters=None, rule=None, backend="statevector", learning_rate=0.1, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> ParameterShiftTrainingResult
 validate_parameter_shift_training(result, gradient_tolerance=None, target_value=None, target_value_tolerance=1e-8, min_decrease=None) -> ParameterShiftTrainingCertificate
 NaturalGradientOptimizer(...).minimize(objective, initial_values, metric_fn, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_steps=100, gradient_tolerance=1e-8, step_tolerance=1e-8, value_tolerance=None) -> NaturalGradientOptimizationResult
@@ -1282,6 +1283,12 @@ parameter-shift gradient-descent convergence with a training certificate.
 benchmark for onboarding, CI, and paper evidence tables. It intentionally
 excludes discontinuous objectives, stochastic hardware shots, arbitrary
 regressors, and undeclared generator spectra.
+`run_phase_gradient_benchmark_suite()` expands this into a deterministic
+multi-case conformance suite covering single-frequency phase rotations,
+multi-frequency rotations with a declared shift rule, and a coupled pair phase
+loss. Its aggregate result reports per-case audit reports, worst gradient
+error, best objective values, unsupported scenarios, and an explicit boundary
+that this is not a blanket hardware or arbitrary-program AD certificate.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records
