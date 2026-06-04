@@ -252,6 +252,13 @@ Statevector checks. It is not hardware execution or finite-shot provider
 submission; use the provider callback contract above when the expectation
 source is an adapter or provider runtime.
 
+The same Qiskit bridge accepts `multi_frequency_parameter_shift_rule(...)`.
+Circuit generation emits one fully bound plus/minus pair per
+`(parameter, shift_term)`, and local Statevector execution aggregates the term
+coefficients into the final gradient. This covers symbolic circuits where the
+same trainable parameter appears with several generator frequencies, for
+example `theta` and `2 * theta` rotations in one ansatz.
+
 For finite-shot planning and uncertainty accounting without submitting provider
 jobs, use `execute_qiskit_finite_shot_parameter_shift(...)`. It binds the same
 Qiskit plus/minus shifted circuits, evaluates expectations and observable

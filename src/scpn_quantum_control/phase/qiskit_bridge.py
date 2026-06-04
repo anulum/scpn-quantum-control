@@ -33,6 +33,9 @@ class QiskitParameterShiftRecord:
     """One Qiskit plus/minus shifted-circuit pair."""
 
     parameter_index: int
+    shift_index: int
+    shift: float
+    coefficient: float
     parameter_name: str
     plus_values: FloatArray
     minus_values: FloatArray
@@ -42,6 +45,10 @@ class QiskitParameterShiftRecord:
     def __post_init__(self) -> None:
         if isinstance(self.parameter_index, bool) or self.parameter_index < 0:
             raise ValueError("parameter_index must be a non-negative integer")
+        if isinstance(self.shift_index, bool) or self.shift_index < 0:
+            raise ValueError("shift_index must be a non-negative integer")
+        shift = _as_positive_scalar("shift", self.shift)
+        coefficient = _as_finite_scalar("coefficient", self.coefficient)
         if not self.parameter_name:
             raise ValueError("parameter_name must be non-empty")
         plus_values = _as_finite_vector("plus_values", self.plus_values)
@@ -50,6 +57,8 @@ class QiskitParameterShiftRecord:
             raise ValueError("plus_values and minus_values must have matching shapes")
         if self.plus_circuit.num_parameters != 0 or self.minus_circuit.num_parameters != 0:
             raise ValueError("shifted Qiskit circuits must be fully bound")
+        object.__setattr__(self, "shift", shift)
+        object.__setattr__(self, "coefficient", coefficient)
         object.__setattr__(self, "plus_values", plus_values)
         object.__setattr__(self, "minus_values", minus_values)
 
@@ -57,6 +66,9 @@ class QiskitParameterShiftRecord:
         """Return JSON-compatible shifted-circuit metadata."""
         return {
             "parameter_index": self.parameter_index,
+            "shift_index": self.shift_index,
+            "shift": self.shift,
+            "coefficient": self.coefficient,
             "parameter_name": self.parameter_name,
             "plus_values": self.plus_values.tolist(),
             "minus_values": self.minus_values.tolist(),
@@ -111,25 +123,29 @@ def generate_qiskit_parameter_shift_circuits(
     """Generate fully bound Qiskit plus/minus circuits for parameter shift."""
     parameter_tuple = _normalise_parameters(parameters)
     values_vector = _as_finite_vector("values", values, width=len(parameter_tuple))
-    shift_value, _coefficient = _parameter_shift_rule(rule, shift)
+    terms = _parameter_shift_terms(rule, shift)
     _validate_circuit_parameters(circuit, parameter_tuple)
 
     records: list[QiskitParameterShiftRecord] = []
     for index, parameter in enumerate(parameter_tuple):
-        plus_values = values_vector.copy()
-        minus_values = values_vector.copy()
-        plus_values[index] += shift_value
-        minus_values[index] -= shift_value
-        records.append(
-            QiskitParameterShiftRecord(
-                parameter_index=index,
-                parameter_name=parameter.name,
-                plus_values=plus_values,
-                minus_values=minus_values,
-                plus_circuit=_bind_circuit(circuit, parameter_tuple, plus_values),
-                minus_circuit=_bind_circuit(circuit, parameter_tuple, minus_values),
+        for shift_index, (shift_value, coefficient) in enumerate(terms):
+            plus_values = values_vector.copy()
+            minus_values = values_vector.copy()
+            plus_values[index] += shift_value
+            minus_values[index] -= shift_value
+            records.append(
+                QiskitParameterShiftRecord(
+                    parameter_index=index,
+                    shift_index=shift_index,
+                    shift=shift_value,
+                    coefficient=coefficient,
+                    parameter_name=parameter.name,
+                    plus_values=plus_values,
+                    minus_values=minus_values,
+                    plus_circuit=_bind_circuit(circuit, parameter_tuple, plus_values),
+                    minus_circuit=_bind_circuit(circuit, parameter_tuple, minus_values),
+                )
             )
-        )
     return tuple(records)
 
 
@@ -145,7 +161,7 @@ def execute_qiskit_statevector_parameter_shift(
     """Evaluate a local Qiskit Statevector value and parameter-shift gradient."""
     parameter_tuple = _normalise_parameters(parameters)
     values_vector = _as_finite_vector("values", values, width=len(parameter_tuple))
-    _shift_value, coefficient = _parameter_shift_rule(rule, shift)
+    terms = _parameter_shift_terms(rule, shift)
     _validate_circuit_parameters(circuit, parameter_tuple)
     base_circuit = _bind_circuit(circuit, parameter_tuple, values_vector)
     value = _expectation(base_circuit, observable)
@@ -156,22 +172,19 @@ def execute_qiskit_statevector_parameter_shift(
         rule=rule,
         shift=shift,
     )
-    gradient = np.array(
-        [
-            coefficient
-            * (
-                _expectation(record.plus_circuit, observable)
-                - _expectation(record.minus_circuit, observable)
-            )
-            for record in records
-        ],
-        dtype=np.float64,
-    )
+    gradient = np.zeros(values_vector.size, dtype=np.float64)
+    for record in records:
+        gradient[record.parameter_index] += record.coefficient * (
+            _expectation(record.plus_circuit, observable)
+            - _expectation(record.minus_circuit, observable)
+        )
     return QiskitParameterShiftGradientResult(
         value=value,
         gradient=gradient,
         records=records,
-        method="qiskit_statevector_parameter_shift",
+        method="qiskit_statevector_parameter_shift"
+        if len(terms) == 1
+        else "qiskit_statevector_multi_frequency_parameter_shift",
         evaluations=1 + 2 * len(records),
         claim_boundary=(
             "local Qiskit Statevector parameter-shift execution for fully bound circuits; "
@@ -281,20 +294,23 @@ def _normalise_parameters(parameters: Sequence[Parameter]) -> tuple[Parameter, .
     return parameter_tuple
 
 
-def _parameter_shift_rule(
+def _parameter_shift_terms(
     rule: ParameterShiftRule | None,
     shift: float,
-) -> tuple[float, float]:
+) -> tuple[tuple[float, float], ...]:
     if rule is not None:
-        return _as_positive_scalar("rule.shift", rule.shift), _as_finite_scalar(
-            "rule.coefficient",
-            rule.coefficient,
+        return tuple(
+            (
+                _as_positive_scalar("rule.shift", shift_value),
+                _as_finite_scalar("rule.coefficient", coefficient),
+            )
+            for shift_value, coefficient in rule.terms
         )
     shift_value = _as_positive_scalar("shift", shift)
     denominator = 2.0 * np.sin(shift_value)
     if abs(denominator) <= 1.0e-15:
         raise ValueError("shift must not make the parameter-shift denominator singular")
-    return shift_value, float(1.0 / denominator)
+    return ((shift_value, float(1.0 / denominator)),)
 
 
 def _as_finite_vector(

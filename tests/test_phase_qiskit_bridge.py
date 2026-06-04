@@ -21,6 +21,7 @@ from scpn_quantum_control.phase import (
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
+    multi_frequency_parameter_shift_rule,
 )
 
 
@@ -95,6 +96,67 @@ def test_execute_qiskit_finite_shot_parameter_shift_reports_uncertainty() -> Non
     np.testing.assert_allclose(result.standard_error, np.array([expected_standard_error]))
     assert result.records[0].plus.shots == shots
     assert result.records[0].minus.shots == shots
+
+
+def test_qiskit_statevector_supports_multi_frequency_parameter_shift() -> None:
+    theta = Parameter("theta")
+    circuit = QuantumCircuit(2)
+    circuit.ry(theta, 0)
+    circuit.ry(2.0 * theta, 1)
+    observable = SparsePauliOp.from_list([("IZ", 1.0), ("ZI", 0.1)])
+    values = np.array([0.4], dtype=float)
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    records = generate_qiskit_parameter_shift_circuits(
+        circuit,
+        (theta,),
+        values,
+        rule=rule,
+    )
+    result = execute_qiskit_statevector_parameter_shift(
+        circuit,
+        observable,
+        (theta,),
+        values,
+        rule=rule,
+    )
+
+    expected_gradient = -np.sin(values[0]) - 0.2 * np.sin(2.0 * values[0])
+    assert len(records) == len(rule.terms)
+    assert [record.shift_index for record in records] == [0, 1]
+    assert records[0].to_dict()["shift_index"] == 0
+    assert result.method == "qiskit_statevector_multi_frequency_parameter_shift"
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+    np.testing.assert_allclose(result.gradient, np.array([expected_gradient]), atol=1e-12)
+
+
+def test_qiskit_finite_shot_supports_multi_frequency_parameter_shift() -> None:
+    theta = Parameter("theta")
+    circuit = QuantumCircuit(2)
+    circuit.ry(theta, 0)
+    circuit.ry(2.0 * theta, 1)
+    observable = SparsePauliOp.from_list([("IZ", 1.0), ("ZI", 0.1)])
+    values = np.array([0.4], dtype=float)
+    shots = 300
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    result = execute_qiskit_finite_shot_parameter_shift(
+        circuit,
+        observable,
+        (theta,),
+        values,
+        shots=shots,
+        rule=rule,
+    )
+
+    expected_gradient = -np.sin(values[0]) - 0.2 * np.sin(2.0 * values[0])
+    assert result.method == "multi_frequency_stochastic_parameter_shift"
+    assert result.plan.shift_terms == len(rule.terms)
+    assert result.total_evaluations == 2 * len(rule.terms)
+    assert result.total_shots == 2 * len(rule.terms) * shots
+    assert [record.shift_index for record in result.records] == [0, 1]
+    np.testing.assert_allclose(result.gradient, np.array([expected_gradient]), atol=1e-12)
+    assert result.standard_error[0] > 0.0
 
 
 def test_execute_qiskit_statevector_parameter_shift_handles_two_parameters() -> None:
