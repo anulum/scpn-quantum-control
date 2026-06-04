@@ -127,6 +127,44 @@ result = parameter_shift_gradient_with_uncertainty(
 print(result.gradient, result.standard_error)
 ```
 
+## Provider callback execution
+
+`execute_provider_parameter_shift_gradient(...)` is the first provider-safe
+execution contract for parameter-shift gradients. It does not submit hardware
+jobs by itself. Instead, callers provide a strict expectation-sampling callback
+that can be backed by a local simulator, a managed provider adapter, or a dry-run
+fixture:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    ProviderExpectationSample,
+    execute_provider_parameter_shift_gradient,
+)
+
+
+def sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+    value = float(np.cos(params[0]))
+    return ProviderExpectationSample(value=value, variance=0.04, shots=shots)
+
+
+result = execute_provider_parameter_shift_gradient(
+    sampler,
+    np.array([0.4]),
+    backend="qasm_simulator",
+    shots=4096,
+)
+
+print(result.gradient, result.standard_error, result.total_shots)
+```
+
+The result records backend plan provenance, every plus/minus shifted parameter
+vector, sample values, sample variances, shot counts, propagated standard
+errors, confidence radii, and a claim boundary. Hardware aliases still fail
+closed unless an explicit hardware policy enables them through the backend
+planner.
+
 ## Gradient tape MVP
 
 For local simulator workflows, `gradient_tape` records deterministic and

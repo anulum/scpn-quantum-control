@@ -30,6 +30,13 @@ agreement certificates with pass/fail status, absolute and relative error
 maxima, and evaluation counts so notebooks, CI, and provider adapters can share
 the same gradient-verification record.
 
+For backend execution, use
+`execute_provider_parameter_shift_gradient(...)` with a
+`ProviderExpectationSample` callback. This is the supported bridge between SCPN
+parameter-shift semantics and provider-specific execution layers: it records
+shifted parameters, sample values, variances, shots, uncertainty propagation,
+and fail-closed backend policy in one serialisable result.
+
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
 for public facades such as `scpn_quantum_control.kuramoto_core`. The lower-level

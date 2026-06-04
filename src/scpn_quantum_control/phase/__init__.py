@@ -62,6 +62,12 @@ from .pennylane_bridge import (
     is_phase_pennylane_available,
 )
 from .phase_vqe import PhaseVQE
+from .provider_gradient import (
+    ProviderExpectationSample,
+    ProviderGradientExecutionResult,
+    ProviderParameterShiftRecord,
+    execute_provider_parameter_shift_gradient,
+)
 from .pulse_shaping import (
     HypergeometricPulse,
     ICIPulse,
@@ -127,6 +133,10 @@ __all__ = [
     "check_pennylane_qnode_round_trip",
     "PennyLaneGradientAgreementResult",
     "PennyLaneRoundTripResult",
+    "ProviderExpectationSample",
+    "ProviderGradientExecutionResult",
+    "ProviderParameterShiftRecord",
+    "execute_provider_parameter_shift_gradient",
     "is_phase_torch_available",
     "torch_parameter_shift_value_and_grad",
     "PhaseTorchParameterShiftResult",

@@ -148,7 +148,7 @@ layers:
 |---|---|---|
 | Quantum parameter-shift | Supported through `scpn_quantum_control.phase.param_shift` for callable expectation objectives, structured `PhaseVQE` gradients, and local gradient-descent VQE examples. | [Quantum Gradients](docs/quantum_gradients.md), [Variational Methods](docs/variational.md) |
 | Program and compiler AD | Supported for registered scalar, vector, and matrix primitives with native lowering reports and fail-closed unsupported boundaries. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
-| ML framework and tape roadmap | Gradient tape, backend gradient planning, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, and PyTorch/TensorFlow host-boundary tensor bridges are available. Full PennyLane/Qiskit migration bridges, QNN, QGNN, and QSNN remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
+| ML framework and tape roadmap | Gradient tape, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, and PyTorch/TensorFlow host-boundary tensor bridges are available. Full PennyLane/Qiskit migration bridges, QNN, QGNN, and QSNN remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
 They need gradients, convergence evidence, framework interop, reproducible
