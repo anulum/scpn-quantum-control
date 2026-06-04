@@ -81,6 +81,11 @@ from .natural_gradient import (
     solve_natural_gradient_direction,
     validate_natural_gradient_training,
 )
+from .optimizer_audit import (
+    OptimizerComparisonSuiteResult,
+    OptimizerConvergenceRecord,
+    run_parameter_shift_optimizer_comparison,
+)
 from .param_shift import (
     GradientVerificationResult,
     HessianVerificationResult,
@@ -206,6 +211,9 @@ __all__ = [
     "ParameterShiftNaturalGradientCertificate",
     "ParameterShiftNaturalGradientResult",
     "ParameterShiftNaturalGradientStep",
+    "run_parameter_shift_optimizer_comparison",
+    "OptimizerComparisonSuiteResult",
+    "OptimizerConvergenceRecord",
     "gradient_tape",
     "QuantumGradientTape",
     "TapeGradientRecord",

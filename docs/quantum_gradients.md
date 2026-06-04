@@ -412,6 +412,26 @@ labelled as such and is not a claim of quantum Fisher extraction. Non-symmetric
 metrics, wrong shapes, non-finite entries, singular regularised systems, unsafe
 hardware backends, and non-descent metrics fail closed.
 
+For reviewer-facing optimizer evidence, run the multi-start comparison audit:
+
+```python
+from scpn_quantum_control.phase import run_parameter_shift_optimizer_comparison
+
+
+suite = run_parameter_shift_optimizer_comparison(max_steps=8)
+
+print(suite.passed)
+print(suite.best_optimizer)
+print(suite.natural_gradient_not_worse_count, suite.start_count)
+```
+
+The suite executes ordinary parameter-shift descent and natural-gradient descent
+from several starts, records certificates for every route, and checks whether
+the metric-aware route is no worse than the baseline under the declared
+tolerance. Its claim boundary is intentionally narrow: local smooth phase
+objectives, functional convergence evidence, no hardware execution, no
+throughput statement, and no global optimality proof.
+
 The QSNN trainer composes with the same route for full-batch quantum neural
 network training:
 

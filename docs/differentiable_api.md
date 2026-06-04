@@ -19,6 +19,7 @@ This page maps the public differentiable-programming namespace and the related q
 | `scpn_quantum_control.phase.coupling_learning` | Differentiable coupling inference from observation models with convergence and finite-difference agreement certificates. |
 | `scpn_quantum_control.phase.gradient_descent` | Generic parameter-shift gradient descent with line-search traces and convergence certificates. |
 | `scpn_quantum_control.phase.natural_gradient` | Metric-aware parameter-shift descent with damped solves, metric validation, line-search traces, and convergence certificates. |
+| `scpn_quantum_control.phase.optimizer_audit` | Multi-start optimizer comparison evidence for parameter-shift descent and natural-gradient descent. |
 | `scpn_quantum_control.qsnn.training` | QSNN parameter-shift gradients, full-batch descent, and training convergence evidence. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
@@ -38,7 +39,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
 | Gradient audit evidence | `DifferentiableQuantumAuditReport`, `DifferentiableWorkflowAuditSuiteResult`, `FiniteShotGradientAuditResult`, `MLFrameworkGradientAuditSuiteResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `run_differentiable_workflow_audit_suite`, `run_finite_shot_gradient_uncertainty_audit`, `run_ml_framework_gradient_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite` | Bundle finite-difference agreement, finite-shot uncertainty containment, optional ML-framework parity, analytic-gradient agreement, convergence evidence, coupling-learning checks, and multi-case phase-gradient conformance into reviewer-facing reports. |
-| Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParameterShiftNaturalGradientResult`, `ParameterShiftNaturalGradientCertificate`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, metric-aware descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
+| Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParameterShiftNaturalGradientResult`, `ParameterShiftNaturalGradientCertificate`, `OptimizerComparisonSuiteResult`, `OptimizerConvergenceRecord`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, metric-aware descent, optimizer comparison evidence, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
@@ -87,6 +88,7 @@ import numpy as np
 from scpn_quantum_control.phase import (
     parameter_shift_gradient_descent,
     parameter_shift_natural_gradient_descent,
+    run_parameter_shift_optimizer_comparison,
     validate_param_shift_convergence,
     validate_natural_gradient_training,
     validate_parameter_shift_training,
@@ -132,6 +134,10 @@ natural_certificate = validate_natural_gradient_training(
     gradient_tolerance=0.08,
 )
 assert natural_certificate.monotone_accepted_values
+
+comparison = run_parameter_shift_optimizer_comparison(max_steps=8)
+assert comparison.passed
+assert comparison.natural_gradient_not_worse_count == comparison.start_count
 ```
 
 Natural-gradient training accepts an explicit metric tensor or callable metric
@@ -139,6 +145,12 @@ and validates shape, symmetry, finite values, conditioning, and descent
 direction before applying a damped solve. The identity metric path is recorded
 as a preconditioner baseline; it is not promoted as a quantum Fisher extraction
 or arbitrary-circuit natural-gradient method.
+
+The optimizer comparison audit is a local functional evidence tool. It runs
+multiple starts through ordinary parameter-shift descent and natural-gradient
+descent, records certificates for every route, and checks whether the metric
+route is no worse than the baseline under the declared tolerance. It is not a
+hardware benchmark, throughput result, or proof of global optimality.
 
 ## Minimal QSNN descent certificate
 
