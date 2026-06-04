@@ -52,10 +52,14 @@ AnalyticGradient = Callable[[FloatArray], ArrayLike]
 
 class _GradientAdapterResult(Protocol):
     @property
-    def value(self) -> float: ...
+    def value(self) -> float:
+        """Return the scalar objective value produced by the adapter."""
+        ...
 
     @property
-    def gradient(self) -> FloatArray: ...
+    def gradient(self) -> FloatArray:
+        """Return the one-dimensional gradient vector produced by the adapter."""
+        ...
 
 
 def _as_finite_vector(name: str, values: ArrayLike) -> FloatArray:
