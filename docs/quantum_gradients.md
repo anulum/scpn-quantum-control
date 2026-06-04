@@ -390,6 +390,7 @@ For reviewer-facing correctness evidence, run the bundled gradient audit:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    run_finite_shot_gradient_uncertainty_audit,
     run_known_phase_gradient_audit,
     run_phase_gradient_benchmark_suite,
 )
@@ -397,9 +398,15 @@ from scpn_quantum_control.phase import (
 
 report = run_known_phase_gradient_audit(np.array([0.8, -0.5, 0.3]))
 suite = run_phase_gradient_benchmark_suite()
+finite_shot = run_finite_shot_gradient_uncertainty_audit(
+    lambda theta: float(np.mean(1.0 - np.cos(theta))),
+    np.array([0.7, -0.4, 0.2]),
+    target_standard_error=0.02,
+)
 
 print(report.passed, report.max_gradient_error, report.best_value)
 print(suite.passed, suite.benchmark_names, suite.worst_gradient_error)
+print(finite_shot.passed, finite_shot.max_standard_error)
 ```
 
 The report combines three independent checks: parameter-shift versus central
@@ -412,6 +419,11 @@ The suite extends the same report format across single-frequency,
 multi-frequency, and coupled-pair phase objectives so evidence tables can show
 broader coverage without claiming full arbitrary-program AD or hardware
 gradient completeness.
+The finite-shot audit adds confidence-containment evidence for declared
+plus/minus variances and planned shot budgets. It validates stochastic
+uncertainty propagation and shot accounting, while live hardware sampling,
+detector drift, and queue calibration remain separate provider-validation
+tasks.
 
 Coupling learning uses the same optimizer for inverse oscillator problems:
 

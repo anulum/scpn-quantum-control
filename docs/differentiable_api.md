@@ -36,7 +36,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
-| Gradient audit evidence | `DifferentiableQuantumAuditReport`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite` | Bundle finite-difference agreement, analytic-gradient agreement, convergence evidence, and multi-case phase-gradient conformance into reviewer-facing reports. |
+| Gradient audit evidence | `DifferentiableQuantumAuditReport`, `FiniteShotGradientAuditResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `run_finite_shot_gradient_uncertainty_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite` | Bundle finite-difference agreement, finite-shot uncertainty containment, analytic-gradient agreement, convergence evidence, and multi-case phase-gradient conformance into reviewer-facing reports. |
 | Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
@@ -184,6 +184,33 @@ phase rotations using a declared shift rule, and a coupled pair phase loss.
 This is the recommended CI and paper-table entry point when users need visible
 evidence that the differentiable-programming surface handles more than one
 toy gradient.
+
+For finite-shot uncertainty evidence:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import run_finite_shot_gradient_uncertainty_audit
+
+
+def objective(theta: np.ndarray) -> float:
+    return float(np.mean(1.0 - np.cos(theta)))
+
+
+finite_shot = run_finite_shot_gradient_uncertainty_audit(
+    objective,
+    np.array([0.7, -0.4, 0.2]),
+    target_standard_error=0.02,
+)
+
+print(finite_shot.passed)
+print(finite_shot.max_standard_error)
+print(finite_shot.within_confidence)
+```
+
+This path verifies uncertainty propagation, shot allocation, and confidence
+containment for declared shifted-expectation variances. It is not a live
+hardware-sampling, detector-drift, or queue-calibration certificate.
 
 ## Minimal differentiable coupling learning
 

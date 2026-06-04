@@ -11,11 +11,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from ..differentiable import ParameterShiftRule
+from ..differentiable import ParameterShiftRule, ShotAllocationResult, StochasticGradientResult
 from .gradient_descent import (
     ParameterShiftTrainingCertificate,
     ParameterShiftTrainingResult,
@@ -26,6 +27,8 @@ from .param_shift import (
     GradientVerificationResult,
     multi_frequency_parameter_shift_rule,
     parameter_shift_gradient,
+    parameter_shift_gradient_with_uncertainty,
+    plan_parameter_shift_shots,
     verify_parameter_shift_gradient,
 )
 
@@ -66,6 +69,111 @@ def _normalise_target_value(
     if target_value is None:
         return None, tolerance
     return _as_finite_scalar("target_value", target_value), tolerance
+
+
+def _as_non_negative_shift_matrix(
+    name: str,
+    values: ArrayLike,
+    *,
+    term_count: int,
+    width: int,
+) -> FloatArray:
+    raw = np.asarray(values)
+    matrix: FloatArray
+    if raw.shape == ():
+        scalar = _as_finite_scalar(name, values)
+        matrix = cast(FloatArray, np.full((term_count, width), scalar, dtype=np.float64))
+    elif raw.ndim == 1:
+        vector = _as_finite_vector(name, values)
+        if vector.size != width:
+            raise ValueError(f"{name} width must match parameter count")
+        matrix = cast(
+            FloatArray,
+            np.asarray(np.tile(vector, (term_count, 1)), dtype=np.float64),
+        )
+    elif raw.ndim == 2:
+        matrix = cast(FloatArray, np.asarray(values, dtype=np.float64))
+        if matrix.shape != (term_count, width):
+            raise ValueError(f"{name} shape must be (shift_terms, parameter_count)")
+        if not np.all(np.isfinite(matrix)):
+            raise ValueError(f"{name} must contain finite real numeric values")
+        matrix = matrix.astype(np.float64, copy=True)
+    else:
+        raise ValueError(f"{name} must be scalar, vector, or shift-term matrix")
+    if np.any(matrix < 0.0):
+        raise ValueError(f"{name} must contain finite non-negative values")
+    return matrix
+
+
+def _shifted_objective_values(
+    objective: ScalarObjective,
+    values: FloatArray,
+    rule: ParameterShiftRule,
+) -> tuple[FloatArray, FloatArray]:
+    terms = rule.terms
+    plus_values = np.zeros((len(terms), values.size), dtype=np.float64)
+    minus_values = np.zeros_like(plus_values)
+    for term_index, (shift, _coefficient) in enumerate(terms):
+        for param_index in range(values.size):
+            plus = values.copy()
+            minus = values.copy()
+            plus[param_index] += shift
+            minus[param_index] -= shift
+            plus_values[term_index, param_index] = _as_finite_scalar(
+                "plus shifted objective",
+                objective(plus),
+            )
+            minus_values[term_index, param_index] = _as_finite_scalar(
+                "minus shifted objective",
+                objective(minus),
+            )
+    return plus_values, minus_values
+
+
+def _stochastic_input(array: FloatArray) -> FloatArray:
+    if array.shape[0] == 1:
+        return cast(FloatArray, array[0].copy())
+    return cast(FloatArray, array.copy())
+
+
+def _balanced_shots_from_allocation(allocation: ShotAllocationResult) -> FloatArray:
+    shots = np.asarray(allocation.shots, dtype=float)
+    if shots.ndim == 2:
+        return cast(FloatArray, np.maximum(shots[0], shots[1]).astype(np.float64, copy=False))
+    if shots.ndim == 3:
+        return cast(FloatArray, np.max(shots, axis=1).astype(np.float64, copy=False))
+    raise ValueError("shot allocation shape must contain plus/minus shot counts")
+
+
+def _stochastic_gradient_to_dict(result: StochasticGradientResult) -> dict[str, object]:
+    return {
+        "value": result.value,
+        "gradient": result.gradient.tolist(),
+        "standard_error": result.standard_error.tolist(),
+        "covariance": result.covariance.tolist(),
+        "confidence_radius": result.confidence_radius.tolist(),
+        "shots": np.asarray(result.shots, dtype=float).tolist(),
+        "confidence_level": result.confidence_level,
+        "method": result.method,
+        "shift": result.shift,
+        "coefficient": result.coefficient,
+        "evaluations": result.evaluations,
+        "parameter_names": list(result.parameter_names),
+        "trainable": list(result.trainable),
+    }
+
+
+def _shot_allocation_to_dict(result: ShotAllocationResult) -> dict[str, object]:
+    return {
+        "shots": np.asarray(result.shots, dtype=float).tolist(),
+        "predicted_standard_error": result.predicted_standard_error.tolist(),
+        "covariance": result.covariance.tolist(),
+        "target_standard_error": result.target_standard_error,
+        "total_shots": result.total_shots,
+        "method": result.method,
+        "parameter_names": list(result.parameter_names),
+        "trainable": list(result.trainable),
+    }
 
 
 @dataclass(frozen=True)
@@ -223,6 +331,86 @@ class PhaseGradientBenchmarkSuiteResult:
         }
 
 
+@dataclass(frozen=True)
+class FiniteShotGradientAuditResult:
+    """Finite-shot uncertainty containment certificate for parameter-shift gradients."""
+
+    deterministic_gradient: FloatArray
+    stochastic: StochasticGradientResult
+    shot_allocation: ShotAllocationResult
+    abs_error: FloatArray
+    within_confidence: tuple[bool, ...]
+    target_standard_error: float
+    max_abs_error: float
+    max_confidence_radius: float
+    max_standard_error: float
+    executed_total_shots: int
+    passed: bool
+    method: str
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        deterministic = _as_finite_vector(
+            "deterministic_gradient",
+            self.deterministic_gradient,
+        )
+        abs_error = _as_finite_vector("abs_error", self.abs_error)
+        if deterministic.shape != self.stochastic.gradient.shape:
+            raise ValueError("deterministic_gradient shape must match stochastic gradient")
+        if abs_error.shape != deterministic.shape:
+            raise ValueError("abs_error shape must match deterministic_gradient")
+        if len(self.within_confidence) != deterministic.size:
+            raise ValueError("within_confidence length must match gradient width")
+        if np.any(abs_error < 0.0):
+            raise ValueError("abs_error must be non-negative")
+        target_standard_error = _as_finite_scalar(
+            "target_standard_error",
+            self.target_standard_error,
+        )
+        max_abs_error = _as_finite_scalar("max_abs_error", self.max_abs_error)
+        max_confidence_radius = _as_finite_scalar(
+            "max_confidence_radius",
+            self.max_confidence_radius,
+        )
+        max_standard_error = _as_finite_scalar("max_standard_error", self.max_standard_error)
+        if target_standard_error <= 0.0:
+            raise ValueError("target_standard_error must be finite and positive")
+        if max_abs_error < 0.0 or max_confidence_radius < 0.0 or max_standard_error < 0.0:
+            raise ValueError("finite-shot audit maxima must be non-negative")
+        if isinstance(self.executed_total_shots, bool) or self.executed_total_shots < 1:
+            raise ValueError("executed_total_shots must be a positive integer")
+        if not isinstance(self.passed, bool):
+            raise ValueError("passed must be a boolean")
+        if not self.method:
+            raise ValueError("method must be non-empty")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "deterministic_gradient", deterministic)
+        object.__setattr__(self, "abs_error", abs_error)
+        object.__setattr__(self, "target_standard_error", target_standard_error)
+        object.__setattr__(self, "max_abs_error", max_abs_error)
+        object.__setattr__(self, "max_confidence_radius", max_confidence_radius)
+        object.__setattr__(self, "max_standard_error", max_standard_error)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready finite-shot audit evidence."""
+        return {
+            "deterministic_gradient": self.deterministic_gradient.tolist(),
+            "stochastic": _stochastic_gradient_to_dict(self.stochastic),
+            "shot_allocation": _shot_allocation_to_dict(self.shot_allocation),
+            "abs_error": self.abs_error.tolist(),
+            "within_confidence": list(self.within_confidence),
+            "target_standard_error": self.target_standard_error,
+            "max_abs_error": self.max_abs_error,
+            "max_confidence_radius": self.max_confidence_radius,
+            "max_standard_error": self.max_standard_error,
+            "executed_total_shots": self.executed_total_shots,
+            "passed": self.passed,
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def verify_parameter_shift_analytic_gradient(
     objective: ScalarObjective,
     analytic_gradient: AnalyticGradient,
@@ -370,6 +558,96 @@ def run_known_phase_gradient_audit(
     )
 
 
+def run_finite_shot_gradient_uncertainty_audit(
+    objective: ScalarObjective,
+    initial_values: ArrayLike,
+    *,
+    rule: ParameterShiftRule | None = None,
+    plus_variances: ArrayLike = 0.04,
+    minus_variances: ArrayLike = 0.04,
+    target_standard_error: float = 0.02,
+    min_shots: int = 64,
+    max_shots_per_evaluation: int | None = None,
+    confidence_level: float = 0.95,
+    confidence_z: float = 1.959963984540054,
+) -> FiniteShotGradientAuditResult:
+    """Audit finite-shot parameter-shift uncertainty propagation.
+
+    The shifted expectation values are evaluated deterministically, while the
+    supplied variances and planned shots define the stochastic uncertainty
+    envelope. This certifies propagation and containment semantics; it does not
+    claim live hardware sampling correctness.
+    """
+    values = _as_finite_vector("initial_values", initial_values)
+    shift_rule = rule or ParameterShiftRule()
+    term_count = len(shift_rule.terms)
+    target = _as_finite_scalar("target_standard_error", target_standard_error)
+    if target <= 0.0:
+        raise ValueError("target_standard_error must be finite and positive")
+    plus_var = _as_non_negative_shift_matrix(
+        "plus_variances",
+        plus_variances,
+        term_count=term_count,
+        width=values.size,
+    )
+    minus_var = _as_non_negative_shift_matrix(
+        "minus_variances",
+        minus_variances,
+        term_count=term_count,
+        width=values.size,
+    )
+    plus_values, minus_values = _shifted_objective_values(objective, values, shift_rule)
+    shot_allocation = plan_parameter_shift_shots(
+        _stochastic_input(plus_var),
+        _stochastic_input(minus_var),
+        target_standard_error=target,
+        rule=shift_rule,
+        min_shots=min_shots,
+        max_shots_per_evaluation=max_shots_per_evaluation,
+    )
+    balanced_shots = _balanced_shots_from_allocation(shot_allocation)
+    stochastic = parameter_shift_gradient_with_uncertainty(
+        _stochastic_input(plus_values),
+        _stochastic_input(minus_values),
+        _stochastic_input(plus_var),
+        _stochastic_input(minus_var),
+        shots=balanced_shots,
+        rule=shift_rule,
+        confidence_level=confidence_level,
+        confidence_z=confidence_z,
+    )
+    deterministic = parameter_shift_gradient(objective, values, rule=shift_rule)
+    abs_error = np.abs(stochastic.gradient - deterministic)
+    within_confidence = tuple(
+        bool(error <= radius + 1.0e-15)
+        for error, radius in zip(abs_error, stochastic.confidence_radius, strict=True)
+    )
+    max_standard_error = (
+        float(np.max(stochastic.standard_error)) if stochastic.standard_error.size else 0.0
+    )
+    return FiniteShotGradientAuditResult(
+        deterministic_gradient=deterministic,
+        stochastic=stochastic,
+        shot_allocation=shot_allocation,
+        abs_error=abs_error,
+        within_confidence=within_confidence,
+        target_standard_error=target,
+        max_abs_error=float(np.max(abs_error)) if abs_error.size else 0.0,
+        max_confidence_radius=float(np.max(stochastic.confidence_radius))
+        if stochastic.confidence_radius.size
+        else 0.0,
+        max_standard_error=max_standard_error,
+        executed_total_shots=int(2 * np.sum(balanced_shots)),
+        passed=all(within_confidence) and max_standard_error <= target + 1.0e-12,
+        method="finite_shot_parameter_shift_uncertainty_audit",
+        claim_boundary=(
+            "finite-shot uncertainty propagation for deterministic shifted "
+            "expectation values with declared variances and shot budgets; not "
+            "a live hardware sampling, detector-drift, or queue-calibration certificate"
+        ),
+    )
+
+
 def run_phase_gradient_benchmark_suite(
     *,
     learning_rate: float = 0.35,
@@ -479,9 +757,11 @@ def run_phase_gradient_benchmark_suite(
 __all__ = [
     "AnalyticGradient",
     "DifferentiableQuantumAuditReport",
+    "FiniteShotGradientAuditResult",
     "ParameterShiftAnalyticAgreement",
     "PhaseGradientBenchmarkSuiteResult",
     "ScalarObjective",
+    "run_finite_shot_gradient_uncertainty_audit",
     "run_known_phase_gradient_audit",
     "run_parameter_shift_audit_suite",
     "run_phase_gradient_benchmark_suite",

@@ -24,8 +24,10 @@ from .coupling_learning import (
 from .cross_domain_transfer import TransferResult, build_systems, transfer_experiment
 from .differentiable_audit import (
     DifferentiableQuantumAuditReport,
+    FiniteShotGradientAuditResult,
     ParameterShiftAnalyticAgreement,
     PhaseGradientBenchmarkSuiteResult,
+    run_finite_shot_gradient_uncertainty_audit,
     run_known_phase_gradient_audit,
     run_parameter_shift_audit_suite,
     run_phase_gradient_benchmark_suite,
@@ -156,10 +158,12 @@ __all__ = [
     "CouplingGradientVerificationResult",
     "CouplingLearningResult",
     "run_known_phase_gradient_audit",
+    "run_finite_shot_gradient_uncertainty_audit",
     "run_parameter_shift_audit_suite",
     "run_phase_gradient_benchmark_suite",
     "verify_parameter_shift_analytic_gradient",
     "DifferentiableQuantumAuditReport",
+    "FiniteShotGradientAuditResult",
     "ParameterShiftAnalyticAgreement",
     "PhaseGradientBenchmarkSuiteResult",
     "varqite_ground_state",

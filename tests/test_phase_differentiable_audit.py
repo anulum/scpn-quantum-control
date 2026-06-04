@@ -14,8 +14,10 @@ import pytest
 
 from scpn_quantum_control.phase import (
     DifferentiableQuantumAuditReport,
+    FiniteShotGradientAuditResult,
     ParameterShiftAnalyticAgreement,
     PhaseGradientBenchmarkSuiteResult,
+    run_finite_shot_gradient_uncertainty_audit,
     run_known_phase_gradient_audit,
     run_parameter_shift_audit_suite,
     run_phase_gradient_benchmark_suite,
@@ -58,6 +60,41 @@ def test_verify_parameter_shift_analytic_gradient_matches_closed_form() -> None:
     assert certificate.max_abs_error < 1e-12
     assert certificate.evaluations == 4
     assert certificate.to_dict()["method"] == "parameter_shift_vs_analytic_gradient"
+
+
+def test_run_finite_shot_gradient_uncertainty_audit_contains_errors() -> None:
+    def objective(values: np.ndarray) -> float:
+        return float(np.mean(1.0 - np.cos(values)))
+
+    certificate = run_finite_shot_gradient_uncertainty_audit(
+        objective,
+        np.array([0.7, -0.4, 0.2], dtype=float),
+        target_standard_error=0.02,
+        plus_variances=np.array([0.04, 0.03, 0.02], dtype=float),
+        minus_variances=np.array([0.04, 0.03, 0.02], dtype=float),
+    )
+
+    assert isinstance(certificate, FiniteShotGradientAuditResult)
+    assert certificate.passed
+    assert all(certificate.within_confidence)
+    assert certificate.max_abs_error <= certificate.max_confidence_radius
+    assert certificate.max_standard_error <= certificate.target_standard_error + 1e-12
+    assert certificate.executed_total_shots >= certificate.shot_allocation.total_shots
+    payload = certificate.to_dict()
+    assert payload["passed"] is True
+    assert payload["method"] == "finite_shot_parameter_shift_uncertainty_audit"
+
+
+def test_run_finite_shot_gradient_uncertainty_audit_rejects_negative_variance() -> None:
+    def objective(values: np.ndarray) -> float:
+        return float(np.mean(1.0 - np.cos(values)))
+
+    with pytest.raises(ValueError, match="plus_variances"):
+        run_finite_shot_gradient_uncertainty_audit(
+            objective,
+            np.array([0.7, -0.4], dtype=float),
+            plus_variances=np.array([0.04, -0.03], dtype=float),
+        )
 
 
 def test_run_phase_gradient_benchmark_suite_passes_all_cases() -> None:

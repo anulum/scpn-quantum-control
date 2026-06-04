@@ -86,7 +86,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.phase.differentiable_audit
     options:
-      members: [DifferentiableQuantumAuditReport, ParameterShiftAnalyticAgreement, PhaseGradientBenchmarkSuiteResult, run_known_phase_gradient_audit, run_parameter_shift_audit_suite, run_phase_gradient_benchmark_suite, verify_parameter_shift_analytic_gradient]
+      members: [DifferentiableQuantumAuditReport, FiniteShotGradientAuditResult, ParameterShiftAnalyticAgreement, PhaseGradientBenchmarkSuiteResult, run_finite_shot_gradient_uncertainty_audit, run_known_phase_gradient_audit, run_parameter_shift_audit_suite, run_phase_gradient_benchmark_suite, verify_parameter_shift_analytic_gradient]
 
 ::: scpn_quantum_control.phase.gradient_descent
     options:
