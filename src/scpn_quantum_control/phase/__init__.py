@@ -84,6 +84,7 @@ from .pulse_shaping import (
 from .qiskit_bridge import (
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
+    execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
 )
@@ -149,6 +150,7 @@ __all__ = [
     "execute_provider_parameter_shift_gradient",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
+    "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
     "is_phase_torch_available",

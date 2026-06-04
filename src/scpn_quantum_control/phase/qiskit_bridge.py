@@ -16,9 +16,14 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import Operator, Statevector
 
 from ..differentiable import ParameterShiftRule
+from .provider_gradient import (
+    ProviderExpectationSample,
+    ProviderGradientExecutionResult,
+    execute_provider_parameter_shift_gradient,
+)
 
 FloatArray = NDArray[np.float64]
 
@@ -175,10 +180,69 @@ def execute_qiskit_statevector_parameter_shift(
     )
 
 
+def execute_qiskit_finite_shot_parameter_shift(
+    circuit: QuantumCircuit,
+    observable: object,
+    parameters: Sequence[Parameter],
+    values: ArrayLike,
+    *,
+    shots: int,
+    rule: ParameterShiftRule | None = None,
+    shift: float = float(np.pi / 2.0),
+    confidence_level: float = 0.95,
+    confidence_z: float = 1.959963984540054,
+) -> ProviderGradientExecutionResult:
+    """Evaluate Qiskit shifted circuits through the provider-safe finite-shot contract."""
+    shot_count = _normalise_shots(shots)
+    parameter_tuple = _normalise_parameters(parameters)
+    values_vector = _as_finite_vector("values", values, width=len(parameter_tuple))
+    _validate_circuit_parameters(circuit, parameter_tuple)
+
+    def sampler(shifted_values: FloatArray, sample_shots: int | None) -> ProviderExpectationSample:
+        bound = _bind_circuit(circuit, parameter_tuple, shifted_values)
+        value, variance = _expectation_and_variance(bound, observable)
+        return ProviderExpectationSample(
+            value=value,
+            variance=variance,
+            shots=sample_shots,
+            metadata={
+                "engine": "qiskit_statevector_finite_shot_surrogate",
+                "observable_type": type(observable).__name__,
+            },
+        )
+
+    return execute_provider_parameter_shift_gradient(
+        sampler,
+        values_vector,
+        backend="finite_shot_simulator",
+        shots=shot_count,
+        rule=rule,
+        shift=shift,
+        confidence_level=confidence_level,
+        confidence_z=confidence_z,
+    )
+
+
 def _expectation(circuit: QuantumCircuit, observable: object) -> float:
     state = Statevector.from_instruction(circuit)
     value = state.expectation_value(observable)
     return _as_finite_scalar("Qiskit expectation value", np.real(value))
+
+
+def _expectation_and_variance(circuit: QuantumCircuit, observable: object) -> tuple[float, float]:
+    state = Statevector.from_instruction(circuit)
+    value = _as_finite_scalar(
+        "Qiskit expectation value",
+        np.real(state.expectation_value(observable)),
+    )
+    matrix = Operator(observable).data
+    vector = np.asarray(state.data, dtype=np.complex128)
+    second_moment = _as_finite_scalar(
+        "Qiskit expectation second moment",
+        np.real(np.vdot(matrix @ vector, matrix @ vector)),
+    )
+    variance = max(0.0, second_moment - value * value)
+    return value, variance
 
 
 def _bind_circuit(
@@ -266,9 +330,16 @@ def _as_positive_scalar(name: str, value: object) -> float:
     return scalar
 
 
+def _normalise_shots(value: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError("shots must be a positive integer")
+    return value
+
+
 __all__ = [
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
+    "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
 ]

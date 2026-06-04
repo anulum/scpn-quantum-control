@@ -199,6 +199,30 @@ Statevector checks. It is not hardware execution or finite-shot provider
 submission; use the provider callback contract above when the expectation
 source is an adapter or provider runtime.
 
+For finite-shot planning and uncertainty accounting without submitting provider
+jobs, use `execute_qiskit_finite_shot_parameter_shift(...)`. It binds the same
+Qiskit plus/minus shifted circuits, evaluates expectations and observable
+variance with a local Statevector surrogate, and routes the samples through
+`execute_provider_parameter_shift_gradient(...)`:
+
+```python
+result = execute_qiskit_finite_shot_parameter_shift(
+    circuit,
+    observable,
+    (theta,),
+    np.array([0.4]),
+    shots=4096,
+)
+
+print(result.gradient, result.standard_error, result.total_shots)
+```
+
+This is useful for provider-contract tests, notebooks, and dry-run cost
+modelling because it produces the same serialisable shifted-sample records,
+standard errors, confidence radii, and shot totals as the provider callback
+route. It is still not hardware job submission; hardware aliases continue to
+fail closed until an explicit backend policy enables them.
+
 ## Gradient tape MVP
 
 For local simulator workflows, `gradient_tape` records deterministic and

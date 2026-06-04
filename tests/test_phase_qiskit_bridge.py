@@ -18,6 +18,7 @@ from qiskit.quantum_info import SparsePauliOp
 from scpn_quantum_control.phase import (
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
+    execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
 )
@@ -71,6 +72,31 @@ def test_execute_qiskit_statevector_parameter_shift_matches_analytic_reference()
     assert result.to_dict()["evaluations"] == 3
 
 
+def test_execute_qiskit_finite_shot_parameter_shift_reports_uncertainty() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    shots = 400
+
+    result = execute_qiskit_finite_shot_parameter_shift(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=shots,
+    )
+
+    expected_gradient = -np.sin(0.4)
+    expected_variance = np.cos(0.4) ** 2
+    expected_standard_error = 0.5 * np.sqrt(expected_variance / shots + expected_variance / shots)
+    assert result.backend == "finite_shot_simulator"
+    assert result.method == "stochastic_parameter_shift"
+    assert result.total_evaluations == 2
+    assert result.total_shots == 2 * shots
+    np.testing.assert_allclose(result.gradient, np.array([expected_gradient]), atol=1e-12)
+    np.testing.assert_allclose(result.standard_error, np.array([expected_standard_error]))
+    assert result.records[0].plus.shots == shots
+    assert result.records[0].minus.shots == shots
+
+
 def test_execute_qiskit_statevector_parameter_shift_handles_two_parameters() -> None:
     theta_0 = Parameter("theta_0")
     theta_1 = Parameter("theta_1")
@@ -117,3 +143,11 @@ def test_qiskit_parameter_shift_rejects_unbound_or_bad_inputs() -> None:
         )
     with pytest.raises(ValueError, match="parameters"):
         generate_qiskit_parameter_shift_circuits(circuit, (), np.array([], dtype=float))
+    with pytest.raises(ValueError, match="shots"):
+        execute_qiskit_finite_shot_parameter_shift(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=0,
+        )

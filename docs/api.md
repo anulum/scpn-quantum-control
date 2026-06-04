@@ -40,7 +40,10 @@ and fail-closed backend policy in one serialisable result.
 For Qiskit-native circuit workflows, use
 `generate_qiskit_parameter_shift_circuits(...)` to produce the plus/minus bound
 circuits, or `execute_qiskit_statevector_parameter_shift(...)` to evaluate a
-local Statevector value and gradient against a supplied observable.
+local Statevector value and gradient against a supplied observable. Use
+`execute_qiskit_finite_shot_parameter_shift(...)` when the same Qiskit circuit
+needs provider-contract style shot accounting, sample variances, propagated
+standard errors, and confidence radii without submitting hardware jobs.
 
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
