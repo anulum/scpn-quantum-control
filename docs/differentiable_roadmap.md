@@ -18,7 +18,7 @@ This roadmap defines the staged work needed to turn differentiable programming i
 | 2 | Public gradient API | `grad`, `value_and_grad`, support reports, typed errors. |
 | 3 | Gradient tape | MVP context manager available for supported phase parameter-shift records; expand to nesting semantics and programme-IR traces. |
 | 4 | Backend gradient planner | MVP available for statevector, finite-shot simulator, fail-closed hardware routes, and callback-based provider parameter-shift execution with shot/variance accounting; expand to provider-specific job submission policies. |
-| 5 | Framework adapters | JAX host-callback, JAX gradient-agreement certificates, PyTorch tensor, TensorFlow tensor, PennyLane agreement checks, and PennyLane caller-supplied QNode round-trip certificates are available for supported phase parameter-shift calls. Native framework autodiff-through-simulator kernels, full PennyLane/Qiskit migration, and unrestricted provider-backed gradient execution remain open. |
+| 5 | Framework adapters | JAX host-callback, JAX gradient-agreement certificates, PyTorch tensor, TensorFlow tensor, PennyLane agreement checks, PennyLane caller-supplied QNode round-trip certificates, and Qiskit shifted-circuit generation/local Statevector gradients are available for supported phase parameter-shift calls. Native framework autodiff-through-simulator kernels, full provider job submission, and unrestricted provider-backed gradient execution remain open. |
 | 6 | QNN/QGNN/QSNN training | Seeded convergence notebooks and benchmarks. |
 | 7 | Compiler-backed AD | Executable MLIR/LLVM/JIT kernels beyond bounded scalar/vector/matrix paths. |
 | 8 | Benchmark oracle | Quantum Sync Challenge fixtures, baselines, leaderboard-ready output. |

@@ -37,6 +37,11 @@ parameter-shift semantics and provider-specific execution layers: it records
 shifted parameters, sample values, variances, shots, uncertainty propagation,
 and fail-closed backend policy in one serialisable result.
 
+For Qiskit-native circuit workflows, use
+`generate_qiskit_parameter_shift_circuits(...)` to produce the plus/minus bound
+circuits, or `execute_qiskit_statevector_parameter_shift(...)` to evaluate a
+local Statevector value and gradient against a supplied observable.
+
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
 for public facades such as `scpn_quantum_control.kuramoto_core`. The lower-level

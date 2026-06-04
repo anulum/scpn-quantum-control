@@ -165,6 +165,40 @@ errors, confidence radii, and a claim boundary. Hardware aliases still fail
 closed unless an explicit hardware policy enables them through the backend
 planner.
 
+## Qiskit shifted-circuit generation
+
+For Qiskit-native circuits, the phase namespace can generate fully bound
+plus/minus shifted circuits and execute a local Statevector parameter-shift
+gradient:
+
+```python
+import numpy as np
+from qiskit import QuantumCircuit
+from qiskit.circuit import Parameter
+from qiskit.quantum_info import SparsePauliOp
+
+from scpn_quantum_control.phase import execute_qiskit_statevector_parameter_shift
+
+theta = Parameter("theta")
+circuit = QuantumCircuit(1)
+circuit.ry(theta, 0)
+observable = SparsePauliOp.from_list([("Z", 1.0)])
+
+result = execute_qiskit_statevector_parameter_shift(
+    circuit,
+    observable,
+    (theta,),
+    np.array([0.4]),
+)
+
+print(result.value, result.gradient)
+```
+
+This closes the automatic shifted-circuit generation gap for local Qiskit
+Statevector checks. It is not hardware execution or finite-shot provider
+submission; use the provider callback contract above when the expectation
+source is an adapter or provider runtime.
+
 ## Gradient tape MVP
 
 For local simulator workflows, `gradient_tape` records deterministic and

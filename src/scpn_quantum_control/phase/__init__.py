@@ -81,6 +81,12 @@ from .pulse_shaping import (
     ici_three_level_evolution,
     infidelity_bound,
 )
+from .qiskit_bridge import (
+    QiskitParameterShiftGradientResult,
+    QiskitParameterShiftRecord,
+    execute_qiskit_statevector_parameter_shift,
+    generate_qiskit_parameter_shift_circuits,
+)
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
@@ -141,6 +147,10 @@ __all__ = [
     "ProviderGradientExecutionResult",
     "ProviderParameterShiftRecord",
     "execute_provider_parameter_shift_gradient",
+    "QiskitParameterShiftGradientResult",
+    "QiskitParameterShiftRecord",
+    "execute_qiskit_statevector_parameter_shift",
+    "generate_qiskit_parameter_shift_circuits",
     "is_phase_torch_available",
     "torch_parameter_shift_value_and_grad",
     "PhaseTorchParameterShiftResult",
