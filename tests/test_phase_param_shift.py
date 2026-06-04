@@ -18,6 +18,7 @@ from scpn_quantum_control.phase.param_shift import (
     GradientVerificationResult,
     HessianVerificationResult,
     ParamShiftVQEResult,
+    multi_frequency_parameter_shift_rule,
     parameter_shift_gradient,
     parameter_shift_hessian,
     plan_quantum_gradient_backend,
@@ -55,6 +56,21 @@ def test_phase_param_shift_module_exports_core_gradient() -> None:
     grad = parameter_shift_gradient(objective, params, shift=np.pi / 2.0)
     expected = np.array([-np.sin(params[0]), 0.25 * np.cos(params[1])], dtype=float)
     np.testing.assert_allclose(grad, expected, atol=1e-12)
+
+
+def test_phase_param_shift_exports_multi_frequency_rule() -> None:
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
+
+    grad = parameter_shift_gradient(objective, np.array([0.4]), rule=rule)
+
+    np.testing.assert_allclose(
+        grad,
+        np.array([np.cos(0.4) - 0.2 * np.sin(0.8)]),
+        atol=1e-12,
+    )
 
 
 def test_phase_param_shift_module_exports_backend_planner() -> None:
@@ -215,6 +231,13 @@ def test_hessian_verification_rejects_unsafe_inputs() -> None:
 
     with pytest.raises(ValueError, match="second-order"):
         parameter_shift_hessian(objective, np.array([0.2]), shift=1e-8)
+
+    with pytest.raises(ValueError, match="single-term"):
+        parameter_shift_hessian(
+            objective,
+            np.array([0.2]),
+            rule=multi_frequency_parameter_shift_rule([1.0, 2.0]),
+        )
 
     def non_finite_objective(values: np.ndarray) -> float:
         if np.allclose(values, np.array([0.2]), atol=0.0, rtol=0.0):

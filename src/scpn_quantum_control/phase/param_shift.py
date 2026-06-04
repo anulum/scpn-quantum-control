@@ -23,6 +23,7 @@ from ..differentiable import (
     ShotAllocationResult,
     StochasticGradientResult,
     allocate_parameter_shift_shots,
+    multi_frequency_parameter_shift_rule,
     value_and_parameter_shift_grad,
 )
 from ..differentiable import (
@@ -421,6 +422,8 @@ def _validate_parameter_count(
 
 
 def _second_order_diagonal_coefficient(rule: ParameterShiftRule) -> float:
+    if not rule.is_single_term:
+        raise ValueError("parameter-shift Hessian currently requires a single-term rule")
     denominator = 2.0 * (1.0 - np.cos(float(rule.shift)))
     if abs(denominator) <= 1e-15 or not np.isfinite(denominator):
         raise ValueError(
@@ -998,6 +1001,7 @@ __all__ = [
     "HessianVerificationResult",
     "ShotAllocationResult",
     "StochasticGradientResult",
+    "multi_frequency_parameter_shift_rule",
     "parameter_shift_gradient",
     "parameter_shift_hessian",
     "parameter_shift_gradient_with_uncertainty",

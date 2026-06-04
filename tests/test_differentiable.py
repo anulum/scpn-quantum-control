@@ -134,6 +134,7 @@ from scpn_quantum_control.differentiable import (
     jvp,
     least_squares_covariance,
     levenberg_marquardt_step,
+    multi_frequency_parameter_shift_rule,
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
@@ -344,6 +345,83 @@ def test_parameter_metadata_validation_and_custom_rule() -> None:
     )
 
     np.testing.assert_allclose(result.gradient, [2.0 * math.cos(0.6)], atol=1e-12)
+
+
+def test_multi_frequency_parameter_shift_rule_matches_analytic_reference() -> None:
+    """Multi-frequency rules should differentiate wider generator spectra exactly."""
+
+    theta = 0.23
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0, 3.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(
+            math.sin(values[0])
+            + 0.2 * math.cos(2.0 * values[0])
+            + 0.05 * math.sin(3.0 * values[0])
+        )
+
+    result = value_and_parameter_shift_grad(objective, [theta], rule=rule)
+    expected = math.cos(theta) - 0.4 * math.sin(2.0 * theta) + 0.15 * math.cos(3.0 * theta)
+
+    assert result.method == "multi_frequency_parameter_shift"
+    assert result.shift is None
+    assert result.coefficient is None
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+    assert rule.frequencies == (1.0, 2.0, 3.0)
+    np.testing.assert_allclose(result.gradient, [expected], atol=1e-12)
+
+
+def test_multi_frequency_parameter_shift_preserves_trainable_metadata() -> None:
+    """Multi-term rules should skip frozen parameters without spending probes."""
+
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+    result = value_and_parameter_shift_grad(
+        lambda values: math.sin(values[0]) + math.sin(2.0 * values[1]),
+        [0.2, -0.3],
+        parameters=[Parameter("theta"), Parameter("frozen_phi", trainable=False)],
+        rule=rule,
+    )
+
+    np.testing.assert_allclose(result.gradient, [math.cos(0.2), 0.0], atol=1e-12)
+    assert result.parameter_names == ("theta", "frozen_phi")
+    assert result.trainable == (True, False)
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+
+
+def test_multi_frequency_parameter_shift_rule_rejects_invalid_systems() -> None:
+    """Multi-frequency rule construction must fail closed for ambiguous systems."""
+
+    with pytest.raises(ValueError, match="positive"):
+        multi_frequency_parameter_shift_rule([0.0, 1.0])
+    with pytest.raises(ValueError, match="unique"):
+        multi_frequency_parameter_shift_rule([1.0, 1.0])
+    with pytest.raises(ValueError, match="same length"):
+        multi_frequency_parameter_shift_rule([1.0, 2.0], shifts=[0.1])
+    with pytest.raises(ValueError, match="ill-conditioned"):
+        multi_frequency_parameter_shift_rule([1.0, 2.0], shifts=[math.pi, 2.0 * math.pi])
+
+
+def test_multi_frequency_parameter_shift_fails_closed_for_shot_noise_surfaces() -> None:
+    """Shot-noise helpers should reject multi-term rules until per-term samples exist."""
+
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    with pytest.raises(ValueError, match="single-term"):
+        parameter_shift_gradient_with_uncertainty(
+            [1.0],
+            [0.0],
+            [0.1],
+            [0.1],
+            [100],
+            rule=rule,
+        )
+    with pytest.raises(ValueError, match="single-term"):
+        allocate_parameter_shift_shots(
+            [0.1],
+            [0.1],
+            target_standard_error=0.1,
+            rule=rule,
+        )
 
 
 def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:

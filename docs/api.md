@@ -1104,7 +1104,7 @@ DualNumber(primal, tangent=0.0)
 ReverseNode(primal)
 Parameter(name: str, trainable: bool = True)
 ParameterBounds(lower=None, upper=None, periodic=False)
-ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5)
+ParameterShiftRule(shift: float = np.pi / 2, coefficient: float = 0.5, shifts=None, coefficients=None, frequencies=None)
 ShotAllocationResult(shots, predicted_standard_error, covariance, target_standard_error, total_shots, method, parameter_names, trainable)
 SparseMatrixResult(row_indices, column_indices, values, shape, method, parameter_names, trainable)
 FisherConjugateGradientResult(solution, residual_norm_history, iterations, converged, tolerance, damping, parameter_names, trainable)
@@ -1134,6 +1134,7 @@ WeightedGradientResult(value, gradient, components, weights, method, evaluations
 armijo_backtracking_line_search(objective, values, gradient_result, direction, bounds=None, initial_step=1.0, contraction=0.5, sufficient_decrease=1e-4, max_steps=20) -> ArmijoLineSearchResult
 parameter_shift_gradient(objective, values, parameters=None, rule=None) -> np.ndarray
 value_and_parameter_shift_grad(objective, values, parameters=None, rule=None) -> GradientResult
+multi_frequency_parameter_shift_rule(frequencies, shifts=None, max_condition=1e10) -> ParameterShiftRule
 parameter_shift_gradient_with_uncertainty(plus_values, minus_values, plus_variances, minus_variances, plus_shots, minus_shots=None, value=0.0, parameters=None, rule=None, confidence_level=0.95, confidence_z=1.959963984540054) -> StochasticGradientResult
 allocate_parameter_shift_shots(plus_variances, minus_variances, target_standard_error, parameters=None, rule=None, min_shots=1, max_shots_per_evaluation=None) -> ShotAllocationResult
 forward_mode_gradient(objective, values, parameters=None) -> np.ndarray

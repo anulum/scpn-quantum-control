@@ -7991,18 +7991,142 @@ class ParameterBounds:
 
 @dataclass(frozen=True)
 class ParameterShiftRule:
-    """Two-point parameter-shift rule for one-generator rotation parameters."""
+    """Symmetric parameter-shift rule for one- or multi-frequency generators."""
 
     shift: float = float(np.pi / 2.0)
     coefficient: float = 0.5
+    shifts: Sequence[float] | None = None
+    coefficients: Sequence[float] | None = None
+    frequencies: Sequence[float] | None = None
 
     def __post_init__(self) -> None:
-        shift = _as_real_scalar("shift", self.shift)
-        coefficient = _as_real_scalar("coefficient", self.coefficient)
-        if shift <= 0.0:
-            raise ValueError("shift must be finite and positive")
+        shifts: tuple[float, ...]
+        coefficients: tuple[float, ...]
+        if (self.shifts is None) != (self.coefficients is None):
+            raise ValueError("shifts and coefficients must be provided together")
+        if self.shifts is None:
+            shift = _as_real_scalar("shift", self.shift)
+            coefficient = _as_real_scalar("coefficient", self.coefficient)
+            if shift <= 0.0:
+                raise ValueError("shift must be finite and positive")
+            shifts = (shift,)
+            coefficients = (coefficient,)
+        else:
+            raw_shifts = _as_parameter_array(self.shifts)
+            raw_coefficients = _as_parameter_array(cast(Sequence[float], self.coefficients))
+            if raw_shifts.shape != raw_coefficients.shape:
+                raise ValueError("shifts and coefficients must have matching shapes")
+            if raw_shifts.size == 0:
+                raise ValueError("parameter-shift rule must contain at least one term")
+            if np.any(raw_shifts <= 0.0):
+                raise ValueError("shifts must contain finite positive values")
+            shifts = tuple(float(value) for value in raw_shifts)
+            coefficients = tuple(float(value) for value in raw_coefficients)
+            shift = shifts[0]
+            coefficient = coefficients[0]
+        frequencies: tuple[float, ...] | None = None
+        if self.frequencies is not None:
+            raw_frequencies = _as_parameter_array(self.frequencies)
+            if raw_frequencies.size == 0:
+                raise ValueError("frequencies must contain at least one value")
+            if np.any(raw_frequencies <= 0.0):
+                raise ValueError("frequencies must contain finite positive values")
+            if np.unique(raw_frequencies).size != raw_frequencies.size:
+                raise ValueError("frequencies must be unique")
+            frequencies = tuple(float(value) for value in raw_frequencies)
         object.__setattr__(self, "shift", shift)
         object.__setattr__(self, "coefficient", coefficient)
+        object.__setattr__(self, "shifts", shifts)
+        object.__setattr__(self, "coefficients", coefficients)
+        object.__setattr__(self, "frequencies", frequencies)
+
+    @property
+    def terms(self) -> tuple[tuple[float, float], ...]:
+        """Return `(shift, coefficient)` terms for symmetric plus/minus probes."""
+        shifts = cast(tuple[float, ...], self.shifts)
+        coefficients = cast(tuple[float, ...], self.coefficients)
+        return tuple(zip(shifts, coefficients, strict=True))
+
+    @property
+    def is_single_term(self) -> bool:
+        """Return whether this rule is the legacy two-evaluation rule."""
+        return len(self.terms) == 1
+
+
+def multi_frequency_parameter_shift_rule(
+    frequencies: ArrayLike,
+    *,
+    shifts: ArrayLike | None = None,
+    max_condition: float = 1.0e10,
+) -> ParameterShiftRule:
+    """Return an exact multi-frequency parameter-shift rule.
+
+    For trigonometric objectives with positive generator frequency set
+    `frequencies`, the coefficients solve
+    `2 * sin(frequency_i * shift_j) @ coefficient_j = frequency_i`.
+    The resulting rule can exactly differentiate any supported linear
+    combination of sine/cosine components at those frequencies.
+    """
+
+    frequency_values = _as_parameter_array(frequencies)
+    if frequency_values.size == 0:
+        raise ValueError("frequencies must contain at least one value")
+    if np.any(frequency_values <= 0.0):
+        raise ValueError("frequencies must contain finite positive values")
+    if np.unique(frequency_values).size != frequency_values.size:
+        raise ValueError("frequencies must be unique")
+    condition_limit = _as_real_scalar("max_condition", max_condition)
+    if condition_limit <= 1.0:
+        raise ValueError("max_condition must be finite and greater than one")
+
+    shift_values = (
+        _default_multi_frequency_shifts(frequency_values, max_condition=condition_limit)
+        if shifts is None
+        else _as_parameter_array(shifts)
+    )
+    if shift_values.shape != frequency_values.shape:
+        raise ValueError("shifts must have the same length as frequencies")
+    if np.any(shift_values <= 0.0):
+        raise ValueError("shifts must contain finite positive values")
+
+    sine_system = 2.0 * np.sin(np.outer(frequency_values, shift_values))
+    system_scale = float(np.max(np.abs(sine_system))) if sine_system.size else 0.0
+    if system_scale <= np.finfo(np.float64).eps:
+        raise ValueError("multi-frequency parameter-shift system is singular or ill-conditioned")
+    rank_tolerance = max(sine_system.shape) * np.finfo(np.float64).eps * max(1.0, system_scale)
+    if np.linalg.matrix_rank(sine_system, tol=rank_tolerance) != frequency_values.size:
+        raise ValueError("multi-frequency parameter-shift system is singular or ill-conditioned")
+    condition = float(np.linalg.cond(sine_system))
+    if not np.isfinite(condition) or condition > condition_limit:
+        raise ValueError("multi-frequency parameter-shift system is singular or ill-conditioned")
+    coefficients = np.linalg.solve(sine_system, frequency_values)
+    if not np.all(np.isfinite(coefficients)):
+        raise ValueError("multi-frequency parameter-shift coefficients must be finite")
+    return ParameterShiftRule(
+        shift=float(shift_values[0]),
+        coefficient=float(coefficients[0]),
+        shifts=tuple(float(value) for value in shift_values),
+        coefficients=tuple(float(value) for value in coefficients),
+        frequencies=tuple(float(value) for value in frequency_values),
+    )
+
+
+def _default_multi_frequency_shifts(
+    frequencies: NDArray[np.float64],
+    *,
+    max_condition: float,
+) -> NDArray[np.float64]:
+    count = int(frequencies.size)
+    max_frequency = float(np.max(frequencies))
+    start = 2 * count + 1
+    stop = max(start + 64, int(np.ceil(4.0 * max_frequency * count)) + 65)
+    for denominator in range(start, stop):
+        candidate = np.arange(1, count + 1, dtype=np.float64) * np.pi / float(denominator)
+        sine_system = 2.0 * np.sin(np.outer(frequencies, candidate))
+        condition = float(np.linalg.cond(sine_system))
+        if np.isfinite(condition) and condition <= max_condition:
+            return candidate
+    raise ValueError("could not construct a well-conditioned multi-frequency shift system")
 
 
 @dataclass(frozen=True)
@@ -22721,6 +22845,7 @@ def value_and_parameter_shift_grad(
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
     shift_rule = rule or ParameterShiftRule()
+    terms = shift_rule.terms
     gradient = np.zeros_like(parameter_values)
     base_value = _as_scalar(objective(parameter_values.copy()))
     evaluations = 1
@@ -22728,21 +22853,24 @@ def value_and_parameter_shift_grad(
     for index, parameter in enumerate(parameter_meta):
         if not parameter.trainable:
             continue
-        plus = parameter_values.copy()
-        minus = parameter_values.copy()
-        plus[index] += shift_rule.shift
-        minus[index] -= shift_rule.shift
-        plus_value = _as_scalar(objective(plus))
-        minus_value = _as_scalar(objective(minus))
-        evaluations += 2
-        gradient[index] = shift_rule.coefficient * (plus_value - minus_value)
+        for shift, coefficient in terms:
+            plus = parameter_values.copy()
+            minus = parameter_values.copy()
+            plus[index] += shift
+            minus[index] -= shift
+            plus_value = _as_scalar(objective(plus))
+            minus_value = _as_scalar(objective(minus))
+            evaluations += 2
+            gradient[index] += coefficient * (plus_value - minus_value)
 
     return GradientResult(
         value=base_value,
         gradient=gradient,
-        method="parameter_shift",
-        shift=shift_rule.shift,
-        coefficient=shift_rule.coefficient,
+        method="parameter_shift"
+        if shift_rule.is_single_term
+        else "multi_frequency_parameter_shift",
+        shift=shift_rule.shift if shift_rule.is_single_term else None,
+        coefficient=shift_rule.coefficient if shift_rule.is_single_term else None,
         evaluations=evaluations,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
@@ -22795,6 +22923,8 @@ def parameter_shift_gradient_with_uncertainty(
 
     parameter_meta = _normalise_parameters(plus, parameters)
     shift_rule = rule or ParameterShiftRule()
+    if not shift_rule.is_single_term:
+        raise ValueError("shot-noise parameter-shift currently requires a single-term rule")
     gradient = np.zeros_like(plus)
     variance = np.zeros_like(plus)
     for index, parameter in enumerate(parameter_meta):
@@ -22854,6 +22984,8 @@ def allocate_parameter_shift_shots(
         raise ValueError("max_shots_per_evaluation must be an integer >= min_shots")
     parameter_meta = _normalise_parameters(plus_var, parameters)
     shift_rule = rule or ParameterShiftRule()
+    if not shift_rule.is_single_term:
+        raise ValueError("shot allocation currently requires a single-term parameter-shift rule")
     shot_plan = np.full((2, plus_var.size), float(min_shots), dtype=np.float64)
     variance = np.zeros_like(plus_var)
     target_variance = target**2
@@ -25550,6 +25682,7 @@ __all__ = [
     "sparse_empirical_fisher_metric",
     "sparse_hessian",
     "sparse_jacobian",
+    "multi_frequency_parameter_shift_rule",
     "parameter_shift_gradient_with_uncertainty",
     "update_levenberg_marquardt_damping",
     "weighted_gradient_sum",

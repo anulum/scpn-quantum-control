@@ -14,7 +14,7 @@ This roadmap defines the staged work needed to turn differentiable programming i
 
 | Stage | Deliverable | Promotion evidence |
 |---|---|---|
-| 1 | Parameter-shift core for Kuramoto-XY/VQE objectives | Analytic checks, finite-difference checks, second-order Hessian certificates, convergence tests. |
+| 1 | Parameter-shift core for Kuramoto-XY/VQE objectives | Analytic checks, finite-difference checks, multi-frequency parameter-shift rules, second-order Hessian certificates, convergence tests. |
 | 2 | Public gradient API | `grad`, `value_and_grad`, support reports, typed errors. |
 | 3 | Gradient tape | MVP context manager available for supported phase parameter-shift records; expand to nesting semantics and programme-IR traces. |
 | 4 | Backend gradient planner | MVP available for statevector, finite-shot simulator, fail-closed hardware routes, and callback-based provider parameter-shift execution with shot/variance accounting; expand to provider-specific job submission policies. |
