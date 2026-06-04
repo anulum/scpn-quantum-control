@@ -146,7 +146,7 @@ layers:
 |---|---|---|
 | Quantum parameter-shift | Supported through `scpn_quantum_control.phase.param_shift` for callable expectation objectives, structured `PhaseVQE` gradients, and local gradient-descent VQE examples. | [Quantum Gradients](docs/quantum_gradients.md), [Variational Methods](docs/variational.md) |
 | Program and compiler AD | Supported for registered scalar, vector, and matrix primitives with native lowering reports and fail-closed unsupported boundaries. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
-| ML framework and tape roadmap | JAX, PyTorch, TensorFlow, PennyLane, Qiskit, gradient tape, QNN, QGNN, QSNN, and backend gradient planners are planned as staged public surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
+| ML framework and tape roadmap | Gradient tape, backend gradient planning, convergence certificates, and an optional JAX host-callback parameter-shift bridge are available. PyTorch, TensorFlow, PennyLane/Qiskit migration bridges, QNN, QGNN, and QSNN remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
 They need gradients, convergence evidence, framework interop, reproducible
@@ -162,10 +162,11 @@ The first production-grade differentiable workflows are deliberately bounded:
 4. document unsupported gates, backends, shapes, and dynamic program paths
    before they can mislead users.
 
-Future releases will extend this route toward backend-aware quantum gradients,
-JAX/PyTorch/TensorFlow adapters, PennyLane/Qiskit migration bridges,
-quantum neural networks, analog oscillator mappings, open-system gradients,
-benchmark leaderboards, and real-time feedback control.
+Future releases will extend this route toward native framework gradients beyond
+the current JAX host-callback bridge, PyTorch/TensorFlow adapters,
+PennyLane/Qiskit migration bridges, quantum neural networks, analog oscillator
+mappings, open-system gradients, benchmark leaderboards, and real-time
+feedback control.
 
 ## Richer Presentation
 

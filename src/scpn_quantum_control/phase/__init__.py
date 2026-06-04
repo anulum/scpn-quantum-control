@@ -23,6 +23,11 @@ from .gradient_backend import (
     quantum_gradient_backend_capability,
 )
 from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
+from .jax_bridge import (
+    PhaseJAXParameterShiftResult,
+    is_phase_jax_available,
+    jax_parameter_shift_value_and_grad,
+)
 from .kuramoto_variants import (
     HigherOrderKuramotoSpec,
     KuramotoVariant,
@@ -94,6 +99,9 @@ __all__ = [
     "gradient_tape",
     "QuantumGradientTape",
     "TapeGradientRecord",
+    "is_phase_jax_available",
+    "jax_parameter_shift_value_and_grad",
+    "PhaseJAXParameterShiftResult",
     "build_structured_ansatz",
     "LindbladSyncEngine",
     "parameter_shift_gradient",

@@ -18,6 +18,7 @@ This page maps the public differentiable-programming namespace and the related q
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
+| `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, and support-profile reports. |
 
 ## Common objects
@@ -30,6 +31,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
 | Gradient-training evidence | `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics`, `validate_param_shift_convergence` | Certify accepted energy descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
+| Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
 
 ## Minimal parameter-shift call
 
@@ -129,6 +131,30 @@ print(record.gradient, record.plan.method)
 
 The tape records only supported phase-gradient evaluations. Unsupported
 hardware routes fail closed through the same backend planner.
+
+## Minimal JAX host-callback bridge
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import jax_parameter_shift_value_and_grad
+
+
+def cost(params: np.ndarray) -> float:
+    return float(np.cos(params[0]))
+
+
+result = jax_parameter_shift_value_and_grad(
+    cost,
+    np.array([0.4]),
+    jit=True,
+)
+print(result.gradient, result.host_callback)
+```
+
+This is an optional interop adapter. It imports JAX only when called and reports
+`host_callback=True` for JIT-wrapped execution. Native JAX-differentiated
+quantum kernels remain a separate roadmap item.
 
 ## Minimal custom primitive route
 

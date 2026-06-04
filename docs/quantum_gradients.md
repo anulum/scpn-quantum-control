@@ -161,6 +161,33 @@ line-search steps, backtracking counts, final gradient norm, exact-energy gap
 when a Kuramoto-XY Hamiltonian reference is available, and optional pass/fail
 flags for requested gap or gradient tolerances.
 
+## Optional JAX bridge
+
+`phase.jax_bridge` provides a bounded JAX-facing adapter for supported
+parameter-shift calls:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import jax_parameter_shift_value_and_grad
+
+
+def objective(params: np.ndarray) -> float:
+    return float(np.cos(params[0]))
+
+
+result = jax_parameter_shift_value_and_grad(
+    objective,
+    np.array([0.4]),
+    jit=True,
+)
+print(result.gradient, result.jitted, result.host_callback)
+```
+
+The bridge is optional and fail-closed. It imports JAX only when called. JIT
+mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
+therefore does not claim native JAX differentiation of a quantum kernel.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:
