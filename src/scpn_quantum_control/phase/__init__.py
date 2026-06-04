@@ -15,9 +15,11 @@ from .ansatz_bench import benchmark_ansatz, run_ansatz_benchmark
 from .ansatz_methodology import AnsatzBenchmarkResult
 from .avqds import AVQDSResult, avqds_simulate
 from .coupling_learning import (
+    CouplingGradientVerificationResult,
     CouplingLearningResult,
     coupling_matrix_from_edge_vector,
     learn_couplings_from_observations,
+    verify_coupling_parameter_shift_gradient,
 )
 from .cross_domain_transfer import TransferResult, build_systems, transfer_experiment
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
@@ -140,7 +142,9 @@ __all__ = [
     "avqds_simulate",
     "AVQDSResult",
     "learn_couplings_from_observations",
+    "verify_coupling_parameter_shift_gradient",
     "coupling_matrix_from_edge_vector",
+    "CouplingGradientVerificationResult",
     "CouplingLearningResult",
     "varqite_ground_state",
     "VarQITEResult",

@@ -1230,6 +1230,7 @@ check_custom_derivative_consistency(rule, values, tangent, cotangent, parameters
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
 learn_couplings_from_observations(observation_model, target_observations, initial_couplings, n_nodes=None, edges=None, backend="statevector", rule=None, learning_rate=0.1, max_steps=100) -> CouplingLearningResult
+verify_coupling_parameter_shift_gradient(observation_model, target_observations, couplings, n_nodes=None, edges=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> CouplingGradientVerificationResult
 parameter_shift_gradient_descent(objective, initial_params, parameters=None, rule=None, backend="statevector", learning_rate=0.1, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> ParameterShiftTrainingResult
 validate_parameter_shift_training(result, gradient_tolerance=None, target_value=None, target_value_tolerance=1e-8, min_decrease=None) -> ParameterShiftTrainingCertificate
 NaturalGradientOptimizer(...).minimize(objective, initial_values, metric_fn, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_steps=100, gradient_tolerance=1e-8, step_tolerance=1e-8, value_tolerance=None) -> NaturalGradientOptimizationResult
@@ -1264,6 +1265,12 @@ returns `CouplingLearningResult` with learned matrix, static edge list,
 target/predicted observations, residuals, optimizer trace, convergence
 certificate, backend plan, and an explicit claim boundary rejecting arbitrary
 classical regression and default hardware execution.
+`verify_coupling_parameter_shift_gradient()` compares the coupling objective's
+parameter-shift gradient against an independent central finite-difference
+reference for small smooth observation models. Its certificate records both
+gradient vectors, absolute-error vector, maximum error, evaluation counts,
+edge provenance, and a claim boundary excluding discontinuous, shot-noisy,
+hardware-only, or arbitrary regression models.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

@@ -15,7 +15,12 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from ..differentiable import Parameter, ParameterShiftRule
+from ..differentiable import (
+    Parameter,
+    ParameterShiftRule,
+    value_and_finite_difference_grad,
+    value_and_parameter_shift_grad,
+)
 from .gradient_descent import (
     ParameterShiftTrainingCertificate,
     ParameterShiftTrainingResult,
@@ -26,6 +31,25 @@ from .gradient_descent import (
 FloatArray = NDArray[np.float64]
 Edge = tuple[int, int]
 CouplingObservationModel = Callable[[FloatArray], ArrayLike]
+
+
+def _as_finite_scalar(name: str, value: object) -> float:
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "c", "O", "S", "U"}:
+        raise ValueError(f"{name} must be a finite real scalar")
+    scalar = float(raw.item())
+    if not np.isfinite(scalar):
+        raise ValueError(f"{name} must be a finite real scalar")
+    return scalar
+
+
+def _as_finite_vector(name: str, values: ArrayLike) -> FloatArray:
+    vector = np.asarray(values, dtype=float)
+    if vector.ndim != 1:
+        raise ValueError(f"{name} must be a one-dimensional array")
+    if not np.all(np.isfinite(vector)):
+        raise ValueError(f"{name} must contain only finite values")
+    return vector.astype(np.float64, copy=True)
 
 
 @dataclass(frozen=True)
@@ -67,6 +91,98 @@ class CouplingLearningResult:
             "backend": self.backend,
             "best_loss": self.best_loss,
             "max_abs_residual": self.max_abs_residual,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class CouplingGradientVerificationResult:
+    """Finite-difference agreement certificate for coupling-learning gradients."""
+
+    parameters: FloatArray
+    parameter_shift_gradient: FloatArray
+    finite_difference_gradient: FloatArray
+    abs_error: FloatArray
+    max_abs_error: float
+    objective_value: float
+    value_delta: float
+    passed: bool
+    method: str
+    finite_difference_step: float
+    tolerance: float
+    parameter_shift_evaluations: int
+    finite_difference_evaluations: int
+    edges: tuple[Edge, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        parameters = _as_finite_vector("verification parameters", self.parameters)
+        parameter_shift_gradient = _as_finite_vector(
+            "parameter_shift_gradient",
+            self.parameter_shift_gradient,
+        )
+        finite_difference_gradient = _as_finite_vector(
+            "finite_difference_gradient",
+            self.finite_difference_gradient,
+        )
+        abs_error = _as_finite_vector("abs_error", self.abs_error)
+        if parameter_shift_gradient.shape != parameters.shape:
+            raise ValueError("parameter_shift_gradient shape must match parameters")
+        if finite_difference_gradient.shape != parameters.shape:
+            raise ValueError("finite_difference_gradient shape must match parameters")
+        if abs_error.shape != parameters.shape:
+            raise ValueError("abs_error shape must match parameters")
+        if np.any(abs_error < 0.0):
+            raise ValueError("abs_error must be non-negative")
+        max_abs_error = _as_finite_scalar("max_abs_error", self.max_abs_error)
+        objective_value = _as_finite_scalar("objective_value", self.objective_value)
+        value_delta = _as_finite_scalar("value_delta", self.value_delta)
+        finite_difference_step = _as_finite_scalar(
+            "finite_difference_step",
+            self.finite_difference_step,
+        )
+        tolerance = _as_finite_scalar("tolerance", self.tolerance)
+        if max_abs_error < 0.0:
+            raise ValueError("max_abs_error must be non-negative")
+        if finite_difference_step <= 0.0:
+            raise ValueError("finite_difference_step must be finite and positive")
+        if tolerance < 0.0:
+            raise ValueError("tolerance must be finite and non-negative")
+        if not isinstance(self.passed, bool):
+            raise ValueError("passed must be a boolean")
+        if not self.method:
+            raise ValueError("method must be non-empty")
+        if self.parameter_shift_evaluations < 1:
+            raise ValueError("parameter_shift_evaluations must be positive")
+        if self.finite_difference_evaluations < 1:
+            raise ValueError("finite_difference_evaluations must be positive")
+        object.__setattr__(self, "parameters", parameters)
+        object.__setattr__(self, "parameter_shift_gradient", parameter_shift_gradient)
+        object.__setattr__(self, "finite_difference_gradient", finite_difference_gradient)
+        object.__setattr__(self, "abs_error", abs_error)
+        object.__setattr__(self, "max_abs_error", max_abs_error)
+        object.__setattr__(self, "objective_value", objective_value)
+        object.__setattr__(self, "value_delta", value_delta)
+        object.__setattr__(self, "finite_difference_step", finite_difference_step)
+        object.__setattr__(self, "tolerance", tolerance)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready gradient-verification evidence."""
+        return {
+            "parameters": self.parameters.tolist(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "finite_difference_gradient": self.finite_difference_gradient.tolist(),
+            "abs_error": self.abs_error.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "objective_value": self.objective_value,
+            "value_delta": self.value_delta,
+            "passed": self.passed,
+            "method": self.method,
+            "finite_difference_step": self.finite_difference_step,
+            "tolerance": self.tolerance,
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "finite_difference_evaluations": self.finite_difference_evaluations,
+            "edges": [list(edge) for edge in self.edges],
             "claim_boundary": self.claim_boundary,
         }
 
@@ -283,9 +399,96 @@ def learn_couplings_from_observations(
     )
 
 
+def verify_coupling_parameter_shift_gradient(
+    observation_model: CouplingObservationModel,
+    target_observations: ArrayLike,
+    couplings: ArrayLike,
+    *,
+    n_nodes: int | None = None,
+    edges: Sequence[Sequence[int]] | None = None,
+    rule: ParameterShiftRule | None = None,
+    finite_difference_step: float = 1.0e-6,
+    tolerance: float = 1.0e-5,
+) -> CouplingGradientVerificationResult:
+    """Verify coupling gradients against central finite differences.
+
+    This diagnostic is intended for small smooth observation models where a
+    central finite-difference reference is affordable. It does not certify
+    discontinuous, shot-noisy, hardware-only, or arbitrary regression models.
+    """
+    step_value = _as_finite_scalar("finite_difference_step", finite_difference_step)
+    if step_value <= 0.0:
+        raise ValueError("finite_difference_step must be finite and positive")
+    tolerance_value = _as_finite_scalar("tolerance", tolerance)
+    if tolerance_value < 0.0:
+        raise ValueError("tolerance must be finite and non-negative")
+    target = _as_target_observations(target_observations)
+    initial_matrix, values, edge_tuple = _initial_matrix_and_vector(
+        couplings,
+        n_nodes=n_nodes,
+        edges=edges,
+    )
+    node_count = int(initial_matrix.shape[0])
+    parameters = [Parameter(f"K_{row}_{col}") for row, col in edge_tuple]
+
+    def objective(edge_values: FloatArray) -> float:
+        matrix = coupling_matrix_from_edge_vector(
+            edge_values,
+            n_nodes=node_count,
+            edges=edge_tuple,
+        )
+        prediction = _evaluate_observation_model(
+            observation_model,
+            matrix,
+            target.shape,
+        )
+        residuals = prediction - target
+        return float(np.mean(residuals * residuals))
+
+    parameter_shift = value_and_parameter_shift_grad(
+        objective,
+        values,
+        parameters=parameters,
+        rule=rule,
+    )
+    finite_difference = value_and_finite_difference_grad(
+        objective,
+        values,
+        parameters=parameters,
+        step=step_value,
+    )
+    delta = parameter_shift.gradient - finite_difference.gradient
+    abs_error = np.abs(delta)
+    max_abs_error = float(np.max(abs_error)) if abs_error.size else 0.0
+    value_delta = float(parameter_shift.value - finite_difference.value)
+    return CouplingGradientVerificationResult(
+        parameters=values,
+        parameter_shift_gradient=parameter_shift.gradient,
+        finite_difference_gradient=finite_difference.gradient,
+        abs_error=abs_error,
+        max_abs_error=max_abs_error,
+        objective_value=parameter_shift.value,
+        value_delta=value_delta,
+        passed=max_abs_error <= tolerance_value,
+        method="parameter_shift_vs_central_finite_difference",
+        finite_difference_step=step_value,
+        tolerance=tolerance_value,
+        parameter_shift_evaluations=parameter_shift.evaluations,
+        finite_difference_evaluations=finite_difference.evaluations,
+        edges=edge_tuple,
+        claim_boundary=(
+            "small smooth parameter-shift-compatible coupling objectives only; "
+            "not discontinuous, shot-noisy, hardware-only, or arbitrary "
+            "classical regression models"
+        ),
+    )
+
+
 __all__ = [
+    "CouplingGradientVerificationResult",
     "CouplingLearningResult",
     "CouplingObservationModel",
     "coupling_matrix_from_edge_vector",
     "learn_couplings_from_observations",
+    "verify_coupling_parameter_shift_gradient",
 ]

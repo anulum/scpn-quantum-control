@@ -13,10 +13,12 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.phase import (
+    CouplingGradientVerificationResult,
     CouplingLearningResult,
     coupling_matrix_from_edge_vector,
     learn_couplings_from_observations,
     multi_frequency_parameter_shift_rule,
+    verify_coupling_parameter_shift_gradient,
 )
 
 
@@ -70,6 +72,52 @@ def test_coupling_matrix_from_edge_vector_preserves_static_edges() -> None:
         dtype=float,
     )
     np.testing.assert_allclose(matrix, expected, atol=1e-14)
+
+
+def test_verify_coupling_parameter_shift_gradient_matches_finite_difference() -> None:
+    def observation_model(couplings: np.ndarray) -> np.ndarray:
+        return np.array([np.sin(couplings[0, 1])], dtype=float)
+
+    initial = np.array([[0.0, 0.8], [0.8, 0.0]], dtype=float)
+    rule = multi_frequency_parameter_shift_rule([2.0])
+
+    certificate = verify_coupling_parameter_shift_gradient(
+        observation_model,
+        np.array([0.0], dtype=float),
+        initial,
+        rule=rule,
+        finite_difference_step=1e-6,
+        tolerance=1e-5,
+    )
+
+    assert isinstance(certificate, CouplingGradientVerificationResult)
+    assert certificate.passed
+    assert certificate.edges == ((0, 1),)
+    assert certificate.max_abs_error < 1e-5
+    assert certificate.parameter_shift_evaluations >= 3
+    assert certificate.finite_difference_evaluations >= 3
+    np.testing.assert_allclose(
+        certificate.parameter_shift_gradient,
+        certificate.finite_difference_gradient,
+        atol=1e-5,
+    )
+    payload = certificate.to_dict()
+    assert payload["passed"] is True
+    assert payload["edges"] == [[0, 1]]
+    assert payload["method"] == "parameter_shift_vs_central_finite_difference"
+
+
+def test_verify_coupling_parameter_shift_gradient_rejects_bad_step() -> None:
+    def observation_model(couplings: np.ndarray) -> np.ndarray:
+        return np.array([np.sin(couplings[0, 1])], dtype=float)
+
+    with pytest.raises(ValueError, match="finite_difference_step"):
+        verify_coupling_parameter_shift_gradient(
+            observation_model,
+            np.array([0.0], dtype=float),
+            np.array([[0.0, 0.8], [0.8, 0.0]], dtype=float),
+            finite_difference_step=0.0,
+        )
 
 
 def test_learn_couplings_from_observations_fails_closed_for_hardware() -> None:

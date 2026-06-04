@@ -392,6 +392,7 @@ import numpy as np
 from scpn_quantum_control.phase import (
     learn_couplings_from_observations,
     multi_frequency_parameter_shift_rule,
+    verify_coupling_parameter_shift_gradient,
 )
 
 
@@ -406,7 +407,15 @@ run = learn_couplings_from_observations(
     rule=multi_frequency_parameter_shift_rule([2.0]),
 )
 
+certificate = verify_coupling_parameter_shift_gradient(
+    observations,
+    np.array([0.0]),
+    np.array([[0.0, 0.8], [0.8, 0.0]]),
+    rule=multi_frequency_parameter_shift_rule([2.0]),
+)
+
 print(run.best_loss, run.max_abs_residual)
+print(certificate.passed, certificate.max_abs_error)
 ```
 
 The result records the initial and learned symmetric coupling matrices,
@@ -414,6 +423,11 @@ trainable edge list, target and predicted observations, residuals, optimizer
 trace, convergence certificate, and a claim boundary. The supported claim is
 sinusoidal or quantum-expectation observation models with declared shift rules;
 arbitrary classical regressors and hardware execution remain fail-closed.
+The verification certificate records the parameter-shift gradient, independent
+central finite-difference gradient, absolute-error vector, maximum error,
+evaluation counts, and edge provenance. It is intended for small smooth
+diagnostic objectives; discontinuities, shot-noisy hardware runs, and arbitrary
+regression models remain outside the certified boundary.
 
 ## Convergence evidence
 
