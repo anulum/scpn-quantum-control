@@ -22,6 +22,13 @@ from .gradient_backend import (
     plan_quantum_gradient_backend,
     quantum_gradient_backend_capability,
 )
+from .gradient_descent import (
+    ParameterShiftTrainingCertificate,
+    ParameterShiftTrainingResult,
+    ParameterShiftTrainingStep,
+    parameter_shift_gradient_descent,
+    validate_parameter_shift_training,
+)
 from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
 from .jax_bridge import (
     PhaseJAXGradientAgreementResult,
@@ -136,6 +143,11 @@ __all__ = [
     "plan_quantum_gradient_backend",
     "QuantumGradientBackendCapability",
     "QuantumGradientPlan",
+    "parameter_shift_gradient_descent",
+    "validate_parameter_shift_training",
+    "ParameterShiftTrainingCertificate",
+    "ParameterShiftTrainingResult",
+    "ParameterShiftTrainingStep",
     "gradient_tape",
     "QuantumGradientTape",
     "TapeGradientRecord",

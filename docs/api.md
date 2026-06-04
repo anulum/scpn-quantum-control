@@ -1222,6 +1222,8 @@ check_parameter_shift_consistency(objective, values, parameters=None, rule=None,
 check_custom_derivative_consistency(rule, values, tangent, cotangent, parameters=None, finite_difference_step=1e-6, tolerance=1e-5) -> CustomDerivativeCheckResult
 DifferentiableOptimizer(learning_rate=0.01).step(values, gradient_result, bounds=None, max_gradient_norm=None) -> np.ndarray
 DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_gradient_norm=None, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> OptimizationResult
+parameter_shift_gradient_descent(objective, initial_params, parameters=None, rule=None, backend="statevector", learning_rate=0.1, max_steps=100, gradient_tolerance=1e-8, value_tolerance=None) -> ParameterShiftTrainingResult
+validate_parameter_shift_training(result, gradient_tolerance=None, target_value=None, target_value_tolerance=1e-8, min_decrease=None) -> ParameterShiftTrainingCertificate
 NaturalGradientOptimizer(...).minimize(objective, initial_values, metric_fn, parameters=None, rule=None, gradient_method="parameter_shift", finite_difference_step=1e-6, bounds=None, max_steps=100, gradient_tolerance=1e-8, step_tolerance=1e-8, value_tolerance=None) -> NaturalGradientOptimizationResult
 LevenbergMarquardtOptimizer(...).minimize(objective, initial_values, parameters=None, bounds=None, weight_fn=None, rcond=1e-12) -> LevenbergMarquardtResult
 is_jax_autodiff_available() -> bool
@@ -1248,6 +1250,13 @@ consumes them.
 `DifferentiableOptimizer.minimize()` is deliberately bounded: it records scalar
 objective history, preserves non-trainable parameters, and exits only through
 explicit gradient tolerance, optional value tolerance, or `max_steps`.
+`parameter_shift_gradient_descent()` is the phase-native training surface for
+quantum objectives: it plans a fail-closed backend route, evaluates native
+parameter-shift gradients, applies Armijo backtracking, and records
+`ParameterShiftTrainingStep` traces with method, shift-term, and evaluation
+provenance. `validate_parameter_shift_training()` turns that trace into a
+certificate for monotone accepted values, final-gradient tolerance, target-value
+tolerance, and minimum achieved decrease.
 `armijo_backtracking_line_search()` provides a fail-closed sufficient-decrease
 step selector for scalar objectives, masking frozen directions, projecting
 declared bounds, and returning accepted/rejected provenance plus trial values.

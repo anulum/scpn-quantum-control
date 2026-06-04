@@ -16,6 +16,7 @@ This page maps the public differentiable-programming namespace and the related q
 |---|---|
 | `scpn_quantum_control.differentiable` | AD data structures, primitive registry contracts, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
+| `scpn_quantum_control.phase.gradient_descent` | Generic parameter-shift gradient descent with line-search traces and convergence certificates. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
 | `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls. |
@@ -33,7 +34,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
-| Gradient-training evidence | `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics`, `validate_param_shift_convergence` | Certify accepted energy descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
+| Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
 | Optional PennyLane agreement | `PennyLaneGradientAgreementResult`, `check_pennylane_parameter_shift_agreement`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against a caller-supplied PennyLane gradient callable. |
 | Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `torch_parameter_shift_value_and_grad`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors while preserving NumPy evidence. |
@@ -78,7 +79,9 @@ gradient norm.
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    parameter_shift_gradient_descent,
     validate_param_shift_convergence,
+    validate_parameter_shift_training,
     vqe_with_param_shift,
 )
 
@@ -96,6 +99,18 @@ run = vqe_with_param_shift(
 )
 certificate = validate_param_shift_convergence(run, gradient_tolerance=0.08)
 assert certificate.monotone_energy
+
+generic_run = parameter_shift_gradient_descent(
+    cost,
+    np.array([2.7, -0.4]),
+    max_steps=28,
+    learning_rate=0.35,
+)
+generic_certificate = validate_parameter_shift_training(
+    generic_run,
+    gradient_tolerance=0.08,
+)
+assert generic_certificate.monotone_accepted_values
 ```
 
 ## Minimal backend gradient plan

@@ -80,6 +80,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [PhaseVQE]
 
+::: scpn_quantum_control.phase.gradient_descent
+    options:
+      members: [ParameterShiftTrainingStep, ParameterShiftTrainingResult, ParameterShiftTrainingCertificate, parameter_shift_gradient_descent, validate_parameter_shift_training]
+
 ::: scpn_quantum_control.phase.trotter_upde
     options:
       members: [QuantumUPDESolver]

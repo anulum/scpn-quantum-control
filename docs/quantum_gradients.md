@@ -319,6 +319,54 @@ The MVP remains intentionally bounded. It is not a full programme-IR tape, does
 not capture arbitrary Python side effects, and does not enable hardware
 gradients without explicit policy approval.
 
+## Parameter-shift gradient descent
+
+For training and onboarding evidence, the phase namespace exposes a bounded
+gradient-descent loop over native parameter-shift gradients:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    parameter_shift_gradient_descent,
+    validate_parameter_shift_training,
+)
+
+
+def objective(params: np.ndarray) -> float:
+    return float(1.0 - np.cos(params[0]))
+
+
+run = parameter_shift_gradient_descent(
+    objective,
+    np.array([0.8]),
+    learning_rate=0.5,
+    max_steps=80,
+    gradient_tolerance=1e-7,
+)
+certificate = validate_parameter_shift_training(
+    run,
+    gradient_tolerance=1e-7,
+    target_value=0.0,
+    target_value_tolerance=1e-10,
+)
+
+print(run.best_value, certificate.monotone_accepted_values)
+```
+
+`ParameterShiftTrainingResult` records the initial/final/best objective value,
+initial/final/best parameter vectors, final gradient, accepted and rejected
+step counts, total objective evaluations, backend plan, native method, shift
+term count, and every line-search step. `validate_parameter_shift_training`
+turns that trace into a machine-checkable certificate for monotone accepted
+values, target-value tolerance, minimum decrease, and final-gradient tolerance.
+Multi-frequency rules preserve their `shift_terms` through every step.
+
+Unsuitable scenarios remain explicit: hardware backends fail closed unless a
+future policy enables them, non-finite objectives are rejected, and line-search
+failure is recorded as `reason="line_search_failed"` instead of being promoted
+as convergence.
+
 ## Convergence evidence
 
 `vqe_with_param_shift` now returns auditable convergence metadata in addition to
