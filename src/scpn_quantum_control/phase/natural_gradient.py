@@ -21,9 +21,9 @@ from ..differentiable import value_and_parameter_shift_grad as _value_and_grad
 from .gradient_backend import QuantumGradientPlan, plan_quantum_gradient_backend
 
 FloatArray: TypeAlias = NDArray[np.float64]
-ScalarObjective = Callable[[FloatArray], float]
-MetricTensorProvider = Callable[[FloatArray], ArrayLike]
-MetricTensorInput = ArrayLike | MetricTensorProvider | None
+ScalarObjective: TypeAlias = Callable[[FloatArray], float]
+MetricTensorProvider: TypeAlias = Callable[[FloatArray], ArrayLike]
+MetricTensorInput: TypeAlias = ArrayLike | MetricTensorProvider | None
 
 
 @dataclass(frozen=True)
