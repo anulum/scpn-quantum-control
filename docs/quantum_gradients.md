@@ -68,6 +68,29 @@ tolerances, and objective-evaluation accounting. Finite differences are used
 only as an independent diagnostic for small smooth objectives; they are not
 advertised as a scalable hardware-gradient method.
 
+Second-order curvature evidence is available through
+`parameter_shift_hessian(...)`, `verify_parameter_shift_hessian(...)`, and
+`verify_vqe_parameter_shift_hessian(...)` for the same standard
+shift-compatible objective class. Diagonal entries use the sinusoidal
+second-derivative shift identity, mixed entries compose first-order shifts, and
+the verification certificate compares the result against central finite
+differences:
+
+```python
+from scpn_quantum_control.phase import verify_parameter_shift_hessian
+
+certificate = verify_parameter_shift_hessian(
+    objective,
+    np.array([0.2, -0.4]),
+)
+
+print(certificate.passed, certificate.max_abs_error)
+```
+
+This is a local curvature diagnostic for small supported objectives. It is not a
+claim of universal quantum Fisher information, arbitrary-circuit adjoint
+curvature, or hardware-efficient Hessian estimation.
+
 ## Kuramoto-XY VQE route
 
 `PhaseVQE` exposes a direct parameter-shift path for its K_nm-informed

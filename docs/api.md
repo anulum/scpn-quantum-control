@@ -25,10 +25,12 @@ symbol alone.
 
 For visible correctness evidence, the phase gradient API includes
 `verify_parameter_shift_gradient(...)` and
-`verify_vqe_parameter_shift_gradient(...)`. They emit finite-difference
-agreement certificates with pass/fail status, absolute and relative error
-maxima, and evaluation counts so notebooks, CI, and provider adapters can share
-the same gradient-verification record.
+`verify_vqe_parameter_shift_gradient(...)` for first derivatives plus
+`verify_parameter_shift_hessian(...)` and
+`verify_vqe_parameter_shift_hessian(...)` for second-order curvature on standard
+shift-compatible objectives. They emit finite-difference agreement certificates
+with pass/fail status, absolute and relative error maxima, and evaluation counts
+so notebooks, CI, and provider adapters can share the same verification record.
 
 For backend execution, use
 `execute_provider_parameter_shift_gradient(...)` with a

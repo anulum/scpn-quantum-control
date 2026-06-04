@@ -16,12 +16,16 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 from scpn_quantum_control.phase import vqe_with_param_shift
 from scpn_quantum_control.phase.param_shift import (
     GradientVerificationResult,
+    HessianVerificationResult,
     ParamShiftVQEResult,
     parameter_shift_gradient,
+    parameter_shift_hessian,
     plan_quantum_gradient_backend,
     value_and_vqe_grad,
     verify_parameter_shift_gradient,
+    verify_parameter_shift_hessian,
     verify_vqe_parameter_shift_gradient,
+    verify_vqe_parameter_shift_hessian,
 )
 from scpn_quantum_control.phase.phase_vqe import PhaseVQE
 
@@ -92,6 +96,57 @@ def test_parameter_shift_verification_certificate_matches_analytic_reference() -
     np.testing.assert_allclose(certificate.analytic_gradient, expected, atol=1e-12)
 
 
+def test_parameter_shift_hessian_matches_coupled_analytic_reference() -> None:
+    params = np.array([0.2, -0.4], dtype=float)
+
+    def objective(values: np.ndarray) -> float:
+        return float(
+            np.cos(values[0]) + 0.25 * np.sin(values[1]) + 0.1 * np.cos(values[0] - values[1])
+        )
+
+    expected = np.array(
+        [
+            [
+                -np.cos(params[0]) - 0.1 * np.cos(params[0] - params[1]),
+                0.1 * np.cos(params[0] - params[1]),
+            ],
+            [
+                0.1 * np.cos(params[0] - params[1]),
+                -0.25 * np.sin(params[1]) - 0.1 * np.cos(params[0] - params[1]),
+            ],
+        ],
+        dtype=float,
+    )
+
+    hessian = parameter_shift_hessian(objective, params)
+
+    np.testing.assert_allclose(hessian, expected, atol=1e-12)
+    np.testing.assert_allclose(hessian, hessian.T, atol=1e-12)
+
+
+def test_parameter_shift_hessian_verification_certificate_matches_reference() -> None:
+    params = np.array([0.2, -0.4], dtype=float)
+
+    def objective(values: np.ndarray) -> float:
+        return float(
+            np.cos(values[0]) + 0.25 * np.sin(values[1]) + 0.1 * np.cos(values[0] - values[1])
+        )
+
+    certificate = verify_parameter_shift_hessian(objective, params)
+    payload = certificate.to_dict()
+
+    assert isinstance(certificate, HessianVerificationResult)
+    assert certificate.passed
+    assert certificate.method == "parameter_shift_hessian_vs_central_finite_difference"
+    assert certificate.parameter_shift_evaluations == 2 * params.size * params.size + 1
+    assert certificate.finite_difference_evaluations == 2 * params.size * params.size + 1
+    assert certificate.total_evaluations == 2 * (2 * params.size * params.size + 1)
+    assert payload["total_evaluations"] == certificate.total_evaluations
+    np.testing.assert_allclose(
+        certificate.parameter_shift_hessian, certificate.parameter_shift_hessian.T
+    )
+
+
 def test_phase_vqe_gradient_verification_certificate() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
@@ -105,6 +160,29 @@ def test_phase_vqe_gradient_verification_certificate() -> None:
     assert certificate.max_abs_error < 1e-5
     assert certificate.parameter_shift_evaluations == 2 * vqe.n_params
     assert certificate.finite_difference_evaluations == 2 * vqe.n_params
+
+
+def test_phase_vqe_hessian_verification_certificate() -> None:
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    vqe = PhaseVQE(K, omega, ansatz_reps=1)
+    params = np.linspace(-0.2, 0.25, vqe.n_params, dtype=float)
+
+    certificate = verify_vqe_parameter_shift_hessian(
+        vqe,
+        params,
+        absolute_tolerance=5e-4,
+        relative_tolerance=5e-4,
+    )
+
+    assert certificate.passed
+    assert certificate.parameters.shape == (vqe.n_params,)
+    assert certificate.parameter_shift_hessian.shape == (vqe.n_params, vqe.n_params)
+    np.testing.assert_allclose(
+        certificate.parameter_shift_hessian,
+        certificate.parameter_shift_hessian.T,
+        atol=1e-12,
+    )
 
 
 def test_gradient_verification_rejects_unsafe_finite_difference_inputs() -> None:
@@ -126,6 +204,25 @@ def test_gradient_verification_rejects_unsafe_finite_difference_inputs() -> None
 
     with pytest.raises(ValueError, match="finite-difference probes"):
         verify_parameter_shift_gradient(non_finite_objective, np.array([0.2]))
+
+
+def test_hessian_verification_rejects_unsafe_inputs() -> None:
+    def objective(values: np.ndarray) -> float:
+        return float(np.cos(values[0]))
+
+    with pytest.raises(ValueError, match="finite_difference_step"):
+        verify_parameter_shift_hessian(objective, np.array([0.2]), finite_difference_step=0.0)
+
+    with pytest.raises(ValueError, match="second-order"):
+        parameter_shift_hessian(objective, np.array([0.2]), shift=1e-8)
+
+    def non_finite_objective(values: np.ndarray) -> float:
+        if np.allclose(values, np.array([0.2]), atol=0.0, rtol=0.0):
+            return float(np.cos(values[0]))
+        return float("nan")
+
+    with pytest.raises(ValueError, match="parameter-shift Hessian"):
+        verify_parameter_shift_hessian(non_finite_objective, np.array([0.2]))
 
 
 def test_phase_vqe_structured_gradient_metadata() -> None:

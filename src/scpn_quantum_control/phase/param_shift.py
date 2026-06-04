@@ -177,6 +177,47 @@ class GradientVerificationResult:
         }
 
 
+@dataclass(frozen=True)
+class HessianVerificationResult:
+    """Finite-difference agreement certificate for parameter-shift Hessians."""
+
+    method: str
+    passed: bool
+    max_abs_error: float
+    max_relative_error: float
+    absolute_tolerance: float
+    relative_tolerance: float
+    finite_difference_step: float
+    parameters: FloatArray
+    parameter_shift_hessian: FloatArray
+    finite_difference_hessian: FloatArray
+    parameter_shift_evaluations: int
+    finite_difference_evaluations: int
+
+    @property
+    def total_evaluations(self) -> int:
+        """Return objective evaluations spent on second-order verification."""
+        return self.parameter_shift_evaluations + self.finite_difference_evaluations
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable Hessian verification evidence."""
+        return {
+            "method": self.method,
+            "passed": self.passed,
+            "max_abs_error": self.max_abs_error,
+            "max_relative_error": self.max_relative_error,
+            "absolute_tolerance": self.absolute_tolerance,
+            "relative_tolerance": self.relative_tolerance,
+            "finite_difference_step": self.finite_difference_step,
+            "parameters": self.parameters.tolist(),
+            "parameter_shift_hessian": self.parameter_shift_hessian.tolist(),
+            "finite_difference_hessian": self.finite_difference_hessian.tolist(),
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "finite_difference_evaluations": self.finite_difference_evaluations,
+            "total_evaluations": self.total_evaluations,
+        }
+
+
 def _as_finite_vector(name: str, values: ArrayLike, *, width: int | None = None) -> FloatArray:
     vector = np.asarray(values, dtype=float)
     if vector.ndim != 1:
@@ -266,15 +307,94 @@ def _finite_difference_gradient(
     return gradient
 
 
-def parameter_shift_gradient(
+def _finite_objective_value(
     objective: ScalarObjective,
-    values: ArrayLike,
+    values: FloatArray,
+    *,
+    context: str,
+) -> float:
+    value = float(objective(values.copy()))
+    if not np.isfinite(value):
+        raise ValueError(f"objective must return finite scalars for {context}")
+    return value
+
+
+def _finite_difference_hessian_with_evaluations(
+    objective: ScalarObjective,
+    values: FloatArray,
+    *,
+    step: float,
+) -> tuple[FloatArray, int]:
+    width = values.size
+    hessian = np.zeros((width, width), dtype=np.float64)
+    base_value = _finite_objective_value(objective, values, context="finite-difference base")
+    evaluations = 1
+    for row in range(width):
+        plus = values.copy()
+        minus = values.copy()
+        plus[row] += step
+        minus[row] -= step
+        plus_value = _finite_objective_value(
+            objective,
+            plus,
+            context="finite-difference diagonal probes",
+        )
+        minus_value = _finite_objective_value(
+            objective,
+            minus,
+            context="finite-difference diagonal probes",
+        )
+        evaluations += 2
+        hessian[row, row] = (plus_value - 2.0 * base_value + minus_value) / (step * step)
+
+    denominator = 4.0 * step * step
+    for row in range(width):
+        for col in range(row + 1, width):
+            plus_plus = values.copy()
+            plus_minus = values.copy()
+            minus_plus = values.copy()
+            minus_minus = values.copy()
+            plus_plus[row] += step
+            plus_plus[col] += step
+            plus_minus[row] += step
+            plus_minus[col] -= step
+            minus_plus[row] -= step
+            minus_plus[col] += step
+            minus_minus[row] -= step
+            minus_minus[col] -= step
+            value = (
+                _finite_objective_value(
+                    objective,
+                    plus_plus,
+                    context="finite-difference mixed probes",
+                )
+                - _finite_objective_value(
+                    objective,
+                    plus_minus,
+                    context="finite-difference mixed probes",
+                )
+                - _finite_objective_value(
+                    objective,
+                    minus_plus,
+                    context="finite-difference mixed probes",
+                )
+                + _finite_objective_value(
+                    objective,
+                    minus_minus,
+                    context="finite-difference mixed probes",
+                )
+            ) / denominator
+            evaluations += 4
+            hessian[row, col] = value
+            hessian[col, row] = value
+    return hessian, evaluations
+
+
+def _resolve_parameter_shift_rule(
     shift: float = float(np.pi / 2.0),
     *,
-    parameters: Sequence[Parameter] | None = None,
     rule: ParameterShiftRule | None = None,
-) -> FloatArray:
-    """Return a parameter-shift gradient while preserving the legacy `shift` keyword."""
+) -> ParameterShiftRule:
     shift_value = float(shift)
     if rule is not None and not np.isclose(shift_value, np.pi / 2.0):
         raise ValueError("shift must not be overridden when rule is provided")
@@ -288,12 +408,144 @@ def parameter_shift_gradient(
             shift=shift_value,
             coefficient=float(1.0 / denominator),
         )
+    return rule
+
+
+def _validate_parameter_count(
+    parameters: Sequence[Parameter] | None,
+    *,
+    width: int,
+) -> None:
+    if parameters is not None and len(tuple(parameters)) != width:
+        raise ValueError(f"parameters must contain {width} entries")
+
+
+def _second_order_diagonal_coefficient(rule: ParameterShiftRule) -> float:
+    denominator = 2.0 * (1.0 - np.cos(float(rule.shift)))
+    if abs(denominator) <= 1e-15 or not np.isfinite(denominator):
+        raise ValueError(
+            "shift must not make the second-order parameter-shift denominator singular"
+        )
+    return float(1.0 / denominator)
+
+
+def _parameter_shift_hessian_with_evaluations(
+    objective: ScalarObjective,
+    values: FloatArray,
+    *,
+    rule: ParameterShiftRule,
+) -> tuple[FloatArray, int]:
+    width = values.size
+    hessian = np.zeros((width, width), dtype=np.float64)
+    shift = float(rule.shift)
+    diagonal_coefficient = _second_order_diagonal_coefficient(rule)
+    mixed_coefficient = float(rule.coefficient) * float(rule.coefficient)
+    base_value = _finite_objective_value(objective, values, context="parameter-shift Hessian base")
+    evaluations = 1
+
+    for row in range(width):
+        plus = values.copy()
+        minus = values.copy()
+        plus[row] += shift
+        minus[row] -= shift
+        plus_value = _finite_objective_value(
+            objective,
+            plus,
+            context="parameter-shift Hessian diagonal probes",
+        )
+        minus_value = _finite_objective_value(
+            objective,
+            minus,
+            context="parameter-shift Hessian diagonal probes",
+        )
+        evaluations += 2
+        hessian[row, row] = diagonal_coefficient * (plus_value - 2.0 * base_value + minus_value)
+
+    for row in range(width):
+        for col in range(row + 1, width):
+            plus_plus = values.copy()
+            plus_minus = values.copy()
+            minus_plus = values.copy()
+            minus_minus = values.copy()
+            plus_plus[row] += shift
+            plus_plus[col] += shift
+            plus_minus[row] += shift
+            plus_minus[col] -= shift
+            minus_plus[row] -= shift
+            minus_plus[col] += shift
+            minus_minus[row] -= shift
+            minus_minus[col] -= shift
+            value = mixed_coefficient * (
+                _finite_objective_value(
+                    objective,
+                    plus_plus,
+                    context="parameter-shift Hessian mixed probes",
+                )
+                - _finite_objective_value(
+                    objective,
+                    plus_minus,
+                    context="parameter-shift Hessian mixed probes",
+                )
+                - _finite_objective_value(
+                    objective,
+                    minus_plus,
+                    context="parameter-shift Hessian mixed probes",
+                )
+                + _finite_objective_value(
+                    objective,
+                    minus_minus,
+                    context="parameter-shift Hessian mixed probes",
+                )
+            )
+            evaluations += 4
+            hessian[row, col] = value
+            hessian[col, row] = value
+    return hessian, evaluations
+
+
+def parameter_shift_gradient(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    shift: float = float(np.pi / 2.0),
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> FloatArray:
+    """Return a parameter-shift gradient while preserving the legacy `shift` keyword."""
+    rule = _resolve_parameter_shift_rule(shift, rule=rule)
     return _core_parameter_shift_gradient(
         objective,
         values,
         parameters=parameters,
         rule=rule,
     )
+
+
+def parameter_shift_hessian(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    shift: float = float(np.pi / 2.0),
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> FloatArray:
+    """Return a parameter-shift Hessian for standard shift-compatible objectives.
+
+    Diagonal entries use the exact sinusoidal second-derivative shift identity;
+    mixed entries compose first-order parameter shifts. The helper is intended
+    for local simulator and provider-contract diagnostics where the circuit
+    generators satisfy the same two-eigenvalue rule used by
+    `parameter_shift_gradient`.
+    """
+    values_vector = _as_finite_vector("values", values)
+    _validate_parameter_count(parameters, width=values_vector.size)
+    resolved_rule = _resolve_parameter_shift_rule(shift, rule=rule)
+    hessian, _ = _parameter_shift_hessian_with_evaluations(
+        objective,
+        values_vector,
+        rule=resolved_rule,
+    )
+    return hessian
 
 
 def verify_parameter_shift_gradient(
@@ -372,6 +624,76 @@ def verify_parameter_shift_gradient(
     )
 
 
+def verify_parameter_shift_hessian(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    shift: float = float(np.pi / 2.0),
+    *,
+    finite_difference_step: float = 1e-4,
+    absolute_tolerance: float = 1e-4,
+    relative_tolerance: float = 1e-4,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> HessianVerificationResult:
+    """Verify parameter-shift Hessians against central finite differences."""
+    values_vector = _as_finite_vector("values", values)
+    _validate_parameter_count(parameters, width=values_vector.size)
+    fd_step = _validate_positive_threshold(
+        "finite_difference_step",
+        finite_difference_step,
+    )
+    abs_tol = _validate_non_negative_threshold(
+        "absolute_tolerance",
+        absolute_tolerance,
+    )
+    rel_tol = _validate_non_negative_threshold(
+        "relative_tolerance",
+        relative_tolerance,
+    )
+    if abs_tol is None or rel_tol is None:
+        raise ValueError("absolute_tolerance and relative_tolerance must be provided")
+
+    resolved_rule = _resolve_parameter_shift_rule(shift, rule=rule)
+    analytic, parameter_shift_evaluations = _parameter_shift_hessian_with_evaluations(
+        objective,
+        values_vector,
+        rule=resolved_rule,
+    )
+    finite_difference, finite_difference_evaluations = _finite_difference_hessian_with_evaluations(
+        objective,
+        values_vector,
+        step=fd_step,
+    )
+    abs_errors = np.abs(analytic - finite_difference)
+    denominator = np.maximum(
+        np.maximum(np.abs(analytic), np.abs(finite_difference)),
+        np.finfo(np.float64).eps,
+    )
+    relative_errors = abs_errors / denominator
+
+    return HessianVerificationResult(
+        method="parameter_shift_hessian_vs_central_finite_difference",
+        passed=bool(
+            np.allclose(
+                analytic,
+                finite_difference,
+                atol=abs_tol,
+                rtol=rel_tol,
+            )
+        ),
+        max_abs_error=float(np.max(abs_errors)) if abs_errors.size else 0.0,
+        max_relative_error=float(np.max(relative_errors)) if relative_errors.size else 0.0,
+        absolute_tolerance=float(abs_tol),
+        relative_tolerance=float(rel_tol),
+        finite_difference_step=fd_step,
+        parameters=values_vector.copy(),
+        parameter_shift_hessian=analytic.astype(np.float64, copy=True),
+        finite_difference_hessian=finite_difference.astype(np.float64, copy=True),
+        parameter_shift_evaluations=parameter_shift_evaluations,
+        finite_difference_evaluations=finite_difference_evaluations,
+    )
+
+
 def verify_vqe_parameter_shift_gradient(
     vqe: PhaseVQE,
     params: ArrayLike,
@@ -383,6 +705,25 @@ def verify_vqe_parameter_shift_gradient(
     """Verify a `PhaseVQE` parameter-shift gradient against finite differences."""
     values = _as_finite_vector("params", params, width=vqe.n_params)
     return verify_parameter_shift_gradient(
+        vqe._cost,
+        values,
+        finite_difference_step=finite_difference_step,
+        absolute_tolerance=absolute_tolerance,
+        relative_tolerance=relative_tolerance,
+    )
+
+
+def verify_vqe_parameter_shift_hessian(
+    vqe: PhaseVQE,
+    params: ArrayLike,
+    *,
+    finite_difference_step: float = 1e-4,
+    absolute_tolerance: float = 1e-4,
+    relative_tolerance: float = 1e-4,
+) -> HessianVerificationResult:
+    """Verify a `PhaseVQE` parameter-shift Hessian against finite differences."""
+    values = _as_finite_vector("params", params, width=vqe.n_params)
+    return verify_parameter_shift_hessian(
         vqe._cost,
         values,
         finite_difference_step=finite_difference_step,
@@ -654,16 +995,20 @@ __all__ = [
     "ParamShiftConvergenceDiagnostics",
     "QuantumGradientPlan",
     "GradientVerificationResult",
+    "HessianVerificationResult",
     "ShotAllocationResult",
     "StochasticGradientResult",
     "parameter_shift_gradient",
+    "parameter_shift_hessian",
     "parameter_shift_gradient_with_uncertainty",
     "plan_parameter_shift_shots",
     "plan_quantum_gradient_backend",
     "value_and_parameter_shift_grad",
     "value_and_vqe_grad",
     "verify_parameter_shift_gradient",
+    "verify_parameter_shift_hessian",
     "verify_vqe_parameter_shift_gradient",
+    "verify_vqe_parameter_shift_hessian",
     "validate_param_shift_convergence",
     "vqe_with_param_shift",
 ]
