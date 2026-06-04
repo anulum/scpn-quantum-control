@@ -28,6 +28,7 @@ This repository now documents those questions directly. Current support is delib
 | Parameter-shift gradients | Available for callable scalar objectives, structured `PhaseVQE` gradients, local gradient-descent VQE examples, metric-aware natural-gradient descent, multi-start optimizer comparison evidence, and compatible composed phase-control objectives through `scpn_quantum_control.phase`. | [Quantum Gradients](quantum_gradients.md), [Variational Methods](variational.md) |
 | Objective evidence | Available for composed phase-control objectives through finite-difference agreement, compatibility-gate checks, and local training certificates. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Objective execution planning | Available for composed objectives through fail-closed routing between pure parameter-shift, hybrid term-gradient, hardware-blocked, and unsupported backend routes. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
+| Provider-gradient readiness | Available as an executable support matrix for deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, and malformed samples. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Compiler/program AD | Available for supported scalar, vector, and matrix primitives with registry contracts, lowering reports, and native executable kernels on bounded paths. | [Differentiable API](differentiable_api.md), [Quickstart](quickstart.md) |
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
@@ -42,7 +43,7 @@ This repository now documents those questions directly. Current support is delib
 | Train a small VQE objective | `phase.param_shift` -> [Quantum Gradients](quantum_gradients.md) -> [Variational Methods](variational.md) |
 | Inspect compiler-backed AD | [Quickstart](quickstart.md) differentiable primitive path -> [Differentiable API](differentiable_api.md) |
 | Build a custom primitive | `CustomDerivativeRule` -> `CustomDerivativeRegistry` -> primitive contract tests |
-| Decide whether a backend can support gradients | Use current support docs; backend gradient planner remains roadmap work |
+| Decide whether a backend can support gradients | `plan_quantum_gradient_backend(...)` plus `run_provider_gradient_readiness_audit(...)` |
 | Prepare ML-framework integration | Follow [Differentiable Roadmap](differentiable_roadmap.md) until adapter tests land |
 
 ## Design principles
@@ -64,7 +65,7 @@ The next differentiable-programming implementation rounds should prioritise:
 4. PennyLane adapter round-trip tests;
 5. QSNN training convergence tests;
 6. public tutorials for Kuramoto-XY VQE gradients and coupling learning;
-7. a support matrix for gates, observables, backends, transforms, and adapters.
+7. a support matrix for gates, observables, transforms, and adapters beyond the current backend/provider-readiness matrix.
 
 ## Unsupported boundaries
 
@@ -75,6 +76,7 @@ Unsupported does not mean ignored. Current public boundaries include:
 - complete gradient tape semantics beyond supported phase parameter-shift records;
 - public JAX/PyTorch/TensorFlow adapters;
 - hardware gradient jobs without explicit backend policy;
+- provider callbacks that omit finite-shot variance or shifted-sample provenance;
 - gates without registered generator spectra;
 - dynamic topology changes that invalidate parameter indexing;
 - wide native quotient-linalg traces beyond the documented support profile.

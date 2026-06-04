@@ -218,6 +218,34 @@ standard error. Finite-shot callbacks must therefore return value, variance,
 and shot metadata for every shifted term instead of supplying a collapsed
 gradient estimate.
 
+### Provider-gradient readiness audit
+
+`run_provider_gradient_readiness_audit()` turns the provider callback contract
+into executable evidence:
+
+```python
+from scpn_quantum_control.phase import run_provider_gradient_readiness_audit
+
+audit = run_provider_gradient_readiness_audit()
+assert audit.passed
+print([record.scenario.name for record in audit.blocked_records])
+```
+
+The built-in audit records:
+
+| Scenario | Expected outcome |
+|---|---|
+| `statevector_parameter_shift` | Executes deterministic local parameter-shift and matches the analytic gradient. |
+| `finite_shot_parameter_shift` | Executes finite-shot callback gradients with sample variance and confidence radii. |
+| `multi_frequency_finite_shot` | Executes multi-frequency parameter-shift with per-term shot provenance. |
+| `hardware_without_policy` | Fails closed before execution because hardware gradients require an explicit policy gate. |
+| `unknown_backend` | Fails closed and suggests local simulator alternatives. |
+| `finite_shot_missing_variance` | Fails during execution because finite-shot gradients require sample variance. |
+
+This support matrix is intentionally executable rather than a static checklist.
+It lets reviewers distinguish ready callback paths from blocked hardware or
+malformed-sample paths without submitting jobs to a provider.
+
 ## Qiskit shifted-circuit generation
 
 For Qiskit-native circuits, the phase namespace can generate fully bound

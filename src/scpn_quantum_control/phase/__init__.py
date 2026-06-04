@@ -149,6 +149,13 @@ from .provider_gradient import (
     ProviderParameterShiftRecord,
     execute_provider_parameter_shift_gradient,
 )
+from .provider_gradient_audit import (
+    ProviderGradientReadinessAuditResult,
+    ProviderGradientReadinessRecord,
+    ProviderGradientReadinessScenario,
+    default_provider_gradient_readiness_scenarios,
+    run_provider_gradient_readiness_audit,
+)
 from .pulse_shaping import (
     HypergeometricPulse,
     ICIPulse,
@@ -285,6 +292,11 @@ __all__ = [
     "ProviderGradientExecutionResult",
     "ProviderParameterShiftRecord",
     "execute_provider_parameter_shift_gradient",
+    "ProviderGradientReadinessScenario",
+    "ProviderGradientReadinessRecord",
+    "ProviderGradientReadinessAuditResult",
+    "default_provider_gradient_readiness_scenarios",
+    "run_provider_gradient_readiness_audit",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
     "execute_qiskit_finite_shot_parameter_shift",

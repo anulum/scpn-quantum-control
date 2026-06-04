@@ -112,6 +112,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ComposedObjectiveExecutionPlan, ComposedObjectivePlannerAuditResult, plan_composed_objective_execution, assert_composed_objective_execution_supported, run_composed_objective_planner_audit]
 
+::: scpn_quantum_control.phase.provider_gradient_audit
+    options:
+      members: [ProviderGradientReadinessScenario, ProviderGradientReadinessRecord, ProviderGradientReadinessAuditResult, default_provider_gradient_readiness_scenarios, run_provider_gradient_readiness_audit]
+
 ::: scpn_quantum_control.phase.trotter_upde
     options:
       members: [QuantumUPDESolver]
