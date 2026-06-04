@@ -112,8 +112,35 @@ class ParamShiftVQEResult:
         """Return the best parameters found during the descent."""
         return cast(FloatArray, self.best_params.copy())
 
+    def _legacy_mapping(self) -> dict[str, object]:
+        """Return the historical four-key VQE result mapping."""
+        return {
+            "optimal_params": self.best_params.copy(),
+            "energy": self.best_energy,
+            "energy_history": list(self.energies),
+            "grad_norms": list(self.gradient_norms),
+        }
+
+    def __getitem__(self, key: str) -> object:
+        """Return a legacy mapping item for backwards-compatible callers."""
+        if key in self._legacy_mapping():
+            return self._legacy_mapping()[key]
+        return self.to_dict()[key]
+
+    def keys(self) -> tuple[str, ...]:
+        """Return historical VQE result keys used by notebooks and tests."""
+        return tuple(self._legacy_mapping().keys())
+
+    def items(self) -> tuple[tuple[str, object], ...]:
+        """Return historical VQE result items used by mapping-style callers."""
+        return tuple(self._legacy_mapping().items())
+
+    def values(self) -> tuple[object, ...]:
+        """Return historical VQE result values used by mapping-style callers."""
+        return tuple(self._legacy_mapping().values())
+
     def to_dict(self) -> dict[str, object]:
-        """Return a backwards-compatible mapping for notebooks and scripts."""
+        """Return a structured mapping for notebooks and scripts."""
         return {
             "initial_energy": self.initial_energy,
             "final_energy": self.final_energy,
@@ -920,7 +947,7 @@ def vqe_with_param_shift(
     learning_rate: float = 0.1,
     steps: int | None = None,
     n_iterations: int | None = None,
-    tolerance: float = 1e-8,
+    tolerance: float = 0.0,
     seed: int | None = 0,
     initial_params: ArrayLike | None = None,
 ) -> ParamShiftVQEResult:
@@ -939,12 +966,18 @@ def vqe_with_param_shift(
     exact_energy: float | None = None
 
     if callable(objective_or_k):
+        positional_n_params: int | None = None
         if omega is not None:
-            raise ValueError("omega must be omitted when objective_or_k is callable")
-        if n_params is None:
+            raw_width = np.asarray(omega)
+            if n_params is None and raw_width.shape == () and raw_width.dtype.kind in {"i", "u"}:
+                positional_n_params = int(raw_width.item())
+            else:
+                raise ValueError("omega must be omitted when objective_or_k is callable")
+        resolved_n_params = n_params if n_params is not None else positional_n_params
+        if resolved_n_params is None:
             raise ValueError("n_params is required when objective_or_k is callable")
         objective = objective_or_k
-        width = int(n_params)
+        width = int(resolved_n_params)
     else:
         if omega is None:
             raise ValueError("omega is required when objective_or_k is a coupling matrix")
