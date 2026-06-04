@@ -16,6 +16,7 @@ This page maps the public differentiable-programming namespace and the related q
 |---|---|
 | `scpn_quantum_control.differentiable` | AD data structures, primitive registry contracts, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
+| `scpn_quantum_control.phase.coupling_learning` | Differentiable coupling inference from observation models with convergence certificates. |
 | `scpn_quantum_control.phase.gradient_descent` | Generic parameter-shift gradient descent with line-search traces and convergence certificates. |
 | `scpn_quantum_control.qsnn.training` | QSNN parameter-shift gradients, full-batch descent, and training convergence evidence. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
@@ -36,6 +37,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
 | Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
+| Coupling-learning evidence | `CouplingLearningResult`, `learn_couplings_from_observations` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
 | Optional PennyLane agreement | `PennyLaneGradientAgreementResult`, `check_pennylane_parameter_shift_agreement`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against a caller-supplied PennyLane gradient callable. |
@@ -137,6 +139,37 @@ assert run.certificate.monotone_accepted_values
 This route is full-batch local-simulator training. Hardware backends remain
 disabled by default through the same fail-closed backend planner used by phase
 gradients.
+
+## Minimal differentiable coupling learning
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    learn_couplings_from_observations,
+    multi_frequency_parameter_shift_rule,
+)
+
+
+def observations(K: np.ndarray) -> np.ndarray:
+    return np.array([np.sin(K[0, 1])])
+
+
+run = learn_couplings_from_observations(
+    observations,
+    target_observations=np.array([0.0]),
+    initial_couplings=np.array([[0.0, 0.8], [0.8, 0.0]]),
+    rule=multi_frequency_parameter_shift_rule([2.0]),
+    max_steps=80,
+)
+
+print(run.learned_coupling_matrix, run.certificate.monotone_accepted_values)
+```
+
+This is a bounded differentiable-programming route for sinusoidal or quantum
+expectation observation models. It is not an arbitrary classical-regression
+claim, and hardware backends remain disabled unless an explicit policy enables
+them.
 
 ## Minimal backend gradient plan
 

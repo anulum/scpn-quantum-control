@@ -384,6 +384,37 @@ This gives QSNN notebooks and experiments the same convergence evidence as
 phase objectives: backend plan, line-search trace, parameter-shift evaluation
 count, final-gradient norm, best loss, and fail-closed hardware boundaries.
 
+Coupling learning uses the same optimizer for inverse oscillator problems:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    learn_couplings_from_observations,
+    multi_frequency_parameter_shift_rule,
+)
+
+
+def observations(K: np.ndarray) -> np.ndarray:
+    return np.array([np.sin(K[0, 1])])
+
+
+run = learn_couplings_from_observations(
+    observations,
+    np.array([0.0]),
+    np.array([[0.0, 0.8], [0.8, 0.0]]),
+    rule=multi_frequency_parameter_shift_rule([2.0]),
+)
+
+print(run.best_loss, run.max_abs_residual)
+```
+
+The result records the initial and learned symmetric coupling matrices,
+trainable edge list, target and predicted observations, residuals, optimizer
+trace, convergence certificate, and a claim boundary. The supported claim is
+sinusoidal or quantum-expectation observation models with declared shift rules;
+arbitrary classical regressors and hardware execution remain fail-closed.
+
 ## Convergence evidence
 
 `vqe_with_param_shift` now returns auditable convergence metadata in addition to

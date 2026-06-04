@@ -14,6 +14,11 @@ from .adiabatic_preparation import AdiabaticResult, adiabatic_ramp
 from .ansatz_bench import benchmark_ansatz, run_ansatz_benchmark
 from .ansatz_methodology import AnsatzBenchmarkResult
 from .avqds import AVQDSResult, avqds_simulate
+from .coupling_learning import (
+    CouplingLearningResult,
+    coupling_matrix_from_edge_vector,
+    learn_couplings_from_observations,
+)
 from .cross_domain_transfer import TransferResult, build_systems, transfer_experiment
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
 from .gradient_backend import (
@@ -134,6 +139,9 @@ __all__ = [
     "AdiabaticResult",
     "avqds_simulate",
     "AVQDSResult",
+    "learn_couplings_from_observations",
+    "coupling_matrix_from_edge_vector",
+    "CouplingLearningResult",
     "varqite_ground_state",
     "VarQITEResult",
     "floquet_evolve",
