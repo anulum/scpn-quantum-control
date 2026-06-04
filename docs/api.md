@@ -1232,6 +1232,7 @@ DifferentiableOptimizer(...).minimize(objective, initial_values, parameters=None
 learn_couplings_from_observations(observation_model, target_observations, initial_couplings, n_nodes=None, edges=None, backend="statevector", rule=None, learning_rate=0.1, max_steps=100) -> CouplingLearningResult
 verify_coupling_parameter_shift_gradient(observation_model, target_observations, couplings, n_nodes=None, edges=None, rule=None, finite_difference_step=1e-6, tolerance=1e-5) -> CouplingGradientVerificationResult
 verify_parameter_shift_analytic_gradient(objective, analytic_gradient, values, rule=None, tolerance=1e-8) -> ParameterShiftAnalyticAgreement
+run_differentiable_workflow_audit_suite(finite_shot_target_standard_error=0.02, coupling_learning_rate=0.35, coupling_max_steps=80, gradient_tolerance=1e-7) -> DifferentiableWorkflowAuditSuiteResult
 run_finite_shot_gradient_uncertainty_audit(objective, initial_values, rule=None, plus_variances=0.04, minus_variances=0.04, target_standard_error=0.02, min_shots=64) -> FiniteShotGradientAuditResult
 run_parameter_shift_audit_suite(objective, analytic_gradient, initial_values, rule=None, finite_difference_step=1e-6, finite_difference_tolerance=1e-5, analytic_tolerance=1e-8, learning_rate=0.35, max_steps=80) -> DifferentiableQuantumAuditReport
 run_known_phase_gradient_audit(initial_values=None, learning_rate=0.35, max_steps=80) -> DifferentiableQuantumAuditReport
@@ -1296,6 +1297,13 @@ values with declared plus/minus variances and planned shot budgets. It records
 the deterministic gradient, stochastic gradient, standard errors, confidence
 radii, shot allocation, containment flags, and explicit non-claims for live
 hardware sampling, detector drift, and queue calibration.
+`run_differentiable_workflow_audit_suite()` aggregates the supported
+differentiable-programming evidence lanes into one report: phase-gradient
+conformance, finite-shot uncertainty containment, coupling-gradient
+verification, and parameter-shift coupling training. It is the recommended
+single-call audit for release notes and reviewer evidence, while explicitly
+excluding arbitrary Python reverse-mode AD, live provider calibration, dynamic
+circuit topology, and mutation-heavy program IR semantics.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

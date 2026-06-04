@@ -14,9 +14,11 @@ import pytest
 
 from scpn_quantum_control.phase import (
     DifferentiableQuantumAuditReport,
+    DifferentiableWorkflowAuditSuiteResult,
     FiniteShotGradientAuditResult,
     ParameterShiftAnalyticAgreement,
     PhaseGradientBenchmarkSuiteResult,
+    run_differentiable_workflow_audit_suite,
     run_finite_shot_gradient_uncertainty_audit,
     run_known_phase_gradient_audit,
     run_parameter_shift_audit_suite,
@@ -95,6 +97,28 @@ def test_run_finite_shot_gradient_uncertainty_audit_rejects_negative_variance() 
             np.array([0.7, -0.4], dtype=float),
             plus_variances=np.array([0.04, -0.03], dtype=float),
         )
+
+
+def test_run_differentiable_workflow_audit_suite_passes_supported_lanes() -> None:
+    suite = run_differentiable_workflow_audit_suite()
+
+    assert isinstance(suite, DifferentiableWorkflowAuditSuiteResult)
+    assert suite.passed
+    assert suite.workflow_names == (
+        "phase_gradient_conformance",
+        "finite_shot_uncertainty_containment",
+        "coupling_gradient_verification",
+        "coupling_learning_training",
+    )
+    assert suite.phase_benchmarks.passed
+    assert suite.finite_shot.passed
+    assert suite.coupling_gradient.passed
+    assert suite.coupling_learning.best_loss < 1e-8
+    assert suite.worst_gradient_error < 1e-5
+    payload = suite.to_dict()
+    assert payload["passed"] is True
+    assert "arbitrary Python program reverse-mode AD" in payload["unsupported_scenarios"]
+    assert "coupling_learning" in payload
 
 
 def test_run_phase_gradient_benchmark_suite_passes_all_cases() -> None:

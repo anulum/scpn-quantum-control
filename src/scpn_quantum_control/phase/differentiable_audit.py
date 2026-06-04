@@ -17,6 +17,12 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import ParameterShiftRule, ShotAllocationResult, StochasticGradientResult
+from .coupling_learning import (
+    CouplingGradientVerificationResult,
+    CouplingLearningResult,
+    learn_couplings_from_observations,
+    verify_coupling_parameter_shift_gradient,
+)
 from .gradient_descent import (
     ParameterShiftTrainingCertificate,
     ParameterShiftTrainingResult,
@@ -327,6 +333,66 @@ class PhaseGradientBenchmarkSuiteResult:
             "passed": self.passed,
             "worst_gradient_error": self.worst_gradient_error,
             "best_values": list(self.best_values),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class DifferentiableWorkflowAuditSuiteResult:
+    """Aggregate evidence across supported differentiable quantum workflows."""
+
+    phase_benchmarks: PhaseGradientBenchmarkSuiteResult
+    finite_shot: FiniteShotGradientAuditResult
+    coupling_gradient: CouplingGradientVerificationResult
+    coupling_learning: CouplingLearningResult
+    workflow_names: tuple[str, ...]
+    unsupported_scenarios: tuple[str, ...]
+    passed: bool
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.workflow_names:
+            raise ValueError("workflow_names must be non-empty")
+        if any(not name for name in self.workflow_names):
+            raise ValueError("workflow_names must contain non-empty names")
+        if not self.unsupported_scenarios:
+            raise ValueError("unsupported_scenarios must be non-empty")
+        if any(not item for item in self.unsupported_scenarios):
+            raise ValueError("unsupported_scenarios must contain non-empty items")
+        if not isinstance(self.passed, bool):
+            raise ValueError("passed must be a boolean")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+
+    @property
+    def worst_gradient_error(self) -> float:
+        """Return the largest gradient error across all audit workflows."""
+        return max(
+            self.phase_benchmarks.worst_gradient_error,
+            self.finite_shot.max_abs_error,
+            self.coupling_gradient.max_abs_error,
+        )
+
+    @property
+    def best_training_values(self) -> tuple[float, float]:
+        """Return best training values for phase and coupling-training lanes."""
+        return (
+            min(self.phase_benchmarks.best_values),
+            self.coupling_learning.best_loss,
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready workflow-audit evidence."""
+        return {
+            "phase_benchmarks": self.phase_benchmarks.to_dict(),
+            "finite_shot": self.finite_shot.to_dict(),
+            "coupling_gradient": self.coupling_gradient.to_dict(),
+            "coupling_learning": self.coupling_learning.to_dict(),
+            "workflow_names": list(self.workflow_names),
+            "unsupported_scenarios": list(self.unsupported_scenarios),
+            "passed": self.passed,
+            "worst_gradient_error": self.worst_gradient_error,
+            "best_training_values": list(self.best_training_values),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -648,6 +714,84 @@ def run_finite_shot_gradient_uncertainty_audit(
     )
 
 
+def run_differentiable_workflow_audit_suite(
+    *,
+    finite_shot_target_standard_error: float = 0.02,
+    coupling_learning_rate: float = 0.35,
+    coupling_max_steps: int = 80,
+    gradient_tolerance: float = 1.0e-7,
+) -> DifferentiableWorkflowAuditSuiteResult:
+    """Run the built-in cross-workflow differentiable-programming audit suite."""
+
+    def phase_objective(theta: FloatArray) -> float:
+        return float(np.mean(1.0 - np.cos(theta)))
+
+    phase_benchmarks = run_phase_gradient_benchmark_suite()
+    finite_shot = run_finite_shot_gradient_uncertainty_audit(
+        phase_objective,
+        np.array([0.7, -0.4, 0.2], dtype=np.float64),
+        target_standard_error=finite_shot_target_standard_error,
+        plus_variances=np.array([0.04, 0.03, 0.02], dtype=np.float64),
+        minus_variances=np.array([0.04, 0.03, 0.02], dtype=np.float64),
+    )
+
+    def observations(couplings: FloatArray) -> FloatArray:
+        return np.array([np.sin(couplings[0, 1])], dtype=np.float64)
+
+    coupling_rule = multi_frequency_parameter_shift_rule([2.0])
+    initial_couplings = np.array([[0.0, 0.8], [0.8, 0.0]], dtype=np.float64)
+    coupling_gradient = verify_coupling_parameter_shift_gradient(
+        observations,
+        np.array([0.0], dtype=np.float64),
+        initial_couplings,
+        rule=coupling_rule,
+        finite_difference_step=1.0e-6,
+        tolerance=1.0e-5,
+    )
+    coupling_learning = learn_couplings_from_observations(
+        observations,
+        np.array([0.0], dtype=np.float64),
+        initial_couplings,
+        rule=coupling_rule,
+        learning_rate=coupling_learning_rate,
+        max_steps=coupling_max_steps,
+        gradient_tolerance=gradient_tolerance,
+        min_loss_decrease=0.1,
+    )
+    return DifferentiableWorkflowAuditSuiteResult(
+        phase_benchmarks=phase_benchmarks,
+        finite_shot=finite_shot,
+        coupling_gradient=coupling_gradient,
+        coupling_learning=coupling_learning,
+        workflow_names=(
+            "phase_gradient_conformance",
+            "finite_shot_uncertainty_containment",
+            "coupling_gradient_verification",
+            "coupling_learning_training",
+        ),
+        unsupported_scenarios=(
+            "arbitrary Python program reverse-mode AD",
+            "live hardware sampling and provider queue calibration",
+            "dynamic circuit topology with unstable parameter identity",
+            "classical regressors without declared generator spectra",
+            "mutation-heavy or aliasing program IR semantics",
+        ),
+        passed=(
+            phase_benchmarks.passed
+            and finite_shot.passed
+            and coupling_gradient.passed
+            and coupling_learning.certificate.monotone_accepted_values
+            and coupling_learning.best_loss <= 1.0e-8
+        ),
+        claim_boundary=(
+            "cross-workflow deterministic differentiable quantum audit for "
+            "supported phase, finite-shot uncertainty, and coupling-learning "
+            "paths; not a full arbitrary-program AD, live hardware, or "
+            "complete ML-framework integration certificate"
+        ),
+    )
+
+
 def run_phase_gradient_benchmark_suite(
     *,
     learning_rate: float = 0.35,
@@ -757,10 +901,12 @@ def run_phase_gradient_benchmark_suite(
 __all__ = [
     "AnalyticGradient",
     "DifferentiableQuantumAuditReport",
+    "DifferentiableWorkflowAuditSuiteResult",
     "FiniteShotGradientAuditResult",
     "ParameterShiftAnalyticAgreement",
     "PhaseGradientBenchmarkSuiteResult",
     "ScalarObjective",
+    "run_differentiable_workflow_audit_suite",
     "run_finite_shot_gradient_uncertainty_audit",
     "run_known_phase_gradient_audit",
     "run_parameter_shift_audit_suite",
