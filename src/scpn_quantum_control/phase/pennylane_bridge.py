@@ -35,6 +35,8 @@ class PennyLaneGradientAgreementResult:
     tolerance: float
     passed: bool
     evaluations: int
+    method: str = "parameter_shift"
+    shift_terms: int = 1
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serialisable agreement metadata."""
@@ -47,6 +49,8 @@ class PennyLaneGradientAgreementResult:
             "tolerance": self.tolerance,
             "passed": self.passed,
             "evaluations": self.evaluations,
+            "method": self.method,
+            "shift_terms": self.shift_terms,
         }
 
 
@@ -65,6 +69,8 @@ class PennyLaneRoundTripResult:
     gradient_tolerance: float
     passed: bool
     evaluations: int
+    method: str = "parameter_shift"
+    shift_terms: int = 1
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serialisable round-trip metadata."""
@@ -80,6 +86,8 @@ class PennyLaneRoundTripResult:
             "gradient_tolerance": self.gradient_tolerance,
             "passed": self.passed,
             "evaluations": self.evaluations,
+            "method": self.method,
+            "shift_terms": self.shift_terms,
         }
 
 
@@ -156,6 +164,7 @@ def check_pennylane_parameter_shift_agreement(
         parameters=parameters,
         rule=rule,
     )
+    shift_terms = len((rule or ParameterShiftRule()).terms)
     external_gradient = _as_parameter_vector(
         "PennyLane gradient",
         pennylane_gradient(parameter_values.copy()),
@@ -173,6 +182,8 @@ def check_pennylane_parameter_shift_agreement(
         tolerance=tolerance_value,
         passed=max_abs_error <= tolerance_value,
         evaluations=scpn.evaluations,
+        method=scpn.method,
+        shift_terms=shift_terms,
     )
 
 
@@ -204,6 +215,7 @@ def check_pennylane_qnode_round_trip(
         parameters=parameters,
         rule=rule,
     )
+    shift_terms = len((rule or ParameterShiftRule()).terms)
     external_value = _as_finite_scalar(
         "PennyLane objective",
         pennylane_objective(parameter_values.copy()),
@@ -230,6 +242,8 @@ def check_pennylane_qnode_round_trip(
         gradient_tolerance=gradient_tol,
         passed=bool(value_abs_error <= value_tol and gradient_max_abs_error <= gradient_tol),
         evaluations=scpn.evaluations,
+        method=scpn.method,
+        shift_terms=shift_terms,
     )
 
 

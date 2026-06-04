@@ -424,7 +424,9 @@ print(agreement.passed, agreement.max_abs_error)
 
 This is an agreement verifier, not an automatic PennyLane QNode generator. It
 fails closed when PennyLane is not importable and reports explicit gradient
-error metrics when the external gradient disagrees.
+error metrics when the external gradient disagrees. When a multi-frequency rule
+is supplied, the report records the native SCPN method and shift-term count so
+the comparison cannot be mistaken for the legacy two-point rule.
 
 For full adapter smoke tests, `check_pennylane_qnode_round_trip(...)` compares
 both value and gradient parity:

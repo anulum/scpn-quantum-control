@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
     check_pennylane_parameter_shift_agreement,
     check_pennylane_qnode_round_trip,
     is_phase_pennylane_available,
+    multi_frequency_parameter_shift_rule,
 )
 
 
@@ -66,6 +67,35 @@ def test_pennylane_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPa
     assert result.l2_error > 0.0
 
 
+def test_pennylane_bridge_reports_multi_frequency_gradient_agreement(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
+
+    def external_gradient(values: np.ndarray) -> np.ndarray:
+        return np.array([np.cos(values[0]) - 0.2 * np.sin(2.0 * values[0])], dtype=float)
+
+    result = check_pennylane_parameter_shift_agreement(
+        objective,
+        external_gradient,
+        np.array([0.4], dtype=float),
+        tolerance=1e-12,
+        rule=rule,
+    )
+    payload = result.to_dict()
+
+    assert result.passed
+    assert result.method == "multi_frequency_parameter_shift"
+    assert result.shift_terms == len(rule.terms)
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+    assert payload["shift_terms"] == len(rule.terms)
+    np.testing.assert_allclose(result.scpn_gradient, result.pennylane_gradient, atol=1e-12)
+
+
 def test_pennylane_bridge_reports_qnode_round_trip(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
@@ -86,6 +116,35 @@ def test_pennylane_bridge_reports_qnode_round_trip(monkeypatch: pytest.MonkeyPat
     assert result.evaluations == 5
     assert payload["passed"] is True
     assert payload["evaluations"] == 5
+    np.testing.assert_allclose(result.scpn_gradient, result.pennylane_gradient, atol=1e-12)
+
+
+def test_pennylane_bridge_reports_multi_frequency_qnode_round_trip(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
+
+    def external_gradient(values: np.ndarray) -> np.ndarray:
+        return np.array([np.cos(values[0]) - 0.2 * np.sin(2.0 * values[0])], dtype=float)
+
+    result = check_pennylane_qnode_round_trip(
+        objective,
+        objective,
+        external_gradient,
+        np.array([0.4], dtype=float),
+        value_tolerance=1e-12,
+        gradient_tolerance=1e-12,
+        rule=rule,
+    )
+
+    assert result.passed
+    assert result.method == "multi_frequency_parameter_shift"
+    assert result.shift_terms == len(rule.terms)
+    assert result.evaluations == 1 + 2 * len(rule.terms)
     np.testing.assert_allclose(result.scpn_gradient, result.pennylane_gradient, atol=1e-12)
 
 
