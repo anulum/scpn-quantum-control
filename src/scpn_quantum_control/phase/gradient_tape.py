@@ -57,6 +57,16 @@ class TapeGradientRecord:
         return self.plan.evaluations
 
     @property
+    def method(self) -> str:
+        """Return the replay method recorded by the gradient result."""
+        return self.result.method
+
+    @property
+    def shift_terms(self) -> int:
+        """Return the number of parameter-shift terms used per parameter."""
+        return self.plan.shift_terms
+
+    @property
     def standard_error(self) -> FloatArray | None:
         """Return finite-shot standard errors when the record is stochastic."""
         if isinstance(self.result, StochasticGradientResult):
@@ -70,6 +80,30 @@ class TapeGradientRecord:
             return self.result.confidence_radius
         return None
 
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready replay provenance for audit logs and notebooks."""
+        standard_error = self.standard_error
+        confidence_radius = self.confidence_radius
+        return {
+            "name": self.name,
+            "kind": self.kind,
+            "backend": self.plan.backend,
+            "plan_method": self.plan.method,
+            "method": self.method,
+            "n_params": self.plan.n_params,
+            "shift_terms": self.plan.shift_terms,
+            "evaluations": self.plan.evaluations,
+            "shots": self.plan.shots,
+            "seed": self.plan.seed,
+            "finite_shot": self.plan.finite_shot,
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "standard_error": (None if standard_error is None else standard_error.tolist()),
+            "confidence_radius": (
+                None if confidence_radius is None else confidence_radius.tolist()
+            ),
+        }
+
 
 def _as_parameter_vector(name: str, values: ArrayLike) -> FloatArray:
     vector = np.asarray(values, dtype=float)
@@ -78,6 +112,36 @@ def _as_parameter_vector(name: str, values: ArrayLike) -> FloatArray:
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} must contain only finite values")
     return vector.astype(np.float64, copy=True)
+
+
+def _shift_term_count(rule: ParameterShiftRule | None) -> int:
+    if rule is None:
+        return 1
+    return len(rule.terms)
+
+
+def _as_finite_shot_array(name: str, values: ArrayLike) -> FloatArray:
+    records = np.asarray(values, dtype=float)
+    if records.ndim not in (1, 2):
+        raise ValueError(f"{name} must be a one- or two-dimensional array")
+    if records.size == 0:
+        raise ValueError(f"{name} must not be empty")
+    if records.ndim == 2 and (records.shape[0] == 0 or records.shape[1] == 0):
+        raise ValueError(f"{name} must have non-empty shift and parameter axes")
+    if not np.all(np.isfinite(records)):
+        raise ValueError(f"{name} must contain only finite values")
+    return records.astype(np.float64, copy=True)
+
+
+def _require_matching_finite_shot_shape(
+    name: str,
+    values: ArrayLike,
+    expected_shape: tuple[int, ...],
+) -> FloatArray:
+    records = _as_finite_shot_array(name, values)
+    if records.shape != expected_shape:
+        raise ValueError(f"{name} must match plus_values shape {expected_shape}")
+    return records
 
 
 class QuantumGradientTape:
@@ -157,9 +221,11 @@ class QuantumGradientTape:
         self._require_active()
         record_name = self._validate_name(name)
         values = _as_parameter_vector("params", params)
+        shift_terms = _shift_term_count(rule)
         plan = plan_quantum_gradient_backend(
             self.backend,
             n_params=values.size,
+            shift_terms=shift_terms,
             method="parameter_shift",
             seed=self.seed,
             allow_hardware=self.allow_hardware,
@@ -196,10 +262,41 @@ class QuantumGradientTape:
         """Record finite-shot parameter-shift gradient with uncertainty."""
         self._require_active()
         record_name = self._validate_name(name)
-        plus = _as_parameter_vector("plus_values", plus_values)
+        plus = _as_finite_shot_array("plus_values", plus_values)
+        shift_terms = _shift_term_count(rule)
+        if plus.ndim == 1:
+            if shift_terms != 1:
+                raise ValueError(
+                    "multi-term finite-shot tape records require two-dimensional "
+                    "plus_values with shape (shift_terms, n_params)"
+                )
+            n_params = plus.size
+        else:
+            if plus.shape[0] != shift_terms:
+                raise ValueError(
+                    "plus_values first axis must match the parameter-shift "
+                    f"rule term count {shift_terms}"
+                )
+            n_params = plus.shape[1]
+        minus = _require_matching_finite_shot_shape(
+            "minus_values",
+            minus_values,
+            plus.shape,
+        )
+        plus_var = _require_matching_finite_shot_shape(
+            "plus_variances",
+            plus_variances,
+            plus.shape,
+        )
+        minus_var = _require_matching_finite_shot_shape(
+            "minus_variances",
+            minus_variances,
+            plus.shape,
+        )
         plan = plan_quantum_gradient_backend(
             self.backend,
-            n_params=plus.size,
+            n_params=n_params,
+            shift_terms=shift_terms,
             method="stochastic_parameter_shift",
             shots=self.shots,
             seed=self.seed,
@@ -212,9 +309,9 @@ class QuantumGradientTape:
             raise ValueError("finite-shot tape records require an explicit shot plan")
         result = parameter_shift_gradient_with_uncertainty(
             plus,
-            minus_values,
-            plus_variances,
-            minus_variances,
+            minus,
+            plus_var,
+            minus_var,
             shots=plan.shots,
             backend=plan.backend,
             value=value,

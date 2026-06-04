@@ -286,7 +286,10 @@ fail closed until an explicit backend policy enables them.
 ## Gradient tape MVP
 
 For local simulator workflows, `gradient_tape` records deterministic and
-finite-shot parameter-shift evaluations with backend-plan provenance:
+finite-shot parameter-shift evaluations with backend-plan provenance. The tape
+now preserves the active parameter-shift rule identity through `record.method`,
+the backend replay plan through `record.plan_method`, and the per-parameter
+shift-term count through `record.shift_terms` and `record.to_dict()`:
 
 ```python
 import numpy as np
@@ -301,12 +304,20 @@ def objective(params: np.ndarray) -> float:
 with gradient_tape(backend="statevector") as tape:
     record = tape.record_parameter_shift("single_rotation", objective, np.array([0.3]))
 
-print(record.gradient, record.plan.method, record.evaluations)
+print(record.gradient, record.method, record.shift_terms, record.evaluations)
 ```
 
-The MVP is intentionally bounded. It is not a full programme-IR tape, does not
-capture arbitrary Python side effects, and does not enable hardware gradients
-without explicit policy approval.
+Multi-frequency generators are supported when callers pass the same
+`ParameterShiftRule` used by the native gradient engine. Deterministic replay
+plans `2 * shift_terms * n_params` objective evaluations. Finite-shot replay
+uses the same rule but requires `plus_values`, `minus_values`, `plus_variances`,
+and `minus_variances` to be shaped as `(shift_terms, n_params)` whenever
+`shift_terms > 1`; flat arrays fail closed because they cannot encode which
+sample belongs to which Fourier term.
+
+The MVP remains intentionally bounded. It is not a full programme-IR tape, does
+not capture arbitrary Python side effects, and does not enable hardware
+gradients without explicit policy approval.
 
 ## Convergence evidence
 
