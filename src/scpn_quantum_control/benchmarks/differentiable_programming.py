@@ -25,6 +25,7 @@ from ..differentiable import (
     vmap,
     whole_program_value_and_grad,
 )
+from ..phase.param_shift import verify_parameter_shift_gradient
 
 
 @dataclass(frozen=True)
@@ -115,6 +116,80 @@ class DifferentiableProgrammingExternalReferenceResult:
         return self.max_abs_value_error <= 1.0e-10 and self.max_abs_gradient_error <= 1.0e-10
 
 
+@dataclass(frozen=True)
+class QuantumGradientBenchmarkResult:
+    """Conformance result for deterministic quantum-gradient benchmark rows."""
+
+    case_id: str
+    category: str
+    value: float
+    parameter_shift_gradient: NDArray[np.float64]
+    finite_difference_gradient: NDArray[np.float64]
+    analytic_gradient: NDArray[np.float64]
+    max_abs_reference_error: float
+    max_abs_finite_difference_error: float
+    verification_passed: bool
+    evaluations: int
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.case_id:
+            raise ValueError("quantum gradient case_id must be non-empty")
+        if not self.category:
+            raise ValueError("quantum gradient category must be non-empty")
+        if not math.isfinite(self.value):
+            raise ValueError("quantum gradient value must be finite")
+        parameter_shift_gradient = _as_gradient(
+            "parameter_shift_gradient",
+            self.parameter_shift_gradient,
+        )
+        finite_difference_gradient = _as_gradient(
+            "finite_difference_gradient",
+            self.finite_difference_gradient,
+        )
+        analytic_gradient = _as_gradient("analytic_gradient", self.analytic_gradient)
+        if (
+            parameter_shift_gradient.shape != finite_difference_gradient.shape
+            or parameter_shift_gradient.shape != analytic_gradient.shape
+        ):
+            raise ValueError("quantum gradient benchmark gradient shapes must match")
+        if self.max_abs_reference_error < 0.0 or not math.isfinite(self.max_abs_reference_error):
+            raise ValueError("quantum gradient reference error must be finite and non-negative")
+        if self.max_abs_finite_difference_error < 0.0 or not math.isfinite(
+            self.max_abs_finite_difference_error
+        ):
+            raise ValueError(
+                "quantum gradient finite-difference error must be finite and non-negative"
+            )
+        if not isinstance(self.verification_passed, bool):
+            raise ValueError("quantum gradient verification_passed must be a boolean")
+        if self.evaluations <= 0:
+            raise ValueError("quantum gradient evaluations must be positive")
+        if not self.claim_boundary:
+            raise ValueError("quantum gradient claim_boundary must be non-empty")
+        object.__setattr__(
+            self,
+            "parameter_shift_gradient",
+            parameter_shift_gradient,
+        )
+        object.__setattr__(
+            self,
+            "finite_difference_gradient",
+            finite_difference_gradient,
+        )
+        object.__setattr__(self, "analytic_gradient", analytic_gradient)
+
+    @property
+    def passed(self) -> bool:
+        """Return whether parameter-shift gradients passed all reference checks."""
+
+        return (
+            self.verification_passed
+            and self.max_abs_reference_error <= 1.0e-12
+            and self.max_abs_finite_difference_error <= 1.0e-5
+        )
+
+
 def run_differentiable_programming_benchmark_suite() -> tuple[
     DifferentiableProgrammingBenchmarkResult, ...
 ]:
@@ -131,6 +206,21 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
     )
 
 
+def run_quantum_gradient_benchmark_suite() -> tuple[QuantumGradientBenchmarkResult, ...]:
+    """Run deterministic quantum-gradient conformance rows.
+
+    These rows exercise parameter-shift gradients on small smooth expectation
+    objectives with analytic references and finite-difference certificates. They
+    are correctness benchmarks only, not hardware, provider, or performance
+    claims.
+    """
+
+    return (
+        _single_rotation_quantum_gradient_case(),
+        _two_parameter_quantum_gradient_case(),
+    )
+
+
 def run_differentiable_programming_external_reference_suite() -> tuple[
     DifferentiableProgrammingExternalReferenceResult, ...
 ]:
@@ -142,6 +232,39 @@ def run_differentiable_programming_external_reference_suite() -> tuple[
         _jax_loop_heavy_case(),
         _jax_linalg_primitive_case(),
         _jax_transform_nesting_case(),
+    )
+
+
+def _single_rotation_quantum_gradient_case() -> QuantumGradientBenchmarkResult:
+    values = np.array([0.4], dtype=np.float64)
+
+    def objective(params: NDArray[np.float64]) -> float:
+        return float(np.cos(params[0]))
+
+    analytic = np.array([-math.sin(values[0])], dtype=np.float64)
+    return _quantum_gradient_case(
+        "single_rotation_parameter_shift",
+        objective,
+        values,
+        analytic,
+    )
+
+
+def _two_parameter_quantum_gradient_case() -> QuantumGradientBenchmarkResult:
+    values = np.array([0.2, -0.4], dtype=np.float64)
+
+    def objective(params: NDArray[np.float64]) -> float:
+        return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
+
+    analytic = np.array(
+        [-math.sin(values[0]), 0.25 * math.cos(values[1])],
+        dtype=np.float64,
+    )
+    return _quantum_gradient_case(
+        "two_parameter_phase_expectation",
+        objective,
+        values,
+        analytic,
     )
 
 
@@ -895,6 +1018,36 @@ def _program_ad_case(
     )
 
 
+def _quantum_gradient_case(
+    case_id: str,
+    objective: Callable[[NDArray[np.float64]], float],
+    values: NDArray[np.float64],
+    analytic_gradient: NDArray[np.float64],
+) -> QuantumGradientBenchmarkResult:
+    certificate = verify_parameter_shift_gradient(objective, values)
+    value = float(objective(values.copy()))
+    return QuantumGradientBenchmarkResult(
+        case_id=case_id,
+        category="quantum-gradient",
+        value=value,
+        parameter_shift_gradient=certificate.analytic_gradient,
+        finite_difference_gradient=certificate.finite_difference_gradient,
+        analytic_gradient=analytic_gradient,
+        max_abs_reference_error=_max_abs_error(
+            certificate.analytic_gradient,
+            analytic_gradient,
+        ),
+        max_abs_finite_difference_error=certificate.max_abs_error,
+        verification_passed=certificate.passed,
+        evaluations=certificate.total_evaluations,
+        claim_boundary=(
+            "deterministic local expectation-gradient conformance against analytic "
+            "and finite-difference references; no wall-clock performance, hardware, "
+            "provider, or framework-autodiff claim"
+        ),
+    )
+
+
 def _as_gradient(name: str, value: NDArray[np.float64]) -> NDArray[np.float64]:
     array = np.asarray(value, dtype=np.float64)
     if array.ndim != 1:
@@ -913,6 +1066,8 @@ def _max_abs_error(left: NDArray[np.float64], right: NDArray[np.float64]) -> flo
 __all__ = [
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
+    "QuantumGradientBenchmarkResult",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
+    "run_quantum_gradient_benchmark_suite",
 ]

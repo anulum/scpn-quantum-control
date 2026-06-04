@@ -18,8 +18,10 @@ import pytest
 from scpn_quantum_control.benchmarks import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
+    QuantumGradientBenchmarkResult,
     run_differentiable_programming_benchmark_suite,
     run_differentiable_programming_external_reference_suite,
+    run_quantum_gradient_benchmark_suite,
 )
 from scpn_quantum_control.benchmarks import differentiable_programming as dp_benchmarks
 
@@ -199,6 +201,123 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
             adjoint_supported=True,
             max_abs_adjoint_error=0.0,
             claim_boundary="",
+        )
+
+
+def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
+    """Quantum-gradient rows should expose parameter-shift verification evidence."""
+
+    results = run_quantum_gradient_benchmark_suite()
+
+    assert [row.case_id for row in results] == [
+        "single_rotation_parameter_shift",
+        "two_parameter_phase_expectation",
+    ]
+    for row in results:
+        assert isinstance(row, QuantumGradientBenchmarkResult)
+        assert row.category == "quantum-gradient"
+        assert row.passed
+        assert row.verification_passed
+        assert row.evaluations > 0
+        assert row.max_abs_reference_error <= 1.0e-12
+        assert row.max_abs_finite_difference_error <= 1.0e-5
+        assert "no wall-clock performance" in row.claim_boundary
+        assert "hardware" in row.claim_boundary
+        np.testing.assert_allclose(
+            row.parameter_shift_gradient,
+            row.analytic_gradient,
+            atol=1.0e-12,
+        )
+
+
+def test_quantum_gradient_benchmark_result_validation_paths() -> None:
+    """Quantum-gradient benchmark metadata should reject malformed rows."""
+
+    gradient = np.array([1.0, 2.0], dtype=np.float64)
+    row = QuantumGradientBenchmarkResult(
+        case_id="case",
+        category="quantum-gradient",
+        value=1.0,
+        parameter_shift_gradient=gradient,
+        finite_difference_gradient=gradient.copy(),
+        analytic_gradient=gradient.copy(),
+        max_abs_reference_error=0.0,
+        max_abs_finite_difference_error=0.0,
+        verification_passed=True,
+        evaluations=8,
+        claim_boundary="diagnostic conformance only, no wall-clock performance claim",
+    )
+
+    assert row.passed is True
+    with pytest.raises(ValueError, match="case_id"):
+        QuantumGradientBenchmarkResult(
+            case_id="",
+            category="quantum-gradient",
+            value=1.0,
+            parameter_shift_gradient=gradient,
+            finite_difference_gradient=gradient,
+            analytic_gradient=gradient,
+            max_abs_reference_error=0.0,
+            max_abs_finite_difference_error=0.0,
+            verification_passed=True,
+            evaluations=8,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="gradient shapes"):
+        QuantumGradientBenchmarkResult(
+            case_id="case",
+            category="quantum-gradient",
+            value=1.0,
+            parameter_shift_gradient=gradient,
+            finite_difference_gradient=np.array([1.0], dtype=np.float64),
+            analytic_gradient=gradient,
+            max_abs_reference_error=0.0,
+            max_abs_finite_difference_error=0.0,
+            verification_passed=True,
+            evaluations=8,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="reference error"):
+        QuantumGradientBenchmarkResult(
+            case_id="case",
+            category="quantum-gradient",
+            value=1.0,
+            parameter_shift_gradient=gradient,
+            finite_difference_gradient=gradient,
+            analytic_gradient=gradient,
+            max_abs_reference_error=np.nan,
+            max_abs_finite_difference_error=0.0,
+            verification_passed=True,
+            evaluations=8,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="verification_passed"):
+        QuantumGradientBenchmarkResult(
+            case_id="case",
+            category="quantum-gradient",
+            value=1.0,
+            parameter_shift_gradient=gradient,
+            finite_difference_gradient=gradient,
+            analytic_gradient=gradient,
+            max_abs_reference_error=0.0,
+            max_abs_finite_difference_error=0.0,
+            verification_passed="yes",  # type: ignore[arg-type]
+            evaluations=8,
+            claim_boundary="diagnostic",
+        )
+    with pytest.raises(ValueError, match="evaluations"):
+        QuantumGradientBenchmarkResult(
+            case_id="case",
+            category="quantum-gradient",
+            value=1.0,
+            parameter_shift_gradient=gradient,
+            finite_difference_gradient=gradient,
+            analytic_gradient=gradient,
+            max_abs_reference_error=0.0,
+            max_abs_finite_difference_error=0.0,
+            verification_passed=True,
+            evaluations=0,
+            claim_boundary="diagnostic",
         )
 
 
@@ -443,9 +562,13 @@ def test_differentiable_programming_benchmark_exports_from_package_root() -> Non
         scpn.run_differentiable_programming_external_reference_suite
         is run_differentiable_programming_external_reference_suite
     )
+    assert scpn.QuantumGradientBenchmarkResult is QuantumGradientBenchmarkResult
+    assert scpn.run_quantum_gradient_benchmark_suite is run_quantum_gradient_benchmark_suite
     assert dp_benchmarks.__all__ == [
         "DifferentiableProgrammingBenchmarkResult",
         "DifferentiableProgrammingExternalReferenceResult",
+        "QuantumGradientBenchmarkResult",
         "run_differentiable_programming_benchmark_suite",
         "run_differentiable_programming_external_reference_suite",
+        "run_quantum_gradient_benchmark_suite",
     ]

@@ -370,6 +370,22 @@ Runs optional JAX reference comparisons when JAX is installed. When JAX is not
 available, it returns an empty tuple rather than weakening the base dependency
 contract.
 
+#### `run_quantum_gradient_benchmark_suite()`
+
+Runs deterministic parameter-shift correctness rows for small smooth quantum
+expectation objectives. Each row records the parameter-shift gradient, central
+finite-difference gradient, analytic reference gradient, finite-difference
+verification pass/fail flag, objective-evaluation count, and a claim boundary.
+
+| Case | Category | Contract |
+|------|----------|----------|
+| `single_rotation_parameter_shift` | quantum-gradient | One-parameter Pauli-rotation expectation with analytic `-sin(theta)` reference |
+| `two_parameter_phase_expectation` | quantum-gradient | Two-parameter phase expectation with analytic mixed sine/cosine reference |
+
+These rows are correctness/conformance benchmarks only. They do not claim
+hardware execution, provider integration, framework-native autodiff, or
+wall-clock performance.
+
 ---
 
 ## Crossover Summary

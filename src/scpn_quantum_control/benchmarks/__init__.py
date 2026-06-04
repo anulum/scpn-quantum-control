@@ -18,8 +18,10 @@ from .classical_baselines import (
 from .differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
+    QuantumGradientBenchmarkResult,
     run_differentiable_programming_benchmark_suite,
     run_differentiable_programming_external_reference_suite,
+    run_quantum_gradient_benchmark_suite,
 )
 from .gpu_baseline import GPUBaselineResult, gpu_baseline_comparison
 from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
@@ -40,8 +42,10 @@ __all__ = [
     "scipy_ode_baseline",
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
+    "QuantumGradientBenchmarkResult",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
+    "run_quantum_gradient_benchmark_suite",
     "GPUBaselineResult",
     "gpu_baseline_comparison",
     "MPSBaselineResult",

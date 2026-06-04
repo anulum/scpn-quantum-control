@@ -23,8 +23,10 @@ from .benchmarks.classical_baselines import (
 from .benchmarks.differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
+    QuantumGradientBenchmarkResult,
     run_differentiable_programming_benchmark_suite,
     run_differentiable_programming_external_reference_suite,
+    run_quantum_gradient_benchmark_suite,
 )
 from .benchmarks.quantum_advantage import (
     AdvantageResult,
@@ -1161,8 +1163,10 @@ __all__ = [
     "run_documented_classical_baselines",
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
+    "QuantumGradientBenchmarkResult",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
+    "run_quantum_gradient_benchmark_suite",
     "AdvantageResult",
     "classical_benchmark",
     "quantum_benchmark",
