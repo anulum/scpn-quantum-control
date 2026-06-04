@@ -97,6 +97,31 @@ result = parameter_shift_gradient_with_uncertainty(
 print(result.gradient, result.standard_error)
 ```
 
+## Gradient tape MVP
+
+For local simulator workflows, `gradient_tape` records deterministic and
+finite-shot parameter-shift evaluations with backend-plan provenance:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import gradient_tape
+
+
+def objective(params: np.ndarray) -> float:
+    return float(np.cos(params[0]))
+
+
+with gradient_tape(backend="statevector") as tape:
+    record = tape.record_parameter_shift("single_rotation", objective, np.array([0.3]))
+
+print(record.gradient, record.plan.method, record.evaluations)
+```
+
+The MVP is intentionally bounded. It is not a full programme-IR tape, does not
+capture arbitrary Python side effects, and does not enable hardware gradients
+without explicit policy approval.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:

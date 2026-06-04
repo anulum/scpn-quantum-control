@@ -30,7 +30,7 @@ This repository now documents those questions directly. Current support is delib
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
 | JAX, PyTorch, TensorFlow adapters | Planned staged surfaces, not production-complete. | [Differentiable Roadmap](differentiable_roadmap.md) |
-| Gradient tape | Planned staged surface, not production-complete. | [Differentiable Roadmap](differentiable_roadmap.md) |
+| Gradient tape | MVP available for supported phase parameter-shift records; arbitrary Python and programme-IR tape semantics remain open. | [Quantum Gradients](quantum_gradients.md), [Differentiable Roadmap](differentiable_roadmap.md) |
 | QNN/QGNN/QSNN training lane | Partly represented in existing QSNN and neural-state work; production convergence notebooks remain planned. | [Notebooks](notebooks.md) |
 
 ## User routes
@@ -69,7 +69,7 @@ Unsupported does not mean ignored. Current public boundaries include:
 
 - arbitrary Python/NumPy program AD beyond supported trace operations;
 - full native compiler AD for every MLIR/LLVM/JIT path;
-- gradient tape semantics;
+- complete gradient tape semantics beyond supported phase parameter-shift records;
 - public JAX/PyTorch/TensorFlow adapters;
 - hardware gradient jobs without explicit backend policy;
 - gates without registered generator spectra;

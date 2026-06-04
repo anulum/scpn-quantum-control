@@ -22,6 +22,7 @@ from .gradient_backend import (
     plan_quantum_gradient_backend,
     quantum_gradient_backend_capability,
 )
+from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
 from .kuramoto_variants import (
     HigherOrderKuramotoSpec,
     KuramotoVariant,
@@ -88,6 +89,9 @@ __all__ = [
     "plan_quantum_gradient_backend",
     "QuantumGradientBackendCapability",
     "QuantumGradientPlan",
+    "gradient_tape",
+    "QuantumGradientTape",
+    "TapeGradientRecord",
     "build_structured_ansatz",
     "LindbladSyncEngine",
     "parameter_shift_gradient",

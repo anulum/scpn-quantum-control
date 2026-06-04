@@ -16,7 +16,7 @@ This roadmap defines the staged work needed to turn differentiable programming i
 |---|---|---|
 | 1 | Parameter-shift core for Kuramoto-XY/VQE objectives | Analytic checks, finite-difference checks, convergence tests. |
 | 2 | Public gradient API | `grad`, `value_and_grad`, support reports, typed errors. |
-| 3 | Gradient tape | Context manager, nesting semantics, unsupported-operation diagnostics. |
+| 3 | Gradient tape | MVP context manager available for supported phase parameter-shift records; expand to nesting semantics and programme-IR traces. |
 | 4 | Backend gradient planner | MVP available for statevector, finite-shot simulator, and fail-closed hardware routes; expand to provider-specific policies. |
 | 5 | Framework adapters | JAX first, then PyTorch, TensorFlow, PennyLane, and Qiskit parity tests. |
 | 6 | QNN/QGNN/QSNN training | Seeded convergence notebooks and benchmarks. |
