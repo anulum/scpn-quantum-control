@@ -84,6 +84,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [CouplingGradientVerificationResult, CouplingLearningResult, coupling_matrix_from_edge_vector, learn_couplings_from_observations, verify_coupling_parameter_shift_gradient]
 
+::: scpn_quantum_control.phase.differentiable_audit
+    options:
+      members: [DifferentiableQuantumAuditReport, ParameterShiftAnalyticAgreement, run_known_phase_gradient_audit, run_parameter_shift_audit_suite, verify_parameter_shift_analytic_gradient]
+
 ::: scpn_quantum_control.phase.gradient_descent
     options:
       members: [ParameterShiftTrainingStep, ParameterShiftTrainingResult, ParameterShiftTrainingCertificate, parameter_shift_gradient_descent, validate_parameter_shift_training]

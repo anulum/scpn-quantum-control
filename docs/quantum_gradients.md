@@ -384,6 +384,26 @@ This gives QSNN notebooks and experiments the same convergence evidence as
 phase objectives: backend plan, line-search trace, parameter-shift evaluation
 count, final-gradient norm, best loss, and fail-closed hardware boundaries.
 
+For reviewer-facing correctness evidence, run the bundled gradient audit:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import run_known_phase_gradient_audit
+
+
+report = run_known_phase_gradient_audit(np.array([0.8, -0.5, 0.3]))
+
+print(report.passed, report.max_gradient_error, report.best_value)
+```
+
+The report combines three independent checks: parameter-shift versus central
+finite-difference agreement, parameter-shift versus an analytic closed-form
+gradient, and deterministic parameter-shift gradient-descent convergence. It is
+designed for local smooth phase-rotation objectives and CI/paper evidence
+tables. It does not certify discontinuous losses, shot-noisy hardware
+gradients, arbitrary regression models, or undeclared generator spectra.
+
 Coupling learning uses the same optimizer for inverse oscillator problems:
 
 ```python

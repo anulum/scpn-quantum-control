@@ -36,6 +36,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
+| Gradient audit evidence | `DifferentiableQuantumAuditReport`, `ParameterShiftAnalyticAgreement`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite` | Bundle finite-difference agreement, analytic-gradient agreement, and convergence evidence into reviewer-facing reports. |
 | Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
@@ -139,6 +140,30 @@ assert run.certificate.monotone_accepted_values
 This route is full-batch local-simulator training. Hardware backends remain
 disabled by default through the same fail-closed backend planner used by phase
 gradients.
+
+## Reviewer-facing gradient audit report
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import run_known_phase_gradient_audit
+
+
+report = run_known_phase_gradient_audit(np.array([0.8, -0.5, 0.3]))
+
+print(report.passed)
+print(report.finite_difference.max_abs_error)
+print(report.analytic.max_abs_error)
+print(report.training_certificate.to_dict())
+```
+
+The audit report is intended for visible correctness evidence. It combines
+parameter-shift versus finite-difference agreement, parameter-shift versus an
+analytic gradient, and a deterministic gradient-descent convergence
+certificate. The built-in benchmark is a smooth phase-rotation objective,
+`mean(1 - cos(theta_i))`, with exact gradient `sin(theta_i) / n`.
+Discontinuous objectives, stochastic hardware shots, arbitrary regressors, and
+undeclared generator spectra are explicitly outside this report boundary.
 
 ## Minimal differentiable coupling learning
 

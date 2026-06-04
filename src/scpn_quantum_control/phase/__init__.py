@@ -22,6 +22,13 @@ from .coupling_learning import (
     verify_coupling_parameter_shift_gradient,
 )
 from .cross_domain_transfer import TransferResult, build_systems, transfer_experiment
+from .differentiable_audit import (
+    DifferentiableQuantumAuditReport,
+    ParameterShiftAnalyticAgreement,
+    run_known_phase_gradient_audit,
+    run_parameter_shift_audit_suite,
+    verify_parameter_shift_analytic_gradient,
+)
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
 from .gradient_backend import (
     QuantumGradientBackendCapability,
@@ -146,6 +153,11 @@ __all__ = [
     "coupling_matrix_from_edge_vector",
     "CouplingGradientVerificationResult",
     "CouplingLearningResult",
+    "run_known_phase_gradient_audit",
+    "run_parameter_shift_audit_suite",
+    "verify_parameter_shift_analytic_gradient",
+    "DifferentiableQuantumAuditReport",
+    "ParameterShiftAnalyticAgreement",
     "varqite_ground_state",
     "VarQITEResult",
     "floquet_evolve",
