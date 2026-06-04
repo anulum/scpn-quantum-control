@@ -1199,6 +1199,8 @@ is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 is_phase_jax_available() -> bool
 jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None, rule=None) -> PhaseJAXParameterShiftResult
+is_phase_pennylane_available() -> bool
+check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGradientResult
 ```
@@ -1206,9 +1208,9 @@ weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGra
 All native and optional-adapter inputs are fail-closed real-numeric boundaries:
 parameter arrays, objective return values, optimiser learning rates,
 parameter-shift rules, JAX objective values, phase JAX host-callback gradients,
-and gradients reject strings, booleans, object arrays, complex values, shape
-mismatches, and non-finite numbers before training or hardware-adapter code
-consumes them.
+PennyLane agreement gradients, and gradients reject strings, booleans, object
+arrays, complex values, shape mismatches, and non-finite numbers before
+training or hardware-adapter code consumes them.
 `DifferentiableOptimizer.minimize()` is deliberately bounded: it records scalar
 objective history, preserves non-trainable parameters, and exits only through
 explicit gradient tolerance, optional value tolerance, or `max_steps`.

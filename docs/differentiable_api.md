@@ -19,6 +19,7 @@ This page maps the public differentiable-programming namespace and the related q
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
 | `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls. |
+| `scpn_quantum_control.phase.pennylane_bridge` | Optional PennyLane gradient-agreement checker for caller-supplied PennyLane/QNode gradient functions. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, and support-profile reports. |
 
 ## Common objects
@@ -32,6 +33,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
 | Gradient-training evidence | `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics`, `validate_param_shift_convergence` | Certify accepted energy descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
+| Optional PennyLane agreement | `PennyLaneGradientAgreementResult`, `check_pennylane_parameter_shift_agreement`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against a caller-supplied PennyLane gradient callable. |
 
 ## Minimal parameter-shift call
 
@@ -155,6 +157,34 @@ print(result.gradient, result.host_callback)
 This is an optional interop adapter. It imports JAX only when called and reports
 `host_callback=True` for JIT-wrapped execution. Native JAX-differentiated
 quantum kernels remain a separate roadmap item.
+
+## Minimal PennyLane agreement check
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import check_pennylane_parameter_shift_agreement
+
+
+def scpn_cost(params: np.ndarray) -> float:
+    return float(np.cos(params[0]))
+
+
+def pennylane_grad(params: np.ndarray) -> np.ndarray:
+    # Usually qml.grad(qnode)(params); written explicitly for compact docs.
+    return np.array([-np.sin(params[0])], dtype=float)
+
+
+agreement = check_pennylane_parameter_shift_agreement(
+    scpn_cost,
+    pennylane_grad,
+    np.array([0.4]),
+)
+assert agreement.passed
+```
+
+The bridge validates agreement. It does not claim automatic QNode generation
+for every SCPN circuit yet.
 
 ## Minimal custom primitive route
 

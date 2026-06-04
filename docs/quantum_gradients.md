@@ -188,6 +188,39 @@ The bridge is optional and fail-closed. It imports JAX only when called. JIT
 mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
 therefore does not claim native JAX differentiation of a quantum kernel.
 
+## Optional PennyLane agreement check
+
+For PennyLane/QNode parity work, use
+`check_pennylane_parameter_shift_agreement` with a caller-supplied
+PennyLane-derived gradient callable:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import check_pennylane_parameter_shift_agreement
+
+
+def scpn_objective(params: np.ndarray) -> float:
+    return float(np.cos(params[0]))
+
+
+def pennylane_gradient(params: np.ndarray) -> np.ndarray:
+    # Replace with qml.grad(qnode)(params) in a real PennyLane round trip.
+    return np.array([-np.sin(params[0])], dtype=float)
+
+
+agreement = check_pennylane_parameter_shift_agreement(
+    scpn_objective,
+    pennylane_gradient,
+    np.array([0.4]),
+)
+print(agreement.passed, agreement.max_abs_error)
+```
+
+This is an agreement verifier, not an automatic PennyLane QNode generator. It
+fails closed when PennyLane is not importable and reports explicit gradient
+error metrics when the external gradient disagrees.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:

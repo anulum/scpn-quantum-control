@@ -51,6 +51,11 @@ from .param_shift import (
     value_and_vqe_grad,
     vqe_with_param_shift,
 )
+from .pennylane_bridge import (
+    PennyLaneGradientAgreementResult,
+    check_pennylane_parameter_shift_agreement,
+    is_phase_pennylane_available,
+)
 from .phase_vqe import PhaseVQE
 from .pulse_shaping import (
     HypergeometricPulse,
@@ -102,6 +107,9 @@ __all__ = [
     "is_phase_jax_available",
     "jax_parameter_shift_value_and_grad",
     "PhaseJAXParameterShiftResult",
+    "is_phase_pennylane_available",
+    "check_pennylane_parameter_shift_agreement",
+    "PennyLaneGradientAgreementResult",
     "build_structured_ansatz",
     "LindbladSyncEngine",
     "parameter_shift_gradient",

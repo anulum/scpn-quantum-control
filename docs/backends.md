@@ -875,6 +875,9 @@ The PennyLane adapter layer provides `PennyLaneDeviceHALAdapter` and
 `pennylane_gate_workload()`. It executes a strict SCPN native-gate payload on a
 local PennyLane device such as `default.qubit`; unsupported gate names, invalid
 wire references, wrong arity, and malformed JSON are rejected before execution.
+For differentiable-programming parity checks, the phase namespace also exposes
+`check_pennylane_parameter_shift_agreement()` to compare SCPN parameter-shift
+gradients with caller-supplied PennyLane/QNode gradient callables.
 
 ```python
 hal = HardwareAbstractionLayer.with_builtin_profiles()
