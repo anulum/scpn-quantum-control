@@ -122,6 +122,45 @@ The MVP is intentionally bounded. It is not a full programme-IR tape, does not
 capture arbitrary Python side effects, and does not enable hardware gradients
 without explicit policy approval.
 
+## Convergence evidence
+
+`vqe_with_param_shift` now returns auditable convergence metadata in addition to
+the final parameters. Use `validate_param_shift_convergence` to turn a training
+run into a machine-checkable certificate:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    validate_param_shift_convergence,
+    vqe_with_param_shift,
+)
+
+
+def objective(params: np.ndarray) -> float:
+    return float(np.cos(params[0]) + np.sin(params[1]))
+
+
+result = vqe_with_param_shift(
+    objective,
+    n_params=2,
+    initial_params=np.array([2.7, -0.4]),
+    learning_rate=0.35,
+    steps=28,
+)
+diagnostics = validate_param_shift_convergence(
+    result,
+    gradient_tolerance=0.08,
+)
+
+print(diagnostics.best_energy, diagnostics.parameter_shift_evaluations)
+```
+
+The diagnostics report monotone accepted energy history, accepted and rejected
+line-search steps, backtracking counts, final gradient norm, exact-energy gap
+when a Kuramoto-XY Hamiltonian reference is available, and optional pass/fail
+flags for requested gap or gradient tolerances.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:
@@ -130,7 +169,7 @@ Before a new quantum-gradient path is promoted, it needs visible evidence:
 |---|---|
 | Analytic small-circuit references | Proves exact formula on cases with closed-form expectations. |
 | Finite-difference checks | Detects sign, scale, parameter-index, and broadcasting mistakes. |
-| Convergence tests | Shows that gradients improve optimisation, not only local derivatives. |
+| Convergence tests | Shows that gradients improve optimisation, not only local derivatives. The parameter-shift route includes explicit convergence certificates. |
 | Cross-framework agreement | Compares against JAX, PennyLane, Qiskit, PyTorch, or TensorFlow where applicable. |
 | Unsupported-operation tests | Confirms fail-closed behaviour for gates, backends, and observables without valid gradient rules. |
 

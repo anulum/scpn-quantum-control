@@ -43,6 +43,49 @@ ScalarObjective = Callable[[FloatArray], float]
 
 
 @dataclass(frozen=True)
+class ParamShiftConvergenceDiagnostics:
+    """Machine-checkable convergence evidence for parameter-shift training."""
+
+    initial_energy: float
+    final_energy: float
+    best_energy: float
+    energy_decrease: float
+    max_energy_increase: float
+    monotone_energy: bool
+    best_improved: bool
+    final_gradient_norm: float
+    accepted_steps: int
+    rejected_steps: int
+    line_search_backtracks: tuple[int, ...]
+    parameter_shift_evaluations: int
+    exact_energy: float | None
+    exact_gap: float | None
+    within_energy_tolerance: bool | None
+    within_gradient_tolerance: bool | None
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable convergence evidence."""
+        return {
+            "initial_energy": self.initial_energy,
+            "final_energy": self.final_energy,
+            "best_energy": self.best_energy,
+            "energy_decrease": self.energy_decrease,
+            "max_energy_increase": self.max_energy_increase,
+            "monotone_energy": self.monotone_energy,
+            "best_improved": self.best_improved,
+            "final_gradient_norm": self.final_gradient_norm,
+            "accepted_steps": self.accepted_steps,
+            "rejected_steps": self.rejected_steps,
+            "line_search_backtracks": list(self.line_search_backtracks),
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "exact_energy": self.exact_energy,
+            "exact_gap": self.exact_gap,
+            "within_energy_tolerance": self.within_energy_tolerance,
+            "within_gradient_tolerance": self.within_gradient_tolerance,
+        }
+
+
+@dataclass(frozen=True)
 class ParamShiftVQEResult:
     """Result of a local simulator-backed parameter-shift VQE descent."""
 
@@ -57,6 +100,11 @@ class ParamShiftVQEResult:
     converged: bool
     exact_energy: float | None = None
     energy_gap: float | None = None
+    accepted_steps: int = 0
+    rejected_steps: int = 0
+    line_search_backtracks: tuple[int, ...] = ()
+    step_sizes: tuple[float, ...] = ()
+    parameter_shift_evaluations: int = 0
 
     @property
     def optimal_params(self) -> FloatArray:
@@ -79,6 +127,12 @@ class ParamShiftVQEResult:
             "converged": self.converged,
             "exact_energy": self.exact_energy,
             "energy_gap": self.energy_gap,
+            "accepted_steps": self.accepted_steps,
+            "rejected_steps": self.rejected_steps,
+            "line_search_backtracks": list(self.line_search_backtracks),
+            "step_sizes": list(self.step_sizes),
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "convergence_diagnostics": validate_param_shift_convergence(self).to_dict(),
         }
 
 
@@ -133,6 +187,15 @@ def _shot_vector(shots: int | ArrayLike, width: int) -> FloatArray:
     if not np.all(values > 0.0) or not np.allclose(values, np.round(values)):
         raise ValueError("shots must contain positive integers")
     return values
+
+
+def _validate_non_negative_threshold(name: str, value: float | None) -> float | None:
+    if value is None:
+        return None
+    threshold = float(value)
+    if threshold < 0.0 or not np.isfinite(threshold):
+        raise ValueError(f"{name} must be finite and non-negative")
+    return threshold
 
 
 def parameter_shift_gradient(
@@ -225,6 +288,67 @@ def plan_parameter_shift_shots(
     )
 
 
+def validate_param_shift_convergence(
+    result: ParamShiftVQEResult,
+    *,
+    energy_tolerance: float = 1e-10,
+    target_gap: float | None = None,
+    gradient_tolerance: float | None = None,
+) -> ParamShiftConvergenceDiagnostics:
+    """Return explicit convergence evidence for a parameter-shift VQE run.
+
+    The validator is intentionally diagnostic, not promotional. It reports
+    whether the observed energy history is monotone under the accepted
+    backtracking line search, whether the best value improved over the initial
+    point, how many parameter-shift objective evaluations were spent, and
+    whether optional exact-energy or gradient-norm tolerances were reached.
+    """
+    energy_tol = _validate_non_negative_threshold("energy_tolerance", energy_tolerance)
+    if energy_tol is None:
+        energy_tol = 0.0
+    gap_tol = _validate_non_negative_threshold("target_gap", target_gap)
+    grad_tol = _validate_non_negative_threshold("gradient_tolerance", gradient_tolerance)
+
+    energies = np.asarray(result.energies, dtype=float)
+    if energies.ndim != 1 or energies.size == 0:
+        raise ValueError("result.energies must contain at least one energy")
+    if not np.all(np.isfinite(energies)):
+        raise ValueError("result.energies must contain only finite values")
+
+    deltas = np.diff(energies)
+    max_increase = float(np.max(deltas)) if deltas.size else 0.0
+    max_increase = max(0.0, max_increase)
+    final_gradient_norm = (
+        float(result.gradient_norms[-1]) if result.gradient_norms else float("nan")
+    )
+    exact_gap = result.energy_gap
+    if exact_gap is None and result.exact_energy is not None:
+        exact_gap = abs(result.best_energy - result.exact_energy)
+
+    return ParamShiftConvergenceDiagnostics(
+        initial_energy=float(result.initial_energy),
+        final_energy=float(result.final_energy),
+        best_energy=float(result.best_energy),
+        energy_decrease=float(result.initial_energy - result.best_energy),
+        max_energy_increase=max_increase,
+        monotone_energy=bool(max_increase <= energy_tol),
+        best_improved=bool(result.best_energy <= result.initial_energy + energy_tol),
+        final_gradient_norm=final_gradient_norm,
+        accepted_steps=int(result.accepted_steps),
+        rejected_steps=int(result.rejected_steps),
+        line_search_backtracks=tuple(int(value) for value in result.line_search_backtracks),
+        parameter_shift_evaluations=int(result.parameter_shift_evaluations),
+        exact_energy=result.exact_energy,
+        exact_gap=exact_gap,
+        within_energy_tolerance=None
+        if gap_tol is None
+        else exact_gap is not None and exact_gap <= gap_tol,
+        within_gradient_tolerance=None
+        if grad_tol is None
+        else np.isfinite(final_gradient_norm) and final_gradient_norm <= grad_tol,
+    )
+
+
 def value_and_vqe_grad(vqe: PhaseVQE, params: ArrayLike) -> GradientResult:
     """Return the VQE energy and parameter-shift gradient for a `PhaseVQE` object."""
     values = _as_finite_vector("params", params, width=vqe.n_params)
@@ -289,12 +413,18 @@ def vqe_with_param_shift(
 
     energies = [energy]
     gradient_norms: list[float] = []
+    line_search_backtracks: list[int] = []
+    step_sizes: list[float] = []
     best_energy = energy
     best_params = params.copy()
     converged = False
+    accepted_steps = 0
+    rejected_steps = 0
+    parameter_shift_evaluations = 0
 
     for _ in range(iteration_count):
         grad_result = value_and_parameter_shift_grad(objective, params)
+        parameter_shift_evaluations += grad_result.evaluations
         gradient = grad_result.gradient
         grad_norm = float(np.linalg.norm(gradient))
         gradient_norms.append(grad_norm)
@@ -306,19 +436,25 @@ def vqe_with_param_shift(
         accepted = False
         candidate = params.copy()
         candidate_energy = energy
-        for _ in range(12):
+        backtracks = 0
+        for attempt in range(12):
             trial = params - step_size * gradient
             trial_energy = float(objective(trial.copy()))
             if np.isfinite(trial_energy) and trial_energy <= energy:
                 candidate = trial
                 candidate_energy = trial_energy
                 accepted = True
+                backtracks = attempt
                 break
             step_size *= 0.5
 
         if not accepted:
+            rejected_steps += 1
             break
 
+        accepted_steps += 1
+        line_search_backtracks.append(backtracks)
+        step_sizes.append(step_size)
         params = candidate.astype(np.float64, copy=False)
         energy = candidate_energy
         energies.append(energy)
@@ -339,6 +475,11 @@ def vqe_with_param_shift(
         converged=converged,
         exact_energy=exact_energy,
         energy_gap=gap,
+        accepted_steps=accepted_steps,
+        rejected_steps=rejected_steps,
+        line_search_backtracks=tuple(line_search_backtracks),
+        step_sizes=tuple(float(value) for value in step_sizes),
+        parameter_shift_evaluations=parameter_shift_evaluations,
     )
 
 
@@ -347,6 +488,7 @@ __all__ = [
     "ParamShiftVQEResult",
     "Parameter",
     "ParameterShiftRule",
+    "ParamShiftConvergenceDiagnostics",
     "QuantumGradientPlan",
     "ShotAllocationResult",
     "StochasticGradientResult",
@@ -356,5 +498,6 @@ __all__ = [
     "plan_quantum_gradient_backend",
     "value_and_parameter_shift_grad",
     "value_and_vqe_grad",
+    "validate_param_shift_convergence",
     "vqe_with_param_shift",
 ]

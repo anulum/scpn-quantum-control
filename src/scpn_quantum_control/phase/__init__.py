@@ -36,10 +36,12 @@ from .kuramoto_variants import (
 )
 from .lindblad_engine import LindbladSyncEngine
 from .param_shift import (
+    ParamShiftConvergenceDiagnostics,
     ParamShiftVQEResult,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
     plan_parameter_shift_shots,
+    validate_param_shift_convergence,
     value_and_parameter_shift_grad,
     value_and_vqe_grad,
     vqe_with_param_shift,
@@ -97,9 +99,11 @@ __all__ = [
     "parameter_shift_gradient",
     "parameter_shift_gradient_with_uncertainty",
     "plan_parameter_shift_shots",
+    "validate_param_shift_convergence",
     "value_and_parameter_shift_grad",
     "value_and_vqe_grad",
     "vqe_with_param_shift",
+    "ParamShiftConvergenceDiagnostics",
     "ParamShiftVQEResult",
     "KuramotoVariant",
     "KuramotoVariantResult",

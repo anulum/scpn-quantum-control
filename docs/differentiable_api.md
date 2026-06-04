@@ -29,6 +29,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit` | Execute bounded native AD kernels where support reports allow it. |
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
+| Gradient-training evidence | `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics`, `validate_param_shift_convergence` | Certify accepted energy descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 
 ## Minimal parameter-shift call
 
@@ -62,6 +63,32 @@ print(result["gradient_method"], result["n_grad_evals"])
 The solver switches derivative-free defaults to a gradient-aware local
 optimiser for this mode and returns gradient evaluation counts plus the final
 gradient norm.
+
+## Minimal convergence certificate
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    validate_param_shift_convergence,
+    vqe_with_param_shift,
+)
+
+
+def cost(params: np.ndarray) -> float:
+    return float(np.cos(params[0]) + np.sin(params[1]))
+
+
+run = vqe_with_param_shift(
+    cost,
+    n_params=2,
+    initial_params=np.array([2.7, -0.4]),
+    steps=28,
+    learning_rate=0.35,
+)
+certificate = validate_param_shift_convergence(run, gradient_tolerance=0.08)
+assert certificate.monotone_energy
+```
 
 ## Minimal backend gradient plan
 
