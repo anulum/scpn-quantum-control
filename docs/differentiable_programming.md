@@ -25,7 +25,7 @@ This repository now documents those questions directly. Current support is delib
 
 | Surface | Status | Evidence route |
 |---|---|---|
-| Parameter-shift gradients | Available for callable scalar objectives, structured `PhaseVQE` gradients, local gradient-descent VQE examples, metric-aware natural-gradient descent, and multi-start optimizer comparison evidence through `scpn_quantum_control.phase`. | [Quantum Gradients](quantum_gradients.md), [Variational Methods](variational.md) |
+| Parameter-shift gradients | Available for callable scalar objectives, structured `PhaseVQE` gradients, local gradient-descent VQE examples, metric-aware natural-gradient descent, multi-start optimizer comparison evidence, and compatible composed phase-control objectives through `scpn_quantum_control.phase`. | [Quantum Gradients](quantum_gradients.md), [Variational Methods](variational.md) |
 | Compiler/program AD | Available for supported scalar, vector, and matrix primitives with registry contracts, lowering reports, and native executable kernels on bounded paths. | [Differentiable API](differentiable_api.md), [Quickstart](quickstart.md) |
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
@@ -47,6 +47,7 @@ This repository now documents those questions directly. Current support is delib
 
 - Fail closed when a derivative mode is unsupported.
 - Separate exact, approximate, finite-shot, and roadmap gradient modes.
+- Do not silently treat analytic classical penalties as parameter-shift quantum terms.
 - Keep shape, dtype, backend, and primitive support inspectable.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.

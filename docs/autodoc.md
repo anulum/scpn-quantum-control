@@ -100,6 +100,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [OptimizerConvergenceRecord, OptimizerComparisonSuiteResult, run_parameter_shift_optimizer_comparison]
 
+::: scpn_quantum_control.phase.objectives
+    options:
+      members: [ObjectiveTermValue, ObjectiveGradientEvaluation, ObjectiveTerm, ComposedPhaseObjective, ComposedObjectiveTrainingStep, ComposedObjectiveTrainingResult, ComposedObjectiveTrainingCertificate, phase_energy_term, phase_fidelity_target_term, periodic_regularization_term, phase_symmetry_penalty_term, smooth_box_safety_penalty_term, build_phase_control_objective, train_composed_phase_objective, validate_composed_objective_training]
+
 ::: scpn_quantum_control.phase.trotter_upde
     options:
       members: [QuantumUPDESolver]

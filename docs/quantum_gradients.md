@@ -432,6 +432,36 @@ tolerance. Its claim boundary is intentionally narrow: local smooth phase
 objectives, functional convergence evidence, no hardware execution, no
 throughput statement, and no global optimality proof.
 
+## Composed differentiable objectives
+
+Real control objectives usually mix energy, fidelity, regularization,
+symmetry, and safety terms. `ComposedPhaseObjective` makes that explicit:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import build_phase_control_objective
+
+
+objective = build_phase_control_objective(
+    2,
+    energy_weight=1.0,
+    fidelity_target=np.zeros(2),
+    fidelity_weight=0.2,
+    safety_bounds=(-1.0, 1.0),
+    safety_weight=0.1,
+)
+evaluation = objective.evaluate(np.array([0.8, -0.7]))
+
+print(evaluation.value, evaluation.parameter_shift_compatible)
+```
+
+Periodic energy, target-fidelity, regularization, and symmetry terms remain
+parameter-shift compatible. Smooth box-safety penalties are analytic classical
+terms; the objective can train them with exact term-wise gradients, but it
+fails closed if a caller requires a pure parameter-shift objective. This keeps
+hybrid quantum-control objectives useful without overstating the gradient mode.
+
 The QSNN trainer composes with the same route for full-batch quantum neural
 network training:
 
