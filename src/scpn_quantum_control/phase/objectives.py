@@ -11,12 +11,12 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import cast
+from typing import TypeAlias, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 TermValueFn = Callable[[FloatArray], float]
 TermGradientFn = Callable[[FloatArray], FloatArray]
 

@@ -11,14 +11,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import Parameter, ParameterShiftRule, value_and_parameter_shift_grad
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
 GradientCallable = Callable[[FloatArray], ArrayLike]
 

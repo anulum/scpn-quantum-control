@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -19,7 +20,7 @@ from ..differentiable import GradientResult, Parameter, ParameterShiftRule
 from ..differentiable import value_and_parameter_shift_grad as _value_and_grad
 from .gradient_backend import QuantumGradientPlan, plan_quantum_gradient_backend
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
 
 

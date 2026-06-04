@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from types import TracebackType
-from typing import Literal
+from typing import Literal, TypeAlias
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -27,7 +27,7 @@ from ..differentiable import (
 from .gradient_backend import QuantumGradientPlan, plan_quantum_gradient_backend
 from .param_shift import parameter_shift_gradient_with_uncertainty
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
 TapeKind = Literal["deterministic", "stochastic"]
 

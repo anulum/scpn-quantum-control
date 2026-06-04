@@ -12,7 +12,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -26,7 +26,7 @@ from .provider_gradient import (
     execute_provider_parameter_shift_gradient,
 )
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 ProviderReadinessOutcome = Literal["supported", "plan_blocked", "execution_blocked"]
 ProviderReadinessSampler = Callable[[FloatArray, int | None], ProviderExpectationSample]
 

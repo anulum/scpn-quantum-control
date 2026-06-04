@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Protocol, cast
+from typing import Protocol, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -45,7 +45,7 @@ from .tensorflow_bridge import (
 )
 from .torch_bridge import is_phase_torch_available, torch_parameter_shift_value_and_grad
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
 AnalyticGradient = Callable[[FloatArray], ArrayLike]
 

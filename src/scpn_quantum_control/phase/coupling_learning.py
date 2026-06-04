@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -28,7 +29,7 @@ from .gradient_descent import (
     validate_parameter_shift_training,
 )
 
-FloatArray = NDArray[np.float64]
+FloatArray: TypeAlias = NDArray[np.float64]
 Edge = tuple[int, int]
 CouplingObservationModel = Callable[[FloatArray], ArrayLike]
 
