@@ -278,6 +278,23 @@ Before tagging:
 10. Commit with the required authorship line after staged-diff audit.
 11. Push the commit and wait for CI before creating a release tag.
 
+## 0.9.10 documentation and differentiable-programming release scope
+
+The `0.9.10` source release aligns the public documentation with the current
+differentiable-programming implementation state. It does not promote arbitrary
+program AD, hardware gradients, full ML-framework-native autodiff, or broad
+quantum advantage. The release scope is:
+
+- clearer README, onboarding, tutorial, notebook, API, and gradient-route entry
+  points;
+- version-consistent `pyproject.toml`, `CITATION.cff`, `.zenodo.json`,
+  capability manifest, and reproducibility metadata;
+- explicit support boundaries for parameter-shift, composed objectives,
+  provider-gradient readiness, transform nesting, compiler/program AD
+  primitives, and unsupported routes;
+- continued requirement that hardware and scientific claims cite committed
+  evidence artefacts before promotion.
+
 ## 0.9.9 release-documentation scope
 
 The `0.9.9` source release documentation surface adds a public

@@ -32,7 +32,7 @@
 > artifacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
-**Version:** 0.9.9
+**Version:** 0.9.10
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 91.5% | IBM Heron r2 evidence ledgered
 
 <!-- capability-snapshot:start -->
@@ -43,10 +43,10 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.9 |
-| Public API exports | 570 |
-| Python source modules | 767 |
-| Public Python classes | 1505 |
+| Package version | 0.9.10 |
+| Public API exports | 574 |
+| Python source modules | 786 |
+| Public Python classes | 1565 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -54,8 +54,8 @@
 | Rust source modules | 28 |
 | Notebook files | 98 |
 | Example files | 23 |
-| Optional extras | 40 |
-| Python test files | 1876 |
+| Optional extras | 42 |
+| Python test files | 1896 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 18 |
 
@@ -136,6 +136,23 @@ Open boundaries remain explicit: the package does not claim broad quantum
 advantage, clinical validation, or externally validated SCPN biology. It
 provides a reproducible computational workbench and the governance required to
 promote claims only when the evidence exists.
+
+## Why Teams Would Adopt It
+
+The package is useful when a team needs a single accountable route from a
+coupled-system model to quantum-control evidence:
+
+| Need | What the repository supplies | Boundary to respect |
+|---|---|---|
+| Turn oscillator data into quantum experiments | `K_nm`/`omega` validation, XY Hamiltonians, circuits, and local execution paths. | The mapping is a quantum XY analogue of synchronisation dynamics, not a proof of nonlinear classical equivalence for every system. |
+| Optimise trainable objectives | Parameter-shift VQE, composed phase objectives, gradient certificates, and supported compiler/program-AD kernels. | Unsupported gates, adapters, backends, shapes, and transform nests fail closed. |
+| Compare simulators, hardware, and papers | Raw-count ledgers, result packs, no-QPU gates, benchmark manifests, and reproducibility docs. | Claims must cite committed evidence artefacts; simulator output is not hardware validation. |
+| Prepare a product or research integration | Stable facades, provider capability records, Rust acceleration hooks, API docs, tutorials, and licence boundary text. | Closed-source network services or embedded products need the commercial licence route. |
+
+Market-facing applications include quantum-control prototyping, power-grid and
+plasma synchronisation studies, EEG/MEG rhythm modelling under non-clinical
+claim limits, quantum-hardware campaign governance, gradient-informed VQE/QNN
+research, and reproducible benchmark publication.
 
 ## Differentiable Programming Route
 

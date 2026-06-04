@@ -10,6 +10,11 @@
 
 This page maps the public differentiable-programming namespace and the related quantum-gradient entry points. It is an API guide, not a proof that every exported symbol is production-ready for every backend. Always pair an API call with the support matrix and tests for the target primitive, backend, shape, dtype, and transform.
 
+The API contract is deliberately fail-closed: a supported route should return a
+structured plan, result, certificate, or diagnostic; an unsupported route should
+return a blocked plan or raise a targeted error instead of silently substituting
+finite differences or pretending that a hardware/provider gradient exists.
+
 ## Public namespaces
 
 | Namespace | Role |

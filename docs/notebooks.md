@@ -29,7 +29,14 @@ Recommended first path:
 1. `01_kuramoto_xy_dynamics.ipynb` for the Kuramoto-XY mapping.
 2. `02_vqe_ground_state.ipynb` for variational ground states.
 3. `03_error_mitigation.ipynb` for ZNE concepts.
-4. `13_cross_repo_bridges.ipynb` for integration boundaries.
+4. `10_qsnn_training.ipynb` for the current gradient-training notebook lane.
+5. `13_cross_repo_bridges.ipynb` for integration boundaries.
+
+For differentiable-programming work, pair every notebook with the public
+[Quantum Gradients](quantum_gradients.md), [Differentiable API](differentiable_api.md),
+and [Differentiable Roadmap](differentiable_roadmap.md) pages. Notebook curves
+are exploratory until the underlying gradient certificates, support-matrix
+plans, and benchmark artefacts are committed.
 
 For a non-notebook entry point, use [Quickstart](quickstart.md).
 

@@ -6,15 +6,15 @@
     "github_workflows": 18,
     "model_documentation_pages": 0,
     "notebook_files": 98,
-    "optional_extras": 40,
+    "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 570,
+    "public_api_exports": 574,
     "public_documentation_pages": 240,
-    "python_model_classes": 1505,
-    "python_model_source_modules": 767,
+    "python_model_classes": 1565,
+    "python_model_source_modules": 786,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1876
+    "test_files": 1896
   },
   "documentation": {
     "examples": [
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 29
+        "python_modules": 48
       },
       {
         "package": "psi_field",
@@ -1753,6 +1753,38 @@
         "path": "src/scpn_quantum_control/paper0/components_validation.py"
       },
       {
+        "name": "ComposedObjectiveAuditSuiteResult",
+        "path": "src/scpn_quantum_control/phase/objective_audit.py"
+      },
+      {
+        "name": "ComposedObjectiveExecutionPlan",
+        "path": "src/scpn_quantum_control/phase/objective_planner.py"
+      },
+      {
+        "name": "ComposedObjectiveGradientAgreement",
+        "path": "src/scpn_quantum_control/phase/objective_audit.py"
+      },
+      {
+        "name": "ComposedObjectivePlannerAuditResult",
+        "path": "src/scpn_quantum_control/phase/objective_planner.py"
+      },
+      {
+        "name": "ComposedObjectiveTrainingCertificate",
+        "path": "src/scpn_quantum_control/phase/objectives.py"
+      },
+      {
+        "name": "ComposedObjectiveTrainingResult",
+        "path": "src/scpn_quantum_control/phase/objectives.py"
+      },
+      {
+        "name": "ComposedObjectiveTrainingStep",
+        "path": "src/scpn_quantum_control/phase/objectives.py"
+      },
+      {
+        "name": "ComposedPhaseObjective",
+        "path": "src/scpn_quantum_control/phase/objectives.py"
+      },
+      {
         "name": "CompoundMitigationResult",
         "path": "src/scpn_quantum_control/mitigation/compound_mitigation.py"
       },
@@ -1853,8 +1885,16 @@
         "path": "src/scpn_quantum_control/paper0/cosmology_physics_extensions_validation.py"
       },
       {
+        "name": "CouplingGradientVerificationResult",
+        "path": "src/scpn_quantum_control/phase/coupling_learning.py"
+      },
+      {
         "name": "CouplingGraphBounds",
         "path": "src/scpn_quantum_control/topology_control/constraints.py"
+      },
+      {
+        "name": "CouplingLearningResult",
+        "path": "src/scpn_quantum_control/phase/coupling_learning.py"
       },
       {
         "name": "CouplingTopologyObjective",
@@ -2035,6 +2075,14 @@
       {
         "name": "DifferentiableProgrammingExternalReferenceResult",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
+      },
+      {
+        "name": "DifferentiableQuantumAuditReport",
+        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
+        "name": "DifferentiableWorkflowAuditSuiteResult",
+        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
       },
       {
         "name": "DisciplineRole",
@@ -2437,6 +2485,10 @@
         "path": "src/scpn_quantum_control/paper0/fine_tuning_pes_validation.py"
       },
       {
+        "name": "FiniteShotGradientAuditResult",
+        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
         "name": "FiniteSizeResult",
         "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py"
       },
@@ -2633,6 +2685,30 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "GradientSupportCapability",
+        "path": "src/scpn_quantum_control/phase/gradient_support_matrix.py"
+      },
+      {
+        "name": "GradientSupportMatrixAuditResult",
+        "path": "src/scpn_quantum_control/phase/gradient_support_matrix.py"
+      },
+      {
+        "name": "GradientSupportPlan",
+        "path": "src/scpn_quantum_control/phase/gradient_support_matrix.py"
+      },
+      {
+        "name": "GradientTransformNestingAuditResult",
+        "path": "src/scpn_quantum_control/phase/transform_nesting.py"
+      },
+      {
+        "name": "GradientTransformNestingPlan",
+        "path": "src/scpn_quantum_control/phase/transform_nesting.py"
+      },
+      {
+        "name": "GradientVerificationResult",
+        "path": "src/scpn_quantum_control/phase/param_shift.py"
+      },
+      {
         "name": "GrandSynthesisConfig",
         "path": "src/scpn_quantum_control/paper0/grand_synthesis_validation.py"
       },
@@ -2723,6 +2799,10 @@
       {
         "name": "HessianResult",
         "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "HessianVerificationResult",
+        "path": "src/scpn_quantum_control/phase/param_shift.py"
       },
       {
         "name": "HigherOrderKuramotoSpec",
@@ -3457,6 +3537,14 @@
         "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py"
       },
       {
+        "name": "MLFrameworkGradientAuditRecord",
+        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
+        "name": "MLFrameworkGradientAuditSuiteResult",
+        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
         "name": "MLIRCompileConfig",
         "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
@@ -3869,6 +3957,10 @@
         "path": "src/scpn_quantum_control/paper0/upde_natural_gradient_validation.py"
       },
       {
+        "name": "NaturalGradientDirection",
+        "path": "src/scpn_quantum_control/phase/natural_gradient.py"
+      },
+      {
         "name": "NaturalGradientOptimizationResult",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -3981,6 +4073,18 @@
         "path": "src/scpn_quantum_control/paper0/objective_cover_context_validation.py"
       },
       {
+        "name": "ObjectiveGradientEvaluation",
+        "path": "src/scpn_quantum_control/phase/objectives.py"
+      },
+      {
+        "name": "ObjectiveTerm",
+        "path": "src/scpn_quantum_control/phase/objectives.py"
+      },
+      {
+        "name": "ObjectiveTermValue",
+        "path": "src/scpn_quantum_control/phase/objectives.py"
+      },
+      {
         "name": "ObservableComparison",
         "path": "src/scpn_quantum_control/benchmark_harness/synchronisation_compare.py"
       },
@@ -4039,6 +4143,14 @@
       {
         "name": "OptimizationResult",
         "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "OptimizerComparisonSuiteResult",
+        "path": "src/scpn_quantum_control/phase/optimizer_audit.py"
+      },
+      {
+        "name": "OptimizerConvergenceRecord",
+        "path": "src/scpn_quantum_control/phase/optimizer_audit.py"
       },
       {
         "name": "OrchestratorFeedback",
@@ -4217,6 +4329,14 @@
         "path": "src/scpn_quantum_control/paper0/topology_schema.py"
       },
       {
+        "name": "ParamShiftConvergenceDiagnostics",
+        "path": "src/scpn_quantum_control/phase/param_shift.py"
+      },
+      {
+        "name": "ParamShiftVQEResult",
+        "path": "src/scpn_quantum_control/phase/param_shift.py"
+      },
+      {
         "name": "Parameter",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -4225,8 +4345,36 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "ParameterShiftAnalyticAgreement",
+        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
+        "name": "ParameterShiftNaturalGradientCertificate",
+        "path": "src/scpn_quantum_control/phase/natural_gradient.py"
+      },
+      {
+        "name": "ParameterShiftNaturalGradientResult",
+        "path": "src/scpn_quantum_control/phase/natural_gradient.py"
+      },
+      {
+        "name": "ParameterShiftNaturalGradientStep",
+        "path": "src/scpn_quantum_control/phase/natural_gradient.py"
+      },
+      {
         "name": "ParameterShiftRule",
         "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ParameterShiftTrainingCertificate",
+        "path": "src/scpn_quantum_control/phase/gradient_descent.py"
+      },
+      {
+        "name": "ParameterShiftTrainingResult",
+        "path": "src/scpn_quantum_control/phase/gradient_descent.py"
+      },
+      {
+        "name": "ParameterShiftTrainingStep",
+        "path": "src/scpn_quantum_control/phase/gradient_descent.py"
       },
       {
         "name": "PartIiThePhysicalSectorFieldTheoryQuantization24TheSsbCascadConfig",
@@ -4261,8 +4409,16 @@
         "path": "src/scpn_quantum_control/hardware/hal_pennylane.py"
       },
       {
+        "name": "PennyLaneGradientAgreementResult",
+        "path": "src/scpn_quantum_control/phase/pennylane_bridge.py"
+      },
+      {
         "name": "PennyLaneResult",
         "path": "src/scpn_quantum_control/hardware/pennylane_adapter.py"
+      },
+      {
+        "name": "PennyLaneRoundTripResult",
+        "path": "src/scpn_quantum_control/phase/pennylane_bridge.py"
       },
       {
         "name": "PennyLaneRunner",
@@ -4297,6 +4453,18 @@
         "path": "src/scpn_quantum_control/analysis/xxz_phase_diagram.py"
       },
       {
+        "name": "PhaseGradientBenchmarkSuiteResult",
+        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
+        "name": "PhaseJAXGradientAgreementResult",
+        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+      },
+      {
+        "name": "PhaseJAXParameterShiftResult",
+        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+      },
+      {
         "name": "PhaseLockingSubstrateBoundaryValidationResult",
         "path": "src/scpn_quantum_control/paper0/artificial_sentience_validation.py"
       },
@@ -4319,6 +4487,14 @@
       {
         "name": "PhasePredictionErrorValidationResult",
         "path": "src/scpn_quantum_control/paper0/hpc_upde_bridge_validation.py"
+      },
+      {
+        "name": "PhaseTensorFlowParameterShiftResult",
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+      },
+      {
+        "name": "PhaseTorchParameterShiftResult",
+        "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
       {
         "name": "PhaseVQE",
@@ -4609,8 +4785,32 @@
         "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py"
       },
       {
+        "name": "ProviderExpectationSample",
+        "path": "src/scpn_quantum_control/phase/provider_gradient.py"
+      },
+      {
+        "name": "ProviderGradientExecutionResult",
+        "path": "src/scpn_quantum_control/phase/provider_gradient.py"
+      },
+      {
+        "name": "ProviderGradientReadinessAuditResult",
+        "path": "src/scpn_quantum_control/phase/provider_gradient_audit.py"
+      },
+      {
+        "name": "ProviderGradientReadinessRecord",
+        "path": "src/scpn_quantum_control/phase/provider_gradient_audit.py"
+      },
+      {
+        "name": "ProviderGradientReadinessScenario",
+        "path": "src/scpn_quantum_control/phase/provider_gradient_audit.py"
+      },
+      {
         "name": "ProviderOptionalDependencyRow",
         "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
+      },
+      {
+        "name": "ProviderParameterShiftRecord",
+        "path": "src/scpn_quantum_control/phase/provider_gradient.py"
       },
       {
         "name": "PsiDmInteractionValidationResult",
@@ -4741,7 +4941,19 @@
         "path": "src/scpn_quantum_control/analysis/quantum_speed_limit.py"
       },
       {
+        "name": "QSNNParameterShiftDescentRun",
+        "path": "src/scpn_quantum_control/qsnn/training.py"
+      },
+      {
         "name": "QSNNTrainer",
+        "path": "src/scpn_quantum_control/qsnn/training.py"
+      },
+      {
+        "name": "QSNNTrainingDiagnostics",
+        "path": "src/scpn_quantum_control/qsnn/training.py"
+      },
+      {
+        "name": "QSNNTrainingRun",
         "path": "src/scpn_quantum_control/qsnn/training.py"
       },
       {
@@ -4755,6 +4967,14 @@
       {
         "name": "QiskitAerHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_qiskit.py"
+      },
+      {
+        "name": "QiskitParameterShiftGradientResult",
+        "path": "src/scpn_quantum_control/phase/qiskit_bridge.py"
+      },
+      {
+        "name": "QiskitParameterShiftRecord",
+        "path": "src/scpn_quantum_control/phase/qiskit_bridge.py"
       },
       {
         "name": "QiskitRuntimeHALAdapter",
@@ -4833,8 +5053,24 @@
         "path": "src/scpn_quantum_control/paper0/quantum_foundations_collapse_validation.py"
       },
       {
+        "name": "QuantumGradientBackendCapability",
+        "path": "src/scpn_quantum_control/phase/gradient_backend.py"
+      },
+      {
+        "name": "QuantumGradientBenchmarkResult",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
+      },
+      {
+        "name": "QuantumGradientPlan",
+        "path": "src/scpn_quantum_control/phase/gradient_backend.py"
+      },
+      {
         "name": "QuantumGradientResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_gradient.py"
+      },
+      {
+        "name": "QuantumGradientTape",
+        "path": "src/scpn_quantum_control/phase/gradient_tape.py"
       },
       {
         "name": "QuantumGravitationEdgeCasesConfig",
@@ -6119,6 +6355,10 @@
       {
         "name": "Table1PredictedNthsPhaseCharacteristicsInMultiAgentActiveInferFixtureResult",
         "path": "src/scpn_quantum_control/paper0/table_1_predicted_nths_phase_characteristics_in_multi_agent_active_infer_validation.py"
+      },
+      {
+        "name": "TapeGradientRecord",
+        "path": "src/scpn_quantum_control/phase/gradient_tape.py"
       },
       {
         "name": "TechnoSocialSystemsConfig",
@@ -7746,22 +7986,41 @@
       "src/scpn_quantum_control/phase/avqds.py",
       "src/scpn_quantum_control/phase/backend_selector.py",
       "src/scpn_quantum_control/phase/contraction_optimiser.py",
+      "src/scpn_quantum_control/phase/coupling_learning.py",
       "src/scpn_quantum_control/phase/cross_domain_transfer.py",
+      "src/scpn_quantum_control/phase/differentiable_audit.py",
       "src/scpn_quantum_control/phase/floquet_kuramoto.py",
       "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
+      "src/scpn_quantum_control/phase/gradient_backend.py",
+      "src/scpn_quantum_control/phase/gradient_descent.py",
+      "src/scpn_quantum_control/phase/gradient_support_matrix.py",
+      "src/scpn_quantum_control/phase/gradient_tape.py",
+      "src/scpn_quantum_control/phase/jax_bridge.py",
       "src/scpn_quantum_control/phase/jax_nqs.py",
       "src/scpn_quantum_control/phase/kuramoto_variants.py",
       "src/scpn_quantum_control/phase/lindblad.py",
       "src/scpn_quantum_control/phase/lindblad_engine.py",
       "src/scpn_quantum_control/phase/mps_evolution.py",
+      "src/scpn_quantum_control/phase/natural_gradient.py",
       "src/scpn_quantum_control/phase/nqs_ansatz.py",
+      "src/scpn_quantum_control/phase/objective_audit.py",
+      "src/scpn_quantum_control/phase/objective_planner.py",
+      "src/scpn_quantum_control/phase/objectives.py",
+      "src/scpn_quantum_control/phase/optimizer_audit.py",
       "src/scpn_quantum_control/phase/param_shift.py",
+      "src/scpn_quantum_control/phase/pennylane_bridge.py",
       "src/scpn_quantum_control/phase/phase_vqe.py",
+      "src/scpn_quantum_control/phase/provider_gradient.py",
+      "src/scpn_quantum_control/phase/provider_gradient_audit.py",
       "src/scpn_quantum_control/phase/pulse_shaping.py",
+      "src/scpn_quantum_control/phase/qiskit_bridge.py",
       "src/scpn_quantum_control/phase/qsvt_evolution.py",
       "src/scpn_quantum_control/phase/results.py",
       "src/scpn_quantum_control/phase/structured_ansatz.py",
       "src/scpn_quantum_control/phase/tensor_jump.py",
+      "src/scpn_quantum_control/phase/tensorflow_bridge.py",
+      "src/scpn_quantum_control/phase/torch_bridge.py",
+      "src/scpn_quantum_control/phase/transform_nesting.py",
       "src/scpn_quantum_control/phase/trotter_error.py",
       "src/scpn_quantum_control/phase/trotter_upde.py",
       "src/scpn_quantum_control/phase/varqite.py",
@@ -8082,6 +8341,7 @@
     "ProviderOptionalDependencyRow",
     "QAOA_MPC",
     "QECLevel",
+    "QSNNParameterShiftDescentRun",
     "QSNNTrainer",
     "QbraidRuntimeHALAdapter",
     "QiskitAerHALAdapter",
@@ -8092,6 +8352,7 @@
     "QuantumBackend",
     "QuantumDenseLayer",
     "QuantumDisruptionClassifier",
+    "QuantumGradientBenchmarkResult",
     "QuantumJobRef",
     "QuantumJobResult",
     "QuantumKuramotoSolver",
@@ -8335,6 +8596,7 @@
     "make_vector_squared_norm_native_llvm_jit_primitive_transform",
     "measure_order_parameter",
     "mps_tebd_baseline",
+    "multi_frequency_parameter_shift_rule",
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
     "natural_gradient",
@@ -8449,6 +8711,7 @@
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_documented_classical_baselines",
+    "run_quantum_gradient_benchmark_suite",
     "run_real_data_sync_forecast_benchmark",
     "run_real_data_sync_forecast_suite",
     "run_realtime_control_loop",
@@ -8565,7 +8828,9 @@
       "rust",
       "strangeworks",
       "tensor",
+      "tensorflow",
       "topology",
+      "torch",
       "viz",
       "xvalidate"
     ],
@@ -8576,7 +8841,7 @@
     "name": "scpn-quantum-control",
     "readme": "README.md",
     "requires_python": ">=3.10",
-    "version": "0.9.9"
+    "version": "0.9.10"
   },
   "project_label": "scpn-quantum-control",
   "quality_gates": {
@@ -9845,9 +10110,29 @@
       "tests/test_phase_artifact.py",
       "tests/test_phase_artifact_errors.py",
       "tests/test_phase_artifact_fuzz.py",
+      "tests/test_phase_coupling_learning.py",
       "tests/test_phase_diagram.py",
+      "tests/test_phase_differentiable_audit.py",
       "tests/test_phase_dynamics_contracts.py",
+      "tests/test_phase_framework_bridges.py",
+      "tests/test_phase_gradient_backend.py",
+      "tests/test_phase_gradient_descent.py",
+      "tests/test_phase_gradient_support_matrix.py",
+      "tests/test_phase_gradient_tape.py",
+      "tests/test_phase_gradient_training.py",
+      "tests/test_phase_jax_bridge.py",
+      "tests/test_phase_natural_gradient.py",
+      "tests/test_phase_objective_audit.py",
+      "tests/test_phase_objective_planner.py",
+      "tests/test_phase_objectives.py",
+      "tests/test_phase_optimizer_audit.py",
+      "tests/test_phase_param_shift.py",
+      "tests/test_phase_pennylane_bridge.py",
+      "tests/test_phase_provider_gradient.py",
+      "tests/test_phase_provider_gradient_audit.py",
+      "tests/test_phase_qiskit_bridge.py",
       "tests/test_phase_results.py",
+      "tests/test_phase_transform_nesting.py",
       "tests/test_phase_vqe.py",
       "tests/test_physics_accuracy.py",
       "tests/test_physics_first_tutorial.py",

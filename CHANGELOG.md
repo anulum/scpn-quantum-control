@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.9.10] - 2026-06-04
+
+### Added
+- 2026-06-04 — Polished the public differentiable-programming documentation and
+  release metadata surface for the current implementation state, including
+  clearer onboarding, README positioning, tutorial/notebook routing, support
+  boundaries, reproducibility metadata, and generated capability inventory.
+- 2026-06-04 — Documented the current enterprise-readiness boundary for
+  gradient-bearing Kuramoto-XY workflows: supported parameter-shift, composed
+  objectives, program/compiler AD primitives, provider-gradient readiness,
+  transform-nesting governance, and fail-closed unsupported scenarios remain
+  separated from future framework-native and arbitrary-program AD claims.
+
 ## [0.9.9] - 2026-06-02
 
 ### Added

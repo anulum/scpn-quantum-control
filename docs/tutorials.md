@@ -88,10 +88,25 @@ graph TD
 | Researcher with a custom network | Physics-First Kuramoto-XY -> Tutorial 7 -> Research Tools |
 | Hardware operator | Hardware Status Ledger -> Hardware Guide -> Hardware Result Packs -> Release Readiness Gate |
 | API integrator | Stable Facades API -> API Overview -> Kuramoto Core Facade |
-| Optimisation or AD user | API Overview compiler-AD section -> differentiable primitive tests -> release gates before public claims |
+| Optimisation or AD user | Differentiable Programming -> Quantum Gradients -> Differentiable API -> gradient support matrix -> release gates before public claims |
 
 Every route keeps the same rule: simulator output, hardware evidence, and open
 scientific claims are separate evidence classes.
+
+## Differentiable Learning Route
+
+Use this route if you are comparing the framework with quantum-ML stacks:
+
+1. run the local parameter-shift smoke path in [Quickstart](quickstart.md);
+2. verify gradients with [Quantum Gradients](quantum_gradients.md);
+3. inspect public objects in [Differentiable API](differentiable_api.md);
+4. run only supported transform/backend plans from the gradient support matrix;
+5. document unsupported gates, adapters, hardware policies, or transform nests
+   as research evidence rather than hiding them behind finite differences.
+
+This route is intentionally stricter than a demo notebook. It is designed to
+make exact, stochastic, approximate, blocked, and roadmap gradient modes visible
+before users build training loops or publish claims.
 
 ## Level 1: Foundations
 

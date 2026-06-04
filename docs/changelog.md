@@ -12,6 +12,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## [0.9.10] - 2026-06-04
+
+### Added
+- Public documentation and release metadata polish for the current
+  differentiable-programming implementation state, including onboarding,
+  README positioning, tutorial and notebook routing, API boundary text,
+  gradient evidence checklists, and the generated capability inventory.
+- Explicit enterprise-readiness boundary for supported parameter-shift,
+  composed-objective, provider-gradient, transform-nesting, and
+  compiler/program-AD routes, with unsupported arbitrary-program, hardware,
+  and framework-native paths kept fail-closed.
+
 ## [0.9.9] - 2026-06-02
 
 ### Added

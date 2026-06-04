@@ -45,6 +45,19 @@ a common route for those systems:
 | Paper 0 source register | Preserves source-bounded validation fixtures and claim boundaries for Paper 0. | `scpn_quantum_control.paper0` |
 | Release gates | Make public release decisions repeatable instead of narrative. | `tools/audit_release_readiness.py` and `scpn-bench` gates |
 
+## Adoption Checklist
+
+Before using the package in a paper, product prototype, or integration, make
+these decisions explicit:
+
+| Question | Recommended answer path |
+|---|---|
+| Is my system naturally represented as coupled oscillators? | Start with `K_nm`, `omega`, and [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md). |
+| Do I need gradients? | Start with [Differentiable Programming](differentiable_programming.md), then verify support with the gradient support matrix. |
+| Am I citing hardware? | Use only rows named in [Hardware Status Ledger](hardware_status_ledger.md) and committed raw-count artefacts. |
+| Am I building a closed product or service? | Review the AGPL/commercial licence boundary before distribution or network use. |
+| Am I using SCPN-specific biological or consciousness language? | Keep it source-bounded unless external validation artefacts exist. |
+
 ## Recommended First Paths
 
 | Goal | Path |

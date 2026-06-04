@@ -5,10 +5,10 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.9 |
-| Public API exports | 570 |
-| Python source modules | 767 |
-| Public Python classes | 1505 |
+| Package version | 0.9.10 |
+| Public API exports | 574 |
+| Python source modules | 786 |
+| Public Python classes | 1565 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -16,8 +16,8 @@
 | Rust source modules | 28 |
 | Notebook files | 98 |
 | Example files | 23 |
-| Optional extras | 40 |
-| Python test files | 1876 |
+| Optional extras | 42 |
+| Python test files | 1896 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 18 |
 

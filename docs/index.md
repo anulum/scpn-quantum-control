@@ -43,11 +43,25 @@ builds circuits, runs local or provider-backed execution when allowed, and
 analyses synchronisation, entanglement, topology, and control observables under
 explicit evidence boundaries.
 
+## Product Map
+
+| Lane | What users get now | Why it matters |
+|---|---|---|
+| Physics compiler | A reproducible `K_nm`/`omega` to XY-Hamiltonian path with simulator execution and classical references. | Researchers can compare oscillator-network hypotheses without rewriting the quantum stack. |
+| Differentiable optimisation | Parameter-shift VQE, composed phase objectives, gradient evidence, and bounded compiler/program AD kernels. | Optimisation and ML users can see when gradients are exact, approximate, blocked, or still roadmap. |
+| Hardware governance | Provider capability records, raw-count ledgers, result packs, and release gates. | Hardware claims stay auditable and safe to cite. |
+| Integration surface | Stable facades, notebooks, tutorials, API maps, and Rust acceleration hooks. | External projects can adopt supported entry points without depending on internal layout. |
+
+Use [Differentiable Programming](differentiable_programming.md) and
+[Quantum Gradients](quantum_gradients.md) when the central question is whether a
+workflow can be trained or optimised. Use [Hardware Status Ledger](hardware_status_ledger.md)
+when the central question is whether a result can be promoted as hardware evidence.
+
 ## Status Snapshot — 2026-05-18
 
 | Area | Public status |
 |---|---|
-| Package line | Version `0.9.9`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
+| Package line | Version `0.9.10`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Paper 0 source-validation register | Fully promoted through the source-accounting register from `P0R00001` through `P0R06211`; the planner reports `0` remaining work orders and `0` remaining records. This is source-bounded ingestion and fixture preservation, not external validation evidence. |

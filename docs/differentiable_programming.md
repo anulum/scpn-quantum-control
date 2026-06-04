@@ -48,6 +48,24 @@ This repository now documents those questions directly. Current support is delib
 | Decide whether a gradient stack can run | `plan_gradient_support(...)`, `plan_gradient_transform_nesting(...)`, `plan_quantum_gradient_backend(...)`, and `run_provider_gradient_readiness_audit(...)` |
 | Prepare ML-framework integration | Follow [Differentiable Roadmap](differentiable_roadmap.md) until adapter tests land |
 
+## Production-Readiness Rubric
+
+A differentiable workflow should be treated as production-ready only when all
+of these checks are true:
+
+| Check | Required evidence |
+|---|---|
+| Mathematical derivative contract | Parameter-shift, analytic derivative, adjoint replay, or compiler-AD rule is named and registered. |
+| Shape and dtype contract | Primitive registry or support matrix admits the target tensor rank, dtype, backend, and static arguments. |
+| Verification | Finite-difference, analytic, or independent framework agreement is recorded for a small representative case. |
+| Optimiser behaviour | Descent or convergence diagnostics exist for the target objective class. |
+| Backend policy | Simulator, finite-shot simulator, hardware, or adapter route declares shot, variance, and blocked-state policy. |
+| Documentation | Unsupported or unsuitable scenarios are listed with alternatives and no silent fallback. |
+
+This is the current standard for claiming enterprise-grade differentiable
+behaviour in this repository. Anything below that bar is documented as staged,
+experimental, or unsupported.
+
 ## Design principles
 
 - Fail closed when a derivative mode is unsupported.

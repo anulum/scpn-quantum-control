@@ -42,6 +42,22 @@ for multi-term rules. This keeps provider data honest: every shift term must
 carry its own sample variance instead of being collapsed into a single opaque
 parameter estimate.
 
+## Evidence Checklist
+
+Before promoting a quantum-gradient result, record:
+
+| Evidence | Why it is required |
+|---|---|
+| Objective definition and parameter order | Replays and shifted evaluations must address the same trainable parameters. |
+| Rule family | Standard parameter-shift, multi-frequency parameter-shift, finite-shot stochastic shift, or unsupported route. |
+| Shifted samples | Plus/minus expectation values, shot counts, and finite-shot variances when stochastic. |
+| Agreement check | Finite-difference or independent-framework comparison on a small smooth case. |
+| Optimisation trace | Accepted value descent, gradient norm, failure reason, or convergence certificate. |
+| Backend plan | Statevector, finite-shot simulator, hardware-blocked, or provider-specific policy. |
+
+This makes gradient evidence reviewable by researchers who expect PennyLane-like
+visibility while preserving SCPN-specific claim boundaries.
+
 ## Current API
 
 ```python
