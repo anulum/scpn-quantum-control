@@ -160,6 +160,23 @@ framework-style gradients. It is not a native autodiff-through-simulator claim;
 native framework kernels still need their own adapter, round-trip, device, and
 host-boundary tests before promotion.
 
+## Bounded QNN convergence evidence
+
+`run_parameter_shift_qnn_convergence_suite(...)` packages deterministic
+phase-flip training cases with explicit loss-drop, accuracy, and evaluation
+accounting:
+
+```python
+from scpn_quantum_control.phase import run_parameter_shift_qnn_convergence_suite
+
+suite = run_parameter_shift_qnn_convergence_suite()
+print(suite.passed, suite.total_parameter_shift_evaluations)
+```
+
+The suite is local deterministic evidence only. It is not hardware evidence,
+not finite-shot noisy training, and not a claim that arbitrary QNN/QGNN/QSNN
+architectures converge.
+
 ## Kuramoto-XY VQE route
 
 `PhaseVQE` exposes a direct parameter-shift path for its K_nm-informed
