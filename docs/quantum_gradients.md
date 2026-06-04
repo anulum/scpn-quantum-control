@@ -483,6 +483,7 @@ classifier:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    run_parameter_shift_qnn_conformance_suite,
     train_parameter_shift_qnn_classifier,
     verify_parameter_shift_qnn_classifier_gradient,
 )
@@ -506,6 +507,9 @@ verification = verify_parameter_shift_qnn_classifier_gradient(
     run.best_params,
 )
 print(verification.passed, verification.max_abs_error)
+
+suite = run_parameter_shift_qnn_conformance_suite()
+print(suite.passed, suite.case_count, suite.unsuitable_scenario_count)
 ```
 
 The route is intentionally narrow and auditable: one trainable phase per
@@ -513,8 +517,11 @@ feature column, full-batch binary MSE, deterministic local execution, explicit
 multi-frequency parameter-shift descent, finite-difference gradient replay, and
 fail-closed hardware policy. Optional external-gradient callables can be named
 in the verification report to record JAX, PennyLane, or other adapter agreement
-without claiming automatic framework conversion. It is the current production
-QNN foothold, not a claim of unrestricted arbitrary QNN/QGNN/QSNN training.
+without claiming automatic framework conversion. The conformance suite packages
+the supported route and records unsuitable scenarios such as hardware backend
+promotion, arbitrary architectures, non-finite data, and native framework
+autodiff as staged or fail-closed. It is the current production QNN foothold,
+not a claim of unrestricted arbitrary QNN/QGNN/QSNN training.
 
 ## Parameter-shift natural gradient
 

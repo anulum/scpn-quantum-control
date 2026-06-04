@@ -184,6 +184,14 @@ from .qiskit_bridge import (
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
 )
+from .qnn_conformance import (
+    ExternalGradientMap,
+    ParameterShiftQNNConformanceCaseResult,
+    ParameterShiftQNNConformanceSuiteResult,
+    ParameterShiftQNNUnsupportedScenario,
+    run_parameter_shift_qnn_conformance_suite,
+    summarize_parameter_shift_qnn_unsuitable_scenarios,
+)
 from .qnn_training import (
     ParameterShiftQNNExternalGradientAgreement,
     ParameterShiftQNNGradientVerificationResult,
@@ -333,6 +341,12 @@ __all__ = [
     "ProviderGradientReadinessAuditResult",
     "default_provider_gradient_readiness_scenarios",
     "run_provider_gradient_readiness_audit",
+    "ExternalGradientMap",
+    "ParameterShiftQNNConformanceCaseResult",
+    "ParameterShiftQNNConformanceSuiteResult",
+    "ParameterShiftQNNUnsupportedScenario",
+    "run_parameter_shift_qnn_conformance_suite",
+    "summarize_parameter_shift_qnn_unsuitable_scenarios",
     "ParameterShiftQNNPredictionResult",
     "ParameterShiftQNNTrainingResult",
     "ParameterShiftQNNExternalGradientAgreement",

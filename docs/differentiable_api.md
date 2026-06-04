@@ -173,6 +173,7 @@ hardware benchmark, throughput result, or proof of global optimality.
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    run_parameter_shift_qnn_conformance_suite,
     train_parameter_shift_qnn_classifier,
     verify_parameter_shift_qnn_classifier_gradient,
 )
@@ -200,6 +201,10 @@ verification = verify_parameter_shift_qnn_classifier_gradient(
     run.best_params,
 )
 assert verification.passed
+
+suite = run_parameter_shift_qnn_conformance_suite()
+assert suite.passed
+print(suite.case_count, suite.unsuitable_scenario_count)
 ```
 
 This is a deliberately bounded local classifier. Each feature column is encoded
@@ -208,8 +213,11 @@ full-batch MSE loss is trained with an explicit `[1, 2]` multi-frequency
 parameter-shift rule because MSE introduces second harmonics. The verification
 helper replays the same bounded loss against central finite differences and can
 record caller-supplied external gradients under names such as `jax` or
-`pennylane`. It is not an unrestricted QNN framework, live provider execution
-path, or proof that arbitrary feature maps are differentiable.
+`pennylane`. The conformance suite bundles three deterministic replay cases,
+one convergence case, optional external-gradient hooks, and explicit
+unsuitable-scenario records. It is not an unrestricted QNN framework, live
+provider execution path, or proof that arbitrary feature maps are
+differentiable.
 
 ## Minimal gradient support matrix
 
