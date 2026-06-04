@@ -38,6 +38,7 @@ class PhaseTorchParameterShiftResult:
     method: str
     evaluations: int
     host_boundary: bool
+    shift_terms: int = 1
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serialisable PyTorch interop metadata."""
@@ -47,6 +48,7 @@ class PhaseTorchParameterShiftResult:
             "method": self.method,
             "evaluations": self.evaluations,
             "host_boundary": self.host_boundary,
+            "shift_terms": self.shift_terms,
             "torch_value_type": type(self.torch_value).__name__,
             "torch_gradient_type": type(self.torch_gradient).__name__,
         }
@@ -131,6 +133,7 @@ def torch_parameter_shift_value_and_grad(
         parameters=parameters,
         rule=rule,
     )
+    shift_terms = len((rule or ParameterShiftRule()).terms)
     gradient = _as_parameter_vector(
         "PyTorch parameter-shift gradient",
         result.gradient,
@@ -141,9 +144,10 @@ def torch_parameter_shift_value_and_grad(
         gradient=gradient,
         torch_value=_torch_tensor(torch_module, np.asarray(result.value, dtype=np.float64)),
         torch_gradient=_torch_tensor(torch_module, gradient),
-        method="parameter_shift",
+        method=result.method,
         evaluations=result.evaluations,
         host_boundary=True,
+        shift_terms=shift_terms,
     )
 
 

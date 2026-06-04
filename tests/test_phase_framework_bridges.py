@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
     PhaseTorchParameterShiftResult,
     is_phase_tensorflow_available,
     is_phase_torch_available,
+    multi_frequency_parameter_shift_rule,
     tensorflow_parameter_shift_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -105,6 +106,30 @@ def test_torch_bridge_returns_tensor_and_numpy_gradients(monkeypatch: pytest.Mon
     np.testing.assert_allclose(result.torch_gradient.numpy(), result.gradient, atol=1e-12)
 
 
+def test_torch_bridge_reports_multi_frequency_parameter_shift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
+
+    result = torch_parameter_shift_value_and_grad(
+        objective,
+        _FakeTorchTensor(np.array([0.4], dtype=float)),
+        rule=rule,
+    )
+
+    expected = np.array([np.cos(0.4) - 0.2 * np.sin(0.8)], dtype=float)
+    assert result.method == "multi_frequency_parameter_shift"
+    assert result.shift_terms == len(rule.terms)
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+    np.testing.assert_allclose(result.gradient, expected, atol=1e-12)
+    assert result.to_dict()["shift_terms"] == len(rule.terms)
+
+
 def test_tensorflow_bridge_returns_tensor_and_numpy_gradients(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -133,6 +158,30 @@ def test_tensorflow_bridge_returns_tensor_and_numpy_gradients(
         result.gradient,
         atol=1e-12,
     )
+
+
+def test_tensorflow_bridge_reports_multi_frequency_parameter_shift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
+
+    result = tensorflow_parameter_shift_value_and_grad(
+        objective,
+        _FakeTensorFlowTensor(np.array([0.4], dtype=float)),
+        rule=rule,
+    )
+
+    expected = np.array([np.cos(0.4) - 0.2 * np.sin(0.8)], dtype=float)
+    assert result.method == "multi_frequency_parameter_shift"
+    assert result.shift_terms == len(rule.terms)
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+    np.testing.assert_allclose(result.gradient, expected, atol=1e-12)
+    assert result.to_dict()["shift_terms"] == len(rule.terms)
 
 
 def test_framework_bridges_fail_closed_when_optional_dependency_missing(

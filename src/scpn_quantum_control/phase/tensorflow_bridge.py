@@ -38,6 +38,7 @@ class PhaseTensorFlowParameterShiftResult:
     method: str
     evaluations: int
     host_boundary: bool
+    shift_terms: int = 1
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serialisable TensorFlow interop metadata."""
@@ -47,6 +48,7 @@ class PhaseTensorFlowParameterShiftResult:
             "method": self.method,
             "evaluations": self.evaluations,
             "host_boundary": self.host_boundary,
+            "shift_terms": self.shift_terms,
             "tensorflow_value_type": type(self.tensorflow_value).__name__,
             "tensorflow_gradient_type": type(self.tensorflow_gradient).__name__,
         }
@@ -122,6 +124,7 @@ def tensorflow_parameter_shift_value_and_grad(
         parameters=parameters,
         rule=rule,
     )
+    shift_terms = len((rule or ParameterShiftRule()).terms)
     gradient = _as_parameter_vector(
         "TensorFlow parameter-shift gradient",
         result.gradient,
@@ -135,9 +138,10 @@ def tensorflow_parameter_shift_value_and_grad(
             np.asarray(result.value, dtype=np.float64),
         ),
         tensorflow_gradient=_tensorflow_tensor(tensorflow_module, gradient),
-        method="parameter_shift",
+        method=result.method,
         evaluations=result.evaluations,
         host_boundary=True,
+        shift_terms=shift_terms,
     )
 
 

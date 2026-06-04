@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
     jax_parameter_shift_value_and_grad,
+    multi_frequency_parameter_shift_rule,
 )
 
 
@@ -95,6 +96,32 @@ def test_phase_jax_bridge_jit_uses_pure_callback(monkeypatch: pytest.MonkeyPatch
     )
 
 
+def test_phase_jax_bridge_supports_multi_frequency_parameter_shift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
+
+    result = jax_parameter_shift_value_and_grad(
+        objective,
+        np.array([0.4], dtype=float),
+        rule=rule,
+        jit=True,
+    )
+
+    expected = np.array([np.cos(0.4) - 0.2 * np.sin(0.8)], dtype=float)
+    assert result.method == "multi_frequency_parameter_shift"
+    assert result.shift_terms == len(rule.terms)
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+    assert result.host_callback
+    np.testing.assert_allclose(result.gradient, expected, atol=1e-12)
+    assert result.to_dict()["shift_terms"] == len(rule.terms)
+
+
 def test_phase_jax_bridge_reports_gradient_agreement(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_jax = _FakeJAX()
     monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
@@ -115,6 +142,34 @@ def test_phase_jax_bridge_reports_gradient_agreement(monkeypatch: pytest.MonkeyP
     assert result.evaluations == 5
     np.testing.assert_allclose(result.scpn_gradient, result.jax_gradient, atol=1e-12)
     assert result.to_dict()["passed"] is True
+
+
+def test_phase_jax_bridge_reports_multi_frequency_gradient_agreement(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
+
+    def jax_gradient(values: np.ndarray) -> np.ndarray:
+        return np.array([np.cos(values[0]) - 0.2 * np.sin(2.0 * values[0])], dtype=float)
+
+    result = check_jax_parameter_shift_agreement(
+        objective,
+        jax_gradient,
+        np.array([0.4], dtype=float),
+        tolerance=1e-12,
+        rule=rule,
+    )
+
+    assert result.passed
+    assert result.method == "multi_frequency_parameter_shift"
+    assert result.shift_terms == len(rule.terms)
+    assert result.evaluations == 1 + 2 * len(rule.terms)
+    np.testing.assert_allclose(result.scpn_gradient, result.jax_gradient, atol=1e-12)
 
 
 def test_phase_jax_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:

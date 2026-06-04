@@ -39,6 +39,7 @@ class PhaseJAXParameterShiftResult:
     jit_requested: bool
     jitted: bool
     host_callback: bool
+    shift_terms: int = 1
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serialisable JAX interop metadata."""
@@ -50,6 +51,7 @@ class PhaseJAXParameterShiftResult:
             "jit_requested": self.jit_requested,
             "jitted": self.jitted,
             "host_callback": self.host_callback,
+            "shift_terms": self.shift_terms,
         }
 
 
@@ -65,6 +67,8 @@ class PhaseJAXGradientAgreementResult:
     tolerance: float
     passed: bool
     evaluations: int
+    method: str = "parameter_shift"
+    shift_terms: int = 1
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-serialisable JAX gradient agreement metadata."""
@@ -77,6 +81,8 @@ class PhaseJAXGradientAgreementResult:
             "tolerance": self.tolerance,
             "passed": self.passed,
             "evaluations": self.evaluations,
+            "method": self.method,
+            "shift_terms": self.shift_terms,
         }
 
 
@@ -154,8 +160,11 @@ def jax_parameter_shift_value_and_grad(
     """
     parameter_values = _as_parameter_vector("values", values)
     jax_module, jnp = _load_jax()
+    shift_terms = len((rule or ParameterShiftRule()).terms)
+    last_result: GradientResult | None = None
 
     def evaluate(raw_values: object) -> tuple[np.ndarray, np.ndarray]:
+        nonlocal last_result
         raw_array = _as_parameter_vector(
             "JAX callback values", raw_values, width=parameter_values.size
         )
@@ -165,6 +174,7 @@ def jax_parameter_shift_value_and_grad(
             parameters=parameters,
             rule=rule,
         )
+        last_result = result
         return (
             np.asarray(result.value, dtype=np.float64),
             result.gradient.astype(np.float64, copy=False),
@@ -198,14 +208,17 @@ def jax_parameter_shift_value_and_grad(
         gradient_obj,
         width=parameter_values.size,
     )
+    if last_result is None:
+        raise RuntimeError("JAX parameter-shift callback did not execute")
     return PhaseJAXParameterShiftResult(
         value=_as_scalar("JAX parameter-shift value", value_obj),
         gradient=gradient,
-        method="parameter_shift",
-        evaluations=1 + 2 * parameter_values.size,
+        method=last_result.method,
+        evaluations=last_result.evaluations,
         jit_requested=jit,
         jitted=jitted,
         host_callback=host_callback,
+        shift_terms=shift_terms,
     )
 
 
@@ -233,6 +246,7 @@ def check_jax_parameter_shift_agreement(
         parameters=parameters,
         rule=rule,
     )
+    shift_terms = len((rule or ParameterShiftRule()).terms)
     external_gradient = _as_parameter_vector(
         "JAX gradient",
         jax_gradient(parameter_values.copy()),
@@ -250,6 +264,8 @@ def check_jax_parameter_shift_agreement(
         tolerance=tolerance_value,
         passed=max_abs_error <= tolerance_value,
         evaluations=scpn.evaluations,
+        method=scpn.method,
+        shift_terms=shift_terms,
     )
 
 

@@ -391,7 +391,8 @@ print(agreement.passed, agreement.max_abs_error)
 This produces a pass/fail agreement certificate between SCPN's manual
 parameter-shift gradient and the supplied JAX gradient. It is still a bounded
 interop verifier, not automatic native JAX compilation of arbitrary quantum
-kernels.
+kernels. Multi-frequency rules are supported through the same host-boundary
+path, and the JAX result reports the native method and shift-term count.
 
 ## Optional PennyLane agreement check
 
@@ -473,7 +474,9 @@ print(tf_result.tensorflow_gradient, tf_result.host_boundary)
 
 Both adapters import the optional framework only when called, run SCPN's
 deterministic parameter-shift rule on the host, and return NumPy plus framework
-tensor payloads. They are not native autograd-through-simulator kernels.
+tensor payloads. Multi-frequency rules preserve the native method and
+shift-term count in the adapter result. They are not native
+autograd-through-simulator kernels.
 
 ## Verification requirements
 
