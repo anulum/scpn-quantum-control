@@ -22,6 +22,7 @@ This page maps the public differentiable-programming namespace and the related q
 | `scpn_quantum_control.phase.optimizer_audit` | Multi-start optimizer comparison evidence for parameter-shift descent and natural-gradient descent. |
 | `scpn_quantum_control.phase.objectives` | Composable differentiable phase-control objectives with term-wise gradients and fail-closed parameter-shift compatibility. |
 | `scpn_quantum_control.phase.objective_audit` | Finite-difference agreement, compatibility-gate, and training evidence for composed objectives. |
+| `scpn_quantum_control.phase.objective_planner` | Fail-closed execution planning for pure parameter-shift, hybrid term-gradient, hardware, and unsupported composed-objective routes. |
 | `scpn_quantum_control.qsnn.training` | QSNN parameter-shift gradients, full-batch descent, and training convergence evidence. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
@@ -42,7 +43,7 @@ This page maps the public differentiable-programming namespace and the related q
 | Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
 | Gradient audit evidence | `DifferentiableQuantumAuditReport`, `DifferentiableWorkflowAuditSuiteResult`, `FiniteShotGradientAuditResult`, `MLFrameworkGradientAuditSuiteResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `run_differentiable_workflow_audit_suite`, `run_finite_shot_gradient_uncertainty_audit`, `run_ml_framework_gradient_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite` | Bundle finite-difference agreement, finite-shot uncertainty containment, optional ML-framework parity, analytic-gradient agreement, convergence evidence, coupling-learning checks, and multi-case phase-gradient conformance into reviewer-facing reports. |
 | Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParameterShiftNaturalGradientResult`, `ParameterShiftNaturalGradientCertificate`, `OptimizerComparisonSuiteResult`, `OptimizerConvergenceRecord`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, metric-aware descent, optimizer comparison evidence, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
-| Objective composition | `ComposedPhaseObjective`, `ObjectiveTerm`, `ObjectiveGradientEvaluation`, `ComposedObjectiveTrainingResult`, `ComposedObjectiveGradientAgreement`, `ComposedObjectiveAuditSuiteResult`, `build_phase_control_objective`, `train_composed_phase_objective`, `verify_composed_objective_gradient`, `run_composed_objective_audit_suite` | Combine energy, fidelity, periodic regularization, symmetry, and smooth safety penalties without misclassifying analytic classical penalties as parameter-shift quantum terms. |
+| Objective composition | `ComposedPhaseObjective`, `ObjectiveTerm`, `ObjectiveGradientEvaluation`, `ComposedObjectiveTrainingResult`, `ComposedObjectiveGradientAgreement`, `ComposedObjectiveAuditSuiteResult`, `ComposedObjectiveExecutionPlan`, `ComposedObjectivePlannerAuditResult`, `build_phase_control_objective`, `train_composed_phase_objective`, `verify_composed_objective_gradient`, `run_composed_objective_audit_suite`, `plan_composed_objective_execution`, `run_composed_objective_planner_audit` | Combine energy, fidelity, periodic regularization, symmetry, and smooth safety penalties without misclassifying analytic classical penalties as parameter-shift quantum terms. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
@@ -162,7 +163,9 @@ import numpy as np
 
 from scpn_quantum_control.phase import (
     build_phase_control_objective,
+    plan_composed_objective_execution,
     run_composed_objective_audit_suite,
+    run_composed_objective_planner_audit,
     train_composed_phase_objective,
     validate_composed_objective_training,
 )
@@ -186,6 +189,11 @@ print(evaluation.value, certificate.monotone_accepted_values)
 audit = run_composed_objective_audit_suite()
 assert audit.passed
 assert audit.hybrid_parameter_shift_gate_failed
+
+plan = plan_composed_objective_execution(objective)
+planner_audit = run_composed_objective_planner_audit()
+assert plan.recommended_entrypoint == "train_composed_phase_objective"
+assert planner_audit.passed
 ```
 
 The objective reports which terms are parameter-shift compatible. Periodic
@@ -197,6 +205,10 @@ checks finite-difference gradient agreement for pure and hybrid objectives,
 confirms the pure objective passes the parameter-shift gate, confirms the
 hybrid safety objective fails that gate, and records local training
 certificates for both.
+`plan_composed_objective_execution()` is the fail-closed routing layer: pure
+periodic objectives route to local parameter-shift training, hybrid objectives
+route to exact term-gradient training, and hardware, unknown backends, or forced
+pure parameter-shift on analytic safety terms return unsupported plans.
 
 ## Minimal QSNN descent certificate
 

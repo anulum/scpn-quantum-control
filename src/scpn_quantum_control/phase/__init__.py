@@ -87,6 +87,13 @@ from .objective_audit import (
     run_composed_objective_audit_suite,
     verify_composed_objective_gradient,
 )
+from .objective_planner import (
+    ComposedObjectiveExecutionPlan,
+    ComposedObjectivePlannerAuditResult,
+    assert_composed_objective_execution_supported,
+    plan_composed_objective_execution,
+    run_composed_objective_planner_audit,
+)
 from .objectives import (
     ComposedObjectiveTrainingCertificate,
     ComposedObjectiveTrainingResult,
@@ -256,6 +263,11 @@ __all__ = [
     "run_composed_objective_audit_suite",
     "ComposedObjectiveGradientAgreement",
     "ComposedObjectiveAuditSuiteResult",
+    "plan_composed_objective_execution",
+    "assert_composed_objective_execution_supported",
+    "run_composed_objective_planner_audit",
+    "ComposedObjectiveExecutionPlan",
+    "ComposedObjectivePlannerAuditResult",
     "gradient_tape",
     "QuantumGradientTape",
     "TapeGradientRecord",

@@ -108,6 +108,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ComposedObjectiveGradientAgreement, ComposedObjectiveAuditSuiteResult, verify_composed_objective_gradient, run_composed_objective_audit_suite]
 
+::: scpn_quantum_control.phase.objective_planner
+    options:
+      members: [ComposedObjectiveExecutionPlan, ComposedObjectivePlannerAuditResult, plan_composed_objective_execution, assert_composed_objective_execution_supported, run_composed_objective_planner_audit]
+
 ::: scpn_quantum_control.phase.trotter_upde
     options:
       members: [QuantumUPDESolver]

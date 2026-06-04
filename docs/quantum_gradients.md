@@ -481,6 +481,21 @@ pure periodic objective and a hybrid objective with an analytic safety term,
 then trains both with exact term gradients. It also records why the hybrid
 objective is unsuitable for pure parameter-shift execution.
 
+Before training, use the planner to select the safe route:
+
+```python
+from scpn_quantum_control.phase import plan_composed_objective_execution
+
+
+plan = plan_composed_objective_execution(objective)
+print(plan.supported, plan.mode, plan.recommended_entrypoint)
+```
+
+Pure periodic objectives route to local parameter-shift descent. Hybrid
+objectives with analytic safety penalties route to exact term-gradient descent.
+Hardware aliases, unknown backends, and forced pure parameter-shift execution on
+hybrid objectives return unsupported plans with explicit blocked reasons.
+
 The QSNN trainer composes with the same route for full-batch quantum neural
 network training:
 
