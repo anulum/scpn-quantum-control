@@ -221,6 +221,35 @@ This is an agreement verifier, not an automatic PennyLane QNode generator. It
 fails closed when PennyLane is not importable and reports explicit gradient
 error metrics when the external gradient disagrees.
 
+## Optional PyTorch and TensorFlow tensor bridges
+
+For ML pipelines that need framework tensors, the phase namespace exposes
+host-boundary PyTorch and TensorFlow adapters:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    tensorflow_parameter_shift_value_and_grad,
+    torch_parameter_shift_value_and_grad,
+)
+
+
+def objective(params: np.ndarray) -> float:
+    return float(np.cos(params[0]))
+
+
+torch_result = torch_parameter_shift_value_and_grad(objective, np.array([0.4]))
+tf_result = tensorflow_parameter_shift_value_and_grad(objective, np.array([0.4]))
+
+print(torch_result.torch_gradient, torch_result.host_boundary)
+print(tf_result.tensorflow_gradient, tf_result.host_boundary)
+```
+
+Both adapters import the optional framework only when called, run SCPN's
+deterministic parameter-shift rule on the host, and return NumPy plus framework
+tensor payloads. They are not native autograd-through-simulator kernels.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:

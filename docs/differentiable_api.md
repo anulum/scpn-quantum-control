@@ -20,6 +20,8 @@ This page maps the public differentiable-programming namespace and the related q
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
 | `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls. |
 | `scpn_quantum_control.phase.pennylane_bridge` | Optional PennyLane gradient-agreement checker for caller-supplied PennyLane/QNode gradient functions. |
+| `scpn_quantum_control.phase.torch_bridge` | Optional PyTorch tensor bridge for supported phase parameter-shift value-and-gradient calls. |
+| `scpn_quantum_control.phase.tensorflow_bridge` | Optional TensorFlow tensor bridge for supported phase parameter-shift value-and-gradient calls. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, and support-profile reports. |
 
 ## Common objects
@@ -34,6 +36,8 @@ This page maps the public differentiable-programming namespace and the related q
 | Gradient-training evidence | `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics`, `validate_param_shift_convergence` | Certify accepted energy descent, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
 | Optional PennyLane agreement | `PennyLaneGradientAgreementResult`, `check_pennylane_parameter_shift_agreement`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against a caller-supplied PennyLane gradient callable. |
+| Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `torch_parameter_shift_value_and_grad`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors while preserving NumPy evidence. |
+| Optional TensorFlow bridge | `PhaseTensorFlowParameterShiftResult`, `tensorflow_parameter_shift_value_and_grad`, `is_phase_tensorflow_available` | Convert supported phase parameter-shift value-and-gradient outputs into TensorFlow tensors while preserving NumPy evidence. |
 
 ## Minimal parameter-shift call
 
@@ -185,6 +189,32 @@ assert agreement.passed
 
 The bridge validates agreement. It does not claim automatic QNode generation
 for every SCPN circuit yet.
+
+## Minimal PyTorch and TensorFlow tensor bridges
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    tensorflow_parameter_shift_value_and_grad,
+    torch_parameter_shift_value_and_grad,
+)
+
+
+def cost(params: np.ndarray) -> float:
+    return float(np.cos(params[0]))
+
+
+torch_result = torch_parameter_shift_value_and_grad(cost, np.array([0.4]))
+tf_result = tensorflow_parameter_shift_value_and_grad(cost, np.array([0.4]))
+
+print(torch_result.torch_gradient, torch_result.host_boundary)
+print(tf_result.tensorflow_gradient, tf_result.host_boundary)
+```
+
+These bridges are optional tensor-conversion boundaries. They are useful for
+framework pipelines that need gradient payloads, but they do not claim native
+PyTorch or TensorFlow autodiff through a quantum simulator.
 
 ## Minimal custom primitive route
 

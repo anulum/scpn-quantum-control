@@ -71,6 +71,16 @@ from .pulse_shaping import (
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
+from .tensorflow_bridge import (
+    PhaseTensorFlowParameterShiftResult,
+    is_phase_tensorflow_available,
+    tensorflow_parameter_shift_value_and_grad,
+)
+from .torch_bridge import (
+    PhaseTorchParameterShiftResult,
+    is_phase_torch_available,
+    torch_parameter_shift_value_and_grad,
+)
 from .trotter_error import trotter_error_norm, trotter_error_sweep
 from .trotter_upde import QuantumUPDESolver
 from .varqite import VarQITEResult, varqite_ground_state
@@ -110,6 +120,12 @@ __all__ = [
     "is_phase_pennylane_available",
     "check_pennylane_parameter_shift_agreement",
     "PennyLaneGradientAgreementResult",
+    "is_phase_torch_available",
+    "torch_parameter_shift_value_and_grad",
+    "PhaseTorchParameterShiftResult",
+    "is_phase_tensorflow_available",
+    "tensorflow_parameter_shift_value_and_grad",
+    "PhaseTensorFlowParameterShiftResult",
     "build_structured_ansatz",
     "LindbladSyncEngine",
     "parameter_shift_gradient",
