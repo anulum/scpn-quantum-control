@@ -174,6 +174,7 @@ import numpy as np
 
 from scpn_quantum_control.phase import (
     run_parameter_shift_qnn_conformance_suite,
+    run_parameter_shift_qnn_optimizer_benchmark_suite,
     train_parameter_shift_qnn_classifier,
     verify_parameter_shift_qnn_classifier_gradient,
 )
@@ -205,6 +206,10 @@ assert verification.passed
 suite = run_parameter_shift_qnn_conformance_suite()
 assert suite.passed
 print(suite.case_count, suite.unsuitable_scenario_count)
+
+optimizer_suite = run_parameter_shift_qnn_optimizer_benchmark_suite()
+assert optimizer_suite.passed
+assert optimizer_suite.evidence_class == "functional_non_isolated"
 ```
 
 This is a deliberately bounded local classifier. Each feature column is encoded
@@ -215,9 +220,12 @@ helper replays the same bounded loss against central finite differences and can
 record caller-supplied external gradients under names such as `jax` or
 `pennylane`. The conformance suite bundles three deterministic replay cases,
 one convergence case, optional external-gradient hooks, and explicit
-unsuitable-scenario records. It is not an unrestricted QNN framework, live
-provider execution path, or proof that arbitrary feature maps are
-differentiable.
+unsuitable-scenario records. The optimizer benchmark suite compares the
+parameter-shift trainer with finite-difference and derivative-free baselines,
+but records `functional_non_isolated` evidence only; it is not a throughput
+benchmark or hardware performance claim. This route is not an unrestricted QNN
+framework, live provider execution path, or proof that arbitrary feature maps
+are differentiable.
 
 ## Minimal gradient support matrix
 

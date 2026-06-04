@@ -484,6 +484,7 @@ import numpy as np
 
 from scpn_quantum_control.phase import (
     run_parameter_shift_qnn_conformance_suite,
+    run_parameter_shift_qnn_optimizer_benchmark_suite,
     train_parameter_shift_qnn_classifier,
     verify_parameter_shift_qnn_classifier_gradient,
 )
@@ -510,6 +511,9 @@ print(verification.passed, verification.max_abs_error)
 
 suite = run_parameter_shift_qnn_conformance_suite()
 print(suite.passed, suite.case_count, suite.unsuitable_scenario_count)
+
+optimizer_suite = run_parameter_shift_qnn_optimizer_benchmark_suite()
+print(optimizer_suite.passed, optimizer_suite.evidence_class)
 ```
 
 The route is intentionally narrow and auditable: one trainable phase per
@@ -520,8 +524,11 @@ in the verification report to record JAX, PennyLane, or other adapter agreement
 without claiming automatic framework conversion. The conformance suite packages
 the supported route and records unsuitable scenarios such as hardware backend
 promotion, arbitrary architectures, non-finite data, and native framework
-autodiff as staged or fail-closed. It is the current production QNN foothold,
-not a claim of unrestricted arbitrary QNN/QGNN/QSNN training.
+autodiff as staged or fail-closed. The optimizer benchmark suite compares
+parameter-shift training against finite-difference gradients and deterministic
+derivative-free candidates, but labels the result as non-isolated functional
+evidence only. It is the current production QNN foothold, not a claim of
+unrestricted arbitrary QNN/QGNN/QSNN training.
 
 ## Parameter-shift natural gradient
 

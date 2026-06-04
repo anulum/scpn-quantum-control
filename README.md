@@ -45,8 +45,8 @@
 |---|---:|
 | Package version | 0.9.10 |
 | Public API exports | 574 |
-| Python source modules | 788 |
-| Public Python classes | 1572 |
+| Python source modules | 789 |
+| Public Python classes | 1574 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -55,7 +55,7 @@
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1898 |
+| Python test files | 1899 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 18 |
 
@@ -138,6 +138,9 @@ quantum hardware experimentation, and control-facing software:
 - `run_parameter_shift_qnn_conformance_suite(...)` bundles QNN training,
   gradient replay, external-gradient agreement hooks, and explicit unsuitable
   scenario records for reviewer-facing evidence packs.
+- `run_parameter_shift_qnn_optimizer_benchmark_suite(...)` compares the bounded
+  QNN parameter-shift trainer against finite-difference and deterministic
+  derivative-free baselines as non-isolated functional evidence only.
 - **Product route:** AGPL use is available for open research; proprietary
   deployment uses the commercial licence route described below.
 
@@ -177,7 +180,7 @@ layers:
 | Gradient support matrix | Executable support planning now covers registered gates, observables, backends, transforms, and ML/provider adapters with explicit blocked reasons and alternatives. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Transform nesting governance | Executable planning now separates supported local `grad`, `value_and_grad`, `hessian`, nested-grad, and tape routes from blocked vectorized, adapter-nested, finite-shot curvature, and hardware nesting routes. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Provider-gradient readiness | Executable audit evidence distinguishes deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, and malformed finite-shot samples. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
-| Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, optional named external-gradient agreement records, and a conformance suite with unsuitable-scenario evidence. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
+| Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, optional named external-gradient agreement records, a conformance suite with unsuitable-scenario evidence, and non-isolated optimizer-baseline comparisons. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | ML framework and tape roadmap | Gradient tape, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, and PyTorch/TensorFlow host-boundary tensor bridges are available. Full PennyLane/Qiskit migration bridges, arbitrary QNNs, QGNNs, and unrestricted QSNN training remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
@@ -190,7 +193,7 @@ The first production-grade differentiable workflows are deliberately bounded:
 
 1. train small VQE objectives with parameter-shift gradients through `PhaseVQE.solve(gradient_method="parameter_shift")`;
 2. verify gradients against finite differences and analytic references through `verify_parameter_shift_gradient(...)` and `verify_vqe_parameter_shift_gradient(...)`;
-3. train bounded phase-QNN classifiers through `train_parameter_shift_qnn_classifier(...)`, verify their QNN-specific gradients through `verify_parameter_shift_qnn_classifier_gradient(...)`, and package evidence with `run_parameter_shift_qnn_conformance_suite(...)`;
+3. train bounded phase-QNN classifiers through `train_parameter_shift_qnn_classifier(...)`, verify their QNN-specific gradients through `verify_parameter_shift_qnn_classifier_gradient(...)`, package evidence with `run_parameter_shift_qnn_conformance_suite(...)`, and compare local optimizer baselines with `run_parameter_shift_qnn_optimizer_benchmark_suite(...)`;
 4. use compiler/program-AD kernels for supported classical objectives;
 5. document unsupported gates, backends, shapes, and dynamic program paths
    before they can mislead users.
