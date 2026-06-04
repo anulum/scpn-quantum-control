@@ -56,7 +56,9 @@ from .param_shift import (
 )
 from .pennylane_bridge import (
     PennyLaneGradientAgreementResult,
+    PennyLaneRoundTripResult,
     check_pennylane_parameter_shift_agreement,
+    check_pennylane_qnode_round_trip,
     is_phase_pennylane_available,
 )
 from .phase_vqe import PhaseVQE
@@ -122,7 +124,9 @@ __all__ = [
     "PhaseJAXParameterShiftResult",
     "is_phase_pennylane_available",
     "check_pennylane_parameter_shift_agreement",
+    "check_pennylane_qnode_round_trip",
     "PennyLaneGradientAgreementResult",
+    "PennyLaneRoundTripResult",
     "is_phase_torch_available",
     "torch_parameter_shift_value_and_grad",
     "PhaseTorchParameterShiftResult",

@@ -15,7 +15,9 @@ import pytest
 import scpn_quantum_control.phase.pennylane_bridge as pennylane_bridge
 from scpn_quantum_control.phase import (
     PennyLaneGradientAgreementResult,
+    PennyLaneRoundTripResult,
     check_pennylane_parameter_shift_agreement,
+    check_pennylane_qnode_round_trip,
     is_phase_pennylane_available,
 )
 
@@ -64,6 +66,68 @@ def test_pennylane_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPa
     assert result.l2_error > 0.0
 
 
+def test_pennylane_bridge_reports_qnode_round_trip(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
+
+    result = check_pennylane_qnode_round_trip(
+        _objective,
+        _objective,
+        _closed_form_gradient,
+        np.array([0.2, -0.4], dtype=float),
+        value_tolerance=1e-12,
+        gradient_tolerance=1e-12,
+    )
+    payload = result.to_dict()
+
+    assert isinstance(result, PennyLaneRoundTripResult)
+    assert result.passed
+    assert result.value_abs_error <= 1e-12
+    assert result.gradient_max_abs_error <= 1e-12
+    assert result.evaluations == 5
+    assert payload["passed"] is True
+    assert payload["evaluations"] == 5
+    np.testing.assert_allclose(result.scpn_gradient, result.pennylane_gradient, atol=1e-12)
+
+
+def test_pennylane_bridge_reports_qnode_round_trip_mismatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
+
+    def shifted_objective(values: np.ndarray) -> float:
+        return _objective(values) + 0.01
+
+    result = check_pennylane_qnode_round_trip(
+        _objective,
+        shifted_objective,
+        _closed_form_gradient,
+        np.array([0.2, -0.4], dtype=float),
+        value_tolerance=1e-4,
+        gradient_tolerance=1e-12,
+    )
+
+    assert not result.passed
+    assert result.value_abs_error > result.value_tolerance
+    assert result.gradient_max_abs_error <= result.gradient_tolerance
+
+
+def test_pennylane_bridge_round_trip_rejects_bad_values(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
+
+    def non_finite_objective(values: np.ndarray) -> float:
+        return float("nan")
+
+    with pytest.raises(ValueError, match="PennyLane objective"):
+        check_pennylane_qnode_round_trip(
+            _objective,
+            non_finite_objective,
+            _closed_form_gradient,
+            np.array([0.2, -0.4], dtype=float),
+        )
+
+
 def test_pennylane_bridge_fails_closed_when_pennylane_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -75,6 +139,13 @@ def test_pennylane_bridge_fails_closed_when_pennylane_missing(
     assert not is_phase_pennylane_available()
     with pytest.raises(ImportError, match="blocked"):
         check_pennylane_parameter_shift_agreement(
+            _objective,
+            _closed_form_gradient,
+            np.array([0.2, -0.4], dtype=float),
+        )
+    with pytest.raises(ImportError, match="blocked"):
+        check_pennylane_qnode_round_trip(
+            _objective,
             _objective,
             _closed_form_gradient,
             np.array([0.2, -0.4], dtype=float),

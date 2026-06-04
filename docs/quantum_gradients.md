@@ -251,6 +251,24 @@ This is an agreement verifier, not an automatic PennyLane QNode generator. It
 fails closed when PennyLane is not importable and reports explicit gradient
 error metrics when the external gradient disagrees.
 
+For full adapter smoke tests, `check_pennylane_qnode_round_trip(...)` compares
+both value and gradient parity:
+
+```python
+from scpn_quantum_control.phase import check_pennylane_qnode_round_trip
+
+round_trip = check_pennylane_qnode_round_trip(
+    scpn_objective,
+    pennylane_qnode,
+    qml.grad(pennylane_qnode),
+    np.array([0.4]),
+)
+print(round_trip.passed, round_trip.value_abs_error)
+```
+
+This still stays fail-closed and caller-supplied: SCPN does not claim automatic
+translation of every internal ansatz into a PennyLane QNode.
+
 ## Optional PyTorch and TensorFlow tensor bridges
 
 For ML pipelines that need framework tensors, the phase namespace exposes
