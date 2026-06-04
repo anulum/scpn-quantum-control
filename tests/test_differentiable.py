@@ -401,24 +401,88 @@ def test_multi_frequency_parameter_shift_rule_rejects_invalid_systems() -> None:
         multi_frequency_parameter_shift_rule([1.0, 2.0], shifts=[math.pi, 2.0 * math.pi])
 
 
-def test_multi_frequency_parameter_shift_fails_closed_for_shot_noise_surfaces() -> None:
-    """Shot-noise helpers should reject multi-term rules until per-term samples exist."""
+def test_multi_frequency_parameter_shift_propagates_per_term_shot_noise() -> None:
+    """Multi-frequency shot noise should propagate independent per-term records."""
+
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+    plus = np.array([[1.4, 10.0], [0.9, 20.0]])
+    minus = np.array([[0.2, 11.0], [0.1, 19.0]])
+    plus_variance = np.array([[0.20, 0.30], [0.40, 0.50]])
+    minus_variance = np.array([[0.10, 0.20], [0.30, 0.40]])
+    plus_shots = np.array([[100, 101], [200, 201]])
+    minus_shots = np.array([[120, 121], [220, 221]])
+
+    result = parameter_shift_gradient_with_uncertainty(
+        plus,
+        minus,
+        plus_variance,
+        minus_variance,
+        plus_shots,
+        minus_shots,
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+        rule=rule,
+    )
+
+    expected_gradient = np.zeros(2)
+    expected_variance = np.zeros(2)
+    for term_index, (_shift, coefficient) in enumerate(rule.terms):
+        expected_gradient[0] += coefficient * (plus[term_index, 0] - minus[term_index, 0])
+        expected_variance[0] += coefficient**2 * (
+            plus_variance[term_index, 0] / plus_shots[term_index, 0]
+            + minus_variance[term_index, 0] / minus_shots[term_index, 0]
+        )
+
+    assert result.method == "multi_frequency_parameter_shift_shot_noise"
+    assert result.shift is None
+    assert result.coefficient is None
+    assert result.evaluations == 2 * len(rule.terms)
+    assert result.shots.shape == (len(rule.terms), 2, 2)
+    np.testing.assert_allclose(result.gradient, expected_gradient)
+    np.testing.assert_allclose(result.standard_error, np.sqrt(expected_variance))
+    np.testing.assert_allclose(np.diag(result.covariance), expected_variance)
+    np.testing.assert_allclose(result.shots[:, 0, :], plus_shots)
+    np.testing.assert_allclose(result.shots[:, 1, :], minus_shots)
+
+
+def test_multi_frequency_parameter_shift_allocates_per_term_shots() -> None:
+    """Shot allocation should support all multi-frequency plus/minus terms."""
+
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+    allocation = allocate_parameter_shift_shots(
+        [[0.20, 0.30], [0.40, 0.50]],
+        [[0.10, 0.20], [0.30, 0.40]],
+        target_standard_error=0.15,
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+        rule=rule,
+        min_shots=7,
+    )
+
+    assert allocation.method == "multi_frequency_parameter_shift_target_se"
+    assert allocation.shots.shape == (len(rule.terms), 2, 2)
+    assert allocation.total_shots == int(np.sum(allocation.shots))
+    assert allocation.predicted_standard_error[0] <= 0.15
+    assert allocation.predicted_standard_error[1] == 0.0
+    assert np.all(allocation.shots[:, :, 1] == 7)
+
+
+def test_multi_frequency_parameter_shift_rejects_ambiguous_shot_tensors() -> None:
+    """Multi-frequency shot-noise inputs must expose the term dimension."""
 
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
-    with pytest.raises(ValueError, match="single-term"):
+    with pytest.raises(ValueError, match="shape"):
         parameter_shift_gradient_with_uncertainty(
-            [1.0],
-            [0.0],
-            [0.1],
-            [0.1],
-            [100],
+            [1.0, 0.0],
+            [0.0, 0.0],
+            [0.1, 0.1],
+            [0.1, 0.1],
+            [100, 100],
             rule=rule,
         )
-    with pytest.raises(ValueError, match="single-term"):
+    with pytest.raises(ValueError, match="first dimension"):
         allocate_parameter_shift_shots(
-            [0.1],
-            [0.1],
+            [[0.1, 0.1, 0.1]],
+            [[0.1, 0.1, 0.1]],
             target_standard_error=0.1,
             rule=rule,
         )

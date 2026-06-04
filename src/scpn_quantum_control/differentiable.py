@@ -8406,8 +8406,8 @@ class StochasticGradientResult:
     shots: NDArray[np.float64]
     confidence_level: float
     method: str
-    shift: float
-    coefficient: float
+    shift: float | None
+    coefficient: float | None
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
@@ -8423,16 +8423,28 @@ class StochasticGradientResult:
             "stochastic gradient confidence_level",
             self.confidence_level,
         )
-        shift = _as_real_scalar("stochastic gradient shift", self.shift)
-        coefficient = _as_real_scalar("stochastic gradient coefficient", self.coefficient)
+        shift = (
+            None
+            if self.shift is None
+            else _as_real_scalar("stochastic gradient shift", self.shift)
+        )
+        coefficient = (
+            None
+            if self.coefficient is None
+            else _as_real_scalar("stochastic gradient coefficient", self.coefficient)
+        )
         if standard_error.shape != gradient.shape:
             raise ValueError("standard_error shape must match gradient shape")
         if confidence_radius.shape != gradient.shape:
             raise ValueError("confidence_radius shape must match gradient shape")
         if covariance.shape != (gradient.size, gradient.size):
             raise ValueError("covariance shape must be gradient length squared")
-        if shots.shape != (2, gradient.size):
-            raise ValueError("shots shape must be (2, gradient length)")
+        if shots.shape != (2, gradient.size) and not (
+            shots.ndim == 3 and shots.shape[1:] == (2, gradient.size)
+        ):
+            raise ValueError(
+                "shots shape must be (2, gradient length) or (n_terms, 2, gradient length)"
+            )
         if not np.all(shots > 0.0) or not np.allclose(shots, np.round(shots)):
             raise ValueError("shots must contain positive integer counts")
         if not np.all(np.isfinite(standard_error)) or np.any(standard_error < 0.0):
@@ -8443,9 +8455,9 @@ class StochasticGradientResult:
             raise ValueError("covariance must contain only finite values")
         if confidence_level <= 0.0 or confidence_level >= 1.0:
             raise ValueError("confidence_level must be between zero and one")
-        if shift <= 0.0:
+        if shift is not None and shift <= 0.0:
             raise ValueError("stochastic gradient shift must be finite and positive")
-        if coefficient <= 0.0:
+        if coefficient is not None and coefficient <= 0.0:
             raise ValueError("stochastic gradient coefficient must be finite and positive")
         if self.evaluations < 0:
             raise ValueError("stochastic gradient evaluations must be non-negative")
@@ -8489,11 +8501,18 @@ class ShotAllocationResult:
             "shot allocation target_standard_error",
             self.target_standard_error,
         )
-        if shots.ndim != 2 or shots.shape[0] != 2:
-            raise ValueError("shot allocation shots must have shape (2, n_parameters)")
-        if standard_error.shape != (shots.shape[1],):
+        if shots.ndim == 2 and shots.shape[0] == 2:
+            parameter_count = int(shots.shape[1])
+        elif shots.ndim == 3 and shots.shape[1] == 2:
+            parameter_count = int(shots.shape[2])
+        else:
+            raise ValueError(
+                "shot allocation shots must have shape (2, n_parameters) "
+                "or (n_terms, 2, n_parameters)"
+            )
+        if standard_error.shape != (parameter_count,):
             raise ValueError("predicted_standard_error length must match shot columns")
-        if covariance.shape != (shots.shape[1], shots.shape[1]):
+        if covariance.shape != (parameter_count, parameter_count):
             raise ValueError("shot allocation covariance shape must be n_parameters squared")
         if not np.all(shots > 0.0) or not np.allclose(shots, np.round(shots)):
             raise ValueError("shot allocation shots must contain positive integer counts")
@@ -22583,6 +22602,26 @@ def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
     return array
 
 
+def _as_parameter_shift_sample_tensor(
+    name: str,
+    values: ArrayLike,
+    *,
+    term_count: int,
+) -> NDArray[np.float64]:
+    array = _as_real_numeric_array(name, values)
+    if term_count == 1 and array.ndim == 1:
+        array = array.reshape(1, array.size)
+    elif array.ndim != 2:
+        raise ValueError(f"{name} must have shape (n_terms, n_parameters)")
+    if array.shape[0] != term_count:
+        raise ValueError(f"{name} first dimension must match parameter-shift terms")
+    if array.shape[1] < 1:
+        raise ValueError(f"{name} must contain at least one parameter column")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values")
+    return cast(NDArray[np.float64], array)
+
+
 def _as_batch_parameter_array(
     name: str,
     values: ArrayLike,
@@ -22893,12 +22932,43 @@ def parameter_shift_gradient_with_uncertainty(
 ) -> StochasticGradientResult:
     """Propagate independent shot noise through parameter-shift gradients."""
 
-    plus = _as_parameter_array(plus_values)
-    minus = _as_parameter_array(minus_values)
-    plus_var = _as_parameter_array(plus_variances)
-    minus_var = _as_parameter_array(minus_variances)
-    plus_count = _as_parameter_array(plus_shots)
-    minus_count = plus_count.copy() if minus_shots is None else _as_parameter_array(minus_shots)
+    shift_rule = rule or ParameterShiftRule()
+    terms = shift_rule.terms
+    term_count = len(terms)
+    plus = _as_parameter_shift_sample_tensor(
+        "plus_values",
+        plus_values,
+        term_count=term_count,
+    )
+    minus = _as_parameter_shift_sample_tensor(
+        "minus_values",
+        minus_values,
+        term_count=term_count,
+    )
+    plus_var = _as_parameter_shift_sample_tensor(
+        "plus_variances",
+        plus_variances,
+        term_count=term_count,
+    )
+    minus_var = _as_parameter_shift_sample_tensor(
+        "minus_variances",
+        minus_variances,
+        term_count=term_count,
+    )
+    plus_count = _as_parameter_shift_sample_tensor(
+        "plus_shots",
+        plus_shots,
+        term_count=term_count,
+    )
+    minus_count = (
+        plus_count.copy()
+        if minus_shots is None
+        else _as_parameter_shift_sample_tensor(
+            "minus_shots",
+            minus_shots,
+            term_count=term_count,
+        )
+    )
     if minus.shape != plus.shape:
         raise ValueError("minus_values shape must match plus_values shape")
     if plus_var.shape != plus.shape or minus_var.shape != plus.shape:
@@ -22921,33 +22991,39 @@ def parameter_shift_gradient_with_uncertainty(
     if z_value <= 0.0:
         raise ValueError("confidence_z must be finite and positive")
 
-    parameter_meta = _normalise_parameters(plus, parameters)
-    shift_rule = rule or ParameterShiftRule()
-    if not shift_rule.is_single_term:
-        raise ValueError("shot-noise parameter-shift currently requires a single-term rule")
-    gradient = np.zeros_like(plus)
-    variance = np.zeros_like(plus)
+    parameter_meta = _normalise_parameters(plus[0], parameters)
+    gradient = np.zeros(plus.shape[1], dtype=np.float64)
+    variance = np.zeros(plus.shape[1], dtype=np.float64)
     for index, parameter in enumerate(parameter_meta):
         if not parameter.trainable:
             continue
-        gradient[index] = shift_rule.coefficient * (plus[index] - minus[index])
-        variance[index] = shift_rule.coefficient**2 * (
-            plus_var[index] / plus_count[index] + minus_var[index] / minus_count[index]
-        )
+        for term_index, (_shift, coefficient) in enumerate(terms):
+            gradient[index] += coefficient * (plus[term_index, index] - minus[term_index, index])
+            variance[index] += coefficient**2 * (
+                plus_var[term_index, index] / plus_count[term_index, index]
+                + minus_var[term_index, index] / minus_count[term_index, index]
+            )
     standard_error = np.sqrt(variance)
     covariance = np.diag(variance)
+    shots = (
+        np.vstack([plus_count[0], minus_count[0]])
+        if shift_rule.is_single_term
+        else np.stack([plus_count, minus_count], axis=1)
+    )
     return StochasticGradientResult(
         value=value,
         gradient=gradient,
         standard_error=standard_error,
         covariance=covariance,
         confidence_radius=z_value * standard_error,
-        shots=np.vstack([plus_count, minus_count]),
+        shots=shots,
         confidence_level=confidence,
-        method="parameter_shift_shot_noise",
-        shift=shift_rule.shift,
-        coefficient=shift_rule.coefficient,
-        evaluations=2 * sum(parameter.trainable for parameter in parameter_meta),
+        method="parameter_shift_shot_noise"
+        if shift_rule.is_single_term
+        else "multi_frequency_parameter_shift_shot_noise",
+        shift=shift_rule.shift if shift_rule.is_single_term else None,
+        coefficient=shift_rule.coefficient if shift_rule.is_single_term else None,
+        evaluations=2 * term_count * sum(parameter.trainable for parameter in parameter_meta),
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
     )
@@ -22965,8 +23041,19 @@ def allocate_parameter_shift_shots(
 ) -> ShotAllocationResult:
     """Plan plus/minus shots to meet a target parameter-shift standard error."""
 
-    plus_var = _as_parameter_array(plus_variances)
-    minus_var = _as_parameter_array(minus_variances)
+    shift_rule = rule or ParameterShiftRule()
+    terms = shift_rule.terms
+    term_count = len(terms)
+    plus_var = _as_parameter_shift_sample_tensor(
+        "plus_variances",
+        plus_variances,
+        term_count=term_count,
+    )
+    minus_var = _as_parameter_shift_sample_tensor(
+        "minus_variances",
+        minus_variances,
+        term_count=term_count,
+    )
     if minus_var.shape != plus_var.shape:
         raise ValueError("minus_variances shape must match plus_variances shape")
     if np.any(plus_var < 0.0) or np.any(minus_var < 0.0):
@@ -22982,44 +23069,54 @@ def allocate_parameter_shift_shots(
         or max_shots_per_evaluation < min_shots
     ):
         raise ValueError("max_shots_per_evaluation must be an integer >= min_shots")
-    parameter_meta = _normalise_parameters(plus_var, parameters)
-    shift_rule = rule or ParameterShiftRule()
-    if not shift_rule.is_single_term:
-        raise ValueError("shot allocation currently requires a single-term parameter-shift rule")
-    shot_plan = np.full((2, plus_var.size), float(min_shots), dtype=np.float64)
-    variance = np.zeros_like(plus_var)
+    parameter_meta = _normalise_parameters(plus_var[0], parameters)
+    shot_plan = np.full((term_count, 2, plus_var.shape[1]), float(min_shots), dtype=np.float64)
+    variance = np.zeros(plus_var.shape[1], dtype=np.float64)
     target_variance = target**2
-    coefficient_squared = shift_rule.coefficient**2
 
     for index, parameter in enumerate(parameter_meta):
         if not parameter.trainable:
             continue
-        plus_noise = coefficient_squared * plus_var[index]
-        minus_noise = coefficient_squared * minus_var[index]
-        root_sum = float(np.sqrt(plus_noise) + np.sqrt(minus_noise))
+        noises: list[tuple[int, int, float]] = []
+        root_sum = 0.0
+        for term_index, (_shift, coefficient) in enumerate(terms):
+            coefficient_squared = coefficient**2
+            plus_noise = coefficient_squared * plus_var[term_index, index]
+            minus_noise = coefficient_squared * minus_var[term_index, index]
+            noises.append((term_index, 0, float(plus_noise)))
+            noises.append((term_index, 1, float(minus_noise)))
+            root_sum += float(np.sqrt(plus_noise) + np.sqrt(minus_noise))
         if root_sum > 0.0:
-            plus_required = np.sqrt(plus_noise) * root_sum / target_variance
-            minus_required = np.sqrt(minus_noise) * root_sum / target_variance
+            for term_index, side_index, noise in noises:
+                required = np.sqrt(noise) * root_sum / target_variance
+                shot_plan[term_index, side_index, index] = max(
+                    float(min_shots),
+                    float(np.ceil(required)),
+                )
         else:
-            plus_required = float(min_shots)
-            minus_required = float(min_shots)
-        shot_plan[0, index] = max(float(min_shots), float(np.ceil(plus_required)))
-        shot_plan[1, index] = max(float(min_shots), float(np.ceil(minus_required)))
+            shot_plan[:, :, index] = float(min_shots)
         if max_shots_per_evaluation is not None:
-            shot_plan[0, index] = min(shot_plan[0, index], float(max_shots_per_evaluation))
-            shot_plan[1, index] = min(shot_plan[1, index], float(max_shots_per_evaluation))
-        variance[index] = coefficient_squared * (
-            plus_var[index] / shot_plan[0, index] + minus_var[index] / shot_plan[1, index]
-        )
+            shot_plan[:, :, index] = np.minimum(
+                shot_plan[:, :, index],
+                float(max_shots_per_evaluation),
+            )
+        for term_index, (_shift, coefficient) in enumerate(terms):
+            variance[index] += coefficient**2 * (
+                plus_var[term_index, index] / shot_plan[term_index, 0, index]
+                + minus_var[term_index, index] / shot_plan[term_index, 1, index]
+            )
 
     standard_error = np.sqrt(variance)
+    output_shots = shot_plan[0] if shift_rule.is_single_term else shot_plan
     return ShotAllocationResult(
-        shots=shot_plan,
+        shots=output_shots,
         predicted_standard_error=standard_error,
         covariance=np.diag(variance),
         target_standard_error=target,
-        total_shots=int(np.sum(shot_plan)),
-        method="parameter_shift_target_se",
+        total_shots=int(np.sum(output_shots)),
+        method="parameter_shift_target_se"
+        if shift_rule.is_single_term
+        else "multi_frequency_parameter_shift_target_se",
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
     )

@@ -36,8 +36,11 @@ grad = parameter_shift_gradient(objective, params, rule=rule)
 The helper solves the exact sine-system for symmetric plus/minus shifts and
 records the declared frequency set on the rule. This broadens deterministic
 simulator and dry-run gradient coverage beyond the legacy two-point case.
-Finite-shot uncertainty and shot-allocation helpers still fail closed for
-multi-term rules until provider sample records can carry per-term variances.
+Finite-shot uncertainty and shot-allocation helpers accept explicit
+`(n_terms, n_parameters)` plus/minus means, variances, and shot-count records
+for multi-term rules. This keeps provider data honest: every shift term must
+carry its own sample variance instead of being collapsed into a single opaque
+parameter estimate.
 
 ## Current API
 
