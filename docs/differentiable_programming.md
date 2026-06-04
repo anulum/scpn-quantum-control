@@ -25,7 +25,7 @@ This repository now documents those questions directly. Current support is delib
 
 | Surface | Status | Evidence route |
 |---|---|---|
-| Parameter-shift gradients | Available for callable scalar objectives and VQE examples through `scpn_quantum_control.phase.param_shift`. | [Quantum Gradients](quantum_gradients.md), [Variational Methods](variational.md) |
+| Parameter-shift gradients | Available for callable scalar objectives, structured `PhaseVQE` gradients, and local gradient-descent VQE examples through `scpn_quantum_control.phase.param_shift`. | [Quantum Gradients](quantum_gradients.md), [Variational Methods](variational.md) |
 | Compiler/program AD | Available for supported scalar, vector, and matrix primitives with registry contracts, lowering reports, and native executable kernels on bounded paths. | [Differentiable API](differentiable_api.md), [Quickstart](quickstart.md) |
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
@@ -55,8 +55,8 @@ This repository now documents those questions directly. Current support is delib
 
 The next differentiable-programming implementation rounds should prioritise:
 
-1. finite-difference verification for small circuits;
-2. gradient-descent convergence on known ground states;
+1. broader finite-difference verification for larger circuits;
+2. multi-start convergence studies on known ground states;
 3. JAX agreement with manual parameter-shift;
 4. PennyLane adapter round-trip tests;
 5. QSNN training convergence tests;

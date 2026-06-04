@@ -84,6 +84,15 @@ grad = parameter_shift_gradient(expectation, params)
 print(grad)
 ```
 
+The VQE solver also accepts `gradient_method="parameter_shift"` for the
+K_nm-informed `ry/rz/cz` ansatz:
+
+```python
+vqe = PhaseVQE(K, omega, ansatz_reps=1)
+sol = vqe.solve(maxiter=40, seed=0, gradient_method="parameter_shift")
+print(sol["gradient_method"], sol["n_grad_evals"])
+```
+
 For Pauli-rotation expectation objectives, the parameter-shift rule evaluates
 the objective at `theta + pi/2` and `theta - pi/2` for each trainable
 parameter. For general Python callables that are not sinusoidal quantum

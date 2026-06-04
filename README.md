@@ -144,7 +144,7 @@ layers:
 
 | Layer | Current status | Where to start |
 |---|---|---|
-| Quantum parameter-shift | Supported through `scpn_quantum_control.phase.param_shift` for callable expectation objectives and gradient-descent VQE examples. | [Quantum Gradients](docs/quantum_gradients.md), [Variational Methods](docs/variational.md) |
+| Quantum parameter-shift | Supported through `scpn_quantum_control.phase.param_shift` for callable expectation objectives, structured `PhaseVQE` gradients, and local gradient-descent VQE examples. | [Quantum Gradients](docs/quantum_gradients.md), [Variational Methods](docs/variational.md) |
 | Program and compiler AD | Supported for registered scalar, vector, and matrix primitives with native lowering reports and fail-closed unsupported boundaries. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | ML framework and tape roadmap | JAX, PyTorch, TensorFlow, PennyLane, Qiskit, gradient tape, QNN, QGNN, QSNN, and backend gradient planners are planned as staged public surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
@@ -156,7 +156,7 @@ and compiler-backed AD under one support matrix.
 
 The first production-grade differentiable workflows are deliberately bounded:
 
-1. train small VQE objectives with parameter-shift gradients;
+1. train small VQE objectives with parameter-shift gradients through `PhaseVQE.solve(gradient_method="parameter_shift")`;
 2. verify gradients against finite differences and analytic references;
 3. use compiler/program-AD kernels for supported classical objectives;
 4. document unsupported gates, backends, shapes, and dynamic program paths

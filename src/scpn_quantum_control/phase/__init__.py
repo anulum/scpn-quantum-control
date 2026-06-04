@@ -28,6 +28,13 @@ from .kuramoto_variants import (
     simulate_pt_symmetric_kuramoto,
 )
 from .lindblad_engine import LindbladSyncEngine
+from .param_shift import (
+    ParamShiftVQEResult,
+    parameter_shift_gradient,
+    value_and_parameter_shift_grad,
+    value_and_vqe_grad,
+    vqe_with_param_shift,
+)
 from .phase_vqe import PhaseVQE
 from .pulse_shaping import (
     HypergeometricPulse,
@@ -71,6 +78,11 @@ __all__ = [
     "FloquetResult",
     "build_structured_ansatz",
     "LindbladSyncEngine",
+    "parameter_shift_gradient",
+    "value_and_parameter_shift_grad",
+    "value_and_vqe_grad",
+    "vqe_with_param_shift",
+    "ParamShiftVQEResult",
     "KuramotoVariant",
     "KuramotoVariantResult",
     "HigherOrderKuramotoSpec",

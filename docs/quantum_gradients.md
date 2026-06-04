@@ -38,6 +38,27 @@ grad = parameter_shift_gradient(objective, params)
 
 For VQE-style examples, see [Variational Methods](variational.md). For the wider differentiable namespace, see [Differentiable API](differentiable_api.md).
 
+## Kuramoto-XY VQE route
+
+`PhaseVQE` exposes a direct parameter-shift path for its K_nm-informed
+`ry/rz/cz` ansatz:
+
+```python
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.phase import PhaseVQE
+
+K = build_knm_paper27(L=2)
+omega = OMEGA_N_16[:2]
+
+vqe = PhaseVQE(K, omega, ansatz_reps=1)
+result = vqe.solve(maxiter=40, seed=0, gradient_method="parameter_shift")
+print(result["ground_energy"], result["gradient_norm"])
+```
+
+The implementation is local-simulator backed. Hardware gradients remain
+fail-closed until backend policy, shot allocation, and uncertainty reporting are
+registered for the target provider.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:

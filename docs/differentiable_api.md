@@ -43,6 +43,24 @@ def cost(params: np.ndarray) -> float:
 grad = parameter_shift_gradient(cost, np.array([0.4], dtype=float))
 ```
 
+## Minimal Kuramoto-XY VQE gradient call
+
+```python
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.phase import PhaseVQE
+
+K = build_knm_paper27(L=2)
+omega = OMEGA_N_16[:2]
+
+vqe = PhaseVQE(K, omega, ansatz_reps=1)
+result = vqe.solve(maxiter=40, seed=0, gradient_method="parameter_shift")
+print(result["gradient_method"], result["n_grad_evals"])
+```
+
+The solver switches derivative-free defaults to a gradient-aware local
+optimiser for this mode and returns gradient evaluation counts plus the final
+gradient norm.
+
 ## Minimal custom primitive route
 
 ```python

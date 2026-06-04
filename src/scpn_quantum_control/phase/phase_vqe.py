@@ -19,6 +19,11 @@ from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
+from ..differentiable import (
+    GradientResult,
+    parameter_shift_gradient,
+    value_and_parameter_shift_grad,
+)
 from ..hardware.classical import classical_exact_diag
 
 
@@ -45,25 +50,68 @@ class PhaseVQE:
         self._optimal_params: np.ndarray | None = None
         self._ground_energy: float | None = None
 
+    def _validate_params(self, params: np.ndarray) -> np.ndarray:
+        """Return finite one-dimensional VQE parameters with the expected width."""
+        values = np.asarray(params, dtype=float)
+        if values.shape != (self.n_params,):
+            raise ValueError(f"params must have shape ({self.n_params},), got {values.shape}")
+        if not np.all(np.isfinite(values)):
+            raise ValueError("params must contain only finite values")
+        return values
+
     def _cost(self, params: np.ndarray) -> float:
-        bound = self.ansatz.assign_parameters(params)
+        values = self._validate_params(params)
+        bound = self.ansatz.assign_parameters(values)
         sv = Statevector.from_instruction(bound)
         return float(sv.expectation_value(self.hamiltonian).real)
 
-    def solve(
-        self, optimizer: str = "COBYLA", maxiter: int = 200, seed: int | None = None
-    ) -> dict:
-        """Run VQE optimization.
+    def parameter_shift_gradient(self, params: np.ndarray) -> np.ndarray:
+        """Return analytic parameter-shift gradients for the current ansatz."""
+        values = self._validate_params(params)
+        return parameter_shift_gradient(self._cost, values)
 
-        Returns dict with ground_energy, optimal_params, n_evals.
+    def value_and_parameter_shift_gradient(self, params: np.ndarray) -> GradientResult:
+        """Return the VQE energy and structured parameter-shift gradient metadata."""
+        values = self._validate_params(params)
+        return value_and_parameter_shift_grad(self._cost, values)
+
+    def solve(
+        self,
+        optimizer: str = "COBYLA",
+        maxiter: int = 200,
+        seed: int | None = None,
+        gradient_method: str | None = None,
+    ) -> dict:
+        """Run VQE optimisation.
+
+        Returns dict with ground_energy, optimal_params, n_evals, and gradient metadata.
         """
+        gradient_mode = "none" if gradient_method is None else gradient_method.strip().lower()
+        gradient_mode = gradient_mode.replace("-", "_")
+        if gradient_mode not in {"none", "parameter_shift"}:
+            raise ValueError("gradient_method must be one of: None, 'none', 'parameter_shift'")
+
         x0 = np.random.default_rng(seed).uniform(-np.pi, np.pi, self.n_params)
 
         effective_maxiter = max(maxiter, self.n_params + 10)
+        effective_optimizer = optimizer
+        n_grad_evals = 0
+        jac = None
+
+        if gradient_mode == "parameter_shift":
+            if optimizer.upper() in {"COBYLA", "NELDER-MEAD", "POWELL"}:
+                effective_optimizer = "L-BFGS-B"
+
+            def jac(params: np.ndarray) -> np.ndarray:
+                nonlocal n_grad_evals
+                n_grad_evals += 1
+                return self.parameter_shift_gradient(params)
+
         result = minimize(
             self._cost,
             x0,
-            method=optimizer,
+            method=effective_optimizer,
+            jac=jac,
             options={"maxiter": effective_maxiter},
         )
 
@@ -85,7 +133,13 @@ class PhaseVQE:
             else float("nan"),
             "optimal_params": self._optimal_params,
             "n_evals": result.nfev,
+            "n_grad_evals": n_grad_evals,
             "n_params": self.n_params,
+            "optimizer": effective_optimizer,
+            "gradient_method": gradient_mode,
+            "gradient_norm": float(np.linalg.norm(self.parameter_shift_gradient(result.x)))
+            if gradient_mode == "parameter_shift"
+            else float("nan"),
             "converged": result.success,
         }
 

@@ -13,7 +13,8 @@
 Analytic gradient computation for variational quantum eigensolvers (VQE).
 The parameter-shift rule computes exact gradients using only two circuit
 evaluations per parameter — no finite-difference error, works on real
-quantum hardware.
+quantum expectation routes once the backend policy supports the required
+shifted evaluations. The implemented route is local simulator-first.
 
 ---
 
@@ -41,7 +42,8 @@ The module provides a basic gradient-descent VQE loop:
 4. Repeat until convergence or iteration limit
 
 This is a pedagogical implementation. For production VQE, use
-SciPy optimisers (L-BFGS-B, COBYLA) or Qiskit's `VQE` class.
+`PhaseVQE.solve(gradient_method="parameter_shift")` or another solver with
+registered gradient semantics for the target backend.
 
 ---
 
@@ -79,23 +81,23 @@ of `cost_fn`.
 
 ```python
 result = vqe_with_param_shift(
-    cost_fn: Callable[[np.ndarray], float],
-    n_params: int,
+    objective_or_k: Callable[[np.ndarray], float] | np.ndarray,
+    omega: np.ndarray | None = None,
+    n_params: int | None = None,
     learning_rate: float = 0.1,
-    n_iterations: int = 100,
+    steps: int = 100,
     seed: int | None = None,
-) -> dict
+) -> ParamShiftVQEResult
 ```
 
 **Returns:**
 
 ```python
-{
-    "optimal_params": np.ndarray,    # best parameters found
-    "energy": float,                  # final energy
-    "energy_history": list[float],   # energy at each iteration
-    "grad_norms": list[float],       # gradient norm at each iteration
-}
+result.best_params       # best parameters found
+result.best_energy       # best energy observed
+result.energies          # accepted energy history
+result.gradient_norms    # gradient norm history
+result.to_dict()         # mapping form for legacy notebooks
 ```
 
 ---
@@ -108,59 +110,31 @@ result = vqe_with_param_shift(
 import numpy as np
 from scpn_quantum_control.phase.param_shift import parameter_shift_gradient
 
-# Quadratic cost: C(θ) = θ₀² + 2θ₁²
+# Sinusoidal expectation-style cost: C(theta) = cos(theta_0) + sin(theta_1)
 def cost(params):
-    return params[0]**2 + 2 * params[1]**2
+    return np.cos(params[0]) + np.sin(params[1])
 
-params = np.array([1.0, 1.0])
+params = np.array([1.0, 1.0], dtype=float)
 grad = parameter_shift_gradient(cost, params)
 print(f"Gradient: {grad}")
-# Analytic: [2.0, 4.0] — parameter-shift gives exact result for sinusoidal
-# functions, approximate for polynomials
+# Analytic: [-sin(theta_0), cos(theta_1)]
 ```
 
 ### VQE for the XY Hamiltonian
 
 ```python
 import numpy as np
-from scpn_quantum_control.phase.param_shift import vqe_with_param_shift
-from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
+from scpn_quantum_control.phase import PhaseVQE
 
 n = 4
 K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
 np.fill_diagonal(K, 0.0)
 omega = np.linspace(0.8, 1.2, n)
-H = knm_to_dense_matrix(K, omega)
-dim = 2**n
-
-def vqe_cost(params):
-    """Simple Ry-layer ansatz."""
-    psi = np.zeros(dim, dtype=complex)
-    psi[0] = 1.0
-    # Apply Ry rotations
-    for i in range(n):
-        c, s = np.cos(params[i]/2), np.sin(params[i]/2)
-        # Single-qubit Ry on qubit i
-        new_psi = np.zeros_like(psi)
-        for k in range(dim):
-            bit = (k >> i) & 1
-            k_flip = k ^ (1 << i)
-            if bit == 0:
-                new_psi[k] += c * psi[k]
-                new_psi[k_flip] += s * psi[k]
-            else:
-                new_psi[k] += c * psi[k]
-                new_psi[k_flip] -= s * psi[k]
-        psi = new_psi
-    return np.real(psi.conj() @ H @ psi)
-
-result = vqe_with_param_shift(vqe_cost, n_params=n,
-                               learning_rate=0.1, n_iterations=200, seed=42)
-print(f"VQE energy: {result['energy']:.6f}")
-print(f"Final gradient norm: {result['grad_norms'][-1]:.2e}")
-
-E_exact = np.linalg.eigvalsh(H)[0]
-print(f"Exact energy: {E_exact:.6f}")
+vqe = PhaseVQE(K, omega, ansatz_reps=1)
+result = vqe.solve(maxiter=80, seed=42, gradient_method="parameter_shift")
+print(f"VQE energy: {result['ground_energy']:.6f}")
+print(f"Gradient norm: {result['gradient_norm']:.2e}")
+print(f"Exact energy: {result['exact_energy']:.6f}")
 ```
 
 ---
@@ -171,12 +145,13 @@ print(f"Exact energy: {E_exact:.6f}")
 |---------|-------------|-------------|----------------------|
 | Gradient method | Parameter-shift | SPSA, COBYLA, etc. | Parameter-shift, backprop |
 | Optimiser | Vanilla GD | SciPy, custom | Built-in (Adam, GD, etc.) |
-| Hardware-compatible | Yes (2 evals/param) | Yes | Yes |
+| Hardware-compatible | Policy-gated | Yes | Yes |
 | Ansatz | User-supplied `cost_fn` | Qiskit circuits | PennyLane circuits |
 | Complexity | $2P$ evaluations | Method-dependent | $2P$ or $O(1)$ (backprop) |
 
-This module is a building block. For production VQE with adaptive ansätze
-and advanced optimisers, use Qiskit or PennyLane.
+This module is a building block. Use the local route for deterministic
+gradient validation, then promote backends only after shot policy,
+uncertainty reporting, and backend capability checks are registered.
 
 ---
 
