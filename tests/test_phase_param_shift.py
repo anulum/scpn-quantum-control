@@ -15,10 +15,13 @@ import pytest
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.phase import vqe_with_param_shift
 from scpn_quantum_control.phase.param_shift import (
+    GradientVerificationResult,
     ParamShiftVQEResult,
     parameter_shift_gradient,
     plan_quantum_gradient_backend,
     value_and_vqe_grad,
+    verify_parameter_shift_gradient,
+    verify_vqe_parameter_shift_gradient,
 )
 from scpn_quantum_control.phase.phase_vqe import PhaseVQE
 
@@ -67,6 +70,62 @@ def test_phase_vqe_parameter_shift_matches_finite_difference() -> None:
     finite_difference = _finite_difference_gradient(vqe._cost, params)
 
     np.testing.assert_allclose(analytic, finite_difference, atol=1e-5, rtol=1e-5)
+
+
+def test_parameter_shift_verification_certificate_matches_analytic_reference() -> None:
+    params = np.array([0.2, -0.4], dtype=float)
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
+
+    certificate = verify_parameter_shift_gradient(objective, params)
+    expected = np.array([-np.sin(params[0]), 0.25 * np.cos(params[1])], dtype=float)
+    payload = certificate.to_dict()
+
+    assert isinstance(certificate, GradientVerificationResult)
+    assert certificate.passed
+    assert certificate.method == "parameter_shift_vs_central_finite_difference"
+    assert certificate.parameter_shift_evaluations == 2 * params.size
+    assert certificate.finite_difference_evaluations == 2 * params.size
+    assert certificate.total_evaluations == 4 * params.size
+    assert payload["total_evaluations"] == certificate.total_evaluations
+    np.testing.assert_allclose(certificate.analytic_gradient, expected, atol=1e-12)
+
+
+def test_phase_vqe_gradient_verification_certificate() -> None:
+    K = build_knm_paper27(L=2)
+    omega = OMEGA_N_16[:2]
+    vqe = PhaseVQE(K, omega, ansatz_reps=1)
+    params = np.linspace(-0.3, 0.4, vqe.n_params, dtype=float)
+
+    certificate = verify_vqe_parameter_shift_gradient(vqe, params)
+
+    assert certificate.passed
+    assert certificate.parameters.shape == (vqe.n_params,)
+    assert certificate.max_abs_error < 1e-5
+    assert certificate.parameter_shift_evaluations == 2 * vqe.n_params
+    assert certificate.finite_difference_evaluations == 2 * vqe.n_params
+
+
+def test_gradient_verification_rejects_unsafe_finite_difference_inputs() -> None:
+    def objective(values: np.ndarray) -> float:
+        return float(np.cos(values[0]))
+
+    with pytest.raises(ValueError, match="finite_difference_step"):
+        verify_parameter_shift_gradient(objective, np.array([0.2]), finite_difference_step=0.0)
+
+    with pytest.raises(ValueError, match="absolute_tolerance"):
+        verify_parameter_shift_gradient(objective, np.array([0.2]), absolute_tolerance=-1.0)
+
+    def non_finite_objective(values: np.ndarray) -> float:
+        is_finite_base = np.isclose(values[0], 0.2, atol=0.0, rtol=0.0)
+        is_finite_shift = abs(values[0] - 0.2) > 0.01
+        if is_finite_base or is_finite_shift:
+            return float(np.cos(values[0]))
+        return float("nan")
+
+    with pytest.raises(ValueError, match="finite-difference probes"):
+        verify_parameter_shift_gradient(non_finite_objective, np.array([0.2]))
 
 
 def test_phase_vqe_structured_gradient_metadata() -> None:

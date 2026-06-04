@@ -159,7 +159,7 @@ and compiler-backed AD under one support matrix.
 The first production-grade differentiable workflows are deliberately bounded:
 
 1. train small VQE objectives with parameter-shift gradients through `PhaseVQE.solve(gradient_method="parameter_shift")`;
-2. verify gradients against finite differences and analytic references;
+2. verify gradients against finite differences and analytic references through `verify_parameter_shift_gradient(...)` and `verify_vqe_parameter_shift_gradient(...)`;
 3. use compiler/program-AD kernels for supported classical objectives;
 4. document unsupported gates, backends, shapes, and dynamic program paths
    before they can mislead users.

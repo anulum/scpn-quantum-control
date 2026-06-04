@@ -136,6 +136,47 @@ class ParamShiftVQEResult:
         }
 
 
+@dataclass(frozen=True)
+class GradientVerificationResult:
+    """Finite-difference agreement certificate for parameter-shift gradients."""
+
+    method: str
+    passed: bool
+    max_abs_error: float
+    max_relative_error: float
+    absolute_tolerance: float
+    relative_tolerance: float
+    finite_difference_step: float
+    parameters: FloatArray
+    analytic_gradient: FloatArray
+    finite_difference_gradient: FloatArray
+    parameter_shift_evaluations: int
+    finite_difference_evaluations: int
+
+    @property
+    def total_evaluations(self) -> int:
+        """Return objective evaluations spent on verification."""
+        return self.parameter_shift_evaluations + self.finite_difference_evaluations
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable gradient verification evidence."""
+        return {
+            "method": self.method,
+            "passed": self.passed,
+            "max_abs_error": self.max_abs_error,
+            "max_relative_error": self.max_relative_error,
+            "absolute_tolerance": self.absolute_tolerance,
+            "relative_tolerance": self.relative_tolerance,
+            "finite_difference_step": self.finite_difference_step,
+            "parameters": self.parameters.tolist(),
+            "analytic_gradient": self.analytic_gradient.tolist(),
+            "finite_difference_gradient": self.finite_difference_gradient.tolist(),
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "finite_difference_evaluations": self.finite_difference_evaluations,
+            "total_evaluations": self.total_evaluations,
+        }
+
+
 def _as_finite_vector(name: str, values: ArrayLike, *, width: int | None = None) -> FloatArray:
     vector = np.asarray(values, dtype=float)
     if vector.ndim != 1:
@@ -198,6 +239,33 @@ def _validate_non_negative_threshold(name: str, value: float | None) -> float | 
     return threshold
 
 
+def _validate_positive_threshold(name: str, value: float) -> float:
+    threshold = float(value)
+    if threshold <= 0.0 or not np.isfinite(threshold):
+        raise ValueError(f"{name} must be finite and positive")
+    return threshold
+
+
+def _finite_difference_gradient(
+    objective: ScalarObjective,
+    values: FloatArray,
+    *,
+    step: float,
+) -> FloatArray:
+    gradient = np.zeros_like(values, dtype=np.float64)
+    for index in range(values.size):
+        plus = values.copy()
+        minus = values.copy()
+        plus[index] += step
+        minus[index] -= step
+        plus_value = float(objective(plus))
+        minus_value = float(objective(minus))
+        if not np.isfinite(plus_value) or not np.isfinite(minus_value):
+            raise ValueError("objective must return finite scalars for finite-difference probes")
+        gradient[index] = (plus_value - minus_value) / (2.0 * step)
+    return gradient
+
+
 def parameter_shift_gradient(
     objective: ScalarObjective,
     values: ArrayLike,
@@ -225,6 +293,101 @@ def parameter_shift_gradient(
         values,
         parameters=parameters,
         rule=rule,
+    )
+
+
+def verify_parameter_shift_gradient(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    shift: float = float(np.pi / 2.0),
+    *,
+    finite_difference_step: float = 1e-6,
+    absolute_tolerance: float = 1e-5,
+    relative_tolerance: float = 1e-5,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> GradientVerificationResult:
+    """Verify parameter-shift gradients against central finite differences.
+
+    This helper is designed for notebooks, CI conformance checks, and provider
+    adapter smoke tests. It does not claim finite differences are a production
+    gradient method; they are used as an independent local diagnostic for small,
+    smooth objectives.
+    """
+    values_vector = _as_finite_vector("values", values)
+    fd_step = _validate_positive_threshold(
+        "finite_difference_step",
+        finite_difference_step,
+    )
+    abs_tol = _validate_non_negative_threshold(
+        "absolute_tolerance",
+        absolute_tolerance,
+    )
+    rel_tol = _validate_non_negative_threshold(
+        "relative_tolerance",
+        relative_tolerance,
+    )
+    if abs_tol is None or rel_tol is None:
+        raise ValueError("absolute_tolerance and relative_tolerance must be provided")
+
+    analytic = parameter_shift_gradient(
+        objective,
+        values_vector,
+        shift=shift,
+        parameters=parameters,
+        rule=rule,
+    )
+    finite_difference = _finite_difference_gradient(
+        objective,
+        values_vector,
+        step=fd_step,
+    )
+    abs_errors = np.abs(analytic - finite_difference)
+    denominator = np.maximum(
+        np.maximum(np.abs(analytic), np.abs(finite_difference)),
+        np.finfo(np.float64).eps,
+    )
+    relative_errors = abs_errors / denominator
+
+    return GradientVerificationResult(
+        method="parameter_shift_vs_central_finite_difference",
+        passed=bool(
+            np.allclose(
+                analytic,
+                finite_difference,
+                atol=abs_tol,
+                rtol=rel_tol,
+            )
+        ),
+        max_abs_error=float(np.max(abs_errors)) if abs_errors.size else 0.0,
+        max_relative_error=float(np.max(relative_errors)) if relative_errors.size else 0.0,
+        absolute_tolerance=float(abs_tol),
+        relative_tolerance=float(rel_tol),
+        finite_difference_step=fd_step,
+        parameters=values_vector.copy(),
+        analytic_gradient=analytic.astype(np.float64, copy=True),
+        finite_difference_gradient=finite_difference.astype(np.float64, copy=True),
+        parameter_shift_evaluations=2 * values_vector.size,
+        finite_difference_evaluations=2 * values_vector.size,
+    )
+
+
+def verify_vqe_parameter_shift_gradient(
+    vqe: PhaseVQE,
+    params: ArrayLike,
+    *,
+    finite_difference_step: float = 1e-6,
+    absolute_tolerance: float = 1e-5,
+    relative_tolerance: float = 1e-5,
+) -> GradientVerificationResult:
+    """Verify a `PhaseVQE` parameter-shift gradient against finite differences."""
+    values = _as_finite_vector("params", params, width=vqe.n_params)
+    return verify_parameter_shift_gradient(
+        vqe._cost,
+        values,
+        finite_difference_step=finite_difference_step,
+        absolute_tolerance=absolute_tolerance,
+        relative_tolerance=relative_tolerance,
     )
 
 
@@ -490,6 +653,7 @@ __all__ = [
     "ParameterShiftRule",
     "ParamShiftConvergenceDiagnostics",
     "QuantumGradientPlan",
+    "GradientVerificationResult",
     "ShotAllocationResult",
     "StochasticGradientResult",
     "parameter_shift_gradient",
@@ -498,6 +662,8 @@ __all__ = [
     "plan_quantum_gradient_backend",
     "value_and_parameter_shift_grad",
     "value_and_vqe_grad",
+    "verify_parameter_shift_gradient",
+    "verify_vqe_parameter_shift_gradient",
     "validate_param_shift_convergence",
     "vqe_with_param_shift",
 ]

@@ -41,6 +41,7 @@ from .kuramoto_variants import (
 )
 from .lindblad_engine import LindbladSyncEngine
 from .param_shift import (
+    GradientVerificationResult,
     ParamShiftConvergenceDiagnostics,
     ParamShiftVQEResult,
     parameter_shift_gradient,
@@ -49,6 +50,8 @@ from .param_shift import (
     validate_param_shift_convergence,
     value_and_parameter_shift_grad,
     value_and_vqe_grad,
+    verify_parameter_shift_gradient,
+    verify_vqe_parameter_shift_gradient,
     vqe_with_param_shift,
 )
 from .pennylane_bridge import (
@@ -134,6 +137,9 @@ __all__ = [
     "validate_param_shift_convergence",
     "value_and_parameter_shift_grad",
     "value_and_vqe_grad",
+    "verify_parameter_shift_gradient",
+    "verify_vqe_parameter_shift_gradient",
+    "GradientVerificationResult",
     "vqe_with_param_shift",
     "ParamShiftConvergenceDiagnostics",
     "ParamShiftVQEResult",

@@ -23,6 +23,13 @@ ML-framework adapters. Unsupported gradient modes must fail closed with an
 explicit support reason; do not infer production support from an internal
 symbol alone.
 
+For visible correctness evidence, the phase gradient API includes
+`verify_parameter_shift_gradient(...)` and
+`verify_vqe_parameter_shift_gradient(...)`. They emit finite-difference
+agreement certificates with pass/fail status, absolute and relative error
+maxima, and evaluation counts so notebooks, CI, and provider adapters can share
+the same gradient-verification record.
+
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
 for public facades such as `scpn_quantum_control.kuramoto_core`. The lower-level

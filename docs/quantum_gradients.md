@@ -38,6 +38,36 @@ grad = parameter_shift_gradient(objective, params)
 
 For VQE-style examples, see [Variational Methods](variational.md). For the wider differentiable namespace, see [Differentiable API](differentiable_api.md).
 
+## Gradient verification certificate
+
+Small smooth objectives can now emit a reusable finite-difference agreement
+certificate. This makes gradient correctness visible outside private test code:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import verify_parameter_shift_gradient
+
+
+def objective(params: np.ndarray) -> float:
+    return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
+
+
+certificate = verify_parameter_shift_gradient(
+    objective,
+    np.array([0.2, -0.4]),
+)
+
+print(certificate.passed, certificate.max_abs_error)
+```
+
+For Kuramoto-XY VQE objects, use `verify_vqe_parameter_shift_gradient(vqe,
+params)`. The certificate records the analytic parameter-shift gradient, the
+central finite-difference gradient, absolute and relative error maxima, pass/fail
+tolerances, and objective-evaluation accounting. Finite differences are used
+only as an independent diagnostic for small smooth objectives; they are not
+advertised as a scalable hardware-gradient method.
+
 ## Kuramoto-XY VQE route
 
 `PhaseVQE` exposes a direct parameter-shift path for its K_nm-informed
