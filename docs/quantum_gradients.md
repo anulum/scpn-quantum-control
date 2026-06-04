@@ -256,6 +256,25 @@ The bridge is optional and fail-closed. It imports JAX only when called. JIT
 mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
 therefore does not claim native JAX differentiation of a quantum kernel.
 
+For parity checks against a caller-owned JAX objective, use
+`check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:
+
+```python
+from scpn_quantum_control.phase import check_jax_parameter_shift_agreement
+
+agreement = check_jax_parameter_shift_agreement(
+    objective,
+    jax.grad(jax_objective),
+    np.array([0.4]),
+)
+print(agreement.passed, agreement.max_abs_error)
+```
+
+This produces a pass/fail agreement certificate between SCPN's manual
+parameter-shift gradient and the supplied JAX gradient. It is still a bounded
+interop verifier, not automatic native JAX compilation of arbitrary quantum
+kernels.
+
 ## Optional PennyLane agreement check
 
 For PennyLane/QNode parity work, use

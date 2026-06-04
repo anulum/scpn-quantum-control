@@ -24,7 +24,9 @@ from .gradient_backend import (
 )
 from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
 from .jax_bridge import (
+    PhaseJAXGradientAgreementResult,
     PhaseJAXParameterShiftResult,
+    check_jax_parameter_shift_agreement,
     is_phase_jax_available,
     jax_parameter_shift_value_and_grad,
 )
@@ -126,7 +128,9 @@ __all__ = [
     "QuantumGradientTape",
     "TapeGradientRecord",
     "is_phase_jax_available",
+    "check_jax_parameter_shift_agreement",
     "jax_parameter_shift_value_and_grad",
+    "PhaseJAXGradientAgreementResult",
     "PhaseJAXParameterShiftResult",
     "is_phase_pennylane_available",
     "check_pennylane_parameter_shift_agreement",

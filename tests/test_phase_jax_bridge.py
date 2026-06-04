@@ -14,7 +14,9 @@ import pytest
 
 import scpn_quantum_control.phase.jax_bridge as jax_bridge
 from scpn_quantum_control.phase import (
+    PhaseJAXGradientAgreementResult,
     PhaseJAXParameterShiftResult,
+    check_jax_parameter_shift_agreement,
     is_phase_jax_available,
     jax_parameter_shift_value_and_grad,
 )
@@ -93,6 +95,47 @@ def test_phase_jax_bridge_jit_uses_pure_callback(monkeypatch: pytest.MonkeyPatch
     )
 
 
+def test_phase_jax_bridge_reports_gradient_agreement(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    def jax_gradient(values: np.ndarray) -> np.ndarray:
+        return np.array([-np.sin(values[0]), 0.25 * np.cos(values[1])], dtype=float)
+
+    result = check_jax_parameter_shift_agreement(
+        _objective,
+        jax_gradient,
+        np.array([0.2, -0.4], dtype=float),
+        tolerance=1e-12,
+    )
+
+    assert isinstance(result, PhaseJAXGradientAgreementResult)
+    assert result.passed
+    assert result.max_abs_error <= 1e-12
+    assert result.evaluations == 5
+    np.testing.assert_allclose(result.scpn_gradient, result.jax_gradient, atol=1e-12)
+    assert result.to_dict()["passed"] is True
+
+
+def test_phase_jax_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    def shifted_gradient(values: np.ndarray) -> np.ndarray:
+        return np.array([-np.sin(values[0]) + 0.01, 0.25 * np.cos(values[1])], dtype=float)
+
+    result = check_jax_parameter_shift_agreement(
+        _objective,
+        shifted_gradient,
+        np.array([0.2, -0.4], dtype=float),
+        tolerance=1e-4,
+    )
+
+    assert not result.passed
+    assert result.max_abs_error > result.tolerance
+    assert result.l2_error > 0.0
+
+
 def test_phase_jax_bridge_fails_closed_when_jax_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     def unavailable():
         raise ImportError("blocked")
@@ -102,3 +145,9 @@ def test_phase_jax_bridge_fails_closed_when_jax_missing(monkeypatch: pytest.Monk
     assert not is_phase_jax_available()
     with pytest.raises(ImportError, match="blocked"):
         jax_parameter_shift_value_and_grad(_objective, np.array([0.2, -0.4], dtype=float))
+    with pytest.raises(ImportError, match="blocked"):
+        check_jax_parameter_shift_agreement(
+            _objective,
+            lambda values: values,
+            np.array([0.2, -0.4], dtype=float),
+        )

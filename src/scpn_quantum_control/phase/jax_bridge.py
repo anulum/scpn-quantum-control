@@ -25,6 +25,7 @@ from ..differentiable import (
 
 FloatArray = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
+GradientCallable = Callable[[FloatArray], ArrayLike]
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,33 @@ class PhaseJAXParameterShiftResult:
             "jit_requested": self.jit_requested,
             "jitted": self.jitted,
             "host_callback": self.host_callback,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseJAXGradientAgreementResult:
+    """Agreement report between SCPN and JAX-style gradient callables."""
+
+    value: float
+    scpn_gradient: FloatArray
+    jax_gradient: FloatArray
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    evaluations: int
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable JAX gradient agreement metadata."""
+        return {
+            "value": self.value,
+            "scpn_gradient": self.scpn_gradient.tolist(),
+            "jax_gradient": self.jax_gradient.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "evaluations": self.evaluations,
         }
 
 
@@ -89,6 +117,13 @@ def _as_scalar(name: str, value: object) -> float:
     if not np.isfinite(scalar):
         raise ValueError(f"{name} must be finite")
     return scalar
+
+
+def _as_non_negative_tolerance(value: float) -> float:
+    tolerance = float(value)
+    if tolerance < 0.0 or not np.isfinite(tolerance):
+        raise ValueError("tolerance must be finite and non-negative")
+    return tolerance
 
 
 def _require_jax_callback_support(jax_module: Any) -> None:
@@ -174,8 +209,54 @@ def jax_parameter_shift_value_and_grad(
     )
 
 
+def check_jax_parameter_shift_agreement(
+    objective: ScalarObjective,
+    jax_gradient: GradientCallable,
+    values: ArrayLike,
+    *,
+    tolerance: float = 1e-6,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> PhaseJAXGradientAgreementResult:
+    """Compare SCPN parameter-shift gradients with a JAX-derived gradient callable.
+
+    ``jax_gradient`` is caller-supplied so the bridge can verify agreement with
+    ``jax.grad`` or equivalent JAX code without claiming automatic conversion of
+    every SCPN objective into a native JAX quantum kernel.
+    """
+    _load_jax()
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    parameter_values = _as_parameter_vector("values", values)
+    scpn = value_and_parameter_shift_grad(
+        objective,
+        parameter_values,
+        parameters=parameters,
+        rule=rule,
+    )
+    external_gradient = _as_parameter_vector(
+        "JAX gradient",
+        jax_gradient(parameter_values.copy()),
+        width=parameter_values.size,
+    )
+    delta = scpn.gradient - external_gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta, ord=2))
+    return PhaseJAXGradientAgreementResult(
+        value=float(scpn.value),
+        scpn_gradient=scpn.gradient.copy(),
+        jax_gradient=external_gradient,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=max_abs_error <= tolerance_value,
+        evaluations=scpn.evaluations,
+    )
+
+
 __all__ = [
+    "PhaseJAXGradientAgreementResult",
     "PhaseJAXParameterShiftResult",
+    "check_jax_parameter_shift_agreement",
     "is_phase_jax_available",
     "jax_parameter_shift_value_and_grad",
 ]
