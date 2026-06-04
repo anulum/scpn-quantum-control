@@ -573,7 +573,7 @@ from .qsnn.quantum_neuromorphic_bridge import (
     TraceSTDPConfig,
     TraceSTDPState,
 )
-from .qsnn.training import QSNNTrainer
+from .qsnn.training import QSNNParameterShiftDescentRun, QSNNTrainer
 from .stable_core import (
     Backend,
     Experiment,
@@ -1130,6 +1130,7 @@ __all__ = [
     "QuantumSTDP",
     "QuantumDenseLayer",
     "QSNNTrainer",
+    "QSNNParameterShiftDescentRun",
     "CLAIM_BOUNDARY",
     "DynamicCouplingConfig",
     "NeuromorphicStepResult",

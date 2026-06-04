@@ -11,7 +11,11 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
-from scpn_quantum_control.qsnn.training import QSNNTrainer, QSNNTrainingRun
+from scpn_quantum_control.qsnn.training import (
+    QSNNParameterShiftDescentRun,
+    QSNNTrainer,
+    QSNNTrainingRun,
+)
 
 
 def test_trainer_init():
@@ -81,6 +85,50 @@ def test_train_with_diagnostics_returns_convergence_certificate():
     assert result.diagnostics.best_loss <= result.diagnostics.initial_loss
     assert result.diagnostics.final_loss >= 0.0
     assert result.to_dict()["parameter_shift_evaluations"] == result.parameter_shift_evaluations
+
+
+def test_train_with_parameter_shift_descent_improves_full_batch_loss():
+    layer = QuantumDenseLayer(1, 1, seed=42)
+    trainer = QSNNTrainer(layer, lr=0.4)
+    X = np.array([[1.0]])
+    y = np.array([[0.0]])
+
+    result = trainer.train_with_parameter_shift_descent(
+        X,
+        y,
+        max_steps=40,
+        gradient_tolerance=1e-7,
+        min_loss_decrease=1e-4,
+    )
+
+    assert isinstance(result, QSNNParameterShiftDescentRun)
+    assert result.n_samples == 1
+    assert result.n_parameters == 1
+    assert result.backend == "statevector_simulator"
+    assert result.training.best_value <= result.training.initial_value
+    assert result.training.accepted_steps > 0
+    assert result.certificate.monotone_accepted_values
+    assert result.certificate.min_decrease_satisfied
+    assert result.best_loss == result.training.best_value
+    assert result.to_dict()["n_parameters"] == 1
+
+
+def test_train_with_parameter_shift_descent_fails_closed_for_hardware():
+    layer = QuantumDenseLayer(1, 1, seed=42)
+    trainer = QSNNTrainer(layer, lr=0.4)
+    X = np.array([[1.0]])
+    y = np.array([[0.0]])
+    before = layer.get_weights().copy()
+
+    with pytest.raises(ValueError, match="hardware gradient execution requires"):
+        trainer.train_with_parameter_shift_descent(
+            X,
+            y,
+            backend="hardware",
+            max_steps=2,
+        )
+
+    np.testing.assert_allclose(layer.get_weights(), before, atol=1e-14)
 
 
 def test_qsnn_trainer_rejects_mismatched_or_empty_dataset():

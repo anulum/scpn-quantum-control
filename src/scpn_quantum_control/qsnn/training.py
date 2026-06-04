@@ -24,6 +24,12 @@ from ..differentiable import (
     Parameter,
     value_and_parameter_shift_grad,
 )
+from ..phase.gradient_descent import (
+    ParameterShiftTrainingCertificate,
+    ParameterShiftTrainingResult,
+    parameter_shift_gradient_descent,
+    validate_parameter_shift_training,
+)
 from .qlayer import QuantumDenseLayer
 from .qsynapse import QuantumSynapse
 
@@ -73,6 +79,39 @@ class QSNNTrainingRun:
             "n_samples": self.n_samples,
             "learning_rate": self.learning_rate,
             "parameter_shift_evaluations": self.parameter_shift_evaluations,
+        }
+
+
+@dataclass(frozen=True)
+class QSNNParameterShiftDescentRun:
+    """Full-batch QSNN descent result backed by phase parameter-shift training."""
+
+    training: ParameterShiftTrainingResult
+    certificate: ParameterShiftTrainingCertificate
+    n_samples: int
+    n_parameters: int
+    backend: str
+
+    @property
+    def loss_history(self) -> tuple[float, ...]:
+        """Return the optimizer value history as a QSNN loss history."""
+        return self.training.value_history
+
+    @property
+    def best_loss(self) -> float:
+        """Return the best observed full-batch QSNN loss."""
+        return self.training.best_value
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable full-batch training evidence."""
+        return {
+            "training": self.training.to_dict(),
+            "certificate": self.certificate.to_dict(),
+            "n_samples": self.n_samples,
+            "n_parameters": self.n_parameters,
+            "backend": self.backend,
+            "loss_history": list(self.loss_history),
+            "best_loss": self.best_loss,
         }
 
 
@@ -189,6 +228,43 @@ class QSNNTrainer:
         weight = theta / np.pi * (w_max - w_min) + w_min
         synapse.update_weight(weight)
 
+    def _theta_values(self) -> np.ndarray:
+        """Return current synapse CRy angles as a flat parameter vector."""
+        return np.array(
+            [
+                self.layer.synapses[ni][ii].theta
+                for ni in range(self.layer.n_neurons)
+                for ii in range(self.layer.n_inputs)
+            ],
+            dtype=np.float64,
+        )
+
+    def _set_theta_values(self, values: np.ndarray) -> None:
+        """Set all synapse CRy angles from a flat parameter vector."""
+        angles = np.asarray(values, dtype=float)
+        expected = self.layer.n_neurons * self.layer.n_inputs
+        if angles.shape != (expected,):
+            raise ValueError(f"values must have shape ({expected},)")
+        if not np.all(np.isfinite(angles)):
+            raise ValueError("values must contain only finite angles")
+        flat_index = 0
+        for ni in range(self.layer.n_neurons):
+            for ii in range(self.layer.n_inputs):
+                self._set_synapse_theta(
+                    self.layer.synapses[ni][ii],
+                    float(angles[flat_index]),
+                )
+                flat_index += 1
+
+    def _batch_loss(self, X: np.ndarray, y: np.ndarray, values: np.ndarray) -> float:
+        """Return full-batch MSE loss for a flat synapse-angle vector."""
+        self._set_theta_values(values)
+        total_loss = 0.0
+        for xi, yi in zip(X, y, strict=True):
+            prediction = self._forward_probs(xi)
+            total_loss += float(np.mean((prediction - yi) ** 2))
+        return total_loss / float(X.shape[0])
+
     def parameter_shift_gradient(
         self,
         inputs: np.ndarray,
@@ -199,14 +275,7 @@ class QSNNTrainer:
         Returns (n_neurons, n_inputs) gradient array.
         """
         shape = (self.layer.n_neurons, self.layer.n_inputs)
-        values = np.array(
-            [
-                self.layer.synapses[ni][ii].theta
-                for ni in range(self.layer.n_neurons)
-                for ii in range(self.layer.n_inputs)
-            ],
-            dtype=np.float64,
-        )
+        values = self._theta_values()
         parameters = [
             Parameter(f"synapse_{ni}_{ii}")
             for ni in range(self.layer.n_neurons)
@@ -314,4 +383,67 @@ class QSNNTrainer:
             n_samples=int(X.shape[0]),
             learning_rate=float(self.lr),
             parameter_shift_evaluations=epoch_count * int(X.shape[0]) * (1 + 2 * n_parameters),
+        )
+
+    def train_with_parameter_shift_descent(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        *,
+        backend: str = "statevector",
+        max_steps: int = 100,
+        gradient_tolerance: float = 1e-8,
+        value_tolerance: float | None = None,
+        target_loss: float | None = None,
+        target_loss_tolerance: float = 1e-8,
+        min_loss_decrease: float | None = None,
+        allow_hardware: bool = False,
+    ) -> QSNNParameterShiftDescentRun:
+        """Train QSNN synapse angles with full-batch parameter-shift descent.
+
+        This route uses the same auditable optimizer as phase objectives, so
+        QSNN training records backend planning, every accepted/rejected line
+        search step, total objective evaluations, and a convergence certificate.
+        """
+        X, y = self._validate_dataset(X, y)
+        original = self._theta_values()
+        parameters = [
+            Parameter(f"synapse_{ni}_{ii}")
+            for ni in range(self.layer.n_neurons)
+            for ii in range(self.layer.n_inputs)
+        ]
+
+        def objective(values: np.ndarray) -> float:
+            return self._batch_loss(X, y, values)
+
+        try:
+            training = parameter_shift_gradient_descent(
+                objective,
+                original,
+                parameters=parameters,
+                backend=backend,
+                learning_rate=self.lr,
+                max_steps=max_steps,
+                gradient_tolerance=gradient_tolerance,
+                value_tolerance=value_tolerance,
+                allow_hardware=allow_hardware,
+            )
+        except Exception:
+            self._set_theta_values(original)
+            raise
+
+        self._set_theta_values(training.final_params)
+        certificate = validate_parameter_shift_training(
+            training,
+            gradient_tolerance=gradient_tolerance,
+            target_value=target_loss,
+            target_value_tolerance=target_loss_tolerance,
+            min_decrease=min_loss_decrease,
+        )
+        return QSNNParameterShiftDescentRun(
+            training=training,
+            certificate=certificate,
+            n_samples=int(X.shape[0]),
+            n_parameters=int(original.size),
+            backend=training.backend_plan.backend,
         )

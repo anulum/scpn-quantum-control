@@ -911,6 +911,7 @@ QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01)
     .train_epoch(X, y) -> float  # mean loss
     .train(X, y, epochs=10) -> list[float]  # loss history
     .train_with_diagnostics(X, y, epochs=10) -> QSNNTrainingRun
+    .train_with_parameter_shift_descent(X, y, backend="statevector", max_steps=100) -> QSNNParameterShiftDescentRun
 ```
 
 `QSNNTrainer.parameter_shift_gradient()` delegates to the native
@@ -919,6 +920,12 @@ demo is therefore no longer a separate manual-gradient implementation.
 `train_with_diagnostics()` returns a structured `QSNNTrainingRun` with loss
 history, monotonicity/best-loss diagnostics, sample count, learning rate, and
 parameter-shift evaluation accounting.
+`train_with_parameter_shift_descent()` connects QSNN full-batch MSE training to
+the phase-native `parameter_shift_gradient_descent()` optimizer. The returned
+`QSNNParameterShiftDescentRun` includes the optimizer trace, convergence
+certificate, backend plan, sample count, parameter count, loss history, and
+best loss. Hardware backends fail closed by default and restore the original
+weights when planning or objective validation fails.
 
 ## differentiable
 

@@ -367,6 +367,23 @@ future policy enables them, non-finite objectives are rejected, and line-search
 failure is recorded as `reason="line_search_failed"` instead of being promoted
 as convergence.
 
+The QSNN trainer composes with the same route for full-batch quantum neural
+network training:
+
+```python
+from scpn_quantum_control.qsnn import QuantumDenseLayer, QSNNTrainer
+
+layer = QuantumDenseLayer(1, 1, seed=42)
+trainer = QSNNTrainer(layer, lr=0.4)
+run = trainer.train_with_parameter_shift_descent(X, y, max_steps=40)
+
+print(run.best_loss, run.certificate.monotone_accepted_values)
+```
+
+This gives QSNN notebooks and experiments the same convergence evidence as
+phase objectives: backend plan, line-search trace, parameter-shift evaluation
+count, final-gradient norm, best loss, and fail-closed hardware boundaries.
+
 ## Convergence evidence
 
 `vqe_with_param_shift` now returns auditable convergence metadata in addition to

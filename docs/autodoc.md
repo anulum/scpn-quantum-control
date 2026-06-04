@@ -110,7 +110,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.qsnn.training
     options:
-      members: [QSNNTrainer]
+      members: [QSNNTrainer, QSNNTrainingDiagnostics, QSNNTrainingRun, QSNNParameterShiftDescentRun]
 
 ## Differentiable Programming
 

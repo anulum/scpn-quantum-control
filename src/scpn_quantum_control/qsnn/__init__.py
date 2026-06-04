@@ -22,7 +22,12 @@ from .quantum_neuromorphic_bridge import (
     TraceSTDPConfig,
     TraceSTDPState,
 )
-from .training import QSNNTrainer, QSNNTrainingDiagnostics, QSNNTrainingRun
+from .training import (
+    QSNNParameterShiftDescentRun,
+    QSNNTrainer,
+    QSNNTrainingDiagnostics,
+    QSNNTrainingRun,
+)
 
 __all__ = [
     "CLAIM_BOUNDARY",
@@ -35,6 +40,7 @@ __all__ = [
     "QuantumSTDP",
     "QuantumSynapse",
     "QSNNTrainer",
+    "QSNNParameterShiftDescentRun",
     "QSNNTrainingDiagnostics",
     "QSNNTrainingRun",
     "TraceSTDPConfig",
