@@ -469,6 +469,23 @@ preparation = prepare_provider_hardware_parameter_shift_gradient(
 `preparation.gradient_available` and `preparation.hardware_execution` are both
 false. The record is readiness evidence only.
 
+The provider hardware-preparation audit packages the same boundary checks into
+a one-call support matrix:
+
+```python
+from scpn_quantum_control.phase import run_provider_hardware_gradient_preparation_audit
+
+audit = run_provider_hardware_gradient_preparation_audit()
+assert audit.passed
+print(audit.approved_count, audit.blocked_count, audit.hardware_execution_count)
+```
+
+The built-in scenarios cover bounded dry-run preparation, ticketed
+live-preparation, missing evidence, excessive shot budgets, unknown
+provider/backend aliases, and live preparation without a ticket. A passing audit
+means all records preserved `hardware_execution == False` and
+`gradient_available == False`; it is not a live QPU result.
+
 ## Qiskit shifted-circuit generation
 
 For Qiskit-native circuits, the phase namespace can generate fully bound

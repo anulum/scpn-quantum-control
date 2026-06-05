@@ -177,6 +177,13 @@ from .provider_gradient_audit import (
     default_provider_gradient_readiness_scenarios,
     run_provider_gradient_readiness_audit,
 )
+from .provider_hardware_gradient_audit import (
+    ProviderHardwareGradientPreparationAuditResult,
+    ProviderHardwareGradientPreparationRecord,
+    ProviderHardwareGradientPreparationScenario,
+    default_provider_hardware_gradient_preparation_scenarios,
+    run_provider_hardware_gradient_preparation_audit,
+)
 from .pulse_shaping import (
     HypergeometricPulse,
     ICIPulse,
@@ -434,6 +441,11 @@ __all__ = [
     "ProviderParameterShiftRecord",
     "execute_provider_parameter_shift_gradient",
     "prepare_provider_hardware_parameter_shift_gradient",
+    "ProviderHardwareGradientPreparationScenario",
+    "ProviderHardwareGradientPreparationRecord",
+    "ProviderHardwareGradientPreparationAuditResult",
+    "default_provider_hardware_gradient_preparation_scenarios",
+    "run_provider_hardware_gradient_preparation_audit",
     "ProviderGradientReadinessScenario",
     "ProviderGradientReadinessRecord",
     "ProviderGradientReadinessAuditResult",
