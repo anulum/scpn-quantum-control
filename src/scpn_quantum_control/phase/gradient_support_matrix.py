@@ -334,6 +334,7 @@ _ADAPTER_CAPABILITIES: dict[str, GradientSupportCapability] = {
             "parameter_shift_directional_derivative",
             "parameter_shift_pullback",
             "parameter_shift_scalar_jacobian",
+            "manual_vmap_parameter_shift_grad",
         ),
         conditions=("NumPy-compatible callable or phase namespace objective",),
         blocked_reasons=(),

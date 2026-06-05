@@ -249,6 +249,27 @@ def execute_phase_qnode_transform(
             jacobian=jacobian,
         )
 
+    if plan.transforms == ("vmap", "grad"):
+        return PhaseQNodeTransformResult(
+            transform=label,
+            plan=plan,
+            params=values.copy(),
+            supported=False,
+            value=None,
+            gradient=None,
+            hessian=None,
+            jvp=None,
+            vjp=None,
+            jacobian=None,
+            tangent=None,
+            cotangent=None,
+            parameter_shift_evaluations=0,
+            failure_reason=(
+                "scalar QNode transform executor does not accept batched parameters; "
+                "use execute_phase_qnode_vmap_grad for native manual vmap(grad)"
+            ),
+        )
+
     return _blocked_result(label, plan, values)
 
 

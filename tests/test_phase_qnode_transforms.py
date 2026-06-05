@@ -124,7 +124,7 @@ def test_phase_qnode_transform_fails_closed_for_unsupported_routes() -> None:
     assert "deterministic local expectations" in finite_hessian.failure_reason
 
     assert not vectorized.supported
-    assert "vmap over quantum-gradient executions is not implemented" in vectorized.failure_reason
+    assert "use execute_phase_qnode_vmap_grad" in vectorized.failure_reason
 
 
 def test_phase_qnode_transform_validates_directional_inputs() -> None:

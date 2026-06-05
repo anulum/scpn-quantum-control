@@ -105,6 +105,7 @@ class GradientTransformNestingAuditResult:
             ("vjp", "native", "statevector"),
             ("jacfwd", "native", "statevector"),
             ("jacrev", "native", "statevector"),
+            ("vmap.grad", "native", "statevector"),
         }
         failures: list[GradientTransformNestingPlan] = []
         for plan in self.plans:
@@ -185,8 +186,20 @@ def plan_gradient_transform_nesting(
         blocked_reasons.append("unknown transform in nesting stack")
         alternatives.extend(_known_transform_alternatives())
     if "vmap" in normalised:
-        blocked_reasons.append("vmap over quantum-gradient executions is not implemented")
-        alternatives.extend(("manual loop", "batched classical post-processing"))
+        if normalised == ("vmap", "grad") and adapter == "native":
+            if support_plan.backend_plan.finite_shot:
+                blocked_reasons.append(
+                    "native vmap(grad) requires deterministic local expectations"
+                )
+                alternatives.extend(("statevector", "manual loop"))
+            if support_plan.backend_plan.requires_hardware_approval:
+                blocked_reasons.append("native vmap(grad) hardware execution is policy-blocked")
+                alternatives.extend(("statevector", "grad"))
+        else:
+            blocked_reasons.append(
+                "vmap over quantum-gradient executions is supported only for native manual vmap(grad)"
+            )
+            alternatives.extend(("native", "manual loop", "batched classical post-processing"))
     if (
         "jvp" in normalised
         or "vjp" in normalised
@@ -249,7 +262,10 @@ def plan_gradient_transform_nesting(
         blocked_reasons=tuple(dict.fromkeys(blocked_reasons)),
         warnings=tuple(dict.fromkeys(warnings + list(_nesting_warnings(normalised, adapter)))),
         alternatives=tuple(dict.fromkeys(alternatives)),
-        requires_deterministic_backend=normalised in {("grad", "grad"), ("hessian",)},
+        requires_deterministic_backend=normalised in {("grad", "grad"), ("hessian",)}
+        or any(
+            transform in {"jvp", "vjp", "jacfwd", "jacrev", "vmap"} for transform in normalised
+        ),
         requires_host_boundary=adapter != "native",
         claim_boundary=_claim_boundary(normalised, adapter, supported),
     )
@@ -273,6 +289,7 @@ def run_gradient_transform_nesting_audit() -> GradientTransformNestingAuditResul
         plan_gradient_transform_nesting(("grad", "grad"), n_params=2),
         plan_gradient_transform_nesting("value_grad", adapter="jax", n_params=2),
         plan_gradient_transform_nesting("gradient_tape", n_params=2),
+        plan_gradient_transform_nesting(("vmap", "grad"), n_params=2),
         plan_gradient_transform_nesting(("vmap", "grad"), adapter="jax", n_params=2),
         plan_gradient_transform_nesting(
             "hessian", backend="qasm_simulator", n_params=2, shots=400
@@ -332,6 +349,8 @@ def _all_known(transforms: tuple[str, ...]) -> bool:
 def _differentiation_order(transforms: tuple[str, ...]) -> int:
     if transforms in {("hessian",), ("grad", "grad")}:
         return 2
+    if transforms == ("vmap", "grad"):
+        return 1
     if any(transform in {"jacfwd", "jacrev"} for transform in transforms):
         return 1
     if any(transform in {"grad", "value_and_grad", "jvp", "vjp"} for transform in transforms):
@@ -344,6 +363,8 @@ def _strategy(transforms: tuple[str, ...], support_plan: GradientSupportPlan) ->
         return support_plan.recommended_method
     if transforms == ("value_and_grad",):
         return support_plan.recommended_method
+    if transforms == ("vmap", "grad"):
+        return "native_manual_vmap_parameter_shift_grad"
     if transforms == ("hessian",):
         return "native_parameter_shift_hessian"
     if transforms == ("grad", "grad"):
@@ -361,6 +382,10 @@ def _strategy(transforms: tuple[str, ...], support_plan: GradientSupportPlan) ->
 
 def _nesting_warnings(transforms: tuple[str, ...], adapter: str) -> tuple[str, ...]:
     warnings: list[str] = []
+    if transforms == ("vmap", "grad"):
+        warnings.append(
+            "vmap(grad) is a deterministic host-side manual batch loop, not provider or framework vectorization"
+        )
     if transforms in {("grad", "grad"), ("hessian",)}:
         warnings.append("second-order routes are deterministic local diagnostics")
     if adapter != "native":
@@ -389,6 +414,11 @@ def _claim_boundary(transforms: tuple[str, ...], adapter: str, supported: bool) 
         return "supported scalar local directional transform via parameter-shift gradient; not arbitrary program JVP/VJP"
     if transforms in {("jacfwd",), ("jacrev",)}:
         return "supported scalar local Jacobian via parameter-shift gradient; not full vector-output jacobian algebra"
+    if transforms == ("vmap", "grad"):
+        return (
+            "bounded native manual vmap over scalar local parameter-shift gradients; "
+            "not provider vectorization, framework vmap, or hardware execution"
+        )
     if adapter != "native":
         return f"{adapter} single-transform bridge support; arbitrary nested framework autodiff is not claimed"
     return "bounded first-order local quantum-gradient transform support"

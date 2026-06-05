@@ -248,6 +248,13 @@ from .qnode_transforms import (
     execute_phase_qnode_transform,
     run_phase_qnode_transform_readiness_suite,
 )
+from .qnode_vector_transforms import (
+    PhaseQNodeVectorTransformReadinessSuiteResult,
+    PhaseQNodeVectorTransformResult,
+    execute_phase_qnode_vector_jacobian,
+    execute_phase_qnode_vmap_grad,
+    run_phase_qnode_vector_transform_readiness_suite,
+)
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
@@ -376,6 +383,11 @@ __all__ = [
     "PhaseQNodeTransformResult",
     "execute_phase_qnode_transform",
     "run_phase_qnode_transform_readiness_suite",
+    "PhaseQNodeVectorTransformReadinessSuiteResult",
+    "PhaseQNodeVectorTransformResult",
+    "execute_phase_qnode_vector_jacobian",
+    "execute_phase_qnode_vmap_grad",
+    "run_phase_qnode_vector_transform_readiness_suite",
     "is_phase_jax_available",
     "check_jax_parameter_shift_agreement",
     "jax_parameter_shift_value_and_grad",

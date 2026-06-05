@@ -87,11 +87,23 @@ def test_transform_nesting_supports_local_directional_and_scalar_jacobian_routes
     assert jacrev.strategy == "native_parameter_shift_scalar_jacobian"
 
 
-def test_transform_nesting_blocks_vectorized_transform_stacks() -> None:
+def test_transform_nesting_supports_native_manual_vmap_grad() -> None:
+    vmap_grad = plan_gradient_transform_nesting(("vmap", "grad"), n_params=2)
+
+    assert vmap_grad.supported
+    assert vmap_grad.strategy == "native_manual_vmap_parameter_shift_grad"
+    assert vmap_grad.requires_deterministic_backend
+    assert "manual batch loop" in vmap_grad.warnings[0]
+
+
+def test_transform_nesting_blocks_framework_vectorized_transform_stacks() -> None:
     vmap_grad = plan_gradient_transform_nesting(("vmap", "grad"), adapter="jax", n_params=2)
 
     assert vmap_grad.fail_closed
-    assert "vmap over quantum-gradient executions is not implemented" in vmap_grad.blocked_reasons
+    assert (
+        "vmap over quantum-gradient executions is supported only for native manual vmap(grad)"
+        in vmap_grad.blocked_reasons
+    )
     assert (
         "ML/provider adapters support only declared single-transform bridge surfaces"
         in vmap_grad.blocked_reasons
@@ -168,8 +180,8 @@ def test_transform_nesting_audit_records_supported_and_blocked_routes() -> None:
 
     assert isinstance(audit, GradientTransformNestingAuditResult)
     assert audit.passed
-    assert len(audit.plans) == 16
-    assert len(audit.supported_plans) == 10
+    assert len(audit.plans) == 17
+    assert len(audit.supported_plans) == 11
     assert len(audit.blocked_plans) == 6
     assert audit.failing_plans == ()
     assert payload["passed"] is True

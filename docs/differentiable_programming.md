@@ -29,7 +29,7 @@ This repository now documents those questions directly. Current support is delib
 | Objective evidence | Available for composed phase-control objectives through finite-difference agreement, compatibility-gate checks, and local training certificates. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Objective execution planning | Available for composed objectives through fail-closed routing between pure parameter-shift, hybrid term-gradient, hardware-blocked, and unsupported backend routes. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Gradient support matrix | Available for executable planning across registered gates, observables, backends, transforms, and adapters with explicit alternatives for blocked combinations. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
-| Transform nesting governance | Available for bounded first-order, value-and-gradient, deterministic local Hessian, nested-grad Hessian, tape, scalar local JVP/VJP, and scalar local jacfwd/jacrev routes, with fail-closed vectorization, vector-output Jacobian, adapter-nesting, and hardware boundaries. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
+| Transform nesting governance | Available for bounded first-order, value-and-gradient, deterministic local Hessian, nested-grad Hessian, tape, scalar local JVP/VJP, scalar local jacfwd/jacrev, deterministic native vector-output Jacobian execution, and native manual `vmap(grad)`, with fail-closed framework vectorization, adapter-nesting, finite-shot batched-gradient, and hardware boundaries. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Provider-gradient readiness | Available as an executable support matrix for deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, and malformed samples. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 | Compiler/program AD | Available for supported scalar, vector, and matrix primitives with registry contracts, lowering reports, and native executable kernels on bounded paths. | [Differentiable API](differentiable_api.md), [Quickstart](quickstart.md) |
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
@@ -86,7 +86,7 @@ The next differentiable-programming implementation rounds should prioritise:
 4. broader PennyLane adapter round-trip tests beyond caller-supplied framework-gradient agreement checks;
 5. broader QNN/QGNN/QSNN convergence notebooks beyond the bounded local phase-QNN conformance, deterministic convergence, seeded finite-shot, and optimizer-baseline suites plus QSNN tests;
 6. public tutorials for Kuramoto-XY VQE gradients and coupling learning;
-7. executable implementations for still-blocked `vmap`, vector-output Jacobian, provider-backed transform, and framework-native nested routes where the physics contract is clear.
+7. executable implementations for still-blocked provider-backed transforms and framework-native nested routes where the physics contract is clear; native vector-output Jacobian and manual `vmap(grad)` now have bounded local evidence.
 
 ## Unsupported boundaries
 

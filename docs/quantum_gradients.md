@@ -1079,6 +1079,58 @@ This is differentiable execution evidence for supported phase objectives, not a
 claim of arbitrary QNode autodiff, native framework tracing through simulator
 kernels, or unrestricted provider-backed hardware gradients.
 
+## Vector QNode Jacobians and native manual vmap
+
+`execute_phase_qnode_vector_jacobian(...)` extends the deterministic local QNode
+transform route to one-dimensional vector outputs. It evaluates each output
+component through the same parameter-shift rule used by scalar objectives and
+returns a `(output_dim, n_params)` Jacobian with explicit evaluation accounting.
+
+```python
+import numpy as np
+from scpn_quantum_control.phase import execute_phase_qnode_vector_jacobian
+
+
+def vector_objective(params: np.ndarray) -> np.ndarray:
+    return np.array(
+        [
+            np.cos(params[0]) + 0.1 * np.sin(params[1]),
+            np.sin(params[0]) - 0.25 * np.cos(params[1]),
+        ]
+    )
+
+
+result = execute_phase_qnode_vector_jacobian(
+    "jacfwd",
+    vector_objective,
+    np.array([0.2, -0.4]),
+)
+print(result.values, result.jacobian, result.parameter_shift_evaluations)
+```
+
+`execute_phase_qnode_vmap_grad(...)` implements the first native vectorized
+gradient surface as a deterministic host-side manual loop over scalar
+parameter-shift gradients:
+
+```python
+from scpn_quantum_control.phase import execute_phase_qnode_vmap_grad
+
+
+def scalar_objective(params: np.ndarray) -> float:
+    return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
+
+
+batched = np.array([[0.2, -0.4], [0.7, 0.1], [-0.3, 0.6]])
+result = execute_phase_qnode_vmap_grad(scalar_objective, batched)
+print(result.batched_values, result.batched_gradients)
+```
+
+The readiness helper `run_phase_qnode_vector_transform_readiness_suite()`
+records supported `jacfwd`, `jacrev`, and `vmap.grad` routes plus fail-closed
+hardware, adapter, and finite-shot scenarios. The implementation deliberately
+does not claim provider vectorization, framework-native `vmap`, finite-shot
+batched-gradient statistics, or hardware transform execution.
+
 ## Scalar QNode transform execution
 
 `execute_phase_qnode_transform(...)` executes scalar local phase-QNode transforms
@@ -1090,8 +1142,9 @@ objectives: JVP returns the gradient-tangent contraction, VJP returns the
 scalar-cotangent pullback, and `jacfwd`/`jacrev` return a one-row Jacobian.
 
 The readiness helper `run_phase_qnode_transform_readiness_suite()` records both
-supported local routes and fail-closed hardware, finite-shot curvature, and
-vectorized-transform routes. This closes the scalar local QNode transform gap;
-it does not claim vector-output Jacobian algebra, arbitrary program AD, native
-ML-framework tracing through simulator kernels, or unrestricted provider-backed
-hardware transform execution.
+supported scalar routes and fail-closed hardware, finite-shot curvature, and
+scalar-executor vectorized-transform routes. This closes the scalar local QNode
+transform gap; vector-output Jacobians and native manual `vmap(grad)` are handled
+by the vector transform API above, while arbitrary program AD, framework-native
+nested transforms, and hardware transform execution remain outside this claim
+boundary.
