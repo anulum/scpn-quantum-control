@@ -26,7 +26,7 @@ The audit composes five release checks:
 These checks exist to separate “works on my machine” from releasable outcomes.
 They were designed so that:
 
-- claims are tied to committed artefacts, not narrative;
+- claims are tied to committed artefacts, not prose-only;
 - changes to core interfaces are checked against contracts;
 - source-accounting and performance/validation gates are explicit before a new tag.
 

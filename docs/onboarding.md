@@ -65,7 +65,7 @@ a common route for those systems:
 | Rust acceleration | Speeds up selected Hamiltonian, expectation, pulse, symmetry, and compiler-AD hot paths. | `scpn-quantum-engine` |
 | Differentiable programming | Provides parameter-shift VQE building blocks, supported scalar/vector/matrix AD primitives, native lowering reports, and fail-closed unsupported boundaries. | `scpn_quantum_control.phase.param_shift`, `scpn_quantum_control.compiler.mlir`, and `scpn_quantum_control.differentiable` |
 | Paper 0 source register | Preserves source-bounded validation fixtures and claim boundaries for Paper 0. | `scpn_quantum_control.paper0` |
-| Release gates | Make public release decisions repeatable instead of narrative. | `tools/audit_release_readiness.py` and `scpn-bench` gates |
+| Release gates | Make public release decisions repeatable instead of process-only statements. | `tools/audit_release_readiness.py` and `scpn-bench` gates |
 
 ## Adoption Checklist
 
