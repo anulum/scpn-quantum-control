@@ -367,6 +367,12 @@ errors, confidence radii, and a claim boundary. Hardware aliases still fail
 closed unless an explicit hardware policy enables them through the backend
 planner.
 
+For hardware preparation, use
+`prepare_provider_hardware_parameter_shift_gradient(...)` instead of the
+sampler-execution function. It returns provider/backend, policy decision,
+shifted-evaluation, estimated-shot, evidence-ID, and claim-boundary metadata
+without invoking a sampler and without submitting a QPU job.
+
 Multi-frequency rules are provider-safe on the same callback contract. The
 executor plans `2 * n_terms * n_parameters` samples, stores each
 `(parameter_index, shift_index)` record with the exact shift and coefficient,
@@ -440,6 +446,28 @@ approval, unknown provider/backend aliases, excessive shot budgets, missing
 evidence IDs, and live execution without a ticket. Dry-run approval means a
 provider job can be prepared under policy; it is not live QPU execution and not
 a hardware-gradient result.
+
+To bind that policy to a provider-preparation record:
+
+```python
+from scpn_quantum_control.phase import prepare_provider_hardware_parameter_shift_gradient
+
+preparation = prepare_provider_hardware_parameter_shift_gradient(
+    [0.2, -0.4],
+    provider="ibm_quantum",
+    backend="ibm_quantum",
+    shots=512,
+    evidence_ids={
+        "backend_calibration_id": "calibration-snapshot-id",
+        "no_qpu_gate_id": "no-qpu-gate-id",
+        "claim_boundary_id": "claim-boundary-id",
+        "cost_budget_id": "budget-approval-id",
+    },
+)
+```
+
+`preparation.gradient_available` and `preparation.hardware_execution` are both
+false. The record is readiness evidence only.
 
 ## Qiskit shifted-circuit generation
 

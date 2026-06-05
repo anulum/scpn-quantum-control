@@ -165,8 +165,10 @@ from .phase_vqe import PhaseVQE
 from .provider_gradient import (
     ProviderExpectationSample,
     ProviderGradientExecutionResult,
+    ProviderHardwareGradientPreparationResult,
     ProviderParameterShiftRecord,
     execute_provider_parameter_shift_gradient,
+    prepare_provider_hardware_parameter_shift_gradient,
 )
 from .provider_gradient_audit import (
     ProviderGradientReadinessAuditResult,
@@ -428,8 +430,10 @@ __all__ = [
     "PennyLaneRoundTripResult",
     "ProviderExpectationSample",
     "ProviderGradientExecutionResult",
+    "ProviderHardwareGradientPreparationResult",
     "ProviderParameterShiftRecord",
     "execute_provider_parameter_shift_gradient",
+    "prepare_provider_hardware_parameter_shift_gradient",
     "ProviderGradientReadinessScenario",
     "ProviderGradientReadinessRecord",
     "ProviderGradientReadinessAuditResult",

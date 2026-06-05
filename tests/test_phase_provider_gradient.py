@@ -17,13 +17,23 @@ import pytest
 from scpn_quantum_control.phase import (
     ProviderExpectationSample,
     ProviderGradientExecutionResult,
+    ProviderHardwareGradientPreparationResult,
     execute_provider_parameter_shift_gradient,
     multi_frequency_parameter_shift_rule,
+    prepare_provider_hardware_parameter_shift_gradient,
 )
 
 
 def _objective(values: np.ndarray) -> float:
     return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
+
+
+_HARDWARE_EVIDENCE_IDS = {
+    "backend_calibration_id": "cal-provider-2026-06-05",
+    "no_qpu_gate_id": "no-qpu-provider-2026-06-05",
+    "claim_boundary_id": "claim-boundary-provider-2026-06-05",
+    "cost_budget_id": "budget-provider-2026-06-05",
+}
 
 
 def test_provider_gradient_executes_statevector_parameter_shift() -> None:
@@ -76,6 +86,7 @@ def test_provider_gradient_executes_finite_shot_parameter_shift_with_uncertainty
     assert result.backend == "finite_shot_simulator"
     assert result.method == "stochastic_parameter_shift"
     assert result.total_shots == 1600
+    assert result.records[0].plus.metadata is not None
     assert result.records[0].plus.metadata["source"] == "finite-shot fixture"
     np.testing.assert_allclose(result.standard_error, np.array([expected_se, expected_se]))
     np.testing.assert_allclose(result.confidence_radius, 1.959963984540054 * result.standard_error)
@@ -118,6 +129,7 @@ def test_provider_gradient_executes_multi_frequency_finite_shot_records() -> Non
     assert result.total_evaluations == 2 * len(rule.terms)
     assert result.total_shots == 2 * len(rule.terms) * 300
     assert [record.shift_index for record in result.records] == [0, 1]
+    assert result.records[0].plus.metadata is not None
     assert result.records[0].plus.metadata["term_safe"] is True
     np.testing.assert_allclose(result.gradient, np.array([expected_gradient]), atol=1e-12)
     np.testing.assert_allclose(result.standard_error, np.array([math.sqrt(expected_variance)]))
@@ -135,6 +147,84 @@ def test_provider_gradient_fails_closed_for_hardware_without_policy() -> None:
             backend="ibm_quantum",
             shots=1024,
         )
+
+
+def test_provider_hardware_preparation_approves_dry_run_without_sampling() -> None:
+    values = np.array([0.2, -0.4], dtype=float)
+
+    result = prepare_provider_hardware_parameter_shift_gradient(
+        values,
+        provider="ibm_quantum",
+        backend="ibm_quantum",
+        shots=512,
+        evidence_ids=_HARDWARE_EVIDENCE_IDS,
+    )
+
+    assert isinstance(result, ProviderHardwareGradientPreparationResult)
+    assert result.approved
+    assert not result.fail_closed
+    assert result.mode == "dry_run"
+    assert result.method == "hardware_policy_dry_run_parameter_shift"
+    assert result.total_evaluations == 4
+    assert result.estimated_total_shots == 2048
+    assert result.gradient_available is False
+    assert result.hardware_execution is False
+    assert result.decision.evidence_ids == _HARDWARE_EVIDENCE_IDS
+    assert result.to_dict()["gradient_available"] is False
+
+
+def test_provider_hardware_preparation_blocks_missing_evidence() -> None:
+    result = prepare_provider_hardware_parameter_shift_gradient(
+        np.array([0.2, -0.4], dtype=float),
+        provider="ibm_quantum",
+        backend="ibm_quantum",
+        shots=512,
+        evidence_ids={"backend_calibration_id": "cal-provider-2026-06-05"},
+    )
+
+    assert result.fail_closed
+    assert not result.approved
+    assert result.mode == "blocked"
+    assert result.gradient_available is False
+    assert result.decision.missing_evidence == (
+        "claim_boundary_id",
+        "cost_budget_id",
+        "no_qpu_gate_id",
+    )
+    assert "missing required evidence IDs" in result.failure_reason
+
+
+def test_provider_hardware_preparation_live_mode_requires_ticket() -> None:
+    blocked = prepare_provider_hardware_parameter_shift_gradient(
+        np.array([0.2], dtype=float),
+        provider="ibm_quantum",
+        backend="ibm_quantum",
+        shots=256,
+        evidence_ids=_HARDWARE_EVIDENCE_IDS,
+        dry_run_only=False,
+    )
+    ticketed = prepare_provider_hardware_parameter_shift_gradient(
+        np.array([0.2], dtype=float),
+        provider="ibm_quantum",
+        backend="ibm_quantum",
+        shots=256,
+        evidence_ids=_HARDWARE_EVIDENCE_IDS,
+        dry_run_only=False,
+        live_execution_ticket="QPU-LIVE-PROVIDER-2026-06-05-001",
+    )
+
+    assert blocked.fail_closed
+    assert (
+        "live hardware-gradient execution requires live_execution_ticket" in blocked.failure_reason
+    )
+    assert ticketed.approved
+    assert ticketed.mode == "live_ticketed"
+    assert ticketed.method == "hardware_policy_live_ticketed_parameter_shift"
+    assert ticketed.hardware_execution is False
+    payload = ticketed.to_dict()
+    decision_payload = payload["decision"]
+    assert isinstance(decision_payload, dict)
+    assert decision_payload["has_live_execution_ticket"] is True
 
 
 def test_provider_gradient_rejects_invalid_samples() -> None:

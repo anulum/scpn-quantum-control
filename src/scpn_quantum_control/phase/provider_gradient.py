@@ -18,6 +18,12 @@ from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import ParameterShiftRule
 from .gradient_backend import QuantumGradientPlan, plan_quantum_gradient_backend
+from .hardware_gradient_policy import (
+    HardwareGradientPolicy,
+    HardwareGradientPolicyDecision,
+    HardwareGradientRequest,
+    evaluate_hardware_gradient_policy,
+)
 
 FloatArray: TypeAlias = NDArray[np.float64]
 JsonValue: TypeAlias = str | int | float | bool | None | list["JsonValue"] | dict[str, "JsonValue"]
@@ -189,6 +195,158 @@ class ProviderGradientExecutionResult:
         }
 
 
+@dataclass(frozen=True)
+class ProviderHardwareGradientPreparationResult:
+    """Provider hardware-gradient preparation record without QPU submission."""
+
+    provider: str
+    backend: str
+    method: str
+    mode: str
+    values: FloatArray
+    decision: HardwareGradientPolicyDecision
+    plan: QuantumGradientPlan | None
+    rule_terms: int
+    total_evaluations: int
+    estimated_total_shots: int
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        values = _as_finite_vector("values", self.values)
+        if not self.provider.strip():
+            raise ValueError("provider must be non-empty")
+        if not self.backend.strip():
+            raise ValueError("backend must be non-empty")
+        if not self.method.strip():
+            raise ValueError("method must be non-empty")
+        if not self.mode.strip():
+            raise ValueError("mode must be non-empty")
+        if self.rule_terms <= 0:
+            raise ValueError("rule_terms must be positive")
+        if self.total_evaluations <= 0:
+            raise ValueError("total_evaluations must be positive")
+        if self.estimated_total_shots <= 0:
+            raise ValueError("estimated_total_shots must be positive")
+        if not self.claim_boundary.strip():
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "values", values)
+        object.__setattr__(self, "provider", self.provider.strip())
+        object.__setattr__(self, "backend", self.backend.strip())
+        object.__setattr__(self, "method", self.method.strip())
+        object.__setattr__(self, "mode", self.mode.strip())
+        object.__setattr__(self, "claim_boundary", self.claim_boundary.strip())
+
+    @property
+    def approved(self) -> bool:
+        """Whether provider hardware-gradient preparation passed policy checks."""
+
+        return self.decision.approved
+
+    @property
+    def fail_closed(self) -> bool:
+        """Whether provider hardware-gradient preparation is blocked."""
+
+        return self.decision.fail_closed
+
+    @property
+    def gradient_available(self) -> bool:
+        """Whether a gradient vector was produced by hardware execution."""
+
+        return False
+
+    @property
+    def hardware_execution(self) -> bool:
+        """Whether this record submitted or executed a hardware job."""
+
+        return False
+
+    @property
+    def failure_reason(self) -> str:
+        """Human-readable fail-closed reason from the policy decision."""
+
+        return self.decision.failure_reason
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible hardware-preparation metadata."""
+
+        return {
+            "provider": self.provider,
+            "backend": self.backend,
+            "method": self.method,
+            "mode": self.mode,
+            "values": self.values.tolist(),
+            "decision": self.decision.to_dict(),
+            "plan": None if self.plan is None else _plan_to_dict(self.plan),
+            "rule_terms": self.rule_terms,
+            "total_evaluations": self.total_evaluations,
+            "estimated_total_shots": self.estimated_total_shots,
+            "claim_boundary": self.claim_boundary,
+            "approved": self.approved,
+            "fail_closed": self.fail_closed,
+            "gradient_available": self.gradient_available,
+            "hardware_execution": self.hardware_execution,
+            "failure_reason": self.failure_reason,
+        }
+
+
+def prepare_provider_hardware_parameter_shift_gradient(
+    values: ArrayLike,
+    *,
+    provider: str = "ibm_quantum",
+    backend: str = "ibm_quantum",
+    shots: int | None = None,
+    rule: ParameterShiftRule | None = None,
+    shift: float = float(np.pi / 2.0),
+    policy: HardwareGradientPolicy | None = None,
+    evidence_ids: Mapping[str, str] | None = None,
+    dry_run_only: bool = True,
+    live_execution_ticket: str | None = None,
+    allow_hardware: bool = True,
+) -> ProviderHardwareGradientPreparationResult:
+    """Prepare a policy-bound provider hardware-gradient request without QPU execution."""
+
+    values_vector = _as_finite_vector("values", values)
+    terms = _parameter_shift_terms(rule, shift)
+    active_policy = policy or HardwareGradientPolicy()
+    planned_shots = shots if shots is not None else active_policy.default_shots
+    decision = evaluate_hardware_gradient_policy(
+        HardwareGradientRequest(
+            provider=provider,
+            backend=backend,
+            n_params=values_vector.size,
+            shots=planned_shots,
+            shift_terms=len(terms),
+            allow_hardware=allow_hardware,
+            evidence_ids=evidence_ids,
+            dry_run_only=dry_run_only,
+            live_execution_ticket=live_execution_ticket,
+        ),
+        policy=active_policy,
+        scenario="provider_hardware_gradient_preparation",
+    )
+    plan = _provider_hardware_plan(
+        backend=backend,
+        n_params=values_vector.size,
+        shift_terms=len(terms),
+        shots=planned_shots,
+        confidence_level=active_policy.confidence_level,
+        allow_hardware=allow_hardware,
+    )
+    return ProviderHardwareGradientPreparationResult(
+        provider=provider,
+        backend=backend,
+        method=_hardware_preparation_method(decision.mode, len(terms)),
+        mode=decision.mode,
+        values=values_vector,
+        decision=decision,
+        plan=plan,
+        rule_terms=len(terms),
+        total_evaluations=decision.evaluations,
+        estimated_total_shots=decision.estimated_total_shots,
+        claim_boundary=decision.claim_boundary,
+    )
+
+
 def execute_provider_parameter_shift_gradient(
     sampler: ProviderExpectationSampler,
     values: ArrayLike,
@@ -288,6 +446,54 @@ def execute_provider_parameter_shift_gradient(
             "not a proof of provider availability or quantum advantage"
         ),
     )
+
+
+def _plan_to_dict(plan: QuantumGradientPlan) -> dict[str, object]:
+    return {
+        "backend": plan.backend,
+        "family": plan.family,
+        "method": plan.method,
+        "supported": plan.supported,
+        "shift_terms": plan.shift_terms,
+        "evaluations": plan.evaluations,
+        "shots": plan.shots,
+        "finite_shot": plan.finite_shot,
+        "requires_hardware_approval": plan.requires_hardware_approval,
+        "reasons": list(plan.reasons),
+        "alternatives": list(plan.alternatives),
+    }
+
+
+def _provider_hardware_plan(
+    *,
+    backend: str,
+    n_params: int,
+    shift_terms: int,
+    shots: int,
+    confidence_level: float,
+    allow_hardware: bool,
+) -> QuantumGradientPlan | None:
+    try:
+        return plan_quantum_gradient_backend(
+            backend,
+            n_params=n_params,
+            shift_terms=shift_terms,
+            shots=shots,
+            finite_shot=True,
+            confidence_level=confidence_level,
+            allow_hardware=allow_hardware,
+        )
+    except ValueError:
+        return None
+
+
+def _hardware_preparation_method(mode: str, rule_terms: int) -> str:
+    rule_prefix = "multi_frequency_" if rule_terms > 1 else ""
+    if mode == "live_ticketed":
+        return f"hardware_policy_live_ticketed_{rule_prefix}parameter_shift"
+    if mode == "dry_run":
+        return f"hardware_policy_dry_run_{rule_prefix}parameter_shift"
+    return f"hardware_policy_blocked_{rule_prefix}parameter_shift"
 
 
 def _sample_provider(

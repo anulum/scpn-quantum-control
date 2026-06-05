@@ -34,6 +34,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.objective_planner` | Fail-closed execution planning for pure parameter-shift, hybrid term-gradient, hardware, and unsupported composed-objective routes. |
 | `scpn_quantum_control.qsnn.training` | QSNN parameter-shift gradients, full-batch descent, and training convergence evidence. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
+| `scpn_quantum_control.phase.provider_gradient` | Provider callback parameter-shift execution plus policy-bound hardware-gradient preparation records that never submit QPU jobs. |
 | `scpn_quantum_control.phase.hardware_gradient_policy` | Hardware-gradient preparation policy with provider/backend allowlists, shot/evaluation budget accounting, required evidence IDs, dry-run approval, and live-ticket gating. |
 | `scpn_quantum_control.phase.gradient_support_matrix` | Executable support planning for gates, observables, backends, transforms, and ML/provider adapters. |
 | `scpn_quantum_control.phase.transform_nesting` | Fail-closed transform-nesting planner for local, tape, ML-adapter, vectorized, and hardware gradient routes. |
@@ -397,9 +398,11 @@ decision = evaluate_hardware_gradient_policy(
 ```
 
 An approved dry-run decision means the request is ready for controlled provider
-job preparation. It does not submit hardware work and does not promote a
-hardware-gradient claim. Live mode remains blocked unless a
-`live_execution_ticket` is present.
+job preparation. `prepare_provider_hardware_parameter_shift_gradient(...)`
+packages the same policy decision with provider/backend, shifted-evaluation,
+shot-budget, and claim-boundary metadata. It still does not submit hardware
+work and does not promote a hardware-gradient claim. Live mode remains blocked
+unless a `live_execution_ticket` is present.
 
 ## Minimal QSNN descent certificate
 
