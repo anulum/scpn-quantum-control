@@ -22,6 +22,20 @@ Quantum simulation of coupled Kuramoto oscillator networks on IBM superconductin
 hardware, with a hardware evidence ledger separating theory, simulator,
 unmitigated hardware, mitigated hardware, and noise-limited claims.
 
+## Positioning and purpose
+
+`scpn-quantum-control` is an evidence-first platform for teams turning
+coupled-oscillator models into reproducible computational evidence. It is aimed at
+research groups and product teams that need a clearer path from model statement to
+auditable result than ad-hoc notebooks can provide.
+
+In practice, this means:
+
+- explicit problem-to-experiment boundaries (`K_nm`, `omega`, solver surface);
+- separation of simulator and hardware evidence classes;
+- stable public interfaces for integration;
+- explicit, non-silenced boundaries on unsupported or blocked modes.
+
 ## Start Here
 
 If you are new to the repository, read these pages in order:

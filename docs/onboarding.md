@@ -12,12 +12,34 @@ This page is the shortest route to understanding what
 `scpn-quantum-control` is, what it is useful for, and where the claim
 boundaries sit.
 
+## Why this exists
+
+The package is intended for teams that cannot treat every quantum workflow as
+equivalent. It separates:
+
+- **simulation science** (fast iteration),
+- **method verification** (reproducible checks and baselines),
+- **hardware evidence** (raw-count-backed claims), and
+- **commercial readiness** (stable facades, release gates, and deployment boundaries).
+
+The goal is a single path from idea to auditable outcome, where every higher-cost
+route has a defined evidence burden.
+
 ## One-Sentence Description
 
 `scpn-quantum-control` is a quantum-control and differentiable-computation
 workbench for coupled oscillator networks, centred on the Kuramoto-XY mapping
 and backed by simulator workflows, Rust acceleration, hardware-result ledgers,
 release gates, and explicit scientific claim boundaries.
+
+## Who this helps in practice
+
+| Role | Outcome |
+|---|---|
+| Researcher | turn coupled-oscillator models into structured comparisons with clear limits |
+| Hardware operator | run campaign planning and raw-count review without mixing simulator and hardware claims |
+| Product engineer | adopt stable facades and migrate into integrations with low risk |
+| Compliance reviewer | inspect explicit claim classes and verify promotion rules before release |
 
 ## What Problem It Solves
 

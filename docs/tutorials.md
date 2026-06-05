@@ -12,6 +12,21 @@ This page guides you from your first simulation to publishing-quality research
 results. Each section builds on the previous, progressing from conceptual
 understanding through hands-on computation to original research.
 
+## Practical aim
+
+The tutorial sequence is designed to deliver three outcomes:
+
+1. **Model confidence** — users can generate validated synchronisation outputs from
+   known topologies and detect whether assumptions still hold.
+2. **Operational confidence** — users can move between simulator, mitigation, and
+   hardware-governed evidence without breaking reproducibility.
+3. **Commercial confidence** — users can use stable interfaces and claim boundaries
+   when preparing a prototype, paper, or integration surface.
+
+The sequence is intentionally claim-aware: pages for gradients, hardware, and
+optimisation are introduced with explicit boundaries so teams can choose the
+minimum safe surface for their objective.
+
 ---
 
 ## Learning Path Overview

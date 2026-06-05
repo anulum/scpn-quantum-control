@@ -18,6 +18,20 @@ continue with [Quickstart](quickstart.md).
 pip install scpn-quantum-control
 ```
 
+## Installation posture
+
+The installation is intentionally tiered:
+
+- **Base path** (`pip install scpn-quantum-control`) for standard simulator workflows.
+- **Developer and extension path** (`pip install -e ".[dev]"`) for local testing and
+  contribution.
+- **Operational path** with selected extras only: install exactly the integration
+  surface your workflow needs.
+
+The production value is that teams can keep environments lean and evidence
+deterministic: each additional capability is explicit at install time rather than
+implicitly enabling unsupported routes.
+
 ## From source (development)
 
 ```bash

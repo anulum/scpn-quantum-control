@@ -8,6 +8,16 @@
 
 # API Reference
 
+## How to read this page
+
+This API page is divided by abstraction level. Use it to decide whether you need a
+stable entry point for integration, a workflow guide for experimentation, or a
+source-level reference for extension and debugging.
+
+The commercial goal is to reduce dependency on internal layout while keeping
+advanced users with a direct path to deeper modules. Each function section below
+is accompanied by explicit boundary context in the corresponding guide pages.
+
 ## Differentiable programming entry points
 
 The differentiable-programming surface has its own public guide and API map:

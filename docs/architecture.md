@@ -8,6 +8,22 @@
 
 # Architecture
 
+## Purpose and boundaries
+
+This page documents the software architecture in a way that supports technical due
+diligence and long-lived integration. The design objective is to keep
+problem-to-experiment flow deterministic while allowing each subsystem to evolve
+with clear contracts.
+
+The architecture intentionally separates:
+
+- **core transforms** (`bridge`, `phase`, `analysis`) from
+- **execution substrates** (`hardware`, `benchmarks`, `accel`) and
+- **evidence/control surfaces** (`release`, `hardware status`, campaign artefacts).
+
+This split is why the same repository can support both reproducible research
+workflows and integration-oriented development.
+
 ## Package Statistics (v0.9.8)
 
 | Metric | Count |

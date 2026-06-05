@@ -10,6 +10,22 @@
 
 `scpn-quantum-control` treats differentiability as a product surface, not a hidden implementation detail. The goal is to make coupled-oscillator quantum control trainable, testable, and explainable across quantum gradients, classical program AD, compiler-backed kernels, and future ML-framework adapters.
 
+## Business-facing value
+
+The differentiable lane is where optimisation-heavy teams get practical value: a
+bounded route from objectives to gradient diagnostics that is explicit about what is
+analytic, approximate, stochastic, and unsupported.
+
+In practical terms, this means:
+
+- training and convergence evidence can be produced without waiting on hardware;
+- optimisation routes can be compared against finite-difference and multi-framework
+  references;
+- unsupported or blocked cases stay visible in the API evidence contract.
+
+This section is intentionally conservative. It prefers explicit fail-closed boundaries
+over hidden fallback because enterprises depend on predictable failure modes.
+
 ## Why this matters
 
 A useful quantum-control framework must answer four questions quickly:

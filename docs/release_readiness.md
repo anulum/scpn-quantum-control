@@ -21,6 +21,18 @@ boundaries. The deterministic gate is:
 
 The audit composes five release checks:
 
+## For teams shipping with this repository
+
+These checks exist to separate “works on my machine” from releasable outcomes.
+They were designed so that:
+
+- claims are tied to committed artefacts, not narrative;
+- changes to core interfaces are checked against contracts;
+- source-accounting and performance/validation gates are explicit before a new tag.
+
+If you are preparing a pilot, demo, or publication-facing release, this is the
+single place to prove that the same route is repeatable across machines.
+
 | Check | Release meaning |
 |---|---|
 | Version consistency | `pyproject.toml`, package `__version__`, `CITATION.cff`, and `.zenodo.json` carry the same version. |
