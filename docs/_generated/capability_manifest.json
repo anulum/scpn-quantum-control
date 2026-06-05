@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 574,
     "public_documentation_pages": 240,
-    "python_model_classes": 1594,
-    "python_model_source_modules": 796,
+    "python_model_classes": 1598,
+    "python_model_source_modules": 797,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1906
+    "test_files": 1907
   },
   "documentation": {
     "examples": [
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 58
+        "python_modules": 59
       },
       {
         "package": "psi_field",
@@ -2771,6 +2771,22 @@
       {
         "name": "HardwareEmbeddingConstraint",
         "path": "src/scpn_quantum_control/topology_control/constraints.py"
+      },
+      {
+        "name": "HardwareGradientPolicy",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_policy.py"
+      },
+      {
+        "name": "HardwareGradientPolicyDecision",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_policy.py"
+      },
+      {
+        "name": "HardwareGradientReadinessSuiteResult",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_policy.py"
+      },
+      {
+        "name": "HardwareGradientRequest",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_policy.py"
       },
       {
         "name": "HardwareJobDossier",
@@ -8111,6 +8127,7 @@
       "src/scpn_quantum_control/phase/gradient_descent.py",
       "src/scpn_quantum_control/phase/gradient_support_matrix.py",
       "src/scpn_quantum_control/phase/gradient_tape.py",
+      "src/scpn_quantum_control/phase/hardware_gradient_policy.py",
       "src/scpn_quantum_control/phase/jax_bridge.py",
       "src/scpn_quantum_control/phase/jax_nqs.py",
       "src/scpn_quantum_control/phase/kuramoto_variants.py",
@@ -10246,6 +10263,7 @@
       "tests/test_phase_gradient_support_matrix.py",
       "tests/test_phase_gradient_tape.py",
       "tests/test_phase_gradient_training.py",
+      "tests/test_phase_hardware_gradient_policy.py",
       "tests/test_phase_jax_bridge.py",
       "tests/test_phase_natural_gradient.py",
       "tests/test_phase_objective_audit.py",

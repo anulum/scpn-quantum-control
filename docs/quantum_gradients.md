@@ -403,6 +403,44 @@ This support matrix is intentionally executable rather than a static checklist.
 It lets reviewers distinguish ready callback paths from blocked hardware or
 malformed-sample paths without submitting jobs to a provider.
 
+## Hardware-gradient policy readiness
+
+`evaluate_hardware_gradient_policy(...)` adds an explicit gate between provider
+callback readiness and real hardware-gradient preparation. It checks the
+provider/backend allowlists, `allow_hardware=True`, parameter count, shift-term
+count, shots per shifted expectation, total estimated shots, required evidence
+IDs, and live-execution ticket status:
+
+```python
+from scpn_quantum_control.phase import (
+    HardwareGradientRequest,
+    evaluate_hardware_gradient_policy,
+)
+
+decision = evaluate_hardware_gradient_policy(
+    HardwareGradientRequest(
+        provider="ibm_quantum",
+        backend="ibm_quantum",
+        n_params=2,
+        shots=512,
+        allow_hardware=True,
+        evidence_ids={
+            "backend_calibration_id": "calibration-snapshot-id",
+            "no_qpu_gate_id": "no-qpu-gate-id",
+            "claim_boundary_id": "claim-boundary-id",
+            "cost_budget_id": "budget-approval-id",
+        },
+    )
+)
+```
+
+`run_hardware_gradient_policy_readiness_suite()` returns JSON-ready evidence
+covering a bounded dry-run approval and blocked routes for missing hardware
+approval, unknown provider/backend aliases, excessive shot budgets, missing
+evidence IDs, and live execution without a ticket. Dry-run approval means a
+provider job can be prepared under policy; it is not live QPU execution and not
+a hardware-gradient result.
+
 ## Qiskit shifted-circuit generation
 
 For Qiskit-native circuits, the phase namespace can generate fully bound

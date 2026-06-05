@@ -63,6 +63,15 @@ from .gradient_support_matrix import (
     run_gradient_support_matrix_audit,
 )
 from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
+from .hardware_gradient_policy import (
+    HardwareGradientPolicy,
+    HardwareGradientPolicyDecision,
+    HardwareGradientReadinessSuiteResult,
+    HardwareGradientRequest,
+    assert_hardware_gradient_policy_approved,
+    evaluate_hardware_gradient_policy,
+    run_hardware_gradient_policy_readiness_suite,
+)
 from .jax_bridge import (
     PhaseJAXGradientAgreementResult,
     PhaseJAXParameterShiftResult,
@@ -328,6 +337,13 @@ __all__ = [
     "scan_drive_amplitude",
     "FloquetResult",
     "quantum_gradient_backend_capability",
+    "HardwareGradientPolicy",
+    "HardwareGradientPolicyDecision",
+    "HardwareGradientReadinessSuiteResult",
+    "HardwareGradientRequest",
+    "assert_hardware_gradient_policy_approved",
+    "evaluate_hardware_gradient_policy",
+    "run_hardware_gradient_policy_readiness_suite",
     "plan_quantum_gradient_backend",
     "QuantumGradientBackendCapability",
     "QuantumGradientPlan",

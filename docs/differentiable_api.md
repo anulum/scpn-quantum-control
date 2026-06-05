@@ -34,6 +34,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.objective_planner` | Fail-closed execution planning for pure parameter-shift, hybrid term-gradient, hardware, and unsupported composed-objective routes. |
 | `scpn_quantum_control.qsnn.training` | QSNN parameter-shift gradients, full-batch descent, and training convergence evidence. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
+| `scpn_quantum_control.phase.hardware_gradient_policy` | Hardware-gradient preparation policy with provider/backend allowlists, shot/evaluation budget accounting, required evidence IDs, dry-run approval, and live-ticket gating. |
 | `scpn_quantum_control.phase.gradient_support_matrix` | Executable support planning for gates, observables, backends, transforms, and ML/provider adapters. |
 | `scpn_quantum_control.phase.transform_nesting` | Fail-closed transform-nesting planner for local, tape, ML-adapter, vectorized, and hardware gradient routes. |
 | `scpn_quantum_control.phase.provider_gradient_audit` | Executable provider-gradient readiness audit for deterministic, finite-shot, multi-frequency, hardware-blocked, unknown-backend, and malformed-sample routes. |
@@ -364,6 +365,41 @@ multi-frequency finite-shot parameter-shift. Blocked records cover hardware
 without explicit policy approval, unknown provider families, and finite-shot
 callbacks that omit sample variance. This is provider-readiness evidence, not a
 live hardware-gradient claim.
+
+## Hardware-gradient policy readiness
+
+Use `evaluate_hardware_gradient_policy(...)` before preparing a provider-backed
+hardware-gradient job. The policy checks explicit hardware opt-in, provider and
+backend allowlists, parameter-shift evaluation count, per-evaluation and total
+shot budgets, required evidence identifiers, and live-execution ticket status:
+
+```python
+from scpn_quantum_control.phase import (
+    HardwareGradientRequest,
+    evaluate_hardware_gradient_policy,
+)
+
+decision = evaluate_hardware_gradient_policy(
+    HardwareGradientRequest(
+        provider="ibm_quantum",
+        backend="ibm_quantum",
+        n_params=2,
+        shots=512,
+        allow_hardware=True,
+        evidence_ids={
+            "backend_calibration_id": "calibration-snapshot-id",
+            "no_qpu_gate_id": "no-qpu-gate-id",
+            "claim_boundary_id": "claim-boundary-id",
+            "cost_budget_id": "budget-approval-id",
+        },
+    )
+)
+```
+
+An approved dry-run decision means the request is ready for controlled provider
+job preparation. It does not submit hardware work and does not promote a
+hardware-gradient claim. Live mode remains blocked unless a
+`live_execution_ticket` is present.
 
 ## Minimal QSNN descent certificate
 
