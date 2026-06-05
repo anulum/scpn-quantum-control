@@ -8,16 +8,6 @@
 
 # Quantum Simulation of Coupled-Oscillator Synchronisation on a 156-Qubit Superconducting Processor
 
-## Purpose and current status
-
-This is a historical preprint artefact for one legacy workflow using mixed
-open-loop and no-live post-processing on 156-qubit hardware snapshots.
-It is useful for tracing the evidence chain and reproducing specific claims, but
-it is not a current production promotion target.
-
-For current status-bound claims, use `docs/results.md`, `hardware_status_ledger.md`,
-and the release gate outputs that carry explicit claim IDs.
-
 **Miroslav Šotek**
 ANULUM / Fortis Studio, Marbach SG, Switzerland
 [protoscience@anulum.li](mailto:protoscience@anulum.li) |
