@@ -13,6 +13,7 @@ import math
 import os
 import shutil
 import time
+import tracemalloc
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -109,10 +110,11 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
     """
 
     rows: list[ExternalComparisonRow] = []
-    for backend, available, batching, transform, setup in (
+    for backend, available, runner, batching, transform, setup in (
         (
             "jax",
             is_phase_jax_available(),
+            _run_jax_reference,
             "vmap",
             "value_and_grad",
             "Install the CPU overlay wheel jax[cpu].",
@@ -120,6 +122,7 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
         (
             "pytorch",
             is_phase_torch_available(),
+            _run_pytorch_reference,
             "torch.func.vmap",
             "torch.func.grad/jacrev",
             "Install the CPU overlay wheel torch.",
@@ -127,6 +130,7 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
         (
             "tensorflow",
             is_phase_tensorflow_available(),
+            _run_tensorflow_reference,
             "vectorized_map",
             "GradientTape",
             "Install the CPU overlay wheel tensorflow-cpu.",
@@ -134,19 +138,20 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
         (
             "pennylane",
             is_phase_pennylane_available(),
+            _run_pennylane_reference,
             "not_native",
             "QNode",
             "Install the CPU overlay wheel pennylane.",
         ),
     ):
         rows.append(
-            _success_row(backend, batching, transform)
+            _framework_row(backend, runner, batching, transform, setup)
             if available
             else _dependency_gap_row(backend, batching, transform, setup)
         )
     rows.append(
-        _success_row("enzyme", "not_evaluated", "LLVM Enzyme")
-        if _enzyme_tooling_available()
+        _enzyme_row()
+        if _enzyme_runner_configured()
         else _dependency_gap_row(
             "enzyme",
             "not_evaluated",
@@ -157,16 +162,29 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
     return tuple(rows)
 
 
-def _success_row(
-    backend: str, batching_support: str, transform_support: str
+def _framework_row(
+    backend: str,
+    runner: Any,
+    batching_support: str,
+    transform_support: str,
+    setup: str,
 ) -> ExternalComparisonRow:
     values = np.array([0.2, -0.4], dtype=np.float64)
-    start = time.perf_counter()
     reference_value = _bounded_phase_objective(values)
     reference_gradient = _bounded_phase_gradient(values)
-    external_value = _bounded_phase_objective(values)
-    external_gradient = _bounded_phase_gradient(values)
+    tracemalloc.start()
+    start = time.perf_counter()
+    try:
+        external_value, external_gradient = runner(values)
+    except ImportError:
+        tracemalloc.stop()
+        return _dependency_gap_row(backend, batching_support, transform_support, setup)
+    except Exception as exc:  # pragma: no cover - defensive optional boundary
+        tracemalloc.stop()
+        return _runtime_gap_row(backend, batching_support, transform_support, str(exc))
     runtime = time.perf_counter() - start
+    _, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
     return ExternalComparisonRow(
         case_id="bounded_phase_objective",
         backend=backend,
@@ -175,9 +193,7 @@ def _success_row(
         value_error=abs(reference_value - external_value),
         gradient_error=float(np.max(np.abs(reference_gradient - external_gradient))),
         runtime_seconds=runtime,
-        memory_peak_bytes=int(
-            values.nbytes + reference_gradient.nbytes + external_gradient.nbytes
-        ),
+        memory_peak_bytes=max(int(peak), int(values.nbytes + reference_gradient.nbytes)),
         batching_support=batching_support,
         transform_support=transform_support,
         dtype="float64",
@@ -188,6 +204,15 @@ def _success_row(
             "Bounded CPU external comparison against the SCPN reference; no provider, "
             "QPU, GPU, or production performance claim."
         ),
+    )
+
+
+def _enzyme_row() -> ExternalComparisonRow:
+    return _dependency_gap_row(
+        "enzyme",
+        "not_evaluated",
+        "LLVM Enzyme",
+        "Configure SCPN_ENZYME_RUNNER to an executable runner that emits value and gradient JSON.",
     )
 
 
@@ -216,6 +241,31 @@ def _dependency_gap_row(
     )
 
 
+def _runtime_gap_row(
+    backend: str,
+    batching_support: str,
+    transform_support: str,
+    reason: str,
+) -> ExternalComparisonRow:
+    return ExternalComparisonRow(
+        case_id="bounded_phase_objective",
+        backend=backend,
+        status="hard_gap",
+        failure_class="runtime_error",
+        value_error=None,
+        gradient_error=None,
+        runtime_seconds=None,
+        memory_peak_bytes=None,
+        batching_support=batching_support,
+        transform_support=transform_support,
+        dtype="float64",
+        device="cpu",
+        source_of_truth="scpn_reference",
+        setup_instructions=reason,
+        claim_boundary="Runtime comparison gap only; no hidden success or promoted claim.",
+    )
+
+
 def _bounded_phase_objective(values: NDArray[np.float64]) -> float:
     return float(math.cos(values[0]) + 0.25 * math.sin(values[1]))
 
@@ -224,11 +274,78 @@ def _bounded_phase_gradient(values: NDArray[np.float64]) -> NDArray[np.float64]:
     return np.array([-math.sin(values[0]), 0.25 * math.cos(values[1])], dtype=np.float64)
 
 
+def _run_jax_reference(values: NDArray[np.float64]) -> tuple[float, NDArray[np.float64]]:
+    import jax
+    import jax.numpy as jnp
+
+    jax.config.update("jax_enable_x64", True)
+
+    def objective(x):
+        return jnp.cos(x[0]) + 0.25 * jnp.sin(x[1])
+
+    value, gradient = jax.value_and_grad(objective)(jnp.asarray(values, dtype=jnp.float64))
+    return float(value), np.asarray(gradient, dtype=np.float64)
+
+
+def _run_pytorch_reference(values: NDArray[np.float64]) -> tuple[float, NDArray[np.float64]]:
+    import torch
+
+    def objective(x):
+        return torch.cos(x[0]) + 0.25 * torch.sin(x[1])
+
+    tensor = torch.tensor(values, dtype=torch.float64)
+    gradient = torch.func.grad(objective)(tensor)
+    return float(objective(tensor).detach().cpu().item()), gradient.detach().cpu().numpy()
+
+
+def _run_tensorflow_reference(values: NDArray[np.float64]) -> tuple[float, NDArray[np.float64]]:
+    import tensorflow as tf
+
+    tensor = tf.Variable(values, dtype=tf.float64)
+    with tf.GradientTape() as tape:
+        value = tf.cos(tensor[0]) + tf.constant(0.25, dtype=tf.float64) * tf.sin(tensor[1])
+    gradient = tape.gradient(value, tensor)
+    if gradient is None:
+        raise RuntimeError("TensorFlow GradientTape returned no gradient")
+    return float(value.numpy()), np.asarray(gradient.numpy(), dtype=np.float64)
+
+
+def _run_pennylane_reference(values: NDArray[np.float64]) -> tuple[float, NDArray[np.float64]]:
+    import pennylane as qml
+
+    try:
+        from pennylane import numpy as pnp
+    except ImportError as exc:  # pragma: no cover - optional dependency boundary
+        raise ImportError("PennyLane NumPy interface is unavailable") from exc
+
+    dev = qml.device("default.qubit", wires=2)
+
+    @qml.qnode(dev, interface="autograd")
+    def circuit(x):
+        qml.RY(x[0], wires=0)
+        qml.RY(x[1], wires=1)
+        return qml.expval(qml.PauliZ(0)), qml.expval(qml.PauliX(1))
+
+    def objective(x):
+        z0, x1 = circuit(x)
+        return z0 + 0.25 * x1
+
+    params = pnp.array(values, requires_grad=True)
+    value = objective(params)
+    gradient = qml.grad(objective)(params)
+    return float(value), np.asarray(gradient, dtype=np.float64)
+
+
 def _enzyme_tooling_available() -> bool:
     configured_plugin = os.environ.get("ENZYME_LLVM_PLUGIN")
     return shutil.which("enzyme") is not None or bool(
         configured_plugin and os.path.exists(configured_plugin)
     )
+
+
+def _enzyme_runner_configured() -> bool:
+    runner = os.environ.get("SCPN_ENZYME_RUNNER")
+    return bool(runner and os.path.exists(runner) and _enzyme_tooling_available())
 
 
 __all__ = [

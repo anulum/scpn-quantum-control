@@ -67,6 +67,7 @@ these decisions explicit:
 | Use the stable API | [Stable Facades API](stable_facades_api.md) |
 | Bring a custom oscillator network | [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) |
 | Train or inspect gradients | [Differentiable Programming](differentiable_programming.md), [Quantum Gradients](quantum_gradients.md), and [Differentiable API](differentiable_api.md) |
+| Reproduce framework parity | Build the CPU-only framework overlay, run the external comparison suite, and inspect the [claim ledger](../data/differentiable_phase_qnode/claim_ledger.md). |
 | Inspect notebooks | [Interactive Notebooks](notebooks.md) |
 | Build or install the Rust engine | [Rust Engine](rust_engine.md) |
 | Evaluate release readiness | [Release Readiness Gate](release_readiness.md) |
@@ -88,8 +89,8 @@ coupled dynamics matter:
 - **Quantum hardware operations:** raw-count evidence packs, provider
   readiness, and no-QPU gates before new hardware spend.
 - **Differentiable computation:** gradient-bearing primitive kernels used for
-  optimisation, VQE training experiments, compiler-backed AD, and future
-  ML-framework adapters.
+  optimisation, VQE training experiments, compiler-backed AD, CPU-only
+  framework parity, and external ML-framework comparison rows.
 
 ## What Is Mature
 
@@ -111,6 +112,10 @@ coupled dynamics matter:
 - Parameter-shift gradient helpers for callable expectation objectives,
   gradient-descent VQE examples, provider-gradient readiness ledgers, and a
   unified differentiable-readiness audit for reviewer-facing support evidence.
+- The Phase-QNode differentiable lane now has a reproducible CPU framework
+  overlay profile, external comparison rows for JAX, PyTorch, TensorFlow,
+  PennyLane, and optional Enzyme/compiler AD, plus a claim ledger that requires
+  artefact IDs before promotion.
 
 ## What Remains Bounded
 
@@ -118,6 +123,9 @@ coupled dynamics matter:
 - Clinical, biological, or consciousness claims are not externally validated.
 - Hardware evidence must name committed raw-count artefacts and pass the
   relevant ledger gates before promotion.
+- Phase-QNode performance remains SOTA-candidate until a self-hosted
+  `isolated-benchmark` CI runner uploads an `isolated_affinity` artefact; local
+  and GitHub-hosted rows are diagnostic only.
 - General native MLIR/LLVM/JIT AD over arbitrary programs is still an open
   engineering frontier; supported primitives and supported scalar traces
   execute through bounded kernels, and unsupported paths report the blocked

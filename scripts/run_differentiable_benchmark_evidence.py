@@ -16,6 +16,10 @@ from pathlib import Path
 
 from scpn_quantum_control.benchmarks.differentiable_evidence import (
     BenchmarkIsolationMetadata,
+    capture_host_load,
+    infer_heavy_jobs_running,
+    read_cpu_frequency_mhz,
+    read_cpu_governor,
     write_differentiable_benchmark_evidence_bundle,
 )
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
@@ -24,6 +28,8 @@ from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
 
 
 def main() -> int:
+    """Write the differentiable benchmark evidence bundle from CLI arguments."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path("data/differentiable_phase_qnode"))
     parser.add_argument("--cpu-affinity", default=os.environ.get("SCPN_BENCH_CPU_AFFINITY"))
@@ -34,18 +40,23 @@ def main() -> int:
     args = parser.parse_args()
 
     command = ("python", "scripts/run_differentiable_benchmark_evidence.py")
+    load_before = capture_host_load()
+    governor = read_cpu_governor()
+    frequency_mhz = read_cpu_frequency_mhz()
+    heavy_jobs_running = args.heavy_jobs_running or infer_heavy_jobs_running(load_before)
+    timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
+    load_after = capture_host_load()
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         os.environ,
         command=command,
         cpu_affinity=args.cpu_affinity,
         isolation_method=args.isolation_method,
-        load_before=None,
-        load_after=None,
-        governor=None,
-        frequency_mhz=None,
-        heavy_jobs_running=args.heavy_jobs_running,
+        load_before=load_before,
+        load_after=load_after,
+        governor=governor,
+        frequency_mhz=frequency_mhz,
+        heavy_jobs_running=heavy_jobs_running,
     )
-    timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
     bundle = write_differentiable_benchmark_evidence_bundle(
         args.output_dir,
         metadata=metadata,

@@ -88,7 +88,7 @@ graph TD
 | Researcher with a custom network | Physics-First Kuramoto-XY -> Tutorial 7 -> Research Tools |
 | Hardware operator | Hardware Status Ledger -> Hardware Guide -> Hardware Result Packs -> Release Readiness Gate |
 | API integrator | Stable Facades API -> API Overview -> Kuramoto Core Facade |
-| Optimisation or AD user | Differentiable Programming -> Quantum Gradients -> Differentiable API -> gradient support matrix -> release gates before public claims |
+| Optimisation or AD user | Differentiable Programming -> Quantum Gradients -> Differentiable API -> CPU framework overlay -> external comparison rows -> claim ledger -> release gates before public claims |
 
 Every route keeps the same rule: simulator output, hardware evidence, and open
 scientific claims are separate evidence classes.
@@ -100,13 +100,20 @@ Use this route if you are comparing the framework with quantum-ML stacks:
 1. run the local parameter-shift smoke path in [Quickstart](quickstart.md);
 2. verify gradients with [Quantum Gradients](quantum_gradients.md);
 3. inspect public objects in [Differentiable API](differentiable_api.md);
-4. run only supported transform/backend plans from the gradient support matrix;
-5. document unsupported gates, adapters, hardware policies, or transform nests
+4. build the CPU-only overlay from [Differentiable Programming](differentiable_programming.md)
+   before comparing JAX, PyTorch, TensorFlow, or PennyLane rows;
+5. run only supported transform/backend plans from the gradient support matrix;
+6. inspect the Phase-QNode [claim ledger](../data/differentiable_phase_qnode/claim_ledger.md)
+   and benchmark classification before using performance language;
+7. document unsupported gates, adapters, hardware policies, transform nests, or
+   missing Enzyme tooling
    as research evidence rather than hiding them behind finite differences.
 
 This route is intentionally stricter than a demo notebook. It is designed to
 make exact, stochastic, approximate, blocked, and roadmap gradient modes visible
-before users build training loops or publish claims.
+before users build training loops or publish claims. A local or GitHub-hosted
+benchmark row is not production performance evidence unless it is uploaded by a
+self-hosted `isolated-benchmark` runner and classified as `isolated_affinity`.
 
 For compiler-backed AD users, the current native whole-program path supports
 verified static dense determinant lowering through `19x19`, static inverse and
@@ -132,7 +139,7 @@ $\theta_i$ that evolves according to:
 
 $$\frac{d\theta_i}{dt} = \omega_i + \sum_j K_{ij}\sin(\theta_j - \theta_i)$$
 
-When the coupling is strong enough, the oscillators synchronise — their phases
+When the coupling is high enough, the oscillators synchronise — their phases
 align, and the order parameter $R$ rises from 0 (incoherent) toward 1 (perfect sync).
 
 Think of four pendulums hanging from a shared beam. Each swings at its own natural
@@ -451,7 +458,7 @@ for i, K_val in enumerate(result.K_values):
 - Spectral gap reaches minimum (near-degeneracy)
 - Fiedler $\lambda_2$ crosses zero (correlation graph connects)
 
-If all four agree, you have strong evidence of a genuine quantum phase transition.
+If all four agree, you have convergent evidence of a genuine quantum phase transition.
 
 ---
 

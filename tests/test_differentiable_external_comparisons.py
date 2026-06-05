@@ -25,7 +25,39 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_pennylane_available", lambda: True)
-    monkeypatch.setattr(comparison, "_enzyme_tooling_available", lambda: False)
+    monkeypatch.setattr(comparison, "_enzyme_runner_configured", lambda: False)
+    monkeypatch.setattr(
+        comparison,
+        "_run_jax_reference",
+        lambda values: (
+            comparison._bounded_phase_objective(values),
+            comparison._bounded_phase_gradient(values),
+        ),
+    )
+    monkeypatch.setattr(
+        comparison,
+        "_run_pytorch_reference",
+        lambda values: (
+            comparison._bounded_phase_objective(values),
+            comparison._bounded_phase_gradient(values),
+        ),
+    )
+    monkeypatch.setattr(
+        comparison,
+        "_run_tensorflow_reference",
+        lambda values: (
+            comparison._bounded_phase_objective(values),
+            comparison._bounded_phase_gradient(values),
+        ),
+    )
+    monkeypatch.setattr(
+        comparison,
+        "_run_pennylane_reference",
+        lambda values: (
+            comparison._bounded_phase_objective(values),
+            comparison._bounded_phase_gradient(values),
+        ),
+    )
 
     rows = run_differentiable_external_comparison_suite()
     by_backend = {row.backend: row for row in rows}
@@ -45,6 +77,25 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     assert by_backend["enzyme"].status == "hard_gap"
     assert by_backend["enzyme"].failure_class == "dependency_missing"
     assert "LLVM/Enzyme" in str(by_backend["enzyme"].setup_instructions)
+
+
+def test_external_comparison_suite_classifies_runtime_failures(monkeypatch) -> None:
+    monkeypatch.setattr(comparison, "is_phase_jax_available", lambda: True)
+    monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: False)
+    monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: False)
+    monkeypatch.setattr(comparison, "is_phase_pennylane_available", lambda: False)
+    monkeypatch.setattr(comparison, "_enzyme_runner_configured", lambda: False)
+
+    def broken_runner(values):
+        raise RuntimeError("framework callback failed")
+
+    monkeypatch.setattr(comparison, "_run_jax_reference", broken_runner)
+
+    row = {item.backend: item for item in run_differentiable_external_comparison_suite()}["jax"]
+
+    assert row.status == "hard_gap"
+    assert row.failure_class == "runtime_error"
+    assert "framework callback failed" in str(row.setup_instructions)
 
 
 def test_external_comparison_row_requires_hard_gap_fields() -> None:
@@ -100,7 +151,7 @@ def test_external_comparison_suite_records_dependency_missing_rows(monkeypatch) 
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_pennylane_available", lambda: False)
-    monkeypatch.setattr(comparison, "_enzyme_tooling_available", lambda: False)
+    monkeypatch.setattr(comparison, "_enzyme_runner_configured", lambda: False)
 
     rows = run_differentiable_external_comparison_suite()
 

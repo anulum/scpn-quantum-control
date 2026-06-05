@@ -57,6 +57,10 @@ context when available, dependency versions, warmups, repetitions, and timing
 rows.
 
 Rows are labelled `isolated_affinity` only when reserved CPU affinity, low host
-load, fixed command metadata, and absence of heavy concurrent jobs are all
-recorded. Otherwise the result is `functional_non_isolated` and must not be
-used as a production throughput or latency claim.
+load, governor or frequency metadata, fixed command metadata, and absence of
+heavy concurrent jobs are all recorded. Otherwise the result is
+`functional_non_isolated` or `hard_gap` and must not be used as a production
+throughput or latency claim. The GitHub Actions lane must run on a self-hosted
+runner labelled `self-hosted`, `linux`, and `isolated-benchmark`; the helper
+`tools/setup_isolated_benchmark_runner.py` prints or installs that runner
+configuration.

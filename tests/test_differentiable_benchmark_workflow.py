@@ -22,6 +22,8 @@ def test_ci_workflow_declares_parity_and_isolated_benchmark_jobs() -> None:
     assert "isolated-benchmark" in text
     assert "self-hosted" in text
     assert "taskset" in text
+    assert "chrt" in text
+    assert '"classification": "isolated_affinity"' in text
     assert "actions/upload-artifact" in text
 
 
@@ -37,6 +39,7 @@ def test_ci_workflow_uses_cpu_framework_wheels_without_cuda_extra() -> None:
     assert "pennylane" in parity_block
     assert "torch" in parity_block
     assert "install-differentiable-framework-overlay" in parity_block
+    assert "--install" in parity_block
 
 
 def test_ci_workflow_uploads_non_isolated_artifacts_without_production_promotion() -> None:

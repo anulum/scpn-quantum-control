@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import csv
 import json
+import os
+import platform
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -28,6 +30,10 @@ class BenchmarkIsolationMetadata:
     runner_labels: tuple[str, ...]
     github_run_id: str | None
     commit_sha: str | None
+    runner_os: str
+    python_version: str
+    platform: str
+    cpu_count: int | None
     cpu_affinity: str | None
     isolation_method: str | None
     load_before: tuple[float, float, float] | None
@@ -36,6 +42,7 @@ class BenchmarkIsolationMetadata:
     frequency_mhz: float | None
     heavy_jobs_running: bool
     classification: str
+    failure_class: str | None
     production_eligible: bool
     gap_reason: str | None
 
@@ -61,6 +68,7 @@ class BenchmarkIsolationMetadata:
         runner_environment = env.get("RUNNER_ENVIRONMENT", "")
         runner_type = "self-hosted" if runner_environment == "self-hosted" else "github-hosted"
         has_isolated_label = "isolated-benchmark" in labels
+        cpu_count = os.cpu_count()
         has_required_context = all(
             (
                 cpu_affinity,
@@ -79,9 +87,18 @@ class BenchmarkIsolationMetadata:
         )
         if production_eligible:
             classification = "isolated_affinity"
+            failure_class = None
             gap_reason = None
+        elif runner_type == "self-hosted" and has_isolated_label:
+            classification = "hard_gap"
+            failure_class = "insufficient_isolation_metadata"
+            gap_reason = (
+                "Self-hosted isolated benchmark runner did not provide complete CPU "
+                "affinity, host load, governor/frequency, and heavy-job metadata."
+            )
         else:
             classification = "functional_non_isolated"
+            failure_class = "non_isolated_runner"
             gap_reason = (
                 "Production benchmark promotion requires a self-hosted isolated benchmark "
                 "runner, CPU affinity, isolation method, host load, governor/frequency "
@@ -94,6 +111,10 @@ class BenchmarkIsolationMetadata:
             runner_labels=labels,
             github_run_id=env.get("GITHUB_RUN_ID"),
             commit_sha=env.get("GITHUB_SHA"),
+            runner_os=env.get("RUNNER_OS", platform.system()),
+            python_version=platform.python_version(),
+            platform=platform.platform(),
+            cpu_count=cpu_count,
             cpu_affinity=cpu_affinity,
             isolation_method=isolation_method,
             load_before=load_before,
@@ -102,6 +123,7 @@ class BenchmarkIsolationMetadata:
             frequency_mhz=frequency_mhz,
             heavy_jobs_running=heavy_jobs_running,
             classification=classification,
+            failure_class=failure_class,
             production_eligible=production_eligible,
             gap_reason=gap_reason,
         )
@@ -116,6 +138,10 @@ class BenchmarkIsolationMetadata:
             "runner_labels": list(self.runner_labels),
             "github_run_id": self.github_run_id,
             "commit_sha": self.commit_sha,
+            "runner_os": self.runner_os,
+            "python_version": self.python_version,
+            "platform": self.platform,
+            "cpu_count": self.cpu_count,
             "cpu_affinity": self.cpu_affinity,
             "isolation_method": self.isolation_method,
             "load_before": list(self.load_before) if self.load_before is not None else None,
@@ -124,6 +150,7 @@ class BenchmarkIsolationMetadata:
             "frequency_mhz": self.frequency_mhz,
             "heavy_jobs_running": self.heavy_jobs_running,
             "classification": self.classification,
+            "failure_class": self.failure_class,
             "production_eligible": self.production_eligible,
             "gap_reason": self.gap_reason,
         }
@@ -165,6 +192,10 @@ def write_differentiable_benchmark_evidence_bundle(
         "generated_at_epoch": generated_at,
         "metadata": metadata.to_dict(),
         "timing_rows": rows,
+        "evidence_artifact_ids": [
+            resolved_artifact_id,
+            "diff-qnode-external-comparison-schema-v1",
+        ],
         "claim_boundary": (
             "CI benchmark evidence only. functional_non_isolated rows are parity/local "
             "regression artefacts and cannot support production performance claims."
@@ -184,6 +215,7 @@ def write_differentiable_benchmark_evidence_bundle(
                 f"- Artefact ID: `{resolved_artifact_id}`",
                 f"- Classification: `{metadata.classification}`",
                 f"- Production eligible: `{metadata.production_eligible}`",
+                f"- Failure class: {metadata.failure_class or 'none'}",
                 f"- Gap reason: {metadata.gap_reason or 'none'}",
                 "",
                 "No provider or QPU execution is performed by this evidence writer.",
@@ -202,8 +234,55 @@ def write_differentiable_benchmark_evidence_bundle(
     )
 
 
+def capture_host_load() -> tuple[float, float, float] | None:
+    """Return host load averages when the platform exposes them."""
+
+    try:
+        one, five, fifteen = os.getloadavg()
+        return (float(one), float(five), float(fifteen))
+    except (AttributeError, OSError):
+        return None
+
+
+def read_cpu_governor(cpu_index: int = 0) -> str | None:
+    """Read Linux CPU frequency governor metadata when available."""
+
+    path = Path(f"/sys/devices/system/cpu/cpu{cpu_index}/cpufreq/scaling_governor")
+    if not path.exists():
+        return None
+    value = path.read_text(encoding="utf-8", errors="replace").strip()
+    return value or None
+
+
+def read_cpu_frequency_mhz(cpu_index: int = 0) -> float | None:
+    """Read Linux CPU frequency metadata in MHz when available."""
+
+    sysfs_path = Path(f"/sys/devices/system/cpu/cpu{cpu_index}/cpufreq/scaling_cur_freq")
+    if sysfs_path.exists():
+        value = sysfs_path.read_text(encoding="utf-8", errors="replace").strip()
+        if value:
+            return float(value) / 1000.0
+    cpuinfo = Path("/proc/cpuinfo")
+    if cpuinfo.exists():
+        for line in cpuinfo.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.lower().startswith("cpu mhz"):
+                return float(line.split(":", maxsplit=1)[1].strip())
+    return None
+
+
+def infer_heavy_jobs_running(load: tuple[float, float, float] | None) -> bool:
+    """Infer whether current host load is too high for production promotion."""
+
+    cpu_count = os.cpu_count() or 1
+    return bool(load and load[0] > max(1.0, cpu_count * 0.75))
+
+
 __all__ = [
     "BenchmarkIsolationMetadata",
     "DifferentiableBenchmarkEvidenceBundle",
+    "capture_host_load",
+    "infer_heavy_jobs_running",
+    "read_cpu_frequency_mhz",
+    "read_cpu_governor",
     "write_differentiable_benchmark_evidence_bundle",
 ]

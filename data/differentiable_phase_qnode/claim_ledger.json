@@ -25,6 +25,9 @@
       "evidence_artifact_ids": [
         "diff-qnode-framework-overlay-profile-v1"
       ],
+      "benchmark_artifact_ids": [
+        "diff-qnode-framework-overlay-profile-v1"
+      ],
       "known_gaps": [
         "Local machines must still run the manifest install command before parity can execute.",
         "The overlay is CPU-only and intentionally excludes the repository jax[cuda12] extra."
@@ -51,6 +54,9 @@
       "evidence_artifact_ids": [
         "diff-qnode-ci-evidence-schema-v1"
       ],
+      "benchmark_artifact_ids": [
+        "diff-qnode-ci-evidence-schema-v1"
+      ],
       "known_gaps": [
         "GitHub-hosted runners are downgraded to functional_non_isolated.",
         "Production isolated_affinity promotion requires a self-hosted isolated-benchmark runner artefact."
@@ -72,6 +78,9 @@
         "data/differentiable_phase_qnode/claim_ledger.md"
       ],
       "evidence_artifact_ids": [
+        "diff-qnode-external-comparison-schema-v1"
+      ],
+      "benchmark_artifact_ids": [
         "diff-qnode-external-comparison-schema-v1"
       ],
       "known_gaps": [
@@ -101,6 +110,9 @@
         "data/differentiable_phase_qnode/claim_ledger.md"
       ],
       "evidence_artifact_ids": [
+        "diff-qnode-claim-ledger-v1"
+      ],
+      "benchmark_artifact_ids": [
         "diff-qnode-claim-ledger-v1"
       ],
       "known_gaps": [

@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-05 — Hardened the differentiable Phase-QNode promotion lane with a
+  CPU-only framework overlay installer, isolated benchmark metadata gates,
+  real optional-framework comparison execution, self-hosted runner setup
+  tooling, and stricter claim-ledger promotion checks.
 - 2026-06-05 — Added a registered local Phase-QNode circuit family with
   statevector execution, analytic parameter-shift gradients, Pauli-product and
   sparse-Hamiltonian expectations, structured support reports, framework parity

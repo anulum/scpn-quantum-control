@@ -11,7 +11,7 @@
 *98 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
-(2026-03-29) with 19 findings (6 negative) including hardware-artifact
+(2026-03-29) with 19 findings (6 negative) including hardware-artefact
 dual protection on ibm_fez.*
 
 ---
@@ -34,9 +34,17 @@ Recommended first path:
 
 For differentiable-programming work, pair every notebook with the public
 [Quantum Gradients](quantum_gradients.md), [Differentiable API](differentiable_api.md),
-and [Differentiable Roadmap](differentiable_roadmap.md) pages. Notebook curves
-are exploratory until the underlying gradient certificates, support-matrix
-plans, and benchmark artefacts are committed.
+and [Differentiable Roadmap](differentiable_roadmap.md) pages. Build the
+CPU-only framework overlay from [Differentiable Programming](differentiable_programming.md)
+before treating JAX, PyTorch, TensorFlow, or PennyLane comparison rows as
+reproducible. Notebook curves are exploratory until the underlying gradient
+certificates, support-matrix plans, external comparison rows, benchmark
+classifications, and claim-ledger artefact IDs are committed.
+
+For Phase-QNode performance language, notebooks are never enough by themselves:
+the CI evidence bundle must report `isolated_affinity` from a self-hosted
+`isolated-benchmark` runner. Missing Enzyme/compiler AD tooling is recorded as a
+dependency gap, not as a passed comparison.
 
 For a non-notebook entry point, use [Quickstart](quickstart.md).
 
@@ -550,7 +558,7 @@ graph LR
 |--------|------|--------|
 | SNN adapter | Membrane $\to$ angle $\to$ membrane roundtrip | RMSE < 0.01 |
 | SSGF adapter | $W \to H \to$ Trotter $\to$ phases $\to W'$ | Phase fidelity plot |
-| Orchestrator | State payload $\to$ artifact $\to$ quantum $\to$ feedback | Advance/hold decision |
+| Orchestrator | State payload $\to$ artefact $\to$ quantum $\to$ feedback | Advance/hold decision |
 | Fusion-core | Plasma $K_{nm} \to$ Hamiltonian $\to R$ | Coupling comparison |
 
 **Modules used:** `bridge.snn_adapter`, `bridge.ssgf_adapter`,
@@ -593,7 +601,7 @@ for the full findings. All results are saved as JSON in `results/`.
 | 36 | Topology universality | **Universal on all 6 networks**, small-world optimal |
 | 37 | Mean-field self-consistent | R* = √(1−2Δ/(K·R+λ·R/(1−R²+ε))) |
 | 38 | FIM-MBL mechanism | M²/n sector splitting, 2.3x spectrum stretch |
-| 39 | IBM hardware v2 | Equal-depth aggregate artifacts, unpromoted pending raw-count review |
+| 39 | IBM hardware v2 | Equal-depth aggregate artefacts, unpromoted pending raw-count review |
 | 40 | SPO cross-validation | U(1) confirmed, Lyapunov correspondence 5/6 |
 | 41 | Stochastic resonance | **FIM-mediated SR** at weak coupling |
 | 42 | Delayed FIM | Delay-robust with coupling, fragile without |

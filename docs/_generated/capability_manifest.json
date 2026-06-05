@@ -14,7 +14,7 @@
     "python_model_source_modules": 808,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1921
+    "test_files": 1922
   },
   "documentation": {
     "examples": [
@@ -11009,6 +11009,7 @@
       "tests/test_s4_provider_preregistration.py",
       "tests/test_sc_to_quantum.py",
       "tests/test_serialization_surface_audit.py",
+      "tests/test_setup_isolated_benchmark_runner.py",
       "tests/test_shadow_tomography.py",
       "tests/test_snn_adapter.py",
       "tests/test_snn_backward.py",

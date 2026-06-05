@@ -55,11 +55,13 @@ repository `jax` extra, because that extra resolves to `jax[cuda12]`.
 ```bash
 PYTHONPATH=src:. python scripts/install_differentiable_framework_overlay.py \
   --overlay-path "${XDG_CACHE_HOME:-$HOME/.cache}/scpn-qc-framework-site-py312" \
-  --manifest-path /tmp/scpn-qc-framework-overlay.json
+  --manifest-path /tmp/scpn-qc-framework-overlay.json \
+  --install
 ```
 
-The generated manifest prints the exact `PYTHONPATH` for parity runs and lists
-only CPU wheels: `jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`.
+The generated manifest prints the exact `PYTHONPATH` for parity runs, records
+package versions when verification succeeds, and lists only CPU wheels:
+`jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`.
 
 Benchmark artefacts written by
 `scripts/run_differentiable_benchmark_evidence.py` are CI evidence only.
@@ -68,6 +70,18 @@ performance wording requires a self-hosted runner labelled
 `isolated-benchmark`, explicit CPU affinity, host-load context, governor or
 frequency context, and no concurrent heavy jobs. Missing Enzyme tooling is a
 recorded `dependency_missing` hard gap, not a hidden success.
+
+Self-hosted runner preparation is explicit:
+
+```bash
+PYTHONPATH=src:. python tools/setup_isolated_benchmark_runner.py \
+  --repo anulum/scpn-quantum-control
+```
+
+The helper prints the labels, runner directory, runner version, and download
+URL without mutating the host. Add `--install` only on the reserved Linux x64
+benchmark host. A claim is still not promoted until the CI artefact itself
+reports `isolated_affinity`.
 
 ## User routes
 

@@ -31,6 +31,7 @@ class ClaimLedgerRow:
     test_surface: tuple[str, ...]
     docs_surface: tuple[str, ...]
     evidence_artifact_ids: tuple[str, ...]
+    benchmark_artifact_ids: tuple[str, ...]
     known_gaps: tuple[str, ...]
     promotion_status: PromotionStatus
     claim_boundary: str
@@ -65,6 +66,9 @@ class ClaimLedgerRow:
             test_surface=tuple(str(item) for item in payload["test_surface"]),
             docs_surface=tuple(str(item) for item in payload["docs_surface"]),
             evidence_artifact_ids=tuple(str(item) for item in payload["evidence_artifact_ids"]),
+            benchmark_artifact_ids=_string_tuple(
+                payload.get("benchmark_artifact_ids") or payload["evidence_artifact_ids"]
+            ),
             known_gaps=tuple(str(item) for item in payload["known_gaps"]),
             promotion_status=str(payload["promotion_status"]),  # type: ignore[arg-type]
             claim_boundary=str(payload["claim_boundary"]),
@@ -80,6 +84,7 @@ class ClaimLedgerRow:
             "test_surface": list(self.test_surface),
             "docs_surface": list(self.docs_surface),
             "evidence_artifact_ids": list(self.evidence_artifact_ids),
+            "benchmark_artifact_ids": list(self.benchmark_artifact_ids),
             "known_gaps": list(self.known_gaps),
             "promotion_status": self.promotion_status,
             "claim_boundary": self.claim_boundary,
@@ -109,6 +114,14 @@ class ClaimLedgerValidation:
 MappingLike = dict[str, Any]
 
 
+def _string_tuple(value: Any) -> tuple[str, ...]:
+    """Return a tuple of strings from a JSON list-like value."""
+
+    if not isinstance(value, list | tuple):
+        raise ValueError("expected a list-like JSON value")
+    return tuple(str(item) for item in value)
+
+
 def load_differentiable_claim_ledger(path: Path = DEFAULT_LEDGER_PATH) -> ClaimLedger:
     """Load the committed differentiable claim ledger."""
 
@@ -122,6 +135,8 @@ def load_differentiable_claim_ledger(path: Path = DEFAULT_LEDGER_PATH) -> ClaimL
 
 def validate_claim_ledger(
     rows_or_ledger: ClaimLedger | Sequence[ClaimLedgerRow],
+    *,
+    artifact_statuses: MappingLike | None = None,
 ) -> ClaimLedgerValidation:
     """Validate claim ledger promotion invariants."""
 
@@ -136,11 +151,38 @@ def validate_claim_ledger(
         seen.add(row.claim_id)
         if row.promotion_status == "promoted" and not row.evidence_artifact_ids:
             errors.append(f"{row.claim_id}: promoted claims require at least one artefact ID")
+        if row.promotion_status == "promoted" and not row.benchmark_artifact_ids:
+            errors.append(f"{row.claim_id}: promoted claims require benchmark evidence IDs")
         if (
             row.promotion_status in {"promoted", "SOTA-candidate"}
             and not row.evidence_artifact_ids
         ):
             errors.append(f"{row.claim_id}: candidate claims require artefact ID evidence")
+        if artifact_statuses and row.promotion_status == "promoted":
+            for artifact_id in row.evidence_artifact_ids:
+                if artifact_statuses.get(artifact_id) != "passed":
+                    errors.append(f"{row.claim_id}: artefact {artifact_id} is not passed")
+    return ClaimLedgerValidation(passed=not errors, errors=tuple(errors))
+
+
+def validate_public_language_against_ledger(
+    rows_or_ledger: ClaimLedger | Sequence[ClaimLedgerRow],
+    public_texts: Iterable[str],
+) -> ClaimLedgerValidation:
+    """Reject public SOTA wording when the ledger has no promoted claim."""
+
+    rows = (
+        rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
+    )
+    has_promoted = any(row.promotion_status == "promoted" for row in rows)
+    if has_promoted:
+        return ClaimLedgerValidation(passed=True, errors=())
+    banned = ("world-leading", "state-of-the-art", "SOTA", "production performance")
+    errors: list[str] = []
+    for text in public_texts:
+        for phrase in banned:
+            if phrase in text and "SOTA-candidate" not in text:
+                errors.append(f"public wording exceeds claim ledger: {phrase}")
     return ClaimLedgerValidation(passed=not errors, errors=tuple(errors))
 
 
@@ -163,15 +205,16 @@ def render_claim_ledger_markdown(rows_or_ledger: ClaimLedger | Iterable[ClaimLed
         "",
         "# Differentiable Phase-QNode Claim Ledger",
         "",
-        "| Claim | Status | Artefact IDs | Known gaps |",
-        "|---|---|---|---|",
+        "| Claim | Status | Artefact IDs | Benchmark IDs | Known gaps |",
+        "|---|---|---|---|---|",
     ]
     for row in rows:
         lines.append(
-            "| {claim} | {status} | {artefacts} | {gaps} |".format(
+            "| {claim} | {status} | {artefacts} | {benchmarks} | {gaps} |".format(
                 claim=row.claim_id,
                 status=row.promotion_status,
                 artefacts=", ".join(row.evidence_artifact_ids) or "none",
+                benchmarks=", ".join(row.benchmark_artifact_ids) or "none",
                 gaps="<br>".join(row.known_gaps),
             )
         )
@@ -192,4 +235,5 @@ __all__ = [
     "load_differentiable_claim_ledger",
     "render_claim_ledger_markdown",
     "validate_claim_ledger",
+    "validate_public_language_against_ledger",
 ]

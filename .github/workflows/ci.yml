@@ -211,10 +211,9 @@ jobs:
           python -m pip install --no-deps -e .
       - name: Build CPU-only differentiable framework overlay
         run: |
+          # CPU wheels: jax[cpu], tensorflow-cpu, pennylane, torch.
           export SCPN_FRAMEWORK_OVERLAY="$RUNNER_TEMP/scpn-qc-framework-site-py312"
-          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY"
-          python -m pip install --target "$SCPN_FRAMEWORK_OVERLAY" --upgrade "jax[cpu]" "tensorflow-cpu" "pennylane"
-          python -m pip install --target "$SCPN_FRAMEWORK_OVERLAY" --upgrade --index-url https://download.pytorch.org/whl/cpu "torch"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --install
           echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" >> "$GITHUB_ENV"
           install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --verify
       - name: Run differentiable parity tests
@@ -278,7 +277,7 @@ jobs:
               --output-dir differentiable-isolated-benchmark-evidence \
               --cpu-affinity "$SCPN_BENCH_CPU_AFFINITY" \
               --isolation-method "$SCPN_BENCH_ISOLATION_METHOD"
-          grep -R "classification" differentiable-isolated-benchmark-evidence
+          grep -R '"classification": "isolated_affinity"' differentiable-isolated-benchmark-evidence
       - name: Upload isolated differentiable benchmark evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:

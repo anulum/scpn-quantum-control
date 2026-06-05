@@ -15,6 +15,7 @@ import numpy as np
 
 from scpn_quantum_control.benchmarks.differentiable_evidence import (
     BenchmarkIsolationMetadata,
+    infer_heavy_jobs_running,
     write_differentiable_benchmark_evidence_bundle,
 )
 
@@ -40,6 +41,7 @@ def test_github_hosted_benchmark_metadata_downgrades_to_functional_non_isolated(
 
     assert metadata.runner_type == "github-hosted"
     assert metadata.classification == "functional_non_isolated"
+    assert metadata.failure_class == "non_isolated_runner"
     assert not metadata.production_eligible
     assert metadata.github_run_id == "12345"
     assert metadata.commit_sha == "abc123"
@@ -73,8 +75,33 @@ def test_self_hosted_isolated_metadata_promotes_only_with_all_required_context()
 
     assert metadata.runner_type == "self-hosted"
     assert metadata.classification == "isolated_affinity"
+    assert metadata.failure_class is None
     assert metadata.production_eligible
     assert metadata.gap_reason is None
+
+
+def test_self_hosted_isolated_metadata_requires_full_host_context() -> None:
+    metadata = BenchmarkIsolationMetadata.from_ci_environment(
+        {
+            "GITHUB_RUN_ID": "67890",
+            "GITHUB_SHA": "def456",
+            "RUNNER_NAME": "isolated-qc-runner",
+            "RUNNER_ENVIRONMENT": "self-hosted",
+            "RUNNER_LABELS": "self-hosted,linux,isolated-benchmark",
+        },
+        command=("python", "scripts/run_differentiable_benchmark_evidence.py"),
+        cpu_affinity="2",
+        isolation_method="taskset",
+        load_before=None,
+        load_after=None,
+        governor=None,
+        frequency_mhz=None,
+        heavy_jobs_running=False,
+    )
+
+    assert metadata.classification == "hard_gap"
+    assert metadata.failure_class == "insufficient_isolation_metadata"
+    assert not metadata.production_eligible
 
 
 def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_ids(
@@ -115,6 +142,15 @@ def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_id
     raw = bundle.raw_json_path.read_text(encoding="utf-8")
     assert bundle.artifact_id in raw
     assert "functional_non_isolated" in raw
+    assert "diff-qnode-external-comparison-schema-v1" in raw
+    assert "non_isolated_runner" in raw
     assert "phase_qnode_vector_grad" in bundle.csv_path.read_text(encoding="utf-8")
     assert "functional_non_isolated" in bundle.markdown_path.read_text(encoding="utf-8")
     assert np.isfinite(bundle.generated_at_epoch)
+
+
+def test_heavy_job_inference_uses_cpu_scaled_load(monkeypatch) -> None:
+    monkeypatch.setattr("os.cpu_count", lambda: 4)
+
+    assert infer_heavy_jobs_running((4.0, 1.0, 1.0))
+    assert not infer_heavy_jobs_running((1.0, 1.0, 1.0))
