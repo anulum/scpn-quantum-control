@@ -69,6 +69,15 @@ def test_gradient_support_matrix_routes_finite_shot_and_host_bridge_paths() -> N
         adapter="qiskit",
         n_params=1,
     )
+    provider_plan = plan_gradient_support(
+        gate="ry",
+        observable="pauli_expectation",
+        backend="qasm_simulator",
+        transform="value_and_grad",
+        adapter="provider",
+        n_params=2,
+        shots=400,
+    )
 
     assert finite_shot.supported
     assert finite_shot.recommended_method == "stochastic_parameter_shift"
@@ -85,6 +94,12 @@ def test_gradient_support_matrix_routes_finite_shot_and_host_bridge_paths() -> N
     assert qiskit_plan.observable == "sparse_pauli_sum"
     assert qiskit_plan.backend == "statevector"
     assert qiskit_plan.recommended_method == "qiskit_shifted_circuit_parameter_shift"
+
+    assert provider_plan.supported
+    assert provider_plan.adapter == "provider_callback"
+    assert provider_plan.recommended_method == "provider_callback_stochastic_parameter_shift"
+    assert provider_plan.evaluation_mode == "finite_shot_provider_callback"
+    assert provider_plan.requires_finite_shot_variance
 
 
 def test_gradient_support_matrix_fails_closed_for_unsupported_components() -> None:
@@ -201,8 +216,8 @@ def test_gradient_support_matrix_audit_records_expected_supported_and_blocked_ro
 
     assert isinstance(audit, GradientSupportMatrixAuditResult)
     assert audit.passed
-    assert len(audit.plans) == 9
-    assert len(audit.supported_plans) == 4
+    assert len(audit.plans) == 10
+    assert len(audit.supported_plans) == 5
     assert len(audit.blocked_plans) == 5
     assert audit.failing_plans == ()
     assert payload["passed"] is True

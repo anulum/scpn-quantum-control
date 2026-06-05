@@ -235,6 +235,13 @@ from .qnn_training import (
     train_parameter_shift_qnn_classifier,
     verify_parameter_shift_qnn_classifier_gradient,
 )
+from .qnode_provider_transforms import (
+    ProviderQNodeTransformReadinessSuiteResult,
+    ProviderQNodeTransformResult,
+    execute_provider_qnode_transform,
+    execute_provider_qnode_vmap_grad,
+    run_provider_qnode_transform_readiness_suite,
+)
 from .qnode_tape import (
     PhaseQNodeTape,
     PhaseQNodeTapeReadinessSuiteResult,
@@ -379,6 +386,11 @@ __all__ = [
     "PhaseQNodeTapeReadinessSuiteResult",
     "PhaseQNodeTapeRecord",
     "run_phase_qnode_tape_readiness_suite",
+    "ProviderQNodeTransformReadinessSuiteResult",
+    "ProviderQNodeTransformResult",
+    "execute_provider_qnode_transform",
+    "execute_provider_qnode_vmap_grad",
+    "run_provider_qnode_transform_readiness_suite",
     "PhaseQNodeTransformReadinessSuiteResult",
     "PhaseQNodeTransformResult",
     "execute_phase_qnode_transform",

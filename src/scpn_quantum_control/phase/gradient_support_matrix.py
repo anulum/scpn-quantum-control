@@ -118,6 +118,13 @@ class GradientSupportMatrixAuditResult:
             ("rz", "kuramoto_xy_energy", "qasm_simulator", "grad", "native"),
             ("ry", "pauli_expectation", "statevector", "value_and_grad", "jax"),
             ("rx", "sparse_pauli_sum", "statevector", "grad", "qiskit"),
+            (
+                "ry",
+                "pauli_expectation",
+                "qasm_simulator",
+                "value_and_grad",
+                "provider_callback",
+            ),
         }
         failures: list[GradientSupportPlan] = []
         for plan in self.plans:
@@ -393,6 +400,21 @@ _ADAPTER_CAPABILITIES: dict[str, GradientSupportCapability] = {
         alternatives=("native",),
         claim_boundary="Qiskit shifted-circuit/local execution support; live hardware submission remains policy-gated",
     ),
+    "provider_callback": GradientSupportCapability(
+        category="adapter",
+        name="provider_callback",
+        supported=True,
+        gradient_methods=(
+            "provider_callback_parameter_shift",
+            "provider_callback_stochastic_parameter_shift",
+        ),
+        conditions=(
+            "caller supplies shifted expectation samples with variance metadata for finite-shot routes",
+        ),
+        blocked_reasons=(),
+        alternatives=("native", "qiskit"),
+        claim_boundary="provider callback execution support; live hardware submission remains policy-gated",
+    ),
 }
 
 _UNSUPPORTED_CAPABILITIES: dict[SupportCategory, GradientSupportCapability] = {
@@ -443,7 +465,15 @@ _UNSUPPORTED_CAPABILITIES: dict[SupportCategory, GradientSupportCapability] = {
         gradient_methods=(),
         conditions=(),
         blocked_reasons=("adapter has no registered quantum-gradient bridge",),
-        alternatives=("native", "jax", "pytorch", "tensorflow", "pennylane", "qiskit"),
+        alternatives=(
+            "native",
+            "jax",
+            "pytorch",
+            "tensorflow",
+            "pennylane",
+            "qiskit",
+            "provider_callback",
+        ),
         claim_boundary="unsupported adapter; no derivative execution is permitted",
     ),
 }
@@ -484,6 +514,8 @@ _ALIAS_MAP: dict[SupportCategory, dict[str, str]] = {
         "torch": "pytorch",
         "tf": "tensorflow",
         "qml": "pennylane",
+        "provider": "provider_callback",
+        "callback": "provider_callback",
     },
 }
 
@@ -579,7 +611,11 @@ def plan_gradient_support(
     if transform_key == "hessian" and backend_plan.finite_shot:
         blocked_reasons += ("hessian support is limited to deterministic local backends",)
         alternatives += ("grad", "statevector")
-    if transform_key in {"jvp", "vjp", "jacfwd", "jacrev"} and backend_plan.finite_shot:
+    if (
+        transform_key in {"jvp", "vjp", "jacfwd", "jacrev"}
+        and backend_plan.finite_shot
+        and adapter_key != "provider_callback"
+    ):
         blocked_reasons += (
             "directional and scalar-Jacobian transforms require deterministic local expectations",
         )
@@ -597,6 +633,18 @@ def plan_gradient_support(
         alternatives += ("native", "grad", "value_and_grad")
     if adapter_key == "qiskit" and transform_key not in {"grad", "value_and_grad"}:
         blocked_reasons += ("qiskit bridge supports shifted-circuit first-order gradients",)
+        alternatives += ("native", "grad", "value_and_grad")
+    if adapter_key == "provider_callback" and transform_key not in {
+        "grad",
+        "value_and_grad",
+        "jvp",
+        "vjp",
+        "jacfwd",
+        "jacrev",
+    }:
+        blocked_reasons += (
+            "provider_callback adapter supports scalar first-order QNode transforms only",
+        )
         alternatives += ("native", "grad", "value_and_grad")
 
     supported = not blocked_reasons
@@ -663,6 +711,15 @@ def run_gradient_support_matrix_audit() -> GradientSupportMatrixAuditResult:
             transform="grad",
             adapter="qiskit",
             n_params=1,
+        ),
+        plan_gradient_support(
+            gate="ry",
+            observable="pauli_expectation",
+            backend="qasm_simulator",
+            transform="value_and_grad",
+            adapter="provider_callback",
+            n_params=2,
+            shots=400,
         ),
         plan_gradient_support(
             gate="arbitrary_unitary",
@@ -825,6 +882,10 @@ def _compatibility_warnings(
         warnings.append(
             "qiskit route is shifted-circuit/local execution unless provider policy is supplied"
         )
+    if adapter == "provider_callback":
+        warnings.append(
+            "provider callback route requires caller-supplied expectation samples and variance metadata for finite-shot execution"
+        )
     if transform == "hessian":
         warnings.append("hessian route is a local curvature diagnostic")
     return tuple(warnings)
@@ -853,6 +914,10 @@ def _recommended_method(
         return "pennylane_gradient_agreement"
     if adapter == "qiskit":
         return "qiskit_shifted_circuit_parameter_shift"
+    if adapter == "provider_callback":
+        if backend_plan.finite_shot:
+            return "provider_callback_stochastic_parameter_shift"
+        return "provider_callback_parameter_shift"
     if transform == "hessian":
         return "parameter_shift_hessian"
     if transform == "gradient_tape":
@@ -868,8 +933,12 @@ def _evaluation_mode(
 ) -> str:
     if not supported:
         return "fail_closed"
+    if adapter == "provider_callback" and backend_plan.finite_shot:
+        return "finite_shot_provider_callback"
     if backend_plan.finite_shot:
         return "finite_shot_callback"
+    if adapter == "provider_callback":
+        return "provider_callback"
     if adapter != "native":
         return "host_bridge"
     if transform == "hessian":
@@ -885,6 +954,8 @@ def _claim_boundary(
 ) -> str:
     if not supported:
         return "unsupported combination; no derivative execution or production claim is permitted"
+    if adapter == "provider_callback":
+        return "provider callback gradient support with explicit sample records; no live hardware claim is implied"
     if backend_plan.finite_shot:
         return "finite-shot gradient support with explicit variance metadata; no hardware claim is implied"
     if adapter != "native":

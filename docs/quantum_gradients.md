@@ -1131,6 +1131,52 @@ hardware, adapter, and finite-shot scenarios. The implementation deliberately
 does not claim provider vectorization, framework-native `vmap`, finite-shot
 batched-gradient statistics, or hardware transform execution.
 
+## Provider-callback QNode transforms
+
+`execute_provider_qnode_transform(...)` binds the provider callback gradient
+contract to scalar QNode transform evidence. The caller supplies a sampler that
+returns `ProviderExpectationSample` records for shifted parameter vectors. The
+executor supports scalar `grad`, `value_and_grad`, `jvp`, `vjp`,
+`jacfwd`/`jacrev`, and reports the shifted samples, shot totals, standard error,
+and confidence radii carried by `execute_provider_parameter_shift_gradient(...)`.
+
+```python
+import numpy as np
+from scpn_quantum_control.phase import (
+    ProviderExpectationSample,
+    execute_provider_qnode_transform,
+)
+
+
+def sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+    return ProviderExpectationSample(
+        value=float(np.cos(params[0]) + 0.25 * np.sin(params[1])),
+        variance=None if shots is None else 0.04,
+        shots=shots,
+    )
+
+
+result = execute_provider_qnode_transform(
+    "value_and_grad",
+    sampler,
+    np.array([0.2, -0.4]),
+    backend="qasm_simulator",
+    shots=400,
+)
+print(result.value, result.gradient, result.standard_error, result.total_shots)
+```
+
+`execute_provider_qnode_vmap_grad(...)` provides a host-side manual
+`vmap(grad)` route over provider callback gradients. It records one provider
+gradient result per batch row and fails closed if any row lacks required
+finite-shot variance metadata.
+
+The readiness helper `run_provider_qnode_transform_readiness_suite()` records
+supported deterministic, finite-shot, directional, scalar-Jacobian, and manual
+batch routes alongside blocked hardware, curvature, and malformed finite-shot
+scenarios. This is provider-callback execution evidence, not live provider job
+submission or unrestricted hardware-gradient execution.
+
 ## Scalar QNode transform execution
 
 `execute_phase_qnode_transform(...)` executes scalar local phase-QNode transforms
