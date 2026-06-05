@@ -100,6 +100,11 @@ from .kuramoto_variants import (
     simulate_pt_symmetric_kuramoto,
 )
 from .lindblad_engine import LindbladSyncEngine
+from .model_training_evidence import (
+    DifferentiableModelTrainingEvidenceSuite,
+    DifferentiableModelTrainingRecord,
+    run_differentiable_model_training_evidence_suite,
+)
 from .natural_gradient import (
     NaturalGradientDirection,
     ParameterShiftNaturalGradientCertificate,
@@ -268,6 +273,32 @@ from .qnn_training import (
     train_parameter_shift_qnn_classifier,
     verify_parameter_shift_qnn_classifier_gradient,
 )
+from .qnode_affinity_benchmark import (
+    PhaseQNodeAffinityBenchmarkMetadata,
+    PhaseQNodeAffinityBenchmarkResult,
+    classify_affinity_evidence,
+    run_phase_qnode_affinity_benchmark,
+)
+from .qnode_circuit import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    PhaseQNodeExecutionResult,
+    PhaseQNodeGradientResult,
+    PhaseQNodeOperation,
+    PhaseQNodeSupportError,
+    PhaseQNodeSupportReport,
+    SparsePauliHamiltonian,
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+    phase_qnode_support_report,
+    registered_phase_qnode_gates,
+    registered_phase_qnode_observables,
+)
+from .qnode_framework_parity import (
+    PhaseQNodeFrameworkParityRecord,
+    PhaseQNodeFrameworkParitySuiteResult,
+    run_phase_qnode_framework_parity_suite,
+)
 from .qnode_provider_transforms import (
     ProviderQNodeTransformReadinessSuiteResult,
     ProviderQNodeTransformResult,
@@ -435,6 +466,29 @@ __all__ = [
     "PhaseQNodeTapeReadinessSuiteResult",
     "PhaseQNodeTapeRecord",
     "run_phase_qnode_tape_readiness_suite",
+    "PauliTerm",
+    "PhaseQNodeCircuit",
+    "PhaseQNodeExecutionResult",
+    "PhaseQNodeGradientResult",
+    "PhaseQNodeOperation",
+    "PhaseQNodeSupportError",
+    "PhaseQNodeSupportReport",
+    "SparsePauliHamiltonian",
+    "execute_phase_qnode_circuit",
+    "parameter_shift_phase_qnode_gradient",
+    "phase_qnode_support_report",
+    "registered_phase_qnode_gates",
+    "registered_phase_qnode_observables",
+    "PhaseQNodeFrameworkParityRecord",
+    "PhaseQNodeFrameworkParitySuiteResult",
+    "run_phase_qnode_framework_parity_suite",
+    "PhaseQNodeAffinityBenchmarkMetadata",
+    "PhaseQNodeAffinityBenchmarkResult",
+    "classify_affinity_evidence",
+    "run_phase_qnode_affinity_benchmark",
+    "DifferentiableModelTrainingEvidenceSuite",
+    "DifferentiableModelTrainingRecord",
+    "run_differentiable_model_training_evidence_suite",
     "ProviderQNodeTransformReadinessSuiteResult",
     "ProviderQNodeTransformResult",
     "execute_provider_qnode_transform",

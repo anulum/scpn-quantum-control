@@ -1327,7 +1327,7 @@ def compile_custom_derivative_rule_to_mlir(
 ) -> MLIRModule:
     """Lower an exact custom derivative rule to deterministic MLIR-style text.
 
-    This emits an auditable differentiable-primitive interchange artifact with
+    This emits an auditable differentiable-primitive interchange artefact with
     value and Jacobian shape metadata. When numeric payloads are enabled, the
     current value and exact custom Jacobian are embedded as deterministic
     attributes. The function deliberately does not claim executable LLVM or JIT
@@ -9086,7 +9086,7 @@ def compile_whole_program_ad_trace_to_mlir(
 ) -> MLIRModule:
     """Lower a whole-program AD execution trace to MLIR-style interchange text.
 
-    The emitted module is an audit artifact for Python whole-program gradients
+    The emitted module is an audit artefact for Python whole-program gradients
     and polyglot compiler planning. It deliberately records Rust and LLVM/JIT
     executable differentiation as blocked unless a real backend is provided.
     """
@@ -13466,6 +13466,92 @@ def _escape_mlir_string(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
+def lower_phase_qnode_circuit_to_mlir(
+    circuit: Any,
+    parameters: Sequence[float],
+) -> MLIRModule:
+    """Lower a registered local Phase-QNode circuit to textual MLIR metadata.
+
+    This is a compiler interchange report for the registered local statevector
+    subset. It does not execute a native Rust/PyO3, LLVM, JIT, provider, or
+    hardware backend.
+    """
+    from scpn_quantum_control.phase.qnode_circuit import (
+        PauliTerm,
+        SparsePauliHamiltonian,
+        phase_qnode_support_report,
+    )
+
+    values = np.asarray(parameters, dtype=np.float64)
+    report = phase_qnode_support_report(circuit, values)
+    if not report.supported:
+        raise ValueError(f"phase-QNode lowering failed closed: {report.failure_reason}")
+    operation_lines: list[str] = []
+    for operation in circuit.operations:
+        qubits = ", ".join(str(qubit) for qubit in operation.qubits)
+        parameter_attr = (
+            ""
+            if operation.parameter_index is None
+            else f" {{parameter_index = {operation.parameter_index}}}"
+        )
+        operation_lines.append(
+            f"    scpn_phase_qnode.{operation.gate}({qubits}){parameter_attr} : () -> ()"
+        )
+    observable = circuit.observable
+    if isinstance(observable, SparsePauliHamiltonian):
+        observable_terms = [term.to_dict() for term in observable.terms]
+    elif isinstance(observable, PauliTerm):
+        observable_terms = [observable.to_dict()]
+    else:
+        observable_terms = [{"kind": str(observable)}]
+    operation_lines.append(
+        f"    scpn_phase_qnode.expectation @{report.observable_kind} : () -> f64"
+    )
+    text = "\n".join(
+        (
+            'module attributes {dialect = "scpn_phase_qnode"} {',
+            "  func.func @phase_qnode(%params: tensor<?xf64>) -> f64 {",
+            *operation_lines,
+            "  }",
+            "}",
+        )
+    )
+    metadata = {
+        "supported": True,
+        "support_report": report.to_dict(),
+        "primitive_support": {
+            "gates": list(report.gates),
+            "observables": [report.observable_kind],
+            "differentiable_parameters": list(report.differentiable_parameters),
+        },
+        "shape_limits": {
+            "max_qubits": 8,
+            "max_parameters": 64,
+            "statevector_dimension_limit": 2**8,
+        },
+        "observable_terms": observable_terms,
+        "rust_pyo3_parity": "blocked: no Rust phase-QNode lowering backend",
+        "native_jit_parity": "blocked: no native JIT phase-QNode lowering backend",
+        "provider_lowering": "blocked: provider circuits require explicit provider boundary",
+        "interpreter_fallback": "not_used",
+        "claim_boundary": (
+            "registered local Phase-QNode textual MLIR lowering only; no native "
+            "execution, provider submission, or interpreter fallback success"
+        ),
+    }
+    return MLIRModule(
+        text=text,
+        sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        dialect="scpn_phase_qnode",
+        resource_counts={
+            "phase_qnode_gates": len(circuit.operations),
+            "phase_qnode_parameters": int(values.size),
+            "phase_qnode_observable_terms": len(observable_terms),
+        },
+        metadata=metadata,
+    )
+
+
 __all__ = [
     "CompilerADTransformPlan",
     "CompilerADExecutableConfig",
@@ -13506,6 +13592,7 @@ __all__ = [
     "compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
+    "lower_phase_qnode_circuit_to_mlir",
     "make_executable_ad_kernel_batching_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_primitive_transform",

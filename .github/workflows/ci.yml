@@ -192,6 +192,100 @@ jobs:
           python -c "from scpn_quantum_control.hardware.backends import discover_backends; print(discover_backends())"
           python -c "from scpn_quantum_control.analysis import DLAParityWitness; print(DLAParityWitness.__name__)"
 
+  differentiable-parity:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}
+      RUNNER_ENVIRONMENT: github-hosted
+      RUNNER_LABELS: ubuntu-latest,linux
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI dependency surface
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Build CPU-only differentiable framework overlay
+        run: |
+          export SCPN_FRAMEWORK_OVERLAY="$RUNNER_TEMP/scpn-qc-framework-site-py312"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY"
+          python -m pip install --target "$SCPN_FRAMEWORK_OVERLAY" --upgrade "jax[cpu]" "tensorflow-cpu" "pennylane"
+          python -m pip install --target "$SCPN_FRAMEWORK_OVERLAY" --upgrade --index-url https://download.pytorch.org/whl/cpu "torch"
+          echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" >> "$GITHUB_ENV"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --verify
+      - name: Run differentiable parity tests
+        run: >
+          pytest
+          tests/test_differentiable_framework_overlay.py
+          tests/test_differentiable_external_comparisons.py
+          tests/test_phase_qnode_framework_parity.py
+          -q
+      - name: Generate functional_non_isolated differentiable evidence
+        run: |
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID"
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          mkdir -p differentiable-benchmark-evidence
+          python scripts/run_differentiable_benchmark_evidence.py \
+            --output-dir differentiable-benchmark-evidence
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(
+              Path("differentiable-benchmark-evidence/diff-qnode-ci-evidence-schema-v1.json").read_text()
+          )
+          if payload["metadata"]["classification"] != "functional_non_isolated":
+              raise SystemExit("GitHub-hosted benchmark evidence must remain functional_non_isolated")
+          PY
+      - name: Assert non-provider benchmark boundary
+        run: grep -R "No provider or QPU execution" differentiable-benchmark-evidence
+      - name: Upload functional_non_isolated differentiable evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: differentiable-functional-non-isolated-evidence
+          path: differentiable-benchmark-evidence/
+          retention-days: 30
+
+  differentiable-isolated-benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    needs: lint
+    runs-on: [self-hosted, linux, isolated-benchmark]
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}
+      RUNNER_ENVIRONMENT: self-hosted
+      RUNNER_LABELS: self-hosted,linux,isolated-benchmark
+      SCPN_BENCH_CPU_AFFINITY: "0"
+      SCPN_BENCH_ISOLATION_METHOD: taskset+chrt
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI dependency surface
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Run isolated differentiable benchmark evidence
+        run: |
+          mkdir -p differentiable-isolated-benchmark-evidence
+          taskset -c "$SCPN_BENCH_CPU_AFFINITY" chrt -f 1 \
+            python scripts/run_differentiable_benchmark_evidence.py \
+              --output-dir differentiable-isolated-benchmark-evidence \
+              --cpu-affinity "$SCPN_BENCH_CPU_AFFINITY" \
+              --isolation-method "$SCPN_BENCH_ISOLATION_METHOD"
+          grep -R "classification" differentiable-isolated-benchmark-evidence
+      - name: Upload isolated differentiable benchmark evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: differentiable-isolated-benchmark-evidence
+          path: differentiable-isolated-benchmark-evidence/
+          retention-days: 30
+
   security:
     needs: lint
     runs-on: ubuntu-latest
@@ -266,7 +360,7 @@ jobs:
         run: pytest tests/test_arcane_neuron_e2e.py tests/test_cross_repo_wiring.py -v --tb=short
 
   ci-gate:
-    needs: [lint, test, test-extra-platforms, type-check, wheel-check, install-smoke, security, rust-audit]
+    needs: [lint, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -278,6 +372,7 @@ jobs:
              [[ "${{ needs.type-check.result }}" != "success" ]] || \
              [[ "${{ needs.wheel-check.result }}" != "success" ]] || \
              [[ "${{ needs.install-smoke.result }}" != "success" ]] || \
+             [[ "${{ needs['differentiable-parity'].result }}" != "success" ]] || \
              [[ "${{ needs.security.result }}" != "success" ]] || \
              [[ "${{ needs.rust-audit.result }}" != "success" ]]; then
             echo "CI gate failed"

@@ -38,7 +38,36 @@ This repository now documents those questions directly. Current support is delib
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
 | JAX, PyTorch, TensorFlow adapters | Optional parameter-shift value-and-gradient bridges plus a fail-closed ML parity audit are available for supported phase objectives; native framework autodiff through arbitrary simulators remains open. | [Differentiable Roadmap](differentiable_roadmap.md), [Quantum Gradients](quantum_gradients.md) |
 | Gradient tape | MVP available for supported phase parameter-shift records, plus QNode-style tape records for deterministic, seeded finite-shot, and provider-boundary evidence; arbitrary Python and programme-IR tape semantics remain open. | [Quantum Gradients](quantum_gradients.md), [Differentiable Roadmap](differentiable_roadmap.md) |
-| QNN/QGNN/QSNN training lane | A bounded phase-QNN binary classifier, QNN-specific finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, named external-gradient agreement records, dedicated caller-supplied framework-gradient agreement checks, deterministic convergence-suite evidence, conformance-suite evidence with unsuitable-scenario records, non-isolated optimizer-baseline comparisons, and QSNN parameter-shift training evidence are available locally; arbitrary QNN/QGNN/QSNN stacks and production convergence notebooks remain planned. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
+| Registered Phase-QNode circuit family | Available for the declared local gate/observable subset with statevector execution, analytic parameter-shift gradients, framework parity rows, textual MLIR lowering metadata, and affinity-labelled benchmark metadata. Unsupported gates, observables, provider paths, and dynamic routes fail closed with support reports. | [Differentiable API](differentiable_api.md), [Benchmark Harness](benchmark_harness.md) |
+| QNN/QGNN/QSNN training lane | A bounded phase-QNN binary classifier, QNN-specific finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, named external-gradient agreement records, dedicated caller-supplied framework-gradient agreement checks, deterministic convergence-suite evidence, conformance-suite evidence with unsuitable-scenario records, non-isolated optimizer-baseline comparisons, QSNN parameter-shift training evidence, and a registered medium QNN/QGNN/QSNN/Kuramoto-XY training evidence suite are available locally; arbitrary QNN/QGNN/QSNN stacks and production convergence notebooks remain planned. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
+
+## Evidence Promotion Lane
+
+The differentiable Phase-QNode lane is SOTA-candidate until the committed claim
+ledger, isolated CI benchmark artefact, and external comparison rows all pass.
+The ledger is committed at
+`data/differentiable_phase_qnode/claim_ledger.json` with a reviewer summary in
+`data/differentiable_phase_qnode/claim_ledger.md`.
+
+Optional framework parity uses an explicit CPU-only overlay instead of the
+repository `jax` extra, because that extra resolves to `jax[cuda12]`.
+
+```bash
+PYTHONPATH=src:. python scripts/install_differentiable_framework_overlay.py \
+  --overlay-path "${XDG_CACHE_HOME:-$HOME/.cache}/scpn-qc-framework-site-py312" \
+  --manifest-path /tmp/scpn-qc-framework-overlay.json
+```
+
+The generated manifest prints the exact `PYTHONPATH` for parity runs and lists
+only CPU wheels: `jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`.
+
+Benchmark artefacts written by
+`scripts/run_differentiable_benchmark_evidence.py` are CI evidence only.
+GitHub-hosted runners are classified as `functional_non_isolated`; production
+performance wording requires a self-hosted runner labelled
+`isolated-benchmark`, explicit CPU affinity, host-load context, governor or
+frequency context, and no concurrent heavy jobs. Missing Enzyme tooling is a
+recorded `dependency_missing` hard gap, not a hidden success.
 
 ## User routes
 
@@ -46,6 +75,7 @@ This repository now documents those questions directly. Current support is delib
 |---|---|
 | Train a small VQE objective | `phase.param_shift` -> [Quantum Gradients](quantum_gradients.md) -> [Variational Methods](variational.md) |
 | Train and verify a bounded QNN classifier | `phase.qnn_training` -> `train_parameter_shift_qnn_classifier(...)` -> `verify_parameter_shift_qnn_classifier_gradient(...)` -> `estimate_parameter_shift_qnn_finite_shot_gradient(...)` -> `run_parameter_shift_qnn_conformance_suite(...)` -> `run_parameter_shift_qnn_convergence_suite(...)` -> `run_parameter_shift_qnn_finite_shot_convergence_suite(...)` -> `run_parameter_shift_qnn_framework_agreement_suite(...)` -> `run_parameter_shift_qnn_optimizer_benchmark_suite(...)` -> [Quantum Gradients](quantum_gradients.md) |
+| Execute and compare a registered Phase-QNode | `phase.qnode_circuit` -> `execute_phase_qnode_circuit(...)` -> `parameter_shift_phase_qnode_gradient(...)` -> `run_phase_qnode_framework_parity_suite()` -> `lower_phase_qnode_circuit_to_mlir(...)` |
 | Inspect compiler-backed AD | [Quickstart](quickstart.md) differentiable primitive path -> [Differentiable API](differentiable_api.md) |
 | Build a custom primitive | `CustomDerivativeRule` -> `CustomDerivativeRegistry` -> primitive contract tests |
 | Decide whether a gradient stack can run | `plan_gradient_support(...)`, `plan_gradient_transform_nesting(...)`, `plan_quantum_gradient_backend(...)`, `run_phase_qnode_tape_readiness_suite()`, `run_provider_gradient_readiness_audit(...)`, `run_hardware_gradient_policy_readiness_suite()`, `run_provider_hardware_gradient_preparation_audit()`, and `run_differentiable_readiness_audit()` |
@@ -82,11 +112,11 @@ experimental, or unsupported.
 
 The next differentiable-programming implementation rounds should prioritise:
 
-1. broader finite-difference verification for larger circuits;
+1. larger registered Phase-QNode parity families beyond the current local subset;
 2. multi-start convergence studies on known ground states and VQE systems, extending the current phase-optimizer comparison audit with derivative-free baselines;
-3. native JAX agreement beyond QNN caller-supplied framework-gradient records and the existing host-boundary bridge;
+3. native framework agreement beyond the registered Phase-QNode parity family and bounded QNN records;
 4. broader PennyLane adapter round-trip tests beyond caller-supplied framework-gradient agreement checks;
-5. broader QNN/QGNN/QSNN convergence notebooks beyond the bounded local phase-QNN conformance, deterministic convergence, seeded finite-shot, and optimizer-baseline suites plus QSNN tests;
+5. broader QNN/QGNN/QSNN convergence notebooks beyond the bounded local phase-QNN conformance, deterministic convergence, seeded finite-shot, optimizer-baseline suites, QSNN tests, and registered medium evidence suite;
 6. public tutorials for Kuramoto-XY VQE gradients and coupling learning;
 7. executable implementations for still-blocked framework-native nested routes where the physics contract is clear; native vector-output Jacobian, provider-callback QNode transforms, and manual `vmap(grad)` now have bounded local evidence.
 

@@ -920,6 +920,37 @@ status against the native parameter-shift reference. It executes available
 adapters, records missing optional dependencies as unavailable, and blocks
 PennyLane execution until a caller supplies a QNode gradient callable.
 
+For the registered local Phase-QNode subset, use the executable circuit and
+parity suite when a concrete circuit family is required:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+    run_phase_qnode_framework_parity_suite,
+)
+
+circuit = PhaseQNodeCircuit(
+    n_qubits=2,
+    operations=(("ry", (0,), 0), ("cnot", (0, 1)), ("rzz", (0, 1), 1)),
+    observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+)
+params = np.array([0.2, -0.3], dtype=float)
+
+value = execute_phase_qnode_circuit(circuit, params)
+gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+parity = run_phase_qnode_framework_parity_suite()
+print(value.value, gradient.gradient, parity.frameworks)
+```
+
+The circuit family is intentionally bounded: unsupported gates, unregistered
+observables, dynamic provider paths, and hardware-backed gradients raise or
+record support reports rather than falling back to an interpreter success.
+
 Coupling learning uses the same optimizer for inverse oscillator problems:
 
 ```python

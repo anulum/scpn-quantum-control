@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-05 — Added a registered local Phase-QNode circuit family with
+  statevector execution, analytic parameter-shift gradients, Pauli-product and
+  sparse-Hamiltonian expectations, structured support reports, framework parity
+  rows, affinity-labelled benchmark metadata, registered model-training
+  evidence, and textual MLIR lowering metadata for the supported subset.
 - 2026-06-05 — Added a fail-closed bounded phase-QNN framework bridge matrix
   that declares implemented JAX/PyTorch/TensorFlow bridge routes and records
   arbitrary simulator autodiff plus live provider hardware-gradient routes as
@@ -137,8 +142,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-05-18 — Added a TCBO `p_h1` replay-uncertainty gate so the reconstructed coupling-weighted complex can report confidence intervals and refuse claim promotion without a named preregistered dataset.
 - 2026-05-18 — Added a repository-wide documentation surface audit helper with focused tests and an internal baseline report for Python docstrings, Markdown titles, and stale status snapshots.
 - 2026-05-18 — Added public Paper 0 source-validation register documentation and API routing after completing source-accounting ingestion through `P0R06211`.
-- 2026-04-30 — Added an IEEE 5-bus measured power-grid coupling artifact and audit support for measured-system topology, magnitude, spectral, critical-response, and null-model diagnostics.
-- 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artifact and an eyes-closed-minus-eyes-open comparison artifact.
+- 2026-04-30 — Added an IEEE 5-bus measured power-grid coupling artefact and audit support for measured-system topology, magnitude, spectral, critical-response, and null-model diagnostics.
+- 2026-04-30 — Added the 109-subject EEGMMIDB baseline eyes-closed PLV artefact and an eyes-closed-minus-eyes-open comparison artefact.
 
 ### Changed
 - 2026-05-18 — Marked the Paper 0 promotion planner tests as
@@ -224,7 +229,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `tests/test_logging_setup.py` (19 tests).
 - `tests/test_async_runner.py` (17 tests, mocked `qiskit_ibm_runtime`).
 - `tests/test_accel_dispatch.py` (27 tests, Rust → Julia → Python floor).
-- `tests/test_phase_artifact_fuzz.py` (18 Hypothesis tests).
+- `tests/test_phase_artefact_fuzz.py` (18 Hypothesis tests).
 - `tests/test_hardware_classical_fuzz.py` (13 Hypothesis tests).
 - `tests/test_qec_validators_fuzz.py` (15 Hypothesis tests).
 - `tests/test_perf_regression.py` (Rust ≥ 2× Python floor).
@@ -237,7 +242,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `.coordination/launch_copy/` — 9 visibility drafts (HN / r/QuantumComputing / r/qiskit / Slack / Discord / LinkedIn / X / arXiv / README).
 
 ### Changed
-- CI dev-tool matrix (`pytest 9.0.3`, `mypy 1.20.1`, `ruff 0.15.10`, `hypothesis 6.151.13`, `build 1.4.3`, `actions/upload-artifact 7.0.1`, `pypa/gh-action-pypi-publish 1.14.0`).
+- CI dev-tool matrix (`pytest 9.0.3`, `mypy 1.20.1`, `ruff 0.15.10`, `hypothesis 6.151.13`, `build 1.4.3`, `actions/upload-artefact 7.0.1`, `pypa/gh-action-pypi-publish 1.14.0`).
 - `_order_param` in `hardware/classical.py` now dispatches through the accel chain.
 - Five remaining `print()` calls in `hardware/runner.py` → `structlog` events.
 - `HardwareRunner.DEFAULT_INSTANCE` → `HardwareRunner._default_instance()` (reads SCPNConfig).
@@ -435,7 +440,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `examples/07_crypto_bell_test.py`, `examples/08_dynamical_decoupling.py`.
 - `notebooks/05_crypto_and_entanglement.ipynb`.
 - Shared fixtures in `conftest.py`: `knm_4q`, `knm_8q`, `rng`.
-- Dataclass field docs on `LockSignatureArtifact`, `LayerStateArtifact`.
+- Dataclass field docs on `LockSignatureArtefact`, `LayerStateArtefact`.
 
 ### Fixed
 - `q_disruption.py` magic `16` → `2**self.n_data_qubits`.

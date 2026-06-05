@@ -1,0 +1,114 @@
+{
+  "SPDX-License-Identifier": "AGPL-3.0-or-later",
+  "commercial_license": "available",
+  "contact": "www.anulum.li | protoscience@anulum.li",
+  "copyright_code": "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
+  "copyright_concepts": "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
+  "orcid": "0009-0009-3560-0851",
+  "title": "SCPN Quantum Control — Differentiable Phase-QNode Claim Ledger",
+  "schema": "scpn_qc_differentiable_claim_ledger_v1",
+  "artifact_id": "diff-qnode-claim-ledger-v1",
+  "claims": [
+    {
+      "claim_id": "framework_overlay_parity",
+      "claim_text": "Optional JAX, PyTorch, TensorFlow CPU, and PennyLane parity is reproducible from an explicit overlay profile.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_framework_overlay.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_framework_overlay.py"
+      ],
+      "docs_surface": [
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-qnode-framework-overlay-profile-v1"
+      ],
+      "known_gaps": [
+        "Local machines must still run the manifest install command before parity can execute.",
+        "The overlay is CPU-only and intentionally excludes the repository jax[cuda12] extra."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Framework overlay evidence is installation reproducibility only; it is not GPU, provider, QPU, or performance evidence."
+    },
+    {
+      "claim_id": "ci_benchmark_evidence",
+      "claim_text": "Differentiable Phase-QNode benchmark artefacts carry CI runner, isolation, load, governor, and artefact-ID metadata.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
+        "scripts/run_differentiable_benchmark_evidence.py",
+        ".github/workflows/ci.yml"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_benchmark_evidence.py",
+        "tests/test_differentiable_benchmark_workflow.py"
+      ],
+      "docs_surface": [
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-qnode-ci-evidence-schema-v1"
+      ],
+      "known_gaps": [
+        "GitHub-hosted runners are downgraded to functional_non_isolated.",
+        "Production isolated_affinity promotion requires a self-hosted isolated-benchmark runner artefact."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Non-isolated artefacts support functional parity and regression tracking only, not production speed claims."
+    },
+    {
+      "claim_id": "external_framework_comparison",
+      "claim_text": "The bounded Phase-QNode objective has explicit comparison rows for JAX, PyTorch, TensorFlow, PennyLane, and optional Enzyme.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_external_comparisons.py"
+      ],
+      "docs_surface": [
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-qnode-external-comparison-schema-v1"
+      ],
+      "known_gaps": [
+        "Missing framework dependencies are hard_gap rows.",
+        "Missing LLVM/Enzyme tooling remains dependency_missing until configured."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "External comparison rows are bounded CPU diagnostic evidence only; they do not claim provider or QPU execution."
+    },
+    {
+      "claim_id": "phase_qnode_claim_boundary",
+      "claim_text": "Phase-QNode public wording remains bounded to artefact-backed differentiable execution and does not promote broad framework or hardware claims.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/phase/qnode_tape.py",
+        "src/scpn_quantum_control/phase/qnode_transforms.py",
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+      ],
+      "test_surface": [
+        "tests/test_phase_qnode_tape.py",
+        "tests/test_phase_qnode_transforms.py",
+        "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_differentiable_claim_ledger.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-qnode-claim-ledger-v1"
+      ],
+      "known_gaps": [
+        "The lane remains SOTA-candidate until isolated CI benchmark and external comparison artefacts pass.",
+        "Provider and QPU execution remain explicitly outside this claim."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Bounded Phase-QNode differentiable execution only; no broad quantum advantage, provider, QPU, or production performance claim."
+    }
+  ]
+}

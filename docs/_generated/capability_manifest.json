@@ -3,18 +3,18 @@
   "counts": {
     "domain_package_families": 28,
     "example_files": 23,
-    "github_workflows": 18,
+    "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
     "public_api_exports": 574,
     "public_documentation_pages": 240,
-    "python_model_classes": 1610,
-    "python_model_source_modules": 800,
+    "python_model_classes": 1632,
+    "python_model_source_modules": 808,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1910
+    "test_files": 1921
   },
   "documentation": {
     "examples": [
@@ -385,7 +385,7 @@
       "docs/xy_compiler.md"
     ]
   },
-  "evidence_boundary": "Counts are file-system and static-source inventory only; benchmark, coverage, hardware, and scientific-fidelity claims remain governed by their dedicated evidence artifacts.",
+  "evidence_boundary": "Counts are file-system and static-source inventory only; benchmark, coverage, hardware, and scientific-fidelity claims remain governed by their dedicated evidence artefacts.",
   "generated_from": {
     "config": "tools/capability_manifest.toml",
     "generator": "tools/capability_manifest.py"
@@ -433,7 +433,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 8
+        "python_modules": 10
       },
       {
         "package": "bridge",
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 62
+        "python_modules": 66
       },
       {
         "package": "psi_field",
@@ -1485,6 +1485,10 @@
         "path": "src/scpn_quantum_control/benchmark_harness/registry.py"
       },
       {
+        "name": "BenchmarkIsolationMetadata",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_evidence.py"
+      },
+      {
         "name": "BenchmarkResultRow",
         "path": "src/scpn_quantum_control/benchmark_harness/synchronisation_runner.py"
       },
@@ -1667,6 +1671,18 @@
       {
         "name": "CitationsP0r05625FixtureResult",
         "path": "src/scpn_quantum_control/paper0/citations_p0r05625_validation.py"
+      },
+      {
+        "name": "ClaimLedger",
+        "path": "src/scpn_quantum_control/differentiable_claim_ledger.py"
+      },
+      {
+        "name": "ClaimLedgerRow",
+        "path": "src/scpn_quantum_control/differentiable_claim_ledger.py"
+      },
+      {
+        "name": "ClaimLedgerValidation",
+        "path": "src/scpn_quantum_control/differentiable_claim_ledger.py"
       },
       {
         "name": "ClassicalBaselineRun",
@@ -2069,8 +2085,20 @@
         "path": "src/scpn_quantum_control/paper0/derived_lagrangian_detail_validation.py"
       },
       {
+        "name": "DifferentiableBenchmarkEvidenceBundle",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_evidence.py"
+      },
+      {
         "name": "DifferentiableMLIRCompileConfig",
         "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
+        "name": "DifferentiableModelTrainingEvidenceSuite",
+        "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
+      },
+      {
+        "name": "DifferentiableModelTrainingRecord",
+        "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
       },
       {
         "name": "DifferentiableOptimizer",
@@ -2389,6 +2417,10 @@
         "path": "src/scpn_quantum_control/paper0/extended_cognition_embodiment_validation.py"
       },
       {
+        "name": "ExternalComparisonRow",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+      },
+      {
         "name": "FEPApplicationPlugin",
         "path": "src/scpn_quantum_control/applications/app_plugins.py"
       },
@@ -2579,6 +2611,14 @@
       {
         "name": "FragmentationSpinGlassRiskValidationResult",
         "path": "src/scpn_quantum_control/paper0/l11_interface_validation.py"
+      },
+      {
+        "name": "FrameworkOverlayManifest",
+        "path": "src/scpn_quantum_control/differentiable_framework_overlay.py"
+      },
+      {
+        "name": "FrameworkOverlayVerification",
+        "path": "src/scpn_quantum_control/differentiable_framework_overlay.py"
       },
       {
         "name": "FreeEnergyConfig",
@@ -4521,6 +4561,10 @@
         "path": "src/scpn_quantum_control/paper0/pathology_criticality_validation.py"
       },
       {
+        "name": "PauliTerm",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
         "name": "PennyLaneDeviceHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_pennylane.py"
       },
@@ -4607,6 +4651,46 @@
       {
         "name": "PhasePredictionErrorValidationResult",
         "path": "src/scpn_quantum_control/paper0/hpc_upde_bridge_validation.py"
+      },
+      {
+        "name": "PhaseQNodeAffinityBenchmarkMetadata",
+        "path": "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py"
+      },
+      {
+        "name": "PhaseQNodeAffinityBenchmarkResult",
+        "path": "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py"
+      },
+      {
+        "name": "PhaseQNodeCircuit",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeExecutionResult",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeFrameworkParityRecord",
+        "path": "src/scpn_quantum_control/phase/qnode_framework_parity.py"
+      },
+      {
+        "name": "PhaseQNodeFrameworkParitySuiteResult",
+        "path": "src/scpn_quantum_control/phase/qnode_framework_parity.py"
+      },
+      {
+        "name": "PhaseQNodeGradientResult",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeOperation",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeSupportError",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeSupportReport",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
       {
         "name": "PhaseQNodeTape",
@@ -6329,6 +6413,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "SparsePauliHamiltonian",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
         "name": "SpectralBridgeResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_spectral.py"
       },
@@ -7547,6 +7635,8 @@
       "src/scpn_quantum_control/benchmarks/advantage_protocol.py",
       "src/scpn_quantum_control/benchmarks/appqsim_protocol.py",
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
@@ -7587,6 +7677,8 @@
       "src/scpn_quantum_control/dense_budget.py",
       "src/scpn_quantum_control/deployment/cloud_native.py",
       "src/scpn_quantum_control/differentiable.py",
+      "src/scpn_quantum_control/differentiable_claim_ledger.py",
+      "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
@@ -8182,6 +8274,7 @@
       "src/scpn_quantum_control/phase/kuramoto_variants.py",
       "src/scpn_quantum_control/phase/lindblad.py",
       "src/scpn_quantum_control/phase/lindblad_engine.py",
+      "src/scpn_quantum_control/phase/model_training_evidence.py",
       "src/scpn_quantum_control/phase/mps_evolution.py",
       "src/scpn_quantum_control/phase/natural_gradient.py",
       "src/scpn_quantum_control/phase/nqs_ansatz.py",
@@ -8204,6 +8297,9 @@
       "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",
       "src/scpn_quantum_control/phase/qnn_optimizer_benchmark.py",
       "src/scpn_quantum_control/phase/qnn_training.py",
+      "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
+      "src/scpn_quantum_control/phase/qnode_circuit.py",
+      "src/scpn_quantum_control/phase/qnode_framework_parity.py",
       "src/scpn_quantum_control/phase/qnode_provider_transforms.py",
       "src/scpn_quantum_control/phase/qnode_tape.py",
       "src/scpn_quantum_control/phase/qnode_transforms.py",
@@ -9044,6 +9140,7 @@
       ".github/workflows/ci.yml",
       ".github/workflows/codeql.yml",
       ".github/workflows/commit-trailers.yml",
+      ".github/workflows/differentiable-frameworks.yml",
       ".github/workflows/docker.yml",
       ".github/workflows/docs-strict.yml",
       ".github/workflows/docs.yml",
@@ -9639,6 +9736,12 @@
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
       "tests/test_differentiable.py",
+      "tests/test_differentiable_benchmark_evidence.py",
+      "tests/test_differentiable_benchmark_workflow.py",
+      "tests/test_differentiable_claim_ledger.py",
+      "tests/test_differentiable_external_comparisons.py",
+      "tests/test_differentiable_framework_ci_workflow.py",
+      "tests/test_differentiable_framework_overlay.py",
       "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",
@@ -10317,6 +10420,7 @@
       "tests/test_phase_gradient_training.py",
       "tests/test_phase_hardware_gradient_policy.py",
       "tests/test_phase_jax_bridge.py",
+      "tests/test_phase_model_training_evidence.py",
       "tests/test_phase_natural_gradient.py",
       "tests/test_phase_objective_audit.py",
       "tests/test_phase_objective_planner.py",
@@ -10335,6 +10439,10 @@
       "tests/test_phase_qnn_framework_bridge_matrix.py",
       "tests/test_phase_qnn_optimizer_benchmark.py",
       "tests/test_phase_qnn_training.py",
+      "tests/test_phase_qnode_affinity_benchmark.py",
+      "tests/test_phase_qnode_circuit.py",
+      "tests/test_phase_qnode_compiler_lowering.py",
+      "tests/test_phase_qnode_framework_parity.py",
       "tests/test_phase_qnode_provider_transforms.py",
       "tests/test_phase_qnode_tape.py",
       "tests/test_phase_qnode_transforms.py",

@@ -29,7 +29,7 @@
 > artefact-backed `ibm_fez` baseline rows, the April/May 2026
 > `ibm_kingston` DLA parity raw-count datasets, and the May 2026 SCPN/FIM
 > falsification artefacts. Stable core contracts and backend capability
-> artifacts are now part of release/repro hardening and are kept separate from
+> artefacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
 **Version:** 0.9.11
@@ -45,8 +45,8 @@
 |---|---:|
 | Package version | 0.9.11 |
 | Public API exports | 574 |
-| Python source modules | 800 |
-| Public Python classes | 1610 |
+| Python source modules | 808 |
+| Public Python classes | 1632 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -55,11 +55,11 @@
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1910 |
+| Python test files | 1921 |
 | Public documentation pages | 240 |
-| GitHub Actions workflows | 18 |
+| GitHub Actions workflows | 19 |
 
-Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artifacts.
+Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
 <!-- capability-snapshot:end -->
 
 ---
@@ -69,7 +69,7 @@ Evidence boundary: this snapshot is a static inventory. Performance, coverage, h
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
-| Release and reproducibility scope | Stable core contracts and backend capability artifacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
+| Release and reproducibility scope | Stable core contracts and backend capability artefacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |
 | Paper 0 source-validation register | Paper 0 is fully promoted through the source-accounting register: the planner reports `0` remaining work orders and `0` remaining source records after `P0R00001`-`P0R06211`. The generated register contains 466 validation modules with colocated specs, fixtures, loaders, and tests; this is source-bounded ingestion, not external validation evidence. |
@@ -158,6 +158,22 @@ quantum hardware experimentation, and control-facing software:
   QNode-style differentiable execution records for supported phase objectives,
   seeded finite-shot replay, and provider-boundary routes that fail closed
   before hardware submission.
+- `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, and
+  `parameter_shift_phase_qnode_gradient(...)` execute the registered local
+  statevector subset (`rx/ry/rz/phase`, Pauli Clifford gates, controlled
+  rotations, `swap`, `rxx/ryy/rzz`) against Pauli products and sparse weighted
+  Pauli Hamiltonians with structured support reports for blocked routes.
+- `run_phase_qnode_framework_parity_suite()` runs the same bounded circuit
+  family through SCPN plus installed JAX, PyTorch, TensorFlow, and PennyLane
+  backends, recording value, gradient, dtype/device metadata, and dependency
+  sparse classifications without provider execution.
+- `run_phase_qnode_affinity_benchmark(...)` records command, affinity, host
+  load, CPU/runtime/dependency metadata, warmups, repetitions, and raw timing
+  rows; evidence is labelled `isolated_affinity` only when the isolation policy
+  passes, otherwise `functional_non_isolated`.
+- `run_differentiable_model_training_evidence_suite()` packages seeded
+  registered QNN, QGNN, QSNN, and Kuramoto-XY local training cases with loss
+  reduction and finite-difference gradient-agreement evidence.
 - `execute_phase_qnode_transform(...)` and
   `run_phase_qnode_transform_readiness_suite()` execute supported scalar local
   QNode transforms for `grad`, `value_and_grad`, `hessian`, `jvp`, `vjp`,
@@ -205,8 +221,9 @@ research, and reproducible benchmark publication.
 
 The differentiable-programming lane is now documented as a first-path product
 surface because gradient evidence is central to quantum optimisation, machine
-learning integration, and control. The current repository contains three
-layers:
+learning integration, and control. The bounded Phase-QNode promotion state is
+SOTA-candidate until the claim ledger, external comparison rows, and isolated
+CI benchmark artefacts all pass:
 
 | Layer | Current status | Where to start |
 |---|---|---|
@@ -217,8 +234,10 @@ layers:
 | Transform nesting governance | Executable planning now separates supported local `grad`, `value_and_grad`, `hessian`, nested-grad, tape, scalar `jvp`, scalar `vjp`, scalar `jacfwd`, scalar `jacrev`, vector-output native Jacobian execution, native manual `vmap(grad)`, and provider-callback QNode transforms from blocked framework-vectorized, adapter-nested, finite-shot curvature, malformed-provider, and hardware nesting routes. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Provider-gradient readiness | Executable audit evidence distinguishes deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, malformed finite-shot samples, and policy-bound hardware-preparation records. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Hardware-gradient policy readiness | Executable dry-run policy decisions now gate hardware-gradient preparation by provider/backend allowlist, shot budget, required evidence IDs, and live-execution ticket status. `prepare_provider_hardware_parameter_shift_gradient(...)` packages that approval into provider-preparation evidence, and `run_provider_hardware_gradient_preparation_audit()` verifies supported and blocked preparation routes without submitting QPU jobs. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
+| Differentiable claim ledger | The Phase-QNode evidence ledger maps implementation, tests, artefact IDs, documentation, known gaps, and promotion status; no promoted claim is accepted without an artefact ID. | [Differentiable Programming](docs/differentiable_programming.md), [Claim Ledger](data/differentiable_phase_qnode/claim_ledger.md) |
 | Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, optional named external-gradient agreement records, a conformance suite with unsuitable-scenario evidence, deterministic convergence suites, non-isolated optimizer-baseline comparisons, and caller-supplied framework-gradient agreement checks. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
-| ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, and PyTorch/TensorFlow host-boundary tensor bridges are available. Full PennyLane/Qiskit migration bridges, arbitrary QNNs, QGNNs, and unrestricted QSNN training remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
+| Registered Phase-QNode family | Local statevector execution, parameter-shift gradients, framework parity rows, textual MLIR lowering metadata, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
+| ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, PyTorch/TensorFlow host-boundary tensor bridges, and bounded framework parity rows are available. Full provider-backed QNode migration bridges and arbitrary architectures remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
 They need gradients, convergence evidence, framework interop, reproducible
@@ -231,12 +250,13 @@ The first production-grade differentiable workflows are deliberately bounded:
 1. train small VQE objectives with parameter-shift gradients through `PhaseVQE.solve(gradient_method="parameter_shift")`;
 2. verify gradients against finite differences and analytic references through `verify_parameter_shift_gradient(...)` and `verify_vqe_parameter_shift_gradient(...)`;
 3. train bounded phase-QNN classifiers through `train_parameter_shift_qnn_classifier(...)`, verify their QNN-specific gradients through `verify_parameter_shift_qnn_classifier_gradient(...)`, record seeded finite-shot uncertainty through `estimate_parameter_shift_qnn_finite_shot_gradient(...)`, package evidence with `run_parameter_shift_qnn_conformance_suite(...)`, certify deterministic local convergence with `run_parameter_shift_qnn_convergence_suite(...)`, replay seeded finite-shot convergence with `run_parameter_shift_qnn_finite_shot_convergence_suite(...)`, compare local optimizer baselines with `run_parameter_shift_qnn_optimizer_benchmark_suite(...)`, and record caller-supplied framework-gradient agreement with `verify_parameter_shift_qnn_framework_agreement(...)`;
-4. use compiler/program-AD kernels for supported classical objectives;
-5. evaluate hardware-gradient preparation with `evaluate_hardware_gradient_policy(...)`
+4. execute registered local Phase-QNode circuits with `execute_phase_qnode_circuit(...)`, compare installed framework parity with `run_phase_qnode_framework_parity_suite()`, and lower supported subsets to textual MLIR metadata with `lower_phase_qnode_circuit_to_mlir(...)`;
+5. use compiler/program-AD kernels for supported classical objectives;
+6. evaluate hardware-gradient preparation with `evaluate_hardware_gradient_policy(...)`
    and `run_hardware_gradient_policy_readiness_suite()` before any provider job
    is prepared;
-6. summarize the focused readiness suites with `run_differentiable_readiness_audit()`;
-7. document unsupported gates, backends, shapes, and dynamic program paths
+7. summarize the focused readiness suites with `run_differentiable_readiness_audit()`;
+8. document unsupported gates, backends, shapes, and dynamic program paths
    before they can mislead users.
 
 Future releases will extend this route toward native framework gradients beyond
@@ -356,7 +376,7 @@ The package provides:
   promoted `ibm_kingston` DLA parity datasets, and the SCPN/FIM negative
   hardware result are separated from simulator-only, frontier, queued-job, and
   aggregate-only outputs.
-   Stable core contracts and backend capability artifacts are included in this
+   Stable core contracts and backend capability artefacts are included in this
    hardening boundary and are replayed via reproducibility tooling.
 
 4. **Paper 0 source-validation register** — source-bounded Paper 0 ingestion is
@@ -789,7 +809,7 @@ Optional:
 - **IBM hardware claim hygiene.** Do not cite queued-job, placeholder,
   aggregate-only, or frontier JSON as hardware validation. The promoted
   raw-count campaign is `data/phase1_dla_parity/`; legacy `ibm_fez`
-  observations must name their committed artifact row.
+  observations must name their committed artefact row.
 
 ## Documentation
 
@@ -810,7 +830,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Architecture](docs/architecture.md) — dependency graph + 20 subpackages
 - [Analysis API](docs/analysis_api.md) — advanced reference for 46 analysis modules
 - [Phase API](docs/phase_api.md) — advanced reference for 29 evolution algorithms
-- [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artifacts
+- [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artefacts
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 98 tracked notebooks (47 core + 51 Colab)

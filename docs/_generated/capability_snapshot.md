@@ -7,8 +7,8 @@
 |---|---:|
 | Package version | 0.9.11 |
 | Public API exports | 574 |
-| Python source modules | 800 |
-| Public Python classes | 1610 |
+| Python source modules | 808 |
+| Public Python classes | 1632 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -17,8 +17,8 @@
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1910 |
+| Python test files | 1921 |
 | Public documentation pages | 240 |
-| GitHub Actions workflows | 18 |
+| GitHub Actions workflows | 19 |
 
-Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artifacts.
+Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
