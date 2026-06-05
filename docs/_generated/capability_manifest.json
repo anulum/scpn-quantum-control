@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 574,
     "public_documentation_pages": 240,
-    "python_model_classes": 1588,
-    "python_model_source_modules": 793,
+    "python_model_classes": 1590,
+    "python_model_source_modules": 794,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1903
+    "test_files": 1904
   },
   "documentation": {
     "examples": [
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 55
+        "python_modules": 56
       },
       {
         "package": "psi_field",
@@ -4581,6 +4581,14 @@
         "path": "src/scpn_quantum_control/phase/qnode_tape.py"
       },
       {
+        "name": "PhaseQNodeTransformReadinessSuiteResult",
+        "path": "src/scpn_quantum_control/phase/qnode_transforms.py"
+      },
+      {
+        "name": "PhaseQNodeTransformResult",
+        "path": "src/scpn_quantum_control/phase/qnode_transforms.py"
+      },
+      {
         "name": "PhaseTensorFlowParameterShiftResult",
         "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
       },
@@ -8113,6 +8121,7 @@
       "src/scpn_quantum_control/phase/qnn_optimizer_benchmark.py",
       "src/scpn_quantum_control/phase/qnn_training.py",
       "src/scpn_quantum_control/phase/qnode_tape.py",
+      "src/scpn_quantum_control/phase/qnode_transforms.py",
       "src/scpn_quantum_control/phase/qsvt_evolution.py",
       "src/scpn_quantum_control/phase/results.py",
       "src/scpn_quantum_control/phase/structured_ansatz.py",
@@ -10237,6 +10246,7 @@
       "tests/test_phase_qnn_optimizer_benchmark.py",
       "tests/test_phase_qnn_training.py",
       "tests/test_phase_qnode_tape.py",
+      "tests/test_phase_qnode_transforms.py",
       "tests/test_phase_results.py",
       "tests/test_phase_transform_nesting.py",
       "tests/test_phase_vqe.py",

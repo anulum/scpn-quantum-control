@@ -39,6 +39,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.provider_gradient_audit` | Executable provider-gradient readiness audit for deterministic, finite-shot, multi-frequency, hardware-blocked, unknown-backend, and malformed-sample routes. |
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
 | `scpn_quantum_control.phase.qnode_tape` | QNode-style differentiable tape records for supported phase objectives, seeded finite-shot replay, and provider-boundary routes that fail closed before hardware submission. |
+| `scpn_quantum_control.phase.qnode_transforms` | Executable scalar local QNode transform evidence for `grad`, `value_and_grad`, `hessian`, `jvp`, `vjp`, `jacfwd`, and `jacrev`, with fail-closed vectorized/provider/framework-native boundaries. |
 | `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls. |
 | `scpn_quantum_control.phase.pennylane_bridge` | Optional PennyLane gradient-agreement checker for caller-supplied PennyLane/QNode gradient functions. |
 | `scpn_quantum_control.phase.torch_bridge` | Optional PyTorch tensor bridge for supported phase parameter-shift value-and-gradient calls. |
@@ -283,10 +284,11 @@ assert audit.passed
 
 Supported nesting is intentionally bounded. Local `grad`, `value_and_grad`,
 deterministic local `hessian`, `grad` of `grad`, single-adapter
-`value_and_grad`, phase `gradient_tape`, and phase `qnode_tape` routes are planned as supported.
-`vmap`, JVP/VJP, `jacfwd`, `jacrev`, nested ML/provider adapters, finite-shot
-curvature, nested tape transforms, and hardware nesting fail closed with
-reasons and alternatives.
+`value_and_grad`, phase `gradient_tape`, phase `qnode_tape`, scalar local
+`jvp`, scalar local `vjp`, scalar local `jacfwd`, and scalar local `jacrev`
+routes are planned as supported. `vmap`, nested ML/provider adapters,
+finite-shot curvature, nested tape transforms, vector-output Jacobians, and
+hardware nesting fail closed with reasons and alternatives.
 
 ## Minimal composed objective
 

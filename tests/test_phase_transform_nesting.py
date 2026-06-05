@@ -68,10 +68,27 @@ def test_transform_nesting_supports_single_adapter_and_tape_routes() -> None:
     assert "record/replay" in tape_plan.warnings[0]
 
 
-def test_transform_nesting_blocks_vectorized_and_unimplemented_algebra() -> None:
-    vmap_grad = plan_gradient_transform_nesting(("vmap", "grad"), adapter="jax", n_params=2)
+def test_transform_nesting_supports_local_directional_and_scalar_jacobian_routes() -> None:
     jvp = plan_gradient_transform_nesting("jvp", n_params=2)
+    vjp = plan_gradient_transform_nesting("vjp", n_params=2)
+    jacfwd = plan_gradient_transform_nesting("jacfwd", n_params=2)
     jacrev = plan_gradient_transform_nesting("jacrev", n_params=2)
+
+    assert jvp.supported
+    assert jvp.strategy == "native_parameter_shift_jvp"
+    assert "directional/Jacobian routes are scalar local QNode diagnostics" in jvp.warnings
+    assert assert_gradient_transform_nesting_supported(jvp) is jvp
+
+    assert vjp.supported
+    assert vjp.strategy == "native_parameter_shift_vjp"
+    assert jacfwd.supported
+    assert jacfwd.strategy == "native_parameter_shift_scalar_jacobian"
+    assert jacrev.supported
+    assert jacrev.strategy == "native_parameter_shift_scalar_jacobian"
+
+
+def test_transform_nesting_blocks_vectorized_transform_stacks() -> None:
+    vmap_grad = plan_gradient_transform_nesting(("vmap", "grad"), adapter="jax", n_params=2)
 
     assert vmap_grad.fail_closed
     assert "vmap over quantum-gradient executions is not implemented" in vmap_grad.blocked_reasons
@@ -80,14 +97,6 @@ def test_transform_nesting_blocks_vectorized_and_unimplemented_algebra() -> None
         in vmap_grad.blocked_reasons
     )
     assert "manual loop" in vmap_grad.alternatives
-
-    assert jvp.fail_closed
-    assert "quantum-gradient jvp/vjp transform execution is not implemented" in jvp.blocked_reasons
-
-    assert jacrev.fail_closed
-    assert "jacfwd/jacrev quantum transform algebra is not implemented" in jacrev.blocked_reasons
-    with pytest.raises(ValueError, match="jacfwd/jacrev"):
-        assert_gradient_transform_nesting_supported(jacrev)
 
 
 def test_transform_nesting_blocks_unsafe_curvature_and_tape_nesting() -> None:
@@ -159,9 +168,9 @@ def test_transform_nesting_audit_records_supported_and_blocked_routes() -> None:
 
     assert isinstance(audit, GradientTransformNestingAuditResult)
     assert audit.passed
-    assert len(audit.plans) == 13
-    assert len(audit.supported_plans) == 6
-    assert len(audit.blocked_plans) == 7
+    assert len(audit.plans) == 16
+    assert len(audit.supported_plans) == 10
+    assert len(audit.blocked_plans) == 6
     assert audit.failing_plans == ()
     assert payload["passed"] is True
     assert plans[0]["supported"] is True

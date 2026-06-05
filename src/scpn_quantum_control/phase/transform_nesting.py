@@ -101,6 +101,10 @@ class GradientTransformNestingAuditResult:
             ("grad.grad", "native", "statevector"),
             ("value_and_grad", "jax", "statevector"),
             ("gradient_tape", "native", "statevector"),
+            ("jvp", "native", "statevector"),
+            ("vjp", "native", "statevector"),
+            ("jacfwd", "native", "statevector"),
+            ("jacrev", "native", "statevector"),
         }
         failures: list[GradientTransformNestingPlan] = []
         for plan in self.plans:
@@ -183,12 +187,26 @@ def plan_gradient_transform_nesting(
     if "vmap" in normalised:
         blocked_reasons.append("vmap over quantum-gradient executions is not implemented")
         alternatives.extend(("manual loop", "batched classical post-processing"))
-    if "jvp" in normalised or "vjp" in normalised:
-        blocked_reasons.append("quantum-gradient jvp/vjp transform execution is not implemented")
-        alternatives.extend(("grad", "value_and_grad"))
-    if "jacfwd" in normalised or "jacrev" in normalised:
-        blocked_reasons.append("jacfwd/jacrev quantum transform algebra is not implemented")
-        alternatives.extend(("grad", "hessian"))
+    if (
+        "jvp" in normalised
+        or "vjp" in normalised
+        or "jacfwd" in normalised
+        or "jacrev" in normalised
+    ) and support_plan.backend_plan.finite_shot:
+        blocked_reasons.append(
+            "directional and scalar-Jacobian transform execution requires deterministic local expectations"
+        )
+        alternatives.extend(("statevector", "grad"))
+    if (
+        "jvp" in normalised
+        or "vjp" in normalised
+        or "jacfwd" in normalised
+        or "jacrev" in normalised
+    ) and adapter != "native":
+        blocked_reasons.append(
+            "directional and scalar-Jacobian transforms are supported only on the native local route"
+        )
+        alternatives.extend(("native", "grad", "value_and_grad"))
     if "gradient_tape" in normalised and len(normalised) > 1:
         blocked_reasons.append(
             "gradient tape records supported evaluations but is not itself nestable"
@@ -262,7 +280,10 @@ def run_gradient_transform_nesting_audit() -> GradientTransformNestingAuditResul
         plan_gradient_transform_nesting(("grad", "grad"), adapter="pytorch", n_params=2),
         plan_gradient_transform_nesting(("gradient_tape", "grad"), n_params=2),
         plan_gradient_transform_nesting("jvp", n_params=2),
+        plan_gradient_transform_nesting("vjp", n_params=2),
+        plan_gradient_transform_nesting("jacfwd", n_params=2),
         plan_gradient_transform_nesting("jacrev", n_params=2),
+        plan_gradient_transform_nesting("jvp", backend="qasm_simulator", n_params=2, shots=400),
         plan_gradient_transform_nesting("grad", backend="hardware", n_params=2, shots=1024),
     )
     result = GradientTransformNestingAuditResult(
@@ -329,6 +350,12 @@ def _strategy(transforms: tuple[str, ...], support_plan: GradientSupportPlan) ->
         return "native_hessian_via_nested_grad"
     if transforms == ("gradient_tape",):
         return "record_supported_parameter_shift_tape"
+    if transforms == ("jvp",):
+        return "native_parameter_shift_jvp"
+    if transforms == ("vjp",):
+        return "native_parameter_shift_vjp"
+    if transforms in {("jacfwd",), ("jacrev",)}:
+        return "native_parameter_shift_scalar_jacobian"
     return "unsupported"
 
 
@@ -342,6 +369,8 @@ def _nesting_warnings(transforms: tuple[str, ...], adapter: str) -> tuple[str, .
         warnings.append(
             "gradient tape is a record/replay evidence surface, not arbitrary program AD"
         )
+    if transforms in {("jvp",), ("vjp",), ("jacfwd",), ("jacrev",)}:
+        warnings.append("directional/Jacobian routes are scalar local QNode diagnostics")
     return tuple(warnings)
 
 
@@ -356,6 +385,10 @@ def _claim_boundary(transforms: tuple[str, ...], adapter: str, supported: bool) 
         return "deterministic local second-order diagnostic; no hardware Hessian or universal curvature claim is implied"
     if transforms == ("gradient_tape",):
         return "supported phase-gradient tape records only; arbitrary program tape nesting remains outside this surface"
+    if transforms in {("jvp",), ("vjp",)}:
+        return "supported scalar local directional transform via parameter-shift gradient; not arbitrary program JVP/VJP"
+    if transforms in {("jacfwd",), ("jacrev",)}:
+        return "supported scalar local Jacobian via parameter-shift gradient; not full vector-output jacobian algebra"
     if adapter != "native":
         return f"{adapter} single-transform bridge support; arbitrary nested framework autodiff is not claimed"
     return "bounded first-order local quantum-gradient transform support"

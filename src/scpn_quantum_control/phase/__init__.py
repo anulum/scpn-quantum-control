@@ -242,6 +242,12 @@ from .qnode_tape import (
     phase_qnode_tape,
     run_phase_qnode_tape_readiness_suite,
 )
+from .qnode_transforms import (
+    PhaseQNodeTransformReadinessSuiteResult,
+    PhaseQNodeTransformResult,
+    execute_phase_qnode_transform,
+    run_phase_qnode_transform_readiness_suite,
+)
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
@@ -366,6 +372,10 @@ __all__ = [
     "PhaseQNodeTapeReadinessSuiteResult",
     "PhaseQNodeTapeRecord",
     "run_phase_qnode_tape_readiness_suite",
+    "PhaseQNodeTransformReadinessSuiteResult",
+    "PhaseQNodeTransformResult",
+    "execute_phase_qnode_transform",
+    "run_phase_qnode_transform_readiness_suite",
     "is_phase_jax_available",
     "check_jax_parameter_shift_agreement",
     "jax_parameter_shift_value_and_grad",

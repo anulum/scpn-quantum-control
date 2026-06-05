@@ -1078,3 +1078,20 @@ replay, and a hardware/provider boundary that fails closed before submission.
 This is differentiable execution evidence for supported phase objectives, not a
 claim of arbitrary QNode autodiff, native framework tracing through simulator
 kernels, or unrestricted provider-backed hardware gradients.
+
+## Scalar QNode transform execution
+
+`execute_phase_qnode_transform(...)` executes scalar local phase-QNode transforms
+when the transform-nesting planner declares the route supported. Current
+executable routes are `grad`, `value_and_grad`, deterministic local `hessian`,
+scalar `jvp`, scalar `vjp`, scalar `jacfwd`, and scalar `jacrev`. Directional
+and Jacobian routes are implemented through parameter-shift gradients for scalar
+objectives: JVP returns the gradient-tangent contraction, VJP returns the
+scalar-cotangent pullback, and `jacfwd`/`jacrev` return a one-row Jacobian.
+
+The readiness helper `run_phase_qnode_transform_readiness_suite()` records both
+supported local routes and fail-closed hardware, finite-shot curvature, and
+vectorized-transform routes. This closes the scalar local QNode transform gap;
+it does not claim vector-output Jacobian algebra, arbitrary program AD, native
+ML-framework tracing through simulator kernels, or unrestricted provider-backed
+hardware transform execution.

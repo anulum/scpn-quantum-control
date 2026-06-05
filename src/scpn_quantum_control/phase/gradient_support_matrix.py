@@ -278,6 +278,48 @@ _TRANSFORM_CAPABILITIES: dict[str, GradientSupportCapability] = {
         alternatives=("grad", "value_and_grad"),
         claim_boundary="phase-gradient tape support only; arbitrary Python tape semantics remain outside this matrix",
     ),
+    "jvp": GradientSupportCapability(
+        category="transform",
+        name="jvp",
+        supported=True,
+        gradient_methods=("parameter_shift_directional_derivative",),
+        conditions=(
+            "scalar objective, deterministic local backend, and tangent matching parameter shape",
+        ),
+        blocked_reasons=(),
+        alternatives=("grad", "value_and_grad"),
+        claim_boundary="scalar local JVP via parameter-shift gradient only; not arbitrary program JVP",
+    ),
+    "vjp": GradientSupportCapability(
+        category="transform",
+        name="vjp",
+        supported=True,
+        gradient_methods=("parameter_shift_pullback",),
+        conditions=("scalar objective, deterministic local backend, and scalar cotangent",),
+        blocked_reasons=(),
+        alternatives=("grad", "value_and_grad"),
+        claim_boundary="scalar local VJP via parameter-shift gradient only; not arbitrary program VJP",
+    ),
+    "jacfwd": GradientSupportCapability(
+        category="transform",
+        name="jacfwd",
+        supported=True,
+        gradient_methods=("parameter_shift_scalar_jacobian",),
+        conditions=("scalar objective with stable parameter vector; returns one-row Jacobian",),
+        blocked_reasons=(),
+        alternatives=("grad", "hessian"),
+        claim_boundary="scalar local Jacobian via parameter-shift gradient only; not full vector-output jacfwd",
+    ),
+    "jacrev": GradientSupportCapability(
+        category="transform",
+        name="jacrev",
+        supported=True,
+        gradient_methods=("parameter_shift_scalar_jacobian",),
+        conditions=("scalar objective with stable parameter vector; returns one-row Jacobian",),
+        blocked_reasons=(),
+        alternatives=("grad", "hessian"),
+        claim_boundary="scalar local Jacobian via parameter-shift gradient only; not full vector-output jacrev",
+    ),
 }
 
 _ADAPTER_CAPABILITIES: dict[str, GradientSupportCapability] = {
@@ -289,6 +331,9 @@ _ADAPTER_CAPABILITIES: dict[str, GradientSupportCapability] = {
             "parameter_shift",
             "stochastic_parameter_shift",
             "parameter_shift_hessian",
+            "parameter_shift_directional_derivative",
+            "parameter_shift_pullback",
+            "parameter_shift_scalar_jacobian",
         ),
         conditions=("NumPy-compatible callable or phase namespace objective",),
         blocked_reasons=(),
@@ -532,6 +577,11 @@ def plan_gradient_support(
 
     if transform_key == "hessian" and backend_plan.finite_shot:
         blocked_reasons += ("hessian support is limited to deterministic local backends",)
+        alternatives += ("grad", "statevector")
+    if transform_key in {"jvp", "vjp", "jacfwd", "jacrev"} and backend_plan.finite_shot:
+        blocked_reasons += (
+            "directional and scalar-Jacobian transforms require deterministic local expectations",
+        )
         alternatives += ("grad", "statevector")
     if adapter_key in {"jax", "pytorch", "tensorflow"} and transform_key not in {
         "grad",
