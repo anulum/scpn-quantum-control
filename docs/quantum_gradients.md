@@ -1062,3 +1062,19 @@ uncertainty policy, unsupported alternatives, and fail-closed reasons.
 | Gate without registered generator spectrum | Unsupported; fail closed. |
 | Dynamic circuit topology or parameter count | Unsupported unless the trace records stable parameter identity. |
 | Roadmap adapters | JAX, PyTorch, TensorFlow, PennyLane, and Qiskit require parity tests before production claims. |
+
+## Phase QNode tape readiness
+
+`phase_qnode_tape(...)` is the supported QNode-style record layer for phase
+objectives. It wraps existing parameter-shift and finite-shot tape contracts and
+adds the metadata users expect from a trainable quantum node: QNode name,
+observable, backend plan, parameter-shift evaluation count, shot budget, replay
+seed, confidence radii, provider name, requested job identifier, and a claim
+boundary.
+
+The readiness helper `run_phase_qnode_tape_readiness_suite()` records three
+representative routes: deterministic local parameter shift, seeded finite-shot
+replay, and a hardware/provider boundary that fails closed before submission.
+This is differentiable execution evidence for supported phase objectives, not a
+claim of arbitrary QNode autodiff, native framework tracing through simulator
+kernels, or unrestricted provider-backed hardware gradients.

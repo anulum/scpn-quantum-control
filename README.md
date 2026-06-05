@@ -45,8 +45,8 @@
 |---|---:|
 | Package version | 0.9.10 |
 | Public API exports | 574 |
-| Python source modules | 792 |
-| Public Python classes | 1585 |
+| Python source modules | 793 |
+| Public Python classes | 1588 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -55,7 +55,7 @@
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1902 |
+| Python test files | 1903 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 18 |
 
@@ -154,6 +154,10 @@ quantum hardware experimentation, and control-facing software:
   QNN parameter-shift gradients with caller-supplied or deterministic
   framework-style references while explicitly recording that this is not
   native framework autodiff through simulator kernels.
+- `phase_qnode_tape(...)` and `run_phase_qnode_tape_readiness_suite()` add
+  QNode-style differentiable execution records for supported phase objectives,
+  seeded finite-shot replay, and provider-boundary routes that fail closed
+  before hardware submission.
 - **Product route:** AGPL use is available for open research; proprietary
   deployment uses the commercial licence route described below.
 
@@ -194,7 +198,7 @@ layers:
 | Transform nesting governance | Executable planning now separates supported local `grad`, `value_and_grad`, `hessian`, nested-grad, and tape routes from blocked vectorized, adapter-nested, finite-shot curvature, and hardware nesting routes. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Provider-gradient readiness | Executable audit evidence distinguishes deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, and malformed finite-shot samples. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, optional named external-gradient agreement records, a conformance suite with unsuitable-scenario evidence, deterministic convergence suites, non-isolated optimizer-baseline comparisons, and caller-supplied framework-gradient agreement checks. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
-| ML framework and tape roadmap | Gradient tape, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, and PyTorch/TensorFlow host-boundary tensor bridges are available. Full PennyLane/Qiskit migration bridges, arbitrary QNNs, QGNNs, and unrestricted QSNN training remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
+| ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, and PyTorch/TensorFlow host-boundary tensor bridges are available. Full PennyLane/Qiskit migration bridges, arbitrary QNNs, QGNNs, and unrestricted QSNN training remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
 They need gradients, convergence evidence, framework interop, reproducible

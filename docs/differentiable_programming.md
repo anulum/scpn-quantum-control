@@ -35,7 +35,7 @@ This repository now documents those questions directly. Current support is delib
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
 | JAX, PyTorch, TensorFlow adapters | Optional parameter-shift value-and-gradient bridges plus a fail-closed ML parity audit are available for supported phase objectives; native framework autodiff through arbitrary simulators remains open. | [Differentiable Roadmap](differentiable_roadmap.md), [Quantum Gradients](quantum_gradients.md) |
-| Gradient tape | MVP available for supported phase parameter-shift records; arbitrary Python and programme-IR tape semantics remain open. | [Quantum Gradients](quantum_gradients.md), [Differentiable Roadmap](differentiable_roadmap.md) |
+| Gradient tape | MVP available for supported phase parameter-shift records, plus QNode-style tape records for deterministic, seeded finite-shot, and provider-boundary evidence; arbitrary Python and programme-IR tape semantics remain open. | [Quantum Gradients](quantum_gradients.md), [Differentiable Roadmap](differentiable_roadmap.md) |
 | QNN/QGNN/QSNN training lane | A bounded phase-QNN binary classifier, QNN-specific finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, named external-gradient agreement records, dedicated caller-supplied framework-gradient agreement checks, deterministic convergence-suite evidence, conformance-suite evidence with unsuitable-scenario records, non-isolated optimizer-baseline comparisons, and QSNN parameter-shift training evidence are available locally; arbitrary QNN/QGNN/QSNN stacks and production convergence notebooks remain planned. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 
 ## User routes
@@ -46,7 +46,7 @@ This repository now documents those questions directly. Current support is delib
 | Train and verify a bounded QNN classifier | `phase.qnn_training` -> `train_parameter_shift_qnn_classifier(...)` -> `verify_parameter_shift_qnn_classifier_gradient(...)` -> `estimate_parameter_shift_qnn_finite_shot_gradient(...)` -> `run_parameter_shift_qnn_conformance_suite(...)` -> `run_parameter_shift_qnn_convergence_suite(...)` -> `run_parameter_shift_qnn_finite_shot_convergence_suite(...)` -> `run_parameter_shift_qnn_framework_agreement_suite(...)` -> `run_parameter_shift_qnn_optimizer_benchmark_suite(...)` -> [Quantum Gradients](quantum_gradients.md) |
 | Inspect compiler-backed AD | [Quickstart](quickstart.md) differentiable primitive path -> [Differentiable API](differentiable_api.md) |
 | Build a custom primitive | `CustomDerivativeRule` -> `CustomDerivativeRegistry` -> primitive contract tests |
-| Decide whether a gradient stack can run | `plan_gradient_support(...)`, `plan_gradient_transform_nesting(...)`, `plan_quantum_gradient_backend(...)`, and `run_provider_gradient_readiness_audit(...)` |
+| Decide whether a gradient stack can run | `plan_gradient_support(...)`, `plan_gradient_transform_nesting(...)`, `plan_quantum_gradient_backend(...)`, `run_phase_qnode_tape_readiness_suite()`, and `run_provider_gradient_readiness_audit(...)` |
 | Prepare ML-framework integration | Follow [Differentiable Roadmap](differentiable_roadmap.md) until adapter tests land |
 
 ## Production-Readiness Rubric
@@ -94,7 +94,7 @@ Unsupported does not mean ignored. Current public boundaries include:
 
 - arbitrary Python/NumPy program AD beyond supported trace operations;
 - full native compiler AD for every MLIR/LLVM/JIT path;
-- complete gradient tape semantics beyond supported phase parameter-shift records;
+- complete gradient tape semantics beyond supported phase parameter-shift and QNode-style phase records;
 - public JAX/PyTorch/TensorFlow adapters;
 - hardware gradient jobs without explicit backend policy;
 - provider callbacks that omit finite-shot variance or shifted-sample provenance;

@@ -235,6 +235,13 @@ from .qnn_training import (
     train_parameter_shift_qnn_classifier,
     verify_parameter_shift_qnn_classifier_gradient,
 )
+from .qnode_tape import (
+    PhaseQNodeTape,
+    PhaseQNodeTapeReadinessSuiteResult,
+    PhaseQNodeTapeRecord,
+    phase_qnode_tape,
+    run_phase_qnode_tape_readiness_suite,
+)
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
@@ -354,6 +361,11 @@ __all__ = [
     "gradient_tape",
     "QuantumGradientTape",
     "TapeGradientRecord",
+    "phase_qnode_tape",
+    "PhaseQNodeTape",
+    "PhaseQNodeTapeReadinessSuiteResult",
+    "PhaseQNodeTapeRecord",
+    "run_phase_qnode_tape_readiness_suite",
     "is_phase_jax_available",
     "check_jax_parameter_shift_agreement",
     "jax_parameter_shift_value_and_grad",
