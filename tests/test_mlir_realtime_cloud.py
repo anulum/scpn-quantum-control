@@ -5071,31 +5071,31 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
     """Native program AD lowering should report replay-supported ops that lack LLVM lowering."""
 
     def objective(values: np.ndarray) -> object:
-        matrix = np.diag(values[:17])
-        return np.linalg.det(matrix) + np.sin(values[17])
+        matrix = np.diag(values[:20])
+        return np.linalg.det(matrix) + np.sin(values[20])
 
-    sample = np.linspace(1.1, 1.7, 18, dtype=np.float64)
-    parameters = tuple(Parameter(f"x{index}") for index in range(18))
+    sample = np.linspace(1.1, 1.7, 21, dtype=np.float64)
+    parameters = tuple(Parameter(f"x{index}") for index in range(21))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert isinstance(report, WholeProgramADNativeLoweringReport)
     assert report.supported is False
-    assert report.unsupported_ops == ("linalg:det:17x17",)
+    assert report.unsupported_ops == ("linalg:det:20x20",)
     assert report.unsupported_operation_count == 1
     assert report.lowerable_operation_count == len(result.ir_nodes) - 1
-    assert "unsupported native ops: linalg:det:17x17" in report.fail_closed_reason
+    assert "unsupported native ops: linalg:det:20x20" in report.fail_closed_reason
     assert report.as_metadata()["unsupported_ops"] == report.unsupported_ops
 
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:det:17x17"):
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:det:20x20"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_wide_determinants() -> None:
-    """Native program AD should lower helper-backed 6x6 through 16x16 determinants."""
+    """Native program AD should lower helper-backed 6x6 through 19x19 determinants."""
 
-    for size in range(6, 17):
+    for size in range(6, 20):
 
         def objective(
             values: np.ndarray,
@@ -5177,9 +5177,9 @@ def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_bound
         native_whole_program_ad_linalg_support
     )
     assert support["determinant_expression_sizes"] == (2, 3, 4, 5)
-    assert support["determinant_helper_sizes"] == tuple(range(6, 17))
-    assert support["determinant_static_dense_sizes"] == tuple(range(2, 17))
-    assert support["determinant_fail_closed_from"] == 17
+    assert support["determinant_helper_sizes"] == tuple(range(6, 20))
+    assert support["determinant_static_dense_sizes"] == tuple(range(2, 20))
+    assert support["determinant_fail_closed_from"] == 20
     assert support["determinant_derivative"] == "exact_forward_partials"
     assert support["determinant_policy"] == "static_dense_native_or_fail_closed"
     assert support["inverse_sizes"] == tuple(range(2, 7))
@@ -5203,7 +5203,7 @@ def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_bound
 def test_whole_program_ad_trace_native_llvm_jit_lowers_dense_wide_determinants() -> None:
     """Native wide determinant helpers should match replay AD on non-diagonal matrices."""
 
-    for size in (7, 9, 11, 13, 15, 16):
+    for size in (7, 9, 11, 13, 15, 16, 17, 18, 19):
         offsets = _dense_determinant_offsets(size)
 
         def objective(

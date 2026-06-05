@@ -256,14 +256,14 @@ nondifferentiable boundaries, use unsupported operations, loop/control joins, or
 shape changes fail closed and should use the replay executable until a native
 lowering rule exists.
 Strict scalar 2x2, 3x3, 4x4, and 5x5 determinants lower through explicit native
-arithmetic expressions; static dense 6x6 through 16x16 determinants lower
+arithmetic expressions; static dense 6x6 through 19x19 determinants lower
 through compact loop-helper native LLVM/JIT value-and-partials kernels and are
 regression-tested on non-diagonal dense matrices. Static
 square/rectangular trace nodes with fixed offsets, static diagonal
 gather/scatter nodes, static dense inverse through 6x6, static vector and
 matrix-RHS linear solves through 6x6, 2x2 square via `matrix_power(..., 2)`,
 and 2x2-by-2x2 `multi_dot` program-AD nodes also lower to native LLVM/JIT
-arithmetic kernels; 17x17 and wider determinant traces, 7x7 and wider
+arithmetic kernels; 20x20 and wider determinant traces, 7x7 and wider
 inverse/solve traces, matrix-RHS traces with more than four RHS columns,
 other wider linalg,
 and shape-changing linalg traces still report unsupported native ops before
@@ -272,6 +272,12 @@ failing closed.
 Unsupported native quotient-linalg scenarios are intentionally documented
 because they carry research and engineering value:
 
+- Static dense `20x20` and wider determinant traces fail closed. A `20x20`
+  helper promotion reached native code generation but failed the strict
+  value/JVP/VJP/gradient verification gate under the current loop-helper
+  formulation, so those wider determinants remain unsuitable until a scaled
+  factorisation or stronger numerically stable determinant-partial helper
+  replaces the current route.
 - Full-output inverse and matrix-RHS solve traces at `7x7` and wider are not
   lowered by the native quotient-linalg path. The `5x5` through `6x6` path
   shares one determinant/adjugate helper per static matrix and reuses it across
