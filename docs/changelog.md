@@ -110,7 +110,7 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 ### Repository hygiene
 - Public tracked files stripped of agent-name mentions; internal logs keep identity.
 - `CHANGELOG.md` terse-rewritten (dates + changes only, no attributions).
-- `docs/contributing.md` moved to `.coordination/` (gitignored).
+- `docs/contributing.md` moved to `private local workspace/` (gitignored).
 
 ## [0.9.5] - 2026-03-29 / 2026-04-11
 
@@ -162,7 +162,7 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
   with Shannon-entropy filter and keyword-based password detection.
 - **gitleaks v8.21.2** pre-commit hook for generic secret detection.
 - Incident report
-  (`.coordination/incidents/INCIDENT_2026-04-10T2336_...`) for the
+  (`<private-local-record>`) for the
   prevented FTP-credentials leak that motivated the new scanners.
 - Tests collected: 2,813 → **4,828** (97%+ coverage).
 - Python modules 165 → **201**, subpackages 17 → **19**, Rust
@@ -266,7 +266,7 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 - `figures/generate_knm_heatmap.py` + `figures/knm_heatmap.png` (16×16 K_nm coupling matrix)
 - Knm heatmap figure in README with annotated calibration anchors
 - All 4 notebooks executed with embedded outputs
-- Remove misplaced docs/SESSION_LOG and docs/HANDOVER (duplicates of .coordination/)
+- Remove misplaced docs/SESSION_LOG and docs/HANDOVER (duplicates of private local workspace/)
 
 ## [0.6.1] - 2026-03-01
 

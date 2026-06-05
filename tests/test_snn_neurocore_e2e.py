@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for Arcane Neuron E2E
-"""End-to-end integration tests for ArcaneNeuronBridge with real sc-neurocore."""
+# SCPN Quantum Control — Tests for sc-neurocore E2E
+"""End-to-end integration tests for the optional sc-neurocore bridge."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ _SKIP_NO_SC = pytest.mark.skipif(not HAS_SC_NEUROCORE, reason="sc-neurocore not 
 
 
 @_SKIP_NO_SC
-class TestArcaneNeuronE2E:
+class TestSNNNeurocoreE2E:
     def test_10_step_trajectory(self):
         """Run 10 steps and verify output structure at each step."""
         bridge = ArcaneNeuronBridge(n_neurons=2, n_inputs=3, seed=42)
@@ -154,8 +154,8 @@ class TestSNNQuantumBridgeNoDeps:
         output = bridge.forward(spikes)
         assert output.shape == (2,)
 
-    def test_arcane_neuron_bridge_import_error(self):
-        """Without sc-neurocore, ArcaneNeuronBridge should raise ImportError."""
+    def test_neurocore_bridge_import_error(self):
+        """Without sc-neurocore, the optional bridge should raise ImportError."""
         if HAS_SC_NEUROCORE:
             pytest.skip("sc-neurocore is installed")
         with pytest.raises(ImportError, match="sc-neurocore"):

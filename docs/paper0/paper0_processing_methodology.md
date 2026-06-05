@@ -237,7 +237,7 @@ Paper 0 processing is recoverable from three evidence classes:
    containing the tuned extraction captures, canonical review ledgers,
    validation specs, fixture outputs, promotion gates, and reconciliation
    reports.
-4. Append-only internal session and handover logs under `.coordination/`.
+4. Append-only internal session and private handoff record logs under `private local workspace/`.
 
 Public documentation intentionally does not copy internal logs. It references
 the existence of the audit trail and the internal runbook while keeping the
@@ -276,6 +276,6 @@ Use this checklist before starting Paper 1:
 11. Add a public validation-register page.
 12. Add or update a downstream pathway only after ingestion is complete.
 13. Run the focused verification gates and record the result in a fresh
-    append-only session log.
+    append-only private audit record.
 
 This checklist is the minimum bar for calling the next Book II paper processed.

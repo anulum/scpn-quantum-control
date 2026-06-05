@@ -60,7 +60,7 @@ A single markdown-size document covering:
    backend access.
 
 Template lives at `docs/preregistration_template.md`; fill in a
-copy under `.coordination/preregistrations/<campaign>.md`
+copy under `<private-local-record>`
 (gitignored local working copy) and upload to OSF for the frozen
 copy.
 
@@ -75,7 +75,7 @@ silently.
 In the repository workflow:
 
 - **Before freeze:** all iteration lives in
-  `.coordination/preregistrations/<campaign>.md` (local). No
+  `<private-local-record>` (local). No
   artefacts are uploaded to the backend.
 - **At freeze:** OSF record is created, the DOI for the
   registration is added to the campaign's row in
@@ -96,7 +96,7 @@ changes the backend queue depth while we are running). Every
 amendment:
 
 1. Lives in a new file
-   `.coordination/preregistrations/<campaign>_amendment_<N>.md`.
+   `<private-local-record>`.
 2. Cites the original OSF DOI and explains the trigger.
 3. Creates a new OSF registration (amendment, not overwrite).
 4. The amendment DOI is added to the campaign's row in
@@ -123,7 +123,7 @@ we do instead:
 ## Upcoming campaigns to pre-register
 
 - **Phase 2 DLA parity ($n = 4$ scaling, popcount control).** Draft
-  exists in `.coordination/` per memory
+  exists in `private local workspace/` per memory
   `reference_ibm_credits_application`. Freeze target: before the
   180-minute/year IBM Quantum Open Plan allocation activates.
 - **Phase 3 Heron r2 cross-backend replication** (kingston +

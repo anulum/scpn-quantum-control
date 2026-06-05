@@ -29,7 +29,7 @@ from qiskit import QuantumCircuit, transpile
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 HELPER_PATH = REPO_ROOT / "scripts" / "iqm_fake_transpile_payload.py"
-VAULT_PATH = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+VAULT_PATH = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 PUBLIC_DIR = REPO_ROOT / "data" / "iqm_paper_replication"
 PRIVATE_DIR = REPO_ROOT / "docs" / "internal" / "iqm_runs"
 DEFAULT_LAYOUT = (9, 4, 3, 8)

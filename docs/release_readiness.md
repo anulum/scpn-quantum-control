@@ -247,7 +247,7 @@ The release audit accepts the packet through:
 ```bash
 ./.venv-linux/bin/python tools/audit_release_readiness.py \
   --fail-on-blocker \
-  --hardware-result-pack-evidence docs/internal/releases/<packet>.json
+  --hardware-result-pack-evidence private internal records/releases/<packet>.json
 ```
 
 If a release does not cite promoted hardware evidence, record that decision in

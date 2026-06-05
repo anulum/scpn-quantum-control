@@ -17,7 +17,7 @@ real QPU budget and changes the evidentiary status of the project.
 ## Non-negotiable Rule
 
 No S1 live job may be submitted unless every gate below is complete and recorded
-in a new session log. A dry-run package, capability probe, or valid credential is
+in a new private audit record. A dry-run package, capability probe, or valid credential is
 not sufficient by itself.
 
 ## Required Artefacts
@@ -96,7 +96,7 @@ Stop and do not submit if any of the following occurs:
 - QPU budget approval is missing or lower than the planned spend;
 - provider dry-run payload and live backend metadata disagree;
 - raw-count archival path is not ready;
-- session log cannot be written.
+- private audit record cannot be written.
 
 ## Post-run Requirement
 
@@ -106,5 +106,5 @@ Immediately after completion:
 - write job IDs and backend metadata;
 - hash raw-count files;
 - run the preregistered analysis script;
-- update the S1 session log and handover;
+- update the S1 private audit record;
 - do not alter the hypothesis or decision tree after seeing results.

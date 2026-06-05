@@ -38,7 +38,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "s1_feedback_loop"
 DATE = "2026-05-06"
-DEFAULT_CREDENTIALS_VAULT = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+DEFAULT_CREDENTIALS_VAULT = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

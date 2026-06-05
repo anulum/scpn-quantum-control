@@ -1105,7 +1105,7 @@
     "git_commit": "8e720d1702339e373a648ce29f7f40f0f7dd7a88",
     "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
     "python": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
-    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL"
+    "repo_root": "."
   },
   "schema_version": "scpn-quantum-control.measured-couplings.v1",
   "signal_processing": {

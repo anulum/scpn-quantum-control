@@ -158,8 +158,8 @@ Abort after submission if any condition below holds:
 
 The submission script writes live results under:
 
-- `.coordination/ibm_runs/phase2_full_{timestamp}.json`
-- `.coordination/IBM_EXECUTION_LOG.md`
+- `<private-local-record>`
+- `<private-local-record>`
 - `results/ibm_runs/` through `HardwareRunner`
 
 Before any public promotion, the raw counts must be copied into a reviewed,
@@ -171,7 +171,7 @@ tracked data directory with a manifest equivalent to the Phase 1 dataset:
 - a reproducer that recomputes every promoted statistic from raw counts
 - a hardware-ledger row naming the exact artefacts
 
-`.coordination/` output is execution evidence for review, not public proof by
+`private local workspace/` output is execution evidence for review, not public proof by
 itself.
 
 ## Statistical tests

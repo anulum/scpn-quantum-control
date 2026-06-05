@@ -121,7 +121,7 @@ Before upload, verify:
 - DLA job IDs match `docs/publication/dla_parity_submission_checklist_2026-05-06.md`.
 - FIM job IDs match `docs/campaigns/scpn_fim_submission_checklist_2026-05-06.md`.
 - Zenodo DOI references resolve to the intended software or data records.
-- No internal `.coordination/`, private dataset, backup, credential, or token
+- No internal `private local workspace/`, private dataset, backup, credential, or token
   path appears in public manuscript text.
 
 ## Minimal AI Disclosure Policy

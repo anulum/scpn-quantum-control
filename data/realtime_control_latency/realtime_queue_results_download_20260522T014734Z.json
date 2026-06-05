@@ -1,7 +1,7 @@
 {
   "schema": "scpn_realtime_queue_results_download_v1",
   "timestamp_utc": "2026-05-22T01:47:12.020938+00:00",
-  "source_manifest": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/realtime_queue_submission_manifest_2026-05-22T013439Z.json",
+  "source_manifest": "data/realtime_control_latency/realtime_queue_submission_manifest_2026-05-22T013439Z.json",
   "results": [
     {
       "backend": "ibm_kingston",

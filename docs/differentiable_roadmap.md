@@ -8,7 +8,7 @@
 
 # Differentiable Roadmap
 
-This roadmap defines the staged work needed to turn differentiable programming into a complete public product surface. It complements the internal TODO without exposing private execution notes.
+This roadmap defines the staged work needed to turn differentiable programming into a complete public product surface. It complements the private execution tracker without exposing private execution notes.
 
 ## Critical path
 

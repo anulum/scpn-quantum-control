@@ -71,7 +71,7 @@ def main() -> int:
     print(f"Timestamp: {timestamp}")
     print()
 
-    vault = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+    vault = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     api_key, instance = parse_vault(vault)
     print("Credentials loaded.")
     print("Connecting to IBM Cloud...")

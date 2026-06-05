@@ -59,7 +59,7 @@ publication, or becomes part of a formal preprint, it moves to an
 externally-archived Zenodo record:
 
 1. **Reserve a Zenodo DOI** via the API (token in
-   `agentic-shared/CREDENTIALS.md` under Zenodo). Write the DOI
+   `user-supplied credentials vault` under Zenodo). Write the DOI
    into the campaign `literature/README.md` before the upload, so readers
    see the eventual citation target.
 2. **Upload** the raw JSONs (plus the analysis script from

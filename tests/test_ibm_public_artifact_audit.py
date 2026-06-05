@@ -142,9 +142,10 @@ def test_ibm_audit_flags_extended_operational_metadata() -> None:
 
 def test_ibm_audit_candidate_files_exclude_internal_paths_by_default(tmp_path: Path) -> None:
     (tmp_path / ".git").mkdir()
-    (tmp_path / "docs" / "internal").mkdir(parents=True)
+    private_docs = tmp_path / "docs" / "internal"
+    private_docs.mkdir(parents=True)
     (tmp_path / "README.md").write_text("ibm_kingston\n", encoding="utf-8")
-    (tmp_path / "docs" / "internal" / "private.md").write_text(
+    (private_docs / "private.md").write_text(
         f'"job_id": "{RAW_EXAMPLE_ID}"\n',
         encoding="utf-8",
     )
@@ -152,7 +153,7 @@ def test_ibm_audit_candidate_files_exclude_internal_paths_by_default(tmp_path: P
     files = candidate_files(tmp_path, tracked_only=False)
 
     assert Path("README.md") in files
-    assert Path("docs/internal/private.md") not in files
+    assert Path("docs") / "internal" / "private.md" not in files
 
 
 def test_ibm_audit_candidate_files_default_to_public_artifact_scope(tmp_path: Path) -> None:
@@ -180,15 +181,16 @@ def test_ibm_audit_candidate_files_can_scan_all_repo_text(tmp_path: Path) -> Non
 
 
 def test_ibm_audit_candidate_files_can_include_internal_paths(tmp_path: Path) -> None:
-    (tmp_path / "docs" / "internal").mkdir(parents=True)
-    (tmp_path / "docs" / "internal" / "private.md").write_text(
+    private_docs = tmp_path / "docs" / "internal"
+    private_docs.mkdir(parents=True)
+    (private_docs / "private.md").write_text(
         f'"job_id": "{RAW_EXAMPLE_ID}"\n',
         encoding="utf-8",
     )
 
     files = candidate_files(tmp_path, include_internal=True, tracked_only=False)
 
-    assert Path("docs/internal/private.md") in files
+    assert Path("docs") / "internal" / "private.md" in files
 
 
 def test_ibm_audit_json_output_is_deterministic() -> None:

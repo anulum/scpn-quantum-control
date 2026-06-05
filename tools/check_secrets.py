@@ -14,8 +14,8 @@ appear in the ANULUM credentials vault. This catches short passwords
 like FTP credentials that do not match any generic regex pattern.
 
 How it works:
-  1. Reads the vault file at VAULT_PATH (default:
-     /media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md).
+  1. Reads the vault file at `ANULUM_VAULT_PATH`, or the generic
+     per-user config fallback when the environment variable is unset.
   2. Extracts distinctive credential-shaped tokens from the vault via
      a conservative regex (8+ chars, mixed case or digits or symbols).
   3. Filters out short common words and obvious non-secrets.
@@ -52,7 +52,7 @@ from pathlib import Path
 DEFAULT_VAULT = Path(
     os.environ.get(
         "ANULUM_VAULT_PATH",
-        "/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md",
+        "~/.config/scpn-quantum-control/credentials.md",
     )
 )
 

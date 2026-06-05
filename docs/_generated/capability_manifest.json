@@ -9185,7 +9185,7 @@
       "tests/test_applications_benchmark_contracts.py",
       "tests/test_appqsim.py",
       "tests/test_appqsim_protocol.py",
-      "tests/test_arcane_neuron_e2e.py",
+      "tests/test_snn_neurocore_e2e.py",
       "tests/test_async_runner.py",
       "tests/test_audit_coverage_gaps.py",
       "tests/test_audit_mock_stub_usage.py",

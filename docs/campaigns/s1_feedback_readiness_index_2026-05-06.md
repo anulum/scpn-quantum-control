@@ -128,7 +128,7 @@ It cannot, by itself, establish:
 - [ ] Perform live transpilation without submission.
 - [ ] Record transpiled depth and operation counts.
 - [ ] Complete `docs/campaigns/s1_live_submission_preflight_2026-05-06.md`.
-- [ ] Create a new session log for the live-submission decision.
+- [ ] Create a new private audit record for the live-submission decision.
 - [ ] Create a `HardwareApprovalRecord` matching the exact package hash.
 - [ ] Confirm remaining QPU budget and approved QPU-second ceiling.
 - [ ] Prepare raw-count archival path before submission.

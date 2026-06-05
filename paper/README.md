@@ -80,7 +80,7 @@ For arXiv (either paper):
 
 3. Upload via `arxiv.org/submit`. Select primary category
    `quant-ph`, cross-list `cond-mat.stat-mech` + `cs.ET` (see
-   `.coordination/launch_copy/arxiv.md` for the prepared metadata
+   `<private-local-record>` for the prepared metadata
    block).
 
 ## Build artefacts

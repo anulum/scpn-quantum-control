@@ -23,4 +23,4 @@ material. Keep literature reviews here instead of the repository root.
 - Submission-specific bibliographies belong inside the corresponding
   `paper/submissions/...` or `paper/submissions_joss/...` package.
 - Internal-only reviewer notes, outreach notes, and grant-specific literature
-  scans belong under `docs/internal/`.
+  scans belong under `private internal records/`.

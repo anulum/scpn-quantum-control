@@ -498,7 +498,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point."""
     args = _parse_args(argv)
     credential_value, instance = parse_vault(
-        Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+        Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     )
     runner = HardwareRunner(
         credential_value,

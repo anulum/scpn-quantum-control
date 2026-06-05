@@ -8,8 +8,7 @@
 //
 // Privacy-friendly page-view analytics via GoatCounter. No cookies,
 // no personal data, no IP logging (GoatCounter hashes per-day).
-// Dashboard at https://anulum.goatcounter.com (Arcane Sapience
-// access only). If this script fails to load, the docs site still
+// Dashboard at https://anulum.goatcounter.com. If this script fails to load, the docs site still
 // works — there is no hard dependency.
 
 (function () {

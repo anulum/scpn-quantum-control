@@ -431,7 +431,7 @@ def main() -> int:
     out_path = out_dir / f"phase3_state_layout_{args.backend}_{timestamp}.json"
 
     credential_value, instance = parse_vault(
-        Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+        Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     )
     runner = HardwareRunner(
         credential_value,

@@ -140,7 +140,7 @@ def main() -> int:
     parser.add_argument(
         "--vault",
         type=Path,
-        default=Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md"),
+        default=Path("~/.config/scpn-quantum-control/credentials.md").expanduser(),
     )
     parser.add_argument(
         "--protocol",

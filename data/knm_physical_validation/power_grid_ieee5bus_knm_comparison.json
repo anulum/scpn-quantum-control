@@ -9,7 +9,7 @@
       "source_name": "eeg_alpha_plv_8ch",
       "spearman_offdiag": 0.9160024102955289
     },
-    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "candidate_dir": "data/public_application_benchmarks",
     "status": "topology_candidates_scanned",
     "systems": [
       {
@@ -687,15 +687,15 @@
     "n_layers": 5
   },
   "provenance": {
-    "candidate_dir": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks",
+    "candidate_dir": "data/public_application_benchmarks",
     "git_commit": "7f3cdccb1076dafd9ef8e3d0a8f97ceee74f4565",
     "machine": "x86_64",
-    "measured_path": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
+    "measured_path": "data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json",
     "numpy": "2.4.4",
     "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
     "processor": "x86_64",
     "python": "3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]",
-    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL",
+    "repo_root": ".",
     "scpn_codebase": null
   },
   "schema_version": 3

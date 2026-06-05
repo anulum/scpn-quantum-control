@@ -500,7 +500,7 @@ ibm_kingston dataset.
 ## Phase 1 Campaign Protocol (April 2026)
 
 The Phase 1 campaign is recorded in
-`.coordination/IBM_CAMPAIGN_STATE.md` and `IBM_EXECUTION_LOG.md`, and
+`<private-local-record>` and `IBM_EXECUTION_LOG.md`, and
 the analysis is reproduced by `scripts/analyse_phase1_dla_parity.py`.
 The four sub-phases progressively increased the per-point repetition
 count from 2 to 21 to drive the per-depth uncertainty below the 5 %

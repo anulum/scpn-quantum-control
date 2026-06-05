@@ -122,9 +122,9 @@ We explicitly do **not** plan against:
   file, so a silent overwrite becomes detectable as a `git`
   hash that does not match the claimed campaign.
 
-### S6 — `docs/internal/` and `.coordination/`
+### S6 — `private internal records/` and `private local workspace/`
 
-- Gitignored. Contain drafts, session logs, agent-generated
+- Gitignored. Contain drafts, private audit records, agent-generated
   audits. No secret should live there, but private plans do.
 - Repo gitleaks hook scans both anyway in `--all` mode.
 

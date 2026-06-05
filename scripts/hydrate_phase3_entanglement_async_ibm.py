@@ -161,7 +161,7 @@ def hydrate_artifact(path: Path) -> tuple[dict[str, Any], str]:
 
     phase1 = _phase1_module()
     credential_value, instance = phase1.parse_vault(
-        Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+        Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     )
     from qiskit_ibm_runtime import QiskitRuntimeService
 

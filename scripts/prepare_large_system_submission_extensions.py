@@ -34,7 +34,7 @@ from qiskit.providers.fake_provider import GenericBackendV2
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "large_system_submission_extensions"
 DOCS_DIR = REPO_ROOT / "docs" / "campaigns"
-DEFAULT_CREDENTIALS_VAULT = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+DEFAULT_CREDENTIALS_VAULT = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 SEED_TRANSPILER = 20260520
 SECONDS_PER_CIRCUIT_ESTIMATE = 0.55
 METHODS_SECONDS_PER_CIRCUIT_ESTIMATE = 1.0

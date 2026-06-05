@@ -6,12 +6,12 @@ particular language. It exists so that every new module has a
 defensible, written rationale for its language choice instead of
 defaulting to "whatever the author reaches for first".
 
-The repository-wide rule from `SHARED_CONTEXT.md` is stricter than the
-three-line summary:
+The repository-wide implementation standard is stricter than the three-line
+summary:
 
 > A module is NOT done until (1) wired into pipeline, (2) multi-angle
 > tests, (3) **Rust path**, (4) benchmarks measured, (5) performance
-> documented, (6) elite docs, (7) all rules followed.
+> documented, (6) user-facing documentation, (7) all rules followed.
 
 The word "Rust" in rule 3 is shorthand for "the appropriate
 non-Python compiled language". An orchestration module with no compute

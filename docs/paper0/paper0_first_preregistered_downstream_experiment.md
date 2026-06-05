@@ -25,7 +25,7 @@ quantum advantage, or hardware readiness.
 | Cross-domain negative control | IEEE 5-bus power-grid sparse coupling candidate |
 | Source programme | GOTM-SCPN Paper 0: The Foundational Framework downstream pathway |
 | Registry evidence | `docs/paper0/paper0_lane_registry.md`; `data/paper0_lane_registry.json` |
-| Existing gap contract | `docs/internal/audits/contracts/knm_physical_validation_contract_2026-04-30.md` |
+| Existing gap contract | `<private-internal-record>` |
 | Hardware status | no QPU submission; no hardware execution; no IBM spend |
 
 ## Scientific question
@@ -47,7 +47,7 @@ without promoting topology correlation into physical magnitude validation?
 
 Required committed inputs:
 
-- `docs/internal/audits/contracts/knm_physical_validation_contract_2026-04-30.md`
+- `<private-internal-record>`
 - `data/public_application_benchmarks/`
 - `data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json`
 - `docs/paper0/paper0_experimental_pathway.md`

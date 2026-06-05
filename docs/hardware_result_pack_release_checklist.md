@@ -19,7 +19,7 @@ Preferred generator from the release candidate commit:
 
 ```bash
 scpn-generate-hardware-pack-evidence \
-  --output-dir docs/internal/releases \
+  --output-dir private internal records/releases \
   --export-dir dist/hardware-result-packs
 ```
 
@@ -34,7 +34,7 @@ scpn-generate-hardware-pack-evidence \
 ```
 
 The generator runs the verifier, writes deterministic exports, runs every
-selected pack's reproduction command, stores logs under `docs/internal/releases/`,
+selected pack's reproduction command, stores logs under `<private-internal-record>`,
 computes log SHA-256 digests, and writes the evidence packet. Manual verifier
 and export commands remain acceptable only when the packet matches the schema
 below.
@@ -49,13 +49,13 @@ shape:
 {
   "schema_version": 1,
   "hardware_evidence_cited": true,
-  "verifier_summary_path": "docs/internal/releases/hardware_result_packs_verify_YYYY-MM-DD.json",
-  "export_summary_path": "docs/internal/releases/hardware_result_packs_export_YYYY-MM-DD.json",
+  "verifier_summary_path": "private internal records/releases/hardware_result_packs_verify_YYYY-MM-DD.json",
+  "export_summary_path": "private internal records/releases/hardware_result_packs_export_YYYY-MM-DD.json",
   "reproduction_logs": [
     {
       "pack_id": "phase2_dla_parity_ag_ibm_kingston_2026_05_05",
       "command": "python scripts/analyse_phase2_dla_parity.py --verify-integrity",
-      "log_path": "docs/internal/releases/phase2_dla_parity_ag_reproduction_YYYY-MM-DD.log",
+      "log_path": "private internal records/releases/phase2_dla_parity_ag_reproduction_YYYY-MM-DD.log",
       "sha256": "<sha256 of log file>"
     }
   ]

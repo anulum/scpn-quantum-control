@@ -3,14 +3,14 @@
 ## Canonical work queue
 
 This file is the single source of truth for active roadmap and TODO
-selection. Older planning files under `.coordination/` and
-`docs/internal/` are retained as historical context only unless an item
+selection. Older planning files under `private local workspace/` and
+`private internal records/` are retained as historical context only unless an item
 is copied here.
 
 ### Current platform programme: reproducible evidence and benchmark infrastructure
 
 - [x] **Platform opportunity prioritisation.** Recorded 2026-05-18 in
-  `docs/internal/strategy/2026-05-18_platform_opportunity_prioritisation.md`: first
+  `<private-internal-record>`: first
   result packs, then benchmark suite, then symmetry/sector-aware mitigation
   compiler, then Kuramoto/XY DSL, then differentiable control co-design.
 - [x] **Hardware result-pack manifest and offline verifier.** Implemented
@@ -281,7 +281,7 @@ is copied here.
 - [x] **Safe workflow-run cleanup.** Completed 2026-05-06: deleted only
   resolved or superseded failed/cancelled workflow runs after their
   causes were fixed by later successful commits.
-- [x] **Session log, handover, and Arcane notification.** Completed
+- [x] **Private audit record, and Arcane notification.** Completed
   2026-05-06 with append-only coordination records and a new SNN
   stimulus.
 
@@ -329,8 +329,8 @@ is copied here.
 - [x] **Safe workflow-run cleanup.** After classification, delete only
   cancelled or fully resolved failed runs where deletion does not remove
   the only evidence for an unresolved defect.
-- [x] **Session log, handover, and Arcane notification.** Keep a new
-  timestamped log and handover for the repository-hygiene audit, and
+- [x] **Private audit record, and Arcane notification.** Keep a new
+  timestamped log and private handoff record for the repository-hygiene audit, and
   emit a factual Arcane stimulus.
 
 ### Active release tasks
@@ -485,7 +485,7 @@ is copied here.
   generic-outperformance, and clean-readout overclaims. The FIM
   manuscript boundary remains regression-tested as a backend/circuit-
   specific negative hardware result, and an internal meeting brief was
-  added at `docs/internal/publication_planning/2026-05-13_coauthor_meeting_readiness.md`.
+  added at `<private-internal-record>`.
 - [x] **NumPy NQS sampling-contract hardening.** Implemented
   2026-05-12: `vmc_ground_state()` now rejects explicit `n_samples`
   because the current NumPy RBM path performs exact enumeration with
@@ -594,7 +594,7 @@ is copied here.
   per-file threshold, and provides `--fail-on-gap` for release-gating
   without running tests or treating line coverage as scientific
   validation. Usage and boundaries are documented in
-  `docs/internal/audits/release_readiness/coverage_gap_audit_2026-05-06.md`.
+  `<private-internal-record>`.
 - [x] **Coverage XML freshness guard.** Implemented 2026-05-07:
   `tools/audit_coverage_gaps.py` now emits an explicit
   `coverage_report_warning` when no selected package source files match
@@ -614,7 +614,7 @@ is copied here.
   `Test*` classes, so class-based pytest modules are no longer
   misreported as empty.
 - [x] **Behavioural-test audit.** Completed 2026-05-06:
-  `docs/internal/audits/release_readiness/behavioural_test_audit_closure_2026-05-06.md` records the
+  `<private-internal-record>` records the
   final audit state after targeted hardening passes. The current
   automated inventory covers `319` test modules and reports no
   smoke-only tests; broader coverage-to-100% work remains open as a
@@ -841,7 +841,7 @@ is copied here.
   reproduction gates, arXiv metadata draft, URL/identifier checks, and a
   minimal venue-conditional AI disclosure policy.
 - [x] **IBM Quantum Credits follow-up.** Completed 2026-05-06:
-  `docs/internal/publication_ops/ibm_quantum_credits_followup_2026-05-06.md` records the
+  `<private-internal-record>` records the
   5--10 hour QPU allocation boundary, current evidence package,
   affiliation wording, draft locations, and per-run spend gates. The
   older allocation draft now matches the 5--10 hour scope.
@@ -1233,11 +1233,11 @@ explicit QPU-time estimate before submission.
   archived snapshot SWHID.
 - [x] **Zenodo communities and metadata refresh preparation.**
   Completed 2026-05-06:
-  `docs/internal/publication_ops/zenodo_metadata_refresh_checklist_2026-05-06.md` records the
+  `<private-internal-record>` records the
   DOI, current version consistency, community targets, related
   identifiers, claim boundary, and manual-session update procedure.
 - [x] **Zenodo metadata refresh execution.** Completed 2026-05-06:
-  `docs/internal/publication_ops/zenodo_metadata_refresh_execution_2026-05-06.md` records the
+  `<private-internal-record>` records the
   authenticated Zenodo API edit/publish cycle. Public metadata now
   reports version `0.9.6`, publication date `2026-03-29`, license
   `agpl-3.0-or-later`, bounded description, and refreshed keywords for
@@ -1245,7 +1245,7 @@ explicit QPU-time estimate before submission.
   `10.5281/zenodo.18821929`.
 - [x] **Zenodo community submission UI follow-up.** Completed
   2026-05-06:
-  `docs/internal/publication_ops/zenodo_community_submission_2026-05-06.md` records the pending
+  `<private-internal-record>` records the pending
   Zenodo `community-inclusion` request for the `Research Software
   Engineering` community. Public record community membership remains
   pending curator acceptance.
@@ -1319,7 +1319,7 @@ explicit QPU-time estimate before submission.
   Research Software Directory.
 - [x] **Community-announcement preparation pack.** Completed
   2026-05-06:
-  `docs/internal/publication_ops/community_announcement_pack_2026-05-06.md` prepares bounded
+  `<private-internal-record>` prepares bounded
   Reddit, Qiskit Slack, Unitary Discord, Hacker News, LinkedIn, and X
   copy while keeping publication deferred until public preprint links
   are live.

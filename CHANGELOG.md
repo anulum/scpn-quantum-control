@@ -243,7 +243,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `.github/workflows/notebooks.yml`, `link-check.yml`, `docs-strict.yml`, `sbom.yml`, `mutation-testing.yml`, `commit-trailers.yml`.
 - `tools/check_commit_trailers.py`, `tools/mutmut_runner.sh`.
 - `pyproject.toml` extras: `xvalidate`, `config`, `logging`, `julia`; entry-point group `scpn_quantum_control.backends`.
-- `.coordination/launch_copy/` — 9 visibility drafts (HN / r/QuantumComputing / r/qiskit / Slack / Discord / LinkedIn / X / arXiv / README).
+- `<private-local-record>` — 9 visibility drafts (HN / r/QuantumComputing / r/qiskit / Slack / Discord / LinkedIn / X / arXiv / README).
 
 ### Changed
 - CI dev-tool matrix (`pytest 9.0.3`, `mypy 1.20.1`, `ruff 0.15.10`, `hypothesis 6.151.13`, `build 1.4.3`, `actions/upload-artefact 7.0.1`, `pypa/gh-action-pypi-publish 1.14.0`).
@@ -254,8 +254,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - Self-applied quality labels scrubbed across `CHANGELOG.md`, `docs/changelog.md`, `docs/test_infrastructure.md`, `docs/symmetry_decay_guess.md`, `docs/dynq_qubit_mapping.md`, and 27 test docstrings.
 
 ### Repository hygiene
-- `.coordination/sessions/` and `.coordination/handovers/` untracked; local-only going forward.
-- `.gitignore` patterns for paper-extraction working files, `.agent_metadata.json`, root-level `handover_*.md`, `.coordination/refactor_backups/`, `.coordination/contributing.md`.
+- `<private-local-record>` and `<private-local-record>` untracked; local-only going forward.
+- `.gitignore` patterns for paper-extraction working files, `.agent_metadata.json`, root-level `private handoff record_*.md`, `<private-local-record>`, `<private-local-record>`.
 - Agent-name mentions stripped from public-facing tracked files (`CHANGELOG.md`, `docs/triage.md`, `docs/PAPER_CLAIMS.md`, `docs/changelog.md`, `figures/generate_ansatz_comparison.py`, `tests/test_koopman.py`, and nine files referencing the internal audit filename).
 
 ## [0.9.5] - 2026-03-29 / 2026-04-11
@@ -264,7 +264,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-10: Phase 1 IBM Quantum hardware campaign on `ibm_kingston` (Heron r2, 156 qubits). 348 circuits, up to 21 reps per (depth, sector) at n = 4. Mean DLA-parity asymmetry +10.8 % for depths ≥ 4, peak +17.48 % at depth 6. Fisher combined χ²(16) = 123.4, p ≪ 10⁻¹⁶. Apriori simulator band was 4.5–9.6 %.
 - `scripts/analyse_phase1_dla_parity.py`, `paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity_short_paper.md`.
 - IBM execution scripts: `pipe_cleaner_ibm_kingston.py`, `phase1_mini_bench_ibm_kingston.py`, `phase1_5_reinforce_ibm_kingston.py`, `phase2_exhaust_cycle_ibm_kingston.py`, `phase2_5_final_burn_ibm_kingston.py`, `phase2_full_campaign_ibm.py`, `micro_probe_ibm_kingston.py`, `retrieve_ibm_job.py`.
-- `.coordination/IBM_CAMPAIGN_STATE.md`, `IBM_EXECUTION_LOG.md`, `phase1_experiment_design.md`, `WEBMASTER_CONTEXT.md`.
+- `<private-local-record>`, `IBM_EXECUTION_LOG.md`, `phase1_experiment_design.md`, `WEBMASTER_CONTEXT.md`.
 - 2026-04-08: `mitigation/symmetry_decay.py` + `scpn_quantum_engine/src/symmetry_decay.rs` — GUESS symmetry-decay ZNE (Oliva del Moral et al., arXiv:2603.13060, 2026). 20 tests.
 - `hardware/qubit_mapper.py` + `scpn_quantum_engine/src/community.rs` — DynQ topology-agnostic mapper (Liu et al., arXiv:2601.19635). 17 tests.
 - `phase/pulse_shaping.py` + `scpn_quantum_engine/src/pulse_shaping.rs` — PMP / ICI pulse sequences (Liu et al. 2023). Rust `ici_three_level_evolution_batch` 1 665× vs Python.
@@ -272,8 +272,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - FFI boundary hardening across all 36 `#[pyfunction]` exports (`PyResult<T>`, `validate_n`, `validate_positive`, `validate_range`, `validate_finite`, `validate_flat_square`, `validate_statevec_len`, `validate_domain_range`). 16 `validation.rs` tests.
 - `docs/symmetry_decay_guess.md` (891 lines), `docs/dynq_qubit_mapping.md` (878 lines).
 - 2026-04-10: `tools/check_secrets.py` (vault-pattern scanner) + gitleaks v8.21.2 pre-commit hook.
-- `.coordination/incidents/INCIDENT_2026-04-10T2336_ftp_creds_in_webmaster_context.md`.
-- `.gitignore` patterns for `.venv-linux/`, `.venv-rocm/`, `.venv-cuda/`, `results/`, `.coordination/TODO_*.md`, `.coordination/*.pdf`.
+- `<private-local-record>`.
+- `.gitignore` patterns for `.venv-linux/`, `.venv-rocm/`, `.venv-cuda/`, `results/`, `<private-local-record>`, `<private-local-record>`.
 
 ### Changed
 - Tests collected: 2 813 → 4 828 (97 %+ coverage).

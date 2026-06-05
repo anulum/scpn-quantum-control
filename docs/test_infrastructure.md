@@ -291,5 +291,5 @@ Test-only dependencies (in `[dev]` extras):
 Optional (for full test coverage):
 - `scpn-quantum-engine >= 0.2.0` (Rust acceleration tests)
 - `quimb >= 1.8` (MPS/DMRG tests — `importorskip`)
-- `sc-neurocore >= 3.14` (ArcaneNeuron E2E tests — `skipif`)
+- `sc-neurocore >= 3.14` (optional SNN bridge E2E tests — `skipif`)
 - `pennylane >= 0.40` (PennyLane adapter tests — `skipif`)

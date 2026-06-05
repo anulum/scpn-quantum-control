@@ -1,6 +1,6 @@
 # Paper 0 Equation Inventory
 
-Source: `/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/01_MANUSCRIPTS/SCPN_PAPERS/Paper 0 - The Foundational Framework  -revision 11.31- 12.05.2026-11-46- (Refactored).docx`
+Source: `<private-source:paper0-foundational-framework>`
 
 ## Coverage
 

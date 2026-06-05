@@ -38,7 +38,7 @@ For each arXiv upload bundle, include only public manuscript files:
 
 Do not include:
 
-- `.coordination/` logs or handovers;
+- `private local workspace/` logs or private handoff records;
 - credential or vault files;
 - IBM tokens or provider configuration;
 - raw private email drafts;
