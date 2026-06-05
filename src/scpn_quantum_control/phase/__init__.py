@@ -38,6 +38,13 @@ from .differentiable_audit import (
     run_phase_gradient_benchmark_suite,
     verify_parameter_shift_analytic_gradient,
 )
+from .differentiable_readiness import (
+    DifferentiableReadinessAuditRecord,
+    DifferentiableReadinessAuditResult,
+    DifferentiableReadinessSurface,
+    default_differentiable_readiness_surfaces,
+    run_differentiable_readiness_audit,
+)
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
 from .gradient_backend import (
     QuantumGradientBackendCapability,
@@ -333,6 +340,11 @@ __all__ = [
     "run_phase_gradient_benchmark_suite",
     "run_ml_framework_gradient_audit",
     "verify_parameter_shift_analytic_gradient",
+    "DifferentiableReadinessSurface",
+    "DifferentiableReadinessAuditRecord",
+    "DifferentiableReadinessAuditResult",
+    "default_differentiable_readiness_surfaces",
+    "run_differentiable_readiness_audit",
     "DifferentiableQuantumAuditReport",
     "DifferentiableWorkflowAuditSuiteResult",
     "FiniteShotGradientAuditResult",

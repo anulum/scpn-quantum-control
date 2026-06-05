@@ -34,6 +34,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.objective_planner` | Fail-closed execution planning for pure parameter-shift, hybrid term-gradient, hardware, and unsupported composed-objective routes. |
 | `scpn_quantum_control.qsnn.training` | QSNN parameter-shift gradients, full-batch descent, and training convergence evidence. |
 | `scpn_quantum_control.phase.gradient_backend` | Backend gradient capability declarations, fail-closed planner, shot policy, and hardware-safe defaults. |
+| `scpn_quantum_control.phase.differentiable_readiness` | Unified reviewer-facing readiness ledger over the focused differentiable support, transform, provider, QNode, hardware-policy, and provider hardware-preparation audits. |
 | `scpn_quantum_control.phase.provider_gradient` | Provider callback parameter-shift execution plus policy-bound hardware-gradient preparation records that never submit QPU jobs. |
 | `scpn_quantum_control.phase.provider_hardware_gradient_audit` | Executable audit suite for approved and blocked provider hardware-gradient preparation routes with zero hardware execution and zero produced hardware gradients. |
 | `scpn_quantum_control.phase.hardware_gradient_policy` | Hardware-gradient preparation policy with provider/backend allowlists, shot/evaluation budget accounting, required evidence IDs, dry-run approval, and live-ticket gating. |
@@ -410,6 +411,12 @@ For a reviewer-facing support matrix, use
 ticketed live-preparation, missing-evidence, shot-budget, unknown-provider, and
 missing-ticket scenarios. Passing the audit means the preparation layer preserves
 its declared boundaries; it is not a live hardware-gradient result.
+
+For a whole-lane status ledger, use `run_differentiable_readiness_audit()`. It
+aggregates the support matrix, transform nesting, QNode tape/transform suites,
+provider gradients, hardware policy, and provider hardware-preparation audit
+into one JSON-ready pass/fail record with supported counts, blocked counts, and
+hardware-execution counters.
 
 ## Minimal QSNN descent certificate
 

@@ -45,8 +45,8 @@
 |---|---:|
 | Package version | 0.9.10 |
 | Public API exports | 574 |
-| Python source modules | 798 |
-| Public Python classes | 1602 |
+| Python source modules | 799 |
+| Public Python classes | 1605 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -55,7 +55,7 @@
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1908 |
+| Python test files | 1909 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 18 |
 
@@ -213,6 +213,7 @@ layers:
 | Quantum parameter-shift | Supported through `scpn_quantum_control.phase.param_shift` for callable expectation objectives, structured `PhaseVQE` gradients, and local gradient-descent VQE examples. | [Quantum Gradients](docs/quantum_gradients.md), [Variational Methods](docs/variational.md) |
 | Program and compiler AD | Supported for registered scalar, vector, and matrix primitives with native lowering reports and fail-closed unsupported boundaries. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Gradient support matrix | Executable support planning now covers registered gates, observables, backends, transforms, and ML/provider adapters with explicit blocked reasons and alternatives. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
+| Unified readiness ledger | `run_differentiable_readiness_audit()` aggregates the support matrix, transform nesting, QNode tape/transform suites, provider gradients, hardware policy, and provider hardware-preparation audit into one reviewer-facing pass/fail ledger. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Transform nesting governance | Executable planning now separates supported local `grad`, `value_and_grad`, `hessian`, nested-grad, tape, scalar `jvp`, scalar `vjp`, scalar `jacfwd`, scalar `jacrev`, vector-output native Jacobian execution, native manual `vmap(grad)`, and provider-callback QNode transforms from blocked framework-vectorized, adapter-nested, finite-shot curvature, malformed-provider, and hardware nesting routes. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Provider-gradient readiness | Executable audit evidence distinguishes deterministic callbacks, finite-shot callbacks, multi-frequency rules, hardware-blocked routes, unknown backends, malformed finite-shot samples, and policy-bound hardware-preparation records. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Hardware-gradient policy readiness | Executable dry-run policy decisions now gate hardware-gradient preparation by provider/backend allowlist, shot budget, required evidence IDs, and live-execution ticket status. `prepare_provider_hardware_parameter_shift_gradient(...)` packages that approval into provider-preparation evidence, and `run_provider_hardware_gradient_preparation_audit()` verifies supported and blocked preparation routes without submitting QPU jobs. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
@@ -234,7 +235,8 @@ The first production-grade differentiable workflows are deliberately bounded:
 5. evaluate hardware-gradient preparation with `evaluate_hardware_gradient_policy(...)`
    and `run_hardware_gradient_policy_readiness_suite()` before any provider job
    is prepared;
-6. document unsupported gates, backends, shapes, and dynamic program paths
+6. summarize the focused readiness suites with `run_differentiable_readiness_audit()`;
+7. document unsupported gates, backends, shapes, and dynamic program paths
    before they can mislead users.
 
 Future releases will extend this route toward native framework gradients beyond

@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 574,
     "public_documentation_pages": 240,
-    "python_model_classes": 1602,
-    "python_model_source_modules": 798,
+    "python_model_classes": 1605,
+    "python_model_source_modules": 799,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1908
+    "test_files": 1909
   },
   "documentation": {
     "examples": [
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 60
+        "python_modules": 61
       },
       {
         "package": "psi_field",
@@ -2079,6 +2079,18 @@
       {
         "name": "DifferentiableQuantumAuditReport",
         "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
+        "name": "DifferentiableReadinessAuditRecord",
+        "path": "src/scpn_quantum_control/phase/differentiable_readiness.py"
+      },
+      {
+        "name": "DifferentiableReadinessAuditResult",
+        "path": "src/scpn_quantum_control/phase/differentiable_readiness.py"
+      },
+      {
+        "name": "DifferentiableReadinessSurface",
+        "path": "src/scpn_quantum_control/phase/differentiable_readiness.py"
       },
       {
         "name": "DifferentiableWorkflowAuditSuiteResult",
@@ -8137,6 +8149,7 @@
       "src/scpn_quantum_control/phase/coupling_learning.py",
       "src/scpn_quantum_control/phase/cross_domain_transfer.py",
       "src/scpn_quantum_control/phase/differentiable_audit.py",
+      "src/scpn_quantum_control/phase/differentiable_readiness.py",
       "src/scpn_quantum_control/phase/floquet_kuramoto.py",
       "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
       "src/scpn_quantum_control/phase/gradient_backend.py",
@@ -10273,6 +10286,7 @@
       "tests/test_phase_coupling_learning.py",
       "tests/test_phase_diagram.py",
       "tests/test_phase_differentiable_audit.py",
+      "tests/test_phase_differentiable_readiness.py",
       "tests/test_phase_dynamics_contracts.py",
       "tests/test_phase_framework_bridges.py",
       "tests/test_phase_gradient_backend.py",

@@ -486,6 +486,13 @@ provider/backend aliases, and live preparation without a ticket. A passing audit
 means all records preserved `hardware_execution == False` and
 `gradient_available == False`; it is not a live QPU result.
 
+For the full differentiable-programming lane, `run_differentiable_readiness_audit()`
+aggregates the gradient support matrix, transform nesting, QNode tape and
+transform suites, provider-gradient readiness, hardware policy, and provider
+hardware-preparation audit into one JSON-ready ledger. This is the fastest way
+to show a reviewer which routes are supported, which routes are blocked, and
+that hardware execution remains closed.
+
 ## Qiskit shifted-circuit generation
 
 For Qiskit-native circuits, the phase namespace can generate fully bound
