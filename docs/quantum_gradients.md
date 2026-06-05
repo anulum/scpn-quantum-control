@@ -159,12 +159,13 @@ This is reviewer-facing agreement evidence for named, caller-supplied
 framework-style gradients. The bounded phase-QNN model also exposes
 `jax_native_qnn_value_and_grad(...)`, which expresses that model directly in JAX
 operations and verifies JAX `value_and_grad` against the SCPN parameter-shift
-reference, plus `torch_bounded_qnn_value_and_grad(...)`, which returns PyTorch
-tensors from the analytic bounded-model gradient and checks the same
-parameter-shift reference. These are intentionally narrow bridge promotions:
-arbitrary autodiff-through-simulator kernels, unrestricted QNN architectures,
-device placement guarantees, and live provider gradients remain outside the
-promoted surface.
+reference, plus `torch_bounded_qnn_value_and_grad(...)` and
+`tensorflow_bounded_qnn_value_and_grad(...)`, which return framework tensors
+from the analytic bounded-model gradient and check the same parameter-shift
+reference. These are intentionally narrow bridge promotions: arbitrary
+autodiff-through-simulator kernels, unrestricted QNN architectures, device
+placement guarantees, and live provider gradients remain outside the promoted
+surface.
 
 ## Bounded QNN convergence evidence
 

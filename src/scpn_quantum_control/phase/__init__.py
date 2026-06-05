@@ -294,7 +294,9 @@ from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
 from .tensorflow_bridge import (
     PhaseTensorFlowParameterShiftResult,
+    PhaseTensorFlowQNNGradientResult,
     is_phase_tensorflow_available,
+    tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
 )
 from .torch_bridge import (
@@ -524,8 +526,10 @@ __all__ = [
     "assert_gradient_transform_nesting_supported",
     "run_gradient_transform_nesting_audit",
     "is_phase_tensorflow_available",
+    "tensorflow_bounded_qnn_value_and_grad",
     "tensorflow_parameter_shift_value_and_grad",
     "PhaseTensorFlowParameterShiftResult",
+    "PhaseTensorFlowQNNGradientResult",
     "build_structured_ansatz",
     "LindbladSyncEngine",
     "multi_frequency_parameter_shift_rule",

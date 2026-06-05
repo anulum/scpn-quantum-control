@@ -16,6 +16,7 @@ import scpn_quantum_control.phase.tensorflow_bridge as tensorflow_bridge
 import scpn_quantum_control.phase.torch_bridge as torch_bridge
 from scpn_quantum_control.phase import (
     PhaseTensorFlowParameterShiftResult,
+    PhaseTensorFlowQNNGradientResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchQNNGradientResult,
     is_phase_tensorflow_available,
@@ -23,6 +24,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
+    tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
     torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
@@ -240,6 +242,58 @@ def test_tensorflow_bridge_reports_multi_frequency_parameter_shift(
     assert result.to_dict()["shift_terms"] == len(rule.terms)
 
 
+def test_tensorflow_bounded_qnn_gradient_matches_parameter_shift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
+
+    result = tensorflow_bounded_qnn_value_and_grad(
+        features,
+        labels,
+        params,
+        tolerance=1e-12,
+    )
+
+    expected_loss = parameter_shift_qnn_classifier_loss(
+        features,
+        labels,
+        params.numpy(),
+    )
+    expected_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params.numpy(),
+    )
+    assert isinstance(result, PhaseTensorFlowQNNGradientResult)
+    assert result.passed
+    assert result.analytic_framework_gradient
+    assert not result.native_framework_autodiff
+    assert not result.host_boundary
+    np.testing.assert_allclose(result.loss, expected_loss, atol=1e-12)
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.parameter_shift_gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert result.to_dict()["passed"] is True
+
+
+def test_tensorflow_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+
+    with pytest.raises(ValueError, match="params width must match feature width"):
+        tensorflow_bounded_qnn_value_and_grad(
+            np.array([[0.0, 1.0]], dtype=float),
+            np.array([0.0], dtype=float),
+            np.array([0.45], dtype=float),
+        )
+
+
 def test_framework_bridges_fail_closed_when_optional_dependency_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -266,4 +320,10 @@ def test_framework_bridges_fail_closed_when_optional_dependency_missing(
         tensorflow_parameter_shift_value_and_grad(
             _objective,
             np.array([0.2, -0.4], dtype=float),
+        )
+    with pytest.raises(ImportError, match="tensorflow blocked"):
+        tensorflow_bounded_qnn_value_and_grad(
+            np.array([[0.0]], dtype=float),
+            np.array([0.0], dtype=float),
+            np.array([0.2], dtype=float),
         )
