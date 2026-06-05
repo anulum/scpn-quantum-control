@@ -134,6 +134,20 @@ curvature, or hardware-efficient Hessian estimation.
 The bounded phase-QNN route now has a dedicated framework-agreement surface:
 
 ```python
+from scpn_quantum_control.phase import run_bounded_qnn_framework_bridge_matrix
+
+matrix = run_bounded_qnn_framework_bridge_matrix()
+print(matrix.supported_count, matrix.fail_closed_count)
+```
+
+The bridge matrix declares the bounded routes that are implemented today:
+native JAX `value_and_grad` for the bounded phase-QNN classifier, PyTorch
+tensor-gradient evidence, and TensorFlow tensor-gradient evidence. It also
+records explicit fail-closed rows for arbitrary framework autodiff through
+simulator kernels and live provider hardware-gradient execution. Treat this
+matrix as the route selector before promoting any framework-gradient result.
+
+```python
 import numpy as np
 
 from scpn_quantum_control.phase import (

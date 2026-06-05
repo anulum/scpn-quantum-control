@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-05 — Added a fail-closed bounded phase-QNN framework bridge matrix
+  that declares implemented JAX/PyTorch/TensorFlow bridge routes and records
+  arbitrary simulator autodiff plus live provider hardware-gradient routes as
+  explicit unsupported gaps.
 - 2026-06-05 — Added native bounded phase-QNN framework-gradient evidence:
   `jax_native_qnn_value_and_grad` now evaluates the bounded classifier loss in
   JAX `value_and_grad` without host callbacks, while

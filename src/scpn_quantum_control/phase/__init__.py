@@ -245,6 +245,12 @@ from .qnn_framework_agreement import (
     run_parameter_shift_qnn_framework_agreement_suite,
     verify_parameter_shift_qnn_framework_agreement,
 )
+from .qnn_framework_bridge_matrix import (
+    BoundedQNNFrameworkBridgeCapability,
+    BoundedQNNFrameworkBridgeMatrixResult,
+    assert_bounded_qnn_framework_bridge_supported,
+    run_bounded_qnn_framework_bridge_matrix,
+)
 from .qnn_optimizer_benchmark import (
     DerivativeFreeCandidateMap,
     ParameterShiftQNNOptimizerBenchmarkCaseResult,
@@ -487,6 +493,10 @@ __all__ = [
     "ParameterShiftQNNFrameworkAgreementResult",
     "ParameterShiftQNNFrameworkAgreementSuiteResult",
     "ParameterShiftQNNFrameworkGradientAgreement",
+    "BoundedQNNFrameworkBridgeCapability",
+    "BoundedQNNFrameworkBridgeMatrixResult",
+    "assert_bounded_qnn_framework_bridge_supported",
+    "run_bounded_qnn_framework_bridge_matrix",
     "run_parameter_shift_qnn_framework_agreement_suite",
     "verify_parameter_shift_qnn_framework_agreement",
     "ParameterShiftQNNFiniteShotConvergenceCaseResult",
