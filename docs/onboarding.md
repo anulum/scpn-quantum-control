@@ -67,7 +67,7 @@ these decisions explicit:
 | Use the stable API | [Stable Facades API](stable_facades_api.md) |
 | Bring a custom oscillator network | [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) |
 | Train or inspect gradients | [Differentiable Programming](differentiable_programming.md), [Quantum Gradients](quantum_gradients.md), and [Differentiable API](differentiable_api.md) |
-| Reproduce framework parity | Build the CPU-only framework overlay, run the external comparison suite, and inspect the [claim ledger](../data/differentiable_phase_qnode/claim_ledger.md). |
+| Reproduce framework parity | Build the CPU-only framework overlay, run the external comparison suite, and inspect the [claim ledger](https://github.com/anulum/scpn-quantum-control/blob/main/data/differentiable_phase_qnode/claim_ledger.md). |
 | Inspect notebooks | [Interactive Notebooks](notebooks.md) |
 | Build or install the Rust engine | [Rust Engine](rust_engine.md) |
 | Evaluate release readiness | [Release Readiness Gate](release_readiness.md) |

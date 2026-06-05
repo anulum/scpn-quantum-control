@@ -60,6 +60,8 @@ jobs:
             --exclude https://www.contributor-covenant.org
             --exclude https://doi.org/10.5281/zenodo.18821929
             --exclude https://ojs.aaai.org/index.php/AAAI-SS/article/view/36900
+            --exclude https://www.seco.admin.ch/seco/de/home/Aussenwirtschaftspolitik_Wirtschaftliche_Zusammenarbeit/Wirtschaftsbeziehungen/exportkontrollen-und-sanktionen.html
+            --exclude https://www.nature.com/articles/s41534-023-00681-0
             './**/*.md'
           # 403/429/500/502/503 are accepted because many journals and
           # vendor pages return those for anonymous HEAD requests yet

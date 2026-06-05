@@ -103,7 +103,7 @@ Use this route if you are comparing the framework with quantum-ML stacks:
 4. build the CPU-only overlay from [Differentiable Programming](differentiable_programming.md)
    before comparing JAX, PyTorch, TensorFlow, or PennyLane rows;
 5. run only supported transform/backend plans from the gradient support matrix;
-6. inspect the Phase-QNode [claim ledger](../data/differentiable_phase_qnode/claim_ledger.md)
+6. inspect the Phase-QNode [claim ledger](https://github.com/anulum/scpn-quantum-control/blob/main/data/differentiable_phase_qnode/claim_ledger.md)
    and benchmark classification before using performance language;
 7. document unsupported gates, adapters, hardware policies, transform nests, or
    missing Enzyme tooling
