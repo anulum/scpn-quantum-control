@@ -278,6 +278,28 @@ Before tagging:
 10. Commit with the required authorship line after staged-diff audit.
 11. Push the commit and wait for CI before creating a release tag.
 
+
+## 0.9.11 documentation, native AD, and release-polish scope
+
+The `0.9.11` source release packages the latest documentation and
+differentiable-programming hardening round. It does not promote arbitrary
+program AD, hardware gradients, full ML-framework-native autodiff, or broad
+quantum advantage. The release scope is:
+
+- public docs now route first-time users through onboarding, applications,
+  tutorials, notebooks, differentiable programming, and claim boundaries before
+  low-level APIs;
+- version-consistent `pyproject.toml`, `CITATION.cff`, `.zenodo.json`,
+  capability manifest, README snapshot, reproducibility metadata, and release
+  notes;
+- native compiler-backed whole-program AD determinant support widened from
+  helper-backed `6x6`-`16x16` to verified `6x6`-`19x19`;
+- static dense `20x20+` determinant traces are explicitly documented as
+  fail-closed after strict native verification rejected the current helper
+  formulation;
+- repository hygiene remains bound by module-specific tests, release-readiness
+  gates, security scans, and GitHub CI before public promotion.
+
 ## 0.9.10 documentation and differentiable-programming release scope
 
 The `0.9.10` source release aligns the public documentation with the current

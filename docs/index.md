@@ -61,7 +61,7 @@ when the central question is whether a result can be promoted as hardware eviden
 
 | Area | Public status |
 |---|---|
-| Package line | Version `0.9.10`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
+| Package line | Version `0.9.11`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Paper 0 source-validation register | Fully promoted through the source-accounting register from `P0R00001` through `P0R06211`; the planner reports `0` remaining work orders and `0` remaining records. This is source-bounded ingestion and fixture preservation, not external validation evidence. |
@@ -102,7 +102,7 @@ This package provides three things:
    expose native lowering reports before LLVM/JIT compilation, with strict
    no-tie native selection lowering for `np.where`, `maximum`, `minimum`, and
    `clip`, plus scalar 2x2/3x3/4x4/5x5 expression determinant,
-   helper-backed 6x6 through 16x16 determinant, static square/rectangular trace,
+   helper-backed 6x6 through 19x19 determinant, static square/rectangular trace,
    static diagonal gather/scatter, static dense inverse through 6x6, static
    vector and matrix-RHS solve through 6x6, and 2x2 product lowering.
    The native linalg support contract is introspectable before compilation, and

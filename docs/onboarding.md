@@ -103,13 +103,14 @@ coupled dynamics matter:
   inspectable native program-AD lowering reports for supported scalar traces
   with strict no-tie native `where`/selection/`clip` support,
   2x2/3x3/4x4/5x5 expression determinant native lowering, helper-backed
-  6x6 through 16x16 determinant native lowering, static square/rectangular trace
+  6x6 through 19x19 determinant native lowering, static square/rectangular trace
   native lowering, static diagonal gather/scatter native lowering, static dense
   inverse native lowering through 6x6, static vector and matrix-RHS solve
   native lowering through 6x6, 2x2 product native lowering, and an
   introspectable native linalg support contract for service gating.
-- Parameter-shift gradient helpers for callable expectation objectives and
-  gradient-descent VQE examples.
+- Parameter-shift gradient helpers for callable expectation objectives,
+  gradient-descent VQE examples, provider-gradient readiness ledgers, and a
+  unified differentiable-readiness audit for reviewer-facing support evidence.
 
 ## What Remains Bounded
 
@@ -121,6 +122,9 @@ coupled dynamics matter:
   engineering frontier; supported primitives and supported scalar traces
   execute through bounded kernels, and unsupported paths report the blocked
   operation before failing closed.
+- Native determinant traces at `20x20` and wider are intentionally
+  fail-closed after a strict native verification failure at the current helper
+  formulation.
 - Native quotient-linalg full-output inverse and matrix-RHS solve traces at
   `7x7` and wider are intentionally unsuitable for the current native path.
   `5x5` through `6x6` reuse one determinant/adjugate helper per static matrix;

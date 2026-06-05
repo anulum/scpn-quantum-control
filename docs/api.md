@@ -658,7 +658,7 @@ from scpn_quantum_control import generate_cloud_manifests
 bundle = generate_cloud_manifests(
     CloudDeploymentSpec(
         name="scpn-qc",
-        image="registry.example/scpn-quantum-control:0.9.10",
+        image="registry.example/scpn-quantum-control:0.9.11",
         command=("scpn-bench", "stable-core-contract-gate"),
         resources=ContainerResources(cpu="1000m", memory="1Gi"),
         env={"SCPN_EXECUTION_MODE": "offline"},

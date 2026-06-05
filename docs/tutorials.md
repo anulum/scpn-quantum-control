@@ -108,6 +108,13 @@ This route is intentionally stricter than a demo notebook. It is designed to
 make exact, stochastic, approximate, blocked, and roadmap gradient modes visible
 before users build training loops or publish claims.
 
+For compiler-backed AD users, the current native whole-program path supports
+verified static dense determinant lowering through `19x19`, static inverse and
+solve routes through `6x6`, and fail-closed reports for wider unsupported linalg.
+Treat the `20x20+` determinant boundary as useful engineering evidence: it
+identifies where the present loop-helper formulation needs a stronger numerical
+factorisation before promotion.
+
 ## Level 1: Foundations
 
 ### Tutorial 1: Your First Quantum Synchronization

@@ -12,6 +12,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## [0.9.11] - 2026-06-05
+
+### Added
+- Public documentation and release metadata alignment for the current
+  differentiable-programming hardening state, including onboarding, tutorials,
+  notebooks, API routes, reproducibility metadata, release-readiness scope, and
+  generated capability inventory.
+- Native compiler-backed whole-program AD determinant support widened to
+  verified static dense `6x6` through `19x19`, with `20x20+` traces documented
+  as fail-closed until a stronger determinant-partial helper is verified.
+
 ## [0.9.10] - 2026-06-04
 
 ### Added

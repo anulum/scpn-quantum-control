@@ -32,7 +32,7 @@
 > artifacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
-**Version:** 0.9.10
+**Version:** 0.9.11
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 91.5% | IBM Heron r2 evidence ledgered
 
 <!-- capability-snapshot:start -->
@@ -43,7 +43,7 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.10 |
+| Package version | 0.9.11 |
 | Public API exports | 574 |
 | Python source modules | 799 |
 | Public Python classes | 1605 |

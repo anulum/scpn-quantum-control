@@ -4,6 +4,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.9.11] - 2026-06-05
+
+### Added
+- 2026-06-05 — Bumped the public release metadata and documentation surfaces
+  for the current differentiable-programming hardening state, including README,
+  onboarding, tutorial, notebook, API, reproducibility, hardware-ledger,
+  release-readiness, citation, Zenodo, and generated capability inventory
+  alignment.
+- 2026-06-05 — Promoted native compiler-backed whole-program AD determinant
+  lowering from helper-backed `6x6`-`16x16` to verified `6x6`-`19x19`, and
+  documented `20x20+` determinant traces as fail-closed after strict native
+  value/JVP/VJP/gradient verification rejected the current helper formulation.
+
 ## [0.9.10] - 2026-06-04
 
 ### Added
