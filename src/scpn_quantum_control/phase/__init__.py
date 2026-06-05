@@ -81,9 +81,11 @@ from .hardware_gradient_policy import (
 )
 from .jax_bridge import (
     PhaseJAXGradientAgreementResult,
+    PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
+    jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
 )
 from .kuramoto_variants import (
@@ -297,7 +299,9 @@ from .tensorflow_bridge import (
 )
 from .torch_bridge import (
     PhaseTorchParameterShiftResult,
+    PhaseTorchQNNGradientResult,
     is_phase_torch_available,
+    torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
 from .transform_nesting import (
@@ -439,8 +443,10 @@ __all__ = [
     "run_phase_qnode_vector_transform_readiness_suite",
     "is_phase_jax_available",
     "check_jax_parameter_shift_agreement",
+    "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
     "PhaseJAXGradientAgreementResult",
+    "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
     "is_phase_pennylane_available",
     "check_pennylane_parameter_shift_agreement",
@@ -508,8 +514,10 @@ __all__ = [
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
     "is_phase_torch_available",
+    "torch_bounded_qnn_value_and_grad",
     "torch_parameter_shift_value_and_grad",
     "PhaseTorchParameterShiftResult",
+    "PhaseTorchQNNGradientResult",
     "GradientTransformNestingPlan",
     "GradientTransformNestingAuditResult",
     "plan_gradient_transform_nesting",

@@ -4,6 +4,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+- 2026-06-05 — Added native bounded phase-QNN framework-gradient evidence:
+  `jax_native_qnn_value_and_grad` now evaluates the bounded classifier loss in
+  JAX `value_and_grad` without host callbacks, while
+  `torch_bounded_qnn_value_and_grad` returns tensor-ready analytic gradient
+  evidence checked against the canonical SCPN parameter-shift gradient.
+
 ## [0.9.11] - 2026-06-05
 
 ### Added

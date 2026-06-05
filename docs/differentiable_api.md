@@ -26,7 +26,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.qnn_training` | Bounded data-reuploading phase-QNN classifier training with multi-frequency parameter-shift descent, prediction evidence, and accuracy certificates. |
 | `scpn_quantum_control.phase.qnn_convergence` | Deterministic bounded-QNN convergence evidence with loss-drop thresholds, accuracy thresholds, parameter-shift evaluation accounting, and unsuitable-scenario records. |
 | `scpn_quantum_control.phase.qnn_finite_shot` | Seeded finite-shot simulator evidence for bounded-QNN gradients and noisy-gradient convergence with replay seeds, shot counts, uncertainty radii, and non-hardware claim boundaries. |
-| `scpn_quantum_control.phase.qnn_framework_agreement` | Caller-supplied QNN framework-gradient agreement checks for JAX/PennyLane/PyTorch/TensorFlow-style references without claiming native framework autodiff through simulator kernels. |
+| `scpn_quantum_control.phase.qnn_framework_agreement` | Caller-supplied QNN framework-gradient agreement checks for JAX/PennyLane/PyTorch/TensorFlow-style references, complemented by bounded native/tensor QNN bridge evidence where explicitly documented. |
 | `scpn_quantum_control.phase.natural_gradient` | Metric-aware parameter-shift descent with damped solves, metric validation, line-search traces, and convergence certificates. |
 | `scpn_quantum_control.phase.optimizer_audit` | Multi-start optimizer comparison evidence for parameter-shift descent and natural-gradient descent. |
 | `scpn_quantum_control.phase.objectives` | Composable differentiable phase-control objectives with term-wise gradients and fail-closed parameter-shift compatibility. |
@@ -46,9 +46,9 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.qnode_transforms` | Executable scalar local QNode transform evidence for `grad`, `value_and_grad`, `hessian`, `jvp`, `vjp`, `jacfwd`, and `jacrev`, with fail-closed vectorized/provider/framework-native boundaries. |
 | `scpn_quantum_control.phase.qnode_vector_transforms` | Executable deterministic native vector-output QNode Jacobian evidence for `jacfwd`/`jacrev` plus host-side manual `vmap(grad)` over scalar local parameter-shift objectives, with fail-closed finite-shot, hardware, provider, and framework-native vectorization boundaries. |
 | `scpn_quantum_control.phase.qnode_provider_transforms` | Provider-callback QNode transform evidence for scalar `grad`, `value_and_grad`, `jvp`, `vjp`, scalar `jacfwd`/`jacrev`, and manual `vmap(grad)` with shifted-sample records, finite-shot uncertainty propagation, and fail-closed hardware policy. |
-| `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls. |
+| `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls plus native JAX bounded phase-QNN `value_and_grad` evidence that avoids host callbacks for that narrow model. |
 | `scpn_quantum_control.phase.pennylane_bridge` | Optional PennyLane gradient-agreement checker for caller-supplied PennyLane/QNode gradient functions. |
-| `scpn_quantum_control.phase.torch_bridge` | Optional PyTorch tensor bridge for supported phase parameter-shift value-and-gradient calls. |
+| `scpn_quantum_control.phase.torch_bridge` | Optional PyTorch tensor bridge for supported phase parameter-shift value-and-gradient calls plus tensor-ready bounded phase-QNN analytic gradient evidence checked against parameter-shift references. |
 | `scpn_quantum_control.phase.tensorflow_bridge` | Optional TensorFlow tensor bridge for supported phase parameter-shift value-and-gradient calls. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, and support-profile reports. |
 
@@ -68,9 +68,9 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Objective composition | `ComposedPhaseObjective`, `ObjectiveTerm`, `ObjectiveGradientEvaluation`, `ComposedObjectiveTrainingResult`, `ComposedObjectiveGradientAgreement`, `ComposedObjectiveAuditSuiteResult`, `ComposedObjectiveExecutionPlan`, `ComposedObjectivePlannerAuditResult`, `build_phase_control_objective`, `train_composed_phase_objective`, `verify_composed_objective_gradient`, `run_composed_objective_audit_suite`, `plan_composed_objective_execution`, `run_composed_objective_planner_audit` | Combine energy, fidelity, periodic regularization, symmetry, and smooth safety penalties without misclassifying analytic classical penalties as parameter-shift quantum terms. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
-| Optional JAX bridge | `PhaseJAXParameterShiftResult`, `jax_parameter_shift_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary. |
+| Optional JAX bridge | `PhaseJAXParameterShiftResult`, `PhaseJAXNativeQNNGradientResult`, `jax_parameter_shift_value_and_grad`, `jax_native_qnn_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary, and expose native JAX autodiff evidence for the bounded phase-QNN classifier only. |
 | Optional PennyLane agreement | `PennyLaneGradientAgreementResult`, `check_pennylane_parameter_shift_agreement`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against a caller-supplied PennyLane gradient callable. |
-| Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `torch_parameter_shift_value_and_grad`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors while preserving NumPy evidence. |
+| Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `PhaseTorchQNNGradientResult`, `torch_parameter_shift_value_and_grad`, `torch_bounded_qnn_value_and_grad`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors and provide bounded phase-QNN tensor-gradient evidence while preserving NumPy and parameter-shift references. |
 | Optional TensorFlow bridge | `PhaseTensorFlowParameterShiftResult`, `tensorflow_parameter_shift_value_and_grad`, `is_phase_tensorflow_available` | Convert supported phase parameter-shift value-and-gradient outputs into TensorFlow tensors while preserving NumPy evidence. |
 
 ## Minimal parameter-shift call
@@ -237,6 +237,38 @@ but records `functional_non_isolated` evidence only; it is not a throughput
 benchmark or hardware performance claim. This route is not an unrestricted QNN
 framework, live provider execution path, or proof that arbitrary feature maps
 are differentiable.
+
+## Native and tensor framework QNN gradient bridges
+
+The bounded phase-QNN classifier has a narrow native JAX autodiff route and a
+PyTorch tensor-gradient evidence route:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    jax_native_qnn_value_and_grad,
+    torch_bounded_qnn_value_and_grad,
+)
+
+features = np.array([[0.0], [np.pi]], dtype=float)
+labels = np.array([0.0, 1.0], dtype=float)
+params = np.array([0.45], dtype=float)
+
+jax_result = jax_native_qnn_value_and_grad(features, labels, params)
+torch_result = torch_bounded_qnn_value_and_grad(features, labels, params)
+
+assert jax_result.passed
+assert torch_result.passed
+```
+
+`jax_native_qnn_value_and_grad` expresses the bounded model directly in JAX
+operations and compares the JAX `value_and_grad` result against the canonical
+SCPN parameter-shift gradient. `torch_bounded_qnn_value_and_grad` returns
+PyTorch tensors from the analytic bounded-model gradient and checks the same
+parameter-shift reference. These routes are not arbitrary simulator autodiff
+claims, not provider-backed hardware gradients, and not replacements for the
+broader framework-agreement surface for caller-supplied models.
 
 ## Minimal gradient support matrix
 

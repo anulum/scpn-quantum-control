@@ -15,11 +15,14 @@ import pytest
 import scpn_quantum_control.phase.jax_bridge as jax_bridge
 from scpn_quantum_control.phase import (
     PhaseJAXGradientAgreementResult,
+    PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
+    jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
     multi_frequency_parameter_shift_rule,
+    parameter_shift_qnn_classifier_gradient,
 )
 
 
@@ -44,6 +47,22 @@ class _FakeJAX:
     def pure_callback(self, callback, _shape_dtypes, values):
         self.callback_calls += 1
         return callback(values)
+
+    def value_and_grad(self, fn):
+        def wrapped(values):
+            array = np.asarray(values, dtype=float)
+            value = fn(array)
+            gradient = np.zeros_like(array, dtype=float)
+            step = 1e-6
+            for index in range(array.size):
+                forward = array.copy()
+                backward = array.copy()
+                forward[index] += step
+                backward[index] -= step
+                gradient[index] = (float(fn(forward)) - float(fn(backward))) / (2.0 * step)
+            return value, gradient
+
+        return wrapped
 
 
 def _objective(values: np.ndarray) -> float:
@@ -191,6 +210,68 @@ def test_phase_jax_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPa
     assert result.l2_error > 0.0
 
 
+def test_phase_jax_native_qnn_autodiff_agrees_with_parameter_shift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.45], dtype=float)
+
+    result = jax_native_qnn_value_and_grad(
+        features,
+        labels,
+        params,
+        tolerance=1e-5,
+    )
+
+    expected = parameter_shift_qnn_classifier_gradient(features, labels, params)
+    assert isinstance(result, PhaseJAXNativeQNNGradientResult)
+    assert result.passed
+    assert result.native_framework_autodiff
+    assert not result.host_callback
+    assert not result.jitted
+    np.testing.assert_allclose(result.gradient, expected, atol=1e-5)
+    np.testing.assert_allclose(result.parameter_shift_gradient, expected, atol=1e-12)
+
+
+def test_phase_jax_native_qnn_jit_records_native_no_callback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    result = jax_native_qnn_value_and_grad(
+        np.array([[0.0], [np.pi]], dtype=float),
+        np.array([0.0, 1.0], dtype=float),
+        np.array([0.45], dtype=float),
+        tolerance=1e-5,
+        jit=True,
+    )
+
+    assert result.jit_requested
+    assert result.jitted
+    assert result.native_framework_autodiff
+    assert not result.host_callback
+    assert fake_jax.jit_calls == 1
+    assert fake_jax.callback_calls == 0
+
+
+def test_phase_jax_native_qnn_fails_closed_on_shape_mismatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    with pytest.raises(ValueError, match="params must have shape"):
+        jax_native_qnn_value_and_grad(
+            np.array([[0.0, 1.0]], dtype=float),
+            np.array([0.0], dtype=float),
+            np.array([0.45], dtype=float),
+        )
+
+
 def test_phase_jax_bridge_fails_closed_when_jax_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     def unavailable():
         raise ImportError("blocked")
@@ -205,4 +286,10 @@ def test_phase_jax_bridge_fails_closed_when_jax_missing(monkeypatch: pytest.Monk
             _objective,
             lambda values: values,
             np.array([0.2, -0.4], dtype=float),
+        )
+    with pytest.raises(ImportError, match="blocked"):
+        jax_native_qnn_value_and_grad(
+            np.array([[0.0]], dtype=float),
+            np.array([0.0], dtype=float),
+            np.array([0.2], dtype=float),
         )

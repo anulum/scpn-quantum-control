@@ -22,6 +22,10 @@ from ..differentiable import (
     ParameterShiftRule,
     value_and_parameter_shift_grad,
 )
+from .qnn_training import (
+    parameter_shift_qnn_classifier_gradient,
+    parameter_shift_qnn_classifier_loss,
+)
 
 FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
@@ -86,6 +90,41 @@ class PhaseJAXGradientAgreementResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXNativeQNNGradientResult:
+    """Native JAX autodiff agreement for the bounded phase-QNN classifier."""
+
+    loss: float
+    gradient: FloatArray
+    parameter_shift_gradient: FloatArray
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    native_framework_autodiff: bool
+    host_callback: bool
+    jit_requested: bool
+    jitted: bool
+    method: str = "jax_native_bounded_phase_qnn_value_and_grad"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready native JAX bounded-QNN gradient evidence."""
+        return {
+            "loss": self.loss,
+            "gradient": self.gradient.tolist(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_callback": self.host_callback,
+            "jit_requested": self.jit_requested,
+            "jitted": self.jitted,
+            "method": self.method,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -130,6 +169,34 @@ def _as_non_negative_tolerance(value: float) -> float:
     if tolerance < 0.0 or not np.isfinite(tolerance):
         raise ValueError("tolerance must be finite and non-negative")
     return tolerance
+
+
+def _as_feature_matrix(features: ArrayLike) -> FloatArray:
+    matrix = np.asarray(features, dtype=float)
+    if matrix.ndim != 2:
+        raise ValueError("features must be a two-dimensional array")
+    if matrix.shape[0] == 0:
+        raise ValueError("features must contain at least one sample")
+    if matrix.shape[1] == 0:
+        raise ValueError("features must contain at least one feature column")
+    if not np.all(np.isfinite(matrix)):
+        raise ValueError("features must contain only finite values")
+    return matrix.astype(np.float64, copy=True)
+
+
+def _as_label_vector(labels: ArrayLike, *, n_samples: int) -> FloatArray:
+    vector = np.asarray(labels, dtype=float)
+    if vector.ndim == 2 and vector.shape[1] == 1:
+        vector = vector[:, 0]
+    if vector.ndim != 1:
+        raise ValueError("labels must be a one-dimensional array or a single-column matrix")
+    if vector.shape != (n_samples,):
+        raise ValueError("features and labels must have the same sample count")
+    if not np.all(np.isfinite(vector)):
+        raise ValueError("labels must contain only finite values")
+    if np.any((vector < 0.0) | (vector > 1.0)):
+        raise ValueError("labels must lie in the closed interval [0, 1]")
+    return vector.astype(np.float64, copy=True)
 
 
 def _require_jax_callback_support(jax_module: Any) -> None:
@@ -269,10 +336,97 @@ def check_jax_parameter_shift_agreement(
     )
 
 
+def jax_native_qnn_value_and_grad(
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike,
+    *,
+    tolerance: float = 1e-6,
+    jit: bool = False,
+) -> PhaseJAXNativeQNNGradientResult:
+    """Differentiate the bounded phase-QNN loss with native JAX autodiff.
+
+    This route is intentionally narrower than arbitrary simulator autodiff. It
+    expresses the repository's bounded phase-QNN classifier loss directly in
+    JAX tensor operations, obtains a native ``value_and_grad`` result, and
+    records agreement against the existing multi-frequency parameter-shift
+    gradient. It does not use ``pure_callback`` and does not claim conversion of
+    arbitrary quantum programs into JAX kernels.
+    """
+    jax_module, jnp = _load_jax()
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _as_parameter_vector(
+        "params",
+        params,
+        width=feature_matrix.shape[1],
+    )
+    feature_tensor = jnp.asarray(feature_matrix)
+    label_tensor = jnp.asarray(label_vector)
+
+    def loss_fn(raw_params: object) -> object:
+        parameter_tensor = jnp.asarray(raw_params)
+        probabilities = 0.5 * (1.0 - jnp.cos(feature_tensor + parameter_tensor[None, :]))
+        predictions = jnp.mean(probabilities, axis=1)
+        residual = predictions - label_tensor
+        return jnp.mean(residual * residual)
+
+    value_and_grad_fn = getattr(jax_module, "value_and_grad", None)
+    if not callable(value_and_grad_fn):
+        raise RuntimeError("JAX value_and_grad is required for native QNN autodiff")
+    executable = value_and_grad_fn(loss_fn)
+    jitted = False
+    if jit:
+        jit_fn = getattr(jax_module, "jit", None)
+        if not callable(jit_fn):
+            raise RuntimeError("JAX JIT is unavailable in the active JAX module")
+        executable = jit_fn(executable)
+        jitted = True
+
+    loss_obj, gradient_obj = executable(jnp.asarray(parameter_values))
+    gradient = _as_parameter_vector(
+        "JAX native QNN gradient",
+        gradient_obj,
+        width=parameter_values.size,
+    )
+    reference_gradient = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    reference_loss = parameter_shift_qnn_classifier_loss(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    loss = _as_scalar("JAX native QNN loss", loss_obj)
+    if abs(loss - reference_loss) > max(tolerance_value, 1e-12):
+        raise RuntimeError("JAX native QNN loss disagrees with parameter-shift loss")
+    delta = gradient - reference_gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta, ord=2))
+    return PhaseJAXNativeQNNGradientResult(
+        loss=loss,
+        gradient=gradient,
+        parameter_shift_gradient=reference_gradient.copy(),
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=max_abs_error <= tolerance_value,
+        native_framework_autodiff=True,
+        host_callback=False,
+        jit_requested=jit,
+        jitted=jitted,
+    )
+
+
 __all__ = [
     "PhaseJAXGradientAgreementResult",
+    "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
     "check_jax_parameter_shift_agreement",
     "is_phase_jax_available",
+    "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
 ]
