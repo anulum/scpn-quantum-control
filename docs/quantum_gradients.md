@@ -177,6 +177,37 @@ The suite is local deterministic evidence only. It is not hardware evidence,
 not finite-shot noisy training, and not a claim that arbitrary QNN/QGNN/QSNN
 architectures converge.
 
+## Bounded QNN finite-shot evidence
+
+Seeded finite-shot simulator evidence is available for the bounded phase-QNN
+classifier:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import estimate_parameter_shift_qnn_finite_shot_gradient
+
+features = np.array([[0.0], [np.pi]], dtype=float)
+labels = np.array([0.0, 1.0], dtype=float)
+params = np.array([0.45], dtype=float)
+
+result = estimate_parameter_shift_qnn_finite_shot_gradient(
+    features,
+    labels,
+    params,
+    shots_per_sample=8192,
+    seed=17,
+)
+print(result.passed, result.max_confidence_radius)
+```
+
+`run_parameter_shift_qnn_finite_shot_convergence_suite(...)` extends this to
+seeded noisy-gradient training cases. The evidence records replay seeds, shot
+counts, shifted-loss probes, confidence radii, and total shot use. It remains a
+local simulator surface: provider jobs, unseeded stochastic training,
+low-shot promotion, and arbitrary QNN architectures remain fail-closed or
+staged.
+
 ## Kuramoto-XY VQE route
 
 `PhaseVQE` exposes a direct parameter-shift path for its K_nm-informed

@@ -199,6 +199,16 @@ from .qnn_convergence import (
     run_parameter_shift_qnn_convergence_suite,
     summarize_parameter_shift_qnn_convergence_unsuitable_scenarios,
 )
+from .qnn_finite_shot import (
+    ParameterShiftQNNFiniteShotConvergenceCaseResult,
+    ParameterShiftQNNFiniteShotConvergenceSuiteResult,
+    ParameterShiftQNNFiniteShotGradientResult,
+    ParameterShiftQNNFiniteShotProbeRecord,
+    ParameterShiftQNNFiniteShotUnsupportedScenario,
+    estimate_parameter_shift_qnn_finite_shot_gradient,
+    run_parameter_shift_qnn_finite_shot_convergence_suite,
+    summarize_parameter_shift_qnn_finite_shot_unsuitable_scenarios,
+)
 from .qnn_framework_agreement import (
     FrameworkGradientCaseMap,
     FrameworkGradientMap,
@@ -381,6 +391,14 @@ __all__ = [
     "ParameterShiftQNNFrameworkGradientAgreement",
     "run_parameter_shift_qnn_framework_agreement_suite",
     "verify_parameter_shift_qnn_framework_agreement",
+    "ParameterShiftQNNFiniteShotConvergenceCaseResult",
+    "ParameterShiftQNNFiniteShotConvergenceSuiteResult",
+    "ParameterShiftQNNFiniteShotGradientResult",
+    "ParameterShiftQNNFiniteShotProbeRecord",
+    "ParameterShiftQNNFiniteShotUnsupportedScenario",
+    "estimate_parameter_shift_qnn_finite_shot_gradient",
+    "run_parameter_shift_qnn_finite_shot_convergence_suite",
+    "summarize_parameter_shift_qnn_finite_shot_unsuitable_scenarios",
     "DerivativeFreeCandidateMap",
     "ParameterShiftQNNOptimizerBenchmarkCaseResult",
     "ParameterShiftQNNOptimizerBenchmarkSuiteResult",

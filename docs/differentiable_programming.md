@@ -36,14 +36,14 @@ This repository now documents those questions directly. Current support is delib
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
 | JAX, PyTorch, TensorFlow adapters | Optional parameter-shift value-and-gradient bridges plus a fail-closed ML parity audit are available for supported phase objectives; native framework autodiff through arbitrary simulators remains open. | [Differentiable Roadmap](differentiable_roadmap.md), [Quantum Gradients](quantum_gradients.md) |
 | Gradient tape | MVP available for supported phase parameter-shift records; arbitrary Python and programme-IR tape semantics remain open. | [Quantum Gradients](quantum_gradients.md), [Differentiable Roadmap](differentiable_roadmap.md) |
-| QNN/QGNN/QSNN training lane | A bounded phase-QNN binary classifier, QNN-specific finite-difference gradient verification, named external-gradient agreement records, dedicated caller-supplied framework-gradient agreement checks, deterministic convergence-suite evidence, conformance-suite evidence with unsuitable-scenario records, non-isolated optimizer-baseline comparisons, and QSNN parameter-shift training evidence are available locally; arbitrary QNN/QGNN/QSNN stacks and production convergence notebooks remain planned. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
+| QNN/QGNN/QSNN training lane | A bounded phase-QNN binary classifier, QNN-specific finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, named external-gradient agreement records, dedicated caller-supplied framework-gradient agreement checks, deterministic convergence-suite evidence, conformance-suite evidence with unsuitable-scenario records, non-isolated optimizer-baseline comparisons, and QSNN parameter-shift training evidence are available locally; arbitrary QNN/QGNN/QSNN stacks and production convergence notebooks remain planned. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 
 ## User routes
 
 | Goal | Recommended path |
 |---|---|
 | Train a small VQE objective | `phase.param_shift` -> [Quantum Gradients](quantum_gradients.md) -> [Variational Methods](variational.md) |
-| Train and verify a bounded QNN classifier | `phase.qnn_training` -> `train_parameter_shift_qnn_classifier(...)` -> `verify_parameter_shift_qnn_classifier_gradient(...)` -> `run_parameter_shift_qnn_conformance_suite(...)` -> `run_parameter_shift_qnn_convergence_suite(...)` -> `run_parameter_shift_qnn_framework_agreement_suite(...)` -> `run_parameter_shift_qnn_optimizer_benchmark_suite(...)` -> [Quantum Gradients](quantum_gradients.md) |
+| Train and verify a bounded QNN classifier | `phase.qnn_training` -> `train_parameter_shift_qnn_classifier(...)` -> `verify_parameter_shift_qnn_classifier_gradient(...)` -> `estimate_parameter_shift_qnn_finite_shot_gradient(...)` -> `run_parameter_shift_qnn_conformance_suite(...)` -> `run_parameter_shift_qnn_convergence_suite(...)` -> `run_parameter_shift_qnn_finite_shot_convergence_suite(...)` -> `run_parameter_shift_qnn_framework_agreement_suite(...)` -> `run_parameter_shift_qnn_optimizer_benchmark_suite(...)` -> [Quantum Gradients](quantum_gradients.md) |
 | Inspect compiler-backed AD | [Quickstart](quickstart.md) differentiable primitive path -> [Differentiable API](differentiable_api.md) |
 | Build a custom primitive | `CustomDerivativeRule` -> `CustomDerivativeRegistry` -> primitive contract tests |
 | Decide whether a gradient stack can run | `plan_gradient_support(...)`, `plan_gradient_transform_nesting(...)`, `plan_quantum_gradient_backend(...)`, and `run_provider_gradient_readiness_audit(...)` |
@@ -84,7 +84,7 @@ The next differentiable-programming implementation rounds should prioritise:
 2. multi-start convergence studies on known ground states and VQE systems, extending the current phase-optimizer comparison audit with derivative-free baselines;
 3. native JAX agreement beyond QNN caller-supplied framework-gradient records and the existing host-boundary bridge;
 4. broader PennyLane adapter round-trip tests beyond caller-supplied framework-gradient agreement checks;
-5. broader QNN/QGNN/QSNN convergence notebooks beyond the bounded local phase-QNN conformance, deterministic convergence, and optimizer-baseline suites plus QSNN tests;
+5. broader QNN/QGNN/QSNN convergence notebooks beyond the bounded local phase-QNN conformance, deterministic convergence, seeded finite-shot, and optimizer-baseline suites plus QSNN tests;
 6. public tutorials for Kuramoto-XY VQE gradients and coupling learning;
 7. executable implementations for currently blocked `vmap`, `jvp`, `vjp`, `jacfwd`, and `jacrev` routes where the physics contract is clear.
 
@@ -100,7 +100,7 @@ Unsupported does not mean ignored. Current public boundaries include:
 - provider callbacks that omit finite-shot variance or shifted-sample provenance;
 - unsupported gate, observable, transform, adapter, or backend combinations returned by `plan_gradient_support(...)`;
 - unsupported transform nesting returned by `plan_gradient_transform_nesting(...)`;
-- arbitrary quantum neural architectures beyond the bounded local phase-QNN classifier, its QNN-specific gradient verifier, its conformance, convergence, framework-agreement, and optimizer-baseline suites, and declared QSNN training routes;
+- arbitrary quantum neural architectures beyond the bounded local phase-QNN classifier, its QNN-specific gradient verifier, finite-shot simulator evidence, conformance, convergence, framework-agreement, and optimizer-baseline suites, and declared QSNN training routes;
 - gates without registered generator spectra;
 - dynamic topology changes that invalidate parameter indexing;
 - wide native quotient-linalg traces beyond the documented support profile.
