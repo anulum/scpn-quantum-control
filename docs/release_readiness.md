@@ -10,6 +10,27 @@
 
 Date added: 2026-05-18
 
+## Purpose
+
+This is the release control page for software changes that touch stable contracts,
+core evidence, or claim-facing documentation. It gives teams one deterministic
+route to prove what is and is not safe to ship.
+
+Use this gate before tagging:
+
+- release managers preparing a package tag;
+- reviewers closing a milestone;
+- any PR that changes release-blocking artefacts, contracts, or claim tables.
+
+## What it governs
+
+The page is a blocker policy for artefact-backed releases. It governs:
+
+- version consistency across public package metadata,
+- stable-contract fixture and capability generation reproducibility,
+- coverage and behavioural gating thresholds,
+- open-surface scientific gaps that remain bounded until explicit gates pass.
+
 This page records the release-blocker closure path for the next package tag.
 The release decision is no longer based on scattered manual judgement across
 coverage, behavioural-test quality, source ingestion, and scientific claim

@@ -8,6 +8,12 @@
 
 # Paper Claims: Quantum Simulation of Kuramoto Phase Dynamics on NISQ Hardware
 
+## Purpose
+
+This file keeps the historical claim-development trace that predates the current
+publication release boundary. It is useful for internal review and manuscript
+draft recovery, but it is not a replacement for committed release artifacts.
+
 ## Legacy claim triage
 
 This file is a legacy planning and triage note, not a submission-ready claim

@@ -14,6 +14,13 @@ multi-backend support. 17 modules (April 2026: added `qubit_mapper.py`
 for DynQ topology-agnostic placement) covering IBM superconducting,
 trapped ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.
 
+## Why this page exists
+
+This page gives operators and integrators one entry point for how experiments
+flow from circuit definition to reference comparisons. It is the practical route
+for teams that need to control submission policy, evidence classes, and
+reproducibility boundaries before running local or provider workloads.
+
 **Hardware evidence status:**
 
 | Device | Family | Campaign | Highlight |

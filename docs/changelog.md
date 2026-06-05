@@ -8,6 +8,12 @@
 
 # Changelog
 
+## Why this page exists
+
+This file is the release history anchor for API, evidence, and policy changes.
+Use it to verify when a claim boundary, verification path, or gating rule
+changed before that version was promoted.
+
 Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).

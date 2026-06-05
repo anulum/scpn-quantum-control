@@ -8,6 +8,16 @@
 
 # Installation
 
+## Why this page exists
+
+This page defines how to install the project with explicit capability boundaries.
+The same repository supports local simulation, source-level debugging, and
+provider-aware integration, but each use case has different dependency and
+reproducibility requirements.
+
+Use this page to keep installations narrow and auditable before running either
+`Quickstart` workflows or benchmark and release evidence pipelines.
+
 For a non-technical orientation before installing, read
 [Onboarding](onboarding.md). For the fastest working run after installation,
 continue with [Quickstart](quickstart.md).

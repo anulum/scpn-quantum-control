@@ -4,6 +4,12 @@ This is the S10 no-submit readiness surface for analog-native Kuramoto
 backends. It records primitive accounting and provider export status
 without hardware submission or analog-advantage promotion.
 
+## Why this page exists
+
+This page helps teams deciding between analogue and digital execution routes.
+It tracks primitive coverage and provider export readiness before any analog
+advantage statement is promoted.
+
 ## Boundary
 
 analog-native primitive accounting and provider export readiness only; no hardware submission and no analog-advantage claim

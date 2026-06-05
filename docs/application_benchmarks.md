@@ -13,6 +13,13 @@ artifact contract used by the Kuramoto-XY pipeline. The built-in
 plugins cover EEG, tokamak MHD mode locking, IEEE power-grid
 synchronisation, and Friston-style predictive coding.
 
+## Why this page exists
+
+This page is for teams moving from abstract synchronisation models to domain-facing
+benchmarks with traceable outputs. It is intended to show where raw-domain data
+must pass before it can become a `QPUDataArtifact` and which routes are bounded
+by plugin and reproducibility requirements.
+
 ```python
 from scpn_quantum_control.applications import (
     compile_application_problem,
@@ -70,7 +77,7 @@ compact benchmark matrices as substitutes for raw domain archives.
 | EEG alpha PLV | `data/public_application_benchmarks/eeg_alpha_plv_8ch.json`; measured audit artefacts in `data/knm_physical_validation/`, including `eeg_alpha_plv_knm_comparison.json`. | Public-literature benchmark matrix for examples; raw EDF cohorts stay outside Git under `<private-local-record>`. The K_nm audit keeps PLV non-promotional because it is an association observable, not a calibrated coupling magnitude. | `scripts/build_real_eeg_plv_validation_dataset.py` and `scripts/compare_eeg_plv_cohorts.py` regenerate the cohort artefacts; `scripts/run_knm_physical_validation_audit.py --measured data/knm_physical_validation/measured_couplings.json --n-layers 8` regenerates the K_nm comparison. |
 | IEEE power grid | `data/public_application_benchmarks/ieee5bus_power_grid.json`; `data/knm_physical_validation/measured_couplings_power_grid_ieee5bus.json`; `data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json`; `data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json`. | Public IEEE 5-bus constants are converted to swing-equation coupling; public IEEE 14-bus branch reactance and voltage constants provide a larger voltage-weighted admittance control. Both remain negative/control candidates until the measured-system promotion gate passes. | `scripts/build_power_grid_measured_couplings.py` regenerates the 5-bus artefact; add `--case ieee14` for the 14-bus admittance candidate; run `scripts/run_knm_physical_validation_audit.py --measured ... --n-layers 14` for the comparison. |
 | Plasma/tokamak | `data/public_application_benchmarks/iter_mhd_8mode.json`. | Curated ITER-scale mode-locking topology from public MHD literature, not raw discharge traces. | `run_application_benchmark_suite()` includes the packaged plasma benchmark without optional HDF5 dependencies. |
-| Notebook and example workflows | `examples/02_kuramoto_xy_demo.py`, `examples/05_vqe_ansatz_comparison.py`, `examples/09_classical_vs_quantum_benchmark.py`, `examples/13_iter_disruption_demo.py`, `examples/18_end_to_end_pipeline.py`, `examples/19_sync_witness_operator.py`, and `examples/20_quantum_persistent_homology.py`. | Notebooks remain narrative wrappers; reusable logic stays in `src/`, `scripts/`, and versioned example files. | Static example tests ensure promoted examples remain parseable, expose `main()`, and are listed in `examples/README.md`. |
+| Notebook and example workflows | `examples/02_kuramoto_xy_demo.py`, `examples/05_vqe_ansatz_comparison.py`, `examples/09_classical_vs_quantum_benchmark.py`, `examples/13_iter_disruption_demo.py`, `examples/18_end_to_end_pipeline.py`, `examples/19_sync_witness_operator.py`, and `examples/20_quantum_persistent_homology.py`. | Notebooks remain support wrappers; reusable logic stays in `src/`, `scripts/`, and versioned example files. | Static example tests ensure promoted examples remain parseable, expose `main()`, and are listed in `examples/README.md`. |
 
 For a no-credential smoke path, run:
 

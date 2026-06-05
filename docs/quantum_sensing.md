@@ -5,6 +5,12 @@ sensing via the synchronisation order parameter. It records QFI and
 classical Fisher proxy rows without hardware submission or sensing
 advantage promotion.
 
+## Why this page exists
+
+This page supports teams comparing sensing hypotheses against classical baselines.
+It captures reproducible gain estimates and the required prerequisites before any
+promotion of sensing-advantage claims.
+
 ## Boundary
 
 QFI and sync-order sensing readiness estimate only; no hardware submission and no sensing-advantage claim

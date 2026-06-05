@@ -5,6 +5,13 @@ of synchronisation transitions. It records calibrated observables and
 protocol prerequisites with no hardware submission and no thermodynamic
 peak claim.
 
+## Why this page exists
+
+This page is for teams evaluating thermodynamic observables on synchronization
+models under bounded evidence rules. It captures readiness inputs before any
+hardware-run claim is promoted, and it keeps the route to thermodynamic peak
+promotion visible.
+
 ## Boundary
 
 readiness and calibrated-protocol estimate only; no thermodynamic peak claim and no hardware submission
