@@ -36,7 +36,7 @@ jobs:
   python-sbom:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
         with:
           python-version: "3.12"
@@ -61,7 +61,7 @@ jobs:
       run:
         working-directory: scpn_quantum_engine
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
       # Ubuntu runners come with a recent stable rustc + cargo in
       # PATH (`rustup show` resolves to 1.80+). No separate toolchain
       # install needed for the SBOM step.
@@ -90,7 +90,7 @@ jobs:
       actions: read
       contents: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
       - name: Download generated SBOM artifacts
         env:
           GH_TOKEN: ${{ github.token }}
