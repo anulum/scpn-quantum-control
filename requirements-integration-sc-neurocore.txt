@@ -4,6 +4,6 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Hashed SC-NeuroCore Integration Dependency
-sc-neurocore==3.15.7 \
-    --hash=sha256:2d25a105287f90399560506344e93ecd93dfb5fbf4e5c8804df1b4a888fd3712 \
-    --hash=sha256:7dc34788c73f77e2b9ac99780bc439bf4bedcb723c2f835a0c0307b10a510763
+sc-neurocore==3.15.33 \
+    --hash=sha256:830a81d6e5868af1856ac0a2288a835259a051c7e6e5c37e7a88ec3d8a627b4e \
+    --hash=sha256:9b04fe81075fcb1b961e232b04555ce8e6c556f0884c4850c65c20b5ec72093e
