@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added audited JAX PyTree parameter support via
+  `run_jax_pytree_compatibility_audit`, including bounded native-QNN and
+  custom-VJP no-host-callback structured-parameter checks, deterministic
+  flattening and gradient tree restoration, explicit arbitrary-simulator
+  PyTree lowering gap classification, phase exports, module tests, live local
+  JAX audit evidence, generated capability updates, and public documentation.
 - 2026-06-14 — Added audited JAX PMAP/sharding compatibility evidence via
   `run_jax_sharding_compatibility_audit`, including bounded native-QNN and
   custom-VJP no-host-callback local-device batch checks, explicit single-device

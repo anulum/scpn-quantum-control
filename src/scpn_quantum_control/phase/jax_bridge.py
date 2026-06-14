@@ -293,6 +293,61 @@ class PhaseJAXShardingCompatibilityResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXPyTreeCompatibilityResult:
+    """Audited JAX PyTree parameter support for bounded phase-QNN gradients."""
+
+    passed: bool
+    leaf_count: int
+    parameter_count: int
+    leaf_shapes: tuple[tuple[int, ...], ...]
+    parameter_vector: FloatArray
+    native_qnn_pytree: bool
+    native_qnn_host_callback: bool
+    custom_vjp_qnn_pytree: bool
+    custom_vjp_qnn_host_callback: bool
+    custom_vjp_registered: bool
+    native_loss: float
+    custom_vjp_loss: float
+    parameter_shift_loss: float
+    native_gradient_vector: FloatArray
+    custom_vjp_gradient_vector: FloatArray
+    parameter_shift_gradient: FloatArray
+    native_gradient_pytree: object
+    custom_vjp_gradient_pytree: object
+    max_abs_error: float
+    tolerance: float
+    unsupported_native_routes: tuple[str, ...]
+    claim_boundary: str = "bounded_jax_pytree_compatibility"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready JAX PyTree compatibility evidence."""
+        return {
+            "passed": self.passed,
+            "leaf_count": self.leaf_count,
+            "parameter_count": self.parameter_count,
+            "leaf_shapes": [list(shape) for shape in self.leaf_shapes],
+            "parameter_vector": self.parameter_vector.tolist(),
+            "native_qnn_pytree": self.native_qnn_pytree,
+            "native_qnn_host_callback": self.native_qnn_host_callback,
+            "custom_vjp_qnn_pytree": self.custom_vjp_qnn_pytree,
+            "custom_vjp_qnn_host_callback": self.custom_vjp_qnn_host_callback,
+            "custom_vjp_registered": self.custom_vjp_registered,
+            "native_loss": self.native_loss,
+            "custom_vjp_loss": self.custom_vjp_loss,
+            "parameter_shift_loss": self.parameter_shift_loss,
+            "native_gradient_vector": self.native_gradient_vector.tolist(),
+            "custom_vjp_gradient_vector": self.custom_vjp_gradient_vector.tolist(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "native_gradient_pytree": _json_ready_pytree(self.native_gradient_pytree),
+            "custom_vjp_gradient_pytree": _json_ready_pytree(self.custom_vjp_gradient_pytree),
+            "max_abs_error": self.max_abs_error,
+            "tolerance": self.tolerance,
+            "unsupported_native_routes": list(self.unsupported_native_routes),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -319,7 +374,7 @@ def _as_parameter_vector(name: str, values: object, *, width: int | None = None)
         raise ValueError(f"{name} must have shape ({width},), got {vector.shape}")
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} must contain only finite values")
-    return vector.astype(np.float64, copy=True)
+    return cast(FloatArray, vector.astype(np.float64, copy=True))
 
 
 def _as_parameter_batch(name: str, values: object, *, width: int) -> FloatArray:
@@ -333,6 +388,16 @@ def _as_parameter_batch(name: str, values: object, *, width: int) -> FloatArray:
     if not np.all(np.isfinite(matrix)):
         raise ValueError(f"{name} must contain only finite values")
     return matrix.astype(np.float64, copy=True)
+
+
+def _json_ready_pytree(tree: object) -> object:
+    if isinstance(tree, dict):
+        return {str(key): _json_ready_pytree(value) for key, value in tree.items()}
+    if isinstance(tree, tuple):
+        return [_json_ready_pytree(value) for value in tree]
+    if isinstance(tree, list):
+        return [_json_ready_pytree(value) for value in tree]
+    return np.asarray(tree, dtype=float).tolist()
 
 
 def _as_scalar(name: str, value: object) -> float:
@@ -377,7 +442,7 @@ def _as_label_vector(labels: ArrayLike, *, n_samples: int) -> FloatArray:
         raise ValueError("labels must contain only finite values")
     if np.any((vector < 0.0) | (vector > 1.0)):
         raise ValueError("labels must lie in the closed interval [0, 1]")
-    return vector.astype(np.float64, copy=True)
+    return cast(FloatArray, vector.astype(np.float64, copy=True))
 
 
 def _require_jax_callback_support(jax_module: Any) -> None:
@@ -421,6 +486,23 @@ def _require_jax_pmap_support(jax_module: Any) -> None:
         )
 
 
+def _require_jax_pytree_support(jax_module: Any) -> None:
+    tree_util = getattr(jax_module, "tree_util", None)
+    if tree_util is None:
+        raise RuntimeError(
+            "JAX PyTree tree_util support is required for bounded-QNN PyTree parameters"
+        )
+    if not callable(getattr(tree_util, "tree_flatten", None)):
+        raise RuntimeError("JAX PyTree tree_flatten is required for bounded-QNN PyTree parameters")
+    if not callable(getattr(tree_util, "tree_unflatten", None)):
+        raise RuntimeError(
+            "JAX PyTree tree_unflatten is required for bounded-QNN PyTree parameters"
+        )
+    value_and_grad = getattr(jax_module, "value_and_grad", None)
+    if not callable(value_and_grad):
+        raise RuntimeError("JAX value_and_grad is required for bounded-QNN PyTree parameters")
+
+
 def _jax_local_devices(jax_module: Any, local_device_count: int) -> tuple[str, ...]:
     local_devices = getattr(jax_module, "local_devices", None)
     if not callable(local_devices):
@@ -429,6 +511,77 @@ def _jax_local_devices(jax_module: Any, local_device_count: int) -> tuple[str, .
     if len(devices) != local_device_count:
         return tuple(f"local-device-{index}" for index in range(local_device_count))
     return devices
+
+
+def _as_pytree_parameter_vector(
+    jax_module: Any,
+    name: str,
+    params_pytree: object,
+    *,
+    width: int,
+) -> tuple[FloatArray, object, tuple[tuple[int, ...], ...], tuple[int, ...]]:
+    leaves, treedef = jax_module.tree_util.tree_flatten(params_pytree)
+    if not leaves:
+        raise ValueError(f"{name} must contain at least one numeric leaf")
+    arrays = []
+    shapes = []
+    sizes = []
+    for index, leaf in enumerate(leaves):
+        array = np.asarray(leaf, dtype=float)
+        if not np.all(np.isfinite(array)):
+            raise ValueError(f"{name} leaf {index} must contain only finite values")
+        arrays.append(array.astype(np.float64, copy=True))
+        shapes.append(tuple(int(axis) for axis in array.shape))
+        sizes.append(int(array.size))
+    vector = np.concatenate([array.reshape(-1) for array in arrays])
+    if vector.shape != (width,):
+        raise ValueError(f"{name} must flatten to shape ({width},), got {vector.shape}")
+    return vector, treedef, tuple(shapes), tuple(sizes)
+
+
+def _jax_flatten_pytree(jax_module: Any, jnp: Any, params_pytree: object) -> object:
+    leaves, _treedef = jax_module.tree_util.tree_flatten(params_pytree)
+    parts = [jnp.ravel(jnp.asarray(leaf)) for leaf in leaves]
+    if not parts:
+        raise ValueError("params_pytree must contain at least one numeric leaf")
+    if len(parts) == 1:
+        return parts[0]
+    return jnp.concatenate(parts)
+
+
+def _jax_unflatten_vector_to_pytree(
+    jax_module: Any,
+    jnp: Any,
+    vector: object,
+    treedef: object,
+    leaf_shapes: tuple[tuple[int, ...], ...],
+    leaf_sizes: tuple[int, ...],
+) -> object:
+    flat = jnp.ravel(jnp.asarray(vector))
+    leaves = []
+    offset = 0
+    for shape, size in zip(leaf_shapes, leaf_sizes, strict=True):
+        leaves.append(jnp.reshape(flat[offset : offset + size], shape))
+        offset += size
+    return jax_module.tree_util.tree_unflatten(treedef, leaves)
+
+
+def _flatten_runtime_pytree_gradient(
+    jax_module: Any,
+    name: str,
+    gradient_pytree: object,
+    *,
+    width: int,
+) -> FloatArray:
+    leaves, _treedef = jax_module.tree_util.tree_flatten(gradient_pytree)
+    if not leaves:
+        raise ValueError(f"{name} must contain at least one gradient leaf")
+    vector = np.concatenate([np.asarray(leaf, dtype=float).reshape(-1) for leaf in leaves])
+    if vector.shape != (width,):
+        raise ValueError(f"{name} must flatten to shape ({width},), got {vector.shape}")
+    if not np.all(np.isfinite(vector)):
+        raise ValueError(f"{name} must contain only finite values")
+    return cast(FloatArray, vector.astype(np.float64, copy=True))
 
 
 def _jax_bounded_qnn_loss(
@@ -1090,12 +1243,139 @@ def run_jax_sharding_compatibility_audit(
     )
 
 
+def run_jax_pytree_compatibility_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params_pytree: object,
+    tolerance: float = 1e-6,
+) -> PhaseJAXPyTreeCompatibilityResult:
+    """Audit bounded JAX PyTree parameter support.
+
+    The audit accepts a JAX PyTree of numeric parameter leaves, flattens it into
+    the bounded phase-QNN parameter vector, and restores gradients into the same
+    PyTree structure. It does not claim arbitrary simulator PyTree lowering.
+    """
+    jax_module, jnp = _load_jax()
+    _require_jax_pytree_support(jax_module)
+    _require_jax_custom_vjp_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_vector, treedef, leaf_shapes, leaf_sizes = _as_pytree_parameter_vector(
+        jax_module,
+        "params_pytree",
+        params_pytree,
+        width=feature_matrix.shape[1],
+    )
+    feature_tensor = jnp.asarray(feature_matrix)
+    label_tensor = jnp.asarray(label_vector)
+
+    def native_loss_fn(raw_tree: object) -> object:
+        parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor)
+
+    @jax_module.custom_vjp
+    def custom_loss_fn(raw_tree: object) -> object:
+        parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor)
+
+    def custom_loss_fwd(raw_tree: object) -> tuple[object, object]:
+        parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
+        return (
+            _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor),
+            parameter_tensor,
+        )
+
+    def custom_loss_bwd(parameter_tensor: object, cotangent: object) -> tuple[object]:
+        gradient_vector = _jax_bounded_qnn_gradient(
+            jnp,
+            feature_tensor,
+            label_tensor,
+            jnp.asarray(parameter_tensor),
+        )
+        gradient_tree = _jax_unflatten_vector_to_pytree(
+            jax_module,
+            jnp,
+            jnp.asarray(cotangent) * gradient_vector,
+            treedef,
+            leaf_shapes,
+            leaf_sizes,
+        )
+        return (gradient_tree,)
+
+    custom_loss_fn.defvjp(custom_loss_fwd, custom_loss_bwd)
+
+    native_loss_obj, native_gradient_pytree = jax_module.value_and_grad(native_loss_fn)(
+        params_pytree
+    )
+    custom_loss_obj, custom_gradient_pytree = jax_module.value_and_grad(custom_loss_fn)(
+        params_pytree
+    )
+    native_gradient_vector = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX native PyTree gradient",
+        native_gradient_pytree,
+        width=parameter_vector.size,
+    )
+    custom_gradient_vector = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX custom-VJP PyTree gradient",
+        custom_gradient_pytree,
+        width=parameter_vector.size,
+    )
+    reference_gradient = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        parameter_vector,
+    )
+    reference_loss = parameter_shift_qnn_classifier_loss(
+        feature_matrix,
+        label_vector,
+        parameter_vector,
+    )
+    native_loss = _as_scalar("JAX native PyTree QNN loss", native_loss_obj)
+    custom_loss = _as_scalar("JAX custom-VJP PyTree QNN loss", custom_loss_obj)
+    loss_error = max(abs(native_loss - reference_loss), abs(custom_loss - reference_loss))
+    gradient_error = max(
+        float(np.max(np.abs(native_gradient_vector - reference_gradient))),
+        float(np.max(np.abs(custom_gradient_vector - reference_gradient))),
+    )
+    max_abs_error = max(float(loss_error), gradient_error)
+    unsupported_native_routes = ("arbitrary_simulator_pytree_lowering",)
+    passed = max_abs_error <= tolerance_value
+    return PhaseJAXPyTreeCompatibilityResult(
+        passed=passed,
+        leaf_count=len(leaf_shapes),
+        parameter_count=int(parameter_vector.size),
+        leaf_shapes=leaf_shapes,
+        parameter_vector=parameter_vector.copy(),
+        native_qnn_pytree=True,
+        native_qnn_host_callback=False,
+        custom_vjp_qnn_pytree=True,
+        custom_vjp_qnn_host_callback=False,
+        custom_vjp_registered=True,
+        native_loss=native_loss,
+        custom_vjp_loss=custom_loss,
+        parameter_shift_loss=reference_loss,
+        native_gradient_vector=native_gradient_vector,
+        custom_vjp_gradient_vector=custom_gradient_vector,
+        parameter_shift_gradient=reference_gradient.copy(),
+        native_gradient_pytree=native_gradient_pytree,
+        custom_vjp_gradient_pytree=custom_gradient_pytree,
+        max_abs_error=max_abs_error,
+        tolerance=tolerance_value,
+        unsupported_native_routes=unsupported_native_routes,
+    )
+
+
 __all__ = [
     "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
     "PhaseJAXJITCompatibilityResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
+    "PhaseJAXPyTreeCompatibilityResult",
     "PhaseJAXShardingCompatibilityResult",
     "PhaseJAXVMAPCompatibilityResult",
     "check_jax_parameter_shift_agreement",
@@ -1104,6 +1384,7 @@ __all__ = [
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
     "run_jax_jit_compatibility_audit",
+    "run_jax_pytree_compatibility_audit",
     "run_jax_sharding_compatibility_audit",
     "run_jax_vmap_compatibility_audit",
 ]

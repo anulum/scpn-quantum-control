@@ -76,7 +76,7 @@ This package is designed for organisations that want to:
 | Package version | 0.9.11 |
 | Public API exports | 585 |
 | Python source modules | 808 |
-| Public Python classes | 1649 |
+| Public Python classes | 1650 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |

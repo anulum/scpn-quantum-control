@@ -1136,7 +1136,7 @@ therefore does not claim native JAX differentiation of a quantum kernel.
 
 For the bounded phase-QNN classifier, the bridge also exposes a native
 custom-VJP route plus audited JIT, VMAP, and PMAP/sharding compatibility
-reports:
+reports, plus bounded PyTree parameter support:
 
 ```python
 import jax
@@ -1144,6 +1144,7 @@ import jax
 from scpn_quantum_control.phase import (
     jax_custom_vjp_qnn_value_and_grad,
     run_jax_jit_compatibility_audit,
+    run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
 )
@@ -1181,6 +1182,16 @@ sharding_audit = run_jax_sharding_compatibility_audit(
     ).reshape(int(jax.local_device_count()), 1),
 )
 print(sharding_audit.passed, sharding_audit.sharding_mode)
+
+pytree_audit = run_jax_pytree_compatibility_audit(
+    features=np.array([[0.0, 0.2, 0.4], [np.pi, np.pi + 0.2, np.pi + 0.4]]),
+    labels=labels,
+    params_pytree={
+        "encoder": np.array([0.25, 0.45], dtype=float),
+        "readout": {"phase": np.array([0.65], dtype=float)},
+    },
+)
+print(pytree_audit.passed, pytree_audit.leaf_shapes)
 ```
 
 `jax_custom_vjp_qnn_value_and_grad(...)` registers a JAX `custom_vjp` for the
@@ -1195,10 +1206,13 @@ row against SCPN parameter-shift references, and records those references as a
 host-side loop rather than native VMAP.
 `run_jax_sharding_compatibility_audit(...)` uses `jax.pmap` with one parameter
 row per local JAX device and records whether the evidence is single-device or
-multi-device. These remain bounded model routes: they are not arbitrary
-simulator autodiff, not provider-backed execution, not hardware gradients, and
-not claims that every quantum objective can be lowered into JAX JIT, VMAP, or
-distributed sharding.
+multi-device. `run_jax_pytree_compatibility_audit(...)` accepts nested numeric
+parameter PyTrees, flattens them into the bounded phase-QNN parameter vector,
+and restores gradients to the same tree structure. These remain bounded model
+routes: they are not arbitrary simulator autodiff, not provider-backed
+execution, not hardware gradients, and not claims that every quantum objective
+can be lowered into JAX JIT, VMAP, distributed sharding, or arbitrary PyTree
+programs.
 
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:

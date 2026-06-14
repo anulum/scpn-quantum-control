@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
     PhaseJAXJITCompatibilityResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
+    PhaseJAXPyTreeCompatibilityResult,
     PhaseJAXShardingCompatibilityResult,
     PhaseJAXVMAPCompatibilityResult,
     check_jax_parameter_shift_agreement,
@@ -29,16 +30,52 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     run_jax_jit_compatibility_audit,
+    run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
 )
 
 
 class _FakeJAX:
+    class _TreeUtil:
+        @staticmethod
+        def tree_flatten(tree):
+            leaves = []
+
+            def visit(node):
+                if isinstance(node, dict):
+                    return ("dict", tuple((key, visit(node[key])) for key in sorted(node)))
+                if isinstance(node, tuple):
+                    return ("tuple", tuple(visit(item) for item in node))
+                if isinstance(node, list):
+                    return ("list", tuple(visit(item) for item in node))
+                leaves.append(node)
+                return ("leaf", len(leaves) - 1)
+
+            treedef = visit(tree)
+            return leaves, treedef
+
+        @staticmethod
+        def tree_unflatten(treedef, leaves):
+            kind, payload = treedef
+            if kind == "leaf":
+                return leaves[payload]
+            if kind == "dict":
+                return {
+                    key: _FakeJAX._TreeUtil.tree_unflatten(child, leaves) for key, child in payload
+                }
+            if kind == "tuple":
+                return tuple(_FakeJAX._TreeUtil.tree_unflatten(child, leaves) for child in payload)
+            if kind == "list":
+                return [_FakeJAX._TreeUtil.tree_unflatten(child, leaves) for child in payload]
+            raise ValueError(f"unsupported fake PyTree node kind {kind}")
+
     class ShapeDtypeStruct:
         def __init__(self, shape: tuple[int, ...], dtype: object) -> None:
             self.shape = shape
             self.dtype = dtype
+
+    tree_util = _TreeUtil()
 
     def __init__(self) -> None:
         self.jit_calls = 0
@@ -94,8 +131,21 @@ class _FakeJAX:
         def wrapped(values):
             if hasattr(fn, "value_and_grad"):
                 return fn.value_and_grad(values)
-            array = np.asarray(values, dtype=float)
-            value = fn(array)
+            leaves, treedef = self.tree_util.tree_flatten(values)
+            arrays = [np.asarray(leaf, dtype=float) for leaf in leaves]
+            sizes = [array.size for array in arrays]
+            shapes = [array.shape for array in arrays]
+            array = np.concatenate([array.ravel() for array in arrays])
+
+            def rebuild(flat_values):
+                offset = 0
+                rebuilt = []
+                for size, shape in zip(sizes, shapes, strict=True):
+                    rebuilt.append(flat_values[offset : offset + size].reshape(shape))
+                    offset += size
+                return self.tree_util.tree_unflatten(treedef, rebuilt)
+
+            value = fn(rebuild(array))
             gradient = np.zeros_like(array, dtype=float)
             step = 1e-6
             for index in range(array.size):
@@ -103,8 +153,10 @@ class _FakeJAX:
                 backward = array.copy()
                 forward[index] += step
                 backward[index] -= step
-                gradient[index] = (float(fn(forward)) - float(fn(backward))) / (2.0 * step)
-            return value, gradient
+                gradient[index] = (float(fn(rebuild(forward))) - float(fn(rebuild(backward)))) / (
+                    2.0 * step
+                )
+            return value, rebuild(gradient)
 
         return wrapped
 
@@ -572,6 +624,69 @@ def test_phase_jax_sharding_compatibility_audit_fails_closed_without_pmap(
             features=np.array([[0.0], [np.pi]], dtype=float),
             labels=np.array([0.0, 1.0], dtype=float),
             params_batch=np.array([[0.25], [0.45]], dtype=float),
+        )
+
+
+def test_phase_jax_pytree_compatibility_audit_round_trips_gradient_structure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    features = np.array([[0.0, 0.2, 0.4], [np.pi, np.pi + 0.2, np.pi + 0.4]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params_tree = {
+        "encoder": np.array([0.25, 0.45], dtype=float),
+        "readout": {"phase": np.array([0.65], dtype=float)},
+    }
+
+    result = run_jax_pytree_compatibility_audit(
+        features=features,
+        labels=labels,
+        params_pytree=params_tree,
+        tolerance=1e-10,
+    )
+
+    expected = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        np.array([0.25, 0.45, 0.65], dtype=float),
+    )
+    assert isinstance(result, PhaseJAXPyTreeCompatibilityResult)
+    assert result.passed
+    assert result.leaf_count == 2
+    assert result.parameter_count == 3
+    assert result.native_qnn_pytree
+    assert result.custom_vjp_qnn_pytree
+    assert result.custom_vjp_registered
+    assert not result.native_qnn_host_callback
+    assert not result.custom_vjp_qnn_host_callback
+    assert result.max_abs_error <= 1e-10
+    assert result.claim_boundary == "bounded_jax_pytree_compatibility"
+    np.testing.assert_allclose(result.parameter_vector, np.array([0.25, 0.45, 0.65]))
+    np.testing.assert_allclose(result.native_gradient_vector, expected, atol=1e-10)
+    np.testing.assert_allclose(result.custom_vjp_gradient_vector, expected, atol=1e-10)
+    np.testing.assert_allclose(result.native_gradient_pytree["encoder"], expected[:2], atol=1e-10)
+    np.testing.assert_allclose(
+        result.custom_vjp_gradient_pytree["readout"]["phase"],
+        expected[2:],
+        atol=1e-10,
+    )
+    assert result.to_dict()["passed"] is True
+
+
+def test_phase_jax_pytree_compatibility_audit_fails_closed_without_tree_util(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _NoTreeUtilJAX(_FakeJAX):
+        tree_util = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_NoTreeUtilJAX(), np))
+
+    with pytest.raises(RuntimeError, match="PyTree"):
+        run_jax_pytree_compatibility_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params_pytree={"phase": np.array([0.45], dtype=float)},
         )
 
 
