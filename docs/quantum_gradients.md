@@ -1277,7 +1277,7 @@ This is differentiable execution evidence for supported phase objectives, not a
 claim of arbitrary QNode autodiff, native framework tracing through simulator
 kernels, or unrestricted provider-backed hardware gradients.
 
-## Vector QNode Jacobians and native manual vmap
+## Vector QNode directional transforms, Jacobians, and native manual vmap
 
 `execute_phase_qnode_vector_jacobian(...)` extends the deterministic local QNode
 transform route to one-dimensional vector outputs. It evaluates each output
@@ -1286,7 +1286,11 @@ returns a `(output_dim, n_params)` Jacobian with explicit evaluation accounting.
 
 ```python
 import numpy as np
-from scpn_quantum_control.phase import execute_phase_qnode_vector_jacobian
+from scpn_quantum_control.phase import (
+    execute_phase_qnode_vector_jacobian,
+    execute_phase_qnode_vector_jvp,
+    execute_phase_qnode_vector_vjp,
+)
 
 
 def vector_objective(params: np.ndarray) -> np.ndarray:
@@ -1304,7 +1308,24 @@ result = execute_phase_qnode_vector_jacobian(
     np.array([0.2, -0.4]),
 )
 print(result.values, result.jacobian, result.parameter_shift_evaluations)
+
+jvp = execute_phase_qnode_vector_jvp(
+    vector_objective,
+    np.array([0.2, -0.4]),
+    np.array([0.5, -1.25]),
+)
+vjp = execute_phase_qnode_vector_vjp(
+    vector_objective,
+    np.array([0.2, -0.4]),
+    np.array([2.0, -0.75]),
+)
+print(jvp.jvp, vjp.vjp)
 ```
+
+The vector JVP and VJP routes are computed as `jacobian @ tangent` and
+`jacobian.T @ cotangent` from the same parameter-shift Jacobian evidence. They
+validate tangent/cotangent shapes and fail closed for finite-shot, hardware,
+provider, and framework-native adapter routes.
 
 `execute_phase_qnode_vmap_grad(...)` implements the first native vectorized
 gradient surface as a deterministic host-side manual loop over scalar
@@ -1324,10 +1345,11 @@ print(result.batched_values, result.batched_gradients)
 ```
 
 The readiness helper `run_phase_qnode_vector_transform_readiness_suite()`
-records supported `jacfwd`, `jacrev`, and `vmap.grad` routes plus fail-closed
-hardware, adapter, and finite-shot scenarios. The implementation deliberately
-does not claim provider vectorization, framework-native `vmap`, finite-shot
-batched-gradient statistics, or hardware transform execution.
+records supported `jacfwd`, `jacrev`, vector `jvp`, vector `vjp`, and
+`vmap.grad` routes plus fail-closed hardware, adapter, and finite-shot
+scenarios. The implementation deliberately does not claim provider
+vectorization, framework-native `vmap`, finite-shot batched-gradient
+statistics, or hardware transform execution.
 
 ## Provider-callback QNode transforms
 

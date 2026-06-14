@@ -330,6 +330,8 @@ from .qnode_vector_transforms import (
     PhaseQNodeVectorTransformReadinessSuiteResult,
     PhaseQNodeVectorTransformResult,
     execute_phase_qnode_vector_jacobian,
+    execute_phase_qnode_vector_jvp,
+    execute_phase_qnode_vector_vjp,
     execute_phase_qnode_vmap_grad,
     run_phase_qnode_vector_transform_readiness_suite,
 )
@@ -514,7 +516,9 @@ __all__ = [
     "run_phase_qnode_transform_readiness_suite",
     "PhaseQNodeVectorTransformReadinessSuiteResult",
     "PhaseQNodeVectorTransformResult",
+    "execute_phase_qnode_vector_jvp",
     "execute_phase_qnode_vector_jacobian",
+    "execute_phase_qnode_vector_vjp",
     "execute_phase_qnode_vmap_grad",
     "run_phase_qnode_vector_transform_readiness_suite",
     "is_phase_jax_available",

@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added vector-output Phase-QNode `jvp` and `vjp`
+  transforms over deterministic local parameter-shift Jacobian evidence, with
+  tangent/cotangent shape validation, fail-closed unsafe routes, public docs,
+  tests, and generated capability-surface alignment.
 - 2026-06-14 — Added exact computational-basis classical Fisher information
   for the registered local Phase-QNode statevector family, with singular
   zero-probability fail-closed handling, public docs, tests, and generated

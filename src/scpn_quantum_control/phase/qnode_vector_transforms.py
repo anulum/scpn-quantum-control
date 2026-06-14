@@ -26,9 +26,9 @@ VectorObjective = Callable[[FloatArray], ArrayLike]
 
 EVIDENCE_CLASS = "phase_qnode_vector_transform_execution"
 CLAIM_BOUNDARY = (
-    "supported deterministic native local vector-output phase-QNode Jacobian and "
-    "manual vmap(grad) evidence only; not provider vectorization, hardware execution, "
-    "or arbitrary framework-native transform algebra"
+    "supported deterministic native local vector-output phase-QNode Jacobian, "
+    "vector-output phase-QNode directional transforms, and manual vmap(grad) evidence only; not provider "
+    "vectorization, hardware execution, or arbitrary framework-native transform algebra"
 )
 
 
@@ -42,6 +42,10 @@ class PhaseQNodeVectorTransformResult:
     params: FloatArray | None
     values: FloatArray | None
     jacobian: FloatArray | None
+    tangent: FloatArray | None
+    cotangent: FloatArray | None
+    jvp: FloatArray | None
+    vjp: FloatArray | None
     batched_params: FloatArray | None
     batched_values: FloatArray | None
     batched_gradients: FloatArray | None
@@ -76,6 +80,10 @@ class PhaseQNodeVectorTransformResult:
             "params": None if self.params is None else self.params.tolist(),
             "values": None if self.values is None else self.values.tolist(),
             "jacobian": None if self.jacobian is None else self.jacobian.tolist(),
+            "tangent": None if self.tangent is None else self.tangent.tolist(),
+            "cotangent": None if self.cotangent is None else self.cotangent.tolist(),
+            "jvp": None if self.jvp is None else self.jvp.tolist(),
+            "vjp": None if self.vjp is None else self.vjp.tolist(),
             "batched_params": (
                 None if self.batched_params is None else self.batched_params.tolist()
             ),
@@ -129,7 +137,7 @@ class PhaseQNodeVectorTransformReadinessSuiteResult:
         """Return true when supported routes execute and unsafe routes refuse."""
         supported = {record.transform for record in self.records if record.supported}
         return (
-            {"jacfwd", "jacrev", "vmap.grad"}.issubset(supported)
+            {"jacfwd", "jacrev", "jvp", "vjp", "vmap.grad"}.issubset(supported)
             and self.fail_closed_count >= 3
             and not self.hardware_execution
         )
@@ -224,6 +232,140 @@ def execute_phase_qnode_vector_jacobian(
     )
 
 
+def execute_phase_qnode_vector_jvp(
+    objective: VectorObjective,
+    params: ArrayLike,
+    tangent: ArrayLike,
+    *,
+    gate: str = "ry",
+    observable: str = "pauli_expectation",
+    backend: str = "statevector",
+    adapter: str = "native",
+    shots: int | None = None,
+    shift_terms: int = 1,
+    allow_hardware: bool = False,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> PhaseQNodeVectorTransformResult:
+    """Execute a native vector-output JVP using the parameter-shift Jacobian."""
+    values = _as_parameter_vector("params", params)
+    tangent_vector = _as_parameter_vector("tangent", tangent, width=values.size)
+    plan = plan_gradient_transform_nesting(
+        "jvp",
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        adapter=adapter,
+        n_params=values.size,
+        shift_terms=shift_terms if rule is None else len(rule.terms),
+        shots=shots,
+        allow_hardware=allow_hardware,
+    )
+    label = ".".join(plan.transforms)
+    if plan.fail_closed:
+        return _blocked_result(label, plan, params=values)
+    jacobian_result = execute_phase_qnode_vector_jacobian(
+        "jacfwd",
+        objective,
+        values,
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        adapter=adapter,
+        shots=shots,
+        shift_terms=shift_terms,
+        allow_hardware=allow_hardware,
+        parameters=parameters,
+        rule=rule,
+    )
+    if jacobian_result.fail_closed or jacobian_result.jacobian is None:
+        return _blocked_result(
+            label,
+            plan,
+            params=values,
+            reason=jacobian_result.failure_reason,
+        )
+    return _supported_result(
+        label,
+        plan,
+        params=values,
+        values=jacobian_result.values,
+        jacobian=jacobian_result.jacobian,
+        tangent=tangent_vector,
+        jvp=jacobian_result.jacobian @ tangent_vector,
+        parameter_shift_evaluations=jacobian_result.parameter_shift_evaluations,
+    )
+
+
+def execute_phase_qnode_vector_vjp(
+    objective: VectorObjective,
+    params: ArrayLike,
+    cotangent: ArrayLike,
+    *,
+    gate: str = "ry",
+    observable: str = "pauli_expectation",
+    backend: str = "statevector",
+    adapter: str = "native",
+    shots: int | None = None,
+    shift_terms: int = 1,
+    allow_hardware: bool = False,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> PhaseQNodeVectorTransformResult:
+    """Execute a native vector-output VJP using the parameter-shift Jacobian."""
+    values = _as_parameter_vector("params", params)
+    plan = plan_gradient_transform_nesting(
+        "vjp",
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        adapter=adapter,
+        n_params=values.size,
+        shift_terms=shift_terms if rule is None else len(rule.terms),
+        shots=shots,
+        allow_hardware=allow_hardware,
+    )
+    label = ".".join(plan.transforms)
+    if plan.fail_closed:
+        return _blocked_result(label, plan, params=values)
+    jacobian_result = execute_phase_qnode_vector_jacobian(
+        "jacrev",
+        objective,
+        values,
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        adapter=adapter,
+        shots=shots,
+        shift_terms=shift_terms,
+        allow_hardware=allow_hardware,
+        parameters=parameters,
+        rule=rule,
+    )
+    if jacobian_result.fail_closed or jacobian_result.jacobian is None:
+        return _blocked_result(
+            label,
+            plan,
+            params=values,
+            reason=jacobian_result.failure_reason,
+        )
+    cotangent_vector = _as_parameter_vector(
+        "cotangent",
+        cotangent,
+        width=jacobian_result.jacobian.shape[0],
+    )
+    return _supported_result(
+        label,
+        plan,
+        params=values,
+        values=jacobian_result.values,
+        jacobian=jacobian_result.jacobian,
+        cotangent=cotangent_vector,
+        vjp=jacobian_result.jacobian.T @ cotangent_vector,
+        parameter_shift_evaluations=jacobian_result.parameter_shift_evaluations,
+    )
+
+
 def execute_phase_qnode_vmap_grad(
     objective: ScalarObjective,
     batched_params: ArrayLike,
@@ -309,6 +451,16 @@ def run_phase_qnode_vector_transform_readiness_suite() -> (
     records = (
         execute_phase_qnode_vector_jacobian("jacfwd", vector_objective, params),
         execute_phase_qnode_vector_jacobian("jacrev", vector_objective, params),
+        execute_phase_qnode_vector_jvp(
+            vector_objective,
+            params,
+            np.array([0.5, -1.25], dtype=np.float64),
+        ),
+        execute_phase_qnode_vector_vjp(
+            vector_objective,
+            params,
+            np.array([2.0, -0.75], dtype=np.float64),
+        ),
         execute_phase_qnode_vmap_grad(scalar_objective, batched_params),
         execute_phase_qnode_vector_jacobian(
             "jacfwd",
@@ -340,6 +492,10 @@ def _supported_result(
     params: FloatArray | None = None,
     values: FloatArray | None = None,
     jacobian: FloatArray | None = None,
+    tangent: FloatArray | None = None,
+    cotangent: FloatArray | None = None,
+    jvp: FloatArray | None = None,
+    vjp: FloatArray | None = None,
     batched_params: FloatArray | None = None,
     batched_values: FloatArray | None = None,
     batched_gradients: FloatArray | None = None,
@@ -352,6 +508,10 @@ def _supported_result(
         params=None if params is None else params.astype(np.float64, copy=True),
         values=None if values is None else values.astype(np.float64, copy=True),
         jacobian=None if jacobian is None else jacobian.astype(np.float64, copy=True),
+        tangent=None if tangent is None else tangent.astype(np.float64, copy=True),
+        cotangent=None if cotangent is None else cotangent.astype(np.float64, copy=True),
+        jvp=None if jvp is None else jvp.astype(np.float64, copy=True),
+        vjp=None if vjp is None else vjp.astype(np.float64, copy=True),
         batched_params=(
             None if batched_params is None else batched_params.astype(np.float64, copy=True)
         ),
@@ -381,6 +541,10 @@ def _blocked_result(
         params=None if params is None else params.copy(),
         values=None,
         jacobian=None,
+        tangent=None,
+        cotangent=None,
+        jvp=None,
+        vjp=None,
         batched_params=None if batched_params is None else batched_params.copy(),
         batched_values=None,
         batched_gradients=None,
@@ -443,7 +607,9 @@ def _parameter_shift_evaluations(n_params: int, output_dim: int, shift_terms: in
 __all__ = [
     "PhaseQNodeVectorTransformReadinessSuiteResult",
     "PhaseQNodeVectorTransformResult",
+    "execute_phase_qnode_vector_jvp",
     "execute_phase_qnode_vector_jacobian",
+    "execute_phase_qnode_vector_vjp",
     "execute_phase_qnode_vmap_grad",
     "run_phase_qnode_vector_transform_readiness_suite",
 ]
