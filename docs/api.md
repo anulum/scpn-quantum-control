@@ -1270,6 +1270,7 @@ run_torch_module_wrapper_audit(features, labels, initial_params, tolerance=1e-6)
 is_phase_tensorflow_available() -> bool
 tensorflow_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTensorFlowParameterShiftResult
 run_tensorflow_gradient_tape_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowGradientTapeCompatibilityResult
+run_tensorflow_function_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowFunctionCompatibilityResult
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGradientResult
 ```
@@ -1278,7 +1279,7 @@ All native and optional-adapter inputs are fail-closed real-numeric boundaries:
 parameter arrays, objective return values, optimiser learning rates,
 parameter-shift rules, JAX objective values, phase JAX host-callback gradients,
 PennyLane agreement gradients, PyTorch/TensorFlow tensor-bridge gradients,
-TensorFlow `GradientTape` bridge gradients, and gradients reject strings,
+TensorFlow `GradientTape`/`tf.function` bridge gradients, and gradients reject strings,
 booleans, object arrays, complex values, shape
 mismatches, and non-finite numbers before training or hardware-adapter code
 consumes them.

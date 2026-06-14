@@ -409,6 +409,8 @@ class _FakeTensorFlow:
         self.convert_calls: list[np.ndarray] = []
         self.gradient_tape_entries = 0
         self.gradient_calls = 0
+        self.function_traces = 0
+        self.function_calls = 0
 
     def convert_to_tensor(
         self,
@@ -427,6 +429,15 @@ class _FakeTensorFlow:
 
     def GradientTape(self) -> _FakeTensorFlowGradientTape:
         return _FakeTensorFlowGradientTape(self)
+
+    def function(self, fn: object) -> object:
+        self.function_traces += 1
+
+        def wrapped(*args: object, **kwargs: object) -> object:
+            self.function_calls += 1
+            return fn(*args, **kwargs)
+
+        return wrapped
 
     def cos(self, values: object) -> _FakeTensorFlowTensor:
         tensor = _FakeTensorFlowTensor(values)
@@ -943,6 +954,61 @@ def test_tensorflow_gradient_tape_compatibility_fails_closed_without_gradient_ta
 
     with pytest.raises(RuntimeError, match="GradientTape"):
         tensorflow_bridge.run_tensorflow_gradient_tape_compatibility_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            params=np.array([0.45], dtype=float),
+        )
+
+
+def test_tensorflow_function_compatibility_audit_checks_traced_gradient(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
+
+    result = tensorflow_bridge.run_tensorflow_function_compatibility_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params.numpy(),
+    )
+    assert isinstance(
+        result,
+        tensorflow_bridge.PhaseTensorFlowFunctionCompatibilityResult,
+    )
+    assert result.passed
+    assert result.function_supported
+    assert result.gradient_tape_supported
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "bounded_tensorflow_function_compatibility"
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert fake_tf.function_traces == 1
+    assert fake_tf.function_calls == 1
+    assert fake_tf.gradient_tape_entries == 1
+    assert fake_tf.gradient_calls == 1
+    assert result.to_dict()["function_supported"] is True
+
+
+def test_tensorflow_function_compatibility_fails_closed_without_tf_function(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    fake_tf.function = None  # type: ignore[method-assign]
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+
+    with pytest.raises(RuntimeError, match="tf.function"):
+        tensorflow_bridge.run_tensorflow_function_compatibility_audit(
             features=np.array([[0.0]], dtype=float),
             labels=np.array([0.0], dtype=float),
             params=np.array([0.45], dtype=float),

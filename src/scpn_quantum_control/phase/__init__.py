@@ -353,10 +353,12 @@ from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
 from .tensorflow_bridge import (
+    PhaseTensorFlowFunctionCompatibilityResult,
     PhaseTensorFlowGradientTapeCompatibilityResult,
     PhaseTensorFlowParameterShiftResult,
     PhaseTensorFlowQNNGradientResult,
     is_phase_tensorflow_available,
+    run_tensorflow_function_compatibility_audit,
     run_tensorflow_gradient_tape_compatibility_audit,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
@@ -658,9 +660,11 @@ __all__ = [
     "assert_gradient_transform_nesting_supported",
     "run_gradient_transform_nesting_audit",
     "is_phase_tensorflow_available",
+    "run_tensorflow_function_compatibility_audit",
     "run_tensorflow_gradient_tape_compatibility_audit",
     "tensorflow_bounded_qnn_value_and_grad",
     "tensorflow_parameter_shift_value_and_grad",
+    "PhaseTensorFlowFunctionCompatibilityResult",
     "PhaseTensorFlowGradientTapeCompatibilityResult",
     "PhaseTensorFlowParameterShiftResult",
     "PhaseTensorFlowQNNGradientResult",
