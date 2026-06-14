@@ -1308,7 +1308,9 @@ import numpy as np
 from scpn_quantum_control.phase import (
     run_tensorflow_function_compatibility_audit,
     run_tensorflow_gradient_tape_compatibility_audit,
+    run_tensorflow_keras_layer_wrapper_audit,
     run_tensorflow_xla_compatibility_audit,
+    tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -1335,6 +1337,16 @@ tf_xla_audit = run_tensorflow_xla_compatibility_audit(
     labels=np.array([0.0, 1.0], dtype=float),
     params=np.array([0.45], dtype=float),
 )
+tf_keras_layer = tensorflow_bounded_qnn_keras_layer(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    initial_params=np.array([0.45], dtype=float),
+)
+tf_keras_audit = run_tensorflow_keras_layer_wrapper_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    initial_params=np.array([0.45], dtype=float),
+)
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
@@ -1359,9 +1371,13 @@ reference. The separate `run_tensorflow_function_compatibility_audit(...)`
 route traces only that same bounded loss through `tf.function` and checks its
 `GradientTape` gradient against the same reference. The separate
 `run_tensorflow_xla_compatibility_audit(...)` route requests
-`tf.function(jit_compile=True)` only for that same bounded loss. All remain
-outside arbitrary provider or simulator autodiff and do not claim broad XLA
-lowering coverage.
+`tf.function(jit_compile=True)` only for that same bounded loss. The separate
+`tensorflow_bounded_qnn_keras_layer(...)` and
+`run_tensorflow_keras_layer_wrapper_audit(...)` routes expose only that same
+bounded loss through a Keras `Layer` and checks its `GradientTape` gradient
+against the same reference. All remain outside arbitrary provider or simulator
+autodiff and do not claim broad XLA or unrestricted Keras training-loop
+coverage.
 
 ## Verification requirements
 

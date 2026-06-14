@@ -208,13 +208,16 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
                 "tensorflow_bounded_qnn_value_and_grad,"
                 "run_tensorflow_gradient_tape_compatibility_audit,"
                 "run_tensorflow_function_compatibility_audit,"
-                "run_tensorflow_xla_compatibility_audit"
+                "run_tensorflow_xla_compatibility_audit,"
+                "tensorflow_bounded_qnn_keras_layer,"
+                "run_tensorflow_keras_layer_wrapper_audit"
             ),
             gradient_route=(
                 "bounded_phase_qnn_tensor_analytic_gradient,"
                 "bounded_tensorflow_gradient_tape_gradient,"
                 "bounded_tensorflow_function_gradient,"
-                "bounded_tensorflow_xla_gradient"
+                "bounded_tensorflow_xla_gradient,"
+                "bounded_tensorflow_keras_layer_gradient"
             ),
             optional_dependency="tensorflow",
             implemented=True,

@@ -1272,6 +1272,8 @@ tensorflow_parameter_shift_value_and_grad(objective, values, parameters=None, ru
 run_tensorflow_gradient_tape_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowGradientTapeCompatibilityResult
 run_tensorflow_function_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowFunctionCompatibilityResult
 run_tensorflow_xla_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowXLACompatibilityResult
+tensorflow_bounded_qnn_keras_layer(features, labels, initial_params, trainable=True) -> tf.keras.layers.Layer
+run_tensorflow_keras_layer_wrapper_audit(features, labels, initial_params, tolerance=1e-6) -> PhaseTensorFlowKerasLayerWrapperAuditResult
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGradientResult
 ```
@@ -1280,7 +1282,7 @@ All native and optional-adapter inputs are fail-closed real-numeric boundaries:
 parameter arrays, objective return values, optimiser learning rates,
 parameter-shift rules, JAX objective values, phase JAX host-callback gradients,
 PennyLane agreement gradients, PyTorch/TensorFlow tensor-bridge gradients,
-TensorFlow `GradientTape`/`tf.function`/XLA bridge gradients, and gradients reject strings,
+TensorFlow `GradientTape`/`tf.function`/XLA/Keras bridge gradients, and gradients reject strings,
 booleans, object arrays, complex values, shape
 mismatches, and non-finite numbers before training or hardware-adapter code
 consumes them.

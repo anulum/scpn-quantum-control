@@ -28,9 +28,11 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
+    run_tensorflow_keras_layer_wrapper_audit,
     run_torch_compile_compatibility_audit,
     run_torch_func_compatibility_audit,
     run_torch_module_wrapper_audit,
+    tensorflow_bounded_qnn_keras_layer,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
     torch_autograd_qnn_value_and_grad,
@@ -402,6 +404,60 @@ class _FakeTensorFlowGradientTape:
         return _FakeTensorFlowTensor(gradient)
 
 
+class _FakeTensorFlowKerasLayer:
+    def __init__(self) -> None:
+        self.trainable_variables: list[_FakeTensorFlowVariable] = []
+        self.non_trainable_variables: list[_FakeTensorFlowVariable] = []
+
+    def add_weight(
+        self,
+        *,
+        name: str,
+        shape: tuple[int, ...],
+        initializer: object,
+        trainable: bool = True,
+        dtype: object | None = None,
+    ) -> _FakeTensorFlowVariable:
+        del name, dtype
+        values = (
+            initializer(shape=shape) if callable(initializer) else np.zeros(shape, dtype=float)
+        )
+        variable = _FakeTensorFlowVariable(values)
+        if trainable:
+            self.trainable_variables.append(variable)
+        else:
+            self.non_trainable_variables.append(variable)
+        return variable
+
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        return self.call(*args, **kwargs)
+
+
+class _FakeTensorFlowConstantInitializer:
+    def __init__(self, values: object) -> None:
+        self._values = _FakeTensorFlowTensor(values).numpy()
+
+    def __call__(self, *, shape: tuple[int, ...]) -> np.ndarray:
+        values = np.asarray(self._values, dtype=float)
+        if values.shape != shape:
+            return np.broadcast_to(values, shape).copy()
+        return values.copy()
+
+
+class _FakeTensorFlowKerasInitializers:
+    Constant = _FakeTensorFlowConstantInitializer
+
+
+class _FakeTensorFlowKerasLayers:
+    Layer = _FakeTensorFlowKerasLayer
+
+
+class _FakeTensorFlowKeras:
+    def __init__(self) -> None:
+        self.layers = _FakeTensorFlowKerasLayers()
+        self.initializers = _FakeTensorFlowKerasInitializers()
+
+
 class _FakeTensorFlow:
     float64 = np.float64
 
@@ -412,6 +468,7 @@ class _FakeTensorFlow:
         self.function_traces = 0
         self.function_calls = 0
         self.function_jit_flags: list[bool | None] = []
+        self.keras = _FakeTensorFlowKeras()
 
     def convert_to_tensor(
         self,
@@ -1076,6 +1133,90 @@ def test_tensorflow_xla_compatibility_fails_closed_without_jit_compile(
         )
 
 
+def test_tensorflow_keras_layer_wraps_bounded_loss_and_reference_gradient(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    initial_params = np.array([0.45], dtype=float)
+
+    layer = tensorflow_bounded_qnn_keras_layer(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+    )
+    frozen_layer = tensorflow_bounded_qnn_keras_layer(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+        trainable=False,
+    )
+
+    expected_loss = parameter_shift_qnn_classifier_loss(features, labels, initial_params)
+    expected_gradient = parameter_shift_qnn_classifier_gradient(features, labels, initial_params)
+    assert layer.claim_boundary == "bounded_tensorflow_keras_layer_wrapper"
+    assert layer.feature_width == 1
+    assert layer.host_boundary is False
+    assert layer.native_framework_autodiff is True
+    assert len(layer.trainable_variables) == 1
+    assert len(frozen_layer.trainable_variables) == 0
+    np.testing.assert_allclose(layer().numpy(), expected_loss, atol=1e-12)
+    np.testing.assert_allclose(layer.parameter_shift_gradient(), expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(frozen_layer().numpy(), expected_loss, atol=1e-12)
+
+
+def test_tensorflow_keras_layer_wrapper_audit_checks_gradient_tape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    initial_params = np.array([0.45], dtype=float)
+
+    result = run_tensorflow_keras_layer_wrapper_audit(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(features, labels, initial_params)
+    assert isinstance(
+        result,
+        tensorflow_bridge.PhaseTensorFlowKerasLayerWrapperAuditResult,
+    )
+    assert result.passed
+    assert result.keras_layer_supported
+    assert result.gradient_tape_supported
+    assert result.trainable_parameters == 1
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "bounded_tensorflow_keras_layer_wrapper"
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert fake_tf.gradient_tape_entries == 1
+    assert fake_tf.gradient_calls == 1
+    assert result.to_dict()["keras_layer_supported"] is True
+
+
+def test_tensorflow_keras_layer_fails_closed_without_keras_layer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    fake_tf.keras = object()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+
+    with pytest.raises(RuntimeError, match="tf.keras.layers.Layer"):
+        tensorflow_bounded_qnn_keras_layer(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            initial_params=np.array([0.45], dtype=float),
+        )
+
+
 def test_framework_bridges_fail_closed_when_optional_dependency_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1145,4 +1286,16 @@ def test_framework_bridges_fail_closed_when_optional_dependency_missing(
             np.array([[0.0]], dtype=float),
             np.array([0.0], dtype=float),
             np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="tensorflow blocked"):
+        tensorflow_bounded_qnn_keras_layer(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            initial_params=np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="tensorflow blocked"):
+        run_tensorflow_keras_layer_wrapper_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            initial_params=np.array([0.2], dtype=float),
         )
