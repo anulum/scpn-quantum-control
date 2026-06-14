@@ -19,6 +19,26 @@ pub struct StochasticGradientUncertaintyResult {
     pub confidence_radius: Vec<f64>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct SPSAGradientKernelResult {
+    pub gradient: Vec<f64>,
+    pub standard_error: Vec<f64>,
+    pub covariance: Vec<Vec<f64>>,
+    pub confidence_radius: Vec<f64>,
+}
+
+fn ensure_finite_vector(name: &str, values: &[f64]) -> Result<(), String> {
+    if values.is_empty() {
+        return Err(format!("{name} must be non-empty"));
+    }
+    for (index, value) in values.iter().copied().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{name}[{index}] must be finite, got {value}"));
+        }
+    }
+    Ok(())
+}
+
 fn ensure_finite_matrix(name: &str, values: &[Vec<f64>]) -> Result<(usize, usize), String> {
     if values.is_empty() {
         return Err(format!("{name} must have at least one shift term"));
@@ -175,6 +195,215 @@ pub fn stochastic_parameter_shift_uncertainty_inner(
     })
 }
 
+pub fn spsa_gradient_inner(
+    plus_values: &[f64],
+    minus_values: &[f64],
+    perturbations: &[Vec<f64>],
+    plus_variances: Option<&[f64]>,
+    minus_variances: Option<&[f64]>,
+    plus_shots: Option<&[f64]>,
+    minus_shots: Option<&[f64]>,
+    trainable: &[bool],
+    perturbation_radius: f64,
+    confidence_z: f64,
+) -> Result<SPSAGradientKernelResult, String> {
+    ensure_finite_vector("plus_values", plus_values)?;
+    ensure_finite_vector("minus_values", minus_values)?;
+    if plus_values.len() != minus_values.len() {
+        return Err(format!(
+            "minus_values length must match plus_values length: {} != {}",
+            minus_values.len(),
+            plus_values.len()
+        ));
+    }
+    let repetitions = plus_values.len();
+    if perturbations.len() != repetitions {
+        return Err(format!(
+            "perturbation row count must match repetitions: {} != {repetitions}",
+            perturbations.len()
+        ));
+    }
+    if !perturbation_radius.is_finite() || perturbation_radius <= 0.0 {
+        return Err(format!(
+            "perturbation_radius must be a finite positive value, got {perturbation_radius}"
+        ));
+    }
+    if !confidence_z.is_finite() || confidence_z <= 0.0 {
+        return Err(format!(
+            "confidence_z must be a finite positive value, got {confidence_z}"
+        ));
+    }
+    if trainable.is_empty() {
+        return Err("trainable mask must be non-empty".to_string());
+    }
+    let parameter_count = trainable.len();
+    for (row_index, row) in perturbations.iter().enumerate() {
+        if row.len() != parameter_count {
+            return Err(format!(
+                "perturbation row {row_index} width must match trainable mask: {} != {parameter_count}",
+                row.len()
+            ));
+        }
+        for (column_index, value) in row.iter().copied().enumerate() {
+            if !value.is_finite() {
+                return Err(format!(
+                    "perturbations[{row_index}][{column_index}] must be finite, got {value}"
+                ));
+            }
+            if trainable[column_index] && value.abs() != 1.0 {
+                return Err(format!(
+                    "trainable perturbations[{row_index}][{column_index}] must be +/-1, got {value}"
+                ));
+            }
+            if !trainable[column_index] && value != 0.0 {
+                return Err(format!(
+                    "frozen perturbations[{row_index}][{column_index}] must be 0, got {value}"
+                ));
+            }
+        }
+    }
+
+    let finite_shot = plus_variances.is_some()
+        || minus_variances.is_some()
+        || plus_shots.is_some()
+        || minus_shots.is_some();
+    let mut shot_variance = vec![0.0; parameter_count];
+    let plus_variances = match (finite_shot, plus_variances) {
+        (true, Some(values)) => {
+            ensure_finite_vector("plus_variances", values)?;
+            Some(values)
+        }
+        (true, None) => return Err("plus_variances are required for finite-shot SPSA".to_string()),
+        (false, _) => None,
+    };
+    let minus_variances = match (finite_shot, minus_variances) {
+        (true, Some(values)) => {
+            ensure_finite_vector("minus_variances", values)?;
+            Some(values)
+        }
+        (true, None) => return Err("minus_variances are required for finite-shot SPSA".to_string()),
+        (false, _) => None,
+    };
+    let plus_shots = match (finite_shot, plus_shots) {
+        (true, Some(values)) => {
+            ensure_finite_vector("plus_shots", values)?;
+            validate_shot_vector("plus_shots", values)?;
+            Some(values)
+        }
+        (true, None) => return Err("plus_shots are required for finite-shot SPSA".to_string()),
+        (false, _) => None,
+    };
+    let minus_shots = match (finite_shot, minus_shots) {
+        (true, Some(values)) => {
+            ensure_finite_vector("minus_shots", values)?;
+            validate_shot_vector("minus_shots", values)?;
+            Some(values)
+        }
+        (true, None) => return Err("minus_shots are required for finite-shot SPSA".to_string()),
+        (false, _) => None,
+    };
+    if finite_shot {
+        for (name, values) in [
+            ("plus_variances", plus_variances.unwrap()),
+            ("minus_variances", minus_variances.unwrap()),
+            ("plus_shots", plus_shots.unwrap()),
+            ("minus_shots", minus_shots.unwrap()),
+        ] {
+            if values.len() != repetitions {
+                return Err(format!(
+                    "{name} length must match repetitions: {} != {repetitions}",
+                    values.len()
+                ));
+            }
+        }
+        validate_variance_vector("plus_variances", plus_variances.unwrap())?;
+        validate_variance_vector("minus_variances", minus_variances.unwrap())?;
+    }
+
+    let mut estimates = vec![vec![0.0; parameter_count]; repetitions];
+    for repetition in 0..repetitions {
+        let difference = plus_values[repetition] - minus_values[repetition];
+        for parameter in 0..parameter_count {
+            if !trainable[parameter] {
+                continue;
+            }
+            let delta = perturbations[repetition][parameter];
+            estimates[repetition][parameter] = difference / (2.0 * perturbation_radius * delta);
+            if finite_shot {
+                shot_variance[parameter] += (plus_variances.unwrap()[repetition]
+                    / plus_shots.unwrap()[repetition]
+                    + minus_variances.unwrap()[repetition] / minus_shots.unwrap()[repetition])
+                    / (4.0 * perturbation_radius * perturbation_radius);
+            }
+        }
+    }
+
+    let mut gradient = vec![0.0; parameter_count];
+    for parameter in 0..parameter_count {
+        gradient[parameter] =
+            estimates.iter().map(|row| row[parameter]).sum::<f64>() / repetitions as f64;
+    }
+    let mut variance = vec![0.0; parameter_count];
+    if repetitions > 1 {
+        for parameter in 0..parameter_count {
+            let sum_sq: f64 = estimates
+                .iter()
+                .map(|row| {
+                    let residual = row[parameter] - gradient[parameter];
+                    residual * residual
+                })
+                .sum();
+            variance[parameter] += sum_sq / ((repetitions - 1) as f64 * repetitions as f64);
+        }
+    }
+    if finite_shot {
+        for parameter in 0..parameter_count {
+            variance[parameter] += shot_variance[parameter] / (repetitions * repetitions) as f64;
+        }
+    }
+    for parameter in 0..parameter_count {
+        if !trainable[parameter] {
+            gradient[parameter] = 0.0;
+            variance[parameter] = 0.0;
+        }
+    }
+    let standard_error: Vec<f64> = variance.iter().map(|value| value.sqrt()).collect();
+    let confidence_radius: Vec<f64> = standard_error
+        .iter()
+        .map(|value| confidence_z * value)
+        .collect();
+    let mut covariance = vec![vec![0.0; parameter_count]; parameter_count];
+    for index in 0..parameter_count {
+        covariance[index][index] = variance[index];
+    }
+    Ok(SPSAGradientKernelResult {
+        gradient,
+        standard_error,
+        covariance,
+        confidence_radius,
+    })
+}
+
+fn validate_variance_vector(name: &str, values: &[f64]) -> Result<(), String> {
+    for (index, value) in values.iter().copied().enumerate() {
+        if value < 0.0 {
+            return Err(format!("{name}[{index}] must be non-negative, got {value}"));
+        }
+    }
+    Ok(())
+}
+
+fn validate_shot_vector(name: &str, values: &[f64]) -> Result<(), String> {
+    for (index, value) in values.iter().copied().enumerate() {
+        if value <= 0.0 || (value - value.round()).abs() > 0.0 {
+            return Err(format!(
+                "{name}[{index}] must be a positive integer count, got {value}"
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn read_array2_rows(values: PyReadonlyArray2<'_, f64>) -> Vec<Vec<f64>> {
     values
         .as_array()
@@ -228,6 +457,60 @@ pub fn parameter_shift_gradient_uncertainty_rust<'py>(
         &read_array2_rows(minus_shots),
         coefficients.as_slice()?,
         trainable.as_slice()?,
+        confidence_z,
+    )
+    .map_err(PyValueError::new_err)?;
+    let covariance = nested_to_array2(result.covariance).map_err(PyValueError::new_err)?;
+    Ok((
+        PyArray1::from_vec(py, result.gradient),
+        PyArray1::from_vec(py, result.standard_error),
+        PyArray2::from_owned_array(py, covariance),
+        PyArray1::from_vec(py, result.confidence_radius),
+    ))
+}
+
+#[pyfunction]
+#[pyo3(signature = (
+    plus_values,
+    minus_values,
+    perturbations,
+    plus_variances,
+    minus_variances,
+    plus_shots,
+    minus_shots,
+    trainable,
+    perturbation_radius,
+    confidence_z=1.959963984540054
+))]
+pub fn spsa_gradient_rust<'py>(
+    py: Python<'py>,
+    plus_values: PyReadonlyArray1<'_, f64>,
+    minus_values: PyReadonlyArray1<'_, f64>,
+    perturbations: PyReadonlyArray2<'_, f64>,
+    plus_variances: PyReadonlyArray1<'_, f64>,
+    minus_variances: PyReadonlyArray1<'_, f64>,
+    plus_shots: PyReadonlyArray1<'_, f64>,
+    minus_shots: PyReadonlyArray1<'_, f64>,
+    trainable: PyReadonlyArray1<'_, bool>,
+    perturbation_radius: f64,
+    confidence_z: f64,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    let perturbations = read_array2_rows(perturbations);
+    let result = spsa_gradient_inner(
+        plus_values.as_slice()?,
+        minus_values.as_slice()?,
+        &perturbations,
+        Some(plus_variances.as_slice()?),
+        Some(minus_variances.as_slice()?),
+        Some(plus_shots.as_slice()?),
+        Some(minus_shots.as_slice()?),
+        trainable.as_slice()?,
+        perturbation_radius,
         confidence_z,
     )
     .map_err(PyValueError::new_err)?;
@@ -305,6 +588,86 @@ mod tests {
             &[0.5],
             &[true],
             1.0,
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn spsa_gradient_kernel_averages_perturbation_records() {
+        let plus_values = [1.0, 0.25];
+        let minus_values = [0.0, -0.75];
+        let perturbations = [vec![1.0, 0.0], vec![-1.0, 0.0]];
+        let plus_variances = [0.04, 0.09];
+        let minus_variances = [0.04, 0.09];
+        let plus_shots = [400.0, 500.0];
+        let minus_shots = [400.0, 500.0];
+
+        let result = spsa_gradient_inner(
+            &plus_values,
+            &minus_values,
+            &perturbations,
+            Some(&plus_variances),
+            Some(&minus_variances),
+            Some(&plus_shots),
+            Some(&minus_shots),
+            &[true, false],
+            0.5,
+            2.0,
+        )
+        .unwrap();
+
+        assert_close(result.gradient[0], 0.0);
+        assert_close(result.gradient[1], 0.0);
+        assert!(result.standard_error[0] > 0.0);
+        assert_close(result.standard_error[1], 0.0);
+        assert_close(result.confidence_radius[0], 2.0 * result.standard_error[0]);
+    }
+
+    #[test]
+    fn spsa_gradient_kernel_rejects_invalid_contracts() {
+        let plus_values = [1.0];
+        let minus_values = [0.0];
+        let valid_perturbations = [vec![1.0]];
+        let variances = [0.04];
+        let shots = [400.0];
+
+        assert!(spsa_gradient_inner(
+            &plus_values,
+            &minus_values,
+            &[vec![0.0]],
+            Some(&variances),
+            Some(&variances),
+            Some(&shots),
+            Some(&shots),
+            &[true],
+            0.5,
+            2.0,
+        )
+        .is_err());
+        assert!(spsa_gradient_inner(
+            &plus_values,
+            &minus_values,
+            &valid_perturbations,
+            Some(&variances),
+            None,
+            Some(&shots),
+            Some(&shots),
+            &[true],
+            0.5,
+            2.0,
+        )
+        .is_err());
+        assert!(spsa_gradient_inner(
+            &plus_values,
+            &minus_values,
+            &valid_perturbations,
+            Some(&[-0.01]),
+            Some(&variances),
+            Some(&shots),
+            Some(&shots),
+            &[true],
+            0.5,
+            2.0,
         )
         .is_err());
     }

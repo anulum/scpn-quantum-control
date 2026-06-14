@@ -48,7 +48,9 @@ use scpn_quantum_engine::qnode_metrics::{
     computational_basis_fisher_inner, fubini_study_metric_inner, hessian_vector_product_inner,
     vector_hessian_tensor_inner, vector_jvp_inner, vector_vjp_inner,
 };
-use scpn_quantum_engine::stochastic_gradient::stochastic_parameter_shift_uncertainty_inner;
+use scpn_quantum_engine::stochastic_gradient::{
+    spsa_gradient_inner, stochastic_parameter_shift_uncertainty_inner,
+};
 
 fn bench_build_knm(c: &mut Criterion) {
     let mut group = c.benchmark_group("build_knm_inner");
@@ -490,6 +492,17 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
     let minus_shots = vec![vec![400.0, 100.0]];
     let coefficients = [0.5];
     let trainable = [true, false];
+    let spsa_plus_values = [1.0, 0.25, 0.75, -0.1];
+    let spsa_minus_values = [0.0, -0.75, -0.25, -1.1];
+    let spsa_perturbations = vec![
+        vec![1.0, -1.0],
+        vec![-1.0, -1.0],
+        vec![1.0, 1.0],
+        vec![-1.0, 1.0],
+    ];
+    let spsa_variances = [0.04, 0.04, 0.04, 0.04];
+    let spsa_shots = [400.0, 400.0, 400.0, 400.0];
+    let spsa_trainable = [true, true];
 
     let mut group = c.benchmark_group("phase_qnode_metric_and_transform_kernels");
     group.bench_function("fubini_study_metric", |bench| {
@@ -542,6 +555,23 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
                 black_box(&minus_shots),
                 black_box(&coefficients),
                 black_box(&trainable),
+                black_box(1.959963984540054),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("spsa_gradient", |bench| {
+        bench.iter(|| {
+            spsa_gradient_inner(
+                black_box(&spsa_plus_values),
+                black_box(&spsa_minus_values),
+                black_box(&spsa_perturbations),
+                Some(black_box(&spsa_variances)),
+                Some(black_box(&spsa_variances)),
+                Some(black_box(&spsa_shots)),
+                Some(black_box(&spsa_shots)),
+                black_box(&spsa_trainable),
+                black_box(0.25),
                 black_box(1.959963984540054),
             )
             .unwrap()

@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 575,
+    "public_api_exports": 579,
     "public_documentation_pages": 240,
-    "python_model_classes": 1638,
+    "python_model_classes": 1641,
     "python_model_source_modules": 808,
-    "rust_pyo3_model_wrappers": 119,
+    "rust_pyo3_model_wrappers": 120,
     "rust_source_modules": 30,
-    "test_files": 1925
+    "test_files": 1927
   },
   "documentation": {
     "examples": [
@@ -5661,6 +5661,18 @@
         "path": "src/scpn_quantum_control/bridge/snn_adapter.py"
       },
       {
+        "name": "SPSAGradientResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "SPSAObjectiveSample",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "SPSAProbeRecord",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "SSBHierarchyGenesisConfig",
         "path": "src/scpn_quantum_control/paper0/ssb_hierarchy_genesis_validation.py"
       },
@@ -8484,6 +8496,7 @@
       "rabi_pi_amplitude_fit",
       "run_realtime_feedback_loop",
       "score_regions_batch",
+      "spsa_gradient_rust",
       "state_order_param_sparse",
       "symmetric_2x2_cholesky_jvp",
       "symmetric_2x2_cholesky_sum_gradient",
@@ -8701,6 +8714,9 @@
     "ReverseNode",
     "RigettiQCSHALAdapter",
     "SNNQuantumBridge",
+    "SPSAGradientResult",
+    "SPSAObjectiveSample",
+    "SPSAProbeRecord",
     "SSGFQuantumLoop",
     "ShotAllocationResult",
     "SparseMatrixResult",
@@ -9068,6 +9084,7 @@
     "sparse_hessian",
     "sparse_jacobian",
     "spike_train_to_rotations",
+    "spsa_gradient_estimate",
     "ssgf",
     "ssgf_state_to_quantum",
     "ssgf_w_to_hamiltonian",
@@ -9778,6 +9795,7 @@
       "tests/test_differentiable_framework_ci_workflow.py",
       "tests/test_differentiable_framework_overlay.py",
       "tests/test_differentiable_programming_benchmarks.py",
+      "tests/test_differentiable_spsa.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",
       "tests/test_dla_parity_dataset.py",
@@ -11066,6 +11084,7 @@
       "tests/test_stable_core_preflight.py",
       "tests/test_stable_core_preflight_fixtures_gate.py",
       "tests/test_stable_core_release_gate.py",
+      "tests/test_stochastic_gradient_rust_parity.py",
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_submit_fim_replication_zne_ibm.py",

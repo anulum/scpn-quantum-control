@@ -8481,6 +8481,157 @@ class StochasticGradientResult:
 
 
 @dataclass(frozen=True)
+class SPSAObjectiveSample:
+    """One scalar objective sample for SPSA gradient estimation."""
+
+    value: float
+    variance: float | None = None
+    shots: int | None = None
+    metadata: Mapping[str, object] | None = None
+
+    def __post_init__(self) -> None:
+        value = _as_real_scalar("SPSA sample value", self.value)
+        variance = (
+            None
+            if self.variance is None
+            else _as_real_scalar("SPSA sample variance", self.variance)
+        )
+        if variance is not None and variance < 0.0:
+            raise ValueError("SPSA sample variance must be non-negative")
+        if self.shots is not None and (
+            isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
+        ):
+            raise ValueError("SPSA sample shots must be a positive integer or None")
+        metadata = {} if self.metadata is None else dict(self.metadata)
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "variance", variance)
+        object.__setattr__(self, "metadata", metadata)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready sample metadata."""
+        return {
+            "value": self.value,
+            "variance": self.variance,
+            "shots": self.shots,
+            "metadata": dict(self.metadata or {}),
+        }
+
+
+@dataclass(frozen=True)
+class SPSAProbeRecord:
+    """One simultaneous perturbation probe pair."""
+
+    repetition: int
+    perturbation: NDArray[np.float64]
+    plus_parameters: NDArray[np.float64]
+    minus_parameters: NDArray[np.float64]
+    plus: SPSAObjectiveSample
+    minus: SPSAObjectiveSample
+    gradient_estimate: NDArray[np.float64]
+
+    def __post_init__(self) -> None:
+        if isinstance(self.repetition, bool) or self.repetition < 0:
+            raise ValueError("SPSA repetition must be a non-negative integer")
+        perturbation = _as_parameter_array(self.perturbation)
+        plus_parameters = _as_parameter_array(self.plus_parameters)
+        minus_parameters = _as_parameter_array(self.minus_parameters)
+        gradient = _as_parameter_array(self.gradient_estimate)
+        if not (
+            perturbation.shape == plus_parameters.shape == minus_parameters.shape == gradient.shape
+        ):
+            raise ValueError("SPSA record arrays must share parameter shape")
+        object.__setattr__(self, "perturbation", perturbation)
+        object.__setattr__(self, "plus_parameters", plus_parameters)
+        object.__setattr__(self, "minus_parameters", minus_parameters)
+        object.__setattr__(self, "gradient_estimate", gradient)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready probe evidence."""
+        return {
+            "repetition": self.repetition,
+            "perturbation": self.perturbation.tolist(),
+            "plus_parameters": self.plus_parameters.tolist(),
+            "minus_parameters": self.minus_parameters.tolist(),
+            "plus": self.plus.to_dict(),
+            "minus": self.minus.to_dict(),
+            "gradient_estimate": self.gradient_estimate.tolist(),
+        }
+
+
+@dataclass(frozen=True)
+class SPSAGradientResult:
+    """Seeded SPSA gradient estimate with optional finite-shot uncertainty."""
+
+    gradient: NDArray[np.float64]
+    standard_error: NDArray[np.float64]
+    covariance: NDArray[np.float64]
+    confidence_radius: NDArray[np.float64]
+    records: tuple[SPSAProbeRecord, ...]
+    perturbation_radius: float
+    repetitions: int
+    seed: int
+    confidence_z: float
+    method: str
+    evaluations: int
+    total_shots: int | None
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+    claim_boundary: str
+    hardware_execution: bool
+
+    def __post_init__(self) -> None:
+        gradient = _as_parameter_array(self.gradient)
+        standard_error = _as_parameter_array(self.standard_error)
+        covariance = _as_real_numeric_array("SPSA covariance", self.covariance)
+        confidence_radius = _as_parameter_array(self.confidence_radius)
+        if standard_error.shape != gradient.shape or confidence_radius.shape != gradient.shape:
+            raise ValueError("SPSA uncertainty vectors must match gradient shape")
+        if covariance.shape != (gradient.size, gradient.size):
+            raise ValueError("SPSA covariance shape must be gradient length squared")
+        if np.any(standard_error < 0.0) or np.any(confidence_radius < 0.0):
+            raise ValueError("SPSA uncertainty vectors must be non-negative")
+        if self.perturbation_radius <= 0.0 or not np.isfinite(self.perturbation_radius):
+            raise ValueError("SPSA perturbation_radius must be finite and positive")
+        if self.repetitions <= 0:
+            raise ValueError("SPSA repetitions must be positive")
+        if self.evaluations != 2 * self.repetitions:
+            raise ValueError("SPSA evaluations must equal two per repetition")
+        if self.total_shots is not None and self.total_shots <= 0:
+            raise ValueError("SPSA total_shots must be positive or None")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("SPSA parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("SPSA trainable mask length must match gradient length")
+        if not self.claim_boundary:
+            raise ValueError("SPSA claim_boundary must be non-empty")
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "standard_error", standard_error)
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "confidence_radius", confidence_radius)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready SPSA gradient evidence."""
+        return {
+            "gradient": self.gradient.tolist(),
+            "standard_error": self.standard_error.tolist(),
+            "covariance": self.covariance.tolist(),
+            "confidence_radius": self.confidence_radius.tolist(),
+            "records": [record.to_dict() for record in self.records],
+            "perturbation_radius": self.perturbation_radius,
+            "repetitions": self.repetitions,
+            "seed": self.seed,
+            "confidence_z": self.confidence_z,
+            "method": self.method,
+            "evaluations": self.evaluations,
+            "total_shots": self.total_shots,
+            "parameter_names": list(self.parameter_names),
+            "trainable": list(self.trainable),
+            "claim_boundary": self.claim_boundary,
+            "hardware_execution": self.hardware_execution,
+        }
+
+
+@dataclass(frozen=True)
 class ShotAllocationResult:
     """Per-parameter shot allocation for stochastic parameter-shift gradients."""
 
@@ -23029,6 +23180,139 @@ def parameter_shift_gradient_with_uncertainty(
     )
 
 
+def _as_spsa_sample(value: object, *, shots: int | None) -> SPSAObjectiveSample:
+    if isinstance(value, SPSAObjectiveSample):
+        if shots is not None and value.variance is None:
+            raise ValueError("SPSA finite-shot samples must include variance")
+        if shots is not None and value.shots is None:
+            return SPSAObjectiveSample(
+                value=value.value,
+                variance=value.variance,
+                shots=shots,
+                metadata=value.metadata,
+            )
+        return value
+    if shots is not None:
+        raise ValueError("SPSA finite-shot objective must return SPSAObjectiveSample")
+    return SPSAObjectiveSample(value=_as_real_scalar("SPSA objective value", value))
+
+
+def _call_spsa_objective(
+    objective: Callable[..., object],
+    values: NDArray[np.float64],
+    shots: int | None,
+) -> SPSAObjectiveSample:
+    sample = objective(values.copy()) if shots is None else objective(values.copy(), shots)
+    return _as_spsa_sample(sample, shots=shots)
+
+
+def spsa_gradient_estimate(
+    objective: Callable[..., object],
+    values: ArrayLike,
+    *,
+    perturbation_radius: float = 0.1,
+    repetitions: int = 1,
+    seed: int = 0,
+    shots: int | None = None,
+    parameters: Sequence[Parameter] | None = None,
+    confidence_z: float = 1.959963984540054,
+) -> SPSAGradientResult:
+    """Estimate a scalar-objective gradient with seeded SPSA perturbations."""
+
+    parameter_values = _as_parameter_array(values)
+    radius = _as_real_scalar("SPSA perturbation_radius", perturbation_radius)
+    if radius <= 0.0:
+        raise ValueError("SPSA perturbation_radius must be finite and positive")
+    if isinstance(repetitions, bool) or not isinstance(repetitions, int) or repetitions <= 0:
+        raise ValueError("SPSA repetitions must be a positive integer")
+    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
+        raise ValueError("SPSA seed must be a non-negative integer")
+    if shots is not None and (isinstance(shots, bool) or not isinstance(shots, int) or shots <= 0):
+        raise ValueError("SPSA shots must be a positive integer or None")
+    z_value = _as_real_scalar("SPSA confidence_z", confidence_z)
+    if z_value <= 0.0:
+        raise ValueError("SPSA confidence_z must be finite and positive")
+
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    if not np.any(trainable):
+        raise ValueError("SPSA requires at least one trainable parameter")
+
+    rng = np.random.default_rng(seed)
+    gradient_estimates = np.zeros((repetitions, parameter_values.size), dtype=np.float64)
+    shot_variance = np.zeros(parameter_values.size, dtype=np.float64)
+    records: list[SPSAProbeRecord] = []
+    total_shots = 0
+
+    for repetition in range(repetitions):
+        raw_delta = rng.choice(np.array([-1.0, 1.0], dtype=np.float64), size=parameter_values.size)
+        perturbation = np.where(trainable, raw_delta, 0.0).astype(np.float64)
+        plus_parameters = parameter_values + radius * perturbation
+        minus_parameters = parameter_values - radius * perturbation
+        plus = _call_spsa_objective(objective, plus_parameters, shots)
+        minus = _call_spsa_objective(objective, minus_parameters, shots)
+        difference = plus.value - minus.value
+        estimate = np.zeros(parameter_values.size, dtype=np.float64)
+        for index, is_trainable in enumerate(trainable):
+            if not is_trainable:
+                continue
+            estimate[index] = difference / (2.0 * radius * raw_delta[index])
+            if shots is not None:
+                if plus.variance is None or minus.variance is None:
+                    raise ValueError("SPSA finite-shot samples must include variance")
+                if plus.shots is None or minus.shots is None:
+                    raise ValueError("SPSA finite-shot samples must include shot counts")
+                shot_variance[index] += (
+                    plus.variance / float(plus.shots) + minus.variance / float(minus.shots)
+                ) / (4.0 * radius * radius)
+        gradient_estimates[repetition] = estimate
+        if shots is not None:
+            total_shots += int(cast(int, plus.shots)) + int(cast(int, minus.shots))
+        records.append(
+            SPSAProbeRecord(
+                repetition=repetition,
+                perturbation=perturbation,
+                plus_parameters=plus_parameters,
+                minus_parameters=minus_parameters,
+                plus=plus,
+                minus=minus,
+                gradient_estimate=estimate,
+            )
+        )
+
+    gradient = np.mean(gradient_estimates, axis=0)
+    estimator_variance = (
+        np.var(gradient_estimates, axis=0, ddof=1) / repetitions
+        if repetitions > 1
+        else np.zeros(parameter_values.size, dtype=np.float64)
+    )
+    variance = estimator_variance + shot_variance / float(repetitions * repetitions)
+    variance = np.where(trainable, variance, 0.0)
+    standard_error = np.sqrt(variance)
+    return SPSAGradientResult(
+        gradient=gradient,
+        standard_error=standard_error,
+        covariance=np.diag(variance),
+        confidence_radius=z_value * standard_error,
+        records=tuple(records),
+        perturbation_radius=radius,
+        repetitions=repetitions,
+        seed=seed,
+        confidence_z=z_value,
+        method="finite_shot_spsa" if shots is not None else "spsa",
+        evaluations=2 * repetitions,
+        total_shots=total_shots if shots is not None else None,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=(
+            "seeded local SPSA gradient estimator for scalar objectives; "
+            "finite-shot uncertainty is propagated only when objective samples "
+            "provide variances and shot counts; no hardware execution"
+        ),
+        hardware_execution=False,
+    )
+
+
 def allocate_parameter_shift_shots(
     plus_variances: ArrayLike,
     minus_variances: ArrayLike,
@@ -25626,6 +25910,9 @@ __all__ = [
     "PrimitiveTransformRule",
     "ReverseNode",
     "ShotAllocationResult",
+    "SPSAGradientResult",
+    "SPSAObjectiveSample",
+    "SPSAProbeRecord",
     "SparseMatrixResult",
     "StochasticGradientResult",
     "VJPResult",
@@ -25779,6 +26066,7 @@ __all__ = [
     "sparse_empirical_fisher_metric",
     "sparse_hessian",
     "sparse_jacobian",
+    "spsa_gradient_estimate",
     "multi_frequency_parameter_shift_rule",
     "parameter_shift_gradient_with_uncertainty",
     "update_levenberg_marquardt_damping",

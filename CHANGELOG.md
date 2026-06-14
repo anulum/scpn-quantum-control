@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added seeded local SPSA gradient estimation with finite-shot
+  sample uncertainty propagation, probe-pair provenance, fail-closed stochastic
+  contracts, Rust/PyO3 parity for materialised SPSA records, module/parity
+  tests, Criterion benchmark coverage, typed extension exports, and public
+  documentation updates.
 - 2026-06-14 — Added Rust/PyO3 parity for materialised finite-shot
   parameter-shift uncertainty propagation, including shifted-mean, variance,
   shot-count, coefficient, and trainable-mask validation; Python/Rust parity

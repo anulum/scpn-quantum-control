@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (119)
+## Functions (120)
 
-The Rust crate exports 119 PyO3 bindings across 29 Rust source files. They are organised
+The Rust crate exports 120 PyO3 bindings across 29 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -121,17 +121,19 @@ project benchmark policy is local regression evidence only.
 | Function | Description | Complexity |
 |----------|-------------|------------|
 | `parameter_shift_gradient_uncertainty_rust(plus_values, minus_values, plus_variances, minus_variances, plus_shots, minus_shots, coefficients, trainable, confidence_z=1.959963984540054)` | Validate and propagate materialised finite-shot parameter-shift uncertainty into gradient, standard error, diagonal covariance, and confidence radius | O(tp) |
+| `spsa_gradient_rust(plus_values, minus_values, perturbations, plus_variances, minus_variances, plus_shots, minus_shots, trainable, perturbation_radius, confidence_z=1.959963984540054)` | Validate and propagate materialised SPSA probe records into gradient, standard error, diagonal covariance, and confidence radius | O(rp) |
 
-This kernel mirrors the core Python finite-shot uncertainty primitive for
-already materialised shifted expectation records. It validates finite shifted
-means, non-negative variances, positive integer shot counts, finite rule
-coefficients, trainable-mask width, and positive confidence radius scaling. It
-does not execute provider callbacks, allocate shots, submit hardware jobs, or
-create claim-ledger evidence by itself.
+These kernels mirror the core Python finite-shot uncertainty primitives for
+already materialised shifted expectation or SPSA probe records. They validate
+finite shifted means, non-negative variances, positive integer shot counts,
+finite rule coefficients, SPSA perturbations, trainable-mask width, and
+positive confidence radius scaling. They do not execute provider callbacks,
+allocate shots, submit hardware jobs, or create claim-ledger evidence by
+themselves.
 
 The `phase_qnode_metric_and_transform_kernels` benchmark group includes
-`parameter_shift_uncertainty`; without isolation metadata, those timings remain
-local regression evidence only.
+`parameter_shift_uncertainty` and `spsa_gradient`; without isolation metadata,
+those timings remain local regression evidence only.
 
 ### Error Mitigation
 

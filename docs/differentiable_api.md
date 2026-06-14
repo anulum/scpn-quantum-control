@@ -68,7 +68,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Forward and reverse AD results | `GradientResult`, `JacobianResult`, `HessianResult`, `JVPResult`, `HVPResult`, `ProgramADAdjointResult` | Return structured derivative outputs and diagnostics. |
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
 | Compiler-backed kernels | `compile_*_ad_to_native_llvm_jit`, `compile_whole_program_ad_trace_to_native_llvm_jit`, `native_whole_program_ad_linalg_support` | Execute bounded native AD kernels where support reports allow it, including verified static dense determinant lowering through `19x19` and fail-closed `20x20+` reports. |
-| Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, and fail closed for unsafe hardware routes. |
+| Backend and shot planning | `QuantumGradientPlan`, `QuantumGradientBackendCapability`, `ShotAllocationResult`, `SPSAObjectiveSample`, `SPSAProbeRecord`, `SPSAGradientResult`, `spsa_gradient_estimate`, support-profile records | Select supported local gradient methods, propagate finite-shot uncertainty, run seeded local SPSA probes over caller-supplied objectives, and fail closed for unsafe hardware routes. |
 | Gradient support matrix | `GradientSupportCapability`, `GradientSupportPlan`, `GradientSupportMatrixAuditResult`, `gradient_support_capability`, `list_gradient_support_capabilities`, `plan_gradient_support`, `assert_gradient_support`, `run_gradient_support_matrix_audit` | Decide whether a gate, observable, backend, transform, and adapter combination is supported before execution; blocked combinations carry reasons and alternatives. |
 | Transform nesting | `GradientTransformNestingPlan`, `GradientTransformNestingAuditResult`, `plan_gradient_transform_nesting`, `assert_gradient_transform_nesting_supported`, `run_gradient_transform_nesting_audit` | Decide whether transform stacks such as `grad`, `value_and_grad`, `hessian`, `grad` of `grad`, tape, native manual `vmap(grad)`, JVP/VJP, provider-callback routes, adapter bridges, or hardware routes are safe before execution. |
 | Gradient audit evidence | `DifferentiableQuantumAuditReport`, `DifferentiableWorkflowAuditSuiteResult`, `FiniteShotGradientAuditResult`, `MLFrameworkGradientAuditSuiteResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `ProviderGradientReadinessAuditResult`, `run_differentiable_workflow_audit_suite`, `run_finite_shot_gradient_uncertainty_audit`, `run_ml_framework_gradient_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite`, `run_provider_gradient_readiness_audit` | Bundle finite-difference agreement, finite-shot uncertainty containment, optional ML-framework parity, analytic-gradient agreement, convergence evidence, coupling-learning checks, provider-readiness checks, and multi-case phase-gradient conformance into reviewer-facing reports. |
@@ -78,7 +78,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
 | Registered model-training evidence | `DifferentiableModelTrainingEvidenceSuite`, `DifferentiableModelTrainingRecord`, `run_differentiable_model_training_evidence_suite` | Package seeded QNN, QGNN, QSNN, and Kuramoto-XY local training cases with loss reduction and gradient-agreement evidence. |
 | Registered Phase-QNode circuit evidence | `PhaseQNodeCircuit`, `DenseHermitianObservable`, `PauliTerm`, `PauliCovarianceObservable`, `SparsePauliHamiltonian`, `PhaseQNodeClassicalFisherResult`, `PhaseQNodeMetricTensorResult`, `execute_phase_qnode_circuit`, `parameter_shift_phase_qnode_gradient`, `phase_qnode_computational_basis_fisher_information`, `phase_qnode_quantum_fisher_information`, `phase_qnode_natural_gradient_metric`, `phase_qnode_support_report`, `run_phase_qnode_framework_parity_suite`, `run_phase_qnode_affinity_benchmark` | Execute the declared local gate/observable family, including dense Hermitian expectations, exact Pauli covariance values, product-rule covariance gradients, exact computational-basis classical Fisher metrics, and pure-state Fubini-Study/QFI metrics; compare installed framework parity, record benchmark-isolation metadata, and fail closed for unsupported routes. |
-| Rust differentiable parity kernels | `phase_qnode_fubini_study_metric_rust`, `phase_qnode_computational_basis_fisher_rust`, `phase_qnode_vector_jvp_rust`, `phase_qnode_vector_vjp_rust`, `phase_qnode_hessian_vector_product_rust`, `phase_qnode_vector_hessian_tensor_rust`, `phase_qnode_complex_derivative_contract_rust`, `parameter_shift_gradient_uncertainty_rust` | Optional PyO3 parity surface for the promoted deterministic local metric, directional-transform, vector-Hessian, real-only complex-boundary, and materialised finite-shot uncertainty primitives. The kernels operate on materialised state derivatives, Jacobians, Hessians, vector Hessian tensors, shifted means, variances, shot counts, coefficients, or trainable masks and are checked against the Python APIs. They do not execute provider callbacks or hardware jobs. |
+| Rust differentiable parity kernels | `phase_qnode_fubini_study_metric_rust`, `phase_qnode_computational_basis_fisher_rust`, `phase_qnode_vector_jvp_rust`, `phase_qnode_vector_vjp_rust`, `phase_qnode_hessian_vector_product_rust`, `phase_qnode_vector_hessian_tensor_rust`, `phase_qnode_complex_derivative_contract_rust`, `parameter_shift_gradient_uncertainty_rust`, `spsa_gradient_rust` | Optional PyO3 parity surface for the promoted deterministic local metric, directional-transform, vector-Hessian, real-only complex-boundary, materialised finite-shot uncertainty, and materialised SPSA-record primitives. The kernels operate on materialised state derivatives, Jacobians, Hessians, vector Hessian tensors, shifted means, variances, shot counts, coefficients, SPSA perturbations, or trainable masks and are checked against the Python APIs. They do not execute provider callbacks or hardware jobs. |
 | Differentiable promotion evidence | `FrameworkOverlayManifest`, `FrameworkOverlayVerification`, `install_framework_overlay`, `verify_framework_overlay_path`, `BenchmarkIsolationMetadata`, `run_differentiable_external_comparison_suite`, `load_claim_ledger`, `validate_claim_ledger` | Reproduce the CPU framework overlay, produce CI-only benchmark bundles, compare external AD frameworks, and validate that Phase-QNode claims have implementation, tests, docs, known gaps, artefact IDs, and benchmark IDs. |
 | Bounded QNN framework bridge matrix | `BoundedQNNFrameworkBridgeCapability`, `BoundedQNNFrameworkBridgeMatrixResult`, `run_bounded_qnn_framework_bridge_matrix`, `assert_bounded_qnn_framework_bridge_supported` | Declare implemented bounded JAX/PyTorch/TensorFlow bridge routes and fail closed for arbitrary simulator autodiff or live provider hardware-gradient routes. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `PhaseJAXNativeQNNGradientResult`, `jax_parameter_shift_value_and_grad`, `jax_native_qnn_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary, and expose native JAX autodiff evidence for the bounded phase-QNN classifier only. |
@@ -678,6 +678,43 @@ assert plan.method == "stochastic_parameter_shift"
 
 Hardware backends intentionally return an unsupported plan by default. That is a
 safety boundary, not a missing exception.
+
+For seeded local SPSA diagnostics:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.differentiable import (
+    SPSAObjectiveSample,
+    spsa_gradient_estimate,
+)
+
+
+def finite_shot_cost(values: np.ndarray, shots: int | None) -> SPSAObjectiveSample:
+    return SPSAObjectiveSample(
+        value=float(0.5 * values[0] - 0.25 * values[1]),
+        variance=0.04,
+        shots=shots,
+    )
+
+
+result = spsa_gradient_estimate(
+    finite_shot_cost,
+    np.array([0.4, -0.2]),
+    perturbation_radius=0.25,
+    repetitions=4,
+    seed=11,
+    shots=400,
+)
+
+print(result.gradient, result.standard_error, result.claim_boundary)
+```
+
+The SPSA route records each plus/minus perturbation pair and propagates
+finite-shot uncertainty only when objective samples provide both variance and
+shot counts. It is a seeded local estimator over caller-provided objective
+values; it does not submit provider jobs or claim arbitrary hardware-gradient
+execution.
 
 ## Minimal gradient tape
 

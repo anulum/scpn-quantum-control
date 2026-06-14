@@ -1265,6 +1265,18 @@ The backend planner classifies each execution path as one of:
 Each gradient plan reports the selected method, backend, shots, seed, estimator
 uncertainty policy, unsupported alternatives, and fail-closed reasons.
 
+The implemented SPSA diagnostic route is available as
+`spsa_gradient_estimate(...)` in the differentiable module. It draws seeded
+Bernoulli perturbations, evaluates caller-provided plus/minus objective probes,
+records every probe pair, and returns gradient, standard-error, diagonal
+covariance, confidence-radius, evaluation-count, shot-count, and claim-boundary
+metadata. When `shots` is supplied, the objective must return
+`SPSAObjectiveSample` values with finite variances and positive shot counts so
+the estimator can propagate finite-shot uncertainty. The optional Rust parity
+kernel `spsa_gradient_rust(...)` validates and reproduces the same uncertainty
+calculation from materialised SPSA records; it does not execute objectives,
+providers, or hardware jobs.
+
 ## Suitable and unsuitable scenarios
 
 | Scenario | Status |
@@ -1272,6 +1284,7 @@ uncertainty policy, unsupported alternatives, and fail-closed reasons.
 | Small Pauli-rotation expectation objective | Suitable for parameter-shift. |
 | Gradient-trained Kuramoto-XY VQE | Current implementation route; convergence evidence must be attached. |
 | Noisy finite-shot backend | Supported for uncertainty propagation when plus/minus variances and shots are supplied. |
+| Seeded local SPSA diagnostic | Supported for caller-supplied objectives when perturbation radius, repetitions, seed, sample variances, and shot counts satisfy the estimator contract. |
 | Hardware execution | Must remain disabled by default until a hardware-safe gradient policy exists. |
 | Gate without registered generator spectrum | Unsupported; fail closed. |
 | Dynamic circuit topology or parameter count | Unsupported unless the trace records stable parameter identity. |
