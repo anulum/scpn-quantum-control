@@ -1306,6 +1306,7 @@ host-boundary PyTorch and TensorFlow adapters:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    run_tensorflow_gradient_tape_compatibility_audit,
     tensorflow_parameter_shift_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -1317,6 +1318,11 @@ def objective(params: np.ndarray) -> float:
 
 torch_result = torch_parameter_shift_value_and_grad(objective, np.array([0.4]))
 tf_result = tensorflow_parameter_shift_value_and_grad(objective, np.array([0.4]))
+tf_tape_audit = run_tensorflow_gradient_tape_compatibility_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    params=np.array([0.45], dtype=float),
+)
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
@@ -1334,8 +1340,10 @@ for the bounded phase-QNN model. The separate
 gradients only for that same model. The separate
 `torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` wrapper route
 verifies a bounded PyTorch `nn.Module`/layer loss and gradient only for that same
-model. All remain outside
-arbitrary provider or simulator autodiff.
+model. The separate `run_tensorflow_gradient_tape_compatibility_audit(...)`
+route verifies TensorFlow `GradientTape` only for the same bounded classifier
+loss and checks the returned gradient against the SCPN parameter-shift
+reference. All remain outside arbitrary provider or simulator autodiff.
 
 ## Verification requirements
 

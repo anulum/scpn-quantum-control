@@ -247,11 +247,159 @@ class _FakeTorchWithoutNN(_FakeTorch):
 
 
 class _FakeTensorFlowTensor:
-    def __init__(self, values: object) -> None:
+    def __init__(
+        self,
+        values: object,
+        *,
+        derivative: np.ndarray | None = None,
+    ) -> None:
+        if isinstance(values, _FakeTensorFlowTensor):
+            if derivative is None:
+                derivative = values.derivative()
+            values = values.numpy()
         self._values = np.asarray(values, dtype=float)
+        self._derivative = None if derivative is None else np.asarray(derivative, dtype=float)
 
     def numpy(self) -> np.ndarray:
         return self._values.copy()
+
+    def derivative(self) -> np.ndarray | None:
+        if self._derivative is None:
+            return None
+        return self._derivative.copy()
+
+    @staticmethod
+    def _with_derivative(
+        values: np.ndarray, derivative: np.ndarray | None
+    ) -> _FakeTensorFlowTensor:
+        return _FakeTensorFlowTensor(values, derivative=derivative)
+
+    @staticmethod
+    def _broadcast_derivative(
+        derivative: np.ndarray | None,
+        *,
+        target_shape: tuple[int, ...],
+        width: int,
+    ) -> np.ndarray:
+        if derivative is None:
+            return np.zeros((*target_shape, width), dtype=float)
+        return np.broadcast_to(derivative, (*target_shape, width)).copy()
+
+    @staticmethod
+    def _derivative_width(
+        left: np.ndarray | None,
+        right: np.ndarray | None,
+    ) -> int | None:
+        if left is not None:
+            return int(left.shape[-1])
+        if right is not None:
+            return int(right.shape[-1])
+        return None
+
+    def __add__(self, other: object) -> _FakeTensorFlowTensor:
+        rhs = _FakeTensorFlowTensor(other)
+        values = self._values + rhs.numpy()
+        width = self._derivative_width(self._derivative, rhs._derivative)
+        derivative = None
+        if width is not None:
+            derivative = self._broadcast_derivative(
+                self._derivative,
+                target_shape=values.shape,
+                width=width,
+            ) + self._broadcast_derivative(
+                rhs._derivative,
+                target_shape=values.shape,
+                width=width,
+            )
+        return self._with_derivative(values, derivative)
+
+    __radd__ = __add__
+
+    def __sub__(self, other: object) -> _FakeTensorFlowTensor:
+        rhs = _FakeTensorFlowTensor(other)
+        values = self._values - rhs.numpy()
+        width = self._derivative_width(self._derivative, rhs._derivative)
+        derivative = None
+        if width is not None:
+            derivative = self._broadcast_derivative(
+                self._derivative,
+                target_shape=values.shape,
+                width=width,
+            ) - self._broadcast_derivative(
+                rhs._derivative,
+                target_shape=values.shape,
+                width=width,
+            )
+        return self._with_derivative(values, derivative)
+
+    def __rsub__(self, other: object) -> _FakeTensorFlowTensor:
+        lhs = _FakeTensorFlowTensor(other)
+        return lhs.__sub__(self)
+
+    def __mul__(self, other: object) -> _FakeTensorFlowTensor:
+        rhs = _FakeTensorFlowTensor(other)
+        lhs_values = self._values
+        rhs_values = rhs.numpy()
+        values = lhs_values * rhs_values
+        width = self._derivative_width(self._derivative, rhs._derivative)
+        derivative = None
+        if width is not None:
+            lhs_derivative = self._broadcast_derivative(
+                self._derivative,
+                target_shape=values.shape,
+                width=width,
+            )
+            rhs_derivative = self._broadcast_derivative(
+                rhs._derivative,
+                target_shape=values.shape,
+                width=width,
+            )
+            derivative = (
+                lhs_derivative * np.broadcast_to(rhs_values, values.shape)[..., np.newaxis]
+                + rhs_derivative * np.broadcast_to(lhs_values, values.shape)[..., np.newaxis]
+            )
+        return self._with_derivative(values, derivative)
+
+    __rmul__ = __mul__
+
+
+class _FakeTensorFlowVariable(_FakeTensorFlowTensor):
+    def __init__(self, values: object) -> None:
+        array = np.asarray(values, dtype=float)
+        if array.ndim != 1:
+            raise ValueError("fake TensorFlow Variable only supports vectors")
+        derivative = np.eye(array.size, dtype=float)
+        super().__init__(array, derivative=derivative)
+
+
+class _FakeTensorFlowGradientTape:
+    def __init__(self, module: _FakeTensorFlow) -> None:
+        self.module = module
+        self.watched: list[_FakeTensorFlowTensor] = []
+        self.entered = False
+
+    def __enter__(self) -> _FakeTensorFlowGradientTape:
+        self.entered = True
+        self.module.gradient_tape_entries += 1
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
+        del exc_type, exc, tb
+
+    def watch(self, tensor: _FakeTensorFlowTensor) -> None:
+        self.watched.append(tensor)
+
+    def gradient(
+        self,
+        loss: _FakeTensorFlowTensor,
+        params: _FakeTensorFlowTensor,
+    ) -> _FakeTensorFlowTensor | None:
+        del params
+        self.module.gradient_calls += 1
+        gradient = loss.derivative()
+        if gradient is None:
+            return None
+        return _FakeTensorFlowTensor(gradient)
 
 
 class _FakeTensorFlow:
@@ -259,6 +407,8 @@ class _FakeTensorFlow:
 
     def __init__(self) -> None:
         self.convert_calls: list[np.ndarray] = []
+        self.gradient_tape_entries = 0
+        self.gradient_calls = 0
 
     def convert_to_tensor(
         self,
@@ -270,6 +420,41 @@ class _FakeTensorFlow:
         array = np.asarray(values, dtype=float)
         self.convert_calls.append(array.copy())
         return _FakeTensorFlowTensor(array)
+
+    def Variable(self, values: object, *, dtype: object | None = None) -> _FakeTensorFlowVariable:
+        del dtype
+        return _FakeTensorFlowVariable(values)
+
+    def GradientTape(self) -> _FakeTensorFlowGradientTape:
+        return _FakeTensorFlowGradientTape(self)
+
+    def cos(self, values: object) -> _FakeTensorFlowTensor:
+        tensor = _FakeTensorFlowTensor(values)
+        array = tensor.numpy()
+        derivative = tensor.derivative()
+        if derivative is not None:
+            derivative = -np.sin(array)[..., np.newaxis] * derivative
+        return _FakeTensorFlowTensor(np.cos(array), derivative=derivative)
+
+    def reduce_mean(
+        self,
+        values: object,
+        *,
+        axis: int | None = None,
+    ) -> _FakeTensorFlowTensor:
+        tensor = _FakeTensorFlowTensor(values)
+        derivative = tensor.derivative()
+        if derivative is not None:
+            value_ndim = tensor.numpy().ndim
+            if axis is None:
+                derivative_axis: int | tuple[int, ...] = tuple(range(value_ndim))
+            else:
+                derivative_axis = axis
+            derivative = np.mean(derivative, axis=derivative_axis)
+        return _FakeTensorFlowTensor(
+            np.mean(tensor.numpy(), axis=axis),
+            derivative=derivative,
+        )
 
 
 def _objective(values: np.ndarray) -> float:
@@ -709,6 +894,58 @@ def test_tensorflow_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
             np.array([[0.0, 1.0]], dtype=float),
             np.array([0.0], dtype=float),
             np.array([0.45], dtype=float),
+        )
+
+
+def test_tensorflow_gradient_tape_compatibility_audit_checks_native_gradient_tape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
+
+    result = tensorflow_bridge.run_tensorflow_gradient_tape_compatibility_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params.numpy(),
+    )
+    assert isinstance(
+        result,
+        tensorflow_bridge.PhaseTensorFlowGradientTapeCompatibilityResult,
+    )
+    assert result.passed
+    assert result.gradient_tape_supported
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "bounded_tensorflow_gradient_tape_compatibility"
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert fake_tf.gradient_tape_entries == 1
+    assert fake_tf.gradient_calls == 1
+    assert result.to_dict()["gradient_tape_supported"] is True
+
+
+def test_tensorflow_gradient_tape_compatibility_fails_closed_without_gradient_tape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    fake_tf.GradientTape = None  # type: ignore[method-assign]
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+
+    with pytest.raises(RuntimeError, match="GradientTape"):
+        tensorflow_bridge.run_tensorflow_gradient_tape_compatibility_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            params=np.array([0.45], dtype=float),
         )
 
 

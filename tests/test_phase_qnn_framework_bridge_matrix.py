@@ -26,7 +26,7 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     assert result.framework_count == 5
     assert result.supported_count == 3
     assert result.fail_closed_count == 2
-    assert result.native_framework_autodiff_count == 2
+    assert result.native_framework_autodiff_count == 3
     assert result.tensor_output_count == 2
     assert result.host_boundary_count == 0
 
@@ -55,8 +55,13 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     tensorflow = result.capability_by_framework("tensorflow")
     assert tensorflow.supported
     assert tensorflow.tensor_output
+    assert tensorflow.native_framework_autodiff
     assert tensorflow.analytic_framework_gradient
-    assert tensorflow.public_api == "tensorflow_bounded_qnn_value_and_grad"
+    assert (
+        tensorflow.public_api == "tensorflow_bounded_qnn_value_and_grad"
+        ",run_tensorflow_gradient_tape_compatibility_audit"
+    )
+    assert "bounded_tensorflow_gradient_tape_gradient" in tensorflow.gradient_route
 
 
 def test_bounded_qnn_framework_bridge_matrix_records_fail_closed_gaps() -> None:
@@ -97,7 +102,7 @@ def test_bounded_qnn_framework_bridge_matrix_to_dict_is_json_ready() -> None:
     assert payload["passed"] is True
     assert payload["framework_count"] == 2
     assert payload["supported_count"] == 2
-    assert payload["native_framework_autodiff_count"] == 1
+    assert payload["native_framework_autodiff_count"] == 2
     assert payload["tensor_output_count"] == 1
     assert "not arbitrary framework autodiff" in str(payload["claim_boundary"])
     assert [item["framework"] for item in payload["capabilities"]] == [

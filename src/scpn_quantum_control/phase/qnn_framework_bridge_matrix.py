@@ -204,12 +204,18 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
         ),
         BoundedQNNFrameworkBridgeCapability(
             framework="tensorflow",
-            public_api="tensorflow_bounded_qnn_value_and_grad",
-            gradient_route="bounded_phase_qnn_tensor_analytic_gradient",
+            public_api=(
+                "tensorflow_bounded_qnn_value_and_grad,"
+                "run_tensorflow_gradient_tape_compatibility_audit"
+            ),
+            gradient_route=(
+                "bounded_phase_qnn_tensor_analytic_gradient,"
+                "bounded_tensorflow_gradient_tape_gradient"
+            ),
             optional_dependency="tensorflow",
             implemented=True,
             runtime_dependency_required=True,
-            native_framework_autodiff=False,
+            native_framework_autodiff=True,
             tensor_output=True,
             host_boundary=False,
             analytic_framework_gradient=True,

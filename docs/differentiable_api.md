@@ -80,11 +80,11 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Registered Phase-QNode circuit evidence | `PhaseQNodeCircuit`, `DenseHermitianObservable`, `PauliTerm`, `PauliCovarianceObservable`, `SparsePauliHamiltonian`, `PhaseQNodeClassicalFisherResult`, `PhaseQNodeMetricTensorResult`, `execute_phase_qnode_circuit`, `parameter_shift_phase_qnode_gradient`, `phase_qnode_computational_basis_fisher_information`, `phase_qnode_quantum_fisher_information`, `phase_qnode_natural_gradient_metric`, `phase_qnode_support_report`, `run_phase_qnode_framework_parity_suite`, `run_phase_qnode_affinity_benchmark` | Execute the declared local gate/observable family, including dense Hermitian expectations, exact Pauli covariance values, product-rule covariance gradients, exact computational-basis classical Fisher metrics, and pure-state Fubini-Study/QFI metrics; compare installed framework parity, record benchmark-isolation metadata, and fail closed for unsupported routes. |
 | Rust differentiable parity kernels | `phase_qnode_fubini_study_metric_rust`, `phase_qnode_computational_basis_fisher_rust`, `phase_qnode_vector_jvp_rust`, `phase_qnode_vector_vjp_rust`, `phase_qnode_hessian_vector_product_rust`, `phase_qnode_vector_hessian_tensor_rust`, `phase_qnode_complex_derivative_contract_rust`, `parameter_shift_gradient_uncertainty_rust`, `spsa_gradient_rust`, `score_function_gradient_rust`, `gradient_confidence_interval_rust` | Optional PyO3 parity surface for the promoted deterministic local metric, directional-transform, vector-Hessian, real-only complex-boundary, materialised finite-shot uncertainty, materialised SPSA-record, materialised score-function, and confidence-policy primitives. The kernels operate on materialised state derivatives, Jacobians, Hessians, vector Hessian tensors, shifted means, variances, shot counts, coefficients, SPSA perturbations, rewards, score vectors, gradients, standard errors, or trainable masks and are checked against the Python APIs. They do not execute provider callbacks or hardware jobs. |
 | Differentiable promotion evidence | `FrameworkOverlayManifest`, `FrameworkOverlayVerification`, `install_framework_overlay`, `verify_framework_overlay_path`, `BenchmarkIsolationMetadata`, `run_differentiable_external_comparison_suite`, `load_claim_ledger`, `validate_claim_ledger` | Reproduce the CPU framework overlay, produce CI-only benchmark bundles, compare external AD frameworks, and validate that Phase-QNode claims have implementation, tests, docs, known gaps, artefact IDs, and benchmark IDs. |
-| Bounded QNN framework bridge matrix | `BoundedQNNFrameworkBridgeCapability`, `BoundedQNNFrameworkBridgeMatrixResult`, `run_bounded_qnn_framework_bridge_matrix`, `assert_bounded_qnn_framework_bridge_supported` | Declare implemented bounded JAX/PyTorch/TensorFlow bridge routes, including the bounded JAX custom-VJP route, bounded PyTorch custom-autograd route, bounded PyTorch `torch.func` compatibility route, bounded PyTorch `torch.compile` route, and bounded PyTorch module/layer wrapper route, and fail closed for arbitrary simulator autodiff or live provider hardware-gradient routes. |
+| Bounded QNN framework bridge matrix | `BoundedQNNFrameworkBridgeCapability`, `BoundedQNNFrameworkBridgeMatrixResult`, `run_bounded_qnn_framework_bridge_matrix`, `assert_bounded_qnn_framework_bridge_supported` | Declare implemented bounded JAX/PyTorch/TensorFlow bridge routes, including the bounded JAX custom-VJP route, bounded PyTorch custom-autograd route, bounded PyTorch `torch.func` compatibility route, bounded PyTorch `torch.compile` route, bounded PyTorch module/layer wrapper route, and bounded TensorFlow `GradientTape` route, and fail closed for arbitrary simulator autodiff or live provider hardware-gradient routes. |
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `PhaseJAXNativeQNNGradientResult`, `PhaseJAXCustomVJPQNNGradientResult`, `PhaseJAXJITCompatibilityResult`, `PhaseJAXVMAPCompatibilityResult`, `PhaseJAXShardingCompatibilityResult`, `PhaseJAXPyTreeCompatibilityResult`, `jax_parameter_shift_value_and_grad`, `jax_native_qnn_value_and_grad`, `jax_custom_vjp_qnn_value_and_grad`, `run_jax_jit_compatibility_audit`, `run_jax_vmap_compatibility_audit`, `run_jax_sharding_compatibility_audit`, `run_jax_pytree_compatibility_audit`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary, expose native JAX autodiff evidence for the bounded phase-QNN classifier, expose a bounded JAX `custom_vjp` route whose backward rule is checked against the SCPN parameter-shift gradient, and report JIT/VMAP/PMAP/PyTree compatibility without promoting host-bound references or arbitrary simulator lowering as native transforms. |
 | Optional PennyLane agreement | `PennyLaneGradientAgreementResult`, `check_pennylane_parameter_shift_agreement`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against a caller-supplied PennyLane gradient callable. |
 | Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `PhaseTorchQNNGradientResult`, `PhaseTorchAutogradQNNGradientResult`, `PhaseTorchFuncCompatibilityResult`, `PhaseTorchCompileCompatibilityResult`, `PhaseTorchModuleWrapperAuditResult`, `torch_parameter_shift_value_and_grad`, `torch_bounded_qnn_value_and_grad`, `torch_autograd_qnn_value_and_grad`, `run_torch_func_compatibility_audit`, `run_torch_compile_compatibility_audit`, `torch_bounded_qnn_module`, `torch_bounded_qnn_layer`, `run_torch_module_wrapper_audit`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors, provide bounded phase-QNN tensor-gradient evidence, expose a bounded custom `torch.autograd.Function` path, and audit bounded `torch.func.grad`/`vmap`/`jacrev`, `torch.compile`, and module/layer wrapper compatibility while preserving NumPy and parameter-shift references. |
-| Optional TensorFlow bridge | `PhaseTensorFlowParameterShiftResult`, `PhaseTensorFlowQNNGradientResult`, `tensorflow_parameter_shift_value_and_grad`, `tensorflow_bounded_qnn_value_and_grad`, `is_phase_tensorflow_available` | Convert supported phase parameter-shift value-and-gradient outputs into TensorFlow tensors and provide bounded phase-QNN tensor-gradient evidence while preserving NumPy and parameter-shift references. |
+| Optional TensorFlow bridge | `PhaseTensorFlowParameterShiftResult`, `PhaseTensorFlowQNNGradientResult`, `PhaseTensorFlowGradientTapeCompatibilityResult`, `tensorflow_parameter_shift_value_and_grad`, `tensorflow_bounded_qnn_value_and_grad`, `run_tensorflow_gradient_tape_compatibility_audit`, `is_phase_tensorflow_available` | Convert supported phase parameter-shift value-and-gradient outputs into TensorFlow tensors, provide bounded phase-QNN tensor-gradient evidence, and audit bounded `GradientTape` gradients against parameter-shift references. |
 
 ## Minimal parameter-shift call
 
@@ -271,6 +271,7 @@ from scpn_quantum_control.phase import (
     run_torch_func_compatibility_audit,
     run_torch_module_wrapper_audit,
     tensorflow_bounded_qnn_value_and_grad,
+    run_tensorflow_gradient_tape_compatibility_audit,
     torch_autograd_qnn_value_and_grad,
     torch_bounded_qnn_value_and_grad,
     torch_bounded_qnn_layer,
@@ -312,6 +313,11 @@ jax_pytree_audit = run_jax_pytree_compatibility_audit(
     },
 )
 tf_result = tensorflow_bounded_qnn_value_and_grad(features, labels, params)
+tf_tape_audit = run_tensorflow_gradient_tape_compatibility_audit(
+    features=features,
+    labels=labels,
+    params=params,
+)
 torch_result = torch_bounded_qnn_value_and_grad(features, labels, params)
 torch_autograd_result = torch_autograd_qnn_value_and_grad(features, labels, params)
 torch_func_audit = run_torch_func_compatibility_audit(
@@ -400,10 +406,12 @@ loss through a PyTorch `nn.Module`/layer wrapper, and
 `run_torch_module_wrapper_audit` checks the wrapper gradient against the same
 reference.
 `tensorflow_bounded_qnn_value_and_grad` returns TensorFlow tensors from the
-analytic bounded-model gradient and checks the same reference. These routes are
-not arbitrary simulator autodiff claims, not provider-backed hardware
-gradients, and not replacements for the broader framework-agreement surface for
-caller-supplied models.
+analytic bounded-model gradient and checks the same reference.
+`run_tensorflow_gradient_tape_compatibility_audit` differentiates the same
+bounded TensorFlow loss through `GradientTape` and checks the returned gradient
+against the parameter-shift reference. These routes are not arbitrary simulator
+autodiff claims, not provider-backed hardware gradients, and not replacements
+for the broader framework-agreement surface for caller-supplied models.
 
 Use the bridge matrix before selecting a framework route:
 

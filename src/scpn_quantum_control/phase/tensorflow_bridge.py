@@ -99,6 +99,43 @@ class PhaseTensorFlowQNNGradientResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTensorFlowGradientTapeCompatibilityResult:
+    """Bounded phase-QNN compatibility evidence for TensorFlow ``GradientTape``."""
+
+    loss: float
+    gradient: FloatArray
+    parameter_shift_gradient: FloatArray
+    tensorflow_loss: Any
+    tensorflow_gradient: Any
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    gradient_tape_supported: bool
+    native_framework_autodiff: bool = True
+    host_boundary: bool = False
+    claim_boundary: str = "bounded_tensorflow_gradient_tape_compatibility"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable TensorFlow ``GradientTape`` evidence."""
+        return {
+            "loss": self.loss,
+            "gradient": self.gradient.copy(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.copy(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "gradient_tape_supported": self.gradient_tape_supported,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_boundary": self.host_boundary,
+            "claim_boundary": self.claim_boundary,
+            "tensorflow_loss_type": type(self.tensorflow_loss).__name__,
+            "tensorflow_gradient_type": type(self.tensorflow_gradient).__name__,
+        }
+
+
 def _load_tensorflow() -> Any:
     try:
         import tensorflow as tf
@@ -174,6 +211,54 @@ def _tensorflow_tensor(tensorflow_module: Any, values: object) -> Any:
     if dtype is None:
         return convert(values)
     return convert(values, dtype=dtype)
+
+
+def _tensorflow_variable(tensorflow_module: Any, values: object) -> Any:
+    variable = getattr(tensorflow_module, "Variable", None)
+    if not callable(variable):
+        raise RuntimeError("TensorFlow module does not expose Variable")
+    dtype = getattr(tensorflow_module, "float64", None)
+    if dtype is None:
+        return variable(values)
+    return variable(values, dtype=dtype)
+
+
+def _tensorflow_gradient_tape(tensorflow_module: Any) -> Any:
+    tape = getattr(tensorflow_module, "GradientTape", None)
+    if not callable(tape):
+        raise RuntimeError("TensorFlow module does not expose GradientTape")
+    return tape
+
+
+def _tensorflow_values_to_float(values: object) -> float:
+    candidate = values
+    numpy_method = getattr(candidate, "numpy", None)
+    if callable(numpy_method):
+        candidate = numpy_method()
+    scalar = np.asarray(candidate, dtype=float)
+    if scalar.shape not in ((), (1,)):
+        raise ValueError(f"TensorFlow scalar value must be scalar-like, got {scalar.shape}")
+    value = float(scalar.reshape(-1)[0])
+    if not np.isfinite(value):
+        raise ValueError("TensorFlow scalar value must be finite")
+    return value
+
+
+def _tensorflow_bounded_qnn_loss_tensor(
+    tensorflow_module: Any,
+    feature_tensor: Any,
+    label_tensor: Any,
+    parameter_tensor: Any,
+) -> Any:
+    cos = getattr(tensorflow_module, "cos", None)
+    reduce_mean = getattr(tensorflow_module, "reduce_mean", None)
+    if not callable(cos) or not callable(reduce_mean):
+        raise RuntimeError("TensorFlow module does not expose cos and reduce_mean")
+    shifted = feature_tensor + parameter_tensor
+    probabilities = 0.5 * (1.0 - cos(shifted))
+    predictions = reduce_mean(probabilities, axis=1)
+    residual = predictions - label_tensor
+    return reduce_mean(residual * residual)
 
 
 def tensorflow_parameter_shift_value_and_grad(
@@ -301,10 +386,98 @@ def tensorflow_bounded_qnn_value_and_grad(
     )
 
 
+def run_tensorflow_gradient_tape_compatibility_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike | object,
+    tolerance: float = 1e-6,
+) -> PhaseTensorFlowGradientTapeCompatibilityResult:
+    """Audit bounded phase-QNN compatibility with TensorFlow ``GradientTape``.
+
+    The audited route is the bounded classifier loss only. It does not expose
+    arbitrary TensorFlow autodiff through SCPN simulator kernels or provider
+    hardware execution.
+    """
+    tensorflow_module = _load_tensorflow()
+    tape_factory = _tensorflow_gradient_tape(tensorflow_module)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _tensorflow_values_to_numpy(params)
+    if parameter_values.shape != (feature_matrix.shape[1],):
+        raise ValueError(
+            "params width must match feature width: "
+            f"{parameter_values.shape[0]} != {feature_matrix.shape[1]}",
+        )
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_tensor = _tensorflow_tensor(tensorflow_module, feature_matrix)
+    label_tensor = _tensorflow_tensor(tensorflow_module, label_vector)
+    parameter_tensor = _tensorflow_variable(tensorflow_module, parameter_values)
+    with tape_factory() as tape:
+        watch = getattr(tape, "watch", None)
+        if callable(watch):
+            watch(parameter_tensor)
+        tensorflow_loss = _tensorflow_bounded_qnn_loss_tensor(
+            tensorflow_module,
+            feature_tensor,
+            label_tensor,
+            parameter_tensor,
+        )
+    gradient_method = getattr(tape, "gradient", None)
+    if not callable(gradient_method):
+        raise RuntimeError("TensorFlow GradientTape does not expose gradient")
+    tensorflow_gradient = gradient_method(tensorflow_loss, parameter_tensor)
+    if tensorflow_gradient is None:
+        raise RuntimeError("TensorFlow GradientTape returned no gradient")
+    gradient = _as_parameter_vector(
+        "TensorFlow GradientTape bounded phase-QNN gradient",
+        _tensorflow_values_to_numpy(tensorflow_gradient),
+        width=parameter_values.size,
+    )
+    loss = _tensorflow_values_to_float(tensorflow_loss)
+    reference_loss = parameter_shift_qnn_classifier_loss(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    if abs(loss - reference_loss) > tolerance_value:
+        raise RuntimeError(
+            "TensorFlow GradientTape bounded phase-QNN loss disagrees with SCPN "
+            f"parameter-shift loss: {loss} != {reference_loss}",
+        )
+    reference_gradient_values = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    reference_gradient = _as_parameter_vector(
+        "SCPN bounded phase-QNN parameter-shift gradient",
+        reference_gradient_values,
+        width=parameter_values.size,
+    )
+    delta = gradient - reference_gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta))
+    return PhaseTensorFlowGradientTapeCompatibilityResult(
+        loss=loss,
+        gradient=gradient,
+        parameter_shift_gradient=reference_gradient,
+        tensorflow_loss=tensorflow_loss,
+        tensorflow_gradient=tensorflow_gradient,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=bool(max_abs_error <= tolerance_value),
+        gradient_tape_supported=True,
+    )
+
+
 __all__ = [
+    "PhaseTensorFlowGradientTapeCompatibilityResult",
     "PhaseTensorFlowParameterShiftResult",
     "PhaseTensorFlowQNNGradientResult",
     "is_phase_tensorflow_available",
+    "run_tensorflow_gradient_tape_compatibility_audit",
     "tensorflow_bounded_qnn_value_and_grad",
     "tensorflow_parameter_shift_value_and_grad",
 ]
