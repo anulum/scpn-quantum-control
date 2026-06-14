@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
     PhaseJAXJITCompatibilityResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
+    PhaseJAXVMAPCompatibilityResult,
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
     jax_custom_vjp_qnn_value_and_grad,
@@ -27,6 +28,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     run_jax_jit_compatibility_audit,
+    run_jax_vmap_compatibility_audit,
 )
 
 
@@ -42,6 +44,7 @@ class _FakeJAX:
         self.callback_shape_dtypes = None
         self.custom_vjp_calls = 0
         self.custom_vjp_defvjp_calls = 0
+        self.vmap_calls = 0
 
     def jit(self, fn):
         self.jit_calls += 1
@@ -98,6 +101,17 @@ class _FakeJAX:
                 backward[index] -= step
                 gradient[index] = (float(fn(forward)) - float(fn(backward))) / (2.0 * step)
             return value, gradient
+
+        return wrapped
+
+    def vmap(self, fn):
+        self.vmap_calls += 1
+
+        def wrapped(values):
+            outputs = [fn(row) for row in np.asarray(values, dtype=float)]
+            if outputs and isinstance(outputs[0], tuple):
+                return tuple(np.stack(items, axis=0) for items in zip(*outputs, strict=True))
+            return np.asarray(outputs, dtype=float)
 
         return wrapped
 
@@ -430,6 +444,58 @@ def test_phase_jax_jit_compatibility_audit_fails_closed_without_jit(
             features=np.array([[0.0], [np.pi]], dtype=float),
             labels=np.array([0.0, 1.0], dtype=float),
             params=np.array([0.45], dtype=float),
+        )
+
+
+def test_phase_jax_vmap_compatibility_audit_batches_native_and_custom_vjp(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params_batch = np.array([[0.25], [0.45], [0.65]], dtype=float)
+
+    result = run_jax_vmap_compatibility_audit(
+        features=features,
+        labels=labels,
+        params_batch=params_batch,
+        tolerance=1e-10,
+    )
+
+    expected_gradients = np.vstack(
+        [parameter_shift_qnn_classifier_gradient(features, labels, row) for row in params_batch]
+    )
+    assert isinstance(result, PhaseJAXVMAPCompatibilityResult)
+    assert result.passed
+    assert result.batch_size == 3
+    assert result.native_qnn_vmapped
+    assert result.custom_vjp_qnn_vmapped
+    assert result.custom_vjp_registered
+    assert not result.native_qnn_host_callback
+    assert not result.custom_vjp_qnn_host_callback
+    assert result.max_abs_error <= 1e-10
+    assert result.claim_boundary == "bounded_jax_vmap_compatibility"
+    assert "parameter_shift_host_loop_reference" in result.unsupported_native_routes
+    assert fake_jax.vmap_calls == 2
+    np.testing.assert_allclose(result.native_gradients, expected_gradients, atol=1e-10)
+    np.testing.assert_allclose(result.custom_vjp_gradients, expected_gradients, atol=1e-10)
+    assert result.to_dict()["passed"] is True
+
+
+def test_phase_jax_vmap_compatibility_audit_fails_closed_without_vmap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _NoVMAPJAX(_FakeJAX):
+        vmap = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_NoVMAPJAX(), np))
+
+    with pytest.raises(RuntimeError, match="JAX vmap"):
+        run_jax_vmap_compatibility_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params_batch=np.array([[0.25], [0.45]], dtype=float),
         )
 
 

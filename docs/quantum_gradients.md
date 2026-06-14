@@ -1135,12 +1135,13 @@ mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
 therefore does not claim native JAX differentiation of a quantum kernel.
 
 For the bounded phase-QNN classifier, the bridge also exposes a native
-custom-VJP route and an audited JIT compatibility report:
+custom-VJP route plus audited JIT and VMAP compatibility reports:
 
 ```python
 from scpn_quantum_control.phase import (
     jax_custom_vjp_qnn_value_and_grad,
     run_jax_jit_compatibility_audit,
+    run_jax_vmap_compatibility_audit,
 )
 
 custom_vjp = jax_custom_vjp_qnn_value_and_grad(
@@ -1157,6 +1158,13 @@ jit_audit = run_jax_jit_compatibility_audit(
     params=params,
 )
 print(jit_audit.passed, jit_audit.unsupported_native_routes)
+
+vmap_audit = run_jax_vmap_compatibility_audit(
+    features=features,
+    labels=labels,
+    params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
+)
+print(vmap_audit.passed, vmap_audit.batch_size)
 ```
 
 `jax_custom_vjp_qnn_value_and_grad(...)` registers a JAX `custom_vjp` for the
@@ -1165,10 +1173,13 @@ multi-frequency SCPN parameter-shift gradient.
 `run_jax_jit_compatibility_audit(...)` JITs the bounded native JAX and
 custom-VJP routes, requires both to stay no-host-callback routes, and records the
 generic parameter-shift bridge as host-callback interop through
-`unsupported_native_routes`. It remains a bounded model route: it is not
-arbitrary simulator autodiff, not provider-backed execution, not a hardware
-gradient, and not a claim that every quantum objective can be lowered into JAX
-JIT.
+`unsupported_native_routes`. `run_jax_vmap_compatibility_audit(...)` VMAPs the
+same bounded native and custom-VJP routes over parameter batches, verifies each
+row against SCPN parameter-shift references, and records those references as a
+host-side loop rather than native VMAP. These remain bounded model routes: they
+are not arbitrary simulator autodiff, not provider-backed execution, not
+hardware gradients, and not claims that every quantum objective can be lowered
+into JAX JIT or VMAP.
 
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:
