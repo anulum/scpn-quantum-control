@@ -39,12 +39,13 @@ from .realtime_feedback import (
     feedback_policy_numpy,
 )
 from .structured_ansatz import StructuredAnsatz
-from .vqls_gs import VQLS_GradShafranov
+from .vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
 
 __all__ = [
     "StructuredAnsatz",
     "QAOA_MPC",
     "VQLS_GradShafranov",
+    "VQLSGradShafranovResult",
     "QuantumPetriNet",
     "QuantumPetriStepReport",
     "QuantumPetriCampaignReport",

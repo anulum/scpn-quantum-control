@@ -194,11 +194,21 @@ $$|\gamma, \beta\rangle = \prod_{p=1}^{P} \left[e^{-i\beta_p H_{\text{mixer}}}\,
 
 ## VQLS Cost Function
 
-For linear system $Ax = b$:
+For the finite-difference Grad-Shafranov linear system $Ax = b$:
 
 $$C_{\text{VQLS}} = 1 - \frac{|\langle b|A|x\rangle|^2}{\langle x|A^\dagger A|x\rangle}$$
 
 where $|x\rangle = U(\theta)|0\rangle$ is a variational ansatz.
+The implementation also computes the physical residual certificate
+
+$$r(x) = \frac{\|Ax - b\|_2}{\|b\|_2}.$$
+
+`VQLS_GradShafranov.solve()` returns a profile only when $r(x)$ is within the
+configured tolerance.  If the variational ansatz misses the tolerance for the
+SPD tridiagonal Laplacian assembled by `discretize()`, the default runtime path
+returns the direct finite-difference solve and labels the diagnostic method as
+`direct_spd_residual_repair`; the raw variational residual remains available in
+`VQLSGradShafranovResult`.
 
 ## Probabilistic Error Cancellation (PEC)
 

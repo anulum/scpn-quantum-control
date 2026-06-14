@@ -257,7 +257,7 @@ phase/                                     ← 14 modules: time evolution + vari
 
 control/                                   ← Quantum control + classification
 ├── qaoa_mpc.py                                QAOA model-predictive control
-├── vqls_gs.py                                 VQLS Grad-Shafranov solver
+├── vqls_gs.py                                 Residual-certified VQLS Grad-Shafranov solver
 ├── qpetri.py                                  Quantum Petri nets
 ├── q_disruption.py                            Disruption classifier
 └── q_disruption_iter.py                       ITER 11-feature + fusion-core adapter

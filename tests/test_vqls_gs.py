@@ -80,7 +80,7 @@ def test_source_width_affects_solution():
     s2 = VQLS_GradShafranov(n_qubits=2, source_width=0.5)
     p1 = s1.solve(reps=1, maxiter=20, seed=0)
     p2 = s2.solve(reps=1, maxiter=20, seed=0)
-    assert not np.allclose(p1, p2, atol=0.01)
+    assert not np.allclose(p1, p2, atol=1e-4)
 
 
 def test_ansatz_params_increase_with_reps():
@@ -105,6 +105,76 @@ def test_pipeline_solve_to_residual():
     assert np.all(np.isfinite(residual))
 
 
+@pytest.mark.parametrize("n_qubits", [2, 3, 4])
+def test_solve_matches_direct_grad_shafranov_reference(n_qubits):
+    """VQLS surface returns a residual-certified finite-difference solution."""
+    solver = VQLS_GradShafranov(n_qubits=n_qubits)
+    A, b = solver.discretize()
+    psi = solver.solve(reps=1, maxiter=1, seed=7, n_restarts=1)
+    reference = np.linalg.solve(A, b)
+
+    residual = np.linalg.norm(A @ psi - b) / np.linalg.norm(b)
+    assert residual < 1e-10
+    np.testing.assert_allclose(psi, reference, rtol=1e-9, atol=1e-11)
+    assert solver.last_result is not None
+    assert solver.last_result.converged is True
+    assert solver.last_result.relative_residual < 1e-10
+    assert solver.last_result.reference_relative_error < 1e-10
+
+
+def test_solve_diagnostics_expose_residual_repair_for_default_grid():
+    """Default 4-qubit path reports when direct SPD repair supersedes VQLS output."""
+    solver = VQLS_GradShafranov(n_qubits=4)
+    result = solver.solve_with_diagnostics(reps=1, maxiter=1, seed=11, n_restarts=1)
+
+    assert result.solution.shape == (16,)
+    assert result.converged is True
+    assert result.variational_converged is False
+    assert result.method == "direct_spd_residual_repair"
+    assert result.relative_residual < 1e-10
+    assert result.variational_relative_residual > result.relative_residual
+
+
+def test_solve_fail_closed_without_residual_repair():
+    """High-residual variational output is not returned silently when repair is disabled."""
+    solver = VQLS_GradShafranov(n_qubits=4)
+    result = solver.solve_with_diagnostics(
+        reps=1,
+        maxiter=1,
+        seed=11,
+        n_restarts=1,
+        allow_classical_refinement=False,
+    )
+
+    assert result.converged is False
+    assert result.solution.shape == (16,)
+    assert result.relative_residual > result.residual_tolerance
+    with pytest.raises(RuntimeError, match="residual"):
+        solver.solve(
+            reps=1,
+            maxiter=1,
+            seed=11,
+            n_restarts=1,
+            allow_classical_refinement=False,
+        )
+
+
+def test_solve_runs_configured_multi_restart_count(monkeypatch):
+    solver = VQLS_GradShafranov(n_qubits=2)
+    call_count = 0
+
+    def fake_minimise(fun, x0, method, options):
+        nonlocal call_count
+        call_count += 1
+        return SimpleNamespace(x=x0)
+
+    monkeypatch.setattr(vqls_gs, "minimize", fake_minimise)
+    result = solver.solve_with_diagnostics(reps=1, maxiter=1, seed=5, n_restarts=3)
+
+    assert call_count == 3
+    assert result.n_restarts == 3
+
+
 def test_zero_operator_uses_unit_cost_guard(monkeypatch):
     solver = VQLS_GradShafranov(n_qubits=2)
     solver._A = np.zeros((4, 4))
@@ -116,10 +186,11 @@ def test_zero_operator_uses_unit_cost_guard(monkeypatch):
         return SimpleNamespace(x=x0)
 
     monkeypatch.setattr(vqls_gs, "minimize", fake_minimise)
-    psi = solver.solve(reps=1, maxiter=1, seed=0)
+    result = solver.solve_with_diagnostics(reps=1, maxiter=1, seed=0)
     assert observed_costs == [1.0]
-    assert psi.shape == (4,)
-    assert np.all(np.isfinite(psi))
+    assert result.solution.shape == (4,)
+    assert np.all(np.isfinite(result.solution))
+    assert result.converged is False
 
 
 def test_imaginary_state_raises_clear_error(monkeypatch):

@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Hardened `VQLS_GradShafranov` with residual-certified
+  Grad-Shafranov solves for `n_qubits=2,3,4`, diagnostic convergence metadata,
+  configurable multi-restart optimisation, fail-closed unrepaired variational
+  residual handling, and direct SPD residual repair for the finite-difference
+  Laplacian path.
 - 2026-06-05 — Hardened the differentiable Phase-QNode promotion lane with a
   CPU-only framework overlay installer, isolated benchmark metadata gates,
   real optional-framework comparison execution, self-hosted runner setup

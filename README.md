@@ -597,7 +597,7 @@ graph TD
     end
 
     subgraph "Applications"
-        control["control/ (11)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
+        control["control/ (11)\nQAOA-MPC, residual VQLS-GS\nPetri nets, ITER"]
         qsnn["qsnn/ (7)\nQuantum spiking\nneural networks"]
         apps["applications/ (13)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
@@ -638,7 +638,7 @@ graph TD
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
 | `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `control` | 11 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
+| `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 13 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
 | `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
@@ -791,7 +791,7 @@ scpn_quantum_control/
 ├── phase/          29 modules — time evolution + variational + Lindblad
 ├── bridge/         13 modules — K_nm → quantum objects + cross-repo
 ├── applications/   13 modules — physical system benchmarks
-├── control/        11 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
+├── control/        11 modules — QAOA-MPC, residual VQLS-GS, Petri, ITER, topological
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
 ├── benchmarks/      7 modules — performance baselines

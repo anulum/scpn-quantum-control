@@ -166,7 +166,7 @@ from .control.realtime_runtime import (
     run_realtime_control_loop,
 )
 from .control.topological_optimizer import TopologicalCouplingOptimizer
-from .control.vqls_gs import VQLS_GradShafranov
+from .control.vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
 from .deployment.cloud_native import (
     CloudDeploymentSpec,
     CloudManifestBundle,
@@ -884,6 +884,7 @@ __all__ = [
     "qiskit_circuit_to_qasm3_workload",
     "qiskit_circuit_to_workload",
     "VQLS_GradShafranov",
+    "VQLSGradShafranovResult",
     "ArmijoLineSearchResult",
     "CustomDerivativeCheckResult",
     "CustomDerivativeRule",

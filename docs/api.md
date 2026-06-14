@@ -1693,11 +1693,34 @@ QAOA_MPC(B_matrix, target_state, horizon, p_layers=2)
 ### `vqls_gs.VQLS_GradShafranov`
 
 ```python
-VQLS_GradShafranov(grid_size=4, source_profile=None)
+VQLS_GradShafranov(n_qubits=4, source_width=0.05, imag_tol=0.1)
     .discretize() -> tuple[np.ndarray, np.ndarray]  # (A, b)
-    .build_ansatz(n_qubits, reps=2) -> QuantumCircuit
-    .solve() -> np.ndarray  # psi profile
+    .build_ansatz(reps=2) -> QuantumCircuit
+    .solve(
+        reps=2,
+        maxiter=200,
+        seed=None,
+        n_restarts=1,
+        residual_tol=1e-10,
+        allow_classical_refinement=True,
+    ) -> np.ndarray  # residual-certified psi profile
+    .solve_with_diagnostics(...) -> VQLSGradShafranovResult
 ```
+
+`solve()` first evaluates the variational VQLS ansatz against the
+finite-difference Grad-Shafranov system `A x = b`.  The returned vector is
+accepted only when its relative residual is within `residual_tol`; otherwise,
+for the SPD Laplacian system built by `discretize()`, the default path repairs
+the result with `np.linalg.solve(A, b)` and records
+`method="direct_spd_residual_repair"` in `last_result`.
+Set `allow_classical_refinement=False` to inspect the raw variational failure
+through `solve_with_diagnostics()`; `solve()` raises instead of returning an
+unverified high-residual profile.
+
+`VQLSGradShafranovResult` exposes the returned solution, relative residual,
+residual tolerance, variational candidate, variational residual, convergence
+flags, direct-reference error, optimiser metadata, restart count, method label,
+and condition number.
 
 ### `qpetri.QuantumPetriNet`
 
