@@ -244,7 +244,7 @@ phase/                                     ← 14 modules: time evolution + vari
 ├── trotter_upde.py                            Full 16-layer UPDE solver
 ├── trotter_error.py                           Trotter error analysis
 ├── phase_vqe.py                               Variational eigensolver
-├── adapt_vqe.py                             ★ Gradient-driven operator selection
+├── adapt_vqe.py                             ★ Adaptive layered VQE (exact-GS)
 ├── varqite.py                                 Imaginary time evolution
 ├── avqds.py                                   Adaptive variational dynamics
 ├── qsvt_evolution.py                          QSVT resource estimation (260× speedup)

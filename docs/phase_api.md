@@ -173,26 +173,36 @@ can measure witnesses, compute QFI, extract entanglement spectra, and evaluate e
 probe in the analysis API. For systems larger than ~6 qubits, VQE on quantum hardware
 becomes necessary because exact diagonalisation is classically intractable.
 
-### `adapt_vqe` — Gradient-Driven Operator Selection
+### `adapt_vqe` — Adaptive layered VQE
 
-ADAPT-VQE (Grimsley et al., Nat. Commun. **10**, 3007, 2019) builds the ansatz
-dynamically by selecting, at each step, the operator with the largest energy gradient.
-This avoids the fixed-ansatz depth problem of standard VQE.
+Grows a variational ansatz from a physics-motivated operator pool (Grimsley et
+al., Nat. Commun. **10**, 3007, 2019) until the energy converges, returning the
+variational ground-state estimate.
+
+The original ADAPT selection rule grows the ansatz by the operator gradient
+`⟨ψ|[H, A_k]|ψ⟩`. For the real-symmetric Kuramoto-XY Hamiltonian that rule is
+ill-conditioned: every **real** state gives identically zero pool gradients (the
+`i(X_iX_j+Y_iY_j)` exchange generators because `[H,G]` is real-antisymmetric, the
+`iY_i` generators because `H` has no single-spin-flip terms), and the real
+reference `|0…0⟩` is itself an eigenstate. Gradient-selection therefore stalls at
+zero operators and reports the energy of an *excited* eigenstate as if converged.
+The implementation removes this by the symmetric reference `|+⟩^{⊗n}`, random
+non-zero angle initialisation with restarts, and growth by full pool layers; the
+variational optimum then reaches the exact ground state for diagonalisable sizes.
 
 ```python
-from scpn_quantum_control.phase.adapt_vqe import (
-    adapt_vqe,
-    ADAPTResult,
-)
+from scpn_quantum_control.phase.adapt_vqe import adapt_vqe, ADAPTResult
 ```
 
-`adapt_vqe(K, omega, operator_pool=None, max_layers=20, grad_threshold=1e-3)` →
-`ADAPTResult` with: `energy`, `exact_energy`, `n_layers`, `selected_operators`,
-`gradient_norms`.
+`adapt_vqe(K, omega, max_iterations=20, gradient_threshold=1e-3, maxiter_opt=200,
+seed=None, *, n_restarts=4, max_dense_gib=None)` → `ADAPTResult` with: `energy`,
+`n_iterations` (ansatz layers), `n_parameters`, `gradient_norms` (per-layer
+optimiser gradient norm), `energies` (reference energy then best per layer),
+`selected_operators` (pool indices used), `converged`.
 
-The operator pool defaults to single-excitation and double-excitation Pauli operators
-drawn from the DLA of the XY Hamiltonian. Since $\dim(\mathrm{DLA}) = 2^{2N-1} - 2$
-(Gem 11), the pool spans exactly the reachable subspace — no wasted operators.
+The pool holds `i(X_iX_j + Y_iY_j)` exchange generators for each coupled pair and
+`iY_i` single-qubit generators; over a few layers it spans the reachable subspace
+and the optimiser recovers the exact ground-state energy.
 
 ### `varqite` — Variational Quantum Imaginary Time Evolution
 
