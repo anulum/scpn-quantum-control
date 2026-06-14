@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (55)
+## Functions (117)
 
-The Rust crate exports 55 PyO3 bindings across 27 Rust source files. They are organised
+The Rust crate exports 117 PyO3 bindings across 28 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -88,6 +88,30 @@ Returns flat real array (XY Hamiltonian is real in the computational basis).
 
 `all_xy_expectations` returns `(exp_x[n], exp_y[n])` in a single FFI call,
 avoiding 2n individual calls to `expectation_pauli_fast`.
+
+### Phase-QNode Differential Kernels
+
+| Function | Description | Complexity |
+|----------|-------------|------------|
+| `phase_qnode_fubini_study_metric_rust(state_re, state_im, derivatives_re, derivatives_im)` | Pure-state Fubini-Study metric, QFI, and derivative norms from split complex state derivatives | O(p²d) |
+| `phase_qnode_computational_basis_fisher_rust(state_re, state_im, derivatives_re, derivatives_im, min_probability)` | Exact computational-basis classical Fisher matrix from state and probability derivatives | O(p²d) |
+| `phase_qnode_vector_jvp_rust(jacobian, tangent)` | Dense vector-output JVP contraction | O(mp) |
+| `phase_qnode_vector_vjp_rust(jacobian, cotangent)` | Dense vector-output VJP contraction | O(mp) |
+| `phase_qnode_hessian_vector_product_rust(hessian, vector)` | Dense Hessian-vector contraction | O(p²) |
+| `phase_qnode_complex_derivative_contract_rust()` | Rust-visible real-only complex/W boundary metadata | O(1) |
+
+The metric kernels consume already materialised statevector derivative
+evidence: split real and imaginary state amplitudes plus split real and
+imaginary parameter-derivative rows. They do not execute circuits and do not
+claim finite-shot, density-matrix, noisy-channel, provider, hardware, or
+optimal measurement metrics. The directional kernels are the Rust parity layer
+for the promoted deterministic local Phase-QNode JVP, VJP, and Hessian-vector
+product surfaces.
+
+`cargo bench --bench hot_paths` includes the
+`phase_qnode_metric_and_transform_kernels` group for these inner kernels. Any
+result captured without the benchmark-isolation metadata required by the
+project benchmark policy is local regression evidence only.
 
 ### Error Mitigation
 

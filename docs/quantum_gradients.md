@@ -808,6 +808,13 @@ singular there. The result is deterministic local evidence only; finite-shot
 uncertainty, hardware sampling, adaptive measurements, and optimal measurement
 selection remain outside this route.
 
+The optional Rust extension exposes parity kernels for the materialised metric
+evidence as `phase_qnode_fubini_study_metric_rust(...)` and
+`phase_qnode_computational_basis_fisher_rust(...)`. These functions take split
+real/imaginary state amplitudes and split real/imaginary derivative rows; they
+mirror the algebra used by the Python Phase-QNode API but do not execute the
+circuit family themselves.
+
 For reviewer-facing optimizer evidence, run the multi-start comparison audit:
 
 ```python
@@ -1327,6 +1334,12 @@ The vector JVP and VJP routes are computed as `jacobian @ tangent` and
 validate tangent/cotangent shapes and fail closed for finite-shot, hardware,
 provider, and framework-native adapter routes.
 
+When `scpn_quantum_engine` is installed, the matching PyO3 parity kernels are
+`phase_qnode_vector_jvp_rust(jacobian, tangent)` and
+`phase_qnode_vector_vjp_rust(jacobian, cotangent)`. They are dense contraction
+kernels over already materialised Jacobian evidence and preserve the same
+real-valued input boundary.
+
 `execute_phase_qnode_vmap_grad(...)` implements the first native vectorized
 gradient surface as a deterministic host-side manual loop over scalar
 parameter-shift gradients:
@@ -1414,6 +1427,11 @@ and vector provenance. It is a bounded second-order local diagnostic, not a
 finite-shot HVP, hardware HVP, sparse implicit HVP, or arbitrary-program
 second-order AD claim.
 
+The Rust parity surface for this contraction is
+`phase_qnode_hessian_vector_product_rust(hessian, vector)`. It validates finite
+real inputs, square Hessian shape, and vector width before returning `H @
+vector`.
+
 Complex and Wirtinger derivatives are an explicit fail-closed boundary on the
 Phase-QNode transform APIs. `phase_qnode_complex_derivative_contract()` returns
 the machine-readable contract: parameters, tangents, cotangents, HVP vectors,
@@ -1422,6 +1440,11 @@ arrays. Complex-valued objectives, holomorphic derivatives, Wirtinger partials,
 and complex tangent/cotangent algebra are not silently coerced; callers must
 split complex controls into real and imaginary real-valued controls before using
 these transform surfaces.
+
+The optional extension mirrors this boundary through
+`phase_qnode_complex_derivative_contract_rust()` so Rust/PyO3 consumers can
+inspect the same real-only contract without implying holomorphic or Wirtinger
+support.
 
 The readiness helper `run_phase_qnode_transform_readiness_suite()` records both
 supported scalar routes and fail-closed hardware, finite-shot curvature, and

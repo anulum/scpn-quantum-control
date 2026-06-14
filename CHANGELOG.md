@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added Rust/PyO3 parity kernels for promoted local
+  Phase-QNode Fubini-Study/QFI, computational-basis Fisher, vector JVP/VJP,
+  Hessian-vector product, and real-only complex-derivative contract surfaces,
+  with Rust unit tests, Python parity tests, typed extension exports, Criterion
+  benchmark entries, and documentation updates.
 - 2026-06-14 — Added an explicit real-only complex/Wirtinger derivative
   contract for Phase-QNode scalar and vector transform surfaces, with public
   contract metadata, fail-closed complex input/output validation, docs, tests,

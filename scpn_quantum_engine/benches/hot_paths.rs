@@ -44,6 +44,10 @@ use scpn_quantum_engine::compiler_ad::{
 use scpn_quantum_engine::dla::{commutator_dense, is_independent_fast};
 use scpn_quantum_engine::knm::build_knm_inner;
 use scpn_quantum_engine::kuramoto::order_parameter_inner;
+use scpn_quantum_engine::qnode_metrics::{
+    computational_basis_fisher_inner, fubini_study_metric_inner, hessian_vector_product_inner,
+    vector_jvp_inner, vector_vjp_inner,
+};
 
 fn bench_build_knm(c: &mut Criterion) {
     let mut group = c.benchmark_group("build_knm_inner");
@@ -462,6 +466,56 @@ fn bench_symmetric_2x2_eigenvalues_ad(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
+    let theta = 0.31_f64;
+    let state_re = [(theta / 2.0).cos(), (theta / 2.0).sin()];
+    let state_im = [0.0, 0.0];
+    let derivatives_re = [[-0.5 * (theta / 2.0).sin(), 0.5 * (theta / 2.0).cos()]];
+    let derivatives_im = [[0.0, 0.0]];
+    let jacobian = [[1.0, -2.0, 0.5], [3.0, 4.0, -1.0]];
+    let tangent = [0.25, -0.5, 2.0];
+    let cotangent = [1.5, -0.25];
+    let hessian = [[2.0, -1.0], [-1.0, 3.5]];
+    let vector = [0.75, -2.0];
+
+    let mut group = c.benchmark_group("phase_qnode_metric_and_transform_kernels");
+    group.bench_function("fubini_study_metric", |bench| {
+        bench.iter(|| {
+            fubini_study_metric_inner(
+                black_box(&state_re),
+                black_box(&state_im),
+                black_box(&derivatives_re),
+                black_box(&derivatives_im),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("computational_basis_fisher", |bench| {
+        bench.iter(|| {
+            computational_basis_fisher_inner(
+                black_box(&state_re),
+                black_box(&state_im),
+                black_box(&derivatives_re),
+                black_box(&derivatives_im),
+                black_box(1e-15),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("vector_jvp", |bench| {
+        bench.iter(|| vector_jvp_inner(black_box(&jacobian), black_box(&tangent)).unwrap());
+    });
+    group.bench_function("vector_vjp", |bench| {
+        bench.iter(|| vector_vjp_inner(black_box(&jacobian), black_box(&cotangent)).unwrap());
+    });
+    group.bench_function("hessian_vector_product", |bench| {
+        bench.iter(|| {
+            hessian_vector_product_inner(black_box(&hessian), black_box(&vector)).unwrap()
+        });
+    });
+    group.finish();
+}
+
 criterion_group!(
     hot_paths,
     bench_build_knm,
@@ -482,6 +536,7 @@ criterion_group!(
     bench_matrix_matrix_product_ad,
     bench_matrix_trace_ad,
     bench_vector_dot_ad,
-    bench_vector_squared_norm_ad
+    bench_vector_squared_norm_ad,
+    bench_phase_qnode_metric_and_transform_kernels
 );
 criterion_main!(hot_paths);
