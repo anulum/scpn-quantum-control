@@ -559,6 +559,12 @@ def _as_parameter_vector(
     *,
     width: int | None = None,
 ) -> FloatArray:
+    raw = np.asarray(values)
+    if raw.dtype.kind in {"c", "O", "S", "U"}:
+        raise ValueError(
+            f"{name} must be a real-valued finite array; complex/Wirtinger derivatives "
+            "are outside the supported Phase-QNode transform contract"
+        )
     vector = np.asarray(values, dtype=float)
     if vector.ndim != 1:
         raise ValueError(f"{name} must be a one-dimensional array")
@@ -570,6 +576,12 @@ def _as_parameter_vector(
 
 
 def _as_parameter_matrix(name: str, values: ArrayLike) -> FloatArray:
+    raw = np.asarray(values)
+    if raw.dtype.kind in {"c", "O", "S", "U"}:
+        raise ValueError(
+            f"{name} must be a real-valued finite array; complex/Wirtinger derivatives "
+            "are outside the supported Phase-QNode transform contract"
+        )
     matrix = np.asarray(values, dtype=float)
     if matrix.ndim != 2:
         raise ValueError(f"{name} must be a two-dimensional array")
@@ -581,6 +593,12 @@ def _as_parameter_matrix(name: str, values: ArrayLike) -> FloatArray:
 
 
 def _as_vector_output(name: str, values: ArrayLike, *, width: int | None = None) -> FloatArray:
+    raw = np.asarray(values)
+    if raw.dtype.kind in {"c", "O", "S", "U"}:
+        raise ValueError(
+            f"{name} must be a real-valued finite vector output; complex/Wirtinger "
+            "derivatives are outside the supported Phase-QNode transform contract"
+        )
     vector = np.asarray(values, dtype=float)
     if vector.ndim != 1:
         raise ValueError(f"{name} must be a one-dimensional vector output")

@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added an explicit real-only complex/Wirtinger derivative
+  contract for Phase-QNode scalar and vector transform surfaces, with public
+  contract metadata, fail-closed complex input/output validation, docs, tests,
+  and generated capability-surface alignment.
 - 2026-06-14 — Added deterministic local scalar Phase-QNode
   Hessian-vector products backed by parameter-shift Hessian evidence, with
   vector validation, fail-closed finite-shot/hardware/adapter routes, public

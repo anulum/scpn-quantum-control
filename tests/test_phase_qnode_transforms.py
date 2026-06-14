@@ -13,9 +13,11 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.phase import (
+    PhaseQNodeComplexDerivativeContract,
     PhaseQNodeTransformResult,
     execute_phase_qnode_hessian_vector_product,
     execute_phase_qnode_transform,
+    phase_qnode_complex_derivative_contract,
     plan_gradient_transform_nesting,
     run_phase_qnode_transform_readiness_suite,
 )
@@ -165,6 +167,46 @@ def test_phase_qnode_transform_validates_directional_inputs() -> None:
             _objective,
             params,
             np.array([1.0], dtype=float),
+        )
+
+
+def test_phase_qnode_complex_and_wirtinger_contract_is_explicit_fail_closed() -> None:
+    contract = phase_qnode_complex_derivative_contract()
+
+    assert isinstance(contract, PhaseQNodeComplexDerivativeContract)
+    assert not contract.supported
+    assert contract.parameter_domain == "real"
+    assert contract.requested_derivative in {"complex", "wirtinger"}
+    assert "Wirtinger" in contract.failure_reason
+    assert "real-valued parameter vectors" in contract.claim_boundary
+    assert contract.to_dict()["supported"] is False
+
+
+def test_phase_qnode_transform_rejects_complex_derivative_inputs() -> None:
+    params = np.array([0.2 + 0.1j, -0.4], dtype=np.complex128)
+    real_params = np.array([0.2, -0.4], dtype=float)
+
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_transform("grad", _objective, params)
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_transform(
+            "jvp",
+            _objective,
+            real_params,
+            tangent=np.array([0.5 + 0.1j, -1.0], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_transform(
+            "vjp",
+            _objective,
+            real_params,
+            cotangent=np.array([1.0 + 0.5j], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_hessian_vector_product(
+            _objective,
+            real_params,
+            np.array([0.5 + 0.1j, -1.0], dtype=np.complex128),
         )
 
 

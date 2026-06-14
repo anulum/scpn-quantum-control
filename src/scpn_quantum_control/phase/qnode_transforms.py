@@ -35,6 +35,29 @@ CLAIM_BOUNDARY = (
 
 
 @dataclass(frozen=True)
+class PhaseQNodeComplexDerivativeContract:
+    """Fail-closed complex/Wirtinger derivative contract for Phase-QNode transforms."""
+
+    supported: bool
+    parameter_domain: str
+    requested_derivative: str
+    failure_reason: str
+    alternatives: tuple[str, ...]
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready complex derivative contract evidence."""
+        return {
+            "supported": self.supported,
+            "parameter_domain": self.parameter_domain,
+            "requested_derivative": self.requested_derivative,
+            "failure_reason": self.failure_reason,
+            "alternatives": list(self.alternatives),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseQNodeTransformResult:
     """Execution or fail-closed evidence for one scalar phase-QNode transform."""
 
@@ -281,6 +304,35 @@ def execute_phase_qnode_transform(
     return _blocked_result(label, plan, values)
 
 
+def phase_qnode_complex_derivative_contract(
+    requested_derivative: str = "wirtinger",
+) -> PhaseQNodeComplexDerivativeContract:
+    """Return the real-only contract for complex Phase-QNode derivative requests."""
+    requested = requested_derivative.strip().lower()
+    if requested not in {"complex", "wirtinger"}:
+        raise ValueError("requested_derivative must be 'complex' or 'wirtinger'")
+    return PhaseQNodeComplexDerivativeContract(
+        supported=False,
+        parameter_domain="real",
+        requested_derivative=requested,
+        failure_reason=(
+            "Complex and Wirtinger Phase-QNode derivatives are not implemented; "
+            "the deterministic local transform surfaces accept real-valued "
+            "parameter, tangent, cotangent, vector, and output arrays only"
+        ),
+        alternatives=(
+            "split complex parameters into explicit real and imaginary real-valued controls",
+            "use real-valued parameter-shift gradients on supported observables",
+            "keep complex-state amplitudes internal to the statevector simulator",
+        ),
+        claim_boundary=(
+            "real-valued parameter vectors and real scalar objectives only; "
+            "complex-valued objectives, holomorphic derivatives, Wirtinger "
+            "partials, and complex tangent/cotangent algebra are fail-closed"
+        ),
+    )
+
+
 def execute_phase_qnode_hessian_vector_product(
     objective: ScalarObjective,
     params: ArrayLike,
@@ -441,6 +493,12 @@ def _as_parameter_vector(
 ) -> FloatArray:
     if values is None:
         raise ValueError(f"{name} must be provided")
+    raw = np.asarray(values)
+    if raw.dtype.kind in {"c", "O", "S", "U"}:
+        raise ValueError(
+            f"{name} must be a real-valued finite array; complex/Wirtinger derivatives "
+            "are outside the supported Phase-QNode transform contract"
+        )
     vector = np.asarray(values, dtype=float)
     if vector.ndim != 1:
         raise ValueError(f"{name} must be a one-dimensional array")
@@ -461,6 +519,12 @@ def _hessian_evaluations(n_params: int, shift_terms: int) -> int:
 def _as_cotangent(values: ArrayLike | float | None) -> FloatArray:
     if values is None:
         raise ValueError("cotangent must be provided")
+    raw = np.asarray(values)
+    if raw.dtype.kind in {"c", "O", "S", "U"}:
+        raise ValueError(
+            "cotangent must be a real-valued finite array; complex/Wirtinger derivatives "
+            "are outside the supported Phase-QNode transform contract"
+        )
     vector = np.asarray(values, dtype=float)
     if vector.ndim == 0:
         vector = vector.reshape(1)
@@ -472,9 +536,11 @@ def _as_cotangent(values: ArrayLike | float | None) -> FloatArray:
 
 
 __all__ = [
+    "PhaseQNodeComplexDerivativeContract",
     "PhaseQNodeTransformReadinessSuiteResult",
     "PhaseQNodeTransformResult",
     "execute_phase_qnode_hessian_vector_product",
     "execute_phase_qnode_transform",
+    "phase_qnode_complex_derivative_contract",
     "run_phase_qnode_transform_readiness_suite",
 ]

@@ -209,6 +209,40 @@ def test_phase_qnode_vector_transforms_validate_shapes_and_finiteness() -> None:
         )
 
 
+def test_phase_qnode_vector_transforms_reject_complex_derivative_inputs() -> None:
+    real_params = np.array([0.2, -0.4], dtype=float)
+
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_jacobian(
+            "jacfwd",
+            _vector_objective,
+            np.array([0.2 + 0.1j, -0.4], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_jvp(
+            _vector_objective,
+            real_params,
+            np.array([0.5 + 0.1j, -1.0], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_vjp(
+            _vector_objective,
+            real_params,
+            np.array([1.0 + 0.5j, -0.25], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vmap_grad(
+            _scalar_objective,
+            np.array([[0.2 + 0.1j, -0.4]], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_jacobian(
+            "jacfwd",
+            lambda _: np.array([1.0 + 0.1j], dtype=np.complex128),
+            real_params,
+        )
+
+
 def test_phase_qnode_vector_transform_readiness_suite_records_boundaries() -> None:
     suite = run_phase_qnode_vector_transform_readiness_suite()
     payload = suite.to_dict()

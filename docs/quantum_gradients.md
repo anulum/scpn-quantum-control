@@ -1414,6 +1414,15 @@ and vector provenance. It is a bounded second-order local diagnostic, not a
 finite-shot HVP, hardware HVP, sparse implicit HVP, or arbitrary-program
 second-order AD claim.
 
+Complex and Wirtinger derivatives are an explicit fail-closed boundary on the
+Phase-QNode transform APIs. `phase_qnode_complex_derivative_contract()` returns
+the machine-readable contract: parameters, tangents, cotangents, HVP vectors,
+vector outputs, and batched parameter matrices must be real-valued finite
+arrays. Complex-valued objectives, holomorphic derivatives, Wirtinger partials,
+and complex tangent/cotangent algebra are not silently coerced; callers must
+split complex controls into real and imaginary real-valued controls before using
+these transform surfaces.
+
 The readiness helper `run_phase_qnode_transform_readiness_suite()` records both
 supported scalar routes and fail-closed hardware, finite-shot curvature, and
 scalar-executor vectorized-transform routes. This closes the scalar local QNode

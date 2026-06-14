@@ -321,10 +321,12 @@ from .qnode_tape import (
     run_phase_qnode_tape_readiness_suite,
 )
 from .qnode_transforms import (
+    PhaseQNodeComplexDerivativeContract,
     PhaseQNodeTransformReadinessSuiteResult,
     PhaseQNodeTransformResult,
     execute_phase_qnode_hessian_vector_product,
     execute_phase_qnode_transform,
+    phase_qnode_complex_derivative_contract,
     run_phase_qnode_transform_readiness_suite,
 )
 from .qnode_vector_transforms import (
@@ -511,10 +513,12 @@ __all__ = [
     "execute_provider_qnode_transform",
     "execute_provider_qnode_vmap_grad",
     "run_provider_qnode_transform_readiness_suite",
+    "PhaseQNodeComplexDerivativeContract",
     "PhaseQNodeTransformReadinessSuiteResult",
     "PhaseQNodeTransformResult",
     "execute_phase_qnode_hessian_vector_product",
     "execute_phase_qnode_transform",
+    "phase_qnode_complex_derivative_contract",
     "run_phase_qnode_transform_readiness_suite",
     "PhaseQNodeVectorTransformReadinessSuiteResult",
     "PhaseQNodeVectorTransformResult",
