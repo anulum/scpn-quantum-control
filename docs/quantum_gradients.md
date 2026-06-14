@@ -1135,12 +1135,16 @@ mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
 therefore does not claim native JAX differentiation of a quantum kernel.
 
 For the bounded phase-QNN classifier, the bridge also exposes a native
-custom-VJP route plus audited JIT and VMAP compatibility reports:
+custom-VJP route plus audited JIT, VMAP, and PMAP/sharding compatibility
+reports:
 
 ```python
+import jax
+
 from scpn_quantum_control.phase import (
     jax_custom_vjp_qnn_value_and_grad,
     run_jax_jit_compatibility_audit,
+    run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
 )
 
@@ -1165,6 +1169,18 @@ vmap_audit = run_jax_vmap_compatibility_audit(
     params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
 )
 print(vmap_audit.passed, vmap_audit.batch_size)
+
+sharding_audit = run_jax_sharding_compatibility_audit(
+    features=features,
+    labels=labels,
+    params_batch=np.linspace(
+        0.25,
+        0.65,
+        int(jax.local_device_count()),
+        dtype=float,
+    ).reshape(int(jax.local_device_count()), 1),
+)
+print(sharding_audit.passed, sharding_audit.sharding_mode)
 ```
 
 `jax_custom_vjp_qnn_value_and_grad(...)` registers a JAX `custom_vjp` for the
@@ -1176,10 +1192,13 @@ generic parameter-shift bridge as host-callback interop through
 `unsupported_native_routes`. `run_jax_vmap_compatibility_audit(...)` VMAPs the
 same bounded native and custom-VJP routes over parameter batches, verifies each
 row against SCPN parameter-shift references, and records those references as a
-host-side loop rather than native VMAP. These remain bounded model routes: they
-are not arbitrary simulator autodiff, not provider-backed execution, not
-hardware gradients, and not claims that every quantum objective can be lowered
-into JAX JIT or VMAP.
+host-side loop rather than native VMAP.
+`run_jax_sharding_compatibility_audit(...)` uses `jax.pmap` with one parameter
+row per local JAX device and records whether the evidence is single-device or
+multi-device. These remain bounded model routes: they are not arbitrary
+simulator autodiff, not provider-backed execution, not hardware gradients, and
+not claims that every quantum objective can be lowered into JAX JIT, VMAP, or
+distributed sharding.
 
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:

@@ -85,6 +85,7 @@ from .jax_bridge import (
     PhaseJAXJITCompatibilityResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
+    PhaseJAXShardingCompatibilityResult,
     PhaseJAXVMAPCompatibilityResult,
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
@@ -92,6 +93,7 @@ from .jax_bridge import (
     jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
     run_jax_jit_compatibility_audit,
+    run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
 )
 from .kuramoto_variants import (
@@ -546,9 +548,11 @@ __all__ = [
     "PhaseJAXJITCompatibilityResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
+    "PhaseJAXShardingCompatibilityResult",
     "PhaseJAXVMAPCompatibilityResult",
     "is_phase_pennylane_available",
     "run_jax_vmap_compatibility_audit",
+    "run_jax_sharding_compatibility_audit",
     "check_pennylane_parameter_shift_agreement",
     "check_pennylane_qnode_round_trip",
     "PennyLaneGradientAgreementResult",

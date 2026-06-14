@@ -242,6 +242,57 @@ class PhaseJAXVMAPCompatibilityResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXShardingCompatibilityResult:
+    """Audited JAX PMAP/sharding compatibility for bounded phase-QNN batches."""
+
+    passed: bool
+    batch_size: int
+    local_device_count: int
+    device_descriptions: tuple[str, ...]
+    sharding_mode: str
+    native_qnn_pmapped: bool
+    native_qnn_host_callback: bool
+    custom_vjp_qnn_pmapped: bool
+    custom_vjp_qnn_host_callback: bool
+    custom_vjp_registered: bool
+    native_losses: FloatArray
+    native_gradients: FloatArray
+    custom_vjp_losses: FloatArray
+    custom_vjp_gradients: FloatArray
+    parameter_shift_losses: FloatArray
+    parameter_shift_gradients: FloatArray
+    max_abs_error: float
+    tolerance: float
+    unsupported_native_routes: tuple[str, ...]
+    claim_boundary: str = "bounded_jax_pmap_sharding_compatibility"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready JAX PMAP/sharding compatibility evidence."""
+        return {
+            "passed": self.passed,
+            "batch_size": self.batch_size,
+            "local_device_count": self.local_device_count,
+            "device_descriptions": list(self.device_descriptions),
+            "sharding_mode": self.sharding_mode,
+            "native_qnn_pmapped": self.native_qnn_pmapped,
+            "native_qnn_host_callback": self.native_qnn_host_callback,
+            "custom_vjp_qnn_pmapped": self.custom_vjp_qnn_pmapped,
+            "custom_vjp_qnn_host_callback": self.custom_vjp_qnn_host_callback,
+            "custom_vjp_registered": self.custom_vjp_registered,
+            "native_losses": self.native_losses.tolist(),
+            "native_gradients": self.native_gradients.tolist(),
+            "custom_vjp_losses": self.custom_vjp_losses.tolist(),
+            "custom_vjp_gradients": self.custom_vjp_gradients.tolist(),
+            "parameter_shift_losses": self.parameter_shift_losses.tolist(),
+            "parameter_shift_gradients": self.parameter_shift_gradients.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "tolerance": self.tolerance,
+            "unsupported_native_routes": list(self.unsupported_native_routes),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -354,6 +405,30 @@ def _require_jax_vmap_support(jax_module: Any) -> None:
     value_and_grad = getattr(jax_module, "value_and_grad", None)
     if not callable(value_and_grad):
         raise RuntimeError("JAX value_and_grad is required for bounded-QNN parameter-batch VMAP")
+
+
+def _require_jax_pmap_support(jax_module: Any) -> None:
+    pmap = getattr(jax_module, "pmap", None)
+    if not callable(pmap):
+        raise RuntimeError("JAX pmap is required for bounded-QNN sharding compatibility")
+    value_and_grad = getattr(jax_module, "value_and_grad", None)
+    if not callable(value_and_grad):
+        raise RuntimeError("JAX value_and_grad is required for bounded-QNN sharding compatibility")
+    local_device_count = getattr(jax_module, "local_device_count", None)
+    if not callable(local_device_count):
+        raise RuntimeError(
+            "JAX local_device_count is required for bounded-QNN sharding compatibility"
+        )
+
+
+def _jax_local_devices(jax_module: Any, local_device_count: int) -> tuple[str, ...]:
+    local_devices = getattr(jax_module, "local_devices", None)
+    if not callable(local_devices):
+        return tuple(f"local-device-{index}" for index in range(local_device_count))
+    devices = tuple(str(device) for device in local_devices())
+    if len(devices) != local_device_count:
+        return tuple(f"local-device-{index}" for index in range(local_device_count))
+    return devices
 
 
 def _jax_bounded_qnn_loss(
@@ -886,12 +961,142 @@ def run_jax_vmap_compatibility_audit(
     )
 
 
+def run_jax_sharding_compatibility_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params_batch: ArrayLike,
+    tolerance: float = 1e-6,
+) -> PhaseJAXShardingCompatibilityResult:
+    """Audit bounded JAX PMAP/sharding support for local-device batches.
+
+    The audit maps one parameter row per local JAX device with ``jax.pmap``.
+    It promotes only the bounded native and custom-VJP phase-QNN loss routes.
+    SCPN parameter-shift references stay host-side validation rows and are not
+    reported as sharded/native execution.
+    """
+    jax_module, jnp = _load_jax()
+    _require_jax_pmap_support(jax_module)
+    _require_jax_custom_vjp_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    local_device_count = int(jax_module.local_device_count())
+    if local_device_count < 1:
+        raise RuntimeError("JAX pmap requires at least one local device")
+    parameter_batch = _as_parameter_batch(
+        "params_batch",
+        params_batch,
+        width=feature_matrix.shape[1],
+    )
+    if parameter_batch.shape[0] != local_device_count:
+        raise ValueError(
+            "params_batch row count must match JAX local_device_count "
+            f"({local_device_count}), got {parameter_batch.shape[0]}"
+        )
+    feature_tensor = jnp.asarray(feature_matrix)
+    label_tensor = jnp.asarray(label_vector)
+
+    def native_loss_fn(raw_params: object) -> object:
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
+
+    @jax_module.custom_vjp
+    def custom_loss_fn(raw_params: object) -> object:
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
+
+    def custom_loss_fwd(raw_params: object) -> tuple[object, object]:
+        parameter_tensor = jnp.asarray(raw_params)
+        return (
+            _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor),
+            parameter_tensor,
+        )
+
+    def custom_loss_bwd(parameter_tensor: object, cotangent: object) -> tuple[object]:
+        gradient = _jax_bounded_qnn_gradient(
+            jnp,
+            feature_tensor,
+            label_tensor,
+            jnp.asarray(parameter_tensor),
+        )
+        return (jnp.asarray(cotangent) * gradient,)
+
+    custom_loss_fn.defvjp(custom_loss_fwd, custom_loss_bwd)
+
+    native_losses_obj, native_gradients_obj = jax_module.pmap(
+        jax_module.value_and_grad(native_loss_fn)
+    )(jnp.asarray(parameter_batch))
+    custom_losses_obj, custom_gradients_obj = jax_module.pmap(
+        jax_module.value_and_grad(custom_loss_fn)
+    )(jnp.asarray(parameter_batch))
+
+    native_losses = np.asarray(native_losses_obj, dtype=float)
+    custom_losses = np.asarray(custom_losses_obj, dtype=float)
+    native_gradients = np.asarray(native_gradients_obj, dtype=float)
+    custom_gradients = np.asarray(custom_gradients_obj, dtype=float)
+    if native_losses.shape != (parameter_batch.shape[0],):
+        raise RuntimeError("JAX native PMAP loss batch has an unexpected shape")
+    if custom_losses.shape != (parameter_batch.shape[0],):
+        raise RuntimeError("JAX custom-VJP PMAP loss batch has an unexpected shape")
+    if native_gradients.shape != parameter_batch.shape:
+        raise RuntimeError("JAX native PMAP gradient batch has an unexpected shape")
+    if custom_gradients.shape != parameter_batch.shape:
+        raise RuntimeError("JAX custom-VJP PMAP gradient batch has an unexpected shape")
+
+    reference_losses = np.asarray(
+        [
+            parameter_shift_qnn_classifier_loss(feature_matrix, label_vector, row)
+            for row in parameter_batch
+        ],
+        dtype=np.float64,
+    )
+    reference_gradients = np.vstack(
+        [
+            parameter_shift_qnn_classifier_gradient(feature_matrix, label_vector, row)
+            for row in parameter_batch
+        ]
+    ).astype(np.float64, copy=False)
+    loss_error = max(
+        float(np.max(np.abs(native_losses - reference_losses))),
+        float(np.max(np.abs(custom_losses - reference_losses))),
+    )
+    gradient_error = max(
+        float(np.max(np.abs(native_gradients - reference_gradients))),
+        float(np.max(np.abs(custom_gradients - reference_gradients))),
+    )
+    max_abs_error = max(loss_error, gradient_error)
+    sharding_mode = "pmap_single_device" if local_device_count == 1 else "pmap_multi_device"
+    unsupported_native_routes = ("parameter_shift_host_loop_reference",)
+    passed = max_abs_error <= tolerance_value
+    return PhaseJAXShardingCompatibilityResult(
+        passed=passed,
+        batch_size=int(parameter_batch.shape[0]),
+        local_device_count=local_device_count,
+        device_descriptions=_jax_local_devices(jax_module, local_device_count),
+        sharding_mode=sharding_mode,
+        native_qnn_pmapped=True,
+        native_qnn_host_callback=False,
+        custom_vjp_qnn_pmapped=True,
+        custom_vjp_qnn_host_callback=False,
+        custom_vjp_registered=True,
+        native_losses=native_losses.astype(np.float64, copy=True),
+        native_gradients=native_gradients.astype(np.float64, copy=True),
+        custom_vjp_losses=custom_losses.astype(np.float64, copy=True),
+        custom_vjp_gradients=custom_gradients.astype(np.float64, copy=True),
+        parameter_shift_losses=reference_losses.copy(),
+        parameter_shift_gradients=reference_gradients.copy(),
+        max_abs_error=max_abs_error,
+        tolerance=tolerance_value,
+        unsupported_native_routes=unsupported_native_routes,
+    )
+
+
 __all__ = [
     "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
     "PhaseJAXJITCompatibilityResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
+    "PhaseJAXShardingCompatibilityResult",
     "PhaseJAXVMAPCompatibilityResult",
     "check_jax_parameter_shift_agreement",
     "is_phase_jax_available",
@@ -899,5 +1104,6 @@ __all__ = [
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
     "run_jax_jit_compatibility_audit",
+    "run_jax_sharding_compatibility_audit",
     "run_jax_vmap_compatibility_audit",
 ]

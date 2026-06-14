@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added audited JAX PMAP/sharding compatibility evidence via
+  `run_jax_sharding_compatibility_audit`, including bounded native-QNN and
+  custom-VJP no-host-callback local-device batch checks, explicit single-device
+  versus multi-device pmap classification, host-loop parameter-shift reference
+  classification, phase exports, module tests, live local JAX audit evidence,
+  generated capability updates, and public documentation.
 - 2026-06-14 — Added audited JAX VMAP compatibility evidence via
   `run_jax_vmap_compatibility_audit`, including bounded native-QNN and
   custom-VJP no-host-callback parameter-batch checks, explicit host-loop

@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
     PhaseJAXJITCompatibilityResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
+    PhaseJAXShardingCompatibilityResult,
     PhaseJAXVMAPCompatibilityResult,
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
@@ -28,6 +29,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     run_jax_jit_compatibility_audit,
+    run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
 )
 
@@ -45,6 +47,8 @@ class _FakeJAX:
         self.custom_vjp_calls = 0
         self.custom_vjp_defvjp_calls = 0
         self.vmap_calls = 0
+        self.pmap_calls = 0
+        self.local_device_count_value = 2
 
     def jit(self, fn):
         self.jit_calls += 1
@@ -114,6 +118,23 @@ class _FakeJAX:
             return np.asarray(outputs, dtype=float)
 
         return wrapped
+
+    def pmap(self, fn):
+        self.pmap_calls += 1
+
+        def wrapped(values):
+            outputs = [fn(row) for row in np.asarray(values, dtype=float)]
+            if outputs and isinstance(outputs[0], tuple):
+                return tuple(np.stack(items, axis=0) for items in zip(*outputs, strict=True))
+            return np.asarray(outputs, dtype=float)
+
+        return wrapped
+
+    def local_device_count(self):
+        return self.local_device_count_value
+
+    def local_devices(self):
+        return [f"fake-device-{index}" for index in range(self.local_device_count_value)]
 
 
 def _objective(values: np.ndarray) -> float:
@@ -493,6 +514,61 @@ def test_phase_jax_vmap_compatibility_audit_fails_closed_without_vmap(
 
     with pytest.raises(RuntimeError, match="JAX vmap"):
         run_jax_vmap_compatibility_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params_batch=np.array([[0.25], [0.45]], dtype=float),
+        )
+
+
+def test_phase_jax_sharding_compatibility_audit_batches_native_and_custom_vjp(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    fake_jax.local_device_count_value = 2
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params_batch = np.array([[0.25], [0.45]], dtype=float)
+
+    result = run_jax_sharding_compatibility_audit(
+        features=features,
+        labels=labels,
+        params_batch=params_batch,
+        tolerance=1e-10,
+    )
+
+    expected_gradients = np.vstack(
+        [parameter_shift_qnn_classifier_gradient(features, labels, row) for row in params_batch]
+    )
+    assert isinstance(result, PhaseJAXShardingCompatibilityResult)
+    assert result.passed
+    assert result.batch_size == 2
+    assert result.local_device_count == 2
+    assert result.sharding_mode == "pmap_multi_device"
+    assert result.native_qnn_pmapped
+    assert result.custom_vjp_qnn_pmapped
+    assert result.custom_vjp_registered
+    assert not result.native_qnn_host_callback
+    assert not result.custom_vjp_qnn_host_callback
+    assert result.max_abs_error <= 1e-10
+    assert result.claim_boundary == "bounded_jax_pmap_sharding_compatibility"
+    assert "parameter_shift_host_loop_reference" in result.unsupported_native_routes
+    assert fake_jax.pmap_calls == 2
+    np.testing.assert_allclose(result.native_gradients, expected_gradients, atol=1e-10)
+    np.testing.assert_allclose(result.custom_vjp_gradients, expected_gradients, atol=1e-10)
+    assert result.to_dict()["passed"] is True
+
+
+def test_phase_jax_sharding_compatibility_audit_fails_closed_without_pmap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _NoPMAPJAX(_FakeJAX):
+        pmap = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_NoPMAPJAX(), np))
+
+    with pytest.raises(RuntimeError, match="JAX pmap"):
+        run_jax_sharding_compatibility_audit(
             features=np.array([[0.0], [np.pi]], dtype=float),
             labels=np.array([0.0, 1.0], dtype=float),
             params_batch=np.array([[0.25], [0.45]], dtype=float),
