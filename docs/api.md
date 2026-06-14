@@ -1264,6 +1264,9 @@ torch_bounded_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> Ph
 torch_autograd_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> PhaseTorchAutogradQNNGradientResult
 run_torch_func_compatibility_audit(features, labels, params, params_batch, tolerance=1e-6) -> PhaseTorchFuncCompatibilityResult
 run_torch_compile_compatibility_audit(features, labels, params, tolerance=1e-6, fullgraph=True, dynamic=False) -> PhaseTorchCompileCompatibilityResult
+torch_bounded_qnn_module(features, labels, initial_params, trainable=True) -> torch.nn.Module
+torch_bounded_qnn_layer(features, labels, initial_params, trainable=True) -> torch.nn.Module
+run_torch_module_wrapper_audit(features, labels, initial_params, tolerance=1e-6) -> PhaseTorchModuleWrapperAuditResult
 is_phase_tensorflow_available() -> bool
 tensorflow_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTensorFlowParameterShiftResult
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult

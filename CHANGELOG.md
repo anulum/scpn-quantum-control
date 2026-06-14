@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added bounded PyTorch module/layer wrapper evidence via
+  `torch_bounded_qnn_module`, `torch_bounded_qnn_layer`, and
+  `run_torch_module_wrapper_audit`, including `torch.nn.Module`/`Parameter`
+  fail-closed handling, module-gradient checks against SCPN parameter-shift
+  references, phase exports, bridge matrix promotion, module tests, generated
+  capability updates, and public documentation.
 - 2026-06-14 — Added bounded PyTorch `torch.compile` compatibility evidence via
   `run_torch_compile_compatibility_audit`, including compiled bounded loss
   gradient checks against the canonical parameter-shift reference, fail-closed

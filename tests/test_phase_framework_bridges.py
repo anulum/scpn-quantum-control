@@ -20,6 +20,7 @@ from scpn_quantum_control.phase import (
     PhaseTorchAutogradQNNGradientResult,
     PhaseTorchCompileCompatibilityResult,
     PhaseTorchFuncCompatibilityResult,
+    PhaseTorchModuleWrapperAuditResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchQNNGradientResult,
     is_phase_tensorflow_available,
@@ -29,9 +30,12 @@ from scpn_quantum_control.phase import (
     parameter_shift_qnn_classifier_loss,
     run_torch_compile_compatibility_audit,
     run_torch_func_compatibility_audit,
+    run_torch_module_wrapper_audit,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
     torch_autograd_qnn_value_and_grad,
+    torch_bounded_qnn_layer,
+    torch_bounded_qnn_module,
     torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -67,6 +71,26 @@ class _FakeTorchTensor:
 
     __rmul__ = __mul__
 
+    def __add__(self, other: object) -> _FakeTorchTensor:
+        if isinstance(other, _FakeTorchTensor):
+            return _FakeTorchTensor(self._values + other._values)
+        return _FakeTorchTensor(self._values + np.asarray(other, dtype=float))
+
+    __radd__ = __add__
+
+    def __sub__(self, other: object) -> _FakeTorchTensor:
+        if isinstance(other, _FakeTorchTensor):
+            return _FakeTorchTensor(self._values - other._values)
+        return _FakeTorchTensor(self._values - np.asarray(other, dtype=float))
+
+    def __rsub__(self, other: object) -> _FakeTorchTensor:
+        if isinstance(other, _FakeTorchTensor):
+            return _FakeTorchTensor(other._values - self._values)
+        return _FakeTorchTensor(np.asarray(other, dtype=float) - self._values)
+
+    def unsqueeze(self, axis: int) -> _FakeTorchTensor:
+        return _FakeTorchTensor(np.expand_dims(self._values, axis=axis))
+
 
 class _FakeTorchAutogradFunction:
     @classmethod
@@ -95,6 +119,32 @@ class _FakeTorchAutograd:
         if isinstance(result, tuple):
             return result
         return (result,)
+
+
+class _FakeTorchModule:
+    def __init__(self) -> None:
+        self._buffers: dict[str, _FakeTorchTensor] = {}
+
+    def register_buffer(self, name: str, tensor: _FakeTorchTensor) -> None:
+        self._buffers[name] = tensor
+        setattr(self, name, tensor)
+
+    def parameters(self) -> tuple[_FakeTorchTensor, ...]:
+        params = getattr(self, "params", None)
+        if params is None:
+            return ()
+        return (params,)
+
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        return self.forward(*args, **kwargs)
+
+
+class _FakeTorchNN:
+    Module = _FakeTorchModule
+
+    @staticmethod
+    def Parameter(values: object, *, requires_grad: bool = True) -> _FakeTorchTensor:
+        return _FakeTorchTensor(values).requires_grad_(requires_grad)
 
 
 class _FakeTorchFunc:
@@ -147,6 +197,7 @@ class _FakeTorch:
     def __init__(self) -> None:
         self.autograd = _FakeTorchAutograd()
         self.func = _FakeTorchFunc()
+        self.nn = _FakeTorchNN()
         self.as_tensor_calls: list[np.ndarray] = []
         self.compile_calls: list[dict[str, object]] = []
 
@@ -166,6 +217,12 @@ class _FakeTorch:
         self.compile_calls.append({"fullgraph": fullgraph, "dynamic": dynamic})
         return fn
 
+    def cos(self, values: object) -> _FakeTorchTensor:
+        return _FakeTorchTensor(np.cos(_FakeTorchTensor(values).numpy()))
+
+    def mean(self, values: object, *, dim: int | None = None) -> _FakeTorchTensor:
+        return _FakeTorchTensor(np.mean(_FakeTorchTensor(values).numpy(), axis=dim))
+
 
 class _FakeTorchWithoutAutogradFunction(_FakeTorch):
     def __init__(self) -> None:
@@ -181,6 +238,12 @@ class _FakeTorchWithoutFunc(_FakeTorch):
 
 class _FakeTorchWithoutCompile(_FakeTorch):
     compile = None
+
+
+class _FakeTorchWithoutNN(_FakeTorch):
+    def __init__(self) -> None:
+        super().__init__()
+        self.nn = object()
 
 
 class _FakeTensorFlowTensor:
@@ -453,6 +516,82 @@ def test_torch_compile_compatibility_audit_fails_closed_without_compile(
         )
 
 
+def test_torch_bounded_qnn_module_and_layer_wrap_bounded_loss(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    initial_params = np.array([0.45], dtype=float)
+
+    module = torch_bounded_qnn_module(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+    )
+    layer = torch_bounded_qnn_layer(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+        trainable=False,
+    )
+
+    expected_loss = parameter_shift_qnn_classifier_loss(features, labels, initial_params)
+    expected_gradient = parameter_shift_qnn_classifier_gradient(features, labels, initial_params)
+    assert module.claim_boundary == "bounded_torch_module_layer_wrapper"
+    assert module.feature_width == 1
+    assert module.host_boundary is False
+    np.testing.assert_allclose(module().numpy(), expected_loss, atol=1e-12)
+    np.testing.assert_allclose(module.parameter_shift_gradient(), expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(layer().numpy(), expected_loss, atol=1e-12)
+
+
+def test_torch_module_wrapper_audit_checks_module_grad(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    initial_params = np.array([0.45], dtype=float)
+
+    result = run_torch_module_wrapper_audit(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(features, labels, initial_params)
+    assert isinstance(result, PhaseTorchModuleWrapperAuditResult)
+    assert result.passed
+    assert result.module_wrapper_supported
+    assert result.layer_wrapper_supported
+    assert result.trainable_parameters == 1
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "bounded_torch_module_layer_wrapper"
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.torch_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert result.to_dict()["module_wrapper_supported"] is True
+    assert fake_torch.func.grad_calls == 1
+
+
+def test_torch_module_wrapper_fails_closed_without_nn(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorchWithoutNN()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    with pytest.raises(RuntimeError, match="torch.nn.Module"):
+        torch_bounded_qnn_module(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            initial_params=np.array([0.45], dtype=float),
+        )
+
+
 def test_torch_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -613,6 +752,24 @@ def test_framework_bridges_fail_closed_when_optional_dependency_missing(
             features=np.array([[0.0]], dtype=float),
             labels=np.array([0.0], dtype=float),
             params=np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="torch blocked"):
+        torch_bounded_qnn_module(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            initial_params=np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="torch blocked"):
+        torch_bounded_qnn_layer(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            initial_params=np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="torch blocked"):
+        run_torch_module_wrapper_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            initial_params=np.array([0.2], dtype=float),
         )
     with pytest.raises(ImportError, match="tensorflow blocked"):
         tensorflow_parameter_shift_value_and_grad(

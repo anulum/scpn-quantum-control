@@ -231,6 +231,49 @@ class PhaseTorchCompileCompatibilityResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTorchModuleWrapperAuditResult:
+    """Bounded phase-QNN evidence for PyTorch module/layer wrappers."""
+
+    loss: float
+    gradient: FloatArray
+    parameter_shift_gradient: FloatArray
+    torch_module: Any
+    torch_loss: Any
+    torch_gradient: Any
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    module_wrapper_supported: bool
+    layer_wrapper_supported: bool
+    trainable_parameters: int
+    native_framework_autodiff: bool = True
+    host_boundary: bool = False
+    claim_boundary: str = "bounded_torch_module_layer_wrapper"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable PyTorch module-wrapper evidence metadata."""
+        return {
+            "loss": self.loss,
+            "gradient": self.gradient.copy(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.copy(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "module_wrapper_supported": self.module_wrapper_supported,
+            "layer_wrapper_supported": self.layer_wrapper_supported,
+            "trainable_parameters": self.trainable_parameters,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_boundary": self.host_boundary,
+            "claim_boundary": self.claim_boundary,
+            "torch_module_type": type(self.torch_module).__name__,
+            "torch_loss_type": type(self.torch_loss).__name__,
+            "torch_gradient_type": type(self.torch_gradient).__name__,
+        }
+
+
 def _load_torch() -> Any:
     try:
         import torch
@@ -329,6 +372,26 @@ def _torch_batch_to_numpy(values: object) -> FloatArray:
     return _as_parameter_matrix("values", candidate)
 
 
+def _torch_scalar_to_float(values: object) -> float:
+    candidate = values
+    detach = getattr(candidate, "detach", None)
+    if callable(detach):
+        candidate = detach()
+    cpu = getattr(candidate, "cpu", None)
+    if callable(cpu):
+        candidate = cpu()
+    numpy_method = getattr(candidate, "numpy", None)
+    if callable(numpy_method):
+        candidate = numpy_method()
+    scalar = np.asarray(candidate, dtype=float)
+    if scalar.shape not in ((), (1,)):
+        raise ValueError(f"PyTorch scalar value must be scalar-like, got {scalar.shape}")
+    value = float(scalar.reshape(-1)[0])
+    if not np.isfinite(value):
+        raise ValueError("PyTorch scalar value must be finite")
+    return value
+
+
 def _torch_tensor(torch_module: Any, values: object) -> Any:
     dtype = getattr(torch_module, "float64", None)
     as_tensor = getattr(torch_module, "as_tensor", None)
@@ -376,6 +439,22 @@ def _torch_compile(torch_module: Any) -> Any:
     if not callable(compile_fn):
         raise RuntimeError("PyTorch module does not expose torch.compile")
     return compile_fn
+
+
+def _torch_nn_module_and_parameter(torch_module: Any) -> tuple[Any, Any]:
+    torch_nn = getattr(torch_module, "nn", None)
+    module_base = getattr(torch_nn, "Module", None)
+    parameter_cls = getattr(torch_nn, "Parameter", None)
+    if torch_nn is None or module_base is None or not callable(parameter_cls):
+        raise RuntimeError("PyTorch module does not expose torch.nn.Module and torch.nn.Parameter")
+    return module_base, parameter_cls
+
+
+def _torch_parameter_count(module: Any) -> int:
+    parameters = getattr(module, "parameters", None)
+    if not callable(parameters):
+        return 0
+    return sum(1 for _parameter in parameters())
 
 
 def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
@@ -810,16 +889,152 @@ def run_torch_compile_compatibility_audit(
     )
 
 
+def torch_bounded_qnn_module(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    initial_params: ArrayLike | object,
+    trainable: bool = True,
+) -> Any:
+    """Return a PyTorch ``nn.Module`` wrapper for the bounded phase-QNN loss."""
+    torch_module = _load_torch()
+    module_base, parameter_cls = _torch_nn_module_and_parameter(torch_module)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _torch_values_to_numpy(initial_params)
+    if parameter_values.shape != (feature_matrix.shape[1],):
+        raise ValueError(
+            "initial_params width must match feature width: "
+            f"{parameter_values.shape[0]} != {feature_matrix.shape[1]}",
+        )
+    feature_tensor = _torch_tensor(torch_module, feature_matrix)
+    label_tensor = _torch_tensor(torch_module, label_vector)
+    parameter_tensor = _torch_tensor(torch_module, parameter_values)
+
+    class _BoundedPhaseQNNModule(module_base):  # type: ignore[misc, valid-type]
+        def __init__(self) -> None:
+            super().__init__()
+            register_buffer = getattr(self, "register_buffer", None)
+            if callable(register_buffer):
+                register_buffer("features", feature_tensor)
+                register_buffer("labels", label_tensor)
+            else:
+                self.features = feature_tensor
+                self.labels = label_tensor
+            self.params = parameter_cls(parameter_tensor, requires_grad=bool(trainable))
+            self.feature_width = int(feature_matrix.shape[1])
+            self.host_boundary = False
+            self.native_framework_autodiff = True
+            self.claim_boundary = "bounded_torch_module_layer_wrapper"
+
+        def forward(self, params: Any | None = None) -> Any:
+            parameter_source = self.params if params is None else params
+            return _torch_bounded_qnn_loss_tensor(
+                torch_module,
+                self.features,
+                self.labels,
+                parameter_source,
+            )
+
+        def parameter_shift_gradient(self, params: Any | None = None) -> FloatArray:
+            parameter_source = self.params if params is None else params
+            raw_params = _torch_values_to_numpy(parameter_source)
+            raw_params = _as_parameter_vector(
+                "PyTorch bounded phase-QNN module parameters",
+                raw_params,
+                width=feature_matrix.shape[1],
+            )
+            reference_gradient = parameter_shift_qnn_classifier_gradient(
+                feature_matrix,
+                label_vector,
+                raw_params,
+            )
+            return _as_parameter_vector(
+                "SCPN bounded phase-QNN parameter-shift gradient",
+                reference_gradient,
+                width=feature_matrix.shape[1],
+            )
+
+    return _BoundedPhaseQNNModule()
+
+
+def torch_bounded_qnn_layer(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    initial_params: ArrayLike | object,
+    trainable: bool = True,
+) -> Any:
+    """Return the bounded phase-QNN wrapper using layer-oriented naming."""
+    return torch_bounded_qnn_module(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+        trainable=trainable,
+    )
+
+
+def run_torch_module_wrapper_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    initial_params: ArrayLike | object,
+    tolerance: float = 1e-6,
+) -> PhaseTorchModuleWrapperAuditResult:
+    """Audit bounded phase-QNN PyTorch module/layer wrapper gradients."""
+    torch_module = _load_torch()
+    torch_func_grad, _torch_func_vmap, _torch_func_jacrev = _torch_func_transforms(torch_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    module = torch_bounded_qnn_module(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+        trainable=True,
+    )
+    torch_params = module.params
+    torch_loss = module()
+
+    def loss_fn(parameter_tensor: Any) -> Any:
+        return module(parameter_tensor)
+
+    grad_fn = torch_func_grad(loss_fn)
+    torch_gradient = grad_fn(torch_params)
+    gradient = _torch_values_to_numpy(torch_gradient)
+    parameter_shift_gradient = module.parameter_shift_gradient(torch_params)
+    delta = gradient - parameter_shift_gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta))
+    return PhaseTorchModuleWrapperAuditResult(
+        loss=_torch_scalar_to_float(torch_loss),
+        gradient=gradient,
+        parameter_shift_gradient=parameter_shift_gradient,
+        torch_module=module,
+        torch_loss=torch_loss,
+        torch_gradient=torch_gradient,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=bool(max_abs_error <= tolerance_value),
+        module_wrapper_supported=True,
+        layer_wrapper_supported=True,
+        trainable_parameters=_torch_parameter_count(module),
+    )
+
+
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
     "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchFuncCompatibilityResult",
+    "PhaseTorchModuleWrapperAuditResult",
     "PhaseTorchParameterShiftResult",
     "PhaseTorchQNNGradientResult",
     "is_phase_torch_available",
     "run_torch_compile_compatibility_audit",
     "run_torch_func_compatibility_audit",
+    "run_torch_module_wrapper_audit",
     "torch_autograd_qnn_value_and_grad",
     "torch_bounded_qnn_value_and_grad",
+    "torch_bounded_qnn_layer",
+    "torch_bounded_qnn_module",
     "torch_parameter_shift_value_and_grad",
 ]

@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 585,
     "public_documentation_pages": 240,
-    "python_model_classes": 1653,
+    "python_model_classes": 1654,
     "python_model_source_modules": 808,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
@@ -4782,6 +4782,10 @@
       },
       {
         "name": "PhaseTorchFuncCompatibilityResult",
+        "path": "src/scpn_quantum_control/phase/torch_bridge.py"
+      },
+      {
+        "name": "PhaseTorchModuleWrapperAuditResult",
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
       {
