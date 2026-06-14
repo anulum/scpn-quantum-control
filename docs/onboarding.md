@@ -148,7 +148,8 @@ coupled dynamics matter:
   relevant ledger gates before promotion.
 - Phase-QNode performance remains SOTA-candidate until a self-hosted
   `isolated-benchmark` CI runner uploads an `isolated_affinity` artefact; local
-  and GitHub-hosted rows are diagnostic only.
+  and GitHub-hosted rows are diagnostic only, and CUDA/ROCm claims require
+  explicit visible-device metadata rather than CPU fallback.
 - General native MLIR/LLVM/JIT AD over arbitrary programs is still an open
   engineering frontier; supported primitives and supported scalar traces
   execute through bounded kernels, and unsupported paths report the blocked

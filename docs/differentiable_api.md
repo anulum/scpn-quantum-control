@@ -52,7 +52,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.qnode_provider_transforms` | Provider-callback QNode transform evidence for scalar `grad`, `value_and_grad`, `jvp`, `vjp`, scalar `jacfwd`/`jacrev`, and manual `vmap(grad)` with shifted-sample records, finite-shot uncertainty propagation, and fail-closed hardware policy. |
 | `scpn_quantum_control.differentiable_framework_overlay` | CPU-only overlay manifest, installer, verifier, and CLI for reproducible JAX, PyTorch, TensorFlow, and PennyLane parity environments. |
 | `scpn_quantum_control.benchmarks.differentiable_external_comparison` | External comparison rows for JAX `value_and_grad`/`vmap` support, PyTorch `torch.func`, TensorFlow `GradientTape`, PennyLane QNodes, and optional LLVM/Enzyme runner AD with strict JSON, timeout, toolchain, and correctness gates; unconfigured tooling remains an explicit dependency-gap row. |
-| `scpn_quantum_control.benchmarks.differentiable_evidence` | CI benchmark evidence writer with runner metadata, CPU affinity, host-load, governor/frequency, heavy-job, classification, and artefact-ID fields. |
+| `scpn_quantum_control.benchmarks.differentiable_evidence` | CI benchmark evidence writer with runner metadata, CPU affinity, host-load, governor/frequency, heavy-job, explicit accelerator metadata, silent CPU-fallback detection, classification, and artefact-ID fields. |
 | `scpn_quantum_control.differentiable_claim_ledger` | Claim-ledger parser, Markdown renderer, and validation helpers that prevent promoted claims without artefact and benchmark IDs. |
 | `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls plus bounded native/custom-VJP JAX phase-QNN evidence and audited no-host-callback JIT/VMAP/PMAP/PyTree boundaries for that narrow model. |
 | `scpn_quantum_control.phase.pennylane_bridge` | Optional PennyLane gradient-agreement checker for caller-supplied PennyLane/QNode gradient functions. |
@@ -251,6 +251,13 @@ but records `functional_non_isolated` evidence only; it is not a throughput
 benchmark or hardware performance claim. This route is not an unrestricted QNN
 framework, live provider execution path, or proof that arbitrary feature maps
 are differentiable.
+
+Differentiable benchmark evidence also carries explicit accelerator metadata.
+By default the evidence is CPU-only and does not imply GPU execution. When
+`SCPN_BENCH_ACCELERATOR_BACKEND=cuda` or `rocm` is set, the benchmark bundle
+requires matching visible-device metadata before an accelerator claim can be
+attached; otherwise classification becomes `hard_gap` with
+`silent_accelerator_fallback`.
 
 ## Native and tensor framework QNN gradient bridges
 

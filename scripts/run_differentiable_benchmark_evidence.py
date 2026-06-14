@@ -16,6 +16,7 @@ from pathlib import Path
 
 from scpn_quantum_control.benchmarks.differentiable_evidence import (
     BenchmarkIsolationMetadata,
+    capture_accelerator_metadata,
     capture_host_load,
     infer_heavy_jobs_running,
     read_cpu_frequency_mhz,
@@ -44,6 +45,7 @@ def main() -> int:
     governor = read_cpu_governor()
     frequency_mhz = read_cpu_frequency_mhz()
     heavy_jobs_running = args.heavy_jobs_running or infer_heavy_jobs_running(load_before)
+    accelerator_metadata = capture_accelerator_metadata(os.environ)
     timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
     load_after = capture_host_load()
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
@@ -56,6 +58,7 @@ def main() -> int:
         governor=governor,
         frequency_mhz=frequency_mhz,
         heavy_jobs_running=heavy_jobs_running,
+        accelerator_metadata=accelerator_metadata,
     )
     bundle = write_differentiable_benchmark_evidence_bundle(
         args.output_dir,

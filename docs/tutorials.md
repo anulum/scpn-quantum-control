@@ -129,6 +129,9 @@ make exact, stochastic, approximate, blocked, and roadmap gradient modes visible
 before users build training loops or publish claims. A local or GitHub-hosted
 benchmark row is not production performance evidence unless it is uploaded by a
 self-hosted `isolated-benchmark` runner and classified as `isolated_affinity`.
+Accelerator benchmark evidence is also explicit: CPU-only rows make no GPU
+claim, and requested CUDA/ROCm runs without visible-device metadata become
+`silent_accelerator_fallback` hard gaps.
 
 For compiler-backed AD users, the current native whole-program path supports
 verified static dense determinant lowering through `19x19`, static inverse and

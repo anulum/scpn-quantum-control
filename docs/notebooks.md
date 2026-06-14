@@ -45,7 +45,9 @@ For Phase-QNode performance language, notebooks are never enough by themselves:
 the CI evidence bundle must report `isolated_affinity` from a self-hosted
 `isolated-benchmark` runner. Unconfigured Enzyme/compiler AD tooling is
 recorded as a dependency gap, not as a passed comparison; configured runners
-must pass the external comparison JSON and correctness contract.
+must pass the external comparison JSON and correctness contract. Accelerator
+rows must also record explicit CUDA/ROCm device metadata; missing visible
+devices are classified as `silent_accelerator_fallback`, not GPU evidence.
 
 For a non-notebook entry point, use [Quickstart](quickstart.md).
 

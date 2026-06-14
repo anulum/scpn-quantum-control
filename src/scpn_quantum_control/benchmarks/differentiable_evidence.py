@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import csv
+import importlib.metadata as importlib_metadata
 import json
 import os
 import platform
@@ -18,6 +19,49 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+
+@dataclass(frozen=True)
+class AcceleratorEvidenceMetadata:
+    """Explicit accelerator metadata for benchmark claim boundaries."""
+
+    requested_backend: str
+    detected_backend: str
+    device_ids: tuple[str, ...]
+    device_names: tuple[str, ...]
+    runtime_versions: dict[str, str]
+    cpu_fallback_detected: bool
+    claim_boundary: str
+
+    @classmethod
+    def cpu_only(cls) -> AcceleratorEvidenceMetadata:
+        """Return explicit CPU-only accelerator metadata."""
+
+        return cls(
+            requested_backend="cpu",
+            detected_backend="cpu",
+            device_ids=(),
+            device_names=(),
+            runtime_versions={},
+            cpu_fallback_detected=False,
+            claim_boundary=(
+                "CPU-only differentiable benchmark evidence. This row carries no CUDA, "
+                "ROCm, GPU, provider, or QPU performance claim."
+            ),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return JSON-ready accelerator metadata."""
+
+        return {
+            "requested_backend": self.requested_backend,
+            "detected_backend": self.detected_backend,
+            "device_ids": list(self.device_ids),
+            "device_names": list(self.device_names),
+            "runtime_versions": dict(self.runtime_versions),
+            "cpu_fallback_detected": self.cpu_fallback_detected,
+            "claim_boundary": self.claim_boundary,
+        }
 
 
 @dataclass(frozen=True)
@@ -41,6 +85,7 @@ class BenchmarkIsolationMetadata:
     governor: str | None
     frequency_mhz: float | None
     heavy_jobs_running: bool
+    accelerator: AcceleratorEvidenceMetadata
     classification: str
     failure_class: str | None
     production_eligible: bool
@@ -59,9 +104,11 @@ class BenchmarkIsolationMetadata:
         governor: str | None,
         frequency_mhz: float | None,
         heavy_jobs_running: bool,
+        accelerator_metadata: AcceleratorEvidenceMetadata | None = None,
     ) -> BenchmarkIsolationMetadata:
         """Classify a CI benchmark run from runner metadata."""
 
+        accelerator = accelerator_metadata or capture_accelerator_metadata(env)
         labels = tuple(
             label.strip() for label in env.get("RUNNER_LABELS", "").split(",") if label.strip()
         )
@@ -84,8 +131,17 @@ class BenchmarkIsolationMetadata:
             and has_isolated_label
             and has_required_context
             and not heavy_jobs_running
+            and not accelerator.cpu_fallback_detected
         )
-        if production_eligible:
+        if accelerator.cpu_fallback_detected:
+            classification = "hard_gap"
+            failure_class = "silent_accelerator_fallback"
+            gap_reason = (
+                f"Benchmark requested {accelerator.requested_backend} accelerator execution, "
+                f"but detected backend is {accelerator.detected_backend} with no visible "
+                "device evidence. CPU fallback cannot support accelerator benchmark claims."
+            )
+        elif production_eligible:
             classification = "isolated_affinity"
             failure_class = None
             gap_reason = None
@@ -122,6 +178,7 @@ class BenchmarkIsolationMetadata:
             governor=governor,
             frequency_mhz=frequency_mhz,
             heavy_jobs_running=heavy_jobs_running,
+            accelerator=accelerator,
             classification=classification,
             failure_class=failure_class,
             production_eligible=production_eligible,
@@ -149,6 +206,7 @@ class BenchmarkIsolationMetadata:
             "governor": self.governor,
             "frequency_mhz": self.frequency_mhz,
             "heavy_jobs_running": self.heavy_jobs_running,
+            "accelerator": self.accelerator.to_dict(),
             "classification": self.classification,
             "failure_class": self.failure_class,
             "production_eligible": self.production_eligible,
@@ -217,6 +275,9 @@ def write_differentiable_benchmark_evidence_bundle(
                 f"- Production eligible: `{metadata.production_eligible}`",
                 f"- Failure class: {metadata.failure_class or 'none'}",
                 f"- Gap reason: {metadata.gap_reason or 'none'}",
+                f"- Accelerator requested: `{metadata.accelerator.requested_backend}`",
+                f"- Accelerator detected: `{metadata.accelerator.detected_backend}`",
+                f"- Accelerator CPU fallback: `{metadata.accelerator.cpu_fallback_detected}`",
                 "",
                 "No provider or QPU execution is performed by this evidence writer.",
                 "",
@@ -270,6 +331,48 @@ def read_cpu_frequency_mhz(cpu_index: int = 0) -> float | None:
     return None
 
 
+def capture_accelerator_metadata(env: Mapping[str, str]) -> AcceleratorEvidenceMetadata:
+    """Capture explicit accelerator metadata from deterministic benchmark environment."""
+
+    requested_backend = _normalise_accelerator_backend(
+        env.get("SCPN_BENCH_ACCELERATOR_BACKEND") or env.get("SCPN_ACCELERATOR_BACKEND") or "cpu"
+    )
+    if env.get("SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY") == "1":
+        probed_device_ids: tuple[str, ...] = ()
+        probed_device_names: tuple[str, ...] = ()
+        probed_runtime_versions: dict[str, str] = {}
+    else:
+        probed_device_ids, probed_device_names, probed_runtime_versions = (
+            _probe_requested_accelerator(requested_backend)
+        )
+    device_ids = _accelerator_device_ids(env, requested_backend) or probed_device_ids
+    detected_backend = _detected_accelerator_backend(requested_backend, device_ids, env)
+    cpu_fallback_detected = requested_backend not in {"cpu", "none"} and (
+        detected_backend != requested_backend or len(device_ids) == 0
+    )
+    return AcceleratorEvidenceMetadata(
+        requested_backend=requested_backend,
+        detected_backend=detected_backend,
+        device_ids=device_ids,
+        device_names=_split_metadata_list(env.get("SCPN_BENCH_ACCELERATOR_DEVICE_NAMES", ""))
+        or probed_device_names,
+        runtime_versions={
+            **probed_runtime_versions,
+            **_runtime_version_metadata(
+                env.get("SCPN_BENCH_ACCELERATOR_RUNTIME")
+                or env.get("SCPN_ACCELERATOR_RUNTIME")
+                or ""
+            ),
+        },
+        cpu_fallback_detected=cpu_fallback_detected,
+        claim_boundary=_accelerator_claim_boundary(
+            requested_backend=requested_backend,
+            detected_backend=detected_backend,
+            cpu_fallback_detected=cpu_fallback_detected,
+        ),
+    )
+
+
 def infer_heavy_jobs_running(load: tuple[float, float, float] | None) -> bool:
     """Infer whether current host load is too high for production promotion."""
 
@@ -277,9 +380,130 @@ def infer_heavy_jobs_running(load: tuple[float, float, float] | None) -> bool:
     return bool(load and load[0] > max(1.0, cpu_count * 0.75))
 
 
+def _normalise_accelerator_backend(value: str) -> str:
+    backend = value.strip().lower()
+    aliases = {
+        "gpu": "cuda",
+        "nvidia": "cuda",
+        "hip": "rocm",
+        "amd": "rocm",
+        "none": "cpu",
+        "": "cpu",
+    }
+    return aliases.get(backend, backend)
+
+
+def _accelerator_device_ids(env: Mapping[str, str], requested_backend: str) -> tuple[str, ...]:
+    explicit_ids = _visible_device_ids(env.get("SCPN_BENCH_ACCELERATOR_DEVICE_IDS", ""))
+    if explicit_ids:
+        return explicit_ids
+    if requested_backend == "cuda":
+        return _visible_device_ids(env.get("CUDA_VISIBLE_DEVICES", ""))
+    if requested_backend == "rocm":
+        visible = env.get("ROCR_VISIBLE_DEVICES") or env.get("HIP_VISIBLE_DEVICES") or ""
+        return _visible_device_ids(visible)
+    return ()
+
+
+def _probe_requested_accelerator(
+    requested_backend: str,
+) -> tuple[tuple[str, ...], tuple[str, ...], dict[str, str]]:
+    if requested_backend != "cuda":
+        return (), (), {}
+    try:
+        import jax
+    except Exception:
+        return (), (), {}
+    try:
+        devices = tuple(jax.devices("gpu"))
+    except Exception:
+        return (), (), _jax_runtime_versions()
+    return (
+        tuple(str(index) for index, _device in enumerate(devices)),
+        tuple(str(device) for device in devices),
+        _jax_runtime_versions(),
+    )
+
+
+def _jax_runtime_versions() -> dict[str, str]:
+    versions: dict[str, str] = {}
+    for package in ("jax", "jaxlib", "jax-cuda12-plugin", "jax-cuda12-pjrt"):
+        try:
+            versions[package] = str(importlib_metadata.version(package))
+        except importlib_metadata.PackageNotFoundError:
+            continue
+    return versions
+
+
+def _detected_accelerator_backend(
+    requested_backend: str,
+    device_ids: tuple[str, ...],
+    env: Mapping[str, str],
+) -> str:
+    if requested_backend in {"cuda", "rocm"} and device_ids:
+        return requested_backend
+    if _visible_device_ids(env.get("CUDA_VISIBLE_DEVICES", "")):
+        return "cuda"
+    if _visible_device_ids(
+        env.get("ROCR_VISIBLE_DEVICES") or env.get("HIP_VISIBLE_DEVICES") or ""
+    ):
+        return "rocm"
+    return "cpu"
+
+
+def _visible_device_ids(value: str) -> tuple[str, ...]:
+    devices = _split_metadata_list(value)
+    blocked = {"", "-1", "none", "no", "void"}
+    return tuple(device for device in devices if device.lower() not in blocked)
+
+
+def _split_metadata_list(value: str) -> tuple[str, ...]:
+    return tuple(item.strip() for item in value.split(",") if item.strip())
+
+
+def _runtime_version_metadata(value: str) -> dict[str, str]:
+    metadata: dict[str, str] = {}
+    for item in _split_metadata_list(value):
+        if "=" not in item:
+            metadata[item] = "unknown"
+            continue
+        key, version = item.split("=", maxsplit=1)
+        key = key.strip().lower()
+        version = version.strip()
+        if key and version:
+            metadata[key] = version
+    return metadata
+
+
+def _accelerator_claim_boundary(
+    *,
+    requested_backend: str,
+    detected_backend: str,
+    cpu_fallback_detected: bool,
+) -> str:
+    if cpu_fallback_detected:
+        return (
+            f"{requested_backend} accelerator execution was requested, but benchmark metadata "
+            "does not prove a visible accelerator device. Treat the artefact as a hard gap, "
+            "not accelerator evidence."
+        )
+    if requested_backend in {"cuda", "rocm"} and detected_backend == requested_backend:
+        return (
+            f"{requested_backend} accelerator metadata is present for the benchmark host. "
+            "This records device visibility only; production performance claims still require "
+            "isolated benchmark classification and matching timing rows."
+        )
+    return (
+        "CPU-only differentiable benchmark evidence. This row carries no CUDA, ROCm, GPU, "
+        "provider, or QPU performance claim."
+    )
+
+
 __all__ = [
+    "AcceleratorEvidenceMetadata",
     "BenchmarkIsolationMetadata",
     "DifferentiableBenchmarkEvidenceBundle",
+    "capture_accelerator_metadata",
     "capture_host_load",
     "infer_heavy_jobs_running",
     "read_cpu_frequency_mhz",

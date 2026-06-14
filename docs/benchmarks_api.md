@@ -412,6 +412,19 @@ the SCPN reference. These rows are comparison evidence only; they do not claim
 provider execution, QPU execution, GPU execution, arbitrary-program AD, or
 production performance.
 
+The CI benchmark evidence writer records accelerator metadata in every bundle.
+The default is explicit CPU-only evidence. To request accelerator evidence, set
+`SCPN_BENCH_ACCELERATOR_BACKEND=cuda` or `rocm` and provide visible-device
+metadata through `SCPN_BENCH_ACCELERATOR_DEVICE_IDS`, `CUDA_VISIBLE_DEVICES`,
+`ROCR_VISIBLE_DEVICES`, or `HIP_VISIBLE_DEVICES`. CUDA requests can also use
+JAX CUDA device discovery when the CUDA-enabled `jaxlib` plugin is installed.
+Optional names and runtime versions can be recorded with
+`SCPN_BENCH_ACCELERATOR_DEVICE_NAMES` and
+`SCPN_BENCH_ACCELERATOR_RUNTIME` (`cuda=12.4,cudnn=9.1`). Requested
+accelerator execution without matching visible devices is classified as
+`hard_gap` / `silent_accelerator_fallback`, so a CPU fallback cannot be reused
+as GPU benchmark evidence.
+
 ---
 
 ## Crossover Summary
