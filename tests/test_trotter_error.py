@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Trotter Error
-"""Tests for Trotter error analysis — multi-angle coverage."""
+"""Tests for two-group Trotter error: scaling laws, order-1/2 accuracy, budget gating."""
 
 import numpy as np
 import pytest
@@ -56,7 +56,9 @@ def test_error_norm_passes_dense_budget_to_bridge(monkeypatch):
 
     trotter_error_norm(K, omega, t=0.1, reps=1, max_dense_gib=0.25)
 
-    assert seen_budgets == [0.25]
+    # The two-group measurement builds three dense matrices (H, H_XY, H_Z),
+    # and the dense budget must be propagated to every one of them.
+    assert seen_budgets == [0.25, 0.25, 0.25]
 
 
 def test_error_decreases_with_reps(small_system):
@@ -104,7 +106,7 @@ def test_sweep_propagates_dense_budget(monkeypatch, small_system):
     K, omega = small_system
     seen: list[float | None] = []
 
-    def fake_error_norm(K_arg, omega_arg, t, reps, *, max_dense_gib=None):  # noqa: ARG001
+    def fake_error_norm(K_arg, omega_arg, t, reps, order=1, *, max_dense_gib=None):  # noqa: ARG001
         seen.append(max_dense_gib)
         return 0.0
 
@@ -185,3 +187,62 @@ def test_pipeline_knm_to_trotter_sweep(small_system):
     print(f"\n  PIPELINE Knm→TrotterSweep (3q, 3×3): {dt:.1f} ms")
     print(f"  ε(t=0.05,reps=1)={result['errors'][0][0]:.6f}")
     print(f"  ε(t=0.2,reps=5)={result['errors'][2][2]:.6f}")
+
+
+# ---------------------------------------------------------------------------
+# Two-group splitting and norm semantics (order 1 vs 2)
+# ---------------------------------------------------------------------------
+
+
+def test_spectral_norm_below_frobenius_of_same_difference(small_system):
+    """The reported error is the spectral norm, which never exceeds the Frobenius norm."""
+    from scipy.linalg import expm
+
+    import scpn_quantum_control.phase.trotter_error as tm
+
+    K, omega = small_system
+    t, reps = 0.5, 2
+    h_full = tm.knm_to_dense_matrix(K, omega)
+    h_xy = tm.knm_to_dense_matrix(K, np.zeros_like(omega))
+    h_z = tm.knm_to_dense_matrix(np.zeros_like(K), omega)
+    diff = expm(-1j * h_full * t) - tm._two_group_unitary(h_xy, h_z, t, reps, 1)
+
+    spectral = trotter_error_norm(K, omega, t=t, reps=reps, order=1)
+    assert spectral == pytest.approx(np.linalg.norm(diff, 2), rel=1e-9, abs=1e-12)
+    assert spectral <= np.linalg.norm(diff, "fro") + 1e-12
+
+
+def test_second_order_more_accurate_than_first(small_system):
+    """For the same (t, reps), symmetric Suzuki-Trotter error is below Lie-Trotter."""
+    K, omega = small_system
+    err1 = trotter_error_norm(K, omega, t=0.6, reps=2, order=1)
+    err2 = trotter_error_norm(K, omega, t=0.6, reps=2, order=2)
+    assert err2 < err1
+
+
+def test_second_order_cubic_time_scaling(small_system):
+    """Symmetric Suzuki-Trotter error scales as O(t³) at fixed reps."""
+    K, omega = small_system
+    err_t1 = trotter_error_norm(K, omega, t=0.1, reps=1, order=2)
+    err_t2 = trotter_error_norm(K, omega, t=0.2, reps=1, order=2)
+    ratio = err_t2 / max(err_t1, 1e-15)
+    assert ratio > 5.0  # 2³ = 8, accept >5 for finite-size effects
+
+
+def test_invalid_order_rejected(small_system):
+    K, omega = small_system
+    with pytest.raises(ValueError, match="order must be 1 or 2"):
+        trotter_error_norm(K, omega, t=0.1, reps=1, order=3)
+
+
+def test_nonpositive_reps_rejected(small_system):
+    K, omega = small_system
+    with pytest.raises(ValueError, match="reps must be"):
+        trotter_error_norm(K, omega, t=0.1, reps=0)
+
+
+def test_sweep_carries_order_through_result(small_system):
+    K, omega = small_system
+    result = trotter_error_sweep(K, omega, t_values=[0.1], reps_values=[1, 2], order=2)
+    assert result["order"] == 2
+    assert len(result["errors"][0]) == 2

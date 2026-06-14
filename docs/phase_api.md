@@ -115,8 +115,15 @@ cited through the hardware ledger and committed raw artifacts.
 
 ### `trotter_error` — Error Analysis
 
-Quantifies Trotter error by comparing the approximate evolution operator with the exact
-matrix exponential.
+Quantifies Trotter error by comparing the two-group (`H_XY` then `H_Z`) product
+formula with the exact matrix exponential. The empirical measurement and the
+analytical bound use the **same** operator splitting and the **same** spectral
+(induced 2-) norm, so `trotter_error_bound` rigorously upper-bounds
+`trotter_error_norm` of the matching order. The spectral norm is the
+algorithm-error norm in which the Childs et al. (PRX 11, 011020, 2021)
+product-formula bounds are stated; the Frobenius norm of the same difference can
+exceed these commutator estimates by up to a factor `√(2^n)` and is therefore
+not the reported quantity.
 
 ```python
 from scpn_quantum_control.phase.trotter_error import (
@@ -127,9 +134,12 @@ from scpn_quantum_control.phase.trotter_error import (
 )
 ```
 
-Dense exact comparison APIs accept `max_dense_gib`:
-`trotter_error_norm(K, omega, t, reps, *, max_dense_gib=None)` and
-`trotter_error_sweep(K, omega, t_values, reps_values, *, max_dense_gib=None)`.
+`order=1` measures the Lie-Trotter product `(e^{-iH_XY τ} e^{-iH_Z τ})^r`;
+`order=2` measures the symmetric Suzuki-Trotter product
+`(e^{-iH_XY τ/2} e^{-iH_Z τ} e^{-iH_XY τ/2})^r`. Dense exact comparison APIs
+accept `max_dense_gib`:
+`trotter_error_norm(K, omega, t, reps, order=1, *, max_dense_gib=None)` and
+`trotter_error_sweep(K, omega, t_values, reps_values, order=1, *, max_dense_gib=None)`.
 Second-order analytical bounds also forward the budget through
 `nested_commutator_norm_bound`, `trotter_error_bound`, and `optimal_dt` when
 the exact small-system nested commutator path is selected.

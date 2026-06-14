@@ -7,17 +7,34 @@
 # SCPN Quantum Control — Trotter Error
 """Trotter error analysis for the XY Kuramoto Hamiltonian.
 
-Provides both empirical (Frobenius norm) and analytical (commutator bound)
-error estimates for Lie-Trotter and Suzuki-Trotter decompositions.
+Provides both empirical and analytical spectral-norm error estimates for the
+two-group (``H_XY`` then ``H_Z``) Lie-Trotter and symmetric Suzuki-Trotter
+product formulas. The empirical measurement and the analytical bound use the
+*same* operator splitting and the *same* (spectral / induced 2-) norm, so the
+analytical bound rigorously upper-bounds the empirical error.
 
-Analytical bound (Childs et al., PRX 11, 011020, 2021):
-    ||U_exact - U_trotter|| <= (t²/2r) × ||[H_XY, H_Z]||
+Analytical first-order bound (Childs et al., PRX 11, 011020, 2021):
+    ||U_exact - U_trotter||_2 <= (t²/2r) × ||[H_XY, H_Z]||_2
 
-For the Kuramoto XY Hamiltonian:
-    [H_XY, H_Z] = 2i Σ_{i<j} K_ij(ω_j - ω_i)(Y_iX_j - X_iY_j)
+Analytical second-order (symmetric) bound:
+    ||U_exact - U_trotter||_2 <= (t³/12r²) × (||[H_XY,[H_XY,H_Z]]||_2
+                                              + ||[H_Z,[H_XY,H_Z]]||_2)
 
-Key insight: Trotter error vanishes when all frequencies are equal.
-Error scales with K × Δω, not K alone.
+For the Kuramoto XY Hamiltonian ``H = -Σ_{i<j} K_ij(X_iX_j + Y_iY_j) - Σ_i ω_i Z_i``
+the inner commutator is
+    [H_XY, H_Z] = 2i Σ_{i<j} K_ij(ω_j - ω_i)(Y_iX_j - X_iY_j),
+
+so ``||[H_XY, H_Z]||_2 <= 4 Σ_{i<j} |K_ij| |ω_j - ω_i|`` by the triangle
+inequality with ``||Y_iX_j - X_iY_j||_2 = 2``.
+
+Key insight: Trotter error vanishes when all frequencies are equal. Error
+scales with K × Δω, not K alone.
+
+Norm choice: the spectral norm is the algorithm-error norm in which the
+product-formula bounds of Childs et al. are stated; measuring the empirical
+error in the same norm is what makes the bound a genuine upper bound. The
+Frobenius norm of the same difference is larger by up to a factor ``√(2^n)``
+and is not bounded by these commutator estimates.
 """
 
 from __future__ import annotations
@@ -25,8 +42,30 @@ from __future__ import annotations
 import numpy as np
 from scipy.linalg import expm
 
-from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
+
+
+def _two_group_unitary(
+    h_xy: np.ndarray,
+    h_z: np.ndarray,
+    t: float,
+    reps: int,
+    order: int,
+) -> np.ndarray:
+    """Dense unitary of the two-group product formula over ``reps`` steps.
+
+    order 1: ``(e^{-i H_XY τ} e^{-i H_Z τ})^r`` (Lie-Trotter).
+    order 2: ``(e^{-i H_XY τ/2} e^{-i H_Z τ} e^{-i H_XY τ/2})^r`` (symmetric Strang).
+    """
+    tau = t / reps
+    if order == 1:
+        step = expm(-1j * h_xy * tau) @ expm(-1j * h_z * tau)
+    else:
+        half_xy = expm(-1j * h_xy * (tau / 2.0))
+        full_z = expm(-1j * h_z * tau)
+        step = half_xy @ full_z @ half_xy
+    return np.linalg.matrix_power(step, reps)
 
 
 def trotter_error_norm(
@@ -34,43 +73,47 @@ def trotter_error_norm(
     omega: np.ndarray,
     t: float,
     reps: int,
+    order: int = 1,
     *,
     max_dense_gib: float | None = None,
 ) -> float:
-    """||U_exact - U_trotter||_F for a single (t, reps) pair.
+    """``||U_exact - U_trotter||_2`` for the two-group product formula.
 
-    Raises ValueError for n > 10 (2^10 = 1024, matrices get large fast).
+    Measures the spectral-norm distance between the exact propagator and the
+    two-group product formula of the requested ``order`` (1 = Lie-Trotter,
+    2 = symmetric Suzuki-Trotter). This is the same splitting and norm assumed
+    by :func:`trotter_error_bound`, so that bound upper-bounds this value.
+
+    Raises ValueError for n > 10 (2^10 = 1024, dense matrices grow fast),
+    reps < 1, or order not in {1, 2}.
     """
-    n = len(omega)
+    K_arr = np.asarray(K, dtype=np.float64)
+    omega_arr = np.asarray(omega, dtype=np.float64)
+    _validate_k_omega(K_arr, omega_arr)
+    n = omega_arr.shape[0]
     if n > 10:
         raise ValueError(f"n={n} too large for exact unitary comparison (max 10)")
+    if reps < 1:
+        raise ValueError(f"reps must be >= 1, got {reps}")
+    if order not in (1, 2):
+        raise ValueError(f"order must be 1 or 2, got {order}")
 
     require_dense_allocation(
         n,
         dtype=np.complex128,
         rank=2,
-        object_count=4,
+        object_count=5,
         max_gib=max_dense_gib,
         label="Trotter dense unitary comparison workspace",
     )
-    H_op = knm_to_hamiltonian(K, omega)
-    H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
+    h_full = knm_to_dense_matrix(K_arr, omega_arr, max_dense_gib=max_dense_gib)
+    h_xy = knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr), max_dense_gib=max_dense_gib)
+    h_z = knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr, max_dense_gib=max_dense_gib)
 
-    U_exact = expm(-1j * H_mat * t)
+    u_exact = expm(-1j * h_full * t)
+    u_trotter = _two_group_unitary(h_xy, h_z, t, reps, order)
 
-    from qiskit import QuantumCircuit
-    from qiskit.circuit.library import PauliEvolutionGate
-    from qiskit.quantum_info import Operator
-    from qiskit.synthesis import LieTrotter
-
-    qc = QuantumCircuit(n)
-    evo = PauliEvolutionGate(H_op, time=t, synthesis=LieTrotter(reps=reps))
-    qc.append(evo, range(n))
-    # Decompose so Operator sees individual gates, not the exact PauliEvolutionGate
-    qc_decomposed = qc.decompose(reps=2)
-    U_trotter = Operator(qc_decomposed).data
-
-    return float(np.linalg.norm(U_exact - U_trotter, "fro"))
+    return float(np.linalg.norm(u_exact - u_trotter, 2))
 
 
 def trotter_error_sweep(
@@ -78,23 +121,25 @@ def trotter_error_sweep(
     omega: np.ndarray,
     t_values: list[float],
     reps_values: list[int],
+    order: int = 1,
     *,
     max_dense_gib: float | None = None,
 ) -> dict:
-    """2D sweep of Trotter error over (t, reps) pairs.
+    """2D sweep of two-group Trotter error over (t, reps) pairs.
 
-    Returns dict with keys 't_values', 'reps_values', 'errors' (2D list).
+    Returns dict with keys 't_values', 'reps_values', 'order', 'errors' (2D list).
     """
     errors = []
     for t in t_values:
         row = []
         for reps in reps_values:
-            row.append(trotter_error_norm(K, omega, t, reps, max_dense_gib=max_dense_gib))
+            row.append(trotter_error_norm(K, omega, t, reps, order, max_dense_gib=max_dense_gib))
         errors.append(row)
 
     return {
         "t_values": t_values,
         "reps_values": reps_values,
+        "order": order,
         "errors": errors,
     }
 
@@ -175,15 +220,16 @@ def trotter_error_bound(
     *,
     max_dense_gib: float | None = None,
 ) -> float:
-    """Analytical upper bound on Trotter error.
+    """Analytical spectral-norm upper bound on two-group Trotter error.
 
     For first-order (Lie-Trotter, order=1):
-        error ≤ (t²/2r) × ||[H_XY, H_Z]||
+        error ≤ (t²/2r) × ||[H_XY, H_Z]||₂
 
-    For second-order (Suzuki-Trotter, order=2):
-        error ≤ (t³/12r²) × ||[H_XY, [H_XY, H_Z]]|| + ||[H_Z, [H_XY, H_Z]]||
+    For second-order (symmetric Suzuki-Trotter, order=2):
+        error ≤ (t³/12r²) × ( ||[H_XY,[H_XY,H_Z]]||₂ + ||[H_Z,[H_XY,H_Z]]||₂ )
 
-    Returns the upper bound on ||U_exact - U_trotter||.
+    Returns the upper bound on ||U_exact - U_trotter||₂ for the matching
+    product formula measured by :func:`trotter_error_norm`.
     """
     gamma = commutator_norm_bound(K, omega)
     if order == 1:
