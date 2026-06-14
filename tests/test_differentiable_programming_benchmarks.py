@@ -212,6 +212,7 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     assert [row.case_id for row in results] == [
         "single_rotation_parameter_shift",
         "two_parameter_phase_expectation",
+        "sparse_ising_chain_six_qubit_expectation",
     ]
     for row in results:
         assert isinstance(row, QuantumGradientBenchmarkResult)
@@ -228,6 +229,10 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
             row.analytic_gradient,
             atol=1.0e-12,
         )
+    sparse_row = next(row for row in results if row.case_id.startswith("sparse_ising"))
+    assert sparse_row.parameter_shift_gradient.shape == (6,)
+    assert sparse_row.evaluations >= 24
+    assert "sparse Hamiltonian" in sparse_row.claim_boundary
 
 
 def test_quantum_gradient_benchmark_result_validation_paths() -> None:

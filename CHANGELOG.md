@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added a six-parameter sparse Ising-chain Hamiltonian
+  expectation row to the quantum-gradient benchmark suite, with analytic
+  field/coupling gradients, parameter-shift verification, finite-difference
+  diagnostics, and explicit non-performance/non-hardware claim boundaries.
 - 2026-06-14 — Hardened `VQLS_GradShafranov` with residual-certified
   Grad-Shafranov solves for `n_qubits=2,3,4`, diagnostic convergence metadata,
   configurable multi-restart optimisation, fail-closed unrepaired variational
