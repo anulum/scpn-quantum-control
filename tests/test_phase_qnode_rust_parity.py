@@ -15,6 +15,7 @@ import pytest
 from scpn_quantum_control.phase import (
     PhaseQNodeCircuit,
     execute_phase_qnode_hessian_vector_product,
+    execute_phase_qnode_vector_hessian,
     execute_phase_qnode_vector_jvp,
     execute_phase_qnode_vector_vjp,
     phase_qnode_complex_derivative_contract,
@@ -145,6 +146,20 @@ def test_rust_phase_qnode_directional_transforms_match_python_surfaces() -> None
     np.testing.assert_allclose(
         rust_hvp(python_hvp.hessian, vector),
         python_hvp.hessian_vector_product,
+        atol=1e-12,
+    )
+
+
+def test_rust_phase_qnode_vector_hessian_tensor_matches_python_surface() -> None:
+    rust_hessian_tensor = _require_export("phase_qnode_vector_hessian_tensor_rust")
+    params = np.array([0.31, -0.17], dtype=np.float64)
+
+    python_result = execute_phase_qnode_vector_hessian(_vector_objective, params)
+    assert python_result.hessian_tensor is not None
+
+    np.testing.assert_allclose(
+        rust_hessian_tensor(python_result.hessian_tensor),
+        python_result.hessian_tensor,
         atol=1e-12,
     )
 

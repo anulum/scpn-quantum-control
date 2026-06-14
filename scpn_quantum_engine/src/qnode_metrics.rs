@@ -6,8 +6,8 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-engine — Phase-QNode metric and transform kernels
 
-use ndarray::Array2;
-use numpy::{PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use ndarray::{Array2, Array3};
+use numpy::{PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -325,11 +325,76 @@ where
         .collect())
 }
 
+pub fn vector_hessian_tensor_inner(
+    tensor: &[Vec<Vec<f64>>],
+    symmetry_tolerance: f64,
+) -> Result<Vec<Vec<Vec<f64>>>, String> {
+    if tensor.is_empty() {
+        return Err("hessian tensor must have at least one output component".to_string());
+    }
+    if !symmetry_tolerance.is_finite() || symmetry_tolerance < 0.0 {
+        return Err(format!(
+            "symmetry_tolerance must be a finite non-negative value, got {symmetry_tolerance}"
+        ));
+    }
+    let parameter_count = tensor[0].len();
+    if parameter_count == 0 {
+        return Err("hessian tensor must have a non-empty parameter axis".to_string());
+    }
+    let mut result = vec![vec![vec![0.0; parameter_count]; parameter_count]; tensor.len()];
+    for (component_index, component) in tensor.iter().enumerate() {
+        if component.len() != parameter_count {
+            return Err(format!(
+                "hessian tensor component {component_index} has row count {}, expected {parameter_count}",
+                component.len()
+            ));
+        }
+        for (row_index, row) in component.iter().enumerate() {
+            if row.len() != parameter_count {
+                return Err(format!(
+                    "hessian tensor component {component_index} row {row_index} has width {}, expected {parameter_count}",
+                    row.len()
+                ));
+            }
+            ensure_finite_slice(
+                &format!("hessian_tensor[{component_index}][{row_index}]"),
+                row,
+            )?;
+        }
+        for row in 0..parameter_count {
+            for column in row..parameter_count {
+                let forward = component[row][column];
+                let reverse = component[column][row];
+                if (forward - reverse).abs() > symmetry_tolerance {
+                    return Err(format!(
+                        "hessian tensor component {component_index} is not symmetric at ({row}, {column}): {forward} != {reverse}"
+                    ));
+                }
+                let value = 0.5 * (forward + reverse);
+                result[component_index][row][column] = value;
+                result[component_index][column][row] = value;
+            }
+        }
+    }
+    Ok(result)
+}
+
 fn nested_to_array2(values: Vec<Vec<f64>>) -> Result<Array2<f64>, String> {
     let rows = values.len();
     let columns = values.first().map_or(0, Vec::len);
     let flat: Vec<f64> = values.into_iter().flatten().collect();
     Array2::from_shape_vec((rows, columns), flat).map_err(|err| err.to_string())
+}
+
+fn nested_to_array3(values: Vec<Vec<Vec<f64>>>) -> Result<Array3<f64>, String> {
+    let components = values.len();
+    let rows = values.first().map_or(0, Vec::len);
+    let columns = values
+        .first()
+        .and_then(|component| component.first())
+        .map_or(0, Vec::len);
+    let flat: Vec<f64> = values.into_iter().flatten().flatten().collect();
+    Array3::from_shape_vec((components, rows, columns), flat).map_err(|err| err.to_string())
 }
 
 fn read_array2_rows(values: PyReadonlyArray2<'_, f64>) -> Vec<Vec<f64>> {
@@ -338,6 +403,23 @@ fn read_array2_rows(values: PyReadonlyArray2<'_, f64>) -> Vec<Vec<f64>> {
         .outer_iter()
         .map(|row| row.to_vec())
         .collect()
+}
+
+fn read_array3_components(values: PyReadonlyArray3<'_, f64>) -> Vec<Vec<Vec<f64>>> {
+    let array = values.as_array();
+    let shape = array.shape();
+    let output_dim = shape[0];
+    let rows = shape[1];
+    let columns = shape[2];
+    let mut tensor = vec![vec![vec![0.0; columns]; rows]; output_dim];
+    for output in 0..output_dim {
+        for row in 0..rows {
+            for column in 0..columns {
+                tensor[output][row][column] = array[[output, row, column]];
+            }
+        }
+    }
+    tensor
 }
 
 #[pyfunction]
@@ -439,6 +521,20 @@ pub fn phase_qnode_hessian_vector_product_rust<'py>(
 }
 
 #[pyfunction]
+#[pyo3(signature = (hessian_tensor, symmetry_tolerance=1e-12))]
+pub fn phase_qnode_vector_hessian_tensor_rust<'py>(
+    py: Python<'py>,
+    hessian_tensor: PyReadonlyArray3<'_, f64>,
+    symmetry_tolerance: f64,
+) -> PyResult<Bound<'py, PyArray3<f64>>> {
+    let tensor = read_array3_components(hessian_tensor);
+    let result =
+        vector_hessian_tensor_inner(&tensor, symmetry_tolerance).map_err(PyValueError::new_err)?;
+    let array = nested_to_array3(result).map_err(PyValueError::new_err)?;
+    Ok(PyArray3::from_owned_array(py, array))
+}
+
+#[pyfunction]
 pub fn phase_qnode_complex_derivative_contract_rust<'py>(
     py: Python<'py>,
 ) -> PyResult<Bound<'py, PyDict>> {
@@ -523,6 +619,21 @@ mod tests {
             hessian_vector_product_inner(&hessian, &vector).unwrap(),
             vec![3.5, -7.75]
         );
+    }
+
+    #[test]
+    fn vector_hessian_tensor_kernel_validates_and_symmetrizes_component_matrices() {
+        let tensor = vec![
+            vec![vec![1.0, 2.0], vec![2.0000000000000004, 3.0]],
+            vec![vec![-0.5, 0.25], vec![0.2499999999999998, 0.75]],
+        ];
+
+        let result = vector_hessian_tensor_inner(&tensor, 1e-12).unwrap();
+
+        assert_close(result[0][0][1], 2.0);
+        assert_close(result[0][1][0], 2.0);
+        assert_close(result[1][0][1], 0.25);
+        assert_close(result[1][1][0], 0.25);
     }
 
     #[test]

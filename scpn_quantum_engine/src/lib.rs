@@ -200,6 +200,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_vector_hessian_tensor_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
         qnode_metrics::phase_qnode_complex_derivative_contract_rust,
         m
     )?)?;

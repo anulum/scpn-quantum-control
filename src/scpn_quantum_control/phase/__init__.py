@@ -332,6 +332,7 @@ from .qnode_transforms import (
 from .qnode_vector_transforms import (
     PhaseQNodeVectorTransformReadinessSuiteResult,
     PhaseQNodeVectorTransformResult,
+    execute_phase_qnode_vector_hessian,
     execute_phase_qnode_vector_jacobian,
     execute_phase_qnode_vector_jvp,
     execute_phase_qnode_vector_vjp,
@@ -522,6 +523,7 @@ __all__ = [
     "run_phase_qnode_transform_readiness_suite",
     "PhaseQNodeVectorTransformReadinessSuiteResult",
     "PhaseQNodeVectorTransformResult",
+    "execute_phase_qnode_vector_hessian",
     "execute_phase_qnode_vector_jvp",
     "execute_phase_qnode_vector_jacobian",
     "execute_phase_qnode_vector_vjp",

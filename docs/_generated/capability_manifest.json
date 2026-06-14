@@ -12,9 +12,9 @@
     "public_documentation_pages": 240,
     "python_model_classes": 1638,
     "python_model_source_modules": 808,
-    "rust_pyo3_model_wrappers": 111,
-    "rust_source_modules": 28,
-    "test_files": 1924
+    "rust_pyo3_model_wrappers": 118,
+    "rust_source_modules": 29,
+    "test_files": 1925
   },
   "documentation": {
     "examples": [
@@ -8467,6 +8467,13 @@
       "parity_filter_mask",
       "pec_coefficients",
       "pec_sample_parallel",
+      "phase_qnode_complex_derivative_contract_rust",
+      "phase_qnode_computational_basis_fisher_rust",
+      "phase_qnode_fubini_study_metric_rust",
+      "phase_qnode_hessian_vector_product_rust",
+      "phase_qnode_vector_hessian_tensor_rust",
+      "phase_qnode_vector_jvp_rust",
+      "phase_qnode_vector_vjp_rust",
       "plaquette_action_batch",
       "pt_symmetric_kuramoto_trajectory",
       "qpetri_campaign_aggregate",
@@ -8521,6 +8528,7 @@
       "scpn_quantum_engine/src/pauli.rs",
       "scpn_quantum_engine/src/pec.rs",
       "scpn_quantum_engine/src/pulse_shaping.rs",
+      "scpn_quantum_engine/src/qnode_metrics.rs",
       "scpn_quantum_engine/src/qpetri.rs",
       "scpn_quantum_engine/src/sectors.rs",
       "scpn_quantum_engine/src/symmetry_decay.rs",
@@ -10470,6 +10478,7 @@
       "tests/test_phase_qnode_compiler_lowering.py",
       "tests/test_phase_qnode_framework_parity.py",
       "tests/test_phase_qnode_provider_transforms.py",
+      "tests/test_phase_qnode_rust_parity.py",
       "tests/test_phase_qnode_tape.py",
       "tests/test_phase_qnode_transforms.py",
       "tests/test_phase_qnode_vector_transforms.py",

@@ -17,7 +17,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import Parameter, ParameterShiftRule
-from .param_shift import parameter_shift_gradient
+from .param_shift import parameter_shift_gradient, parameter_shift_hessian
 from .transform_nesting import GradientTransformNestingPlan, plan_gradient_transform_nesting
 
 FloatArray: TypeAlias = NDArray[np.float64]
@@ -42,6 +42,7 @@ class PhaseQNodeVectorTransformResult:
     params: FloatArray | None
     values: FloatArray | None
     jacobian: FloatArray | None
+    hessian_tensor: FloatArray | None
     tangent: FloatArray | None
     cotangent: FloatArray | None
     jvp: FloatArray | None
@@ -80,6 +81,9 @@ class PhaseQNodeVectorTransformResult:
             "params": None if self.params is None else self.params.tolist(),
             "values": None if self.values is None else self.values.tolist(),
             "jacobian": None if self.jacobian is None else self.jacobian.tolist(),
+            "hessian_tensor": (
+                None if self.hessian_tensor is None else self.hessian_tensor.tolist()
+            ),
             "tangent": None if self.tangent is None else self.tangent.tolist(),
             "cotangent": None if self.cotangent is None else self.cotangent.tolist(),
             "jvp": None if self.jvp is None else self.jvp.tolist(),
@@ -137,7 +141,7 @@ class PhaseQNodeVectorTransformReadinessSuiteResult:
         """Return true when supported routes execute and unsafe routes refuse."""
         supported = {record.transform for record in self.records if record.supported}
         return (
-            {"jacfwd", "jacrev", "jvp", "vjp", "vmap.grad"}.issubset(supported)
+            {"jacfwd", "jacrev", "jvp", "vjp", "hessian", "vmap.grad"}.issubset(supported)
             and self.fail_closed_count >= 3
             and not self.hardware_execution
         )
@@ -229,6 +233,68 @@ def execute_phase_qnode_vector_jacobian(
             vector_value.size,
             plan.support_plan.backend_plan.shift_terms,
         ),
+    )
+
+
+def execute_phase_qnode_vector_hessian(
+    objective: VectorObjective,
+    params: ArrayLike,
+    *,
+    gate: str = "ry",
+    observable: str = "pauli_expectation",
+    backend: str = "statevector",
+    adapter: str = "native",
+    shots: int | None = None,
+    shift_terms: int = 1,
+    allow_hardware: bool = False,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> PhaseQNodeVectorTransformResult:
+    """Execute deterministic local vector-output Hessians component by component."""
+    values = _as_parameter_vector("params", params)
+    plan = plan_gradient_transform_nesting(
+        "hessian",
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        adapter=adapter,
+        n_params=values.size,
+        shift_terms=shift_terms if rule is None else len(rule.terms),
+        shots=shots,
+        allow_hardware=allow_hardware,
+    )
+    label = ".".join(plan.transforms)
+    if plan.fail_closed:
+        return _blocked_result(label, plan, params=values)
+    vector_value = _as_vector_output("objective(params)", objective(values.copy()))
+    component_hessians: list[FloatArray] = []
+    for output_index in range(vector_value.size):
+
+        def scalar_component(candidate: FloatArray, *, index: int = output_index) -> float:
+            candidate_value = _as_vector_output(
+                "objective(shifted_params)",
+                objective(candidate.copy()),
+                width=vector_value.size,
+            )
+            return float(candidate_value[index])
+
+        component_hessians.append(
+            parameter_shift_hessian(
+                scalar_component,
+                values,
+                parameters=parameters,
+                rule=rule,
+            )
+        )
+    hessian_tensor = np.stack(component_hessians, axis=0).astype(np.float64, copy=True)
+    return _supported_result(
+        label,
+        plan,
+        params=values,
+        values=vector_value,
+        hessian_tensor=hessian_tensor,
+        parameter_shift_evaluations=vector_value.size
+        * _hessian_evaluations(values.size, plan.support_plan.backend_plan.shift_terms),
     )
 
 
@@ -461,6 +527,7 @@ def run_phase_qnode_vector_transform_readiness_suite() -> (
             params,
             np.array([2.0, -0.75], dtype=np.float64),
         ),
+        execute_phase_qnode_vector_hessian(vector_objective, params),
         execute_phase_qnode_vmap_grad(scalar_objective, batched_params),
         execute_phase_qnode_vector_jacobian(
             "jacfwd",
@@ -492,6 +559,7 @@ def _supported_result(
     params: FloatArray | None = None,
     values: FloatArray | None = None,
     jacobian: FloatArray | None = None,
+    hessian_tensor: FloatArray | None = None,
     tangent: FloatArray | None = None,
     cotangent: FloatArray | None = None,
     jvp: FloatArray | None = None,
@@ -508,6 +576,9 @@ def _supported_result(
         params=None if params is None else params.astype(np.float64, copy=True),
         values=None if values is None else values.astype(np.float64, copy=True),
         jacobian=None if jacobian is None else jacobian.astype(np.float64, copy=True),
+        hessian_tensor=(
+            None if hessian_tensor is None else hessian_tensor.astype(np.float64, copy=True)
+        ),
         tangent=None if tangent is None else tangent.astype(np.float64, copy=True),
         cotangent=None if cotangent is None else cotangent.astype(np.float64, copy=True),
         jvp=None if jvp is None else jvp.astype(np.float64, copy=True),
@@ -541,6 +612,7 @@ def _blocked_result(
         params=None if params is None else params.copy(),
         values=None,
         jacobian=None,
+        hessian_tensor=None,
         tangent=None,
         cotangent=None,
         jvp=None,
@@ -622,9 +694,17 @@ def _parameter_shift_evaluations(n_params: int, output_dim: int, shift_terms: in
     return 2 * n_params * output_dim * shift_terms
 
 
+def _hessian_evaluations(n_params: int, shift_terms: int) -> int:
+    diagonal = 2 * n_params * shift_terms
+    mixed_pairs = n_params * (n_params - 1) // 2
+    mixed = 4 * mixed_pairs * shift_terms * shift_terms
+    return diagonal + mixed
+
+
 __all__ = [
     "PhaseQNodeVectorTransformReadinessSuiteResult",
     "PhaseQNodeVectorTransformResult",
+    "execute_phase_qnode_vector_hessian",
     "execute_phase_qnode_vector_jvp",
     "execute_phase_qnode_vector_jacobian",
     "execute_phase_qnode_vector_vjp",

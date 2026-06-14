@@ -1340,6 +1340,18 @@ When `scpn_quantum_engine` is installed, the matching PyO3 parity kernels are
 kernels over already materialised Jacobian evidence and preserve the same
 real-valued input boundary.
 
+`execute_phase_qnode_vector_hessian(...)` computes deterministic local
+vector-output Hessian tensors by materialising one parameter-shift Hessian per
+output component. The result tensor has shape `(output_dim, n_params,
+n_params)`, is checked against real finite vector-output objectives, and fails
+closed for finite-shot, hardware, provider, and framework-native adapter
+routes.
+
+The Rust parity surface for materialised vector Hessian tensors is
+`phase_qnode_vector_hessian_tensor_rust(hessian_tensor)`. It validates finite
+real tensor entries, square component Hessians, and Hessian symmetry before
+returning the symmetrised tensor.
+
 `execute_phase_qnode_vmap_grad(...)` implements the first native vectorized
 gradient surface as a deterministic host-side manual loop over scalar
 parameter-shift gradients:
@@ -1358,8 +1370,8 @@ print(result.batched_values, result.batched_gradients)
 ```
 
 The readiness helper `run_phase_qnode_vector_transform_readiness_suite()`
-records supported `jacfwd`, `jacrev`, vector `jvp`, vector `vjp`, and
-`vmap.grad` routes plus fail-closed hardware, adapter, and finite-shot
+records supported `jacfwd`, `jacrev`, vector `jvp`, vector `vjp`, vector
+`hessian`, and `vmap.grad` routes plus fail-closed hardware, adapter, and finite-shot
 scenarios. The implementation deliberately does not claim provider
 vectorization, framework-native `vmap`, finite-shot batched-gradient
 statistics, or hardware transform execution.

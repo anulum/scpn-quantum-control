@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added deterministic local vector-output Phase-QNode Hessian
+  tensors with fail-closed finite-shot/hardware/adapter boundaries, Rust/PyO3
+  tensor validation parity, module tests, benchmark coverage, and
+  documentation updates.
 - 2026-06-14 — Added Rust/PyO3 parity kernels for promoted local
   Phase-QNode Fubini-Study/QFI, computational-basis Fisher, vector JVP/VJP,
   Hessian-vector product, and real-only complex-derivative contract surfaces,

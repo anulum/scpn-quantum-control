@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (117)
+## Functions (118)
 
-The Rust crate exports 117 PyO3 bindings across 28 Rust source files. They are organised
+The Rust crate exports 118 PyO3 bindings across 28 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -98,6 +98,7 @@ avoiding 2n individual calls to `expectation_pauli_fast`.
 | `phase_qnode_vector_jvp_rust(jacobian, tangent)` | Dense vector-output JVP contraction | O(mp) |
 | `phase_qnode_vector_vjp_rust(jacobian, cotangent)` | Dense vector-output VJP contraction | O(mp) |
 | `phase_qnode_hessian_vector_product_rust(hessian, vector)` | Dense Hessian-vector contraction | O(p²) |
+| `phase_qnode_vector_hessian_tensor_rust(hessian_tensor, symmetry_tolerance=1e-12)` | Validate and symmetrise materialised vector-output Hessian tensors | O(kp²) |
 | `phase_qnode_complex_derivative_contract_rust()` | Rust-visible real-only complex/W boundary metadata | O(1) |
 
 The metric kernels consume already materialised statevector derivative
@@ -106,7 +107,9 @@ imaginary parameter-derivative rows. They do not execute circuits and do not
 claim finite-shot, density-matrix, noisy-channel, provider, hardware, or
 optimal measurement metrics. The directional kernels are the Rust parity layer
 for the promoted deterministic local Phase-QNode JVP, VJP, and Hessian-vector
-product surfaces.
+product surfaces. The tensor kernel gives the vector-output Hessian route a
+Rust-visible validation and parity surface without claiming Rust execution of
+arbitrary Python objectives.
 
 `cargo bench --bench hot_paths` includes the
 `phase_qnode_metric_and_transform_kernels` group for these inner kernels. Any

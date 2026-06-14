@@ -46,7 +46,7 @@ use scpn_quantum_engine::knm::build_knm_inner;
 use scpn_quantum_engine::kuramoto::order_parameter_inner;
 use scpn_quantum_engine::qnode_metrics::{
     computational_basis_fisher_inner, fubini_study_metric_inner, hessian_vector_product_inner,
-    vector_jvp_inner, vector_vjp_inner,
+    vector_hessian_tensor_inner, vector_jvp_inner, vector_vjp_inner,
 };
 
 fn bench_build_knm(c: &mut Criterion) {
@@ -477,6 +477,10 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
     let cotangent = [1.5, -0.25];
     let hessian = [[2.0, -1.0], [-1.0, 3.5]];
     let vector = [0.75, -2.0];
+    let hessian_tensor = vec![
+        vec![vec![-0.95, 0.0], vec![0.0, 0.02]],
+        vec![vec![-0.31, 0.0], vec![0.0, 0.24]],
+    ];
 
     let mut group = c.benchmark_group("phase_qnode_metric_and_transform_kernels");
     group.bench_function("fubini_study_metric", |bench| {
@@ -511,6 +515,11 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
     group.bench_function("hessian_vector_product", |bench| {
         bench.iter(|| {
             hessian_vector_product_inner(black_box(&hessian), black_box(&vector)).unwrap()
+        });
+    });
+    group.bench_function("vector_hessian_tensor", |bench| {
+        bench.iter(|| {
+            vector_hessian_tensor_inner(black_box(&hessian_tensor), black_box(1e-12)).unwrap()
         });
     });
     group.finish();
