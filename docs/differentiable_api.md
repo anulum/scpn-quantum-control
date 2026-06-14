@@ -80,8 +80,8 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Registered Phase-QNode circuit evidence | `PhaseQNodeCircuit`, `DenseHermitianObservable`, `PauliTerm`, `PauliCovarianceObservable`, `SparsePauliHamiltonian`, `PhaseQNodeClassicalFisherResult`, `PhaseQNodeMetricTensorResult`, `execute_phase_qnode_circuit`, `parameter_shift_phase_qnode_gradient`, `phase_qnode_computational_basis_fisher_information`, `phase_qnode_quantum_fisher_information`, `phase_qnode_natural_gradient_metric`, `phase_qnode_support_report`, `run_phase_qnode_framework_parity_suite`, `run_phase_qnode_affinity_benchmark` | Execute the declared local gate/observable family, including dense Hermitian expectations, exact Pauli covariance values, product-rule covariance gradients, exact computational-basis classical Fisher metrics, and pure-state Fubini-Study/QFI metrics; compare installed framework parity, record benchmark-isolation metadata, and fail closed for unsupported routes. |
 | Rust differentiable parity kernels | `phase_qnode_fubini_study_metric_rust`, `phase_qnode_computational_basis_fisher_rust`, `phase_qnode_vector_jvp_rust`, `phase_qnode_vector_vjp_rust`, `phase_qnode_hessian_vector_product_rust`, `phase_qnode_vector_hessian_tensor_rust`, `phase_qnode_complex_derivative_contract_rust`, `parameter_shift_gradient_uncertainty_rust`, `spsa_gradient_rust`, `score_function_gradient_rust`, `gradient_confidence_interval_rust` | Optional PyO3 parity surface for the promoted deterministic local metric, directional-transform, vector-Hessian, real-only complex-boundary, materialised finite-shot uncertainty, materialised SPSA-record, materialised score-function, and confidence-policy primitives. The kernels operate on materialised state derivatives, Jacobians, Hessians, vector Hessian tensors, shifted means, variances, shot counts, coefficients, SPSA perturbations, rewards, score vectors, gradients, standard errors, or trainable masks and are checked against the Python APIs. They do not execute provider callbacks or hardware jobs. |
 | Differentiable promotion evidence | `FrameworkOverlayManifest`, `FrameworkOverlayVerification`, `install_framework_overlay`, `verify_framework_overlay_path`, `BenchmarkIsolationMetadata`, `run_differentiable_external_comparison_suite`, `load_claim_ledger`, `validate_claim_ledger` | Reproduce the CPU framework overlay, produce CI-only benchmark bundles, compare external AD frameworks, and validate that Phase-QNode claims have implementation, tests, docs, known gaps, artefact IDs, and benchmark IDs. |
-| Bounded QNN framework bridge matrix | `BoundedQNNFrameworkBridgeCapability`, `BoundedQNNFrameworkBridgeMatrixResult`, `run_bounded_qnn_framework_bridge_matrix`, `assert_bounded_qnn_framework_bridge_supported` | Declare implemented bounded JAX/PyTorch/TensorFlow bridge routes and fail closed for arbitrary simulator autodiff or live provider hardware-gradient routes. |
-| Optional JAX bridge | `PhaseJAXParameterShiftResult`, `PhaseJAXNativeQNNGradientResult`, `jax_parameter_shift_value_and_grad`, `jax_native_qnn_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary, and expose native JAX autodiff evidence for the bounded phase-QNN classifier only. |
+| Bounded QNN framework bridge matrix | `BoundedQNNFrameworkBridgeCapability`, `BoundedQNNFrameworkBridgeMatrixResult`, `run_bounded_qnn_framework_bridge_matrix`, `assert_bounded_qnn_framework_bridge_supported` | Declare implemented bounded JAX/PyTorch/TensorFlow bridge routes, including the bounded JAX custom-VJP route, and fail closed for arbitrary simulator autodiff or live provider hardware-gradient routes. |
+| Optional JAX bridge | `PhaseJAXParameterShiftResult`, `PhaseJAXNativeQNNGradientResult`, `PhaseJAXCustomVJPQNNGradientResult`, `jax_parameter_shift_value_and_grad`, `jax_native_qnn_value_and_grad`, `jax_custom_vjp_qnn_value_and_grad`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary, expose native JAX autodiff evidence for the bounded phase-QNN classifier, and expose a bounded JAX `custom_vjp` route whose backward rule is checked against the SCPN parameter-shift gradient. |
 | Optional PennyLane agreement | `PennyLaneGradientAgreementResult`, `check_pennylane_parameter_shift_agreement`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against a caller-supplied PennyLane gradient callable. |
 | Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `PhaseTorchQNNGradientResult`, `torch_parameter_shift_value_and_grad`, `torch_bounded_qnn_value_and_grad`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors and provide bounded phase-QNN tensor-gradient evidence while preserving NumPy and parameter-shift references. |
 | Optional TensorFlow bridge | `PhaseTensorFlowParameterShiftResult`, `PhaseTensorFlowQNNGradientResult`, `tensorflow_parameter_shift_value_and_grad`, `tensorflow_bounded_qnn_value_and_grad`, `is_phase_tensorflow_available` | Convert supported phase parameter-shift value-and-gradient outputs into TensorFlow tensors and provide bounded phase-QNN tensor-gradient evidence while preserving NumPy and parameter-shift references. |
@@ -260,6 +260,7 @@ PyTorch tensor-gradient evidence route:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    jax_custom_vjp_qnn_value_and_grad,
     jax_native_qnn_value_and_grad,
     tensorflow_bounded_qnn_value_and_grad,
     torch_bounded_qnn_value_and_grad,
@@ -270,17 +271,22 @@ labels = np.array([0.0, 1.0], dtype=float)
 params = np.array([0.45], dtype=float)
 
 jax_result = jax_native_qnn_value_and_grad(features, labels, params)
+jax_custom_vjp_result = jax_custom_vjp_qnn_value_and_grad(features, labels, params)
 tf_result = tensorflow_bounded_qnn_value_and_grad(features, labels, params)
 torch_result = torch_bounded_qnn_value_and_grad(features, labels, params)
 
 assert jax_result.passed
+assert jax_custom_vjp_result.passed
 assert tf_result.passed
 assert torch_result.passed
 ```
 
 `jax_native_qnn_value_and_grad` expresses the bounded model directly in JAX
 operations and compares the JAX `value_and_grad` result against the canonical
-SCPN parameter-shift gradient. `torch_bounded_qnn_value_and_grad` and
+SCPN parameter-shift gradient. `jax_custom_vjp_qnn_value_and_grad` registers an
+explicit JAX `custom_vjp` for the same bounded loss, keeps `host_callback=False`,
+and checks the backward rule against the same parameter-shift reference.
+`torch_bounded_qnn_value_and_grad` and
 `tensorflow_bounded_qnn_value_and_grad` return framework tensors from the
 analytic bounded-model gradient and check the same parameter-shift reference.
 These routes are not arbitrary simulator autodiff claims, not provider-backed

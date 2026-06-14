@@ -80,11 +80,13 @@ from .hardware_gradient_policy import (
     run_hardware_gradient_policy_readiness_suite,
 )
 from .jax_bridge import (
+    PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
+    jax_custom_vjp_qnn_value_and_grad,
     jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
 )
@@ -531,8 +533,10 @@ __all__ = [
     "run_phase_qnode_vector_transform_readiness_suite",
     "is_phase_jax_available",
     "check_jax_parameter_shift_agreement",
+    "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
+    "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",

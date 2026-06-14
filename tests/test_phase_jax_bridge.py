@@ -14,11 +14,13 @@ import pytest
 
 import scpn_quantum_control.phase.jax_bridge as jax_bridge
 from scpn_quantum_control.phase import (
+    PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
     check_jax_parameter_shift_agreement,
     is_phase_jax_available,
+    jax_custom_vjp_qnn_value_and_grad,
     jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
     multi_frequency_parameter_shift_rule,
@@ -35,6 +37,8 @@ class _FakeJAX:
     def __init__(self) -> None:
         self.jit_calls = 0
         self.callback_calls = 0
+        self.custom_vjp_calls = 0
+        self.custom_vjp_defvjp_calls = 0
 
     def jit(self, fn):
         self.jit_calls += 1
@@ -48,8 +52,37 @@ class _FakeJAX:
         self.callback_calls += 1
         return callback(values)
 
+    def custom_vjp(self, fn):
+        self.custom_vjp_calls += 1
+        fake_jax = self
+
+        class _CustomVJPFunction:
+            def __init__(self, primal_fn):
+                self._primal_fn = primal_fn
+                self._forward = None
+                self._backward = None
+
+            def defvjp(self, forward, backward):
+                fake_jax.custom_vjp_defvjp_calls += 1
+                self._forward = forward
+                self._backward = backward
+
+            def __call__(self, values):
+                return self._primal_fn(values)
+
+            def value_and_grad(self, values):
+                if self._forward is None or self._backward is None:
+                    raise RuntimeError("custom_vjp rule has not been registered")
+                value, residual = self._forward(values)
+                (gradient,) = self._backward(residual, np.asarray(1.0, dtype=float))
+                return value, gradient
+
+        return _CustomVJPFunction(fn)
+
     def value_and_grad(self, fn):
         def wrapped(values):
+            if hasattr(fn, "value_and_grad"):
+                return fn.value_and_grad(values)
             array = np.asarray(values, dtype=float)
             value = fn(array)
             gradient = np.zeros_like(array, dtype=float)
@@ -258,6 +291,75 @@ def test_phase_jax_native_qnn_jit_records_native_no_callback(
     assert fake_jax.callback_calls == 0
 
 
+def test_phase_jax_custom_vjp_qnn_uses_parameter_shift_backward_rule(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.45], dtype=float)
+
+    result = jax_custom_vjp_qnn_value_and_grad(
+        features,
+        labels,
+        params,
+        tolerance=1e-12,
+    )
+
+    expected = parameter_shift_qnn_classifier_gradient(features, labels, params)
+    assert isinstance(result, PhaseJAXCustomVJPQNNGradientResult)
+    assert result.passed
+    assert result.custom_vjp
+    assert result.native_framework_autodiff
+    assert not result.host_callback
+    assert not result.jitted
+    assert result.method == "jax_custom_vjp_bounded_phase_qnn_value_and_grad"
+    assert fake_jax.custom_vjp_calls == 1
+    assert fake_jax.custom_vjp_defvjp_calls == 1
+    np.testing.assert_allclose(result.gradient, expected, atol=1e-12)
+    np.testing.assert_allclose(result.parameter_shift_gradient, expected, atol=1e-12)
+    assert result.to_dict()["custom_vjp"] is True
+
+
+def test_phase_jax_custom_vjp_qnn_jit_keeps_native_no_callback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    result = jax_custom_vjp_qnn_value_and_grad(
+        np.array([[0.0], [np.pi]], dtype=float),
+        np.array([0.0, 1.0], dtype=float),
+        np.array([0.45], dtype=float),
+        tolerance=1e-12,
+        jit=True,
+    )
+
+    assert result.jit_requested
+    assert result.jitted
+    assert result.custom_vjp
+    assert not result.host_callback
+    assert fake_jax.jit_calls == 1
+    assert fake_jax.callback_calls == 0
+
+
+def test_phase_jax_custom_vjp_qnn_fails_closed_without_custom_vjp(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _NoCustomVJPJAX(_FakeJAX):
+        custom_vjp = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_NoCustomVJPJAX(), np))
+
+    with pytest.raises(RuntimeError, match="custom_vjp"):
+        jax_custom_vjp_qnn_value_and_grad(
+            np.array([[0.0], [np.pi]], dtype=float),
+            np.array([0.0, 1.0], dtype=float),
+            np.array([0.45], dtype=float),
+        )
+
+
 def test_phase_jax_native_qnn_fails_closed_on_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -289,6 +391,12 @@ def test_phase_jax_bridge_fails_closed_when_jax_missing(monkeypatch: pytest.Monk
         )
     with pytest.raises(ImportError, match="blocked"):
         jax_native_qnn_value_and_grad(
+            np.array([[0.0]], dtype=float),
+            np.array([0.0], dtype=float),
+            np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="blocked"):
+        jax_custom_vjp_qnn_value_and_grad(
             np.array([[0.0]], dtype=float),
             np.array([0.0], dtype=float),
             np.array([0.2], dtype=float),

@@ -33,7 +33,8 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     jax = result.capability_by_framework("jax")
     assert jax.supported
     assert jax.native_framework_autodiff
-    assert jax.public_api == "jax_native_qnn_value_and_grad"
+    assert jax.public_api == "jax_native_qnn_value_and_grad,jax_custom_vjp_qnn_value_and_grad"
+    assert "jax_custom_vjp_bounded_phase_qnn_value_and_grad" in jax.gradient_route
     assert not jax.host_boundary
 
     pytorch = result.capability_by_framework("pytorch")

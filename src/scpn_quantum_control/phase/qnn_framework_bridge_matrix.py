@@ -169,8 +169,8 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
     return (
         BoundedQNNFrameworkBridgeCapability(
             framework="jax",
-            public_api="jax_native_qnn_value_and_grad",
-            gradient_route="native_bounded_phase_qnn_value_and_grad",
+            public_api="jax_native_qnn_value_and_grad,jax_custom_vjp_qnn_value_and_grad",
+            gradient_route="native_bounded_phase_qnn_value_and_grad,jax_custom_vjp_bounded_phase_qnn_value_and_grad",
             optional_dependency="jax",
             implemented=True,
             runtime_dependency_required=True,

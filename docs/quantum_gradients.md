@@ -1134,6 +1134,27 @@ The bridge is optional and fail-closed. It imports JAX only when called. JIT
 mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
 therefore does not claim native JAX differentiation of a quantum kernel.
 
+For the bounded phase-QNN classifier, the bridge also exposes a native
+custom-VJP route:
+
+```python
+from scpn_quantum_control.phase import jax_custom_vjp_qnn_value_and_grad
+
+custom_vjp = jax_custom_vjp_qnn_value_and_grad(
+    features,
+    labels,
+    params,
+    jit=True,
+)
+print(custom_vjp.passed, custom_vjp.custom_vjp, custom_vjp.host_callback)
+```
+
+`jax_custom_vjp_qnn_value_and_grad(...)` registers a JAX `custom_vjp` for the
+bounded classifier loss and checks the returned gradient against the canonical
+multi-frequency SCPN parameter-shift gradient. It remains a bounded model route:
+it is not arbitrary simulator autodiff, not provider-backed execution, and not a
+hardware gradient.
+
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:
 

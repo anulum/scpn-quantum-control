@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added bounded JAX custom-VJP phase-QNN gradient evidence via
+  `jax_custom_vjp_qnn_value_and_grad`, including fail-closed optional
+  dependency checks, JIT-compatible no-host-callback execution for the bounded
+  classifier, parameter-shift reference validation, phase exports, framework
+  bridge matrix updates, module tests, generated capability updates, and public
+  documentation.
 - 2026-06-14 — Added stochastic-gradient confidence intervals and
   fail-closed failure policies across finite-shot parameter-shift, seeded SPSA,
   and materialised score-function estimators, with Rust/PyO3 interval-policy

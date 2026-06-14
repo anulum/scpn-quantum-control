@@ -125,6 +125,43 @@ class PhaseJAXNativeQNNGradientResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXCustomVJPQNNGradientResult:
+    """JAX custom-VJP evidence for the bounded phase-QNN classifier."""
+
+    loss: float
+    gradient: FloatArray
+    parameter_shift_gradient: FloatArray
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    custom_vjp: bool
+    native_framework_autodiff: bool
+    host_callback: bool
+    jit_requested: bool
+    jitted: bool
+    method: str = "jax_custom_vjp_bounded_phase_qnn_value_and_grad"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready custom-VJP bounded-QNN gradient evidence."""
+        return {
+            "loss": self.loss,
+            "gradient": self.gradient.tolist(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "custom_vjp": self.custom_vjp,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_callback": self.host_callback,
+            "jit_requested": self.jit_requested,
+            "jitted": self.jitted,
+            "method": self.method,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -206,6 +243,42 @@ def _require_jax_callback_support(jax_module: Any) -> None:
         raise RuntimeError("JAX pure_callback is required for JIT-wrapped host gradients")
     if not hasattr(jax_module, "ShapeDtypeStruct"):
         raise RuntimeError("JAX ShapeDtypeStruct is required for JIT-wrapped host gradients")
+
+
+def _require_jax_custom_vjp_support(jax_module: Any) -> None:
+    custom_vjp = getattr(jax_module, "custom_vjp", None)
+    if not callable(custom_vjp):
+        raise RuntimeError("JAX custom_vjp is required for the bounded-QNN custom VJP route")
+    value_and_grad = getattr(jax_module, "value_and_grad", None)
+    if not callable(value_and_grad):
+        raise RuntimeError("JAX value_and_grad is required for the bounded-QNN custom VJP route")
+
+
+def _jax_bounded_qnn_loss(
+    jnp: Any,
+    feature_tensor: Any,
+    label_tensor: Any,
+    parameter_tensor: Any,
+) -> Any:
+    probabilities = 0.5 * (1.0 - jnp.cos(feature_tensor + parameter_tensor[None, :]))
+    predictions = jnp.mean(probabilities, axis=1)
+    residual = predictions - label_tensor
+    return jnp.mean(residual * residual)
+
+
+def _jax_bounded_qnn_gradient(
+    jnp: Any,
+    feature_tensor: Any,
+    label_tensor: Any,
+    parameter_tensor: Any,
+) -> Any:
+    feature_count = feature_tensor.shape[1]
+    probabilities = 0.5 * (1.0 - jnp.cos(feature_tensor + parameter_tensor[None, :]))
+    predictions = jnp.mean(probabilities, axis=1)
+    residual = predictions - label_tensor
+    probability_derivative = 0.5 * jnp.sin(feature_tensor + parameter_tensor[None, :])
+    prediction_derivative = probability_derivative / feature_count
+    return jnp.mean(2.0 * residual[:, None] * prediction_derivative, axis=0)
 
 
 def jax_parameter_shift_value_and_grad(
@@ -366,11 +439,7 @@ def jax_native_qnn_value_and_grad(
     label_tensor = jnp.asarray(label_vector)
 
     def loss_fn(raw_params: object) -> object:
-        parameter_tensor = jnp.asarray(raw_params)
-        probabilities = 0.5 * (1.0 - jnp.cos(feature_tensor + parameter_tensor[None, :]))
-        predictions = jnp.mean(probabilities, axis=1)
-        residual = predictions - label_tensor
-        return jnp.mean(residual * residual)
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
 
     value_and_grad_fn = getattr(jax_module, "value_and_grad", None)
     if not callable(value_and_grad_fn):
@@ -421,12 +490,113 @@ def jax_native_qnn_value_and_grad(
     )
 
 
+def jax_custom_vjp_qnn_value_and_grad(
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike,
+    *,
+    tolerance: float = 1e-6,
+    jit: bool = False,
+) -> PhaseJAXCustomVJPQNNGradientResult:
+    """Differentiate the bounded phase-QNN loss through a JAX custom VJP.
+
+    The primal is the same bounded phase-QNN MSE loss used by
+    ``jax_native_qnn_value_and_grad``. The VJP rule is registered explicitly
+    and returns the mathematically equivalent bounded-QNN derivative, then the
+    result is checked against the repository's multi-frequency parameter-shift
+    reference. This route is still intentionally narrow: it does not expose
+    arbitrary simulator autodiff, provider callbacks, or hardware execution.
+    """
+    jax_module, jnp = _load_jax()
+    _require_jax_custom_vjp_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _as_parameter_vector(
+        "params",
+        params,
+        width=feature_matrix.shape[1],
+    )
+    feature_tensor = jnp.asarray(feature_matrix)
+    label_tensor = jnp.asarray(label_vector)
+
+    @jax_module.custom_vjp
+    def loss_fn(raw_params: object) -> object:
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
+
+    def loss_fwd(raw_params: object) -> tuple[object, object]:
+        parameter_tensor = jnp.asarray(raw_params)
+        return (
+            _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor),
+            parameter_tensor,
+        )
+
+    def loss_bwd(parameter_tensor: object, cotangent: object) -> tuple[object]:
+        gradient = _jax_bounded_qnn_gradient(
+            jnp,
+            feature_tensor,
+            label_tensor,
+            jnp.asarray(parameter_tensor),
+        )
+        return (jnp.asarray(cotangent) * gradient,)
+
+    loss_fn.defvjp(loss_fwd, loss_bwd)
+
+    executable = jax_module.value_and_grad(loss_fn)
+    jitted = False
+    if jit:
+        jit_fn = getattr(jax_module, "jit", None)
+        if not callable(jit_fn):
+            raise RuntimeError("JAX JIT is unavailable in the active JAX module")
+        executable = jit_fn(executable)
+        jitted = True
+
+    loss_obj, gradient_obj = executable(jnp.asarray(parameter_values))
+    gradient = _as_parameter_vector(
+        "JAX custom VJP QNN gradient",
+        gradient_obj,
+        width=parameter_values.size,
+    )
+    reference_gradient = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    reference_loss = parameter_shift_qnn_classifier_loss(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    loss = _as_scalar("JAX custom VJP QNN loss", loss_obj)
+    if abs(loss - reference_loss) > max(tolerance_value, 1e-12):
+        raise RuntimeError("JAX custom VJP QNN loss disagrees with parameter-shift loss")
+    delta = gradient - reference_gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta, ord=2))
+    return PhaseJAXCustomVJPQNNGradientResult(
+        loss=loss,
+        gradient=gradient,
+        parameter_shift_gradient=reference_gradient.copy(),
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=max_abs_error <= tolerance_value,
+        custom_vjp=True,
+        native_framework_autodiff=True,
+        host_callback=False,
+        jit_requested=jit,
+        jitted=jitted,
+    )
+
+
 __all__ = [
+    "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
     "check_jax_parameter_shift_agreement",
     "is_phase_jax_available",
+    "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
 ]
