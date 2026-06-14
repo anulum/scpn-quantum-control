@@ -226,6 +226,27 @@ seeded initial-condition perturbations; it is not finite-shot stochastic
 training, hardware execution, isolated benchmark evidence, or a broad
 QNN/QGNN/QSNN convergence claim.
 
+`run_parameter_shift_qnn_loss_landscape_suite(...)` samples the same bounded
+phase-QNN objectives on local parameter grids:
+
+```python
+from scpn_quantum_control.phase import run_parameter_shift_qnn_loss_landscape_suite
+
+suite = run_parameter_shift_qnn_loss_landscape_suite(
+    case_names=("single_feature_phase_flip",),
+    grid_radius=0.2,
+    points_per_axis=5,
+)
+case = suite.case_by_name("single_feature_phase_flip")
+print(case.min_loss, case.max_loss, case.max_gradient_norm)
+```
+
+The landscape evidence records grid axes, every sampled parameter vector,
+losses, analytic parameter-shift gradients, gradient norms, sampled argmin,
+loss span, and pass/fail thresholds. It is a local diagnostic for bounded
+training surfaces, not hardware execution, finite-shot evidence, isolated
+benchmark evidence, or a claim about arbitrary QNN/QGNN/QSNN landscapes.
+
 ## Bounded QNN finite-shot evidence
 
 Seeded finite-shot simulator evidence is available for the bounded phase-QNN

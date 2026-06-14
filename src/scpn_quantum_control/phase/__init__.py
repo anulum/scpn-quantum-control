@@ -273,6 +273,12 @@ from .qnn_framework_bridge_matrix import (
     assert_bounded_qnn_framework_bridge_supported,
     run_bounded_qnn_framework_bridge_matrix,
 )
+from .qnn_loss_landscape import (
+    ParameterShiftQNNLossLandscapeCaseResult,
+    ParameterShiftQNNLossLandscapePoint,
+    ParameterShiftQNNLossLandscapeSuiteResult,
+    run_parameter_shift_qnn_loss_landscape_suite,
+)
 from .qnn_optimizer_benchmark import (
     DerivativeFreeCandidateMap,
     ParameterShiftQNNOptimizerBenchmarkCaseResult,
@@ -632,6 +638,10 @@ __all__ = [
     "run_bounded_qnn_framework_bridge_matrix",
     "run_parameter_shift_qnn_framework_agreement_suite",
     "verify_parameter_shift_qnn_framework_agreement",
+    "ParameterShiftQNNLossLandscapeCaseResult",
+    "ParameterShiftQNNLossLandscapePoint",
+    "ParameterShiftQNNLossLandscapeSuiteResult",
+    "run_parameter_shift_qnn_loss_landscape_suite",
     "ParameterShiftQNNFiniteShotConvergenceCaseResult",
     "ParameterShiftQNNFiniteShotConvergenceSuiteResult",
     "ParameterShiftQNNFiniteShotGradientResult",

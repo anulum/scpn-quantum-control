@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 587,
     "public_documentation_pages": 240,
-    "python_model_classes": 1664,
-    "python_model_source_modules": 808,
+    "python_model_classes": 1667,
+    "python_model_source_modules": 809,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
-    "test_files": 1929
+    "test_files": 1930
   },
   "documentation": {
     "examples": [
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 66
+        "python_modules": 67
       },
       {
         "package": "psi_field",
@@ -4509,6 +4509,18 @@
         "path": "src/scpn_quantum_control/phase/qnn_training.py"
       },
       {
+        "name": "ParameterShiftQNNLossLandscapeCaseResult",
+        "path": "src/scpn_quantum_control/phase/qnn_loss_landscape.py"
+      },
+      {
+        "name": "ParameterShiftQNNLossLandscapePoint",
+        "path": "src/scpn_quantum_control/phase/qnn_loss_landscape.py"
+      },
+      {
+        "name": "ParameterShiftQNNLossLandscapeSuiteResult",
+        "path": "src/scpn_quantum_control/phase/qnn_loss_landscape.py"
+      },
+      {
         "name": "ParameterShiftQNNMultiSeedConvergenceCaseResult",
         "path": "src/scpn_quantum_control/phase/qnn_convergence.py"
       },
@@ -8423,6 +8435,7 @@
       "src/scpn_quantum_control/phase/qnn_finite_shot.py",
       "src/scpn_quantum_control/phase/qnn_framework_agreement.py",
       "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",
+      "src/scpn_quantum_control/phase/qnn_loss_landscape.py",
       "src/scpn_quantum_control/phase/qnn_optimizer_benchmark.py",
       "src/scpn_quantum_control/phase/qnn_training.py",
       "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
@@ -10594,6 +10607,7 @@
       "tests/test_phase_qnn_finite_shot.py",
       "tests/test_phase_qnn_framework_agreement.py",
       "tests/test_phase_qnn_framework_bridge_matrix.py",
+      "tests/test_phase_qnn_loss_landscape.py",
       "tests/test_phase_qnn_optimizer_benchmark.py",
       "tests/test_phase_qnn_training.py",
       "tests/test_phase_qnode_affinity_benchmark.py",

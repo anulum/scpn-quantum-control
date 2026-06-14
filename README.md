@@ -75,8 +75,8 @@ This package is designed for organisations that want to:
 |---|---:|
 | Package version | 0.9.11 |
 | Public API exports | 587 |
-| Python source modules | 808 |
-| Public Python classes | 1664 |
+| Python source modules | 809 |
+| Public Python classes | 1667 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -85,7 +85,7 @@ This package is designed for organisations that want to:
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1929 |
+| Python test files | 1930 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 19 |
 
