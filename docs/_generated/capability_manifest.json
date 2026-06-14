@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 574,
+    "public_api_exports": 575,
     "public_documentation_pages": 240,
-    "python_model_classes": 1632,
+    "python_model_classes": 1634,
     "python_model_source_modules": 808,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
-    "test_files": 1922
+    "test_files": 1924
   },
   "documentation": {
     "examples": [
@@ -4561,6 +4561,10 @@
         "path": "src/scpn_quantum_control/paper0/pathology_criticality_validation.py"
       },
       {
+        "name": "PauliCovarianceObservable",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
         "name": "PauliTerm",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
@@ -7349,6 +7353,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "VQLSGradShafranovResult",
+        "path": "src/scpn_quantum_control/control/vqls_gs.py"
+      },
+      {
         "name": "VQLS_GradShafranov",
         "path": "src/scpn_quantum_control/control/vqls_gs.py"
       },
@@ -8687,6 +8695,7 @@
     "TrotterEvolutionConfig",
     "UPDEPhaseArtifact",
     "VJPResult",
+    "VQLSGradShafranovResult",
     "VQLS_GradShafranov",
     "VirtualRealtimeClock",
     "WeightedGradientResult",
@@ -9185,7 +9194,6 @@
       "tests/test_applications_benchmark_contracts.py",
       "tests/test_appqsim.py",
       "tests/test_appqsim_protocol.py",
-      "tests/test_snn_neurocore_e2e.py",
       "tests/test_async_runner.py",
       "tests/test_audit_coverage_gaps.py",
       "tests/test_audit_mock_stub_usage.py",
@@ -9685,6 +9693,7 @@
       "tests/test_capability_manifest.py",
       "tests/test_cft_analysis.py",
       "tests/test_check_commit_trailers.py",
+      "tests/test_check_internal_todo_policy.py",
       "tests/test_check_rust_pyi_exports.py",
       "tests/test_check_secrets.py",
       "tests/test_check_version_consistency.py",
@@ -9873,6 +9882,7 @@
       "tests/test_l16_director.py",
       "tests/test_layer_selective_comparator_matrix.py",
       "tests/test_layer_selective_readiness.py",
+      "tests/test_lean_phase_import.py",
       "tests/test_lindblad.py",
       "tests/test_lindblad_engine.py",
       "tests/test_lindblad_ness.py",
@@ -11013,6 +11023,7 @@
       "tests/test_shadow_tomography.py",
       "tests/test_snn_adapter.py",
       "tests/test_snn_backward.py",
+      "tests/test_snn_neurocore_e2e.py",
       "tests/test_sparse_hamiltonian.py",
       "tests/test_spectral_bridge.py",
       "tests/test_spectral_form_factor.py",

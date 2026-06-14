@@ -31,6 +31,7 @@ _REGISTERED_OBSERVABLES = (
     "pauli_z",
     "weighted_pauli_sum",
     "pauli_product",
+    "pauli_covariance",
     "sparse_pauli_hamiltonian",
 )
 
@@ -129,6 +130,26 @@ class SparsePauliHamiltonian:
 
 
 @dataclass(frozen=True)
+class PauliCovarianceObservable:
+    """Symmetrised covariance between two Pauli-product observables."""
+
+    left: PauliTerm
+    right: PauliTerm
+
+    @property
+    def observable_kind(self) -> str:
+        """Return the public observable family represented by this covariance."""
+        return "pauli_covariance"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready covariance metadata."""
+        return {
+            "left": self.left.to_dict(),
+            "right": self.right.to_dict(),
+        }
+
+
+@dataclass(frozen=True)
 class PhaseQNodeSupportReport:
     """Structured support report for local Phase-QNode execution."""
 
@@ -171,7 +192,7 @@ class PhaseQNodeCircuit:
 
     n_qubits: int
     operations: tuple[PhaseQNodeOperation | OperationSpec, ...]
-    observable: str | PauliTerm | SparsePauliHamiltonian
+    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable
 
     def __post_init__(self) -> None:
         if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
@@ -322,17 +343,29 @@ def parameter_shift_phase_qnode_gradient(
     if not report.supported:
         raise PhaseQNodeSupportError(report)
     gradient = np.zeros_like(values)
+    base_result = execute_phase_qnode_circuit(circuit, values)
     for index in report.differentiable_parameters:
         plus = values.copy()
         minus = values.copy()
         plus[index] += np.pi / 2.0
         minus[index] -= np.pi / 2.0
-        gradient[index] = 0.5 * (
-            execute_phase_qnode_circuit(circuit, plus).value
-            - execute_phase_qnode_circuit(circuit, minus).value
-        )
+        if isinstance(circuit.observable, PauliCovarianceObservable):
+            plus_state = _execute_state(circuit, plus)
+            minus_state = _execute_state(circuit, minus)
+            gradient[index] = _covariance_product_rule_gradient(
+                base_result.state,
+                plus_state,
+                minus_state,
+                circuit.n_qubits,
+                circuit.observable,
+            )
+        else:
+            gradient[index] = 0.5 * (
+                execute_phase_qnode_circuit(circuit, plus).value
+                - execute_phase_qnode_circuit(circuit, minus).value
+            )
     return PhaseQNodeGradientResult(
-        value=execute_phase_qnode_circuit(circuit, values).value,
+        value=base_result.value,
         gradient=gradient,
         support_report=report,
         parameter_shift_evaluations=2 * len(report.differentiable_parameters),
@@ -360,9 +393,9 @@ def _parsed_operations(circuit: PhaseQNodeCircuit) -> tuple[PhaseQNodeOperation,
 
 
 def _normalise_observable(
-    observable: str | PauliTerm | SparsePauliHamiltonian,
+    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable,
     n_qubits: int,
-) -> str | PauliTerm | SparsePauliHamiltonian:
+) -> str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable:
     if isinstance(observable, str):
         normalized = observable.strip().lower()
         if normalized in {"x", "pauli_x"}:
@@ -373,7 +406,13 @@ def _normalise_observable(
             return PauliTerm(1.0, ((0, "z"),))
         return normalized
     max_qubit = -1
-    terms = observable.terms if isinstance(observable, SparsePauliHamiltonian) else (observable,)
+    terms: tuple[PauliTerm, ...]
+    if isinstance(observable, PauliCovarianceObservable):
+        terms = (observable.left, observable.right)
+    else:
+        terms = (
+            observable.terms if isinstance(observable, SparsePauliHamiltonian) else (observable,)
+        )
     for term in terms:
         max_qubit = max(max_qubit, *(qubit for qubit, _label in term.factors))
     if max_qubit >= n_qubits:
@@ -381,7 +420,11 @@ def _normalise_observable(
     return observable
 
 
-def _observable_kind(observable: str | PauliTerm | SparsePauliHamiltonian) -> str:
+def _observable_kind(
+    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable,
+) -> str:
+    if isinstance(observable, PauliCovarianceObservable):
+        return observable.observable_kind
     if isinstance(observable, SparsePauliHamiltonian):
         return "sparse_pauli_hamiltonian"
     if isinstance(observable, PauliTerm):
@@ -521,8 +564,10 @@ def _apply_gate_matrix(
 def _expectation_value(
     state: ComplexArray,
     n_qubits: int,
-    observable: str | PauliTerm | SparsePauliHamiltonian,
+    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable,
 ) -> float:
+    if isinstance(observable, PauliCovarianceObservable):
+        return _covariance_expectation(state, n_qubits, observable)
     if isinstance(observable, SparsePauliHamiltonian):
         return float(sum(_term_expectation(state, n_qubits, term) for term in observable.terms))
     if isinstance(observable, PauliTerm):
@@ -538,7 +583,95 @@ def _term_expectation(state: ComplexArray, n_qubits: int, term: PauliTerm) -> fl
     return float(np.real_if_close(value).real)
 
 
+def _execute_state(circuit: PhaseQNodeCircuit, values: FloatArray) -> ComplexArray:
+    state = np.zeros(2**circuit.n_qubits, dtype=np.complex128)
+    state[0] = 1.0 + 0.0j
+    for operation in _parsed_operations(circuit):
+        state = _apply_operation(state, circuit.n_qubits, operation, values)
+    return state
+
+
+def _covariance_expectation(
+    state: ComplexArray,
+    n_qubits: int,
+    observable: PauliCovarianceObservable,
+) -> float:
+    symmetrized = _symmetrized_product_expectation(
+        state,
+        n_qubits,
+        observable.left,
+        observable.right,
+    )
+    left_mean = _term_expectation(state, n_qubits, observable.left)
+    right_mean = _term_expectation(state, n_qubits, observable.right)
+    return float(symmetrized - left_mean * right_mean)
+
+
+def _covariance_product_rule_gradient(
+    base_state: ComplexArray,
+    plus_state: ComplexArray,
+    minus_state: ComplexArray,
+    n_qubits: int,
+    observable: PauliCovarianceObservable,
+) -> float:
+    base_left = _term_expectation(base_state, n_qubits, observable.left)
+    base_right = _term_expectation(base_state, n_qubits, observable.right)
+    left_grad = 0.5 * (
+        _term_expectation(plus_state, n_qubits, observable.left)
+        - _term_expectation(minus_state, n_qubits, observable.left)
+    )
+    right_grad = 0.5 * (
+        _term_expectation(plus_state, n_qubits, observable.right)
+        - _term_expectation(minus_state, n_qubits, observable.right)
+    )
+    sym_grad = 0.5 * (
+        _symmetrized_product_expectation(
+            plus_state,
+            n_qubits,
+            observable.left,
+            observable.right,
+        )
+        - _symmetrized_product_expectation(
+            minus_state,
+            n_qubits,
+            observable.left,
+            observable.right,
+        )
+    )
+    return float(sym_grad - left_grad * base_right - base_left * right_grad)
+
+
+def _symmetrized_product_expectation(
+    state: ComplexArray,
+    n_qubits: int,
+    left: PauliTerm,
+    right: PauliTerm,
+) -> float:
+    left_right = _term_product_expectation(state, n_qubits, left, right)
+    right_left = _term_product_expectation(state, n_qubits, right, left)
+    return float(np.real_if_close(0.5 * (left_right + right_left)).real)
+
+
+def _term_product_expectation(
+    state: ComplexArray,
+    n_qubits: int,
+    left: PauliTerm,
+    right: PauliTerm,
+) -> complex:
+    transformed = _apply_term_operator(state, n_qubits, right)
+    transformed = _apply_term_operator(transformed, n_qubits, left)
+    return complex(left.coefficient * right.coefficient * np.vdot(state, transformed))
+
+
+def _apply_term_operator(state: ComplexArray, n_qubits: int, term: PauliTerm) -> ComplexArray:
+    transformed = cast(ComplexArray, state.copy())
+    for qubit, label in term.factors:
+        transformed = _apply_gate_matrix(transformed, n_qubits, (qubit,), _PAULI_MATRICES[label])
+    return transformed
+
+
 __all__ = [
+    "PauliCovarianceObservable",
     "PauliTerm",
     "PhaseQNodeCircuit",
     "PhaseQNodeExecutionResult",

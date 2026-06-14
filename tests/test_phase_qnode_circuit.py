@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.phase.qnode_circuit import (
+    PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
     PhaseQNodeSupportError,
@@ -96,6 +97,7 @@ def test_phase_qnode_registered_gate_family_executes_with_pauli_observables() ->
         "pauli_z",
         "weighted_pauli_sum",
         "pauli_product",
+        "pauli_covariance",
         "sparse_pauli_hamiltonian",
     }
 
@@ -129,6 +131,40 @@ def test_phase_qnode_parameter_shift_matches_finite_difference_for_registered_ge
     np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
     assert gradient.support_report.differentiable_parameters == (0, 1, 2)
     assert gradient.parameter_shift_evaluations == 6
+
+
+def test_phase_qnode_covariance_observable_matches_bell_reference() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("h", (0,)), ("cnot", (0, 1))),
+        observable=PauliCovarianceObservable(
+            PauliTerm(1.0, ((0, "z"),)),
+            PauliTerm(1.0, ((1, "z"),)),
+        ),
+    )
+
+    result = execute_phase_qnode_circuit(circuit, np.array([], dtype=float))
+
+    np.testing.assert_allclose(result.value, 1.0, atol=1e-12)
+    assert result.support_report.observable_kind == "pauli_covariance"
+
+
+def test_phase_qnode_covariance_gradient_uses_product_rule() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("ry", (0,), 0), ("cnot", (0, 1))),
+        observable=PauliCovarianceObservable(
+            PauliTerm(1.0, ((0, "z"),)),
+            PauliTerm(1.0, ((1, "z"),)),
+        ),
+    )
+    params = np.array([0.37], dtype=float)
+
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+
+    np.testing.assert_allclose(gradient.value, np.sin(params[0]) ** 2, atol=1e-12)
+    np.testing.assert_allclose(gradient.gradient, [np.sin(2.0 * params[0])], atol=1e-12)
+    assert gradient.parameter_shift_evaluations == 2
 
 
 def test_phase_qnode_unsupported_routes_fail_with_structured_support_report() -> None:

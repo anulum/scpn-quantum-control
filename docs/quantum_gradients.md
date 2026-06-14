@@ -927,6 +927,7 @@ parity suite when a concrete circuit family is required:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
     execute_phase_qnode_circuit,
@@ -946,6 +947,12 @@ gradient = parameter_shift_phase_qnode_gradient(circuit, params)
 parity = run_phase_qnode_framework_parity_suite()
 print(value.value, gradient.gradient, parity.frameworks)
 ```
+
+For covariance objectives, use `PauliCovarianceObservable(left, right)`.  The
+local statevector path evaluates the symmetrised covariance
+`0.5 <AB + BA> - <A><B>` and differentiates it with the product rule over the
+shifted component expectations, rather than applying a naive two-point shift to
+the nonlinear covariance scalar.
 
 The circuit family is intentionally bounded: unsupported gates, unregistered
 observables, dynamic provider paths, and hardware-backed gradients raise or

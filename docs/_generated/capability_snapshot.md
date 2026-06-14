@@ -6,9 +6,9 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.11 |
-| Public API exports | 574 |
+| Public API exports | 575 |
 | Python source modules | 808 |
-| Public Python classes | 1632 |
+| Public Python classes | 1634 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -17,7 +17,7 @@
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1922 |
+| Python test files | 1924 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 19 |
 
