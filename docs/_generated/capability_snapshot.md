@@ -8,7 +8,7 @@
 | Package version | 0.9.11 |
 | Public API exports | 575 |
 | Python source modules | 808 |
-| Public Python classes | 1635 |
+| Public Python classes | 1636 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |

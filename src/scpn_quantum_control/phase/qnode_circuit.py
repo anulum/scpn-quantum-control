@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
@@ -288,6 +288,29 @@ class PhaseQNodeGradientResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseQNodeMetricTensorResult:
+    """Pure-state metric tensor evidence for a supported Phase-QNode circuit."""
+
+    fubini_study_metric: FloatArray
+    quantum_fisher_information: FloatArray
+    derivative_norms: FloatArray
+    support_report: PhaseQNodeSupportReport
+    parameter_derivative_evaluations: int
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready metric tensor evidence."""
+        return {
+            "fubini_study_metric": self.fubini_study_metric.tolist(),
+            "quantum_fisher_information": self.quantum_fisher_information.tolist(),
+            "derivative_norms": self.derivative_norms.tolist(),
+            "support_report": self.support_report.to_dict(),
+            "parameter_derivative_evaluations": self.parameter_derivative_evaluations,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def registered_phase_qnode_gates() -> tuple[str, ...]:
     """Return the local Phase-QNode gate family."""
     return _REGISTERED_GATES
@@ -415,6 +438,60 @@ def parameter_shift_phase_qnode_gradient(
     )
 
 
+def phase_qnode_quantum_fisher_information(
+    circuit: PhaseQNodeCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeMetricTensorResult:
+    """Compute the pure-state QFI and Fubini-Study metric for a local QNode."""
+    values = _as_parameter_vector(parameters)
+    report = phase_qnode_support_report(circuit, values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    width = values.size
+    metric = np.zeros((width, width), dtype=np.float64)
+    overlaps = np.array([np.vdot(state, derivative) for derivative in derivatives])
+    for row in range(width):
+        for column in range(row, width):
+            raw = (
+                np.vdot(derivatives[row], derivatives[column])
+                - np.conj(overlaps[row]) * overlaps[column]
+            )
+            value = float(np.real_if_close(raw).real)
+            metric[row, column] = value
+            metric[column, row] = value
+    symmetrized_metric: FloatArray = np.asarray(0.5 * (metric + metric.T), dtype=np.float64)
+    qfi: FloatArray = np.asarray(4.0 * symmetrized_metric, dtype=np.float64)
+    derivative_norms = np.asarray(
+        [np.linalg.norm(derivative) for derivative in derivatives],
+        dtype=np.float64,
+    )
+    return PhaseQNodeMetricTensorResult(
+        fubini_study_metric=symmetrized_metric,
+        quantum_fisher_information=qfi,
+        derivative_norms=derivative_norms,
+        support_report=report,
+        parameter_derivative_evaluations=len(_parsed_operations(circuit)),
+        claim_boundary=(
+            "pure-state local Phase-QNode Fubini-Study metric and QFI for the "
+            "registered statevector gate family; no finite-shot classical Fisher, "
+            "density-matrix, noisy-channel, provider, or hardware metric claim"
+        ),
+    )
+
+
+def phase_qnode_natural_gradient_metric(
+    circuit: PhaseQNodeCircuit,
+) -> Callable[[FloatArray], FloatArray]:
+    """Return a metric provider for quantum natural-gradient optimisation."""
+
+    def metric(parameters: FloatArray) -> FloatArray:
+        result = phase_qnode_quantum_fisher_information(circuit, parameters)
+        return cast(FloatArray, result.fubini_study_metric.copy())
+
+    return metric
+
+
 def _parse_operation(operation: PhaseQNodeOperation | OperationSpec) -> PhaseQNodeOperation:
     if isinstance(operation, PhaseQNodeOperation):
         return operation
@@ -533,6 +610,55 @@ def _apply_operation(
     return _apply_gate_matrix(state, n_qubits, operation.qubits, matrix)
 
 
+def _execute_state_and_parameter_derivatives(
+    circuit: PhaseQNodeCircuit,
+    values: FloatArray,
+) -> tuple[ComplexArray, tuple[ComplexArray, ...]]:
+    state = np.zeros(2**circuit.n_qubits, dtype=np.complex128)
+    state[0] = 1.0 + 0.0j
+    derivatives = tuple(np.zeros_like(state) for _ in range(values.size))
+    for operation in _parsed_operations(circuit):
+        matrix = _operation_matrix(operation, values)
+        derivative_matrix = _operation_derivative_matrix(operation, values)
+        previous_state = state
+        state = _apply_gate_matrix(previous_state, circuit.n_qubits, operation.qubits, matrix)
+        updated: list[ComplexArray] = []
+        for index, derivative in enumerate(derivatives):
+            propagated = _apply_gate_matrix(derivative, circuit.n_qubits, operation.qubits, matrix)
+            if operation.parameter_index == index:
+                propagated = propagated + _apply_gate_matrix(
+                    previous_state,
+                    circuit.n_qubits,
+                    operation.qubits,
+                    derivative_matrix,
+                )
+            updated.append(cast(ComplexArray, propagated.astype(np.complex128, copy=False)))
+        derivatives = tuple(updated)
+    return state, derivatives
+
+
+def _operation_matrix(
+    operation: PhaseQNodeOperation,
+    parameters: FloatArray,
+) -> ComplexArray:
+    theta = 0.0
+    if operation.gate in _PARAMETRIC_GATES:
+        theta = float(parameters[cast(int, operation.parameter_index)])
+    return _gate_matrix(operation.gate, theta)
+
+
+def _operation_derivative_matrix(
+    operation: PhaseQNodeOperation,
+    parameters: FloatArray,
+) -> ComplexArray:
+    if operation.gate not in _PARAMETRIC_GATES:
+        return np.zeros(
+            (2 ** len(operation.qubits), 2 ** len(operation.qubits)), dtype=np.complex128
+        )
+    theta = float(parameters[cast(int, operation.parameter_index)])
+    return _gate_derivative_matrix(operation.gate, theta)
+
+
 def _gate_matrix(gate: str, theta: float) -> ComplexArray:
     if gate == "h":
         return np.asarray(_H, dtype=np.complex128)
@@ -598,6 +724,54 @@ def _gate_matrix(gate: str, theta: float) -> ComplexArray:
             dtype=np.complex128,
         )
     raise ValueError(f"unsupported gate matrix: {gate}")
+
+
+def _gate_derivative_matrix(gate: str, theta: float) -> ComplexArray:
+    if gate == "rx":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _X,
+            dtype=np.complex128,
+        )
+    if gate == "ry":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _Y,
+            dtype=np.complex128,
+        )
+    if gate == "rz":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _Z,
+            dtype=np.complex128,
+        )
+    if gate == "phase":
+        return np.array(
+            [[0.0, 0.0], [0.0, 1.0j * np.exp(1.0j * theta)]],
+            dtype=np.complex128,
+        )
+    if gate == "crx":
+        return _controlled(_gate_derivative_matrix("rx", theta))
+    if gate == "cry":
+        return _controlled(_gate_derivative_matrix("ry", theta))
+    if gate == "crz":
+        return _controlled(_gate_derivative_matrix("rz", theta))
+    if gate == "rxx":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_X, _X),
+            dtype=np.complex128,
+        )
+    if gate == "ryy":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_Y, _Y),
+            dtype=np.complex128,
+        )
+    if gate == "rzz":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_Z, _Z),
+            dtype=np.complex128,
+        )
+    raise ValueError(f"unsupported gate derivative matrix: {gate}")
 
 
 def _controlled(target: ComplexArray) -> ComplexArray:
@@ -750,12 +924,15 @@ __all__ = [
     "PhaseQNodeCircuit",
     "PhaseQNodeExecutionResult",
     "PhaseQNodeGradientResult",
+    "PhaseQNodeMetricTensorResult",
     "PhaseQNodeOperation",
     "PhaseQNodeSupportError",
     "PhaseQNodeSupportReport",
     "SparsePauliHamiltonian",
     "execute_phase_qnode_circuit",
     "parameter_shift_phase_qnode_gradient",
+    "phase_qnode_natural_gradient_metric",
+    "phase_qnode_quantum_fisher_information",
     "phase_qnode_support_report",
     "registered_phase_qnode_gates",
     "registered_phase_qnode_observables",

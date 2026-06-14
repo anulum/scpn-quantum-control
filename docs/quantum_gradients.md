@@ -733,6 +733,8 @@ import numpy as np
 
 from scpn_quantum_control.phase import (
     parameter_shift_natural_gradient_descent,
+    phase_qnode_natural_gradient_metric,
+    PhaseQNodeCircuit,
     validate_natural_gradient_training,
 )
 
@@ -764,6 +766,34 @@ identity metric is allowed as a reproducible preconditioner baseline, but it is
 labelled as such and is not a claim of quantum Fisher extraction. Non-symmetric
 metrics, wrong shapes, non-finite entries, singular regularised systems, unsafe
 hardware backends, and non-descent metrics fail closed.
+
+For registered local Phase-QNode circuits, the phase namespace also exposes an
+exact pure-state metric provider.  It propagates analytic state derivatives
+through the registered statevector gate family, computes the Fubini-Study
+metric and the quantum Fisher information relation `QFI = 4 * metric`, and
+returns the Fubini-Study metric in the shape expected by natural-gradient
+training:
+
+```python
+circuit = PhaseQNodeCircuit(
+    n_qubits=1,
+    operations=(("ry", (0,), 0),),
+    observable="pauli_z",
+)
+qnode_metric = phase_qnode_natural_gradient_metric(circuit)
+
+run = parameter_shift_natural_gradient_descent(
+    lambda params: float(1.0 - np.cos(params[0])),
+    np.array([0.8]),
+    metric_tensor=qnode_metric,
+    learning_rate=0.4,
+    max_steps=20,
+)
+```
+
+This route is bounded to pure-state local Phase-QNode statevectors. It is not a
+finite-shot classical Fisher estimator, density-matrix metric, noisy-channel
+metric, provider metric, or hardware metric claim.
 
 For reviewer-facing optimizer evidence, run the multi-start comparison audit:
 
