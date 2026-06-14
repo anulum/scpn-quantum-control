@@ -411,6 +411,7 @@ class _FakeTensorFlow:
         self.gradient_calls = 0
         self.function_traces = 0
         self.function_calls = 0
+        self.function_jit_flags: list[bool | None] = []
 
     def convert_to_tensor(
         self,
@@ -430,8 +431,9 @@ class _FakeTensorFlow:
     def GradientTape(self) -> _FakeTensorFlowGradientTape:
         return _FakeTensorFlowGradientTape(self)
 
-    def function(self, fn: object) -> object:
+    def function(self, fn: object, *, jit_compile: bool | None = None) -> object:
         self.function_traces += 1
+        self.function_jit_flags.append(jit_compile)
 
         def wrapped(*args: object, **kwargs: object) -> object:
             self.function_calls += 1
@@ -1009,6 +1011,65 @@ def test_tensorflow_function_compatibility_fails_closed_without_tf_function(
 
     with pytest.raises(RuntimeError, match="tf.function"):
         tensorflow_bridge.run_tensorflow_function_compatibility_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            params=np.array([0.45], dtype=float),
+        )
+
+
+def test_tensorflow_xla_compatibility_audit_requests_jit_compile(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
+
+    result = tensorflow_bridge.run_tensorflow_xla_compatibility_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params.numpy(),
+    )
+    assert isinstance(
+        result,
+        tensorflow_bridge.PhaseTensorFlowXLACompatibilityResult,
+    )
+    assert result.passed
+    assert result.xla_compile_requested
+    assert result.function_supported
+    assert result.gradient_tape_supported
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "bounded_tensorflow_xla_compatibility"
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert fake_tf.function_jit_flags == [True]
+    assert fake_tf.function_calls == 1
+    assert fake_tf.gradient_calls == 1
+    assert result.to_dict()["xla_compile_requested"] is True
+
+
+def test_tensorflow_xla_compatibility_fails_closed_without_jit_compile(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+
+    def function_without_jit(fn: object) -> object:
+        return fn
+
+    fake_tf.function = function_without_jit  # type: ignore[method-assign]
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+
+    with pytest.raises(RuntimeError, match="jit_compile"):
+        tensorflow_bridge.run_tensorflow_xla_compatibility_audit(
             features=np.array([[0.0]], dtype=float),
             labels=np.array([0.0], dtype=float),
             params=np.array([0.45], dtype=float),

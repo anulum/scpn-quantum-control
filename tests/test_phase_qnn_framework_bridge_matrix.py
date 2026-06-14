@@ -61,9 +61,11 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
         tensorflow.public_api == "tensorflow_bounded_qnn_value_and_grad"
         ",run_tensorflow_gradient_tape_compatibility_audit"
         ",run_tensorflow_function_compatibility_audit"
+        ",run_tensorflow_xla_compatibility_audit"
     )
     assert "bounded_tensorflow_gradient_tape_gradient" in tensorflow.gradient_route
     assert "bounded_tensorflow_function_gradient" in tensorflow.gradient_route
+    assert "bounded_tensorflow_xla_gradient" in tensorflow.gradient_route
 
 
 def test_bounded_qnn_framework_bridge_matrix_records_fail_closed_gaps() -> None:

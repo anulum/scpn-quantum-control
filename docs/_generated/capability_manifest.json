@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 585,
     "public_documentation_pages": 240,
-    "python_model_classes": 1656,
+    "python_model_classes": 1657,
     "python_model_source_modules": 808,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
@@ -4778,6 +4778,10 @@
       },
       {
         "name": "PhaseTensorFlowQNNGradientResult",
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+      },
+      {
+        "name": "PhaseTensorFlowXLACompatibilityResult",
         "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
       },
       {

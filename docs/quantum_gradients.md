@@ -1308,6 +1308,7 @@ import numpy as np
 from scpn_quantum_control.phase import (
     run_tensorflow_function_compatibility_audit,
     run_tensorflow_gradient_tape_compatibility_audit,
+    run_tensorflow_xla_compatibility_audit,
     tensorflow_parameter_shift_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -1325,6 +1326,11 @@ tf_tape_audit = run_tensorflow_gradient_tape_compatibility_audit(
     params=np.array([0.45], dtype=float),
 )
 tf_function_audit = run_tensorflow_function_compatibility_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    params=np.array([0.45], dtype=float),
+)
+tf_xla_audit = run_tensorflow_xla_compatibility_audit(
     features=np.array([[0.0], [np.pi]], dtype=float),
     labels=np.array([0.0, 1.0], dtype=float),
     params=np.array([0.45], dtype=float),
@@ -1351,8 +1357,11 @@ route verifies TensorFlow `GradientTape` only for the same bounded classifier
 loss and checks the returned gradient against the SCPN parameter-shift
 reference. The separate `run_tensorflow_function_compatibility_audit(...)`
 route traces only that same bounded loss through `tf.function` and checks its
-`GradientTape` gradient against the same reference. All remain outside arbitrary
-provider or simulator autodiff.
+`GradientTape` gradient against the same reference. The separate
+`run_tensorflow_xla_compatibility_audit(...)` route requests
+`tf.function(jit_compile=True)` only for that same bounded loss. All remain
+outside arbitrary provider or simulator autodiff and do not claim broad XLA
+lowering coverage.
 
 ## Verification requirements
 
