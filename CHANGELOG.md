@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added bounded PyTorch `torch.func` compatibility evidence via
+  `run_torch_func_compatibility_audit`, including `torch.func.grad`,
+  `torch.func.vmap`, and `torch.func.jacrev` checks against the canonical
+  parameter-shift reference, fail-closed missing-`torch.func` handling, phase
+  exports, framework bridge matrix updates, module tests, generated capability
+  updates, and public documentation.
 - 2026-06-14 — Added bounded PyTorch custom-autograd phase-QNN gradient
   evidence via `torch_autograd_qnn_value_and_grad`, including a custom
   `torch.autograd.Function` route, fail-closed optional dependency surface

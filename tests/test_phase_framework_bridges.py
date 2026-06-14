@@ -18,6 +18,7 @@ from scpn_quantum_control.phase import (
     PhaseTensorFlowParameterShiftResult,
     PhaseTensorFlowQNNGradientResult,
     PhaseTorchAutogradQNNGradientResult,
+    PhaseTorchFuncCompatibilityResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchQNNGradientResult,
     is_phase_tensorflow_available,
@@ -25,6 +26,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
+    run_torch_func_compatibility_audit,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
     torch_autograd_qnn_value_and_grad,
@@ -35,6 +37,8 @@ from scpn_quantum_control.phase import (
 
 class _FakeTorchTensor:
     def __init__(self, values: object) -> None:
+        if isinstance(values, _FakeTorchTensor):
+            values = values.numpy()
         self._values = np.asarray(values, dtype=float)
         self.grad: _FakeTorchTensor | None = None
 
@@ -91,11 +95,56 @@ class _FakeTorchAutograd:
         return (result,)
 
 
+class _FakeTorchFunc:
+    def __init__(self) -> None:
+        self.grad_calls = 0
+        self.vmap_calls = 0
+        self.jacrev_calls = 0
+
+    def grad(self, loss_fn: object) -> object:
+        del loss_fn
+        self.grad_calls += 1
+
+        def gradient(params: object) -> _FakeTorchTensor:
+            return _FakeTorchTensor(self._gradient(params))
+
+        return gradient
+
+    def vmap(self, gradient_fn: object) -> object:
+        self.vmap_calls += 1
+
+        def mapped(params_batch: object) -> _FakeTorchTensor:
+            batch = np.asarray(_FakeTorchTensor(params_batch).numpy(), dtype=float)
+            return _FakeTorchTensor(np.vstack([self._gradient(row) for row in batch]))
+
+        return mapped
+
+    def jacrev(self, loss_fn: object) -> object:
+        del loss_fn
+        self.jacrev_calls += 1
+
+        def jacobian(params: object) -> _FakeTorchTensor:
+            return _FakeTorchTensor(self._gradient(params))
+
+        return jacobian
+
+    @staticmethod
+    def _gradient(params: object) -> np.ndarray:
+        features = np.array([[0.0], [np.pi]], dtype=float)
+        labels = np.array([0.0, 1.0], dtype=float)
+        return parameter_shift_qnn_classifier_gradient(
+            features,
+            labels,
+            _FakeTorchTensor(params).numpy(),
+        )
+
+
 class _FakeTorch:
     float64 = np.float64
 
     def __init__(self) -> None:
         self.autograd = _FakeTorchAutograd()
+        self.func = _FakeTorchFunc()
         self.as_tensor_calls: list[np.ndarray] = []
 
     def as_tensor(self, values: object, *, dtype: object | None = None) -> _FakeTorchTensor:
@@ -109,6 +158,12 @@ class _FakeTorchWithoutAutogradFunction(_FakeTorch):
     def __init__(self) -> None:
         super().__init__()
         self.autograd = object()
+
+
+class _FakeTorchWithoutFunc(_FakeTorch):
+    def __init__(self) -> None:
+        super().__init__()
+        self.func = object()
 
 
 class _FakeTensorFlowTensor:
@@ -273,6 +328,64 @@ def test_torch_autograd_qnn_gradient_fails_closed_without_function(
         )
 
 
+def test_torch_func_compatibility_audit_checks_grad_vmap_and_jacrev(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = _FakeTorchTensor(np.array([0.45], dtype=float))
+    params_batch = np.array([[0.25], [0.45], [0.65]], dtype=float)
+
+    result = run_torch_func_compatibility_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        params_batch=params_batch,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params.numpy(),
+    )
+    expected_batch = np.vstack(
+        [parameter_shift_qnn_classifier_gradient(features, labels, row) for row in params_batch],
+    )
+    assert isinstance(result, PhaseTorchFuncCompatibilityResult)
+    assert result.passed
+    assert result.func_grad_supported
+    assert result.func_vmap_supported
+    assert result.func_jacrev_supported
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "bounded_torch_func_compatibility"
+    np.testing.assert_allclose(result.grad_gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.jacrev_gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.vmap_gradients, expected_batch, atol=1e-12)
+    assert fake_torch.func.grad_calls == 1
+    assert fake_torch.func.vmap_calls == 1
+    assert fake_torch.func.jacrev_calls == 1
+    assert result.to_dict()["func_vmap_supported"] is True
+
+
+def test_torch_func_compatibility_audit_fails_closed_without_torch_func(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorchWithoutFunc()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    with pytest.raises(RuntimeError, match="torch.func"):
+        run_torch_func_compatibility_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            params=np.array([0.45], dtype=float),
+            params_batch=np.array([[0.45]], dtype=float),
+        )
+
+
 def test_torch_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -420,6 +533,13 @@ def test_framework_bridges_fail_closed_when_optional_dependency_missing(
             np.array([[0.0]], dtype=float),
             np.array([0.0], dtype=float),
             np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="torch blocked"):
+        run_torch_func_compatibility_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            params=np.array([0.2], dtype=float),
+            params_batch=np.array([[0.2]], dtype=float),
         )
     with pytest.raises(ImportError, match="tensorflow blocked"):
         tensorflow_parameter_shift_value_and_grad(

@@ -143,6 +143,53 @@ class PhaseTorchAutogradQNNGradientResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTorchFuncCompatibilityResult:
+    """Bounded phase-QNN compatibility evidence for ``torch.func`` transforms."""
+
+    grad_gradient: FloatArray
+    vmap_gradients: FloatArray
+    jacrev_gradient: FloatArray
+    parameter_shift_gradient: FloatArray
+    parameter_shift_batch_gradients: FloatArray
+    torch_grad_gradient: Any
+    torch_vmap_gradients: Any
+    torch_jacrev_gradient: Any
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    func_grad_supported: bool
+    func_vmap_supported: bool
+    func_jacrev_supported: bool
+    native_framework_autodiff: bool = True
+    host_boundary: bool = False
+    claim_boundary: str = "bounded_torch_func_compatibility"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable PyTorch ``torch.func`` evidence metadata."""
+        return {
+            "grad_gradient": self.grad_gradient.copy(),
+            "vmap_gradients": self.vmap_gradients.copy(),
+            "jacrev_gradient": self.jacrev_gradient.copy(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.copy(),
+            "parameter_shift_batch_gradients": self.parameter_shift_batch_gradients.copy(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "func_grad_supported": self.func_grad_supported,
+            "func_vmap_supported": self.func_vmap_supported,
+            "func_jacrev_supported": self.func_jacrev_supported,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_boundary": self.host_boundary,
+            "claim_boundary": self.claim_boundary,
+            "torch_grad_gradient_type": type(self.torch_grad_gradient).__name__,
+            "torch_vmap_gradients_type": type(self.torch_vmap_gradients).__name__,
+            "torch_jacrev_gradient_type": type(self.torch_jacrev_gradient).__name__,
+        }
+
+
 def _load_torch() -> Any:
     try:
         import torch
@@ -182,6 +229,19 @@ def _as_feature_matrix(features: ArrayLike) -> FloatArray:
     return matrix.astype(np.float64, copy=True)
 
 
+def _as_parameter_matrix(name: str, values: object, *, width: int | None = None) -> FloatArray:
+    matrix = np.asarray(values, dtype=float)
+    if matrix.ndim != 2:
+        raise ValueError(f"{name} must be a two-dimensional array")
+    if matrix.shape[0] == 0 or matrix.shape[1] == 0:
+        raise ValueError(f"{name} must not be empty")
+    if width is not None and matrix.shape[1] != width:
+        raise ValueError(f"{name} width must be {width}, got {matrix.shape[1]}")
+    if not np.all(np.isfinite(matrix)):
+        raise ValueError(f"{name} must contain only finite values")
+    return matrix.astype(np.float64, copy=True)
+
+
 def _as_label_vector(labels: ArrayLike, *, n_samples: int) -> FloatArray:
     vector = np.asarray(labels, dtype=float)
     if vector.ndim != 1:
@@ -212,6 +272,20 @@ def _torch_values_to_numpy(values: object) -> FloatArray:
     if callable(numpy_method):
         candidate = numpy_method()
     return _as_parameter_vector("values", candidate)
+
+
+def _torch_batch_to_numpy(values: object) -> FloatArray:
+    candidate = values
+    detach = getattr(candidate, "detach", None)
+    if callable(detach):
+        candidate = detach()
+    cpu = getattr(candidate, "cpu", None)
+    if callable(cpu):
+        candidate = cpu()
+    numpy_method = getattr(candidate, "numpy", None)
+    if callable(numpy_method):
+        candidate = numpy_method()
+    return _as_parameter_matrix("values", candidate)
 
 
 def _torch_tensor(torch_module: Any, values: object) -> Any:
@@ -246,6 +320,16 @@ def _torch_autograd_grad(torch_module: Any) -> Any:
     return grad
 
 
+def _torch_func_transforms(torch_module: Any) -> tuple[Any, Any, Any]:
+    torch_func = getattr(torch_module, "func", None)
+    grad = getattr(torch_func, "grad", None)
+    vmap = getattr(torch_func, "vmap", None)
+    jacrev = getattr(torch_func, "jacrev", None)
+    if torch_func is None or not callable(grad) or not callable(vmap) or not callable(jacrev):
+        raise RuntimeError("PyTorch module does not expose torch.func.grad/vmap/jacrev")
+    return grad, vmap, jacrev
+
+
 def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
     tensor = _torch_tensor(torch_module, values)
     detach = getattr(tensor, "detach", None)
@@ -258,6 +342,26 @@ def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
     if not callable(requires_grad):
         raise RuntimeError("PyTorch tensor does not expose requires_grad_")
     return requires_grad(True)
+
+
+def _torch_bounded_qnn_loss_tensor(
+    torch_module: Any,
+    feature_tensor: Any,
+    label_tensor: Any,
+    parameter_tensor: Any,
+) -> Any:
+    unsqueeze = getattr(parameter_tensor, "unsqueeze", None)
+    if not callable(unsqueeze):
+        raise RuntimeError("PyTorch tensor does not expose unsqueeze")
+    cos = getattr(torch_module, "cos", None)
+    mean = getattr(torch_module, "mean", None)
+    if not callable(cos) or not callable(mean):
+        raise RuntimeError("PyTorch module does not expose cos and mean")
+    shifted = feature_tensor + unsqueeze(0)
+    probabilities = 0.5 * (1.0 - cos(shifted))
+    predictions = mean(probabilities, dim=1)
+    residual = predictions - label_tensor
+    return mean(residual * residual)
 
 
 def _bounded_qnn_loss_gradient_reference(
@@ -500,11 +604,104 @@ def torch_autograd_qnn_value_and_grad(
     )
 
 
+def run_torch_func_compatibility_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike | object,
+    params_batch: ArrayLike | object,
+    tolerance: float = 1e-6,
+) -> PhaseTorchFuncCompatibilityResult:
+    """Audit bounded phase-QNN compatibility with ``torch.func`` transforms."""
+    torch_module = _load_torch()
+    torch_func_grad, torch_func_vmap, torch_func_jacrev = _torch_func_transforms(torch_module)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _torch_values_to_numpy(params)
+    if parameter_values.shape != (feature_matrix.shape[1],):
+        raise ValueError(
+            "params width must match feature width: "
+            f"{parameter_values.shape[0]} != {feature_matrix.shape[1]}",
+        )
+    parameter_batch = _torch_batch_to_numpy(params_batch)
+    parameter_batch = _as_parameter_matrix(
+        "params_batch",
+        parameter_batch,
+        width=feature_matrix.shape[1],
+    )
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_tensor = _torch_tensor(torch_module, feature_matrix)
+    label_tensor = _torch_tensor(torch_module, label_vector)
+
+    def loss_fn(parameter_tensor: Any) -> Any:
+        return _torch_bounded_qnn_loss_tensor(
+            torch_module,
+            feature_tensor,
+            label_tensor,
+            parameter_tensor,
+        )
+
+    grad_fn = torch_func_grad(loss_fn)
+    vmap_grad_fn = torch_func_vmap(grad_fn)
+    jacrev_fn = torch_func_jacrev(loss_fn)
+    torch_params = _torch_tensor(torch_module, parameter_values)
+    torch_params_batch = _torch_tensor(torch_module, parameter_batch)
+    torch_grad_gradient = grad_fn(torch_params)
+    torch_vmap_gradients = vmap_grad_fn(torch_params_batch)
+    torch_jacrev_gradient = jacrev_fn(torch_params)
+    grad_gradient = _torch_values_to_numpy(torch_grad_gradient)
+    vmap_gradients = _torch_batch_to_numpy(torch_vmap_gradients)
+    jacrev_gradient = _torch_values_to_numpy(torch_jacrev_gradient)
+    parameter_shift_gradient = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    parameter_shift_gradient = _as_parameter_vector(
+        "SCPN bounded phase-QNN parameter-shift gradient",
+        parameter_shift_gradient,
+        width=parameter_values.size,
+    )
+    parameter_shift_batch_gradients = np.vstack(
+        [
+            parameter_shift_qnn_classifier_gradient(feature_matrix, label_vector, row)
+            for row in parameter_batch
+        ],
+    )
+    deltas = (
+        grad_gradient - parameter_shift_gradient,
+        jacrev_gradient - parameter_shift_gradient,
+        (vmap_gradients - parameter_shift_batch_gradients).reshape(-1),
+    )
+    flat_delta = np.concatenate([delta.reshape(-1) for delta in deltas])
+    max_abs_error = float(np.max(np.abs(flat_delta))) if flat_delta.size else 0.0
+    l2_error = float(np.linalg.norm(flat_delta))
+    return PhaseTorchFuncCompatibilityResult(
+        grad_gradient=grad_gradient,
+        vmap_gradients=vmap_gradients,
+        jacrev_gradient=jacrev_gradient,
+        parameter_shift_gradient=parameter_shift_gradient,
+        parameter_shift_batch_gradients=parameter_shift_batch_gradients,
+        torch_grad_gradient=torch_grad_gradient,
+        torch_vmap_gradients=torch_vmap_gradients,
+        torch_jacrev_gradient=torch_jacrev_gradient,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=bool(max_abs_error <= tolerance_value),
+        func_grad_supported=True,
+        func_vmap_supported=True,
+        func_jacrev_supported=True,
+    )
+
+
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
+    "PhaseTorchFuncCompatibilityResult",
     "PhaseTorchParameterShiftResult",
     "PhaseTorchQNNGradientResult",
     "is_phase_torch_available",
+    "run_torch_func_compatibility_audit",
     "torch_autograd_qnn_value_and_grad",
     "torch_bounded_qnn_value_and_grad",
     "torch_parameter_shift_value_and_grad",

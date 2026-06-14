@@ -44,8 +44,10 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     assert pytorch.analytic_framework_gradient
     assert (
         pytorch.public_api == "torch_bounded_qnn_value_and_grad,torch_autograd_qnn_value_and_grad"
+        ",run_torch_func_compatibility_audit"
     )
     assert "torch_bounded_phase_qnn_custom_autograd_function" in pytorch.gradient_route
+    assert "bounded_torch_func_grad_vmap_jacrev" in pytorch.gradient_route
 
     tensorflow = result.capability_by_framework("tensorflow")
     assert tensorflow.supported

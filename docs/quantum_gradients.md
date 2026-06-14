@@ -176,7 +176,9 @@ operations and verifies JAX `value_and_grad` against the SCPN parameter-shift
 reference, plus `torch_bounded_qnn_value_and_grad(...)`, which returns PyTorch
 tensors from the analytic bounded-model gradient,
 `torch_autograd_qnn_value_and_grad(...)`, which wraps the bounded model in a
-custom `torch.autograd.Function`, and
+custom `torch.autograd.Function`,
+`run_torch_func_compatibility_audit(...)`, which checks bounded
+`torch.func.grad`, `torch.func.vmap`, and `torch.func.jacrev` compatibility, and
 `tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
 from the analytic bounded-model gradient. Each route checks the same
 parameter-shift reference. These are intentionally narrow bridge promotions:
@@ -1320,8 +1322,10 @@ run SCPN's deterministic parameter-shift rule on the host, and return NumPy plus
 framework tensor payloads. Multi-frequency rules preserve the native method and
 shift-term count in the adapter result. The separate
 `torch_autograd_qnn_value_and_grad(...)` route is native PyTorch autograd only
-for the bounded phase-QNN model and remains outside arbitrary provider or
-simulator autodiff.
+for the bounded phase-QNN model. The separate
+`run_torch_func_compatibility_audit(...)` route verifies `torch.func.grad`,
+`vmap`, and `jacrev` only for the same bounded model. Both remain outside
+arbitrary provider or simulator autodiff.
 
 ## Verification requirements
 

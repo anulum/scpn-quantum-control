@@ -1260,6 +1260,9 @@ is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 is_phase_torch_available() -> bool
 torch_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTorchParameterShiftResult
+torch_bounded_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> PhaseTorchQNNGradientResult
+torch_autograd_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> PhaseTorchAutogradQNNGradientResult
+run_torch_func_compatibility_audit(features, labels, params, params_batch, tolerance=1e-6) -> PhaseTorchFuncCompatibilityResult
 is_phase_tensorflow_available() -> bool
 tensorflow_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTensorFlowParameterShiftResult
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
