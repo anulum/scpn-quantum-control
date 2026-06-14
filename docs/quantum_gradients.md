@@ -178,7 +178,9 @@ tensors from the analytic bounded-model gradient,
 `torch_autograd_qnn_value_and_grad(...)`, which wraps the bounded model in a
 custom `torch.autograd.Function`,
 `run_torch_func_compatibility_audit(...)`, which checks bounded
-`torch.func.grad`, `torch.func.vmap`, and `torch.func.jacrev` compatibility, and
+`torch.func.grad`, `torch.func.vmap`, and `torch.func.jacrev` compatibility,
+`run_torch_compile_compatibility_audit(...)`, which checks bounded
+`torch.compile` gradient compatibility, and
 `tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
 from the analytic bounded-model gradient. Each route checks the same
 parameter-shift reference. These are intentionally narrow bridge promotions:
@@ -1324,7 +1326,9 @@ shift-term count in the adapter result. The separate
 `torch_autograd_qnn_value_and_grad(...)` route is native PyTorch autograd only
 for the bounded phase-QNN model. The separate
 `run_torch_func_compatibility_audit(...)` route verifies `torch.func.grad`,
-`vmap`, and `jacrev` only for the same bounded model. Both remain outside
+`vmap`, and `jacrev` only for the same bounded model. The separate
+`run_torch_compile_compatibility_audit(...)` route verifies compiled bounded-loss
+gradients only for that same model. All remain outside
 arbitrary provider or simulator autodiff.
 
 ## Verification requirements

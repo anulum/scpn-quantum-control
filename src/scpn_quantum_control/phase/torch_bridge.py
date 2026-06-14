@@ -190,6 +190,47 @@ class PhaseTorchFuncCompatibilityResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTorchCompileCompatibilityResult:
+    """Bounded phase-QNN compatibility evidence for ``torch.compile``."""
+
+    gradient: FloatArray
+    parameter_shift_gradient: FloatArray
+    torch_gradient: Any
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    torch_compile_supported: bool
+    compiled_loss_supported: bool
+    compiled_gradient_supported: bool
+    fullgraph: bool
+    dynamic: bool
+    native_framework_autodiff: bool = True
+    host_boundary: bool = False
+    claim_boundary: str = "bounded_torch_compile_compatibility"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable PyTorch compile evidence metadata."""
+        return {
+            "gradient": self.gradient.copy(),
+            "parameter_shift_gradient": self.parameter_shift_gradient.copy(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "torch_compile_supported": self.torch_compile_supported,
+            "compiled_loss_supported": self.compiled_loss_supported,
+            "compiled_gradient_supported": self.compiled_gradient_supported,
+            "fullgraph": self.fullgraph,
+            "dynamic": self.dynamic,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_boundary": self.host_boundary,
+            "claim_boundary": self.claim_boundary,
+            "torch_gradient_type": type(self.torch_gradient).__name__,
+        }
+
+
 def _load_torch() -> Any:
     try:
         import torch
@@ -328,6 +369,13 @@ def _torch_func_transforms(torch_module: Any) -> tuple[Any, Any, Any]:
     if torch_func is None or not callable(grad) or not callable(vmap) or not callable(jacrev):
         raise RuntimeError("PyTorch module does not expose torch.func.grad/vmap/jacrev")
     return grad, vmap, jacrev
+
+
+def _torch_compile(torch_module: Any) -> Any:
+    compile_fn = getattr(torch_module, "compile", None)
+    if not callable(compile_fn):
+        raise RuntimeError("PyTorch module does not expose torch.compile")
+    return compile_fn
 
 
 def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
@@ -695,12 +743,81 @@ def run_torch_func_compatibility_audit(
     )
 
 
+def run_torch_compile_compatibility_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike | object,
+    tolerance: float = 1e-6,
+    fullgraph: bool = True,
+    dynamic: bool = False,
+) -> PhaseTorchCompileCompatibilityResult:
+    """Audit bounded phase-QNN compatibility with ``torch.compile``."""
+    torch_module = _load_torch()
+    compile_fn = _torch_compile(torch_module)
+    torch_func_grad, _torch_func_vmap, _torch_func_jacrev = _torch_func_transforms(torch_module)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _torch_values_to_numpy(params)
+    if parameter_values.shape != (feature_matrix.shape[1],):
+        raise ValueError(
+            "params width must match feature width: "
+            f"{parameter_values.shape[0]} != {feature_matrix.shape[1]}",
+        )
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_tensor = _torch_tensor(torch_module, feature_matrix)
+    label_tensor = _torch_tensor(torch_module, label_vector)
+
+    def loss_fn(parameter_tensor: Any) -> Any:
+        return _torch_bounded_qnn_loss_tensor(
+            torch_module,
+            feature_tensor,
+            label_tensor,
+            parameter_tensor,
+        )
+
+    compiled_loss_fn = compile_fn(loss_fn, fullgraph=bool(fullgraph), dynamic=bool(dynamic))
+    grad_fn = torch_func_grad(compiled_loss_fn)
+    torch_params = _torch_tensor(torch_module, parameter_values)
+    torch_gradient = grad_fn(torch_params)
+    gradient = _torch_values_to_numpy(torch_gradient)
+    parameter_shift_gradient = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+    )
+    parameter_shift_gradient = _as_parameter_vector(
+        "SCPN bounded phase-QNN parameter-shift gradient",
+        parameter_shift_gradient,
+        width=parameter_values.size,
+    )
+    delta = gradient - parameter_shift_gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    l2_error = float(np.linalg.norm(delta))
+    return PhaseTorchCompileCompatibilityResult(
+        gradient=gradient,
+        parameter_shift_gradient=parameter_shift_gradient,
+        torch_gradient=torch_gradient,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=bool(max_abs_error <= tolerance_value),
+        torch_compile_supported=True,
+        compiled_loss_supported=True,
+        compiled_gradient_supported=True,
+        fullgraph=bool(fullgraph),
+        dynamic=bool(dynamic),
+    )
+
+
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
+    "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchFuncCompatibilityResult",
     "PhaseTorchParameterShiftResult",
     "PhaseTorchQNNGradientResult",
     "is_phase_torch_available",
+    "run_torch_compile_compatibility_audit",
     "run_torch_func_compatibility_audit",
     "torch_autograd_qnn_value_and_grad",
     "torch_bounded_qnn_value_and_grad",

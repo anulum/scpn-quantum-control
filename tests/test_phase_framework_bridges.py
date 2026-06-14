@@ -18,6 +18,7 @@ from scpn_quantum_control.phase import (
     PhaseTensorFlowParameterShiftResult,
     PhaseTensorFlowQNNGradientResult,
     PhaseTorchAutogradQNNGradientResult,
+    PhaseTorchCompileCompatibilityResult,
     PhaseTorchFuncCompatibilityResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchQNNGradientResult,
@@ -26,6 +27,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
+    run_torch_compile_compatibility_audit,
     run_torch_func_compatibility_audit,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
@@ -146,12 +148,23 @@ class _FakeTorch:
         self.autograd = _FakeTorchAutograd()
         self.func = _FakeTorchFunc()
         self.as_tensor_calls: list[np.ndarray] = []
+        self.compile_calls: list[dict[str, object]] = []
 
     def as_tensor(self, values: object, *, dtype: object | None = None) -> _FakeTorchTensor:
         del dtype
         array = np.asarray(values, dtype=float)
         self.as_tensor_calls.append(array.copy())
         return _FakeTorchTensor(array)
+
+    def compile(
+        self,
+        fn: object,
+        *,
+        fullgraph: bool = True,
+        dynamic: bool = False,
+    ) -> object:
+        self.compile_calls.append({"fullgraph": fullgraph, "dynamic": dynamic})
+        return fn
 
 
 class _FakeTorchWithoutAutogradFunction(_FakeTorch):
@@ -164,6 +177,10 @@ class _FakeTorchWithoutFunc(_FakeTorch):
     def __init__(self) -> None:
         super().__init__()
         self.func = object()
+
+
+class _FakeTorchWithoutCompile(_FakeTorch):
+    compile = None
 
 
 class _FakeTensorFlowTensor:
@@ -386,6 +403,56 @@ def test_torch_func_compatibility_audit_fails_closed_without_torch_func(
         )
 
 
+def test_torch_compile_compatibility_audit_checks_compiled_grad(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = _FakeTorchTensor(np.array([0.45], dtype=float))
+
+    result = run_torch_compile_compatibility_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params.numpy(),
+    )
+    assert isinstance(result, PhaseTorchCompileCompatibilityResult)
+    assert result.passed
+    assert result.torch_compile_supported
+    assert result.compiled_loss_supported
+    assert result.compiled_gradient_supported
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "bounded_torch_compile_compatibility"
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.torch_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert fake_torch.func.grad_calls == 1
+    assert fake_torch.compile_calls == [{"fullgraph": True, "dynamic": False}]
+    assert result.to_dict()["compiled_gradient_supported"] is True
+
+
+def test_torch_compile_compatibility_audit_fails_closed_without_compile(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorchWithoutCompile()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    with pytest.raises(RuntimeError, match="torch.compile"):
+        run_torch_compile_compatibility_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            params=np.array([0.45], dtype=float),
+        )
+
+
 def test_torch_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -540,6 +607,12 @@ def test_framework_bridges_fail_closed_when_optional_dependency_missing(
             labels=np.array([0.0], dtype=float),
             params=np.array([0.2], dtype=float),
             params_batch=np.array([[0.2]], dtype=float),
+        )
+    with pytest.raises(ImportError, match="torch blocked"):
+        run_torch_compile_compatibility_audit(
+            features=np.array([[0.0]], dtype=float),
+            labels=np.array([0.0], dtype=float),
+            params=np.array([0.2], dtype=float),
         )
     with pytest.raises(ImportError, match="tensorflow blocked"):
         tensorflow_parameter_shift_value_and_grad(

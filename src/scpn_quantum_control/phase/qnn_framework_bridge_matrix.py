@@ -184,12 +184,12 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
             framework="pytorch",
             public_api=(
                 "torch_bounded_qnn_value_and_grad,torch_autograd_qnn_value_and_grad,"
-                "run_torch_func_compatibility_audit"
+                "run_torch_func_compatibility_audit,run_torch_compile_compatibility_audit"
             ),
             gradient_route=(
                 "bounded_phase_qnn_tensor_analytic_gradient,"
                 "torch_bounded_phase_qnn_custom_autograd_function,"
-                "bounded_torch_func_grad_vmap_jacrev"
+                "bounded_torch_func_grad_vmap_jacrev,bounded_torch_compile_gradient"
             ),
             optional_dependency="torch",
             implemented=True,
