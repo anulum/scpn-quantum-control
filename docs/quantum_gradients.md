@@ -1402,10 +1402,17 @@ submission or unrestricted hardware-gradient execution.
 `execute_phase_qnode_transform(...)` executes scalar local phase-QNode transforms
 when the transform-nesting planner declares the route supported. Current
 executable routes are `grad`, `value_and_grad`, deterministic local `hessian`,
-scalar `jvp`, scalar `vjp`, scalar `jacfwd`, and scalar `jacrev`. Directional
-and Jacobian routes are implemented through parameter-shift gradients for scalar
-objectives: JVP returns the gradient-tangent contraction, VJP returns the
-scalar-cotangent pullback, and `jacfwd`/`jacrev` return a one-row Jacobian.
+deterministic local `hessian_vector_product`, scalar `jvp`, scalar `vjp`,
+scalar `jacfwd`, and scalar `jacrev`. Directional and Jacobian routes are
+implemented through parameter-shift gradients for scalar objectives: JVP returns
+the gradient-tangent contraction, VJP returns the scalar-cotangent pullback, and
+`jacfwd`/`jacrev` return a one-row Jacobian.
+
+`execute_phase_qnode_hessian_vector_product(...)` materialises the deterministic
+local parameter-shift Hessian and returns `H @ vector` with the Hessian evidence
+and vector provenance. It is a bounded second-order local diagnostic, not a
+finite-shot HVP, hardware HVP, sparse implicit HVP, or arbitrary-program
+second-order AD claim.
 
 The readiness helper `run_phase_qnode_transform_readiness_suite()` records both
 supported scalar routes and fail-closed hardware, finite-shot curvature, and

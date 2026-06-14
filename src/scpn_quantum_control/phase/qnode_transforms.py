@@ -45,6 +45,7 @@ class PhaseQNodeTransformResult:
     value: float | None
     gradient: FloatArray | None
     hessian: FloatArray | None
+    hessian_vector_product: FloatArray | None
     jvp: float | None
     vjp: FloatArray | None
     jacobian: FloatArray | None
@@ -72,6 +73,11 @@ class PhaseQNodeTransformResult:
             "value": self.value,
             "gradient": None if self.gradient is None else self.gradient.tolist(),
             "hessian": None if self.hessian is None else self.hessian.tolist(),
+            "hessian_vector_product": (
+                None
+                if self.hessian_vector_product is None
+                else self.hessian_vector_product.tolist()
+            ),
             "jvp": self.jvp,
             "vjp": None if self.vjp is None else self.vjp.tolist(),
             "jacobian": None if self.jacobian is None else self.jacobian.tolist(),
@@ -124,6 +130,7 @@ class PhaseQNodeTransformReadinessSuiteResult:
                 "grad",
                 "value_and_grad",
                 "hessian",
+                "hessian_vector_product",
                 "jvp",
                 "vjp",
                 "jacfwd",
@@ -258,6 +265,7 @@ def execute_phase_qnode_transform(
             value=None,
             gradient=None,
             hessian=None,
+            hessian_vector_product=None,
             jvp=None,
             vjp=None,
             jacobian=None,
@@ -273,6 +281,56 @@ def execute_phase_qnode_transform(
     return _blocked_result(label, plan, values)
 
 
+def execute_phase_qnode_hessian_vector_product(
+    objective: ScalarObjective,
+    params: ArrayLike,
+    vector: ArrayLike,
+    *,
+    gate: str = "ry",
+    observable: str = "pauli_expectation",
+    backend: str = "statevector",
+    adapter: str = "native",
+    shots: int | None = None,
+    shift_terms: int = 1,
+    allow_hardware: bool = False,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> PhaseQNodeTransformResult:
+    """Execute a deterministic local Hessian-vector product for a scalar QNode."""
+    values = _as_parameter_vector("params", params)
+    vector_values = _as_parameter_vector("vector", vector, width=values.size)
+    plan = plan_gradient_transform_nesting(
+        "hessian",
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        adapter=adapter,
+        n_params=values.size,
+        shift_terms=shift_terms if rule is None else len(rule.terms),
+        shots=shots,
+        allow_hardware=allow_hardware,
+    )
+    if plan.fail_closed:
+        return _blocked_result("hessian_vector_product", plan, values)
+    hessian = parameter_shift_hessian(objective, values, parameters=parameters, rule=rule)
+    return _supported_result(
+        "hessian_vector_product",
+        plan,
+        values,
+        hessian=hessian,
+        hessian_vector_product=hessian @ vector_values,
+        tangent=vector_values,
+        parameter_shift_evaluations=_hessian_evaluations(
+            values.size, plan.support_plan.backend_plan.shift_terms
+        ),
+        claim_boundary=(
+            "deterministic local Hessian-vector product via parameter-shift "
+            "Hessian materialisation; no finite-shot, hardware, sparse implicit "
+            "HVP, or arbitrary-program second-order AD claim"
+        ),
+    )
+
+
 def run_phase_qnode_transform_readiness_suite() -> PhaseQNodeTransformReadinessSuiteResult:
     """Run scalar QNode transform readiness evidence."""
 
@@ -284,6 +342,11 @@ def run_phase_qnode_transform_readiness_suite() -> PhaseQNodeTransformReadinessS
         execute_phase_qnode_transform("grad", objective, params),
         execute_phase_qnode_transform("value_and_grad", objective, params),
         execute_phase_qnode_transform("hessian", objective, params),
+        execute_phase_qnode_hessian_vector_product(
+            objective,
+            params,
+            np.array([0.5, -1.25], dtype=np.float64),
+        ),
         execute_phase_qnode_transform("jvp", objective, params, tangent=np.array([0.5, -2.0])),
         execute_phase_qnode_transform("vjp", objective, params, cotangent=np.array([3.0])),
         execute_phase_qnode_transform("jacfwd", objective, params),
@@ -309,12 +372,14 @@ def _supported_result(
     value: float | None = None,
     gradient: FloatArray | None = None,
     hessian: FloatArray | None = None,
+    hessian_vector_product: FloatArray | None = None,
     jvp: float | None = None,
     vjp: FloatArray | None = None,
     jacobian: FloatArray | None = None,
     tangent: FloatArray | None = None,
     cotangent: FloatArray | None = None,
     parameter_shift_evaluations: int | None = None,
+    claim_boundary: str = CLAIM_BOUNDARY,
 ) -> PhaseQNodeTransformResult:
     return PhaseQNodeTransformResult(
         transform=transform,
@@ -324,6 +389,11 @@ def _supported_result(
         value=value,
         gradient=None if gradient is None else gradient.astype(np.float64, copy=True),
         hessian=None if hessian is None else hessian.astype(np.float64, copy=True),
+        hessian_vector_product=(
+            None
+            if hessian_vector_product is None
+            else hessian_vector_product.astype(np.float64, copy=True)
+        ),
         jvp=jvp,
         vjp=None if vjp is None else vjp.astype(np.float64, copy=True),
         jacobian=None if jacobian is None else jacobian.astype(np.float64, copy=True),
@@ -335,6 +405,7 @@ def _supported_result(
             else parameter_shift_evaluations
         ),
         failure_reason="",
+        claim_boundary=claim_boundary,
     )
 
 
@@ -351,6 +422,7 @@ def _blocked_result(
         value=None,
         gradient=None,
         hessian=None,
+        hessian_vector_product=None,
         jvp=None,
         vjp=None,
         jacobian=None,
@@ -402,6 +474,7 @@ def _as_cotangent(values: ArrayLike | float | None) -> FloatArray:
 __all__ = [
     "PhaseQNodeTransformReadinessSuiteResult",
     "PhaseQNodeTransformResult",
+    "execute_phase_qnode_hessian_vector_product",
     "execute_phase_qnode_transform",
     "run_phase_qnode_transform_readiness_suite",
 ]

@@ -323,6 +323,7 @@ from .qnode_tape import (
 from .qnode_transforms import (
     PhaseQNodeTransformReadinessSuiteResult,
     PhaseQNodeTransformResult,
+    execute_phase_qnode_hessian_vector_product,
     execute_phase_qnode_transform,
     run_phase_qnode_transform_readiness_suite,
 )
@@ -512,6 +513,7 @@ __all__ = [
     "run_provider_qnode_transform_readiness_suite",
     "PhaseQNodeTransformReadinessSuiteResult",
     "PhaseQNodeTransformResult",
+    "execute_phase_qnode_hessian_vector_product",
     "execute_phase_qnode_transform",
     "run_phase_qnode_transform_readiness_suite",
     "PhaseQNodeVectorTransformReadinessSuiteResult",

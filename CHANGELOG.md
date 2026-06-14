@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added deterministic local scalar Phase-QNode
+  Hessian-vector products backed by parameter-shift Hessian evidence, with
+  vector validation, fail-closed finite-shot/hardware/adapter routes, public
+  docs, tests, and generated capability-surface alignment.
 - 2026-06-14 — Added vector-output Phase-QNode `jvp` and `vjp`
   transforms over deterministic local parameter-shift Jacobian evidence, with
   tangent/cotangent shape validation, fail-closed unsafe routes, public docs,

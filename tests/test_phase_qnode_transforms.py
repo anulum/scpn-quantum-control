@@ -14,6 +14,7 @@ import pytest
 
 from scpn_quantum_control.phase import (
     PhaseQNodeTransformResult,
+    execute_phase_qnode_hessian_vector_product,
     execute_phase_qnode_transform,
     plan_gradient_transform_nesting,
     run_phase_qnode_transform_readiness_suite,
@@ -62,6 +63,24 @@ def test_phase_qnode_transform_executes_grad_value_and_hessian() -> None:
     np.testing.assert_allclose(hessian.hessian, _hessian(params), atol=1e-12)
     assert hessian.plan.requires_deterministic_backend
     assert hessian.parameter_shift_evaluations > grad.parameter_shift_evaluations
+
+
+def test_phase_qnode_transform_executes_hessian_vector_product() -> None:
+    params = np.array([0.31, -0.17], dtype=float)
+    vector = np.array([0.5, -1.25], dtype=float)
+
+    hvp = execute_phase_qnode_hessian_vector_product(_objective, params, vector)
+
+    assert hvp.supported
+    assert hvp.transform == "hessian_vector_product"
+    assert hvp.hessian is not None
+    assert hvp.hessian_vector_product is not None
+    np.testing.assert_allclose(hvp.hessian, _hessian(params), atol=1e-12)
+    np.testing.assert_allclose(hvp.hessian_vector_product, _hessian(params) @ vector, atol=1e-12)
+    np.testing.assert_allclose(hvp.tangent, vector, atol=1e-12)
+    assert hvp.plan.requires_deterministic_backend
+    assert hvp.parameter_shift_evaluations > 0
+    assert "Hessian-vector" in hvp.claim_boundary
 
 
 def test_phase_qnode_transform_executes_jvp_vjp_and_scalar_jacobians() -> None:
@@ -141,6 +160,40 @@ def test_phase_qnode_transform_validates_directional_inputs() -> None:
             params,
             tangent=np.array([1.0], dtype=float),
         )
+    with pytest.raises(ValueError, match="vector"):
+        execute_phase_qnode_hessian_vector_product(
+            _objective,
+            params,
+            np.array([1.0], dtype=float),
+        )
+
+
+def test_phase_qnode_hessian_vector_product_fails_closed_for_unsafe_routes() -> None:
+    params = np.array([0.2, -0.4], dtype=float)
+    vector = np.array([0.5, -1.25], dtype=float)
+
+    finite_shot = execute_phase_qnode_hessian_vector_product(
+        _objective,
+        params,
+        vector,
+        backend="finite_shot_simulator",
+        shots=256,
+    )
+    adapter = execute_phase_qnode_hessian_vector_product(
+        _objective,
+        params,
+        vector,
+        adapter="jax",
+    )
+
+    assert finite_shot.fail_closed
+    assert finite_shot.hessian_vector_product is None
+    assert "deterministic local expectations" in finite_shot.failure_reason
+    assert adapter.fail_closed
+    assert adapter.hessian_vector_product is None
+    assert (
+        "hessian transform is supported only on the native local route" in adapter.failure_reason
+    )
 
 
 def test_phase_qnode_transform_readiness_suite_records_supported_and_blocked() -> None:
@@ -156,6 +209,7 @@ def test_phase_qnode_transform_readiness_suite_records_supported_and_blocked() -
         "grad",
         "value_and_grad",
         "hessian",
+        "hessian_vector_product",
         "jvp",
         "vjp",
         "jacfwd",
