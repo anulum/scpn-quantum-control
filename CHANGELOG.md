@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added `DenseHermitianObservable` to the registered Phase-QNode
+  circuit family, with finite square Hermitian matrix validation, exact
+  statevector expectation evaluation, parameter-shift gradient coverage, phase
+  namespace exports, public docs, and generated capability-surface alignment.
 - 2026-06-14 — Added `PauliCovarianceObservable` to the registered
   Phase-QNode circuit family, including exact symmetrised covariance execution,
   product-rule parameter-shift gradients, phase namespace exports, module tests,

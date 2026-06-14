@@ -280,6 +280,7 @@ from .qnode_affinity_benchmark import (
     run_phase_qnode_affinity_benchmark,
 )
 from .qnode_circuit import (
+    DenseHermitianObservable,
     PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
@@ -467,6 +468,7 @@ __all__ = [
     "PhaseQNodeTapeReadinessSuiteResult",
     "PhaseQNodeTapeRecord",
     "run_phase_qnode_tape_readiness_suite",
+    "DenseHermitianObservable",
     "PauliTerm",
     "PauliCovarianceObservable",
     "PhaseQNodeCircuit",

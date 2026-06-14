@@ -32,6 +32,7 @@ _REGISTERED_OBSERVABLES = (
     "weighted_pauli_sum",
     "pauli_product",
     "pauli_covariance",
+    "dense_hermitian",
     "sparse_pauli_hamiltonian",
 )
 
@@ -130,6 +131,42 @@ class SparsePauliHamiltonian:
 
 
 @dataclass(frozen=True)
+class DenseHermitianObservable:
+    """Dense finite-dimensional Hermitian observable."""
+
+    matrix: ComplexArray
+    label: str = "dense_hermitian"
+
+    def __post_init__(self) -> None:
+        matrix = np.asarray(self.matrix, dtype=np.complex128)
+        if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+            raise ValueError("DenseHermitianObservable matrix must be square")
+        if matrix.shape[0] == 0 or matrix.shape[0] & (matrix.shape[0] - 1):
+            raise ValueError("DenseHermitianObservable dimension must be a positive power of two")
+        if not np.all(np.isfinite(matrix)):
+            raise ValueError("DenseHermitianObservable matrix must contain finite values")
+        if not np.allclose(matrix, matrix.conj().T, atol=1e-12):
+            raise ValueError("DenseHermitianObservable matrix must be Hermitian")
+        label = str(self.label).strip() or "dense_hermitian"
+        object.__setattr__(self, "matrix", matrix)
+        object.__setattr__(self, "label", label)
+
+    @property
+    def observable_kind(self) -> str:
+        """Return the public observable family represented by this matrix."""
+        return "dense_hermitian"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready dense observable metadata."""
+        return {
+            "label": self.label,
+            "dimension": int(self.matrix.shape[0]),
+            "matrix_real": self.matrix.real.tolist(),
+            "matrix_imag": self.matrix.imag.tolist(),
+        }
+
+
+@dataclass(frozen=True)
 class PauliCovarianceObservable:
     """Symmetrised covariance between two Pauli-product observables."""
 
@@ -192,7 +229,13 @@ class PhaseQNodeCircuit:
 
     n_qubits: int
     operations: tuple[PhaseQNodeOperation | OperationSpec, ...]
-    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    )
 
     def __post_init__(self) -> None:
         if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
@@ -393,9 +436,17 @@ def _parsed_operations(circuit: PhaseQNodeCircuit) -> tuple[PhaseQNodeOperation,
 
 
 def _normalise_observable(
-    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable,
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
     n_qubits: int,
-) -> str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable:
+) -> (
+    str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable | DenseHermitianObservable
+):
     if isinstance(observable, str):
         normalized = observable.strip().lower()
         if normalized in {"x", "pauli_x"}:
@@ -405,6 +456,11 @@ def _normalise_observable(
         if normalized in {"z", "pauli_z"}:
             return PauliTerm(1.0, ((0, "z"),))
         return normalized
+    if isinstance(observable, DenseHermitianObservable):
+        expected_dimension = 2**n_qubits
+        if observable.matrix.shape != (expected_dimension, expected_dimension):
+            raise ValueError("DenseHermitianObservable dimension must match n_qubits")
+        return observable
     max_qubit = -1
     terms: tuple[PauliTerm, ...]
     if isinstance(observable, PauliCovarianceObservable):
@@ -421,8 +477,16 @@ def _normalise_observable(
 
 
 def _observable_kind(
-    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable,
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
 ) -> str:
+    if isinstance(observable, DenseHermitianObservable):
+        return observable.observable_kind
     if isinstance(observable, PauliCovarianceObservable):
         return observable.observable_kind
     if isinstance(observable, SparsePauliHamiltonian):
@@ -564,8 +628,17 @@ def _apply_gate_matrix(
 def _expectation_value(
     state: ComplexArray,
     n_qubits: int,
-    observable: str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable,
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
 ) -> float:
+    if isinstance(observable, DenseHermitianObservable):
+        value = np.vdot(state, observable.matrix @ state)
+        return float(np.real_if_close(value).real)
     if isinstance(observable, PauliCovarianceObservable):
         return _covariance_expectation(state, n_qubits, observable)
     if isinstance(observable, SparsePauliHamiltonian):
@@ -671,6 +744,7 @@ def _apply_term_operator(state: ComplexArray, n_qubits: int, term: PauliTerm) ->
 
 
 __all__ = [
+    "DenseHermitianObservable",
     "PauliCovarianceObservable",
     "PauliTerm",
     "PhaseQNodeCircuit",

@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.phase.qnode_circuit import (
+    DenseHermitianObservable,
     PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
@@ -98,6 +99,7 @@ def test_phase_qnode_registered_gate_family_executes_with_pauli_observables() ->
         "weighted_pauli_sum",
         "pauli_product",
         "pauli_covariance",
+        "dense_hermitian",
         "sparse_pauli_hamiltonian",
     }
 
@@ -165,6 +167,64 @@ def test_phase_qnode_covariance_gradient_uses_product_rule() -> None:
     np.testing.assert_allclose(gradient.value, np.sin(params[0]) ** 2, atol=1e-12)
     np.testing.assert_allclose(gradient.gradient, [np.sin(2.0 * params[0])], atol=1e-12)
     assert gradient.parameter_shift_evaluations == 2
+
+
+def test_phase_qnode_dense_hermitian_observable_matches_matrix_reference() -> None:
+    observable = DenseHermitianObservable(
+        np.array(
+            [
+                [0.7, 0.2 - 0.1j],
+                [0.2 + 0.1j, -0.3],
+            ],
+            dtype=np.complex128,
+        )
+    )
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=observable,
+    )
+    params = np.array([0.41], dtype=float)
+
+    result = execute_phase_qnode_circuit(circuit, params)
+    state = result.state
+    expected = np.vdot(state, observable.matrix @ state).real
+
+    np.testing.assert_allclose(result.value, expected, atol=1e-12)
+    assert result.support_report.observable_kind == "dense_hermitian"
+
+
+def test_phase_qnode_dense_hermitian_gradient_matches_finite_difference() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=DenseHermitianObservable(
+            np.array([[0.7, 0.2], [0.2, -0.3]], dtype=np.complex128)
+        ),
+    )
+    params = np.array([0.41], dtype=float)
+
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+    eps = 1e-6
+    plus = params + eps
+    minus = params - eps
+    finite_difference = (
+        execute_phase_qnode_circuit(circuit, plus).value
+        - execute_phase_qnode_circuit(circuit, minus).value
+    ) / (2.0 * eps)
+
+    np.testing.assert_allclose(gradient.gradient, [finite_difference], atol=1e-6)
+
+
+def test_phase_qnode_dense_hermitian_observable_fails_closed_on_invalid_matrix() -> None:
+    with pytest.raises(ValueError, match="Hermitian"):
+        DenseHermitianObservable(np.array([[0.0, 1.0], [0.0, 0.0]], dtype=np.complex128))
+    with pytest.raises(ValueError, match="dimension"):
+        PhaseQNodeCircuit(
+            n_qubits=2,
+            operations=(("h", (0,)),),
+            observable=DenseHermitianObservable(np.eye(2, dtype=np.complex128)),
+        )
 
 
 def test_phase_qnode_unsupported_routes_fail_with_structured_support_report() -> None:

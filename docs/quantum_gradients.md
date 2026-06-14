@@ -927,6 +927,7 @@ parity suite when a concrete circuit family is required:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    DenseHermitianObservable,
     PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
@@ -947,6 +948,11 @@ gradient = parameter_shift_phase_qnode_gradient(circuit, params)
 parity = run_phase_qnode_framework_parity_suite()
 print(value.value, gradient.gradient, parity.frameworks)
 ```
+
+For dense local observables, use `DenseHermitianObservable(matrix)`.  The matrix
+must be finite, square, Hermitian, power-of-two dimensional, and sized to the
+declared `n_qubits`; invalid matrices fail during circuit construction instead
+of being accepted as opaque simulator inputs.
 
 For covariance objectives, use `PauliCovarianceObservable(left, right)`.  The
 local statevector path evaluates the symmetrised covariance
