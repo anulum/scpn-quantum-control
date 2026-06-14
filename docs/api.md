@@ -132,6 +132,7 @@ from scpn_quantum_control import (
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
+    PhaseQNodeMLIRRuntimeExecutable,
     PrimitiveLoweringStatus,
     program_ad_interpolation_interp_derivative_rule,
     program_ad_stencil_gradient_derivative_rule,
@@ -140,6 +141,7 @@ from scpn_quantum_control import (
     compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_phase_qnode_circuit_to_mlir_runtime,
     compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
     compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit,
     compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit,
@@ -191,6 +193,10 @@ kernel = compile_custom_derivative_rule_to_executable(
     CompilerADExecutableConfig(),
 )
 kernel.jvp(values, tangent)
+
+phase_runtime = compile_phase_qnode_circuit_to_mlir_runtime(phase_qnode, params)
+phase_runtime.value(params)
+phase_runtime.gradient(params)
 
 interp_rule = program_ad_interpolation_interp_derivative_rule(
     sample_shape=(3,),
@@ -373,7 +379,13 @@ deterministic MLIR provenance plus deterministic LLVM-style scalar-gradient
 provenance for verified scalar-output kernels, binds normalized value/JVP/VJP
 runtime kernels, exposes verified scalar-output `gradient()` execution through
 VJP cotangent-one semantics, and verifies those kernels against the source rule
-before returning. `make_program_ad_linalg_matrix_power_executable_lowering_rule()`
+before returning. `compile_phase_qnode_circuit_to_mlir_runtime()` promotes the
+registered local `PhaseQNodeCircuit` lowering from textual metadata to a
+verified SCPN MLIR-runtime adapter with explicit dialect operation records,
+runtime parameter shape/type checks, value/parameter-shift-gradient execution,
+and a blocked interpreter-fallback success claim. It does not claim native
+LLVM/JIT, provider, hardware, dynamic-circuit, or arbitrary-QNode compilation.
+`make_program_ad_linalg_matrix_power_executable_lowering_rule()`
 and `make_program_ad_linalg_multi_dot_executable_lowering_rule()` bind concrete
 static linalg signatures to verified MLIR-runtime value/JVP kernels derived from
 the direct derivative factories.

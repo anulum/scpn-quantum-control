@@ -74,9 +74,9 @@ This package is designed for organisations that want to:
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.11 |
-| Public API exports | 585 |
+| Public API exports | 587 |
 | Python source modules | 808 |
-| Public Python classes | 1659 |
+| Public Python classes | 1660 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -270,7 +270,7 @@ CI benchmark artefacts all pass:
 | Hardware-gradient policy readiness | Executable dry-run policy decisions now gate hardware-gradient preparation by provider/backend allowlist, shot budget, required evidence IDs, and live-execution ticket status. `prepare_provider_hardware_parameter_shift_gradient(...)` packages that approval into provider-preparation evidence, and `run_provider_hardware_gradient_preparation_audit()` verifies supported and blocked preparation routes without submitting QPU jobs. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Differentiable claim ledger | The Phase-QNode evidence ledger maps implementation, tests, artefact IDs, documentation, known gaps, and promotion status; no promoted claim is accepted without an artefact ID. | [Differentiable Programming](docs/differentiable_programming.md), [Claim Ledger](data/differentiable_phase_qnode/claim_ledger.md) |
 | Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, optional named external-gradient agreement records, a conformance suite with unsuitable-scenario evidence, deterministic convergence suites, non-isolated optimizer-baseline comparisons, and caller-supplied framework-gradient agreement checks. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
-| Registered Phase-QNode family | Local statevector execution, parameter-shift gradients, framework parity rows, textual MLIR lowering metadata, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
+| Registered Phase-QNode family | Local statevector execution, parameter-shift gradients, framework parity rows, verified SCPN MLIR-runtime lowering adapters, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, native LLVM/JIT lowering, interpreter fallback success, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
 | ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, PyTorch/TensorFlow host-boundary tensor bridges, and bounded framework parity rows are available. Full provider-backed QNode migration bridges and arbitrary architectures remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.

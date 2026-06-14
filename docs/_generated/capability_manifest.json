@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 585,
+    "public_api_exports": 587,
     "public_documentation_pages": 240,
-    "python_model_classes": 1659,
+    "python_model_classes": 1660,
     "python_model_source_modules": 808,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
@@ -4725,6 +4725,10 @@
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
       {
+        "name": "PhaseQNodeMLIRRuntimeExecutable",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
         "name": "PhaseQNodeMetricTensorResult",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
@@ -8730,6 +8734,7 @@
     "PasqalPulserHALAdapter",
     "PennyLaneDeviceHALAdapter",
     "PhaseOrchestratorAdapter",
+    "PhaseQNodeMLIRRuntimeExecutable",
     "PhaseVQE",
     "PrimitiveBatchingRule",
     "PrimitiveContract",
@@ -8900,6 +8905,7 @@
     "compile_matrix_quadratic_form_ad_to_native_llvm_jit",
     "compile_matrix_trace_ad_to_native_llvm_jit",
     "compile_matrix_vector_product_ad_to_native_llvm_jit",
+    "compile_phase_qnode_circuit_to_mlir_runtime",
     "compile_registered_primitive_to_executable",
     "compile_scalar_binary_elementwise_ad_to_native_llvm_jit",
     "compile_scalar_quadratic_ad_to_native_llvm_jit",

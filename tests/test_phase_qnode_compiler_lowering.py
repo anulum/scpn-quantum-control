@@ -12,7 +12,13 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scpn_quantum_control.compiler.mlir import lower_phase_qnode_circuit_to_mlir
+import scpn_quantum_control as scpn
+import scpn_quantum_control.compiler as compiler
+from scpn_quantum_control.compiler.mlir import (
+    PhaseQNodeMLIRRuntimeExecutable,
+    compile_phase_qnode_circuit_to_mlir_runtime,
+    lower_phase_qnode_circuit_to_mlir,
+)
 from scpn_quantum_control.phase.qnode_circuit import PauliTerm, PhaseQNodeCircuit
 
 
@@ -32,6 +38,80 @@ def test_phase_qnode_compiler_lowering_reports_registered_subset() -> None:
     assert module.metadata["rust_pyo3_parity"] == "blocked: no Rust phase-QNode lowering backend"
     assert "scpn_phase_qnode.ry" in module.text
     assert "scpn_phase_qnode.expectation" in module.text
+    assert module.metadata["interpreter_fallback"] == (
+        "blocked: cannot report interpreter fallback as compiled success"
+    )
+    assert module.metadata["dialect_operations"][0] == {
+        "op": "scpn_phase_qnode.ry",
+        "gate": "ry",
+        "qubits": [0],
+        "parameter_index": 0,
+        "operand_type": "f64",
+        "result_type": "statevector",
+    }
+
+
+def test_phase_qnode_mlir_runtime_executes_value_and_gradient() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0), ("rx", (0,), 1)),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+    params = np.array([0.2, -0.3], dtype=float)
+
+    executable = compile_phase_qnode_circuit_to_mlir_runtime(circuit, params)
+    value = executable.value(params)
+    gradient = executable.gradient(params)
+    payload = executable.to_dict()
+
+    assert isinstance(executable, PhaseQNodeMLIRRuntimeExecutable)
+    assert executable.runtime_backend == "scpn_mlir_runtime_adapter"
+    assert executable.parameter_shape == (2,)
+    assert executable.parameter_dtype == "float64"
+    assert executable.verification["value_close"] is True
+    assert executable.verification["gradient_close"] is True
+    assert payload["interpreter_fallback"] == (
+        "blocked: cannot report interpreter fallback as compiled success"
+    )
+    np.testing.assert_allclose(value, np.cos(params[0]) * np.cos(params[1]), atol=1e-12)
+    np.testing.assert_allclose(
+        gradient,
+        np.array(
+            [-np.sin(params[0]) * np.cos(params[1]), -np.cos(params[0]) * np.sin(params[1])],
+            dtype=float,
+        ),
+        atol=1e-12,
+    )
+
+
+def test_phase_qnode_mlir_runtime_verifies_shape_and_dtype() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+    executable = compile_phase_qnode_circuit_to_mlir_runtime(
+        circuit,
+        np.array([0.2], dtype=float),
+    )
+
+    with pytest.raises(ValueError, match="runtime parameter shape"):
+        executable.value(np.array([0.2, 0.3], dtype=float))
+    with pytest.raises(ValueError, match="runtime parameters must contain finite real"):
+        executable.gradient(np.array([1.0 + 0.0j]))
+
+
+def test_phase_qnode_mlir_runtime_exports_are_public() -> None:
+    assert (
+        compiler.compile_phase_qnode_circuit_to_mlir_runtime
+        is compile_phase_qnode_circuit_to_mlir_runtime
+    )
+    assert (
+        scpn.compile_phase_qnode_circuit_to_mlir_runtime
+        is compile_phase_qnode_circuit_to_mlir_runtime
+    )
+    assert compiler.PhaseQNodeMLIRRuntimeExecutable is PhaseQNodeMLIRRuntimeExecutable
+    assert scpn.PhaseQNodeMLIRRuntimeExecutable is PhaseQNodeMLIRRuntimeExecutable
 
 
 def test_phase_qnode_compiler_lowering_fails_closed_for_unsupported_circuit() -> None:

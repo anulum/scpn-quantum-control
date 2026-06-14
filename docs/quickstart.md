@@ -247,6 +247,15 @@ rows preserve the compiled branch/signature contract. It remains a bounded
 supported-trace executable path, not an arbitrary source compiler or native
 LLVM/JIT implementation for all Python.
 
+Registered local `PhaseQNodeCircuit` declarations can be lowered to a verified
+SCPN MLIR-runtime adapter with
+`compile_phase_qnode_circuit_to_mlir_runtime(...)`. The adapter executes value
+and parameter-shift-gradient kernels, verifies them against the local
+statevector reference, records dialect operation metadata, and rejects runtime
+parameter shape or dtype mismatches. It does not report interpreter fallback as
+compiled success, and it does not claim native LLVM/JIT, provider, hardware,
+dynamic-circuit, or arbitrary-QNode compilation.
+
 Supported scalar traces over arithmetic, expanded elementary functions
 (`sin`, `cos`, `tan`, `tanh`, `exp`, `expm1`, `log`, `log1p`, `sqrt`,
 `arcsin`, `arccos`, `reciprocal`, `square`, and nonzero `abs`), and stable
