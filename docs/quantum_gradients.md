@@ -208,6 +208,24 @@ The suite is local deterministic evidence only. It is not hardware evidence,
 not finite-shot noisy training, and not a claim that arbitrary QNN/QGNN/QSNN
 architectures converge.
 
+`run_parameter_shift_qnn_multi_seed_convergence_suite(...)` extends the same
+bounded cases across deterministic initial-parameter perturbations:
+
+```python
+from scpn_quantum_control.phase import run_parameter_shift_qnn_multi_seed_convergence_suite
+
+suite = run_parameter_shift_qnn_multi_seed_convergence_suite(seeds=(11, 17, 23))
+case = suite.case_by_name("single_feature_phase_flip")
+print(case.worst_best_loss, case.best_loss_std, suite.total_run_count)
+```
+
+The multi-seed envelope records every seed, seeded initial parameters, per-run
+pass/fail status, worst best-loss, worst accuracy, loss standard deviation, and
+parameter-shift evaluation totals. It remains local deterministic evidence with
+seeded initial-condition perturbations; it is not finite-shot stochastic
+training, hardware execution, isolated benchmark evidence, or a broad
+QNN/QGNN/QSNN convergence claim.
+
 ## Bounded QNN finite-shot evidence
 
 Seeded finite-shot simulator evidence is available for the bounded phase-QNN

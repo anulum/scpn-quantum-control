@@ -13,7 +13,9 @@ import pytest
 
 from scpn_quantum_control.phase import (
     ParameterShiftQNNConvergenceSuiteResult,
+    ParameterShiftQNNMultiSeedConvergenceSuiteResult,
     run_parameter_shift_qnn_convergence_suite,
+    run_parameter_shift_qnn_multi_seed_convergence_suite,
     summarize_parameter_shift_qnn_convergence_unsuitable_scenarios,
 )
 
@@ -55,6 +57,65 @@ def test_qnn_convergence_suite_supports_case_selection() -> None:
     assert suite.case_count == 1
     assert suite.cases[0].name == "two_feature_phase_flip"
     assert suite.case_by_name("two_feature_phase_flip") is suite.cases[0]
+
+
+def test_qnn_multi_seed_convergence_suite_records_seed_envelope() -> None:
+    suite = run_parameter_shift_qnn_multi_seed_convergence_suite(
+        case_names=("single_feature_phase_flip",),
+        seeds=(11, 17, 23),
+    )
+
+    assert isinstance(suite, ParameterShiftQNNMultiSeedConvergenceSuiteResult)
+    assert suite.passed
+    assert suite.case_count == 1
+    assert suite.seed_count == 3
+    assert suite.total_run_count == 3
+    assert suite.passed_run_count == 3
+    assert suite.failed_run_count == 0
+    assert suite.evidence_class == "local_deterministic_qnn_multi_seed_convergence"
+    assert not suite.production_benchmark
+    assert "seeded initial-parameter perturbations" in suite.claim_boundary
+
+    case = suite.case_by_name("single_feature_phase_flip")
+    assert case.passed
+    assert case.seed_count == 3
+    assert case.seeds == (11, 17, 23)
+    assert case.worst_best_loss <= case.target_loss_tolerance
+    assert case.worst_accuracy >= case.min_accuracy
+    assert case.best_loss_std >= 0.0
+    assert case.total_parameter_shift_evaluations > 0
+    assert tuple(run.seed for run in case.runs) == (11, 17, 23)
+    assert all(run.seeded_initial_params for run in case.runs)
+    assert all(run.passed for run in case.runs)
+    assert suite.to_dict()["total_run_count"] == 3
+
+
+def test_qnn_multi_seed_convergence_records_failures_without_hiding_them() -> None:
+    suite = run_parameter_shift_qnn_multi_seed_convergence_suite(
+        case_names=("single_feature_phase_flip",),
+        seeds=(11, 17),
+        min_loss_drop=1.0,
+    )
+
+    assert not suite.passed
+    assert suite.case_count == 1
+    assert suite.passed_run_count == 0
+    assert suite.failed_run_count == 2
+    case = suite.cases[0]
+    assert not case.passed
+    assert case.failed_run_count == 2
+    assert case.to_dict()["passed"] is False
+
+
+def test_qnn_multi_seed_convergence_fails_closed_on_invalid_controls() -> None:
+    with pytest.raises(ValueError, match="seeds must contain at least one"):
+        run_parameter_shift_qnn_multi_seed_convergence_suite(seeds=())
+
+    with pytest.raises(ValueError, match="seeds must be unique"):
+        run_parameter_shift_qnn_multi_seed_convergence_suite(seeds=(1, 1))
+
+    with pytest.raises(ValueError, match="initial_noise_scale"):
+        run_parameter_shift_qnn_multi_seed_convergence_suite(initial_noise_scale=-0.1)
 
 
 def test_qnn_convergence_suite_records_threshold_failures_without_hiding_them() -> None:

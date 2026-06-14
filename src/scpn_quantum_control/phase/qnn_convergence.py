@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import TypeAlias
 
 import numpy as np
@@ -24,9 +24,16 @@ from .qnn_training import (
 FloatArray: TypeAlias = NDArray[np.float64]
 
 EVIDENCE_CLASS = "local_deterministic_qnn_convergence"
+MULTI_SEED_EVIDENCE_CLASS = "local_deterministic_qnn_multi_seed_convergence"
 CLAIM_BOUNDARY = (
     "local deterministic bounded phase-QNN convergence evidence; not hardware, "
     "not finite-shot training, and not arbitrary QNN/QGNN/QSNN architecture evidence"
+)
+MULTI_SEED_CLAIM_BOUNDARY = (
+    "local deterministic bounded phase-QNN multi-seed convergence evidence with "
+    "seeded initial-parameter perturbations; not hardware, not finite-shot noisy "
+    "training, not isolated benchmark evidence, and not arbitrary QNN/QGNN/QSNN "
+    "architecture evidence"
 )
 
 
@@ -205,6 +212,207 @@ class ParameterShiftQNNConvergenceSuiteResult:
         }
 
 
+@dataclass(frozen=True)
+class ParameterShiftQNNMultiSeedConvergenceRunResult:
+    """Convergence evidence for one seeded bounded phase-QNN run."""
+
+    seed: int
+    seeded_initial_params: tuple[float, ...]
+    case: ParameterShiftQNNConvergenceCaseResult
+
+    @property
+    def passed(self) -> bool:
+        """Return whether this seeded run passed all convergence thresholds."""
+        return self.case.passed
+
+    @property
+    def best_loss(self) -> float:
+        """Return the seeded run's best loss."""
+        return self.case.best_loss
+
+    @property
+    def accuracy(self) -> float | None:
+        """Return the seeded run's final classification accuracy."""
+        return self.case.accuracy
+
+    @property
+    def parameter_shift_evaluations(self) -> int:
+        """Return the seeded run's parameter-shift evaluation count."""
+        return self.case.parameter_shift_evaluations
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready seeded-run evidence."""
+        return {
+            "seed": self.seed,
+            "seeded_initial_params": list(self.seeded_initial_params),
+            "passed": self.passed,
+            "best_loss": self.best_loss,
+            "accuracy": self.accuracy,
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "case": self.case.to_dict(),
+        }
+
+
+@dataclass(frozen=True)
+class ParameterShiftQNNMultiSeedConvergenceCaseResult:
+    """Seed-envelope convergence evidence for one bounded phase-QNN case."""
+
+    name: str
+    seeds: tuple[int, ...]
+    runs: tuple[ParameterShiftQNNMultiSeedConvergenceRunResult, ...]
+    target_loss_tolerance: float
+    min_loss_drop: float
+    min_accuracy: float
+    initial_noise_scale: float
+    evidence_class: str
+    claim_boundary: str
+    production_benchmark: bool
+
+    @property
+    def seed_count(self) -> int:
+        """Return the number of seeded starts."""
+        return len(self.seeds)
+
+    @property
+    def passed(self) -> bool:
+        """Return whether every seeded run passed."""
+        return all(run.passed for run in self.runs)
+
+    @property
+    def passed_run_count(self) -> int:
+        """Return the number of passing seeded runs."""
+        return sum(1 for run in self.runs if run.passed)
+
+    @property
+    def failed_run_count(self) -> int:
+        """Return the number of failing seeded runs."""
+        return self.seed_count - self.passed_run_count
+
+    @property
+    def total_parameter_shift_evaluations(self) -> int:
+        """Return total parameter-shift objective evaluations across seeds."""
+        return sum(run.parameter_shift_evaluations for run in self.runs)
+
+    @property
+    def worst_best_loss(self) -> float:
+        """Return the largest best-loss observed across seeds."""
+        return float(max(run.best_loss for run in self.runs))
+
+    @property
+    def mean_best_loss(self) -> float:
+        """Return the mean best-loss across seeds."""
+        return float(np.mean([run.best_loss for run in self.runs]))
+
+    @property
+    def best_loss_std(self) -> float:
+        """Return the population standard deviation of best loss across seeds."""
+        return float(np.std([run.best_loss for run in self.runs]))
+
+    @property
+    def worst_accuracy(self) -> float:
+        """Return the lowest accuracy across seeded runs."""
+        accuracies = [run.accuracy for run in self.runs]
+        if any(value is None for value in accuracies):
+            return float("-inf")
+        return float(min(value for value in accuracies if value is not None))
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready multi-seed case evidence."""
+        return {
+            "name": self.name,
+            "seeds": list(self.seeds),
+            "seed_count": self.seed_count,
+            "passed": self.passed,
+            "passed_run_count": self.passed_run_count,
+            "failed_run_count": self.failed_run_count,
+            "target_loss_tolerance": self.target_loss_tolerance,
+            "min_loss_drop": self.min_loss_drop,
+            "min_accuracy": self.min_accuracy,
+            "initial_noise_scale": self.initial_noise_scale,
+            "worst_best_loss": self.worst_best_loss,
+            "mean_best_loss": self.mean_best_loss,
+            "best_loss_std": self.best_loss_std,
+            "worst_accuracy": self.worst_accuracy,
+            "total_parameter_shift_evaluations": self.total_parameter_shift_evaluations,
+            "evidence_class": self.evidence_class,
+            "claim_boundary": self.claim_boundary,
+            "production_benchmark": self.production_benchmark,
+            "runs": [run.to_dict() for run in self.runs],
+        }
+
+
+@dataclass(frozen=True)
+class ParameterShiftQNNMultiSeedConvergenceSuiteResult:
+    """Bundled multi-seed deterministic convergence evidence."""
+
+    cases: tuple[ParameterShiftQNNMultiSeedConvergenceCaseResult, ...]
+    unsuitable_scenarios: tuple[ParameterShiftQNNConvergenceUnsuitableScenario, ...]
+    evidence_class: str
+    claim_boundary: str
+    production_benchmark: bool
+
+    @property
+    def passed(self) -> bool:
+        """Return whether every case and seed passed."""
+        return all(case.passed for case in self.cases)
+
+    @property
+    def case_count(self) -> int:
+        """Return the number of convergence cases."""
+        return len(self.cases)
+
+    @property
+    def seed_count(self) -> int:
+        """Return the number of seeds per case."""
+        if not self.cases:
+            return 0
+        return self.cases[0].seed_count
+
+    @property
+    def total_run_count(self) -> int:
+        """Return total seeded runs across cases."""
+        return sum(case.seed_count for case in self.cases)
+
+    @property
+    def passed_run_count(self) -> int:
+        """Return passing seeded runs across cases."""
+        return sum(case.passed_run_count for case in self.cases)
+
+    @property
+    def failed_run_count(self) -> int:
+        """Return failing seeded runs across cases."""
+        return self.total_run_count - self.passed_run_count
+
+    @property
+    def total_parameter_shift_evaluations(self) -> int:
+        """Return total parameter-shift objective evaluations across cases."""
+        return sum(case.total_parameter_shift_evaluations for case in self.cases)
+
+    def case_by_name(self, name: str) -> ParameterShiftQNNMultiSeedConvergenceCaseResult:
+        """Return a multi-seed convergence case by name."""
+        for case in self.cases:
+            if case.name == name:
+                return case
+        raise KeyError(f"unknown QNN multi-seed convergence case: {name}")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready multi-seed suite evidence."""
+        return {
+            "passed": self.passed,
+            "case_count": self.case_count,
+            "seed_count": self.seed_count,
+            "total_run_count": self.total_run_count,
+            "passed_run_count": self.passed_run_count,
+            "failed_run_count": self.failed_run_count,
+            "total_parameter_shift_evaluations": self.total_parameter_shift_evaluations,
+            "evidence_class": self.evidence_class,
+            "claim_boundary": self.claim_boundary,
+            "production_benchmark": self.production_benchmark,
+            "cases": [case.to_dict() for case in self.cases],
+            "unsuitable_scenarios": [scenario.to_dict() for scenario in self.unsuitable_scenarios],
+        }
+
+
 def _default_cases() -> tuple[_QNNConvergenceCase, ...]:
     return (
         _QNNConvergenceCase(
@@ -276,6 +484,22 @@ def _as_probability_threshold(name: str, value: float) -> float:
     return scalar
 
 
+def _as_positive_float(name: str, value: float) -> float:
+    scalar = float(value)
+    if not np.isfinite(scalar) or scalar <= 0.0:
+        raise ValueError(f"{name} must be finite and positive")
+    return scalar
+
+
+def _as_seed_tuple(seeds: Sequence[int]) -> tuple[int, ...]:
+    seed_tuple = tuple(int(seed) for seed in seeds)
+    if not seed_tuple:
+        raise ValueError("seeds must contain at least one seed")
+    if len(set(seed_tuple)) != len(seed_tuple):
+        raise ValueError("seeds must be unique")
+    return seed_tuple
+
+
 def _training_result_for_case(
     case: _QNNConvergenceCase,
     *,
@@ -324,6 +548,67 @@ def _training_result_for_case(
         parameter_shift_evaluations=parameter_shift_evaluations,
         evidence_class=EVIDENCE_CLASS,
         claim_boundary=CLAIM_BOUNDARY,
+        production_benchmark=False,
+    )
+
+
+def _seeded_case(
+    case: _QNNConvergenceCase, *, seed: int, initial_noise_scale: float
+) -> tuple[
+    _QNNConvergenceCase,
+    tuple[float, ...],
+]:
+    rng = np.random.default_rng(seed)
+    seeded_initial_params = case.initial_params + rng.normal(
+        loc=0.0,
+        scale=initial_noise_scale,
+        size=case.initial_params.shape,
+    )
+    seeded_initial_params = seeded_initial_params.astype(np.float64, copy=False)
+    return replace(case, initial_params=seeded_initial_params), tuple(
+        float(value) for value in seeded_initial_params
+    )
+
+
+def _multi_seed_result_for_case(
+    case: _QNNConvergenceCase,
+    *,
+    seeds: tuple[int, ...],
+    initial_noise_scale: float,
+    min_loss_drop: float | None,
+    min_accuracy: float | None,
+) -> ParameterShiftQNNMultiSeedConvergenceCaseResult:
+    required_loss_drop = case.min_loss_drop if min_loss_drop is None else min_loss_drop
+    required_accuracy = case.min_accuracy if min_accuracy is None else min_accuracy
+    runs: list[ParameterShiftQNNMultiSeedConvergenceRunResult] = []
+    for seed in seeds:
+        seeded_case, seeded_initial_params = _seeded_case(
+            case,
+            seed=seed,
+            initial_noise_scale=initial_noise_scale,
+        )
+        result = _training_result_for_case(
+            seeded_case,
+            min_loss_drop=min_loss_drop,
+            min_accuracy=min_accuracy,
+        )
+        runs.append(
+            ParameterShiftQNNMultiSeedConvergenceRunResult(
+                seed=seed,
+                seeded_initial_params=seeded_initial_params,
+                case=result,
+            )
+        )
+    return ParameterShiftQNNMultiSeedConvergenceCaseResult(
+        name=case.name,
+        seeds=seeds,
+        runs=tuple(runs),
+        target_loss_tolerance=case.target_loss_tolerance,
+        min_loss_drop=required_loss_drop,
+        min_accuracy=required_accuracy,
+        initial_noise_scale=initial_noise_scale,
+        evidence_class=MULTI_SEED_EVIDENCE_CLASS,
+        claim_boundary=MULTI_SEED_CLAIM_BOUNDARY,
         production_benchmark=False,
     )
 
@@ -411,5 +696,44 @@ def run_parameter_shift_qnn_convergence_suite(
         unsuitable_scenarios=summarize_parameter_shift_qnn_convergence_unsuitable_scenarios(),
         evidence_class=EVIDENCE_CLASS,
         claim_boundary=CLAIM_BOUNDARY,
+        production_benchmark=False,
+    )
+
+
+def run_parameter_shift_qnn_multi_seed_convergence_suite(
+    *,
+    case_names: Sequence[str] | None = None,
+    seeds: Sequence[int] = (11, 17, 23, 29, 31),
+    initial_noise_scale: float = 0.1,
+    min_loss_drop: float | None = None,
+    min_accuracy: float | None = None,
+) -> ParameterShiftQNNMultiSeedConvergenceSuiteResult:
+    """Run deterministic multi-seed convergence evidence for bounded phase-QNN cases."""
+    checked_seeds = _as_seed_tuple(seeds)
+    checked_initial_noise_scale = _as_positive_float(
+        "initial_noise_scale",
+        initial_noise_scale,
+    )
+    checked_min_loss_drop = (
+        None if min_loss_drop is None else _as_non_negative_float("min_loss_drop", min_loss_drop)
+    )
+    checked_min_accuracy = (
+        None if min_accuracy is None else _as_probability_threshold("min_accuracy", min_accuracy)
+    )
+    cases = tuple(
+        _multi_seed_result_for_case(
+            case,
+            seeds=checked_seeds,
+            initial_noise_scale=checked_initial_noise_scale,
+            min_loss_drop=checked_min_loss_drop,
+            min_accuracy=checked_min_accuracy,
+        )
+        for case in _selected_cases(case_names)
+    )
+    return ParameterShiftQNNMultiSeedConvergenceSuiteResult(
+        cases=cases,
+        unsuitable_scenarios=summarize_parameter_shift_qnn_convergence_unsuitable_scenarios(),
+        evidence_class=MULTI_SEED_EVIDENCE_CLASS,
+        claim_boundary=MULTI_SEED_CLAIM_BOUNDARY,
         production_benchmark=False,
     )

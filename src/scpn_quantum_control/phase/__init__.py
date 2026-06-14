@@ -241,7 +241,11 @@ from .qnn_convergence import (
     ParameterShiftQNNConvergenceCaseResult,
     ParameterShiftQNNConvergenceSuiteResult,
     ParameterShiftQNNConvergenceUnsuitableScenario,
+    ParameterShiftQNNMultiSeedConvergenceCaseResult,
+    ParameterShiftQNNMultiSeedConvergenceRunResult,
+    ParameterShiftQNNMultiSeedConvergenceSuiteResult,
     run_parameter_shift_qnn_convergence_suite,
+    run_parameter_shift_qnn_multi_seed_convergence_suite,
     summarize_parameter_shift_qnn_convergence_unsuitable_scenarios,
 )
 from .qnn_finite_shot import (
@@ -611,6 +615,10 @@ __all__ = [
     "ParameterShiftQNNConvergenceCaseResult",
     "ParameterShiftQNNConvergenceSuiteResult",
     "ParameterShiftQNNConvergenceUnsuitableScenario",
+    "ParameterShiftQNNMultiSeedConvergenceCaseResult",
+    "ParameterShiftQNNMultiSeedConvergenceRunResult",
+    "ParameterShiftQNNMultiSeedConvergenceSuiteResult",
+    "run_parameter_shift_qnn_multi_seed_convergence_suite",
     "run_parameter_shift_qnn_convergence_suite",
     "summarize_parameter_shift_qnn_convergence_unsuitable_scenarios",
     "FrameworkGradientCaseMap",
