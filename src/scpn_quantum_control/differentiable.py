@@ -8632,6 +8632,113 @@ class SPSAGradientResult:
 
 
 @dataclass(frozen=True)
+class ScoreFunctionSampleRecord:
+    """One materialised likelihood-ratio gradient sample."""
+
+    index: int
+    reward: float
+    centred_reward: float
+    score: NDArray[np.float64]
+    weighted_score: NDArray[np.float64]
+
+    def __post_init__(self) -> None:
+        if isinstance(self.index, bool) or not isinstance(self.index, int) or self.index < 0:
+            raise ValueError("score-function sample index must be a non-negative integer")
+        reward = _as_real_scalar("score-function sample reward", self.reward)
+        centred_reward = _as_real_scalar(
+            "score-function sample centred_reward",
+            self.centred_reward,
+        )
+        score = _as_parameter_array(self.score)
+        weighted_score = _as_parameter_array(self.weighted_score)
+        if score.shape != weighted_score.shape:
+            raise ValueError("score-function sample score arrays must share shape")
+        object.__setattr__(self, "reward", reward)
+        object.__setattr__(self, "centred_reward", centred_reward)
+        object.__setattr__(self, "score", score)
+        object.__setattr__(self, "weighted_score", weighted_score)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready sample evidence."""
+        return {
+            "index": self.index,
+            "reward": self.reward,
+            "centred_reward": self.centred_reward,
+            "score": self.score.tolist(),
+            "weighted_score": self.weighted_score.tolist(),
+        }
+
+
+@dataclass(frozen=True)
+class ScoreFunctionGradientResult:
+    """Likelihood-ratio gradient estimate with empirical uncertainty."""
+
+    gradient: NDArray[np.float64]
+    standard_error: NDArray[np.float64]
+    covariance: NDArray[np.float64]
+    confidence_radius: NDArray[np.float64]
+    records: tuple[ScoreFunctionSampleRecord, ...]
+    baseline: float
+    sample_count: int
+    confidence_z: float
+    method: str
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+    claim_boundary: str
+    hardware_execution: bool
+
+    def __post_init__(self) -> None:
+        gradient = _as_parameter_array(self.gradient)
+        standard_error = _as_parameter_array(self.standard_error)
+        covariance = _as_real_numeric_array("score-function covariance", self.covariance)
+        confidence_radius = _as_parameter_array(self.confidence_radius)
+        baseline = _as_real_scalar("score-function baseline", self.baseline)
+        z_value = _as_real_scalar("score-function confidence_z", self.confidence_z)
+        if standard_error.shape != gradient.shape or confidence_radius.shape != gradient.shape:
+            raise ValueError("score-function uncertainty vectors must match gradient shape")
+        if covariance.shape != (gradient.size, gradient.size):
+            raise ValueError("score-function covariance shape must be gradient length squared")
+        if np.any(standard_error < 0.0) or np.any(confidence_radius < 0.0):
+            raise ValueError("score-function uncertainty vectors must be non-negative")
+        if self.sample_count < 2:
+            raise ValueError("score-function sample_count must be at least two")
+        if len(self.records) != self.sample_count:
+            raise ValueError("score-function records length must match sample_count")
+        if z_value <= 0.0:
+            raise ValueError("score-function confidence_z must be finite and positive")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("score-function parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("score-function trainable mask length must match gradient length")
+        if not self.claim_boundary:
+            raise ValueError("score-function claim_boundary must be non-empty")
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "standard_error", standard_error)
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "confidence_radius", confidence_radius)
+        object.__setattr__(self, "baseline", baseline)
+        object.__setattr__(self, "confidence_z", z_value)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready score-function gradient evidence."""
+        return {
+            "gradient": self.gradient.tolist(),
+            "standard_error": self.standard_error.tolist(),
+            "covariance": self.covariance.tolist(),
+            "confidence_radius": self.confidence_radius.tolist(),
+            "records": [record.to_dict() for record in self.records],
+            "baseline": self.baseline,
+            "sample_count": self.sample_count,
+            "confidence_z": self.confidence_z,
+            "method": self.method,
+            "parameter_names": list(self.parameter_names),
+            "trainable": list(self.trainable),
+            "claim_boundary": self.claim_boundary,
+            "hardware_execution": self.hardware_execution,
+        }
+
+
+@dataclass(frozen=True)
 class ShotAllocationResult:
     """Per-parameter shot allocation for stochastic parameter-shift gradients."""
 
@@ -23313,6 +23420,78 @@ def spsa_gradient_estimate(
     )
 
 
+def score_function_gradient_estimate(
+    rewards: ArrayLike,
+    score_vectors: ArrayLike,
+    *,
+    baseline: float = 0.0,
+    parameters: Sequence[Parameter] | None = None,
+    confidence_z: float = 1.959963984540054,
+) -> ScoreFunctionGradientResult:
+    """Estimate a likelihood-ratio gradient from materialised score samples."""
+
+    reward_array = _as_parameter_array(rewards)
+    scores = _as_real_numeric_array("score_vectors", score_vectors)
+    if scores.ndim != 2:
+        raise ValueError("score_vectors must be a two-dimensional sample-by-parameter array")
+    if reward_array.size < 2:
+        raise ValueError("score-function estimator requires at least two samples")
+    if scores.shape[0] != reward_array.size:
+        raise ValueError(
+            "score_vectors row count must match reward count: "
+            f"{scores.shape[0]} != {reward_array.size}"
+        )
+    baseline_value = _as_real_scalar("score-function baseline", baseline)
+    z_value = _as_real_scalar("score-function confidence_z", confidence_z)
+    if z_value <= 0.0:
+        raise ValueError("score-function confidence_z must be finite and positive")
+
+    parameter_meta = _normalise_parameters(np.zeros(scores.shape[1], dtype=np.float64), parameters)
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    if not np.any(trainable):
+        raise ValueError("score-function estimator requires at least one trainable parameter")
+
+    centred_rewards = reward_array - baseline_value
+    weighted_scores = centred_rewards[:, None] * scores
+    weighted_scores[:, ~trainable] = 0.0
+    gradient = np.mean(weighted_scores, axis=0)
+    centred_gradients = weighted_scores - gradient
+    covariance = centred_gradients.T @ centred_gradients
+    covariance /= float((reward_array.size - 1) * reward_array.size)
+    covariance[~trainable, :] = 0.0
+    covariance[:, ~trainable] = 0.0
+    standard_error = np.sqrt(np.diag(covariance))
+    records = tuple(
+        ScoreFunctionSampleRecord(
+            index=index,
+            reward=float(reward_array[index]),
+            centred_reward=float(centred_rewards[index]),
+            score=scores[index],
+            weighted_score=weighted_scores[index],
+        )
+        for index in range(reward_array.size)
+    )
+    return ScoreFunctionGradientResult(
+        gradient=gradient,
+        standard_error=standard_error,
+        covariance=covariance,
+        confidence_radius=z_value * standard_error,
+        records=records,
+        baseline=baseline_value,
+        sample_count=reward_array.size,
+        confidence_z=z_value,
+        method="score_function_likelihood_ratio",
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=(
+            "materialised likelihood-ratio score-function estimator for "
+            "finite scalar rewards and score vectors; no sampler autodiff, "
+            "provider callback, or hardware execution"
+        ),
+        hardware_execution=False,
+    )
+
+
 def allocate_parameter_shift_shots(
     plus_variances: ArrayLike,
     minus_variances: ArrayLike,
@@ -25910,6 +26089,8 @@ __all__ = [
     "PrimitiveTransformRule",
     "ReverseNode",
     "ShotAllocationResult",
+    "ScoreFunctionGradientResult",
+    "ScoreFunctionSampleRecord",
     "SPSAGradientResult",
     "SPSAObjectiveSample",
     "SPSAProbeRecord",
@@ -26066,6 +26247,7 @@ __all__ = [
     "sparse_empirical_fisher_metric",
     "sparse_hessian",
     "sparse_jacobian",
+    "score_function_gradient_estimate",
     "spsa_gradient_estimate",
     "multi_frequency_parameter_shift_rule",
     "parameter_shift_gradient_with_uncertainty",

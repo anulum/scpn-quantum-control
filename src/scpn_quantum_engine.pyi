@@ -178,6 +178,13 @@ def spsa_gradient_rust(
     perturbation_radius: float,
     confidence_z: float = ...,
 ) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array]: ...
+def score_function_gradient_rust(
+    rewards: _F64Array,
+    score_vectors: _F64Array,
+    trainable: _BoolArray,
+    baseline: float = ...,
+    confidence_z: float = ...,
+) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array]: ...
 def build_sparse_xy_hamiltonian(
     k_flat: _F64Array,
     omega: _F64Array,

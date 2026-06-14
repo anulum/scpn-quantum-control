@@ -12,7 +12,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scpn_quantum_control.differentiable import SPSAObjectiveSample, spsa_gradient_estimate
+from scpn_quantum_control.differentiable import (
+    SPSAObjectiveSample,
+    score_function_gradient_estimate,
+    spsa_gradient_estimate,
+)
 
 engine = pytest.importorskip("scpn_quantum_engine")
 
@@ -58,6 +62,38 @@ def test_rust_spsa_gradient_matches_python_materialised_records() -> None:
         minus_shots,
         trainable,
         python_result.perturbation_radius,
+        python_result.confidence_z,
+    )
+
+    np.testing.assert_allclose(gradient, python_result.gradient, atol=1e-12)
+    np.testing.assert_allclose(standard_error, python_result.standard_error, atol=1e-12)
+    np.testing.assert_allclose(covariance, python_result.covariance, atol=1e-12)
+    np.testing.assert_allclose(confidence_radius, python_result.confidence_radius, atol=1e-12)
+
+
+def test_rust_score_function_gradient_matches_python_materialised_records() -> None:
+    rewards = np.array([2.0, 0.0, 4.0], dtype=np.float64)
+    score_vectors = np.array(
+        [
+            [1.0, 2.0],
+            [-1.0, 0.0],
+            [0.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    python_result = score_function_gradient_estimate(
+        rewards,
+        score_vectors,
+        baseline=1.0,
+        confidence_z=2.0,
+    )
+    trainable = np.array(python_result.trainable, dtype=np.bool_)
+
+    gradient, standard_error, covariance, confidence_radius = engine.score_function_gradient_rust(
+        rewards,
+        score_vectors,
+        trainable,
+        python_result.baseline,
         python_result.confidence_z,
     )
 

@@ -27,6 +27,14 @@ pub struct SPSAGradientKernelResult {
     pub confidence_radius: Vec<f64>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct ScoreFunctionGradientKernelResult {
+    pub gradient: Vec<f64>,
+    pub standard_error: Vec<f64>,
+    pub covariance: Vec<Vec<f64>>,
+    pub confidence_radius: Vec<f64>,
+}
+
 fn ensure_finite_vector(name: &str, values: &[f64]) -> Result<(), String> {
     if values.is_empty() {
         return Err(format!("{name} must be non-empty"));
@@ -384,6 +392,89 @@ pub fn spsa_gradient_inner(
     })
 }
 
+pub fn score_function_gradient_inner(
+    rewards: &[f64],
+    score_vectors: &[Vec<f64>],
+    trainable: &[bool],
+    baseline: f64,
+    confidence_z: f64,
+) -> Result<ScoreFunctionGradientKernelResult, String> {
+    ensure_finite_vector("rewards", rewards)?;
+    if rewards.len() < 2 {
+        return Err("score-function estimator requires at least two rewards".to_string());
+    }
+    let (sample_count, parameter_count) = ensure_finite_matrix("score_vectors", score_vectors)?;
+    if sample_count != rewards.len() {
+        return Err(format!(
+            "score_vectors row count must match rewards length: {sample_count} != {}",
+            rewards.len()
+        ));
+    }
+    if trainable.len() != parameter_count {
+        return Err(format!(
+            "trainable length must match parameter count: {} != {parameter_count}",
+            trainable.len()
+        ));
+    }
+    if !trainable.iter().any(|flag| *flag) {
+        return Err(
+            "score-function estimator requires at least one trainable parameter".to_string(),
+        );
+    }
+    if !baseline.is_finite() {
+        return Err(format!("baseline must be finite, got {baseline}"));
+    }
+    if !confidence_z.is_finite() || confidence_z <= 0.0 {
+        return Err(format!(
+            "confidence_z must be a finite positive value, got {confidence_z}"
+        ));
+    }
+
+    let mut estimates = vec![vec![0.0; parameter_count]; sample_count];
+    for sample in 0..sample_count {
+        let centred_reward = rewards[sample] - baseline;
+        for parameter in 0..parameter_count {
+            if trainable[parameter] {
+                estimates[sample][parameter] = centred_reward * score_vectors[sample][parameter];
+            }
+        }
+    }
+
+    let mut gradient = vec![0.0; parameter_count];
+    for parameter in 0..parameter_count {
+        gradient[parameter] =
+            estimates.iter().map(|row| row[parameter]).sum::<f64>() / sample_count as f64;
+    }
+    let mut covariance = vec![vec![0.0; parameter_count]; parameter_count];
+    let scale = 1.0 / ((sample_count - 1) as f64 * sample_count as f64);
+    for row in estimates.iter() {
+        for i in 0..parameter_count {
+            if !trainable[i] {
+                continue;
+            }
+            let left = row[i] - gradient[i];
+            for j in 0..parameter_count {
+                if trainable[j] {
+                    covariance[i][j] += left * (row[j] - gradient[j]) * scale;
+                }
+            }
+        }
+    }
+    let standard_error: Vec<f64> = (0..parameter_count)
+        .map(|index| covariance[index][index].sqrt())
+        .collect();
+    let confidence_radius: Vec<f64> = standard_error
+        .iter()
+        .map(|value| confidence_z * value)
+        .collect();
+    Ok(ScoreFunctionGradientKernelResult {
+        gradient,
+        standard_error,
+        covariance,
+        confidence_radius,
+    })
+}
+
 fn validate_variance_vector(name: &str, values: &[f64]) -> Result<(), String> {
     for (index, value) in values.iter().copied().enumerate() {
         if value < 0.0 {
@@ -511,6 +602,45 @@ pub fn spsa_gradient_rust<'py>(
         Some(minus_shots.as_slice()?),
         trainable.as_slice()?,
         perturbation_radius,
+        confidence_z,
+    )
+    .map_err(PyValueError::new_err)?;
+    let covariance = nested_to_array2(result.covariance).map_err(PyValueError::new_err)?;
+    Ok((
+        PyArray1::from_vec(py, result.gradient),
+        PyArray1::from_vec(py, result.standard_error),
+        PyArray2::from_owned_array(py, covariance),
+        PyArray1::from_vec(py, result.confidence_radius),
+    ))
+}
+
+#[pyfunction]
+#[pyo3(signature = (
+    rewards,
+    score_vectors,
+    trainable,
+    baseline=0.0,
+    confidence_z=1.959963984540054
+))]
+pub fn score_function_gradient_rust<'py>(
+    py: Python<'py>,
+    rewards: PyReadonlyArray1<'_, f64>,
+    score_vectors: PyReadonlyArray2<'_, f64>,
+    trainable: PyReadonlyArray1<'_, bool>,
+    baseline: f64,
+    confidence_z: f64,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)> {
+    let score_vectors = read_array2_rows(score_vectors);
+    let result = score_function_gradient_inner(
+        rewards.as_slice()?,
+        &score_vectors,
+        trainable.as_slice()?,
+        baseline,
         confidence_z,
     )
     .map_err(PyValueError::new_err)?;
@@ -670,5 +800,37 @@ mod tests {
             2.0,
         )
         .is_err());
+    }
+
+    #[test]
+    fn score_function_gradient_kernel_matches_likelihood_ratio_reference() {
+        let rewards = [2.0, 0.0, 4.0];
+        let score_vectors = [vec![1.0, 2.0], vec![-1.0, 0.0], vec![0.0, 1.0]];
+
+        let result =
+            score_function_gradient_inner(&rewards, &score_vectors, &[true, true], 1.0, 2.0)
+                .unwrap();
+
+        assert_close(result.gradient[0], 2.0 / 3.0);
+        assert_close(result.gradient[1], 5.0 / 3.0);
+        assert!(result.standard_error[0] > 0.0);
+        assert!(result.standard_error[1] > 0.0);
+        assert_close(result.confidence_radius[0], 2.0 * result.standard_error[0]);
+    }
+
+    #[test]
+    fn score_function_gradient_kernel_rejects_invalid_contracts() {
+        let rewards = [1.0, 2.0];
+        let score_vectors = [vec![0.5], vec![0.25]];
+
+        assert!(score_function_gradient_inner(&[1.0], &[vec![0.5]], &[true], 0.0, 2.0).is_err());
+        assert!(score_function_gradient_inner(&rewards, &[vec![0.5]], &[true], 0.0, 2.0).is_err());
+        assert!(
+            score_function_gradient_inner(&rewards, &score_vectors, &[false], 0.0, 2.0).is_err()
+        );
+        assert!(
+            score_function_gradient_inner(&rewards, &score_vectors, &[true], f64::NAN, 2.0)
+                .is_err()
+        );
     }
 }

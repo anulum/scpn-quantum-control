@@ -1260,6 +1260,7 @@ The backend planner classifies each execution path as one of:
 - stochastic finite-shot gradient;
 - finite-difference diagnostic fallback;
 - SPSA-style fallback;
+- materialised score-function likelihood-ratio estimator;
 - unsupported fail-closed mode.
 
 Each gradient plan reports the selected method, backend, shots, seed, estimator
@@ -1277,6 +1278,16 @@ kernel `spsa_gradient_rust(...)` validates and reproduces the same uncertainty
 calculation from materialised SPSA records; it does not execute objectives,
 providers, or hardware jobs.
 
+The implemented score-function route is available as
+`score_function_gradient_estimate(...)`. It applies the likelihood-ratio
+identity only when finite scalar rewards and finite score vectors are already
+materialised. The result records each weighted score sample, the explicit
+baseline, empirical covariance, standard errors, confidence radii, trainable
+mask, and claim boundary. The optional Rust parity kernel
+`score_function_gradient_rust(...)` validates the same materialised rewards and
+score vectors and reproduces the Python uncertainty calculation. This is not
+sampler autodiff and not an arbitrary discrete-program gradient.
+
 ## Suitable and unsuitable scenarios
 
 | Scenario | Status |
@@ -1285,6 +1296,7 @@ providers, or hardware jobs.
 | Gradient-trained Kuramoto-XY VQE | Current implementation route; convergence evidence must be attached. |
 | Noisy finite-shot backend | Supported for uncertainty propagation when plus/minus variances and shots are supplied. |
 | Seeded local SPSA diagnostic | Supported for caller-supplied objectives when perturbation radius, repetitions, seed, sample variances, and shot counts satisfy the estimator contract. |
+| Materialised score-function diagnostic | Supported when finite rewards and score vectors are supplied by a mathematically valid likelihood-ratio model. |
 | Hardware execution | Must remain disabled by default until a hardware-safe gradient policy exists. |
 | Gate without registered generator spectrum | Unsupported; fail closed. |
 | Dynamic circuit topology or parameter count | Unsupported unless the trace records stable parameter identity. |

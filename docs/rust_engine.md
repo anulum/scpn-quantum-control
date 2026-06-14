@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (120)
+## Functions (121)
 
-The Rust crate exports 120 PyO3 bindings across 29 Rust source files. They are organised
+The Rust crate exports 121 PyO3 bindings across 29 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -122,18 +122,21 @@ project benchmark policy is local regression evidence only.
 |----------|-------------|------------|
 | `parameter_shift_gradient_uncertainty_rust(plus_values, minus_values, plus_variances, minus_variances, plus_shots, minus_shots, coefficients, trainable, confidence_z=1.959963984540054)` | Validate and propagate materialised finite-shot parameter-shift uncertainty into gradient, standard error, diagonal covariance, and confidence radius | O(tp) |
 | `spsa_gradient_rust(plus_values, minus_values, perturbations, plus_variances, minus_variances, plus_shots, minus_shots, trainable, perturbation_radius, confidence_z=1.959963984540054)` | Validate and propagate materialised SPSA probe records into gradient, standard error, diagonal covariance, and confidence radius | O(rp) |
+| `score_function_gradient_rust(rewards, score_vectors, trainable, baseline=0.0, confidence_z=1.959963984540054)` | Validate materialised rewards and likelihood-ratio score vectors, then return gradient, empirical standard error, covariance, and confidence radius | O(sp²) |
 
 These kernels mirror the core Python finite-shot uncertainty primitives for
-already materialised shifted expectation or SPSA probe records. They validate
-finite shifted means, non-negative variances, positive integer shot counts,
-finite rule coefficients, SPSA perturbations, trainable-mask width, and
-positive confidence radius scaling. They do not execute provider callbacks,
-allocate shots, submit hardware jobs, or create claim-ledger evidence by
-themselves.
+already materialised shifted expectation, SPSA probe, or score-function sample
+records. They validate finite shifted means, rewards, score vectors,
+non-negative variances, positive integer shot counts, finite rule coefficients,
+SPSA perturbations, trainable-mask width, finite baselines, and positive
+confidence radius scaling. They do not execute provider callbacks, allocate
+shots, submit hardware jobs, infer sampler score vectors, or create
+claim-ledger evidence by themselves.
 
 The `phase_qnode_metric_and_transform_kernels` benchmark group includes
-`parameter_shift_uncertainty` and `spsa_gradient`; without isolation metadata,
-those timings remain local regression evidence only.
+`parameter_shift_uncertainty`, `spsa_gradient`, and
+`score_function_gradient`; without isolation metadata, those timings remain
+local regression evidence only.
 
 ### Error Mitigation
 

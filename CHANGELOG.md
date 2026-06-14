@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added materialised score-function likelihood-ratio gradient
+  estimation with explicit baseline handling, sample provenance, empirical
+  covariance, fail-closed validity checks, Rust/PyO3 parity, module/parity
+  tests, Criterion benchmark coverage, typed extension exports, and public
+  documentation updates.
 - 2026-06-14 — Added seeded local SPSA gradient estimation with finite-shot
   sample uncertainty propagation, probe-pair provenance, fail-closed stochastic
   contracts, Rust/PyO3 parity for materialised SPSA records, module/parity

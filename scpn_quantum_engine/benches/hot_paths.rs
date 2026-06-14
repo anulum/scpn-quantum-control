@@ -49,7 +49,8 @@ use scpn_quantum_engine::qnode_metrics::{
     vector_hessian_tensor_inner, vector_jvp_inner, vector_vjp_inner,
 };
 use scpn_quantum_engine::stochastic_gradient::{
-    spsa_gradient_inner, stochastic_parameter_shift_uncertainty_inner,
+    score_function_gradient_inner, spsa_gradient_inner,
+    stochastic_parameter_shift_uncertainty_inner,
 };
 
 fn bench_build_knm(c: &mut Criterion) {
@@ -503,6 +504,13 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
     let spsa_variances = [0.04, 0.04, 0.04, 0.04];
     let spsa_shots = [400.0, 400.0, 400.0, 400.0];
     let spsa_trainable = [true, true];
+    let score_function_rewards = [2.0, 0.0, 4.0, 1.5];
+    let score_function_scores = vec![
+        vec![1.0, 2.0],
+        vec![-1.0, 0.0],
+        vec![0.0, 1.0],
+        vec![0.5, -0.5],
+    ];
 
     let mut group = c.benchmark_group("phase_qnode_metric_and_transform_kernels");
     group.bench_function("fubini_study_metric", |bench| {
@@ -572,6 +580,18 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
                 Some(black_box(&spsa_shots)),
                 black_box(&spsa_trainable),
                 black_box(0.25),
+                black_box(1.959963984540054),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("score_function_gradient", |bench| {
+        bench.iter(|| {
+            score_function_gradient_inner(
+                black_box(&score_function_rewards),
+                black_box(&score_function_scores),
+                black_box(&spsa_trainable),
+                black_box(1.0),
                 black_box(1.959963984540054),
             )
             .unwrap()

@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 579,
+    "public_api_exports": 582,
     "public_documentation_pages": 240,
-    "python_model_classes": 1641,
+    "python_model_classes": 1643,
     "python_model_source_modules": 808,
-    "rust_pyo3_model_wrappers": 120,
+    "rust_pyo3_model_wrappers": 121,
     "rust_source_modules": 30,
-    "test_files": 1927
+    "test_files": 1928
   },
   "documentation": {
     "examples": [
@@ -5733,6 +5733,14 @@
         "path": "src/scpn_quantum_control/paper0/schizophrenia_dissonance_validation.py"
       },
       {
+        "name": "ScoreFunctionGradientResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ScoreFunctionSampleRecord",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ScpnIitCorrespondenceConfig",
         "path": "src/scpn_quantum_control/paper0/scpn_iit_correspondence_validation.py"
       },
@@ -8495,6 +8503,7 @@
       "qpetri_transition_activity",
       "rabi_pi_amplitude_fit",
       "run_realtime_feedback_loop",
+      "score_function_gradient_rust",
       "score_regions_batch",
       "spsa_gradient_rust",
       "state_order_param_sparse",
@@ -8718,6 +8727,8 @@
     "SPSAObjectiveSample",
     "SPSAProbeRecord",
     "SSGFQuantumLoop",
+    "ScoreFunctionGradientResult",
+    "ScoreFunctionSampleRecord",
     "ShotAllocationResult",
     "SparseMatrixResult",
     "StableCorePreflightResult",
@@ -9059,6 +9070,7 @@
     "run_scaling_benchmark",
     "run_stable_core_preflight",
     "scipy_ode_baseline",
+    "score_function_gradient_estimate",
     "scpn_control_bridge_dependency_contract",
     "simulate_higher_order_kuramoto",
     "simulate_monitored_kuramoto",
@@ -9795,6 +9807,7 @@
       "tests/test_differentiable_framework_ci_workflow.py",
       "tests/test_differentiable_framework_overlay.py",
       "tests/test_differentiable_programming_benchmarks.py",
+      "tests/test_differentiable_score_function.py",
       "tests/test_differentiable_spsa.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",

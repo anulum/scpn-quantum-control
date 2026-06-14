@@ -74,18 +74,18 @@ This package is designed for organisations that want to:
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.11 |
-| Public API exports | 579 |
+| Public API exports | 582 |
 | Python source modules | 808 |
-| Public Python classes | 1641 |
+| Public Python classes | 1643 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 120 |
+| Rust PyO3 function bindings | 121 |
 | Rust source modules | 30 |
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1927 |
+| Python test files | 1928 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 19 |
 
