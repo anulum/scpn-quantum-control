@@ -43,8 +43,9 @@ classifications, and claim-ledger artefact IDs are committed.
 
 For Phase-QNode performance language, notebooks are never enough by themselves:
 the CI evidence bundle must report `isolated_affinity` from a self-hosted
-`isolated-benchmark` runner. Missing Enzyme/compiler AD tooling is recorded as a
-dependency gap, not as a passed comparison.
+`isolated-benchmark` runner. Unconfigured Enzyme/compiler AD tooling is
+recorded as a dependency gap, not as a passed comparison; configured runners
+must pass the external comparison JSON and correctness contract.
 
 For a non-notebook entry point, use [Quickstart](quickstart.md).
 

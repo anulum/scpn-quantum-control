@@ -387,6 +387,31 @@ These rows are correctness/conformance benchmarks only. They do not claim
 hardware execution, provider integration, framework-native autodiff, or
 wall-clock performance.
 
+#### `run_differentiable_external_comparison_suite()`
+
+Runs optional external comparison rows for JAX, PyTorch, TensorFlow,
+PennyLane, and LLVM/Enzyme runner evidence. The SCPN analytic reference remains
+the source of truth. Missing optional dependencies are emitted as `hard_gap`
+rows instead of being omitted.
+
+For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an executable that reads a JSON
+request on stdin and writes JSON with:
+
+```json
+{
+  "value": 0.0,
+  "gradient": [0.0, 0.0],
+  "toolchain": {"enzyme": "version", "llvm": "version"}
+}
+```
+
+The runner row enforces a timeout (`SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS`,
+default `10`), validates finite scalar/vector outputs, records toolchain
+metadata, and reports `correctness_mismatch` unless value and gradient match
+the SCPN reference. These rows are comparison evidence only; they do not claim
+provider execution, QPU execution, GPU execution, arbitrary-program AD, or
+production performance.
+
 ---
 
 ## Crossover Summary

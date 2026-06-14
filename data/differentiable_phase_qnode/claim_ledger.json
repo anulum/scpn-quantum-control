@@ -85,7 +85,7 @@
       ],
       "known_gaps": [
         "Missing framework dependencies are hard_gap rows.",
-        "Missing LLVM/Enzyme tooling remains dependency_missing until configured."
+        "Unconfigured LLVM/Enzyme tooling remains dependency_missing; configured runners must pass strict JSON, timeout, toolchain, and correctness gates."
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "External comparison rows are bounded CPU diagnostic evidence only; they do not claim provider or QPU execution."

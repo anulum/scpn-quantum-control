@@ -121,7 +121,7 @@ Use this route if you are comparing the framework with quantum-ML stacks:
 6. inspect the Phase-QNode [claim ledger](https://github.com/anulum/scpn-quantum-control/blob/main/data/differentiable_phase_qnode/claim_ledger.md)
    and benchmark classification before using performance language;
 7. document unsupported gates, adapters, hardware policies, transform nests, or
-   missing Enzyme tooling
+   unconfigured Enzyme tooling
    as research evidence rather than hiding them behind finite differences.
 
 This route is intentionally stricter than a demo notebook. It is designed to

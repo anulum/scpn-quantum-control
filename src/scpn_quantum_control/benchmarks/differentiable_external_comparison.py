@@ -9,9 +9,11 @@
 
 from __future__ import annotations
 
+import json
 import math
 import os
 import shutil
+import subprocess
 import time
 import tracemalloc
 from dataclasses import dataclass
@@ -47,6 +49,7 @@ class ExternalComparisonRow:
     source_of_truth: str
     setup_instructions: str | None
     claim_boundary: str
+    toolchain: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         if not self.case_id:
@@ -72,6 +75,11 @@ class ExternalComparisonRow:
                 raise ValueError("success row errors must be non-negative")
         if self.status == "hard_gap" and (not self.failure_class or not self.setup_instructions):
             raise ValueError("hard_gap rows require failure_class and setup_instructions")
+        if self.toolchain is not None and (
+            any(not isinstance(key, str) or not key for key in self.toolchain)
+            or any(not isinstance(value, str) or not value for value in self.toolchain.values())
+        ):
+            raise ValueError("toolchain metadata must map non-empty strings to non-empty strings")
 
     @property
     def artifact_fields_ready(self) -> bool:
@@ -98,6 +106,7 @@ class ExternalComparisonRow:
             "source_of_truth": self.source_of_truth,
             "setup_instructions": self.setup_instructions,
             "claim_boundary": self.claim_boundary,
+            "toolchain": dict(self.toolchain) if self.toolchain is not None else None,
         }
 
 
@@ -208,11 +217,73 @@ def _framework_row(
 
 
 def _enzyme_row() -> ExternalComparisonRow:
-    return _dependency_gap_row(
-        "enzyme",
-        "not_evaluated",
-        "LLVM Enzyme",
-        "Configure SCPN_ENZYME_RUNNER to an executable runner that emits value and gradient JSON.",
+    if not _enzyme_runner_configured():
+        return _dependency_gap_row(
+            "enzyme",
+            "not_evaluated",
+            "LLVM Enzyme",
+            "Configure SCPN_ENZYME_RUNNER to an executable runner that emits value and gradient JSON.",
+        )
+    values = np.array([0.2, -0.4], dtype=np.float64)
+    reference_value = _bounded_phase_objective(values)
+    reference_gradient = _bounded_phase_gradient(values)
+    tracemalloc.start()
+    start = time.perf_counter()
+    try:
+        external_value, external_gradient, toolchain = _run_enzyme_reference(values)
+    except TimeoutError as exc:
+        tracemalloc.stop()
+        return _runtime_gap_row("enzyme", "not_supported", "LLVM Enzyme runner", str(exc))
+    except (RuntimeError, ValueError) as exc:
+        tracemalloc.stop()
+        return _runtime_gap_row("enzyme", "not_supported", "LLVM Enzyme runner", str(exc))
+    runtime = time.perf_counter() - start
+    _, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    value_error = abs(reference_value - external_value)
+    gradient_error = float(np.max(np.abs(reference_gradient - external_gradient)))
+    if value_error > 1.0e-8 or gradient_error > 1.0e-8:
+        return ExternalComparisonRow(
+            case_id="bounded_phase_objective",
+            backend="enzyme",
+            status="hard_gap",
+            failure_class="correctness_mismatch",
+            value_error=None,
+            gradient_error=None,
+            runtime_seconds=None,
+            memory_peak_bytes=None,
+            batching_support="not_supported",
+            transform_support="LLVM Enzyme runner",
+            dtype="float64",
+            device="cpu",
+            source_of_truth="scpn_reference",
+            setup_instructions=(
+                "Configured Enzyme runner output did not match the SCPN reference "
+                f"(value_error={value_error:.3e}, gradient_error={gradient_error:.3e})."
+            ),
+            claim_boundary="Correctness hard gap only; no hidden success or promoted claim.",
+            toolchain=toolchain,
+        )
+    return ExternalComparisonRow(
+        case_id="bounded_phase_objective",
+        backend="enzyme",
+        status="success",
+        failure_class=None,
+        value_error=value_error,
+        gradient_error=gradient_error,
+        runtime_seconds=runtime,
+        memory_peak_bytes=max(int(peak), int(values.nbytes + reference_gradient.nbytes)),
+        batching_support="not_supported",
+        transform_support="LLVM Enzyme runner",
+        dtype="float64",
+        device="cpu",
+        source_of_truth="scpn_reference",
+        setup_instructions=None,
+        claim_boundary=(
+            "Bounded CPU LLVM/Enzyme runner comparison against the SCPN reference; "
+            "no provider, QPU, GPU, arbitrary-program AD, or production performance claim."
+        ),
+        toolchain=toolchain,
     )
 
 
@@ -334,6 +405,93 @@ def _run_pennylane_reference(values: NDArray[np.float64]) -> tuple[float, NDArra
     value = objective(params)
     gradient = qml.grad(objective)(params)
     return float(value), np.asarray(gradient, dtype=np.float64)
+
+
+def _run_enzyme_reference(
+    values: NDArray[np.float64],
+) -> tuple[float, NDArray[np.float64], dict[str, str]]:
+    runner = os.environ.get("SCPN_ENZYME_RUNNER")
+    if not runner:
+        raise RuntimeError("SCPN_ENZYME_RUNNER is not configured")
+    payload = json.dumps(
+        {
+            "schema": "scpn_qc_enzyme_runner_request_v1",
+            "case_id": "bounded_phase_objective",
+            "values": values.tolist(),
+            "objective": "cos(x0)+0.25*sin(x1)",
+            "gradient_contract": ["-sin(x0)", "0.25*cos(x1)"],
+            "dtype": "float64",
+        },
+        sort_keys=True,
+    )
+    try:
+        completed = subprocess.run(
+            [runner],
+            input=payload,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=_enzyme_runner_timeout_seconds(),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise TimeoutError("Configured Enzyme runner timed out") from exc
+    if completed.returncode != 0:
+        stderr = completed.stderr.strip() or "no stderr"
+        raise RuntimeError(f"Configured Enzyme runner failed: {stderr}")
+    try:
+        result = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("Configured Enzyme runner did not emit valid JSON") from exc
+    if not isinstance(result, dict):
+        raise ValueError("Configured Enzyme runner JSON must be an object")
+    value = _as_finite_scalar("Enzyme runner value", result.get("value"))
+    gradient = _as_gradient_vector("Enzyme runner gradient", result.get("gradient"), values.size)
+    toolchain = _as_toolchain_metadata(result.get("toolchain"))
+    return value, gradient, toolchain
+
+
+def _as_finite_scalar(name: str, value: object) -> float:
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "c", "O", "S", "U"}:
+        raise ValueError(f"{name} must be a finite real scalar")
+    scalar = float(raw.item())
+    if not np.isfinite(scalar):
+        raise ValueError(f"{name} must be finite")
+    return scalar
+
+
+def _as_gradient_vector(name: str, value: object, width: int) -> NDArray[np.float64]:
+    raw = np.asarray(value)
+    if raw.dtype.kind in {"b", "c", "O", "S", "U"}:
+        raise ValueError(f"{name} must contain finite real numeric values")
+    gradient = np.asarray(value, dtype=np.float64)
+    if gradient.shape != (width,):
+        raise ValueError(f"{name} must have shape ({width},), got {gradient.shape}")
+    if not np.all(np.isfinite(gradient)):
+        raise ValueError(f"{name} must contain finite real numeric values")
+    return gradient.astype(np.float64, copy=True)
+
+
+def _as_toolchain_metadata(value: object) -> dict[str, str]:
+    if value is None:
+        return {"enzyme": "configured-runner", "llvm": "configured-runner"}
+    if not isinstance(value, dict):
+        raise ValueError("Enzyme runner toolchain metadata must be an object")
+    metadata = {str(key): str(item) for key, item in value.items()}
+    if any(not key or not item for key, item in metadata.items()):
+        raise ValueError("Enzyme runner toolchain metadata cannot contain empty keys or values")
+    return metadata
+
+
+def _enzyme_runner_timeout_seconds() -> float:
+    raw = os.environ.get("SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS", "10")
+    try:
+        timeout = float(raw)
+    except ValueError as exc:
+        raise ValueError("SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS must be numeric") from exc
+    if not np.isfinite(timeout) or timeout <= 0.0:
+        raise ValueError("SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS must be positive")
+    return timeout
 
 
 def _enzyme_tooling_available() -> bool:

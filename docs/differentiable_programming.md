@@ -84,8 +84,12 @@ Benchmark artefacts written by
 GitHub-hosted runners are classified as `functional_non_isolated`; production
 performance wording requires a self-hosted runner labelled
 `isolated-benchmark`, explicit CPU affinity, host-load context, governor or
-frequency context, and no concurrent heavy jobs. Missing Enzyme tooling is a
-recorded `dependency_missing` hard gap, not a hidden success.
+frequency context, and no concurrent heavy jobs. Unconfigured Enzyme tooling is
+a recorded `dependency_missing` hard gap, not a hidden success. When
+`SCPN_ENZYME_RUNNER` is configured and LLVM/Enzyme tooling is present, the
+external comparison row sends a strict JSON request, enforces a timeout, records
+runner toolchain metadata, and accepts success only when value and gradient
+match the SCPN analytic reference.
 
 Self-hosted runner preparation is explicit:
 

@@ -136,7 +136,8 @@ coupled dynamics matter:
   unified differentiable-readiness audit for reviewer-facing support evidence.
 - The Phase-QNode differentiable lane now has a reproducible CPU framework
   overlay profile, external comparison rows for JAX, PyTorch, TensorFlow,
-  PennyLane, and optional Enzyme/compiler AD, plus a claim ledger that requires
+  PennyLane, and optional Enzyme/compiler AD runner evidence with strict JSON,
+  timeout, toolchain, and correctness gates, plus a claim ledger that requires
   artefact IDs before promotion.
 
 ## What Remains Bounded
