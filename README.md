@@ -76,7 +76,7 @@ This package is designed for organisations that want to:
 | Package version | 0.9.11 |
 | Public API exports | 585 |
 | Python source modules | 808 |
-| Public Python classes | 1658 |
+| Public Python classes | 1659 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
@@ -197,6 +197,10 @@ quantum hardware experimentation, and control-facing software:
   family through SCPN plus installed JAX, PyTorch, TensorFlow, and PennyLane
   backends, recording value, gradient, dtype/device metadata, and dependency
   sparse classifications without provider execution.
+- `build_pennylane_qnode_from_phase_qnode(...)` and
+  `check_pennylane_phase_qnode_round_trip(...)` generate bounded PennyLane
+  QNodes from registered local `PhaseQNodeCircuit` declarations and verify
+  value/gradient parity with explicit device, shot, and diff-method metadata.
 - `run_phase_qnode_affinity_benchmark(...)` records command, affinity, host
   load, CPU/runtime/dependency metadata, warmups, repetitions, and raw timing
   rows; evidence is labelled `isolated_affinity` only when the isolation policy

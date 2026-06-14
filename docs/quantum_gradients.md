@@ -1273,11 +1273,11 @@ agreement = check_pennylane_parameter_shift_agreement(
 print(agreement.passed, agreement.max_abs_error)
 ```
 
-This is an agreement verifier, not an automatic PennyLane QNode generator. It
-fails closed when PennyLane is not importable and reports explicit gradient
-error metrics when the external gradient disagrees. When a multi-frequency rule
-is supplied, the report records the native SCPN method and shift-term count so
-the comparison cannot be mistaken for the legacy two-point rule.
+This caller-supplied path fails closed when PennyLane is not importable and
+reports explicit gradient error metrics when the external gradient disagrees.
+When a multi-frequency rule is supplied, the report records the native SCPN
+method and shift-term count so the comparison cannot be mistaken for the legacy
+two-point rule.
 
 For full adapter smoke tests, `check_pennylane_qnode_round_trip(...)` compares
 both value and gradient parity:
@@ -1294,8 +1294,41 @@ round_trip = check_pennylane_qnode_round_trip(
 print(round_trip.passed, round_trip.value_abs_error)
 ```
 
-This still stays fail-closed and caller-supplied: SCPN does not claim automatic
-translation of every internal ansatz into a PennyLane QNode.
+For registered local `PhaseQNodeCircuit` declarations, SCPN can also generate a
+bounded PennyLane QNode and verify the generated value/gradient route:
+
+```python
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    build_pennylane_qnode_from_phase_qnode,
+    check_pennylane_phase_qnode_round_trip,
+)
+
+phase_qnode = PhaseQNodeCircuit(
+    1,
+    (("ry", (0,), 0), ("rx", (0,), 1)),
+    PauliTerm(1.0, ((0, "z"),)),
+)
+conversion = build_pennylane_qnode_from_phase_qnode(
+    phase_qnode,
+    device_name="default.qubit",
+    shots=None,
+    diff_method="parameter-shift",
+)
+generated = check_pennylane_phase_qnode_round_trip(
+    phase_qnode,
+    np.array([0.4, -0.2]),
+)
+print(generated.passed, conversion.device_name, conversion.shots)
+```
+
+The generated route records device, shot policy, interface, diff method, gates,
+observable family, and differentiable parameter indices. Its claim boundary is
+limited to registered static gates and direct expectation observables with
+PennyLane equivalents. Provider submission, hardware execution, dynamic
+circuits, noise models, and covariance observable conversion remain explicit
+non-claims.
 
 ## Optional PyTorch and TensorFlow tensor bridges
 

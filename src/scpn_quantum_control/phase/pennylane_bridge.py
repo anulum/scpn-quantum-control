@@ -10,13 +10,26 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import Parameter, ParameterShiftRule, value_and_parameter_shift_grad
+from .qnode_circuit import (
+    DenseHermitianObservable,
+    PauliCovarianceObservable,
+    PauliTerm,
+    PhaseQNodeCircuit,
+    PhaseQNodeOperation,
+    PhaseQNodeSupportError,
+    SparsePauliHamiltonian,
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+    phase_qnode_support_report,
+)
 
 FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
@@ -88,6 +101,39 @@ class PennyLaneRoundTripResult:
             "evaluations": self.evaluations,
             "method": self.method,
             "shift_terms": self.shift_terms,
+        }
+
+
+@dataclass(frozen=True)
+class PennyLaneQNodeConversionResult:
+    """Bounded conversion metadata for a registered Phase-QNode PennyLane QNode."""
+
+    qnode: Callable[[ArrayLike], object]
+    gradient: Callable[[ArrayLike], object]
+    device_name: str
+    n_qubits: int
+    shots: int | None
+    interface: str
+    diff_method: str
+    gates: tuple[str, ...]
+    observable_kind: str
+    differentiable_parameters: tuple[int, ...]
+    hardware_execution: bool
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready conversion metadata without raw callables."""
+        return {
+            "device_name": self.device_name,
+            "n_qubits": self.n_qubits,
+            "shots": self.shots,
+            "interface": self.interface,
+            "diff_method": self.diff_method,
+            "gates": list(self.gates),
+            "observable_kind": self.observable_kind,
+            "differentiable_parameters": list(self.differentiable_parameters),
+            "hardware_execution": self.hardware_execution,
+            "claim_boundary": self.claim_boundary,
         }
 
 
@@ -247,10 +293,233 @@ def check_pennylane_qnode_round_trip(
     )
 
 
+def build_pennylane_qnode_from_phase_qnode(
+    circuit: PhaseQNodeCircuit,
+    *,
+    device_name: str = "default.qubit",
+    shots: int | None = None,
+    interface: str = "autograd",
+    diff_method: str = "parameter-shift",
+) -> PennyLaneQNodeConversionResult:
+    """Build a PennyLane QNode for the registered local Phase-QNode subset.
+
+    The converter is intentionally bounded. It maps the registered static gate
+    family and expectation observables that have direct PennyLane equivalents,
+    then records the exact device and shot policy used by the generated QNode.
+    Provider submission, hardware execution, dynamic circuits, and covariance
+    observables remain explicit non-claims.
+    """
+    qml = _load_pennylane()
+    shot_policy = _as_optional_shots(shots)
+    parameter_count = _phase_qnode_parameter_count(circuit)
+    support_report = phase_qnode_support_report(circuit, np.zeros(parameter_count, dtype=float))
+    if not support_report.supported:
+        raise PhaseQNodeSupportError(support_report)
+    if isinstance(circuit.observable, PauliCovarianceObservable):
+        raise ValueError(
+            "PennyLane QNode conversion does not support Pauli covariance observables; "
+            "use local Phase-QNode execution for covariance product-rule gradients"
+        )
+    device = qml.device(device_name, wires=circuit.n_qubits, shots=shot_policy)
+
+    def qnode_body(parameters: ArrayLike) -> object:
+        values = _as_parameter_vector("values", parameters, width=parameter_count)
+        for operation in circuit.operations:
+            _apply_pennylane_operation(qml, cast(PhaseQNodeOperation, operation), values)
+        return qml.expval(_pennylane_observable(qml, circuit.observable, circuit.n_qubits))
+
+    qnode = qml.qnode(device, interface=interface, diff_method=diff_method)(qnode_body)
+    _attach_phase_qnode_metadata(qnode, circuit)
+    gradient = qml.grad(qnode)
+    return PennyLaneQNodeConversionResult(
+        qnode=qnode,
+        gradient=gradient,
+        device_name=device_name,
+        n_qubits=circuit.n_qubits,
+        shots=shot_policy,
+        interface=interface,
+        diff_method=diff_method,
+        gates=support_report.gates,
+        observable_kind=support_report.observable_kind,
+        differentiable_parameters=support_report.differentiable_parameters,
+        hardware_execution=False,
+        claim_boundary=(
+            "bounded PennyLane QNode conversion for registered local Phase-QNode "
+            "gates and expectation observables on an explicitly named PennyLane "
+            "device; no provider submission, hardware execution, dynamic-circuit, "
+            "noise-model, or covariance-observable conversion claim"
+        ),
+    )
+
+
+def check_pennylane_phase_qnode_round_trip(
+    circuit: PhaseQNodeCircuit,
+    values: ArrayLike,
+    *,
+    device_name: str = "default.qubit",
+    shots: int | None = None,
+    interface: str = "autograd",
+    diff_method: str = "parameter-shift",
+    value_tolerance: float = 1e-8,
+    gradient_tolerance: float = 1e-6,
+) -> PennyLaneRoundTripResult:
+    """Verify a generated PennyLane QNode against local Phase-QNode execution."""
+    conversion = build_pennylane_qnode_from_phase_qnode(
+        circuit,
+        device_name=device_name,
+        shots=shots,
+        interface=interface,
+        diff_method=diff_method,
+    )
+    value_tol = _as_non_negative_tolerance(value_tolerance)
+    gradient_tol = _as_non_negative_tolerance(gradient_tolerance)
+    parameter_count = _phase_qnode_parameter_count(circuit)
+    parameter_values = _as_parameter_vector("values", values, width=parameter_count)
+    scpn_value = execute_phase_qnode_circuit(circuit, parameter_values).value
+    scpn_gradient = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+    pennylane_value = _as_finite_scalar(
+        "PennyLane generated QNode",
+        conversion.qnode(parameter_values.copy()),
+    )
+    pennylane_gradient = _as_parameter_vector(
+        "PennyLane generated QNode gradient",
+        conversion.gradient(parameter_values.copy()),
+        width=parameter_count,
+    )
+    delta = scpn_gradient.gradient - pennylane_gradient
+    value_abs_error = abs(float(scpn_value) - pennylane_value)
+    gradient_max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    gradient_l2_error = float(np.linalg.norm(delta, ord=2))
+    return PennyLaneRoundTripResult(
+        scpn_value=float(scpn_value),
+        pennylane_value=pennylane_value,
+        value_abs_error=value_abs_error,
+        scpn_gradient=scpn_gradient.gradient.copy(),
+        pennylane_gradient=pennylane_gradient,
+        gradient_max_abs_error=gradient_max_abs_error,
+        gradient_l2_error=gradient_l2_error,
+        value_tolerance=value_tol,
+        gradient_tolerance=gradient_tol,
+        passed=bool(value_abs_error <= value_tol and gradient_max_abs_error <= gradient_tol),
+        evaluations=1 + scpn_gradient.parameter_shift_evaluations,
+        method="phase_qnode_pennylane_conversion",
+        shift_terms=1,
+    )
+
+
+_PENNYLANE_OPERATION_NAMES: dict[str, str] = {
+    "h": "Hadamard",
+    "x": "PauliX",
+    "y": "PauliY",
+    "z": "PauliZ",
+    "s": "S",
+    "t": "T",
+    "sx": "SX",
+    "cnot": "CNOT",
+    "cz": "CZ",
+    "cy": "CY",
+    "swap": "SWAP",
+    "rx": "RX",
+    "ry": "RY",
+    "rz": "RZ",
+    "phase": "PhaseShift",
+    "crx": "CRX",
+    "cry": "CRY",
+    "crz": "CRZ",
+    "rxx": "IsingXX",
+    "ryy": "IsingYY",
+    "rzz": "IsingZZ",
+}
+
+
+def _phase_qnode_parameter_count(circuit: PhaseQNodeCircuit) -> int:
+    parameter_indices = [
+        parsed.parameter_index
+        for operation in circuit.operations
+        if (parsed := cast(PhaseQNodeOperation, operation)).parameter_index is not None
+    ]
+    return 0 if not parameter_indices else max(parameter_indices) + 1
+
+
+def _as_optional_shots(value: int | None) -> int | None:
+    if value is None:
+        return None
+    shots = int(value)
+    if isinstance(value, bool) or shots < 1:
+        raise ValueError("shots must be a positive integer or None")
+    return shots
+
+
+def _attach_phase_qnode_metadata(
+    qnode: Callable[[ArrayLike], object], circuit: PhaseQNodeCircuit
+) -> None:
+    qnode_with_metadata: Any = qnode
+    with suppress(AttributeError):
+        qnode_with_metadata._scpn_phase_qnode_circuit = circuit
+
+
+def _apply_pennylane_operation(
+    qml: Any, operation: PhaseQNodeOperation, values: FloatArray
+) -> None:
+    operation_name = _PENNYLANE_OPERATION_NAMES.get(operation.gate)
+    if operation_name is None:
+        raise ValueError(f"PennyLane QNode conversion does not support gate {operation.gate!r}")
+    qml_operation = getattr(qml, operation_name)
+    wires = operation.qubits[0] if len(operation.qubits) == 1 else list(operation.qubits)
+    if operation.parameter_index is None:
+        qml_operation(wires=wires)
+        return
+    qml_operation(values[operation.parameter_index], wires=wires)
+
+
+def _pennylane_observable(qml: Any, observable: object, n_qubits: int) -> object:
+    if isinstance(observable, PauliTerm):
+        return _pennylane_pauli_term(qml, observable)
+    if isinstance(observable, SparsePauliHamiltonian):
+        terms = [_pennylane_pauli_product(qml, term) for term in observable.terms]
+        coefficients = [float(term.coefficient) for term in observable.terms]
+        return qml.Hamiltonian(coefficients, terms)
+    if isinstance(observable, DenseHermitianObservable):
+        return qml.Hermitian(observable.matrix, wires=range(n_qubits))
+    if isinstance(observable, PauliCovarianceObservable):
+        raise ValueError(
+            "PennyLane QNode conversion does not support Pauli covariance observables"
+        )
+    raise ValueError(
+        f"PennyLane QNode conversion does not support observable {type(observable).__name__}"
+    )
+
+
+def _pennylane_pauli_term(qml: Any, term: PauliTerm) -> object:
+    observable: Any = _pennylane_pauli_product(qml, term)
+    return float(term.coefficient) * observable
+
+
+def _pennylane_pauli_product(qml: Any, term: PauliTerm) -> object:
+    factors = [_pennylane_single_pauli(qml, qubit, label) for qubit, label in term.factors]
+    product: Any = factors[0]
+    for factor in factors[1:]:
+        product = product @ factor
+    return product
+
+
+def _pennylane_single_pauli(qml: Any, qubit: int, label: str) -> object:
+    if label == "x":
+        return qml.PauliX(wires=qubit)
+    if label == "y":
+        return qml.PauliY(wires=qubit)
+    if label == "z":
+        return qml.PauliZ(wires=qubit)
+    raise ValueError(f"PennyLane QNode conversion does not support Pauli label {label!r}")
+
+
 __all__ = [
     "PennyLaneGradientAgreementResult",
+    "PennyLaneQNodeConversionResult",
     "PennyLaneRoundTripResult",
+    "build_pennylane_qnode_from_phase_qnode",
     "check_pennylane_parameter_shift_agreement",
+    "check_pennylane_phase_qnode_round_trip",
     "check_pennylane_qnode_round_trip",
     "is_phase_pennylane_available",
 ]

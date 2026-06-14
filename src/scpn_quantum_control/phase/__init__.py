@@ -180,8 +180,11 @@ from .param_shift import (
 )
 from .pennylane_bridge import (
     PennyLaneGradientAgreementResult,
+    PennyLaneQNodeConversionResult,
     PennyLaneRoundTripResult,
+    build_pennylane_qnode_from_phase_qnode,
     check_pennylane_parameter_shift_agreement,
+    check_pennylane_phase_qnode_round_trip,
     check_pennylane_qnode_round_trip,
     is_phase_pennylane_available,
 )
@@ -576,9 +579,12 @@ __all__ = [
     "run_jax_pytree_compatibility_audit",
     "run_jax_vmap_compatibility_audit",
     "run_jax_sharding_compatibility_audit",
+    "build_pennylane_qnode_from_phase_qnode",
     "check_pennylane_parameter_shift_agreement",
+    "check_pennylane_phase_qnode_round_trip",
     "check_pennylane_qnode_round_trip",
     "PennyLaneGradientAgreementResult",
+    "PennyLaneQNodeConversionResult",
     "PennyLaneRoundTripResult",
     "ProviderExpectationSample",
     "ProviderGradientExecutionResult",
