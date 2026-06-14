@@ -12,8 +12,8 @@
     "public_documentation_pages": 240,
     "python_model_classes": 1638,
     "python_model_source_modules": 808,
-    "rust_pyo3_model_wrappers": 118,
-    "rust_source_modules": 29,
+    "rust_pyo3_model_wrappers": 119,
+    "rust_source_modules": 30,
     "test_files": 1925
   },
   "documentation": {
@@ -8464,6 +8464,7 @@
       "order_param_from_statevector",
       "order_parameter",
       "otoc_from_eigendecomp",
+      "parameter_shift_gradient_uncertainty_rust",
       "parity_filter_mask",
       "pec_coefficients",
       "pec_sample_parallel",
@@ -8531,6 +8532,7 @@
       "scpn_quantum_engine/src/qnode_metrics.rs",
       "scpn_quantum_engine/src/qpetri.rs",
       "scpn_quantum_engine/src/sectors.rs",
+      "scpn_quantum_engine/src/stochastic_gradient.rs",
       "scpn_quantum_engine/src/symmetry_decay.rs",
       "scpn_quantum_engine/src/validation.rs"
     ]

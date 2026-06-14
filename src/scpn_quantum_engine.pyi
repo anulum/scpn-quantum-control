@@ -155,6 +155,17 @@ def phase_qnode_vector_hessian_tensor_rust(
     hessian_tensor: _F64Array, symmetry_tolerance: float = ...
 ) -> _F64Array: ...
 def phase_qnode_complex_derivative_contract_rust() -> dict[str, object]: ...
+def parameter_shift_gradient_uncertainty_rust(
+    plus_values: _F64Array,
+    minus_values: _F64Array,
+    plus_variances: _F64Array,
+    minus_variances: _F64Array,
+    plus_shots: _F64Array,
+    minus_shots: _F64Array,
+    coefficients: _F64Array,
+    trainable: _BoolArray,
+    confidence_z: float = ...,
+) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array]: ...
 def build_sparse_xy_hamiltonian(
     k_flat: _F64Array,
     omega: _F64Array,

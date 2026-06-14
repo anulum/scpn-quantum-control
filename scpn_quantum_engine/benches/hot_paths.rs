@@ -48,6 +48,7 @@ use scpn_quantum_engine::qnode_metrics::{
     computational_basis_fisher_inner, fubini_study_metric_inner, hessian_vector_product_inner,
     vector_hessian_tensor_inner, vector_jvp_inner, vector_vjp_inner,
 };
+use scpn_quantum_engine::stochastic_gradient::stochastic_parameter_shift_uncertainty_inner;
 
 fn bench_build_knm(c: &mut Criterion) {
     let mut group = c.benchmark_group("build_knm_inner");
@@ -481,6 +482,14 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
         vec![vec![-0.95, 0.0], vec![0.0, 0.02]],
         vec![vec![-0.31, 0.0], vec![0.0, 0.24]],
     ];
+    let plus_values = vec![vec![0.8, 0.1]];
+    let minus_values = vec![vec![0.2, -0.3]];
+    let plus_variances = vec![vec![0.36, 0.25]];
+    let minus_variances = vec![vec![0.16, 0.09]];
+    let plus_shots = vec![vec![900.0, 400.0]];
+    let minus_shots = vec![vec![400.0, 100.0]];
+    let coefficients = [0.5];
+    let trainable = [true, false];
 
     let mut group = c.benchmark_group("phase_qnode_metric_and_transform_kernels");
     group.bench_function("fubini_study_metric", |bench| {
@@ -520,6 +529,22 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
     group.bench_function("vector_hessian_tensor", |bench| {
         bench.iter(|| {
             vector_hessian_tensor_inner(black_box(&hessian_tensor), black_box(1e-12)).unwrap()
+        });
+    });
+    group.bench_function("parameter_shift_uncertainty", |bench| {
+        bench.iter(|| {
+            stochastic_parameter_shift_uncertainty_inner(
+                black_box(&plus_values),
+                black_box(&minus_values),
+                black_box(&plus_variances),
+                black_box(&minus_variances),
+                black_box(&plus_shots),
+                black_box(&minus_shots),
+                black_box(&coefficients),
+                black_box(&trainable),
+                black_box(1.959963984540054),
+            )
+            .unwrap()
         });
     });
     group.finish();

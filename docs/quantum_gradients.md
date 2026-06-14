@@ -350,6 +350,15 @@ result = parameter_shift_gradient_with_uncertainty(
 print(result.gradient, result.standard_error)
 ```
 
+The optional Rust extension exposes
+`parameter_shift_gradient_uncertainty_rust(...)` for the same materialised
+finite-shot arithmetic: shifted plus/minus means, shifted variances, plus/minus
+shot counts, rule coefficients, and trainable masks are validated at the FFI
+boundary before Rust returns the gradient, standard error, diagonal covariance,
+and confidence radius. This is a parity kernel for uncertainty propagation; it
+does not call provider samplers, submit hardware jobs, or replace the Python
+evidence records.
+
 ## Provider callback execution
 
 `execute_provider_parameter_shift_gradient(...)` is the first provider-safe

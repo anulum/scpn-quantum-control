@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (118)
+## Functions (119)
 
-The Rust crate exports 118 PyO3 bindings across 28 Rust source files. They are organised
+The Rust crate exports 119 PyO3 bindings across 29 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -115,6 +115,23 @@ arbitrary Python objectives.
 `phase_qnode_metric_and_transform_kernels` group for these inner kernels. Any
 result captured without the benchmark-isolation metadata required by the
 project benchmark policy is local regression evidence only.
+
+### Stochastic Gradient Kernels
+
+| Function | Description | Complexity |
+|----------|-------------|------------|
+| `parameter_shift_gradient_uncertainty_rust(plus_values, minus_values, plus_variances, minus_variances, plus_shots, minus_shots, coefficients, trainable, confidence_z=1.959963984540054)` | Validate and propagate materialised finite-shot parameter-shift uncertainty into gradient, standard error, diagonal covariance, and confidence radius | O(tp) |
+
+This kernel mirrors the core Python finite-shot uncertainty primitive for
+already materialised shifted expectation records. It validates finite shifted
+means, non-negative variances, positive integer shot counts, finite rule
+coefficients, trainable-mask width, and positive confidence radius scaling. It
+does not execute provider callbacks, allocate shots, submit hardware jobs, or
+create claim-ledger evidence by itself.
+
+The `phase_qnode_metric_and_transform_kernels` benchmark group includes
+`parameter_shift_uncertainty`; without isolation metadata, those timings remain
+local regression evidence only.
 
 ### Error Mitigation
 

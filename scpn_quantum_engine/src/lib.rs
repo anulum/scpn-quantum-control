@@ -53,6 +53,7 @@ pub mod pulse_shaping;
 pub mod qnode_metrics;
 pub mod qpetri;
 pub mod sectors;
+pub mod stochastic_gradient;
 pub mod symmetry_decay;
 pub mod validation;
 
@@ -205,6 +206,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     m.add_function(wrap_pyfunction!(
         qnode_metrics::phase_qnode_complex_derivative_contract_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        stochastic_gradient::parameter_shift_gradient_uncertainty_rust,
         m
     )?)?;
 

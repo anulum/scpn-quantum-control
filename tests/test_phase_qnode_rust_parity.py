@@ -12,6 +12,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control.differentiable import (
+    Parameter,
+    parameter_shift_gradient_with_uncertainty,
+)
 from scpn_quantum_control.phase import (
     PhaseQNodeCircuit,
     execute_phase_qnode_hessian_vector_product,
@@ -173,3 +177,40 @@ def test_rust_phase_qnode_complex_contract_matches_python_fail_closed_boundary()
     assert rust_contract["accepts_complex_tangents"] is False
     assert rust_contract["holomorphic_derivatives"] is False
     assert rust_contract["wirtinger_partials"] is False
+
+
+def test_rust_parameter_shift_gradient_uncertainty_matches_python_surface() -> None:
+    rust_uncertainty = engine.parameter_shift_gradient_uncertainty_rust
+    plus_values = np.array([0.8, 0.1], dtype=np.float64)
+    minus_values = np.array([0.2, -0.3], dtype=np.float64)
+    plus_variances = np.array([0.36, 0.25], dtype=np.float64)
+    minus_variances = np.array([0.16, 0.09], dtype=np.float64)
+    plus_shots = np.array([900.0, 400.0], dtype=np.float64)
+    minus_shots = np.array([400.0, 100.0], dtype=np.float64)
+    trainable = np.array([True, False], dtype=np.bool_)
+    coefficients = np.array([0.5], dtype=np.float64)
+
+    python_result = parameter_shift_gradient_with_uncertainty(
+        plus_values=plus_values,
+        minus_values=minus_values,
+        plus_variances=plus_variances,
+        minus_variances=minus_variances,
+        plus_shots=plus_shots,
+        minus_shots=minus_shots,
+        parameters=(Parameter("theta"), Parameter("frozen", trainable=False)),
+    )
+    gradient, standard_error, covariance, confidence_radius = rust_uncertainty(
+        plus_values.reshape(1, -1),
+        minus_values.reshape(1, -1),
+        plus_variances.reshape(1, -1),
+        minus_variances.reshape(1, -1),
+        plus_shots.reshape(1, -1),
+        minus_shots.reshape(1, -1),
+        coefficients,
+        trainable,
+    )
+
+    np.testing.assert_allclose(gradient, python_result.gradient, atol=1e-12)
+    np.testing.assert_allclose(standard_error, python_result.standard_error, atol=1e-12)
+    np.testing.assert_allclose(covariance, python_result.covariance, atol=1e-12)
+    np.testing.assert_allclose(confidence_radius, python_result.confidence_radius, atol=1e-12)
