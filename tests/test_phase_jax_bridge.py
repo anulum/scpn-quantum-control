@@ -16,6 +16,7 @@ import scpn_quantum_control.phase.jax_bridge as jax_bridge
 from scpn_quantum_control.phase import (
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
+    PhaseJAXJITCompatibilityResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
     check_jax_parameter_shift_agreement,
@@ -25,6 +26,7 @@ from scpn_quantum_control.phase import (
     jax_parameter_shift_value_and_grad,
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
+    run_jax_jit_compatibility_audit,
 )
 
 
@@ -37,6 +39,7 @@ class _FakeJAX:
     def __init__(self) -> None:
         self.jit_calls = 0
         self.callback_calls = 0
+        self.callback_shape_dtypes = None
         self.custom_vjp_calls = 0
         self.custom_vjp_defvjp_calls = 0
 
@@ -50,6 +53,7 @@ class _FakeJAX:
 
     def pure_callback(self, callback, _shape_dtypes, values):
         self.callback_calls += 1
+        self.callback_shape_dtypes = _shape_dtypes
         return callback(values)
 
     def custom_vjp(self, fn):
@@ -102,6 +106,12 @@ def _objective(values: np.ndarray) -> float:
     return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
 
+class _Float32JNP:
+    @staticmethod
+    def asarray(values):
+        return np.asarray(values, dtype=np.float32)
+
+
 def test_phase_jax_bridge_parameter_shift_matches_closed_form(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -146,6 +156,24 @@ def test_phase_jax_bridge_jit_uses_pure_callback(monkeypatch: pytest.MonkeyPatch
         np.array([-np.sin(0.2), 0.25 * np.cos(-0.4)], dtype=float),
         atol=1e-12,
     )
+
+
+def test_phase_jax_bridge_jit_uses_active_jax_callback_dtype(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, _Float32JNP))
+
+    result = jax_parameter_shift_value_and_grad(
+        _objective,
+        np.array([0.2, -0.4], dtype=np.float64),
+        jit=True,
+    )
+
+    value_shape, gradient_shape = fake_jax.callback_shape_dtypes
+    assert result.jitted
+    assert value_shape.dtype == np.dtype(np.float32)
+    assert gradient_shape.dtype == np.dtype(np.float32)
 
 
 def test_phase_jax_bridge_supports_multi_frequency_parameter_shift(
@@ -357,6 +385,51 @@ def test_phase_jax_custom_vjp_qnn_fails_closed_without_custom_vjp(
             np.array([[0.0], [np.pi]], dtype=float),
             np.array([0.0, 1.0], dtype=float),
             np.array([0.45], dtype=float),
+        )
+
+
+def test_phase_jax_jit_compatibility_audit_separates_native_and_callback_routes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    result = run_jax_jit_compatibility_audit(
+        features=np.array([[0.0], [np.pi]], dtype=float),
+        labels=np.array([0.0, 1.0], dtype=float),
+        params=np.array([0.45], dtype=float),
+        tolerance=1e-12,
+    )
+
+    assert isinstance(result, PhaseJAXJITCompatibilityResult)
+    assert result.passed
+    assert result.native_qnn_jitted
+    assert result.custom_vjp_qnn_jitted
+    assert result.custom_vjp_registered
+    assert result.parameter_shift_jitted
+    assert result.parameter_shift_host_callback
+    assert not result.native_qnn_host_callback
+    assert not result.custom_vjp_qnn_host_callback
+    assert result.max_abs_error <= 1e-12
+    assert result.claim_boundary == "bounded_jax_jit_compatibility"
+    assert "parameter_shift_host_callback" in result.unsupported_native_routes
+    assert fake_jax.jit_calls == 3
+    assert result.to_dict()["passed"] is True
+
+
+def test_phase_jax_jit_compatibility_audit_fails_closed_without_jit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _NoJITJAX(_FakeJAX):
+        jit = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_NoJITJAX(), np))
+
+    with pytest.raises(RuntimeError, match="JAX JIT"):
+        run_jax_jit_compatibility_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params=np.array([0.45], dtype=float),
         )
 
 

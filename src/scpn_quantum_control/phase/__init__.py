@@ -82,6 +82,7 @@ from .hardware_gradient_policy import (
 from .jax_bridge import (
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
+    PhaseJAXJITCompatibilityResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
     check_jax_parameter_shift_agreement,
@@ -89,6 +90,7 @@ from .jax_bridge import (
     jax_custom_vjp_qnn_value_and_grad,
     jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
+    run_jax_jit_compatibility_audit,
 )
 from .kuramoto_variants import (
     HigherOrderKuramotoSpec,
@@ -536,8 +538,10 @@ __all__ = [
     "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
+    "run_jax_jit_compatibility_audit",
     "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
+    "PhaseJAXJITCompatibilityResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
     "is_phase_pennylane_available",

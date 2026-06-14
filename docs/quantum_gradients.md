@@ -1135,10 +1135,13 @@ mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
 therefore does not claim native JAX differentiation of a quantum kernel.
 
 For the bounded phase-QNN classifier, the bridge also exposes a native
-custom-VJP route:
+custom-VJP route and an audited JIT compatibility report:
 
 ```python
-from scpn_quantum_control.phase import jax_custom_vjp_qnn_value_and_grad
+from scpn_quantum_control.phase import (
+    jax_custom_vjp_qnn_value_and_grad,
+    run_jax_jit_compatibility_audit,
+)
 
 custom_vjp = jax_custom_vjp_qnn_value_and_grad(
     features,
@@ -1147,13 +1150,25 @@ custom_vjp = jax_custom_vjp_qnn_value_and_grad(
     jit=True,
 )
 print(custom_vjp.passed, custom_vjp.custom_vjp, custom_vjp.host_callback)
+
+jit_audit = run_jax_jit_compatibility_audit(
+    features=features,
+    labels=labels,
+    params=params,
+)
+print(jit_audit.passed, jit_audit.unsupported_native_routes)
 ```
 
 `jax_custom_vjp_qnn_value_and_grad(...)` registers a JAX `custom_vjp` for the
 bounded classifier loss and checks the returned gradient against the canonical
-multi-frequency SCPN parameter-shift gradient. It remains a bounded model route:
-it is not arbitrary simulator autodiff, not provider-backed execution, and not a
-hardware gradient.
+multi-frequency SCPN parameter-shift gradient.
+`run_jax_jit_compatibility_audit(...)` JITs the bounded native JAX and
+custom-VJP routes, requires both to stay no-host-callback routes, and records the
+generic parameter-shift bridge as host-callback interop through
+`unsupported_native_routes`. It remains a bounded model route: it is not
+arbitrary simulator autodiff, not provider-backed execution, not a hardware
+gradient, and not a claim that every quantum objective can be lowered into JAX
+JIT.
 
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:

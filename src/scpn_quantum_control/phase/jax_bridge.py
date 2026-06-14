@@ -162,6 +162,41 @@ class PhaseJAXCustomVJPQNNGradientResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXJITCompatibilityResult:
+    """Audited JAX JIT compatibility for bounded phase-QNN gradient routes."""
+
+    passed: bool
+    native_qnn_jitted: bool
+    native_qnn_host_callback: bool
+    custom_vjp_qnn_jitted: bool
+    custom_vjp_qnn_host_callback: bool
+    custom_vjp_registered: bool
+    parameter_shift_jitted: bool
+    parameter_shift_host_callback: bool
+    max_abs_error: float
+    tolerance: float
+    unsupported_native_routes: tuple[str, ...]
+    claim_boundary: str = "bounded_jax_jit_compatibility"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready JAX JIT compatibility evidence."""
+        return {
+            "passed": self.passed,
+            "native_qnn_jitted": self.native_qnn_jitted,
+            "native_qnn_host_callback": self.native_qnn_host_callback,
+            "custom_vjp_qnn_jitted": self.custom_vjp_qnn_jitted,
+            "custom_vjp_qnn_host_callback": self.custom_vjp_qnn_host_callback,
+            "custom_vjp_registered": self.custom_vjp_registered,
+            "parameter_shift_jitted": self.parameter_shift_jitted,
+            "parameter_shift_host_callback": self.parameter_shift_host_callback,
+            "max_abs_error": self.max_abs_error,
+            "tolerance": self.tolerance,
+            "unsupported_native_routes": list(self.unsupported_native_routes),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -316,14 +351,16 @@ def jax_parameter_shift_value_and_grad(
         )
         last_result = result
         return (
-            np.asarray(result.value, dtype=np.float64),
-            result.gradient.astype(np.float64, copy=False),
+            np.asarray(result.value, dtype=callback_dtype),
+            result.gradient.astype(callback_dtype, copy=False),
         )
 
+    parameter_tensor = jnp.asarray(parameter_values)
+    callback_dtype = np.dtype(np.asarray(parameter_tensor).dtype)
     if jit:
         _require_jax_callback_support(jax_module)
-        value_shape = jax_module.ShapeDtypeStruct((), np.dtype(np.float64))
-        gradient_shape = jax_module.ShapeDtypeStruct(parameter_values.shape, np.dtype(np.float64))
+        value_shape = jax_module.ShapeDtypeStruct((), callback_dtype)
+        gradient_shape = jax_module.ShapeDtypeStruct(parameter_values.shape, callback_dtype)
 
         def wrapped(raw_values: object) -> tuple[object, object]:
             return cast(
@@ -335,11 +372,11 @@ def jax_parameter_shift_value_and_grad(
                 ),
             )
 
-        value_obj, gradient_obj = jax_module.jit(wrapped)(jnp.asarray(parameter_values))
+        value_obj, gradient_obj = jax_module.jit(wrapped)(parameter_tensor)
         jitted = True
         host_callback = True
     else:
-        value_obj, gradient_obj = evaluate(jnp.asarray(parameter_values))
+        value_obj, gradient_obj = evaluate(parameter_tensor)
         jitted = False
         host_callback = False
 
@@ -589,9 +626,86 @@ def jax_custom_vjp_qnn_value_and_grad(
     )
 
 
+def run_jax_jit_compatibility_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike,
+    tolerance: float = 1e-6,
+) -> PhaseJAXJITCompatibilityResult:
+    """Audit bounded JAX JIT support without promoting host callbacks.
+
+    The audit exercises three JIT-facing routes:
+
+    - bounded native QNN ``value_and_grad`` with ``host_callback=False``;
+    - bounded QNN ``custom_vjp`` with ``host_callback=False``;
+    - parameter-shift interop under ``jax.pure_callback``, recorded as a
+      host-callback route and therefore excluded from native-JIT promotion.
+    """
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _as_parameter_vector(
+        "params",
+        params,
+        width=feature_matrix.shape[1],
+    )
+
+    def objective(values: FloatArray) -> float:
+        return parameter_shift_qnn_classifier_loss(feature_matrix, label_vector, values)
+
+    native = jax_native_qnn_value_and_grad(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+        tolerance=tolerance_value,
+        jit=True,
+    )
+    custom = jax_custom_vjp_qnn_value_and_grad(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+        tolerance=tolerance_value,
+        jit=True,
+    )
+    parameter_shift = jax_parameter_shift_value_and_grad(
+        objective,
+        parameter_values,
+        jit=True,
+    )
+
+    max_abs_error = max(native.max_abs_error, custom.max_abs_error)
+    unsupported_native_routes: list[str] = []
+    if parameter_shift.host_callback:
+        unsupported_native_routes.append("parameter_shift_host_callback")
+    passed = (
+        native.passed
+        and custom.passed
+        and native.jitted
+        and custom.jitted
+        and not native.host_callback
+        and not custom.host_callback
+        and max_abs_error <= tolerance_value
+    )
+    return PhaseJAXJITCompatibilityResult(
+        passed=passed,
+        native_qnn_jitted=native.jitted,
+        native_qnn_host_callback=native.host_callback,
+        custom_vjp_qnn_jitted=custom.jitted,
+        custom_vjp_qnn_host_callback=custom.host_callback,
+        custom_vjp_registered=custom.custom_vjp,
+        parameter_shift_jitted=parameter_shift.jitted,
+        parameter_shift_host_callback=parameter_shift.host_callback,
+        max_abs_error=max_abs_error,
+        tolerance=tolerance_value,
+        unsupported_native_routes=tuple(unsupported_native_routes),
+    )
+
+
 __all__ = [
     "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
+    "PhaseJAXJITCompatibilityResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
     "check_jax_parameter_shift_agreement",
@@ -599,4 +713,5 @@ __all__ = [
     "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
+    "run_jax_jit_compatibility_audit",
 ]
