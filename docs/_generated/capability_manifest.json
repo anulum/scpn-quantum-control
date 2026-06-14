@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 582,
+    "public_api_exports": 585,
     "public_documentation_pages": 240,
-    "python_model_classes": 1643,
+    "python_model_classes": 1645,
     "python_model_source_modules": 808,
-    "rust_pyo3_model_wrappers": 121,
+    "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
-    "test_files": 1928
+    "test_files": 1929
   },
   "documentation": {
     "examples": [
@@ -2742,6 +2742,10 @@
       },
       {
         "name": "GradientCheckResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "GradientFailurePolicy",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -6501,6 +6505,10 @@
         "path": "src/scpn_quantum_control/paper0/status_method_validation.py"
       },
       {
+        "name": "StochasticGradientConfidenceInterval",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "StochasticGradientResult",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -8423,6 +8431,7 @@
       "free_energy_gradient_rust",
       "gauge_covariant_kinetic_rust",
       "gauge_force_batch",
+      "gradient_confidence_interval_rust",
       "guess_extrapolate_batch",
       "hierarchical_prediction_error_rust",
       "higher_order_kuramoto_trajectory",
@@ -8613,6 +8622,7 @@
     "ForecastModelRun",
     "GUESSResult",
     "GradientCheckResult",
+    "GradientFailurePolicy",
     "GradientResult",
     "HVPResult",
     "HardwareAbstractionLayer",
@@ -8732,6 +8742,7 @@
     "ShotAllocationResult",
     "SparseMatrixResult",
     "StableCorePreflightResult",
+    "StochasticGradientConfidenceInterval",
     "StochasticGradientResult",
     "StrangeworksComputeHALAdapter",
     "SurfaceCodeSpec",
@@ -8889,6 +8900,7 @@
     "generate_cloud_manifests",
     "generate_synthetic_iter_data",
     "grad",
+    "gradient_confidence_interval",
     "guess_extrapolate",
     "hardware_replay_backend",
     "hessian",
@@ -11097,6 +11109,7 @@
       "tests/test_stable_core_preflight.py",
       "tests/test_stable_core_preflight_fixtures_gate.py",
       "tests/test_stable_core_release_gate.py",
+      "tests/test_stochastic_gradient_failure_policy.py",
       "tests/test_stochastic_gradient_rust_parity.py",
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",

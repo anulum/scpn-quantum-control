@@ -49,7 +49,7 @@ use scpn_quantum_engine::qnode_metrics::{
     vector_hessian_tensor_inner, vector_jvp_inner, vector_vjp_inner,
 };
 use scpn_quantum_engine::stochastic_gradient::{
-    score_function_gradient_inner, spsa_gradient_inner,
+    gradient_confidence_interval_inner, score_function_gradient_inner, spsa_gradient_inner,
     stochastic_parameter_shift_uncertainty_inner,
 };
 
@@ -511,6 +511,8 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
         vec![0.0, 1.0],
         vec![0.5, -0.5],
     ];
+    let confidence_gradient = [0.625, 1.375];
+    let confidence_standard_error = [0.441, 0.727];
 
     let mut group = c.benchmark_group("phase_qnode_metric_and_transform_kernels");
     group.bench_function("fubini_study_metric", |bench| {
@@ -593,6 +595,19 @@ fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
                 black_box(&spsa_trainable),
                 black_box(1.0),
                 black_box(1.959963984540054),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("gradient_confidence_interval", |bench| {
+        bench.iter(|| {
+            gradient_confidence_interval_inner(
+                black_box(&confidence_gradient),
+                black_box(&confidence_standard_error),
+                black_box(&spsa_trainable),
+                black_box(1.959963984540054),
+                Some(black_box(1.0)),
+                Some(black_box(2.0)),
             )
             .unwrap()
         });

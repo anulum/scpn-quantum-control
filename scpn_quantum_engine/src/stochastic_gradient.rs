@@ -35,6 +35,14 @@ pub struct ScoreFunctionGradientKernelResult {
     pub confidence_radius: Vec<f64>,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct GradientConfidenceIntervalKernelResult {
+    pub lower: Vec<f64>,
+    pub upper: Vec<f64>,
+    pub status: String,
+    pub failure_reasons: Vec<String>,
+}
+
 fn ensure_finite_vector(name: &str, values: &[f64]) -> Result<(), String> {
     if values.is_empty() {
         return Err(format!("{name} must be non-empty"));
@@ -475,6 +483,98 @@ pub fn score_function_gradient_inner(
     })
 }
 
+pub fn gradient_confidence_interval_inner(
+    gradient: &[f64],
+    standard_error: &[f64],
+    trainable: &[bool],
+    confidence_z: f64,
+    max_standard_error: Option<f64>,
+    max_confidence_radius: Option<f64>,
+) -> Result<GradientConfidenceIntervalKernelResult, String> {
+    ensure_finite_vector("gradient", gradient)?;
+    ensure_finite_vector("standard_error", standard_error)?;
+    if gradient.len() != standard_error.len() {
+        return Err(format!(
+            "standard_error length must match gradient length: {} != {}",
+            standard_error.len(),
+            gradient.len()
+        ));
+    }
+    if trainable.len() != gradient.len() {
+        return Err(format!(
+            "trainable length must match gradient length: {} != {}",
+            trainable.len(),
+            gradient.len()
+        ));
+    }
+    if !trainable.iter().any(|flag| *flag) {
+        return Err("trainable mask must include at least one active parameter".to_string());
+    }
+    if !confidence_z.is_finite() || confidence_z <= 0.0 {
+        return Err(format!(
+            "confidence_z must be a finite positive value, got {confidence_z}"
+        ));
+    }
+    if let Some(limit) = max_standard_error {
+        if !limit.is_finite() || limit <= 0.0 {
+            return Err(format!(
+                "max_standard_error must be a finite positive value, got {limit}"
+            ));
+        }
+    }
+    if let Some(limit) = max_confidence_radius {
+        if !limit.is_finite() || limit <= 0.0 {
+            return Err(format!(
+                "max_confidence_radius must be a finite positive value, got {limit}"
+            ));
+        }
+    }
+    for (index, value) in standard_error.iter().copied().enumerate() {
+        if value < 0.0 {
+            return Err(format!(
+                "standard_error[{index}] must be non-negative, got {value}"
+            ));
+        }
+    }
+
+    let mut lower = Vec::with_capacity(gradient.len());
+    let mut upper = Vec::with_capacity(gradient.len());
+    let mut failure_reasons = Vec::new();
+    for (index, (&mean, &stderr)) in gradient.iter().zip(standard_error.iter()).enumerate() {
+        let radius = confidence_z * stderr;
+        lower.push(mean - radius);
+        upper.push(mean + radius);
+        if !trainable[index] {
+            continue;
+        }
+        if let Some(limit) = max_standard_error {
+            if stderr > limit {
+                failure_reasons.push(format!(
+                    "standard_error[{index}]={stderr} exceeds max_standard_error={limit}"
+                ));
+            }
+        }
+        if let Some(limit) = max_confidence_radius {
+            if radius > limit {
+                failure_reasons.push(format!(
+                    "confidence_radius[{index}]={radius} exceeds max_confidence_radius={limit}"
+                ));
+            }
+        }
+    }
+    let status = if failure_reasons.is_empty() {
+        "passed".to_string()
+    } else {
+        "failed".to_string()
+    };
+    Ok(GradientConfidenceIntervalKernelResult {
+        lower,
+        upper,
+        status,
+        failure_reasons,
+    })
+}
+
 fn validate_variance_vector(name: &str, values: &[f64]) -> Result<(), String> {
     for (index, value) in values.iter().copied().enumerate() {
         if value < 0.0 {
@@ -650,6 +750,46 @@ pub fn score_function_gradient_rust<'py>(
         PyArray1::from_vec(py, result.standard_error),
         PyArray2::from_owned_array(py, covariance),
         PyArray1::from_vec(py, result.confidence_radius),
+    ))
+}
+
+#[pyfunction]
+#[pyo3(signature = (
+    gradient,
+    standard_error,
+    trainable,
+    confidence_z=1.959963984540054,
+    max_standard_error=None,
+    max_confidence_radius=None
+))]
+pub fn gradient_confidence_interval_rust<'py>(
+    py: Python<'py>,
+    gradient: PyReadonlyArray1<'_, f64>,
+    standard_error: PyReadonlyArray1<'_, f64>,
+    trainable: PyReadonlyArray1<'_, bool>,
+    confidence_z: f64,
+    max_standard_error: Option<f64>,
+    max_confidence_radius: Option<f64>,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    String,
+    Vec<String>,
+)> {
+    let result = gradient_confidence_interval_inner(
+        gradient.as_slice()?,
+        standard_error.as_slice()?,
+        trainable.as_slice()?,
+        confidence_z,
+        max_standard_error,
+        max_confidence_radius,
+    )
+    .map_err(PyValueError::new_err)?;
+    Ok((
+        PyArray1::from_vec(py, result.lower),
+        PyArray1::from_vec(py, result.upper),
+        result.status,
+        result.failure_reasons,
     ))
 }
 
@@ -832,5 +972,25 @@ mod tests {
             score_function_gradient_inner(&rewards, &score_vectors, &[true], f64::NAN, 2.0)
                 .is_err()
         );
+    }
+
+    #[test]
+    fn gradient_confidence_interval_kernel_applies_failure_policy() {
+        let result = gradient_confidence_interval_inner(
+            &[1.0, -2.0],
+            &[0.2, 0.0],
+            &[true, false],
+            2.0,
+            Some(0.1),
+            None,
+        )
+        .unwrap();
+
+        assert_close(result.lower[0], 0.6);
+        assert_close(result.upper[0], 1.4);
+        assert_close(result.lower[1], -2.0);
+        assert_close(result.upper[1], -2.0);
+        assert_eq!(result.status, "failed");
+        assert_eq!(result.failure_reasons.len(), 1);
     }
 }

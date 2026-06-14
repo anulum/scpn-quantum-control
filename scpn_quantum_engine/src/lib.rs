@@ -220,6 +220,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         stochastic_gradient::score_function_gradient_rust,
         m
     )?)?;
+    m.add_function(wrap_pyfunction!(
+        stochastic_gradient::gradient_confidence_interval_rust,
+        m
+    )?)?;
 
     // Compiler-backed AD native parity
     m.add_function(wrap_pyfunction!(

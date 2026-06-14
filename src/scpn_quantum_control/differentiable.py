@@ -8395,6 +8395,162 @@ class GradientResult:
 
 
 @dataclass(frozen=True)
+class GradientFailurePolicy:
+    """Fail-closed policy for stochastic-gradient uncertainty evidence."""
+
+    max_standard_error: float | None = None
+    max_confidence_radius: float | None = None
+    require_trainable: bool = True
+
+    def __post_init__(self) -> None:
+        max_standard_error = (
+            None
+            if self.max_standard_error is None
+            else _as_real_scalar("failure_policy max_standard_error", self.max_standard_error)
+        )
+        max_confidence_radius = (
+            None
+            if self.max_confidence_radius is None
+            else _as_real_scalar(
+                "failure_policy max_confidence_radius",
+                self.max_confidence_radius,
+            )
+        )
+        if max_standard_error is not None and max_standard_error <= 0.0:
+            raise ValueError("failure_policy max_standard_error must be finite and positive")
+        if max_confidence_radius is not None and max_confidence_radius <= 0.0:
+            raise ValueError("failure_policy max_confidence_radius must be finite and positive")
+        if not isinstance(self.require_trainable, bool):
+            raise ValueError("failure_policy require_trainable must be boolean")
+        object.__setattr__(self, "max_standard_error", max_standard_error)
+        object.__setattr__(self, "max_confidence_radius", max_confidence_radius)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready policy metadata."""
+        return {
+            "max_standard_error": self.max_standard_error,
+            "max_confidence_radius": self.max_confidence_radius,
+            "require_trainable": self.require_trainable,
+        }
+
+
+@dataclass(frozen=True)
+class StochasticGradientConfidenceInterval:
+    """Per-parameter stochastic-gradient confidence interval and policy status."""
+
+    lower: NDArray[np.float64]
+    upper: NDArray[np.float64]
+    confidence_z: float
+    confidence_level: float | None
+    policy: GradientFailurePolicy
+    status: str
+    failure_reasons: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        lower = _as_parameter_array(self.lower)
+        upper = _as_parameter_array(self.upper)
+        z_value = _as_real_scalar("confidence interval confidence_z", self.confidence_z)
+        confidence_level = (
+            None
+            if self.confidence_level is None
+            else _as_real_scalar("confidence interval confidence_level", self.confidence_level)
+        )
+        if lower.shape != upper.shape:
+            raise ValueError("confidence interval lower/upper shapes must match")
+        if np.any(lower > upper):
+            raise ValueError("confidence interval lower bounds must not exceed upper bounds")
+        if z_value <= 0.0:
+            raise ValueError("confidence interval confidence_z must be finite and positive")
+        if confidence_level is not None and not (0.0 < confidence_level < 1.0):
+            raise ValueError("confidence interval confidence_level must be between zero and one")
+        if self.status not in {"passed", "failed"}:
+            raise ValueError("confidence interval status must be 'passed' or 'failed'")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.status == "passed" and reasons:
+            raise ValueError("passed confidence interval cannot contain failure reasons")
+        object.__setattr__(self, "lower", lower)
+        object.__setattr__(self, "upper", upper)
+        object.__setattr__(self, "confidence_z", z_value)
+        object.__setattr__(self, "confidence_level", confidence_level)
+        object.__setattr__(self, "failure_reasons", reasons)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready interval metadata."""
+        return {
+            "lower": self.lower.tolist(),
+            "upper": self.upper.tolist(),
+            "confidence_z": self.confidence_z,
+            "confidence_level": self.confidence_level,
+            "policy": self.policy.to_dict(),
+            "status": self.status,
+            "failure_reasons": list(self.failure_reasons),
+        }
+
+
+def gradient_confidence_interval(
+    gradient: ArrayLike,
+    standard_error: ArrayLike,
+    *,
+    confidence_z: float = 1.959963984540054,
+    confidence_level: float | None = None,
+    trainable: Sequence[bool] | None = None,
+    failure_policy: GradientFailurePolicy | None = None,
+) -> StochasticGradientConfidenceInterval:
+    """Build confidence bounds and fail-closed status for stochastic gradients."""
+
+    gradient_array = _as_parameter_array(gradient)
+    standard_error_array = _as_parameter_array(standard_error)
+    if standard_error_array.shape != gradient_array.shape:
+        raise ValueError("standard_error shape must match gradient shape")
+    if np.any(standard_error_array < 0.0):
+        raise ValueError("standard_error must be finite and non-negative")
+    z_value = _as_real_scalar("confidence_z", confidence_z)
+    if z_value <= 0.0:
+        raise ValueError("confidence_z must be finite and positive")
+    if confidence_level is not None:
+        confidence_level = _as_real_scalar("confidence_level", confidence_level)
+        if confidence_level <= 0.0 or confidence_level >= 1.0:
+            raise ValueError("confidence_level must be between zero and one")
+    trainable_mask: NDArray[np.bool_]
+    if trainable is None:
+        trainable_mask = np.ones(gradient_array.shape, dtype=np.bool_)
+    else:
+        trainable_mask = np.asarray(tuple(trainable), dtype=np.bool_)
+        if trainable_mask.shape != gradient_array.shape:
+            raise ValueError("trainable mask length must match gradient length")
+    policy = failure_policy or GradientFailurePolicy()
+    reasons: list[str] = []
+    if policy.require_trainable and not np.any(trainable_mask):
+        raise ValueError("trainable mask must include at least one active parameter")
+    active_standard_error = standard_error_array[trainable_mask]
+    confidence_radius = z_value * standard_error_array
+    active_radius = confidence_radius[trainable_mask]
+    if policy.max_standard_error is not None and active_standard_error.size:
+        observed = float(np.max(active_standard_error))
+        if observed > policy.max_standard_error:
+            reasons.append(
+                "standard_error exceeds policy maximum "
+                f"{policy.max_standard_error}: observed {observed}"
+            )
+    if policy.max_confidence_radius is not None and active_radius.size:
+        observed = float(np.max(active_radius))
+        if observed > policy.max_confidence_radius:
+            reasons.append(
+                "confidence_radius exceeds policy maximum "
+                f"{policy.max_confidence_radius}: observed {observed}"
+            )
+    return StochasticGradientConfidenceInterval(
+        lower=gradient_array - confidence_radius,
+        upper=gradient_array + confidence_radius,
+        confidence_z=z_value,
+        confidence_level=confidence_level,
+        policy=policy,
+        status="failed" if reasons else "passed",
+        failure_reasons=tuple(reasons),
+    )
+
+
+@dataclass(frozen=True)
 class StochasticGradientResult:
     """Parameter-shift gradient with independent shot-noise uncertainty."""
 
@@ -8411,6 +8567,9 @@ class StochasticGradientResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    confidence_interval: StochasticGradientConfidenceInterval | None = None
+    failure_policy_status: str = "not_evaluated"
+    failure_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("stochastic gradient value", self.value)
@@ -8469,6 +8628,18 @@ class StochasticGradientResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.confidence_interval is not None:
+            if self.confidence_interval.lower.shape != gradient.shape:
+                raise ValueError("confidence_interval shape must match gradient shape")
+            if self.failure_policy_status not in {"passed", "failed"}:
+                raise ValueError("failure_policy_status must match evaluated interval status")
+            if self.failure_policy_status != self.confidence_interval.status:
+                raise ValueError("failure_policy_status must match confidence_interval status")
+            if reasons != self.confidence_interval.failure_reasons:
+                raise ValueError("failure_reasons must match confidence_interval")
+        elif self.failure_policy_status != "not_evaluated":
+            raise ValueError("failure_policy_status requires confidence_interval")
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "standard_error", standard_error)
@@ -8478,6 +8649,7 @@ class StochasticGradientResult:
         object.__setattr__(self, "confidence_level", confidence_level)
         object.__setattr__(self, "shift", shift)
         object.__setattr__(self, "coefficient", coefficient)
+        object.__setattr__(self, "failure_reasons", reasons)
 
 
 @dataclass(frozen=True)
@@ -8578,6 +8750,9 @@ class SPSAGradientResult:
     trainable: tuple[bool, ...]
     claim_boundary: str
     hardware_execution: bool
+    confidence_interval: StochasticGradientConfidenceInterval | None = None
+    failure_policy_status: str = "not_evaluated"
+    failure_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         gradient = _as_parameter_array(self.gradient)
@@ -8604,10 +8779,23 @@ class SPSAGradientResult:
             raise ValueError("SPSA trainable mask length must match gradient length")
         if not self.claim_boundary:
             raise ValueError("SPSA claim_boundary must be non-empty")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.confidence_interval is not None:
+            if self.confidence_interval.lower.shape != gradient.shape:
+                raise ValueError("SPSA confidence_interval shape must match gradient shape")
+            if self.failure_policy_status not in {"passed", "failed"}:
+                raise ValueError("SPSA failure_policy_status must match interval status")
+            if self.failure_policy_status != self.confidence_interval.status:
+                raise ValueError("SPSA failure_policy_status must match confidence_interval")
+            if reasons != self.confidence_interval.failure_reasons:
+                raise ValueError("SPSA failure_reasons must match confidence_interval")
+        elif self.failure_policy_status != "not_evaluated":
+            raise ValueError("SPSA failure_policy_status requires confidence_interval")
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "standard_error", standard_error)
         object.__setattr__(self, "covariance", covariance)
         object.__setattr__(self, "confidence_radius", confidence_radius)
+        object.__setattr__(self, "failure_reasons", reasons)
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready SPSA gradient evidence."""
@@ -8628,6 +8816,11 @@ class SPSAGradientResult:
             "trainable": list(self.trainable),
             "claim_boundary": self.claim_boundary,
             "hardware_execution": self.hardware_execution,
+            "confidence_interval": None
+            if self.confidence_interval is None
+            else self.confidence_interval.to_dict(),
+            "failure_policy_status": self.failure_policy_status,
+            "failure_reasons": list(self.failure_reasons),
         }
 
 
@@ -8686,6 +8879,9 @@ class ScoreFunctionGradientResult:
     trainable: tuple[bool, ...]
     claim_boundary: str
     hardware_execution: bool
+    confidence_interval: StochasticGradientConfidenceInterval | None = None
+    failure_policy_status: str = "not_evaluated"
+    failure_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         gradient = _as_parameter_array(self.gradient)
@@ -8712,12 +8908,27 @@ class ScoreFunctionGradientResult:
             raise ValueError("score-function trainable mask length must match gradient length")
         if not self.claim_boundary:
             raise ValueError("score-function claim_boundary must be non-empty")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.confidence_interval is not None:
+            if self.confidence_interval.lower.shape != gradient.shape:
+                raise ValueError("score-function confidence_interval shape must match gradient")
+            if self.failure_policy_status not in {"passed", "failed"}:
+                raise ValueError("score-function failure_policy_status must match interval status")
+            if self.failure_policy_status != self.confidence_interval.status:
+                raise ValueError(
+                    "score-function failure_policy_status must match confidence_interval"
+                )
+            if reasons != self.confidence_interval.failure_reasons:
+                raise ValueError("score-function failure_reasons must match confidence_interval")
+        elif self.failure_policy_status != "not_evaluated":
+            raise ValueError("score-function failure_policy_status requires interval")
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "standard_error", standard_error)
         object.__setattr__(self, "covariance", covariance)
         object.__setattr__(self, "confidence_radius", confidence_radius)
         object.__setattr__(self, "baseline", baseline)
         object.__setattr__(self, "confidence_z", z_value)
+        object.__setattr__(self, "failure_reasons", reasons)
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready score-function gradient evidence."""
@@ -8735,6 +8946,11 @@ class ScoreFunctionGradientResult:
             "trainable": list(self.trainable),
             "claim_boundary": self.claim_boundary,
             "hardware_execution": self.hardware_execution,
+            "confidence_interval": None
+            if self.confidence_interval is None
+            else self.confidence_interval.to_dict(),
+            "failure_policy_status": self.failure_policy_status,
+            "failure_reasons": list(self.failure_reasons),
         }
 
 
@@ -23187,6 +23403,7 @@ def parameter_shift_gradient_with_uncertainty(
     rule: ParameterShiftRule | None = None,
     confidence_level: float = 0.95,
     confidence_z: float = 1.959963984540054,
+    failure_policy: GradientFailurePolicy | None = None,
 ) -> StochasticGradientResult:
     """Propagate independent shot noise through parameter-shift gradients."""
 
@@ -23263,6 +23480,14 @@ def parameter_shift_gradient_with_uncertainty(
             )
     standard_error = np.sqrt(variance)
     covariance = np.diag(variance)
+    confidence_interval = gradient_confidence_interval(
+        gradient,
+        standard_error,
+        confidence_z=z_value,
+        confidence_level=confidence,
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        failure_policy=failure_policy,
+    )
     shots = (
         np.vstack([plus_count[0], minus_count[0]])
         if shift_rule.is_single_term
@@ -23284,6 +23509,9 @@ def parameter_shift_gradient_with_uncertainty(
         evaluations=2 * term_count * sum(parameter.trainable for parameter in parameter_meta),
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        confidence_interval=confidence_interval,
+        failure_policy_status=confidence_interval.status,
+        failure_reasons=confidence_interval.failure_reasons,
     )
 
 
@@ -23323,6 +23551,7 @@ def spsa_gradient_estimate(
     shots: int | None = None,
     parameters: Sequence[Parameter] | None = None,
     confidence_z: float = 1.959963984540054,
+    failure_policy: GradientFailurePolicy | None = None,
 ) -> SPSAGradientResult:
     """Estimate a scalar-objective gradient with seeded SPSA perturbations."""
 
@@ -23396,6 +23625,13 @@ def spsa_gradient_estimate(
     variance = estimator_variance + shot_variance / float(repetitions * repetitions)
     variance = np.where(trainable, variance, 0.0)
     standard_error = np.sqrt(variance)
+    confidence_interval = gradient_confidence_interval(
+        gradient,
+        standard_error,
+        confidence_z=z_value,
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        failure_policy=failure_policy,
+    )
     return SPSAGradientResult(
         gradient=gradient,
         standard_error=standard_error,
@@ -23417,6 +23653,9 @@ def spsa_gradient_estimate(
             "provide variances and shot counts; no hardware execution"
         ),
         hardware_execution=False,
+        confidence_interval=confidence_interval,
+        failure_policy_status=confidence_interval.status,
+        failure_reasons=confidence_interval.failure_reasons,
     )
 
 
@@ -23427,6 +23666,7 @@ def score_function_gradient_estimate(
     baseline: float = 0.0,
     parameters: Sequence[Parameter] | None = None,
     confidence_z: float = 1.959963984540054,
+    failure_policy: GradientFailurePolicy | None = None,
 ) -> ScoreFunctionGradientResult:
     """Estimate a likelihood-ratio gradient from materialised score samples."""
 
@@ -23461,6 +23701,13 @@ def score_function_gradient_estimate(
     covariance[~trainable, :] = 0.0
     covariance[:, ~trainable] = 0.0
     standard_error = np.sqrt(np.diag(covariance))
+    confidence_interval = gradient_confidence_interval(
+        gradient,
+        standard_error,
+        confidence_z=z_value,
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        failure_policy=failure_policy,
+    )
     records = tuple(
         ScoreFunctionSampleRecord(
             index=index,
@@ -23489,6 +23736,9 @@ def score_function_gradient_estimate(
             "provider callback, or hardware execution"
         ),
         hardware_execution=False,
+        confidence_interval=confidence_interval,
+        failure_policy_status=confidence_interval.status,
+        failure_reasons=confidence_interval.failure_reasons,
     )
 
 
@@ -26054,6 +26304,7 @@ __all__ = [
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
     "GradientCheckResult",
+    "GradientFailurePolicy",
     "GradientResult",
     "HVPResult",
     "HessianResult",
@@ -26095,6 +26346,7 @@ __all__ = [
     "SPSAObjectiveSample",
     "SPSAProbeRecord",
     "SparseMatrixResult",
+    "StochasticGradientConfidenceInterval",
     "StochasticGradientResult",
     "VJPResult",
     "WeightedGradientResult",
@@ -26145,6 +26397,7 @@ __all__ = [
     "forward_mode_gradient",
     "gauss_newton_gradient",
     "grad",
+    "gradient_confidence_interval",
     "huber_residual_weights",
     "hessian",
     "implicit_fixed_point_sensitivity",

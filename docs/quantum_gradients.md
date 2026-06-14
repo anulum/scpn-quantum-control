@@ -1265,17 +1265,24 @@ The backend planner classifies each execution path as one of:
 
 Each gradient plan reports the selected method, backend, shots, seed, estimator
 uncertainty policy, unsupported alternatives, and fail-closed reasons.
+Stochastic estimator results additionally carry a
+`StochasticGradientConfidenceInterval` and `failure_policy_status`; the helper
+`gradient_confidence_interval(...)` can evaluate the same fail-closed policy
+against materialised gradients and standard errors without rerunning an
+objective.
 
 The implemented SPSA diagnostic route is available as
 `spsa_gradient_estimate(...)` in the differentiable module. It draws seeded
 Bernoulli perturbations, evaluates caller-provided plus/minus objective probes,
 records every probe pair, and returns gradient, standard-error, diagonal
 covariance, confidence-radius, evaluation-count, shot-count, and claim-boundary
-metadata. When `shots` is supplied, the objective must return
+metadata plus confidence-interval and failure-policy status. When `shots` is supplied, the objective must return
 `SPSAObjectiveSample` values with finite variances and positive shot counts so
 the estimator can propagate finite-shot uncertainty. The optional Rust parity
 kernel `spsa_gradient_rust(...)` validates and reproduces the same uncertainty
-calculation from materialised SPSA records; it does not execute objectives,
+calculation from materialised SPSA records. `gradient_confidence_interval_rust(...)`
+reproduces the interval and failure-policy calculation from materialised
+gradient and standard-error arrays; neither kernel executes objectives,
 providers, or hardware jobs.
 
 The implemented score-function route is available as
@@ -1283,7 +1290,8 @@ The implemented score-function route is available as
 identity only when finite scalar rewards and finite score vectors are already
 materialised. The result records each weighted score sample, the explicit
 baseline, empirical covariance, standard errors, confidence radii, trainable
-mask, and claim boundary. The optional Rust parity kernel
+mask, confidence-interval status, failure-policy reasons, and claim boundary.
+The optional Rust parity kernel
 `score_function_gradient_rust(...)` validates the same materialised rewards and
 score vectors and reproduces the Python uncertainty calculation. This is not
 sampler autodiff and not an arbitrary discrete-program gradient.
@@ -1297,6 +1305,7 @@ sampler autodiff and not an arbitrary discrete-program gradient.
 | Noisy finite-shot backend | Supported for uncertainty propagation when plus/minus variances and shots are supplied. |
 | Seeded local SPSA diagnostic | Supported for caller-supplied objectives when perturbation radius, repetitions, seed, sample variances, and shot counts satisfy the estimator contract. |
 | Materialised score-function diagnostic | Supported when finite rewards and score vectors are supplied by a mathematically valid likelihood-ratio model. |
+| Confidence-policy gate | Supported for materialised stochastic-gradient standard errors with active trainable parameters and positive thresholds. |
 | Hardware execution | Must remain disabled by default until a hardware-safe gradient policy exists. |
 | Gate without registered generator spectrum | Unsupported; fail closed. |
 | Dynamic circuit topology or parameter count | Unsupported unless the trace records stable parameter identity. |

@@ -101,3 +101,27 @@ def test_rust_score_function_gradient_matches_python_materialised_records() -> N
     np.testing.assert_allclose(standard_error, python_result.standard_error, atol=1e-12)
     np.testing.assert_allclose(covariance, python_result.covariance, atol=1e-12)
     np.testing.assert_allclose(confidence_radius, python_result.confidence_radius, atol=1e-12)
+
+
+def test_rust_gradient_confidence_policy_matches_python_interval() -> None:
+    python_result = score_function_gradient_estimate(
+        [2.0, 0.0, 4.0],
+        [[1.0, 2.0], [-1.0, 0.0], [0.0, 1.0]],
+        baseline=1.0,
+        confidence_z=2.0,
+    )
+    python_interval = python_result.confidence_interval
+    assert python_interval is not None
+    lower, upper, status, reasons = engine.gradient_confidence_interval_rust(
+        np.asarray(python_result.gradient, dtype=np.float64),
+        np.asarray(python_result.standard_error, dtype=np.float64),
+        np.asarray(python_result.trainable, dtype=np.bool_),
+        python_result.confidence_z,
+        None,
+        None,
+    )
+
+    np.testing.assert_allclose(lower, python_interval.lower, atol=1e-12)
+    np.testing.assert_allclose(upper, python_interval.upper, atol=1e-12)
+    assert status == "passed"
+    assert reasons == []

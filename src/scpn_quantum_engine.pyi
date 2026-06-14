@@ -185,6 +185,14 @@ def score_function_gradient_rust(
     baseline: float = ...,
     confidence_z: float = ...,
 ) -> tuple[_F64Array, _F64Array, _F64Array, _F64Array]: ...
+def gradient_confidence_interval_rust(
+    gradient: _F64Array,
+    standard_error: _F64Array,
+    trainable: _BoolArray,
+    confidence_z: float = ...,
+    max_standard_error: float | None = ...,
+    max_confidence_radius: float | None = ...,
+) -> tuple[_F64Array, _F64Array, str, list[str]]: ...
 def build_sparse_xy_hamiltonian(
     k_flat: _F64Array,
     omega: _F64Array,
