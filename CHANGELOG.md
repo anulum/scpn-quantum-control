@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added bounded PyTorch custom-autograd phase-QNN gradient
+  evidence via `torch_autograd_qnn_value_and_grad`, including a custom
+  `torch.autograd.Function` route, fail-closed optional dependency surface
+  checks, parameter-shift reference validation, phase exports, framework bridge
+  matrix updates, module tests, generated capability updates, and public
+  documentation.
 - 2026-06-14 — Added audited JAX PyTree parameter support via
   `run_jax_pytree_compatibility_audit`, including bounded native-QNN and
   custom-VJP no-host-callback structured-parameter checks, deterministic

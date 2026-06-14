@@ -26,7 +26,7 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     assert result.framework_count == 5
     assert result.supported_count == 3
     assert result.fail_closed_count == 2
-    assert result.native_framework_autodiff_count == 1
+    assert result.native_framework_autodiff_count == 2
     assert result.tensor_output_count == 2
     assert result.host_boundary_count == 0
 
@@ -40,8 +40,12 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     pytorch = result.capability_by_framework("pytorch")
     assert pytorch.supported
     assert pytorch.tensor_output
+    assert pytorch.native_framework_autodiff
     assert pytorch.analytic_framework_gradient
-    assert pytorch.public_api == "torch_bounded_qnn_value_and_grad"
+    assert (
+        pytorch.public_api == "torch_bounded_qnn_value_and_grad,torch_autograd_qnn_value_and_grad"
+    )
+    assert "torch_bounded_phase_qnn_custom_autograd_function" in pytorch.gradient_route
 
     tensorflow = result.capability_by_framework("tensorflow")
     assert tensorflow.supported

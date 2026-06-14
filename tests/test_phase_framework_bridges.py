@@ -17,6 +17,7 @@ import scpn_quantum_control.phase.torch_bridge as torch_bridge
 from scpn_quantum_control.phase import (
     PhaseTensorFlowParameterShiftResult,
     PhaseTensorFlowQNNGradientResult,
+    PhaseTorchAutogradQNNGradientResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchQNNGradientResult,
     is_phase_tensorflow_available,
@@ -26,6 +27,7 @@ from scpn_quantum_control.phase import (
     parameter_shift_qnn_classifier_loss,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
+    torch_autograd_qnn_value_and_grad,
     torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -34,8 +36,16 @@ from scpn_quantum_control.phase import (
 class _FakeTorchTensor:
     def __init__(self, values: object) -> None:
         self._values = np.asarray(values, dtype=float)
+        self.grad: _FakeTorchTensor | None = None
 
     def detach(self) -> _FakeTorchTensor:
+        return self
+
+    def clone(self) -> _FakeTorchTensor:
+        return _FakeTorchTensor(self._values.copy())
+
+    def requires_grad_(self, requires_grad: bool = True) -> _FakeTorchTensor:
+        del requires_grad
         return self
 
     def cpu(self) -> _FakeTorchTensor:
@@ -44,11 +54,48 @@ class _FakeTorchTensor:
     def numpy(self) -> np.ndarray:
         return self._values.copy()
 
+    def __mul__(self, other: object) -> _FakeTorchTensor:
+        if isinstance(other, _FakeTorchTensor):
+            return _FakeTorchTensor(self._values * other._values)
+        return _FakeTorchTensor(self._values * np.asarray(other, dtype=float))
+
+    __rmul__ = __mul__
+
+
+class _FakeTorchAutogradFunction:
+    @classmethod
+    def apply(cls, *args: object) -> _FakeTorchTensor:
+        ctx = type("_FakeAutogradContext", (), {})()
+        result = cls.forward(ctx, *args)
+        result._ctx = ctx  # type: ignore[attr-defined]
+        result._function_cls = cls  # type: ignore[attr-defined]
+        return result
+
+
+class _FakeTorchAutograd:
+    Function = _FakeTorchAutogradFunction
+
+    def grad(
+        self,
+        outputs: _FakeTorchTensor,
+        inputs: _FakeTorchTensor,
+        *,
+        retain_graph: bool = False,
+        create_graph: bool = False,
+    ) -> tuple[_FakeTorchTensor]:
+        del inputs, retain_graph, create_graph
+        backward = outputs._function_cls.backward  # type: ignore[attr-defined]
+        result = backward(outputs._ctx, _FakeTorchTensor(np.asarray(1.0, dtype=float)))  # type: ignore[attr-defined]
+        if isinstance(result, tuple):
+            return result
+        return (result,)
+
 
 class _FakeTorch:
     float64 = np.float64
 
     def __init__(self) -> None:
+        self.autograd = _FakeTorchAutograd()
         self.as_tensor_calls: list[np.ndarray] = []
 
     def as_tensor(self, values: object, *, dtype: object | None = None) -> _FakeTorchTensor:
@@ -56,6 +103,12 @@ class _FakeTorch:
         array = np.asarray(values, dtype=float)
         self.as_tensor_calls.append(array.copy())
         return _FakeTorchTensor(array)
+
+
+class _FakeTorchWithoutAutogradFunction(_FakeTorch):
+    def __init__(self) -> None:
+        super().__init__()
+        self.autograd = object()
 
 
 class _FakeTensorFlowTensor:
@@ -172,6 +225,52 @@ def test_torch_bounded_qnn_gradient_matches_parameter_shift(
     np.testing.assert_allclose(result.parameter_shift_gradient, expected_gradient, atol=1e-12)
     np.testing.assert_allclose(result.torch_gradient.numpy(), expected_gradient, atol=1e-12)
     assert result.to_dict()["passed"] is True
+
+
+def test_torch_autograd_qnn_gradient_uses_custom_function(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = _FakeTorchTensor(np.array([0.45], dtype=float))
+
+    result = torch_autograd_qnn_value_and_grad(
+        features,
+        labels,
+        params,
+        tolerance=1e-12,
+    )
+
+    expected_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        params.numpy(),
+    )
+    assert isinstance(result, PhaseTorchAutogradQNNGradientResult)
+    assert result.passed
+    assert result.native_framework_autodiff
+    assert result.custom_autograd_function
+    assert not result.host_boundary
+    assert result.method == "torch_bounded_phase_qnn_custom_autograd_function"
+    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
+    np.testing.assert_allclose(result.torch_gradient.numpy(), expected_gradient, atol=1e-12)
+    assert result.to_dict()["custom_autograd_function"] is True
+
+
+def test_torch_autograd_qnn_gradient_fails_closed_without_function(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorchWithoutAutogradFunction()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    with pytest.raises(RuntimeError, match="torch.autograd.Function"):
+        torch_autograd_qnn_value_and_grad(
+            np.array([[0.0]], dtype=float),
+            np.array([0.0], dtype=float),
+            np.array([0.45], dtype=float),
+        )
 
 
 def test_torch_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
@@ -312,6 +411,12 @@ def test_framework_bridges_fail_closed_when_optional_dependency_missing(
         torch_parameter_shift_value_and_grad(_objective, np.array([0.2, -0.4], dtype=float))
     with pytest.raises(ImportError, match="torch blocked"):
         torch_bounded_qnn_value_and_grad(
+            np.array([[0.0]], dtype=float),
+            np.array([0.0], dtype=float),
+            np.array([0.2], dtype=float),
+        )
+    with pytest.raises(ImportError, match="torch blocked"):
+        torch_autograd_qnn_value_and_grad(
             np.array([[0.0]], dtype=float),
             np.array([0.0], dtype=float),
             np.array([0.2], dtype=float),

@@ -360,9 +360,11 @@ from .tensorflow_bridge import (
     tensorflow_parameter_shift_value_and_grad,
 )
 from .torch_bridge import (
+    PhaseTorchAutogradQNNGradientResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchQNNGradientResult,
     is_phase_torch_available,
+    torch_autograd_qnn_value_and_grad,
     torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -626,8 +628,10 @@ __all__ = [
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
     "is_phase_torch_available",
+    "torch_autograd_qnn_value_and_grad",
     "torch_bounded_qnn_value_and_grad",
     "torch_parameter_shift_value_and_grad",
+    "PhaseTorchAutogradQNNGradientResult",
     "PhaseTorchParameterShiftResult",
     "PhaseTorchQNNGradientResult",
     "GradientTransformNestingPlan",
