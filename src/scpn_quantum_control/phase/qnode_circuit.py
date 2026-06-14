@@ -311,6 +311,31 @@ class PhaseQNodeMetricTensorResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseQNodeClassicalFisherResult:
+    """Exact computational-basis Fisher evidence for a supported Phase-QNode."""
+
+    classical_fisher_information: FloatArray
+    probabilities: FloatArray
+    probability_derivatives: FloatArray
+    measurement: str
+    min_probability: float
+    support_report: PhaseQNodeSupportReport
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready classical Fisher evidence."""
+        return {
+            "classical_fisher_information": self.classical_fisher_information.tolist(),
+            "probabilities": self.probabilities.tolist(),
+            "probability_derivatives": self.probability_derivatives.tolist(),
+            "measurement": self.measurement,
+            "min_probability": self.min_probability,
+            "support_report": self.support_report.to_dict(),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def registered_phase_qnode_gates() -> tuple[str, ...]:
     """Return the local Phase-QNode gate family."""
     return _REGISTERED_GATES
@@ -480,6 +505,52 @@ def phase_qnode_quantum_fisher_information(
     )
 
 
+def phase_qnode_computational_basis_fisher_information(
+    circuit: PhaseQNodeCircuit,
+    parameters: ArrayLike,
+    *,
+    min_probability: float = 1e-15,
+) -> PhaseQNodeClassicalFisherResult:
+    """Compute exact classical Fisher information for basis probabilities."""
+    values = _as_parameter_vector(parameters)
+    threshold = _as_min_probability(min_probability)
+    report = phase_qnode_support_report(circuit, values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    probabilities = np.asarray(np.abs(state) ** 2, dtype=np.float64)
+    if np.any(probabilities <= threshold):
+        raise ValueError(
+            "computational-basis Fisher information is singular at a "
+            "zero-probability outcome; choose parameters away from the boundary "
+            "or use QFI/Fubini-Study diagnostics"
+        )
+    probability_derivatives = np.asarray(
+        [2.0 * np.real(np.conj(state) * derivative) for derivative in derivatives],
+        dtype=np.float64,
+    )
+    weighted = probability_derivatives / probabilities[np.newaxis, :]
+    fisher: FloatArray = np.asarray(
+        probability_derivatives @ weighted.T,
+        dtype=np.float64,
+    )
+    fisher = np.asarray(0.5 * (fisher + fisher.T), dtype=np.float64)
+    return PhaseQNodeClassicalFisherResult(
+        classical_fisher_information=fisher,
+        probabilities=probabilities,
+        probability_derivatives=probability_derivatives,
+        measurement="computational_basis",
+        min_probability=threshold,
+        support_report=report,
+        claim_boundary=(
+            "exact classical Fisher information for computational-basis "
+            "probabilities from the registered local statevector Phase-QNode "
+            "family; no finite-shot estimator, hardware sampling, adaptive "
+            "measurement, or optimal-measurement claim"
+        ),
+    )
+
+
 def phase_qnode_natural_gradient_metric(
     circuit: PhaseQNodeCircuit,
 ) -> Callable[[FloatArray], FloatArray]:
@@ -592,6 +663,16 @@ def _as_finite_scalar(name: str, value: object) -> float:
     scalar = float(raw.item())
     if not np.isfinite(scalar):
         raise ValueError(f"{name} must be a finite real scalar")
+    return scalar
+
+
+def _as_min_probability(value: float) -> float:
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "c", "O", "S", "U"}:
+        raise ValueError("min_probability must be a non-negative finite scalar")
+    scalar = float(raw.item())
+    if scalar < 0.0 or not np.isfinite(scalar):
+        raise ValueError("min_probability must be a non-negative finite scalar")
     return scalar
 
 
@@ -921,6 +1002,7 @@ __all__ = [
     "DenseHermitianObservable",
     "PauliCovarianceObservable",
     "PauliTerm",
+    "PhaseQNodeClassicalFisherResult",
     "PhaseQNodeCircuit",
     "PhaseQNodeExecutionResult",
     "PhaseQNodeGradientResult",
@@ -931,6 +1013,7 @@ __all__ = [
     "SparsePauliHamiltonian",
     "execute_phase_qnode_circuit",
     "parameter_shift_phase_qnode_gradient",
+    "phase_qnode_computational_basis_fisher_information",
     "phase_qnode_natural_gradient_metric",
     "phase_qnode_quantum_fisher_information",
     "phase_qnode_support_report",

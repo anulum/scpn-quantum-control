@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-14 — Added exact computational-basis classical Fisher information
+  for the registered local Phase-QNode statevector family, with singular
+  zero-probability fail-closed handling, public docs, tests, and generated
+  capability-surface alignment.
 - 2026-06-14 — Added pure-state Phase-QNode QFI/Fubini-Study metric extraction
   for the registered local statevector gate family, with a natural-gradient
   metric provider, fail-closed unsupported-route tests, phase namespace exports,

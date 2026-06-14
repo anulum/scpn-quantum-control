@@ -17,11 +17,13 @@ from scpn_quantum_control.phase.qnode_circuit import (
     PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
+    PhaseQNodeClassicalFisherResult,
     PhaseQNodeMetricTensorResult,
     PhaseQNodeSupportError,
     SparsePauliHamiltonian,
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
+    phase_qnode_computational_basis_fisher_information,
     phase_qnode_natural_gradient_metric,
     phase_qnode_quantum_fisher_information,
     phase_qnode_support_report,
@@ -269,6 +271,64 @@ def test_phase_qnode_quantum_fisher_information_is_gauge_invariant_psd() -> None
     assert np.min(np.linalg.eigvalsh(result.fubini_study_metric)) >= -1e-12
     assert result.derivative_norms.shape == (3,)
     assert np.all(result.derivative_norms > 0.0)
+
+
+def test_phase_qnode_computational_basis_fisher_matches_ry_reference() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit,
+        np.array([0.31], dtype=float),
+    )
+
+    assert isinstance(result, PhaseQNodeClassicalFisherResult)
+    np.testing.assert_allclose(
+        result.probabilities, [np.cos(0.31 / 2.0) ** 2, np.sin(0.31 / 2.0) ** 2]
+    )
+    np.testing.assert_allclose(result.classical_fisher_information, [[1.0]], atol=1e-12)
+    assert result.measurement == "computational_basis"
+    assert "finite-shot" in result.claim_boundary
+
+
+def test_phase_qnode_computational_basis_fisher_is_bounded_by_qfi() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            ("h", (0,)),
+            ("cnot", (0, 1)),
+            ("ry", (0,), 0),
+            ("rz", (1,), 1),
+            ("rxx", (0, 1), 2),
+        ),
+        observable=SparsePauliHamiltonian((PauliTerm(1.0, ((0, "z"),)),)),
+    )
+    params = np.array([0.17, -0.23, 0.41], dtype=float)
+
+    classical = phase_qnode_computational_basis_fisher_information(circuit, params)
+    quantum = phase_qnode_quantum_fisher_information(circuit, params)
+
+    np.testing.assert_allclose(
+        classical.classical_fisher_information,
+        classical.classical_fisher_information.T,
+        atol=1e-12,
+    )
+    gap = quantum.quantum_fisher_information - classical.classical_fisher_information
+    assert np.min(np.linalg.eigvalsh(gap)) >= -1e-10
+
+
+def test_phase_qnode_computational_basis_fisher_fails_closed_at_singular_probability() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    with pytest.raises(ValueError, match="zero-probability"):
+        phase_qnode_computational_basis_fisher_information(circuit, np.array([0.0], dtype=float))
 
 
 def test_phase_qnode_natural_gradient_metric_provider_returns_fubini_study_metric() -> None:

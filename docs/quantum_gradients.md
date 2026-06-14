@@ -734,6 +734,7 @@ import numpy as np
 from scpn_quantum_control.phase import (
     parameter_shift_natural_gradient_descent,
     phase_qnode_natural_gradient_metric,
+    phase_qnode_computational_basis_fisher_information,
     PhaseQNodeCircuit,
     validate_natural_gradient_training,
 )
@@ -781,6 +782,10 @@ circuit = PhaseQNodeCircuit(
     observable="pauli_z",
 )
 qnode_metric = phase_qnode_natural_gradient_metric(circuit)
+classical_fisher = phase_qnode_computational_basis_fisher_information(
+    circuit,
+    np.array([0.8]),
+)
 
 run = parameter_shift_natural_gradient_descent(
     lambda params: float(1.0 - np.cos(params[0])),
@@ -794,6 +799,14 @@ run = parameter_shift_natural_gradient_descent(
 This route is bounded to pure-state local Phase-QNode statevectors. It is not a
 finite-shot classical Fisher estimator, density-matrix metric, noisy-channel
 metric, provider metric, or hardware metric claim.
+
+`phase_qnode_computational_basis_fisher_information(circuit, params)` computes
+the exact classical Fisher matrix for computational-basis statevector
+probabilities using the same analytic state derivatives. It fails closed at
+zero-probability outcomes because the probability-space Fisher expression is
+singular there. The result is deterministic local evidence only; finite-shot
+uncertainty, hardware sampling, adaptive measurements, and optimal measurement
+selection remain outside this route.
 
 For reviewer-facing optimizer evidence, run the multi-start comparison audit:
 

@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 575,
     "public_documentation_pages": 240,
-    "python_model_classes": 1636,
+    "python_model_classes": 1637,
     "python_model_source_modules": 808,
     "rust_pyo3_model_wrappers": 111,
     "rust_source_modules": 28,
@@ -4670,6 +4670,10 @@
       },
       {
         "name": "PhaseQNodeCircuit",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeClassicalFisherResult",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
       {
