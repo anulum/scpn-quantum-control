@@ -769,6 +769,7 @@ print(suite.passed, suite.case_count, suite.unsuitable_scenario_count)
 
 optimizer_suite = run_parameter_shift_qnn_optimizer_benchmark_suite()
 print(optimizer_suite.passed, optimizer_suite.evidence_class)
+print(optimizer_suite.optimizer_names)
 ```
 
 The route is intentionally narrow and auditable: one trainable phase per
@@ -785,10 +786,14 @@ feature/parameter contract mismatches, unregistered feature maps or observables,
 and external gradients without provenance as staged or fail-closed. Each
 scenario includes the evidence required before that route can be promoted. The
 optimizer benchmark suite compares
-parameter-shift training against finite-difference gradients and deterministic
-derivative-free candidates, but labels the result as non-isolated functional
-evidence only. It is the current production QNN foothold, not a claim of
-unrestricted arbitrary QNN/QGNN/QSNN training.
+parameter-shift training against finite-difference gradient descent, full-batch
+SGD, Adam, SciPy L-BFGS-B with parameter-shift Jacobians, a diagonal-Fisher
+natural-gradient baseline, seeded SPSA, and deterministic derivative-free grid
+candidates. Each `QNNOptimizerBaselineResult` records best loss, accuracy,
+evaluation count, step count, convergence flag, method label, and wall-clock
+runtime, but the suite labels every row as non-isolated functional evidence. It
+is the current production QNN foothold, not a throughput benchmark, hardware
+performance claim, or unrestricted arbitrary QNN/QGNN/QSNN training route.
 
 Synthetic exact-answer datasets for this route are available through
 `load_differentiable_domain_benchmark_datasets()` and validated by

@@ -298,6 +298,7 @@ from .qnn_optimizer_benchmark import (
     DerivativeFreeCandidateMap,
     ParameterShiftQNNOptimizerBenchmarkCaseResult,
     ParameterShiftQNNOptimizerBenchmarkSuiteResult,
+    QNNOptimizerBaselineResult,
     run_parameter_shift_qnn_optimizer_benchmark_suite,
 )
 from .qnn_training import (
@@ -681,6 +682,7 @@ __all__ = [
     "DerivativeFreeCandidateMap",
     "ParameterShiftQNNOptimizerBenchmarkCaseResult",
     "ParameterShiftQNNOptimizerBenchmarkSuiteResult",
+    "QNNOptimizerBaselineResult",
     "run_parameter_shift_qnn_optimizer_benchmark_suite",
     "ParameterShiftQNNPredictionResult",
     "ParameterShiftQNNTrainingResult",

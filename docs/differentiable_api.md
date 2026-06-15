@@ -74,7 +74,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Gradient support matrix | `GradientSupportCapability`, `GradientSupportPlan`, `GradientSupportMatrixAuditResult`, `gradient_support_capability`, `list_gradient_support_capabilities`, `plan_gradient_support`, `assert_gradient_support`, `run_gradient_support_matrix_audit` | Decide whether a gate, observable, backend, transform, and adapter combination is supported before execution; blocked combinations carry reasons and alternatives. |
 | Transform nesting | `GradientTransformNestingPlan`, `GradientTransformNestingAuditResult`, `plan_gradient_transform_nesting`, `assert_gradient_transform_nesting_supported`, `run_gradient_transform_nesting_audit` | Decide whether transform stacks such as `grad`, `value_and_grad`, `hessian`, `grad` of `grad`, tape, native manual `vmap(grad)`, JVP/VJP, provider-callback routes, adapter bridges, or hardware routes are safe before execution. |
 | Gradient audit evidence | `DifferentiableQuantumAuditReport`, `DifferentiableWorkflowAuditSuiteResult`, `FiniteShotGradientAuditResult`, `MLFrameworkGradientAuditSuiteResult`, `ParameterShiftAnalyticAgreement`, `PhaseGradientBenchmarkSuiteResult`, `ProviderGradientReadinessAuditResult`, `run_differentiable_workflow_audit_suite`, `run_finite_shot_gradient_uncertainty_audit`, `run_ml_framework_gradient_audit`, `run_known_phase_gradient_audit`, `run_parameter_shift_audit_suite`, `run_phase_gradient_benchmark_suite`, `run_provider_gradient_readiness_audit` | Bundle finite-difference agreement, finite-shot uncertainty containment, optional ML-framework parity, analytic-gradient agreement, convergence evidence, coupling-learning checks, provider-readiness checks, and multi-case phase-gradient conformance into reviewer-facing reports. |
-| Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParameterShiftNaturalGradientResult`, `ParameterShiftNaturalGradientCertificate`, `ParameterShiftQNNTrainingResult`, `ParameterShiftQNNPredictionResult`, `ParameterShiftQNNMultiSeedConvergenceSuiteResult`, `ParameterShiftQNNLossLandscapeSuiteResult`, `DifferentiableDomainBenchmarkDatasetSuite`, `DifferentiableDomainBenchmarkValidationSuite`, `OptimizerComparisonSuiteResult`, `OptimizerConvergenceRecord`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, metric-aware descent, bounded phase-QNN classification, deterministic multi-seed convergence envelopes, bounded loss-landscape scans, exact-answer domain dataset validation, optimizer comparison evidence, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
+| Gradient-training evidence | `ParameterShiftTrainingResult`, `ParameterShiftTrainingCertificate`, `ParameterShiftNaturalGradientResult`, `ParameterShiftNaturalGradientCertificate`, `ParameterShiftQNNTrainingResult`, `ParameterShiftQNNPredictionResult`, `ParameterShiftQNNMultiSeedConvergenceSuiteResult`, `ParameterShiftQNNLossLandscapeSuiteResult`, `QNNOptimizerBaselineResult`, `DifferentiableDomainBenchmarkDatasetSuite`, `DifferentiableDomainBenchmarkValidationSuite`, `OptimizerComparisonSuiteResult`, `OptimizerConvergenceRecord`, `ParamShiftVQEResult`, `ParamShiftConvergenceDiagnostics` | Certify accepted value descent, metric-aware descent, bounded phase-QNN classification, deterministic multi-seed convergence envelopes, bounded loss-landscape scans, named QNN optimizer baseline evidence, exact-answer domain dataset validation, optimizer comparison evidence, line-search behaviour, exact-gap metadata, and parameter-shift evaluation counts. |
 | Objective composition | `ComposedPhaseObjective`, `ObjectiveTerm`, `ObjectiveGradientEvaluation`, `ComposedObjectiveTrainingResult`, `ComposedObjectiveGradientAgreement`, `ComposedObjectiveAuditSuiteResult`, `ComposedObjectiveExecutionPlan`, `ComposedObjectivePlannerAuditResult`, `build_phase_control_objective`, `train_composed_phase_objective`, `verify_composed_objective_gradient`, `run_composed_objective_audit_suite`, `plan_composed_objective_execution`, `run_composed_objective_planner_audit` | Combine energy, fidelity, periodic regularization, symmetry, and smooth safety penalties without misclassifying analytic classical penalties as parameter-shift quantum terms. |
 | Coupling-learning evidence | `CouplingLearningResult`, `CouplingGradientVerificationResult`, `learn_couplings_from_observations`, `verify_coupling_parameter_shift_gradient` | Learn symmetric oscillator couplings from parameter-shift-compatible observation models and independently check small smooth gradients against central finite differences. |
 | QSNN training evidence | `QSNNTrainingRun`, `QSNNParameterShiftDescentRun` | Attach parameter-shift traces and certificates to quantum neural network training loops. |
@@ -237,6 +237,7 @@ print(suite.case_count, suite.unsuitable_scenario_count)
 optimizer_suite = run_parameter_shift_qnn_optimizer_benchmark_suite()
 assert optimizer_suite.passed
 assert optimizer_suite.evidence_class == "functional_non_isolated"
+assert "lbfgs" in optimizer_suite.optimizer_names
 ```
 
 This is a deliberately bounded local classifier. Each feature column is encoded
@@ -254,12 +255,15 @@ cases, one convergence case, optional external-gradient hooks, and explicit
 unsuitable-scenario records with required-evidence lists and claim-boundary
 text for hardware, finite-shot uncertainty, unsupported architecture,
 feature/parameter contract, unregistered primitive, and external-provenance
-routes. The optimizer benchmark suite compares the
-parameter-shift trainer with finite-difference and derivative-free baselines,
-but records `functional_non_isolated` evidence only; it is not a throughput
-benchmark or hardware performance claim. This route is not an unrestricted QNN
-framework, live provider execution path, or proof that arbitrary feature maps
-are differentiable.
+routes. The optimizer benchmark suite compares the parameter-shift trainer with
+finite-difference gradient descent, full-batch SGD, Adam, SciPy L-BFGS-B with a
+parameter-shift Jacobian, diagonal-Fisher natural gradient, seeded SPSA, and a
+deterministic derivative-free grid. Each baseline records best loss, accuracy,
+evaluation count, step count, convergence flag, method label, and wall-clock
+runtime, but the suite records `functional_non_isolated` evidence only; it is
+not a throughput benchmark or hardware performance claim. This route is not an
+unrestricted QNN framework, live provider execution path, or proof that
+arbitrary feature maps are differentiable.
 
 ## Exact-answer differentiable domain datasets
 

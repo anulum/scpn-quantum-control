@@ -14,6 +14,7 @@ import pytest
 
 from scpn_quantum_control.phase import (
     ParameterShiftQNNOptimizerBenchmarkSuiteResult,
+    QNNOptimizerBaselineResult,
     run_parameter_shift_qnn_optimizer_benchmark_suite,
 )
 
@@ -26,23 +27,52 @@ def test_qnn_optimizer_benchmark_records_non_isolated_functional_evidence() -> N
     assert suite.case_count == 2
     assert suite.parameter_shift_not_worse_count == 2
     assert suite.derivative_free_win_count == 0
+    assert suite.optimizer_names == (
+        "parameter_shift",
+        "finite_difference",
+        "sgd",
+        "adam",
+        "lbfgs",
+        "natural_gradient",
+        "spsa",
+        "derivative_free_grid",
+    )
+    assert suite.optimizer_count == 8
     assert suite.evidence_class == "functional_non_isolated"
     assert not suite.production_benchmark
     assert "not a throughput benchmark" in suite.claim_boundary
 
     for case in suite.cases:
         assert case.passed
+        assert case.optimizer_names == suite.optimizer_names
         assert case.parameter_shift_best_loss <= case.finite_difference_best_loss + 1e-6
         assert case.parameter_shift_best_loss <= case.derivative_free_best_loss
         assert case.parameter_shift_evaluations > 0
         assert case.finite_difference_evaluations > 0
         assert case.derivative_free_evaluations > 0
+        assert len(case.optimizer_results) == suite.optimizer_count
+        for optimizer in case.optimizer_results:
+            assert isinstance(optimizer, QNNOptimizerBaselineResult)
+            assert np.isfinite(optimizer.best_loss)
+            assert optimizer.evaluations > 0
+            assert optimizer.steps >= 0
+            assert optimizer.wall_time_seconds >= 0.0
+            assert optimizer.evidence_class == "functional_non_isolated"
+            assert "not a throughput benchmark" in optimizer.claim_boundary
         assert case.evidence_class == "functional_non_isolated"
         assert case.to_dict()["passed"] is True
+        assert case.optimizer_by_name("lbfgs").method == (
+            "scipy_l_bfgs_b_with_parameter_shift_jacobian"
+        )
+        assert case.optimizer_by_name("natural_gradient").method == (
+            "parameter_shift_diagonal_fisher_natural_gradient"
+        )
 
     payload = suite.to_dict()
     assert payload["passed"] is True
     assert payload["case_count"] == 2
+    assert payload["optimizer_count"] == 8
+    assert payload["optimizer_names"] == list(suite.optimizer_names)
     assert payload["production_benchmark"] is False
 
 
@@ -72,6 +102,12 @@ def test_qnn_optimizer_benchmark_rejects_invalid_controls() -> None:
 
     with pytest.raises(ValueError, match="tolerance"):
         run_parameter_shift_qnn_optimizer_benchmark_suite(tolerance=-1.0)
+
+    with pytest.raises(ValueError, match="spsa_perturbation"):
+        run_parameter_shift_qnn_optimizer_benchmark_suite(spsa_perturbation=0.0)
+
+    with pytest.raises(ValueError, match="spsa_seed"):
+        run_parameter_shift_qnn_optimizer_benchmark_suite(spsa_seed=-1)
 
 
 def test_qnn_optimizer_benchmark_derivative_free_baseline_uses_declared_candidates() -> None:

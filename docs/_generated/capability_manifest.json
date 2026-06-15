@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 587,
     "public_documentation_pages": 240,
-    "python_model_classes": 1676,
+    "python_model_classes": 1677,
     "python_model_source_modules": 810,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
@@ -5319,6 +5319,10 @@
       {
         "name": "QFIResult",
         "path": "src/scpn_quantum_control/analysis/qfi.py"
+      },
+      {
+        "name": "QNNOptimizerBaselineResult",
+        "path": "src/scpn_quantum_control/phase/qnn_optimizer_benchmark.py"
       },
       {
         "name": "QPUComputeRequest",
