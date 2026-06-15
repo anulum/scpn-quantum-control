@@ -50,6 +50,11 @@ FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY = (
     "finite-difference diagnostic only; not analytic, parameter-shift, native-framework, "
     "whole-program AD, provider, hardware, or production benchmark evidence"
 )
+STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY = (
+    "materialised parameter-shift finite-shot uncertainty propagation; shifted means, "
+    "variances, shot counts, coefficients, trainable masks, confidence policy, and "
+    "failure reasons are recorded; no provider callback or hardware execution"
+)
 
 
 def _normalise_claim_boundary(label: str, claim_boundary: str) -> str:
@@ -8569,6 +8574,97 @@ def gradient_confidence_interval(
 
 
 @dataclass(frozen=True)
+class ParameterShiftSampleRecord:
+    """One plus/minus shifted sample used in stochastic parameter-shift propagation."""
+
+    term_index: int
+    parameter_index: int
+    parameter_name: str
+    trainable: bool
+    shift: float
+    coefficient: float
+    plus_value: float
+    minus_value: float
+    plus_variance: float
+    minus_variance: float
+    plus_shots: int
+    minus_shots: int
+    gradient_contribution: float
+    variance_contribution: float
+
+    def __post_init__(self) -> None:
+        if isinstance(self.term_index, bool) or not isinstance(self.term_index, int):
+            raise ValueError("parameter-shift record term_index must be an integer")
+        if self.term_index < 0:
+            raise ValueError("parameter-shift record term_index must be non-negative")
+        if isinstance(self.parameter_index, bool) or not isinstance(self.parameter_index, int):
+            raise ValueError("parameter-shift record parameter_index must be an integer")
+        if self.parameter_index < 0:
+            raise ValueError("parameter-shift record parameter_index must be non-negative")
+        if not isinstance(self.parameter_name, str) or not self.parameter_name:
+            raise ValueError("parameter-shift record parameter_name must be non-empty")
+        if not isinstance(self.trainable, bool):
+            raise ValueError("parameter-shift record trainable must be boolean")
+        shift = _as_real_scalar("parameter-shift record shift", self.shift)
+        coefficient = _as_real_scalar("parameter-shift record coefficient", self.coefficient)
+        plus_value = _as_real_scalar("parameter-shift record plus_value", self.plus_value)
+        minus_value = _as_real_scalar("parameter-shift record minus_value", self.minus_value)
+        plus_variance = _as_real_scalar("parameter-shift record plus_variance", self.plus_variance)
+        minus_variance = _as_real_scalar(
+            "parameter-shift record minus_variance", self.minus_variance
+        )
+        gradient_contribution = _as_real_scalar(
+            "parameter-shift record gradient_contribution",
+            self.gradient_contribution,
+        )
+        variance_contribution = _as_real_scalar(
+            "parameter-shift record variance_contribution",
+            self.variance_contribution,
+        )
+        if shift <= 0.0:
+            raise ValueError("parameter-shift record shift must be finite and positive")
+        if plus_variance < 0.0 or minus_variance < 0.0 or variance_contribution < 0.0:
+            raise ValueError("parameter-shift record variances must be non-negative")
+        if (
+            isinstance(self.plus_shots, bool)
+            or not isinstance(self.plus_shots, int)
+            or self.plus_shots <= 0
+            or isinstance(self.minus_shots, bool)
+            or not isinstance(self.minus_shots, int)
+            or self.minus_shots <= 0
+        ):
+            raise ValueError("parameter-shift record shots must be positive integers")
+        object.__setattr__(self, "shift", shift)
+        object.__setattr__(self, "coefficient", coefficient)
+        object.__setattr__(self, "plus_value", plus_value)
+        object.__setattr__(self, "minus_value", minus_value)
+        object.__setattr__(self, "plus_variance", plus_variance)
+        object.__setattr__(self, "minus_variance", minus_variance)
+        object.__setattr__(self, "gradient_contribution", gradient_contribution)
+        object.__setattr__(self, "variance_contribution", variance_contribution)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready shifted-sample provenance."""
+
+        return {
+            "term_index": self.term_index,
+            "parameter_index": self.parameter_index,
+            "parameter_name": self.parameter_name,
+            "trainable": self.trainable,
+            "shift": self.shift,
+            "coefficient": self.coefficient,
+            "plus_value": self.plus_value,
+            "minus_value": self.minus_value,
+            "plus_variance": self.plus_variance,
+            "minus_variance": self.minus_variance,
+            "plus_shots": self.plus_shots,
+            "minus_shots": self.minus_shots,
+            "gradient_contribution": self.gradient_contribution,
+            "variance_contribution": self.variance_contribution,
+        }
+
+
+@dataclass(frozen=True)
 class StochasticGradientResult:
     """Parameter-shift gradient with independent shot-noise uncertainty."""
 
@@ -8585,6 +8681,9 @@ class StochasticGradientResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    records: tuple[ParameterShiftSampleRecord, ...] = ()
+    claim_boundary: str = STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY
+    hardware_execution: bool = False
     confidence_interval: StochasticGradientConfidenceInterval | None = None
     failure_policy_status: str = "not_evaluated"
     failure_reasons: tuple[str, ...] = ()
@@ -8646,6 +8745,22 @@ class StochasticGradientResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        records = tuple(self.records)
+        for record in records:
+            if not isinstance(record, ParameterShiftSampleRecord):
+                raise ValueError("stochastic gradient records must contain sample records")
+            if record.parameter_index >= gradient.size:
+                raise ValueError("stochastic gradient record parameter_index is out of range")
+            if record.parameter_name != self.parameter_names[record.parameter_index]:
+                raise ValueError("stochastic gradient record parameter_name mismatch")
+            if record.trainable != self.trainable[record.parameter_index]:
+                raise ValueError("stochastic gradient record trainable mismatch")
+        claim_boundary = _normalise_claim_boundary(
+            "stochastic gradient result",
+            self.claim_boundary,
+        )
+        if self.hardware_execution is not False:
+            raise ValueError("stochastic gradient result must not claim hardware execution")
         reasons = tuple(str(reason) for reason in self.failure_reasons)
         if self.confidence_interval is not None:
             if self.confidence_interval.lower.shape != gradient.shape:
@@ -8667,7 +8782,36 @@ class StochasticGradientResult:
         object.__setattr__(self, "confidence_level", confidence_level)
         object.__setattr__(self, "shift", shift)
         object.__setattr__(self, "coefficient", coefficient)
+        object.__setattr__(self, "records", records)
+        object.__setattr__(self, "claim_boundary", claim_boundary)
         object.__setattr__(self, "failure_reasons", reasons)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready stochastic parameter-shift evidence."""
+
+        return {
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "standard_error": self.standard_error.tolist(),
+            "covariance": self.covariance.tolist(),
+            "confidence_radius": self.confidence_radius.tolist(),
+            "shots": self.shots.tolist(),
+            "confidence_level": self.confidence_level,
+            "method": self.method,
+            "shift": self.shift,
+            "coefficient": self.coefficient,
+            "evaluations": self.evaluations,
+            "parameter_names": list(self.parameter_names),
+            "trainable": list(self.trainable),
+            "records": [record.to_dict() for record in self.records],
+            "claim_boundary": self.claim_boundary,
+            "hardware_execution": self.hardware_execution,
+            "confidence_interval": None
+            if self.confidence_interval is None
+            else self.confidence_interval.to_dict(),
+            "failure_policy_status": self.failure_policy_status,
+            "failure_reasons": list(self.failure_reasons),
+        }
 
 
 @dataclass(frozen=True)
@@ -23502,14 +23646,40 @@ def parameter_shift_gradient_with_uncertainty(
     parameter_meta = _normalise_parameters(plus[0], parameters)
     gradient = np.zeros(plus.shape[1], dtype=np.float64)
     variance = np.zeros(plus.shape[1], dtype=np.float64)
+    records: list[ParameterShiftSampleRecord] = []
     for index, parameter in enumerate(parameter_meta):
-        if not parameter.trainable:
-            continue
         for term_index, (_shift, coefficient) in enumerate(terms):
-            gradient[index] += coefficient * (plus[term_index, index] - minus[term_index, index])
-            variance[index] += coefficient**2 * (
+            gradient_contribution = coefficient * (
+                plus[term_index, index] - minus[term_index, index]
+            )
+            variance_contribution = coefficient**2 * (
                 plus_var[term_index, index] / plus_count[term_index, index]
                 + minus_var[term_index, index] / minus_count[term_index, index]
+            )
+            if parameter.trainable:
+                gradient[index] += gradient_contribution
+                variance[index] += variance_contribution
+            records.append(
+                ParameterShiftSampleRecord(
+                    term_index=term_index,
+                    parameter_index=index,
+                    parameter_name=parameter.name,
+                    trainable=parameter.trainable,
+                    shift=_shift,
+                    coefficient=coefficient,
+                    plus_value=float(plus[term_index, index]),
+                    minus_value=float(minus[term_index, index]),
+                    plus_variance=float(plus_var[term_index, index]),
+                    minus_variance=float(minus_var[term_index, index]),
+                    plus_shots=int(plus_count[term_index, index]),
+                    minus_shots=int(minus_count[term_index, index]),
+                    gradient_contribution=float(
+                        gradient_contribution if parameter.trainable else 0.0
+                    ),
+                    variance_contribution=float(
+                        variance_contribution if parameter.trainable else 0.0
+                    ),
+                )
             )
     standard_error = np.sqrt(variance)
     covariance = np.diag(variance)
@@ -23542,6 +23712,9 @@ def parameter_shift_gradient_with_uncertainty(
         evaluations=2 * term_count * sum(parameter.trainable for parameter in parameter_meta),
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        records=tuple(records),
+        claim_boundary=STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY,
+        hardware_execution=False,
         confidence_interval=confidence_interval,
         failure_policy_status=confidence_interval.status,
         failure_reasons=confidence_interval.failure_reasons,
@@ -26365,6 +26538,7 @@ __all__ = [
     "Parameter",
     "ParameterBounds",
     "ParameterShiftRule",
+    "ParameterShiftSampleRecord",
     "ProgramADAdjointResult",
     "ProgramADAliasEdge",
     "ProgramADControlRegion",
@@ -26389,6 +26563,7 @@ __all__ = [
     "SparseMatrixResult",
     "StochasticGradientConfidenceInterval",
     "StochasticGradientResult",
+    "STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY",
     "VJPResult",
     "WeightedGradientResult",
     "armijo_backtracking_line_search",

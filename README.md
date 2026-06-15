@@ -98,12 +98,12 @@ has a defined commercial licensing route.
 | Package version | 0.9.12 |
 | Public API exports | 598 |
 | Python source modules | 811 |
-| Public Python classes | 1686 |
+| Public Python classes | 1687 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 122 |
-| Rust source modules | 31 |
+| Rust source modules | 30 |
 | Notebook files | 98 |
 | Example files | 25 |
 | Optional extras | 42 |

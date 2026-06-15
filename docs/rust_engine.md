@@ -130,10 +130,14 @@ already materialised shifted expectation, SPSA probe, or score-function sample
 records. They validate finite shifted means, rewards, score vectors,
 non-negative variances, positive integer shot counts, finite rule coefficients,
 SPSA perturbations, trainable-mask width, finite baselines, and positive
-confidence radius scaling. The confidence-interval kernel also validates
-materialised gradients and standard errors, rejects all-false trainable masks,
-and returns machine-readable failure reasons for exceeded standard-error or
-confidence-radius thresholds. These kernels do not execute provider callbacks,
+confidence radius scaling, but they return only numeric parity arrays. Python
+`StochasticGradientResult` owns the `ParameterShiftSampleRecord` evidence
+envelope, claim boundary, confidence interval, failure-policy status, and
+`hardware_execution=False` contract. The confidence-interval kernel also
+validates materialised gradients and standard errors, rejects all-false
+trainable masks, and returns machine-readable failure reasons for exceeded
+standard-error or confidence-radius thresholds. These kernels do not execute
+provider callbacks,
 allocate shots, submit hardware jobs, infer sampler score vectors, or create
 claim-ledger evidence by themselves.
 

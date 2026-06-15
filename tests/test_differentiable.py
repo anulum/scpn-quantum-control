@@ -48,6 +48,7 @@ from scpn_quantum_control.differentiable import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
+    ParameterShiftSampleRecord,
     PrimitiveBatchingRule,
     PrimitiveContract,
     PrimitiveDTypeRule,
@@ -437,6 +438,14 @@ def test_multi_frequency_parameter_shift_propagates_per_term_shot_noise() -> Non
     assert result.coefficient is None
     assert result.evaluations == 2 * len(rule.terms)
     assert result.shots.shape == (len(rule.terms), 2, 2)
+    assert len(result.records) == len(rule.terms) * 2
+    assert all(isinstance(record, ParameterShiftSampleRecord) for record in result.records)
+    assert all(record.trainable == (record.parameter_name == "theta") for record in result.records)
+    assert all(
+        record.gradient_contribution == 0.0
+        for record in result.records
+        if record.parameter_name == "frozen"
+    )
     np.testing.assert_allclose(result.gradient, expected_gradient)
     np.testing.assert_allclose(result.standard_error, np.sqrt(expected_variance))
     np.testing.assert_allclose(np.diag(result.covariance), expected_variance)
@@ -1333,15 +1342,37 @@ def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> No
 
     assert isinstance(result, StochasticGradientResult)
     assert result.method == "parameter_shift_shot_noise"
+    assert result.claim_boundary == differentiable_module.STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY
+    assert result.hardware_execution is False
     assert result.evaluations == 2
     assert result.parameter_names == ("theta", "frozen")
     assert result.trainable == (True, False)
+    assert len(result.records) == 2
+    active_record, frozen_record = result.records
+    assert active_record.parameter_name == "theta"
+    assert active_record.shift == pytest.approx(math.pi / 2.0)
+    assert active_record.coefficient == pytest.approx(0.5)
+    assert active_record.plus_shots == 900
+    assert active_record.minus_shots == 400
+    assert active_record.gradient_contribution == pytest.approx(0.3)
+    assert active_record.variance_contribution > 0.0
+    assert frozen_record.parameter_name == "frozen"
+    assert frozen_record.trainable is False
+    assert frozen_record.gradient_contribution == pytest.approx(0.0)
+    assert frozen_record.variance_contribution == pytest.approx(0.0)
     np.testing.assert_allclose(result.gradient, [0.3, 0.0])
     expected_variance = 0.5**2 * (0.36 / 900.0 + 0.16 / 400.0)
     np.testing.assert_allclose(result.standard_error, [math.sqrt(expected_variance), 0.0])
     np.testing.assert_allclose(result.covariance, np.diag([expected_variance, 0.0]))
     np.testing.assert_allclose(result.confidence_radius, 1.959963984540054 * result.standard_error)
     np.testing.assert_allclose(result.shots, [[900.0, 400.0], [400.0, 100.0]])
+    evidence = result.to_dict()
+    assert (
+        evidence["claim_boundary"]
+        == differentiable_module.STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY
+    )
+    assert evidence["hardware_execution"] is False
+    assert len(evidence["records"]) == 2
 
 
 def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> None:
@@ -1370,6 +1401,23 @@ def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> N
             [0.1],
             [10],
             confidence_z=0.0,
+        )
+    with pytest.raises(ValueError, match="hardware execution"):
+        StochasticGradientResult(
+            value=0.0,
+            gradient=np.array([1.0]),
+            standard_error=np.array([0.1]),
+            covariance=np.eye(1),
+            confidence_radius=np.array([0.2]),
+            shots=np.array([[10.0], [10.0]]),
+            confidence_level=0.95,
+            method="parameter_shift_shot_noise",
+            shift=math.pi / 2.0,
+            coefficient=0.5,
+            evaluations=2,
+            parameter_names=("theta",),
+            trainable=(True,),
+            hardware_execution=True,
         )
 
 

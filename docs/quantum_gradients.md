@@ -422,6 +422,15 @@ and confidence radius. This is a parity kernel for uncertainty propagation; it
 does not call provider samplers, submit hardware jobs, or replace the Python
 evidence records.
 
+The Python `StochasticGradientResult` now keeps those evidence records directly:
+each `ParameterShiftSampleRecord` names the parameter, term index, shift,
+coefficient, plus/minus values, plus/minus variances, plus/minus shot counts,
+trainable mask, gradient contribution, and variance contribution. Frozen
+parameters are recorded with zero contribution so reviewers can reconstruct why
+they did not enter the stochastic gradient. The result also carries the
+`STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY` string, `hardware_execution=False`,
+the confidence interval, the failure-policy status, and failure reasons.
+
 ## Provider callback execution
 
 `execute_provider_parameter_shift_gradient(...)` is the first provider-safe
