@@ -82,6 +82,10 @@ package versions when verification succeeds, and lists only CPU wheels:
 
 Benchmark artefacts written by
 `scripts/run_differentiable_benchmark_evidence.py` are CI evidence only.
+External comparison artefacts written by
+`write_differentiable_external_comparison(...)` record row payloads,
+dependency versions, toolchain metadata, failure classes, and local Python/host
+metadata, but they are still classified as `functional_non_isolated`.
 GitHub-hosted runners are classified as `functional_non_isolated`; production
 performance wording requires a self-hosted runner labelled
 `isolated-benchmark`, explicit CPU affinity, observed process affinity that

@@ -81,10 +81,24 @@ def test_hardware_exports():
     assert _check_exports("hardware") > 0
 
 
+def test_benchmark_exports():
+    """benchmarks.__all__ exports are importable and typed."""
+    assert _check_exports("benchmarks") > 0
+
+
 def test_no_private_in_all():
     """No __all__ contains underscore-prefixed names."""
 
-    for submod_name in ["bridge", "phase", "control", "qsnn", "mitigation", "hardware", "qec"]:
+    for submod_name in [
+        "bridge",
+        "phase",
+        "control",
+        "qsnn",
+        "mitigation",
+        "hardware",
+        "qec",
+        "benchmarks",
+    ]:
         mod = __import__(f"scpn_quantum_control.{submod_name}", fromlist=["__all__"])
         if hasattr(mod, "__all__"):
             private = [n for n in mod.__all__ if n.startswith("_")]
@@ -125,6 +139,7 @@ def test_all_submodules_importable():
         "hardware",
         "qec",
         "analysis",
+        "benchmarks",
         "identity",
         "crypto",
     ]:

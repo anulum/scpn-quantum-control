@@ -400,6 +400,16 @@ cases: unsupported batching, unsupported nested transforms, unsupported complex
 dtype routes, and unsupported hardware-device routes. Those rows are hard gaps,
 not skipped tests or degraded successes.
 
+#### `write_differentiable_external_comparison()`
+
+Writes the external comparison rows to a JSON artefact with schema
+`scpn_qc_differentiable_external_comparison_v1`. The artefact records the
+row payloads, dependency versions, toolchain metadata where available, failure
+classes, Python/platform metadata, and the fixed `functional_non_isolated`
+classification. It is a reproducibility and correctness artefact only:
+`production_eligible` and `promotion_ready` are false until the isolated
+benchmark gate supplies artefact IDs and the claim ledger is updated.
+
 For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an executable that reads a JSON
 request on stdin and writes JSON with:
 

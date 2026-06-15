@@ -18,6 +18,7 @@ from scpn_quantum_control.benchmarks.differentiable_evidence import (
 )
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
     run_differentiable_external_comparison_suite,
+    write_differentiable_external_comparison,
 )
 
 
@@ -42,6 +43,10 @@ def main() -> None:
         heavy_jobs_running=False,
     )
     with tempfile.TemporaryDirectory(prefix="scpn-qc-diff-bench-") as directory:
+        external_artifact = write_differentiable_external_comparison(
+            Path(directory) / "external_comparison.json",
+            artifact_id="diff-qnode-local-external-comparison-example",
+        )
         bundle = write_differentiable_benchmark_evidence_bundle(
             Path(directory),
             metadata=metadata,
@@ -51,6 +56,7 @@ def main() -> None:
         payload = json.loads(bundle.raw_json_path.read_text(encoding="utf-8"))
 
         print("differentiable benchmark reproduction")
+        print(f"  external comparison json: {external_artifact.path}")
         print(f"  json: {bundle.raw_json_path}")
         print(f"  csv: {bundle.csv_path}")
         print(f"  markdown: {bundle.markdown_path}")

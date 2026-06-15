@@ -15,6 +15,13 @@ from .classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from .differentiable_external_comparison import (
+    ExternalComparisonArtifact,
+    ExternalComparisonRow,
+    external_comparison_failure_mode_rows,
+    run_differentiable_external_comparison_suite,
+    write_differentiable_external_comparison,
+)
 from .differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
@@ -43,6 +50,11 @@ __all__ = [
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
     "QuantumGradientBenchmarkResult",
+    "ExternalComparisonArtifact",
+    "ExternalComparisonRow",
+    "external_comparison_failure_mode_rows",
+    "run_differentiable_external_comparison_suite",
+    "write_differentiable_external_comparison",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_quantum_gradient_benchmark_suite",

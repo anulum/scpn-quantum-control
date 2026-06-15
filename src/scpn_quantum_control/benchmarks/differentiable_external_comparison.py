@@ -12,12 +12,15 @@ from __future__ import annotations
 import json
 import math
 import os
+import platform
 import shutil
 import subprocess
+import sys
 import time
 import tracemalloc
 from dataclasses import dataclass
-from importlib import metadata
+from importlib import import_module, metadata
+from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
@@ -125,6 +128,30 @@ class ExternalComparisonRow:
         }
 
 
+@dataclass(frozen=True)
+class ExternalComparisonArtifact:
+    """Written external comparison artefact paths and summary metadata."""
+
+    path: Path
+    row_count: int
+    success_count: int
+    hard_gap_count: int
+    classification: str
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-ready artefact summary."""
+
+        return {
+            "path": str(self.path),
+            "row_count": self.row_count,
+            "success_count": self.success_count,
+            "hard_gap_count": self.hard_gap_count,
+            "classification": self.classification,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRow, ...]:
     """Run or classify optional external comparison rows.
 
@@ -185,6 +212,71 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
     )
     rows.extend(external_comparison_failure_mode_rows())
     return tuple(rows)
+
+
+def write_differentiable_external_comparison(
+    output_path: str | os.PathLike[str],
+    rows: tuple[ExternalComparisonRow, ...] | None = None,
+    *,
+    artifact_id: str = "differentiable-external-comparison-local",
+) -> ExternalComparisonArtifact:
+    """Write external comparison rows as a bounded JSON evidence artefact."""
+
+    destination = Path(output_path)
+    if destination.suffix.lower() != ".json":
+        raise ValueError("output_path must end with .json")
+    if not artifact_id.strip():
+        raise ValueError("artifact_id must be non-empty")
+    evidence_rows = rows if rows is not None else run_differentiable_external_comparison_suite()
+    if not evidence_rows:
+        raise ValueError("at least one external comparison row is required")
+    row_payloads = [row.to_dict() for row in evidence_rows]
+    success_count = sum(1 for row in evidence_rows if row.status == "success")
+    hard_gap_count = sum(1 for row in evidence_rows if row.status == "hard_gap")
+    failure_classes = sorted(
+        {
+            row.failure_class
+            for row in evidence_rows
+            if row.status == "hard_gap" and row.failure_class is not None
+        }
+    )
+    payload = {
+        "schema": "scpn_qc_differentiable_external_comparison_v1",
+        "artifact_id": artifact_id.strip(),
+        "generated_at_unix": int(time.time()),
+        "classification": "functional_non_isolated",
+        "production_eligible": False,
+        "promotion_ready": False,
+        "source_of_truth": "scpn_reference",
+        "claim_boundary": (
+            "External comparison artefact for bounded CPU framework correctness rows; "
+            "not isolated benchmark evidence, not provider execution, and not a "
+            "promotion artefact until the isolated benchmark gate supplies artefact IDs."
+        ),
+        "environment": {
+            "python": sys.version.split()[0],
+            "platform": platform.platform(),
+            "machine": platform.machine(),
+            "processor": platform.processor() or "unknown",
+        },
+        "summary": {
+            "row_count": len(evidence_rows),
+            "success_count": success_count,
+            "hard_gap_count": hard_gap_count,
+            "failure_classes": failure_classes,
+        },
+        "rows": row_payloads,
+    }
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return ExternalComparisonArtifact(
+        path=destination,
+        row_count=len(evidence_rows),
+        success_count=success_count,
+        hard_gap_count=hard_gap_count,
+        classification="functional_non_isolated",
+        claim_boundary=str(payload["claim_boundary"]),
+    )
 
 
 def external_comparison_failure_mode_rows() -> tuple[ExternalComparisonRow, ...]:
@@ -611,7 +703,13 @@ def _installed_version(package: str) -> str:
     try:
         return metadata.version(package)
     except metadata.PackageNotFoundError:
-        return "not_installed"
+        module_name = "tensorflow" if package == "tensorflow" else package
+        try:
+            module = import_module(module_name)
+        except Exception:
+            return "not_installed"
+        version = getattr(module, "__version__", None)
+        return str(version) if version else "importable_unknown_version"
 
 
 def _enzyme_runner_timeout_seconds() -> float:
@@ -638,7 +736,9 @@ def _enzyme_runner_configured() -> bool:
 
 
 __all__ = [
+    "ExternalComparisonArtifact",
     "ExternalComparisonRow",
     "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",
+    "write_differentiable_external_comparison",
 ]

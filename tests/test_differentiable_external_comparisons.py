@@ -9,13 +9,18 @@
 
 from __future__ import annotations
 
+import json
+from types import SimpleNamespace
+
 import numpy as np
 
 import scpn_quantum_control.benchmarks.differentiable_external_comparison as comparison
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
+    ExternalComparisonArtifact,
     ExternalComparisonRow,
     external_comparison_failure_mode_rows,
     run_differentiable_external_comparison_suite,
+    write_differentiable_external_comparison,
 )
 
 
@@ -297,3 +302,113 @@ def test_external_comparison_row_rejects_empty_dependency_metadata() -> None:
         assert "dependency version metadata" in str(exc)
     else:
         raise AssertionError("empty dependency metadata was accepted")
+
+
+def test_external_comparison_dependency_version_falls_back_to_import(monkeypatch) -> None:
+    def missing_distribution(package):
+        raise comparison.metadata.PackageNotFoundError(package)
+
+    monkeypatch.setattr(comparison.metadata, "version", missing_distribution)
+    monkeypatch.setattr(
+        comparison,
+        "import_module",
+        lambda name: SimpleNamespace(__version__="2.21.0") if name == "tensorflow" else None,
+    )
+
+    assert comparison._installed_version("tensorflow") == "2.21.0"
+
+
+def test_external_comparison_writer_records_non_promotional_artifact(tmp_path) -> None:
+    rows = (
+        ExternalComparisonRow(
+            case_id="bounded_phase_objective",
+            backend="jax",
+            status="success",
+            failure_class=None,
+            value_error=0.0,
+            gradient_error=0.0,
+            runtime_seconds=0.01,
+            memory_peak_bytes=4096,
+            batching_support="vmap",
+            transform_support="value_and_grad",
+            dtype="float64",
+            device="cpu",
+            source_of_truth="scpn_reference",
+            setup_instructions=None,
+            claim_boundary="bounded CPU comparison only",
+            dependency_versions={"jax": "0.0", "jaxlib": "0.0"},
+        ),
+        ExternalComparisonRow(
+            case_id="bounded_phase_objective_unsupported_dtype",
+            backend="tensorflow",
+            status="hard_gap",
+            failure_class="unsupported_dtype",
+            value_error=None,
+            gradient_error=None,
+            runtime_seconds=None,
+            memory_peak_bytes=None,
+            batching_support="vectorized_map",
+            transform_support="GradientTape",
+            dtype="complex128",
+            device="cpu",
+            source_of_truth="scpn_reference",
+            setup_instructions="Use real float64 controls.",
+            claim_boundary="unsupported route only",
+            dependency_versions={"tensorflow": "not_installed"},
+        ),
+    )
+
+    artifact = write_differentiable_external_comparison(
+        tmp_path / "external" / "comparison.json",
+        rows,
+        artifact_id="unit-external-comparison",
+    )
+    payload = json.loads(artifact.path.read_text(encoding="utf-8"))
+
+    assert isinstance(artifact, ExternalComparisonArtifact)
+    assert artifact.to_dict()["classification"] == "functional_non_isolated"
+    assert payload["schema"] == "scpn_qc_differentiable_external_comparison_v1"
+    assert payload["artifact_id"] == "unit-external-comparison"
+    assert payload["classification"] == "functional_non_isolated"
+    assert payload["production_eligible"] is False
+    assert payload["promotion_ready"] is False
+    assert payload["summary"]["row_count"] == 2
+    assert payload["summary"]["success_count"] == 1
+    assert payload["summary"]["hard_gap_count"] == 1
+    assert payload["summary"]["failure_classes"] == ["unsupported_dtype"]
+    assert payload["rows"][0]["dependency_versions"] == {"jax": "0.0", "jaxlib": "0.0"}
+    assert "not isolated benchmark evidence" in payload["claim_boundary"]
+
+
+def test_external_comparison_writer_rejects_invalid_outputs(tmp_path) -> None:
+    row = ExternalComparisonRow(
+        case_id="bounded_phase_objective",
+        backend="jax",
+        status="hard_gap",
+        failure_class="dependency_missing",
+        value_error=None,
+        gradient_error=None,
+        runtime_seconds=None,
+        memory_peak_bytes=None,
+        batching_support="vmap",
+        transform_support="value_and_grad",
+        dtype="float64",
+        device="cpu",
+        source_of_truth="scpn_reference",
+        setup_instructions="Install JAX.",
+        claim_boundary="dependency gap only",
+    )
+
+    try:
+        write_differentiable_external_comparison(tmp_path / "comparison.txt", (row,))
+    except ValueError as exc:
+        assert "must end with .json" in str(exc)
+    else:
+        raise AssertionError("non-JSON external comparison artifact path was accepted")
+
+    try:
+        write_differentiable_external_comparison(tmp_path / "comparison.json", (), artifact_id="")
+    except ValueError as exc:
+        assert "artifact_id" in str(exc)
+    else:
+        raise AssertionError("empty external comparison artifact id was accepted")

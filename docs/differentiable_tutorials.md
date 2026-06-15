@@ -294,6 +294,7 @@ from scpn_quantum_control.benchmarks.differentiable_evidence import (
 )
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
     run_differentiable_external_comparison_suite,
+    write_differentiable_external_comparison,
 )
 
 timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
@@ -316,6 +317,10 @@ metadata = BenchmarkIsolationMetadata.from_ci_environment(
     heavy_jobs_running=False,
 )
 with tempfile.TemporaryDirectory(prefix="scpn-qc-diff-bench-") as directory:
+    external_artifact = write_differentiable_external_comparison(
+        Path(directory) / "external_comparison.json",
+        artifact_id="diff-qnode-local-external-comparison-example",
+    )
     bundle = write_differentiable_benchmark_evidence_bundle(
         Path(directory),
         metadata=metadata,
@@ -324,12 +329,14 @@ with tempfile.TemporaryDirectory(prefix="scpn-qc-diff-bench-") as directory:
     )
     payload = json.loads(bundle.raw_json_path.read_text(encoding="utf-8"))
     print(payload["metadata"]["classification"])
+    print(external_artifact.classification)
     print(failure_classes)
 ```
 
 Local tutorial runs should print `functional_non_isolated`. That is a useful
-reproducibility and integration check, but it cannot close the promotion blocker
-for true `isolated_affinity` evidence.
+reproducibility and integration check for both benchmark and external-comparison
+artefacts, but it cannot close the promotion blocker for true
+`isolated_affinity` evidence.
 
 ## Claim Boundaries
 
