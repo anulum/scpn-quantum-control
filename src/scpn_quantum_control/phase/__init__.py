@@ -61,6 +61,7 @@ from .domain_benchmark_datasets import (
     run_differentiable_published_domain_benchmark_validation,
 )
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
+from .general_unitary import build_u3_operations, su2_zyz_angles
 from .gradient_backend import (
     QuantumGradientBackendCapability,
     QuantumGradientPlan,
@@ -614,6 +615,8 @@ __all__ = [
     "build_phase_qnode_template",
     "build_sparse_ising_chain_hamiltonian",
     "decompose_phase_qnode_controlled_gate",
+    "build_u3_operations",
+    "su2_zyz_angles",
     "execute_phase_qnode_circuit",
     "execute_phase_qnode_density_matrix",
     "parameter_shift_phase_qnode_gradient",

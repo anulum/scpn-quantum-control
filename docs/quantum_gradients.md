@@ -55,6 +55,37 @@ silently applying the single-gate `pi/2` rule. It does not claim that distinct
 logical parameters can be recovered from one simultaneous shift; that would be a
 directional derivative, not the independent gradient vector.
 
+### Controlled-rotation shift rule
+
+The two-term `pi/2` rule is exact only for a single-Pauli generator, whose
+eigenvalues are `{+1/2, -1/2}` and whose only positive spectral gap is `1`. A
+controlled rotation (`crx`, `cry`, `crz`) acts only in the control-on subspace,
+so its generator eigenvalues are `{0, 0, +1/2, -1/2}` and it carries two
+distinct gaps, `{1/2, 1}`. The planner therefore assigns controlled rotations
+the four-term rule (frequencies `{1/2, 1}`); a tied group of `m` identical
+controlled rotations scales to `{m/2, m}`. The two-term rule is wrong for a
+controlled rotation whenever the observable couples the control-on and
+control-off sectors — for example a Pauli `X` or `Y` on the control qubit — and
+the planner no longer applies it there.
+
+### U3 and arbitrary single-qubit unitaries
+
+A U3 gate, and any `2x2` unitary, is supported through an exact Euler ZYZ
+decomposition into three registered single-Pauli rotations, each carrying the
+canonical two-term rule:
+
+```python
+from scpn_quantum_control.phase import build_u3_operations, su2_zyz_angles
+
+phi, theta, lam = su2_zyz_angles(target_unitary)   # U ∝ RZ(phi) RY(theta) RZ(lam)
+operations = build_u3_operations(qubit=0, parameter_indices=(0, 1, 2))
+```
+
+`su2_zyz_angles` discards the global phase and returns the ZYZ angles;
+`build_u3_operations` emits the `RZ·RY·RZ` operations in circuit order so the
+three angles differentiate analytically. This keeps general-unitary coverage
+exact and fail-closed without enlarging the differentiable-gate primitive set.
+
 For generators with several positive frequency gaps, build an explicit
 multi-frequency rule:
 

@@ -1845,17 +1845,45 @@ def _operations_commute_for_shared_parameter(
     return True
 
 
+def _base_generator_frequencies(operation: PhaseQNodeOperation) -> tuple[float, ...]:
+    """Spectral gaps of a single registered generator.
+
+    A single-Pauli rotation (``rx``/``ry``/``rz``/``phase``/``rxx``/``ryy``/
+    ``rzz``) has generator eigenvalues ``±1/2``, so the only positive gap is
+    ``1`` and the canonical two-term rule is exact. A controlled rotation
+    (``crx``/``cry``/``crz``) has generator eigenvalues ``{0, 0, +1/2, -1/2}``
+    (the rotation only acts in the control-on subspace), so it carries two
+    distinct gaps ``{1/2, 1}`` and needs the four-term rule — the two-term rule
+    is wrong whenever the observable couples the control-on and control-off
+    sectors.
+    """
+    if _is_controlled_parametric_gate(operation.gate):
+        return (0.5, 1.0)
+    return (1.0,)
+
+
+def _group_generator_frequencies(
+    operations: tuple[PhaseQNodeOperation, ...],
+) -> tuple[float, ...]:
+    """Positive spectral gaps of the shared-parameter generator group."""
+    if len(operations) == 1 or _collapsible_shared_parameter_group(operations):
+        multiplicity = float(len(operations))
+        return tuple(
+            frequency * multiplicity for frequency in _base_generator_frequencies(operations[0])
+        )
+    # Distinct commuting single-Pauli generators: eigenvalue gaps 1..n.
+    return tuple(float(index) for index in range(1, len(operations) + 1))
+
+
 def _parameter_shift_terms_for_group(
     operations: tuple[PhaseQNodeOperation, ...],
 ) -> tuple[tuple[float, float, float], ...]:
     if not operations:
         return ()
-    if len(operations) == 1:
-        return ((1.0, float(np.pi / 2.0), 0.5),)
-    if _collapsible_shared_parameter_group(operations):
-        frequency = float(len(operations))
+    frequencies = _group_generator_frequencies(operations)
+    if len(frequencies) == 1:
+        frequency = frequencies[0]
         return ((frequency, float(np.pi / (2.0 * frequency)), 0.5 * frequency),)
-    frequencies = tuple(float(index) for index in range(1, len(operations) + 1))
     rule = multi_frequency_parameter_shift_rule(frequencies)
     return tuple(
         (frequency, float(term[0]), float(term[1]))

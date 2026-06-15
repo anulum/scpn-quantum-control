@@ -4,7 +4,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Fixed
+- 2026-06-15 — Corrected the registered Phase-QNode parameter-shift rule for
+  controlled rotations (`crx`, `cry`, `crz`). Their generator eigenvalues are
+  `{0, 0, +1/2, -1/2}`, giving two spectral gaps `{1/2, 1}`, so the two-term
+  `pi/2` rule was wrong whenever the observable coupled the control-on and
+  control-off sectors (for example a Pauli on the control qubit); the gradient
+  now uses the four-term rule (and `{m/2, m}` for a tied group of `m` identical
+  controlled rotations). Single-Pauli rotations are unchanged.
+
 ### Added
+- 2026-06-15 — Added U3 and arbitrary single-qubit unitary coverage to the
+  registered Phase-QNode gate family (`phase/general_unitary.py`).
+  `su2_zyz_angles` returns the exact `RZ(phi) RY(theta) RZ(lam)` Euler angles of
+  any `2x2` unitary (global phase discarded) and `build_u3_operations` emits the
+  matching registered `RZ·RY·RZ` decomposition, so a U3 or general single-qubit
+  unitary differentiates analytically through three two-term rotations without
+  enlarging the differentiable-gate primitive set. Documented in
+  `docs/quantum_gradients.md` and covered by `tests/test_phase_general_unitary_gates.py`.
 - 2026-06-15 — Added a quantum/classical co-simulation package
   (`cosimulation/`). `partition_knm` deterministically splits a K_nm coupling
   network into a strongly-coupled quantum core (statevector-evolved, capped at

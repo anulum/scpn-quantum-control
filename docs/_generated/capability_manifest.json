@@ -11,10 +11,10 @@
     "public_api_exports": 627,
     "public_documentation_pages": 248,
     "python_model_classes": 1717,
-    "python_model_source_modules": 824,
+    "python_model_source_modules": 825,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1941
+    "test_files": 1942
   },
   "documentation": {
     "examples": [
@@ -543,7 +543,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 69
+        "python_modules": 70
       },
       {
         "package": "psi_field",
@@ -8651,6 +8651,7 @@
       "src/scpn_quantum_control/phase/differentiable_readiness.py",
       "src/scpn_quantum_control/phase/domain_benchmark_datasets.py",
       "src/scpn_quantum_control/phase/floquet_kuramoto.py",
+      "src/scpn_quantum_control/phase/general_unitary.py",
       "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
       "src/scpn_quantum_control/phase/gradient_backend.py",
       "src/scpn_quantum_control/phase/gradient_descent.py",
@@ -10899,6 +10900,7 @@
       "tests/test_phase_domain_benchmark_datasets.py",
       "tests/test_phase_dynamics_contracts.py",
       "tests/test_phase_framework_bridges.py",
+      "tests/test_phase_general_unitary_gates.py",
       "tests/test_phase_gradient_backend.py",
       "tests/test_phase_gradient_descent.py",
       "tests/test_phase_gradient_support_matrix.py",
