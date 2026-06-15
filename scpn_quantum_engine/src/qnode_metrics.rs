@@ -657,8 +657,8 @@ mod tests {
 
     #[test]
     fn complex_derivative_contract_is_real_only() {
-        pyo3::prepare_freethreaded_python();
-        Python::with_gil(|py| {
+        Python::initialize();
+        Python::attach(|py| {
             let contract = phase_qnode_complex_derivative_contract_rust(py).unwrap();
             assert_eq!(
                 contract

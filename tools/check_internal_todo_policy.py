@@ -73,8 +73,10 @@ def _repo_root(start: Path) -> Path:
         ["git", "-C", str(start), "rev-parse", "--show-toplevel"],
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
+    if result.returncode != 0:
+        return start
     return Path(result.stdout.strip())
 
 
@@ -84,8 +86,10 @@ def tracked_local_only_paths(root: Path) -> list[str]:
         ["git", "-C", str(root), "ls-files", "--", *LOCAL_ONLY_TREES],
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
+    if result.returncode != 0:
+        return []
     return [line for line in result.stdout.splitlines() if line]
 
 

@@ -152,6 +152,17 @@ def test_skipped_directories_are_not_scanned(tmp_path: Path) -> None:
     assert competing_todo_files(root) == []
 
 
+def test_exported_source_tree_without_git_still_scans_filesystem(tmp_path: Path) -> None:
+    _write(tmp_path / "docs" / "internal" / "TODO.md", "# canonical\n")
+    _write(tmp_path / "docs" / "notes" / "TODO.md", "# rogue queue\n")
+
+    findings = check_internal_todo_policy(tmp_path)
+
+    assert [finding.category for finding in findings] == ["competing-todo"]
+    assert findings[0].path == "docs/notes/TODO.md"
+    assert main(["--root", str(tmp_path)]) == 1
+
+
 def test_format_findings_reports_clean_state() -> None:
     assert "OK" in format_findings([])
 

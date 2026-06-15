@@ -14,6 +14,10 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 RUN useradd --create-home sqc
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY .pre-commit-config.yaml pyproject.toml requirements.txt requirements-dev.txt requirements-ci-py312-linux.txt README.md LICENSE ./
 COPY src/ src/
 

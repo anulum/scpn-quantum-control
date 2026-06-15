@@ -8,6 +8,11 @@ No unreleased changes.
 
 ## [0.9.12] - 2026-06-15
 
+### Security
+- 2026-06-15 — Upgraded the Rust PyO3/Numpy binding stack to `pyo3`/`numpy`
+  `0.29` and refreshed the Rust test attach path, resolving the open PyO3
+  Dependabot advisories before tagging `0.9.12`.
+
 ### Added
 - 2026-06-15 — Bumped the public release metadata and documentation surfaces
   for the current differentiable-programming hardening queue, including README,
