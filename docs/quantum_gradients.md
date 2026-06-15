@@ -780,8 +780,11 @@ without claiming automatic framework conversion. The conformance suite
 propagates external agreement source classes and native-autodiff flags into its
 case payloads, packages the supported route, and records unsuitable scenarios
 such as hardware backend promotion, arbitrary architectures, non-finite data,
-and native framework autodiff as staged or fail-closed. The optimizer benchmark
-suite compares
+native framework autodiff, finite-shot gradients without uncertainty,
+feature/parameter contract mismatches, unregistered feature maps or observables,
+and external gradients without provenance as staged or fail-closed. Each
+scenario includes the evidence required before that route can be promoted. The
+optimizer benchmark suite compares
 parameter-shift training against finite-difference gradients and deterministic
 derivative-free candidates, but labels the result as non-isolated functional
 evidence only. It is the current production QNN foothold, not a claim of

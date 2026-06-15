@@ -49,6 +49,12 @@ class ParameterShiftQNNUnsupportedScenario:
     status: str
     reason: str
     mitigation: str
+    required_evidence: tuple[str, ...]
+    claim_boundary: str = (
+        "the bounded phase-QNN conformance suite is local deterministic evidence "
+        "only; unsupported scenarios remain fail-closed until their required "
+        "evidence is implemented, tested, documented, and attached"
+    )
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready unsupported-scenario evidence."""
@@ -57,6 +63,8 @@ class ParameterShiftQNNUnsupportedScenario:
             "status": self.status,
             "reason": self.reason,
             "mitigation": self.mitigation,
+            "required_evidence": list(self.required_evidence),
+            "claim_boundary": self.claim_boundary,
         }
 
 
@@ -227,6 +235,12 @@ def summarize_parameter_shift_qnn_unsuitable_scenarios() -> tuple[
                 "use local conformance first, then promote through provider-gradient "
                 "readiness and finite-shot provenance gates"
             ),
+            required_evidence=(
+                "provider policy approval",
+                "shifted job lineage",
+                "shot allocation",
+                "variance accounting",
+            ),
         ),
         ParameterShiftQNNUnsupportedScenario(
             name="arbitrary_qnn_architecture",
@@ -239,6 +253,11 @@ def summarize_parameter_shift_qnn_unsuitable_scenarios() -> tuple[
                 "add a dedicated architecture module, analytic gradient contract, "
                 "module-specific tests, and convergence evidence before promotion"
             ),
+            required_evidence=(
+                "architecture-specific gradient contract",
+                "module-specific tests",
+                "convergence evidence",
+            ),
         ),
         ParameterShiftQNNUnsupportedScenario(
             name="nonfinite_training_data",
@@ -249,6 +268,12 @@ def summarize_parameter_shift_qnn_unsuitable_scenarios() -> tuple[
             ),
             mitigation=(
                 "clean or reject the dataset before calling the QNN training or verification APIs"
+            ),
+            required_evidence=(
+                "finite feature matrix",
+                "finite labels in [0, 1]",
+                "finite parameter vector",
+                "finite external gradients",
             ),
         ),
         ParameterShiftQNNUnsupportedScenario(
@@ -261,6 +286,84 @@ def summarize_parameter_shift_qnn_unsuitable_scenarios() -> tuple[
             mitigation=(
                 "route native framework kernels through a separate adapter with "
                 "round-trip tests and explicit host/device boundary metadata"
+            ),
+            required_evidence=(
+                "native framework implementation",
+                "round-trip gradient agreement",
+                "host/device boundary metadata",
+            ),
+        ),
+        ParameterShiftQNNUnsupportedScenario(
+            name="finite_shot_without_uncertainty",
+            status=status,
+            reason=(
+                "finite-shot QNN gradients are stochastic evidence and cannot be "
+                "reported as deterministic agreement without shifted-sample "
+                "provenance, variance, and confidence intervals"
+            ),
+            mitigation=(
+                "use the finite-shot QNN estimator surface and carry shot counts, "
+                "seed provenance, covariance, and confidence radii in the evidence"
+            ),
+            required_evidence=(
+                "shifted-sample provenance",
+                "shot counts",
+                "variance or covariance estimate",
+                "confidence interval",
+            ),
+        ),
+        ParameterShiftQNNUnsupportedScenario(
+            name="feature_parameter_contract_mismatch",
+            status=status,
+            reason=(
+                "the bounded classifier requires exactly one trainable phase per "
+                "feature column; mismatched shapes change the model semantics"
+            ),
+            mitigation=(
+                "register a new model contract or reshape the training data and "
+                "parameter vector before invoking the bounded QNN APIs"
+            ),
+            required_evidence=(
+                "registered model contract",
+                "shape validation tests",
+                "documented parameter semantics",
+            ),
+        ),
+        ParameterShiftQNNUnsupportedScenario(
+            name="unregistered_feature_map_or_observable",
+            status=status,
+            reason=(
+                "custom feature maps, observables, and readouts are outside the "
+                "bounded phase-response classifier unless they expose analytic "
+                "value and gradient contracts"
+            ),
+            mitigation=(
+                "add a registered feature-map or observable module with analytic "
+                "gradient rules, support reports, tests, and docs"
+            ),
+            required_evidence=(
+                "registered primitive",
+                "analytic gradient rule",
+                "support report",
+                "module-specific tests",
+            ),
+        ),
+        ParameterShiftQNNUnsupportedScenario(
+            name="external_gradient_without_provenance",
+            status=status,
+            reason=(
+                "external gradient values without source class and claim-boundary "
+                "metadata are not reviewable enough for promotion evidence"
+            ),
+            mitigation=(
+                "record external gradients through the provenance-aware agreement "
+                "or conformance payloads"
+            ),
+            required_evidence=(
+                "source class",
+                "native-autodiff flag",
+                "claim boundary",
+                "agreement tolerance",
             ),
         ),
     )

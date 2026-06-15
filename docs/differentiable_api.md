@@ -250,7 +250,10 @@ suite propagates them per case so deterministic manual references,
 caller-supplied adapter gradients, and separately validated native framework
 routes stay distinct. The conformance suite bundles three deterministic replay
 cases, one convergence case, optional external-gradient hooks, and explicit
-unsuitable-scenario records. The optimizer benchmark suite compares the
+unsuitable-scenario records with required-evidence lists and claim-boundary
+text for hardware, finite-shot uncertainty, unsupported architecture,
+feature/parameter contract, unregistered primitive, and external-provenance
+routes. The optimizer benchmark suite compares the
 parameter-shift trainer with finite-difference and derivative-free baselines,
 but records `functional_non_isolated` evidence only; it is not a throughput
 benchmark or hardware performance claim. This route is not an unrestricted QNN

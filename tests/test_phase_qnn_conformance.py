@@ -113,12 +113,28 @@ def test_qnn_conformance_suite_fails_closed_on_bad_external_gradient() -> None:
 
 def test_qnn_conformance_unsuitable_scenarios_are_explicit() -> None:
     scenarios = summarize_parameter_shift_qnn_unsuitable_scenarios()
+    scenario_by_name = {scenario.name: scenario for scenario in scenarios}
 
-    assert len(scenarios) >= 3
-    assert {scenario.name for scenario in scenarios} >= {
+    assert len(scenarios) >= 8
+    assert set(scenario_by_name) >= {
         "hardware_backend",
         "arbitrary_qnn_architecture",
         "nonfinite_training_data",
+        "native_framework_autodiff",
+        "finite_shot_without_uncertainty",
+        "feature_parameter_contract_mismatch",
+        "unregistered_feature_map_or_observable",
+        "external_gradient_without_provenance",
     }
     assert all(scenario.status == "fail_closed_or_staged" for scenario in scenarios)
     assert all(scenario.mitigation for scenario in scenarios)
+    assert all(scenario.required_evidence for scenario in scenarios)
+    assert all("fail-closed" in scenario.claim_boundary for scenario in scenarios)
+    assert (
+        "variance or covariance estimate"
+        in scenario_by_name["finite_shot_without_uncertainty"].required_evidence
+    )
+    assert (
+        scenario_by_name["external_gradient_without_provenance"].to_dict()["required_evidence"][0]
+        == "source class"
+    )
