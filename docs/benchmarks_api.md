@@ -394,6 +394,12 @@ PennyLane, and LLVM/Enzyme runner evidence. The SCPN analytic reference remains
 the source of truth. Missing optional dependencies are emitted as `hard_gap`
 rows instead of being omitted.
 
+Every row carries dependency-version metadata for the backend being classified.
+The suite also emits explicit unsupported-route rows for promotion-blocking
+cases: unsupported batching, unsupported nested transforms, unsupported complex
+dtype routes, and unsupported hardware-device routes. Those rows are hard gaps,
+not skipped tests or degraded successes.
+
 For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an executable that reads a JSON
 request on stdin and writes JSON with:
 

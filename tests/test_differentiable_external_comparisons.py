@@ -14,6 +14,7 @@ import numpy as np
 import scpn_quantum_control.benchmarks.differentiable_external_comparison as comparison
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
     ExternalComparisonRow,
+    external_comparison_failure_mode_rows,
     run_differentiable_external_comparison_suite,
 )
 
@@ -60,7 +61,7 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     )
 
     rows = run_differentiable_external_comparison_suite()
-    by_backend = {row.backend: row for row in rows}
+    by_backend = {row.backend: row for row in rows if row.case_id == "bounded_phase_objective"}
 
     assert set(by_backend) == {"jax", "pytorch", "tensorflow", "pennylane", "enzyme"}
     for backend in ("jax", "pytorch", "tensorflow", "pennylane"):
@@ -70,6 +71,7 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
         assert by_backend[backend].gradient_error <= 1e-12
         assert by_backend[backend].artifact_fields_ready
         assert by_backend[backend].source_of_truth == "scpn_reference"
+        assert by_backend[backend].dependency_versions
     assert by_backend["jax"].batching_support == "vmap"
     assert by_backend["pytorch"].batching_support == "torch.func.vmap"
     assert by_backend["tensorflow"].transform_support == "GradientTape"
@@ -77,6 +79,13 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     assert by_backend["enzyme"].status == "hard_gap"
     assert by_backend["enzyme"].failure_class == "dependency_missing"
     assert "LLVM/Enzyme" in str(by_backend["enzyme"].setup_instructions)
+    failure_classes = {row.failure_class for row in rows if row.status == "hard_gap"}
+    assert {
+        "unsupported_batching",
+        "unsupported_transform",
+        "unsupported_dtype",
+        "unsupported_device",
+    }.issubset(failure_classes)
 
 
 def test_external_comparison_suite_classifies_runtime_failures(monkeypatch) -> None:
@@ -91,7 +100,11 @@ def test_external_comparison_suite_classifies_runtime_failures(monkeypatch) -> N
 
     monkeypatch.setattr(comparison, "_run_jax_reference", broken_runner)
 
-    row = {item.backend: item for item in run_differentiable_external_comparison_suite()}["jax"]
+    row = {
+        item.backend: item
+        for item in run_differentiable_external_comparison_suite()
+        if item.case_id == "bounded_phase_objective"
+    }["jax"]
 
     assert row.status == "hard_gap"
     assert row.failure_class == "runtime_error"
@@ -119,6 +132,7 @@ def test_external_comparison_row_requires_hard_gap_fields() -> None:
 
     assert row.artifact_fields_ready
     assert row.to_dict()["failure_class"] == "dependency_missing"
+    assert row.to_dict()["dependency_versions"] is None
 
 
 def test_external_comparison_row_rejects_success_without_numeric_evidence() -> None:
@@ -155,8 +169,9 @@ def test_external_comparison_suite_records_dependency_missing_rows(monkeypatch) 
 
     rows = run_differentiable_external_comparison_suite()
 
-    assert all(row.status == "hard_gap" for row in rows)
-    assert all(row.failure_class == "dependency_missing" for row in rows)
+    primary_rows = [row for row in rows if row.case_id == "bounded_phase_objective"]
+    assert all(row.status == "hard_gap" for row in primary_rows)
+    assert all(row.failure_class == "dependency_missing" for row in primary_rows)
     assert np.isfinite(len(rows))
 
 
@@ -200,6 +215,7 @@ def test_external_comparison_runs_configured_enzyme_runner(tmp_path, monkeypatch
     assert row.transform_support == "LLVM Enzyme runner"
     assert "Enzyme" in row.claim_boundary
     assert payload["toolchain"] == {"enzyme": "test-runner", "llvm": "test-llvm"}
+    assert payload["dependency_versions"]
 
 
 def test_external_comparison_classifies_enzyme_bad_json(tmp_path, monkeypatch) -> None:
@@ -233,3 +249,51 @@ def test_external_comparison_rejects_enzyme_wrong_gradient(tmp_path, monkeypatch
     assert row.status == "hard_gap"
     assert row.failure_class == "correctness_mismatch"
     assert "SCPN reference" in str(row.setup_instructions)
+
+
+def test_external_comparison_failure_mode_rows_cover_required_taxonomy() -> None:
+    rows = external_comparison_failure_mode_rows()
+    by_failure = {row.failure_class: row for row in rows}
+
+    assert set(by_failure) == {
+        "unsupported_batching",
+        "unsupported_transform",
+        "unsupported_dtype",
+        "unsupported_device",
+    }
+    assert by_failure["unsupported_batching"].backend == "jax"
+    assert by_failure["unsupported_transform"].backend == "pytorch"
+    assert by_failure["unsupported_dtype"].dtype == "complex128"
+    assert by_failure["unsupported_device"].device == "hardware_qpu"
+    for row in rows:
+        assert row.status == "hard_gap"
+        assert row.value_error is None
+        assert row.gradient_error is None
+        assert row.dependency_versions is not None
+        assert "no hidden success" in row.claim_boundary
+
+
+def test_external_comparison_row_rejects_empty_dependency_metadata() -> None:
+    try:
+        ExternalComparisonRow(
+            case_id="bounded_phase_objective",
+            backend="jax",
+            status="hard_gap",
+            failure_class="unsupported_dtype",
+            value_error=None,
+            gradient_error=None,
+            runtime_seconds=None,
+            memory_peak_bytes=None,
+            batching_support="vmap",
+            transform_support="value_and_grad",
+            dtype="complex128",
+            device="cpu",
+            source_of_truth="scpn_reference",
+            setup_instructions="Use real float64 controls.",
+            claim_boundary="unsupported route only",
+            dependency_versions={"jax": ""},
+        )
+    except ValueError as exc:
+        assert "dependency version metadata" in str(exc)
+    else:
+        raise AssertionError("empty dependency metadata was accepted")

@@ -17,6 +17,7 @@ import subprocess
 import time
 import tracemalloc
 from dataclasses import dataclass
+from importlib import metadata
 from typing import Any, Literal
 
 import numpy as np
@@ -49,6 +50,7 @@ class ExternalComparisonRow:
     source_of_truth: str
     setup_instructions: str | None
     claim_boundary: str
+    dependency_versions: dict[str, str] | None = None
     toolchain: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
@@ -80,6 +82,16 @@ class ExternalComparisonRow:
             or any(not isinstance(value, str) or not value for value in self.toolchain.values())
         ):
             raise ValueError("toolchain metadata must map non-empty strings to non-empty strings")
+        if self.dependency_versions is not None and (
+            any(not isinstance(key, str) or not key for key in self.dependency_versions)
+            or any(
+                not isinstance(value, str) or not value
+                for value in self.dependency_versions.values()
+            )
+        ):
+            raise ValueError(
+                "dependency version metadata must map non-empty strings to non-empty strings"
+            )
 
     @property
     def artifact_fields_ready(self) -> bool:
@@ -106,6 +118,9 @@ class ExternalComparisonRow:
             "source_of_truth": self.source_of_truth,
             "setup_instructions": self.setup_instructions,
             "claim_boundary": self.claim_boundary,
+            "dependency_versions": (
+                dict(self.dependency_versions) if self.dependency_versions is not None else None
+            ),
             "toolchain": dict(self.toolchain) if self.toolchain is not None else None,
         }
 
@@ -168,7 +183,65 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
             "Install LLVM/Enzyme tooling and configure the Enzyme runner.",
         )
     )
+    rows.extend(external_comparison_failure_mode_rows())
     return tuple(rows)
+
+
+def external_comparison_failure_mode_rows() -> tuple[ExternalComparisonRow, ...]:
+    """Return explicit unsupported-route rows for promotion-evidence artefacts."""
+
+    return (
+        _unsupported_gap_row(
+            backend="jax",
+            failure_class="unsupported_batching",
+            batching_support="single-host vmap only; multi-host pmap is not promotion evidence",
+            transform_support="value_and_grad",
+            dtype="float64",
+            device="cpu",
+            setup=(
+                "Bounded JAX external comparison evidence covers CPU value_and_grad/vmap only; "
+                "multi-host pmap or sharded hardware batches require a separate isolated artefact."
+            ),
+        ),
+        _unsupported_gap_row(
+            backend="pytorch",
+            failure_class="unsupported_transform",
+            batching_support="torch.func.vmap",
+            transform_support="nested torch.compile grad-of-grad not evaluated",
+            dtype="float64",
+            device="cpu",
+            setup=(
+                "Bounded PyTorch external comparison evidence covers torch.func.grad, vmap, "
+                "jacrev, compile, and module wrappers separately; nested compile grad-of-grad "
+                "promotion requires a dedicated correctness and isolation artefact."
+            ),
+        ),
+        _unsupported_gap_row(
+            backend="tensorflow",
+            failure_class="unsupported_dtype",
+            batching_support="vectorized_map",
+            transform_support="GradientTape",
+            dtype="complex128",
+            device="cpu",
+            setup=(
+                "External comparison promotion is real-valued float64 only. Complex or "
+                "Wirtinger TensorFlow routes must use the explicit real/imaginary contract."
+            ),
+        ),
+        _unsupported_gap_row(
+            backend="pennylane",
+            failure_class="unsupported_device",
+            batching_support="not_native",
+            transform_support="QNode",
+            dtype="float64",
+            device="hardware_qpu",
+            setup=(
+                "External comparison rows do not submit live provider or QPU jobs. Hardware "
+                "PennyLane evidence requires a provider policy ticket, artefact ID, shot budget, "
+                "and isolated benchmark classification."
+            ),
+        ),
+    )
 
 
 def _framework_row(
@@ -213,6 +286,7 @@ def _framework_row(
             "Bounded CPU external comparison against the SCPN reference; no provider, "
             "QPU, GPU, or production performance claim."
         ),
+        dependency_versions=_backend_dependency_versions(backend),
     )
 
 
@@ -262,6 +336,7 @@ def _enzyme_row() -> ExternalComparisonRow:
                 f"(value_error={value_error:.3e}, gradient_error={gradient_error:.3e})."
             ),
             claim_boundary="Correctness hard gap only; no hidden success or promoted claim.",
+            dependency_versions=_backend_dependency_versions("enzyme"),
             toolchain=toolchain,
         )
     return ExternalComparisonRow(
@@ -283,6 +358,7 @@ def _enzyme_row() -> ExternalComparisonRow:
             "Bounded CPU LLVM/Enzyme runner comparison against the SCPN reference; "
             "no provider, QPU, GPU, arbitrary-program AD, or production performance claim."
         ),
+        dependency_versions=_backend_dependency_versions("enzyme"),
         toolchain=toolchain,
     )
 
@@ -309,6 +385,7 @@ def _dependency_gap_row(
         source_of_truth="scpn_reference",
         setup_instructions=setup,
         claim_boundary="Dependency hard gap only; no hidden success or promoted claim.",
+        dependency_versions=_backend_dependency_versions(backend),
     )
 
 
@@ -334,6 +411,37 @@ def _runtime_gap_row(
         source_of_truth="scpn_reference",
         setup_instructions=reason,
         claim_boundary="Runtime comparison gap only; no hidden success or promoted claim.",
+        dependency_versions=_backend_dependency_versions(backend),
+    )
+
+
+def _unsupported_gap_row(
+    *,
+    backend: str,
+    failure_class: str,
+    batching_support: str,
+    transform_support: str,
+    dtype: str,
+    device: str,
+    setup: str,
+) -> ExternalComparisonRow:
+    return ExternalComparisonRow(
+        case_id=f"bounded_phase_objective_{failure_class}",
+        backend=backend,
+        status="hard_gap",
+        failure_class=failure_class,
+        value_error=None,
+        gradient_error=None,
+        runtime_seconds=None,
+        memory_peak_bytes=None,
+        batching_support=batching_support,
+        transform_support=transform_support,
+        dtype=dtype,
+        device=device,
+        source_of_truth="scpn_reference",
+        setup_instructions=setup,
+        claim_boundary="Unsupported-route hard gap only; no hidden success or promoted claim.",
+        dependency_versions=_backend_dependency_versions(backend),
     )
 
 
@@ -483,6 +591,29 @@ def _as_toolchain_metadata(value: object) -> dict[str, str]:
     return metadata
 
 
+def _backend_dependency_versions(backend: str) -> dict[str, str]:
+    packages_by_backend: dict[str, tuple[str, ...]] = {
+        "jax": ("jax", "jaxlib"),
+        "pytorch": ("torch",),
+        "tensorflow": ("tensorflow", "tensorflow-cpu"),
+        "pennylane": ("pennylane",),
+        "enzyme": ("llvm", "enzyme"),
+    }
+    return {
+        package: _installed_version(package) for package in packages_by_backend.get(backend, ())
+    }
+
+
+def _installed_version(package: str) -> str:
+    binary = shutil.which(package)
+    if package in {"llvm", "enzyme"} and binary:
+        return f"executable:{binary}"
+    try:
+        return metadata.version(package)
+    except metadata.PackageNotFoundError:
+        return "not_installed"
+
+
 def _enzyme_runner_timeout_seconds() -> float:
     raw = os.environ.get("SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS", "10")
     try:
@@ -508,5 +639,6 @@ def _enzyme_runner_configured() -> bool:
 
 __all__ = [
     "ExternalComparisonRow",
+    "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",
 ]

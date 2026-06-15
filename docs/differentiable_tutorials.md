@@ -157,6 +157,13 @@ from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
 )
 
 timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
+failure_classes = sorted(
+    {
+        row["failure_class"]
+        for row in timing_rows
+        if row["status"] == "hard_gap" and row["failure_class"] is not None
+    }
+)
 metadata = BenchmarkIsolationMetadata.from_ci_environment(
     {},
     command=("python", "examples/24_differentiable_benchmark_reproduction.py"),
@@ -177,6 +184,7 @@ with tempfile.TemporaryDirectory(prefix="scpn-qc-diff-bench-") as directory:
     )
     payload = json.loads(bundle.raw_json_path.read_text(encoding="utf-8"))
     print(payload["metadata"]["classification"])
+    print(failure_classes)
 ```
 
 Local tutorial runs should print `functional_non_isolated`. That is a useful

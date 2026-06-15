@@ -23,6 +23,13 @@ from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
 
 def main() -> None:
     timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
+    failure_classes = sorted(
+        {
+            row["failure_class"]
+            for row in timing_rows
+            if row["status"] == "hard_gap" and row["failure_class"] is not None
+        }
+    )
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         {},
         command=("python", "examples/24_differentiable_benchmark_reproduction.py"),
@@ -50,6 +57,7 @@ def main() -> None:
         print(f"  classification: {payload['metadata']['classification']}")
         print(f"  production eligible: {payload['metadata']['production_eligible']}")
         print(f"  timing rows: {len(payload['timing_rows'])}")
+        print(f"  failure classes: {', '.join(failure_classes)}")
         print(f"  gap reason: {payload['metadata']['gap_reason']}")
         print("  provider or qpu execution: false")
 
