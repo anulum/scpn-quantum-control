@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import os
+
+import pytest
+
 from scpn_quantum_control.phase.qnode_affinity_benchmark import (
     classify_affinity_evidence,
     run_phase_qnode_affinity_benchmark,
@@ -40,9 +44,12 @@ def test_affinity_label_requires_all_isolation_criteria() -> None:
     assert (
         classify_affinity_evidence(
             reserved_cpus=(2, 3),
+            observed_affinity_cpus=(2, 3),
             host_load_before=(0.1, 0.1, 0.1),
             host_load_after=(0.1, 0.1, 0.1),
             command="taskset -c 2,3 python -m bench",
+            governor="performance",
+            frequency_mhz=(3200.0, 3200.0),
             heavy_concurrent_jobs=False,
         )
         == "isolated_affinity"
@@ -50,10 +57,66 @@ def test_affinity_label_requires_all_isolation_criteria() -> None:
     assert (
         classify_affinity_evidence(
             reserved_cpus=(2, 3),
+            observed_affinity_cpus=(2, 3),
             host_load_before=(3.0, 3.0, 3.0),
             host_load_after=(0.1, 0.1, 0.1),
             command="taskset -c 2,3 python -m bench",
+            governor="performance",
+            frequency_mhz=(3200.0, 3200.0),
             heavy_concurrent_jobs=False,
         )
         == "functional_non_isolated"
     )
+
+
+def test_affinity_label_rejects_unmatched_observed_process_affinity() -> None:
+    result = run_phase_qnode_affinity_benchmark(
+        repetitions=1,
+        warmups=0,
+        reserved_cpus=(0,),
+        host_load_before=(0.1, 0.1, 0.1),
+        host_load_after=(0.1, 0.1, 0.1),
+        command="taskset -c 0 python tools/run_phase_qnode_affinity_benchmark.py",
+    )
+
+    assert result.evidence_label == "functional_non_isolated"
+    assert not result.production_benchmark
+    assert result.metadata.affinity_cpus == (0,)
+    assert result.metadata.observed_affinity_cpus
+    assert "observed CPU affinity must match reserved CPU affinity" in result.isolation_failures
+
+
+def test_affinity_label_requires_governor_or_frequency_context() -> None:
+    assert (
+        classify_affinity_evidence(
+            reserved_cpus=(2,),
+            observed_affinity_cpus=(2,),
+            host_load_before=(0.1, 0.1, 0.1),
+            host_load_after=(0.1, 0.1, 0.1),
+            command="taskset -c 2 python -m bench",
+            governor="unknown",
+            frequency_mhz=(),
+            heavy_concurrent_jobs=False,
+        )
+        == "functional_non_isolated"
+    )
+
+
+def test_github_actions_phase_affinity_requires_remote_isolated_runner(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setitem(os.environ, "GITHUB_ACTIONS", "true")
+    monkeypatch.setitem(os.environ, "RUNNER_ENVIRONMENT", "github-hosted")
+    monkeypatch.setitem(os.environ, "RUNNER_LABELS", "ubuntu-latest,linux")
+
+    result = run_phase_qnode_affinity_benchmark(
+        repetitions=1,
+        warmups=0,
+        reserved_cpus=tuple(sorted(os.sched_getaffinity(0))),
+        host_load_before=(0.1, 0.1, 0.1),
+        host_load_after=(0.1, 0.1, 0.1),
+        command="taskset -c 0 python tools/run_phase_qnode_affinity_benchmark.py",
+    )
+
+    assert result.evidence_label == "functional_non_isolated"
+    assert "remote self-hosted isolated-benchmark runner" in result.isolation_failures

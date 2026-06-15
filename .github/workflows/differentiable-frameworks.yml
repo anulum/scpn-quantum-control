@@ -95,6 +95,14 @@ jobs:
             --warmups 3 \
             --reserved-cpus 0 \
             --output benchmark-results/phase-qnode-affinity.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("benchmark-results/phase-qnode-affinity.json").read_text())
+          if payload["evidence_label"] != "functional_non_isolated":
+              raise SystemExit("GitHub-hosted framework benchmark must remain functional_non_isolated")
+          PY
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:

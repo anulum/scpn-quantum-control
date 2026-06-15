@@ -58,15 +58,18 @@ The registry marks planned entries as planned, not implemented. Planned rows hav
 Differentiable Phase-QNode benchmark evidence uses
 `run_phase_qnode_affinity_benchmark(...)` and the
 `tools/run_phase_qnode_affinity_benchmark.py` CLI. The raw JSON records command,
-CPU affinity, isolation method, host load before and after, CPU/governor
-context when available, dependency versions, warmups, repetitions, and timing
-rows.
+requested CPU affinity, observed process affinity, isolation method, host load
+before and after, CPU/governor or frequency context, dependency versions,
+warmups, repetitions, runner metadata, and timing rows.
 
 Rows are labelled `isolated_affinity` only when reserved CPU affinity, low host
-load, governor or frequency metadata, fixed command metadata, and absence of
-heavy concurrent jobs are all recorded. Otherwise the result is
+load, matching observed process affinity, governor or frequency metadata, fixed
+command metadata, and absence of heavy concurrent jobs are all recorded.
+GitHub-hosted CI is explicitly non-promotional. The promotion gate is the
+remote GitHub Actions lane on a self-hosted runner labelled `self-hosted`,
+`linux`, and `isolated-benchmark`; the workflow fails unless its uploaded
+evidence reports `isolated_affinity`. Otherwise the result is
 `functional_non_isolated` or `hard_gap` and must not be used as a production
-throughput or latency claim. The GitHub Actions lane must run on a self-hosted
-runner labelled `self-hosted`, `linux`, and `isolated-benchmark`; the helper
-`tools/setup_isolated_benchmark_runner.py` prints or installs that runner
-configuration.
+throughput or latency claim. The helper
+`tools/setup_isolated_benchmark_runner.py` prints or installs the required
+runner configuration on the reserved Linux x64 benchmark host.

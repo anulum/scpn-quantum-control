@@ -84,9 +84,12 @@ Benchmark artefacts written by
 `scripts/run_differentiable_benchmark_evidence.py` are CI evidence only.
 GitHub-hosted runners are classified as `functional_non_isolated`; production
 performance wording requires a self-hosted runner labelled
-`isolated-benchmark`, explicit CPU affinity, host-load context, governor or
-frequency context, and no concurrent heavy jobs. Unconfigured Enzyme tooling is
-a recorded `dependency_missing` hard gap, not a hidden success. When
+`isolated-benchmark`, explicit CPU affinity, observed process affinity that
+matches the requested CPU set, host-load context, governor or frequency
+context, and no concurrent heavy jobs. The remote CI job is the benchmark gate:
+the repository may not promote the claim unless that job uploads an artefact
+classified as `isolated_affinity`. Unconfigured Enzyme tooling is a recorded
+`dependency_missing` hard gap, not a hidden success. When
 `SCPN_ENZYME_RUNNER` is configured and LLVM/Enzyme tooling is present, the
 external comparison row sends a strict JSON request, enforces a timeout, records
 runner toolchain metadata, and accepts success only when value and gradient
@@ -109,7 +112,9 @@ PYTHONPATH=src:. python tools/setup_isolated_benchmark_runner.py \
 The helper prints the labels, runner directory, runner version, and download
 URL without mutating the host. Add `--install` only on the reserved Linux x64
 benchmark host. A claim is still not promoted until the CI artefact itself
-reports `isolated_affinity`.
+reports `isolated_affinity`. If the repository has no registered
+self-hosted runner with the `isolated-benchmark` label, the benchmark gate is
+not executable and the claim remains unpromoted.
 
 ## User routes
 

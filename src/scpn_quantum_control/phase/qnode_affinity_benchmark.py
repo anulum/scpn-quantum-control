@@ -37,13 +37,17 @@ class PhaseQNodeAffinityBenchmarkMetadata:
 
     command: str
     affinity_cpus: tuple[int, ...]
+    observed_affinity_cpus: tuple[int, ...]
     isolation_method: str
     host_load_before: tuple[float, float, float]
     host_load_after: tuple[float, float, float]
     cpu_model: str
     governor: str
+    frequency_mhz: tuple[float, ...]
     python_version: str
     dependency_versions: dict[str, str]
+    runner_environment: str
+    runner_labels: tuple[str, ...]
     repetitions: int
     warmups: int
     heavy_concurrent_jobs: bool
@@ -53,13 +57,17 @@ class PhaseQNodeAffinityBenchmarkMetadata:
         return {
             "command": self.command,
             "affinity_cpus": list(self.affinity_cpus),
+            "observed_affinity_cpus": list(self.observed_affinity_cpus),
             "isolation_method": self.isolation_method,
             "host_load_before": list(self.host_load_before),
             "host_load_after": list(self.host_load_after),
             "cpu_model": self.cpu_model,
             "governor": self.governor,
+            "frequency_mhz": list(self.frequency_mhz),
             "python_version": self.python_version,
             "dependency_versions": dict(self.dependency_versions),
+            "runner_environment": self.runner_environment,
+            "runner_labels": list(self.runner_labels),
             "repetitions": self.repetitions,
             "warmups": self.warmups,
             "heavy_concurrent_jobs": self.heavy_concurrent_jobs,
@@ -92,18 +100,28 @@ class PhaseQNodeAffinityBenchmarkResult:
 def classify_affinity_evidence(
     *,
     reserved_cpus: tuple[int, ...],
+    observed_affinity_cpus: tuple[int, ...],
     host_load_before: tuple[float, float, float],
     host_load_after: tuple[float, float, float],
     command: str,
+    governor: str,
+    frequency_mhz: tuple[float, ...],
     heavy_concurrent_jobs: bool,
+    runner_environment: str = "",
+    runner_labels: tuple[str, ...] = (),
 ) -> EvidenceLabel:
     """Classify benchmark evidence under the core-isolation policy."""
     failures = _isolation_failures(
         reserved_cpus=reserved_cpus,
+        observed_affinity_cpus=observed_affinity_cpus,
         host_load_before=host_load_before,
         host_load_after=host_load_after,
         command=command,
+        governor=governor,
+        frequency_mhz=frequency_mhz,
         heavy_concurrent_jobs=heavy_concurrent_jobs,
+        runner_environment=runner_environment,
+        runner_labels=runner_labels,
     )
     return "isolated_affinity" if not failures else "functional_non_isolated"
 
@@ -123,7 +141,12 @@ def run_phase_qnode_affinity_benchmark(
         raise ValueError("repetitions must be positive")
     if warmups < 0:
         raise ValueError("warmups must be non-negative")
-    affinity = tuple(sorted(reserved_cpus if reserved_cpus is not None else _current_affinity()))
+    requested_affinity = tuple(
+        sorted(reserved_cpus if reserved_cpus is not None else _current_affinity())
+    )
+    if any(cpu < 0 for cpu in requested_affinity):
+        raise ValueError("reserved CPU indexes must be non-negative")
+    observed_affinity = _current_affinity()
     command_text = command or "python -m scpn_quantum_control.phase.qnode_affinity_benchmark"
     before = host_load_before or _load_average()
     circuit = PhaseQNodeCircuit(
@@ -150,24 +173,37 @@ def run_phase_qnode_affinity_benchmark(
                 }
             )
     after = host_load_after or _load_average()
+    governor = _cpu_governor()
+    frequency_mhz = _cpu_frequency_mhz()
+    runner_environment = os.environ.get("RUNNER_ENVIRONMENT", "")
+    runner_labels = _runner_labels()
     failures = _isolation_failures(
-        reserved_cpus=affinity if reserved_cpus is not None else (),
+        reserved_cpus=requested_affinity if reserved_cpus is not None else (),
+        observed_affinity_cpus=observed_affinity,
         host_load_before=before,
         host_load_after=after,
         command=command_text,
+        governor=governor,
+        frequency_mhz=frequency_mhz,
         heavy_concurrent_jobs=heavy_concurrent_jobs,
+        runner_environment=runner_environment,
+        runner_labels=runner_labels,
     )
     label: EvidenceLabel = "isolated_affinity" if not failures else "functional_non_isolated"
     metadata_row = PhaseQNodeAffinityBenchmarkMetadata(
         command=command_text,
-        affinity_cpus=affinity,
+        affinity_cpus=requested_affinity,
+        observed_affinity_cpus=observed_affinity,
         isolation_method=_isolation_method(command_text),
         host_load_before=before,
         host_load_after=after,
         cpu_model=_cpu_model(),
-        governor=_cpu_governor(),
+        governor=governor,
+        frequency_mhz=frequency_mhz,
         python_version=platform.python_version(),
         dependency_versions=_dependency_versions(),
+        runner_environment=runner_environment,
+        runner_labels=runner_labels,
         repetitions=repetitions,
         warmups=warmups,
         heavy_concurrent_jobs=heavy_concurrent_jobs,
@@ -180,7 +216,8 @@ def run_phase_qnode_affinity_benchmark(
         isolation_failures=tuple(failures),
         claim_boundary=(
             "isolated_affinity only when reserved CPU affinity, low host load, "
-            "fixed command metadata, and no heavy concurrent jobs are recorded"
+            "observed process affinity match, governor or frequency context, fixed "
+            "command metadata, and no heavy concurrent jobs are recorded"
         ),
     )
 
@@ -188,20 +225,35 @@ def run_phase_qnode_affinity_benchmark(
 def _isolation_failures(
     *,
     reserved_cpus: tuple[int, ...],
+    observed_affinity_cpus: tuple[int, ...],
     host_load_before: tuple[float, float, float],
     host_load_after: tuple[float, float, float],
     command: str,
+    governor: str,
+    frequency_mhz: tuple[float, ...],
     heavy_concurrent_jobs: bool,
+    runner_environment: str = "",
+    runner_labels: tuple[str, ...] = (),
 ) -> list[str]:
     failures: list[str] = []
+    if os.environ.get("GITHUB_ACTIONS") == "true" and (
+        runner_environment != "self-hosted" or "isolated-benchmark" not in runner_labels
+    ):
+        failures.append("remote self-hosted isolated-benchmark runner")
     if not reserved_cpus:
         failures.append("reserved CPU affinity")
+    if not observed_affinity_cpus:
+        failures.append("observed CPU affinity")
+    if reserved_cpus and tuple(sorted(reserved_cpus)) != tuple(sorted(observed_affinity_cpus)):
+        failures.append("observed CPU affinity must match reserved CPU affinity")
     if max(host_load_before + host_load_after) > 1.0:
         failures.append("host load must remain low before and after benchmark")
     if not command.strip():
         failures.append("fixed command metadata is required")
     if reserved_cpus and "taskset" not in command and "chrt" not in command:
         failures.append("taskset or chrt isolation marker is required")
+    if governor == "unknown" and not frequency_mhz:
+        failures.append("governor or frequency metadata is required")
     if heavy_concurrent_jobs:
         failures.append("heavy concurrent jobs were reported")
     return failures
@@ -220,6 +272,12 @@ def _current_affinity() -> tuple[int, ...]:
         return tuple(sorted(os.sched_getaffinity(0)))
     except AttributeError:
         return ()
+
+
+def _runner_labels() -> tuple[str, ...]:
+    return tuple(
+        label.strip() for label in os.environ.get("RUNNER_LABELS", "").split(",") if label
+    )
 
 
 def _isolation_method(command: str) -> str:
@@ -248,6 +306,18 @@ def _cpu_governor() -> str:
             return handle.read().strip() or "unknown"
     except OSError:
         return "unknown"
+
+
+def _cpu_frequency_mhz() -> tuple[float, ...]:
+    values: list[float] = []
+    try:
+        with open("/proc/cpuinfo", encoding="utf-8") as handle:
+            for line in handle:
+                if line.lower().startswith("cpu mhz"):
+                    values.append(float(line.split(":", 1)[1].strip()))
+    except (OSError, ValueError):
+        return ()
+    return tuple(values)
 
 
 def _dependency_versions() -> dict[str, str]:

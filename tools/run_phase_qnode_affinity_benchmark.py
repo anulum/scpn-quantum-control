@@ -23,6 +23,11 @@ def main() -> None:
     parser.add_argument("--warmups", type=int, default=3)
     parser.add_argument("--reserved-cpus", default="")
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--require-isolated",
+        action="store_true",
+        help="Exit non-zero unless the written evidence is classified as isolated_affinity.",
+    )
     args = parser.parse_args()
     reserved = tuple(int(item.strip()) for item in args.reserved_cpus.split(",") if item.strip())
     run_phase_qnode_affinity_benchmark = load_phase_module(
@@ -39,6 +44,11 @@ def main() -> None:
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result.to_dict(), indent=2, sort_keys=True), encoding="utf-8")
+    if args.require_isolated and result.evidence_label != "isolated_affinity":
+        raise SystemExit(
+            "isolated_affinity evidence was required but benchmark classified as "
+            f"{result.evidence_label}: {', '.join(result.isolation_failures)}"
+        )
 
 
 if __name__ == "__main__":

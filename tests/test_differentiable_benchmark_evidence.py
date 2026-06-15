@@ -108,6 +108,68 @@ def test_self_hosted_isolated_metadata_requires_full_host_context() -> None:
     assert not metadata.production_eligible
 
 
+def test_self_hosted_isolated_metadata_rejects_high_host_load() -> None:
+    metadata = BenchmarkIsolationMetadata.from_ci_environment(
+        {
+            "GITHUB_RUN_ID": "67890",
+            "GITHUB_SHA": "def456",
+            "RUNNER_NAME": "isolated-qc-runner",
+            "RUNNER_ENVIRONMENT": "self-hosted",
+            "RUNNER_LABELS": "self-hosted,linux,isolated-benchmark",
+        },
+        command=(
+            "taskset",
+            "-c",
+            "2",
+            "python",
+            "scripts/run_differentiable_benchmark_evidence.py",
+        ),
+        cpu_affinity="2",
+        isolation_method="taskset",
+        load_before=(0.05, 0.04, 0.03),
+        load_after=(1.25, 0.95, 0.70),
+        governor="performance",
+        frequency_mhz=3200.0,
+        heavy_jobs_running=False,
+        accelerator_metadata=AcceleratorEvidenceMetadata.cpu_only(),
+    )
+
+    assert metadata.classification == "hard_gap"
+    assert metadata.failure_class == "host_load_not_isolated"
+    assert not metadata.production_eligible
+
+
+def test_self_hosted_isolated_metadata_rejects_heavy_jobs() -> None:
+    metadata = BenchmarkIsolationMetadata.from_ci_environment(
+        {
+            "GITHUB_RUN_ID": "67890",
+            "GITHUB_SHA": "def456",
+            "RUNNER_NAME": "isolated-qc-runner",
+            "RUNNER_ENVIRONMENT": "self-hosted",
+            "RUNNER_LABELS": "self-hosted,linux,isolated-benchmark",
+        },
+        command=(
+            "taskset",
+            "-c",
+            "2",
+            "python",
+            "scripts/run_differentiable_benchmark_evidence.py",
+        ),
+        cpu_affinity="2",
+        isolation_method="taskset",
+        load_before=(0.05, 0.04, 0.03),
+        load_after=(0.06, 0.05, 0.04),
+        governor="performance",
+        frequency_mhz=3200.0,
+        heavy_jobs_running=True,
+        accelerator_metadata=AcceleratorEvidenceMetadata.cpu_only(),
+    )
+
+    assert metadata.classification == "hard_gap"
+    assert metadata.failure_class == "heavy_concurrent_jobs"
+    assert not metadata.production_eligible
+
+
 def test_requested_cuda_without_visible_device_is_hard_gap() -> None:
     accelerator_metadata = capture_accelerator_metadata(
         {

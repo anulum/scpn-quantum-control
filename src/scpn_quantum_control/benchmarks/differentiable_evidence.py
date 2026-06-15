@@ -126,10 +126,12 @@ class BenchmarkIsolationMetadata:
                 frequency_mhz is not None,
             )
         )
+        has_low_host_load = _host_load_is_low(load_before) and _host_load_is_low(load_after)
         production_eligible = (
             runner_type == "self-hosted"
             and has_isolated_label
             and has_required_context
+            and has_low_host_load
             and not heavy_jobs_running
             and not accelerator.cpu_fallback_detected
         )
@@ -147,11 +149,23 @@ class BenchmarkIsolationMetadata:
             gap_reason = None
         elif runner_type == "self-hosted" and has_isolated_label:
             classification = "hard_gap"
-            failure_class = "insufficient_isolation_metadata"
-            gap_reason = (
-                "Self-hosted isolated benchmark runner did not provide complete CPU "
-                "affinity, host load, governor/frequency, and heavy-job metadata."
-            )
+            if not has_required_context:
+                failure_class = "insufficient_isolation_metadata"
+                gap_reason = (
+                    "Self-hosted isolated benchmark runner did not provide complete CPU "
+                    "affinity, host load, governor/frequency, and heavy-job metadata."
+                )
+            elif not has_low_host_load:
+                failure_class = "host_load_not_isolated"
+                gap_reason = (
+                    "Self-hosted isolated benchmark runner reported host load above the "
+                    "isolated promotion threshold before or after the run."
+                )
+            else:
+                failure_class = "heavy_concurrent_jobs"
+                gap_reason = (
+                    "Self-hosted isolated benchmark runner reported concurrent heavy jobs."
+                )
         else:
             classification = "functional_non_isolated"
             failure_class = "non_isolated_runner"
@@ -378,6 +392,10 @@ def infer_heavy_jobs_running(load: tuple[float, float, float] | None) -> bool:
 
     cpu_count = os.cpu_count() or 1
     return bool(load and load[0] > max(1.0, cpu_count * 0.75))
+
+
+def _host_load_is_low(load: tuple[float, float, float] | None) -> bool:
+    return load is not None and max(load) <= 1.0
 
 
 def _normalise_accelerator_backend(value: str) -> str:
