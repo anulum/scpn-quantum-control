@@ -20,6 +20,12 @@ from .adaptive_branching import (
     s8_adaptive_branching_markdown,
     s8_adaptive_branching_payload,
 )
+from .frc_pulsed_qaoa import (
+    FRCScheduleResult,
+    classical_sqp_schedule,
+    optimal_schedule,
+    solve_frc_pulsed_qaoa,
+)
 from .q_disruption import QuantumDisruptionClassifier
 from .q_disruption_iter import (
     DisruptionBenchmark,
@@ -30,6 +36,12 @@ from .q_disruption_iter import (
     validate_scpn_control_bridge_dependency_contract,
 )
 from .qaoa_mpc import QAOA_MPC
+from .qaoa_pulsed_cost import (
+    FRCPlasmaSurrogate,
+    FRCQAOAObjective,
+    decode_schedule_to_field,
+    frc_pulsed_shot_cost,
+)
 from .qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
 from .realtime_feedback import (
     FeedbackStep,
@@ -44,6 +56,14 @@ from .vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
 __all__ = [
     "StructuredAnsatz",
     "QAOA_MPC",
+    "FRCPlasmaSurrogate",
+    "FRCQAOAObjective",
+    "FRCScheduleResult",
+    "classical_sqp_schedule",
+    "decode_schedule_to_field",
+    "frc_pulsed_shot_cost",
+    "optimal_schedule",
+    "solve_frc_pulsed_qaoa",
     "VQLS_GradShafranov",
     "VQLSGradShafranovResult",
     "QuantumPetriNet",

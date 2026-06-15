@@ -5,6 +5,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added the FRC pulsed-shot QAOA scheduling cost
+  (`control/qaoa_pulsed_cost.py`, `control/frc_pulsed_qaoa.py`):
+  `FRCQAOAObjective`, a cited control-grade `FRCPlasmaSurrogate` (s-parameter
+  flux-compression scaling, magnetic-tension-stabilised MRTI growth, FRC n=1
+  tilt-mode margin), `frc_pulsed_shot_cost`, and brute-force, classical SLSQP,
+  and QAOA schedulers over the exact diagonal cost. The MRTI growth integral
+  dispatches to a new Rust kernel matching the NumPy reference to 1e-12 relative
+  tolerance (2.9-59x faster). Ships module-specific and property-based tests, a
+  polyglot comparison benchmark (`scripts/bench_frc_pulsed_qaoa.py`,
+  `results/frc_pulsed_qaoa_benchmark.json`, `functional_non_isolated`),
+  documentation (`docs/frc_pulsed_qaoa.md`), and a demo
+  (`examples/14_frc_pulsed_shot_qaoa_demo.py`).
+
+### Added
 - 2026-06-15 — Added the `scpn_quantum_control.entropy` quantum random-number
   package: a `QRNGStream` streaming harness with Qiskit Aer measurement entropy
   sources (`xy_measurement`, `bell_pair`, `phase_estimation`), Von Neumann

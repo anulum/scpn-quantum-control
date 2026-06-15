@@ -154,6 +154,12 @@ from .compiler.mlir import (
     native_whole_program_ad_compile_cache_stats,
     native_whole_program_ad_linalg_support,
 )
+from .control.frc_pulsed_qaoa import (
+    FRCScheduleResult,
+    classical_sqp_schedule,
+    optimal_schedule,
+    solve_frc_pulsed_qaoa,
+)
 from .control.hardware_topological_optimizer import HardwareTopologicalOptimizer
 from .control.q_disruption import QuantumDisruptionClassifier
 from .control.q_disruption_iter import (
@@ -166,6 +172,11 @@ from .control.q_disruption_iter import (
     validate_scpn_control_bridge_dependency_contract,
 )
 from .control.qaoa_mpc import QAOA_MPC
+from .control.qaoa_pulsed_cost import (
+    FRCPlasmaSurrogate,
+    FRCQAOAObjective,
+    frc_pulsed_shot_cost,
+)
 from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
 from .control.realtime_runtime import (
     CycleSample,
@@ -841,6 +852,13 @@ __all__ = [
     "native_whole_program_ad_linalg_support",
     "compile_kuramoto_to_mlir",
     "AerQuantumEntropySource",
+    "FRCPlasmaSurrogate",
+    "FRCQAOAObjective",
+    "FRCScheduleResult",
+    "classical_sqp_schedule",
+    "frc_pulsed_shot_cost",
+    "optimal_schedule",
+    "solve_frc_pulsed_qaoa",
     "CycleSample",
     "EntropyHealthReport",
     "QRNGStream",

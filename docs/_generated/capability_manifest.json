@@ -2,19 +2,19 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 29,
-    "example_files": 26,
+    "example_files": 27,
     "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 606,
-    "public_documentation_pages": 243,
-    "python_model_classes": 1699,
-    "python_model_source_modules": 815,
-    "rust_pyo3_model_wrappers": 128,
-    "rust_source_modules": 32,
-    "test_files": 1935
+    "public_api_exports": 613,
+    "public_documentation_pages": 244,
+    "python_model_classes": 1706,
+    "python_model_source_modules": 818,
+    "rust_pyo3_model_wrappers": 129,
+    "rust_source_modules": 33,
+    "test_files": 1937
   },
   "documentation": {
     "examples": [
@@ -31,6 +31,7 @@
       "examples/11_pec_demo.py",
       "examples/12_trapped_ion_demo.py",
       "examples/13_iter_disruption_demo.py",
+      "examples/14_frc_pulsed_shot_qaoa_demo.py",
       "examples/14_quantum_advantage_demo.py",
       "examples/15_qsnn_training_demo.py",
       "examples/16_fault_tolerant_demo.py",
@@ -286,6 +287,7 @@
       "docs/error_mitigation.md",
       "docs/execution_surface_policy.md",
       "docs/falsification.md",
+      "docs/frc_pulsed_qaoa.md",
       "docs/free_energy_principle.md",
       "docs/gpu.md",
       "docs/hardware_guide.md",
@@ -454,7 +456,7 @@
       {
         "package": "control",
         "path": "src/scpn_quantum_control/control",
-        "python_modules": 11
+        "python_modules": 13
       },
       {
         "package": "crypto",
@@ -524,7 +526,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 68
+        "python_modules": 69
       },
       {
         "package": "psi_field",
@@ -2512,6 +2514,18 @@
         "path": "src/scpn_quantum_control/applications/fmo_benchmark.py"
       },
       {
+        "name": "FRCPlasmaSurrogate",
+        "path": "src/scpn_quantum_control/control/qaoa_pulsed_cost.py"
+      },
+      {
+        "name": "FRCQAOAObjective",
+        "path": "src/scpn_quantum_control/control/qaoa_pulsed_cost.py"
+      },
+      {
+        "name": "FRCScheduleResult",
+        "path": "src/scpn_quantum_control/control/frc_pulsed_qaoa.py"
+      },
+      {
         "name": "FSSResult",
         "path": "src/scpn_quantum_control/analysis/finite_size_scaling.py"
       },
@@ -2924,6 +2938,18 @@
         "path": "src/scpn_quantum_control/topology_control/constraints.py"
       },
       {
+        "name": "HardwareGradientCampaignPlan",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_campaign.py"
+      },
+      {
+        "name": "HardwareGradientCampaignSpec",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_campaign.py"
+      },
+      {
+        "name": "HardwareGradientCampaignSuite",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_campaign.py"
+      },
+      {
         "name": "HardwareGradientPolicy",
         "path": "src/scpn_quantum_control/phase/hardware_gradient_policy.py"
       },
@@ -2934,6 +2960,10 @@
       {
         "name": "HardwareGradientReadinessSuiteResult",
         "path": "src/scpn_quantum_control/phase/hardware_gradient_policy.py"
+      },
+      {
+        "name": "HardwareGradientReplaySchema",
+        "path": "src/scpn_quantum_control/phase/hardware_gradient_campaign.py"
       },
       {
         "name": "HardwareGradientRequest",
@@ -7937,10 +7967,12 @@
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
+      "src/scpn_quantum_control/control/frc_pulsed_qaoa.py",
       "src/scpn_quantum_control/control/hardware_topological_optimizer.py",
       "src/scpn_quantum_control/control/q_disruption.py",
       "src/scpn_quantum_control/control/q_disruption_iter.py",
       "src/scpn_quantum_control/control/qaoa_mpc.py",
+      "src/scpn_quantum_control/control/qaoa_pulsed_cost.py",
       "src/scpn_quantum_control/control/qpetri.py",
       "src/scpn_quantum_control/control/realtime_feedback.py",
       "src/scpn_quantum_control/control/realtime_runtime.py",
@@ -8553,6 +8585,7 @@
       "src/scpn_quantum_control/phase/gradient_descent.py",
       "src/scpn_quantum_control/phase/gradient_support_matrix.py",
       "src/scpn_quantum_control/phase/gradient_tape.py",
+      "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
       "src/scpn_quantum_control/phase/hardware_gradient_policy.py",
       "src/scpn_quantum_control/phase/jax_bridge.py",
       "src/scpn_quantum_control/phase/jax_nqs.py",
@@ -8662,6 +8695,7 @@
       "expectation_pauli_fast",
       "feedback_policy_batch",
       "fit_symmetry_decay",
+      "frc_mrti_growth",
       "free_energy_gradient_rust",
       "gauge_covariant_kinetic_rust",
       "gauge_force_batch",
@@ -8787,6 +8821,7 @@
       "scpn_quantum_engine/src/entropy.rs",
       "scpn_quantum_engine/src/feedback.rs",
       "scpn_quantum_engine/src/fep.rs",
+      "scpn_quantum_engine/src/frc.rs",
       "scpn_quantum_engine/src/gauge_lattice.rs",
       "scpn_quantum_engine/src/hamiltonian.rs",
       "scpn_quantum_engine/src/knm.rs",
@@ -8861,6 +8896,9 @@
     "ExecutableWholeProgramADKernel",
     "ExecutionRegion",
     "Experiment",
+    "FRCPlasmaSurrogate",
+    "FRCQAOAObjective",
+    "FRCScheduleResult",
     "FaultTolerantUPDE",
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
@@ -9077,6 +9115,7 @@
     "cirq_circuit_workload",
     "classical_benchmark",
     "classical_reference_backend",
+    "classical_sqp_schedule",
     "clear_native_whole_program_ad_compile_cache",
     "coherence_budget",
     "compile_compiler_ad_transform_plan_to_mlir",
@@ -9155,6 +9194,7 @@
     "finite_difference_vjp",
     "forecasting",
     "forward_mode_gradient",
+    "frc_pulsed_shot_cost",
     "from_fusion_core_shot",
     "gate_fold_circuit",
     "gauge",
@@ -9227,6 +9267,7 @@
     "native_whole_program_ad_linalg_support",
     "natural_gradient",
     "normalize_iter_features",
+    "optimal_schedule",
     "oqc_openqasm3_workload",
     "orchestrator_to_quantum_phases",
     "parameter_shift_gradient",
@@ -9365,6 +9406,7 @@
     "snapshot_from_rigetti_qcs",
     "snapshot_from_strangeworks_backend",
     "soft_l1_residual_weights",
+    "solve_frc_pulsed_qaoa",
     "solve_identity",
     "sparse_empirical_fisher_metric",
     "sparse_hessian",
@@ -10764,6 +10806,7 @@
       "tests/test_phase_gradient_support_matrix.py",
       "tests/test_phase_gradient_tape.py",
       "tests/test_phase_gradient_training.py",
+      "tests/test_phase_hardware_gradient_campaign.py",
       "tests/test_phase_hardware_gradient_policy.py",
       "tests/test_phase_jax_bridge.py",
       "tests/test_phase_model_training_evidence.py",
@@ -10826,6 +10869,7 @@
       "tests/test_q_disruption.py",
       "tests/test_q_disruption_iter.py",
       "tests/test_qaoa_mpc.py",
+      "tests/test_qaoa_pulsed_cost.py",
       "tests/test_qasm_export.py",
       "tests/test_qcvv.py",
       "tests/test_qec_properties.py",

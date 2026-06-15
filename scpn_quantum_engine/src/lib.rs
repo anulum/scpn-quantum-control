@@ -38,6 +38,7 @@ pub mod dla;
 pub mod entropy;
 pub mod feedback;
 pub mod fep;
+pub mod frc;
 pub mod gauge_lattice;
 pub mod hamiltonian;
 pub mod knm;
@@ -411,6 +412,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(entropy::nist_monobit_sum, m)?)?;
     m.add_function(wrap_pyfunction!(entropy::nist_runs_counts, m)?)?;
     m.add_function(wrap_pyfunction!(entropy::nist_block_longest_runs, m)?)?;
+
+    // FRC pulsed-shot physics
+    m.add_function(wrap_pyfunction!(frc::frc_mrti_growth, m)?)?;
 
     Ok(())
 }
