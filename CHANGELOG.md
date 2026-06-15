@@ -4,6 +4,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+- 2026-06-15 — Added a bounded quantum graph neural network over K_nm graphs
+  (`phase/qgnn.py`). A classical message-passing stack turns a coupling graph
+  (node frequencies and weighted degree, edge couplings) into the rotation
+  angles of a registered Phase-QNode circuit whose `CZ` entanglers follow the
+  graph topology; the circuit expectation is the model output. `predict_and_gradient`
+  returns the output and its exact gradient with respect to the classical
+  weights, chaining the analytic parameter-shift gradient (output with respect
+  to circuit angles) with the analytic message-passing backward pass (angles
+  with respect to weights), validated against finite differences to ~1e-9.
+  `synthetic_kuramoto_target` and `train` fit the weights to phase-locked
+  Kuramoto-XY targets and report observed local loss decrease only. Documented
+  in `docs/quantum_graph_neural_network.md` and covered by
+  `tests/test_phase_qgnn.py`. Bounded local model: small statevector circuits,
+  no arbitrary-graph, depth, provider, hardware, or production convergence claim.
+
 ### Fixed
 - 2026-06-15 — Corrected the registered Phase-QNode parameter-shift rule for
   controlled rotations (`crx`, `cry`, `crz`). Their generator eigenvalues are

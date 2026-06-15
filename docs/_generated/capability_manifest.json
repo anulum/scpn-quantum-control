@@ -9,12 +9,12 @@
     "optional_extras": 42,
     "paper0_validation_modules": 466,
     "public_api_exports": 627,
-    "public_documentation_pages": 248,
-    "python_model_classes": 1717,
-    "python_model_source_modules": 825,
+    "public_documentation_pages": 249,
+    "python_model_classes": 1720,
+    "python_model_source_modules": 826,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1942
+    "test_files": 1943
   },
   "documentation": {
     "examples": [
@@ -364,6 +364,7 @@
       "docs/qpu_system_capability_dossier.md",
       "docs/quantum_classical_cosimulation.md",
       "docs/quantum_gradients.md",
+      "docs/quantum_graph_neural_network.md",
       "docs/quantum_sensing.md",
       "docs/quantum_thermo.md",
       "docs/quickstart.md",
@@ -543,7 +544,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 70
+        "python_modules": 71
       },
       {
         "package": "psi_field",
@@ -3540,6 +3541,10 @@
         "path": "src/scpn_quantum_control/applications/josephson_array.py"
       },
       {
+        "name": "KnmGraph",
+        "path": "src/scpn_quantum_control/phase/qgnn.py"
+      },
+      {
         "name": "KnmPartition",
         "path": "src/scpn_quantum_control/cosimulation/knm_partition.py"
       },
@@ -5494,6 +5499,14 @@
       {
         "name": "QFIResult",
         "path": "src/scpn_quantum_control/analysis/qfi.py"
+      },
+      {
+        "name": "QGNNConfig",
+        "path": "src/scpn_quantum_control/phase/qgnn.py"
+      },
+      {
+        "name": "QGNNTrainingResult",
+        "path": "src/scpn_quantum_control/phase/qgnn.py"
       },
       {
         "name": "QNNOptimizerBaselineResult",
@@ -8679,6 +8692,7 @@
       "src/scpn_quantum_control/phase/provider_gradient_audit.py",
       "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
       "src/scpn_quantum_control/phase/pulse_shaping.py",
+      "src/scpn_quantum_control/phase/qgnn.py",
       "src/scpn_quantum_control/phase/qiskit_bridge.py",
       "src/scpn_quantum_control/phase/qnn_conformance.py",
       "src/scpn_quantum_control/phase/qnn_convergence.py",
@@ -10920,6 +10934,7 @@
       "tests/test_phase_provider_gradient.py",
       "tests/test_phase_provider_gradient_audit.py",
       "tests/test_phase_provider_hardware_gradient_audit.py",
+      "tests/test_phase_qgnn.py",
       "tests/test_phase_qiskit_bridge.py",
       "tests/test_phase_qnn_conformance.py",
       "tests/test_phase_qnn_convergence.py",

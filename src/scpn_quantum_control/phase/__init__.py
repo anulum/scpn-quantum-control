@@ -249,6 +249,12 @@ from .pulse_shaping import (
     ici_three_level_evolution,
     infidelity_bound,
 )
+from .qgnn import (
+    KnmGraph,
+    QGNNConfig,
+    QGNNTrainingResult,
+    synthetic_kuramoto_target,
+)
 from .qiskit_bridge import (
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
@@ -617,6 +623,10 @@ __all__ = [
     "decompose_phase_qnode_controlled_gate",
     "build_u3_operations",
     "su2_zyz_angles",
+    "KnmGraph",
+    "QGNNConfig",
+    "QGNNTrainingResult",
+    "synthetic_kuramoto_target",
     "execute_phase_qnode_circuit",
     "execute_phase_qnode_density_matrix",
     "parameter_shift_phase_qnode_gradient",
