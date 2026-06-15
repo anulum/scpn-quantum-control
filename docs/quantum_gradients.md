@@ -170,7 +170,14 @@ print(agreement.passed, agreement.framework_count)
 ```
 
 This is reviewer-facing agreement evidence for named, caller-supplied
-framework-style gradients. The bounded phase-QNN model also exposes
+framework-style gradients. Each agreement record carries a machine-readable
+`source_class`, a per-source `native_framework_autodiff` flag, and the same
+claim-boundary text as the suite result, so downstream reports can distinguish
+deterministic manual references from native framework autodiff-through-simulator
+evidence. The default suite labels its built-in rows as deterministic manual
+references; caller-provided rows remain caller-supplied evidence unless a
+separate native adapter surface supplies the row. The bounded phase-QNN model
+also exposes
 `jax_native_qnn_value_and_grad(...)`, which expresses that model directly in JAX
 operations and verifies JAX `value_and_grad` against the SCPN parameter-shift
 reference, plus `torch_bounded_qnn_value_and_grad(...)`, which returns PyTorch
@@ -769,10 +776,12 @@ feature column, full-batch binary MSE, deterministic local execution, explicit
 multi-frequency parameter-shift descent, finite-difference gradient replay, and
 fail-closed hardware policy. Optional external-gradient callables can be named
 in the verification report to record JAX, PennyLane, or other adapter agreement
-without claiming automatic framework conversion. The conformance suite packages
-the supported route and records unsuitable scenarios such as hardware backend
-promotion, arbitrary architectures, non-finite data, and native framework
-autodiff as staged or fail-closed. The optimizer benchmark suite compares
+without claiming automatic framework conversion. The conformance suite
+propagates external agreement source classes and native-autodiff flags into its
+case payloads, packages the supported route, and records unsuitable scenarios
+such as hardware backend promotion, arbitrary architectures, non-finite data,
+and native framework autodiff as staged or fail-closed. The optimizer benchmark
+suite compares
 parameter-shift training against finite-difference gradients and deterministic
 derivative-free candidates, but labels the result as non-isolated functional
 evidence only. It is the current production QNN foothold, not a claim of

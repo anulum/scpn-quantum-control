@@ -50,7 +50,16 @@ def test_qnn_framework_agreement_records_named_adapter_gradients() -> None:
         "jax",
         "pennylane",
     )
+    assert {agreement.source_class for agreement in result.agreements} == {
+        "caller_supplied_gradient"
+    }
+    assert not any(agreement.native_framework_autodiff for agreement in result.agreements)
+    assert all(
+        "not native framework autodiff" in agreement.claim_boundary
+        for agreement in result.agreements
+    )
     assert result.to_dict()["passed"] is True
+    assert result.to_dict()["agreements"][0]["source_class"] == "caller_supplied_gradient"
 
 
 def test_qnn_framework_agreement_suite_covers_default_cases() -> None:
@@ -63,6 +72,11 @@ def test_qnn_framework_agreement_suite_covers_default_cases() -> None:
     assert suite.failed_count == 0
     assert suite.evidence_class == "caller_supplied_qnn_framework_agreement"
     assert not suite.native_framework_autodiff
+    assert all(
+        agreement.source_class == "deterministic_manual_reference"
+        for case in suite.cases
+        for agreement in case.agreements
+    )
     assert tuple(case.name for case in suite.cases) == (
         "phase_separable_single_feature",
         "two_feature_mixed_phase",
@@ -107,6 +121,15 @@ def test_qnn_framework_agreement_fails_closed_on_invalid_gradient() -> None:
             labels,
             params,
             framework_gradients={},
+        )
+
+    with pytest.raises(ValueError, match="source_class"):
+        verify_parameter_shift_qnn_framework_agreement(
+            features,
+            labels,
+            params,
+            framework_gradients={"jax": lambda _values: np.array([0.0], dtype=float)},
+            source_class="native autodiff",
         )
 
 

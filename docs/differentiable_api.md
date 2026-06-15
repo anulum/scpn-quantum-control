@@ -244,8 +244,12 @@ full-batch MSE loss is trained with an explicit `[1, 2]` multi-frequency
 parameter-shift rule because MSE introduces second harmonics. The verification
 helper replays the same bounded loss against central finite differences and can
 record caller-supplied external gradients under names such as `jax` or
-`pennylane`. The conformance suite bundles three deterministic replay cases,
-one convergence case, optional external-gradient hooks, and explicit
+`pennylane`. External agreement payloads include `source_class`,
+`native_framework_autodiff`, and claim-boundary fields, and the conformance
+suite propagates them per case so deterministic manual references,
+caller-supplied adapter gradients, and separately validated native framework
+routes stay distinct. The conformance suite bundles three deterministic replay
+cases, one convergence case, optional external-gradient hooks, and explicit
 unsuitable-scenario records. The optimizer benchmark suite compares the
 parameter-shift trainer with finite-difference and derivative-free baselines,
 but records `functional_non_isolated` evidence only; it is not a throughput

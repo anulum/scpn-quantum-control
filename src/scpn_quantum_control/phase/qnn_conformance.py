@@ -81,6 +81,8 @@ class ParameterShiftQNNConformanceCaseResult:
     training_best_loss: float | None
     training_accuracy: float | None
     external_agreement_names: tuple[str, ...]
+    external_source_classes: tuple[str, ...]
+    external_native_framework_autodiff: bool
     external_passed: bool
 
     @property
@@ -114,6 +116,8 @@ class ParameterShiftQNNConformanceCaseResult:
             "training_best_loss": self.training_best_loss,
             "training_accuracy": self.training_accuracy,
             "external_agreement_names": list(self.external_agreement_names),
+            "external_source_classes": list(self.external_source_classes),
+            "external_native_framework_autodiff": self.external_native_framework_autodiff,
             "external_agreement_count": self.external_agreement_count,
             "external_passed": self.external_passed,
             "passed": self.passed,
@@ -362,6 +366,13 @@ def run_parameter_shift_qnn_conformance_suite(
                 training_accuracy=training_accuracy,
                 external_agreement_names=tuple(
                     agreement.name for agreement in verification.external_agreements
+                ),
+                external_source_classes=tuple(
+                    agreement.source_class for agreement in verification.external_agreements
+                ),
+                external_native_framework_autodiff=any(
+                    agreement.native_framework_autodiff
+                    for agreement in verification.external_agreements
                 ),
                 external_passed=external_passed,
             )

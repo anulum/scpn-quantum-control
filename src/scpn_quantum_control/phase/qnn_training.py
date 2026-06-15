@@ -109,6 +109,13 @@ class ParameterShiftQNNExternalGradientAgreement:
     l2_error: float
     tolerance: float
     passed: bool
+    source_class: str = "caller_supplied_gradient"
+    native_framework_autodiff: bool = False
+    claim_boundary: str = (
+        "external QNN gradient agreement compares a named caller-supplied "
+        "gradient with the bounded parameter-shift reference; it does not "
+        "claim native framework autodiff through simulator kernels"
+    )
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready external-gradient agreement evidence."""
@@ -119,6 +126,9 @@ class ParameterShiftQNNExternalGradientAgreement:
             "l2_error": self.l2_error,
             "tolerance": self.tolerance,
             "passed": self.passed,
+            "source_class": self.source_class,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "claim_boundary": self.claim_boundary,
         }
 
 

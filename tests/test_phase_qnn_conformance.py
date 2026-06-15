@@ -81,12 +81,23 @@ def test_qnn_conformance_suite_records_named_external_gradient_agreements() -> N
     case = suite.case_by_name("two_feature_mixed_phase")
     assert case.external_agreement_count == 2
     assert case.external_passed
+    assert case.external_source_classes == (
+        "caller_supplied_gradient",
+        "caller_supplied_gradient",
+    )
+    assert not case.external_native_framework_autodiff
     assert suite.external_agreement_count == 2
     assert suite.passed
     assert tuple(case.external_agreement_names) == (
         "jax_manual_reference",
         "pennylane_manual_reference",
     )
+    payload = case.to_dict()
+    assert payload["external_source_classes"] == [
+        "caller_supplied_gradient",
+        "caller_supplied_gradient",
+    ]
+    assert payload["external_native_framework_autodiff"] is False
 
 
 def test_qnn_conformance_suite_fails_closed_on_bad_external_gradient() -> None:

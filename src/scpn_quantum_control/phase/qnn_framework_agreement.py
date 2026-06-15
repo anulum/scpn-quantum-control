@@ -27,6 +27,8 @@ FrameworkGradientMap: TypeAlias = Mapping[str, GradientCallable]
 FrameworkGradientCaseMap: TypeAlias = Mapping[str, FrameworkGradientMap]
 
 EVIDENCE_CLASS = "caller_supplied_qnn_framework_agreement"
+DEFAULT_SOURCE_CLASS = "caller_supplied_gradient"
+MANUAL_REFERENCE_SOURCE_CLASS = "deterministic_manual_reference"
 CLAIM_BOUNDARY = (
     "compares bounded phase-QNN parameter-shift gradients with caller-supplied "
     "or deterministic reference framework-style gradients; this is not native "
@@ -53,6 +55,9 @@ class ParameterShiftQNNFrameworkGradientAgreement:
     tolerance: float
     passed: bool
     source: str
+    source_class: str
+    native_framework_autodiff: bool
+    claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready framework-gradient agreement evidence."""
@@ -64,6 +69,9 @@ class ParameterShiftQNNFrameworkGradientAgreement:
             "tolerance": self.tolerance,
             "passed": self.passed,
             "source": self.source,
+            "source_class": self.source_class,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "claim_boundary": self.claim_boundary,
         }
 
 
@@ -224,6 +232,15 @@ def _as_framework_name(name: str) -> str:
     return normalized
 
 
+def _as_source_class(source_class: str) -> str:
+    normalized = str(source_class).strip().lower()
+    if not normalized:
+        raise ValueError("source_class must be non-empty")
+    if any(character.isspace() for character in normalized):
+        raise ValueError("source_class must not contain whitespace")
+    return normalized
+
+
 def _as_framework_gradient(name: str, values: ArrayLike, *, width: int) -> FloatArray:
     gradient = np.asarray(values, dtype=float)
     if gradient.ndim != 1 or gradient.shape != (width,):
@@ -261,6 +278,8 @@ def verify_parameter_shift_qnn_framework_agreement(
     tolerance: float = 1e-6,
     name: str = "ad_hoc",
     source: str = "caller_supplied_gradient",
+    source_class: str = DEFAULT_SOURCE_CLASS,
+    native_framework_autodiff: bool = False,
 ) -> ParameterShiftQNNFrameworkAgreementResult:
     """Compare bounded QNN parameter-shift gradients with named gradients.
 
@@ -272,6 +291,7 @@ def verify_parameter_shift_qnn_framework_agreement(
     """
     _require_framework_gradients(framework_gradients)
     checked_tolerance = _as_non_negative_tolerance(tolerance)
+    checked_source_class = _as_source_class(source_class)
     parameter_shift_gradient = parameter_shift_qnn_classifier_gradient(features, labels, params)
     loss = parameter_shift_qnn_classifier_loss(features, labels, params)
     params_vector = np.asarray(params, dtype=float).astype(np.float64, copy=True)
@@ -300,6 +320,9 @@ def verify_parameter_shift_qnn_framework_agreement(
                 tolerance=checked_tolerance,
                 passed=passed,
                 source=source,
+                source_class=checked_source_class,
+                native_framework_autodiff=bool(native_framework_autodiff),
+                claim_boundary=CLAIM_BOUNDARY,
             )
         )
 
@@ -310,7 +333,7 @@ def verify_parameter_shift_qnn_framework_agreement(
         agreements=tuple(agreements),
         evidence_class=EVIDENCE_CLASS,
         claim_boundary=CLAIM_BOUNDARY,
-        native_framework_autodiff=False,
+        native_framework_autodiff=bool(native_framework_autodiff),
     )
 
 
@@ -331,10 +354,12 @@ def run_parameter_shift_qnn_framework_agreement_suite(
     results: list[ParameterShiftQNNFrameworkAgreementResult] = []
     for case in cases:
         gradients = external_gradients.get(case.name)
-        source = "caller_supplied_gradient"
+        source = DEFAULT_SOURCE_CLASS
+        source_class = DEFAULT_SOURCE_CLASS
         if gradients is None:
             gradients = _default_framework_gradients(case)
-            source = "deterministic_manual_reference"
+            source = MANUAL_REFERENCE_SOURCE_CLASS
+            source_class = MANUAL_REFERENCE_SOURCE_CLASS
         if case.name not in selected_case_names:
             continue
         results.append(
@@ -346,6 +371,8 @@ def run_parameter_shift_qnn_framework_agreement_suite(
                 tolerance=tolerance,
                 name=case.name,
                 source=source,
+                source_class=source_class,
+                native_framework_autodiff=False,
             )
         )
 
