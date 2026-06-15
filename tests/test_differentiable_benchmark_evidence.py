@@ -14,7 +14,9 @@ from pathlib import Path
 import numpy as np
 
 from scpn_quantum_control.benchmarks.differentiable_evidence import (
+    AcceleratorEvidenceMetadata,
     BenchmarkIsolationMetadata,
+    capture_accelerator_metadata,
     infer_heavy_jobs_running,
     write_differentiable_benchmark_evidence_bundle,
 )
@@ -71,6 +73,7 @@ def test_self_hosted_isolated_metadata_promotes_only_with_all_required_context()
         governor="performance",
         frequency_mhz=3200.0,
         heavy_jobs_running=False,
+        accelerator_metadata=AcceleratorEvidenceMetadata.cpu_only(),
     )
 
     assert metadata.runner_type == "self-hosted"
@@ -97,11 +100,127 @@ def test_self_hosted_isolated_metadata_requires_full_host_context() -> None:
         governor=None,
         frequency_mhz=None,
         heavy_jobs_running=False,
+        accelerator_metadata=AcceleratorEvidenceMetadata.cpu_only(),
     )
 
     assert metadata.classification == "hard_gap"
     assert metadata.failure_class == "insufficient_isolation_metadata"
     assert not metadata.production_eligible
+
+
+def test_requested_cuda_without_visible_device_is_hard_gap() -> None:
+    accelerator_metadata = capture_accelerator_metadata(
+        {
+            "SCPN_BENCH_ACCELERATOR_BACKEND": "cuda",
+            "SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY": "1",
+            "CUDA_VISIBLE_DEVICES": "",
+            "SCPN_BENCH_ACCELERATOR_RUNTIME": "cuda=12.4",
+        }
+    )
+    metadata = BenchmarkIsolationMetadata.from_ci_environment(
+        {
+            "GITHUB_RUN_ID": "67890",
+            "GITHUB_SHA": "def456",
+            "RUNNER_NAME": "isolated-qc-runner",
+            "RUNNER_ENVIRONMENT": "self-hosted",
+            "RUNNER_LABELS": "self-hosted,linux,isolated-benchmark",
+        },
+        command=("python", "scripts/run_differentiable_benchmark_evidence.py"),
+        cpu_affinity="2",
+        isolation_method="taskset",
+        load_before=(0.05, 0.04, 0.03),
+        load_after=(0.06, 0.05, 0.04),
+        governor="performance",
+        frequency_mhz=3200.0,
+        heavy_jobs_running=False,
+        accelerator_metadata=accelerator_metadata,
+    )
+
+    assert accelerator_metadata.requested_backend == "cuda"
+    assert accelerator_metadata.detected_backend == "cpu"
+    assert accelerator_metadata.cpu_fallback_detected
+    assert metadata.classification == "hard_gap"
+    assert metadata.failure_class == "silent_accelerator_fallback"
+    assert not metadata.production_eligible
+    assert "requested cuda" in metadata.gap_reason
+
+
+def test_requested_cuda_with_visible_device_keeps_isolated_promotion() -> None:
+    accelerator_metadata = capture_accelerator_metadata(
+        {
+            "SCPN_BENCH_ACCELERATOR_BACKEND": "cuda",
+            "CUDA_VISIBLE_DEVICES": "0",
+            "SCPN_BENCH_ACCELERATOR_DEVICE_NAMES": "NVIDIA L40S",
+            "SCPN_BENCH_ACCELERATOR_RUNTIME": "cuda=12.4,cudnn=9.1",
+        }
+    )
+    metadata = BenchmarkIsolationMetadata.from_ci_environment(
+        {
+            "GITHUB_RUN_ID": "67890",
+            "GITHUB_SHA": "def456",
+            "RUNNER_NAME": "isolated-qc-runner",
+            "RUNNER_ENVIRONMENT": "self-hosted",
+            "RUNNER_LABELS": "self-hosted,linux,isolated-benchmark",
+        },
+        command=("python", "scripts/run_differentiable_benchmark_evidence.py"),
+        cpu_affinity="2",
+        isolation_method="taskset",
+        load_before=(0.05, 0.04, 0.03),
+        load_after=(0.06, 0.05, 0.04),
+        governor="performance",
+        frequency_mhz=3200.0,
+        heavy_jobs_running=False,
+        accelerator_metadata=accelerator_metadata,
+    )
+
+    assert accelerator_metadata.detected_backend == "cuda"
+    assert accelerator_metadata.device_ids == ("0",)
+    assert accelerator_metadata.device_names == ("NVIDIA L40S",)
+    assert accelerator_metadata.runtime_versions["cuda"] == "12.4"
+    assert accelerator_metadata.runtime_versions["cudnn"] == "9.1"
+    assert metadata.classification == "isolated_affinity"
+    assert metadata.failure_class is None
+
+
+def test_requested_cuda_accepts_explicit_device_metadata() -> None:
+    accelerator_metadata = capture_accelerator_metadata(
+        {
+            "SCPN_BENCH_ACCELERATOR_BACKEND": "cuda",
+            "SCPN_BENCH_ACCELERATOR_DEVICE_IDS": "0,1",
+            "SCPN_BENCH_ACCELERATOR_DEVICE_NAMES": "NVIDIA L40S,NVIDIA L40S",
+        }
+    )
+
+    assert accelerator_metadata.requested_backend == "cuda"
+    assert accelerator_metadata.detected_backend == "cuda"
+    assert accelerator_metadata.device_ids == ("0", "1")
+    assert accelerator_metadata.device_names == ("NVIDIA L40S", "NVIDIA L40S")
+    assert not accelerator_metadata.cpu_fallback_detected
+
+
+def test_evidence_bundle_serialises_accelerator_metadata(tmp_path: Path) -> None:
+    metadata = BenchmarkIsolationMetadata.from_ci_environment(
+        {"GITHUB_RUN_ID": "12345", "GITHUB_SHA": "abc123", "RUNNER_ENVIRONMENT": "github-hosted"},
+        command=("python", "scripts/run_differentiable_benchmark_evidence.py"),
+        cpu_affinity=None,
+        isolation_method=None,
+        load_before=None,
+        load_after=None,
+        governor=None,
+        frequency_mhz=None,
+        heavy_jobs_running=True,
+        accelerator_metadata=AcceleratorEvidenceMetadata.cpu_only(),
+    )
+    bundle = write_differentiable_benchmark_evidence_bundle(
+        tmp_path,
+        metadata=metadata,
+        timing_rows=(),
+    )
+
+    payload = bundle.raw_json_path.read_text(encoding="utf-8")
+    assert '"accelerator"' in payload
+    assert '"requested_backend": "cpu"' in payload
+    assert '"cpu_fallback_detected": false' in payload
 
 
 def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_ids(

@@ -1,0 +1,56 @@
+{
+    "exclusions": [
+        {
+            "path_glob": "src/scpn_quantum_control/accel/julia/*",
+            "reason": "Julia accelerator wrappers require an optional Julia runtime. Python dispatcher fallthrough is covered in the release suite, and the Julia tier is exercised through the optional julia extra."
+        },
+        {
+            "path_glob": "src/scpn_quantum_control/paper0/*",
+            "reason": "Paper 0 modules are generated source-accounting artifacts. Their release contract is register reconciliation, generated spec loading, fixture preservation, and claim-boundary tests."
+        },
+        {
+            "path_glob": "src/scpn_quantum_control/hardware/hal_*.py",
+            "reason": "Provider HAL adapters require vendor SDKs, credentials, accounts, or live resources. Contract and conformance tests cover injected-provider behavior; live branches remain in provider smoke/readiness workflows."
+        },
+        {
+            "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py",
+            "reason": "Provider capability discovery depends on optional vendor SDK presence and live provider metadata. Release behavior is covered by discovery contract tests with injected snapshots and provider fixtures."
+        },
+        {
+            "path": "src/scpn_quantum_control/hardware/provider_smoke.py",
+            "reason": "Provider smoke execution is an operational live-provider entry point. It is governed by hardware-marked smoke workflows rather than the CPU-only unit-test line gate."
+        },
+        {
+            "path": "src/scpn_quantum_control/hardware/ibm_latency_probe.py",
+            "reason": "IBM latency probing submits or inspects live backend jobs and requires operator-approved credentials. It is governed by preregistration and result-pack evidence instead of ordinary unit-test coverage."
+        },
+        {
+            "path": "src/scpn_quantum_control/hardware/openpulse_control.py",
+            "reason": "OpenPulse control paths require provider-specific pulse support and live hardware constraints. Feasibility and adapter contracts cover offline behavior; live execution remains hardware-marked."
+        },
+        {
+            "path": "src/scpn_quantum_control/hardware/s1_feedback_ibm.py",
+            "reason": "S1 IBM feedback submission is a campaign submitter with live-provider side effects. Release evidence is preregistration, manifest, and result-pack based."
+        },
+        {
+            "path": "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
+            "reason": "GPU batch VQE depends on optional accelerator runtimes that are not part of the pinned CPU-only release lane. Dispatcher and fallback behavior are covered by core accelerator tests."
+        },
+        {
+            "path": "src/scpn_quantum_control/phase/jax_nqs.py",
+            "reason": "JAX NQS requires optional JAX accelerator surfaces. Contract tests cover import and fallback behavior while accelerator-specific execution remains in optional runtime lanes."
+        },
+        {
+            "path": "src/scpn_quantum_control/phase/mps_evolution.py",
+            "reason": "MPS evolution depends on optional tensor-network runtime surfaces. Core contraction and MPS baseline behavior are covered elsewhere in the release suite."
+        },
+        {
+            "path": "src/scpn_quantum_control/mitigation/mitiq_integration.py",
+            "reason": "Mitiq integration depends on optional external mitigation dependencies. Integration behavior is covered by dedicated Mitiq tests when the mitigation extra is installed."
+        },
+        {
+            "path": "src/scpn_quantum_control/analysis/quantum_persistent_homology.py",
+            "reason": "Quantum persistent homology has optional topological dependencies and hardware-loop branches. Offline contracts are covered by topology analysis and optimizer tests; live branches remain hardware-marked."
+        }
+    ]
+}

@@ -214,7 +214,7 @@ def main() -> int:
     out_dir = REPO_ROOT / "data" / "phase3_multidevice_dla"
     out_path = out_dir / f"phase3_multidevice_{args.backend}_{timestamp}.json"
 
-    vault = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+    vault = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     token, instance = parse_vault(vault)
     runner = HardwareRunner(
         token=token,

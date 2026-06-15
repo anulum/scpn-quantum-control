@@ -185,7 +185,7 @@ Never appears in the public tracker. See `SECURITY.md`. The flow is:
 4. Coordinated disclosure: advisory is published alongside the
    fix commit; the reporter is credited unless they opt out.
 5. A public post-mortem lands in
-   `.coordination/incidents/INCIDENT_*_post_mortem.md`
+   `<private-local-record>`
    (gitignored while in draft, promoted to the public
    `SECURITY_INCIDENTS.md` after 90 days).
 
@@ -306,8 +306,8 @@ keep the timer running.
 ## Collaborators and access
 
 As of 2026-04-17 the repository has one maintainer (Miroslav
-Šotek) with write access, plus Dependabot and the Arcane Sapience
-agent identity as GitHub Actions–scoped collaborators.
+Šotek) with write access, plus Dependabot and GitHub Actions
+automation scoped to repository operations.
 
 Paths toward further collaborator access:
 
@@ -365,4 +365,4 @@ edit this file directly and land on `main`.
 | Date | Change |
 |---|---|
 | 2026-04-17 | Initial policy (closes audit item B11). |
-| 2026-04-17 | Worked examples + label combination matrix + flow diagrams added under SUPERIOR-doc-standard remediation. |
+| 2026-04-17 | Worked examples, label combination matrix, and flow diagrams added under documentation-standard remediation. |

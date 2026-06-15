@@ -32,8 +32,60 @@
 > artefacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
-**Version:** 0.9.11
+**Version:** 0.9.12
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 91.5% | IBM Heron r2 evidence ledgered
+
+## What this repository is for
+
+`scpn-quantum-control` is an evidence-governed workbench for turning
+coupled-oscillator models into quantum-control experiments, simulator studies,
+gradient-bearing optimisation loops, and auditable hardware-result packages.
+It is for teams that need a repeatable path from a physical model to a result
+that can be reviewed, reproduced, cited, or used in an application pilot.
+
+If your team needs reproducible research or product-grade experimentation, the
+repository provides:
+
+- a stable route from `K_nm`/`omega` problem definitions to simulators;
+- deterministic artefact-led evidence for method claims;
+- bounded optimisation and differentiable-programming surfaces for training,
+  verification, and convergence analysis;
+- hardware campaign management that separates committed raw-count rows from
+  simulator and scoped-failure classes.
+
+It is positioned for use-cases where decision quality depends on evidence:
+engineering teams that need a consistent pathway from model specification to
+observable contracts, and research teams that need explicit failure modes rather
+than implied coverage.
+
+## What you can do first
+
+| Need | First path | Output |
+|---|---|---|
+| Understand the software | [Onboarding](docs/onboarding.md) -> [Quickstart](docs/quickstart.md) | A small local Kuramoto-XY run and a clear claim boundary. |
+| Bring your own coupled system | [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md) | A validated `K_nm`/`omega` problem compiled to simulator-ready quantum objects. |
+| Train or inspect gradients | [Differentiable Programming](docs/differentiable_programming.md) -> [Quantum Gradients](docs/quantum_gradients.md) | Exact, finite-shot, framework-comparison, or fail-closed gradient evidence. |
+| Review hardware claims | [Hardware Status Ledger](docs/hardware_status_ledger.md) -> [Hardware Result Packs](docs/hardware_result_packs.md) | Raw-count-backed evidence or an explicit blocked promotion route. |
+| Evaluate adoption | [API Overview](docs/api.md) -> [Release Readiness Gate](docs/release_readiness.md) | Stable integration surfaces, release gates, and licensing boundaries. |
+
+## Application and commercial value
+
+The practical value is not "quantum black box" experimentation; it is the
+ability to reduce integration risk while preserving future hardware options.
+This package is designed for organisations that want to:
+
+- de-risk algorithm ideas on simulators and strong classical baselines first;
+- compare evidence classes before claiming hardware-level results;
+- standardise proof surfaces (contracts, manifests, and ledgers) across pilots;
+- move between R&D notebooks and integration-friendly stable facades without
+  collapsing into undocumented internal APIs.
+
+Application lanes include synchronisation diagnostics, control prototyping,
+quantum-algorithm research, hardware campaign governance, gradient-informed
+optimisation, and evidence packages for due diligence. Commercial value comes
+from reducing unclear research risk: every promoted result must have a named
+artefact, every unsupported route fails closed, and closed-source or SaaS use
+has a defined commercial licensing route.
 
 <!-- capability-snapshot:start -->
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
@@ -43,19 +95,19 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.11 |
-| Public API exports | 574 |
-| Python source modules | 808 |
-| Public Python classes | 1632 |
+| Package version | 0.9.12 |
+| Public API exports | 587 |
+| Python source modules | 809 |
+| Public Python classes | 1667 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 28 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 111 |
-| Rust source modules | 28 |
+| Rust PyO3 function bindings | 122 |
+| Rust source modules | 30 |
 | Notebook files | 98 |
 | Example files | 23 |
 | Optional extras | 42 |
-| Python test files | 1922 |
+| Python test files | 1930 |
 | Public documentation pages | 240 |
 | GitHub Actions workflows | 19 |
 
@@ -167,6 +219,10 @@ quantum hardware experimentation, and control-facing software:
   family through SCPN plus installed JAX, PyTorch, TensorFlow, and PennyLane
   backends, recording value, gradient, dtype/device metadata, and dependency
   sparse classifications without provider execution.
+- `build_pennylane_qnode_from_phase_qnode(...)` and
+  `check_pennylane_phase_qnode_round_trip(...)` generate bounded PennyLane
+  QNodes from registered local `PhaseQNodeCircuit` declarations and verify
+  value/gradient parity with explicit device, shot, and diff-method metadata.
 - `run_phase_qnode_affinity_benchmark(...)` records command, affinity, host
   load, CPU/runtime/dependency metadata, warmups, repetitions, and raw timing
   rows; evidence is labelled `isolated_affinity` only when the isolation policy
@@ -236,7 +292,7 @@ CI benchmark artefacts all pass:
 | Hardware-gradient policy readiness | Executable dry-run policy decisions now gate hardware-gradient preparation by provider/backend allowlist, shot budget, required evidence IDs, and live-execution ticket status. `prepare_provider_hardware_parameter_shift_gradient(...)` packages that approval into provider-preparation evidence, and `run_provider_hardware_gradient_preparation_audit()` verifies supported and blocked preparation routes without submitting QPU jobs. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Differentiable claim ledger | The Phase-QNode evidence ledger maps implementation, tests, artefact IDs, documentation, known gaps, and promotion status; no promoted claim is accepted without an artefact ID. | [Differentiable Programming](docs/differentiable_programming.md), [Claim Ledger](data/differentiable_phase_qnode/claim_ledger.md) |
 | Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, optional named external-gradient agreement records, a conformance suite with unsuitable-scenario evidence, deterministic convergence suites, non-isolated optimizer-baseline comparisons, and caller-supplied framework-gradient agreement checks. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
-| Registered Phase-QNode family | Local statevector execution, parameter-shift gradients, framework parity rows, textual MLIR lowering metadata, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
+| Registered Phase-QNode family | Local statevector execution, parameter-shift gradients, framework parity rows, verified SCPN MLIR-runtime lowering adapters, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, native LLVM/JIT lowering, interpreter fallback success, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
 | ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, PyTorch/TensorFlow host-boundary tensor bridges, and bounded framework parity rows are available. Full provider-backed QNode migration bridges and arbitrary architectures remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
@@ -567,7 +623,7 @@ graph TD
     end
 
     subgraph "Applications"
-        control["control/ (11)\nQAOA-MPC, VQLS-GS\nPetri nets, ITER"]
+        control["control/ (11)\nQAOA-MPC, residual VQLS-GS\nPetri nets, ITER"]
         qsnn["qsnn/ (7)\nQuantum spiking\nneural networks"]
         apps["applications/ (13)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
@@ -608,7 +664,7 @@ graph TD
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
 | `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `control` | 11 | QAOA-MPC, VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
+| `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 13 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
 | `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
@@ -761,7 +817,7 @@ scpn_quantum_control/
 ├── phase/          29 modules — time evolution + variational + Lindblad
 ├── bridge/         13 modules — K_nm → quantum objects + cross-repo
 ├── applications/   13 modules — physical system benchmarks
-├── control/        11 modules — QAOA-MPC, VQLS-GS, Petri, ITER, topological
+├── control/        11 modules — QAOA-MPC, residual VQLS-GS, Petri, ITER, topological
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
 ├── benchmarks/      7 modules — performance baselines

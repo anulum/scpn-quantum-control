@@ -10,7 +10,7 @@
 
 This directory stores small derived measured-coupling artifacts for the
 K_nm physical-validation audit. Raw EEG files are not committed; they are
-downloaded locally under `.coordination/datasets/` and identified by SHA-256.
+downloaded locally under `<private-local-record>` and identified by SHA-256.
 
 Artifacts:
 

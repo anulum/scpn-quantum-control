@@ -131,7 +131,7 @@ def main() -> int:
         print("ERROR: this preregistered runner is n=4 only", file=sys.stderr)
         return 2
 
-    vault = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+    vault = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     token, instance = parse_vault(vault)
     runner = HardwareRunner(
         token=token,

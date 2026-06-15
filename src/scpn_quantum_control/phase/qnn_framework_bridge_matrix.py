@@ -169,8 +169,8 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
     return (
         BoundedQNNFrameworkBridgeCapability(
             framework="jax",
-            public_api="jax_native_qnn_value_and_grad",
-            gradient_route="native_bounded_phase_qnn_value_and_grad",
+            public_api="jax_native_qnn_value_and_grad,jax_custom_vjp_qnn_value_and_grad",
+            gradient_route="native_bounded_phase_qnn_value_and_grad,jax_custom_vjp_bounded_phase_qnn_value_and_grad",
             optional_dependency="jax",
             implemented=True,
             runtime_dependency_required=True,
@@ -182,12 +182,21 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
         ),
         BoundedQNNFrameworkBridgeCapability(
             framework="pytorch",
-            public_api="torch_bounded_qnn_value_and_grad",
-            gradient_route="bounded_phase_qnn_tensor_analytic_gradient",
+            public_api=(
+                "torch_bounded_qnn_value_and_grad,torch_autograd_qnn_value_and_grad,"
+                "run_torch_func_compatibility_audit,run_torch_compile_compatibility_audit,"
+                "torch_bounded_qnn_module,torch_bounded_qnn_layer,run_torch_module_wrapper_audit"
+            ),
+            gradient_route=(
+                "bounded_phase_qnn_tensor_analytic_gradient,"
+                "torch_bounded_phase_qnn_custom_autograd_function,"
+                "bounded_torch_func_grad_vmap_jacrev,bounded_torch_compile_gradient,"
+                "bounded_torch_module_layer_wrapper_gradient"
+            ),
             optional_dependency="torch",
             implemented=True,
             runtime_dependency_required=True,
-            native_framework_autodiff=False,
+            native_framework_autodiff=True,
             tensor_output=True,
             host_boundary=False,
             analytic_framework_gradient=True,
@@ -195,12 +204,25 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
         ),
         BoundedQNNFrameworkBridgeCapability(
             framework="tensorflow",
-            public_api="tensorflow_bounded_qnn_value_and_grad",
-            gradient_route="bounded_phase_qnn_tensor_analytic_gradient",
+            public_api=(
+                "tensorflow_bounded_qnn_value_and_grad,"
+                "run_tensorflow_gradient_tape_compatibility_audit,"
+                "run_tensorflow_function_compatibility_audit,"
+                "run_tensorflow_xla_compatibility_audit,"
+                "tensorflow_bounded_qnn_keras_layer,"
+                "run_tensorflow_keras_layer_wrapper_audit"
+            ),
+            gradient_route=(
+                "bounded_phase_qnn_tensor_analytic_gradient,"
+                "bounded_tensorflow_gradient_tape_gradient,"
+                "bounded_tensorflow_function_gradient,"
+                "bounded_tensorflow_xla_gradient,"
+                "bounded_tensorflow_keras_layer_gradient"
+            ),
             optional_dependency="tensorflow",
             implemented=True,
             runtime_dependency_required=True,
-            native_framework_autodiff=False,
+            native_framework_autodiff=True,
             tensor_output=True,
             host_boundary=False,
             analytic_framework_gradient=True,

@@ -15,7 +15,7 @@ subsystem authors who need direct access to implementation modules. First-path
 user workflows should start with [Stable Facades API](stable_facades_api.md)
 and [Kuramoto Core Facade](kuramoto_core_facade.md).
 
-## Documentation Surface TODO
+## Documentation Surface Audit
 
 The repository documentation-surface audit is tracked by
 `tools/audit_documentation_surface.py`. As of 2026-05-18, after the Paper 0

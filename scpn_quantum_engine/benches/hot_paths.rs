@@ -44,6 +44,14 @@ use scpn_quantum_engine::compiler_ad::{
 use scpn_quantum_engine::dla::{commutator_dense, is_independent_fast};
 use scpn_quantum_engine::knm::build_knm_inner;
 use scpn_quantum_engine::kuramoto::order_parameter_inner;
+use scpn_quantum_engine::qnode_metrics::{
+    computational_basis_fisher_inner, fubini_study_metric_inner, hessian_vector_product_inner,
+    vector_hessian_tensor_inner, vector_jvp_inner, vector_vjp_inner,
+};
+use scpn_quantum_engine::stochastic_gradient::{
+    gradient_confidence_interval_inner, score_function_gradient_inner, spsa_gradient_inner,
+    stochastic_parameter_shift_uncertainty_inner,
+};
 
 fn bench_build_knm(c: &mut Criterion) {
     let mut group = c.benchmark_group("build_knm_inner");
@@ -462,6 +470,151 @@ fn bench_symmetric_2x2_eigenvalues_ad(c: &mut Criterion) {
     group.finish();
 }
 
+fn bench_phase_qnode_metric_and_transform_kernels(c: &mut Criterion) {
+    let theta = 0.31_f64;
+    let state_re = [(theta / 2.0).cos(), (theta / 2.0).sin()];
+    let state_im = [0.0, 0.0];
+    let derivatives_re = [[-0.5 * (theta / 2.0).sin(), 0.5 * (theta / 2.0).cos()]];
+    let derivatives_im = [[0.0, 0.0]];
+    let jacobian = [[1.0, -2.0, 0.5], [3.0, 4.0, -1.0]];
+    let tangent = [0.25, -0.5, 2.0];
+    let cotangent = [1.5, -0.25];
+    let hessian = [[2.0, -1.0], [-1.0, 3.5]];
+    let vector = [0.75, -2.0];
+    let hessian_tensor = vec![
+        vec![vec![-0.95, 0.0], vec![0.0, 0.02]],
+        vec![vec![-0.31, 0.0], vec![0.0, 0.24]],
+    ];
+    let plus_values = vec![vec![0.8, 0.1]];
+    let minus_values = vec![vec![0.2, -0.3]];
+    let plus_variances = vec![vec![0.36, 0.25]];
+    let minus_variances = vec![vec![0.16, 0.09]];
+    let plus_shots = vec![vec![900.0, 400.0]];
+    let minus_shots = vec![vec![400.0, 100.0]];
+    let coefficients = [0.5];
+    let trainable = [true, false];
+    let spsa_plus_values = [1.0, 0.25, 0.75, -0.1];
+    let spsa_minus_values = [0.0, -0.75, -0.25, -1.1];
+    let spsa_perturbations = vec![
+        vec![1.0, -1.0],
+        vec![-1.0, -1.0],
+        vec![1.0, 1.0],
+        vec![-1.0, 1.0],
+    ];
+    let spsa_variances = [0.04, 0.04, 0.04, 0.04];
+    let spsa_shots = [400.0, 400.0, 400.0, 400.0];
+    let spsa_trainable = [true, true];
+    let score_function_rewards = [2.0, 0.0, 4.0, 1.5];
+    let score_function_scores = vec![
+        vec![1.0, 2.0],
+        vec![-1.0, 0.0],
+        vec![0.0, 1.0],
+        vec![0.5, -0.5],
+    ];
+    let confidence_gradient = [0.625, 1.375];
+    let confidence_standard_error = [0.441, 0.727];
+
+    let mut group = c.benchmark_group("phase_qnode_metric_and_transform_kernels");
+    group.bench_function("fubini_study_metric", |bench| {
+        bench.iter(|| {
+            fubini_study_metric_inner(
+                black_box(&state_re),
+                black_box(&state_im),
+                black_box(&derivatives_re),
+                black_box(&derivatives_im),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("computational_basis_fisher", |bench| {
+        bench.iter(|| {
+            computational_basis_fisher_inner(
+                black_box(&state_re),
+                black_box(&state_im),
+                black_box(&derivatives_re),
+                black_box(&derivatives_im),
+                black_box(1e-15),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("vector_jvp", |bench| {
+        bench.iter(|| vector_jvp_inner(black_box(&jacobian), black_box(&tangent)).unwrap());
+    });
+    group.bench_function("vector_vjp", |bench| {
+        bench.iter(|| vector_vjp_inner(black_box(&jacobian), black_box(&cotangent)).unwrap());
+    });
+    group.bench_function("hessian_vector_product", |bench| {
+        bench.iter(|| {
+            hessian_vector_product_inner(black_box(&hessian), black_box(&vector)).unwrap()
+        });
+    });
+    group.bench_function("vector_hessian_tensor", |bench| {
+        bench.iter(|| {
+            vector_hessian_tensor_inner(black_box(&hessian_tensor), black_box(1e-12)).unwrap()
+        });
+    });
+    group.bench_function("parameter_shift_uncertainty", |bench| {
+        bench.iter(|| {
+            stochastic_parameter_shift_uncertainty_inner(
+                black_box(&plus_values),
+                black_box(&minus_values),
+                black_box(&plus_variances),
+                black_box(&minus_variances),
+                black_box(&plus_shots),
+                black_box(&minus_shots),
+                black_box(&coefficients),
+                black_box(&trainable),
+                black_box(1.959963984540054),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("spsa_gradient", |bench| {
+        bench.iter(|| {
+            spsa_gradient_inner(
+                black_box(&spsa_plus_values),
+                black_box(&spsa_minus_values),
+                black_box(&spsa_perturbations),
+                Some(black_box(&spsa_variances)),
+                Some(black_box(&spsa_variances)),
+                Some(black_box(&spsa_shots)),
+                Some(black_box(&spsa_shots)),
+                black_box(&spsa_trainable),
+                black_box(0.25),
+                black_box(1.959963984540054),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("score_function_gradient", |bench| {
+        bench.iter(|| {
+            score_function_gradient_inner(
+                black_box(&score_function_rewards),
+                black_box(&score_function_scores),
+                black_box(&spsa_trainable),
+                black_box(1.0),
+                black_box(1.959963984540054),
+            )
+            .unwrap()
+        });
+    });
+    group.bench_function("gradient_confidence_interval", |bench| {
+        bench.iter(|| {
+            gradient_confidence_interval_inner(
+                black_box(&confidence_gradient),
+                black_box(&confidence_standard_error),
+                black_box(&spsa_trainable),
+                black_box(1.959963984540054),
+                Some(black_box(1.0)),
+                Some(black_box(2.0)),
+            )
+            .unwrap()
+        });
+    });
+    group.finish();
+}
+
 criterion_group!(
     hot_paths,
     bench_build_knm,
@@ -482,6 +635,7 @@ criterion_group!(
     bench_matrix_matrix_product_ad,
     bench_matrix_trace_ad,
     bench_vector_dot_ad,
-    bench_vector_squared_norm_ad
+    bench_vector_squared_norm_ad,
+    bench_phase_qnode_metric_and_transform_kernels
 );
 criterion_main!(hot_paths);

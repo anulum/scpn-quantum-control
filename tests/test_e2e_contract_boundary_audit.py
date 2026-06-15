@@ -32,7 +32,7 @@ main = _MODULE.main
 def test_boundary_audit_matches_expected_test_file_names(tmp_path: Path) -> None:
     (tmp_path / "test_hardware_runner.py").write_text("def test_a():\n    assert True\n")
     (tmp_path / "test_bridge_properties.py").write_text("def test_b():\n    assert True\n")
-    (tmp_path / "test_arcane_neuron_e2e.py").write_text("def test_c():\n    assert True\n")
+    (tmp_path / "test_snn_neurocore_e2e.py").write_text("def test_c():\n    assert True\n")
     (tmp_path / "test_orchestrator_adapter.py").write_text("def test_d():\n    assert True\n")
 
     audits = {item.key: item for item in audit_boundaries(tmp_path)}

@@ -109,7 +109,7 @@ def main() -> int:
     n_qubits = int(sys.argv[2]) if len(sys.argv) >= 3 else 4
     labels = sys.argv[3].split(",") if len(sys.argv) >= 4 else ["even", "odd"]
 
-    vault = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+    vault = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     api_key, instance = parse_vault(vault)
     print("IBM credentials loaded from vault.")
 

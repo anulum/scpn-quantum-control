@@ -32,12 +32,12 @@ Timestamp: `2026-05-22T00:13:57.520930+00:00`
 
 ## Sources
 
-- Local summary: `/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/realtime_control_e2e_summary_2026-05-22.json`
+- Local summary: `data/s1_feedback_loop/realtime_control_e2e_summary_2026-05-22.json`
 - IBM campaigns:
-  - `/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T231917Z.json`
-  - `/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T232106Z.json`
-  - `/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T233721Z.json`
-- IBM Rust run: `/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/s1_feedback_loop/ibm_runtime_rust_latency_run_2026-05-22.json`
+  - `data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T231917Z.json`
+  - `data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T232106Z.json`
+  - `data/s1_feedback_loop/ibm_runtime_latency_campaign_ibm_kingston_20260521T233721Z.json`
+- IBM Rust run: `data/s1_feedback_loop/ibm_runtime_rust_latency_run_2026-05-22.json`
 
 ## Job IDs
 - `d87p5hgp0eas73dmgdig`

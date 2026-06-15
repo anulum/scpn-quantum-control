@@ -14,8 +14,10 @@ import pytest
 
 from scpn_quantum_control.phase import (
     ParameterShiftNaturalGradientResult,
+    PhaseQNodeCircuit,
     parameter_shift_gradient_descent,
     parameter_shift_natural_gradient_descent,
+    phase_qnode_natural_gradient_metric,
     solve_natural_gradient_direction,
     validate_natural_gradient_training,
 )
@@ -88,6 +90,34 @@ def test_parameter_shift_natural_gradient_preconditions_slow_phase_axis() -> Non
     assert natural.rejected_steps == 0
     assert natural.steps[-1].metric_condition_number > 1.0
     assert natural.to_dict()["metric_source"] == "array"
+
+
+def test_parameter_shift_natural_gradient_accepts_phase_qnode_metric_provider() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    def objective(params: np.ndarray) -> float:
+        return float(1.0 - np.cos(params[0]))
+
+    result = parameter_shift_natural_gradient_descent(
+        objective,
+        np.array([0.8], dtype=float),
+        metric_tensor=phase_qnode_natural_gradient_metric(circuit),
+        learning_rate=0.1,
+        max_steps=30,
+        gradient_tolerance=1e-7,
+        natural_gradient_tolerance=1e-7,
+        value_tolerance=1e-10,
+    )
+
+    assert result.converged
+    assert result.reason == "value_tolerance"
+    assert result.metric_source == "callable"
+    assert result.best_value < 1e-10
+    assert result.accepted_steps > 0
 
 
 def test_solve_natural_gradient_direction_rejects_bad_metric_boundaries() -> None:

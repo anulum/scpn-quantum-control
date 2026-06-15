@@ -243,7 +243,7 @@ requirements, stop conditions, and post-run requirements.
 
 The key rule is simple: valid credentials, dry-runs, and capability probes are
 not enough. A live S1 job requires the completed preflight checklist, a matching
-`HardwareApprovalRecord`, and a new session log before submission.
+`HardwareApprovalRecord`, and a new private audit record before submission.
 
 ## IBM Metadata Probe Command
 

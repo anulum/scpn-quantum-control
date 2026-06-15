@@ -5,7 +5,7 @@
     {
       "backend": "ibm_kingston",
       "round_tag": "budgetextra3",
-      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T013355Z.json",
+      "matrix_json": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T013355Z.json",
       "jobs": [
         {
           "lane": "rt_adaptive_dense_dynamic",
@@ -42,7 +42,7 @@
     {
       "backend": "ibm_kingston",
       "round_tag": "budgetextra4",
-      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T013405Z.json",
+      "matrix_json": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T013405Z.json",
       "jobs": [
         {
           "lane": "rt_adaptive_dense_dynamic",
@@ -79,7 +79,7 @@
     {
       "backend": "ibm_fez",
       "round_tag": "budgetextra3",
-      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_fez_20260522T013414Z.json",
+      "matrix_json": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_fez_20260522T013414Z.json",
       "jobs": [
         {
           "lane": "rt_adaptive_dense_dynamic",
@@ -116,7 +116,7 @@
     {
       "backend": "ibm_fez",
       "round_tag": "budgetextra4",
-      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_fez_20260522T013422Z.json",
+      "matrix_json": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_fez_20260522T013422Z.json",
       "jobs": [
         {
           "lane": "rt_adaptive_dense_dynamic",
@@ -153,7 +153,7 @@
     {
       "backend": "ibm_marrakesh",
       "round_tag": "budgetextra3",
-      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_marrakesh_20260522T013430Z.json",
+      "matrix_json": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_marrakesh_20260522T013430Z.json",
       "jobs": [
         {
           "lane": "rt_adaptive_dense_dynamic",
@@ -190,7 +190,7 @@
     {
       "backend": "ibm_marrakesh",
       "round_tag": "budgetextra4",
-      "matrix_json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_marrakesh_20260522T013437Z.json",
+      "matrix_json": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_marrakesh_20260522T013437Z.json",
       "jobs": [
         {
           "lane": "rt_adaptive_dense_dynamic",

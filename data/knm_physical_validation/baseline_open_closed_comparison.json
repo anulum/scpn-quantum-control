@@ -2,12 +2,12 @@
   "claim_boundary": "Descriptive condition comparison for the same 8-channel alpha-band PLV pipeline; this is not a physical-unit K_nm magnitude validation.",
   "cohorts": {
     "baseline_eyes_closed": {
-      "artifact": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings_baseline_closed.json",
+      "artifact": "data/knm_physical_validation/measured_couplings_baseline_closed.json",
       "condition": "baseline eyes closed",
       "n_records": 109
     },
     "baseline_eyes_open": {
-      "artifact": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/knm_physical_validation/measured_couplings.json",
+      "artifact": "data/knm_physical_validation/measured_couplings.json",
       "condition": "baseline eyes open",
       "n_records": 109
     }
@@ -417,7 +417,7 @@
     "git_commit": "08ad87d902eda60358aa02e11b701dda79a60b79",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
     "python": "3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]",
-    "repo_root": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL"
+    "repo_root": "."
   },
   "schema_version": "scpn-quantum-control.eeg-plv-cohort-comparison.v1",
   "summary": {

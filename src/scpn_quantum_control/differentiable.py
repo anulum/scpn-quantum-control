@@ -8395,6 +8395,162 @@ class GradientResult:
 
 
 @dataclass(frozen=True)
+class GradientFailurePolicy:
+    """Fail-closed policy for stochastic-gradient uncertainty evidence."""
+
+    max_standard_error: float | None = None
+    max_confidence_radius: float | None = None
+    require_trainable: bool = True
+
+    def __post_init__(self) -> None:
+        max_standard_error = (
+            None
+            if self.max_standard_error is None
+            else _as_real_scalar("failure_policy max_standard_error", self.max_standard_error)
+        )
+        max_confidence_radius = (
+            None
+            if self.max_confidence_radius is None
+            else _as_real_scalar(
+                "failure_policy max_confidence_radius",
+                self.max_confidence_radius,
+            )
+        )
+        if max_standard_error is not None and max_standard_error <= 0.0:
+            raise ValueError("failure_policy max_standard_error must be finite and positive")
+        if max_confidence_radius is not None and max_confidence_radius <= 0.0:
+            raise ValueError("failure_policy max_confidence_radius must be finite and positive")
+        if not isinstance(self.require_trainable, bool):
+            raise ValueError("failure_policy require_trainable must be boolean")
+        object.__setattr__(self, "max_standard_error", max_standard_error)
+        object.__setattr__(self, "max_confidence_radius", max_confidence_radius)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready policy metadata."""
+        return {
+            "max_standard_error": self.max_standard_error,
+            "max_confidence_radius": self.max_confidence_radius,
+            "require_trainable": self.require_trainable,
+        }
+
+
+@dataclass(frozen=True)
+class StochasticGradientConfidenceInterval:
+    """Per-parameter stochastic-gradient confidence interval and policy status."""
+
+    lower: NDArray[np.float64]
+    upper: NDArray[np.float64]
+    confidence_z: float
+    confidence_level: float | None
+    policy: GradientFailurePolicy
+    status: str
+    failure_reasons: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        lower = _as_parameter_array(self.lower)
+        upper = _as_parameter_array(self.upper)
+        z_value = _as_real_scalar("confidence interval confidence_z", self.confidence_z)
+        confidence_level = (
+            None
+            if self.confidence_level is None
+            else _as_real_scalar("confidence interval confidence_level", self.confidence_level)
+        )
+        if lower.shape != upper.shape:
+            raise ValueError("confidence interval lower/upper shapes must match")
+        if np.any(lower > upper):
+            raise ValueError("confidence interval lower bounds must not exceed upper bounds")
+        if z_value <= 0.0:
+            raise ValueError("confidence interval confidence_z must be finite and positive")
+        if confidence_level is not None and not (0.0 < confidence_level < 1.0):
+            raise ValueError("confidence interval confidence_level must be between zero and one")
+        if self.status not in {"passed", "failed"}:
+            raise ValueError("confidence interval status must be 'passed' or 'failed'")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.status == "passed" and reasons:
+            raise ValueError("passed confidence interval cannot contain failure reasons")
+        object.__setattr__(self, "lower", lower)
+        object.__setattr__(self, "upper", upper)
+        object.__setattr__(self, "confidence_z", z_value)
+        object.__setattr__(self, "confidence_level", confidence_level)
+        object.__setattr__(self, "failure_reasons", reasons)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready interval metadata."""
+        return {
+            "lower": self.lower.tolist(),
+            "upper": self.upper.tolist(),
+            "confidence_z": self.confidence_z,
+            "confidence_level": self.confidence_level,
+            "policy": self.policy.to_dict(),
+            "status": self.status,
+            "failure_reasons": list(self.failure_reasons),
+        }
+
+
+def gradient_confidence_interval(
+    gradient: ArrayLike,
+    standard_error: ArrayLike,
+    *,
+    confidence_z: float = 1.959963984540054,
+    confidence_level: float | None = None,
+    trainable: Sequence[bool] | None = None,
+    failure_policy: GradientFailurePolicy | None = None,
+) -> StochasticGradientConfidenceInterval:
+    """Build confidence bounds and fail-closed status for stochastic gradients."""
+
+    gradient_array = _as_parameter_array(gradient)
+    standard_error_array = _as_parameter_array(standard_error)
+    if standard_error_array.shape != gradient_array.shape:
+        raise ValueError("standard_error shape must match gradient shape")
+    if np.any(standard_error_array < 0.0):
+        raise ValueError("standard_error must be finite and non-negative")
+    z_value = _as_real_scalar("confidence_z", confidence_z)
+    if z_value <= 0.0:
+        raise ValueError("confidence_z must be finite and positive")
+    if confidence_level is not None:
+        confidence_level = _as_real_scalar("confidence_level", confidence_level)
+        if confidence_level <= 0.0 or confidence_level >= 1.0:
+            raise ValueError("confidence_level must be between zero and one")
+    trainable_mask: NDArray[np.bool_]
+    if trainable is None:
+        trainable_mask = np.ones(gradient_array.shape, dtype=np.bool_)
+    else:
+        trainable_mask = np.asarray(tuple(trainable), dtype=np.bool_)
+        if trainable_mask.shape != gradient_array.shape:
+            raise ValueError("trainable mask length must match gradient length")
+    policy = failure_policy or GradientFailurePolicy()
+    reasons: list[str] = []
+    if policy.require_trainable and not np.any(trainable_mask):
+        raise ValueError("trainable mask must include at least one active parameter")
+    active_standard_error = standard_error_array[trainable_mask]
+    confidence_radius = z_value * standard_error_array
+    active_radius = confidence_radius[trainable_mask]
+    if policy.max_standard_error is not None and active_standard_error.size:
+        observed = float(np.max(active_standard_error))
+        if observed > policy.max_standard_error:
+            reasons.append(
+                "standard_error exceeds policy maximum "
+                f"{policy.max_standard_error}: observed {observed}"
+            )
+    if policy.max_confidence_radius is not None and active_radius.size:
+        observed = float(np.max(active_radius))
+        if observed > policy.max_confidence_radius:
+            reasons.append(
+                "confidence_radius exceeds policy maximum "
+                f"{policy.max_confidence_radius}: observed {observed}"
+            )
+    return StochasticGradientConfidenceInterval(
+        lower=gradient_array - confidence_radius,
+        upper=gradient_array + confidence_radius,
+        confidence_z=z_value,
+        confidence_level=confidence_level,
+        policy=policy,
+        status="failed" if reasons else "passed",
+        failure_reasons=tuple(reasons),
+    )
+
+
+@dataclass(frozen=True)
 class StochasticGradientResult:
     """Parameter-shift gradient with independent shot-noise uncertainty."""
 
@@ -8411,6 +8567,9 @@ class StochasticGradientResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    confidence_interval: StochasticGradientConfidenceInterval | None = None
+    failure_policy_status: str = "not_evaluated"
+    failure_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("stochastic gradient value", self.value)
@@ -8469,6 +8628,18 @@ class StochasticGradientResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.confidence_interval is not None:
+            if self.confidence_interval.lower.shape != gradient.shape:
+                raise ValueError("confidence_interval shape must match gradient shape")
+            if self.failure_policy_status not in {"passed", "failed"}:
+                raise ValueError("failure_policy_status must match evaluated interval status")
+            if self.failure_policy_status != self.confidence_interval.status:
+                raise ValueError("failure_policy_status must match confidence_interval status")
+            if reasons != self.confidence_interval.failure_reasons:
+                raise ValueError("failure_reasons must match confidence_interval")
+        elif self.failure_policy_status != "not_evaluated":
+            raise ValueError("failure_policy_status requires confidence_interval")
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "standard_error", standard_error)
@@ -8478,6 +8649,309 @@ class StochasticGradientResult:
         object.__setattr__(self, "confidence_level", confidence_level)
         object.__setattr__(self, "shift", shift)
         object.__setattr__(self, "coefficient", coefficient)
+        object.__setattr__(self, "failure_reasons", reasons)
+
+
+@dataclass(frozen=True)
+class SPSAObjectiveSample:
+    """One scalar objective sample for SPSA gradient estimation."""
+
+    value: float
+    variance: float | None = None
+    shots: int | None = None
+    metadata: Mapping[str, object] | None = None
+
+    def __post_init__(self) -> None:
+        value = _as_real_scalar("SPSA sample value", self.value)
+        variance = (
+            None
+            if self.variance is None
+            else _as_real_scalar("SPSA sample variance", self.variance)
+        )
+        if variance is not None and variance < 0.0:
+            raise ValueError("SPSA sample variance must be non-negative")
+        if self.shots is not None and (
+            isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
+        ):
+            raise ValueError("SPSA sample shots must be a positive integer or None")
+        metadata = {} if self.metadata is None else dict(self.metadata)
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "variance", variance)
+        object.__setattr__(self, "metadata", metadata)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready sample metadata."""
+        return {
+            "value": self.value,
+            "variance": self.variance,
+            "shots": self.shots,
+            "metadata": dict(self.metadata or {}),
+        }
+
+
+@dataclass(frozen=True)
+class SPSAProbeRecord:
+    """One simultaneous perturbation probe pair."""
+
+    repetition: int
+    perturbation: NDArray[np.float64]
+    plus_parameters: NDArray[np.float64]
+    minus_parameters: NDArray[np.float64]
+    plus: SPSAObjectiveSample
+    minus: SPSAObjectiveSample
+    gradient_estimate: NDArray[np.float64]
+
+    def __post_init__(self) -> None:
+        if isinstance(self.repetition, bool) or self.repetition < 0:
+            raise ValueError("SPSA repetition must be a non-negative integer")
+        perturbation = _as_parameter_array(self.perturbation)
+        plus_parameters = _as_parameter_array(self.plus_parameters)
+        minus_parameters = _as_parameter_array(self.minus_parameters)
+        gradient = _as_parameter_array(self.gradient_estimate)
+        if not (
+            perturbation.shape == plus_parameters.shape == minus_parameters.shape == gradient.shape
+        ):
+            raise ValueError("SPSA record arrays must share parameter shape")
+        object.__setattr__(self, "perturbation", perturbation)
+        object.__setattr__(self, "plus_parameters", plus_parameters)
+        object.__setattr__(self, "minus_parameters", minus_parameters)
+        object.__setattr__(self, "gradient_estimate", gradient)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready probe evidence."""
+        return {
+            "repetition": self.repetition,
+            "perturbation": self.perturbation.tolist(),
+            "plus_parameters": self.plus_parameters.tolist(),
+            "minus_parameters": self.minus_parameters.tolist(),
+            "plus": self.plus.to_dict(),
+            "minus": self.minus.to_dict(),
+            "gradient_estimate": self.gradient_estimate.tolist(),
+        }
+
+
+@dataclass(frozen=True)
+class SPSAGradientResult:
+    """Seeded SPSA gradient estimate with optional finite-shot uncertainty."""
+
+    gradient: NDArray[np.float64]
+    standard_error: NDArray[np.float64]
+    covariance: NDArray[np.float64]
+    confidence_radius: NDArray[np.float64]
+    records: tuple[SPSAProbeRecord, ...]
+    perturbation_radius: float
+    repetitions: int
+    seed: int
+    confidence_z: float
+    method: str
+    evaluations: int
+    total_shots: int | None
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+    claim_boundary: str
+    hardware_execution: bool
+    confidence_interval: StochasticGradientConfidenceInterval | None = None
+    failure_policy_status: str = "not_evaluated"
+    failure_reasons: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        gradient = _as_parameter_array(self.gradient)
+        standard_error = _as_parameter_array(self.standard_error)
+        covariance = _as_real_numeric_array("SPSA covariance", self.covariance)
+        confidence_radius = _as_parameter_array(self.confidence_radius)
+        if standard_error.shape != gradient.shape or confidence_radius.shape != gradient.shape:
+            raise ValueError("SPSA uncertainty vectors must match gradient shape")
+        if covariance.shape != (gradient.size, gradient.size):
+            raise ValueError("SPSA covariance shape must be gradient length squared")
+        if np.any(standard_error < 0.0) or np.any(confidence_radius < 0.0):
+            raise ValueError("SPSA uncertainty vectors must be non-negative")
+        if self.perturbation_radius <= 0.0 or not np.isfinite(self.perturbation_radius):
+            raise ValueError("SPSA perturbation_radius must be finite and positive")
+        if self.repetitions <= 0:
+            raise ValueError("SPSA repetitions must be positive")
+        if self.evaluations != 2 * self.repetitions:
+            raise ValueError("SPSA evaluations must equal two per repetition")
+        if self.total_shots is not None and self.total_shots <= 0:
+            raise ValueError("SPSA total_shots must be positive or None")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("SPSA parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("SPSA trainable mask length must match gradient length")
+        if not self.claim_boundary:
+            raise ValueError("SPSA claim_boundary must be non-empty")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.confidence_interval is not None:
+            if self.confidence_interval.lower.shape != gradient.shape:
+                raise ValueError("SPSA confidence_interval shape must match gradient shape")
+            if self.failure_policy_status not in {"passed", "failed"}:
+                raise ValueError("SPSA failure_policy_status must match interval status")
+            if self.failure_policy_status != self.confidence_interval.status:
+                raise ValueError("SPSA failure_policy_status must match confidence_interval")
+            if reasons != self.confidence_interval.failure_reasons:
+                raise ValueError("SPSA failure_reasons must match confidence_interval")
+        elif self.failure_policy_status != "not_evaluated":
+            raise ValueError("SPSA failure_policy_status requires confidence_interval")
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "standard_error", standard_error)
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "confidence_radius", confidence_radius)
+        object.__setattr__(self, "failure_reasons", reasons)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready SPSA gradient evidence."""
+        return {
+            "gradient": self.gradient.tolist(),
+            "standard_error": self.standard_error.tolist(),
+            "covariance": self.covariance.tolist(),
+            "confidence_radius": self.confidence_radius.tolist(),
+            "records": [record.to_dict() for record in self.records],
+            "perturbation_radius": self.perturbation_radius,
+            "repetitions": self.repetitions,
+            "seed": self.seed,
+            "confidence_z": self.confidence_z,
+            "method": self.method,
+            "evaluations": self.evaluations,
+            "total_shots": self.total_shots,
+            "parameter_names": list(self.parameter_names),
+            "trainable": list(self.trainable),
+            "claim_boundary": self.claim_boundary,
+            "hardware_execution": self.hardware_execution,
+            "confidence_interval": None
+            if self.confidence_interval is None
+            else self.confidence_interval.to_dict(),
+            "failure_policy_status": self.failure_policy_status,
+            "failure_reasons": list(self.failure_reasons),
+        }
+
+
+@dataclass(frozen=True)
+class ScoreFunctionSampleRecord:
+    """One materialised likelihood-ratio gradient sample."""
+
+    index: int
+    reward: float
+    centred_reward: float
+    score: NDArray[np.float64]
+    weighted_score: NDArray[np.float64]
+
+    def __post_init__(self) -> None:
+        if isinstance(self.index, bool) or not isinstance(self.index, int) or self.index < 0:
+            raise ValueError("score-function sample index must be a non-negative integer")
+        reward = _as_real_scalar("score-function sample reward", self.reward)
+        centred_reward = _as_real_scalar(
+            "score-function sample centred_reward",
+            self.centred_reward,
+        )
+        score = _as_parameter_array(self.score)
+        weighted_score = _as_parameter_array(self.weighted_score)
+        if score.shape != weighted_score.shape:
+            raise ValueError("score-function sample score arrays must share shape")
+        object.__setattr__(self, "reward", reward)
+        object.__setattr__(self, "centred_reward", centred_reward)
+        object.__setattr__(self, "score", score)
+        object.__setattr__(self, "weighted_score", weighted_score)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready sample evidence."""
+        return {
+            "index": self.index,
+            "reward": self.reward,
+            "centred_reward": self.centred_reward,
+            "score": self.score.tolist(),
+            "weighted_score": self.weighted_score.tolist(),
+        }
+
+
+@dataclass(frozen=True)
+class ScoreFunctionGradientResult:
+    """Likelihood-ratio gradient estimate with empirical uncertainty."""
+
+    gradient: NDArray[np.float64]
+    standard_error: NDArray[np.float64]
+    covariance: NDArray[np.float64]
+    confidence_radius: NDArray[np.float64]
+    records: tuple[ScoreFunctionSampleRecord, ...]
+    baseline: float
+    sample_count: int
+    confidence_z: float
+    method: str
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+    claim_boundary: str
+    hardware_execution: bool
+    confidence_interval: StochasticGradientConfidenceInterval | None = None
+    failure_policy_status: str = "not_evaluated"
+    failure_reasons: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        gradient = _as_parameter_array(self.gradient)
+        standard_error = _as_parameter_array(self.standard_error)
+        covariance = _as_real_numeric_array("score-function covariance", self.covariance)
+        confidence_radius = _as_parameter_array(self.confidence_radius)
+        baseline = _as_real_scalar("score-function baseline", self.baseline)
+        z_value = _as_real_scalar("score-function confidence_z", self.confidence_z)
+        if standard_error.shape != gradient.shape or confidence_radius.shape != gradient.shape:
+            raise ValueError("score-function uncertainty vectors must match gradient shape")
+        if covariance.shape != (gradient.size, gradient.size):
+            raise ValueError("score-function covariance shape must be gradient length squared")
+        if np.any(standard_error < 0.0) or np.any(confidence_radius < 0.0):
+            raise ValueError("score-function uncertainty vectors must be non-negative")
+        if self.sample_count < 2:
+            raise ValueError("score-function sample_count must be at least two")
+        if len(self.records) != self.sample_count:
+            raise ValueError("score-function records length must match sample_count")
+        if z_value <= 0.0:
+            raise ValueError("score-function confidence_z must be finite and positive")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("score-function parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("score-function trainable mask length must match gradient length")
+        if not self.claim_boundary:
+            raise ValueError("score-function claim_boundary must be non-empty")
+        reasons = tuple(str(reason) for reason in self.failure_reasons)
+        if self.confidence_interval is not None:
+            if self.confidence_interval.lower.shape != gradient.shape:
+                raise ValueError("score-function confidence_interval shape must match gradient")
+            if self.failure_policy_status not in {"passed", "failed"}:
+                raise ValueError("score-function failure_policy_status must match interval status")
+            if self.failure_policy_status != self.confidence_interval.status:
+                raise ValueError(
+                    "score-function failure_policy_status must match confidence_interval"
+                )
+            if reasons != self.confidence_interval.failure_reasons:
+                raise ValueError("score-function failure_reasons must match confidence_interval")
+        elif self.failure_policy_status != "not_evaluated":
+            raise ValueError("score-function failure_policy_status requires interval")
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "standard_error", standard_error)
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "confidence_radius", confidence_radius)
+        object.__setattr__(self, "baseline", baseline)
+        object.__setattr__(self, "confidence_z", z_value)
+        object.__setattr__(self, "failure_reasons", reasons)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready score-function gradient evidence."""
+        return {
+            "gradient": self.gradient.tolist(),
+            "standard_error": self.standard_error.tolist(),
+            "covariance": self.covariance.tolist(),
+            "confidence_radius": self.confidence_radius.tolist(),
+            "records": [record.to_dict() for record in self.records],
+            "baseline": self.baseline,
+            "sample_count": self.sample_count,
+            "confidence_z": self.confidence_z,
+            "method": self.method,
+            "parameter_names": list(self.parameter_names),
+            "trainable": list(self.trainable),
+            "claim_boundary": self.claim_boundary,
+            "hardware_execution": self.hardware_execution,
+            "confidence_interval": None
+            if self.confidence_interval is None
+            else self.confidence_interval.to_dict(),
+            "failure_policy_status": self.failure_policy_status,
+            "failure_reasons": list(self.failure_reasons),
+        }
 
 
 @dataclass(frozen=True)
@@ -22929,6 +23403,7 @@ def parameter_shift_gradient_with_uncertainty(
     rule: ParameterShiftRule | None = None,
     confidence_level: float = 0.95,
     confidence_z: float = 1.959963984540054,
+    failure_policy: GradientFailurePolicy | None = None,
 ) -> StochasticGradientResult:
     """Propagate independent shot noise through parameter-shift gradients."""
 
@@ -23005,6 +23480,14 @@ def parameter_shift_gradient_with_uncertainty(
             )
     standard_error = np.sqrt(variance)
     covariance = np.diag(variance)
+    confidence_interval = gradient_confidence_interval(
+        gradient,
+        standard_error,
+        confidence_z=z_value,
+        confidence_level=confidence,
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        failure_policy=failure_policy,
+    )
     shots = (
         np.vstack([plus_count[0], minus_count[0]])
         if shift_rule.is_single_term
@@ -23026,6 +23509,236 @@ def parameter_shift_gradient_with_uncertainty(
         evaluations=2 * term_count * sum(parameter.trainable for parameter in parameter_meta),
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        confidence_interval=confidence_interval,
+        failure_policy_status=confidence_interval.status,
+        failure_reasons=confidence_interval.failure_reasons,
+    )
+
+
+def _as_spsa_sample(value: object, *, shots: int | None) -> SPSAObjectiveSample:
+    if isinstance(value, SPSAObjectiveSample):
+        if shots is not None and value.variance is None:
+            raise ValueError("SPSA finite-shot samples must include variance")
+        if shots is not None and value.shots is None:
+            return SPSAObjectiveSample(
+                value=value.value,
+                variance=value.variance,
+                shots=shots,
+                metadata=value.metadata,
+            )
+        return value
+    if shots is not None:
+        raise ValueError("SPSA finite-shot objective must return SPSAObjectiveSample")
+    return SPSAObjectiveSample(value=_as_real_scalar("SPSA objective value", value))
+
+
+def _call_spsa_objective(
+    objective: Callable[..., object],
+    values: NDArray[np.float64],
+    shots: int | None,
+) -> SPSAObjectiveSample:
+    sample = objective(values.copy()) if shots is None else objective(values.copy(), shots)
+    return _as_spsa_sample(sample, shots=shots)
+
+
+def spsa_gradient_estimate(
+    objective: Callable[..., object],
+    values: ArrayLike,
+    *,
+    perturbation_radius: float = 0.1,
+    repetitions: int = 1,
+    seed: int = 0,
+    shots: int | None = None,
+    parameters: Sequence[Parameter] | None = None,
+    confidence_z: float = 1.959963984540054,
+    failure_policy: GradientFailurePolicy | None = None,
+) -> SPSAGradientResult:
+    """Estimate a scalar-objective gradient with seeded SPSA perturbations."""
+
+    parameter_values = _as_parameter_array(values)
+    radius = _as_real_scalar("SPSA perturbation_radius", perturbation_radius)
+    if radius <= 0.0:
+        raise ValueError("SPSA perturbation_radius must be finite and positive")
+    if isinstance(repetitions, bool) or not isinstance(repetitions, int) or repetitions <= 0:
+        raise ValueError("SPSA repetitions must be a positive integer")
+    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
+        raise ValueError("SPSA seed must be a non-negative integer")
+    if shots is not None and (isinstance(shots, bool) or not isinstance(shots, int) or shots <= 0):
+        raise ValueError("SPSA shots must be a positive integer or None")
+    z_value = _as_real_scalar("SPSA confidence_z", confidence_z)
+    if z_value <= 0.0:
+        raise ValueError("SPSA confidence_z must be finite and positive")
+
+    parameter_meta = _normalise_parameters(parameter_values, parameters)
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    if not np.any(trainable):
+        raise ValueError("SPSA requires at least one trainable parameter")
+
+    rng = np.random.default_rng(seed)
+    gradient_estimates = np.zeros((repetitions, parameter_values.size), dtype=np.float64)
+    shot_variance = np.zeros(parameter_values.size, dtype=np.float64)
+    records: list[SPSAProbeRecord] = []
+    total_shots = 0
+
+    for repetition in range(repetitions):
+        raw_delta = rng.choice(np.array([-1.0, 1.0], dtype=np.float64), size=parameter_values.size)
+        perturbation = np.where(trainable, raw_delta, 0.0).astype(np.float64)
+        plus_parameters = parameter_values + radius * perturbation
+        minus_parameters = parameter_values - radius * perturbation
+        plus = _call_spsa_objective(objective, plus_parameters, shots)
+        minus = _call_spsa_objective(objective, minus_parameters, shots)
+        difference = plus.value - minus.value
+        estimate = np.zeros(parameter_values.size, dtype=np.float64)
+        for index, is_trainable in enumerate(trainable):
+            if not is_trainable:
+                continue
+            estimate[index] = difference / (2.0 * radius * raw_delta[index])
+            if shots is not None:
+                if plus.variance is None or minus.variance is None:
+                    raise ValueError("SPSA finite-shot samples must include variance")
+                if plus.shots is None or minus.shots is None:
+                    raise ValueError("SPSA finite-shot samples must include shot counts")
+                shot_variance[index] += (
+                    plus.variance / float(plus.shots) + minus.variance / float(minus.shots)
+                ) / (4.0 * radius * radius)
+        gradient_estimates[repetition] = estimate
+        if shots is not None:
+            total_shots += int(cast(int, plus.shots)) + int(cast(int, minus.shots))
+        records.append(
+            SPSAProbeRecord(
+                repetition=repetition,
+                perturbation=perturbation,
+                plus_parameters=plus_parameters,
+                minus_parameters=minus_parameters,
+                plus=plus,
+                minus=minus,
+                gradient_estimate=estimate,
+            )
+        )
+
+    gradient = np.mean(gradient_estimates, axis=0)
+    estimator_variance = (
+        np.var(gradient_estimates, axis=0, ddof=1) / repetitions
+        if repetitions > 1
+        else np.zeros(parameter_values.size, dtype=np.float64)
+    )
+    variance = estimator_variance + shot_variance / float(repetitions * repetitions)
+    variance = np.where(trainable, variance, 0.0)
+    standard_error = np.sqrt(variance)
+    confidence_interval = gradient_confidence_interval(
+        gradient,
+        standard_error,
+        confidence_z=z_value,
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        failure_policy=failure_policy,
+    )
+    return SPSAGradientResult(
+        gradient=gradient,
+        standard_error=standard_error,
+        covariance=np.diag(variance),
+        confidence_radius=z_value * standard_error,
+        records=tuple(records),
+        perturbation_radius=radius,
+        repetitions=repetitions,
+        seed=seed,
+        confidence_z=z_value,
+        method="finite_shot_spsa" if shots is not None else "spsa",
+        evaluations=2 * repetitions,
+        total_shots=total_shots if shots is not None else None,
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=(
+            "seeded local SPSA gradient estimator for scalar objectives; "
+            "finite-shot uncertainty is propagated only when objective samples "
+            "provide variances and shot counts; no hardware execution"
+        ),
+        hardware_execution=False,
+        confidence_interval=confidence_interval,
+        failure_policy_status=confidence_interval.status,
+        failure_reasons=confidence_interval.failure_reasons,
+    )
+
+
+def score_function_gradient_estimate(
+    rewards: ArrayLike,
+    score_vectors: ArrayLike,
+    *,
+    baseline: float = 0.0,
+    parameters: Sequence[Parameter] | None = None,
+    confidence_z: float = 1.959963984540054,
+    failure_policy: GradientFailurePolicy | None = None,
+) -> ScoreFunctionGradientResult:
+    """Estimate a likelihood-ratio gradient from materialised score samples."""
+
+    reward_array = _as_parameter_array(rewards)
+    scores = _as_real_numeric_array("score_vectors", score_vectors)
+    if scores.ndim != 2:
+        raise ValueError("score_vectors must be a two-dimensional sample-by-parameter array")
+    if reward_array.size < 2:
+        raise ValueError("score-function estimator requires at least two samples")
+    if scores.shape[0] != reward_array.size:
+        raise ValueError(
+            "score_vectors row count must match reward count: "
+            f"{scores.shape[0]} != {reward_array.size}"
+        )
+    baseline_value = _as_real_scalar("score-function baseline", baseline)
+    z_value = _as_real_scalar("score-function confidence_z", confidence_z)
+    if z_value <= 0.0:
+        raise ValueError("score-function confidence_z must be finite and positive")
+
+    parameter_meta = _normalise_parameters(np.zeros(scores.shape[1], dtype=np.float64), parameters)
+    trainable = np.array([parameter.trainable for parameter in parameter_meta], dtype=bool)
+    if not np.any(trainable):
+        raise ValueError("score-function estimator requires at least one trainable parameter")
+
+    centred_rewards = reward_array - baseline_value
+    weighted_scores = centred_rewards[:, None] * scores
+    weighted_scores[:, ~trainable] = 0.0
+    gradient = np.mean(weighted_scores, axis=0)
+    centred_gradients = weighted_scores - gradient
+    covariance = centred_gradients.T @ centred_gradients
+    covariance /= float((reward_array.size - 1) * reward_array.size)
+    covariance[~trainable, :] = 0.0
+    covariance[:, ~trainable] = 0.0
+    standard_error = np.sqrt(np.diag(covariance))
+    confidence_interval = gradient_confidence_interval(
+        gradient,
+        standard_error,
+        confidence_z=z_value,
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        failure_policy=failure_policy,
+    )
+    records = tuple(
+        ScoreFunctionSampleRecord(
+            index=index,
+            reward=float(reward_array[index]),
+            centred_reward=float(centred_rewards[index]),
+            score=scores[index],
+            weighted_score=weighted_scores[index],
+        )
+        for index in range(reward_array.size)
+    )
+    return ScoreFunctionGradientResult(
+        gradient=gradient,
+        standard_error=standard_error,
+        covariance=covariance,
+        confidence_radius=z_value * standard_error,
+        records=records,
+        baseline=baseline_value,
+        sample_count=reward_array.size,
+        confidence_z=z_value,
+        method="score_function_likelihood_ratio",
+        parameter_names=tuple(parameter.name for parameter in parameter_meta),
+        trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=(
+            "materialised likelihood-ratio score-function estimator for "
+            "finite scalar rewards and score vectors; no sampler autodiff, "
+            "provider callback, or hardware execution"
+        ),
+        hardware_execution=False,
+        confidence_interval=confidence_interval,
+        failure_policy_status=confidence_interval.status,
+        failure_reasons=confidence_interval.failure_reasons,
     )
 
 
@@ -25591,6 +26304,7 @@ __all__ = [
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
     "GradientCheckResult",
+    "GradientFailurePolicy",
     "GradientResult",
     "HVPResult",
     "HessianResult",
@@ -25626,7 +26340,13 @@ __all__ = [
     "PrimitiveTransformRule",
     "ReverseNode",
     "ShotAllocationResult",
+    "ScoreFunctionGradientResult",
+    "ScoreFunctionSampleRecord",
+    "SPSAGradientResult",
+    "SPSAObjectiveSample",
+    "SPSAProbeRecord",
     "SparseMatrixResult",
+    "StochasticGradientConfidenceInterval",
     "StochasticGradientResult",
     "VJPResult",
     "WeightedGradientResult",
@@ -25677,6 +26397,7 @@ __all__ = [
     "forward_mode_gradient",
     "gauss_newton_gradient",
     "grad",
+    "gradient_confidence_interval",
     "huber_residual_weights",
     "hessian",
     "implicit_fixed_point_sensitivity",
@@ -25779,6 +26500,8 @@ __all__ = [
     "sparse_empirical_fisher_metric",
     "sparse_hessian",
     "sparse_jacobian",
+    "score_function_gradient_estimate",
+    "spsa_gradient_estimate",
     "multi_frequency_parameter_shift_rule",
     "parameter_shift_gradient_with_uncertainty",
     "update_levenberg_marquardt_damping",

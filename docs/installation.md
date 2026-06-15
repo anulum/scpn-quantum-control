@@ -8,6 +8,16 @@
 
 # Installation
 
+## Why this page exists
+
+This page defines how to install the project with explicit capability boundaries.
+The same repository supports local simulation, source-level debugging, and
+provider-aware integration, but each use case has different dependency and
+reproducibility requirements.
+
+Use this page to keep installations narrow and auditable before running either
+`Quickstart` workflows or benchmark and release evidence pipelines.
+
 For a non-technical orientation before installing, read
 [Onboarding](onboarding.md). For the fastest working run after installation,
 continue with [Quickstart](quickstart.md).
@@ -17,6 +27,20 @@ continue with [Quickstart](quickstart.md).
 ```bash
 pip install scpn-quantum-control
 ```
+
+## Installation posture
+
+The installation is intentionally tiered:
+
+- **Base path** (`pip install scpn-quantum-control`) for standard simulator workflows.
+- **Developer and extension path** (`pip install -e ".[dev]"`) for local testing and
+  contribution.
+- **Operational path** with selected extras only: install exactly the integration
+  surface your workflow needs.
+
+The production value is that teams can keep environments lean and evidence
+deterministic: each additional capability is explicit at install time rather than
+implicitly enabling unsupported routes.
 
 ## From source (development)
 

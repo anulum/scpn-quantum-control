@@ -158,3 +158,78 @@ def test_external_comparison_suite_records_dependency_missing_rows(monkeypatch) 
     assert all(row.status == "hard_gap" for row in rows)
     assert all(row.failure_class == "dependency_missing" for row in rows)
     assert np.isfinite(len(rows))
+
+
+def test_external_comparison_runs_configured_enzyme_runner(tmp_path, monkeypatch) -> None:
+    runner = tmp_path / "enzyme_runner.py"
+    runner.write_text(
+        "\n".join(
+            (
+                "#!/usr/bin/env python3",
+                "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                "# Commercial license available",
+                "# Copyright (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.",
+                "# Copyright (c) Code 2020-2026 Miroslav Sotek. All rights reserved.",
+                "# ORCID: 0009-0009-3560-0851",
+                "# Contact: www.anulum.li | protoscience@anulum.li",
+                "import json, math, sys",
+                "payload = json.load(sys.stdin)",
+                "values = payload['values']",
+                "print(json.dumps({",
+                "    'value': math.cos(values[0]) + 0.25 * math.sin(values[1]),",
+                "    'gradient': [-math.sin(values[0]), 0.25 * math.cos(values[1])],",
+                "    'toolchain': {'enzyme': 'test-runner', 'llvm': 'test-llvm'},",
+                "}))",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    runner.chmod(0o755)
+    monkeypatch.setenv("SCPN_ENZYME_RUNNER", str(runner))
+    monkeypatch.setattr(comparison, "_enzyme_tooling_available", lambda: True)
+
+    row = comparison._enzyme_row()
+    payload = row.to_dict()
+
+    assert row.status == "success"
+    assert row.failure_class is None
+    assert row.value_error <= 1e-12
+    assert row.gradient_error <= 1e-12
+    assert row.batching_support == "not_supported"
+    assert row.transform_support == "LLVM Enzyme runner"
+    assert "Enzyme" in row.claim_boundary
+    assert payload["toolchain"] == {"enzyme": "test-runner", "llvm": "test-llvm"}
+
+
+def test_external_comparison_classifies_enzyme_bad_json(tmp_path, monkeypatch) -> None:
+    runner = tmp_path / "bad_enzyme_runner.py"
+    runner.write_text("#!/usr/bin/env python3\nprint('not-json')\n", encoding="utf-8")
+    runner.chmod(0o755)
+    monkeypatch.setenv("SCPN_ENZYME_RUNNER", str(runner))
+    monkeypatch.setattr(comparison, "_enzyme_tooling_available", lambda: True)
+
+    row = comparison._enzyme_row()
+
+    assert row.status == "hard_gap"
+    assert row.failure_class == "runtime_error"
+    assert "valid JSON" in str(row.setup_instructions)
+
+
+def test_external_comparison_rejects_enzyme_wrong_gradient(tmp_path, monkeypatch) -> None:
+    runner = tmp_path / "wrong_enzyme_runner.py"
+    runner.write_text(
+        "#!/usr/bin/env python3\n"
+        "import json\n"
+        "print(json.dumps({'value': 1.0, 'gradient': [0.0, 0.0]}))\n",
+        encoding="utf-8",
+    )
+    runner.chmod(0o755)
+    monkeypatch.setenv("SCPN_ENZYME_RUNNER", str(runner))
+    monkeypatch.setattr(comparison, "_enzyme_tooling_available", lambda: True)
+
+    row = comparison._enzyme_row()
+
+    assert row.status == "hard_gap"
+    assert row.failure_class == "correctness_mismatch"
+    assert "SCPN reference" in str(row.setup_instructions)

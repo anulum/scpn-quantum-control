@@ -181,41 +181,9 @@ class BiologicalMWPMDecoder:
         syndrome = syndrome.astype(np.int8, copy=False)
         defects = np.where(syndrome == 1)[0]
 
-        if self._rust_engine is not None and defects.size <= self._rust_exact_mwpm_defect_limit:
-            rust_decode = getattr(self._rust_engine, "biological_decode_z_errors", None)
-            if callable(rust_decode):
-                edge_u = np.fromiter((u for u, _ in self.code.edges), dtype=np.int64)
-                edge_v = np.fromiter((v for _, v in self.code.edges), dtype=np.int64)
-                edge_w = np.fromiter(
-                    (float(self.G[u][v]["weight"]) for u, v in self.code.edges),
-                    dtype=np.float64,
-                )
-                try:
-                    correction = np.asarray(
-                        rust_decode(
-                            edge_u,
-                            edge_v,
-                            edge_w,
-                            int(self.code.n_nodes),
-                            syndrome,
-                        ),
-                        dtype=np.int8,
-                    )
-                    self._last_decoder_backend = "rust_exact_mwpm"
-                    return correction
-                except ValueError as exc:
-                    if "defect count exceeds exact-MWPM limit" not in str(exc):
-                        raise
-
-        if defects.size > self._rust_exact_mwpm_defect_limit:
-            self._last_decoder_backend = "python_fallback_high_defect"
-        else:
-            self._last_decoder_backend = "python_mwpm"
-
-        correction = np.zeros(self.code.num_data, dtype=np.int8)
-
         if len(defects) == 0:
-            return correction
+            self._last_decoder_backend = "python_mwpm"
+            return np.zeros(self.code.num_data, dtype=np.int8)
 
         defect_set = set(int(node) for node in defects)
         for component in nx.connected_components(self.G):
@@ -249,6 +217,38 @@ class BiologicalMWPMDecoder:
                 "check connectivity, thresholding, or boundary model assumptions."
             )
 
+        if self._rust_engine is not None and defects.size <= self._rust_exact_mwpm_defect_limit:
+            rust_decode = getattr(self._rust_engine, "biological_decode_z_errors", None)
+            if callable(rust_decode):
+                edge_u = np.fromiter((u for u, _ in self.code.edges), dtype=np.int64)
+                edge_v = np.fromiter((v for _, v in self.code.edges), dtype=np.int64)
+                edge_w = np.fromiter(
+                    (float(self.G[u][v]["weight"]) for u, v in self.code.edges),
+                    dtype=np.float64,
+                )
+                try:
+                    correction = np.asarray(
+                        rust_decode(
+                            edge_u,
+                            edge_v,
+                            edge_w,
+                            int(self.code.n_nodes),
+                            syndrome,
+                        ),
+                        dtype=np.int8,
+                    )
+                    self._last_decoder_backend = "rust_exact_mwpm"
+                    return correction
+                except ValueError as exc:
+                    if "defect count exceeds exact-MWPM limit" not in str(exc):
+                        raise
+
+        if defects.size > self._rust_exact_mwpm_defect_limit:
+            self._last_decoder_backend = "python_fallback_high_defect"
+        else:
+            self._last_decoder_backend = "python_mwpm"
+
+        correction = np.zeros(self.code.num_data, dtype=np.int8)
         for u, v in matching:
             path = paths[(u, v)]
             for i in range(len(path) - 1):

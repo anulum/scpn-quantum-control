@@ -12,6 +12,25 @@
 **Author:** Miroslav Šotek / SCPN Quantum Control project
 **SPDX:** AGPL-3.0-or-later
 
+## Purpose
+
+This document records the full software and hardware stack used for the Frontier
+Campaign reproducibility lane. It is a reproducibility checkpoint for
+restarts of campaign scripts and bounded no-QPU validation output.
+
+Use this record to verify:
+
+- package versions used during campaign execution,
+- environment-level fixes needed for `mitiq` on Ubuntu Python packaging,
+- hardware aliasing and backend assumptions in committed runs,
+- parameter provenance constraints before running synthetic or production experiments.
+
+## Audience and limits
+
+The record is for maintainers, auditors, and reproducibility runners. It is not
+an external scientific validation statement by itself; it is the first step in an
+evidence chain for bounded campaign claims.
+
 ---
 
 ## 1. Software Environment
@@ -25,7 +44,7 @@
 | mitiq | 1.0.0 |
 | cirq-core | 1.6.1 |
 | matplotlib | 3.10.9 (pip) |
-| scpn-quantum-control | Source tree v0.9.11; public release artefacts may lag until the next tagged package release |
+| scpn-quantum-control | Source tree v0.9.12; public release artefacts may lag until the next tagged package release |
 
 Install the exact environment:
 ```bash

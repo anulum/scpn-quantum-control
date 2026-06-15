@@ -68,14 +68,49 @@ class TestCommutatorBounds:
         assert gamma == pytest.approx(0.0, abs=1e-15)
 
     def test_bound_exceeds_empirical(self):
-        """Analytical bound must be >= empirical Frobenius norm error."""
+        """First-order analytical bound rigorously dominates the empirical spectral error."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         t = 0.5
         reps = 3
         bound = trotter_error_bound(K, omega, t, reps, order=1)
-        empirical = trotter_error_norm(K, omega, t, reps)
-        assert bound >= empirical * 0.5  # allow slack for norm differences
+        empirical = trotter_error_norm(K, omega, t, reps, order=1)
+        assert bound >= empirical - 1e-12
+
+    def test_second_order_bound_exceeds_empirical(self):
+        """Second-order analytical bound rigorously dominates the empirical spectral error."""
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        t = 0.6
+        reps = 2
+        bound = trotter_error_bound(K, omega, t, reps, order=2)
+        empirical = trotter_error_norm(K, omega, t, reps, order=2)
+        assert bound >= empirical - 1e-12
+
+    @pytest.mark.parametrize("order", [1, 2])
+    @pytest.mark.parametrize("seed", [1, 7, 19, 23])
+    def test_bound_dominates_empirical_across_random_systems(self, order, seed):
+        """The bound must upper-bound the same-splitting empirical error, every time.
+
+        This is the contract that the empirical measurement and the analytical
+        bound describe the *same* two-group product formula in the *same*
+        spectral norm; a regression that desynchronises them (wrong norm, wrong
+        splitting, or a loosened constant pushed below the true error) fails here.
+        """
+        rng = np.random.default_rng(seed)
+        n = int(rng.integers(2, 5))
+        K = np.zeros((n, n))
+        for i in range(n):
+            for j in range(i + 1, n):
+                K[i, j] = K[j, i] = rng.uniform(0.05, 0.7)
+        omega = rng.uniform(-1.0, 1.2, size=n)
+        t = float(rng.uniform(0.2, 1.0))
+        reps = int(rng.integers(1, 4))
+
+        bound = trotter_error_bound(K, omega, t, reps, order=order)
+        empirical = trotter_error_norm(K, omega, t, reps, order=order)
+
+        assert bound >= empirical - 1e-12
 
     def test_bound_decreases_with_reps(self):
         K = build_knm_paper27(L=4)

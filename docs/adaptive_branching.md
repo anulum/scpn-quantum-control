@@ -4,6 +4,20 @@ This is the S8 no-submit readiness surface for mid-circuit adaptive
 branching. It records branch policies and backend prerequisites, with
 no hardware submission and no adaptive-advantage claim.
 
+## Why this file exists
+
+This page is used by teams deciding whether to move from simulation to
+controlled feedback control experiments. It captures the exact branch-policy
+surface the runtime can execute and the prerequisites that must be present before
+adaptive control can be promoted.
+
+It is intended for:
+
+- control teams testing mid-circuit correction loops;
+- experiment teams planning conditional gates and reset-dependent branches;
+- reviewers who need a clear boundary between experimental readiness and
+  promoted hardware claims.
+
 ## Boundary
 
 readiness and branch-planning artifact only; no adaptive-advantage claim and no hardware submission

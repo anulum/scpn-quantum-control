@@ -4,7 +4,146 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.9.12] - 2026-06-15
+
+### Security
+- 2026-06-15 — Upgraded the Rust PyO3/Numpy binding stack to `pyo3`/`numpy`
+  `0.29` and refreshed the Rust test attach path, resolving the open PyO3
+  Dependabot advisories before tagging `0.9.12`.
+
 ### Added
+- 2026-06-15 — Bumped the public release metadata and documentation surfaces
+  for the current differentiable-programming hardening queue, including README,
+  site home, onboarding, tutorial, notebook, API, reproducibility,
+  hardware-ledger, release-readiness, citation, Zenodo, and generated
+  capability inventory alignment.
+- 2026-06-15 — Added adoption-oriented documentation routes that explain the
+  software purpose, application lanes, commercial value, first user paths,
+  notebook governance, API selection, evidence classes, and release-hygiene
+  boundary without promoting unsupported hardware, clinical, or broad advantage
+  claims.
+- 2026-06-14 — Added bounded PyTorch module/layer wrapper evidence via
+  `torch_bounded_qnn_module`, `torch_bounded_qnn_layer`, and
+  `run_torch_module_wrapper_audit`, including `torch.nn.Module`/`Parameter`
+  fail-closed handling, module-gradient checks against SCPN parameter-shift
+  references, phase exports, bridge matrix promotion, module tests, generated
+  capability updates, and public documentation.
+- 2026-06-14 — Added bounded PyTorch `torch.compile` compatibility evidence via
+  `run_torch_compile_compatibility_audit`, including compiled bounded loss
+  gradient checks against the canonical parameter-shift reference, fail-closed
+  missing-`torch.compile` handling, phase exports, framework bridge matrix
+  updates, module tests, generated capability updates, and public
+  documentation.
+- 2026-06-14 — Added bounded PyTorch `torch.func` compatibility evidence via
+  `run_torch_func_compatibility_audit`, including `torch.func.grad`,
+  `torch.func.vmap`, and `torch.func.jacrev` checks against the canonical
+  parameter-shift reference, fail-closed missing-`torch.func` handling, phase
+  exports, framework bridge matrix updates, module tests, generated capability
+  updates, and public documentation.
+- 2026-06-14 — Added bounded PyTorch custom-autograd phase-QNN gradient
+  evidence via `torch_autograd_qnn_value_and_grad`, including a custom
+  `torch.autograd.Function` route, fail-closed optional dependency surface
+  checks, parameter-shift reference validation, phase exports, framework bridge
+  matrix updates, module tests, generated capability updates, and public
+  documentation.
+- 2026-06-14 — Added audited JAX PyTree parameter support via
+  `run_jax_pytree_compatibility_audit`, including bounded native-QNN and
+  custom-VJP no-host-callback structured-parameter checks, deterministic
+  flattening and gradient tree restoration, explicit arbitrary-simulator
+  PyTree lowering gap classification, phase exports, module tests, live local
+  JAX audit evidence, generated capability updates, and public documentation.
+- 2026-06-14 — Added audited JAX PMAP/sharding compatibility evidence via
+  `run_jax_sharding_compatibility_audit`, including bounded native-QNN and
+  custom-VJP no-host-callback local-device batch checks, explicit single-device
+  versus multi-device pmap classification, host-loop parameter-shift reference
+  classification, phase exports, module tests, live local JAX audit evidence,
+  generated capability updates, and public documentation.
+- 2026-06-14 — Added audited JAX VMAP compatibility evidence via
+  `run_jax_vmap_compatibility_audit`, including bounded native-QNN and
+  custom-VJP no-host-callback parameter-batch checks, explicit host-loop
+  parameter-shift reference classification, phase exports, module tests, live
+  local JAX audit evidence, generated capability updates, and public
+  documentation.
+- 2026-06-14 — Added audited JAX JIT compatibility evidence via
+  `run_jax_jit_compatibility_audit`, including bounded native-QNN and
+  custom-VJP no-host-callback checks, explicit parameter-shift host-callback
+  classification, active JAX callback dtype negotiation for x64-disabled
+  runtimes, phase exports, module tests, generated capability updates, and
+  public documentation.
+- 2026-06-14 — Added bounded JAX custom-VJP phase-QNN gradient evidence via
+  `jax_custom_vjp_qnn_value_and_grad`, including fail-closed optional
+  dependency checks, JIT-compatible no-host-callback execution for the bounded
+  classifier, parameter-shift reference validation, phase exports, framework
+  bridge matrix updates, module tests, generated capability updates, and public
+  documentation.
+- 2026-06-14 — Added stochastic-gradient confidence intervals and
+  fail-closed failure policies across finite-shot parameter-shift, seeded SPSA,
+  and materialised score-function estimators, with Rust/PyO3 interval-policy
+  parity, module/parity tests, Criterion benchmark coverage, typed extension
+  exports, and public documentation updates.
+- 2026-06-14 — Added materialised score-function likelihood-ratio gradient
+  estimation with explicit baseline handling, sample provenance, empirical
+  covariance, fail-closed validity checks, Rust/PyO3 parity, module/parity
+  tests, Criterion benchmark coverage, typed extension exports, and public
+  documentation updates.
+- 2026-06-14 — Added seeded local SPSA gradient estimation with finite-shot
+  sample uncertainty propagation, probe-pair provenance, fail-closed stochastic
+  contracts, Rust/PyO3 parity for materialised SPSA records, module/parity
+  tests, Criterion benchmark coverage, typed extension exports, and public
+  documentation updates.
+- 2026-06-14 — Added Rust/PyO3 parity for materialised finite-shot
+  parameter-shift uncertainty propagation, including shifted-mean, variance,
+  shot-count, coefficient, and trainable-mask validation; Python/Rust parity
+  tests; Criterion benchmark coverage; typed extension exports; and public
+  documentation updates.
+- 2026-06-14 — Added deterministic local vector-output Phase-QNode Hessian
+  tensors with fail-closed finite-shot/hardware/adapter boundaries, Rust/PyO3
+  tensor validation parity, module tests, benchmark coverage, and
+  documentation updates.
+- 2026-06-14 — Added Rust/PyO3 parity kernels for promoted local
+  Phase-QNode Fubini-Study/QFI, computational-basis Fisher, vector JVP/VJP,
+  Hessian-vector product, and real-only complex-derivative contract surfaces,
+  with Rust unit tests, Python parity tests, typed extension exports, Criterion
+  benchmark entries, and documentation updates.
+- 2026-06-14 — Added an explicit real-only complex/Wirtinger derivative
+  contract for Phase-QNode scalar and vector transform surfaces, with public
+  contract metadata, fail-closed complex input/output validation, docs, tests,
+  and generated capability-surface alignment.
+- 2026-06-14 — Added deterministic local scalar Phase-QNode
+  Hessian-vector products backed by parameter-shift Hessian evidence, with
+  vector validation, fail-closed finite-shot/hardware/adapter routes, public
+  docs, tests, and generated capability-surface alignment.
+- 2026-06-14 — Added vector-output Phase-QNode `jvp` and `vjp`
+  transforms over deterministic local parameter-shift Jacobian evidence, with
+  tangent/cotangent shape validation, fail-closed unsafe routes, public docs,
+  tests, and generated capability-surface alignment.
+- 2026-06-14 — Added exact computational-basis classical Fisher information
+  for the registered local Phase-QNode statevector family, with singular
+  zero-probability fail-closed handling, public docs, tests, and generated
+  capability-surface alignment.
+- 2026-06-14 — Added pure-state Phase-QNode QFI/Fubini-Study metric extraction
+  for the registered local statevector gate family, with a natural-gradient
+  metric provider, fail-closed unsupported-route tests, phase namespace exports,
+  public docs, and generated capability-surface alignment.
+- 2026-06-14 — Added `DenseHermitianObservable` to the registered Phase-QNode
+  circuit family, with finite square Hermitian matrix validation, exact
+  statevector expectation evaluation, parameter-shift gradient coverage, phase
+  namespace exports, public docs, and generated capability-surface alignment.
+- 2026-06-14 — Added `PauliCovarianceObservable` to the registered
+  Phase-QNode circuit family, including exact symmetrised covariance execution,
+  product-rule parameter-shift gradients, phase namespace exports, module tests,
+  differentiable API documentation, and generated capability-surface alignment.
+- 2026-06-14 — Added a six-parameter sparse Ising-chain Hamiltonian
+  expectation row to the quantum-gradient benchmark suite, with analytic
+  field/coupling gradients, parameter-shift verification, finite-difference
+  diagnostics, and explicit non-performance/non-hardware claim boundaries.
+- 2026-06-14 — Hardened `VQLS_GradShafranov` with residual-certified
+  Grad-Shafranov solves for `n_qubits=2,3,4`, diagnostic convergence metadata,
+  configurable multi-restart optimisation, fail-closed unrepaired variational
+  residual handling, and direct SPD residual repair for the finite-difference
+  Laplacian path.
 - 2026-06-05 — Hardened the differentiable Phase-QNode promotion lane with a
   CPU-only framework overlay installer, isolated benchmark metadata gates,
   real optional-framework comparison execution, self-hosted runner setup
@@ -243,7 +382,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `.github/workflows/notebooks.yml`, `link-check.yml`, `docs-strict.yml`, `sbom.yml`, `mutation-testing.yml`, `commit-trailers.yml`.
 - `tools/check_commit_trailers.py`, `tools/mutmut_runner.sh`.
 - `pyproject.toml` extras: `xvalidate`, `config`, `logging`, `julia`; entry-point group `scpn_quantum_control.backends`.
-- `.coordination/launch_copy/` — 9 visibility drafts (HN / r/QuantumComputing / r/qiskit / Slack / Discord / LinkedIn / X / arXiv / README).
+- `<private-local-record>` — 9 visibility drafts (HN / r/QuantumComputing / r/qiskit / Slack / Discord / LinkedIn / X / arXiv / README).
 
 ### Changed
 - CI dev-tool matrix (`pytest 9.0.3`, `mypy 1.20.1`, `ruff 0.15.10`, `hypothesis 6.151.13`, `build 1.4.3`, `actions/upload-artefact 7.0.1`, `pypa/gh-action-pypi-publish 1.14.0`).
@@ -254,8 +393,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - Self-applied quality labels scrubbed across `CHANGELOG.md`, `docs/changelog.md`, `docs/test_infrastructure.md`, `docs/symmetry_decay_guess.md`, `docs/dynq_qubit_mapping.md`, and 27 test docstrings.
 
 ### Repository hygiene
-- `.coordination/sessions/` and `.coordination/handovers/` untracked; local-only going forward.
-- `.gitignore` patterns for paper-extraction working files, `.agent_metadata.json`, root-level `handover_*.md`, `.coordination/refactor_backups/`, `.coordination/contributing.md`.
+- `<private-local-record>` and `<private-local-record>` untracked; local-only going forward.
+- `.gitignore` patterns for paper-extraction working files, `.agent_metadata.json`, root-level `private handoff record_*.md`, `<private-local-record>`, `<private-local-record>`.
 - Agent-name mentions stripped from public-facing tracked files (`CHANGELOG.md`, `docs/triage.md`, `docs/PAPER_CLAIMS.md`, `docs/changelog.md`, `figures/generate_ansatz_comparison.py`, `tests/test_koopman.py`, and nine files referencing the internal audit filename).
 
 ## [0.9.5] - 2026-03-29 / 2026-04-11
@@ -264,7 +403,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-04-10: Phase 1 IBM Quantum hardware campaign on `ibm_kingston` (Heron r2, 156 qubits). 348 circuits, up to 21 reps per (depth, sector) at n = 4. Mean DLA-parity asymmetry +10.8 % for depths ≥ 4, peak +17.48 % at depth 6. Fisher combined χ²(16) = 123.4, p ≪ 10⁻¹⁶. Apriori simulator band was 4.5–9.6 %.
 - `scripts/analyse_phase1_dla_parity.py`, `paper/submissions/submission_002_phase1_dla_parity/phase1_dla_parity_short_paper.md`.
 - IBM execution scripts: `pipe_cleaner_ibm_kingston.py`, `phase1_mini_bench_ibm_kingston.py`, `phase1_5_reinforce_ibm_kingston.py`, `phase2_exhaust_cycle_ibm_kingston.py`, `phase2_5_final_burn_ibm_kingston.py`, `phase2_full_campaign_ibm.py`, `micro_probe_ibm_kingston.py`, `retrieve_ibm_job.py`.
-- `.coordination/IBM_CAMPAIGN_STATE.md`, `IBM_EXECUTION_LOG.md`, `phase1_experiment_design.md`, `WEBMASTER_CONTEXT.md`.
+- `<private-local-record>`, `IBM_EXECUTION_LOG.md`, `phase1_experiment_design.md`, `WEBMASTER_CONTEXT.md`.
 - 2026-04-08: `mitigation/symmetry_decay.py` + `scpn_quantum_engine/src/symmetry_decay.rs` — GUESS symmetry-decay ZNE (Oliva del Moral et al., arXiv:2603.13060, 2026). 20 tests.
 - `hardware/qubit_mapper.py` + `scpn_quantum_engine/src/community.rs` — DynQ topology-agnostic mapper (Liu et al., arXiv:2601.19635). 17 tests.
 - `phase/pulse_shaping.py` + `scpn_quantum_engine/src/pulse_shaping.rs` — PMP / ICI pulse sequences (Liu et al. 2023). Rust `ici_three_level_evolution_batch` 1 665× vs Python.
@@ -272,8 +411,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - FFI boundary hardening across all 36 `#[pyfunction]` exports (`PyResult<T>`, `validate_n`, `validate_positive`, `validate_range`, `validate_finite`, `validate_flat_square`, `validate_statevec_len`, `validate_domain_range`). 16 `validation.rs` tests.
 - `docs/symmetry_decay_guess.md` (891 lines), `docs/dynq_qubit_mapping.md` (878 lines).
 - 2026-04-10: `tools/check_secrets.py` (vault-pattern scanner) + gitleaks v8.21.2 pre-commit hook.
-- `.coordination/incidents/INCIDENT_2026-04-10T2336_ftp_creds_in_webmaster_context.md`.
-- `.gitignore` patterns for `.venv-linux/`, `.venv-rocm/`, `.venv-cuda/`, `results/`, `.coordination/TODO_*.md`, `.coordination/*.pdf`.
+- `<private-local-record>`.
+- `.gitignore` patterns for `.venv-linux/`, `.venv-rocm/`, `.venv-cuda/`, `results/`, `<private-local-record>`, `<private-local-record>`.
 
 ### Changed
 - Tests collected: 2 813 → 4 828 (97 %+ coverage).

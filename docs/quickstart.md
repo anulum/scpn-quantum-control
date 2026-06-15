@@ -20,6 +20,24 @@ The first path uses a small oscillator network and the Kuramoto-XY mapping:
 4. Trotterise the evolution locally;
 5. read the synchronisation order parameter `R(t)`.
 
+## Who this page is for
+
+This page is for fast, no-credential onboarding into the same model contract used
+throughout the repository. It is the practical entry point for teams who want
+three checks in one place:
+
+- the compiler path is functional end-to-end;
+- outputs are reproducible with explicit inputs;
+- the starting route is bounded to simulator evidence until hardware gates are
+  intentionally opened.
+
+The next step after this page should match your objective:
+
+- product or integration pilots: proceed to [Stable Facades API](stable_facades_api.md);
+- model research: proceed to [Tutorials](tutorials.md);
+- proof-facing runs: proceed to [Release Readiness Gate](release_readiness.md) and
+  [Hardware Status Ledger](hardware_status_ledger.md).
+
 Use this page when you want a working run in minutes. Use
 [Onboarding](onboarding.md) first if you need the business, application, and
 claim-boundary overview.
@@ -228,6 +246,15 @@ gradients. The same kernel also supports `batch_value_and_grad(...)`,
 rows preserve the compiled branch/signature contract. It remains a bounded
 supported-trace executable path, not an arbitrary source compiler or native
 LLVM/JIT implementation for all Python.
+
+Registered local `PhaseQNodeCircuit` declarations can be lowered to a verified
+SCPN MLIR-runtime adapter with
+`compile_phase_qnode_circuit_to_mlir_runtime(...)`. The adapter executes value
+and parameter-shift-gradient kernels, verifies them against the local
+statevector reference, records dialect operation metadata, and rejects runtime
+parameter shape or dtype mismatches. It does not report interpreter fallback as
+compiled success, and it does not claim native LLVM/JIT, provider, hardware,
+dynamic-circuit, or arbitrary-QNode compilation.
 
 Supported scalar traces over arithmetic, expanded elementary functions
 (`sin`, `cos`, `tan`, `tanh`, `exp`, `expm1`, `log`, `log1p`, `sqrt`,

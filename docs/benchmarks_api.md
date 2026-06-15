@@ -381,10 +381,49 @@ verification pass/fail flag, objective-evaluation count, and a claim boundary.
 |------|----------|----------|
 | `single_rotation_parameter_shift` | quantum-gradient | One-parameter Pauli-rotation expectation with analytic `-sin(theta)` reference |
 | `two_parameter_phase_expectation` | quantum-gradient | Two-parameter phase expectation with analytic mixed sine/cosine reference |
+| `sparse_ising_chain_six_qubit_expectation` | quantum-gradient | Six-parameter nearest-neighbour sparse Ising-chain expectation with analytic field/coupling gradient reference |
 
 These rows are correctness/conformance benchmarks only. They do not claim
 hardware execution, provider integration, framework-native autodiff, or
 wall-clock performance.
+
+#### `run_differentiable_external_comparison_suite()`
+
+Runs optional external comparison rows for JAX, PyTorch, TensorFlow,
+PennyLane, and LLVM/Enzyme runner evidence. The SCPN analytic reference remains
+the source of truth. Missing optional dependencies are emitted as `hard_gap`
+rows instead of being omitted.
+
+For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an executable that reads a JSON
+request on stdin and writes JSON with:
+
+```json
+{
+  "value": 0.0,
+  "gradient": [0.0, 0.0],
+  "toolchain": {"enzyme": "version", "llvm": "version"}
+}
+```
+
+The runner row enforces a timeout (`SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS`,
+default `10`), validates finite scalar/vector outputs, records toolchain
+metadata, and reports `correctness_mismatch` unless value and gradient match
+the SCPN reference. These rows are comparison evidence only; they do not claim
+provider execution, QPU execution, GPU execution, arbitrary-program AD, or
+production performance.
+
+The CI benchmark evidence writer records accelerator metadata in every bundle.
+The default is explicit CPU-only evidence. To request accelerator evidence, set
+`SCPN_BENCH_ACCELERATOR_BACKEND=cuda` or `rocm` and provide visible-device
+metadata through `SCPN_BENCH_ACCELERATOR_DEVICE_IDS`, `CUDA_VISIBLE_DEVICES`,
+`ROCR_VISIBLE_DEVICES`, or `HIP_VISIBLE_DEVICES`. CUDA requests can also use
+JAX CUDA device discovery when the CUDA-enabled `jaxlib` plugin is installed.
+Optional names and runtime versions can be recorded with
+`SCPN_BENCH_ACCELERATOR_DEVICE_NAMES` and
+`SCPN_BENCH_ACCELERATOR_RUNTIME` (`cuda=12.4,cudnn=9.1`). Requested
+accelerator execution without matching visible devices is classified as
+`hard_gap` / `silent_accelerator_fallback`, so a CPU fallback cannot be reused
+as GPU benchmark evidence.
 
 ---
 

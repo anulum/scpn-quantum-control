@@ -8,6 +8,16 @@
 
 # API Reference
 
+## How to read this page
+
+This API page is divided by abstraction level. Use it to decide whether you need a
+stable entry point for integration, a workflow guide for experimentation, or a
+source-level reference for extension and debugging.
+
+The commercial goal is to reduce dependency on internal layout while keeping
+advanced users with a direct path to deeper modules. Each function section below
+is accompanied by explicit boundary context in the corresponding guide pages.
+
 ## Differentiable programming entry points
 
 The differentiable-programming surface has its own public guide and API map:
@@ -69,6 +79,16 @@ advanced references for subsystem extension.
 | Runtime contract | [QPU Data Artifact](qpu_data_artifact.md), [Pipeline Runtime Contract](pipeline_runtime_contract.md) | Exchanging persisted QPU results or compute-unit metadata. |
 | Advanced module reference | This page and [Auto-Generated Module Index](autodoc.md) | Auditing, extending, or debugging subsystem internals. |
 
+## API choice by job
+
+| Job | Preferred API surface | Boundary |
+|---|---|---|
+| First local coupled-oscillator run | `scpn_quantum_control.kuramoto_core` and `QuantumKuramotoSolver` | Simulator evidence until a hardware ledger row is promoted. |
+| Differentiable optimisation | `scpn_quantum_control.phase.param_shift`, `scpn_quantum_control.phase.qnn_training`, and `scpn_quantum_control.differentiable` | Use support matrices and verification records before claiming gradient support. |
+| Hardware result packaging | `scpn_quantum_control.hardware_result_packs` and QPU artefact contracts | Raw counts and manifests must pass release gates before public promotion. |
+| Cross-repository integration | Stable facade pages and runtime contracts | Avoid internal module paths unless the contract page names them. |
+| Commercial pilot | Stable facades, examples, release-readiness gates, and licence boundary docs | Closed-source or SaaS use requires commercial licensing. |
+
 ## API Selection Rules
 
 - Prefer `scpn_quantum_control.kuramoto_core` for user-facing `K_nm`/`omega`
@@ -122,6 +142,7 @@ from scpn_quantum_control import (
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
     MLIRCompileConfig,
+    PhaseQNodeMLIRRuntimeExecutable,
     PrimitiveLoweringStatus,
     program_ad_interpolation_interp_derivative_rule,
     program_ad_stencil_gradient_derivative_rule,
@@ -130,6 +151,7 @@ from scpn_quantum_control import (
     compile_custom_derivative_rule_to_executable,
     compile_custom_derivative_rule_to_mlir,
     compile_kuramoto_to_mlir,
+    compile_phase_qnode_circuit_to_mlir_runtime,
     compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
     compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit,
     compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit,
@@ -181,6 +203,10 @@ kernel = compile_custom_derivative_rule_to_executable(
     CompilerADExecutableConfig(),
 )
 kernel.jvp(values, tangent)
+
+phase_runtime = compile_phase_qnode_circuit_to_mlir_runtime(phase_qnode, params)
+phase_runtime.value(params)
+phase_runtime.gradient(params)
 
 interp_rule = program_ad_interpolation_interp_derivative_rule(
     sample_shape=(3,),
@@ -363,7 +389,13 @@ deterministic MLIR provenance plus deterministic LLVM-style scalar-gradient
 provenance for verified scalar-output kernels, binds normalized value/JVP/VJP
 runtime kernels, exposes verified scalar-output `gradient()` execution through
 VJP cotangent-one semantics, and verifies those kernels against the source rule
-before returning. `make_program_ad_linalg_matrix_power_executable_lowering_rule()`
+before returning. `compile_phase_qnode_circuit_to_mlir_runtime()` promotes the
+registered local `PhaseQNodeCircuit` lowering from textual metadata to a
+verified SCPN MLIR-runtime adapter with explicit dialect operation records,
+runtime parameter shape/type checks, value/parameter-shift-gradient execution,
+and a blocked interpreter-fallback success claim. It does not claim native
+LLVM/JIT, provider, hardware, dynamic-circuit, or arbitrary-QNode compilation.
+`make_program_ad_linalg_matrix_power_executable_lowering_rule()`
 and `make_program_ad_linalg_multi_dot_executable_lowering_rule()` bind concrete
 static linalg signatures to verified MLIR-runtime value/JVP kernels derived from
 the direct derivative factories.
@@ -1248,10 +1280,24 @@ is_phase_jax_available() -> bool
 jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None, rule=None) -> PhaseJAXParameterShiftResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
+build_pennylane_qnode_from_phase_qnode(circuit, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift") -> PennyLaneQNodeConversionResult
+check_pennylane_phase_qnode_round_trip(circuit, values, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6) -> PennyLaneRoundTripResult
 is_phase_torch_available() -> bool
 torch_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTorchParameterShiftResult
+torch_bounded_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> PhaseTorchQNNGradientResult
+torch_autograd_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> PhaseTorchAutogradQNNGradientResult
+run_torch_func_compatibility_audit(features, labels, params, params_batch, tolerance=1e-6) -> PhaseTorchFuncCompatibilityResult
+run_torch_compile_compatibility_audit(features, labels, params, tolerance=1e-6, fullgraph=True, dynamic=False) -> PhaseTorchCompileCompatibilityResult
+torch_bounded_qnn_module(features, labels, initial_params, trainable=True) -> torch.nn.Module
+torch_bounded_qnn_layer(features, labels, initial_params, trainable=True) -> torch.nn.Module
+run_torch_module_wrapper_audit(features, labels, initial_params, tolerance=1e-6) -> PhaseTorchModuleWrapperAuditResult
 is_phase_tensorflow_available() -> bool
 tensorflow_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTensorFlowParameterShiftResult
+run_tensorflow_gradient_tape_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowGradientTapeCompatibilityResult
+run_tensorflow_function_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowFunctionCompatibilityResult
+run_tensorflow_xla_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowXLACompatibilityResult
+tensorflow_bounded_qnn_keras_layer(features, labels, initial_params, trainable=True) -> tf.keras.layers.Layer
+run_tensorflow_keras_layer_wrapper_audit(features, labels, initial_params, tolerance=1e-6) -> PhaseTensorFlowKerasLayerWrapperAuditResult
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGradientResult
 ```
@@ -1259,8 +1305,9 @@ weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGra
 All native and optional-adapter inputs are fail-closed real-numeric boundaries:
 parameter arrays, objective return values, optimiser learning rates,
 parameter-shift rules, JAX objective values, phase JAX host-callback gradients,
-PennyLane agreement gradients, PyTorch/TensorFlow tensor-bridge gradients, and
-gradients reject strings, booleans, object arrays, complex values, shape
+PennyLane agreement gradients, PyTorch/TensorFlow tensor-bridge gradients,
+TensorFlow `GradientTape`/`tf.function`/XLA/Keras bridge gradients, and gradients reject strings,
+booleans, object arrays, complex values, shape
 mismatches, and non-finite numbers before training or hardware-adapter code
 consumes them.
 `DifferentiableOptimizer.minimize()` is deliberately bounded: it records scalar
@@ -1683,11 +1730,34 @@ QAOA_MPC(B_matrix, target_state, horizon, p_layers=2)
 ### `vqls_gs.VQLS_GradShafranov`
 
 ```python
-VQLS_GradShafranov(grid_size=4, source_profile=None)
+VQLS_GradShafranov(n_qubits=4, source_width=0.05, imag_tol=0.1)
     .discretize() -> tuple[np.ndarray, np.ndarray]  # (A, b)
-    .build_ansatz(n_qubits, reps=2) -> QuantumCircuit
-    .solve() -> np.ndarray  # psi profile
+    .build_ansatz(reps=2) -> QuantumCircuit
+    .solve(
+        reps=2,
+        maxiter=200,
+        seed=None,
+        n_restarts=1,
+        residual_tol=1e-10,
+        allow_classical_refinement=True,
+    ) -> np.ndarray  # residual-certified psi profile
+    .solve_with_diagnostics(...) -> VQLSGradShafranovResult
 ```
+
+`solve()` first evaluates the variational VQLS ansatz against the
+finite-difference Grad-Shafranov system `A x = b`.  The returned vector is
+accepted only when its relative residual is within `residual_tol`; otherwise,
+for the SPD Laplacian system built by `discretize()`, the default path repairs
+the result with `np.linalg.solve(A, b)` and records
+`method="direct_spd_residual_repair"` in `last_result`.
+Set `allow_classical_refinement=False` to inspect the raw variational failure
+through `solve_with_diagnostics()`; `solve()` raises instead of returning an
+unverified high-residual profile.
+
+`VQLSGradShafranovResult` exposes the returned solution, relative residual,
+residual tolerance, variational candidate, variational residual, convergence
+flags, direct-reference error, optimiser metadata, restart count, method label,
+and condition number.
 
 ### `qpetri.QuantumPetriNet`
 

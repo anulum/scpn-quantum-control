@@ -307,15 +307,21 @@ def test_adapt_vqe_full_loop():
     assert hasattr(result, "converged")
 
 
-def test_adapt_vqe_build_ansatz():
-    """Verifies 203-209: _build_ansatz creates circuit from selected ops."""
-    from scpn_quantum_control.phase.adapt_vqe import _build_ansatz, _build_operator_pool
+def test_adapt_vqe_ansatz_action_is_unitary():
+    """The layered ansatz applies exp(-iθG) gates and preserves the state norm."""
+    import numpy as np
+
+    from scpn_quantum_control.phase.adapt_vqe import (
+        _ansatz_state,
+        _plus_reference,
+        _pool_generators_dense,
+    )
 
     K = build_knm_paper27(L=2)
-    pool = _build_operator_pool(K, 2)
-    if len(pool) > 0:
-        qc = _build_ansatz(2, pool, [0], [0.1])
-        assert qc.num_qubits == 2
+    generators = _pool_generators_dense(K, 2)
+    spectra = [np.linalg.eigh(g) for g in generators]
+    out = _ansatz_state(_plus_reference(2), spectra, np.linspace(-0.5, 0.5, len(generators)))
+    assert np.isclose(np.vdot(out, out).real, 1.0, atol=1e-12)
 
 
 class TestQRCEdge:

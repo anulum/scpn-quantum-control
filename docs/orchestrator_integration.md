@@ -8,6 +8,13 @@
 
 # Orchestrator Integration
 
+## Why this page exists
+
+This page defines the interoperability boundary between `scpn-quantum-control` and
+`scpn-phase-orchestrator`. It is the source of truth for how phase and control
+semantics move from orchestrator specs into executable quantum workflows without
+duplicating domain rules.
+
 This page documents how `scpn-quantum-control` now interoperates with
 `scpn-phase-orchestrator` and fusion-specific Kuramoto/UPDE specifications.
 

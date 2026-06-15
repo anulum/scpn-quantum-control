@@ -1,5 +1,11 @@
 # Benchmark Harness
 
+## What this page is for
+
+This page provides the reproducible entry point for public benchmark
+reconstruction. It keeps low-cost datasets, loaders, and tolerance checks aligned
+so published benchmark rows can be regenerated without submitting jobs.
+
 The benchmark harness is the public no-QPU reproduction layer for published SCPN Quantum Control datasets. The first S5 benchmark covers the Phase 1 DLA-parity raw-count campaign.
 
 ## Python API

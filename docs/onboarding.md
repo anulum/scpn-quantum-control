@@ -12,12 +12,37 @@ This page is the shortest route to understanding what
 `scpn-quantum-control` is, what it is useful for, and where the claim
 boundaries sit.
 
+## Why this exists
+
+The package is intended for teams that cannot treat every quantum workflow as
+equivalent. It separates:
+
+- **simulation science** (fast iteration),
+- **method verification** (reproducible checks and baselines),
+- **hardware evidence** (raw-count-backed claims), and
+- **commercial readiness** (stable facades, release gates, and deployment boundaries).
+
+The goal is a single path from idea to auditable outcome, where every higher-cost
+route has a defined evidence burden. A useful result in this repository is not
+only a plot or a notebook output; it is a result with inputs, code path,
+dependency context, claim class, and promotion rule.
+
 ## One-Sentence Description
 
 `scpn-quantum-control` is a quantum-control and differentiable-computation
 workbench for coupled oscillator networks, centred on the Kuramoto-XY mapping
 and backed by simulator workflows, Rust acceleration, hardware-result ledgers,
 release gates, and explicit scientific claim boundaries.
+
+## Who this helps in practice
+
+| Role | Outcome |
+|---|---|
+| Researcher | turn coupled-oscillator models into structured comparisons with clear limits |
+| Hardware operator | run campaign planning and raw-count review without mixing simulator and hardware claims |
+| Product engineer | adopt stable facades and migrate into integrations with low risk |
+| Compliance reviewer | inspect explicit claim classes and verify promotion rules before release |
+| Commercial evaluator | see which parts are ready for pilots, which are research-only, and where a commercial licence is required |
 
 ## What Problem It Solves
 
@@ -43,7 +68,7 @@ a common route for those systems:
 | Rust acceleration | Speeds up selected Hamiltonian, expectation, pulse, symmetry, and compiler-AD hot paths. | `scpn-quantum-engine` |
 | Differentiable programming | Provides parameter-shift VQE building blocks, supported scalar/vector/matrix AD primitives, native lowering reports, and fail-closed unsupported boundaries. | `scpn_quantum_control.phase.param_shift`, `scpn_quantum_control.compiler.mlir`, and `scpn_quantum_control.differentiable` |
 | Paper 0 source register | Preserves source-bounded validation fixtures and claim boundaries for Paper 0. | `scpn_quantum_control.paper0` |
-| Release gates | Make public release decisions repeatable instead of narrative. | `tools/audit_release_readiness.py` and `scpn-bench` gates |
+| Release gates | Make public release decisions repeatable instead of process-only statements. | `tools/audit_release_readiness.py` and `scpn-bench` gates |
 
 ## Adoption Checklist
 
@@ -92,6 +117,19 @@ coupled dynamics matter:
   optimisation, VQE training experiments, compiler-backed AD, CPU-only
   framework parity, and external ML-framework comparison rows.
 
+## Market-fit framing
+
+The strongest adoption case is not a claim of near-term quantum advantage. The
+adoption case is governed uncertainty reduction for domains where coupled
+dynamics matter and where uncontrolled evidence would be expensive:
+
+| Market problem | Why this package matters |
+|---|---|
+| Quantum pilots are hard to compare | Common `K_nm`/`omega` contracts, classical references, and claim classes make pilots reviewable. |
+| Hardware runs are costly and easy to overstate | No-QPU gates, provider readiness, and raw-count ledgers prevent simulator output from becoming hardware language. |
+| Optimisation stacks hide fallback behaviour | Gradient support matrices and fail-closed routes make unsupported AD visible before integration. |
+| Research notebooks do not become products cleanly | Stable facades, API docs, examples, and release gates provide a migration path from exploration to integration. |
+
 ## What Is Mature
 
 - Local simulator workflows for Kuramoto-XY examples and notebooks.
@@ -114,7 +152,8 @@ coupled dynamics matter:
   unified differentiable-readiness audit for reviewer-facing support evidence.
 - The Phase-QNode differentiable lane now has a reproducible CPU framework
   overlay profile, external comparison rows for JAX, PyTorch, TensorFlow,
-  PennyLane, and optional Enzyme/compiler AD, plus a claim ledger that requires
+  PennyLane, and optional Enzyme/compiler AD runner evidence with strict JSON,
+  timeout, toolchain, and correctness gates, plus a claim ledger that requires
   artefact IDs before promotion.
 
 ## What Remains Bounded
@@ -125,7 +164,8 @@ coupled dynamics matter:
   relevant ledger gates before promotion.
 - Phase-QNode performance remains SOTA-candidate until a self-hosted
   `isolated-benchmark` CI runner uploads an `isolated_affinity` artefact; local
-  and GitHub-hosted rows are diagnostic only.
+  and GitHub-hosted rows are diagnostic only, and CUDA/ROCm claims require
+  explicit visible-device metadata rather than CPU fallback.
 - General native MLIR/LLVM/JIT AD over arbitrary programs is still an open
   engineering frontier; supported primitives and supported scalar traces
   execute through bounded kernels, and unsupported paths report the blocked

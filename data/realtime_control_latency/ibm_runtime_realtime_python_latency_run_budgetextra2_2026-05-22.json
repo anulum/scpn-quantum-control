@@ -2,7 +2,7 @@
   "schema": "scpn_ibm_runtime_python_realtime_latency_run_v1",
   "backend": "ibm_kingston",
   "runner": "python_ibm_runtime_program_run",
-  "source_matrix": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T010054Z.json",
+  "source_matrix": "data/realtime_control_latency/ibm_runtime_realtime_payload_matrix_ibm_kingston_20260522T010054Z.json",
   "rows": [
     {
       "lane": "rt_adaptive_dense_dynamic",

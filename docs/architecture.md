@@ -8,6 +8,22 @@
 
 # Architecture
 
+## Purpose and boundaries
+
+This page documents the software architecture in a way that supports technical due
+diligence and long-lived integration. The design objective is to keep
+problem-to-experiment flow deterministic while allowing each subsystem to evolve
+with clear contracts.
+
+The architecture intentionally separates:
+
+- **core transforms** (`bridge`, `phase`, `analysis`) from
+- **execution substrates** (`hardware`, `benchmarks`, `accel`) and
+- **evidence/control surfaces** (`release`, `hardware status`, campaign artefacts).
+
+This split is why the same repository can support both reproducible research
+workflows and integration-oriented development.
+
 ## Package Statistics (v0.9.8)
 
 | Metric | Count |
@@ -228,7 +244,7 @@ phase/                                     ← 14 modules: time evolution + vari
 ├── trotter_upde.py                            Full 16-layer UPDE solver
 ├── trotter_error.py                           Trotter error analysis
 ├── phase_vqe.py                               Variational eigensolver
-├── adapt_vqe.py                             ★ Gradient-driven operator selection
+├── adapt_vqe.py                             ★ Adaptive layered VQE (exact-GS)
 ├── varqite.py                                 Imaginary time evolution
 ├── avqds.py                                   Adaptive variational dynamics
 ├── qsvt_evolution.py                          QSVT resource estimation (260× speedup)
@@ -241,7 +257,7 @@ phase/                                     ← 14 modules: time evolution + vari
 
 control/                                   ← Quantum control + classification
 ├── qaoa_mpc.py                                QAOA model-predictive control
-├── vqls_gs.py                                 VQLS Grad-Shafranov solver
+├── vqls_gs.py                                 Residual-certified VQLS Grad-Shafranov solver
 ├── qpetri.py                                  Quantum Petri nets
 ├── q_disruption.py                            Disruption classifier
 └── q_disruption_iter.py                       ITER 11-feature + fusion-core adapter

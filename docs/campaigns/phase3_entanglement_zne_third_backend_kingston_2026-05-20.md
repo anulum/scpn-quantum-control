@@ -177,7 +177,7 @@ spec = importlib.util.spec_from_file_location(
 phase1 = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(phase1)
 token, instance = phase1.parse_vault(
-    Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+    Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 )
 service = QiskitRuntimeService(channel="ibm_cloud", token=token, instance=instance)
 for role, job_id in {

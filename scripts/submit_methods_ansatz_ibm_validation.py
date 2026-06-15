@@ -35,7 +35,7 @@ from scpn_quantum_control.hardware.runner import _extract_counts
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "rust_vqe_methods"
-DEFAULT_CREDENTIALS_VAULT = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+DEFAULT_CREDENTIALS_VAULT = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 DEFAULT_LAYOUT = (7, 17, 6, 8)
 SEED_TRANSPILER = 20260520
 QPU_SECONDS_CEILING = 140.0

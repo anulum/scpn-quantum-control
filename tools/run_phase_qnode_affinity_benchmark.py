@@ -13,7 +13,7 @@ import argparse
 import json
 from pathlib import Path
 
-from scpn_quantum_control.phase import run_phase_qnode_affinity_benchmark
+from lean_phase_import import load_phase_module
 
 
 def main() -> None:
@@ -25,6 +25,9 @@ def main() -> None:
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
     reserved = tuple(int(item.strip()) for item in args.reserved_cpus.split(",") if item.strip())
+    run_phase_qnode_affinity_benchmark = load_phase_module(
+        "qnode_affinity_benchmark"
+    ).run_phase_qnode_affinity_benchmark
     result = run_phase_qnode_affinity_benchmark(
         repetitions=args.repetitions,
         warmups=args.warmups,

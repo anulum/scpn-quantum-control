@@ -8,6 +8,12 @@
 
 # Quantum Cryptography Research Branch
 
+## Why this branch exists
+
+This branch records experimental work on topology-authenticated cryptography built on
+the SCPN coupling matrix model. It is a specialist research lane and is separate
+from the promoted default API and release gates.
+
 ## Thesis
 
 The SCPN coupling matrix K_nm encodes oscillator topology as quantum

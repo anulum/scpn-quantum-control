@@ -8,7 +8,7 @@ Paper 0 publication package.
 
 This package is intentionally limited to Paper 0 material from the tuned
 full-fidelity extraction and subsequent source-validation promotion pipeline.
-Operational handover/runbook notes live outside this package under ignored
+Operational private handoff record/runbook notes live outside this package under ignored
 internal notes.
 
 ## File Families
@@ -32,13 +32,13 @@ internal notes.
   artefacts generated during earlier promotion phases.
 - `PAPER0_EQUATIONS_CAPTURED.md`, `paper0_foundational_extraction_index_*`,
   `paper0_validation_program_*`: human-facing index and planning notes for the
-  same Paper 0 validation programme; these belong here, not in `docs/internal/`.
+  same Paper 0 validation programme; these belong here, not in `private internal records/`.
 ## Current Layout Rule
 
 The Python loaders and promotion scripts currently resolve artefacts from this
 directory root. Do not move these generated Paper 0 files into deeper
 subdirectories unless the corresponding script defaults, spec loaders, tests,
-and session handover notes are updated in the same change.
+and session private handoff record notes are updated in the same change.
 
 ## Latest Verified Promotion State
 

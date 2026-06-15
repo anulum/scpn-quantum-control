@@ -14,6 +14,13 @@ multi-backend support. 17 modules (April 2026: added `qubit_mapper.py`
 for DynQ topology-agnostic placement) covering IBM superconducting,
 trapped ion, PennyLane, Cirq, GPU acceleration, and circuit cutting.
 
+## Why this page exists
+
+This page gives operators and integrators one entry point for how experiments
+flow from circuit definition to reference comparisons. It is the practical route
+for teams that need to control submission policy, evidence classes, and
+reproducibility boundaries before running local or provider workloads.
+
 **Hardware evidence status:**
 
 | Device | Family | Campaign | Highlight |
@@ -500,7 +507,7 @@ ibm_kingston dataset.
 ## Phase 1 Campaign Protocol (April 2026)
 
 The Phase 1 campaign is recorded in
-`.coordination/IBM_CAMPAIGN_STATE.md` and `IBM_EXECUTION_LOG.md`, and
+`<private-local-record>` and `IBM_EXECUTION_LOG.md`, and
 the analysis is reproduced by `scripts/analyse_phase1_dla_parity.py`.
 The four sub-phases progressively increased the per-point repetition
 count from 2 to 21 to drive the per-depth uncertainty below the 5 %

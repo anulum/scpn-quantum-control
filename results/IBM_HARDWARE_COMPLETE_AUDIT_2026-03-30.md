@@ -178,7 +178,7 @@ results/
 
 2. **Campaign 1 duplicate data**: `results/ibm_hardware_2026-03-18/` and `results/march_2026/` contain the same 9 jobs in different formats. The `march_2026/` format is richer (includes experiment name, group, retrieval timestamp).
 
-3. **Campaign 3 DLA parity F=0.000**: The `mean_fidelity_even` and `mean_fidelity_odd` fields may use a different key structure. The fidelity arrays are present in the file. The actual values from the handover are F_even=0.994, F_odd=0.932 (but with circuit depth confound).
+3. **Campaign 3 DLA parity F=0.000**: The `mean_fidelity_even` and `mean_fidelity_odd` fields may use a different key structure. The fidelity arrays are present in the file. The actual values from the private handoff record are F_even=0.994, F_odd=0.932 (but with circuit depth confound).
 
 4. **Campaign 4 B_M+2/M0/M-2 = 0.000**: These mixed magnetisation sectors completely decohere on hardware — the 0.000 is the actual measurement, not a missing value. Only aligned sectors (M=±4) survive.
 

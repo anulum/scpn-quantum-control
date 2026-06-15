@@ -50,8 +50,10 @@ pub mod otoc;
 pub mod pauli;
 pub mod pec;
 pub mod pulse_shaping;
+pub mod qnode_metrics;
 pub mod qpetri;
 pub mod sectors;
+pub mod stochastic_gradient;
 pub mod symmetry_decay;
 pub mod validation;
 
@@ -176,6 +178,52 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Community scoring (DynQ)
     m.add_function(wrap_pyfunction!(community::score_regions_batch, m)?)?;
+
+    // Phase-QNode differentiable metric and transform parity
+    m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_fubini_study_metric_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_computational_basis_fisher_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_vector_jvp_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_vector_vjp_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_hessian_vector_product_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_vector_hessian_tensor_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        qnode_metrics::phase_qnode_complex_derivative_contract_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        stochastic_gradient::parameter_shift_gradient_uncertainty_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        stochastic_gradient::spsa_gradient_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        stochastic_gradient::score_function_gradient_rust,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        stochastic_gradient::gradient_confidence_interval_rust,
+        m
+    )?)?;
 
     // Compiler-backed AD native parity
     m.add_function(wrap_pyfunction!(

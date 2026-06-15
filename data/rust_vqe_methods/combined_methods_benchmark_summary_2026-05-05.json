@@ -1,8 +1,8 @@
 {
   "artefacts": {
-    "csv": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/rust_vqe_methods/combined_methods_benchmark_summary_2026-05-05.csv",
+    "csv": "data/rust_vqe_methods/combined_methods_benchmark_summary_2026-05-05.csv",
     "csv_sha256": "e69b94df590ff06708b3b21245864f74c3df630b514254526dc6c4af3fe24c2f",
-    "json": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/rust_vqe_methods/combined_methods_benchmark_summary_2026-05-05.json",
+    "json": "data/rust_vqe_methods/combined_methods_benchmark_summary_2026-05-05.json",
     "json_sha256": "c5ebcd248b775ed9a59c892710fddca40607e53f8cd1dbd18adf85b4f7bdf98d"
   },
   "date": "2026-05-05",

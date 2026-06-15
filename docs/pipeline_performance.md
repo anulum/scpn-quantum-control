@@ -1090,10 +1090,15 @@ Optimal dt respects the epsilon target.
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `trotter_error_sweep(3t × 3reps)` | 3 qubits | 483 ms | 2D error map |
+| `trotter_error_sweep(3t × 3reps)` | 3 qubits | ~3.9 ms | 2D error map |
+
+Functional, non-isolated timing (median of 5, host load ≈ 5.3). The two-group
+product formula is measured with direct dense matrix exponentials, replacing the
+earlier circuit-construction path.
 
 Error at t=0: < 1e-10. Error decreases with reps. Error increases with time.
-Quadratic scaling: doubling t roughly quadruples error.
+First-order error shows quadratic time scaling; the symmetric second order
+(`order=2`) shows cubic time scaling and lower error at fixed `(t, reps)`.
 
 ---
 

@@ -36,7 +36,7 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATE = "2026-05-06"
 CAPTURE_DATE = "2026-05-20"
-DEFAULT_CREDENTIALS_VAULT = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+DEFAULT_CREDENTIALS_VAULT = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 DATA_DIR = REPO_ROOT / "data" / "s1_feedback_loop"
 DOCS_DIR = REPO_ROOT / "docs"
 QPU_SECONDS_CEILING = 120.0

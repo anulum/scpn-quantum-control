@@ -32,7 +32,7 @@ The following is stable and covered by this contract:
 Everything else — private modules (`_foo.py`, `foo._bar`), internal
 Rust modules without `#[pyfunction]`, undocumented helper
 constants, fixture files under `tests/`, and agent-facing docs under
-`docs/internal/` — is explicitly **not** part of the public contract
+`private internal records/` — is explicitly **not** part of the public contract
 and may change without notice between releases.
 
 ## What counts as a breaking change

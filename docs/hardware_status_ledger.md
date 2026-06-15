@@ -24,14 +24,14 @@ and raw-data path.
 
 | Area | Current public status | Canonical source |
 |---|---|---|
-| Package line | Version `0.9.11`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. | `pyproject.toml`, `CHANGELOG.md` |
+| Package line | Version `0.9.12`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. | `pyproject.toml`, `CHANGELOG.md` |
 | Generic compiler entry point | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` problems and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. | `docs/kuramoto_core_facade.md` |
 | Core-package licence boundary | Possible future lightweight core split is documented, but no permissive relicensing has occurred. | `docs/core_package_boundary.md` |
 | Baseline hardware campaign | `ibm_fez` Heron r2 baseline artefacts are retained as legacy QPU evidence. Quote only values that name a committed raw artefact or retrieval file; do not use this campaign as proof of broad advantage. | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md` |
 | DLA parity campaigns | `ibm_kingston` Heron r2 Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount-control campaigns are promoted hardware datasets: raw counts, public run labels, integrity checks, and reproduction harnesses are committed. Raw IBM job identifiers are retained only in the private mapping. | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, `data/phase2_popcount_control/`, `docs/publication/publication_phase2_package_2026-05-05.md`, `scripts/analyse_phase2_dla_parity.py`, `scripts/analyse_phase2_scaling_bc.py`, `scripts/analyse_phase2_popcount_control.py` |
 | SCPN/FIM hardware campaign | `ibm_kingston` Heron r2 pilot and repeated follow-up are promoted as a negative/falsification result for the simple digital `lambda=4` hardware-protection hypothesis on the tested circuit family. | `data/scpn_fim_hamiltonian/`, `docs/campaigns/scpn_fim_claim_boundary_2026-05-05.md`, `scripts/analyse_fim_ibm_pilot.py`, `scripts/analyse_fim_ibm_repeated_followup.py`, `scripts/analyse_fim_readout_matrix_mitigation.py` |
 | Simulator claims | BKT, OTOC, Floquet, MBL, FIM, and classical comparison material remain simulator or classical-baseline claims unless a hardware artefact is named. | `results/SIMULATOR_RESULTS.md`, `results/classical_baselines_2026-03-30.json` |
-| Quarantined / unpromoted IBM output | Any frontier, V2, queued-job, placeholder, or aggregate-only IBM output is not promoted until it has raw counts, private retrieval map, analysis code, and an explicit ledger row. | `results/ibm_hardware_v2_2026-03-29/`, `results/ibm_runs/jobs.json`, `docs/internal/chat_exports/2026-04-25_gemini_chat_export_full.md` |
+| Quarantined / unpromoted IBM output | Any frontier, V2, queued-job, placeholder, or aggregate-only IBM output is not promoted until it has raw counts, private retrieval map, analysis code, and an explicit ledger row. | `results/ibm_hardware_v2_2026-03-29/`, `results/ibm_runs/jobs.json`, `<private-internal-record>` |
 
 README, `docs/index.md`, and `docs/results.md` should treat this dated snapshot
 as the source of truth for public status wording. If a campaign value changes,
@@ -101,7 +101,7 @@ raw IBM counts and promoted here.
 
 | Queue | State | Next gate |
 |---|---|---|
-| High-impact execution TODO | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, frontier-track scaffolding, and CI timing-gate stabilization are checked off. | Keep CI green on `main`; add only scoped follow-up work. |
+| High-impact execution record | Complete locally. Dependency hygiene, core facade, documentation ergonomics, baselines, maintenance, frontier-track scaffolding, and CI timing-gate stabilization are checked off. | Keep CI green on `main`; add only scoped follow-up work. |
 | Scientific gaps | Partially closed. The EEG PLV K_nm validation artefacts now cover the full 109-subject PhysioNet EEGMMIDB baseline eyes-open and eyes-closed cohorts, with a derived condition comparison. The first physical-unit measured-system control, IEEE 5-bus, is committed and does not close K_nm physical validation; broad quantum advantage remains open; `p_h1 = 0.72` is an explicit open empirical/theoretical parameter. | Additional physical-unit measured coupling candidates with null models; provenance-rich advantage benchmark tables; TCBO or first-principles p_h1 reproduction. |
 | Hardware experiments | March/April/May evidence is narrowed to legacy `ibm_fez` baseline artefacts, promoted raw-count `ibm_kingston` DLA Phase 1/2 datasets, and the promoted SCPN/FIM negative result. | Further QPU work needs a preregistered manifest, depth/shot gates, QPU-time estimate, and explicit approval; no frontier promotion without raw-count review. |
 | Strategic roadmap | All 53 post-v1.0 differentiation tracks remain deferred / CEO-gated. | Activate one track explicitly before implementation. |

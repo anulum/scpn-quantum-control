@@ -26,27 +26,49 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     assert result.framework_count == 5
     assert result.supported_count == 3
     assert result.fail_closed_count == 2
-    assert result.native_framework_autodiff_count == 1
+    assert result.native_framework_autodiff_count == 3
     assert result.tensor_output_count == 2
     assert result.host_boundary_count == 0
 
     jax = result.capability_by_framework("jax")
     assert jax.supported
     assert jax.native_framework_autodiff
-    assert jax.public_api == "jax_native_qnn_value_and_grad"
+    assert jax.public_api == "jax_native_qnn_value_and_grad,jax_custom_vjp_qnn_value_and_grad"
+    assert "jax_custom_vjp_bounded_phase_qnn_value_and_grad" in jax.gradient_route
     assert not jax.host_boundary
 
     pytorch = result.capability_by_framework("pytorch")
     assert pytorch.supported
     assert pytorch.tensor_output
+    assert pytorch.native_framework_autodiff
     assert pytorch.analytic_framework_gradient
-    assert pytorch.public_api == "torch_bounded_qnn_value_and_grad"
+    assert (
+        pytorch.public_api == "torch_bounded_qnn_value_and_grad,torch_autograd_qnn_value_and_grad"
+        ",run_torch_func_compatibility_audit,run_torch_compile_compatibility_audit"
+        ",torch_bounded_qnn_module,torch_bounded_qnn_layer,run_torch_module_wrapper_audit"
+    )
+    assert "torch_bounded_phase_qnn_custom_autograd_function" in pytorch.gradient_route
+    assert "bounded_torch_func_grad_vmap_jacrev" in pytorch.gradient_route
+    assert "bounded_torch_compile_gradient" in pytorch.gradient_route
+    assert "bounded_torch_module_layer_wrapper_gradient" in pytorch.gradient_route
 
     tensorflow = result.capability_by_framework("tensorflow")
     assert tensorflow.supported
     assert tensorflow.tensor_output
+    assert tensorflow.native_framework_autodiff
     assert tensorflow.analytic_framework_gradient
-    assert tensorflow.public_api == "tensorflow_bounded_qnn_value_and_grad"
+    assert (
+        tensorflow.public_api == "tensorflow_bounded_qnn_value_and_grad"
+        ",run_tensorflow_gradient_tape_compatibility_audit"
+        ",run_tensorflow_function_compatibility_audit"
+        ",run_tensorflow_xla_compatibility_audit"
+        ",tensorflow_bounded_qnn_keras_layer"
+        ",run_tensorflow_keras_layer_wrapper_audit"
+    )
+    assert "bounded_tensorflow_gradient_tape_gradient" in tensorflow.gradient_route
+    assert "bounded_tensorflow_function_gradient" in tensorflow.gradient_route
+    assert "bounded_tensorflow_xla_gradient" in tensorflow.gradient_route
+    assert "bounded_tensorflow_keras_layer_gradient" in tensorflow.gradient_route
 
 
 def test_bounded_qnn_framework_bridge_matrix_records_fail_closed_gaps() -> None:
@@ -87,7 +109,7 @@ def test_bounded_qnn_framework_bridge_matrix_to_dict_is_json_ready() -> None:
     assert payload["passed"] is True
     assert payload["framework_count"] == 2
     assert payload["supported_count"] == 2
-    assert payload["native_framework_autodiff_count"] == 1
+    assert payload["native_framework_autodiff_count"] == 2
     assert payload["tensor_output_count"] == 1
     assert "not arbitrary framework autodiff" in str(payload["claim_boundary"])
     assert [item["framework"] for item in payload["capabilities"]] == [

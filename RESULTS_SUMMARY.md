@@ -117,6 +117,6 @@ independently of coupling topology.
 `tests/test_fim_mechanism.py` — 77 tests covering all findings
 
 ### Cross-Project Documents (gitignored, local only)
-- `scpn-phase-orchestrator/docs/internal/QUANTUM_CONTROL_FINDINGS_2026-03-29.md`
-- `sc-neurocore/docs/internal/QUANTUM_CONTROL_FINDINGS_FOR_NEUROCORE_2026-03-29.md`
-- `sc-neurocore/docs/internal/QUANTUM_CONTROL_ANSWERS_FOR_NEUROCORE_2026-03-29.md`
+- `scpn-phase-orchestrator/private internal records/QUANTUM_CONTROL_FINDINGS_2026-03-29.md`
+- `sc-neurocore/private internal records/QUANTUM_CONTROL_FINDINGS_FOR_NEUROCORE_2026-03-29.md`
+- `sc-neurocore/private internal records/QUANTUM_CONTROL_ANSWERS_FOR_NEUROCORE_2026-03-29.md`

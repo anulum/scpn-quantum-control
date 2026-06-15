@@ -91,7 +91,7 @@ Future paper-ingestion registers should preserve the same contract:
 - Every spec and fixture preserves the claim boundary.
 - Public docs describe ingestion as source-accounting unless measured evidence is
   linked through a separate evidence ledger.
-- Internal extraction artefacts stay under `docs/internal/`.
+- Internal extraction artefacts stay under `private internal records/`.
 - Public API pages route readers to a concise register page instead of exposing
   thousands of generated internals as the first-path documentation surface.
 

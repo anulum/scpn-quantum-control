@@ -218,6 +218,7 @@ def run_quantum_gradient_benchmark_suite() -> tuple[QuantumGradientBenchmarkResu
     return (
         _single_rotation_quantum_gradient_case(),
         _two_parameter_quantum_gradient_case(),
+        _sparse_ising_chain_quantum_gradient_case(),
     )
 
 
@@ -265,6 +266,33 @@ def _two_parameter_quantum_gradient_case() -> QuantumGradientBenchmarkResult:
         objective,
         values,
         analytic,
+    )
+
+
+def _sparse_ising_chain_quantum_gradient_case() -> QuantumGradientBenchmarkResult:
+    values = np.array([0.15, -0.35, 0.55, -0.75, 0.95, -1.15], dtype=np.float64)
+    local_fields = np.array([0.31, -0.17, 0.23, 0.41, -0.29, 0.37], dtype=np.float64)
+    couplings = np.array([0.19, -0.11, 0.07, 0.13, -0.05], dtype=np.float64)
+
+    def objective(params: NDArray[np.float64]) -> float:
+        cos_terms = np.cos(params)
+        local_energy = float(np.dot(local_fields, cos_terms))
+        coupling_energy = float(np.dot(couplings, cos_terms[:-1] * cos_terms[1:]))
+        return local_energy + coupling_energy
+
+    analytic = -local_fields * np.sin(values)
+    analytic[:-1] -= couplings * np.sin(values[:-1]) * np.cos(values[1:])
+    analytic[1:] -= couplings * np.cos(values[:-1]) * np.sin(values[1:])
+    return _quantum_gradient_case(
+        "sparse_ising_chain_six_qubit_expectation",
+        objective,
+        values,
+        analytic,
+        claim_boundary=(
+            "deterministic sparse Hamiltonian expectation-gradient conformance "
+            "for a six-qubit nearest-neighbour Ising chain; no wall-clock "
+            "performance, hardware, provider, or framework-autodiff claim"
+        ),
     )
 
 
@@ -1023,6 +1051,7 @@ def _quantum_gradient_case(
     objective: Callable[[NDArray[np.float64]], float],
     values: NDArray[np.float64],
     analytic_gradient: NDArray[np.float64],
+    claim_boundary: str | None = None,
 ) -> QuantumGradientBenchmarkResult:
     certificate = verify_parameter_shift_gradient(objective, values)
     value = float(objective(values.copy()))
@@ -1040,7 +1069,8 @@ def _quantum_gradient_case(
         max_abs_finite_difference_error=certificate.max_abs_error,
         verification_passed=certificate.passed,
         evaluations=certificate.total_evaluations,
-        claim_boundary=(
+        claim_boundary=claim_boundary
+        or (
             "deterministic local expectation-gradient conformance against analytic "
             "and finite-difference references; no wall-clock performance, hardware, "
             "provider, or framework-autodiff claim"

@@ -173,13 +173,23 @@ This is reviewer-facing agreement evidence for named, caller-supplied
 framework-style gradients. The bounded phase-QNN model also exposes
 `jax_native_qnn_value_and_grad(...)`, which expresses that model directly in JAX
 operations and verifies JAX `value_and_grad` against the SCPN parameter-shift
-reference, plus `torch_bounded_qnn_value_and_grad(...)` and
-`tensorflow_bounded_qnn_value_and_grad(...)`, which return framework tensors
-from the analytic bounded-model gradient and check the same parameter-shift
-reference. These are intentionally narrow bridge promotions: arbitrary
-autodiff-through-simulator kernels, unrestricted QNN architectures, device
-placement guarantees, and live provider gradients remain outside the promoted
-surface.
+reference, plus `torch_bounded_qnn_value_and_grad(...)`, which returns PyTorch
+tensors from the analytic bounded-model gradient,
+`torch_autograd_qnn_value_and_grad(...)`, which wraps the bounded model in a
+custom `torch.autograd.Function`,
+`run_torch_func_compatibility_audit(...)`, which checks bounded
+`torch.func.grad`, `torch.func.vmap`, and `torch.func.jacrev` compatibility,
+`run_torch_compile_compatibility_audit(...)`, which checks bounded
+`torch.compile` gradient compatibility,
+`torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` plus
+`run_torch_module_wrapper_audit(...)`, which check bounded PyTorch module/layer
+wrapper compatibility, and
+`tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
+from the analytic bounded-model gradient. Each route checks the same
+parameter-shift reference. These are intentionally narrow bridge promotions:
+arbitrary autodiff-through-simulator kernels, unrestricted QNN architectures,
+device placement guarantees, and live provider gradients remain outside the
+promoted surface.
 
 ## Bounded QNN convergence evidence
 
@@ -197,6 +207,45 @@ print(suite.passed, suite.total_parameter_shift_evaluations)
 The suite is local deterministic evidence only. It is not hardware evidence,
 not finite-shot noisy training, and not a claim that arbitrary QNN/QGNN/QSNN
 architectures converge.
+
+`run_parameter_shift_qnn_multi_seed_convergence_suite(...)` extends the same
+bounded cases across deterministic initial-parameter perturbations:
+
+```python
+from scpn_quantum_control.phase import run_parameter_shift_qnn_multi_seed_convergence_suite
+
+suite = run_parameter_shift_qnn_multi_seed_convergence_suite(seeds=(11, 17, 23))
+case = suite.case_by_name("single_feature_phase_flip")
+print(case.worst_best_loss, case.best_loss_std, suite.total_run_count)
+```
+
+The multi-seed envelope records every seed, seeded initial parameters, per-run
+pass/fail status, worst best-loss, worst accuracy, loss standard deviation, and
+parameter-shift evaluation totals. It remains local deterministic evidence with
+seeded initial-condition perturbations; it is not finite-shot stochastic
+training, hardware execution, isolated benchmark evidence, or a broad
+QNN/QGNN/QSNN convergence claim.
+
+`run_parameter_shift_qnn_loss_landscape_suite(...)` samples the same bounded
+phase-QNN objectives on local parameter grids:
+
+```python
+from scpn_quantum_control.phase import run_parameter_shift_qnn_loss_landscape_suite
+
+suite = run_parameter_shift_qnn_loss_landscape_suite(
+    case_names=("single_feature_phase_flip",),
+    grid_radius=0.2,
+    points_per_axis=5,
+)
+case = suite.case_by_name("single_feature_phase_flip")
+print(case.min_loss, case.max_loss, case.max_gradient_norm)
+```
+
+The landscape evidence records grid axes, every sampled parameter vector,
+losses, analytic parameter-shift gradients, gradient norms, sampled argmin,
+loss span, and pass/fail thresholds. It is a local diagnostic for bounded
+training surfaces, not hardware execution, finite-shot evidence, isolated
+benchmark evidence, or a claim about arbitrary QNN/QGNN/QSNN landscapes.
 
 ## Bounded QNN finite-shot evidence
 
@@ -349,6 +398,15 @@ result = parameter_shift_gradient_with_uncertainty(
 )
 print(result.gradient, result.standard_error)
 ```
+
+The optional Rust extension exposes
+`parameter_shift_gradient_uncertainty_rust(...)` for the same materialised
+finite-shot arithmetic: shifted plus/minus means, shifted variances, plus/minus
+shot counts, rule coefficients, and trainable masks are validated at the FFI
+boundary before Rust returns the gradient, standard error, diagonal covariance,
+and confidence radius. This is a parity kernel for uncertainty propagation; it
+does not call provider samplers, submit hardware jobs, or replace the Python
+evidence records.
 
 ## Provider callback execution
 
@@ -733,6 +791,9 @@ import numpy as np
 
 from scpn_quantum_control.phase import (
     parameter_shift_natural_gradient_descent,
+    phase_qnode_natural_gradient_metric,
+    phase_qnode_computational_basis_fisher_information,
+    PhaseQNodeCircuit,
     validate_natural_gradient_training,
 )
 
@@ -764,6 +825,53 @@ identity metric is allowed as a reproducible preconditioner baseline, but it is
 labelled as such and is not a claim of quantum Fisher extraction. Non-symmetric
 metrics, wrong shapes, non-finite entries, singular regularised systems, unsafe
 hardware backends, and non-descent metrics fail closed.
+
+For registered local Phase-QNode circuits, the phase namespace also exposes an
+exact pure-state metric provider.  It propagates analytic state derivatives
+through the registered statevector gate family, computes the Fubini-Study
+metric and the quantum Fisher information relation `QFI = 4 * metric`, and
+returns the Fubini-Study metric in the shape expected by natural-gradient
+training:
+
+```python
+circuit = PhaseQNodeCircuit(
+    n_qubits=1,
+    operations=(("ry", (0,), 0),),
+    observable="pauli_z",
+)
+qnode_metric = phase_qnode_natural_gradient_metric(circuit)
+classical_fisher = phase_qnode_computational_basis_fisher_information(
+    circuit,
+    np.array([0.8]),
+)
+
+run = parameter_shift_natural_gradient_descent(
+    lambda params: float(1.0 - np.cos(params[0])),
+    np.array([0.8]),
+    metric_tensor=qnode_metric,
+    learning_rate=0.4,
+    max_steps=20,
+)
+```
+
+This route is bounded to pure-state local Phase-QNode statevectors. It is not a
+finite-shot classical Fisher estimator, density-matrix metric, noisy-channel
+metric, provider metric, or hardware metric claim.
+
+`phase_qnode_computational_basis_fisher_information(circuit, params)` computes
+the exact classical Fisher matrix for computational-basis statevector
+probabilities using the same analytic state derivatives. It fails closed at
+zero-probability outcomes because the probability-space Fisher expression is
+singular there. The result is deterministic local evidence only; finite-shot
+uncertainty, hardware sampling, adaptive measurements, and optimal measurement
+selection remain outside this route.
+
+The optional Rust extension exposes parity kernels for the materialised metric
+evidence as `phase_qnode_fubini_study_metric_rust(...)` and
+`phase_qnode_computational_basis_fisher_rust(...)`. These functions take split
+real/imaginary state amplitudes and split real/imaginary derivative rows; they
+mirror the algebra used by the Python Phase-QNode API but do not execute the
+circuit family themselves.
 
 For reviewer-facing optimizer evidence, run the multi-start comparison audit:
 
@@ -927,6 +1035,8 @@ parity suite when a concrete circuit family is required:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    DenseHermitianObservable,
+    PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
     execute_phase_qnode_circuit,
@@ -946,6 +1056,17 @@ gradient = parameter_shift_phase_qnode_gradient(circuit, params)
 parity = run_phase_qnode_framework_parity_suite()
 print(value.value, gradient.gradient, parity.frameworks)
 ```
+
+For dense local observables, use `DenseHermitianObservable(matrix)`.  The matrix
+must be finite, square, Hermitian, power-of-two dimensional, and sized to the
+declared `n_qubits`; invalid matrices fail during circuit construction instead
+of being accepted as opaque simulator inputs.
+
+For covariance objectives, use `PauliCovarianceObservable(left, right)`.  The
+local statevector path evaluates the symmetrised covariance
+`0.5 <AB + BA> - <A><B>` and differentiates it with the product rule over the
+shifted component expectations, rather than applying a naive two-point shift to
+the nonlinear covariance scalar.
 
 The circuit family is intentionally bounded: unsupported gates, unregistered
 observables, dynamic provider paths, and hardware-backed gradients raise or
@@ -1062,6 +1183,86 @@ The bridge is optional and fail-closed. It imports JAX only when called. JIT
 mode uses `jax.pure_callback` around host-side parameter-shift evaluation and
 therefore does not claim native JAX differentiation of a quantum kernel.
 
+For the bounded phase-QNN classifier, the bridge also exposes a native
+custom-VJP route plus audited JIT, VMAP, and PMAP/sharding compatibility
+reports, plus bounded PyTree parameter support:
+
+```python
+import jax
+
+from scpn_quantum_control.phase import (
+    jax_custom_vjp_qnn_value_and_grad,
+    run_jax_jit_compatibility_audit,
+    run_jax_pytree_compatibility_audit,
+    run_jax_sharding_compatibility_audit,
+    run_jax_vmap_compatibility_audit,
+)
+
+custom_vjp = jax_custom_vjp_qnn_value_and_grad(
+    features,
+    labels,
+    params,
+    jit=True,
+)
+print(custom_vjp.passed, custom_vjp.custom_vjp, custom_vjp.host_callback)
+
+jit_audit = run_jax_jit_compatibility_audit(
+    features=features,
+    labels=labels,
+    params=params,
+)
+print(jit_audit.passed, jit_audit.unsupported_native_routes)
+
+vmap_audit = run_jax_vmap_compatibility_audit(
+    features=features,
+    labels=labels,
+    params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
+)
+print(vmap_audit.passed, vmap_audit.batch_size)
+
+sharding_audit = run_jax_sharding_compatibility_audit(
+    features=features,
+    labels=labels,
+    params_batch=np.linspace(
+        0.25,
+        0.65,
+        int(jax.local_device_count()),
+        dtype=float,
+    ).reshape(int(jax.local_device_count()), 1),
+)
+print(sharding_audit.passed, sharding_audit.sharding_mode)
+
+pytree_audit = run_jax_pytree_compatibility_audit(
+    features=np.array([[0.0, 0.2, 0.4], [np.pi, np.pi + 0.2, np.pi + 0.4]]),
+    labels=labels,
+    params_pytree={
+        "encoder": np.array([0.25, 0.45], dtype=float),
+        "readout": {"phase": np.array([0.65], dtype=float)},
+    },
+)
+print(pytree_audit.passed, pytree_audit.leaf_shapes)
+```
+
+`jax_custom_vjp_qnn_value_and_grad(...)` registers a JAX `custom_vjp` for the
+bounded classifier loss and checks the returned gradient against the canonical
+multi-frequency SCPN parameter-shift gradient.
+`run_jax_jit_compatibility_audit(...)` JITs the bounded native JAX and
+custom-VJP routes, requires both to stay no-host-callback routes, and records the
+generic parameter-shift bridge as host-callback interop through
+`unsupported_native_routes`. `run_jax_vmap_compatibility_audit(...)` VMAPs the
+same bounded native and custom-VJP routes over parameter batches, verifies each
+row against SCPN parameter-shift references, and records those references as a
+host-side loop rather than native VMAP.
+`run_jax_sharding_compatibility_audit(...)` uses `jax.pmap` with one parameter
+row per local JAX device and records whether the evidence is single-device or
+multi-device. `run_jax_pytree_compatibility_audit(...)` accepts nested numeric
+parameter PyTrees, flattens them into the bounded phase-QNN parameter vector,
+and restores gradients to the same tree structure. These remain bounded model
+routes: they are not arbitrary simulator autodiff, not provider-backed
+execution, not hardware gradients, and not claims that every quantum objective
+can be lowered into JAX JIT, VMAP, distributed sharding, or arbitrary PyTree
+programs.
+
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:
 
@@ -1111,11 +1312,11 @@ agreement = check_pennylane_parameter_shift_agreement(
 print(agreement.passed, agreement.max_abs_error)
 ```
 
-This is an agreement verifier, not an automatic PennyLane QNode generator. It
-fails closed when PennyLane is not importable and reports explicit gradient
-error metrics when the external gradient disagrees. When a multi-frequency rule
-is supplied, the report records the native SCPN method and shift-term count so
-the comparison cannot be mistaken for the legacy two-point rule.
+This caller-supplied path fails closed when PennyLane is not importable and
+reports explicit gradient error metrics when the external gradient disagrees.
+When a multi-frequency rule is supplied, the report records the native SCPN
+method and shift-term count so the comparison cannot be mistaken for the legacy
+two-point rule.
 
 For full adapter smoke tests, `check_pennylane_qnode_round_trip(...)` compares
 both value and gradient parity:
@@ -1132,8 +1333,41 @@ round_trip = check_pennylane_qnode_round_trip(
 print(round_trip.passed, round_trip.value_abs_error)
 ```
 
-This still stays fail-closed and caller-supplied: SCPN does not claim automatic
-translation of every internal ansatz into a PennyLane QNode.
+For registered local `PhaseQNodeCircuit` declarations, SCPN can also generate a
+bounded PennyLane QNode and verify the generated value/gradient route:
+
+```python
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    build_pennylane_qnode_from_phase_qnode,
+    check_pennylane_phase_qnode_round_trip,
+)
+
+phase_qnode = PhaseQNodeCircuit(
+    1,
+    (("ry", (0,), 0), ("rx", (0,), 1)),
+    PauliTerm(1.0, ((0, "z"),)),
+)
+conversion = build_pennylane_qnode_from_phase_qnode(
+    phase_qnode,
+    device_name="default.qubit",
+    shots=None,
+    diff_method="parameter-shift",
+)
+generated = check_pennylane_phase_qnode_round_trip(
+    phase_qnode,
+    np.array([0.4, -0.2]),
+)
+print(generated.passed, conversion.device_name, conversion.shots)
+```
+
+The generated route records device, shot policy, interface, diff method, gates,
+observable family, and differentiable parameter indices. Its claim boundary is
+limited to registered static gates and direct expectation observables with
+PennyLane equivalents. Provider submission, hardware execution, dynamic
+circuits, noise models, and covariance observable conversion remain explicit
+non-claims.
 
 ## Optional PyTorch and TensorFlow tensor bridges
 
@@ -1144,6 +1378,11 @@ host-boundary PyTorch and TensorFlow adapters:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    run_tensorflow_function_compatibility_audit,
+    run_tensorflow_gradient_tape_compatibility_audit,
+    run_tensorflow_keras_layer_wrapper_audit,
+    run_tensorflow_xla_compatibility_audit,
+    tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -1155,16 +1394,62 @@ def objective(params: np.ndarray) -> float:
 
 torch_result = torch_parameter_shift_value_and_grad(objective, np.array([0.4]))
 tf_result = tensorflow_parameter_shift_value_and_grad(objective, np.array([0.4]))
+tf_tape_audit = run_tensorflow_gradient_tape_compatibility_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    params=np.array([0.45], dtype=float),
+)
+tf_function_audit = run_tensorflow_function_compatibility_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    params=np.array([0.45], dtype=float),
+)
+tf_xla_audit = run_tensorflow_xla_compatibility_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    params=np.array([0.45], dtype=float),
+)
+tf_keras_layer = tensorflow_bounded_qnn_keras_layer(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    initial_params=np.array([0.45], dtype=float),
+)
+tf_keras_audit = run_tensorflow_keras_layer_wrapper_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    initial_params=np.array([0.45], dtype=float),
+)
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
 ```
 
-Both adapters import the optional framework only when called, run SCPN's
-deterministic parameter-shift rule on the host, and return NumPy plus framework
-tensor payloads. Multi-frequency rules preserve the native method and
-shift-term count in the adapter result. They are not native
-autograd-through-simulator kernels.
+Both parameter-shift adapters import the optional framework only when called,
+run SCPN's deterministic parameter-shift rule on the host, and return NumPy plus
+framework tensor payloads. Multi-frequency rules preserve the native method and
+shift-term count in the adapter result. The separate
+`torch_autograd_qnn_value_and_grad(...)` route is native PyTorch autograd only
+for the bounded phase-QNN model. The separate
+`run_torch_func_compatibility_audit(...)` route verifies `torch.func.grad`,
+`vmap`, and `jacrev` only for the same bounded model. The separate
+`run_torch_compile_compatibility_audit(...)` route verifies compiled bounded-loss
+gradients only for that same model. The separate
+`torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` wrapper route
+verifies a bounded PyTorch `nn.Module`/layer loss and gradient only for that same
+model. The separate `run_tensorflow_gradient_tape_compatibility_audit(...)`
+route verifies TensorFlow `GradientTape` only for the same bounded classifier
+loss and checks the returned gradient against the SCPN parameter-shift
+reference. The separate `run_tensorflow_function_compatibility_audit(...)`
+route traces only that same bounded loss through `tf.function` and checks its
+`GradientTape` gradient against the same reference. The separate
+`run_tensorflow_xla_compatibility_audit(...)` route requests
+`tf.function(jit_compile=True)` only for that same bounded loss. The separate
+`tensorflow_bounded_qnn_keras_layer(...)` and
+`run_tensorflow_keras_layer_wrapper_audit(...)` routes expose only that same
+bounded loss through a Keras `Layer` and checks its `GradientTape` gradient
+against the same reference. All remain outside arbitrary provider or simulator
+autodiff and do not claim broad XLA or unrestricted Keras training-loop
+coverage.
 
 ## Verification requirements
 
@@ -1188,10 +1473,41 @@ The backend planner classifies each execution path as one of:
 - stochastic finite-shot gradient;
 - finite-difference diagnostic fallback;
 - SPSA-style fallback;
+- materialised score-function likelihood-ratio estimator;
 - unsupported fail-closed mode.
 
 Each gradient plan reports the selected method, backend, shots, seed, estimator
 uncertainty policy, unsupported alternatives, and fail-closed reasons.
+Stochastic estimator results additionally carry a
+`StochasticGradientConfidenceInterval` and `failure_policy_status`; the helper
+`gradient_confidence_interval(...)` can evaluate the same fail-closed policy
+against materialised gradients and standard errors without rerunning an
+objective.
+
+The implemented SPSA diagnostic route is available as
+`spsa_gradient_estimate(...)` in the differentiable module. It draws seeded
+Bernoulli perturbations, evaluates caller-provided plus/minus objective probes,
+records every probe pair, and returns gradient, standard-error, diagonal
+covariance, confidence-radius, evaluation-count, shot-count, and claim-boundary
+metadata plus confidence-interval and failure-policy status. When `shots` is supplied, the objective must return
+`SPSAObjectiveSample` values with finite variances and positive shot counts so
+the estimator can propagate finite-shot uncertainty. The optional Rust parity
+kernel `spsa_gradient_rust(...)` validates and reproduces the same uncertainty
+calculation from materialised SPSA records. `gradient_confidence_interval_rust(...)`
+reproduces the interval and failure-policy calculation from materialised
+gradient and standard-error arrays; neither kernel executes objectives,
+providers, or hardware jobs.
+
+The implemented score-function route is available as
+`score_function_gradient_estimate(...)`. It applies the likelihood-ratio
+identity only when finite scalar rewards and finite score vectors are already
+materialised. The result records each weighted score sample, the explicit
+baseline, empirical covariance, standard errors, confidence radii, trainable
+mask, confidence-interval status, failure-policy reasons, and claim boundary.
+The optional Rust parity kernel
+`score_function_gradient_rust(...)` validates the same materialised rewards and
+score vectors and reproduces the Python uncertainty calculation. This is not
+sampler autodiff and not an arbitrary discrete-program gradient.
 
 ## Suitable and unsuitable scenarios
 
@@ -1200,6 +1516,9 @@ uncertainty policy, unsupported alternatives, and fail-closed reasons.
 | Small Pauli-rotation expectation objective | Suitable for parameter-shift. |
 | Gradient-trained Kuramoto-XY VQE | Current implementation route; convergence evidence must be attached. |
 | Noisy finite-shot backend | Supported for uncertainty propagation when plus/minus variances and shots are supplied. |
+| Seeded local SPSA diagnostic | Supported for caller-supplied objectives when perturbation radius, repetitions, seed, sample variances, and shot counts satisfy the estimator contract. |
+| Materialised score-function diagnostic | Supported when finite rewards and score vectors are supplied by a mathematically valid likelihood-ratio model. |
+| Confidence-policy gate | Supported for materialised stochastic-gradient standard errors with active trainable parameters and positive thresholds. |
 | Hardware execution | Must remain disabled by default until a hardware-safe gradient policy exists. |
 | Gate without registered generator spectrum | Unsupported; fail closed. |
 | Dynamic circuit topology or parameter count | Unsupported unless the trace records stable parameter identity. |
@@ -1221,7 +1540,7 @@ This is differentiable execution evidence for supported phase objectives, not a
 claim of arbitrary QNode autodiff, native framework tracing through simulator
 kernels, or unrestricted provider-backed hardware gradients.
 
-## Vector QNode Jacobians and native manual vmap
+## Vector QNode directional transforms, Jacobians, and native manual vmap
 
 `execute_phase_qnode_vector_jacobian(...)` extends the deterministic local QNode
 transform route to one-dimensional vector outputs. It evaluates each output
@@ -1230,7 +1549,11 @@ returns a `(output_dim, n_params)` Jacobian with explicit evaluation accounting.
 
 ```python
 import numpy as np
-from scpn_quantum_control.phase import execute_phase_qnode_vector_jacobian
+from scpn_quantum_control.phase import (
+    execute_phase_qnode_vector_jacobian,
+    execute_phase_qnode_vector_jvp,
+    execute_phase_qnode_vector_vjp,
+)
 
 
 def vector_objective(params: np.ndarray) -> np.ndarray:
@@ -1248,7 +1571,42 @@ result = execute_phase_qnode_vector_jacobian(
     np.array([0.2, -0.4]),
 )
 print(result.values, result.jacobian, result.parameter_shift_evaluations)
+
+jvp = execute_phase_qnode_vector_jvp(
+    vector_objective,
+    np.array([0.2, -0.4]),
+    np.array([0.5, -1.25]),
+)
+vjp = execute_phase_qnode_vector_vjp(
+    vector_objective,
+    np.array([0.2, -0.4]),
+    np.array([2.0, -0.75]),
+)
+print(jvp.jvp, vjp.vjp)
 ```
+
+The vector JVP and VJP routes are computed as `jacobian @ tangent` and
+`jacobian.T @ cotangent` from the same parameter-shift Jacobian evidence. They
+validate tangent/cotangent shapes and fail closed for finite-shot, hardware,
+provider, and framework-native adapter routes.
+
+When `scpn_quantum_engine` is installed, the matching PyO3 parity kernels are
+`phase_qnode_vector_jvp_rust(jacobian, tangent)` and
+`phase_qnode_vector_vjp_rust(jacobian, cotangent)`. They are dense contraction
+kernels over already materialised Jacobian evidence and preserve the same
+real-valued input boundary.
+
+`execute_phase_qnode_vector_hessian(...)` computes deterministic local
+vector-output Hessian tensors by materialising one parameter-shift Hessian per
+output component. The result tensor has shape `(output_dim, n_params,
+n_params)`, is checked against real finite vector-output objectives, and fails
+closed for finite-shot, hardware, provider, and framework-native adapter
+routes.
+
+The Rust parity surface for materialised vector Hessian tensors is
+`phase_qnode_vector_hessian_tensor_rust(hessian_tensor)`. It validates finite
+real tensor entries, square component Hessians, and Hessian symmetry before
+returning the symmetrised tensor.
 
 `execute_phase_qnode_vmap_grad(...)` implements the first native vectorized
 gradient surface as a deterministic host-side manual loop over scalar
@@ -1268,10 +1626,11 @@ print(result.batched_values, result.batched_gradients)
 ```
 
 The readiness helper `run_phase_qnode_vector_transform_readiness_suite()`
-records supported `jacfwd`, `jacrev`, and `vmap.grad` routes plus fail-closed
-hardware, adapter, and finite-shot scenarios. The implementation deliberately
-does not claim provider vectorization, framework-native `vmap`, finite-shot
-batched-gradient statistics, or hardware transform execution.
+records supported `jacfwd`, `jacrev`, vector `jvp`, vector `vjp`, vector
+`hessian`, and `vmap.grad` routes plus fail-closed hardware, adapter, and finite-shot
+scenarios. The implementation deliberately does not claim provider
+vectorization, framework-native `vmap`, finite-shot batched-gradient
+statistics, or hardware transform execution.
 
 ## Provider-callback QNode transforms
 
@@ -1324,10 +1683,36 @@ submission or unrestricted hardware-gradient execution.
 `execute_phase_qnode_transform(...)` executes scalar local phase-QNode transforms
 when the transform-nesting planner declares the route supported. Current
 executable routes are `grad`, `value_and_grad`, deterministic local `hessian`,
-scalar `jvp`, scalar `vjp`, scalar `jacfwd`, and scalar `jacrev`. Directional
-and Jacobian routes are implemented through parameter-shift gradients for scalar
-objectives: JVP returns the gradient-tangent contraction, VJP returns the
-scalar-cotangent pullback, and `jacfwd`/`jacrev` return a one-row Jacobian.
+deterministic local `hessian_vector_product`, scalar `jvp`, scalar `vjp`,
+scalar `jacfwd`, and scalar `jacrev`. Directional and Jacobian routes are
+implemented through parameter-shift gradients for scalar objectives: JVP returns
+the gradient-tangent contraction, VJP returns the scalar-cotangent pullback, and
+`jacfwd`/`jacrev` return a one-row Jacobian.
+
+`execute_phase_qnode_hessian_vector_product(...)` materialises the deterministic
+local parameter-shift Hessian and returns `H @ vector` with the Hessian evidence
+and vector provenance. It is a bounded second-order local diagnostic, not a
+finite-shot HVP, hardware HVP, sparse implicit HVP, or arbitrary-program
+second-order AD claim.
+
+The Rust parity surface for this contraction is
+`phase_qnode_hessian_vector_product_rust(hessian, vector)`. It validates finite
+real inputs, square Hessian shape, and vector width before returning `H @
+vector`.
+
+Complex and Wirtinger derivatives are an explicit fail-closed boundary on the
+Phase-QNode transform APIs. `phase_qnode_complex_derivative_contract()` returns
+the machine-readable contract: parameters, tangents, cotangents, HVP vectors,
+vector outputs, and batched parameter matrices must be real-valued finite
+arrays. Complex-valued objectives, holomorphic derivatives, Wirtinger partials,
+and complex tangent/cotangent algebra are not silently coerced; callers must
+split complex controls into real and imaginary real-valued controls before using
+these transform surfaces.
+
+The optional extension mirrors this boundary through
+`phase_qnode_complex_derivative_contract_rust()` so Rust/PyO3 consumers can
+inspect the same real-only contract without implying holomorphic or Wirtinger
+support.
 
 The readiness helper `run_phase_qnode_transform_readiness_suite()` records both
 supported scalar routes and fail-closed hardware, finite-shot curvature, and

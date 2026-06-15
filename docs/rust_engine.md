@@ -39,9 +39,9 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (55)
+## Functions (122)
 
-The Rust crate exports 55 PyO3 bindings across 27 Rust source files. They are organised
+The Rust crate exports 122 PyO3 bindings across 29 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -88,6 +88,59 @@ Returns flat real array (XY Hamiltonian is real in the computational basis).
 
 `all_xy_expectations` returns `(exp_x[n], exp_y[n])` in a single FFI call,
 avoiding 2n individual calls to `expectation_pauli_fast`.
+
+### Phase-QNode Differential Kernels
+
+| Function | Description | Complexity |
+|----------|-------------|------------|
+| `phase_qnode_fubini_study_metric_rust(state_re, state_im, derivatives_re, derivatives_im)` | Pure-state Fubini-Study metric, QFI, and derivative norms from split complex state derivatives | O(p²d) |
+| `phase_qnode_computational_basis_fisher_rust(state_re, state_im, derivatives_re, derivatives_im, min_probability)` | Exact computational-basis classical Fisher matrix from state and probability derivatives | O(p²d) |
+| `phase_qnode_vector_jvp_rust(jacobian, tangent)` | Dense vector-output JVP contraction | O(mp) |
+| `phase_qnode_vector_vjp_rust(jacobian, cotangent)` | Dense vector-output VJP contraction | O(mp) |
+| `phase_qnode_hessian_vector_product_rust(hessian, vector)` | Dense Hessian-vector contraction | O(p²) |
+| `phase_qnode_vector_hessian_tensor_rust(hessian_tensor, symmetry_tolerance=1e-12)` | Validate and symmetrise materialised vector-output Hessian tensors | O(kp²) |
+| `phase_qnode_complex_derivative_contract_rust()` | Rust-visible real-only complex/W boundary metadata | O(1) |
+
+The metric kernels consume already materialised statevector derivative
+evidence: split real and imaginary state amplitudes plus split real and
+imaginary parameter-derivative rows. They do not execute circuits and do not
+claim finite-shot, density-matrix, noisy-channel, provider, hardware, or
+optimal measurement metrics. The directional kernels are the Rust parity layer
+for the promoted deterministic local Phase-QNode JVP, VJP, and Hessian-vector
+product surfaces. The tensor kernel gives the vector-output Hessian route a
+Rust-visible validation and parity surface without claiming Rust execution of
+arbitrary Python objectives.
+
+`cargo bench --bench hot_paths` includes the
+`phase_qnode_metric_and_transform_kernels` group for these inner kernels. Any
+result captured without the benchmark-isolation metadata required by the
+project benchmark policy is local regression evidence only.
+
+### Stochastic Gradient Kernels
+
+| Function | Description | Complexity |
+|----------|-------------|------------|
+| `parameter_shift_gradient_uncertainty_rust(plus_values, minus_values, plus_variances, minus_variances, plus_shots, minus_shots, coefficients, trainable, confidence_z=1.959963984540054)` | Validate and propagate materialised finite-shot parameter-shift uncertainty into gradient, standard error, diagonal covariance, and confidence radius | O(tp) |
+| `spsa_gradient_rust(plus_values, minus_values, perturbations, plus_variances, minus_variances, plus_shots, minus_shots, trainable, perturbation_radius, confidence_z=1.959963984540054)` | Validate and propagate materialised SPSA probe records into gradient, standard error, diagonal covariance, and confidence radius | O(rp) |
+| `score_function_gradient_rust(rewards, score_vectors, trainable, baseline=0.0, confidence_z=1.959963984540054)` | Validate materialised rewards and likelihood-ratio score vectors, then return gradient, empirical standard error, covariance, and confidence radius | O(sp²) |
+| `gradient_confidence_interval_rust(gradient, standard_error, trainable, confidence_z=1.959963984540054, max_standard_error=None, max_confidence_radius=None)` | Validate materialised stochastic-gradient uncertainty, return lower/upper confidence bounds, and fail closed when active trainable parameters exceed policy thresholds | O(p) |
+
+These kernels mirror the core Python finite-shot uncertainty primitives for
+already materialised shifted expectation, SPSA probe, or score-function sample
+records. They validate finite shifted means, rewards, score vectors,
+non-negative variances, positive integer shot counts, finite rule coefficients,
+SPSA perturbations, trainable-mask width, finite baselines, and positive
+confidence radius scaling. The confidence-interval kernel also validates
+materialised gradients and standard errors, rejects all-false trainable masks,
+and returns machine-readable failure reasons for exceeded standard-error or
+confidence-radius thresholds. These kernels do not execute provider callbacks,
+allocate shots, submit hardware jobs, infer sampler score vectors, or create
+claim-ledger evidence by themselves.
+
+The `phase_qnode_metric_and_transform_kernels` benchmark group includes
+`parameter_shift_uncertainty`, `spsa_gradient`, `score_function_gradient`, and
+`gradient_confidence_interval`; without isolation metadata, those timings remain
+`functional_non_isolated` regression evidence only.
 
 ### Error Mitigation
 

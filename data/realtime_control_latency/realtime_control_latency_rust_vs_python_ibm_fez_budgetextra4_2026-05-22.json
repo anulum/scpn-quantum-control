@@ -1,8 +1,8 @@
 {
   "schema": "scpn_realtime_latency_python_rust_comparison_v1",
   "sources": {
-    "rust": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_rust_latency_run_ibm_fez_budgetextra4_2026-05-22.json",
-    "python": "/media/anulum/724AA8E84AA8AA75/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/realtime_control_latency/ibm_runtime_realtime_python_latency_run_ibm_fez_budgetextra4_2026-05-22.json"
+    "rust": "data/realtime_control_latency/ibm_runtime_realtime_rust_latency_run_ibm_fez_budgetextra4_2026-05-22.json",
+    "python": "data/realtime_control_latency/ibm_runtime_realtime_python_latency_run_ibm_fez_budgetextra4_2026-05-22.json"
   },
   "overall": {
     "rust_mean_s": 7.2648979385,

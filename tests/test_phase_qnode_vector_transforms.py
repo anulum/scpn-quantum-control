@@ -14,7 +14,10 @@ import pytest
 
 from scpn_quantum_control.phase import (
     PhaseQNodeVectorTransformResult,
+    execute_phase_qnode_vector_hessian,
     execute_phase_qnode_vector_jacobian,
+    execute_phase_qnode_vector_jvp,
+    execute_phase_qnode_vector_vjp,
     execute_phase_qnode_vmap_grad,
     plan_gradient_transform_nesting,
     run_phase_qnode_vector_transform_readiness_suite,
@@ -49,6 +52,16 @@ def _vector_jacobian(params: np.ndarray) -> np.ndarray:
     )
 
 
+def _vector_hessian(params: np.ndarray) -> np.ndarray:
+    return np.array(
+        [
+            [[-np.cos(params[0]), 0.0], [0.0, -0.1 * np.sin(params[1])]],
+            [[-np.sin(params[0]), 0.0], [0.0, 0.25 * np.cos(params[1])]],
+        ],
+        dtype=float,
+    )
+
+
 def test_phase_qnode_vector_jacobians_match_analytic_reference() -> None:
     params = np.array([0.31, -0.17], dtype=float)
 
@@ -67,6 +80,84 @@ def test_phase_qnode_vector_jacobians_match_analytic_reference() -> None:
     assert jacfwd.output_dim == 2
     assert jacfwd.parameter_shift_evaluations == 8
     assert "vector-output phase-QNode Jacobian" in jacfwd.claim_boundary
+
+
+def test_phase_qnode_vector_jvp_and_vjp_match_jacobian_reference() -> None:
+    params = np.array([0.31, -0.17], dtype=float)
+    tangent = np.array([0.5, -1.25], dtype=float)
+    cotangent = np.array([2.0, -0.75], dtype=float)
+    expected_jacobian = _vector_jacobian(params)
+
+    jvp = execute_phase_qnode_vector_jvp(_vector_objective, params, tangent)
+    vjp = execute_phase_qnode_vector_vjp(_vector_objective, params, cotangent)
+
+    assert jvp.supported
+    assert vjp.supported
+    assert jvp.transform == "jvp"
+    assert vjp.transform == "vjp"
+    assert jvp.jvp is not None
+    assert vjp.vjp is not None
+    np.testing.assert_allclose(jvp.jvp, expected_jacobian @ tangent, atol=1e-12)
+    np.testing.assert_allclose(vjp.vjp, expected_jacobian.T @ cotangent, atol=1e-12)
+    np.testing.assert_allclose(jvp.tangent, tangent, atol=1e-12)
+    np.testing.assert_allclose(vjp.cotangent, cotangent, atol=1e-12)
+    assert jvp.parameter_shift_evaluations == 8
+    assert vjp.parameter_shift_evaluations == 8
+    assert "vector-output phase-QNode directional" in jvp.claim_boundary
+
+
+def test_phase_qnode_vector_hessian_matches_componentwise_reference() -> None:
+    params = np.array([0.31, -0.17], dtype=float)
+
+    result = execute_phase_qnode_vector_hessian(_vector_objective, params)
+
+    assert result.supported
+    assert result.transform == "hessian"
+    assert result.values is not None
+    assert result.hessian_tensor is not None
+    np.testing.assert_allclose(result.values, _vector_objective(params), atol=1e-12)
+    np.testing.assert_allclose(result.hessian_tensor, _vector_hessian(params), atol=1e-12)
+    np.testing.assert_allclose(result.hessian_tensor, np.swapaxes(result.hessian_tensor, 1, 2))
+    assert result.parameter_shift_evaluations > 0
+    assert result.plan.requires_deterministic_backend
+
+
+def test_phase_qnode_vector_jvp_vjp_validate_direction_shapes() -> None:
+    params = np.array([0.31, -0.17], dtype=float)
+
+    with pytest.raises(ValueError, match="tangent"):
+        execute_phase_qnode_vector_jvp(_vector_objective, params, np.array([1.0], dtype=float))
+    with pytest.raises(ValueError, match="cotangent"):
+        execute_phase_qnode_vector_vjp(
+            _vector_objective,
+            params,
+            np.array([1.0], dtype=float),
+        )
+
+
+def test_phase_qnode_vector_jvp_vjp_fail_closed_for_unsafe_routes() -> None:
+    params = np.array([0.31, -0.17], dtype=float)
+
+    hardware = execute_phase_qnode_vector_jvp(
+        _vector_objective,
+        params,
+        np.array([0.5, -1.25], dtype=float),
+        backend="hardware",
+        shots=1024,
+    )
+    adapter = execute_phase_qnode_vector_vjp(
+        _vector_objective,
+        params,
+        np.array([2.0, -0.75], dtype=float),
+        adapter="jax",
+    )
+
+    assert hardware.fail_closed
+    assert hardware.jvp is None
+    assert "hardware gradient execution requires" in hardware.failure_reason
+    assert adapter.fail_closed
+    assert adapter.vjp is None
+    assert "native local route" in adapter.failure_reason
 
 
 def test_phase_qnode_vmap_grad_matches_rowwise_analytic_reference() -> None:
@@ -125,6 +216,29 @@ def test_phase_qnode_vector_transforms_fail_closed_for_unsafe_routes() -> None:
     assert "deterministic local expectations" in finite_shot_vmap.failure_reason
 
 
+def test_phase_qnode_vector_hessian_fails_closed_for_unsafe_routes() -> None:
+    params = np.array([0.2, -0.4], dtype=float)
+
+    finite_shot = execute_phase_qnode_vector_hessian(
+        _vector_objective,
+        params,
+        backend="qasm_simulator",
+        shots=256,
+    )
+    adapter = execute_phase_qnode_vector_hessian(
+        _vector_objective,
+        params,
+        adapter="jax",
+    )
+
+    assert finite_shot.fail_closed
+    assert finite_shot.hessian_tensor is None
+    assert "deterministic local expectations" in finite_shot.failure_reason
+    assert adapter.fail_closed
+    assert adapter.hessian_tensor is None
+    assert "native local route" in adapter.failure_reason
+
+
 def test_phase_qnode_vector_transforms_validate_shapes_and_finiteness() -> None:
     params = np.array([0.2, -0.4], dtype=float)
 
@@ -145,19 +259,61 @@ def test_phase_qnode_vector_transforms_validate_shapes_and_finiteness() -> None:
         )
 
 
+def test_phase_qnode_vector_transforms_reject_complex_derivative_inputs() -> None:
+    real_params = np.array([0.2, -0.4], dtype=float)
+
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_jacobian(
+            "jacfwd",
+            _vector_objective,
+            np.array([0.2 + 0.1j, -0.4], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_jvp(
+            _vector_objective,
+            real_params,
+            np.array([0.5 + 0.1j, -1.0], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_vjp(
+            _vector_objective,
+            real_params,
+            np.array([1.0 + 0.5j, -0.25], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vmap_grad(
+            _scalar_objective,
+            np.array([[0.2 + 0.1j, -0.4]], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_hessian(
+            _vector_objective,
+            np.array([0.2 + 0.1j, -0.4], dtype=np.complex128),
+        )
+    with pytest.raises(ValueError, match="real-valued.*complex"):
+        execute_phase_qnode_vector_jacobian(
+            "jacfwd",
+            lambda _: np.array([1.0 + 0.1j], dtype=np.complex128),
+            real_params,
+        )
+
+
 def test_phase_qnode_vector_transform_readiness_suite_records_boundaries() -> None:
     suite = run_phase_qnode_vector_transform_readiness_suite()
     payload = suite.to_dict()
 
     assert suite.passed
-    assert suite.record_count == 6
-    assert suite.supported_count == 3
+    assert suite.record_count == 9
+    assert suite.supported_count == 6
     assert suite.fail_closed_count == 3
     assert suite.total_parameter_shift_evaluations > 0
     assert not suite.hardware_execution
     assert {record.transform for record in suite.records if record.supported} == {
         "jacfwd",
         "jacrev",
+        "jvp",
+        "vjp",
+        "hessian",
         "vmap.grad",
     }
     assert payload["passed"] is True

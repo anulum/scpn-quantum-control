@@ -13,12 +13,19 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.phase.qnode_circuit import (
+    DenseHermitianObservable,
+    PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
+    PhaseQNodeClassicalFisherResult,
+    PhaseQNodeMetricTensorResult,
     PhaseQNodeSupportError,
     SparsePauliHamiltonian,
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
+    phase_qnode_computational_basis_fisher_information,
+    phase_qnode_natural_gradient_metric,
+    phase_qnode_quantum_fisher_information,
     phase_qnode_support_report,
     registered_phase_qnode_gates,
     registered_phase_qnode_observables,
@@ -96,6 +103,8 @@ def test_phase_qnode_registered_gate_family_executes_with_pauli_observables() ->
         "pauli_z",
         "weighted_pauli_sum",
         "pauli_product",
+        "pauli_covariance",
+        "dense_hermitian",
         "sparse_pauli_hamiltonian",
     }
 
@@ -129,6 +138,220 @@ def test_phase_qnode_parameter_shift_matches_finite_difference_for_registered_ge
     np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
     assert gradient.support_report.differentiable_parameters == (0, 1, 2)
     assert gradient.parameter_shift_evaluations == 6
+
+
+def test_phase_qnode_covariance_observable_matches_bell_reference() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("h", (0,)), ("cnot", (0, 1))),
+        observable=PauliCovarianceObservable(
+            PauliTerm(1.0, ((0, "z"),)),
+            PauliTerm(1.0, ((1, "z"),)),
+        ),
+    )
+
+    result = execute_phase_qnode_circuit(circuit, np.array([], dtype=float))
+
+    np.testing.assert_allclose(result.value, 1.0, atol=1e-12)
+    assert result.support_report.observable_kind == "pauli_covariance"
+
+
+def test_phase_qnode_covariance_gradient_uses_product_rule() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("ry", (0,), 0), ("cnot", (0, 1))),
+        observable=PauliCovarianceObservable(
+            PauliTerm(1.0, ((0, "z"),)),
+            PauliTerm(1.0, ((1, "z"),)),
+        ),
+    )
+    params = np.array([0.37], dtype=float)
+
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+
+    np.testing.assert_allclose(gradient.value, np.sin(params[0]) ** 2, atol=1e-12)
+    np.testing.assert_allclose(gradient.gradient, [np.sin(2.0 * params[0])], atol=1e-12)
+    assert gradient.parameter_shift_evaluations == 2
+
+
+def test_phase_qnode_dense_hermitian_observable_matches_matrix_reference() -> None:
+    observable = DenseHermitianObservable(
+        np.array(
+            [
+                [0.7, 0.2 - 0.1j],
+                [0.2 + 0.1j, -0.3],
+            ],
+            dtype=np.complex128,
+        )
+    )
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=observable,
+    )
+    params = np.array([0.41], dtype=float)
+
+    result = execute_phase_qnode_circuit(circuit, params)
+    state = result.state
+    expected = np.vdot(state, observable.matrix @ state).real
+
+    np.testing.assert_allclose(result.value, expected, atol=1e-12)
+    assert result.support_report.observable_kind == "dense_hermitian"
+
+
+def test_phase_qnode_dense_hermitian_gradient_matches_finite_difference() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=DenseHermitianObservable(
+            np.array([[0.7, 0.2], [0.2, -0.3]], dtype=np.complex128)
+        ),
+    )
+    params = np.array([0.41], dtype=float)
+
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+    eps = 1e-6
+    plus = params + eps
+    minus = params - eps
+    finite_difference = (
+        execute_phase_qnode_circuit(circuit, plus).value
+        - execute_phase_qnode_circuit(circuit, minus).value
+    ) / (2.0 * eps)
+
+    np.testing.assert_allclose(gradient.gradient, [finite_difference], atol=1e-6)
+
+
+def test_phase_qnode_dense_hermitian_observable_fails_closed_on_invalid_matrix() -> None:
+    with pytest.raises(ValueError, match="Hermitian"):
+        DenseHermitianObservable(np.array([[0.0, 1.0], [0.0, 0.0]], dtype=np.complex128))
+    with pytest.raises(ValueError, match="dimension"):
+        PhaseQNodeCircuit(
+            n_qubits=2,
+            operations=(("h", (0,)),),
+            observable=DenseHermitianObservable(np.eye(2, dtype=np.complex128)),
+        )
+
+
+def test_phase_qnode_quantum_fisher_information_matches_ry_reference() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    result = phase_qnode_quantum_fisher_information(circuit, np.array([0.31], dtype=float))
+
+    assert isinstance(result, PhaseQNodeMetricTensorResult)
+    np.testing.assert_allclose(result.fubini_study_metric, [[0.25]], atol=1e-12)
+    np.testing.assert_allclose(result.quantum_fisher_information, [[1.0]], atol=1e-12)
+    assert result.support_report.differentiable_parameters == (0,)
+    assert result.claim_boundary.startswith("pure-state local Phase-QNode")
+
+
+def test_phase_qnode_quantum_fisher_information_is_gauge_invariant_psd() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            ("h", (0,)),
+            ("cnot", (0, 1)),
+            ("ry", (0,), 0),
+            ("rz", (1,), 1),
+            ("rxx", (0, 1), 2),
+        ),
+        observable=SparsePauliHamiltonian((PauliTerm(1.0, ((0, "z"),)),)),
+    )
+
+    result = phase_qnode_quantum_fisher_information(
+        circuit,
+        np.array([0.17, -0.23, 0.41], dtype=float),
+    )
+
+    np.testing.assert_allclose(result.fubini_study_metric, result.fubini_study_metric.T)
+    np.testing.assert_allclose(result.quantum_fisher_information, 4.0 * result.fubini_study_metric)
+    assert np.min(np.linalg.eigvalsh(result.fubini_study_metric)) >= -1e-12
+    assert result.derivative_norms.shape == (3,)
+    assert np.all(result.derivative_norms > 0.0)
+
+
+def test_phase_qnode_computational_basis_fisher_matches_ry_reference() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit,
+        np.array([0.31], dtype=float),
+    )
+
+    assert isinstance(result, PhaseQNodeClassicalFisherResult)
+    np.testing.assert_allclose(
+        result.probabilities, [np.cos(0.31 / 2.0) ** 2, np.sin(0.31 / 2.0) ** 2]
+    )
+    np.testing.assert_allclose(result.classical_fisher_information, [[1.0]], atol=1e-12)
+    assert result.measurement == "computational_basis"
+    assert "finite-shot" in result.claim_boundary
+
+
+def test_phase_qnode_computational_basis_fisher_is_bounded_by_qfi() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            ("h", (0,)),
+            ("cnot", (0, 1)),
+            ("ry", (0,), 0),
+            ("rz", (1,), 1),
+            ("rxx", (0, 1), 2),
+        ),
+        observable=SparsePauliHamiltonian((PauliTerm(1.0, ((0, "z"),)),)),
+    )
+    params = np.array([0.17, -0.23, 0.41], dtype=float)
+
+    classical = phase_qnode_computational_basis_fisher_information(circuit, params)
+    quantum = phase_qnode_quantum_fisher_information(circuit, params)
+
+    np.testing.assert_allclose(
+        classical.classical_fisher_information,
+        classical.classical_fisher_information.T,
+        atol=1e-12,
+    )
+    gap = quantum.quantum_fisher_information - classical.classical_fisher_information
+    assert np.min(np.linalg.eigvalsh(gap)) >= -1e-10
+
+
+def test_phase_qnode_computational_basis_fisher_fails_closed_at_singular_probability() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    with pytest.raises(ValueError, match="zero-probability"):
+        phase_qnode_computational_basis_fisher_information(circuit, np.array([0.0], dtype=float))
+
+
+def test_phase_qnode_natural_gradient_metric_provider_returns_fubini_study_metric() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("rx", (0,), 0),),
+        observable="pauli_z",
+    )
+    metric = phase_qnode_natural_gradient_metric(circuit)
+
+    np.testing.assert_allclose(metric(np.array([0.4], dtype=float)), [[0.25]], atol=1e-12)
+
+
+def test_phase_qnode_quantum_fisher_information_fails_closed_for_unsupported_routes() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("u3", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    with pytest.raises(PhaseQNodeSupportError) as exc_info:
+        phase_qnode_quantum_fisher_information(circuit, np.array([0.2], dtype=float))
+    assert "unsupported gates" in exc_info.value.report.failure_reason
 
 
 def test_phase_qnode_unsupported_routes_fail_with_structured_support_report() -> None:

@@ -187,7 +187,7 @@ def main() -> int:
         )
         return 0
 
-    vault = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+    vault = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     api_key, instance = parse_vault(vault)
 
     from scpn_quantum_control.hardware.runner import HardwareRunner

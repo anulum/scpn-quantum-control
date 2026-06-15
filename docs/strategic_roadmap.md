@@ -433,7 +433,7 @@ positions itself for application-oriented QC benchmarks.
 
 * "Community resource" only works if the community adopts it.
   Visibility campaign (launch copy drafts already in
-  `.coordination/launch_copy/`) is a prerequisite.
+  `<private-local-record>`) is a prerequisite.
 * Reproducibility-at-a-distance is brittle — CI must exercise
   the harness on every release.
 
@@ -1469,7 +1469,7 @@ community asset.
    submitters.
 5. Kickoff visibility: announcement on the `@qiskit` Slack /
    Unitary Foundation Discord / r/QuantumComputing (copy
-   already drafted in `.coordination/launch_copy/`).
+   already drafted in `<private-local-record>`).
 
 ### Risks
 
@@ -2374,7 +2374,7 @@ before execution starts.
 
 **Source archive.** The original full-length source text for every
 track below is preserved in
-`.coordination/strategic_roadmap_sources/2026-04-18_differentiation_tracks_s36_plus_RAW.md`
+`<private-local-record>`
 (gitignored). Deduplication collapsed seven proposal rounds from
 2026-04-18 into this block; tracks that appeared in multiple rounds
 are merged with cross-references.
@@ -3045,9 +3045,9 @@ Before starting execution on any of S1–S53:
 3. Re-check the "Risks" and "Prerequisites" sections — the
    landscape will have moved.
 4. Create a dedicated audit file under
-   `docs/internal/audit_<date>_<track>.md` with a new gap
+   `<private-internal-record>` with a new gap
    list for the specific deliverables.
-5. Schedule a session log per `CLAUDE_RULES.md` / `SHARED_CONTEXT.md`
+5. Schedule a private audit record per private operating rules
    protocol.
 6. Update `ROADMAP.md` "In progress" section with the track
    identifier.

@@ -59,7 +59,8 @@
       ],
       "known_gaps": [
         "GitHub-hosted runners are downgraded to functional_non_isolated.",
-        "Production isolated_affinity promotion requires a self-hosted isolated-benchmark runner artefact."
+        "Production isolated_affinity promotion requires a self-hosted isolated-benchmark runner artefact.",
+        "Accelerator benchmark claims require explicit CUDA/ROCm device metadata; missing visible devices are classified as silent_accelerator_fallback."
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Non-isolated artefacts support functional parity and regression tracking only, not production speed claims."
@@ -85,7 +86,7 @@
       ],
       "known_gaps": [
         "Missing framework dependencies are hard_gap rows.",
-        "Missing LLVM/Enzyme tooling remains dependency_missing until configured."
+        "Unconfigured LLVM/Enzyme tooling remains dependency_missing; configured runners must pass strict JSON, timeout, toolchain, and correctness gates."
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "External comparison rows are bounded CPU diagnostic evidence only; they do not claim provider or QPU execution."

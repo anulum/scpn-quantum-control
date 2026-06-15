@@ -315,7 +315,8 @@ def _file_sha256(path: Path) -> str:
 def _write_hardware_evidence_packet(root: Path) -> Path:
     import json
 
-    releases = root / "docs" / "internal" / "releases"
+    private_docs = root / "docs" / "internal"
+    releases = private_docs / "releases"
     releases.mkdir(parents=True)
     verifier = releases / "verify.json"
     verifier.write_text(
@@ -335,13 +336,15 @@ def _write_hardware_evidence_packet(root: Path) -> Path:
             {
                 "schema_version": 1,
                 "hardware_evidence_cited": True,
-                "verifier_summary_path": "docs/internal/releases/verify.json",
-                "export_summary_path": "docs/internal/releases/export.json",
+                "verifier_summary_path": str(
+                    Path("docs") / "internal" / "releases" / "verify.json"
+                ),
+                "export_summary_path": str(Path("docs") / "internal" / "releases" / "export.json"),
                 "reproduction_logs": [
                     {
                         "pack_id": "pack_a",
                         "command": "python scripts/reproduce_pack_a.py",
-                        "log_path": "docs/internal/releases/pack_a.log",
+                        "log_path": str(Path("docs") / "internal" / "releases" / "pack_a.log"),
                         "sha256": _file_sha256(log),
                     }
                 ],

@@ -12,6 +12,34 @@ This page guides you from your first simulation to publishing-quality research
 results. Each section builds on the previous, progressing from conceptual
 understanding through hands-on computation to original research.
 
+## Practical aim
+
+The tutorial sequence is designed to deliver three outcomes:
+
+1. **Model confidence** — users can generate validated synchronisation outputs from
+   known topologies and detect whether assumptions still hold.
+2. **Operational confidence** — users can move between simulator, mitigation, and
+   hardware-governed evidence without breaking reproducibility.
+3. **Commercial confidence** — users can use stable interfaces and claim boundaries
+   when preparing a prototype, paper, or integration surface.
+
+The sequence is intentionally claim-aware: pages for gradients, hardware, and
+optimisation are introduced with explicit boundaries so teams can choose the
+minimum safe surface for their objective.
+
+## What each tutorial is allowed to prove
+
+Tutorials teach the workflow; they do not promote claims by themselves. Use
+this rule before copying a result into a paper, sales deck, release note, or
+application dossier:
+
+| Tutorial output | Evidence class | Promotion path |
+|---|---|---|
+| Local simulator curve | Simulator evidence | Preserve inputs, seed policy, versions, and script/notebook path. |
+| Gradient or convergence plot | Method evidence | Attach finite-difference, analytic, framework, or benchmark classification records. |
+| Hardware count distribution | Candidate hardware evidence | Promote only through the hardware ledger and result-pack release checklist. |
+| Application example | Pilot evidence | Bind the domain assumptions, data provenance, claim class, and licence route. |
+
 ---
 
 ## Learning Path Overview
@@ -106,7 +134,7 @@ Use this route if you are comparing the framework with quantum-ML stacks:
 6. inspect the Phase-QNode [claim ledger](https://github.com/anulum/scpn-quantum-control/blob/main/data/differentiable_phase_qnode/claim_ledger.md)
    and benchmark classification before using performance language;
 7. document unsupported gates, adapters, hardware policies, transform nests, or
-   missing Enzyme tooling
+   unconfigured Enzyme tooling
    as research evidence rather than hiding them behind finite differences.
 
 This route is intentionally stricter than a demo notebook. It is designed to
@@ -114,6 +142,9 @@ make exact, stochastic, approximate, blocked, and roadmap gradient modes visible
 before users build training loops or publish claims. A local or GitHub-hosted
 benchmark row is not production performance evidence unless it is uploaded by a
 self-hosted `isolated-benchmark` runner and classified as `isolated_affinity`.
+Accelerator benchmark evidence is also explicit: CPU-only rows make no GPU
+claim, and requested CUDA/ROCm runs without visible-device metadata become
+`silent_accelerator_fallback` hard gaps.
 
 For compiler-backed AD users, the current native whole-program path supports
 verified static dense determinant lowering through `19x19`, static inverse and

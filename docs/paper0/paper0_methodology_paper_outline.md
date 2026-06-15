@@ -75,7 +75,7 @@ generated repository artefacts, and future measured-system evidence relate.
 
 Required artefacts:
 
-- `AGENTS.md`
+- private agent instructions
 - `docs/paper0/paper0_validation_register.md`
 - `docs/paper0/paper0_experimental_pathway.md`
 

@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from typing import TypeAlias, cast
 
@@ -31,6 +31,8 @@ _REGISTERED_OBSERVABLES = (
     "pauli_z",
     "weighted_pauli_sum",
     "pauli_product",
+    "pauli_covariance",
+    "dense_hermitian",
     "sparse_pauli_hamiltonian",
 )
 
@@ -129,6 +131,62 @@ class SparsePauliHamiltonian:
 
 
 @dataclass(frozen=True)
+class DenseHermitianObservable:
+    """Dense finite-dimensional Hermitian observable."""
+
+    matrix: ComplexArray
+    label: str = "dense_hermitian"
+
+    def __post_init__(self) -> None:
+        matrix = np.asarray(self.matrix, dtype=np.complex128)
+        if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+            raise ValueError("DenseHermitianObservable matrix must be square")
+        if matrix.shape[0] == 0 or matrix.shape[0] & (matrix.shape[0] - 1):
+            raise ValueError("DenseHermitianObservable dimension must be a positive power of two")
+        if not np.all(np.isfinite(matrix)):
+            raise ValueError("DenseHermitianObservable matrix must contain finite values")
+        if not np.allclose(matrix, matrix.conj().T, atol=1e-12):
+            raise ValueError("DenseHermitianObservable matrix must be Hermitian")
+        label = str(self.label).strip() or "dense_hermitian"
+        object.__setattr__(self, "matrix", matrix)
+        object.__setattr__(self, "label", label)
+
+    @property
+    def observable_kind(self) -> str:
+        """Return the public observable family represented by this matrix."""
+        return "dense_hermitian"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready dense observable metadata."""
+        return {
+            "label": self.label,
+            "dimension": int(self.matrix.shape[0]),
+            "matrix_real": self.matrix.real.tolist(),
+            "matrix_imag": self.matrix.imag.tolist(),
+        }
+
+
+@dataclass(frozen=True)
+class PauliCovarianceObservable:
+    """Symmetrised covariance between two Pauli-product observables."""
+
+    left: PauliTerm
+    right: PauliTerm
+
+    @property
+    def observable_kind(self) -> str:
+        """Return the public observable family represented by this covariance."""
+        return "pauli_covariance"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready covariance metadata."""
+        return {
+            "left": self.left.to_dict(),
+            "right": self.right.to_dict(),
+        }
+
+
+@dataclass(frozen=True)
 class PhaseQNodeSupportReport:
     """Structured support report for local Phase-QNode execution."""
 
@@ -171,7 +229,13 @@ class PhaseQNodeCircuit:
 
     n_qubits: int
     operations: tuple[PhaseQNodeOperation | OperationSpec, ...]
-    observable: str | PauliTerm | SparsePauliHamiltonian
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    )
 
     def __post_init__(self) -> None:
         if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
@@ -221,6 +285,54 @@ class PhaseQNodeGradientResult:
             "gradient": self.gradient.tolist(),
             "support_report": self.support_report.to_dict(),
             "parameter_shift_evaluations": self.parameter_shift_evaluations,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseQNodeMetricTensorResult:
+    """Pure-state metric tensor evidence for a supported Phase-QNode circuit."""
+
+    fubini_study_metric: FloatArray
+    quantum_fisher_information: FloatArray
+    derivative_norms: FloatArray
+    support_report: PhaseQNodeSupportReport
+    parameter_derivative_evaluations: int
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready metric tensor evidence."""
+        return {
+            "fubini_study_metric": self.fubini_study_metric.tolist(),
+            "quantum_fisher_information": self.quantum_fisher_information.tolist(),
+            "derivative_norms": self.derivative_norms.tolist(),
+            "support_report": self.support_report.to_dict(),
+            "parameter_derivative_evaluations": self.parameter_derivative_evaluations,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseQNodeClassicalFisherResult:
+    """Exact computational-basis Fisher evidence for a supported Phase-QNode."""
+
+    classical_fisher_information: FloatArray
+    probabilities: FloatArray
+    probability_derivatives: FloatArray
+    measurement: str
+    min_probability: float
+    support_report: PhaseQNodeSupportReport
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready classical Fisher evidence."""
+        return {
+            "classical_fisher_information": self.classical_fisher_information.tolist(),
+            "probabilities": self.probabilities.tolist(),
+            "probability_derivatives": self.probability_derivatives.tolist(),
+            "measurement": self.measurement,
+            "min_probability": self.min_probability,
+            "support_report": self.support_report.to_dict(),
+            "claim_boundary": self.claim_boundary,
         }
 
 
@@ -322,21 +434,133 @@ def parameter_shift_phase_qnode_gradient(
     if not report.supported:
         raise PhaseQNodeSupportError(report)
     gradient = np.zeros_like(values)
+    base_result = execute_phase_qnode_circuit(circuit, values)
     for index in report.differentiable_parameters:
         plus = values.copy()
         minus = values.copy()
         plus[index] += np.pi / 2.0
         minus[index] -= np.pi / 2.0
-        gradient[index] = 0.5 * (
-            execute_phase_qnode_circuit(circuit, plus).value
-            - execute_phase_qnode_circuit(circuit, minus).value
-        )
+        if isinstance(circuit.observable, PauliCovarianceObservable):
+            plus_state = _execute_state(circuit, plus)
+            minus_state = _execute_state(circuit, minus)
+            gradient[index] = _covariance_product_rule_gradient(
+                base_result.state,
+                plus_state,
+                minus_state,
+                circuit.n_qubits,
+                circuit.observable,
+            )
+        else:
+            gradient[index] = 0.5 * (
+                execute_phase_qnode_circuit(circuit, plus).value
+                - execute_phase_qnode_circuit(circuit, minus).value
+            )
     return PhaseQNodeGradientResult(
-        value=execute_phase_qnode_circuit(circuit, values).value,
+        value=base_result.value,
         gradient=gradient,
         support_report=report,
         parameter_shift_evaluations=2 * len(report.differentiable_parameters),
     )
+
+
+def phase_qnode_quantum_fisher_information(
+    circuit: PhaseQNodeCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeMetricTensorResult:
+    """Compute the pure-state QFI and Fubini-Study metric for a local QNode."""
+    values = _as_parameter_vector(parameters)
+    report = phase_qnode_support_report(circuit, values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    width = values.size
+    metric = np.zeros((width, width), dtype=np.float64)
+    overlaps = np.array([np.vdot(state, derivative) for derivative in derivatives])
+    for row in range(width):
+        for column in range(row, width):
+            raw = (
+                np.vdot(derivatives[row], derivatives[column])
+                - np.conj(overlaps[row]) * overlaps[column]
+            )
+            value = float(np.real_if_close(raw).real)
+            metric[row, column] = value
+            metric[column, row] = value
+    symmetrized_metric: FloatArray = np.asarray(0.5 * (metric + metric.T), dtype=np.float64)
+    qfi: FloatArray = np.asarray(4.0 * symmetrized_metric, dtype=np.float64)
+    derivative_norms = np.asarray(
+        [np.linalg.norm(derivative) for derivative in derivatives],
+        dtype=np.float64,
+    )
+    return PhaseQNodeMetricTensorResult(
+        fubini_study_metric=symmetrized_metric,
+        quantum_fisher_information=qfi,
+        derivative_norms=derivative_norms,
+        support_report=report,
+        parameter_derivative_evaluations=len(_parsed_operations(circuit)),
+        claim_boundary=(
+            "pure-state local Phase-QNode Fubini-Study metric and QFI for the "
+            "registered statevector gate family; no finite-shot classical Fisher, "
+            "density-matrix, noisy-channel, provider, or hardware metric claim"
+        ),
+    )
+
+
+def phase_qnode_computational_basis_fisher_information(
+    circuit: PhaseQNodeCircuit,
+    parameters: ArrayLike,
+    *,
+    min_probability: float = 1e-15,
+) -> PhaseQNodeClassicalFisherResult:
+    """Compute exact classical Fisher information for basis probabilities."""
+    values = _as_parameter_vector(parameters)
+    threshold = _as_min_probability(min_probability)
+    report = phase_qnode_support_report(circuit, values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    probabilities = np.asarray(np.abs(state) ** 2, dtype=np.float64)
+    if np.any(probabilities <= threshold):
+        raise ValueError(
+            "computational-basis Fisher information is singular at a "
+            "zero-probability outcome; choose parameters away from the boundary "
+            "or use QFI/Fubini-Study diagnostics"
+        )
+    probability_derivatives = np.asarray(
+        [2.0 * np.real(np.conj(state) * derivative) for derivative in derivatives],
+        dtype=np.float64,
+    )
+    weighted = probability_derivatives / probabilities[np.newaxis, :]
+    fisher: FloatArray = np.asarray(
+        probability_derivatives @ weighted.T,
+        dtype=np.float64,
+    )
+    fisher = np.asarray(0.5 * (fisher + fisher.T), dtype=np.float64)
+    return PhaseQNodeClassicalFisherResult(
+        classical_fisher_information=fisher,
+        probabilities=probabilities,
+        probability_derivatives=probability_derivatives,
+        measurement="computational_basis",
+        min_probability=threshold,
+        support_report=report,
+        claim_boundary=(
+            "exact classical Fisher information for computational-basis "
+            "probabilities from the registered local statevector Phase-QNode "
+            "family; no finite-shot estimator, hardware sampling, adaptive "
+            "measurement, or optimal-measurement claim"
+        ),
+    )
+
+
+def phase_qnode_natural_gradient_metric(
+    circuit: PhaseQNodeCircuit,
+) -> Callable[[FloatArray], FloatArray]:
+    """Return a metric provider for quantum natural-gradient optimisation."""
+
+    def metric(parameters: FloatArray) -> FloatArray:
+        result = phase_qnode_quantum_fisher_information(circuit, parameters)
+        return cast(FloatArray, result.fubini_study_metric.copy())
+
+    return metric
 
 
 def _parse_operation(operation: PhaseQNodeOperation | OperationSpec) -> PhaseQNodeOperation:
@@ -360,9 +584,17 @@ def _parsed_operations(circuit: PhaseQNodeCircuit) -> tuple[PhaseQNodeOperation,
 
 
 def _normalise_observable(
-    observable: str | PauliTerm | SparsePauliHamiltonian,
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
     n_qubits: int,
-) -> str | PauliTerm | SparsePauliHamiltonian:
+) -> (
+    str | PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable | DenseHermitianObservable
+):
     if isinstance(observable, str):
         normalized = observable.strip().lower()
         if normalized in {"x", "pauli_x"}:
@@ -372,8 +604,19 @@ def _normalise_observable(
         if normalized in {"z", "pauli_z"}:
             return PauliTerm(1.0, ((0, "z"),))
         return normalized
+    if isinstance(observable, DenseHermitianObservable):
+        expected_dimension = 2**n_qubits
+        if observable.matrix.shape != (expected_dimension, expected_dimension):
+            raise ValueError("DenseHermitianObservable dimension must match n_qubits")
+        return observable
     max_qubit = -1
-    terms = observable.terms if isinstance(observable, SparsePauliHamiltonian) else (observable,)
+    terms: tuple[PauliTerm, ...]
+    if isinstance(observable, PauliCovarianceObservable):
+        terms = (observable.left, observable.right)
+    else:
+        terms = (
+            observable.terms if isinstance(observable, SparsePauliHamiltonian) else (observable,)
+        )
     for term in terms:
         max_qubit = max(max_qubit, *(qubit for qubit, _label in term.factors))
     if max_qubit >= n_qubits:
@@ -381,7 +624,19 @@ def _normalise_observable(
     return observable
 
 
-def _observable_kind(observable: str | PauliTerm | SparsePauliHamiltonian) -> str:
+def _observable_kind(
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
+) -> str:
+    if isinstance(observable, DenseHermitianObservable):
+        return observable.observable_kind
+    if isinstance(observable, PauliCovarianceObservable):
+        return observable.observable_kind
     if isinstance(observable, SparsePauliHamiltonian):
         return "sparse_pauli_hamiltonian"
     if isinstance(observable, PauliTerm):
@@ -411,6 +666,16 @@ def _as_finite_scalar(name: str, value: object) -> float:
     return scalar
 
 
+def _as_min_probability(value: float) -> float:
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "c", "O", "S", "U"}:
+        raise ValueError("min_probability must be a non-negative finite scalar")
+    scalar = float(raw.item())
+    if scalar < 0.0 or not np.isfinite(scalar):
+        raise ValueError("min_probability must be a non-negative finite scalar")
+    return scalar
+
+
 def _apply_operation(
     state: ComplexArray,
     n_qubits: int,
@@ -424,6 +689,55 @@ def _apply_operation(
         theta = 0.0
     matrix = _gate_matrix(gate, theta)
     return _apply_gate_matrix(state, n_qubits, operation.qubits, matrix)
+
+
+def _execute_state_and_parameter_derivatives(
+    circuit: PhaseQNodeCircuit,
+    values: FloatArray,
+) -> tuple[ComplexArray, tuple[ComplexArray, ...]]:
+    state = np.zeros(2**circuit.n_qubits, dtype=np.complex128)
+    state[0] = 1.0 + 0.0j
+    derivatives = tuple(np.zeros_like(state) for _ in range(values.size))
+    for operation in _parsed_operations(circuit):
+        matrix = _operation_matrix(operation, values)
+        derivative_matrix = _operation_derivative_matrix(operation, values)
+        previous_state = state
+        state = _apply_gate_matrix(previous_state, circuit.n_qubits, operation.qubits, matrix)
+        updated: list[ComplexArray] = []
+        for index, derivative in enumerate(derivatives):
+            propagated = _apply_gate_matrix(derivative, circuit.n_qubits, operation.qubits, matrix)
+            if operation.parameter_index == index:
+                propagated = propagated + _apply_gate_matrix(
+                    previous_state,
+                    circuit.n_qubits,
+                    operation.qubits,
+                    derivative_matrix,
+                )
+            updated.append(cast(ComplexArray, propagated.astype(np.complex128, copy=False)))
+        derivatives = tuple(updated)
+    return state, derivatives
+
+
+def _operation_matrix(
+    operation: PhaseQNodeOperation,
+    parameters: FloatArray,
+) -> ComplexArray:
+    theta = 0.0
+    if operation.gate in _PARAMETRIC_GATES:
+        theta = float(parameters[cast(int, operation.parameter_index)])
+    return _gate_matrix(operation.gate, theta)
+
+
+def _operation_derivative_matrix(
+    operation: PhaseQNodeOperation,
+    parameters: FloatArray,
+) -> ComplexArray:
+    if operation.gate not in _PARAMETRIC_GATES:
+        return np.zeros(
+            (2 ** len(operation.qubits), 2 ** len(operation.qubits)), dtype=np.complex128
+        )
+    theta = float(parameters[cast(int, operation.parameter_index)])
+    return _gate_derivative_matrix(operation.gate, theta)
 
 
 def _gate_matrix(gate: str, theta: float) -> ComplexArray:
@@ -493,6 +807,54 @@ def _gate_matrix(gate: str, theta: float) -> ComplexArray:
     raise ValueError(f"unsupported gate matrix: {gate}")
 
 
+def _gate_derivative_matrix(gate: str, theta: float) -> ComplexArray:
+    if gate == "rx":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _X,
+            dtype=np.complex128,
+        )
+    if gate == "ry":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _Y,
+            dtype=np.complex128,
+        )
+    if gate == "rz":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _Z,
+            dtype=np.complex128,
+        )
+    if gate == "phase":
+        return np.array(
+            [[0.0, 0.0], [0.0, 1.0j * np.exp(1.0j * theta)]],
+            dtype=np.complex128,
+        )
+    if gate == "crx":
+        return _controlled(_gate_derivative_matrix("rx", theta))
+    if gate == "cry":
+        return _controlled(_gate_derivative_matrix("ry", theta))
+    if gate == "crz":
+        return _controlled(_gate_derivative_matrix("rz", theta))
+    if gate == "rxx":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_X, _X),
+            dtype=np.complex128,
+        )
+    if gate == "ryy":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_Y, _Y),
+            dtype=np.complex128,
+        )
+    if gate == "rzz":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_Z, _Z),
+            dtype=np.complex128,
+        )
+    raise ValueError(f"unsupported gate derivative matrix: {gate}")
+
+
 def _controlled(target: ComplexArray) -> ComplexArray:
     matrix = np.zeros((4, 4), dtype=np.complex128)
     matrix[0, 0] = 1.0
@@ -521,8 +883,19 @@ def _apply_gate_matrix(
 def _expectation_value(
     state: ComplexArray,
     n_qubits: int,
-    observable: str | PauliTerm | SparsePauliHamiltonian,
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
 ) -> float:
+    if isinstance(observable, DenseHermitianObservable):
+        value = np.vdot(state, observable.matrix @ state)
+        return float(np.real_if_close(value).real)
+    if isinstance(observable, PauliCovarianceObservable):
+        return _covariance_expectation(state, n_qubits, observable)
     if isinstance(observable, SparsePauliHamiltonian):
         return float(sum(_term_expectation(state, n_qubits, term) for term in observable.terms))
     if isinstance(observable, PauliTerm):
@@ -538,17 +911,111 @@ def _term_expectation(state: ComplexArray, n_qubits: int, term: PauliTerm) -> fl
     return float(np.real_if_close(value).real)
 
 
+def _execute_state(circuit: PhaseQNodeCircuit, values: FloatArray) -> ComplexArray:
+    state = np.zeros(2**circuit.n_qubits, dtype=np.complex128)
+    state[0] = 1.0 + 0.0j
+    for operation in _parsed_operations(circuit):
+        state = _apply_operation(state, circuit.n_qubits, operation, values)
+    return state
+
+
+def _covariance_expectation(
+    state: ComplexArray,
+    n_qubits: int,
+    observable: PauliCovarianceObservable,
+) -> float:
+    symmetrized = _symmetrized_product_expectation(
+        state,
+        n_qubits,
+        observable.left,
+        observable.right,
+    )
+    left_mean = _term_expectation(state, n_qubits, observable.left)
+    right_mean = _term_expectation(state, n_qubits, observable.right)
+    return float(symmetrized - left_mean * right_mean)
+
+
+def _covariance_product_rule_gradient(
+    base_state: ComplexArray,
+    plus_state: ComplexArray,
+    minus_state: ComplexArray,
+    n_qubits: int,
+    observable: PauliCovarianceObservable,
+) -> float:
+    base_left = _term_expectation(base_state, n_qubits, observable.left)
+    base_right = _term_expectation(base_state, n_qubits, observable.right)
+    left_grad = 0.5 * (
+        _term_expectation(plus_state, n_qubits, observable.left)
+        - _term_expectation(minus_state, n_qubits, observable.left)
+    )
+    right_grad = 0.5 * (
+        _term_expectation(plus_state, n_qubits, observable.right)
+        - _term_expectation(minus_state, n_qubits, observable.right)
+    )
+    sym_grad = 0.5 * (
+        _symmetrized_product_expectation(
+            plus_state,
+            n_qubits,
+            observable.left,
+            observable.right,
+        )
+        - _symmetrized_product_expectation(
+            minus_state,
+            n_qubits,
+            observable.left,
+            observable.right,
+        )
+    )
+    return float(sym_grad - left_grad * base_right - base_left * right_grad)
+
+
+def _symmetrized_product_expectation(
+    state: ComplexArray,
+    n_qubits: int,
+    left: PauliTerm,
+    right: PauliTerm,
+) -> float:
+    left_right = _term_product_expectation(state, n_qubits, left, right)
+    right_left = _term_product_expectation(state, n_qubits, right, left)
+    return float(np.real_if_close(0.5 * (left_right + right_left)).real)
+
+
+def _term_product_expectation(
+    state: ComplexArray,
+    n_qubits: int,
+    left: PauliTerm,
+    right: PauliTerm,
+) -> complex:
+    transformed = _apply_term_operator(state, n_qubits, right)
+    transformed = _apply_term_operator(transformed, n_qubits, left)
+    return complex(left.coefficient * right.coefficient * np.vdot(state, transformed))
+
+
+def _apply_term_operator(state: ComplexArray, n_qubits: int, term: PauliTerm) -> ComplexArray:
+    transformed = cast(ComplexArray, state.copy())
+    for qubit, label in term.factors:
+        transformed = _apply_gate_matrix(transformed, n_qubits, (qubit,), _PAULI_MATRICES[label])
+    return transformed
+
+
 __all__ = [
+    "DenseHermitianObservable",
+    "PauliCovarianceObservable",
     "PauliTerm",
+    "PhaseQNodeClassicalFisherResult",
     "PhaseQNodeCircuit",
     "PhaseQNodeExecutionResult",
     "PhaseQNodeGradientResult",
+    "PhaseQNodeMetricTensorResult",
     "PhaseQNodeOperation",
     "PhaseQNodeSupportError",
     "PhaseQNodeSupportReport",
     "SparsePauliHamiltonian",
     "execute_phase_qnode_circuit",
     "parameter_shift_phase_qnode_gradient",
+    "phase_qnode_computational_basis_fisher_information",
+    "phase_qnode_natural_gradient_metric",
+    "phase_qnode_quantum_fisher_information",
     "phase_qnode_support_report",
     "registered_phase_qnode_gates",
     "registered_phase_qnode_observables",

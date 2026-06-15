@@ -225,7 +225,7 @@ def main() -> int:
 
     # Real submission to IBM Kingston
     # Read credentials from vault
-    vault = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+    vault = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     if not vault.exists():
         print(f"ERROR: credentials vault not found at {vault}", file=sys.stderr)
         return 1

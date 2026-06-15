@@ -772,7 +772,7 @@ def main() -> int:
     phase1 = _phase1_module()
     hardware_runner, _extract = _hardware_runner_symbols()
     credential_value, instance = phase1.parse_vault(
-        Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+        Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
     )
     runner = hardware_runner(
         credential_value,

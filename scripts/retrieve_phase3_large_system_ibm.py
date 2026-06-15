@@ -38,7 +38,7 @@ from scpn_quantum_control.mitigation.zne import zne_extrapolate
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "phase3_entanglement_tomography"
 DOCS_DIR = REPO_ROOT / "docs" / "campaigns"
-DEFAULT_CREDENTIALS_VAULT = Path("/media/anulum/724AA8E84AA8AA75/agentic-shared/CREDENTIALS.md")
+DEFAULT_CREDENTIALS_VAULT = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 
 
 @dataclass(frozen=True)
