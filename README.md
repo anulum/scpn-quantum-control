@@ -96,19 +96,19 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 623 |
-| Python source modules | 822 |
-| Public Python classes | 1714 |
+| Public API exports | 627 |
+| Python source modules | 824 |
+| Public Python classes | 1717 |
 | Paper 0 validation modules | 466 |
-| Domain package families | 31 |
+| Domain package families | 32 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 133 |
-| Rust source modules | 36 |
+| Rust PyO3 function bindings | 134 |
+| Rust source modules | 37 |
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 1940 |
-| Public documentation pages | 247 |
+| Python test files | 1941 |
+| Public documentation pages | 248 |
 | GitHub Actions workflows | 19 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

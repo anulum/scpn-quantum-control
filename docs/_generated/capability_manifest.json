@@ -1,20 +1,20 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 31,
+    "domain_package_families": 32,
     "example_files": 30,
     "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 623,
-    "public_documentation_pages": 247,
-    "python_model_classes": 1714,
-    "python_model_source_modules": 822,
-    "rust_pyo3_model_wrappers": 133,
-    "rust_source_modules": 36,
-    "test_files": 1940
+    "public_api_exports": 627,
+    "public_documentation_pages": 248,
+    "python_model_classes": 1717,
+    "python_model_source_modules": 824,
+    "rust_pyo3_model_wrappers": 134,
+    "rust_source_modules": 37,
+    "test_files": 1941
   },
   "documentation": {
     "examples": [
@@ -362,6 +362,7 @@
       "docs/qpu_data_artifact.md",
       "docs/qpu_provider_readiness.md",
       "docs/qpu_system_capability_dossier.md",
+      "docs/quantum_classical_cosimulation.md",
       "docs/quantum_gradients.md",
       "docs/quantum_sensing.md",
       "docs/quantum_thermo.md",
@@ -468,6 +469,11 @@
         "package": "control",
         "path": "src/scpn_quantum_control/control",
         "python_modules": 13
+      },
+      {
+        "package": "cosimulation",
+        "path": "src/scpn_quantum_control/cosimulation",
+        "python_modules": 2
       },
       {
         "package": "crypto",
@@ -1750,6 +1756,10 @@
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
       {
+        "name": "CoSimulationResult",
+        "path": "src/scpn_quantum_control/cosimulation/quantum_classical.py"
+      },
+      {
         "name": "CoherenceBreakdownValidationResult",
         "path": "src/scpn_quantum_control/paper0/pathology_criticality_validation.py"
       },
@@ -1880,6 +1890,10 @@
       {
         "name": "ConsciousnessStudiesCognitiveModelsFixtureResult",
         "path": "src/scpn_quantum_control/paper0/consciousness_studies_cognitive_models_validation.py"
+      },
+      {
+        "name": "ConservationReport",
+        "path": "src/scpn_quantum_control/cosimulation/knm_partition.py"
       },
       {
         "name": "ConstraintViolation",
@@ -3524,6 +3538,10 @@
       {
         "name": "JosephsonBenchmarkResult",
         "path": "src/scpn_quantum_control/applications/josephson_array.py"
+      },
+      {
+        "name": "KnmPartition",
+        "path": "src/scpn_quantum_control/cosimulation/knm_partition.py"
       },
       {
         "name": "KoopmanResult",
@@ -8028,6 +8046,8 @@
       "src/scpn_quantum_control/control/structured_ansatz.py",
       "src/scpn_quantum_control/control/topological_optimizer.py",
       "src/scpn_quantum_control/control/vqls_gs.py",
+      "src/scpn_quantum_control/cosimulation/knm_partition.py",
+      "src/scpn_quantum_control/cosimulation/quantum_classical.py",
       "src/scpn_quantum_control/crypto/entanglement_qkd.py",
       "src/scpn_quantum_control/crypto/hierarchical_keys.py",
       "src/scpn_quantum_control/crypto/knm_key.py",
@@ -8740,6 +8760,7 @@
       "build_xy_hamiltonian_dense",
       "concatenated_logical_rate_rust",
       "correlation_matrix_xy",
+      "cosim_classical_substep",
       "dla_dimension",
       "dla_protected_memory_mask",
       "dla_protected_memory_metrics",
@@ -8873,6 +8894,7 @@
       "scpn_quantum_engine/src/compiler_ad.rs",
       "scpn_quantum_engine/src/complex_utils.rs",
       "scpn_quantum_engine/src/concat_qec.rs",
+      "scpn_quantum_engine/src/cosimulation.rs",
       "scpn_quantum_engine/src/dla.rs",
       "scpn_quantum_engine/src/entropy.rs",
       "scpn_quantum_engine/src/feedback.rs",
@@ -8929,6 +8951,7 @@
     "ClassicalBaselineRun",
     "CloudDeploymentSpec",
     "CloudManifestBundle",
+    "CoSimulationResult",
     "CompilerADExecutableConfig",
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",
@@ -8982,6 +9005,7 @@
     "JVPResult",
     "JacobianResult",
     "JobResult",
+    "KnmPartition",
     "KuramotoProblem",
     "KuramotoVariant",
     "KuramotoVariantResult",
@@ -9214,6 +9238,7 @@
     "complex_step_gradient",
     "compound_mitigate_pipeline",
     "concatenated_logical_rate",
+    "cosimulate",
     "custom_derivative_rule_for",
     "custom_gauss_newton_gradient",
     "custom_jacobian",
@@ -9338,6 +9363,7 @@
     "orchestrator_to_quantum_phases",
     "parameter_shift_gradient",
     "parameter_shift_gradient_with_uncertainty",
+    "partition_knm",
     "pauli_twirl_decompose",
     "pec_sample",
     "pennylane_backend",
@@ -10160,6 +10186,7 @@
       "tests/test_control_plasma_knm_mock.py",
       "tests/test_control_qec.py",
       "tests/test_control_structured_ansatz.py",
+      "tests/test_cosimulation.py",
       "tests/test_cpdr.py",
       "tests/test_critical_concordance.py",
       "tests/test_cross_domain.py",

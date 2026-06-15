@@ -5,6 +5,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added a quantum/classical co-simulation package
+  (`cosimulation/`). `partition_knm` deterministically splits a K_nm coupling
+  network into a strongly-coupled quantum core (statevector-evolved, capped at
+  14 nodes) and a weakly-coupled classical Kuramoto bath, with an edge-exact
+  conservation report and a `cross_fraction` quality signal. `cosimulate`
+  interleaves an exact-internal second-order Trotter evolution of the quantum
+  core (driven by the classical mean field) with an explicit-Euler Kuramoto step
+  of the bath (driven by the coherence-weighted quantum moments), returning the
+  classical-phase and quantum-moment trajectories, quantum/classical/global
+  order parameters, and an all-classical baseline. In the decoupled limit the
+  co-simulation reduces exactly to an isolated statevector evolution and an
+  isolated classical Kuramoto run. The per-step classical update dispatches to a
+  zero-skipping Rust kernel (`cosim_classical_substep`, 12.8x faster than the
+  dense NumPy reference on a sparse N=128 bath). Ships parity/conservation/
+  decoupled-limit tests, a polyglot comparison benchmark
+  (`scripts/bench_cosimulation.py`, `results/cosimulation_benchmark.json`,
+  `functional_non_isolated`), and documentation
+  (`docs/quantum_classical_cosimulation.md`). Local mean-field embedding, not an
+  exact full-network or hardware path.
 - 2026-06-15 — Added a pulse-waveform → AMD UltraScale+ HLS code generator
   (`codegen/ultrascale_hls.py`). `pulse_to_vivado_hls` quantises a control
   envelope to a signed Q-format ROM and renders a synthesisable AXI4-Stream

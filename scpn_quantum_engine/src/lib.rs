@@ -34,6 +34,7 @@ pub mod community;
 pub mod compiler_ad;
 pub mod complex_utils;
 pub mod concat_qec;
+pub mod cosimulation;
 pub mod dla;
 pub mod entropy;
 pub mod feedback;
@@ -428,6 +429,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // UltraScale+ HLS Q-format quantisation
     m.add_function(wrap_pyfunction!(hls_quantise::quantise_q_format, m)?)?;
+
+    // Quantum/classical co-simulation classical substep
+    m.add_function(wrap_pyfunction!(cosimulation::cosim_classical_substep, m)?)?;
 
     Ok(())
 }

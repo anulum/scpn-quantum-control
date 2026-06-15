@@ -198,6 +198,12 @@ from .control.realtime_runtime import (
 )
 from .control.topological_optimizer import TopologicalCouplingOptimizer
 from .control.vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
+from .cosimulation import (
+    CoSimulationResult,
+    KnmPartition,
+    cosimulate,
+    partition_knm,
+)
 from .crypto.pqc_trigger import PqcTriggerSigner
 from .deployment.cloud_native import (
     CloudDeploymentSpec,
@@ -866,6 +872,10 @@ __all__ = [
     "HLSBundle",
     "pulse_to_vivado_hls",
     "write_bundle",
+    "KnmPartition",
+    "CoSimulationResult",
+    "partition_knm",
+    "cosimulate",
     "NVCenter",
     "NVFieldCalibration",
     "calibrate_field_from_odmr",
