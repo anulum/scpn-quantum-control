@@ -5,6 +5,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added closed-loop control analysis for the measurement-feedback
+  synchronisation loop (`control/closed_loop_analysis.py`).
+  `analyse_closed_loop_response` turns a set-point tracking trajectory into a
+  control-theoretic verdict — converged, limit-cycle, diverged, or unsettled —
+  with settling round, steady-state error, overshoot, integral absolute error,
+  oscillation amplitude, and trailing error sign-change metrics.
+  `evaluate_closed_loop_policy` gates execution fail-closed (simulation by
+  default; hardware only with `allow_hardware`, a live ticket, and an
+  allow-listed backend, within a round budget), and `run_closed_loop_control`
+  runs the existing controller under the policy and returns a deterministic,
+  replayable `ClosedLoopControlEvidence` record. Documented in
+  `docs/closed_loop_control.md` and covered by
+  `tests/test_closed_loop_analysis.py`. Software-in-the-loop assessment only:
+  not provider-prepared dynamic-circuit or live closed-loop QPU evidence.
 - 2026-06-15 — Added a bounded quantum graph neural network over K_nm graphs
   (`phase/qgnn.py`). A classical message-passing stack turns a coupling graph
   (node frequencies and weighted degree, edge couplings) into the rotation

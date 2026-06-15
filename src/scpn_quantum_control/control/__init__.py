@@ -20,6 +20,17 @@ from .adaptive_branching import (
     s8_adaptive_branching_markdown,
     s8_adaptive_branching_payload,
 )
+from .closed_loop_analysis import (
+    ClosedLoopControlEvidence,
+    ClosedLoopExecutionDecision,
+    ClosedLoopExecutionPolicy,
+    ControlPerformance,
+    ExecutionMode,
+    ResponseClass,
+    analyse_closed_loop_response,
+    evaluate_closed_loop_policy,
+    run_closed_loop_control,
+)
 from .frc_pulsed_qaoa import (
     FRCScheduleResult,
     classical_sqp_schedule,
@@ -54,6 +65,15 @@ from .structured_ansatz import StructuredAnsatz
 from .vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
 
 __all__ = [
+    "ClosedLoopControlEvidence",
+    "ClosedLoopExecutionDecision",
+    "ClosedLoopExecutionPolicy",
+    "ControlPerformance",
+    "ExecutionMode",
+    "ResponseClass",
+    "analyse_closed_loop_response",
+    "evaluate_closed_loop_policy",
+    "run_closed_loop_control",
     "StructuredAnsatz",
     "QAOA_MPC",
     "FRCPlasmaSurrogate",

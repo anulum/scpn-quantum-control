@@ -100,6 +100,7 @@ nav:
           - Mitigation API: mitigation_api.md
           - Bridges API: bridges_api.md
           - Real-Time Feedback: realtime_feedback.md
+          - Closed-Loop Control Analysis: closed_loop_control.md
           - Real-Time Runtime: realtime_runtime.md
           - Quantum RNG: entropy_qrng.md
           - FRC Pulsed-Shot QAOA: frc_pulsed_qaoa.md

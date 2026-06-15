@@ -9,12 +9,12 @@
     "optional_extras": 42,
     "paper0_validation_modules": 466,
     "public_api_exports": 627,
-    "public_documentation_pages": 249,
-    "python_model_classes": 1720,
-    "python_model_source_modules": 826,
+    "public_documentation_pages": 250,
+    "python_model_classes": 1726,
+    "python_model_source_modules": 827,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1943
+    "test_files": 1944
   },
   "documentation": {
     "examples": [
@@ -273,6 +273,7 @@
       "docs/changelog.md",
       "docs/classical_baselines.md",
       "docs/classical_irreproducibility.md",
+      "docs/closed_loop_control.md",
       "docs/core_package_boundary.md",
       "docs/datasets.md",
       "docs/differentiable_api.md",
@@ -469,7 +470,7 @@
       {
         "package": "control",
         "path": "src/scpn_quantum_control/control",
-        "python_modules": 13
+        "python_modules": 14
       },
       {
         "package": "cosimulation",
@@ -1749,6 +1750,18 @@
         "path": "src/scpn_quantum_control/paper0/clinical_scenario_analysis_traumatic_brain_injury_tbi_and_pharmacologica_validation.py"
       },
       {
+        "name": "ClosedLoopControlEvidence",
+        "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
+      },
+      {
+        "name": "ClosedLoopExecutionDecision",
+        "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
+      },
+      {
+        "name": "ClosedLoopExecutionPolicy",
+        "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
+      },
+      {
         "name": "CloudDeploymentSpec",
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
@@ -1911,6 +1924,10 @@
       {
         "name": "ControlOverUniversalParametersFixtureResult",
         "path": "src/scpn_quantum_control/paper0/control_over_universal_parameters_validation.py"
+      },
+      {
+        "name": "ControlPerformance",
+        "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
       },
       {
         "name": "ControlQEC",
@@ -2463,6 +2480,10 @@
       {
         "name": "ExecutableWholeProgramADKernel",
         "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
+        "name": "ExecutionMode",
+        "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
       },
       {
         "name": "ExecutionRegion",
@@ -5929,6 +5950,10 @@
         "path": "src/scpn_quantum_control/paper0/resolving_the_probability_desert_superradiant_amplification_and_bec_stim_validation.py"
       },
       {
+        "name": "ResponseClass",
+        "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
+      },
+      {
         "name": "Result",
         "path": "src/scpn_quantum_control/stable_core.py"
       },
@@ -8047,6 +8072,7 @@
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
+      "src/scpn_quantum_control/control/closed_loop_analysis.py",
       "src/scpn_quantum_control/control/frc_pulsed_qaoa.py",
       "src/scpn_quantum_control/control/hardware_topological_optimizer.py",
       "src/scpn_quantum_control/control/q_disruption.py",
@@ -10189,6 +10215,7 @@
       "tests/test_classical_baselines.py",
       "tests/test_classical_irreproducibility.py",
       "tests/test_classical_reference_regression.py",
+      "tests/test_closed_loop_analysis.py",
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_compound_mitigation.py",
