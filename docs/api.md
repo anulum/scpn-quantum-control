@@ -1280,7 +1280,9 @@ is_phase_jax_available() -> bool
 jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None, rule=None) -> PhaseJAXParameterShiftResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
+build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec
+phase_qnode_depth_profile(circuit) -> PhaseQNodeDepthProfile
 build_pennylane_qnode_from_phase_qnode(circuit, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift") -> PennyLaneQNodeConversionResult
 check_pennylane_phase_qnode_round_trip(circuit, values, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6) -> PennyLaneRoundTripResult
 is_phase_torch_available() -> bool

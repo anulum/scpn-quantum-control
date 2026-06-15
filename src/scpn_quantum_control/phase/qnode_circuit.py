@@ -306,6 +306,58 @@ class PhaseQNodeTemplateSpec:
 
 
 @dataclass(frozen=True)
+class PhaseQNodeDepthProfile:
+    """Depth and resource profile for a registered local Phase-QNode circuit."""
+
+    n_qubits: int
+    operation_count: int
+    depth: int
+    operation_layers: tuple[int, ...]
+    gate_counts: Mapping[str, int]
+    parameter_count: int
+    differentiable_parameters: tuple[int, ...]
+    two_qubit_gate_count: int
+    entangling_pairs: tuple[tuple[int, int], ...]
+    max_operation_arity: int
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready circuit-depth metadata."""
+        return {
+            "n_qubits": self.n_qubits,
+            "operation_count": self.operation_count,
+            "depth": self.depth,
+            "operation_layers": list(self.operation_layers),
+            "gate_counts": dict(self.gate_counts),
+            "parameter_count": self.parameter_count,
+            "differentiable_parameters": list(self.differentiable_parameters),
+            "two_qubit_gate_count": self.two_qubit_gate_count,
+            "entangling_pairs": [list(pair) for pair in self.entangling_pairs],
+            "max_operation_arity": self.max_operation_arity,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseQNodeRegisteredCircuitSpec:
+    """Validated arbitrary-depth registered Phase-QNode circuit declaration."""
+
+    circuit: PhaseQNodeCircuit
+    depth_profile: PhaseQNodeDepthProfile
+    support_report: PhaseQNodeSupportReport
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered-depth circuit metadata."""
+        return {
+            "n_qubits": self.circuit.n_qubits,
+            "depth_profile": self.depth_profile.to_dict(),
+            "support_report": self.support_report.to_dict(),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseQNodeExecutionResult:
     """Statevector execution result for a supported Phase-QNode circuit."""
 
@@ -462,6 +514,98 @@ def build_phase_qnode_template(
             "registered local multi-qubit Phase-QNode template over the bounded "
             "statevector gate family; no dynamic-circuit, provider, finite-shot, "
             "hardware, or native framework autodiff-through-simulator claim"
+        ),
+    )
+
+
+def build_registered_phase_qnode_circuit(
+    n_qubits: int,
+    operations: tuple[PhaseQNodeOperation | OperationSpec, ...],
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
+    *,
+    max_depth: int | None = None,
+    max_operations: int | None = None,
+) -> PhaseQNodeRegisteredCircuitSpec:
+    """Build and validate an arbitrary-depth registered local Phase-QNode circuit."""
+    circuit = PhaseQNodeCircuit(n_qubits=n_qubits, operations=operations, observable=observable)
+    profile = phase_qnode_depth_profile(circuit)
+    operation_budget = _as_optional_positive_int("max_operations", max_operations)
+    depth_budget = _as_optional_positive_int("max_depth", max_depth)
+    if operation_budget is not None and profile.operation_count > operation_budget:
+        raise ValueError(
+            f"registered Phase-QNode operation count {profile.operation_count} "
+            f"exceeds max_operations={operation_budget}"
+        )
+    if depth_budget is not None and profile.depth > depth_budget:
+        raise ValueError(
+            f"registered Phase-QNode depth {profile.depth} exceeds max_depth={depth_budget}"
+        )
+    report = phase_qnode_support_report(
+        circuit,
+        np.zeros(profile.parameter_count, dtype=np.float64),
+    )
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    return PhaseQNodeRegisteredCircuitSpec(
+        circuit=circuit,
+        depth_profile=profile,
+        support_report=report,
+        claim_boundary=(
+            "arbitrary-depth registered local Phase-QNode circuit over the "
+            "bounded statevector gate and observable family with deterministic "
+            "depth/resource accounting; no dynamic-circuit, provider, finite-shot, "
+            "hardware, or native framework autodiff-through-simulator claim"
+        ),
+    )
+
+
+def phase_qnode_depth_profile(circuit: PhaseQNodeCircuit) -> PhaseQNodeDepthProfile:
+    """Return deterministic depth and resource metadata for a registered circuit."""
+    operations = _parsed_operations(circuit)
+    last_layer_by_qubit = [0 for _ in range(circuit.n_qubits)]
+    operation_layers: list[int] = []
+    gate_counts: dict[str, int] = {}
+    parameter_indices: set[int] = set()
+    entangling_pairs: set[tuple[int, int]] = set()
+    max_arity = 0
+    two_qubit_gate_count = 0
+    for operation in operations:
+        layer = 1 + max(last_layer_by_qubit[qubit] for qubit in operation.qubits)
+        operation_layers.append(layer)
+        for qubit in operation.qubits:
+            last_layer_by_qubit[qubit] = layer
+        gate_counts[operation.gate] = gate_counts.get(operation.gate, 0) + 1
+        if operation.parameter_index is not None:
+            parameter_indices.add(operation.parameter_index)
+        arity = len(operation.qubits)
+        max_arity = max(max_arity, arity)
+        if arity == 2:
+            two_qubit_gate_count += 1
+            left, right = operation.qubits
+            entangling_pairs.add((min(left, right), max(left, right)))
+    ordered_parameters = tuple(sorted(parameter_indices))
+    parameter_count = 0 if not ordered_parameters else ordered_parameters[-1] + 1
+    return PhaseQNodeDepthProfile(
+        n_qubits=circuit.n_qubits,
+        operation_count=len(operations),
+        depth=max(operation_layers, default=0),
+        operation_layers=tuple(operation_layers),
+        gate_counts=dict(sorted(gate_counts.items())),
+        parameter_count=parameter_count,
+        differentiable_parameters=ordered_parameters,
+        two_qubit_gate_count=two_qubit_gate_count,
+        entangling_pairs=tuple(sorted(entangling_pairs)),
+        max_operation_arity=max_arity,
+        claim_boundary=(
+            "ordered local Phase-QNode depth/resource profile for registered "
+            "statevector circuits; no hardware duration, pulse schedule, noise, "
+            "provider transpilation, or isolated-performance claim"
         ),
     )
 
@@ -881,6 +1025,14 @@ def _as_min_probability(value: float) -> float:
     return scalar
 
 
+def _as_optional_positive_int(name: str, value: int | None) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or value < 1:
+        raise ValueError(f"{name} must be a positive integer or None")
+    return int(value)
+
+
 def _apply_operation(
     state: ComplexArray,
     n_qubits: int,
@@ -1209,18 +1361,22 @@ __all__ = [
     "PauliTerm",
     "PhaseQNodeClassicalFisherResult",
     "PhaseQNodeCircuit",
+    "PhaseQNodeDepthProfile",
     "PhaseQNodeExecutionResult",
     "PhaseQNodeGradientResult",
     "PhaseQNodeMetricTensorResult",
     "PhaseQNodeOperation",
+    "PhaseQNodeRegisteredCircuitSpec",
     "PhaseQNodeSupportError",
     "PhaseQNodeSupportReport",
     "PhaseQNodeTemplateSpec",
     "SparsePauliHamiltonian",
+    "build_registered_phase_qnode_circuit",
     "build_phase_qnode_template",
     "execute_phase_qnode_circuit",
     "parameter_shift_phase_qnode_gradient",
     "phase_qnode_computational_basis_fisher_information",
+    "phase_qnode_depth_profile",
     "phase_qnode_natural_gradient_metric",
     "phase_qnode_quantum_fisher_information",
     "phase_qnode_support_report",

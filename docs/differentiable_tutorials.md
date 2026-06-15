@@ -99,6 +99,44 @@ registered gates and observables. It does not imply dynamic circuits,
 provider-backed execution, finite-shot sampling, or native framework autodiff
 through a simulator.
 
+For an arbitrary registered-depth circuit, build a validated spec and inspect
+its depth profile before execution:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    build_registered_phase_qnode_circuit,
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+)
+
+spec = build_registered_phase_qnode_circuit(
+    n_qubits=3,
+    operations=(
+        ("ry", (0,), 0),
+        ("rx", (1,), 1),
+        ("cnot", (0, 1)),
+        ("rz", (2,), 2),
+        ("rzz", (1, 2), 3),
+    ),
+    observable=PauliTerm(1.0, ((0, "z"), (1, "z"), (2, "x"))),
+    max_depth=4,
+    max_operations=5,
+)
+params = np.array([0.2, -0.3, 0.1, 0.4], dtype=float)
+
+print(spec.depth_profile.to_dict())
+value = execute_phase_qnode_circuit(spec.circuit, params)
+gradient = parameter_shift_phase_qnode_gradient(spec.circuit, params)
+print(value.value)
+print(gradient.gradient)
+```
+
+Depth budgets are local circuit-resource gates. They are not hardware duration,
+transpilation, pulse-schedule, noise, or performance evidence.
+
 ## Why A Route Is Blocked
 
 ```python

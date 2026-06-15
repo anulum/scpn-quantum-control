@@ -1067,6 +1067,7 @@ import numpy as np
 
 from scpn_quantum_control.phase import (
     build_phase_qnode_template,
+    build_registered_phase_qnode_circuit,
     DenseHermitianObservable,
     PauliCovarianceObservable,
     PauliTerm,
@@ -1106,6 +1107,28 @@ template = build_phase_qnode_template(
 )
 params = np.linspace(0.2, 0.8, template.parameter_count)
 gradient = parameter_shift_phase_qnode_gradient(template.circuit(), params)
+```
+
+Use `build_registered_phase_qnode_circuit(...)` when a hand-authored registered
+operation sequence needs explicit depth and operation-budget validation. The
+returned `PhaseQNodeRegisteredCircuitSpec` carries a `PhaseQNodeDepthProfile`
+with ordered qubit-conflict depth, gate counts, parameter count, entangling
+pairs, and a claim boundary:
+
+```python
+spec = build_registered_phase_qnode_circuit(
+    n_qubits=3,
+    operations=(
+        ("ry", (0,), 0),
+        ("rx", (1,), 1),
+        ("cnot", (0, 1)),
+        ("rz", (2,), 2),
+        ("rzz", (1, 2), 3),
+    ),
+    observable=PauliTerm(1.0, ((0, "z"), (1, "z"), (2, "x"))),
+    max_depth=4,
+    max_operations=5,
+)
 ```
 
 For dense local observables, use `DenseHermitianObservable(matrix)`.  The matrix

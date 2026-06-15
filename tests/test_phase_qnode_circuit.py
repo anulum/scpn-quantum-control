@@ -19,14 +19,18 @@ from scpn_quantum_control.phase.qnode_circuit import (
     PauliTerm,
     PhaseQNodeCircuit,
     PhaseQNodeClassicalFisherResult,
+    PhaseQNodeDepthProfile,
     PhaseQNodeMetricTensorResult,
+    PhaseQNodeRegisteredCircuitSpec,
     PhaseQNodeSupportError,
     PhaseQNodeTemplateSpec,
     SparsePauliHamiltonian,
     build_phase_qnode_template,
+    build_registered_phase_qnode_circuit,
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
     phase_qnode_computational_basis_fisher_information,
+    phase_qnode_depth_profile,
     phase_qnode_natural_gradient_metric,
     phase_qnode_quantum_fisher_information,
     phase_qnode_support_report,
@@ -453,3 +457,141 @@ def test_phase_qnode_template_exports_are_public() -> None:
     assert phase.build_phase_qnode_template is build_phase_qnode_template
     assert phase.registered_phase_qnode_templates is registered_phase_qnode_templates
     assert phase.PhaseQNodeTemplateSpec is PhaseQNodeTemplateSpec
+
+
+def test_phase_qnode_registered_depth_builder_profiles_arbitrary_circuit() -> None:
+    spec = build_registered_phase_qnode_circuit(
+        n_qubits=3,
+        operations=(
+            ("ry", (0,), 0),
+            ("rx", (1,), 1),
+            ("cnot", (0, 1)),
+            ("rz", (2,), 2),
+            ("rzz", (1, 2), 3),
+            ("ry", (0,), 4),
+        ),
+        observable=SparsePauliHamiltonian(
+            (
+                PauliTerm(0.5, ((0, "z"),)),
+                PauliTerm(-0.25, ((1, "x"), (2, "z"))),
+            )
+        ),
+        max_depth=4,
+        max_operations=6,
+    )
+
+    assert isinstance(spec, PhaseQNodeRegisteredCircuitSpec)
+    assert isinstance(spec.depth_profile, PhaseQNodeDepthProfile)
+    assert spec.support_report.supported
+    assert spec.depth_profile.operation_layers == (1, 1, 2, 1, 3, 3)
+    assert spec.depth_profile.depth == 3
+    assert spec.depth_profile.operation_count == 6
+    assert spec.depth_profile.parameter_count == 5
+    assert spec.depth_profile.differentiable_parameters == (0, 1, 2, 3, 4)
+    assert spec.depth_profile.gate_counts == {
+        "cnot": 1,
+        "rx": 1,
+        "ry": 2,
+        "rz": 1,
+        "rzz": 1,
+    }
+    assert spec.depth_profile.two_qubit_gate_count == 2
+    assert spec.depth_profile.entangling_pairs == ((0, 1), (1, 2))
+    assert "hardware" in spec.claim_boundary
+    assert spec.to_dict()["depth_profile"]
+
+
+def test_phase_qnode_registered_depth_builder_executes_and_gradients() -> None:
+    spec = build_registered_phase_qnode_circuit(
+        n_qubits=3,
+        operations=(
+            ("ry", (0,), 0),
+            ("rx", (1,), 1),
+            ("cnot", (0, 1)),
+            ("rz", (2,), 2),
+            ("rxx", (0, 2), 3),
+        ),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"), (2, "x"))),
+    )
+    params = np.array([0.21, -0.33, 0.17, 0.44], dtype=float)
+
+    value = execute_phase_qnode_circuit(spec.circuit, params)
+    gradient = parameter_shift_phase_qnode_gradient(spec.circuit, params)
+    finite_difference = np.zeros_like(params)
+    eps = 1e-6
+    for index in range(params.size):
+        plus = params.copy()
+        minus = params.copy()
+        plus[index] += eps
+        minus[index] -= eps
+        finite_difference[index] = (
+            execute_phase_qnode_circuit(spec.circuit, plus).value
+            - execute_phase_qnode_circuit(spec.circuit, minus).value
+        ) / (2.0 * eps)
+
+    assert np.isfinite(value.value)
+    np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
+    assert gradient.parameter_shift_evaluations == 8
+
+
+def test_phase_qnode_depth_profile_matches_template_circuit() -> None:
+    template = build_phase_qnode_template(
+        "hardware_efficient_ry",
+        3,
+        n_layers=2,
+        entangler="chain",
+    )
+
+    profile = phase_qnode_depth_profile(template.circuit())
+
+    assert profile.depth == 6
+    assert profile.operation_count == 10
+    assert profile.parameter_count == template.parameter_count
+    assert profile.two_qubit_gate_count == 4
+    assert profile.max_operation_arity == 2
+
+
+def test_phase_qnode_registered_depth_builder_fails_closed_for_budgets() -> None:
+    operations = (
+        ("ry", (0,), 0),
+        ("cnot", (0, 1)),
+        ("rzz", (0, 1), 1),
+    )
+    with pytest.raises(ValueError, match="max_operations"):
+        build_registered_phase_qnode_circuit(
+            2,
+            operations,
+            PauliTerm(1.0, ((0, "z"),)),
+            max_operations=2,
+        )
+    with pytest.raises(ValueError, match="max_depth"):
+        build_registered_phase_qnode_circuit(
+            2,
+            operations,
+            PauliTerm(1.0, ((0, "z"),)),
+            max_depth=2,
+        )
+    with pytest.raises(ValueError, match="positive integer"):
+        build_registered_phase_qnode_circuit(
+            2,
+            operations,
+            PauliTerm(1.0, ((0, "z"),)),
+            max_depth=0,
+        )
+
+
+def test_phase_qnode_registered_depth_builder_fails_closed_for_unsupported_routes() -> None:
+    with pytest.raises(PhaseQNodeSupportError) as exc_info:
+        build_registered_phase_qnode_circuit(
+            1,
+            (("u3", (0,), 0),),
+            PauliTerm(1.0, ((0, "z"),)),
+        )
+    assert exc_info.value.report.unsupported_gates == ("u3",)
+
+
+def test_phase_qnode_registered_depth_exports_are_public() -> None:
+    assert phase.build_registered_phase_qnode_circuit is build_registered_phase_qnode_circuit
+    assert phase.phase_qnode_depth_profile is phase_qnode_depth_profile
+    assert phase.PhaseQNodeDepthProfile is PhaseQNodeDepthProfile
+    assert phase.PhaseQNodeRegisteredCircuitSpec is PhaseQNodeRegisteredCircuitSpec
