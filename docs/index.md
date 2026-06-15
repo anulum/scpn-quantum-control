@@ -244,7 +244,8 @@ for name, w in results.items():
 - [Paper 0 Experimental Pathway](paper0/paper0_experimental_pathway.md) — downstream methodology-paper route and experimental programme derived from Paper 0 ingestion
 - [Campaign Artefacts](campaigns/README.md) — dated preregistration, readiness, manifest, and result notes
 - [Publication Operations](publication/README.md) — submission checklists, source packaging, and venue-readiness notes
-- [Release Readiness Gate](release_readiness.md) — deterministic tag-readiness audit for version, coverage, behavioural quality, and claim-boundary artefacts
+- [Release Readiness Gate](release_readiness.md) — deterministic tag-readiness audit for version, licensing, coverage, behavioural quality, and claim-boundary artefacts
+- [Licensing FAQ](licensing_faq.md) — AGPL/commercial route, core-split boundary, and release gate for licence drift
 - [Research Gems](research_gems.md) — **33 analysis modules with theory and API**
 - [Literature Catalogue](literature/README.md) — project-relevant literature surveys and citation-planning material
 - [Equations](equations.md) — every equation in the codebase

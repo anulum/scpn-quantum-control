@@ -1,10 +1,10 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Arcane Sapience
-# Author: Miroslav Sotek
-# Contact: protoscience@anulum.li
-# Project: scpn-quantum-control
-# File: benchmark_remote_knm_machine.py
-# Purpose: Self-contained cross-machine K_nm construction benchmark harness.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Remote K_nm Benchmark Harness
 """Run self-contained K_nm construction benchmarks on one machine.
 
 The harness intentionally avoids importing :mod:`scpn_quantum_control` so the

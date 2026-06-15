@@ -68,6 +68,7 @@ nav:
       - Stable Core Backend Capability Matrix: stable_core_backend_capability_matrix.md
       - Kuramoto Core Facade: kuramoto_core_facade.md
       - Core Package Boundary: core_package_boundary.md
+      - Licensing FAQ: licensing_faq.md
       - API Overview: api.md
       - GOTM-SCPN Paper 0 Index: paper0/README.md
       - GOTM-SCPN Paper 0 Validation Register: paper0/paper0_validation_register.md

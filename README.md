@@ -973,8 +973,9 @@ source code, use the commercial route:
 | **Perpetual** | CHF 999 one-time | Permanent license, one major version |
 | **Enterprise** | Custom | SLA, priority support, custom modules |
 
-Reference files: [`LICENSE`](LICENSE), [`NOTICE.md`](NOTICE.md), and
-[`docs/core_package_boundary.md`](docs/core_package_boundary.md).
+Reference files: [`LICENSE`](LICENSE), [`NOTICE.md`](NOTICE.md),
+[`docs/core_package_boundary.md`](docs/core_package_boundary.md), and
+[`docs/licensing_faq.md`](docs/licensing_faq.md).
 
 Contact: **protoscience@anulum.li** | [anulum.li](https://www.anulum.li)
 

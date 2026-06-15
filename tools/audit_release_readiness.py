@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from audit_coverage_gaps import audit_coverage_gaps, load_justified_exclusions
+from audit_license_readiness import audit_license_readiness
 from audit_test_behaviour import audit_test_tree, evaluate_quality_gate
 
 VERSION_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -351,6 +352,18 @@ def check_behaviour_gate(
     )
 
 
+def check_license_readiness(project_root: Path) -> ReleaseCheck:
+    """Check licence metadata, public boundary docs, and SPDX headers."""
+
+    payload = audit_license_readiness(project_root)
+    return ReleaseCheck(
+        name="license_readiness_gate",
+        valid=bool(payload["ready"]),
+        details=payload,
+        blockers=tuple(str(blocker) for blocker in payload["blockers"]),
+    )
+
+
 def audit_release_readiness(
     *,
     project_root: Path,
@@ -395,6 +408,7 @@ def audit_release_readiness(
             min_assertion_density=min_assertion_density,
             min_raises_contract_density=min_raises_contract_density,
         ),
+        check_license_readiness(project_root),
         check_hardware_result_pack_evidence(project_root, hardware_result_pack_evidence),
     )
     blockers = tuple(blocker for check in checks for blocker in check.blockers)

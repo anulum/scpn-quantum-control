@@ -44,12 +44,78 @@ def _write_version_carriers(root: Path, version: str = "0.9.7") -> None:
     package_root = root / "src" / "scpn_quantum_control"
     package_root.mkdir(parents=True)
     (package_root / "__init__.py").write_text(
-        "from importlib.metadata import version\n__version__ = version('scpn-quantum-control')\n",
+        "\n".join(
+            [
+                "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                "# Commercial license available",
+                "from importlib.metadata import version",
+                "__version__ = version('scpn-quantum-control')",
+            ]
+        ),
         encoding="utf-8",
     )
-    (root / "pyproject.toml").write_text(f'version = "{version}"\n', encoding="utf-8")
+    (root / "pyproject.toml").write_text(
+        "\n".join(
+            [
+                "[project]",
+                f'version = "{version}"',
+                'license = "AGPL-3.0-or-later"',
+                "classifiers = [",
+                '    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",',
+                "]",
+            ]
+        ),
+        encoding="utf-8",
+    )
     (root / "CITATION.cff").write_text(f'version: "{version}"\n', encoding="utf-8")
     (root / ".zenodo.json").write_text(f'{{"version": "{version}"}}\n', encoding="utf-8")
+    (root / "LICENSE").write_text(
+        "\n".join(
+            [
+                "SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available",
+                "AGPL-3.0-or-later",
+                "Commercial license available",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (root / "README.md").write_text(
+        "\n".join(
+            [
+                "# project",
+                "AGPL-3.0-or-later",
+                "commercial licence",
+                "not a separate permissive package today",
+                "all in-repository code remains under the AGPL/commercial terms",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    docs_root = root / "docs"
+    docs_root.mkdir(exist_ok=True)
+    (docs_root / "core_package_boundary.md").write_text(
+        "\n".join(
+            [
+                "# Core Package Boundary",
+                "No file is dual-licensed or permissively relicensed by this document.",
+                "not a separate permissive package today",
+                "not relicensed",
+                "AGPL-3.0-or-later",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (docs_root / "licensing_faq.md").write_text(
+        "\n".join(
+            [
+                "# Licensing FAQ",
+                "AGPL-3.0-or-later",
+                "commercial licence",
+                "not available as a permissive package today",
+            ]
+        ),
+        encoding="utf-8",
+    )
 
 
 def _write_release_artifacts(root: Path) -> None:
@@ -191,7 +257,13 @@ def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(tmp
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     (tmp_path / "src" / "scpn_quantum_control" / "low.py").write_text(
-        "x = 1\n",
+        "\n".join(
+            [
+                "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                "# Commercial license available",
+                "x = 1",
+            ]
+        ),
         encoding="utf-8",
     )
     coverage_xml = tmp_path / "coverage.xml"

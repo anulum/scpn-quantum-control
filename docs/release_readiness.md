@@ -27,6 +27,7 @@ Use this gate before tagging:
 The page is a blocker policy for artefact-backed releases. It governs:
 
 - version consistency across public package metadata,
+- licence and commercial-route consistency across metadata, docs, and headers,
 - stable-contract fixture and capability generation reproducibility,
 - coverage and behavioural gating thresholds,
 - open-surface scientific gaps that remain bounded until explicit gates pass.
@@ -40,7 +41,7 @@ boundaries. The deterministic gate is:
 ./.venv-linux/bin/python tools/audit_release_readiness.py --fail-on-blocker
 ```
 
-The audit composes five release checks:
+The audit composes six release checks:
 
 ## For teams shipping with this repository
 
@@ -60,6 +61,7 @@ single place to prove that the same route is repeatable across machines.
 | Required release artefacts | Paper 0, coverage, behavioural-test, K_nm, stable core contracts, stable core contract fixtures, backend capability artefacts, release coverage exclusions, and S2 blocker artefacts are present. |
 | Coverage gap gate | A fresh `coverage.xml` exists, aggregate package coverage meets the release threshold, and unjustified missing files are blocked. Intentional CPU-only omissions must be listed in [`release_coverage_exclusions.json`](release_coverage_exclusions.json). Per-file gaps remain reported; `--fail-on-file-gap` can promote them to hard blockers. |
 | Behavioural quality gate | Tests satisfy the smoke-only, assertion-density, and exception-contract-density thresholds. |
+| Licence readiness gate | `pyproject.toml`, `LICENSE`, README, [`core_package_boundary.md`](core_package_boundary.md), [`licensing_faq.md`](licensing_faq.md), and source/tool SPDX headers agree that this repository is `AGPL-3.0-or-later` with a commercial route until an approved split changes all surfaces. |
 | Core-artifact determinism | Stable core contracts and backend capability artefacts are reproducible from committed metadata, and exported digests are checked before tagging. |
 
 For any package tag or public release note touching stable-core contracts or backend
