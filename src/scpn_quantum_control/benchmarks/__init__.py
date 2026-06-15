@@ -31,6 +31,11 @@ from .differentiable_programming import (
     run_quantum_gradient_benchmark_suite,
 )
 from .gpu_baseline import GPUBaselineResult, gpu_baseline_comparison
+from .isolated_host_readiness import (
+    HostReadiness,
+    assess_host_readiness,
+    capture_host_readiness,
+)
 from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
 from .quantum_advantage import (
     AdvantageResult,
@@ -58,6 +63,9 @@ __all__ = [
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_quantum_gradient_benchmark_suite",
+    "HostReadiness",
+    "assess_host_readiness",
+    "capture_host_readiness",
     "GPUBaselineResult",
     "gpu_baseline_comparison",
     "MPSBaselineResult",

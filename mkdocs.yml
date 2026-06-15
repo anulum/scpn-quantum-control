@@ -119,6 +119,7 @@ nav:
           - Real-Data Synchronisation Forecasting: real_data_sync_forecasting.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
+          - Isolated Benchmark Runner: isolated_benchmark_runner.md
           - Rust Engine: rust_engine.md
           - "Bench: Dynamic Coupling": bench_dynamic_coupling.md
           - "Bench: Structured Ansatz": bench_structured_ansatz.md

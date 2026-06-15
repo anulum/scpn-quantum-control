@@ -9,12 +9,12 @@
     "optional_extras": 42,
     "paper0_validation_modules": 466,
     "public_api_exports": 634,
-    "public_documentation_pages": 251,
-    "python_model_classes": 1730,
-    "python_model_source_modules": 829,
+    "public_documentation_pages": 252,
+    "python_model_classes": 1731,
+    "python_model_source_modules": 830,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1946
+    "test_files": 1947
   },
   "documentation": {
     "examples": [
@@ -302,6 +302,7 @@
       "docs/identity_api.md",
       "docs/index.md",
       "docs/installation.md",
+      "docs/isolated_benchmark_runner.md",
       "docs/kuramoto_core_facade.md",
       "docs/kuramoto_variants.md",
       "docs/language_policy.md",
@@ -451,7 +452,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 10
+        "python_modules": 11
       },
       {
         "package": "bridge",
@@ -3061,6 +3062,10 @@
       {
         "name": "HigherOrderKuramotoSpec",
         "path": "src/scpn_quantum_control/phase/kuramoto_variants.py"
+      },
+      {
+        "name": "HostReadiness",
+        "path": "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py"
       },
       {
         "name": "HpcBidirectionalFlowValidationResult",
@@ -8069,6 +8074,7 @@
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
+      "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
@@ -10404,6 +10410,7 @@
       "tests/test_internal_corpus_markers.py",
       "tests/test_iqm_backend.py",
       "tests/test_iqm_layout_pinned_dla.py",
+      "tests/test_isolated_host_readiness.py",
       "tests/test_iter_benchmark.py",
       "tests/test_jax_accel_contracts.py",
       "tests/test_jax_nqs.py",

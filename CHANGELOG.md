@@ -5,6 +5,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-16 — Added isolated-benchmark host readiness and self-hosted runner
+  provisioning so the `differentiable-isolated-benchmark` CI job can produce
+  `isolated_affinity` evidence. `benchmarks/isolated_host_readiness.py`
+  (`assess_host_readiness` / `capture_host_readiness`) checks the reserved-core
+  governor, frequency, and host load against the same `1.0` threshold the
+  isolation classifier applies, and `scripts/check_isolated_benchmark_host.py`
+  exits non-zero with the blockers when a host would be downgraded to
+  `functional_non_isolated`. `scripts/provision_isolated_benchmark_runner.sh`
+  registers a GitHub Actions runner with the `self-hosted,linux,isolated-benchmark`
+  labels, pinning runner `v2.335.1` and SHA-256-verifying the archive, installing
+  it as a systemd service, and setting the reserved core to the `performance`
+  governor. Documented in `docs/isolated_benchmark_runner.md` and covered by
+  `tests/test_isolated_host_readiness.py`.
 - 2026-06-15 — Added a Wirtinger (Cauchy-Riemann) calculus module
   (`wirtinger_calculus.py`), the complex-derivative surface the registered
   Phase-QNode engine leaves fail-closed (it differentiates real rotation angles).
