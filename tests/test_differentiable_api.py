@@ -14,6 +14,7 @@ import pytest
 
 import scpn_quantum_control as scpn
 from scpn_quantum_control.differentiable_api import (
+    DifferentiabilityDiagnosticReport,
     UnifiedDifferentiableAPIResult,
     differentiable_api,
     differentiable_benchmark_report,
@@ -23,6 +24,7 @@ from scpn_quantum_control.differentiable_api import (
     differentiable_jacobian,
     differentiable_support_report,
     differentiable_value,
+    explain_differentiability,
 )
 
 
@@ -90,6 +92,37 @@ def test_unified_differentiable_support_report_fails_closed_for_unsupported_rout
     assert report.to_dict()["payload"]["requires_hardware_policy"] is False
 
 
+def test_explain_differentiability_reports_reasons_and_matrices() -> None:
+    report = explain_differentiability(
+        gate="unregistered_gate",
+        observable="pauli_expectation",
+        backend="hardware",
+        shots=1024,
+    )
+
+    assert isinstance(report, DifferentiabilityDiagnosticReport)
+    assert report.fail_closed
+    assert "no registered parameter-shift generator" in report.blocked_reasons[0]
+    assert "statevector_simulator" in report.suggested_alternatives
+    assert "finite_shot_simulator" in report.suggested_alternatives
+    assert report.support_payload["requires_hardware_policy"] is True
+    assert "do not execute objectives" in report.claim_boundary
+
+    dependency_rows = {str(row["framework"]): row for row in report.dependency_matrix}
+    assert dependency_rows["jax"]["optional_dependency"] == "jax"
+    assert dependency_rows["pytorch"]["supported"] is True
+    assert dependency_rows["provider_hardware_gradient"]["supported"] is False
+
+    device_rows = {str(row["backend"]): row for row in report.device_matrix}
+    assert device_rows["hardware_qpu"]["hardware"] is True
+    assert device_rows["statevector_simulator"]["supports_parameter_shift"] is True
+
+    backend_rows = {str(row["backend"]): row for row in report.backend_matrix}
+    assert backend_rows["hardware_qpu"]["fail_closed"] is True
+    assert backend_rows["finite_shot_simulator"]["method"] == "stochastic_parameter_shift"
+    assert report.to_dict()["dependency_matrix"][0]["framework"] == "jax"
+
+
 def test_unified_differentiable_compile_report_filters_registered_primitives() -> None:
     report = differentiable_compile_report(
         primitive_identities=("scpn.program_ad.array:getitem@1",)
@@ -131,9 +164,17 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
         observable="pauli_expectation",
         n_params=2,
     )
+    diagnostic = differentiable_api(
+        "diagnostic_report",
+        gate="unregistered_gate",
+        observable="pauli_expectation",
+    )
 
     np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
     assert support.supported
+    assert diagnostic.fail_closed
+    assert diagnostic.payload["blocked_reasons"]
+    assert scpn.explain_differentiability is explain_differentiability
     assert scpn.differentiable_api is differentiable_api
     assert scpn.differentiable_gradient is differentiable_gradient
     assert scpn.differentiable_value is differentiable_value

@@ -34,7 +34,12 @@ from .differentiable import (
     value_and_hessian,
     value_and_jacobian,
 )
+from .phase.gradient_backend import (
+    plan_quantum_gradient_backend,
+    quantum_gradient_backend_capability,
+)
 from .phase.gradient_support_matrix import plan_gradient_support, run_gradient_support_matrix_audit
+from .phase.qnn_framework_bridge_matrix import run_bounded_qnn_framework_bridge_matrix
 
 FloatArray: TypeAlias = NDArray[np.float64]
 UnifiedDifferentiableOperation = Literal[
@@ -43,6 +48,7 @@ UnifiedDifferentiableOperation = Literal[
     "jacobian",
     "hessian",
     "support_report",
+    "diagnostic_report",
     "compile_report",
     "benchmark_report",
 ]
@@ -85,6 +91,41 @@ class UnifiedDifferentiableAPIResult:
             "jacobian": None if self.jacobian is None else self.jacobian.tolist(),
             "hessian": None if self.hessian is None else self.hessian.tolist(),
             "payload": dict(self.payload),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class DifferentiabilityDiagnosticReport:
+    """JSON-ready explanation for a differentiability support decision."""
+
+    request: Mapping[str, object]
+    supported: bool
+    blocked_reasons: tuple[str, ...]
+    suggested_alternatives: tuple[str, ...]
+    dependency_matrix: tuple[Mapping[str, object], ...]
+    device_matrix: tuple[Mapping[str, object], ...]
+    backend_matrix: tuple[Mapping[str, object], ...]
+    support_payload: Mapping[str, object]
+    claim_boundary: str
+
+    @property
+    def fail_closed(self) -> bool:
+        """Return true when the requested route is intentionally blocked."""
+        return not self.supported
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready differentiability diagnostics."""
+        return {
+            "request": dict(self.request),
+            "supported": self.supported,
+            "fail_closed": self.fail_closed,
+            "blocked_reasons": list(self.blocked_reasons),
+            "suggested_alternatives": list(self.suggested_alternatives),
+            "dependency_matrix": [dict(row) for row in self.dependency_matrix],
+            "device_matrix": [dict(row) for row in self.device_matrix],
+            "backend_matrix": [dict(row) for row in self.backend_matrix],
+            "support_payload": dict(self.support_payload),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -227,6 +268,78 @@ def differentiable_support_report(
     )
 
 
+def explain_differentiability(
+    *,
+    gate: str,
+    observable: str,
+    backend: str = "statevector",
+    transform: str = "grad",
+    adapter: str = "native",
+    n_params: int = 1,
+    shift_terms: int = 1,
+    shots: int | None = None,
+    allow_hardware: bool = False,
+) -> DifferentiabilityDiagnosticReport:
+    """Explain whether a differentiable route can run and why it may fail closed."""
+    plan = plan_gradient_support(
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        transform=transform,
+        adapter=adapter,
+        n_params=n_params,
+        shift_terms=shift_terms,
+        shots=shots,
+        allow_hardware=allow_hardware,
+    )
+    support_payload = plan.to_dict()
+    backend_names = _diagnostic_backend_names(backend)
+    backend_matrix = tuple(
+        _backend_plan_row(
+            selected_backend,
+            n_params=n_params,
+            shift_terms=shift_terms,
+            shots=shots,
+            allow_hardware=allow_hardware,
+        )
+        for selected_backend in backend_names
+    )
+    alternatives = _unique_strings(
+        plan.alternatives
+        + plan.backend_plan.alternatives
+        + tuple(
+            str(alternative)
+            for row in backend_matrix
+            for alternative in cast(Sequence[object], row["alternatives"])
+        )
+    )
+    return DifferentiabilityDiagnosticReport(
+        request={
+            "gate": gate,
+            "observable": observable,
+            "backend": backend,
+            "transform": transform,
+            "adapter": adapter,
+            "n_params": n_params,
+            "shift_terms": shift_terms,
+            "shots": shots,
+            "allow_hardware": allow_hardware,
+        },
+        supported=plan.supported,
+        blocked_reasons=plan.blocked_reasons,
+        suggested_alternatives=alternatives,
+        dependency_matrix=_dependency_matrix_rows(),
+        device_matrix=tuple(_device_capability_row(name) for name in backend_names),
+        backend_matrix=backend_matrix,
+        support_payload=support_payload,
+        claim_boundary=(
+            "differentiability diagnostic report only; support, dependency, "
+            "device, and backend rows are planning evidence and do not execute "
+            "objectives, provider callbacks, hardware jobs, or performance benchmarks"
+        ),
+    )
+
+
 def differentiable_compile_report(
     *,
     primitive_identities: Sequence[str | PrimitiveIdentity] | None = None,
@@ -363,6 +476,29 @@ def differentiable_api(
             shots=shots,
             allow_hardware=allow_hardware,
         )
+    if operation == "diagnostic_report":
+        report = explain_differentiability(
+            gate=gate,
+            observable=observable,
+            backend=backend,
+            transform=transform,
+            adapter=adapter,
+            n_params=n_params,
+            shift_terms=shift_terms,
+            shots=shots,
+            allow_hardware=allow_hardware,
+        )
+        return UnifiedDifferentiableAPIResult(
+            operation="diagnostic_report",
+            supported=report.supported,
+            method="differentiability_diagnostic",
+            value=None,
+            gradient=None,
+            jacobian=None,
+            hessian=None,
+            payload=report.to_dict(),
+            claim_boundary=report.claim_boundary,
+        )
     if operation == "compile_report":
         return differentiable_compile_report(
             primitive_identities=primitive_identities,
@@ -421,7 +557,90 @@ def _json_ready(value: object) -> object:
     return value
 
 
+def _dependency_matrix_rows() -> tuple[Mapping[str, object], ...]:
+    bridge_matrix = run_bounded_qnn_framework_bridge_matrix()
+    return tuple(
+        {
+            "framework": capability.framework,
+            "optional_dependency": capability.optional_dependency,
+            "runtime_dependency_required": capability.runtime_dependency_required,
+            "implemented": capability.implemented,
+            "supported": capability.supported,
+            "public_api": capability.public_api,
+            "gradient_route": capability.gradient_route,
+            "native_framework_autodiff": capability.native_framework_autodiff,
+            "tensor_output": capability.tensor_output,
+            "host_boundary": capability.host_boundary,
+            "fail_closed_reason": capability.fail_closed_reason,
+        }
+        for capability in bridge_matrix.capabilities
+    )
+
+
+def _diagnostic_backend_names(requested_backend: str) -> tuple[str, ...]:
+    return _unique_strings(
+        (
+            requested_backend,
+            "statevector_simulator",
+            "finite_shot_simulator",
+            "hardware_qpu",
+        )
+    )
+
+
+def _device_capability_row(backend: str) -> Mapping[str, object]:
+    capability = quantum_gradient_backend_capability(backend)
+    return {
+        "backend": capability.backend,
+        "family": capability.family,
+        "hardware": capability.hardware,
+        "supports_parameter_shift": capability.supports_parameter_shift,
+        "supports_finite_shot": capability.supports_finite_shot,
+        "supports_adjoint": capability.supports_adjoint,
+        "supports_spsa": capability.supports_spsa,
+        "default_shots": capability.default_shots,
+        "notes": list(capability.notes),
+    }
+
+
+def _backend_plan_row(
+    backend: str,
+    *,
+    n_params: int,
+    shift_terms: int,
+    shots: int | None,
+    allow_hardware: bool,
+) -> Mapping[str, object]:
+    plan = plan_quantum_gradient_backend(
+        backend,
+        n_params=n_params,
+        shift_terms=shift_terms,
+        shots=shots,
+        finite_shot=shots is not None,
+        allow_hardware=allow_hardware,
+    )
+    return {
+        "backend": plan.backend,
+        "family": plan.family,
+        "method": plan.method,
+        "supported": plan.supported,
+        "fail_closed": plan.fail_closed,
+        "evaluations": plan.evaluations,
+        "shots": plan.shots,
+        "finite_shot": plan.finite_shot,
+        "confidence_level": plan.confidence_level,
+        "requires_hardware_approval": plan.requires_hardware_approval,
+        "reasons": list(plan.reasons),
+        "alternatives": list(plan.alternatives),
+    }
+
+
+def _unique_strings(values: Sequence[object]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(str(value) for value in values if str(value)))
+
+
 __all__ = [
+    "DifferentiabilityDiagnosticReport",
     "UnifiedDifferentiableAPIResult",
     "UnifiedDifferentiableOperation",
     "differentiable_api",
@@ -432,4 +651,5 @@ __all__ = [
     "differentiable_jacobian",
     "differentiable_support_report",
     "differentiable_value",
+    "explain_differentiability",
 ]

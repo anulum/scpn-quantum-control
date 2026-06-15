@@ -412,6 +412,7 @@ from .differentiable import (
     whole_program_value_and_grad,
 )
 from .differentiable_api import (
+    DifferentiabilityDiagnosticReport,
     UnifiedDifferentiableAPIResult,
     differentiable_api,
     differentiable_benchmark_report,
@@ -421,6 +422,7 @@ from .differentiable_api import (
     differentiable_jacobian,
     differentiable_support_report,
     differentiable_value,
+    explain_differentiability,
 )
 from .forecasting import (
     ForecastModelRun,
@@ -915,6 +917,7 @@ __all__ = [
     "CustomDerivativeRule",
     "CustomDerivativeRegistry",
     "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
+    "DifferentiabilityDiagnosticReport",
     "DifferentiableOptimizer",
     "UnifiedDifferentiableAPIResult",
     "FixedPointSensitivityResult",
@@ -1142,6 +1145,7 @@ __all__ = [
     "differentiable_jacobian",
     "differentiable_support_report",
     "differentiable_value",
+    "explain_differentiability",
     "vmap",
     "value_and_hessian",
     "value_and_jacfwd",

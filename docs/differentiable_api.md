@@ -19,7 +19,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Namespace | Role |
 |---|---|
-| `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, compile, and local conformance benchmark reports with one JSON evidence envelope. |
+| `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, diagnostics, compile, and local conformance benchmark reports with one JSON evidence envelope. |
 | `scpn_quantum_control.differentiable` | AD data structures, primitive registry contracts, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
 | `scpn_quantum_control.phase.coupling_learning` | Differentiable coupling inference from observation models with convergence and finite-difference agreement certificates. |
@@ -67,7 +67,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Object family | Examples | Use |
 |---|---|---|
-| Unified API evidence | `UnifiedDifferentiableAPIResult`, `differentiable_api`, `differentiable_value`, `differentiable_gradient`, `differentiable_jacobian`, `differentiable_hessian`, `differentiable_support_report`, `differentiable_compile_report`, `differentiable_benchmark_report` | Use one JSON-ready envelope across scalar values, gradients, Jacobians, Hessians, fail-closed support decisions, compiler planning, and local conformance evidence. |
+| Unified API evidence | `UnifiedDifferentiableAPIResult`, `DifferentiabilityDiagnosticReport`, `differentiable_api`, `differentiable_value`, `differentiable_gradient`, `differentiable_jacobian`, `differentiable_hessian`, `differentiable_support_report`, `explain_differentiability`, `differentiable_compile_report`, `differentiable_benchmark_report` | Use one JSON-ready envelope across scalar values, gradients, Jacobians, Hessians, fail-closed support decisions, differentiability diagnostics, compiler planning, and local conformance evidence. |
 | Primitive identity and rules | `PrimitiveIdentity`, `PrimitiveContract`, `CustomDerivativeRule`, `CustomDerivativeRegistry` | Bind derivative, batching, lowering, shape, dtype, and nondifferentiability rules to supported primitives. |
 | Forward and reverse AD results | `GradientResult`, `JacobianResult`, `HessianResult`, `JVPResult`, `HVPResult`, `ProgramADAdjointResult` | Return structured derivative outputs and diagnostics. |
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
@@ -100,6 +100,7 @@ from scpn_quantum_control import (
     differentiable_compile_report,
     differentiable_gradient,
     differentiable_support_report,
+    explain_differentiability,
 )
 
 
@@ -122,6 +123,16 @@ support = differentiable_support_report(
 )
 assert support.supported
 
+diagnostic = explain_differentiability(
+    gate="arbitrary_unitary",
+    observable="pauli_expectation",
+    backend="hardware",
+    shots=1024,
+)
+assert diagnostic.fail_closed
+print(diagnostic.to_dict()["blocked_reasons"])
+print(diagnostic.to_dict()["suggested_alternatives"])
+
 compile_report = differentiable_compile_report(
     primitive_identities=("scpn.program_ad.array:getitem@1",)
 )
@@ -138,10 +149,17 @@ assert same_gradient.to_dict()["operation"] == "gradient"
 
 `UnifiedDifferentiableAPIResult` is the stable evidence envelope for the façade.
 It always carries `operation`, `supported`, `fail_closed`, `method`, derivative
-arrays when applicable, a route-specific `payload`, and a claim boundary. The
-façade delegates to existing implemented surfaces rather than weakening their
-contracts: finite-difference gradients, Jacobians, and Hessians remain local
-diagnostic routes; support reports fail closed for unsupported gate,
+arrays when applicable, a route-specific `payload`, and a claim boundary.
+`DifferentiabilityDiagnosticReport` is the reviewer-facing explanation surface:
+it carries the request, blocked reasons, suggested alternatives, dependency rows
+for bounded framework bridges, device capability rows, backend planning rows,
+and the underlying support-plan payload. The diagnostic route is planning
+evidence only; it does not execute objectives, provider callbacks, hardware
+jobs, or performance benchmarks.
+
+The façade delegates to existing implemented surfaces rather than weakening
+their contracts: finite-difference gradients, Jacobians, and Hessians remain
+local diagnostic routes; support reports fail closed for unsupported gate,
 observable, backend, transform, or adapter combinations; compile reports are
 compiler-planning and MLIR interchange evidence unless the selected primitive
 plan has an executable backend; benchmark reports are local conformance rows,
