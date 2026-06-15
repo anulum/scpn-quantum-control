@@ -2,19 +2,19 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 30,
-    "example_files": 28,
+    "example_files": 29,
     "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 619,
-    "public_documentation_pages": 245,
-    "python_model_classes": 1708,
-    "python_model_source_modules": 819,
-    "rust_pyo3_model_wrappers": 130,
-    "rust_source_modules": 34,
-    "test_files": 1938
+    "public_api_exports": 620,
+    "public_documentation_pages": 246,
+    "python_model_classes": 1713,
+    "python_model_source_modules": 821,
+    "rust_pyo3_model_wrappers": 132,
+    "rust_source_modules": 35,
+    "test_files": 1939
   },
   "documentation": {
     "examples": [
@@ -45,6 +45,7 @@
       "examples/24_differentiable_benchmark_reproduction.py",
       "examples/25_qrng_streaming_quickstart.py",
       "examples/26_nv_magnetometry_20T_demo.py",
+      "examples/27_pqc_trigger_signer_demo.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -308,6 +309,7 @@
       "docs/logical_dla_parity.md",
       "docs/methods_benchmark_dashboard.md",
       "docs/mitigation_api.md",
+      "docs/ml_dsa_pqc.md",
       "docs/multi_platform.md",
       "docs/multiscale_qec.md",
       "docs/mutation_testing.md",
@@ -463,7 +465,7 @@
       {
         "package": "crypto",
         "path": "src/scpn_quantum_control/crypto",
-        "python_modules": 6
+        "python_modules": 8
       },
       {
         "package": "deployment",
@@ -3741,6 +3743,10 @@
         "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py"
       },
       {
+        "name": "MLDSAKeyPair",
+        "path": "src/scpn_quantum_control/crypto/ml_dsa.py"
+      },
+      {
         "name": "MLFrameworkGradientAuditRecord",
         "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
       },
@@ -5089,6 +5095,10 @@
         "path": "src/scpn_quantum_control/applications/power_grid.py"
       },
       {
+        "name": "PqcTriggerSigner",
+        "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
+      },
+      {
         "name": "PrecisionWeightedPhaseTerms",
         "path": "src/scpn_quantum_control/paper0/stuart_landau_precision_validation.py"
       },
@@ -5219,6 +5229,10 @@
       {
         "name": "PrincipleTeleologyAsOptimisationFixtureResult",
         "path": "src/scpn_quantum_control/paper0/principle_teleology_as_optimisation_validation.py"
+      },
+      {
+        "name": "PrivateKey",
+        "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
         "name": "Problem",
@@ -5403,6 +5417,10 @@
       {
         "name": "PsisFieldCouplingIntegrationP0r02950FixtureResult",
         "path": "src/scpn_quantum_control/paper0/psis_field_coupling_integration_p0r02950_validation.py"
+      },
+      {
+        "name": "PublicKey",
+        "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
         "name": "PulseFeasibilityDecision",
@@ -6695,6 +6713,10 @@
       {
         "name": "SigmaLayerExample",
         "path": "src/scpn_quantum_control/paper0/foreword_coupling_validation.py"
+      },
+      {
+        "name": "Signature",
+        "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
         "name": "SimulationArchitectureAndImplementationConfig",
@@ -7997,8 +8019,10 @@
       "src/scpn_quantum_control/crypto/entanglement_qkd.py",
       "src/scpn_quantum_control/crypto/hierarchical_keys.py",
       "src/scpn_quantum_control/crypto/knm_key.py",
+      "src/scpn_quantum_control/crypto/ml_dsa.py",
       "src/scpn_quantum_control/crypto/noise_analysis.py",
       "src/scpn_quantum_control/crypto/percolation.py",
+      "src/scpn_quantum_control/crypto/pqc_trigger.py",
       "src/scpn_quantum_control/crypto/topology_auth.py",
       "src/scpn_quantum_control/dense_budget.py",
       "src/scpn_quantum_control/deployment/cloud_native.py",
@@ -8773,6 +8797,8 @@
       "matrix_vector_product_value",
       "matrix_vector_product_vjp",
       "mc_xy_simulate",
+      "ml_dsa_intt",
+      "ml_dsa_ntt",
       "monitored_kuramoto_trajectory",
       "nist_berlekamp_massey",
       "nist_block_longest_runs",
@@ -8847,6 +8873,7 @@
       "scpn_quantum_engine/src/kuramoto.rs",
       "scpn_quantum_engine/src/lib.rs",
       "scpn_quantum_engine/src/lindblad.rs",
+      "scpn_quantum_engine/src/ml_dsa.rs",
       "scpn_quantum_engine/src/monte_carlo.rs",
       "scpn_quantum_engine/src/mpc.rs",
       "scpn_quantum_engine/src/otoc.rs",
@@ -8980,6 +9007,7 @@
     "PhaseOrchestratorAdapter",
     "PhaseQNodeMLIRRuntimeExecutable",
     "PhaseVQE",
+    "PqcTriggerSigner",
     "PrimitiveBatchingRule",
     "PrimitiveContract",
     "PrimitiveDTypeRule",
@@ -10294,6 +10322,7 @@
       "tests/test_magic_nonstabilizerness.py",
       "tests/test_magnetisation_sectors.py",
       "tests/test_mitiq_integration.py",
+      "tests/test_ml_dsa_pqc.py",
       "tests/test_mlir_realtime_cloud.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",

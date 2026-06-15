@@ -5,6 +5,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added a from-specification FIPS 204 ML-DSA-65 module-lattice
+  signature implementation (`crypto/ml_dsa.py`) and a post-quantum capacitor-bank
+  trigger signer (`crypto/pqc_trigger.py`). ML-DSA-65 (key generation, signing,
+  verification, the negacyclic NTT over Z_q=8380417, ExpandA/ExpandS/ExpandMask,
+  SampleInBall, rounding and hint functions, and key/signature encoding) is
+  validated bit-for-bit against the official NIST ACVP known-answer vectors
+  (keyGen, deterministic sigGen, sigVer). The NTT dispatches to a new bit-true
+  Rust kernel (16x faster). `PqcTriggerSigner` binds payloads to a timestamp,
+  supports a freshness window, and signs canonical capacitor-bank discharge
+  commands. Ships KAT-based and property tests, a polyglot comparison benchmark
+  (`scripts/bench_ml_dsa.py`, `results/ml_dsa_benchmark.json`,
+  `functional_non_isolated`), documentation (`docs/ml_dsa_pqc.md`), and a demo
+  (`examples/27_pqc_trigger_signer_demo.py`). The module is FIPS 204-conformant,
+  not a FIPS-140-validated cryptographic module.
+
+### Added
 - 2026-06-15 — Added the `scpn_quantum_control.sensing` package with a
   simulation-only NV-centre magnetometry model valid into the 20 T regime
   (`sensing/nv_magnetometry_20T.py`): the exactly-diagonalised ground-state

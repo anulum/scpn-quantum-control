@@ -46,6 +46,7 @@ pub mod koopman;
 pub mod krylov;
 pub mod kuramoto;
 pub mod lindblad;
+pub mod ml_dsa;
 pub mod monte_carlo;
 pub mod mpc;
 pub mod otoc;
@@ -419,6 +420,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // NV-centre ODMR spectrum
     m.add_function(wrap_pyfunction!(sensing::nv_odmr_spectrum, m)?)?;
+
+    // ML-DSA number-theoretic transform
+    m.add_function(wrap_pyfunction!(ml_dsa::ml_dsa_ntt, m)?)?;
+    m.add_function(wrap_pyfunction!(ml_dsa::ml_dsa_intt, m)?)?;
 
     Ok(())
 }

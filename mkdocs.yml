@@ -104,6 +104,7 @@ nav:
           - Quantum RNG: entropy_qrng.md
           - FRC Pulsed-Shot QAOA: frc_pulsed_qaoa.md
           - NV-Centre 20 T Magnetometry: nv_magnetometry_20T.md
+          - Post-Quantum Trigger Signer: ml_dsa_pqc.md
           - Analog Kuramoto Backends: analog_backends.md
           - Hybrid Digital-Analog Execution: hybrid_digital_analog.md
           - DLA-Protected Logical Synchronisation: dla_protected_subspace.md

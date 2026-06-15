@@ -44,6 +44,7 @@ from .percolation import (
     robustness_random_removal,
     robustness_targeted_removal,
 )
+from .pqc_trigger import PqcTriggerSigner, PrivateKey, PublicKey, Signature
 from .topology_auth import (
     EIGENVALUE_ZERO_ATOL,
     EIGENVALUE_ZERO_RTOL,
@@ -61,6 +62,10 @@ from .topology_auth import (
 )
 
 __all__ = [
+    "PqcTriggerSigner",
+    "PrivateKey",
+    "PublicKey",
+    "Signature",
     "prepare_key_state",
     "extract_raw_key",
     "estimate_qber",

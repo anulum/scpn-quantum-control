@@ -197,6 +197,7 @@ from .control.realtime_runtime import (
 )
 from .control.topological_optimizer import TopologicalCouplingOptimizer
 from .control.vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
+from .crypto.pqc_trigger import PqcTriggerSigner
 from .deployment.cloud_native import (
     CloudDeploymentSpec,
     CloudManifestBundle,
@@ -860,6 +861,7 @@ __all__ = [
     "native_whole_program_ad_linalg_support",
     "compile_kuramoto_to_mlir",
     "AerQuantumEntropySource",
+    "PqcTriggerSigner",
     "NVCenter",
     "NVFieldCalibration",
     "calibrate_field_from_odmr",
