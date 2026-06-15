@@ -1078,6 +1078,9 @@ from scpn_quantum_control.phase import (
     execute_phase_qnode_circuit,
     execute_phase_qnode_density_matrix,
     parameter_shift_phase_qnode_gradient,
+    phase_qnode_computational_basis_fisher_support_report,
+    phase_qnode_gradient_support_report,
+    phase_qnode_metric_support_report,
     run_phase_qnode_framework_parity_suite,
 )
 
@@ -1131,6 +1134,27 @@ print(noisy.value, noisy.trace, noisy.purity)
 Noisy density execution is deterministic local simulator evidence. It is not a
 parameter-shift gradient route, not a pure-state Fubini-Study/QFI route, not a
 finite-shot estimator, and not provider or hardware evidence.
+
+Preflight pure-state gradient, metric, and exact computational-basis Fisher
+routes before execution when circuits may contain density/noise operations or
+boundary probabilities:
+
+```python
+gradient_report = phase_qnode_gradient_support_report(noisy_circuit, np.array([]))
+metric_report = phase_qnode_metric_support_report(noisy_circuit, np.array([]))
+fisher_report = phase_qnode_computational_basis_fisher_support_report(
+    noisy_circuit,
+    np.array([]),
+)
+print(gradient_report.supported, gradient_report.failure_reason)
+print(metric_report.supported, metric_report.failure_reason)
+print(fisher_report.supported, fisher_report.failure_reason)
+```
+
+The corresponding execution APIs raise `PhaseQNodeSupportError` with the same
+report. Classical Fisher support reports also block singular computational-basis
+probabilities, so callers can distinguish an unsupported route from a valid
+pure-state circuit sitting exactly on a zero-probability boundary.
 
 Use `build_phase_qnode_template(...)` when the circuit should come from a
 registered multi-qubit ansatz rather than hand-authored operations. The current

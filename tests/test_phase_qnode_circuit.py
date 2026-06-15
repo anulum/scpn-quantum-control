@@ -35,8 +35,11 @@ from scpn_quantum_control.phase.qnode_circuit import (
     execute_phase_qnode_density_matrix,
     parameter_shift_phase_qnode_gradient,
     phase_qnode_computational_basis_fisher_information,
+    phase_qnode_computational_basis_fisher_support_report,
     phase_qnode_density_support_report,
     phase_qnode_depth_profile,
+    phase_qnode_gradient_support_report,
+    phase_qnode_metric_support_report,
     phase_qnode_natural_gradient_metric,
     phase_qnode_quantum_fisher_information,
     phase_qnode_support_report,
@@ -349,8 +352,16 @@ def test_phase_qnode_computational_basis_fisher_fails_closed_at_singular_probabi
         observable="pauli_z",
     )
 
-    with pytest.raises(ValueError, match="zero-probability"):
+    report = phase_qnode_computational_basis_fisher_support_report(
+        circuit,
+        np.array([0.0], dtype=float),
+    )
+
+    assert not report.supported
+    assert "zero-probability" in report.failure_reason
+    with pytest.raises(PhaseQNodeSupportError, match="zero-probability") as exc_info:
         phase_qnode_computational_basis_fisher_information(circuit, np.array([0.0], dtype=float))
+    assert exc_info.value.report == report
 
 
 def test_phase_qnode_natural_gradient_metric_provider_returns_fubini_study_metric() -> None:
@@ -374,6 +385,38 @@ def test_phase_qnode_quantum_fisher_information_fails_closed_for_unsupported_rou
     with pytest.raises(PhaseQNodeSupportError) as exc_info:
         phase_qnode_quantum_fisher_information(circuit, np.array([0.2], dtype=float))
     assert "unsupported gates" in exc_info.value.report.failure_reason
+
+
+def test_phase_qnode_route_support_reports_block_density_noise_for_pure_metrics() -> None:
+    circuit = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(
+            ("ry", (0,), 0),
+            PhaseQNodeNoiseChannel("amplitude_damping", (0,), 0.2),
+        ),
+        observable="pauli_z",
+    )
+    params = np.array([0.31], dtype=float)
+
+    gradient_report = phase_qnode_gradient_support_report(circuit, params)
+    metric_report = phase_qnode_metric_support_report(circuit, params)
+    fisher_report = phase_qnode_computational_basis_fisher_support_report(circuit, params)
+
+    for report in (gradient_report, metric_report, fisher_report):
+        assert not report.supported
+        assert "PhaseQNodeCircuit" in report.failure_reason
+        assert "amplitude_damping" in report.failure_reason
+        assert report.differentiable_parameters == (0,)
+        assert report.to_dict()["alternatives"]
+    with pytest.raises(PhaseQNodeSupportError) as gradient_error:
+        parameter_shift_phase_qnode_gradient(circuit, params)
+    with pytest.raises(PhaseQNodeSupportError) as metric_error:
+        phase_qnode_quantum_fisher_information(circuit, params)
+    with pytest.raises(PhaseQNodeSupportError) as fisher_error:
+        phase_qnode_computational_basis_fisher_information(circuit, params)
+    assert gradient_error.value.report == gradient_report
+    assert metric_error.value.report == metric_report
+    assert fisher_error.value.report == fisher_report
 
 
 def test_phase_qnode_unsupported_routes_fail_with_structured_support_report() -> None:
@@ -843,4 +886,10 @@ def test_phase_qnode_density_exports_are_public() -> None:
     assert phase.PhaseQNodeNoiseChannel is PhaseQNodeNoiseChannel
     assert phase.execute_phase_qnode_density_matrix is execute_phase_qnode_density_matrix
     assert phase.phase_qnode_density_support_report is phase_qnode_density_support_report
+    assert phase.phase_qnode_gradient_support_report is phase_qnode_gradient_support_report
+    assert phase.phase_qnode_metric_support_report is phase_qnode_metric_support_report
+    assert (
+        phase.phase_qnode_computational_basis_fisher_support_report
+        is phase_qnode_computational_basis_fisher_support_report
+    )
     assert phase.registered_phase_qnode_noise_channels is registered_phase_qnode_noise_channels

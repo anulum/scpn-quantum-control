@@ -35,6 +35,7 @@ kernels are framework-native differentiable.
 | Minimal QNode | `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, `parameter_shift_phase_qnode_gradient(...)` | Local statevector value and analytic parameter-shift gradient for a registered gate and observable. |
 | Controlled gates | `decompose_phase_qnode_controlled_gate(...)`, `registered_phase_qnode_decompositions()` | Exact registered Toffoli/Fredkin decompositions plus native controlled-H/S/T, Toffoli, CCZ, and Fredkin execution. |
 | Density and noise | `PhaseQNodeDensityCircuit`, `PhaseQNodeNoiseChannel`, `execute_phase_qnode_density_matrix(...)` | Local density-matrix value, trace, purity, and support report for registered unitary gates plus bounded single-qubit Kraus channels. |
+| QNode route preflight | `phase_qnode_support_report(...)`, `phase_qnode_density_support_report(...)`, `phase_qnode_gradient_support_report(...)`, `phase_qnode_metric_support_report(...)`, `phase_qnode_computational_basis_fisher_support_report(...)` | Strict support reports for value, density, pure-state gradient, pure-state metric/QFI, exact computational-basis Fisher, and singular-probability boundary paths. |
 | Diagnostics | `explain_differentiability(...)` | Fail-closed reasons, suggested alternatives, dependency rows, device rows, backend rows, and support payload. |
 | Framework boundary | Bounded QNN bridge matrix inside the diagnostic report | Implemented JAX/PyTorch/TensorFlow bounded rows are separated from arbitrary simulator autodiff and provider hardware gaps. |
 | Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
@@ -51,6 +52,7 @@ from scpn_quantum_control.phase import (
     PhaseQNodeCircuit,
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
+    phase_qnode_gradient_support_report,
 )
 
 circuit = PhaseQNodeCircuit(
@@ -61,6 +63,9 @@ circuit = PhaseQNodeCircuit(
 params = np.array([0.4], dtype=float)
 
 value = execute_phase_qnode_circuit(circuit, params)
+gradient_report = phase_qnode_gradient_support_report(circuit, params)
+if not gradient_report.supported:
+    raise RuntimeError(gradient_report.failure_reason)
 gradient = parameter_shift_phase_qnode_gradient(circuit, params)
 print(value.value)
 print(gradient.gradient)

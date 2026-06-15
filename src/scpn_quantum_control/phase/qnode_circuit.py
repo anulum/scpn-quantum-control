@@ -952,6 +952,94 @@ def phase_qnode_density_support_report(
     )
 
 
+def phase_qnode_gradient_support_report(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeSupportReport:
+    """Return support metadata for the analytic parameter-shift route."""
+    values = _as_parameter_vector(parameters)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        return _blocked_density_route_support_report(
+            circuit,
+            values,
+            route_name="parameter-shift gradients",
+            alternatives=(
+                "use PhaseQNodeCircuit for pure-state parameter-shift gradients",
+                "use execute_phase_qnode_density_matrix for noisy value, trace, and purity evidence",
+                "route finite-shot, provider, or hardware gradients through explicit policy records",
+            ),
+        )
+    return phase_qnode_support_report(circuit, values)
+
+
+def phase_qnode_metric_support_report(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeSupportReport:
+    """Return support metadata for pure-state Fubini-Study and QFI routes."""
+    values = _as_parameter_vector(parameters)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        return _blocked_density_route_support_report(
+            circuit,
+            values,
+            route_name="pure-state Fubini-Study and QFI metrics",
+            alternatives=(
+                "use PhaseQNodeCircuit for pure-state metric and QFI diagnostics",
+                "use execute_phase_qnode_density_matrix for noisy value, trace, and purity evidence",
+                "route density-matrix, finite-shot, provider, or hardware metrics through explicit policy records",
+            ),
+        )
+    return phase_qnode_support_report(circuit, values)
+
+
+def phase_qnode_computational_basis_fisher_support_report(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+    *,
+    min_probability: float = 1e-15,
+) -> PhaseQNodeSupportReport:
+    """Return support metadata for exact computational-basis Fisher diagnostics."""
+    values = _as_parameter_vector(parameters)
+    threshold = _as_min_probability(min_probability)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        return _blocked_density_route_support_report(
+            circuit,
+            values,
+            route_name="exact computational-basis Fisher diagnostics",
+            alternatives=(
+                "use PhaseQNodeCircuit away from zero-probability boundaries",
+                "use phase_qnode_quantum_fisher_information for pure-state QFI diagnostics",
+                "route noisy, finite-shot, provider, or hardware Fisher estimators through explicit policy records",
+            ),
+        )
+    report = phase_qnode_support_report(circuit, values)
+    if not report.supported:
+        return report
+    state, _derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    probabilities = np.asarray(np.abs(state) ** 2, dtype=np.float64)
+    if np.any(probabilities <= threshold):
+        return PhaseQNodeSupportReport(
+            supported=False,
+            gates=report.gates,
+            observable_kind=report.observable_kind,
+            differentiable_parameters=report.differentiable_parameters,
+            unsupported_gates=report.unsupported_gates,
+            unsupported_observables=report.unsupported_observables,
+            unsupported_parameters=report.unsupported_parameters,
+            failure_reason=(
+                "computational-basis Fisher information is singular at a "
+                "zero-probability outcome; choose parameters away from the boundary "
+                "or use QFI/Fubini-Study diagnostics"
+            ),
+            alternatives=(
+                "increase min_probability only when the boundary is intentionally excluded",
+                "use phase_qnode_quantum_fisher_information for pure-state QFI diagnostics",
+                "use parameter_shift_phase_qnode_gradient for expectation-value gradients",
+            ),
+        )
+    return report
+
+
 def execute_phase_qnode_circuit(
     circuit: PhaseQNodeCircuit,
     parameters: ArrayLike,
@@ -1018,13 +1106,15 @@ def execute_phase_qnode_density_matrix(
 
 
 def parameter_shift_phase_qnode_gradient(
-    circuit: PhaseQNodeCircuit,
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
     parameters: ArrayLike,
 ) -> PhaseQNodeGradientResult:
     """Evaluate the analytic parameter-shift gradient for registered generators."""
     values = _as_parameter_vector(parameters)
-    report = phase_qnode_support_report(circuit, values)
+    report = phase_qnode_gradient_support_report(circuit, values)
     if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
         raise PhaseQNodeSupportError(report)
     gradient = np.zeros_like(values)
     base_result = execute_phase_qnode_circuit(circuit, values)
@@ -1057,13 +1147,15 @@ def parameter_shift_phase_qnode_gradient(
 
 
 def phase_qnode_quantum_fisher_information(
-    circuit: PhaseQNodeCircuit,
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
     parameters: ArrayLike,
 ) -> PhaseQNodeMetricTensorResult:
     """Compute the pure-state QFI and Fubini-Study metric for a local QNode."""
     values = _as_parameter_vector(parameters)
-    report = phase_qnode_support_report(circuit, values)
+    report = phase_qnode_metric_support_report(circuit, values)
     if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
         raise PhaseQNodeSupportError(report)
     state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
     width = values.size
@@ -1099,7 +1191,7 @@ def phase_qnode_quantum_fisher_information(
 
 
 def phase_qnode_computational_basis_fisher_information(
-    circuit: PhaseQNodeCircuit,
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
     parameters: ArrayLike,
     *,
     min_probability: float = 1e-15,
@@ -1107,17 +1199,17 @@ def phase_qnode_computational_basis_fisher_information(
     """Compute exact classical Fisher information for basis probabilities."""
     values = _as_parameter_vector(parameters)
     threshold = _as_min_probability(min_probability)
-    report = phase_qnode_support_report(circuit, values)
+    report = phase_qnode_computational_basis_fisher_support_report(
+        circuit,
+        values,
+        min_probability=threshold,
+    )
     if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
         raise PhaseQNodeSupportError(report)
     state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
     probabilities = np.asarray(np.abs(state) ** 2, dtype=np.float64)
-    if np.any(probabilities <= threshold):
-        raise ValueError(
-            "computational-basis Fisher information is singular at a "
-            "zero-probability outcome; choose parameters away from the boundary "
-            "or use QFI/Fubini-Study diagnostics"
-        )
     probability_derivatives = np.asarray(
         [2.0 * np.real(np.conj(state) * derivative) for derivative in derivatives],
         dtype=np.float64,
@@ -1211,6 +1303,42 @@ def _as_density_circuit(
         n_qubits=circuit.n_qubits,
         operations=circuit.operations,
         observable=circuit.observable,
+    )
+
+
+def _blocked_density_route_support_report(
+    circuit: PhaseQNodeDensityCircuit,
+    values: FloatArray,
+    *,
+    route_name: str,
+    alternatives: tuple[str, ...],
+) -> PhaseQNodeSupportReport:
+    density_report = phase_qnode_density_support_report(circuit, values)
+    noise_channels = tuple(
+        operation.channel
+        for operation in _parsed_density_operations(circuit)
+        if isinstance(operation, PhaseQNodeNoiseChannel)
+    )
+    reasons = [
+        f"{route_name} require the pure-state PhaseQNodeCircuit route",
+    ]
+    if noise_channels:
+        reasons.append(
+            f"{route_name} are not registered for density-matrix noise channels: "
+            f"{', '.join(noise_channels)}"
+        )
+    if density_report.failure_reason:
+        reasons.append(density_report.failure_reason)
+    return PhaseQNodeSupportReport(
+        supported=False,
+        gates=density_report.gates,
+        observable_kind=density_report.observable_kind,
+        differentiable_parameters=density_report.differentiable_parameters,
+        unsupported_gates=density_report.unsupported_gates,
+        unsupported_observables=density_report.unsupported_observables,
+        unsupported_parameters=density_report.unsupported_parameters,
+        failure_reason="; ".join(reasons),
+        alternatives=alternatives,
     )
 
 

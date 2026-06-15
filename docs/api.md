@@ -1286,6 +1286,9 @@ phase_qnode_depth_profile(circuit) -> PhaseQNodeDepthProfile
 registered_phase_qnode_decompositions() -> tuple[str, ...]
 registered_phase_qnode_noise_channels() -> tuple[str, ...]
 decompose_phase_qnode_controlled_gate(operation) -> tuple[PhaseQNodeOperation, ...]
+phase_qnode_gradient_support_report(circuit, parameters) -> PhaseQNodeSupportReport
+phase_qnode_metric_support_report(circuit, parameters) -> PhaseQNodeSupportReport
+phase_qnode_computational_basis_fisher_support_report(circuit, parameters, min_probability=1e-15) -> PhaseQNodeSupportReport
 phase_qnode_density_support_report(circuit, parameters) -> PhaseQNodeSupportReport
 execute_phase_qnode_density_matrix(circuit, parameters) -> PhaseQNodeDensityExecutionResult
 build_pennylane_qnode_from_phase_qnode(circuit, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift") -> PennyLaneQNodeConversionResult

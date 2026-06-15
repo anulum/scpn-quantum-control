@@ -217,13 +217,14 @@ quantum hardware experimentation, and control-facing software:
   rotations, controlled-H/S/T, Toffoli/CCZ/Fredkin, `swap`, `rxx/ryy/rzz`)
   against Pauli products and sparse weighted Pauli Hamiltonians with exact
   operation-list decompositions for registered Toffoli/Fredkin gates and
-  structured support reports for blocked routes.
+  strict route support reports for blocked value, gradient, metric, and Fisher
+  paths.
 - `PhaseQNodeDensityCircuit`, `PhaseQNodeNoiseChannel`, and
   `execute_phase_qnode_density_matrix(...)` execute the same registered local
   unitary family through density matrices plus bounded single-qubit Kraus
   channels (`bit_flip`, `phase_flip`, `depolarizing`,
   `amplitude_damping`), returning trace, purity, density entries, support
-  reports, and explicit non-gradient/non-hardware claim boundaries.
+  reports, and explicit non-gradient/non-metric/non-hardware claim boundaries.
 - `run_phase_qnode_framework_parity_suite()` runs the same bounded circuit
   family through SCPN plus installed JAX, PyTorch, TensorFlow, and PennyLane
   backends, recording value, gradient, dtype/device metadata, and dependency
