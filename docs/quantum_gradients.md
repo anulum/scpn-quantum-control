@@ -1066,6 +1066,7 @@ parity suite when a concrete circuit family is required:
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    build_phase_qnode_template,
     DenseHermitianObservable,
     PauliCovarianceObservable,
     PauliTerm,
@@ -1086,6 +1087,25 @@ value = execute_phase_qnode_circuit(circuit, params)
 gradient = parameter_shift_phase_qnode_gradient(circuit, params)
 parity = run_phase_qnode_framework_parity_suite()
 print(value.value, gradient.gradient, parity.frameworks)
+```
+
+Use `build_phase_qnode_template(...)` when the circuit should come from a
+registered multi-qubit ansatz rather than hand-authored operations. The current
+template registry contains `ghz_chain`, `hardware_efficient_ry`, and
+`hardware_efficient_ryrz`; the hardware-efficient templates support chain or
+ring CNOT entanglers, return `PhaseQNodeTemplateSpec` metadata with an explicit
+claim boundary, and execute through the same `PhaseQNodeCircuit` support report
+path:
+
+```python
+template = build_phase_qnode_template(
+    "hardware_efficient_ryrz",
+    n_qubits=3,
+    n_layers=2,
+    entangler="ring",
+)
+params = np.linspace(0.2, 0.8, template.parameter_count)
+gradient = parameter_shift_phase_qnode_gradient(template.circuit(), params)
 ```
 
 For dense local observables, use `DenseHermitianObservable(matrix)`.  The matrix

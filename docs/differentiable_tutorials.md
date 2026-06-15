@@ -67,6 +67,38 @@ print(gradient.gradient)
 This is the smallest useful local quantum-gradient route: one registered
 rotation, one registered observable, and one trainable parameter.
 
+For a registered multi-qubit ansatz, build a template and pass its circuit to
+the same execution and gradient calls:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    build_phase_qnode_template,
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+)
+
+template = build_phase_qnode_template(
+    "hardware_efficient_ryrz",
+    n_qubits=3,
+    n_layers=2,
+    entangler="ring",
+)
+params = np.linspace(0.1, 0.9, template.parameter_count)
+
+value = execute_phase_qnode_circuit(template.circuit(), params)
+gradient = parameter_shift_phase_qnode_gradient(template.circuit(), params)
+print(template.to_dict()["claim_boundary"])
+print(value.value)
+print(gradient.gradient)
+```
+
+Template support is deliberately bounded to local statevector execution over
+registered gates and observables. It does not imply dynamic circuits,
+provider-backed execution, finite-shot sampling, or native framework autodiff
+through a simulator.
+
 ## Why A Route Is Blocked
 
 ```python

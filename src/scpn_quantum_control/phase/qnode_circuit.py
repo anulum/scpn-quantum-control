@@ -35,6 +35,11 @@ _REGISTERED_OBSERVABLES = (
     "dense_hermitian",
     "sparse_pauli_hamiltonian",
 )
+_REGISTERED_TEMPLATES = (
+    "ghz_chain",
+    "hardware_efficient_ry",
+    "hardware_efficient_ryrz",
+)
 
 _I = np.eye(2, dtype=np.complex128)
 _X = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
@@ -252,6 +257,55 @@ class PhaseQNodeCircuit:
 
 
 @dataclass(frozen=True)
+class PhaseQNodeTemplateSpec:
+    """Registered multi-qubit Phase-QNode template declaration."""
+
+    name: str
+    n_qubits: int
+    n_layers: int
+    entangler: str
+    parameter_count: int
+    operations: tuple[PhaseQNodeOperation, ...]
+    observable: (
+        PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable | DenseHermitianObservable
+    )
+    claim_boundary: str
+
+    def circuit(self) -> PhaseQNodeCircuit:
+        """Return the executable circuit represented by this template."""
+        return PhaseQNodeCircuit(
+            n_qubits=self.n_qubits,
+            operations=self.operations,
+            observable=self.observable,
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready template metadata."""
+        observable: object
+        if hasattr(self.observable, "to_dict"):
+            observable = self.observable.to_dict()
+        else:
+            observable = str(self.observable)
+        return {
+            "name": self.name,
+            "n_qubits": self.n_qubits,
+            "n_layers": self.n_layers,
+            "entangler": self.entangler,
+            "parameter_count": self.parameter_count,
+            "operations": [
+                {
+                    "gate": operation.gate,
+                    "qubits": list(operation.qubits),
+                    "parameter_index": operation.parameter_index,
+                }
+                for operation in self.operations
+            ],
+            "observable": observable,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseQNodeExecutionResult:
     """Statevector execution result for a supported Phase-QNode circuit."""
 
@@ -344,6 +398,72 @@ def registered_phase_qnode_gates() -> tuple[str, ...]:
 def registered_phase_qnode_observables() -> tuple[str, ...]:
     """Return the local Phase-QNode observable family."""
     return _REGISTERED_OBSERVABLES
+
+
+def registered_phase_qnode_templates() -> tuple[str, ...]:
+    """Return the registered local multi-qubit Phase-QNode templates."""
+    return _REGISTERED_TEMPLATES
+
+
+def build_phase_qnode_template(
+    name: str,
+    n_qubits: int,
+    *,
+    n_layers: int = 1,
+    entangler: str = "chain",
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+        | None
+    ) = None,
+) -> PhaseQNodeTemplateSpec:
+    """Build a registered multi-qubit template as an executable circuit spec.
+
+    The templates are deterministic local statevector declarations. They do not
+    imply hardware execution, dynamic circuits, finite-shot sampling, or native
+    framework autodiff-through-simulator support.
+    """
+    normalized = str(name).strip().lower()
+    if normalized not in _REGISTERED_TEMPLATES:
+        raise ValueError(
+            "unsupported Phase-QNode template; use registered_phase_qnode_templates()"
+        )
+    width = _as_template_width(n_qubits)
+    layers = _as_template_layers(n_layers)
+    topology = _as_template_entangler(entangler, width)
+    if normalized == "ghz_chain" and topology != "chain":
+        raise ValueError("ghz_chain template only supports chain entanglement")
+    parsed_observable = _normalise_template_observable(observable, width)
+    if normalized == "ghz_chain":
+        operations = _ghz_chain_operations(width)
+        parameter_count = 0
+        effective_layers = 1
+    else:
+        rotation_gates = ("ry",) if normalized == "hardware_efficient_ry" else ("ry", "rz")
+        operations, parameter_count = _hardware_efficient_operations(
+            width,
+            layers,
+            topology,
+            rotation_gates,
+        )
+        effective_layers = layers
+    return PhaseQNodeTemplateSpec(
+        name=normalized,
+        n_qubits=width,
+        n_layers=effective_layers,
+        entangler=topology,
+        parameter_count=parameter_count,
+        operations=operations,
+        observable=parsed_observable,
+        claim_boundary=(
+            "registered local multi-qubit Phase-QNode template over the bounded "
+            "statevector gate family; no dynamic-circuit, provider, finite-shot, "
+            "hardware, or native framework autodiff-through-simulator claim"
+        ),
+    )
 
 
 def phase_qnode_support_report(
@@ -581,6 +701,91 @@ def _parse_operation(operation: PhaseQNodeOperation | OperationSpec) -> PhaseQNo
 
 def _parsed_operations(circuit: PhaseQNodeCircuit) -> tuple[PhaseQNodeOperation, ...]:
     return cast(tuple[PhaseQNodeOperation, ...], circuit.operations)
+
+
+def _as_template_width(value: int) -> int:
+    if isinstance(value, bool) or value < 2:
+        raise ValueError("Phase-QNode templates require at least two qubits")
+    return int(value)
+
+
+def _as_template_layers(value: int) -> int:
+    if isinstance(value, bool) or value < 1:
+        raise ValueError("n_layers must be a positive integer")
+    return int(value)
+
+
+def _as_template_entangler(value: str, n_qubits: int) -> str:
+    topology = str(value).strip().lower()
+    if topology not in {"chain", "ring"}:
+        raise ValueError("entangler must be 'chain' or 'ring'")
+    if topology == "ring" and n_qubits < 3:
+        raise ValueError("ring entanglement requires at least three qubits")
+    return topology
+
+
+def _normalise_template_observable(
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+        | None
+    ),
+    n_qubits: int,
+) -> PauliTerm | SparsePauliHamiltonian | PauliCovarianceObservable | DenseHermitianObservable:
+    if observable is None:
+        return _z_magnetization_observable(n_qubits)
+    if isinstance(observable, str):
+        normalized = observable.strip().lower()
+        if normalized in {"z_magnetization", "pauli_z_magnetization"}:
+            return _z_magnetization_observable(n_qubits)
+        if normalized in {"z_parity", "pauli_z_parity"}:
+            return PauliTerm(1.0, tuple((qubit, "z") for qubit in range(n_qubits)))
+    parsed = _normalise_observable(observable, n_qubits)
+    if isinstance(parsed, str):
+        raise ValueError("template observable strings must be z_magnetization or z_parity")
+    return parsed
+
+
+def _z_magnetization_observable(n_qubits: int) -> SparsePauliHamiltonian:
+    weight = 1.0 / float(n_qubits)
+    return SparsePauliHamiltonian(
+        tuple(PauliTerm(weight, ((qubit, "z"),)) for qubit in range(n_qubits))
+    )
+
+
+def _ghz_chain_operations(n_qubits: int) -> tuple[PhaseQNodeOperation, ...]:
+    operations = [PhaseQNodeOperation("h", (0,))]
+    operations.extend(
+        PhaseQNodeOperation("cnot", (control, control + 1)) for control in range(n_qubits - 1)
+    )
+    return tuple(operations)
+
+
+def _hardware_efficient_operations(
+    n_qubits: int,
+    n_layers: int,
+    entangler: str,
+    rotation_gates: tuple[str, ...],
+) -> tuple[tuple[PhaseQNodeOperation, ...], int]:
+    operations: list[PhaseQNodeOperation] = []
+    parameter_index = 0
+    for _layer in range(n_layers):
+        for gate in rotation_gates:
+            for qubit in range(n_qubits):
+                operations.append(PhaseQNodeOperation(gate, (qubit,), parameter_index))
+                parameter_index += 1
+        operations.extend(_entangler_operations(n_qubits, entangler))
+    return tuple(operations), parameter_index
+
+
+def _entangler_operations(n_qubits: int, entangler: str) -> tuple[PhaseQNodeOperation, ...]:
+    pairs = [(control, control + 1) for control in range(n_qubits - 1)]
+    if entangler == "ring":
+        pairs.append((n_qubits - 1, 0))
+    return tuple(PhaseQNodeOperation("cnot", pair) for pair in pairs)
 
 
 def _normalise_observable(
@@ -1010,7 +1215,9 @@ __all__ = [
     "PhaseQNodeOperation",
     "PhaseQNodeSupportError",
     "PhaseQNodeSupportReport",
+    "PhaseQNodeTemplateSpec",
     "SparsePauliHamiltonian",
+    "build_phase_qnode_template",
     "execute_phase_qnode_circuit",
     "parameter_shift_phase_qnode_gradient",
     "phase_qnode_computational_basis_fisher_information",
@@ -1019,4 +1226,5 @@ __all__ = [
     "phase_qnode_support_report",
     "registered_phase_qnode_gates",
     "registered_phase_qnode_observables",
+    "registered_phase_qnode_templates",
 ]

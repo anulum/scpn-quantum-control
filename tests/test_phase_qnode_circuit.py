@@ -12,6 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control import phase
 from scpn_quantum_control.phase.qnode_circuit import (
     DenseHermitianObservable,
     PauliCovarianceObservable,
@@ -20,7 +21,9 @@ from scpn_quantum_control.phase.qnode_circuit import (
     PhaseQNodeClassicalFisherResult,
     PhaseQNodeMetricTensorResult,
     PhaseQNodeSupportError,
+    PhaseQNodeTemplateSpec,
     SparsePauliHamiltonian,
+    build_phase_qnode_template,
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
     phase_qnode_computational_basis_fisher_information,
@@ -29,6 +32,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
     phase_qnode_support_report,
     registered_phase_qnode_gates,
     registered_phase_qnode_observables,
+    registered_phase_qnode_templates,
 )
 
 
@@ -369,3 +373,83 @@ def test_phase_qnode_unsupported_routes_fail_with_structured_support_report() ->
     with pytest.raises(PhaseQNodeSupportError) as exc_info:
         execute_phase_qnode_circuit(circuit, np.array([0.2], dtype=float))
     assert exc_info.value.report == report
+
+
+def test_phase_qnode_ghz_chain_template_executes_multi_qubit_parity_reference() -> None:
+    template = build_phase_qnode_template(
+        "ghz_chain",
+        4,
+        observable="z_parity",
+    )
+
+    result = execute_phase_qnode_circuit(template.circuit(), np.array([], dtype=float))
+
+    assert isinstance(template, PhaseQNodeTemplateSpec)
+    assert template.name == "ghz_chain"
+    assert template.parameter_count == 0
+    assert [operation.gate for operation in template.operations] == [
+        "h",
+        "cnot",
+        "cnot",
+        "cnot",
+    ]
+    assert result.support_report.supported
+    np.testing.assert_allclose(result.value, 1.0, atol=1e-12)
+    assert "hardware" in template.claim_boundary
+    payload = template.to_dict()
+    assert payload["parameter_count"] == 0
+    assert payload["operations"]
+
+
+def test_phase_qnode_hardware_efficient_template_gradient_matches_finite_difference() -> None:
+    template = build_phase_qnode_template(
+        "hardware_efficient_ryrz",
+        3,
+        n_layers=2,
+        entangler="ring",
+    )
+    params = np.linspace(0.13, 0.97, template.parameter_count, dtype=float)
+
+    gradient = parameter_shift_phase_qnode_gradient(template.circuit(), params)
+    finite_difference = np.zeros_like(params)
+    eps = 1e-6
+    for index in range(params.size):
+        plus = params.copy()
+        minus = params.copy()
+        plus[index] += eps
+        minus[index] -= eps
+        finite_difference[index] = (
+            execute_phase_qnode_circuit(template.circuit(), plus).value
+            - execute_phase_qnode_circuit(template.circuit(), minus).value
+        ) / (2.0 * eps)
+
+    assert template.parameter_count == 12
+    assert template.entangler == "ring"
+    assert gradient.support_report.differentiable_parameters == tuple(range(12))
+    np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
+
+
+def test_phase_qnode_template_registry_validates_boundaries() -> None:
+    assert set(registered_phase_qnode_templates()) == {
+        "ghz_chain",
+        "hardware_efficient_ry",
+        "hardware_efficient_ryrz",
+    }
+    with pytest.raises(ValueError, match="at least two qubits"):
+        build_phase_qnode_template("hardware_efficient_ry", 1)
+    with pytest.raises(ValueError, match="ring entanglement"):
+        build_phase_qnode_template("hardware_efficient_ry", 2, entangler="ring")
+    with pytest.raises(ValueError, match="only supports chain"):
+        build_phase_qnode_template("ghz_chain", 3, entangler="ring")
+    with pytest.raises(ValueError, match="template observable strings"):
+        build_phase_qnode_template(
+            "hardware_efficient_ry",
+            2,
+            observable="not_a_template_observable",
+        )
+
+
+def test_phase_qnode_template_exports_are_public() -> None:
+    assert phase.build_phase_qnode_template is build_phase_qnode_template
+    assert phase.registered_phase_qnode_templates is registered_phase_qnode_templates
+    assert phase.PhaseQNodeTemplateSpec is PhaseQNodeTemplateSpec
