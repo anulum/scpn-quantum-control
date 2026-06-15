@@ -15,10 +15,13 @@ import pytest
 from scpn_quantum_control.bridge.knm_hamiltonian import build_kuramoto_ring
 from scpn_quantum_control.control.closed_loop_analysis import (
     ClosedLoopExecutionPolicy,
+    ClosedLoopLatencyBudget,
     ExecutionMode,
     ResponseClass,
     analyse_closed_loop_response,
+    build_closed_loop_publication_package,
     evaluate_closed_loop_policy,
+    measure_closed_loop_latency_budget,
     run_closed_loop_control,
 )
 from scpn_quantum_control.control.realtime_feedback import (
@@ -173,3 +176,98 @@ def test_run_closed_loop_control_evidence_structure():
 def test_run_closed_loop_control_rejects_short_horizon():
     with pytest.raises(ValueError):
         run_closed_loop_control(_controller(), 1)
+
+
+# --------------------------------------------------------------------------- #
+# Latency budget and publication scaffold
+# --------------------------------------------------------------------------- #
+def test_measure_closed_loop_latency_budget_accepts_replay_samples():
+    budget = ClosedLoopLatencyBudget(
+        max_round_latency_s=0.010,
+        p95_round_latency_s=0.008,
+        p99_round_latency_s=0.009,
+        max_total_latency_s=0.050,
+    )
+
+    report = measure_closed_loop_latency_budget(
+        _controller(),
+        4,
+        budget=budget,
+        seed=11,
+        observed_round_latencies_s=(0.001, 0.002, 0.003, 0.004),
+    )
+
+    assert report.passes
+    assert report.blockers == ()
+    assert report.classification == "software_in_loop_latency"
+    assert report.samples == 4
+    assert report.max_round_latency_s == pytest.approx(0.004)
+    assert report.total_latency_s == pytest.approx(0.010)
+    assert report.control_evidence.decision.mode is ExecutionMode.SIMULATION
+    assert report.to_dict()["claim_boundary"].startswith("software-in-the-loop")
+
+
+def test_measure_closed_loop_latency_budget_fails_closed_on_budget_breach():
+    budget = ClosedLoopLatencyBudget(max_round_latency_s=0.002, max_total_latency_s=0.010)
+
+    report = measure_closed_loop_latency_budget(
+        _controller(),
+        3,
+        budget=budget,
+        observed_round_latencies_s=(0.001, 0.003, 0.001),
+    )
+
+    assert not report.passes
+    assert any("max round latency" in blocker for blocker in report.blockers)
+
+
+def test_measure_closed_loop_latency_budget_records_policy_block_without_hardware_submit():
+    policy = ClosedLoopExecutionPolicy(
+        allow_hardware=True,
+        live_ticket=None,
+        backend_allowlist=("ibm_heron",),
+    )
+
+    report = measure_closed_loop_latency_budget(
+        _controller(),
+        3,
+        policy=policy,
+        backend="ibm_heron",
+        observed_round_latencies_s=(0.001, 0.001, 0.001),
+    )
+
+    assert not report.passes
+    assert report.control_evidence.decision.mode is ExecutionMode.SIMULATION
+    assert any("not authorised" in blocker for blocker in report.blockers)
+
+
+def test_measure_closed_loop_latency_budget_rejects_bad_budget_and_samples():
+    with pytest.raises(ValueError, match="max_round_latency_s"):
+        ClosedLoopLatencyBudget(max_round_latency_s=0.0)
+
+    with pytest.raises(ValueError, match="observed_round_latencies_s"):
+        measure_closed_loop_latency_budget(
+            _controller(),
+            3,
+            observed_round_latencies_s=(0.001, 0.002),
+        )
+
+
+def test_closed_loop_publication_package_separates_evidence_classes():
+    latency_report = measure_closed_loop_latency_budget(
+        _controller(),
+        4,
+        observed_round_latencies_s=(0.001, 0.0015, 0.0012, 0.0013),
+    )
+
+    package = build_closed_loop_publication_package(latency_report=latency_report)
+    payload = package.to_dict()
+    markdown = package.to_markdown()
+
+    assert package.title == "Closed-Loop Quantum Control Evidence Package"
+    assert "software_in_loop_simulation" in payload["evidence_classes"]
+    assert "provider_prepared_dynamic_circuit" in payload["evidence_classes"]
+    assert "live_closed_loop_qpu" in payload["evidence_classes"]
+    assert payload["benchmark_rows"][0]["classification"] == "software_in_loop_latency"
+    assert payload["claim_ledger_rows"][0]["promotion_status"] == "unpromoted"
+    assert "not live closed-loop QPU evidence" in markdown

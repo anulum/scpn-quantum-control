@@ -22,6 +22,7 @@ execution is refused fail-closed without an explicit live ticket.
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -95,6 +96,140 @@ class ClosedLoopControlEvidence:
     performance: ControlPerformance
     decision: ClosedLoopExecutionDecision
     provenance: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ClosedLoopLatencyBudget:
+    """Wall-clock latency budget for software-in-the-loop feedback rounds."""
+
+    max_round_latency_s: float = 0.050
+    p95_round_latency_s: float | None = None
+    p99_round_latency_s: float | None = None
+    max_total_latency_s: float | None = None
+
+    def __post_init__(self) -> None:
+        _require_positive(self.max_round_latency_s, "max_round_latency_s")
+        if self.p95_round_latency_s is not None:
+            _require_positive(self.p95_round_latency_s, "p95_round_latency_s")
+        if self.p99_round_latency_s is not None:
+            _require_positive(self.p99_round_latency_s, "p99_round_latency_s")
+        if self.max_total_latency_s is not None:
+            _require_positive(self.max_total_latency_s, "max_total_latency_s")
+
+
+@dataclass(frozen=True)
+class ClosedLoopLatencyReport:
+    """Budget verdict for a no-submit closed-loop latency measurement."""
+
+    budget: ClosedLoopLatencyBudget
+    control_evidence: ClosedLoopControlEvidence
+    round_latencies_s: tuple[float, ...]
+    total_latency_s: float
+    max_round_latency_s: float
+    p95_round_latency_s: float
+    p99_round_latency_s: float
+    passes: bool
+    blockers: tuple[str, ...]
+    classification: str
+    clock_source: str
+    claim_boundary: str
+
+    @property
+    def samples(self) -> int:
+        """Number of measured feedback rounds."""
+
+        return len(self.round_latencies_s)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-ready latency report."""
+
+        return {
+            "classification": self.classification,
+            "passes": self.passes,
+            "blockers": list(self.blockers),
+            "samples": self.samples,
+            "round_latencies_s": list(self.round_latencies_s),
+            "total_latency_s": self.total_latency_s,
+            "max_round_latency_s": self.max_round_latency_s,
+            "p95_round_latency_s": self.p95_round_latency_s,
+            "p99_round_latency_s": self.p99_round_latency_s,
+            "budget": {
+                "max_round_latency_s": self.budget.max_round_latency_s,
+                "p95_round_latency_s": self.budget.p95_round_latency_s,
+                "p99_round_latency_s": self.budget.p99_round_latency_s,
+                "max_total_latency_s": self.budget.max_total_latency_s,
+            },
+            "execution": {
+                "authorised": self.control_evidence.decision.authorised,
+                "mode": self.control_evidence.decision.mode.value,
+                "reason": self.control_evidence.decision.reason,
+            },
+            "response": {
+                "classification": self.control_evidence.classification.value,
+                "target": self.control_evidence.target,
+                "final_value": self.control_evidence.performance.final_value,
+                "steady_state_error": self.control_evidence.performance.steady_state_error,
+                "settling_round": self.control_evidence.performance.settling_round,
+                "integral_absolute_error": (
+                    self.control_evidence.performance.integral_absolute_error
+                ),
+            },
+            "clock_source": self.clock_source,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class ClosedLoopPublicationPackage:
+    """Publication-control scaffold for closed-loop feedback evidence classes."""
+
+    title: str
+    evidence_classes: tuple[dict[str, str], ...]
+    methods_sections: tuple[dict[str, str], ...]
+    artefact_map: tuple[dict[str, str], ...]
+    benchmark_rows: tuple[dict[str, Any], ...]
+    claim_ledger_rows: tuple[dict[str, str], ...]
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-ready publication package scaffold."""
+
+        return {
+            "title": self.title,
+            "evidence_classes": {
+                item["id"]: {key: value for key, value in item.items() if key != "id"}
+                for item in self.evidence_classes
+            },
+            "methods_sections": list(self.methods_sections),
+            "artefact_map": list(self.artefact_map),
+            "benchmark_rows": list(self.benchmark_rows),
+            "claim_ledger_rows": list(self.claim_ledger_rows),
+            "claim_boundary": self.claim_boundary,
+        }
+
+    def to_markdown(self) -> str:
+        """Return a compact Markdown scaffold for campaign notes."""
+
+        lines = [
+            f"# {self.title}",
+            "",
+            self.claim_boundary,
+            "",
+            "## Evidence Classes",
+        ]
+        for item in self.evidence_classes:
+            lines.append(f"- `{item['id']}`: {item['claim_boundary']}")
+        lines.extend(["", "## Benchmark Rows"])
+        for row in self.benchmark_rows:
+            lines.append(
+                f"- `{row['classification']}`: pass={row['passes']}; "
+                f"max_round_latency_s={row['max_round_latency_s']:.9f}; "
+                f"p95_round_latency_s={row['p95_round_latency_s']:.9f}"
+            )
+        lines.extend(["", "## Claim Ledger Rows"])
+        for row in self.claim_ledger_rows:
+            lines.append(f"- `{row['claim_id']}`: {row['promotion_status']} — {row['evidence']}")
+        return "\n".join(lines)
 
 
 def evaluate_closed_loop_policy(
@@ -288,3 +423,290 @@ def run_closed_loop_control(
         decision=decision,
         provenance=provenance,
     )
+
+
+def measure_closed_loop_latency_budget(
+    controller: RealtimeSyncFeedbackController,
+    n_rounds: int,
+    *,
+    budget: ClosedLoopLatencyBudget | None = None,
+    policy: ClosedLoopExecutionPolicy | None = None,
+    seed: int | None = None,
+    tolerance: float | None = None,
+    settle_window: int = 8,
+    backend: str | None = None,
+    observed_round_latencies_s: tuple[float, ...] | None = None,
+) -> ClosedLoopLatencyReport:
+    """Measure or replay no-submit closed-loop latency against a budget.
+
+    When ``observed_round_latencies_s`` is omitted, each local simulator
+    ``step()`` is measured with :func:`time.perf_counter_ns`. Supplying observed
+    samples is intended for deterministic replay and CI fixtures; it still runs
+    the controller to produce the same response evidence and policy decision.
+    """
+
+    if n_rounds < 2:
+        raise ValueError("n_rounds must be at least two for a latency verdict")
+    budget = budget or ClosedLoopLatencyBudget()
+    policy = policy or ClosedLoopExecutionPolicy()
+    decision = evaluate_closed_loop_policy(policy, backend=backend, requested_rounds=n_rounds)
+
+    if observed_round_latencies_s is not None:
+        if len(observed_round_latencies_s) != n_rounds:
+            raise ValueError("observed_round_latencies_s must contain one sample per round")
+        if any(sample < 0.0 or not np.isfinite(sample) for sample in observed_round_latencies_s):
+            raise ValueError("observed_round_latencies_s must contain finite non-negative samples")
+        evidence = run_closed_loop_control(
+            controller,
+            n_rounds,
+            policy=policy,
+            seed=seed,
+            tolerance=tolerance,
+            settle_window=settle_window,
+            backend=backend,
+        )
+        round_latencies = tuple(float(sample) for sample in observed_round_latencies_s)
+        clock_source = "replayed_observed_round_latencies_s"
+    else:
+        evidence, round_latencies = _run_closed_loop_control_with_wall_clock(
+            controller,
+            n_rounds,
+            decision=decision,
+            seed=seed,
+            tolerance=tolerance,
+            settle_window=settle_window,
+        )
+        clock_source = "time.perf_counter_ns"
+
+    total_latency = float(sum(round_latencies))
+    max_latency = float(max(round_latencies))
+    p95 = float(np.percentile(np.asarray(round_latencies, dtype=np.float64), 95))
+    p99 = float(np.percentile(np.asarray(round_latencies, dtype=np.float64), 99))
+    blockers = _latency_budget_blockers(
+        budget=budget,
+        decision=decision,
+        total_latency_s=total_latency,
+        max_round_latency_s=max_latency,
+        p95_round_latency_s=p95,
+        p99_round_latency_s=p99,
+    )
+    claim_boundary = (
+        "software-in-the-loop closed-loop latency measurement; measures local "
+        "controller/simulator wall-clock time only; not provider-prepared "
+        "dynamic-circuit evidence and not live closed-loop QPU evidence"
+    )
+    return ClosedLoopLatencyReport(
+        budget=budget,
+        control_evidence=evidence,
+        round_latencies_s=round_latencies,
+        total_latency_s=total_latency,
+        max_round_latency_s=max_latency,
+        p95_round_latency_s=p95,
+        p99_round_latency_s=p99,
+        passes=not blockers,
+        blockers=blockers,
+        classification="software_in_loop_latency",
+        clock_source=clock_source,
+        claim_boundary=claim_boundary,
+    )
+
+
+def build_closed_loop_publication_package(
+    *,
+    latency_report: ClosedLoopLatencyReport,
+) -> ClosedLoopPublicationPackage:
+    """Build a no-submit publication scaffold for closed-loop feedback evidence."""
+
+    benchmark_row = {
+        "id": "closed_loop_software_latency",
+        "classification": latency_report.classification,
+        "passes": latency_report.passes,
+        "samples": latency_report.samples,
+        "max_round_latency_s": latency_report.max_round_latency_s,
+        "p95_round_latency_s": latency_report.p95_round_latency_s,
+        "p99_round_latency_s": latency_report.p99_round_latency_s,
+        "total_latency_s": latency_report.total_latency_s,
+        "claim_boundary": latency_report.claim_boundary,
+    }
+    claim_boundary = (
+        "Publication scaffold only: separates software-in-the-loop simulation, "
+        "provider-prepared dynamic-circuit readiness, and true live closed-loop "
+        "QPU evidence; not live closed-loop QPU evidence until a live-ticket run "
+        "adds provider job IDs, raw counts, calibration snapshots, and replay artefacts."
+    )
+    return ClosedLoopPublicationPackage(
+        title="Closed-Loop Quantum Control Evidence Package",
+        evidence_classes=(
+            {
+                "id": "software_in_loop_simulation",
+                "status": "available",
+                "claim_boundary": latency_report.claim_boundary,
+            },
+            {
+                "id": "provider_prepared_dynamic_circuit",
+                "status": "placeholder",
+                "claim_boundary": (
+                    "requires backend capability proof, transpiled dynamic circuit, "
+                    "provider preparation metadata, and no-submit policy approval"
+                ),
+            },
+            {
+                "id": "live_closed_loop_qpu",
+                "status": "blocked_without_live_ticket",
+                "claim_boundary": (
+                    "requires explicit live ticket, allow-listed backend, raw counts, "
+                    "calibration snapshot, job IDs, and replay harness"
+                ),
+            },
+        ),
+        methods_sections=(
+            {
+                "id": "controller_contract",
+                "text": (
+                    "Mid-circuit measurement feeds a classical update policy that "
+                    "adjusts the next-round coupling parameter under explicit policy gates."
+                ),
+            },
+            {
+                "id": "latency_budget",
+                "text": (
+                    "Software-in-the-loop latency records per-round wall-clock samples "
+                    "and fails closed on max, p95, p99, or total-budget breaches."
+                ),
+            },
+            {
+                "id": "hardware_boundary",
+                "text": (
+                    "Provider-prepared and live-QPU claims stay unpromoted until "
+                    "the hardware policy authorises a live ticket and artefacts exist."
+                ),
+            },
+        ),
+        artefact_map=(
+            {
+                "id": "software_latency_report",
+                "path": "generated_by_measure_closed_loop_latency_budget",
+                "required_for": "software-in-the-loop latency claim",
+            },
+            {
+                "id": "provider_dynamic_circuit_pack",
+                "path": "pending_live_ticket",
+                "required_for": "provider-prepared dynamic-circuit claim",
+            },
+            {
+                "id": "live_qpu_raw_counts",
+                "path": "pending_live_ticket",
+                "required_for": "true live closed-loop QPU claim",
+            },
+        ),
+        benchmark_rows=(benchmark_row,),
+        claim_ledger_rows=(
+            {
+                "claim_id": "closed_loop_software_latency",
+                "promotion_status": "unpromoted",
+                "evidence": "software-in-the-loop latency report only",
+            },
+            {
+                "claim_id": "closed_loop_provider_dynamic_circuit",
+                "promotion_status": "blocked",
+                "evidence": "provider preparation artefacts pending",
+            },
+            {
+                "claim_id": "closed_loop_live_qpu",
+                "promotion_status": "blocked",
+                "evidence": "live hardware artefacts pending",
+            },
+        ),
+        claim_boundary=claim_boundary,
+    )
+
+
+def _run_closed_loop_control_with_wall_clock(
+    controller: RealtimeSyncFeedbackController,
+    n_rounds: int,
+    *,
+    decision: ClosedLoopExecutionDecision,
+    seed: int | None,
+    tolerance: float | None,
+    settle_window: int,
+) -> tuple[ClosedLoopControlEvidence, tuple[float, ...]]:
+    controller.reset()
+    rng = np.random.default_rng(seed)
+    steps = []
+    latencies: list[float] = []
+    for _ in range(n_rounds):
+        started = time.perf_counter_ns()
+        step = controller.step(seed=int(rng.integers(0, 2**32 - 1)))
+        finished = time.perf_counter_ns()
+        steps.append(step)
+        latencies.append((finished - started) / 1_000_000_000.0)
+
+    response = np.array([step.r_statevector for step in steps], dtype=np.float64)
+    feedback_signal = np.array([step.r_live for step in steps], dtype=np.float64)
+    target = controller.config.target_r
+    band = tolerance if tolerance is not None else max(2.0 * controller.config.deadband, 1e-3)
+    classification, performance = analyse_closed_loop_response(
+        response, target, tolerance=band, settle_window=settle_window
+    )
+    evidence = ClosedLoopControlEvidence(
+        response=response,
+        feedback_signal=feedback_signal,
+        target=target,
+        classification=classification,
+        performance=performance,
+        decision=decision,
+        provenance={
+            "n_rounds": n_rounds,
+            "target_r": target,
+            "tolerance": band,
+            "settle_window": settle_window,
+            "execution_mode": decision.mode.value,
+            "execution_authorised": decision.authorised,
+            "seed": seed,
+            "claim_boundary": (
+                "software-in-the-loop closed-loop control assessment with local "
+                "wall-clock latency measurement; not provider-prepared dynamic "
+                "circuit evidence and not live closed-loop QPU evidence"
+            ),
+        },
+    )
+    return evidence, tuple(latencies)
+
+
+def _latency_budget_blockers(
+    *,
+    budget: ClosedLoopLatencyBudget,
+    decision: ClosedLoopExecutionDecision,
+    total_latency_s: float,
+    max_round_latency_s: float,
+    p95_round_latency_s: float,
+    p99_round_latency_s: float,
+) -> tuple[str, ...]:
+    blockers: list[str] = []
+    if not decision.authorised:
+        blockers.append(f"closed-loop execution policy not authorised: {decision.reason}")
+    if max_round_latency_s > budget.max_round_latency_s:
+        blockers.append(
+            f"max round latency {max_round_latency_s:.9f}s exceeds "
+            f"{budget.max_round_latency_s:.9f}s"
+        )
+    if budget.p95_round_latency_s is not None and p95_round_latency_s > budget.p95_round_latency_s:
+        blockers.append(
+            f"p95 round latency {p95_round_latency_s:.9f}s exceeds "
+            f"{budget.p95_round_latency_s:.9f}s"
+        )
+    if budget.p99_round_latency_s is not None and p99_round_latency_s > budget.p99_round_latency_s:
+        blockers.append(
+            f"p99 round latency {p99_round_latency_s:.9f}s exceeds "
+            f"{budget.p99_round_latency_s:.9f}s"
+        )
+    if budget.max_total_latency_s is not None and total_latency_s > budget.max_total_latency_s:
+        blockers.append(
+            f"total latency {total_latency_s:.9f}s exceeds {budget.max_total_latency_s:.9f}s"
+        )
+    return tuple(blockers)
+
+
+def _require_positive(value: float, name: str) -> None:
+    if not np.isfinite(value) or value <= 0.0:
+        raise ValueError(f"{name} must be positive")

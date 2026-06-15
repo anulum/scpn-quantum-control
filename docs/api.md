@@ -1743,6 +1743,22 @@ QAOA_MPC(B_matrix, target_state, horizon, p_layers=2)
     .optimize() -> np.ndarray  # action sequence
 ```
 
+### `closed_loop_analysis`
+
+```python
+analyse_closed_loop_response(response, target, tolerance=0.05)
+evaluate_closed_loop_policy(policy, requested_rounds=32, backend=None)
+run_closed_loop_control(controller, n_rounds=32, seed=0)
+measure_closed_loop_latency_budget(controller, n_rounds=32, budget=ClosedLoopLatencyBudget())
+build_closed_loop_publication_package(latency_report=latency_report)
+```
+
+The closed-loop analysis route classifies software-in-the-loop feedback
+responses, gates hardware requests behind an explicit policy, measures local
+per-round latency budgets with replayable samples, and builds a publication
+scaffold that keeps software simulation, provider-prepared dynamic circuits,
+and live closed-loop QPU evidence separate.
+
 ### `vqls_gs.VQLS_GradShafranov`
 
 ```python

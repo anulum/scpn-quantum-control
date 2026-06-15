@@ -70,9 +70,58 @@ evidence.performance         # control-theoretic metrics
 evidence.decision.mode       # simulation unless a live ticket authorises hardware
 ```
 
+## Latency budget
+
+`measure_closed_loop_latency_budget` adds a no-submit latency gate around the
+same controller contract. By default it measures each local feedback round with
+`time.perf_counter_ns`; CI and replay fixtures may pass
+`observed_round_latencies_s` to validate a stored profile without relying on
+workstation timing.
+
+```python
+from scpn_quantum_control.control import (
+    ClosedLoopLatencyBudget,
+    measure_closed_loop_latency_budget,
+)
+
+budget = ClosedLoopLatencyBudget(
+    max_round_latency_s=0.050,
+    p95_round_latency_s=0.040,
+    p99_round_latency_s=0.045,
+    max_total_latency_s=1.500,
+)
+latency = measure_closed_loop_latency_budget(controller, 32, budget=budget, seed=0)
+latency.passes
+latency.to_dict()
+```
+
+The report records per-round samples, max/p95/p99/total latency, policy
+authorisation, response classification, and blockers. A failed policy decision
+or latency-budget breach is evidence, not a provider submission.
+
+## Publication package
+
+`build_closed_loop_publication_package` creates a structured scaffold for the
+future paper/control campaign. It separates three evidence classes:
+
+| evidence class | status boundary |
+|---|---|
+| `software_in_loop_simulation` | available from the local controller and latency gate |
+| `provider_prepared_dynamic_circuit` | placeholder until backend capability and provider-preparation artefacts exist |
+| `live_closed_loop_qpu` | blocked until a live ticket, allow-listed backend, raw counts, calibration snapshot, job IDs, and replay harness exist |
+
+```python
+from scpn_quantum_control.control import build_closed_loop_publication_package
+
+package = build_closed_loop_publication_package(latency_report=latency)
+package.to_dict()
+package.to_markdown()
+```
+
 ## Claim boundary
 
 The evidence is software-in-the-loop only: the controlled output is the exact
 statevector order parameter and the feedback signal is the finite-shot estimate.
-It is not provider-prepared dynamic-circuit evidence, not a latency measurement,
-and not live closed-loop QPU evidence.
+The latency gate measures local controller/simulator wall-clock time only. It
+is not provider-prepared dynamic-circuit evidence and not live closed-loop QPU
+evidence.
