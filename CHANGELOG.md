@@ -5,6 +5,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added a pulse-waveform → AMD UltraScale+ HLS code generator
+  (`codegen/ultrascale_hls.py`). `pulse_to_vivado_hls` quantises a control
+  envelope to a signed Q-format ROM and renders a synthesisable AXI4-Stream
+  pulse-player header, a C co-simulation testbench, and a clock-only XDC for the
+  ZU3EG (`xczu3eg-sbva484-1-e`) and ZU9EG (`xczu9eg-ffvb1156-2-e`) parts shared
+  with SC-NEUROCORE. Quantisation dispatches to a bit-true Rust kernel
+  (`quantise_q_format`, 29.7x faster on 10^4 samples). A non-synthesis shim
+  (`tests/hls_shim`) lets the generated bundle run a bit-true software
+  co-simulation under g++; Vivado synthesis is gated behind `MIF_FPGA_VIVADO_CI`.
+  Ships parity/validation/co-simulation tests, a polyglot comparison benchmark
+  (`scripts/bench_ultrascale_hls.py`, `results/ultrascale_hls_benchmark.json`,
+  `functional_non_isolated`), documentation (`docs/ultrascale_hls.md`), and a
+  quickstart (`examples/28_pulse_to_hls_quickstart.py`).
+
+### Added
 - 2026-06-15 — Added a from-specification FIPS 204 ML-DSA-65 module-lattice
   signature implementation (`crypto/ml_dsa.py`) and a post-quantum capacitor-bank
   trigger signer (`crypto/pqc_trigger.py`). ML-DSA-65 (key generation, signing,

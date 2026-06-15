@@ -6,19 +6,19 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 620 |
-| Python source modules | 821 |
-| Public Python classes | 1713 |
+| Public API exports | 623 |
+| Python source modules | 822 |
+| Public Python classes | 1714 |
 | Paper 0 validation modules | 466 |
-| Domain package families | 30 |
+| Domain package families | 31 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 132 |
-| Rust source modules | 35 |
+| Rust PyO3 function bindings | 133 |
+| Rust source modules | 36 |
 | Notebook files | 98 |
-| Example files | 29 |
+| Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 1939 |
-| Public documentation pages | 246 |
+| Python test files | 1940 |
+| Public documentation pages | 247 |
 | GitHub Actions workflows | 19 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

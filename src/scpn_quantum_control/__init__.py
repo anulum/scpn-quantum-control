@@ -75,6 +75,7 @@ from .bridge.ssgf_adapter import (
     ssgf_state_to_quantum,
     ssgf_w_to_hamiltonian,
 )
+from .codegen import HLSBundle, pulse_to_vivado_hls, write_bundle
 from .compiler.mlir import (
     CompilerADExecutableConfig,
     CompilerADKernelVerification,
@@ -862,6 +863,9 @@ __all__ = [
     "compile_kuramoto_to_mlir",
     "AerQuantumEntropySource",
     "PqcTriggerSigner",
+    "HLSBundle",
+    "pulse_to_vivado_hls",
+    "write_bundle",
     "NVCenter",
     "NVFieldCalibration",
     "calibrate_field_from_odmr",

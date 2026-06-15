@@ -1,20 +1,20 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 30,
-    "example_files": 29,
+    "domain_package_families": 31,
+    "example_files": 30,
     "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 620,
-    "public_documentation_pages": 246,
-    "python_model_classes": 1713,
-    "python_model_source_modules": 821,
-    "rust_pyo3_model_wrappers": 132,
-    "rust_source_modules": 35,
-    "test_files": 1939
+    "public_api_exports": 623,
+    "public_documentation_pages": 247,
+    "python_model_classes": 1714,
+    "python_model_source_modules": 822,
+    "rust_pyo3_model_wrappers": 133,
+    "rust_source_modules": 36,
+    "test_files": 1940
   },
   "documentation": {
     "examples": [
@@ -46,6 +46,7 @@
       "examples/25_qrng_streaming_quickstart.py",
       "examples/26_nv_magnetometry_20T_demo.py",
       "examples/27_pqc_trigger_signer_demo.py",
+      "examples/28_pulse_to_hls_quickstart.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -392,6 +393,7 @@
       "docs/theory.md",
       "docs/triage.md",
       "docs/tutorials.md",
+      "docs/ultrascale_hls.md",
       "docs/variational.md",
       "docs/witness_discovery.md",
       "docs/xy_compiler.md"
@@ -451,6 +453,11 @@
         "package": "bridge",
         "path": "src/scpn_quantum_control/bridge",
         "python_modules": 13
+      },
+      {
+        "package": "codegen",
+        "path": "src/scpn_quantum_control/codegen",
+        "python_modules": 1
       },
       {
         "package": "compiler",
@@ -2909,6 +2916,10 @@
       {
         "name": "HIntAsTheSelectionOperatorFixtureResult",
         "path": "src/scpn_quantum_control/paper0/h_int_as_the_selection_operator_validation.py"
+      },
+      {
+        "name": "HLSBundle",
+        "path": "src/scpn_quantum_control/codegen/ultrascale_hls.py"
       },
       {
         "name": "HPCUPDEDerivationConfig",
@@ -8001,6 +8012,7 @@
       "src/scpn_quantum_control/bridge/spn_to_qcircuit.py",
       "src/scpn_quantum_control/bridge/ssgf_adapter.py",
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
+      "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
@@ -8825,6 +8837,7 @@
       "qpetri_sample_marking",
       "qpetri_state_metrics",
       "qpetri_transition_activity",
+      "quantise_q_format",
       "rabi_pi_amplitude_fit",
       "run_realtime_feedback_loop",
       "score_function_gradient_rust",
@@ -8867,6 +8880,7 @@
       "scpn_quantum_engine/src/frc.rs",
       "scpn_quantum_engine/src/gauge_lattice.rs",
       "scpn_quantum_engine/src/hamiltonian.rs",
+      "scpn_quantum_engine/src/hls_quantise.rs",
       "scpn_quantum_engine/src/knm.rs",
       "scpn_quantum_engine/src/koopman.rs",
       "scpn_quantum_engine/src/krylov.rs",
@@ -8953,6 +8967,7 @@
     "GradientCheckResult",
     "GradientFailurePolicy",
     "GradientResult",
+    "HLSBundle",
     "HVPResult",
     "HardwareAbstractionLayer",
     "HardwareRunner",
@@ -9396,6 +9411,7 @@
     "prove_identity",
     "provider_optional_dependency_matrix",
     "psi_field",
+    "pulse_to_vivado_hls",
     "pulser_sequence_workload",
     "pulser_surrogate_backend",
     "qbraid_program_to_workload",
@@ -9509,6 +9525,7 @@
     "weighted_gradient_sum",
     "whole_program_grad",
     "whole_program_value_and_grad",
+    "write_bundle",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
   ],
@@ -11512,6 +11529,7 @@
       "tests/test_trapped_ion.py",
       "tests/test_trotter_error.py",
       "tests/test_trotter_upde.py",
+      "tests/test_ultrascale_hls.py",
       "tests/test_universality.py",
       "tests/test_variational_workflow.py",
       "tests/test_varqite.py",

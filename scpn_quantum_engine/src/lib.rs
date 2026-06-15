@@ -41,6 +41,7 @@ pub mod fep;
 pub mod frc;
 pub mod gauge_lattice;
 pub mod hamiltonian;
+pub mod hls_quantise;
 pub mod knm;
 pub mod koopman;
 pub mod krylov;
@@ -424,6 +425,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // ML-DSA number-theoretic transform
     m.add_function(wrap_pyfunction!(ml_dsa::ml_dsa_ntt, m)?)?;
     m.add_function(wrap_pyfunction!(ml_dsa::ml_dsa_intt, m)?)?;
+
+    // UltraScale+ HLS Q-format quantisation
+    m.add_function(wrap_pyfunction!(hls_quantise::quantise_q_format, m)?)?;
 
     Ok(())
 }
