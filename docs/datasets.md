@@ -49,6 +49,14 @@ synchronisation, and FEP predictive-coding workflows. The loader path is
 and the plugin suite is documented in
 [`docs/application_benchmarks.md`](application_benchmarks.md).
 
+Differentiable-programming exact-answer fixtures are code-defined rather than
+stored as raw data files. `scpn_quantum_control.phase.domain_benchmark_datasets`
+ships synthetic bounded phase-QNN and two-oscillator Kuramoto-XY cases with
+analytic probabilities, losses, gradients, order parameters, and energies. The
+claim boundary is deliberately narrow: these fixtures validate differentiable
+math and benchmark harness inputs; they are not measured datasets, hardware
+evidence, or performance benchmark artefacts.
+
 Soft size cap: **20 MB per campaign**. Above that, move to Zenodo
 per the next section and leave a DOI pointer in the repo.
 

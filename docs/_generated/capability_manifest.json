@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 587,
     "public_documentation_pages": 240,
-    "python_model_classes": 1667,
-    "python_model_source_modules": 809,
+    "python_model_classes": 1672,
+    "python_model_source_modules": 810,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
-    "test_files": 1930
+    "test_files": 1931
   },
   "documentation": {
     "examples": [
@@ -513,7 +513,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 67
+        "python_modules": 68
       },
       {
         "package": "psi_field",
@@ -2097,6 +2097,22 @@
         "path": "src/scpn_quantum_control/benchmarks/differentiable_evidence.py"
       },
       {
+        "name": "DifferentiableDomainBenchmarkDatasetSuite",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
+        "name": "DifferentiableDomainBenchmarkValidationResult",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
+        "name": "DifferentiableDomainBenchmarkValidationSuite",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
+        "name": "DifferentiableKuramotoExactAnswerCase",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
         "name": "DifferentiableMLIRCompileConfig",
         "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
@@ -2119,6 +2135,10 @@
       {
         "name": "DifferentiableProgrammingExternalReferenceResult",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
+      },
+      {
+        "name": "DifferentiableQNNExactAnswerCase",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
       },
       {
         "name": "DifferentiableQuantumAuditReport",
@@ -8402,6 +8422,7 @@
       "src/scpn_quantum_control/phase/cross_domain_transfer.py",
       "src/scpn_quantum_control/phase/differentiable_audit.py",
       "src/scpn_quantum_control/phase/differentiable_readiness.py",
+      "src/scpn_quantum_control/phase/domain_benchmark_datasets.py",
       "src/scpn_quantum_control/phase/floquet_kuramoto.py",
       "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
       "src/scpn_quantum_control/phase/gradient_backend.py",
@@ -10581,6 +10602,7 @@
       "tests/test_phase_diagram.py",
       "tests/test_phase_differentiable_audit.py",
       "tests/test_phase_differentiable_readiness.py",
+      "tests/test_phase_domain_benchmark_datasets.py",
       "tests/test_phase_dynamics_contracts.py",
       "tests/test_phase_framework_bridges.py",
       "tests/test_phase_gradient_backend.py",

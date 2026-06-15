@@ -790,6 +790,14 @@ derivative-free candidates, but labels the result as non-isolated functional
 evidence only. It is the current production QNN foothold, not a claim of
 unrestricted arbitrary QNN/QGNN/QSNN training.
 
+Synthetic exact-answer datasets for this route are available through
+`load_differentiable_domain_benchmark_datasets()` and validated by
+`run_differentiable_domain_benchmark_dataset_validation()`. The QNN rows carry
+exact bounded phase-response probabilities, full-batch MSE losses, and
+parameter-shift gradients; the Kuramoto-XY row carries an exact two-oscillator
+order parameter, mean phase, XY energy, and phase-energy gradient. These rows
+are conformance fixtures, not performance or hardware evidence.
+
 ## Parameter-shift natural gradient
 
 For metric-aware training, the phase namespace now exposes a bounded natural

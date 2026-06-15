@@ -45,6 +45,15 @@ from .differentiable_readiness import (
     default_differentiable_readiness_surfaces,
     run_differentiable_readiness_audit,
 )
+from .domain_benchmark_datasets import (
+    DifferentiableDomainBenchmarkDatasetSuite,
+    DifferentiableDomainBenchmarkValidationResult,
+    DifferentiableDomainBenchmarkValidationSuite,
+    DifferentiableKuramotoExactAnswerCase,
+    DifferentiableQNNExactAnswerCase,
+    load_differentiable_domain_benchmark_datasets,
+    run_differentiable_domain_benchmark_dataset_validation,
+)
 from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
 from .gradient_backend import (
     QuantumGradientBackendCapability,
@@ -443,6 +452,13 @@ __all__ = [
     "DifferentiableReadinessAuditResult",
     "default_differentiable_readiness_surfaces",
     "run_differentiable_readiness_audit",
+    "DifferentiableDomainBenchmarkDatasetSuite",
+    "DifferentiableDomainBenchmarkValidationResult",
+    "DifferentiableDomainBenchmarkValidationSuite",
+    "DifferentiableKuramotoExactAnswerCase",
+    "DifferentiableQNNExactAnswerCase",
+    "load_differentiable_domain_benchmark_datasets",
+    "run_differentiable_domain_benchmark_dataset_validation",
     "DifferentiableQuantumAuditReport",
     "DifferentiableWorkflowAuditSuiteResult",
     "FiniteShotGradientAuditResult",
