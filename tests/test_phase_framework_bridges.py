@@ -20,6 +20,7 @@ from scpn_quantum_control.phase import (
     PhaseTorchAutogradQNNGradientResult,
     PhaseTorchCompileCompatibilityResult,
     PhaseTorchFuncCompatibilityResult,
+    PhaseTorchMaturityAuditResult,
     PhaseTorchModuleWrapperAuditResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchQNNGradientResult,
@@ -31,6 +32,7 @@ from scpn_quantum_control.phase import (
     run_tensorflow_keras_layer_wrapper_audit,
     run_torch_compile_compatibility_audit,
     run_torch_func_compatibility_audit,
+    run_torch_maturity_audit,
     run_torch_module_wrapper_audit,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_bounded_qnn_value_and_grad,
@@ -831,6 +833,55 @@ def test_torch_module_wrapper_audit_checks_module_grad(
     np.testing.assert_allclose(result.torch_gradient.numpy(), expected_gradient, atol=1e-12)
     assert result.to_dict()["module_wrapper_supported"] is True
     assert fake_torch.func.grad_calls == 1
+
+
+def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.45], dtype=float)
+    params_batch = np.array([[0.25], [0.45], [0.65]], dtype=float)
+
+    result = run_torch_maturity_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        params_batch=params_batch,
+        tolerance=1e-12,
+    )
+
+    assert isinstance(result, PhaseTorchMaturityAuditResult)
+    assert result.bounded_model_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.evidence["analytic_tensor"].passed
+    assert result.evidence["custom_autograd"].passed
+    assert result.evidence["torch_func"].passed
+    assert result.evidence["torch_compile"].passed
+    assert result.evidence["module_layer_wrapper"].passed
+    assert "arbitrary_phase_qnode_torch_lowering" in result.open_gaps
+    assert "promotion_grade_isolated_benchmarks" in result.open_gaps
+    payload = result.to_dict()
+    assert payload["required_capabilities"]["torch_compile"] == "passed"
+    assert payload["required_capabilities"]["live_overlay_execution"] == "blocked"
+    assert payload["claim_boundary"] == "bounded_torch_provider_maturity_audit"
+
+
+def test_torch_maturity_audit_fails_closed_on_bad_batch_shape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    with pytest.raises(ValueError, match="params_batch"):
+        run_torch_maturity_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params=np.array([0.45], dtype=float),
+            params_batch=np.array([0.25], dtype=float),
+        )
 
 
 def test_torch_module_wrapper_fails_closed_without_nn(

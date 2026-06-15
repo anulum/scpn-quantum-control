@@ -274,6 +274,29 @@ class PhaseTorchModuleWrapperAuditResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTorchMaturityAuditResult:
+    """Aggregate PyTorch maturity evidence and explicit provider-parity blockers."""
+
+    bounded_model_ready: bool
+    ready_for_provider_exceedance: bool
+    evidence: dict[str, object]
+    required_capabilities: dict[str, str]
+    open_gaps: tuple[str, ...]
+    claim_boundary: str = "bounded_torch_provider_maturity_audit"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PyTorch maturity evidence."""
+        return {
+            "bounded_model_ready": self.bounded_model_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "evidence": {name: _result_to_dict(result) for name, result in self.evidence.items()},
+            "required_capabilities": dict(self.required_capabilities),
+            "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_torch() -> Any:
     try:
         import torch
@@ -370,6 +393,20 @@ def _torch_batch_to_numpy(values: object) -> FloatArray:
     if callable(numpy_method):
         candidate = numpy_method()
     return _as_parameter_matrix("values", candidate)
+
+
+def _torch_matrix_to_numpy(name: str, values: object) -> FloatArray:
+    candidate = values
+    detach = getattr(candidate, "detach", None)
+    if callable(detach):
+        candidate = detach()
+    cpu = getattr(candidate, "cpu", None)
+    if callable(cpu):
+        candidate = cpu()
+    numpy_method = getattr(candidate, "numpy", None)
+    if callable(numpy_method):
+        candidate = numpy_method()
+    return _as_parameter_matrix(name, candidate)
 
 
 def _torch_scalar_to_float(values: object) -> float:
@@ -1021,16 +1058,124 @@ def run_torch_module_wrapper_audit(
     )
 
 
+def run_torch_maturity_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike | object,
+    params_batch: ArrayLike | object,
+    tolerance: float = 1e-6,
+    fullgraph: bool = True,
+    dynamic: bool = False,
+) -> PhaseTorchMaturityAuditResult:
+    """Aggregate bounded PyTorch evidence and provider-level parity blockers.
+
+    The audit records the bounded phase-QNN routes that are implemented today:
+    tensor-ready analytic gradients, custom autograd, ``torch.func`` transforms,
+    ``torch.compile``, and module/layer wrappers. It deliberately keeps broader
+    PyTorch-provider maturity blocked until arbitrary Phase-QNode lowering, full
+    compiler/autograd integration, live overlay evidence, and isolated benchmark
+    artefacts are present.
+    """
+
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _as_parameter_vector(
+        "params",
+        _torch_values_to_numpy(params),
+        width=feature_matrix.shape[1],
+    )
+    parameter_batch = _as_parameter_matrix(
+        "params_batch",
+        _torch_matrix_to_numpy("params_batch", params_batch),
+        width=feature_matrix.shape[1],
+    )
+
+    analytic_tensor = torch_bounded_qnn_value_and_grad(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+        tolerance=tolerance_value,
+    )
+    custom_autograd = torch_autograd_qnn_value_and_grad(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+        tolerance=tolerance_value,
+    )
+    torch_func = run_torch_func_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params=parameter_values,
+        params_batch=parameter_batch,
+        tolerance=tolerance_value,
+    )
+    torch_compile = run_torch_compile_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params=parameter_values,
+        tolerance=tolerance_value,
+        fullgraph=fullgraph,
+        dynamic=dynamic,
+    )
+    module_layer_wrapper = run_torch_module_wrapper_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        initial_params=parameter_values,
+        tolerance=tolerance_value,
+    )
+
+    evidence: dict[str, object] = {
+        "analytic_tensor": analytic_tensor,
+        "custom_autograd": custom_autograd,
+        "torch_func": torch_func,
+        "torch_compile": torch_compile,
+        "module_layer_wrapper": module_layer_wrapper,
+    }
+    bounded_model_ready = all(
+        bool(getattr(result, "passed", False)) for result in evidence.values()
+    )
+    required_capabilities = {
+        "analytic_tensor": "passed" if analytic_tensor.passed else "failed",
+        "custom_autograd": "passed" if custom_autograd.passed else "failed",
+        "torch_func": "passed" if torch_func.passed else "failed",
+        "torch_compile": "passed" if torch_compile.passed else "failed",
+        "module_layer_wrapper": "passed" if module_layer_wrapper.passed else "failed",
+        "live_overlay_execution": "blocked",
+        "arbitrary_phase_qnode_torch_lowering": "blocked",
+        "full_compiler_autograd_integration": "blocked",
+        "promotion_grade_isolated_benchmarks": "blocked",
+    }
+    open_gaps = tuple(name for name, status in required_capabilities.items() if status != "passed")
+    return PhaseTorchMaturityAuditResult(
+        bounded_model_ready=bounded_model_ready,
+        ready_for_provider_exceedance=bounded_model_ready and not open_gaps,
+        evidence=evidence,
+        required_capabilities=required_capabilities,
+        open_gaps=open_gaps,
+    )
+
+
+def _result_to_dict(result: object) -> object:
+    to_dict = getattr(result, "to_dict", None)
+    if callable(to_dict):
+        return to_dict()
+    return result
+
+
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
     "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchFuncCompatibilityResult",
+    "PhaseTorchMaturityAuditResult",
     "PhaseTorchModuleWrapperAuditResult",
     "PhaseTorchParameterShiftResult",
     "PhaseTorchQNNGradientResult",
     "is_phase_torch_available",
     "run_torch_compile_compatibility_audit",
     "run_torch_func_compatibility_audit",
+    "run_torch_maturity_audit",
     "run_torch_module_wrapper_audit",
     "torch_autograd_qnn_value_and_grad",
     "torch_bounded_qnn_value_and_grad",

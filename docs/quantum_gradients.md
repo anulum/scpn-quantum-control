@@ -1731,6 +1731,7 @@ from scpn_quantum_control.phase import (
     run_tensorflow_gradient_tape_compatibility_audit,
     run_tensorflow_keras_layer_wrapper_audit,
     run_tensorflow_xla_compatibility_audit,
+    run_torch_maturity_audit,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
     torch_parameter_shift_value_and_grad,
@@ -1768,8 +1769,15 @@ tf_keras_audit = run_tensorflow_keras_layer_wrapper_audit(
     labels=np.array([0.0, 1.0], dtype=float),
     initial_params=np.array([0.45], dtype=float),
 )
+torch_maturity = run_torch_maturity_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    params=np.array([0.45], dtype=float),
+    params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
+)
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
+print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
 ```
 
@@ -1785,7 +1793,12 @@ for the bounded phase-QNN model. The separate
 gradients only for that same model. The separate
 `torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` wrapper route
 verifies a bounded PyTorch `nn.Module`/layer loss and gradient only for that same
-model. The separate `run_tensorflow_gradient_tape_compatibility_audit(...)`
+model. The separate `run_torch_maturity_audit(...)` route aggregates those
+bounded PyTorch passes into a provider-maturity record, but keeps provider
+exceedance blocked until live overlay execution, arbitrary registered
+Phase-QNode Torch lowering, full compiler/autograd integration, and
+promotion-grade isolated benchmark artefacts exist. The separate
+`run_tensorflow_gradient_tape_compatibility_audit(...)`
 route verifies TensorFlow `GradientTape` only for the same bounded classifier
 loss and checks the returned gradient against the SCPN parameter-shift
 reference. The separate `run_tensorflow_function_compatibility_audit(...)`

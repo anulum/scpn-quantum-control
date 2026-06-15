@@ -1308,6 +1308,7 @@ run_torch_compile_compatibility_audit(features, labels, params, tolerance=1e-6, 
 torch_bounded_qnn_module(features, labels, initial_params, trainable=True) -> torch.nn.Module
 torch_bounded_qnn_layer(features, labels, initial_params, trainable=True) -> torch.nn.Module
 run_torch_module_wrapper_audit(features, labels, initial_params, tolerance=1e-6) -> PhaseTorchModuleWrapperAuditResult
+run_torch_maturity_audit(features, labels, params, params_batch, tolerance=1e-6, fullgraph=True, dynamic=False) -> PhaseTorchMaturityAuditResult
 is_phase_tensorflow_available() -> bool
 tensorflow_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTensorFlowParameterShiftResult
 run_tensorflow_gradient_tape_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowGradientTapeCompatibilityResult
