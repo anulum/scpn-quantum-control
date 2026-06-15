@@ -104,6 +104,15 @@ from .hardware_gradient_policy import (
     evaluate_hardware_gradient_policy,
     run_hardware_gradient_policy_readiness_suite,
 )
+from .hardware_gradient_publication import (
+    HardwareGradientArtifactMapEntry,
+    HardwareGradientBenchmarkPlaceholder,
+    HardwareGradientClaimLedgerRow,
+    HardwareGradientMethodSection,
+    HardwareGradientPreregistration,
+    HardwareGradientPublicationPackage,
+    build_hardware_gradient_publication_package,
+)
 from .jax_bridge import (
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
@@ -546,6 +555,13 @@ __all__ = [
     "default_hardware_gradient_campaign_specs",
     "plan_hardware_gradient_campaign",
     "run_hardware_gradient_campaign_readiness_suite",
+    "HardwareGradientArtifactMapEntry",
+    "HardwareGradientBenchmarkPlaceholder",
+    "HardwareGradientClaimLedgerRow",
+    "HardwareGradientMethodSection",
+    "HardwareGradientPreregistration",
+    "HardwareGradientPublicationPackage",
+    "build_hardware_gradient_publication_package",
     "plan_quantum_gradient_backend",
     "QuantumGradientBackendCapability",
     "QuantumGradientPlan",

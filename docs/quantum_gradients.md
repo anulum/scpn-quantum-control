@@ -661,6 +661,26 @@ preparation. The suite never calls a provider sampler, never submits a QPU job,
 and never returns a hardware-gradient value; it is campaign-readiness metadata
 only until a live ticket and raw-count artefacts exist.
 
+The campaign publication package scaffold is also available as structured
+metadata:
+
+```python
+from scpn_quantum_control.phase import build_hardware_gradient_publication_package
+
+package = build_hardware_gradient_publication_package()
+print(package.submission_ready)
+print(package.to_markdown())
+```
+
+`build_hardware_gradient_publication_package()` produces the preregistration,
+methods sections, raw artefact map, draft claim-ledger rows, and comparison
+benchmark slots for "Hardware-Validated Quantum Gradients for XY Hamiltonians".
+The generated package is deliberately not submission-ready: claim rows are not
+promoted, benchmark slots are marked as not executed, artefact IDs are empty,
+and live hardware results are rejected if they are injected into the scaffold.
+Use it as the publication control surface for the approved future hardware run,
+not as evidence that the run has already happened.
+
 The provider hardware-preparation audit packages the preparation boundary checks
 into a one-call support matrix:
 
