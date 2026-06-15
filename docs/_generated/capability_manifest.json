@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 587,
+    "public_api_exports": 596,
     "public_documentation_pages": 240,
-    "python_model_classes": 1677,
-    "python_model_source_modules": 810,
+    "python_model_classes": 1678,
+    "python_model_source_modules": 811,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
-    "test_files": 1931
+    "test_files": 1932
   },
   "documentation": {
     "examples": [
@@ -7501,6 +7501,10 @@
         "path": "src/scpn_quantum_control/paper0/unified_consciousness_measure_validation.py"
       },
       {
+        "name": "UnifiedDifferentiableAPIResult",
+        "path": "src/scpn_quantum_control/differentiable_api.py"
+      },
+      {
         "name": "UniversalCheckResult",
         "path": "src/scpn_quantum_control/analysis/bkt_universals.py"
       },
@@ -7857,6 +7861,7 @@
       "src/scpn_quantum_control/dense_budget.py",
       "src/scpn_quantum_control/deployment/cloud_native.py",
       "src/scpn_quantum_control/differentiable.py",
+      "src/scpn_quantum_control/differentiable_api.py",
       "src/scpn_quantum_control/differentiable_claim_ledger.py",
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
@@ -8889,6 +8894,7 @@
     "TrajectoryResult",
     "TrotterEvolutionConfig",
     "UPDEPhaseArtifact",
+    "UnifiedDifferentiableAPIResult",
     "VJPResult",
     "VQLSGradShafranovResult",
     "VQLS_GradShafranov",
@@ -8998,6 +9004,14 @@
     "custom_levenberg_marquardt_step",
     "custom_vjp",
     "dense_to_sparse_matrix",
+    "differentiable_api",
+    "differentiable_benchmark_report",
+    "differentiable_compile_report",
+    "differentiable_gradient",
+    "differentiable_hessian",
+    "differentiable_jacobian",
+    "differentiable_support_report",
+    "differentiable_value",
     "disposition_entanglement_map",
     "dual_cos",
     "dual_exp",
@@ -9944,6 +9958,7 @@
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
       "tests/test_differentiable.py",
+      "tests/test_differentiable_api.py",
       "tests/test_differentiable_benchmark_evidence.py",
       "tests/test_differentiable_benchmark_workflow.py",
       "tests/test_differentiable_claim_ledger.py",

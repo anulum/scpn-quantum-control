@@ -1,0 +1,142 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control -- tests for unified differentiable API facade
+"""Tests for scpn_quantum_control.differentiable_api."""
+
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+import scpn_quantum_control as scpn
+from scpn_quantum_control.differentiable_api import (
+    UnifiedDifferentiableAPIResult,
+    differentiable_api,
+    differentiable_benchmark_report,
+    differentiable_compile_report,
+    differentiable_gradient,
+    differentiable_hessian,
+    differentiable_jacobian,
+    differentiable_support_report,
+    differentiable_value,
+)
+
+
+def _scalar_objective(values: np.ndarray) -> float:
+    return float(values[0] ** 2 + 3.0 * values[1])
+
+
+def _vector_objective(values: np.ndarray) -> np.ndarray:
+    return np.array([values[0] + values[1], values[0] * values[1]], dtype=float)
+
+
+def test_unified_differentiable_value_and_gradient_share_schema() -> None:
+    values = np.array([2.0, -1.0], dtype=float)
+
+    value = differentiable_value(_scalar_objective, values, method="finite_difference")
+    gradient = differentiable_gradient(_scalar_objective, values, method="finite_difference")
+
+    assert isinstance(value, UnifiedDifferentiableAPIResult)
+    assert value.operation == "value"
+    assert value.supported
+    assert value.gradient is None
+    assert value.value == pytest.approx(1.0)
+    assert value.to_dict()["fail_closed"] is False
+
+    assert gradient.operation == "gradient"
+    assert gradient.supported
+    np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
+    assert gradient.to_dict()["gradient"] == pytest.approx([4.0, 3.0], abs=1e-5)
+    assert "no hardware execution" in gradient.claim_boundary
+
+
+def test_unified_differentiable_jacobian_and_hessian_routes_are_explicit() -> None:
+    values = np.array([2.0, -1.0], dtype=float)
+
+    jacobian = differentiable_jacobian(_vector_objective, values)
+    hessian = differentiable_hessian(_scalar_objective, values)
+
+    assert jacobian.operation == "jacobian"
+    np.testing.assert_allclose(
+        jacobian.jacobian,
+        np.array([[1.0, 1.0], [-1.0, 2.0]], dtype=float),
+        atol=1e-5,
+    )
+    assert jacobian.payload["objective_value"] == pytest.approx([1.0, -2.0])
+
+    assert hessian.operation == "hessian"
+    np.testing.assert_allclose(
+        hessian.hessian,
+        np.array([[2.0, 0.0], [0.0, 0.0]], dtype=float),
+        atol=1e-4,
+    )
+    assert hessian.value == pytest.approx(1.0)
+
+
+def test_unified_differentiable_support_report_fails_closed_for_unsupported_route() -> None:
+    report = differentiable_support_report(
+        gate="unregistered_gate",
+        observable="pauli_expectation",
+    )
+
+    assert report.operation == "support_report"
+    assert report.fail_closed
+    assert report.payload["supported"] is False
+    assert "no registered parameter-shift generator" in report.payload["blocked_reasons"][0]
+    assert report.to_dict()["payload"]["requires_hardware_policy"] is False
+
+
+def test_unified_differentiable_compile_report_filters_registered_primitives() -> None:
+    report = differentiable_compile_report(
+        primitive_identities=("scpn.program_ad.array:getitem@1",)
+    )
+
+    assert report.operation == "compile_report"
+    assert report.supported
+    assert report.payload["primitive_count"] == 1
+    assert report.payload["primitive_identities"] == ["scpn.program_ad.array:getitem@1"]
+    assert "scpn_diff.primitive" in str(report.payload["mlir"])
+
+    with pytest.raises(ValueError, match="unknown primitive identities"):
+        differentiable_compile_report(primitive_identities=("missing:primitive@1",))
+
+
+def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -> None:
+    report = differentiable_benchmark_report()
+
+    assert report.operation == "benchmark_report"
+    assert report.supported
+    assert report.payload["program_ad_case_count"] > 0
+    assert report.payload["quantum_gradient_case_count"] > 0
+    assert report.payload["support_audit_passed"] is True
+    assert "not isolated performance" in report.claim_boundary
+
+
+def test_unified_differentiable_dispatcher_and_root_exports() -> None:
+    values = np.array([2.0, -1.0], dtype=float)
+
+    gradient = differentiable_api(
+        "gradient",
+        objective=_scalar_objective,
+        values=values,
+        method="finite_difference",
+    )
+    support = differentiable_api(
+        "support_report",
+        gate="ry",
+        observable="pauli_expectation",
+        n_params=2,
+    )
+
+    np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
+    assert support.supported
+    assert scpn.differentiable_api is differentiable_api
+    assert scpn.differentiable_gradient is differentiable_gradient
+    assert scpn.differentiable_value is differentiable_value
+
+    with pytest.raises(ValueError, match="objective is required"):
+        differentiable_api("gradient", values=values)

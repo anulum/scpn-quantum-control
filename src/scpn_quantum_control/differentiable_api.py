@@ -1,0 +1,435 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control -- unified differentiable API facade
+"""Unified differentiable-programming facade over supported local routes."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, fields, is_dataclass
+from typing import Any, Literal, TypeAlias, cast
+
+import numpy as np
+from numpy.typing import ArrayLike, NDArray
+
+from .benchmarks.differentiable_programming import (
+    run_differentiable_programming_benchmark_suite,
+    run_quantum_gradient_benchmark_suite,
+)
+from .compiler.mlir import (
+    build_compiler_ad_transform_plan,
+    compile_compiler_ad_transform_plan_to_mlir,
+)
+from .differentiable import (
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
+    CustomDerivativeRegistry,
+    PrimitiveIdentity,
+    ScalarObjective,
+    VectorObjective,
+    value_and_grad,
+    value_and_hessian,
+    value_and_jacobian,
+)
+from .phase.gradient_support_matrix import plan_gradient_support, run_gradient_support_matrix_audit
+
+FloatArray: TypeAlias = NDArray[np.float64]
+UnifiedDifferentiableOperation = Literal[
+    "value",
+    "gradient",
+    "jacobian",
+    "hessian",
+    "support_report",
+    "compile_report",
+    "benchmark_report",
+]
+
+CLAIM_BOUNDARY = (
+    "unified differentiable API facade over already-supported local routes; "
+    "finite-difference paths remain diagnostic, support and compile reports "
+    "are fail-closed, and no hardware execution or performance claim is implied"
+)
+
+
+@dataclass(frozen=True)
+class UnifiedDifferentiableAPIResult:
+    """Stable JSON evidence envelope returned by the unified facade."""
+
+    operation: UnifiedDifferentiableOperation
+    supported: bool
+    method: str
+    value: float | None
+    gradient: FloatArray | None
+    jacobian: FloatArray | None
+    hessian: FloatArray | None
+    payload: Mapping[str, Any]
+    claim_boundary: str = CLAIM_BOUNDARY
+
+    @property
+    def fail_closed(self) -> bool:
+        """Return true when the requested operation is intentionally unsupported."""
+        return not self.supported
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready unified differentiable evidence."""
+        return {
+            "operation": self.operation,
+            "supported": self.supported,
+            "fail_closed": self.fail_closed,
+            "method": self.method,
+            "value": self.value,
+            "gradient": None if self.gradient is None else self.gradient.tolist(),
+            "jacobian": None if self.jacobian is None else self.jacobian.tolist(),
+            "hessian": None if self.hessian is None else self.hessian.tolist(),
+            "payload": dict(self.payload),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+def differentiable_value(
+    objective: Callable[[Any], Any],
+    values: ArrayLike,
+    *,
+    method: str = "parameter_shift",
+    step: float | None = None,
+) -> UnifiedDifferentiableAPIResult:
+    """Evaluate a scalar objective through the unified differentiable facade."""
+    result = value_and_grad(objective, values, method=method, step=step)
+    return UnifiedDifferentiableAPIResult(
+        operation="value",
+        supported=True,
+        method=result.method,
+        value=float(result.value),
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload={
+            "evaluations": result.evaluations,
+            "parameter_names": list(result.parameter_names),
+            "trainable": list(result.trainable),
+        },
+    )
+
+
+def differentiable_gradient(
+    objective: Callable[[Any], Any],
+    values: ArrayLike,
+    *,
+    method: str = "parameter_shift",
+    step: float | None = None,
+) -> UnifiedDifferentiableAPIResult:
+    """Evaluate a scalar objective and gradient through the unified facade."""
+    result = value_and_grad(objective, values, method=method, step=step)
+    return UnifiedDifferentiableAPIResult(
+        operation="gradient",
+        supported=True,
+        method=result.method,
+        value=float(result.value),
+        gradient=result.gradient.astype(np.float64, copy=True),
+        jacobian=None,
+        hessian=None,
+        payload={
+            "evaluations": result.evaluations,
+            "parameter_names": list(result.parameter_names),
+            "trainable": list(result.trainable),
+        },
+    )
+
+
+def differentiable_jacobian(
+    objective: VectorObjective,
+    values: ArrayLike,
+    *,
+    method: str = "finite_difference",
+    step: float = 1.0e-6,
+) -> UnifiedDifferentiableAPIResult:
+    """Evaluate a vector objective and Jacobian through the unified facade."""
+    result = value_and_jacobian(objective, values, method=method, step=step)
+    return UnifiedDifferentiableAPIResult(
+        operation="jacobian",
+        supported=True,
+        method=result.method,
+        value=None,
+        gradient=None,
+        jacobian=result.jacobian.astype(np.float64, copy=True),
+        hessian=None,
+        payload={
+            "objective_value": result.value.tolist(),
+            "evaluations": result.evaluations,
+            "parameter_names": list(result.parameter_names),
+            "trainable": list(result.trainable),
+        },
+    )
+
+
+def differentiable_hessian(
+    objective: ScalarObjective,
+    values: ArrayLike,
+    *,
+    method: str = "finite_difference",
+    step: float = 1.0e-4,
+) -> UnifiedDifferentiableAPIResult:
+    """Evaluate a scalar objective and Hessian through the unified facade."""
+    result = value_and_hessian(objective, values, method=method, step=step)
+    return UnifiedDifferentiableAPIResult(
+        operation="hessian",
+        supported=True,
+        method=result.method,
+        value=float(result.value),
+        gradient=None,
+        jacobian=None,
+        hessian=result.hessian.astype(np.float64, copy=True),
+        payload={
+            "evaluations": result.evaluations,
+            "parameter_names": list(result.parameter_names),
+            "trainable": list(result.trainable),
+        },
+    )
+
+
+def differentiable_support_report(
+    *,
+    gate: str,
+    observable: str,
+    backend: str = "statevector",
+    transform: str = "grad",
+    adapter: str = "native",
+    n_params: int = 1,
+    shift_terms: int = 1,
+    shots: int | None = None,
+    allow_hardware: bool = False,
+) -> UnifiedDifferentiableAPIResult:
+    """Return a fail-closed support report for a quantum-gradient route."""
+    plan = plan_gradient_support(
+        gate=gate,
+        observable=observable,
+        backend=backend,
+        transform=transform,
+        adapter=adapter,
+        n_params=n_params,
+        shift_terms=shift_terms,
+        shots=shots,
+        allow_hardware=allow_hardware,
+    )
+    return UnifiedDifferentiableAPIResult(
+        operation="support_report",
+        supported=plan.supported,
+        method=plan.recommended_method,
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=plan.to_dict(),
+        claim_boundary=plan.claim_boundary,
+    )
+
+
+def differentiable_compile_report(
+    *,
+    primitive_identities: Sequence[str | PrimitiveIdentity] | None = None,
+    registry: CustomDerivativeRegistry = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
+    transform: str = "jvp_vjp_adjoint",
+) -> UnifiedDifferentiableAPIResult:
+    """Return compiler-AD planning evidence for registered primitives."""
+    plan = build_compiler_ad_transform_plan(registry, transform=transform)
+    selected = _selected_primitive_keys(primitive_identities)
+    statuses = (
+        plan.statuses
+        if selected is None
+        else tuple(status for status in plan.statuses if status.identity.key in selected)
+    )
+    if selected is not None and len(statuses) != len(selected):
+        present = {status.identity.key for status in statuses}
+        missing = ", ".join(sorted(selected - present))
+        raise ValueError(f"unknown primitive identities for compile report: {missing}")
+    filtered_plan = type(plan)(
+        statuses=statuses,
+        dialect=plan.dialect,
+        transform=plan.transform,
+        executable_backend=plan.executable_backend,
+        claim_boundary=plan.claim_boundary,
+    )
+    mlir_module = compile_compiler_ad_transform_plan_to_mlir(filtered_plan)
+    return UnifiedDifferentiableAPIResult(
+        operation="compile_report",
+        supported=bool(statuses),
+        method=f"compiler_ad_{filtered_plan.transform}",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload={
+            "primitive_count": len(statuses),
+            "primitive_identities": [status.identity.key for status in statuses],
+            "executable_backend": filtered_plan.executable_backend,
+            "mlir": mlir_module.text,
+        },
+        claim_boundary=filtered_plan.claim_boundary,
+    )
+
+
+def differentiable_benchmark_report() -> UnifiedDifferentiableAPIResult:
+    """Return local non-performance benchmark/conformance evidence."""
+    program_rows = run_differentiable_programming_benchmark_suite()
+    quantum_rows = run_quantum_gradient_benchmark_suite()
+    support_audit = run_gradient_support_matrix_audit()
+    passed = (
+        all(row.passed for row in program_rows)
+        and all(row.passed for row in quantum_rows)
+        and support_audit.passed
+    )
+    return UnifiedDifferentiableAPIResult(
+        operation="benchmark_report",
+        supported=passed,
+        method="local_conformance_bundle",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload={
+            "program_ad_case_count": len(program_rows),
+            "quantum_gradient_case_count": len(quantum_rows),
+            "support_audit_passed": support_audit.passed,
+            "program_ad_cases": [_dataclass_payload(row) for row in program_rows],
+            "quantum_gradient_cases": [_dataclass_payload(row) for row in quantum_rows],
+        },
+        claim_boundary=(
+            "local deterministic conformance benchmark bundle; not isolated "
+            "performance, hardware, or provider execution evidence"
+        ),
+    )
+
+
+def differentiable_api(
+    operation: UnifiedDifferentiableOperation,
+    *,
+    objective: Callable[[Any], Any] | None = None,
+    values: ArrayLike | None = None,
+    method: str | None = None,
+    step: float | None = None,
+    gate: str = "ry",
+    observable: str = "pauli_expectation",
+    backend: str = "statevector",
+    transform: str = "grad",
+    adapter: str = "native",
+    n_params: int = 1,
+    shift_terms: int = 1,
+    shots: int | None = None,
+    allow_hardware: bool = False,
+    primitive_identities: Sequence[str | PrimitiveIdentity] | None = None,
+    registry: CustomDerivativeRegistry = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
+) -> UnifiedDifferentiableAPIResult:
+    """Dispatch one supported unified differentiable operation."""
+    if operation == "value":
+        return differentiable_value(
+            _require_objective(objective),
+            _require_values(values),
+            method="parameter_shift" if method is None else method,
+            step=step,
+        )
+    if operation == "gradient":
+        return differentiable_gradient(
+            _require_objective(objective),
+            _require_values(values),
+            method="parameter_shift" if method is None else method,
+            step=step,
+        )
+    if operation == "jacobian":
+        return differentiable_jacobian(
+            cast(VectorObjective, _require_objective(objective)),
+            _require_values(values),
+            method="finite_difference" if method is None else method,
+            step=1.0e-6 if step is None else step,
+        )
+    if operation == "hessian":
+        return differentiable_hessian(
+            cast(ScalarObjective, _require_objective(objective)),
+            _require_values(values),
+            method="finite_difference" if method is None else method,
+            step=1.0e-4 if step is None else step,
+        )
+    if operation == "support_report":
+        return differentiable_support_report(
+            gate=gate,
+            observable=observable,
+            backend=backend,
+            transform=transform,
+            adapter=adapter,
+            n_params=n_params,
+            shift_terms=shift_terms,
+            shots=shots,
+            allow_hardware=allow_hardware,
+        )
+    if operation == "compile_report":
+        return differentiable_compile_report(
+            primitive_identities=primitive_identities,
+            registry=registry,
+            transform="jvp_vjp_adjoint" if method is None else method,
+        )
+    if operation == "benchmark_report":
+        return differentiable_benchmark_report()
+    raise ValueError(f"unsupported unified differentiable operation: {operation!r}")
+
+
+def _require_objective(objective: Callable[[Any], Any] | None) -> Callable[[Any], Any]:
+    if objective is None:
+        raise ValueError("objective is required for this differentiable operation")
+    return objective
+
+
+def _require_values(values: ArrayLike | None) -> ArrayLike:
+    if values is None:
+        raise ValueError("values are required for this differentiable operation")
+    return values
+
+
+def _selected_primitive_keys(
+    primitive_identities: Sequence[str | PrimitiveIdentity] | None,
+) -> set[str] | None:
+    if primitive_identities is None:
+        return None
+    keys = {PrimitiveIdentity.parse(identity).key for identity in primitive_identities}
+    if not keys:
+        raise ValueError("primitive_identities must be non-empty when provided")
+    return keys
+
+
+def _dataclass_payload(value: object) -> dict[str, object]:
+    if not is_dataclass(value):
+        raise TypeError("benchmark payload values must be dataclass instances")
+    payload: dict[str, object] = {}
+    for field in fields(value):
+        payload[field.name] = _json_ready(getattr(value, field.name))
+    passed = getattr(value, "passed", None)
+    if isinstance(passed, bool):
+        payload["passed"] = passed
+    return payload
+
+
+def _json_ready(value: object) -> object:
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, tuple):
+        return [_json_ready(item) for item in value]
+    if isinstance(value, list):
+        return [_json_ready(item) for item in value]
+    if isinstance(value, Mapping):
+        return {str(key): _json_ready(item) for key, item in value.items()}
+    return value
+
+
+__all__ = [
+    "UnifiedDifferentiableAPIResult",
+    "UnifiedDifferentiableOperation",
+    "differentiable_api",
+    "differentiable_benchmark_report",
+    "differentiable_compile_report",
+    "differentiable_gradient",
+    "differentiable_hessian",
+    "differentiable_jacobian",
+    "differentiable_support_report",
+    "differentiable_value",
+]

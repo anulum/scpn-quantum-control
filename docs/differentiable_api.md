@@ -19,6 +19,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Namespace | Role |
 |---|---|
+| `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, compile, and local conformance benchmark reports with one JSON evidence envelope. |
 | `scpn_quantum_control.differentiable` | AD data structures, primitive registry contracts, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
 | `scpn_quantum_control.phase.coupling_learning` | Differentiable coupling inference from observation models with convergence and finite-difference agreement certificates. |
@@ -66,6 +67,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Object family | Examples | Use |
 |---|---|---|
+| Unified API evidence | `UnifiedDifferentiableAPIResult`, `differentiable_api`, `differentiable_value`, `differentiable_gradient`, `differentiable_jacobian`, `differentiable_hessian`, `differentiable_support_report`, `differentiable_compile_report`, `differentiable_benchmark_report` | Use one JSON-ready envelope across scalar values, gradients, Jacobians, Hessians, fail-closed support decisions, compiler planning, and local conformance evidence. |
 | Primitive identity and rules | `PrimitiveIdentity`, `PrimitiveContract`, `CustomDerivativeRule`, `CustomDerivativeRegistry` | Bind derivative, batching, lowering, shape, dtype, and nondifferentiability rules to supported primitives. |
 | Forward and reverse AD results | `GradientResult`, `JacobianResult`, `HessianResult`, `JVPResult`, `HVPResult`, `ProgramADAdjointResult` | Return structured derivative outputs and diagnostics. |
 | Optimisation helpers | `DifferentiableOptimizer`, `NaturalGradientOptimizer`, `LevenbergMarquardtOptimizer` | Drive supported differentiable objectives. |
@@ -87,6 +89,63 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Optional PennyLane bridge | `PennyLaneGradientAgreementResult`, `PennyLaneQNodeConversionResult`, `PennyLaneRoundTripResult`, `check_pennylane_parameter_shift_agreement`, `build_pennylane_qnode_from_phase_qnode`, `check_pennylane_phase_qnode_round_trip`, `check_pennylane_qnode_round_trip`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against caller-supplied PennyLane callables and generate bounded PennyLane QNodes from registered local `PhaseQNodeCircuit` declarations with explicit device, shot, and diff-method metadata. |
 | Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `PhaseTorchQNNGradientResult`, `PhaseTorchAutogradQNNGradientResult`, `PhaseTorchFuncCompatibilityResult`, `PhaseTorchCompileCompatibilityResult`, `PhaseTorchModuleWrapperAuditResult`, `torch_parameter_shift_value_and_grad`, `torch_bounded_qnn_value_and_grad`, `torch_autograd_qnn_value_and_grad`, `run_torch_func_compatibility_audit`, `run_torch_compile_compatibility_audit`, `torch_bounded_qnn_module`, `torch_bounded_qnn_layer`, `run_torch_module_wrapper_audit`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors, provide bounded phase-QNN tensor-gradient evidence, expose a bounded custom `torch.autograd.Function` path, and audit bounded `torch.func.grad`/`vmap`/`jacrev`, `torch.compile`, and module/layer wrapper compatibility while preserving NumPy and parameter-shift references. |
 | Optional TensorFlow bridge | `PhaseTensorFlowParameterShiftResult`, `PhaseTensorFlowQNNGradientResult`, `PhaseTensorFlowGradientTapeCompatibilityResult`, `PhaseTensorFlowFunctionCompatibilityResult`, `PhaseTensorFlowXLACompatibilityResult`, `PhaseTensorFlowKerasLayerWrapperAuditResult`, `tensorflow_parameter_shift_value_and_grad`, `tensorflow_bounded_qnn_value_and_grad`, `run_tensorflow_gradient_tape_compatibility_audit`, `run_tensorflow_function_compatibility_audit`, `run_tensorflow_xla_compatibility_audit`, `tensorflow_bounded_qnn_keras_layer`, `run_tensorflow_keras_layer_wrapper_audit`, `is_phase_tensorflow_available` | Convert supported phase parameter-shift value-and-gradient outputs into TensorFlow tensors, provide bounded phase-QNN tensor-gradient evidence, and audit bounded `GradientTape`/`tf.function`/XLA/Keras layer gradients against parameter-shift references. |
+
+## Unified façade
+
+```python
+import numpy as np
+
+from scpn_quantum_control import (
+    differentiable_api,
+    differentiable_compile_report,
+    differentiable_gradient,
+    differentiable_support_report,
+)
+
+
+def objective(values: np.ndarray) -> float:
+    return float(values[0] ** 2 + 3.0 * values[1])
+
+
+gradient = differentiable_gradient(
+    objective,
+    np.array([2.0, -1.0], dtype=float),
+    method="finite_difference",
+)
+assert gradient.operation == "gradient"
+print(gradient.to_dict()["gradient"])
+
+support = differentiable_support_report(
+    gate="ry",
+    observable="pauli_expectation",
+    n_params=2,
+)
+assert support.supported
+
+compile_report = differentiable_compile_report(
+    primitive_identities=("scpn.program_ad.array:getitem@1",)
+)
+assert compile_report.payload["primitive_count"] == 1
+
+same_gradient = differentiable_api(
+    "gradient",
+    objective=objective,
+    values=np.array([2.0, -1.0], dtype=float),
+    method="finite_difference",
+)
+assert same_gradient.to_dict()["operation"] == "gradient"
+```
+
+`UnifiedDifferentiableAPIResult` is the stable evidence envelope for the façade.
+It always carries `operation`, `supported`, `fail_closed`, `method`, derivative
+arrays when applicable, a route-specific `payload`, and a claim boundary. The
+façade delegates to existing implemented surfaces rather than weakening their
+contracts: finite-difference gradients, Jacobians, and Hessians remain local
+diagnostic routes; support reports fail closed for unsupported gate,
+observable, backend, transform, or adapter combinations; compile reports are
+compiler-planning and MLIR interchange evidence unless the selected primitive
+plan has an executable backend; benchmark reports are local conformance rows,
+not isolated performance, provider, or hardware execution evidence.
 
 ## Minimal parameter-shift call
 
