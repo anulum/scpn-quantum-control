@@ -22,6 +22,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
     PhaseQNodeDensityCircuit,
     PhaseQNodeDensityExecutionResult,
     PhaseQNodeDepthProfile,
+    PhaseQNodeGradientEvaluationPlan,
     PhaseQNodeMetricTensorResult,
     PhaseQNodeNoiseChannel,
     PhaseQNodeRegisteredCircuitSpec,
@@ -44,6 +45,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
     phase_qnode_natural_gradient_metric,
     phase_qnode_quantum_fisher_information,
     phase_qnode_support_report,
+    plan_phase_qnode_parameter_shift_evaluations,
     registered_phase_qnode_decompositions,
     registered_phase_qnode_gates,
     registered_phase_qnode_noise_channels,
@@ -164,6 +166,97 @@ def test_phase_qnode_parameter_shift_matches_finite_difference_for_registered_ge
     np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
     assert gradient.support_report.differentiable_parameters == (0, 1, 2)
     assert gradient.parameter_shift_evaluations == 6
+    assert gradient.evaluation_plan is not None
+    assert gradient.evaluation_plan.planned_shifted_evaluations == 6
+
+
+def test_phase_qnode_gate_aware_plan_reuses_tied_commuting_parameter_shifts() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(
+            ("rz", (0,), 0),
+            ("rz", (0,), 0),
+            ("ry", (0,), 1),
+        ),
+        observable=PauliTerm(1.0, ((0, "x"),)),
+    )
+    params = np.array([0.31, -0.27], dtype=float)
+
+    plan = plan_phase_qnode_parameter_shift_evaluations(circuit, params)
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+    payload = plan.to_dict()
+
+    assert isinstance(plan, PhaseQNodeGradientEvaluationPlan)
+    assert plan.supported
+    assert plan.method == "registered_phase_qnode_gate_aware_parameter_shift"
+    assert plan.differentiable_parameters == (0, 1)
+    assert plan.operation_level_naive_evaluations == 6
+    assert plan.planned_shifted_evaluations == 4
+    assert plan.saved_shifted_evaluations == 2
+    assert plan.groups[0].parameter_index == 0
+    assert plan.groups[0].commuting
+    assert plan.groups[0].operation_indices == (0, 1)
+    assert plan.groups[0].generator_keys == ("z", "z")
+    assert plan.groups[0].frequency_gaps == (2.0,)
+    assert payload["generic_scalar_objective_evaluations"] == 4
+    assert gradient.parameter_shift_evaluations == plan.planned_shifted_evaluations
+    assert gradient.evaluation_plan == plan
+    finite_difference = np.zeros_like(params)
+    eps = 1e-6
+    for index in range(params.size):
+        plus = params.copy()
+        minus = params.copy()
+        plus[index] += eps
+        minus[index] -= eps
+        finite_difference[index] = (
+            execute_phase_qnode_circuit(circuit, plus).value
+            - execute_phase_qnode_circuit(circuit, minus).value
+        ) / (2.0 * eps)
+    np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
+
+
+def test_phase_qnode_gate_aware_plan_does_not_claim_noncommuting_reuse() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("rx", (0,), 0), ("ry", (0,), 0)),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+    params = np.array([0.41], dtype=float)
+
+    plan = plan_phase_qnode_parameter_shift_evaluations(circuit, params)
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+    finite_difference = np.zeros_like(params)
+    eps = 1e-6
+    for index in range(params.size):
+        plus = params.copy()
+        minus = params.copy()
+        plus[index] += eps
+        minus[index] -= eps
+        finite_difference[index] = (
+            execute_phase_qnode_circuit(circuit, plus).value
+            - execute_phase_qnode_circuit(circuit, minus).value
+        ) / (2.0 * eps)
+
+    assert plan.supported
+    assert plan.groups[0].commuting is False
+    assert plan.groups[0].frequency_gaps == (1.0, 2.0)
+    assert plan.planned_shifted_evaluations == 4
+    assert "non-commuting" in plan.groups[0].reason
+    np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
+
+
+def test_phase_qnode_gate_aware_plan_fails_closed_for_density_route() -> None:
+    circuit = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(("rx", (0,), 0), PhaseQNodeNoiseChannel("phase_flip", (0,), 0.1)),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    plan = plan_phase_qnode_parameter_shift_evaluations(circuit, np.array([0.2]))
+
+    assert not plan.supported
+    assert plan.planned_shifted_evaluations == 0
+    assert "pure-state" in plan.fallback_reason
 
 
 def test_phase_qnode_sparse_ising_chain_builder_matches_manual_hamiltonian() -> None:

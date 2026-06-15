@@ -165,6 +165,29 @@ class ParamShiftVQEResult:
 
 
 @dataclass(frozen=True)
+class GenericParameterShiftEvaluationPlan:
+    """Evaluation-count plan for opaque scalar-objective parameter shift."""
+
+    parameter_count: int
+    shift_terms: int
+    evaluations: int
+    method: str
+    fallback_reason: str
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-serialisable generic-callable planning metadata."""
+        return {
+            "parameter_count": self.parameter_count,
+            "shift_terms": self.shift_terms,
+            "evaluations": self.evaluations,
+            "method": self.method,
+            "fallback_reason": self.fallback_reason,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class GradientVerificationResult:
     """Finite-difference agreement certificate for parameter-shift gradients."""
 
@@ -583,6 +606,41 @@ def parameter_shift_gradient(
         values,
         parameters=parameters,
         rule=rule,
+    )
+
+
+def plan_generic_parameter_shift_evaluations(
+    values: ArrayLike,
+    shift: float = float(np.pi / 2.0),
+    *,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> GenericParameterShiftEvaluationPlan:
+    """Return the evaluation-count plan for an opaque scalar objective.
+
+    The generic route intentionally has no gate registry, generator spectrum, or
+    commutator metadata. It therefore plans independent plus/minus probes for
+    each declared parameter and shift term.
+    """
+    values_vector = _as_finite_vector("values", values)
+    _validate_parameter_count(parameters, width=values_vector.size)
+    resolved_rule = _resolve_parameter_shift_rule(shift, rule=rule)
+    shift_terms = len(resolved_rule.terms)
+    return GenericParameterShiftEvaluationPlan(
+        parameter_count=values_vector.size,
+        shift_terms=shift_terms,
+        evaluations=2 * shift_terms * values_vector.size,
+        method="generic_scalar_objective_parameter_shift",
+        fallback_reason=(
+            "ScalarObjective is an opaque callable; no registered gate, generator, "
+            "or commutator metadata is available, so independent 2N shifted "
+            "evaluations are required for the standard one-term rule"
+        ),
+        claim_boundary=(
+            "generic callable parameter-shift evaluation planning only; no "
+            "gate-aware grouping, provider submission, hardware execution, or "
+            "native framework autodiff claim"
+        ),
     )
 
 
@@ -1072,6 +1130,7 @@ def vqe_with_param_shift(
 
 
 __all__ = [
+    "GenericParameterShiftEvaluationPlan",
     "GradientResult",
     "ParamShiftVQEResult",
     "Parameter",
@@ -1086,6 +1145,7 @@ __all__ = [
     "parameter_shift_gradient",
     "parameter_shift_hessian",
     "parameter_shift_gradient_with_uncertainty",
+    "plan_generic_parameter_shift_evaluations",
     "plan_parameter_shift_shots",
     "plan_quantum_gradient_backend",
     "value_and_parameter_shift_grad",

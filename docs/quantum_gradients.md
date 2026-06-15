@@ -18,7 +18,42 @@ $$
 \frac{\partial C}{\partial \theta_k} = \frac{1}{2}\left[C(\theta_k + \pi/2) - C(\theta_k - \pi/2)\right].
 $$
 
-This rule avoids finite-difference truncation error for supported quantum expectation objectives. It still requires two objective evaluations per trainable parameter.
+This rule avoids finite-difference truncation error for supported quantum expectation objectives. Opaque `ScalarObjective` callables still require independent plus/minus evaluations for every trainable parameter and shift term because the callable does not expose gate generators or commutators.
+
+Registered `PhaseQNodeCircuit` declarations expose more structure. Use
+`plan_phase_qnode_parameter_shift_evaluations(...)` before executing gradients
+when circuits reuse logical parameters across multiple gates:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    parameter_shift_phase_qnode_gradient,
+    plan_generic_parameter_shift_evaluations,
+    plan_phase_qnode_parameter_shift_evaluations,
+)
+
+phase_qnode = PhaseQNodeCircuit(
+    n_qubits=1,
+    operations=(("h", (0,)), ("rz", (0,), 0), ("rz", (0,), 0)),
+    observable=PauliTerm(1.0, ((0, "x"),)),
+)
+params = np.array([0.37], dtype=float)
+
+generic_plan = plan_generic_parameter_shift_evaluations(params)
+gate_plan = plan_phase_qnode_parameter_shift_evaluations(phase_qnode, params)
+gradient = parameter_shift_phase_qnode_gradient(phase_qnode, params)
+print(generic_plan.evaluations, gate_plan.planned_shifted_evaluations, gradient.gradient)
+```
+
+The registered planner groups by logical parameter, detects when a tied
+commuting generator group collapses to a valid single frequency, and switches
+repeated non-collapsible parameters to a multi-frequency shift rule instead of
+silently applying the single-gate `pi/2` rule. It does not claim that distinct
+logical parameters can be recovered from one simultaneous shift; that would be a
+directional derivative, not the independent gradient vector.
 
 For generators with several positive frequency gaps, build an explicit
 multi-frequency rule:
@@ -1095,6 +1130,7 @@ from scpn_quantum_control.phase import (
     execute_phase_qnode_circuit,
     execute_phase_qnode_density_matrix,
     parameter_shift_phase_qnode_gradient,
+    plan_phase_qnode_parameter_shift_evaluations,
     phase_qnode_computational_basis_fisher_support_report,
     phase_qnode_gradient_support_report,
     phase_qnode_metric_support_report,
@@ -1109,9 +1145,10 @@ circuit = PhaseQNodeCircuit(
 params = np.array([0.2, -0.3], dtype=float)
 
 value = execute_phase_qnode_circuit(circuit, params)
+plan = plan_phase_qnode_parameter_shift_evaluations(circuit, params)
 gradient = parameter_shift_phase_qnode_gradient(circuit, params)
 parity = run_phase_qnode_framework_parity_suite()
-print(value.value, gradient.gradient, parity.frameworks)
+print(value.value, plan.planned_shifted_evaluations, gradient.gradient, parity.frameworks)
 ```
 
 The registered gate set includes controlled-H/S/T, Toffoli (`ccnot`), CCZ, and
@@ -1196,6 +1233,13 @@ The corresponding execution APIs raise `PhaseQNodeSupportError` with the same
 report. Classical Fisher support reports also block singular computational-basis
 probabilities, so callers can distinguish an unsupported route from a valid
 pure-state circuit sitting exactly on a zero-probability boundary.
+
+`parameter_shift_phase_qnode_gradient(...)` returns the same gate-aware
+evaluation plan in `PhaseQNodeGradientResult.evaluation_plan`. The
+`planned_shifted_evaluations` count excludes the baseline value evaluation,
+matching the historical `parameter_shift_evaluations` field; Qiskit
+Statevector parity tests count the baseline separately as
+`1 + planned_shifted_evaluations`.
 
 Use `build_phase_qnode_template(...)` when the circuit should come from a
 registered multi-qubit ansatz rather than hand-authored operations. The current

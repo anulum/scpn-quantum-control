@@ -12,15 +12,18 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from scpn_quantum_control import phase
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.phase import vqe_with_param_shift
 from scpn_quantum_control.phase.param_shift import (
+    GenericParameterShiftEvaluationPlan,
     GradientVerificationResult,
     HessianVerificationResult,
     ParamShiftVQEResult,
     multi_frequency_parameter_shift_rule,
     parameter_shift_gradient,
     parameter_shift_hessian,
+    plan_generic_parameter_shift_evaluations,
     plan_quantum_gradient_backend,
     value_and_vqe_grad,
     verify_parameter_shift_gradient,
@@ -56,6 +59,23 @@ def test_phase_param_shift_module_exports_core_gradient() -> None:
     grad = parameter_shift_gradient(objective, params, shift=np.pi / 2.0)
     expected = np.array([-np.sin(params[0]), 0.25 * np.cos(params[1])], dtype=float)
     np.testing.assert_allclose(grad, expected, atol=1e-12)
+
+
+def test_generic_parameter_shift_plan_reports_opaque_callable_fallback() -> None:
+    params = np.array([0.2, -0.4, 0.6], dtype=float)
+
+    plan = plan_generic_parameter_shift_evaluations(params)
+    payload = plan.to_dict()
+
+    assert isinstance(plan, GenericParameterShiftEvaluationPlan)
+    assert plan.parameter_count == 3
+    assert plan.shift_terms == 1
+    assert plan.evaluations == 6
+    assert "opaque callable" in plan.fallback_reason
+    assert payload["evaluations"] == 6
+    assert (
+        phase.plan_generic_parameter_shift_evaluations is plan_generic_parameter_shift_evaluations
+    )
 
 
 def test_phase_param_shift_exports_multi_frequency_rule() -> None:

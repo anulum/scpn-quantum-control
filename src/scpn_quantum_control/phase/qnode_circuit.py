@@ -16,6 +16,8 @@ from typing import TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from ..differentiable import multi_frequency_parameter_shift_rule
+
 FloatArray: TypeAlias = NDArray[np.float64]
 ComplexArray: TypeAlias = NDArray[np.complex128]
 OperationSpec: TypeAlias = tuple[object, ...]
@@ -518,6 +520,7 @@ class PhaseQNodeGradientResult:
     gradient: FloatArray
     support_report: PhaseQNodeSupportReport
     parameter_shift_evaluations: int
+    evaluation_plan: PhaseQNodeGradientEvaluationPlan | None = None
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready gradient evidence."""
@@ -526,6 +529,85 @@ class PhaseQNodeGradientResult:
             "gradient": self.gradient.tolist(),
             "support_report": self.support_report.to_dict(),
             "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "evaluation_plan": None
+            if self.evaluation_plan is None
+            else self.evaluation_plan.to_dict(),
+        }
+
+
+@dataclass(frozen=True)
+class PhaseQNodeGradientEvaluationGroup:
+    """One logical-parameter shift group for a registered Phase-QNode circuit."""
+
+    parameter_index: int
+    operation_indices: tuple[int, ...]
+    gates: tuple[str, ...]
+    qubits: tuple[tuple[int, ...], ...]
+    generator_keys: tuple[str, ...]
+    frequency_gaps: tuple[float, ...]
+    commuting: bool
+    shifted_evaluations: int
+    naive_operation_shifted_evaluations: int
+    saved_shifted_evaluations: int
+    reason: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready logical-parameter shift metadata."""
+        return {
+            "parameter_index": self.parameter_index,
+            "operation_indices": list(self.operation_indices),
+            "gates": list(self.gates),
+            "qubits": [list(item) for item in self.qubits],
+            "generator_keys": list(self.generator_keys),
+            "frequency_gaps": list(self.frequency_gaps),
+            "commuting": self.commuting,
+            "shifted_evaluations": self.shifted_evaluations,
+            "naive_operation_shifted_evaluations": self.naive_operation_shifted_evaluations,
+            "saved_shifted_evaluations": self.saved_shifted_evaluations,
+            "reason": self.reason,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseQNodeGradientEvaluationPlan:
+    """Evaluation-count plan for registered Phase-QNode parameter-shift gradients."""
+
+    supported: bool
+    method: str
+    parameter_count: int
+    differentiable_parameters: tuple[int, ...]
+    operation_level_naive_evaluations: int
+    planned_shifted_evaluations: int
+    saved_shifted_evaluations: int
+    groups: tuple[PhaseQNodeGradientEvaluationGroup, ...]
+    fallback_reason: str
+    claim_boundary: str
+
+    @property
+    def parameter_shift_evaluations(self) -> int:
+        """Return shifted evaluations required by the plan."""
+        return self.planned_shifted_evaluations
+
+    @property
+    def generic_scalar_objective_evaluations(self) -> int:
+        """Return the matching generic-callable fallback count."""
+        return 2 * self.parameter_count
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready gate-aware evaluation planning metadata."""
+        return {
+            "supported": self.supported,
+            "method": self.method,
+            "parameter_count": self.parameter_count,
+            "differentiable_parameters": list(self.differentiable_parameters),
+            "operation_level_naive_evaluations": self.operation_level_naive_evaluations,
+            "planned_shifted_evaluations": self.planned_shifted_evaluations,
+            "parameter_shift_evaluations": self.parameter_shift_evaluations,
+            "saved_shifted_evaluations": self.saved_shifted_evaluations,
+            "generic_scalar_objective_evaluations": self.generic_scalar_objective_evaluations,
+            "groups": [group.to_dict() for group in self.groups],
+            "fallback_reason": self.fallback_reason,
+            "claim_boundary": self.claim_boundary,
         }
 
 
@@ -1009,6 +1091,114 @@ def phase_qnode_gradient_support_report(
     return phase_qnode_support_report(circuit, values)
 
 
+def plan_phase_qnode_parameter_shift_evaluations(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeGradientEvaluationPlan:
+    """Plan shifted evaluations for a registered Phase-QNode gradient.
+
+    The planner is gate-aware at the registered-circuit level and parameter-aware
+    at the logical parameter level. It does not claim PennyLane-style generator
+    simplification for an opaque callable, and it does not collapse distinct
+    logical parameters into simultaneous shifts because that would produce a
+    directional derivative rather than independent partial derivatives.
+    """
+    values = _as_parameter_vector(parameters)
+    report = phase_qnode_gradient_support_report(circuit, values)
+    if isinstance(circuit, PhaseQNodeDensityCircuit) or not report.supported:
+        return PhaseQNodeGradientEvaluationPlan(
+            supported=False,
+            method="unsupported_phase_qnode_parameter_shift",
+            parameter_count=values.size,
+            differentiable_parameters=report.differentiable_parameters,
+            operation_level_naive_evaluations=0,
+            planned_shifted_evaluations=0,
+            saved_shifted_evaluations=0,
+            groups=(),
+            fallback_reason=report.failure_reason,
+            claim_boundary=(
+                "fail-closed Phase-QNode parameter-shift evaluation plan; no "
+                "shifted evaluations are authorised for unsupported or density/noise routes"
+            ),
+        )
+    operations = _parsed_operations(cast(PhaseQNodeCircuit, circuit))
+    parametric_by_index: dict[int, list[tuple[int, PhaseQNodeOperation]]] = {}
+    for operation_index, operation in enumerate(operations):
+        if operation.gate in _PARAMETRIC_GATES and operation.parameter_index is not None:
+            parametric_by_index.setdefault(operation.parameter_index, []).append(
+                (operation_index, operation)
+            )
+
+    groups: list[PhaseQNodeGradientEvaluationGroup] = []
+    for parameter_index in report.differentiable_parameters:
+        records = tuple(parametric_by_index.get(parameter_index, ()))
+        operation_indices = tuple(index for index, _operation in records)
+        parameter_operations = tuple(operation for _index, operation in records)
+        generator_keys = tuple(
+            _parameter_generator_key(operation) for operation in parameter_operations
+        )
+        commuting = _operations_commute_for_shared_parameter(parameter_operations)
+        shift_terms = _parameter_shift_terms_for_group(parameter_operations)
+        shifted_evaluations = 2 * len(shift_terms)
+        naive_operation_evaluations = 2 * len(parameter_operations)
+        saved = max(0, naive_operation_evaluations - shifted_evaluations)
+        reason = (
+            "shared logical parameter across a collapsible registered generator group; "
+            "one frequency-adjusted plus/minus pair shifts the parameter once and updates all tied gates"
+            if len(parameter_operations) > 1 and len(shift_terms) == 1 and commuting
+            else "single logical parameter group; no distinct-parameter simultaneous shift claimed"
+        )
+        if len(parameter_operations) > 1 and len(shift_terms) > 1:
+            reason = (
+                "shared logical parameter requires a multi-frequency shift plan; "
+                "the planner avoids the invalid single-gate pi/2 rule"
+            )
+        if len(parameter_operations) > 1 and not commuting:
+            reason = (
+                "shared logical parameter appears on non-commuting generators; "
+                "frequency-aware shifted evaluations are used and no commuting-generator "
+                "reuse claim is made"
+            )
+        groups.append(
+            PhaseQNodeGradientEvaluationGroup(
+                parameter_index=parameter_index,
+                operation_indices=operation_indices,
+                gates=tuple(operation.gate for operation in parameter_operations),
+                qubits=tuple(operation.qubits for operation in parameter_operations),
+                generator_keys=generator_keys,
+                frequency_gaps=tuple(frequency for frequency, _shift, _coefficient in shift_terms),
+                commuting=commuting,
+                shifted_evaluations=shifted_evaluations,
+                naive_operation_shifted_evaluations=naive_operation_evaluations,
+                saved_shifted_evaluations=saved,
+                reason=reason,
+            )
+        )
+    operation_level_naive = sum(group.naive_operation_shifted_evaluations for group in groups)
+    planned = sum(group.shifted_evaluations for group in groups)
+    return PhaseQNodeGradientEvaluationPlan(
+        supported=True,
+        method="registered_phase_qnode_gate_aware_parameter_shift",
+        parameter_count=values.size,
+        differentiable_parameters=report.differentiable_parameters,
+        operation_level_naive_evaluations=operation_level_naive,
+        planned_shifted_evaluations=planned,
+        saved_shifted_evaluations=max(0, operation_level_naive - planned),
+        groups=tuple(groups),
+        fallback_reason=(
+            "generic ScalarObjective callables expose only values, so the generic "
+            "route must plan independent 2N shifts; registered PhaseQNodeCircuit "
+            "metadata is required for operation-level evaluation-count evidence"
+        ),
+        claim_boundary=(
+            "registered local Phase-QNode evaluation-count planning for logical "
+            "parameter-shift gradients; no opaque-callable generator inference, "
+            "distinct-parameter simultaneous-shift gradient extraction, provider "
+            "submission, hardware execution, or native framework autodiff claim"
+        ),
+    )
+
+
 def phase_qnode_metric_support_report(
     circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
     parameters: ArrayLike,
@@ -1153,14 +1343,23 @@ def parameter_shift_phase_qnode_gradient(
         raise PhaseQNodeSupportError(report)
     if isinstance(circuit, PhaseQNodeDensityCircuit):
         raise PhaseQNodeSupportError(report)
+    plan = plan_phase_qnode_parameter_shift_evaluations(circuit, values)
     gradient = np.zeros_like(values)
     base_result = execute_phase_qnode_circuit(circuit, values)
+    operations_by_parameter = _parametric_operations_by_parameter(circuit)
     for index in report.differentiable_parameters:
-        plus = values.copy()
-        minus = values.copy()
-        plus[index] += np.pi / 2.0
-        minus[index] -= np.pi / 2.0
+        shift_terms = _parameter_shift_terms_for_group(operations_by_parameter[index])
         if isinstance(circuit.observable, PauliCovarianceObservable):
+            if len(shift_terms) != 1:
+                raise ValueError(
+                    "Pauli covariance gradients with repeated logical parameters require "
+                    "an explicit product-rule implementation for each frequency term"
+                )
+            _frequency, shift, coefficient = shift_terms[0]
+            plus = values.copy()
+            minus = values.copy()
+            plus[index] += shift
+            minus[index] -= shift
             plus_state = _execute_state(circuit, plus)
             minus_state = _execute_state(circuit, minus)
             gradient[index] = _covariance_product_rule_gradient(
@@ -1169,17 +1368,25 @@ def parameter_shift_phase_qnode_gradient(
                 minus_state,
                 circuit.n_qubits,
                 circuit.observable,
-            )
+            ) * (2.0 * coefficient)
         else:
-            gradient[index] = 0.5 * (
-                execute_phase_qnode_circuit(circuit, plus).value
-                - execute_phase_qnode_circuit(circuit, minus).value
-            )
+            total = 0.0
+            for _frequency, shift, coefficient in shift_terms:
+                plus = values.copy()
+                minus = values.copy()
+                plus[index] += shift
+                minus[index] -= shift
+                total += coefficient * (
+                    execute_phase_qnode_circuit(circuit, plus).value
+                    - execute_phase_qnode_circuit(circuit, minus).value
+                )
+            gradient[index] = total
     return PhaseQNodeGradientResult(
         value=base_result.value,
         gradient=gradient,
         support_report=report,
-        parameter_shift_evaluations=2 * len(report.differentiable_parameters),
+        parameter_shift_evaluations=plan.parameter_shift_evaluations,
+        evaluation_plan=plan,
     )
 
 
@@ -1325,6 +1532,16 @@ def _parse_density_operation(
 
 def _parsed_operations(circuit: PhaseQNodeCircuit) -> tuple[PhaseQNodeOperation, ...]:
     return cast(tuple[PhaseQNodeOperation, ...], circuit.operations)
+
+
+def _parametric_operations_by_parameter(
+    circuit: PhaseQNodeCircuit,
+) -> dict[int, tuple[PhaseQNodeOperation, ...]]:
+    grouped: dict[int, list[PhaseQNodeOperation]] = {}
+    for operation in _parsed_operations(circuit):
+        if operation.gate in _PARAMETRIC_GATES and operation.parameter_index is not None:
+            grouped.setdefault(operation.parameter_index, []).append(operation)
+    return {index: tuple(operations) for index, operations in grouped.items()}
 
 
 def _parsed_density_operations(circuit: PhaseQNodeDensityCircuit) -> tuple[DensityOperation, ...]:
@@ -1600,6 +1817,94 @@ def _as_optional_positive_int(name: str, value: int | None) -> int | None:
 def _require_qubit_width(operation: PhaseQNodeOperation, width: int) -> None:
     if len(operation.qubits) != width:
         raise ValueError(f"{operation.gate} decomposition expects {width} qubits")
+
+
+def _parameter_generator_key(operation: PhaseQNodeOperation) -> str:
+    if operation.gate in {"rx", "crx"}:
+        return "x"
+    if operation.gate in {"ry", "cry"}:
+        return "y"
+    if operation.gate in {"rz", "crz", "phase"}:
+        return "z"
+    if operation.gate == "rxx":
+        return "xx"
+    if operation.gate == "ryy":
+        return "yy"
+    if operation.gate == "rzz":
+        return "zz"
+    return operation.gate
+
+
+def _operations_commute_for_shared_parameter(
+    operations: tuple[PhaseQNodeOperation, ...],
+) -> bool:
+    for left_index, left in enumerate(operations):
+        for right in operations[left_index + 1 :]:
+            if not _parameter_generators_commute(left, right):
+                return False
+    return True
+
+
+def _parameter_shift_terms_for_group(
+    operations: tuple[PhaseQNodeOperation, ...],
+) -> tuple[tuple[float, float, float], ...]:
+    if not operations:
+        return ()
+    if len(operations) == 1:
+        return ((1.0, float(np.pi / 2.0), 0.5),)
+    if _collapsible_shared_parameter_group(operations):
+        frequency = float(len(operations))
+        return ((frequency, float(np.pi / (2.0 * frequency)), 0.5 * frequency),)
+    frequencies = tuple(float(index) for index in range(1, len(operations) + 1))
+    rule = multi_frequency_parameter_shift_rule(frequencies)
+    return tuple(
+        (frequency, float(term[0]), float(term[1]))
+        for frequency, term in zip(frequencies, rule.terms, strict=True)
+    )
+
+
+def _collapsible_shared_parameter_group(
+    operations: tuple[PhaseQNodeOperation, ...],
+) -> bool:
+    if len(operations) <= 1:
+        return False
+    first = operations[0]
+    return all(
+        operation.gate == first.gate and operation.qubits == first.qubits
+        for operation in operations[1:]
+    )
+
+
+def _parameter_generators_commute(
+    left: PhaseQNodeOperation,
+    right: PhaseQNodeOperation,
+) -> bool:
+    if set(left.qubits).isdisjoint(right.qubits):
+        return True
+    if _is_controlled_parametric_gate(left.gate) or _is_controlled_parametric_gate(right.gate):
+        return left.gate == right.gate and left.qubits == right.qubits
+    left_paulis = _generator_pauli_map(left)
+    right_paulis = _generator_pauli_map(right)
+    shared = set(left_paulis).intersection(right_paulis)
+    if not shared:
+        return True
+    anti_commuting_overlap = sum(
+        1 for qubit in shared if left_paulis[qubit] != right_paulis[qubit]
+    )
+    return anti_commuting_overlap % 2 == 0
+
+
+def _is_controlled_parametric_gate(gate: str) -> bool:
+    return gate in {"crx", "cry", "crz"}
+
+
+def _generator_pauli_map(operation: PhaseQNodeOperation) -> Mapping[int, str]:
+    key = _parameter_generator_key(operation)
+    if key in {"x", "y", "z"}:
+        return {operation.qubits[-1]: key}
+    if key in {"xx", "yy", "zz"}:
+        return {qubit: key[0] for qubit in operation.qubits}
+    return {}
 
 
 def _apply_operation(
@@ -2085,6 +2390,8 @@ __all__ = [
     "PhaseQNodeDensityCircuit",
     "PhaseQNodeDensityExecutionResult",
     "PhaseQNodeExecutionResult",
+    "PhaseQNodeGradientEvaluationGroup",
+    "PhaseQNodeGradientEvaluationPlan",
     "PhaseQNodeGradientResult",
     "PhaseQNodeMetricTensorResult",
     "PhaseQNodeNoiseChannel",
@@ -2101,6 +2408,7 @@ __all__ = [
     "execute_phase_qnode_circuit",
     "execute_phase_qnode_density_matrix",
     "parameter_shift_phase_qnode_gradient",
+    "plan_phase_qnode_parameter_shift_evaluations",
     "phase_qnode_computational_basis_fisher_information",
     "phase_qnode_computational_basis_fisher_support_report",
     "phase_qnode_density_support_report",

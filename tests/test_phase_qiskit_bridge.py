@@ -16,12 +16,16 @@ from qiskit.circuit import Parameter
 from qiskit.quantum_info import SparsePauliOp
 
 from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
     multi_frequency_parameter_shift_rule,
+    parameter_shift_phase_qnode_gradient,
+    plan_phase_qnode_parameter_shift_evaluations,
 )
 
 
@@ -128,6 +132,42 @@ def test_qiskit_statevector_supports_multi_frequency_parameter_shift() -> None:
     assert result.method == "qiskit_statevector_multi_frequency_parameter_shift"
     assert result.evaluations == 1 + 2 * len(rule.terms)
     np.testing.assert_allclose(result.gradient, np.array([expected_gradient]), atol=1e-12)
+
+
+def test_phase_qnode_gate_aware_plan_matches_qiskit_tied_parameter_count() -> None:
+    theta = Parameter("theta")
+    qiskit_circuit = QuantumCircuit(1)
+    qiskit_circuit.h(0)
+    qiskit_circuit.rz(theta, 0)
+    qiskit_circuit.rz(theta, 0)
+    observable = SparsePauliOp.from_list([("X", 1.0)])
+    phase_circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("h", (0,)), ("rz", (0,), 0), ("rz", (0,), 0)),
+        observable=PauliTerm(1.0, ((0, "x"),)),
+    )
+    values = np.array([0.37], dtype=float)
+    rule = multi_frequency_parameter_shift_rule([2.0])
+
+    phase_plan = plan_phase_qnode_parameter_shift_evaluations(phase_circuit, values)
+    phase_gradient = parameter_shift_phase_qnode_gradient(phase_circuit, values)
+    qiskit_gradient = execute_qiskit_statevector_parameter_shift(
+        qiskit_circuit,
+        observable,
+        (theta,),
+        values,
+        rule=rule,
+    )
+
+    assert phase_plan.planned_shifted_evaluations == 2
+    assert phase_plan.operation_level_naive_evaluations == 4
+    assert len(qiskit_gradient.records) == phase_plan.planned_shifted_evaluations // 2
+    assert qiskit_gradient.evaluations == 1 + phase_plan.planned_shifted_evaluations
+    np.testing.assert_allclose(
+        phase_gradient.gradient,
+        qiskit_gradient.gradient,
+        atol=1e-12,
+    )
 
 
 def test_qiskit_finite_shot_supports_multi_frequency_parameter_shift() -> None:
