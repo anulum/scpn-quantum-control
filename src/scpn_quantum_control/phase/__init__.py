@@ -85,6 +85,15 @@ from .gradient_support_matrix import (
     run_gradient_support_matrix_audit,
 )
 from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
+from .hardware_gradient_campaign import (
+    HardwareGradientCampaignPlan,
+    HardwareGradientCampaignSpec,
+    HardwareGradientCampaignSuite,
+    HardwareGradientReplaySchema,
+    default_hardware_gradient_campaign_specs,
+    plan_hardware_gradient_campaign,
+    run_hardware_gradient_campaign_readiness_suite,
+)
 from .hardware_gradient_policy import (
     HardwareGradientPolicy,
     HardwareGradientPolicyDecision,
@@ -516,6 +525,13 @@ __all__ = [
     "assert_hardware_gradient_policy_approved",
     "evaluate_hardware_gradient_policy",
     "run_hardware_gradient_policy_readiness_suite",
+    "HardwareGradientCampaignPlan",
+    "HardwareGradientCampaignSpec",
+    "HardwareGradientCampaignSuite",
+    "HardwareGradientReplaySchema",
+    "default_hardware_gradient_campaign_specs",
+    "plan_hardware_gradient_campaign",
+    "run_hardware_gradient_campaign_readiness_suite",
     "plan_quantum_gradient_backend",
     "QuantumGradientBackendCapability",
     "QuantumGradientPlan",

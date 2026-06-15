@@ -606,8 +606,32 @@ preparation = prepare_provider_hardware_parameter_shift_gradient(
 `preparation.gradient_available` and `preparation.hardware_execution` are both
 false. The record is readiness evidence only.
 
-The provider hardware-preparation audit packages the same boundary checks into
-a one-call support matrix:
+No-submit hardware-gradient campaign specs build on the same boundary:
+
+```python
+from scpn_quantum_control.phase import (
+    default_hardware_gradient_campaign_specs,
+    run_hardware_gradient_campaign_readiness_suite,
+)
+
+specs = default_hardware_gradient_campaign_specs()
+suite = run_hardware_gradient_campaign_readiness_suite(specs)
+print(suite.passed, suite.hardware_execution_count)
+```
+
+The default campaign specs cover two no-submit XY-gradient preparation lanes:
+parameter-shift VQE gradients on named Heron r2 backends and seeded SPSA
+gradients with perturbation records. Each `HardwareGradientCampaignSpec` carries
+the backend allowlist, evidence IDs, shot/evaluation budget, calibration
+snapshot requirement, raw-count replay schema, statevector reference-gradient
+requirement, and publication-claim boundary. `HardwareGradientCampaignPlan`
+evaluates the spec through the same hardware-gradient policy used by provider
+preparation. The suite never calls a provider sampler, never submits a QPU job,
+and never returns a hardware-gradient value; it is campaign-readiness metadata
+only until a live ticket and raw-count artefacts exist.
+
+The provider hardware-preparation audit packages the preparation boundary checks
+into a one-call support matrix:
 
 ```python
 from scpn_quantum_control.phase import run_provider_hardware_gradient_preparation_audit
@@ -695,7 +719,7 @@ standard errors, confidence radii, and shot totals as the provider callback
 route. It is still not hardware job submission; hardware aliases continue to
 fail closed until an explicit backend policy enables them.
 
-## Gradient tape MVP
+## Gradient Tape Boundary
 
 For local simulator workflows, `gradient_tape` records deterministic and
 finite-shot parameter-shift evaluations with backend-plan provenance. The tape
@@ -727,9 +751,9 @@ and `minus_variances` to be shaped as `(shift_terms, n_params)` whenever
 `shift_terms > 1`; flat arrays fail closed because they cannot encode which
 sample belongs to which Fourier term.
 
-The MVP remains intentionally bounded. It is not a full programme-IR tape, does
-not capture arbitrary Python side effects, and does not enable hardware
-gradients without explicit policy approval.
+The current tape remains intentionally bounded. It is not a full programme-IR
+tape, does not capture arbitrary Python side effects, and does not enable
+hardware gradients without explicit policy approval.
 
 ## Parameter-shift gradient descent
 
