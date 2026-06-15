@@ -35,6 +35,7 @@ pub mod compiler_ad;
 pub mod complex_utils;
 pub mod concat_qec;
 pub mod dla;
+pub mod entropy;
 pub mod feedback;
 pub mod fep;
 pub mod gauge_lattice;
@@ -404,6 +405,12 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Sub-microsecond realtime telemetry
     m.add_function(wrap_pyfunction!(realtime::sub_us_jitter_percentiles, m)?)?;
     m.add_function(wrap_pyfunction!(realtime::sub_us_tracker_summary, m)?)?;
+
+    // NIST SP 800-22 hot-path statistics
+    m.add_function(wrap_pyfunction!(entropy::nist_berlekamp_massey, m)?)?;
+    m.add_function(wrap_pyfunction!(entropy::nist_monobit_sum, m)?)?;
+    m.add_function(wrap_pyfunction!(entropy::nist_runs_counts, m)?)?;
+    m.add_function(wrap_pyfunction!(entropy::nist_block_longest_runs, m)?)?;
 
     Ok(())
 }

@@ -1,20 +1,20 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 28,
-    "example_files": 25,
+    "domain_package_families": 29,
+    "example_files": 26,
     "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 602,
-    "public_documentation_pages": 242,
-    "python_model_classes": 1690,
-    "python_model_source_modules": 811,
-    "rust_pyo3_model_wrappers": 124,
-    "rust_source_modules": 31,
-    "test_files": 1934
+    "public_api_exports": 606,
+    "public_documentation_pages": 243,
+    "python_model_classes": 1699,
+    "python_model_source_modules": 815,
+    "rust_pyo3_model_wrappers": 128,
+    "rust_source_modules": 32,
+    "test_files": 1935
   },
   "documentation": {
     "examples": [
@@ -42,6 +42,7 @@
       "examples/22_quantum_neuromorphic_bridge.py",
       "examples/23_differentiable_api_workflow.py",
       "examples/24_differentiable_benchmark_reproduction.py",
+      "examples/25_qrng_streaming_quickstart.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -280,6 +281,7 @@
       "docs/dynq_qubit_mapping.md",
       "docs/e2e_contract_boundaries.md",
       "docs/e2e_testing.md",
+      "docs/entropy_qrng.md",
       "docs/equations.md",
       "docs/error_mitigation.md",
       "docs/execution_surface_policy.md",
@@ -467,6 +469,11 @@
       {
         "package": "dla_parity",
         "path": "src/scpn_quantum_control/dla_parity",
+        "python_modules": 4
+      },
+      {
+        "package": "entropy",
+        "path": "src/scpn_quantum_control/entropy",
         "python_modules": 4
       },
       {
@@ -1135,6 +1142,10 @@
       {
         "name": "AdvantageResult",
         "path": "src/scpn_quantum_control/benchmarks/quantum_advantage.py"
+      },
+      {
+        "name": "AerQuantumEntropySource",
+        "path": "src/scpn_quantum_control/entropy/quantum_source.py"
       },
       {
         "name": "AggregatorProviderOptionalDependencyRow",
@@ -2345,8 +2356,16 @@
         "path": "src/scpn_quantum_control/analysis/sync_entanglement_witness.py"
       },
       {
+        "name": "EntropyBackend",
+        "path": "src/scpn_quantum_control/entropy/quantum_source.py"
+      },
+      {
         "name": "EntropyBudgetRates",
         "path": "src/scpn_quantum_control/paper0/computational_unifier_validation.py"
+      },
+      {
+        "name": "EntropyHealthReport",
+        "path": "src/scpn_quantum_control/entropy/qrng_stream.py"
       },
       {
         "name": "EntropyProductionRate",
@@ -2605,6 +2624,10 @@
         "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py"
       },
       {
+        "name": "FipsHealthReport",
+        "path": "src/scpn_quantum_control/entropy/fips_140_2.py"
+      },
+      {
         "name": "FisherConjugateGradientResult",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -2743,6 +2766,10 @@
       {
         "name": "GaugePrincipleDerivationFixtureResult",
         "path": "src/scpn_quantum_control/paper0/gauge_principle_derivation_validation.py"
+      },
+      {
+        "name": "GenericParameterShiftEvaluationPlan",
+        "path": "src/scpn_quantum_control/phase/param_shift.py"
       },
       {
         "name": "GeometricCouplingConsistencyConfig",
@@ -4153,6 +4180,10 @@
         "path": "src/scpn_quantum_control/paper0/neurovascular_validation.py"
       },
       {
+        "name": "NistTestResult",
+        "path": "src/scpn_quantum_control/entropy/nist_sp800_22.py"
+      },
+      {
         "name": "NonAbelianQualiaFieldConfig",
         "path": "src/scpn_quantum_control/paper0/non_abelian_qualia_field_validation.py"
       },
@@ -4817,6 +4848,14 @@
         "path": "src/scpn_quantum_control/phase/qnode_framework_parity.py"
       },
       {
+        "name": "PhaseQNodeGradientEvaluationGroup",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeGradientEvaluationPlan",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
         "name": "PhaseQNodeGradientResult",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
@@ -5395,6 +5434,10 @@
       {
         "name": "QRCPhaseResult",
         "path": "src/scpn_quantum_control/analysis/qrc_phase_detector.py"
+      },
+      {
+        "name": "QRNGStream",
+        "path": "src/scpn_quantum_control/entropy/qrng_stream.py"
       },
       {
         "name": "QSLResult",
@@ -7920,6 +7963,10 @@
       "src/scpn_quantum_control/dla_parity/dataset.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
       "src/scpn_quantum_control/dla_parity/schema.py",
+      "src/scpn_quantum_control/entropy/fips_140_2.py",
+      "src/scpn_quantum_control/entropy/nist_sp800_22.py",
+      "src/scpn_quantum_control/entropy/qrng_stream.py",
+      "src/scpn_quantum_control/entropy/quantum_source.py",
       "src/scpn_quantum_control/execution_surface.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
@@ -8677,6 +8724,10 @@
       "matrix_vector_product_vjp",
       "mc_xy_simulate",
       "monitored_kuramoto_trajectory",
+      "nist_berlekamp_massey",
+      "nist_block_longest_runs",
+      "nist_monobit_sum",
+      "nist_runs_counts",
       "order_param_from_statevector",
       "order_parameter",
       "otoc_from_eigendecomp",
@@ -8733,6 +8784,7 @@
       "scpn_quantum_engine/src/complex_utils.rs",
       "scpn_quantum_engine/src/concat_qec.rs",
       "scpn_quantum_engine/src/dla.rs",
+      "scpn_quantum_engine/src/entropy.rs",
       "scpn_quantum_engine/src/feedback.rs",
       "scpn_quantum_engine/src/fep.rs",
       "scpn_quantum_engine/src/gauge_lattice.rs",
@@ -8761,6 +8813,7 @@
   "package_exports": [
     "ARCANE_SAPIENCE_SPEC",
     "AdvantageResult",
+    "AerQuantumEntropySource",
     "AggregatorProviderOptionalDependencyRow",
     "AggregatorProviderRoute",
     "ArcaneNeuronBridge",
@@ -8802,6 +8855,7 @@
     "DualNumber",
     "DynamicCouplingConfig",
     "DynamicCouplingEngine",
+    "EntropyHealthReport",
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
@@ -8890,6 +8944,7 @@
     "ProviderOptionalDependencyRow",
     "QAOA_MPC",
     "QECLevel",
+    "QRNGStream",
     "QSNNParameterShiftDescentRun",
     "QSNNTrainer",
     "QbraidRuntimeHALAdapter",
@@ -9084,6 +9139,7 @@
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",
     "enforce_realtime_sla",
+    "entropy",
     "estimate_crossover",
     "evaluate_levenberg_marquardt_step",
     "evaluate_realtime_sla",
@@ -10052,6 +10108,7 @@
       "tests/test_entanglement_percolation.py",
       "tests/test_entanglement_spectrum.py",
       "tests/test_entanglement_tomography_readiness.py",
+      "tests/test_entropy_qrng.py",
       "tests/test_error_budget.py",
       "tests/test_example_workflows.py",
       "tests/test_execution_surface_policy.py",

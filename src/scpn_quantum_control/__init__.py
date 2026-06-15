@@ -10,7 +10,19 @@
 from importlib.metadata import PackageNotFoundError, version
 
 # Subpackage-level access for new modules
-from . import analysis, applications, fep, forecasting, gauge, l16, pgbo, psi_field, ssgf, tcbo
+from . import (
+    analysis,
+    applications,
+    entropy,
+    fep,
+    forecasting,
+    gauge,
+    l16,
+    pgbo,
+    psi_field,
+    ssgf,
+    tcbo,
+)
 from .applications.eeg_classification import eeg_plv_to_vqe, eeg_quantum_kernel
 from .benchmarks.classical_baselines import (
     ClassicalBaselineRun,
@@ -428,6 +440,7 @@ from .differentiable_api import (
     differentiable_value,
     explain_differentiability,
 )
+from .entropy import AerQuantumEntropySource, EntropyHealthReport, QRNGStream
 from .forecasting import (
     ForecastModelRun,
     SynchronisationForecastBenchmarkResult,
@@ -827,7 +840,10 @@ __all__ = [
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
     "compile_kuramoto_to_mlir",
+    "AerQuantumEntropySource",
     "CycleSample",
+    "EntropyHealthReport",
+    "QRNGStream",
     "MonotonicRealtimeClock",
     "RealtimeRunResult",
     "RealtimeSLAConfig",
@@ -1234,6 +1250,7 @@ __all__ = [
     "run_scaling_benchmark",
     "analysis",
     "applications",
+    "entropy",
     "forecasting",
     "gauge",
     "ssgf",

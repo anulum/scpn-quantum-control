@@ -5,6 +5,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added the `scpn_quantum_control.entropy` quantum random-number
+  package: a `QRNGStream` streaming harness with Qiskit Aer measurement entropy
+  sources (`xy_measurement`, `bell_pair`, `phase_estimation`), Von Neumann
+  debiasing, and periodic health checks; the full NIST SP 800-22 Revision 1a
+  fifteen-test statistical suite, validated against the publication's
+  worked-example P-values; the FIPS 140-2 Annex C power-up tests with
+  fail-closed enforcement; and Shannon and min-entropy estimation. The
+  linear-complexity Berlekamp-Massey hot path and the monobit/runs/longest-run
+  statistics dispatch to new Rust kernels that are bit-true with the NumPy
+  reference (measured 227–325× faster for Berlekamp-Massey). Ships
+  module-specific and property-based tests, a polyglot comparison benchmark
+  (`scripts/bench_qrng_entropy.py`, `results/qrng_entropy_benchmark.json`,
+  `functional_non_isolated`), documentation (`docs/entropy_qrng.md`), and an
+  example (`examples/25_qrng_streaming_quickstart.py`).
 - 2026-06-15 — Added a sub-microsecond outer-loop telemetry surface to
   `control/realtime_runtime.py`: `SubMicrosecondTracker`, `CycleSample`,
   `SubMicrosecondReport`, and `summarise_cycle_samples`, reporting inter-cycle
