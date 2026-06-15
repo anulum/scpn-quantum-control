@@ -17,11 +17,15 @@ import pytest
 from scpn_quantum_control.phase import (
     DifferentiableDomainBenchmarkDatasetSuite,
     DifferentiableDomainBenchmarkValidationSuite,
+    DifferentiablePublishedDomainBenchmarkSuite,
+    DifferentiablePublishedDomainBenchmarkValidationSuite,
     load_differentiable_domain_benchmark_datasets,
+    load_differentiable_published_domain_benchmark_cases,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
     predict_parameter_shift_qnn_classifier,
     run_differentiable_domain_benchmark_dataset_validation,
+    run_differentiable_published_domain_benchmark_validation,
 )
 
 
@@ -101,3 +105,62 @@ def test_differentiable_domain_benchmark_dataset_selection_is_fail_closed() -> N
 
     with pytest.raises(ValueError, match="tolerance"):
         run_differentiable_domain_benchmark_dataset_validation(tolerance=-1.0)
+
+
+def test_differentiable_published_domain_benchmark_cases_are_artifact_backed() -> None:
+    suite = load_differentiable_published_domain_benchmark_cases()
+
+    assert isinstance(suite, DifferentiablePublishedDomainBenchmarkSuite)
+    assert suite.evidence_class == "published_domain_artifact"
+    assert "not hardware execution" in suite.claim_boundary
+    assert suite.case_count == 4
+    assert suite.dataset_ids == (
+        "eeg_alpha_plv_8ch",
+        "iter_mhd_8mode",
+        "ieee5bus_power_grid",
+        "friston_fep_6node",
+    )
+
+    power_grid = suite.case_by_id("ieee5bus_power_grid")
+    assert power_grid.domain == "power-grid"
+    assert power_grid.n_oscillators == 5
+    assert power_grid.publication_safe
+    assert len(power_grid.artifact_sha256) == 64
+    assert power_grid.coupling_frobenius_norm > 0.0
+    assert power_grid.to_dict()["evidence_class"] == "published_domain_artifact"
+
+
+def test_differentiable_published_domain_benchmark_validation_passes() -> None:
+    validation = run_differentiable_published_domain_benchmark_validation()
+
+    assert isinstance(validation, DifferentiablePublishedDomainBenchmarkValidationSuite)
+    assert validation.passed
+    assert validation.case_count == 4
+    assert {result.domain for result in validation.results} == {
+        "eeg",
+        "plasma",
+        "power-grid",
+        "fep",
+    }
+    assert all(result.publication_safe for result in validation.results)
+    assert all(result.kuramoto_conversion_passed for result in validation.results)
+    assert all(result.metadata_roundtrip_passed for result in validation.results)
+
+
+def test_differentiable_published_domain_benchmark_selection_is_fail_closed() -> None:
+    suite = load_differentiable_published_domain_benchmark_cases(dataset_ids=("iter_mhd_8mode",))
+    assert suite.case_count == 1
+    assert suite.cases[0].domain == "plasma"
+
+    validation = run_differentiable_published_domain_benchmark_validation(
+        dataset_ids=("friston_fep_6node",)
+    )
+    assert validation.passed
+    assert validation.case_count == 1
+    assert validation.results[0].domain == "fep"
+
+    with pytest.raises(ValueError, match="unknown dataset_ids"):
+        load_differentiable_published_domain_benchmark_cases(dataset_ids=("missing",))
+
+    with pytest.raises(ValueError, match="dataset_ids"):
+        load_differentiable_published_domain_benchmark_cases(dataset_ids=("",))

@@ -797,6 +797,11 @@ exact bounded phase-response probabilities, full-batch MSE losses, and
 parameter-shift gradients; the Kuramoto-XY row carries an exact two-oscillator
 order parameter, mean phase, XY energy, and phase-energy gradient. These rows
 are conformance fixtures, not performance or hardware evidence.
+The same API also exposes published public-domain artefact rows via
+`load_differentiable_published_domain_benchmark_cases()` and
+`run_differentiable_published_domain_benchmark_validation()`, validating that
+the committed EEG, ITER-style MHD, IEEE 5-bus, and FEP artefacts remain
+publication-safe and round-trip through the Kuramoto conversion path.
 
 ## Parameter-shift natural gradient
 

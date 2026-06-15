@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 587,
     "public_documentation_pages": 240,
-    "python_model_classes": 1672,
+    "python_model_classes": 1676,
     "python_model_source_modules": 810,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
@@ -2135,6 +2135,22 @@
       {
         "name": "DifferentiableProgrammingExternalReferenceResult",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
+      },
+      {
+        "name": "DifferentiablePublishedDomainBenchmarkCase",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
+        "name": "DifferentiablePublishedDomainBenchmarkSuite",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
+        "name": "DifferentiablePublishedDomainBenchmarkValidationResult",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
+        "name": "DifferentiablePublishedDomainBenchmarkValidationSuite",
+        "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
       },
       {
         "name": "DifferentiableQNNExactAnswerCase",

@@ -29,7 +29,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.qnn_framework_bridge_matrix` | Fail-closed support matrix for bounded phase-QNN framework bridges, separating implemented JAX/PyTorch/TensorFlow routes from arbitrary simulator autodiff and hardware-gradient gaps. |
 | `scpn_quantum_control.phase.qnn_framework_agreement` | Caller-supplied QNN framework-gradient agreement checks for JAX/PennyLane/PyTorch/TensorFlow-style references, complemented by bounded native/tensor QNN bridge evidence where explicitly documented. |
 | `scpn_quantum_control.phase.qnn_loss_landscape` | Deterministic bounded-QNN loss-landscape grids with parameter-shift gradient norms, sampled minima, loss spans, and non-hardware claim boundaries. |
-| `scpn_quantum_control.phase.domain_benchmark_datasets` | Synthetic exact-answer differentiable domain datasets for bounded phase-QNN and two-oscillator Kuramoto-XY cases, with analytic probabilities, losses, gradients, order parameters, energies, and non-performance claim boundaries. |
+| `scpn_quantum_control.phase.domain_benchmark_datasets` | Synthetic exact-answer differentiable domain datasets for bounded phase-QNN and two-oscillator Kuramoto-XY cases, plus published public-domain QPU artefact references for EEG, plasma, power-grid, and FEP Kuramoto conversion checks. |
 | `scpn_quantum_control.phase.natural_gradient` | Metric-aware parameter-shift descent with damped solves, metric validation, line-search traces, and convergence certificates. |
 | `scpn_quantum_control.phase.optimizer_audit` | Multi-start optimizer comparison evidence for parameter-shift descent and natural-gradient descent. |
 | `scpn_quantum_control.phase.objectives` | Composable differentiable phase-control objectives with term-wise gradients and fail-closed parameter-shift compatibility. |
@@ -285,6 +285,28 @@ XY energy, and phase-energy gradient for a $\pi/3$ phase gap. The suite is a
 correctness/conformance fixture for differentiable training and benchmark
 harnesses. It is not a measured physics dataset, hardware result, or isolated
 performance benchmark artefact.
+
+Published public-domain cases are indexed separately and backed by committed
+`QPUDataArtifact` files:
+
+```python
+from scpn_quantum_control.phase import (
+    load_differentiable_published_domain_benchmark_cases,
+    run_differentiable_published_domain_benchmark_validation,
+)
+
+
+published = load_differentiable_published_domain_benchmark_cases()
+assert "ieee5bus_power_grid" in published.dataset_ids
+
+published_validation = run_differentiable_published_domain_benchmark_validation()
+assert published_validation.passed
+```
+
+Those rows validate publication-safe artefact metadata and the Kuramoto facade
+conversion path for the existing EEG, ITER-style MHD, IEEE 5-bus, and
+Friston-style FEP benchmark artefacts. They are source-backed conformance
+records, not live hardware execution or timing evidence.
 
 Differentiable benchmark evidence also carries explicit accelerator metadata.
 By default the evidence is CPU-only and does not imply GPU execution. When
