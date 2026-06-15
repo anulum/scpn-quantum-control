@@ -27,6 +27,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
     SparsePauliHamiltonian,
     build_phase_qnode_template,
     build_registered_phase_qnode_circuit,
+    decompose_phase_qnode_controlled_gate,
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
     phase_qnode_computational_basis_fisher_information,
@@ -34,6 +35,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
     phase_qnode_natural_gradient_metric,
     phase_qnode_quantum_fisher_information,
     phase_qnode_support_report,
+    registered_phase_qnode_decompositions,
     registered_phase_qnode_gates,
     registered_phase_qnode_observables,
     registered_phase_qnode_templates,
@@ -98,6 +100,12 @@ def test_phase_qnode_registered_gate_family_executes_with_pauli_observables() ->
         "cz",
         "cy",
         "swap",
+        "ch",
+        "cs",
+        "ct",
+        "ccnot",
+        "ccz",
+        "cswap",
         "crx",
         "cry",
         "crz",
@@ -595,3 +603,115 @@ def test_phase_qnode_registered_depth_exports_are_public() -> None:
     assert phase.phase_qnode_depth_profile is phase_qnode_depth_profile
     assert phase.PhaseQNodeDepthProfile is PhaseQNodeDepthProfile
     assert phase.PhaseQNodeRegisteredCircuitSpec is PhaseQNodeRegisteredCircuitSpec
+
+
+def test_phase_qnode_controlled_single_qubit_gates_match_references() -> None:
+    ch_circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("x", (0,)), ("ch", (0, 1))),
+        observable=PauliTerm(1.0, ((1, "x"),)),
+    )
+    cs_circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("x", (0,)), ("h", (1,)), ("cs", (0, 1))),
+        observable=PauliTerm(1.0, ((1, "y"),)),
+    )
+    ct_circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("x", (0,)), ("h", (1,)), ("ct", (0, 1))),
+        observable=PauliTerm(1.0, ((1, "x"),)),
+    )
+
+    np.testing.assert_allclose(
+        execute_phase_qnode_circuit(ch_circuit, np.array([], dtype=float)).value,
+        1.0,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        execute_phase_qnode_circuit(cs_circuit, np.array([], dtype=float)).value,
+        1.0,
+        atol=1e-12,
+    )
+    np.testing.assert_allclose(
+        execute_phase_qnode_circuit(ct_circuit, np.array([], dtype=float)).value,
+        np.sqrt(0.5),
+        atol=1e-12,
+    )
+
+
+def test_phase_qnode_toffoli_and_fredkin_decompositions_are_exact() -> None:
+    ccnot_prefix = (
+        ("x", (0,)),
+        ("x", (1,)),
+    )
+    ccnot_native = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(*ccnot_prefix, ("ccnot", (0, 1, 2))),
+        observable=PauliTerm(1.0, ((2, "z"),)),
+    )
+    ccnot_decomposed = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(
+            *ccnot_prefix,
+            *decompose_phase_qnode_controlled_gate(("ccnot", (0, 1, 2))),
+        ),
+        observable=PauliTerm(1.0, ((2, "z"),)),
+    )
+
+    native_ccnot = execute_phase_qnode_circuit(ccnot_native, np.array([], dtype=float))
+    decomposed_ccnot = execute_phase_qnode_circuit(ccnot_decomposed, np.array([], dtype=float))
+    np.testing.assert_allclose(native_ccnot.value, -1.0, atol=1e-12)
+    np.testing.assert_allclose(native_ccnot.state, decomposed_ccnot.state, atol=1e-12)
+
+    cswap_prefix = (
+        ("x", (0,)),
+        ("x", (1,)),
+    )
+    cswap_native = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(*cswap_prefix, ("cswap", (0, 1, 2))),
+        observable=PauliTerm(1.0, ((2, "z"),)),
+    )
+    cswap_decomposed = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(
+            *cswap_prefix,
+            *decompose_phase_qnode_controlled_gate(("cswap", (0, 1, 2))),
+        ),
+        observable=PauliTerm(1.0, ((2, "z"),)),
+    )
+
+    native_cswap = execute_phase_qnode_circuit(cswap_native, np.array([], dtype=float))
+    decomposed_cswap = execute_phase_qnode_circuit(cswap_decomposed, np.array([], dtype=float))
+    np.testing.assert_allclose(native_cswap.value, -1.0, atol=1e-12)
+    np.testing.assert_allclose(native_cswap.state, decomposed_cswap.state, atol=1e-12)
+
+
+def test_phase_qnode_controlled_gate_support_reports_validate_arity() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(("ccnot", (0, 1)),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    report = phase_qnode_support_report(circuit, np.array([], dtype=float))
+
+    assert not report.supported
+    assert "gate arity mismatches" in report.failure_reason
+    with pytest.raises(PhaseQNodeSupportError):
+        execute_phase_qnode_circuit(circuit, np.array([], dtype=float))
+
+
+def test_phase_qnode_controlled_decomposition_registry_validates_inputs() -> None:
+    assert set(registered_phase_qnode_decompositions()) == {"ccnot", "cswap"}
+    with pytest.raises(ValueError, match="do not accept trainable"):
+        decompose_phase_qnode_controlled_gate(("ccnot", (0, 1, 2), 0))
+    with pytest.raises(ValueError, match="expects 3 qubits"):
+        decompose_phase_qnode_controlled_gate(("cswap", (0, 1)))
+    with pytest.raises(ValueError, match="no registered"):
+        decompose_phase_qnode_controlled_gate(("ch", (0, 1)))
+
+
+def test_phase_qnode_controlled_gate_exports_are_public() -> None:
+    assert phase.decompose_phase_qnode_controlled_gate is decompose_phase_qnode_controlled_gate
+    assert phase.registered_phase_qnode_decompositions is registered_phase_qnode_decompositions

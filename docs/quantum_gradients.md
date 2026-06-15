@@ -1068,6 +1068,7 @@ import numpy as np
 from scpn_quantum_control.phase import (
     build_phase_qnode_template,
     build_registered_phase_qnode_circuit,
+    decompose_phase_qnode_controlled_gate,
     DenseHermitianObservable,
     PauliCovarianceObservable,
     PauliTerm,
@@ -1088,6 +1089,21 @@ value = execute_phase_qnode_circuit(circuit, params)
 gradient = parameter_shift_phase_qnode_gradient(circuit, params)
 parity = run_phase_qnode_framework_parity_suite()
 print(value.value, gradient.gradient, parity.frameworks)
+```
+
+The registered gate set includes controlled-H/S/T, Toffoli (`ccnot`), CCZ, and
+Fredkin (`cswap`) gates. Use `decompose_phase_qnode_controlled_gate(...)` when a
+toolchain needs an exact registered operation-list expansion for Toffoli or
+Fredkin gates before execution or export:
+
+```python
+controlled_ops = decompose_phase_qnode_controlled_gate(("cswap", (0, 1, 2)))
+controlled_circuit = PhaseQNodeCircuit(
+    n_qubits=3,
+    operations=(("x", (0,)), ("x", (1,)), *controlled_ops),
+    observable=PauliTerm(1.0, ((2, "z"),)),
+)
+print(execute_phase_qnode_circuit(controlled_circuit, np.array([])).value)
 ```
 
 Use `build_phase_qnode_template(...)` when the circuit should come from a
@@ -1439,9 +1455,10 @@ print(generated.passed, conversion.device_name, conversion.shots)
 The generated route records device, shot policy, interface, diff method, gates,
 observable family, and differentiable parameter indices. Its claim boundary is
 limited to registered static gates and direct expectation observables with
-PennyLane equivalents. Provider submission, hardware execution, dynamic
-circuits, noise models, and covariance observable conversion remain explicit
-non-claims.
+PennyLane equivalents, including CH, Toffoli, Fredkin, and controlled phase
+equivalents for CS/CT/CCZ where the optional dependency is installed. Provider
+submission, hardware execution, dynamic circuits, noise models, and covariance
+observable conversion remain explicit non-claims.
 
 ## Optional PyTorch and TensorFlow tensor bridges
 

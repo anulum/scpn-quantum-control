@@ -419,6 +419,9 @@ _PENNYLANE_OPERATION_NAMES: dict[str, str] = {
     "cz": "CZ",
     "cy": "CY",
     "swap": "SWAP",
+    "ch": "CH",
+    "ccnot": "Toffoli",
+    "cswap": "CSWAP",
     "rx": "RX",
     "ry": "RY",
     "rz": "RZ",
@@ -461,11 +464,25 @@ def _attach_phase_qnode_metadata(
 def _apply_pennylane_operation(
     qml: Any, operation: PhaseQNodeOperation, values: FloatArray
 ) -> None:
+    wire_sequence = list(operation.qubits)
+    wires = operation.qubits[0] if len(operation.qubits) == 1 else wire_sequence
+    if operation.gate == "cs":
+        qml.ControlledPhaseShift(np.pi / 2.0, wires=wires)
+        return
+    if operation.gate == "ct":
+        qml.ControlledPhaseShift(np.pi / 4.0, wires=wires)
+        return
+    if operation.gate == "ccz":
+        qml.ControlledQubitUnitary(
+            np.diag([1.0, 1.0, 1.0, -1.0]).astype(np.complex128),
+            control_wires=wire_sequence[:2],
+            wires=wire_sequence[2],
+        )
+        return
     operation_name = _PENNYLANE_OPERATION_NAMES.get(operation.gate)
     if operation_name is None:
         raise ValueError(f"PennyLane QNode conversion does not support gate {operation.gate!r}")
     qml_operation = getattr(qml, operation_name)
-    wires = operation.qubits[0] if len(operation.qubits) == 1 else list(operation.qubits)
     if operation.parameter_index is None:
         qml_operation(wires=wires)
         return

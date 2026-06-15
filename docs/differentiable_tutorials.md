@@ -33,6 +33,7 @@ kernels are framework-native differentiable.
 | Step | API surface | Evidence produced |
 |---|---|---|
 | Minimal QNode | `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, `parameter_shift_phase_qnode_gradient(...)` | Local statevector value and analytic parameter-shift gradient for a registered gate and observable. |
+| Controlled gates | `decompose_phase_qnode_controlled_gate(...)`, `registered_phase_qnode_decompositions()` | Exact registered Toffoli/Fredkin decompositions plus native controlled-H/S/T, Toffoli, CCZ, and Fredkin execution. |
 | Diagnostics | `explain_differentiability(...)` | Fail-closed reasons, suggested alternatives, dependency rows, device rows, backend rows, and support payload. |
 | Framework boundary | Bounded QNN bridge matrix inside the diagnostic report | Implemented JAX/PyTorch/TensorFlow bounded rows are separated from arbitrary simulator autodiff and provider hardware gaps. |
 | Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
@@ -136,6 +137,36 @@ print(gradient.gradient)
 
 Depth budgets are local circuit-resource gates. They are not hardware duration,
 transpilation, pulse-schedule, noise, or performance evidence.
+
+For controlled-gate export, ask the registry which exact decompositions are
+available and expand only those gates before passing the circuit to another
+toolchain:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    decompose_phase_qnode_controlled_gate,
+    execute_phase_qnode_circuit,
+    registered_phase_qnode_decompositions,
+)
+
+print(registered_phase_qnode_decompositions())
+ops = decompose_phase_qnode_controlled_gate(("ccnot", (0, 1, 2)))
+circuit = PhaseQNodeCircuit(
+    n_qubits=3,
+    operations=(("x", (0,)), ("x", (1,)), *ops),
+    observable=PauliTerm(1.0, ((2, "z"),)),
+)
+
+value = execute_phase_qnode_circuit(circuit, np.array([], dtype=float))
+print(value.value)
+```
+
+The decomposition registry is intentionally explicit: unsupported controlled
+gates, wrong qubit arity, and parameterised decomposition requests fail closed.
 
 ## Why A Route Is Blocked
 

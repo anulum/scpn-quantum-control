@@ -20,11 +20,60 @@ FloatArray: TypeAlias = NDArray[np.float64]
 ComplexArray: TypeAlias = NDArray[np.complex128]
 OperationSpec: TypeAlias = tuple[object, ...]
 
-_NON_PARAMETRIC_GATES = frozenset(("h", "x", "y", "z", "s", "t", "sx", "cnot", "cz", "cy", "swap"))
+_NON_PARAMETRIC_GATES = frozenset(
+    (
+        "h",
+        "x",
+        "y",
+        "z",
+        "s",
+        "t",
+        "sx",
+        "cnot",
+        "cz",
+        "cy",
+        "swap",
+        "ch",
+        "cs",
+        "ct",
+        "ccnot",
+        "ccz",
+        "cswap",
+    )
+)
 _PARAMETRIC_GATES = frozenset(
     ("rx", "ry", "rz", "phase", "crx", "cry", "crz", "rxx", "ryy", "rzz")
 )
 _REGISTERED_GATES = tuple(sorted(_NON_PARAMETRIC_GATES | _PARAMETRIC_GATES))
+_GATE_ARITY = {
+    "h": 1,
+    "x": 1,
+    "y": 1,
+    "z": 1,
+    "s": 1,
+    "t": 1,
+    "sx": 1,
+    "rx": 1,
+    "ry": 1,
+    "rz": 1,
+    "phase": 1,
+    "cnot": 2,
+    "cz": 2,
+    "cy": 2,
+    "swap": 2,
+    "ch": 2,
+    "cs": 2,
+    "ct": 2,
+    "crx": 2,
+    "cry": 2,
+    "crz": 2,
+    "rxx": 2,
+    "ryy": 2,
+    "rzz": 2,
+    "ccnot": 3,
+    "ccz": 3,
+    "cswap": 3,
+}
 _REGISTERED_OBSERVABLES = (
     "pauli_x",
     "pauli_y",
@@ -40,6 +89,7 @@ _REGISTERED_TEMPLATES = (
     "hardware_efficient_ry",
     "hardware_efficient_ryrz",
 )
+_REGISTERED_DECOMPOSITIONS = ("ccnot", "cswap")
 
 _I = np.eye(2, dtype=np.complex128)
 _X = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
@@ -457,6 +507,40 @@ def registered_phase_qnode_templates() -> tuple[str, ...]:
     return _REGISTERED_TEMPLATES
 
 
+def registered_phase_qnode_decompositions() -> tuple[str, ...]:
+    """Return gates with exact registered operation-list decompositions."""
+    return _REGISTERED_DECOMPOSITIONS
+
+
+def decompose_phase_qnode_controlled_gate(
+    operation: PhaseQNodeOperation | OperationSpec,
+) -> tuple[PhaseQNodeOperation, ...]:
+    """Return an exact registered decomposition for supported controlled gates."""
+    parsed = _parse_operation(operation)
+    if parsed.parameter_index is not None:
+        raise ValueError("controlled-gate decompositions do not accept trainable parameters")
+    if parsed.gate == "ccnot":
+        _require_qubit_width(parsed, 3)
+        control_a, control_b, target = parsed.qubits
+        return (
+            PhaseQNodeOperation("h", (target,)),
+            PhaseQNodeOperation("ccz", (control_a, control_b, target)),
+            PhaseQNodeOperation("h", (target,)),
+        )
+    if parsed.gate == "cswap":
+        _require_qubit_width(parsed, 3)
+        control, target_a, target_b = parsed.qubits
+        return (
+            PhaseQNodeOperation("cnot", (target_a, target_b)),
+            PhaseQNodeOperation("ccnot", (control, target_b, target_a)),
+            PhaseQNodeOperation("cnot", (target_a, target_b)),
+        )
+    raise ValueError(
+        "no registered operation-list decomposition for gate "
+        f"{parsed.gate!r}; use registered_phase_qnode_decompositions()"
+    )
+
+
 def build_phase_qnode_template(
     name: str,
     n_qubits: int,
@@ -619,6 +703,11 @@ def phase_qnode_support_report(
     operations = _parsed_operations(circuit)
     gates = tuple(operation.gate for operation in operations)
     unsupported_gates = tuple(gate for gate in gates if gate not in _REGISTERED_GATES)
+    invalid_arities = tuple(
+        f"{index}:{operation.gate}/{len(operation.qubits)}"
+        for index, operation in enumerate(operations)
+        if operation.gate in _GATE_ARITY and len(operation.qubits) != _GATE_ARITY[operation.gate]
+    )
     unsupported_parameters = tuple(
         operation.parameter_index
         for operation in operations
@@ -655,6 +744,8 @@ def phase_qnode_support_report(
         reasons.append(
             f"parametric gates missing parameter indices at operations: {missing_parameters}"
         )
+    if invalid_arities:
+        reasons.append(f"gate arity mismatches at operations: {invalid_arities}")
     return PhaseQNodeSupportReport(
         supported=not reasons,
         gates=gates,
@@ -1033,6 +1124,11 @@ def _as_optional_positive_int(name: str, value: int | None) -> int | None:
     return int(value)
 
 
+def _require_qubit_width(operation: PhaseQNodeOperation, width: int) -> None:
+    if len(operation.qubits) != width:
+        raise ValueError(f"{operation.gate} decomposition expects {width} qubits")
+
+
 def _apply_operation(
     state: ComplexArray,
     n_qubits: int,
@@ -1137,6 +1233,18 @@ def _gate_matrix(gate: str, theta: float) -> ComplexArray:
             [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]],
             dtype=np.complex128,
         )
+    if gate == "ch":
+        return _controlled(_H)
+    if gate == "cs":
+        return _controlled(_S)
+    if gate == "ct":
+        return _controlled(_T)
+    if gate == "ccnot":
+        return _ccnot_matrix()
+    if gate == "ccz":
+        return np.diag([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0]).astype(np.complex128)
+    if gate == "cswap":
+        return _cswap_matrix()
     if gate == "crx":
         return _controlled(_gate_matrix("rx", theta))
     if gate == "cry":
@@ -1217,6 +1325,24 @@ def _controlled(target: ComplexArray) -> ComplexArray:
     matrix[0, 0] = 1.0
     matrix[1, 1] = 1.0
     matrix[2:4, 2:4] = target
+    return matrix
+
+
+def _ccnot_matrix() -> ComplexArray:
+    matrix = np.eye(8, dtype=np.complex128)
+    matrix[6, 6] = 0.0
+    matrix[7, 7] = 0.0
+    matrix[6, 7] = 1.0
+    matrix[7, 6] = 1.0
+    return matrix
+
+
+def _cswap_matrix() -> ComplexArray:
+    matrix = np.eye(8, dtype=np.complex128)
+    matrix[5, 5] = 0.0
+    matrix[6, 6] = 0.0
+    matrix[5, 6] = 1.0
+    matrix[6, 5] = 1.0
     return matrix
 
 
@@ -1373,6 +1499,7 @@ __all__ = [
     "SparsePauliHamiltonian",
     "build_registered_phase_qnode_circuit",
     "build_phase_qnode_template",
+    "decompose_phase_qnode_controlled_gate",
     "execute_phase_qnode_circuit",
     "parameter_shift_phase_qnode_gradient",
     "phase_qnode_computational_basis_fisher_information",
@@ -1382,5 +1509,6 @@ __all__ = [
     "phase_qnode_support_report",
     "registered_phase_qnode_gates",
     "registered_phase_qnode_observables",
+    "registered_phase_qnode_decompositions",
     "registered_phase_qnode_templates",
 ]
