@@ -49,4 +49,6 @@ def test_ci_workflow_uploads_non_isolated_artifacts_without_production_promotion
     assert "RUNNER_ENVIRONMENT" in text
     assert "GITHUB_RUN_ID" in text
     assert "classification" in text
+    assert "External comparison evidence must remain functional_non_isolated" in text
+    assert "diff-qnode-external-comparison" in text
     assert "No provider or QPU execution" in text

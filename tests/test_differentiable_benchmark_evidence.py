@@ -312,6 +312,7 @@ def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_id
                 "gradient_error": 0.0,
             },
         ),
+        external_artifact_ids=("diff-qnode-external-comparison-local",),
     )
 
     assert bundle.raw_json_path.exists()
@@ -323,7 +324,7 @@ def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_id
     raw = bundle.raw_json_path.read_text(encoding="utf-8")
     assert bundle.artifact_id in raw
     assert "functional_non_isolated" in raw
-    assert "diff-qnode-external-comparison-schema-v1" in raw
+    assert "diff-qnode-external-comparison-local" in raw
     assert "non_isolated_runner" in raw
     assert "phase_qnode_vector_grad" in bundle.csv_path.read_text(encoding="utf-8")
     assert "functional_non_isolated" in bundle.markdown_path.read_text(encoding="utf-8")

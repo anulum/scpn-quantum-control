@@ -409,6 +409,10 @@ classes, Python/platform metadata, and the fixed `functional_non_isolated`
 classification. It is a reproducibility and correctness artefact only:
 `production_eligible` and `promotion_ready` are false until the isolated
 benchmark gate supplies artefact IDs and the claim ledger is updated.
+`scripts/run_differentiable_benchmark_evidence.py` writes this companion JSON
+file as `diff-qnode-external-comparison.json` and inserts the real
+external-comparison artefact ID into the benchmark evidence bundle's
+`evidence_artifact_ids` list.
 
 For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an executable that reads a JSON
 request on stdin and writes JSON with:

@@ -366,6 +366,8 @@ def test_external_comparison_writer_records_non_promotional_artifact(tmp_path) -
     payload = json.loads(artifact.path.read_text(encoding="utf-8"))
 
     assert isinstance(artifact, ExternalComparisonArtifact)
+    assert artifact.artifact_id == "unit-external-comparison"
+    assert artifact.to_dict()["artifact_id"] == "unit-external-comparison"
     assert artifact.to_dict()["classification"] == "functional_non_isolated"
     assert payload["schema"] == "scpn_qc_differentiable_external_comparison_v1"
     assert payload["artifact_id"] == "unit-external-comparison"

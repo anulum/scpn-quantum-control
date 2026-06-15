@@ -13,7 +13,7 @@
     "python_model_classes": 1686,
     "python_model_source_modules": 811,
     "rust_pyo3_model_wrappers": 122,
-    "rust_source_modules": 30,
+    "rust_source_modules": 31,
     "test_files": 1932
   },
   "documentation": {
@@ -8732,6 +8732,7 @@
       "scpn_quantum_engine/src/pulse_shaping.rs",
       "scpn_quantum_engine/src/qnode_metrics.rs",
       "scpn_quantum_engine/src/qpetri.rs",
+      "scpn_quantum_engine/src/realtime.rs",
       "scpn_quantum_engine/src/sectors.rs",
       "scpn_quantum_engine/src/stochastic_gradient.rs",
       "scpn_quantum_engine/src/symmetry_decay.rs",

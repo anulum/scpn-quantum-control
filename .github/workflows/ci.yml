@@ -237,8 +237,15 @@ jobs:
           payload = json.loads(
               Path("differentiable-benchmark-evidence/diff-qnode-ci-evidence-schema-v1.json").read_text()
           )
+          external_payload = json.loads(
+              Path("differentiable-benchmark-evidence/diff-qnode-external-comparison.json").read_text()
+          )
           if payload["metadata"]["classification"] != "functional_non_isolated":
               raise SystemExit("GitHub-hosted benchmark evidence must remain functional_non_isolated")
+          if external_payload["classification"] != "functional_non_isolated":
+              raise SystemExit("External comparison evidence must remain functional_non_isolated")
+          if external_payload["artifact_id"] not in payload["evidence_artifact_ids"]:
+              raise SystemExit("Benchmark evidence must reference the external comparison artefact ID")
           PY
       - name: Assert non-provider benchmark boundary
         run: grep -R "No provider or QPU execution" differentiable-benchmark-evidence
@@ -277,7 +284,10 @@ jobs:
               --output-dir differentiable-isolated-benchmark-evidence \
               --cpu-affinity "$SCPN_BENCH_CPU_AFFINITY" \
               --isolation-method "$SCPN_BENCH_ISOLATION_METHOD"
-          grep -R '"classification": "isolated_affinity"' differentiable-isolated-benchmark-evidence
+          grep '"classification": "isolated_affinity"' \
+            differentiable-isolated-benchmark-evidence/diff-qnode-ci-evidence-schema-v1.json
+          grep '"classification": "functional_non_isolated"' \
+            differentiable-isolated-benchmark-evidence/diff-qnode-external-comparison.json
       - name: Upload isolated differentiable benchmark evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:

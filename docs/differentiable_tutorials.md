@@ -338,6 +338,19 @@ reproducibility and integration check for both benchmark and external-comparison
 artefacts, but it cannot close the promotion blocker for true
 `isolated_affinity` evidence.
 
+The CI evidence writer also emits the external comparison companion artefact:
+
+```bash
+python scripts/run_differentiable_benchmark_evidence.py \
+  --output-dir differentiable-benchmark-evidence
+```
+
+The output directory contains `diff-qnode-ci-evidence-schema-v1.json`,
+`diff-qnode-ci-evidence-schema-v1.csv`, `diff-qnode-ci-evidence-schema-v1.md`,
+and `diff-qnode-external-comparison.json`. The benchmark JSON references the
+external comparison artefact ID in `evidence_artifact_ids`; the external
+comparison JSON remains `functional_non_isolated`.
+
 ## Claim Boundaries
 
 - Tutorials and examples prove that the public workflow is runnable.

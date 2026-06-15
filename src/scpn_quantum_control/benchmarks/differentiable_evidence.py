@@ -246,6 +246,7 @@ def write_differentiable_benchmark_evidence_bundle(
     metadata: BenchmarkIsolationMetadata,
     timing_rows: Sequence[Mapping[str, object]],
     artifact_id: str | None = None,
+    external_artifact_ids: Sequence[str] | None = None,
 ) -> DifferentiableBenchmarkEvidenceBundle:
     """Write raw JSON, CSV timing rows, and Markdown summary for benchmark evidence."""
 
@@ -258,16 +259,16 @@ def write_differentiable_benchmark_evidence_bundle(
     csv_path = output_dir / f"{resolved_artifact_id}.csv"
     markdown_path = output_dir / f"{resolved_artifact_id}.md"
     rows = [dict(row) for row in timing_rows]
+    companion_artifact_ids = tuple(
+        external_artifact_ids or ("diff-qnode-external-comparison-schema-v1",)
+    )
     payload = {
         "schema": "scpn_qc_differentiable_benchmark_evidence_v1",
         "artifact_id": resolved_artifact_id,
         "generated_at_epoch": generated_at,
         "metadata": metadata.to_dict(),
         "timing_rows": rows,
-        "evidence_artifact_ids": [
-            resolved_artifact_id,
-            "diff-qnode-external-comparison-schema-v1",
-        ],
+        "evidence_artifact_ids": [resolved_artifact_id, *companion_artifact_ids],
         "claim_boundary": (
             "CI benchmark evidence only. functional_non_isolated rows are parity/local "
             "regression artefacts and cannot support production performance claims."

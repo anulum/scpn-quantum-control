@@ -25,6 +25,7 @@ from scpn_quantum_control.benchmarks.differentiable_evidence import (
 )
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
     run_differentiable_external_comparison_suite,
+    write_differentiable_external_comparison,
 )
 
 
@@ -46,7 +47,8 @@ def main() -> int:
     frequency_mhz = read_cpu_frequency_mhz()
     heavy_jobs_running = args.heavy_jobs_running or infer_heavy_jobs_running(load_before)
     accelerator_metadata = capture_accelerator_metadata(os.environ)
-    timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
+    comparison_rows = run_differentiable_external_comparison_suite()
+    timing_rows = tuple(row.to_dict() for row in comparison_rows)
     load_after = capture_host_load()
     metadata = BenchmarkIsolationMetadata.from_ci_environment(
         os.environ,
@@ -60,16 +62,24 @@ def main() -> int:
         heavy_jobs_running=heavy_jobs_running,
         accelerator_metadata=accelerator_metadata,
     )
+    external_artifact = write_differentiable_external_comparison(
+        args.output_dir / "diff-qnode-external-comparison.json",
+        comparison_rows,
+        artifact_id=f"diff-qnode-external-comparison-{metadata.github_run_id or 'local'}",
+    )
     bundle = write_differentiable_benchmark_evidence_bundle(
         args.output_dir,
         metadata=metadata,
         timing_rows=timing_rows,
         artifact_id="diff-qnode-ci-evidence-schema-v1",
+        external_artifact_ids=(external_artifact.artifact_id,),
     )
+    print(external_artifact.path)
     print(bundle.raw_json_path)
     print(bundle.csv_path)
     print(bundle.markdown_path)
     print(f"classification={bundle.classification}")
+    print(f"external_comparison_classification={external_artifact.classification}")
     print("No provider or QPU execution")
     return 0
 

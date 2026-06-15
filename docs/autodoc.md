@@ -168,7 +168,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.benchmarks.differentiable_external_comparison
     options:
-      members: [ExternalComparisonRow, run_differentiable_external_comparison_suite, write_differentiable_external_comparison]
+      members: [ExternalComparisonArtifact, ExternalComparisonRow, run_differentiable_external_comparison_suite, write_differentiable_external_comparison]
 
 ::: scpn_quantum_control.differentiable_claim_ledger
     options:

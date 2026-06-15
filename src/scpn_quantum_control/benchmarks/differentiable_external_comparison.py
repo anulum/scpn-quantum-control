@@ -132,6 +132,7 @@ class ExternalComparisonRow:
 class ExternalComparisonArtifact:
     """Written external comparison artefact paths and summary metadata."""
 
+    artifact_id: str
     path: Path
     row_count: int
     success_count: int
@@ -143,6 +144,7 @@ class ExternalComparisonArtifact:
         """Return a JSON-ready artefact summary."""
 
         return {
+            "artifact_id": self.artifact_id,
             "path": str(self.path),
             "row_count": self.row_count,
             "success_count": self.success_count,
@@ -270,6 +272,7 @@ def write_differentiable_external_comparison(
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return ExternalComparisonArtifact(
+        artifact_id=artifact_id.strip(),
         path=destination,
         row_count=len(evidence_rows),
         success_count=success_count,

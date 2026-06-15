@@ -86,6 +86,10 @@ External comparison artefacts written by
 `write_differentiable_external_comparison(...)` record row payloads,
 dependency versions, toolchain metadata, failure classes, and local Python/host
 metadata, but they are still classified as `functional_non_isolated`.
+The benchmark evidence script writes `diff-qnode-external-comparison.json`
+beside the benchmark bundle and records that artefact's ID in the bundle, so CI
+artifacts retain the complete comparison evidence chain without upgrading local
+correctness rows into performance claims.
 GitHub-hosted runners are classified as `functional_non_isolated`; production
 performance wording requires a self-hosted runner labelled
 `isolated-benchmark`, explicit CPU affinity, observed process affinity that
