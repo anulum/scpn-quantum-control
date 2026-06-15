@@ -215,6 +215,13 @@ from .pennylane_bridge import (
     check_pennylane_qnode_round_trip,
     is_phase_pennylane_available,
 )
+from .pennylane_import import (
+    PennyLaneImportResult,
+    PennyLaneImportRoundTripResult,
+    check_pennylane_phase_qnode_import_round_trip,
+    import_phase_qnode_from_pennylane,
+    is_pennylane_import_available,
+)
 from .phase_vqe import PhaseVQE
 from .provider_gradient import (
     ProviderExpectationSample,
@@ -697,6 +704,11 @@ __all__ = [
     "check_pennylane_parameter_shift_agreement",
     "check_pennylane_phase_qnode_round_trip",
     "check_pennylane_qnode_round_trip",
+    "PennyLaneImportResult",
+    "PennyLaneImportRoundTripResult",
+    "import_phase_qnode_from_pennylane",
+    "check_pennylane_phase_qnode_import_round_trip",
+    "is_pennylane_import_available",
     "PennyLaneGradientAgreementResult",
     "PennyLaneQNodeConversionResult",
     "PennyLaneRoundTripResult",

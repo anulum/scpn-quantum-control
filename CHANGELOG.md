@@ -5,6 +5,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added a PennyLane import-from bridge
+  (`phase/pennylane_import.py`), the inverse of the existing export bridge.
+  `import_phase_qnode_from_pennylane` reads a `pennylane.tape.QuantumScript` and
+  builds the equivalent registered `PhaseQNodeCircuit`, mapping the supported
+  gate set and a single Pauli-word expectation observable, with every gate
+  parameter becoming a Phase-QNode parameter in tape order.
+  `check_pennylane_phase_qnode_import_round_trip` confirms the imported circuit
+  reproduces the source value and parameter-shift gradient (the gradient
+  comparison restricts the tape to its gate parameters so Hamiltonian
+  coefficients are not differentiated, and independently confirms the four-term
+  controlled-rotation rule against PennyLane). Import is fail-closed on
+  unsupported gates, multi-parameter gates, non-integer or non-contiguous wires,
+  multiple or non-expectation measurements, and non-Pauli observables.
+  Documented in `docs/quantum_gradients.md` and covered by
+  `tests/test_phase_pennylane_import.py`.
 - 2026-06-15 — Added closed-loop control analysis for the measurement-feedback
   synchronisation loop (`control/closed_loop_analysis.py`).
   `analyse_closed_loop_response` turns a set-point tracking trajectory into a

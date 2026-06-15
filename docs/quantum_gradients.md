@@ -1650,6 +1650,40 @@ equivalents for CS/CT/CCZ where the optional dependency is installed. Provider
 submission, hardware execution, dynamic circuits, noise models, and covariance
 observable conversion remain explicit non-claims.
 
+### Importing a PennyLane tape
+
+The inverse direction reads a `pennylane.tape.QuantumScript` and builds the
+equivalent registered `PhaseQNodeCircuit`. Every gate parameter becomes a
+Phase-QNode parameter in tape order, and a single Pauli-word expectation maps to
+the registered observable family.
+
+```python
+import pennylane as qml
+from scpn_quantum_control.phase import (
+    import_phase_qnode_from_pennylane,
+    check_pennylane_phase_qnode_import_round_trip,
+)
+
+tape = qml.tape.QuantumScript(
+    [qml.Hadamard(0), qml.RX(0.6, wires=0), qml.CNOT([0, 1]), qml.CRY(0.9, wires=[0, 1])],
+    [qml.expval(qml.PauliZ(0) @ qml.PauliX(1))],
+)
+imported = import_phase_qnode_from_pennylane(tape)        # -> PhaseQNodeCircuit + parameters
+verdict = check_pennylane_phase_qnode_import_round_trip(tape)
+print(verdict.value_match, verdict.gradient_match)
+```
+
+`check_pennylane_phase_qnode_import_round_trip` executes the source tape and the
+imported circuit and compares both the expectation value and the parameter-shift
+gradient — the gradient comparison restricts the PennyLane tape to its gate
+parameters so observable (Hamiltonian) coefficients are not differentiated, and
+it independently confirms the four-term controlled-rotation rule against
+PennyLane's own gradient. Import is fail-closed: gates outside the registered
+set, multi-parameter gates (for example `Rot`), non-integer or non-contiguous
+wires, multiple or non-expectation measurements, and non-Pauli or identity
+observables are rejected. Mid-circuit measurement, channel, template, provider,
+and hardware import remain explicit non-claims.
+
 ## Optional PyTorch and TensorFlow tensor bridges
 
 For ML pipelines that need framework tensors, the phase namespace exposes

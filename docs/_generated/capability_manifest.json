@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 627,
     "public_documentation_pages": 250,
-    "python_model_classes": 1726,
-    "python_model_source_modules": 827,
+    "python_model_classes": 1728,
+    "python_model_source_modules": 828,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1944
+    "test_files": 1945
   },
   "documentation": {
     "examples": [
@@ -545,7 +545,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 71
+        "python_modules": 72
       },
       {
         "package": "psi_field",
@@ -4806,6 +4806,14 @@
         "path": "src/scpn_quantum_control/phase/pennylane_bridge.py"
       },
       {
+        "name": "PennyLaneImportResult",
+        "path": "src/scpn_quantum_control/phase/pennylane_import.py"
+      },
+      {
+        "name": "PennyLaneImportRoundTripResult",
+        "path": "src/scpn_quantum_control/phase/pennylane_import.py"
+      },
+      {
         "name": "PennyLaneQNodeConversionResult",
         "path": "src/scpn_quantum_control/phase/pennylane_bridge.py"
       },
@@ -8713,6 +8721,7 @@
       "src/scpn_quantum_control/phase/optimizer_audit.py",
       "src/scpn_quantum_control/phase/param_shift.py",
       "src/scpn_quantum_control/phase/pennylane_bridge.py",
+      "src/scpn_quantum_control/phase/pennylane_import.py",
       "src/scpn_quantum_control/phase/phase_vqe.py",
       "src/scpn_quantum_control/phase/provider_gradient.py",
       "src/scpn_quantum_control/phase/provider_gradient_audit.py",
@@ -10958,6 +10967,7 @@
       "tests/test_phase_optimizer_audit.py",
       "tests/test_phase_param_shift.py",
       "tests/test_phase_pennylane_bridge.py",
+      "tests/test_phase_pennylane_import.py",
       "tests/test_phase_provider_gradient.py",
       "tests/test_phase_provider_gradient_audit.py",
       "tests/test_phase_provider_hardware_gradient_audit.py",
