@@ -1656,6 +1656,7 @@ from scpn_quantum_control.phase import (
     PhaseQNodeCircuit,
     build_pennylane_qnode_from_phase_qnode,
     check_pennylane_phase_qnode_round_trip,
+    run_pennylane_maturity_audit,
 )
 
 phase_qnode = PhaseQNodeCircuit(
@@ -1673,7 +1674,16 @@ generated = check_pennylane_phase_qnode_round_trip(
     phase_qnode,
     np.array([0.4, -0.2]),
 )
+maturity = run_pennylane_maturity_audit(
+    objective=scpn_objective,
+    pennylane_objective=scpn_objective,
+    pennylane_gradient=pennylane_gradient,
+    values=np.array([0.4]),
+    circuit=phase_qnode,
+    phase_qnode_values=np.array([0.4, -0.2]),
+)
 print(generated.passed, conversion.device_name, conversion.shots)
+print(maturity.identical_circuit_ready, maturity.ready_for_provider_exceedance)
 ```
 
 The generated route records device, shot policy, interface, diff method, gates,
@@ -1683,6 +1693,14 @@ PennyLane equivalents, including CH, Toffoli, Fredkin, and controlled phase
 equivalents for CS/CT/CCZ where the optional dependency is installed. Provider
 submission, hardware execution, dynamic circuits, noise models, and covariance
 observable conversion remain explicit non-claims.
+`run_pennylane_maturity_audit(...)` combines caller-supplied gradient agreement,
+caller-supplied QNode round-trip parity, generated Phase-QNode export parity,
+optional PennyLane tape import parity, device metadata, shot policy, diff
+method, and grouped registered Phase-QNode parameter-shift evaluation counts.
+The audit can mark `identical_circuit_ready=True` only when a PennyLane import
+tape is supplied and every bounded route passes. It keeps provider exceedance
+blocked until plugin-matrix coverage, provider-plugin execution, hardware
+execution, and promotion-grade isolated benchmark artefacts exist.
 
 ### Importing a PennyLane tape
 

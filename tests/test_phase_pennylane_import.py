@@ -18,8 +18,10 @@ from scpn_quantum_control.phase.pennylane_import import (
     import_phase_qnode_from_pennylane,
     is_pennylane_import_available,
 )
+from scpn_quantum_control.phase.pennylane_bridge import run_pennylane_maturity_audit
 from scpn_quantum_control.phase.qnode_circuit import (
     PauliTerm,
+    PhaseQNodeCircuit,
     SparsePauliHamiltonian,
 )
 
@@ -112,6 +114,45 @@ def test_import_round_trip_parameterless():
     assert result.value_match
     assert result.gradient_match
     assert result.n_parameters == 0
+
+
+def test_pennylane_maturity_audit_records_live_import_round_trip():
+    tape = _script(
+        [qml.RY(0.4, wires=0), qml.RX(-0.2, wires=0)],
+        [qml.expval(qml.PauliZ(0))],
+    )
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0), ("rx", (0,), 1)),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    def objective(values: np.ndarray) -> float:
+        return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
+
+    def gradient(values: np.ndarray) -> np.ndarray:
+        return np.array([-np.sin(values[0]), 0.25 * np.cos(values[1])], dtype=float)
+
+    result = run_pennylane_maturity_audit(
+        objective=objective,
+        pennylane_objective=objective,
+        pennylane_gradient=gradient,
+        values=np.array([0.2, -0.4], dtype=float),
+        circuit=circuit,
+        phase_qnode_values=np.array([0.4, -0.2], dtype=float),
+        import_tape=tape,
+        value_tolerance=1e-6,
+        gradient_tolerance=1e-6,
+    )
+
+    assert result.identical_circuit_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.required_capabilities["phase_qnode_import_round_trip"] == "passed"
+    assert "pennylane_plugin_matrix" in result.open_gaps
+    imported = result.evidence["phase_qnode_import_round_trip"]
+    assert imported.value_match
+    assert imported.gradient_match
+    assert result.promotion_metadata["phase_qnode_parameter_shift_evaluations"] == 4
 
 
 # --------------------------------------------------------------------------- #

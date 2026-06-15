@@ -218,6 +218,7 @@ from .param_shift import (
 )
 from .pennylane_bridge import (
     PennyLaneGradientAgreementResult,
+    PennyLaneMaturityAuditResult,
     PennyLaneQNodeConversionResult,
     PennyLaneRoundTripResult,
     build_pennylane_qnode_from_phase_qnode,
@@ -225,6 +226,7 @@ from .pennylane_bridge import (
     check_pennylane_phase_qnode_round_trip,
     check_pennylane_qnode_round_trip,
     is_phase_pennylane_available,
+    run_pennylane_maturity_audit,
 )
 from .pennylane_import import (
     PennyLaneImportResult,
@@ -726,12 +728,14 @@ __all__ = [
     "check_pennylane_parameter_shift_agreement",
     "check_pennylane_phase_qnode_round_trip",
     "check_pennylane_qnode_round_trip",
+    "run_pennylane_maturity_audit",
     "PennyLaneImportResult",
     "PennyLaneImportRoundTripResult",
     "import_phase_qnode_from_pennylane",
     "check_pennylane_phase_qnode_import_round_trip",
     "is_pennylane_import_available",
     "PennyLaneGradientAgreementResult",
+    "PennyLaneMaturityAuditResult",
     "PennyLaneQNodeConversionResult",
     "PennyLaneRoundTripResult",
     "ProviderExpectationSample",

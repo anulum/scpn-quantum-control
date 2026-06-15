@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from contextlib import suppress
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 from typing import Any, TypeAlias, cast
 
 import numpy as np
@@ -29,6 +29,7 @@ from .qnode_circuit import (
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
     phase_qnode_support_report,
+    plan_phase_qnode_parameter_shift_evaluations,
 )
 
 FloatArray: TypeAlias = NDArray[np.float64]
@@ -133,6 +134,31 @@ class PennyLaneQNodeConversionResult:
             "observable_kind": self.observable_kind,
             "differentiable_parameters": list(self.differentiable_parameters),
             "hardware_execution": self.hardware_execution,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class PennyLaneMaturityAuditResult:
+    """Aggregate PennyLane parity evidence and explicit provider-plugin blockers."""
+
+    identical_circuit_ready: bool
+    ready_for_provider_exceedance: bool
+    evidence: dict[str, object]
+    required_capabilities: dict[str, str]
+    promotion_metadata: dict[str, object]
+    open_gaps: tuple[str, ...]
+    claim_boundary: str = "bounded_pennylane_provider_maturity_audit"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PennyLane maturity evidence."""
+        return {
+            "identical_circuit_ready": self.identical_circuit_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "evidence": {name: _result_to_dict(result) for name, result in self.evidence.items()},
+            "required_capabilities": dict(self.required_capabilities),
+            "promotion_metadata": dict(self.promotion_metadata),
+            "open_gaps": list(self.open_gaps),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -323,14 +349,17 @@ def build_pennylane_qnode_from_phase_qnode(
     device = qml.device(device_name, wires=circuit.n_qubits, shots=shot_policy)
 
     def qnode_body(parameters: ArrayLike) -> object:
-        values = _as_parameter_vector("values", parameters, width=parameter_count)
+        values = _as_qnode_parameter_argument("values", parameters, width=parameter_count)
         for operation in circuit.operations:
             _apply_pennylane_operation(qml, cast(PhaseQNodeOperation, operation), values)
         return qml.expval(_pennylane_observable(qml, circuit.observable, circuit.n_qubits))
 
     qnode = qml.qnode(device, interface=interface, diff_method=diff_method)(qnode_body)
     _attach_phase_qnode_metadata(qnode, circuit)
-    gradient = qml.grad(qnode)
+    try:
+        gradient = qml.grad(qnode, argnum=0)
+    except TypeError:
+        gradient = qml.grad(qnode)
     return PennyLaneQNodeConversionResult(
         qnode=qnode,
         gradient=gradient,
@@ -364,6 +393,7 @@ def check_pennylane_phase_qnode_round_trip(
     gradient_tolerance: float = 1e-6,
 ) -> PennyLaneRoundTripResult:
     """Verify a generated PennyLane QNode against local Phase-QNode execution."""
+    qml = _load_pennylane()
     conversion = build_pennylane_qnode_from_phase_qnode(
         circuit,
         device_name=device_name,
@@ -383,7 +413,7 @@ def check_pennylane_phase_qnode_round_trip(
     )
     pennylane_gradient = _as_parameter_vector(
         "PennyLane generated QNode gradient",
-        conversion.gradient(parameter_values.copy()),
+        conversion.gradient(_pennylane_trainable_vector(qml, parameter_values)),
         width=parameter_count,
     )
     delta = scpn_gradient.gradient - pennylane_gradient
@@ -405,6 +435,193 @@ def check_pennylane_phase_qnode_round_trip(
         method="phase_qnode_pennylane_conversion",
         shift_terms=1,
     )
+
+
+def _pennylane_trainable_vector(qml: Any, values: FloatArray) -> Any:
+    qml_numpy = getattr(qml, "numpy", None)
+    array = getattr(qml_numpy, "array", None)
+    if callable(array):
+        try:
+            return array(values.copy(), requires_grad=True)
+        except TypeError:
+            return array(values.copy())
+    return values.copy()
+
+
+def _as_qnode_parameter_argument(name: str, values: object, *, width: int) -> Any:
+    shape = getattr(values, "shape", None)
+    if shape is None:
+        shape = np.asarray(values).shape
+    if tuple(shape) != (width,):
+        raise ValueError(f"{name} must have shape ({width},), got {tuple(shape)}")
+    return values
+
+
+def run_pennylane_maturity_audit(
+    *,
+    objective: ScalarObjective,
+    pennylane_objective: ScalarObjective,
+    pennylane_gradient: GradientCallable,
+    values: ArrayLike,
+    circuit: PhaseQNodeCircuit,
+    phase_qnode_values: ArrayLike,
+    import_tape: object | None = None,
+    device_name: str = "default.qubit",
+    shots: int | None = None,
+    interface: str = "autograd",
+    diff_method: str = "parameter-shift",
+    value_tolerance: float = 1e-8,
+    gradient_tolerance: float = 1e-6,
+    parameters: Sequence[Parameter] | None = None,
+    rule: ParameterShiftRule | None = None,
+) -> PennyLaneMaturityAuditResult:
+    """Aggregate PennyLane agreement, export, and optional import evidence.
+
+    The audit records the bounded surfaces available today: caller-supplied
+    PennyLane gradient agreement, caller-supplied QNode round-trip parity,
+    generated registered-Phase-QNode export parity, and optional PennyLane tape
+    import parity. It does not promote plugin ecosystems, provider execution,
+    hardware execution, or benchmark claims until those routes have their own
+    artefacts.
+    """
+
+    value_tol = _as_non_negative_tolerance(value_tolerance)
+    gradient_tol = _as_non_negative_tolerance(gradient_tolerance)
+    scalar_values = _as_parameter_vector("values", values)
+    phase_values = _as_parameter_vector("phase_qnode_values", phase_qnode_values)
+
+    gradient_agreement = check_pennylane_parameter_shift_agreement(
+        objective,
+        pennylane_gradient,
+        scalar_values,
+        tolerance=gradient_tol,
+        parameters=parameters,
+        rule=rule,
+    )
+    caller_qnode_round_trip = check_pennylane_qnode_round_trip(
+        objective,
+        pennylane_objective,
+        pennylane_gradient,
+        scalar_values,
+        value_tolerance=value_tol,
+        gradient_tolerance=gradient_tol,
+        parameters=parameters,
+        rule=rule,
+    )
+    export_conversion = build_pennylane_qnode_from_phase_qnode(
+        circuit,
+        device_name=device_name,
+        shots=shots,
+        interface=interface,
+        diff_method=diff_method,
+    )
+    phase_qnode_export_round_trip = check_pennylane_phase_qnode_round_trip(
+        circuit,
+        phase_values,
+        device_name=device_name,
+        shots=shots,
+        interface=interface,
+        diff_method=diff_method,
+        value_tolerance=value_tol,
+        gradient_tolerance=gradient_tol,
+    )
+    phase_qnode_import_round_trip: object | None = None
+    if import_tape is not None:
+        from .pennylane_import import check_pennylane_phase_qnode_import_round_trip
+
+        phase_qnode_import_round_trip = check_pennylane_phase_qnode_import_round_trip(
+            import_tape,
+            value_tolerance=value_tol,
+            gradient_tolerance=gradient_tol,
+        )
+
+    evaluation_plan = plan_phase_qnode_parameter_shift_evaluations(circuit, phase_values)
+    promotion_metadata: dict[str, object] = {
+        "device_name": export_conversion.device_name,
+        "shots": export_conversion.shots,
+        "interface": export_conversion.interface,
+        "diff_method": export_conversion.diff_method,
+        "hardware_execution": export_conversion.hardware_execution,
+        "observable_kind": export_conversion.observable_kind,
+        "differentiable_parameters": list(export_conversion.differentiable_parameters),
+        "phase_qnode_parameter_shift_evaluations": evaluation_plan.parameter_shift_evaluations,
+        "phase_qnode_generic_scalar_evaluations": (
+            evaluation_plan.generic_scalar_objective_evaluations
+        ),
+        "phase_qnode_saved_shifted_evaluations": evaluation_plan.saved_shifted_evaluations,
+        "phase_qnode_evaluation_groups": [group.to_dict() for group in evaluation_plan.groups],
+        "export_claim_boundary": export_conversion.claim_boundary,
+    }
+    if phase_qnode_import_round_trip is not None:
+        promotion_metadata["import_round_trip_parameters"] = int(
+            getattr(phase_qnode_import_round_trip, "n_parameters", 0)
+        )
+
+    import_passed = bool(
+        phase_qnode_import_round_trip is not None
+        and getattr(phase_qnode_import_round_trip, "value_match", False)
+        and getattr(phase_qnode_import_round_trip, "gradient_match", False)
+    )
+    evidence: dict[str, object] = {
+        "gradient_agreement": gradient_agreement,
+        "caller_qnode_round_trip": caller_qnode_round_trip,
+        "phase_qnode_export_conversion": export_conversion,
+        "phase_qnode_export_round_trip": phase_qnode_export_round_trip,
+        "phase_qnode_import_round_trip": phase_qnode_import_round_trip,
+    }
+    required_capabilities = {
+        "gradient_agreement": "passed" if gradient_agreement.passed else "failed",
+        "caller_qnode_round_trip": "passed" if caller_qnode_round_trip.passed else "failed",
+        "phase_qnode_export_conversion": "passed",
+        "phase_qnode_export_round_trip": (
+            "passed" if phase_qnode_export_round_trip.passed else "failed"
+        ),
+        "phase_qnode_import_round_trip": "passed" if import_passed else "blocked",
+        "device_metadata": "passed",
+        "shot_policy_metadata": "passed",
+        "diff_method_metadata": "passed",
+        "grouped_parameter_shift_evaluation_counts": (
+            "passed" if evaluation_plan.supported else "failed"
+        ),
+        "pennylane_plugin_matrix": "blocked",
+        "provider_plugin_execution": "blocked",
+        "hardware_execution": "blocked",
+        "promotion_grade_isolated_benchmarks": "blocked",
+    }
+    identical_circuit_ready = all(
+        required_capabilities[name] == "passed"
+        for name in (
+            "gradient_agreement",
+            "caller_qnode_round_trip",
+            "phase_qnode_export_conversion",
+            "phase_qnode_export_round_trip",
+            "phase_qnode_import_round_trip",
+            "device_metadata",
+            "shot_policy_metadata",
+            "diff_method_metadata",
+            "grouped_parameter_shift_evaluation_counts",
+        )
+    )
+    open_gaps = tuple(name for name, status in required_capabilities.items() if status != "passed")
+    return PennyLaneMaturityAuditResult(
+        identical_circuit_ready=identical_circuit_ready,
+        ready_for_provider_exceedance=identical_circuit_ready and not open_gaps,
+        evidence=evidence,
+        required_capabilities=required_capabilities,
+        promotion_metadata=promotion_metadata,
+        open_gaps=open_gaps,
+    )
+
+
+def _result_to_dict(result: object) -> object:
+    if result is None:
+        return None
+    to_dict = getattr(result, "to_dict", None)
+    if callable(to_dict):
+        return to_dict()
+    if is_dataclass(result) and not isinstance(result, type):
+        return asdict(result)
+    return result
 
 
 _PENNYLANE_OPERATION_NAMES: dict[str, str] = {
@@ -461,9 +678,7 @@ def _attach_phase_qnode_metadata(
         qnode_with_metadata._scpn_phase_qnode_circuit = circuit
 
 
-def _apply_pennylane_operation(
-    qml: Any, operation: PhaseQNodeOperation, values: FloatArray
-) -> None:
+def _apply_pennylane_operation(qml: Any, operation: PhaseQNodeOperation, values: Any) -> None:
     wire_sequence = list(operation.qubits)
     wires = operation.qubits[0] if len(operation.qubits) == 1 else wire_sequence
     if operation.gate == "cs":
@@ -532,6 +747,7 @@ def _pennylane_single_pauli(qml: Any, qubit: int, label: str) -> object:
 
 __all__ = [
     "PennyLaneGradientAgreementResult",
+    "PennyLaneMaturityAuditResult",
     "PennyLaneQNodeConversionResult",
     "PennyLaneRoundTripResult",
     "build_pennylane_qnode_from_phase_qnode",
@@ -539,4 +755,5 @@ __all__ = [
     "check_pennylane_phase_qnode_round_trip",
     "check_pennylane_qnode_round_trip",
     "is_phase_pennylane_available",
+    "run_pennylane_maturity_audit",
 ]
