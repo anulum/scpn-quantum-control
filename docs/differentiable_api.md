@@ -309,8 +309,11 @@ assert published_validation.passed
 
 Those rows validate publication-safe artefact metadata and the Kuramoto facade
 conversion path for the existing EEG, ITER-style MHD, IEEE 5-bus, and
-Friston-style FEP benchmark artefacts. They are source-backed conformance
-records, not live hardware execution or timing evidence.
+Friston-style FEP benchmark artefacts. They also preserve source-equation IDs
+and formula strings for the PLV, MHD mode-coupling, swing-equation power-flow,
+and variational-free-energy transforms so reviewers can see which mathematical
+terms were carried into the Kuramoto conversion. They are source-backed
+conformance records, not live hardware execution or timing evidence.
 
 Differentiable benchmark evidence also carries explicit accelerator metadata.
 By default the evidence is CPU-only and does not imply GPU execution. When

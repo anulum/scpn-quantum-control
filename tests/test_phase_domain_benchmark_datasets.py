@@ -124,10 +124,24 @@ def test_differentiable_published_domain_benchmark_cases_are_artifact_backed() -
     power_grid = suite.case_by_id("ieee5bus_power_grid")
     assert power_grid.domain == "power-grid"
     assert power_grid.n_oscillators == 5
+    assert power_grid.source_equation_ids == ("PWR001", "KUR001")
+    assert power_grid.source_formulae == (
+        "P_i = sum_j V_i * V_j * B_ij * sin(delta_i - delta_j)",
+        "K_ij = V_i * V_j * B_ij / (2 * H_i * omega_0)",
+    )
     assert power_grid.publication_safe
     assert len(power_grid.artifact_sha256) == 64
     assert power_grid.coupling_frobenius_norm > 0.0
-    assert power_grid.to_dict()["evidence_class"] == "published_domain_artifact"
+    payload = power_grid.to_dict()
+    assert payload["evidence_class"] == "published_domain_artifact"
+    assert payload["source_equation_ids"] == list(power_grid.source_equation_ids)
+    assert payload["source_formulae"] == list(power_grid.source_formulae)
+
+    fep = suite.case_by_id("friston_fep_6node")
+    assert fep.source_formulae == (
+        "F = E_q[ln q(s) - ln p(o,s)]",
+        "K_nm = normalise_symmetric(precision_graph_nm)",
+    )
 
 
 def test_differentiable_published_domain_benchmark_validation_passes() -> None:
@@ -145,6 +159,7 @@ def test_differentiable_published_domain_benchmark_validation_passes() -> None:
     assert all(result.publication_safe for result in validation.results)
     assert all(result.kuramoto_conversion_passed for result in validation.results)
     assert all(result.metadata_roundtrip_passed for result in validation.results)
+    assert all(result.formula_preservation_passed for result in validation.results)
 
 
 def test_differentiable_published_domain_benchmark_selection_is_fail_closed() -> None:

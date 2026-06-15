@@ -806,7 +806,8 @@ The same API also exposes published public-domain artefact rows via
 `load_differentiable_published_domain_benchmark_cases()` and
 `run_differentiable_published_domain_benchmark_validation()`, validating that
 the committed EEG, ITER-style MHD, IEEE 5-bus, and FEP artefacts remain
-publication-safe and round-trip through the Kuramoto conversion path.
+publication-safe, preserve their source-equation IDs and formula strings, and
+round-trip through the Kuramoto conversion path.
 
 ## Parameter-shift natural gradient
 

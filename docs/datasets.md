@@ -60,8 +60,11 @@ evidence, or performance benchmark artefacts.
 The same module indexes published public-domain benchmark artefacts from
 `data/public_application_benchmarks/` for differentiable conformance. Those
 records keep source references, licences, transforms, artefact hashes, and
-Kuramoto conversion validation together without duplicating raw files or
-promoting the examples as live hardware/timing evidence.
+source-equation formulae such as PLV phase locking, MHD mode coupling, IEEE
+5-bus swing-equation power flow, and FEP variational free energy. Validation
+checks that those formulae round-trip through the public case payloads together
+with Kuramoto conversion metadata, without duplicating raw files or promoting
+the examples as live hardware/timing evidence.
 
 Soft size cap: **20 MB per campaign**. Above that, move to Zenodo
 per the next section and leave a DOI pointer in the repo.

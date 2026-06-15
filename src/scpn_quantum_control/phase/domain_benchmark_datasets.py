@@ -226,6 +226,8 @@ class DifferentiablePublishedDomainBenchmarkCase:
     domain: str
     source_reference: str
     source_licence: str
+    source_equation_ids: tuple[str, ...]
+    source_formulae: tuple[str, ...]
     transform: str
     artifact_path: str
     artifact_sha256: str
@@ -244,6 +246,8 @@ class DifferentiablePublishedDomainBenchmarkCase:
             "domain": self.domain,
             "source_reference": self.source_reference,
             "source_licence": self.source_licence,
+            "source_equation_ids": list(self.source_equation_ids),
+            "source_formulae": list(self.source_formulae),
             "transform": self.transform,
             "artifact_path": self.artifact_path,
             "artifact_sha256": self.artifact_sha256,
@@ -304,6 +308,7 @@ class DifferentiablePublishedDomainBenchmarkValidationResult:
     publication_safe: bool
     kuramoto_conversion_passed: bool
     metadata_roundtrip_passed: bool
+    formula_preservation_passed: bool
     passed: bool
 
     def to_dict(self) -> dict[str, object]:
@@ -316,6 +321,7 @@ class DifferentiablePublishedDomainBenchmarkValidationResult:
             "publication_safe": self.publication_safe,
             "kuramoto_conversion_passed": self.kuramoto_conversion_passed,
             "metadata_roundtrip_passed": self.metadata_roundtrip_passed,
+            "formula_preservation_passed": self.formula_preservation_passed,
             "passed": self.passed,
         }
 
@@ -579,6 +585,43 @@ def _selected_dataset_ids(
     return selected
 
 
+def _published_source_formulae(dataset_id: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    formulae = {
+        "eeg_alpha_plv_8ch": (
+            ("PLV001", "KUR001"),
+            (
+                "PLV_nm = |N^-1 * sum_k exp(i * (phi_n(k) - phi_m(k)))|",
+                "K_nm = normalise_symmetric(PLV_nm)",
+            ),
+        ),
+        "iter_mhd_8mode": (
+            ("MHD001", "KUR001"),
+            (
+                "dA_m/dt = gamma_m * A_m + sum_n C_mn * A_n",
+                "K_mn = normalise_symmetric(|C_mn|)",
+            ),
+        ),
+        "ieee5bus_power_grid": (
+            ("PWR001", "KUR001"),
+            (
+                "P_i = sum_j V_i * V_j * B_ij * sin(delta_i - delta_j)",
+                "K_ij = V_i * V_j * B_ij / (2 * H_i * omega_0)",
+            ),
+        ),
+        "friston_fep_6node": (
+            ("FEP001", "KUR001"),
+            (
+                "F = E_q[ln q(s) - ln p(o,s)]",
+                "K_nm = normalise_symmetric(precision_graph_nm)",
+            ),
+        ),
+    }
+    try:
+        return formulae[dataset_id]
+    except KeyError as exc:
+        raise KeyError(f"missing source formulae for published dataset {dataset_id!r}") from exc
+
+
 def load_differentiable_published_domain_benchmark_cases(
     *,
     dataset_ids: Sequence[str] | None = None,
@@ -600,12 +643,15 @@ def load_differentiable_published_domain_benchmark_cases(
         artifact = load_application_benchmark_artifact(descriptor.dataset_id)
         problem = artifact_to_kuramoto_problem(artifact)
         payload = artifact.to_dict()
+        source_equation_ids, source_formulae = _published_source_formulae(descriptor.dataset_id)
         cases.append(
             DifferentiablePublishedDomainBenchmarkCase(
                 dataset_id=descriptor.dataset_id,
                 domain=descriptor.domain,
                 source_reference=descriptor.source_reference,
                 source_licence=descriptor.source_licence,
+                source_equation_ids=source_equation_ids,
+                source_formulae=source_formulae,
                 transform=descriptor.transform,
                 artifact_path=str(descriptor.path),
                 artifact_sha256=str(payload["artifact_sha256"]),
@@ -648,6 +694,13 @@ def run_differentiable_published_domain_benchmark_validation(
             and metadata.get("domain") == descriptor.domain
             and problem.n_oscillators == artifact.n_oscillators
         )
+        payload_roundtrip = case.to_dict()
+        formula_preservation_passed = (
+            payload_roundtrip["source_equation_ids"] == list(case.source_equation_ids)
+            and payload_roundtrip["source_formulae"] == list(case.source_formulae)
+            and all(formula.strip() for formula in case.source_formulae)
+            and all(equation_id.strip() for equation_id in case.source_equation_ids)
+        )
         kuramoto_conversion_passed = (
             problem.K_nm.shape == artifact.K_nm.shape
             and problem.omega.shape == artifact.omega.shape
@@ -664,8 +717,12 @@ def run_differentiable_published_domain_benchmark_validation(
                 publication_safe=publication_safe,
                 kuramoto_conversion_passed=kuramoto_conversion_passed,
                 metadata_roundtrip_passed=metadata_roundtrip_passed,
+                formula_preservation_passed=formula_preservation_passed,
                 passed=bool(
-                    publication_safe and kuramoto_conversion_passed and metadata_roundtrip_passed
+                    publication_safe
+                    and kuramoto_conversion_passed
+                    and metadata_roundtrip_passed
+                    and formula_preservation_passed
                 ),
             )
         )
