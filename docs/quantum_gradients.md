@@ -106,6 +106,13 @@ tolerances, and objective-evaluation accounting. Finite differences are used
 only as an independent diagnostic for small smooth objectives; they are not
 advertised as a scalable hardware-gradient method.
 
+Finite-difference result objects in `scpn_quantum_control.differentiable` also
+carry the `FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY` provenance string via
+their `claim_boundary` field. Treat those artefacts as diagnostic-only checks:
+they are not analytic gradients, parameter-shift gradients, native-framework
+autodiff, whole-program AD, provider execution, hardware execution, or production
+benchmark evidence.
+
 Second-order curvature evidence is available through
 `parameter_shift_hessian(...)`, `verify_parameter_shift_hessian(...)`, and
 `verify_vqe_parameter_shift_hessian(...)` for the same standard

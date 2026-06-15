@@ -22,6 +22,10 @@ In practical terms, this means:
 - optimisation routes can be compared against finite-difference and multi-framework
   references;
 - unsupported or blocked cases stay visible in the API evidence contract.
+- finite-difference result artefacts carry an explicit diagnostic-only claim
+  boundary so they cannot be promoted as analytic, parameter-shift,
+  native-framework, whole-program AD, provider, hardware, or production benchmark
+  evidence.
 
 This section is intentionally conservative. It prefers explicit fail-closed boundaries
 over hidden fallback because enterprises depend on predictable failure modes.
@@ -53,6 +57,7 @@ This repository now documents those questions directly. Current support is delib
 | Compiler/program AD | Available for supported scalar, vector, and matrix primitives with registry contracts, lowering reports, native executable kernels on bounded paths, and verified whole-program determinant lowering through `19x19`. | [Differentiable API](differentiable_api.md), [Quickstart](quickstart.md) |
 | Primitive registry | Available for derivative, batching, lowering, shape, dtype, and nondifferentiability contracts on supported primitive identities. | `scpn_quantum_control.differentiable` |
 | Reverse replay and program traces | Available for supported captured operations; unsupported arbitrary Python remains fail-closed. | Support reports and module-specific tests |
+| Finite-difference diagnostics | Available for scalar gradients, vector Jacobians, JVP/VJP contractions, Hessians, and HVPs as local smooth-objective diagnostics. Result artefacts expose `claim_boundary` metadata and remain non-promotional evidence, not analytic, parameter-shift, native-framework, whole-program AD, provider, hardware, or production benchmark claims. | `scpn_quantum_control.differentiable`, [Quantum Gradients](quantum_gradients.md) |
 | JAX, PyTorch, TensorFlow adapters | Optional parameter-shift value-and-gradient bridges plus a fail-closed ML parity audit are available for supported phase objectives; native framework autodiff through arbitrary simulators remains open. | [Differentiable Roadmap](differentiable_roadmap.md), [Quantum Gradients](quantum_gradients.md) |
 | Gradient tape | MVP available for supported phase parameter-shift records, plus QNode-style tape records for deterministic, seeded finite-shot, and provider-boundary evidence; arbitrary Python and programme-IR tape semantics remain open. | [Quantum Gradients](quantum_gradients.md), [Differentiable Roadmap](differentiable_roadmap.md) |
 | Registered Phase-QNode circuit family | Available for the declared local gate/observable subset with arbitrary-depth registered circuit builders, deterministic depth/resource profiles, registered GHZ-chain and hardware-efficient multi-qubit templates, controlled-H/S/T plus Toffoli/CCZ/Fredkin gates, exact Toffoli/Fredkin operation-list decompositions, statevector execution, density-matrix execution with bounded single-qubit Kraus channels, analytic parameter-shift gradients for pure-state routes, framework parity rows, verified SCPN MLIR-runtime lowering adapters, and affinity-labelled benchmark metadata. Unsupported gates, observables, provider paths, dynamic routes, native LLVM/JIT lowering, noisy-channel gradients/metrics, and interpreter fallback success claims fail closed with support reports. | [Differentiable API](differentiable_api.md), [Benchmark Harness](benchmark_harness.md) |

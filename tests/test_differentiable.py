@@ -1491,6 +1491,13 @@ def test_finite_difference_gradient_matches_quadratic_derivative() -> None:
     )
 
     assert result.method == "finite_difference_central"
+    assert (
+        result.claim_boundary == differentiable_module.FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
+    )
+    assert "diagnostic only" in result.claim_boundary
+    assert "not analytic" in result.claim_boundary
+    assert "whole-program AD" in result.claim_boundary
+    assert "production benchmark evidence" in result.claim_boundary
     assert result.evaluations == 3
     np.testing.assert_allclose(result.gradient, [4.0, 0.0], rtol=1.0e-6, atol=1.0e-6)
     np.testing.assert_allclose(
@@ -1508,6 +1515,23 @@ def test_finite_difference_gradient_rejects_invalid_step() -> None:
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step="1e-6")
     with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step=0.0)
+
+
+def test_derivative_result_claim_boundary_must_be_explicit() -> None:
+    """Derivative result artefacts should reject blank claim boundaries."""
+
+    with pytest.raises(ValueError, match="claim_boundary must be non-empty"):
+        GradientResult(
+            value=1.0,
+            gradient=np.array([1.0]),
+            method="finite_difference_central",
+            shift=1.0e-6,
+            coefficient=5.0e5,
+            evaluations=3,
+            parameter_names=("x",),
+            trainable=(True,),
+            claim_boundary=" ",
+        )
 
 
 def test_complex_step_gradient_matches_analytic_derivative() -> None:
@@ -1578,6 +1602,9 @@ def test_finite_difference_jacobian_matches_vector_objective() -> None:
 
     assert isinstance(result, JacobianResult)
     assert result.method == "finite_difference_central"
+    assert (
+        result.claim_boundary == differentiable_module.FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
+    )
     assert result.evaluations == 3
     np.testing.assert_allclose(result.value, [9.0, 1.0])
     np.testing.assert_allclose(result.jacobian, [[6.0, 0.0], [1.0, 0.0]], atol=1.0e-6)
@@ -1624,6 +1651,9 @@ def test_finite_difference_jvp_matches_jacobian_directional_product() -> None:
 
     assert isinstance(result, JVPResult)
     assert result.method == "finite_difference_directional"
+    assert (
+        result.claim_boundary == differentiable_module.FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
+    )
     assert result.evaluations == 3
     np.testing.assert_allclose(result.value, [7.0, 6.0])
     np.testing.assert_allclose(result.tangent, [0.5, -1.0])
@@ -1677,6 +1707,9 @@ def test_vector_jacobian_product_contracts_cotangent() -> None:
 
     assert isinstance(result, VJPResult)
     assert result.method == "vjp:finite_difference_central"
+    assert (
+        result.claim_boundary == differentiable_module.FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
+    )
     np.testing.assert_allclose(result.value, [9.0, 1.0])
     np.testing.assert_allclose(result.cotangent, [0.5, -2.0])
     np.testing.assert_allclose(result.vjp, [1.0, -4.0], atol=1.0e-6)
@@ -1799,6 +1832,9 @@ def test_finite_difference_hessian_matches_quadratic_curvature() -> None:
 
     assert isinstance(result, HessianResult)
     assert result.method == "finite_difference_central"
+    assert (
+        result.claim_boundary == differentiable_module.FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
+    )
     np.testing.assert_allclose(result.hessian, [[2.0, 3.0], [3.0, 4.0]], atol=1.0e-5)
     np.testing.assert_allclose(
         finite_difference_hessian(lambda values: values[0] ** 2, [1.0]),
@@ -1839,6 +1875,9 @@ def test_finite_difference_hvp_matches_quadratic_curvature_product() -> None:
 
     assert isinstance(result, HVPResult)
     assert result.method == "finite_difference_hvp"
+    assert (
+        result.claim_boundary == differentiable_module.FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
+    )
     assert result.value == pytest.approx(0.0)
     np.testing.assert_allclose(result.tangent, [0.5, -2.0])
     np.testing.assert_allclose(result.hvp, [-5.0, -6.5], atol=1.0e-4)

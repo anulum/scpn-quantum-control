@@ -42,6 +42,21 @@ _TraceSortKind = Literal["quicksort", "mergesort", "heapsort", "stable"]
 _GradientSpacing = (
     tuple[Literal["scalar"], float] | tuple[Literal["coordinates"], NDArray[np.float64]]
 )
+DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY = (
+    "derivative result provenance is bounded by method, evaluations, parameter metadata, "
+    "and trainable mask; no hardware or provider execution is implied"
+)
+FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY = (
+    "finite-difference diagnostic only; not analytic, parameter-shift, native-framework, "
+    "whole-program AD, provider, hardware, or production benchmark evidence"
+)
+
+
+def _normalise_claim_boundary(label: str, claim_boundary: str) -> str:
+    boundary = str(claim_boundary).strip()
+    if not boundary:
+        raise ValueError(f"{label} claim_boundary must be non-empty")
+    return boundary
 
 
 @dataclass(frozen=True)
@@ -8360,10 +8375,12 @@ class GradientResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("gradient result value", self.value)
         gradient = _as_real_numeric_array("gradient", self.gradient)
+        claim_boundary = _normalise_claim_boundary("gradient result", self.claim_boundary)
         if gradient.ndim != 1:
             raise ValueError("gradient must be a one-dimensional array")
         if not np.all(np.isfinite(gradient)):
@@ -8392,6 +8409,7 @@ class GradientResult:
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "shift", shift)
         object.__setattr__(self, "coefficient", coefficient)
+        object.__setattr__(self, "claim_boundary", claim_boundary)
 
 
 @dataclass(frozen=True)
@@ -9210,10 +9228,12 @@ class JacobianResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         value = _as_real_numeric_array("jacobian value", self.value)
         jacobian = _as_real_numeric_array("jacobian", self.jacobian)
+        claim_boundary = _normalise_claim_boundary("jacobian result", self.claim_boundary)
         if value.ndim != 1:
             raise ValueError("jacobian value must be a one-dimensional array")
         if jacobian.ndim != 2:
@@ -9242,6 +9262,7 @@ class JacobianResult:
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "jacobian", jacobian)
         object.__setattr__(self, "step", step)
+        object.__setattr__(self, "claim_boundary", claim_boundary)
 
 
 @dataclass(frozen=True)
@@ -9256,11 +9277,13 @@ class JVPResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         value = _as_real_numeric_array("JVP value", self.value)
         jvp = _as_real_numeric_array("JVP", self.jvp)
         tangent = _as_real_numeric_array("JVP tangent", self.tangent)
+        claim_boundary = _normalise_claim_boundary("JVP result", self.claim_boundary)
         if value.ndim != 1:
             raise ValueError("JVP value must be a one-dimensional array")
         if jvp.shape != value.shape:
@@ -9290,6 +9313,7 @@ class JVPResult:
         object.__setattr__(self, "jvp", jvp)
         object.__setattr__(self, "tangent", tangent)
         object.__setattr__(self, "step", step)
+        object.__setattr__(self, "claim_boundary", claim_boundary)
 
 
 @dataclass(frozen=True)
@@ -9304,11 +9328,13 @@ class VJPResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         value = _as_real_numeric_array("VJP value", self.value)
         cotangent = _as_real_numeric_array("VJP cotangent", self.cotangent)
         vjp = _as_real_numeric_array("VJP", self.vjp)
+        claim_boundary = _normalise_claim_boundary("VJP result", self.claim_boundary)
         if value.ndim != 1:
             raise ValueError("VJP value must be a one-dimensional array")
         if cotangent.shape != value.shape:
@@ -9338,6 +9364,7 @@ class VJPResult:
         object.__setattr__(self, "cotangent", cotangent)
         object.__setattr__(self, "vjp", vjp)
         object.__setattr__(self, "step", step)
+        object.__setattr__(self, "claim_boundary", claim_boundary)
 
 
 @dataclass(frozen=True)
@@ -9351,10 +9378,12 @@ class HessianResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("hessian value", self.value)
         hessian = _as_real_numeric_array("hessian", self.hessian)
+        claim_boundary = _normalise_claim_boundary("hessian result", self.claim_boundary)
         if hessian.ndim != 2 or hessian.shape[0] != hessian.shape[1]:
             raise ValueError("hessian must be a square two-dimensional array")
         if not np.all(np.isfinite(hessian)):
@@ -9379,6 +9408,7 @@ class HessianResult:
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "hessian", hessian)
         object.__setattr__(self, "step", step)
+        object.__setattr__(self, "claim_boundary", claim_boundary)
 
 
 @dataclass(frozen=True)
@@ -9456,11 +9486,13 @@ class HVPResult:
     evaluations: int
     parameter_names: tuple[str, ...]
     trainable: tuple[bool, ...]
+    claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         value = _as_real_scalar("HVP value", self.value)
         hvp = _as_real_numeric_array("HVP", self.hvp)
         tangent = _as_real_numeric_array("HVP tangent", self.tangent)
+        claim_boundary = _normalise_claim_boundary("HVP result", self.claim_boundary)
         if hvp.ndim != 1:
             raise ValueError("HVP must be one-dimensional")
         if tangent.shape != hvp.shape:
@@ -9486,6 +9518,7 @@ class HVPResult:
         object.__setattr__(self, "hvp", hvp)
         object.__setattr__(self, "tangent", tangent)
         object.__setattr__(self, "step", step)
+        object.__setattr__(self, "claim_boundary", claim_boundary)
 
 
 @dataclass(frozen=True)
@@ -24486,6 +24519,7 @@ def value_and_finite_difference_grad(
         evaluations=evaluations,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY,
     )
 
 
@@ -24546,6 +24580,7 @@ def value_and_finite_difference_jacobian(
         evaluations=evaluations,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY,
     )
 
 
@@ -24654,6 +24689,7 @@ def value_and_finite_difference_jvp(
         evaluations=evaluations,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY,
     )
 
 
@@ -24724,6 +24760,7 @@ def vector_jacobian_product(
         evaluations=jacobian.evaluations,
         parameter_names=jacobian.parameter_names,
         trainable=jacobian.trainable,
+        claim_boundary=jacobian.claim_boundary,
     )
 
 
@@ -25350,6 +25387,7 @@ def value_and_finite_difference_hessian(
         evaluations=evaluations,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY,
     )
 
 
@@ -25424,6 +25462,7 @@ def value_and_finite_difference_hvp(
         evaluations=evaluations,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        claim_boundary=FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY,
     )
 
 
@@ -26300,6 +26339,8 @@ __all__ = [
     "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
     "DifferentiableOptimizer",
     "DualNumber",
+    "DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY",
+    "FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY",
     "FixedPointSensitivityResult",
     "FisherConjugateGradientResult",
     "FisherVectorProductResult",
