@@ -26,6 +26,7 @@ Recommended researcher quick path:
 - `20_quantum_persistent_homology.py` for topology diagnostics.
 - `22_quantum_neuromorphic_bridge.py` for the QSNN LIF/STDP/dynamic-coupling bridge.
 - `23_differentiable_api_workflow.py` for the unified differentiable API workflow.
+- `24_differentiable_benchmark_reproduction.py` for local benchmark evidence reproduction.
 
 ## Route by Goal
 
@@ -40,6 +41,7 @@ Recommended researcher quick path:
 | Inspect synchronisation observables | `19_sync_witness_operator.py` |
 | Inspect topology diagnostics | `20_quantum_persistent_homology.py` |
 | Inspect differentiable API readiness | `23_differentiable_api_workflow.py` |
+| Reproduce differentiable benchmark evidence | `24_differentiable_benchmark_reproduction.py` |
 
 Examples are onboarding aids. Reusable production logic belongs in `src/`,
 scripts, committed fixtures, and release gates.
@@ -275,4 +277,17 @@ performance benchmark claim.
 
 ```bash
 python examples/23_differentiable_api_workflow.py
+```
+
+## 24_differentiable_benchmark_reproduction.py — Differentiable Benchmark Reproduction
+
+Writes a temporary differentiable benchmark evidence bundle using the public
+evidence writer and external-comparison rows, then prints the resulting
+classification. Local runs are expected to classify as `functional_non_isolated`
+and are not eligible for production performance claims. Promotion still requires
+the self-hosted `isolated-benchmark` runner path documented in the benchmark
+harness.
+
+```bash
+python examples/24_differentiable_benchmark_reproduction.py
 ```

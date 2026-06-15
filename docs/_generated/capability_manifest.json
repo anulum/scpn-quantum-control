@@ -2,7 +2,7 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 28,
-    "example_files": 24,
+    "example_files": 25,
     "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
@@ -41,6 +41,7 @@
       "examples/21_biological_qec_scpn16.py",
       "examples/22_quantum_neuromorphic_bridge.py",
       "examples/23_differentiable_api_workflow.py",
+      "examples/24_differentiable_benchmark_reproduction.py",
       "examples/README.md"
     ],
     "notebooks": [

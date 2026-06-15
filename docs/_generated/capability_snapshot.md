@@ -15,7 +15,7 @@
 | Rust PyO3 function bindings | 122 |
 | Rust source modules | 30 |
 | Notebook files | 98 |
-| Example files | 24 |
+| Example files | 25 |
 | Optional extras | 42 |
 | Python test files | 1932 |
 | Public documentation pages | 241 |

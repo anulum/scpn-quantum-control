@@ -18,6 +18,12 @@ Run the complete script:
 python examples/23_differentiable_api_workflow.py
 ```
 
+Run the local benchmark evidence reproduction script:
+
+```bash
+python examples/24_differentiable_benchmark_reproduction.py
+```
+
 The script is deliberately small. It is a tutorial and integration smoke path,
 not a benchmark, not a hardware claim, and not a claim that arbitrary simulator
 kernels are framework-native differentiable.
@@ -31,6 +37,7 @@ kernels are framework-native differentiable.
 | Framework boundary | Bounded QNN bridge matrix inside the diagnostic report | Implemented JAX/PyTorch/TensorFlow bounded rows are separated from arbitrary simulator autodiff and provider hardware gaps. |
 | Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
 | Training evidence | `train_parameter_shift_qnn_classifier(...)`, `verify_parameter_shift_qnn_classifier_gradient(...)` | Tiny bounded phase-QNN training run plus finite-difference gradient verification. |
+| Benchmark reproduction | `write_differentiable_benchmark_evidence_bundle(...)` | Temporary local benchmark evidence bundle with explicit `functional_non_isolated` classification unless run under the isolated benchmark CI contract. |
 
 ## Minimal QNode
 
@@ -133,6 +140,48 @@ This training path is intentionally bounded to a local phase-QNN classifier. It
 is useful onboarding and regression evidence, but it is not evidence for
 arbitrary QNN/QGNN/QSNN architectures, unseeded stochastic training, or provider
 hardware training.
+
+## Benchmark Reproduction
+
+```python
+import json
+import tempfile
+from pathlib import Path
+
+from scpn_quantum_control.benchmarks.differentiable_evidence import (
+    BenchmarkIsolationMetadata,
+    write_differentiable_benchmark_evidence_bundle,
+)
+from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
+    run_differentiable_external_comparison_suite,
+)
+
+timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
+metadata = BenchmarkIsolationMetadata.from_ci_environment(
+    {},
+    command=("python", "examples/24_differentiable_benchmark_reproduction.py"),
+    cpu_affinity=None,
+    isolation_method=None,
+    load_before=None,
+    load_after=None,
+    governor=None,
+    frequency_mhz=None,
+    heavy_jobs_running=False,
+)
+with tempfile.TemporaryDirectory(prefix="scpn-qc-diff-bench-") as directory:
+    bundle = write_differentiable_benchmark_evidence_bundle(
+        Path(directory),
+        metadata=metadata,
+        timing_rows=timing_rows,
+        artifact_id="diff-qnode-local-reproduction-example",
+    )
+    payload = json.loads(bundle.raw_json_path.read_text(encoding="utf-8"))
+    print(payload["metadata"]["classification"])
+```
+
+Local tutorial runs should print `functional_non_isolated`. That is a useful
+reproducibility and integration check, but it cannot close the promotion blocker
+for true `isolated_affinity` evidence.
 
 ## Claim Boundaries
 

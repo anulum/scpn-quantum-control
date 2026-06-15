@@ -105,7 +105,7 @@ has a defined commercial licensing route.
 | Rust PyO3 function bindings | 122 |
 | Rust source modules | 30 |
 | Notebook files | 98 |
-| Example files | 24 |
+| Example files | 25 |
 | Optional extras | 42 |
 | Python test files | 1932 |
 | Public documentation pages | 241 |
@@ -756,7 +756,7 @@ graph LR
 
 ## Examples
 
-23 standalone scripts in [`examples/`](examples/):
+24 standalone scripts in [`examples/`](examples/):
 
 | # | Script | What it demonstrates |
 |:-:|--------|---------------------|
@@ -783,6 +783,7 @@ graph LR
 | 21 | `biological_qec_scpn16` | Biological surface code on 16-layer SCPN |
 | 22 | `quantum_neuromorphic_bridge` | QSNN quantum LIF + trace STDP + dynamic coupling bridge |
 | 23 | `differentiable_api_workflow` | Unified differentiable API, diagnostics, compiler report, and bounded QNN training |
+| 24 | `differentiable_benchmark_reproduction` | Local differentiable benchmark evidence bundle reproduction with non-isolated classification |
 
 All examples run on statevector simulation (no QPU needed).
 
