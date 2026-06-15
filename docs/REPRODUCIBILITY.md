@@ -25,6 +25,16 @@ Use this record to verify:
 - hardware aliasing and backend assumptions in committed runs,
 - parameter provenance constraints before running synthetic or production experiments.
 
+## Repository Access State
+
+Repository: <https://github.com/anulum/scpn-quantum-control>
+
+The repository is public. Reproducibility runners should use the public GitHub
+repository, tagged release archives, or public PyPI artefacts as their source
+entry point. Commercial licence grants do not replace public source access for
+the AGPL-covered repository; they provide a separate proprietary-integration
+route for users who cannot accept AGPL obligations.
+
 ## Audience and limits
 
 The record is for maintainers, auditors, and reproducibility runners. It is not
