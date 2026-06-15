@@ -1,20 +1,20 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 29,
-    "example_files": 27,
+    "domain_package_families": 30,
+    "example_files": 28,
     "github_workflows": 19,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 613,
-    "public_documentation_pages": 244,
-    "python_model_classes": 1706,
-    "python_model_source_modules": 818,
-    "rust_pyo3_model_wrappers": 129,
-    "rust_source_modules": 33,
-    "test_files": 1937
+    "public_api_exports": 619,
+    "public_documentation_pages": 245,
+    "python_model_classes": 1708,
+    "python_model_source_modules": 819,
+    "rust_pyo3_model_wrappers": 130,
+    "rust_source_modules": 34,
+    "test_files": 1938
   },
   "documentation": {
     "examples": [
@@ -44,6 +44,7 @@
       "examples/23_differentiable_api_workflow.py",
       "examples/24_differentiable_benchmark_reproduction.py",
       "examples/25_qrng_streaming_quickstart.py",
+      "examples/26_nv_magnetometry_20T_demo.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -313,6 +314,7 @@
       "docs/neural_quantum_states.md",
       "docs/new_modules.md",
       "docs/notebooks.md",
+      "docs/nv_magnetometry_20T.md",
       "docs/onboarding.md",
       "docs/open_system_hardware.md",
       "docs/orchestrator_integration.md",
@@ -542,6 +544,11 @@
         "package": "qsnn",
         "path": "src/scpn_quantum_control/qsnn",
         "python_modules": 7
+      },
+      {
+        "package": "sensing",
+        "path": "src/scpn_quantum_control/sensing",
+        "python_modules": 1
       },
       {
         "package": "ssgf",
@@ -4136,6 +4143,14 @@
       {
         "name": "NTHSPhaseTestValidationResult",
         "path": "src/scpn_quantum_control/paper0/grand_synthesis_validation.py"
+      },
+      {
+        "name": "NVCenter",
+        "path": "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py"
+      },
+      {
+        "name": "NVFieldCalibration",
+        "path": "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py"
       },
       {
         "name": "NVQuantumSensingConfig",
@@ -8662,6 +8677,7 @@
       "src/scpn_quantum_control/qsnn/qsynapse.py",
       "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py",
       "src/scpn_quantum_control/qsnn/training.py",
+      "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py",
       "src/scpn_quantum_control/ssgf/quantum_costs.py",
       "src/scpn_quantum_control/ssgf/quantum_gradient.py",
       "src/scpn_quantum_control/ssgf/quantum_outer_cycle.py",
@@ -8762,6 +8778,7 @@
       "nist_block_longest_runs",
       "nist_monobit_sum",
       "nist_runs_counts",
+      "nv_odmr_spectrum",
       "order_param_from_statevector",
       "order_parameter",
       "otoc_from_eigendecomp",
@@ -8840,6 +8857,7 @@
       "scpn_quantum_engine/src/qpetri.rs",
       "scpn_quantum_engine/src/realtime.rs",
       "scpn_quantum_engine/src/sectors.rs",
+      "scpn_quantum_engine/src/sensing.rs",
       "scpn_quantum_engine/src/stochastic_gradient.rs",
       "scpn_quantum_engine/src/symmetry_decay.rs",
       "scpn_quantum_engine/src/validation.rs"
@@ -8941,6 +8959,8 @@
     "MonitoredKuramotoSpec",
     "MonotonicRealtimeClock",
     "MultiscaleQECResult",
+    "NVCenter",
+    "NVFieldCalibration",
     "NativeWholeProgramADKernel",
     "NaturalGradientOptimizationResult",
     "NaturalGradientOptimizer",
@@ -9109,6 +9129,7 @@
     "build_triadic_ring_terms",
     "built_in_aggregator_provider_routes",
     "built_in_backend_profiles",
+    "calibrate_field_from_odmr",
     "check_custom_derivative_consistency",
     "check_parameter_shift_consistency",
     "chsh_from_statevector",
@@ -9156,6 +9177,7 @@
     "custom_jvp",
     "custom_levenberg_marquardt_step",
     "custom_vjp",
+    "cw_odmr_dc_sensitivity_t_per_sqrt_hz",
     "dense_to_sparse_matrix",
     "differentiable_api",
     "differentiable_benchmark_report",
@@ -9267,6 +9289,7 @@
     "native_whole_program_ad_linalg_support",
     "natural_gradient",
     "normalize_iter_features",
+    "odmr_resonances_hz",
     "optimal_schedule",
     "oqc_openqasm3_workload",
     "orchestrator_to_quantum_phases",
@@ -9387,6 +9410,7 @@
     "scipy_ode_baseline",
     "score_function_gradient_estimate",
     "scpn_control_bridge_dependency_contract",
+    "sensing",
     "simulate_higher_order_kuramoto",
     "simulate_monitored_kuramoto",
     "simulate_pt_symmetric_kuramoto",
@@ -10283,6 +10307,7 @@
       "tests/test_noise_model.py",
       "tests/test_notebook_workflows.py",
       "tests/test_nqs_ansatz.py",
+      "tests/test_nv_magnetometry.py",
       "tests/test_observables.py",
       "tests/test_open_system_workflow.py",
       "tests/test_openpulse_control.py",

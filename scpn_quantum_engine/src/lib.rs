@@ -56,6 +56,7 @@ pub mod qnode_metrics;
 pub mod qpetri;
 pub mod realtime;
 pub mod sectors;
+pub mod sensing;
 pub mod stochastic_gradient;
 pub mod symmetry_decay;
 pub mod validation;
@@ -415,6 +416,9 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // FRC pulsed-shot physics
     m.add_function(wrap_pyfunction!(frc::frc_mrti_growth, m)?)?;
+
+    // NV-centre ODMR spectrum
+    m.add_function(wrap_pyfunction!(sensing::nv_odmr_spectrum, m)?)?;
 
     Ok(())
 }

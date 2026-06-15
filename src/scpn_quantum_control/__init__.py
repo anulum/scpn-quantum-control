@@ -20,6 +20,7 @@ from . import (
     l16,
     pgbo,
     psi_field,
+    sensing,
     ssgf,
     tcbo,
 )
@@ -627,6 +628,13 @@ from .qsnn.quantum_neuromorphic_bridge import (
     TraceSTDPState,
 )
 from .qsnn.training import QSNNParameterShiftDescentRun, QSNNTrainer
+from .sensing import (
+    NVCenter,
+    NVFieldCalibration,
+    calibrate_field_from_odmr,
+    cw_odmr_dc_sensitivity_t_per_sqrt_hz,
+    odmr_resonances_hz,
+)
 from .stable_core import (
     Backend,
     Experiment,
@@ -852,6 +860,11 @@ __all__ = [
     "native_whole_program_ad_linalg_support",
     "compile_kuramoto_to_mlir",
     "AerQuantumEntropySource",
+    "NVCenter",
+    "NVFieldCalibration",
+    "calibrate_field_from_odmr",
+    "cw_odmr_dc_sensitivity_t_per_sqrt_hz",
+    "odmr_resonances_hz",
     "FRCPlasmaSurrogate",
     "FRCQAOAObjective",
     "FRCScheduleResult",
@@ -1269,6 +1282,7 @@ __all__ = [
     "analysis",
     "applications",
     "entropy",
+    "sensing",
     "forecasting",
     "gauge",
     "ssgf",

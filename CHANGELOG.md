@@ -5,6 +5,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added the `scpn_quantum_control.sensing` package with a
+  simulation-only NV-centre magnetometry model valid into the 20 T regime
+  (`sensing/nv_magnetometry_20T.py`): the exactly-diagonalised ground-state
+  spin-1 Hamiltonian (zero-field splitting, transverse strain, electron Zeeman
+  at arbitrary field magnitude and angle), ODMR resonance frequencies validated
+  across the GSLAC and the high-field regime, shot-noise CW-ODMR DC sensitivity,
+  a Lorentzian ODMR spectrum dispatching to a bit-true Rust kernel, and a noisy
+  field-calibration loop recovering the field to ~2 microtesla across 0.07-20 T.
+  Hardware calibration is gated by `MIF_NV_HARDWARE_CI=1`. Ships module-specific
+  and property-based tests, a polyglot comparison benchmark
+  (`scripts/bench_nv_magnetometry.py`, `results/nv_magnetometry_benchmark.json`,
+  `functional_non_isolated`), documentation (`docs/nv_magnetometry_20T.md`), and
+  a demo (`examples/26_nv_magnetometry_20T_demo.py`).
+
+### Added
 - 2026-06-15 — Added the FRC pulsed-shot QAOA scheduling cost
   (`control/qaoa_pulsed_cost.py`, `control/frc_pulsed_qaoa.py`):
   `FRCQAOAObjective`, a cited control-grade `FRCPlasmaSurrogate` (s-parameter
