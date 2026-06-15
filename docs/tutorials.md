@@ -736,7 +736,7 @@ in JSON alongside the QASM files.
 
 ## Examples
 
-22 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
+23 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
 
 | # | Script | What it demonstrates |
 |---|--------|---------------------|
@@ -762,3 +762,4 @@ in JSON alongside the QASM files.
 | 20 | `quantum_persistent_homology` | Persistent homology analysis |
 | 21 | `biological_qec_scpn16` | Biological surface code on 16-layer SCPN |
 | 22 | `quantum_neuromorphic_bridge` | QSNN LIF, trace STDP, and dynamic coupling bridge |
+| 23 | `differentiable_api_workflow` | Unified differentiable API, diagnostics, compiler report, and bounded QNN training |

@@ -15,10 +15,10 @@
 | Rust PyO3 function bindings | 122 |
 | Rust source modules | 30 |
 | Notebook files | 98 |
-| Example files | 23 |
+| Example files | 24 |
 | Optional extras | 42 |
 | Python test files | 1932 |
-| Public documentation pages | 240 |
+| Public documentation pages | 241 |
 | GitHub Actions workflows | 19 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

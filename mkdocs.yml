@@ -143,6 +143,7 @@ nav:
       - Tutorials: tutorials.md
       - Physics-First Kuramoto-XY: physics_first_kuramoto_xy.md
       - Differentiable Programming: differentiable_programming.md
+      - Differentiable Tutorials: differentiable_tutorials.md
       - Quantum Gradients: quantum_gradients.md
       - Variational Methods: variational.md
       - Differentiable Roadmap: differentiable_roadmap.md

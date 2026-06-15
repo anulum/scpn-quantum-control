@@ -77,7 +77,8 @@ explicit evidence boundaries.
 | Build an optimisation pilot | Parameter-shift, finite-shot, framework-agreement, and compiler-AD routes. | Gradient evidence with explicit unsupported scenarios. |
 | Assess commercial fit | Stable facades, AGPL/commercial boundary, release-readiness pages, and API maps. | A concrete route from research code to governed integration. |
 
-Use [Differentiable Programming](differentiable_programming.md) and
+Use [Differentiable Tutorials](differentiable_tutorials.md),
+[Differentiable Programming](differentiable_programming.md), and
 [Quantum Gradients](quantum_gradients.md) when the central question is whether a
 workflow can be trained or optimised. Use [Hardware Status Ledger](hardware_status_ledger.md)
 when the central question is whether a result can be promoted as hardware evidence.
@@ -228,9 +229,11 @@ for name, w in results.items():
 - [Onboarding](onboarding.md) — project purpose, user routes, application value, and claim boundaries
 - [Installation](installation.md) — pip install + all optional extras
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
+- [Differentiable Tutorials](differentiable_tutorials.md) — runnable gradient workflow with diagnostics, compiler report, and bounded QNN training
 - [Kuramoto Core Facade](kuramoto_core_facade.md) — stable `K_nm`/`omega` compiler entry point
 - [Stable Facades API](stable_facades_api.md) — mkdocstrings reference for first-path public facades
 - [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
+- [Differentiable Tutorials](differentiable_tutorials.md) — unified differentiable API workflow
 - [Differentiable Programming](differentiable_programming.md) — current AD capabilities, boundaries, and user routes
 - [Quantum Gradients](quantum_gradients.md) — parameter-shift gradients, VQE convergence route, and verification evidence
 - [Differentiable API](differentiable_api.md) — public `scpn_quantum_control.differentiable` namespace map

@@ -64,7 +64,7 @@ than implied coverage.
 |---|---|---|
 | Understand the software | [Onboarding](docs/onboarding.md) -> [Quickstart](docs/quickstart.md) | A small local Kuramoto-XY run and a clear claim boundary. |
 | Bring your own coupled system | [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md) | A validated `K_nm`/`omega` problem compiled to simulator-ready quantum objects. |
-| Train or inspect gradients | [Differentiable Programming](docs/differentiable_programming.md) -> [Quantum Gradients](docs/quantum_gradients.md) | Exact, finite-shot, framework-comparison, or fail-closed gradient evidence. |
+| Train or inspect gradients | [Differentiable Tutorials](docs/differentiable_tutorials.md) -> [Differentiable Programming](docs/differentiable_programming.md) -> [Quantum Gradients](docs/quantum_gradients.md) | Exact, finite-shot, framework-comparison, or fail-closed gradient evidence. |
 | Review hardware claims | [Hardware Status Ledger](docs/hardware_status_ledger.md) -> [Hardware Result Packs](docs/hardware_result_packs.md) | Raw-count-backed evidence or an explicit blocked promotion route. |
 | Evaluate adoption | [API Overview](docs/api.md) -> [Release Readiness Gate](docs/release_readiness.md) | Stable integration surfaces, release gates, and licensing boundaries. |
 
@@ -105,10 +105,10 @@ has a defined commercial licensing route.
 | Rust PyO3 function bindings | 122 |
 | Rust source modules | 30 |
 | Notebook files | 98 |
-| Example files | 23 |
+| Example files | 24 |
 | Optional extras | 42 |
 | Python test files | 1932 |
-| Public documentation pages | 240 |
+| Public documentation pages | 241 |
 | GitHub Actions workflows | 19 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -756,7 +756,7 @@ graph LR
 
 ## Examples
 
-22 standalone scripts in [`examples/`](examples/):
+23 standalone scripts in [`examples/`](examples/):
 
 | # | Script | What it demonstrates |
 |:-:|--------|---------------------|
@@ -782,6 +782,7 @@ graph LR
 | 20 | `quantum_persistent_homology` | Persistent homology analysis |
 | 21 | `biological_qec_scpn16` | Biological surface code on 16-layer SCPN |
 | 22 | `quantum_neuromorphic_bridge` | QSNN quantum LIF + trace STDP + dynamic coupling bridge |
+| 23 | `differentiable_api_workflow` | Unified differentiable API, diagnostics, compiler report, and bounded QNN training |
 
 All examples run on statevector simulation (no QPU needed).
 
@@ -875,6 +876,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Onboarding](docs/onboarding.md) — project purpose, user routes, application value, and claim boundaries
 - [Installation](docs/installation.md) — pip install + all optional extras
 - [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
+- [Differentiable Tutorials](docs/differentiable_tutorials.md) — runnable gradient workflow with diagnostics, compiler report, and bounded QNN training
 - [Differentiable Programming](docs/differentiable_programming.md) — bounded AD surface, gradients, compiler kernels, and roadmap boundaries
 - [Quantum Gradients](docs/quantum_gradients.md) — parameter-shift and gradient-evidence route for VQE and quantum-control objectives
 - [Differentiable API](docs/differentiable_api.md) — public differentiable namespace and support matrix

@@ -1,0 +1,145 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Differentiable Tutorials
+
+# Differentiable Tutorials
+
+This page is the practical differentiable-programming path. It connects the
+physics object, support diagnostics, framework boundaries, compiler report, and
+training evidence without requiring provider credentials or hardware access.
+
+Run the complete script:
+
+```bash
+python examples/23_differentiable_api_workflow.py
+```
+
+The script is deliberately small. It is a tutorial and integration smoke path,
+not a benchmark, not a hardware claim, and not a claim that arbitrary simulator
+kernels are framework-native differentiable.
+
+## What The Workflow Covers
+
+| Step | API surface | Evidence produced |
+|---|---|---|
+| Minimal QNode | `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, `parameter_shift_phase_qnode_gradient(...)` | Local statevector value and analytic parameter-shift gradient for a registered gate and observable. |
+| Diagnostics | `explain_differentiability(...)` | Fail-closed reasons, suggested alternatives, dependency rows, device rows, backend rows, and support payload. |
+| Framework boundary | Bounded QNN bridge matrix inside the diagnostic report | Implemented JAX/PyTorch/TensorFlow bounded rows are separated from arbitrary simulator autodiff and provider hardware gaps. |
+| Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
+| Training evidence | `train_parameter_shift_qnn_classifier(...)`, `verify_parameter_shift_qnn_classifier_gradient(...)` | Tiny bounded phase-QNN training run plus finite-difference gradient verification. |
+
+## Minimal QNode
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+)
+
+circuit = PhaseQNodeCircuit(
+    n_qubits=1,
+    operations=(("ry", (0,), 0),),
+    observable=PauliTerm(1.0, ((0, "z"),)),
+)
+params = np.array([0.4], dtype=float)
+
+value = execute_phase_qnode_circuit(circuit, params)
+gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+print(value.value)
+print(gradient.gradient)
+```
+
+This is the smallest useful local quantum-gradient route: one registered
+rotation, one registered observable, and one trainable parameter.
+
+## Why A Route Is Blocked
+
+```python
+from scpn_quantum_control import explain_differentiability
+
+diagnostic = explain_differentiability(
+    gate="arbitrary_unitary",
+    observable="pauli_expectation",
+    backend="hardware",
+    shots=1024,
+)
+print(diagnostic.blocked_reasons)
+print(diagnostic.suggested_alternatives)
+print(diagnostic.backend_matrix)
+```
+
+Use this before execution when a route might be unsupported. The report explains
+why it cannot differentiate and names safer alternatives. It also shows bounded
+framework dependency rows and backend/device capability rows so integrations
+can decide whether they need native, JAX, PyTorch, TensorFlow, provider-callback,
+or hardware-policy work.
+
+## Compiler Report
+
+```python
+from scpn_quantum_control import differentiable_compile_report
+
+compile_report = differentiable_compile_report(
+    primitive_identities=("scpn.program_ad.array:getitem@1",)
+)
+print(compile_report.payload["primitive_count"])
+print(compile_report.method)
+```
+
+This is planning and interchange evidence. Treat a compiler report as executable
+only when its selected primitive plan declares an executable backend.
+
+## Training Evidence
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    train_parameter_shift_qnn_classifier,
+    verify_parameter_shift_qnn_classifier_gradient,
+)
+
+features = np.array([[0.0], [np.pi]], dtype=float)
+labels = np.array([0.0, 1.0], dtype=float)
+
+training = train_parameter_shift_qnn_classifier(
+    features,
+    labels,
+    initial_params=np.array([0.8], dtype=float),
+    learning_rate=0.7,
+    max_steps=80,
+    target_loss=0.0,
+    target_loss_tolerance=1.0e-4,
+)
+verification = verify_parameter_shift_qnn_classifier_gradient(
+    features,
+    labels,
+    training.best_params,
+)
+print(training.training.best_value)
+print(training.prediction.accuracy)
+print(verification.passed)
+```
+
+This training path is intentionally bounded to a local phase-QNN classifier. It
+is useful onboarding and regression evidence, but it is not evidence for
+arbitrary QNN/QGNN/QSNN architectures, unseeded stochastic training, or provider
+hardware training.
+
+## Claim Boundaries
+
+- Tutorials and examples prove that the public workflow is runnable.
+- Support and diagnostic reports decide whether a route is allowed before
+  derivative execution.
+- Framework rows are capability declarations for bounded bridges, not universal
+  simulator-autodiff claims.
+- Local runs are functional evidence; production performance wording still
+  requires isolated-affinity benchmark artefacts.

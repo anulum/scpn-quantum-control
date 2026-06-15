@@ -119,6 +119,7 @@ reports `isolated_affinity`.
 | Train and verify a bounded QNN classifier | `phase.qnn_training` -> `train_parameter_shift_qnn_classifier(...)` -> `verify_parameter_shift_qnn_classifier_gradient(...)` -> `estimate_parameter_shift_qnn_finite_shot_gradient(...)` -> `run_parameter_shift_qnn_conformance_suite(...)` -> `run_parameter_shift_qnn_convergence_suite(...)` -> `run_parameter_shift_qnn_multi_seed_convergence_suite(...)` -> `run_parameter_shift_qnn_loss_landscape_suite(...)` -> `run_parameter_shift_qnn_finite_shot_convergence_suite(...)` -> `run_parameter_shift_qnn_framework_agreement_suite(...)` -> `run_parameter_shift_qnn_optimizer_benchmark_suite(...)` -> [Quantum Gradients](quantum_gradients.md) |
 | Execute and compare a registered Phase-QNode | `phase.qnode_circuit` -> `execute_phase_qnode_circuit(...)` -> `parameter_shift_phase_qnode_gradient(...)` -> `run_phase_qnode_framework_parity_suite()` -> `lower_phase_qnode_circuit_to_mlir(...)` -> `compile_phase_qnode_circuit_to_mlir_runtime(...)` |
 | Inspect compiler-backed AD | `differentiable_compile_report(...)` -> [Quickstart](quickstart.md) differentiable primitive path -> [Differentiable API](differentiable_api.md) |
+| Follow the complete differentiable tutorial | `examples/23_differentiable_api_workflow.py` -> [Differentiable Tutorials](differentiable_tutorials.md) |
 | Build a custom primitive | `CustomDerivativeRule` -> `CustomDerivativeRegistry` -> primitive contract tests |
 | Decide whether a gradient stack can run | `explain_differentiability(...)`, `differentiable_support_report(...)`, `plan_gradient_support(...)`, `plan_gradient_transform_nesting(...)`, `plan_quantum_gradient_backend(...)`, `run_phase_qnode_tape_readiness_suite()`, `run_provider_gradient_readiness_audit(...)`, `run_hardware_gradient_policy_readiness_suite()`, `run_provider_hardware_gradient_preparation_audit()`, and `run_differentiable_readiness_audit()` |
 | Prepare ML-framework integration | Follow [Differentiable Roadmap](differentiable_roadmap.md) until adapter tests land |
@@ -167,7 +168,8 @@ The next differentiable-programming implementation rounds should prioritise:
 3. native framework agreement beyond the registered Phase-QNode parity family and bounded QNN records;
 4. broader PennyLane adapter round-trip tests beyond caller-supplied framework-gradient agreement checks;
 5. broader QNN/QGNN/QSNN convergence notebooks beyond the bounded local phase-QNN conformance, deterministic convergence, deterministic multi-seed, bounded loss-landscape, seeded finite-shot, named optimizer-baseline suites, QSNN tests, and registered medium evidence suite;
-6. public tutorials for Kuramoto-XY VQE gradients and coupling learning;
+6. public tutorials for Kuramoto-XY VQE gradients and coupling learning beyond
+   the current unified differentiable API tutorial;
 7. executable implementations for still-blocked framework-native nested routes where the physics contract is clear; native vector-output Jacobian, provider-callback QNode transforms, and manual `vmap(grad)` now have bounded local evidence.
 
 ## Unsupported boundaries

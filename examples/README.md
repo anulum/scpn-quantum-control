@@ -25,6 +25,7 @@ Recommended researcher quick path:
 - `19_sync_witness_operator.py` for synchronisation observables.
 - `20_quantum_persistent_homology.py` for topology diagnostics.
 - `22_quantum_neuromorphic_bridge.py` for the QSNN LIF/STDP/dynamic-coupling bridge.
+- `23_differentiable_api_workflow.py` for the unified differentiable API workflow.
 
 ## Route by Goal
 
@@ -38,6 +39,7 @@ Recommended researcher quick path:
 | Run the full packaged workflow | `18_end_to_end_pipeline.py` |
 | Inspect synchronisation observables | `19_sync_witness_operator.py` |
 | Inspect topology diagnostics | `20_quantum_persistent_homology.py` |
+| Inspect differentiable API readiness | `23_differentiable_api_workflow.py` |
 
 Examples are onboarding aids. Reusable production logic belongs in `src/`,
 scripts, committed fixtures, and release gates.
@@ -260,4 +262,17 @@ evidence by itself.
 
 ```bash
 python examples/22_quantum_neuromorphic_bridge.py
+```
+
+## 23_differentiable_api_workflow.py — Differentiable API Workflow
+
+Runs the complete no-credential differentiable tutorial path: a registered
+local Phase-QNode value and parameter-shift gradient, a fail-closed diagnostic
+report for an unsupported hardware route, bounded framework dependency rows, a
+compiler-AD report, and a tiny bounded phase-QNN training plus gradient
+verification. The workflow is functional simulator evidence, not a hardware or
+performance benchmark claim.
+
+```bash
+python examples/23_differentiable_api_workflow.py
 ```

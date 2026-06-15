@@ -78,7 +78,7 @@ these decisions explicit:
 | Question | Recommended answer path |
 |---|---|
 | Is my system naturally represented as coupled oscillators? | Start with `K_nm`, `omega`, and [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md). |
-| Do I need gradients? | Start with [Differentiable Programming](differentiable_programming.md), then verify support with the gradient support matrix. |
+| Do I need gradients? | Start with [Differentiable Tutorials](differentiable_tutorials.md), then use [Differentiable Programming](differentiable_programming.md) and the gradient support matrix for route decisions. |
 | Am I citing hardware? | Use only rows named in [Hardware Status Ledger](hardware_status_ledger.md) and committed raw-count artefacts. |
 | Am I building a closed product or service? | Review the AGPL/commercial licence boundary before distribution or network use. |
 | Am I using SCPN-specific biological or consciousness language? | Keep it source-bounded unless external validation artefacts exist. |
@@ -91,7 +91,7 @@ these decisions explicit:
 | Understand the learning sequence | [Tutorials](tutorials.md) |
 | Use the stable API | [Stable Facades API](stable_facades_api.md) |
 | Bring a custom oscillator network | [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) |
-| Train or inspect gradients | [Differentiable Programming](differentiable_programming.md), [Quantum Gradients](quantum_gradients.md), and [Differentiable API](differentiable_api.md) |
+| Train or inspect gradients | [Differentiable Tutorials](differentiable_tutorials.md), [Differentiable Programming](differentiable_programming.md), [Quantum Gradients](quantum_gradients.md), and [Differentiable API](differentiable_api.md) |
 | Reproduce framework parity | Build the CPU-only framework overlay, run the external comparison suite, and inspect the [claim ledger](https://github.com/anulum/scpn-quantum-control/blob/main/data/differentiable_phase_qnode/claim_ledger.md). |
 | Inspect notebooks | [Interactive Notebooks](notebooks.md) |
 | Build or install the Rust engine | [Rust Engine](rust_engine.md) |
