@@ -19,8 +19,11 @@ from scpn_quantum_control.phase.qnode_circuit import (
     PauliTerm,
     PhaseQNodeCircuit,
     PhaseQNodeClassicalFisherResult,
+    PhaseQNodeDensityCircuit,
+    PhaseQNodeDensityExecutionResult,
     PhaseQNodeDepthProfile,
     PhaseQNodeMetricTensorResult,
+    PhaseQNodeNoiseChannel,
     PhaseQNodeRegisteredCircuitSpec,
     PhaseQNodeSupportError,
     PhaseQNodeTemplateSpec,
@@ -29,14 +32,17 @@ from scpn_quantum_control.phase.qnode_circuit import (
     build_registered_phase_qnode_circuit,
     decompose_phase_qnode_controlled_gate,
     execute_phase_qnode_circuit,
+    execute_phase_qnode_density_matrix,
     parameter_shift_phase_qnode_gradient,
     phase_qnode_computational_basis_fisher_information,
+    phase_qnode_density_support_report,
     phase_qnode_depth_profile,
     phase_qnode_natural_gradient_metric,
     phase_qnode_quantum_fisher_information,
     phase_qnode_support_report,
     registered_phase_qnode_decompositions,
     registered_phase_qnode_gates,
+    registered_phase_qnode_noise_channels,
     registered_phase_qnode_observables,
     registered_phase_qnode_templates,
 )
@@ -715,3 +721,126 @@ def test_phase_qnode_controlled_decomposition_registry_validates_inputs() -> Non
 def test_phase_qnode_controlled_gate_exports_are_public() -> None:
     assert phase.decompose_phase_qnode_controlled_gate is decompose_phase_qnode_controlled_gate
     assert phase.registered_phase_qnode_decompositions is registered_phase_qnode_decompositions
+
+
+def test_phase_qnode_density_matrix_unitary_route_matches_statevector() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("ry", (0,), 0), ("cnot", (0, 1)), ("rz", (1,), 1)),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+    params = np.array([0.37, -0.19], dtype=float)
+
+    pure = execute_phase_qnode_circuit(circuit, params)
+    mixed = execute_phase_qnode_density_matrix(circuit, params)
+
+    assert isinstance(mixed, PhaseQNodeDensityExecutionResult)
+    np.testing.assert_allclose(mixed.value, pure.value, atol=1e-12)
+    np.testing.assert_allclose(mixed.density_matrix, np.outer(pure.state, pure.state.conj()))
+    np.testing.assert_allclose(mixed.trace, 1.0, atol=1e-12)
+    np.testing.assert_allclose(mixed.purity, 1.0, atol=1e-12)
+    assert mixed.support_report.supported
+    assert "density-matrix" in mixed.claim_boundary
+
+
+def test_phase_qnode_density_matrix_noise_channels_match_references() -> None:
+    bit_flip = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(PhaseQNodeNoiseChannel("bit_flip", (0,), 1.0),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+    phase_flip = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(("h", (0,)), ("phase_flip", (0,), 0.5)),
+        observable=PauliTerm(1.0, ((0, "x"),)),
+    )
+    amplitude_damping = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(("x", (0,)), ("amplitude_damping", (0,), 0.25)),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+    depolarizing = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(("depolarizing", (0,), 0.75),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    bit_flip_result = execute_phase_qnode_density_matrix(bit_flip, np.array([], dtype=float))
+    phase_flip_result = execute_phase_qnode_density_matrix(phase_flip, np.array([], dtype=float))
+    damping_result = execute_phase_qnode_density_matrix(
+        amplitude_damping,
+        np.array([], dtype=float),
+    )
+    depolarizing_result = execute_phase_qnode_density_matrix(
+        depolarizing,
+        np.array([], dtype=float),
+    )
+
+    np.testing.assert_allclose(bit_flip_result.value, -1.0, atol=1e-12)
+    np.testing.assert_allclose(phase_flip_result.value, 0.0, atol=1e-12)
+    np.testing.assert_allclose(damping_result.value, -0.5, atol=1e-12)
+    np.testing.assert_allclose(depolarizing_result.value, 0.0, atol=1e-12)
+    for result in (bit_flip_result, phase_flip_result, damping_result, depolarizing_result):
+        np.testing.assert_allclose(result.trace, 1.0, atol=1e-12)
+        assert result.purity <= 1.0 + 1e-12
+
+
+def test_phase_qnode_density_matrix_covariance_and_dense_observables() -> None:
+    bell_with_noise = PhaseQNodeDensityCircuit(
+        n_qubits=2,
+        operations=(
+            ("h", (0,)),
+            ("cnot", (0, 1)),
+            PhaseQNodeNoiseChannel("phase_flip", (0,), 0.5),
+        ),
+        observable=PauliCovarianceObservable(
+            PauliTerm(1.0, ((0, "z"),)),
+            PauliTerm(1.0, ((1, "z"),)),
+        ),
+    )
+    dense = PhaseQNodeDensityCircuit(
+        n_qubits=1,
+        operations=(("amplitude_damping", (0,), 1.0),),
+        observable=DenseHermitianObservable(
+            np.array([[0.4, 0.1], [0.1, -0.8]], dtype=np.complex128)
+        ),
+    )
+
+    covariance = execute_phase_qnode_density_matrix(bell_with_noise, np.array([], dtype=float))
+    dense_result = execute_phase_qnode_density_matrix(dense, np.array([], dtype=float))
+
+    np.testing.assert_allclose(covariance.value, 1.0, atol=1e-12)
+    np.testing.assert_allclose(dense_result.value, 0.4, atol=1e-12)
+
+
+def test_phase_qnode_density_support_reports_fail_closed() -> None:
+    circuit = PhaseQNodeDensityCircuit(
+        n_qubits=2,
+        operations=(("ry", (0,)), ("bit_flip", (0, 1), 0.2)),
+        observable="pauli_z",
+    )
+
+    report = phase_qnode_density_support_report(circuit, np.array([], dtype=float))
+
+    assert not report.supported
+    assert "missing parameter" in report.failure_reason
+    assert "noise channel arity" in report.failure_reason
+    with pytest.raises(PhaseQNodeSupportError):
+        execute_phase_qnode_density_matrix(circuit, np.array([], dtype=float))
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        PhaseQNodeNoiseChannel("bit_flip", (0,), 1.01)
+
+
+def test_phase_qnode_density_exports_are_public() -> None:
+    assert set(registered_phase_qnode_noise_channels()) == {
+        "amplitude_damping",
+        "bit_flip",
+        "depolarizing",
+        "phase_flip",
+    }
+    assert phase.PhaseQNodeDensityCircuit is PhaseQNodeDensityCircuit
+    assert phase.PhaseQNodeDensityExecutionResult is PhaseQNodeDensityExecutionResult
+    assert phase.PhaseQNodeNoiseChannel is PhaseQNodeNoiseChannel
+    assert phase.execute_phase_qnode_density_matrix is execute_phase_qnode_density_matrix
+    assert phase.phase_qnode_density_support_report is phase_qnode_density_support_report
+    assert phase.registered_phase_qnode_noise_channels is registered_phase_qnode_noise_channels

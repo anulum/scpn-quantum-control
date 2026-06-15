@@ -1073,7 +1073,10 @@ from scpn_quantum_control.phase import (
     PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
+    PhaseQNodeDensityCircuit,
+    PhaseQNodeNoiseChannel,
     execute_phase_qnode_circuit,
+    execute_phase_qnode_density_matrix,
     parameter_shift_phase_qnode_gradient,
     run_phase_qnode_framework_parity_suite,
 )
@@ -1105,6 +1108,29 @@ controlled_circuit = PhaseQNodeCircuit(
 )
 print(execute_phase_qnode_circuit(controlled_circuit, np.array([])).value)
 ```
+
+For local mixed-state evidence, use `PhaseQNodeDensityCircuit` and
+`execute_phase_qnode_density_matrix(...)`. The density route supports the same
+registered unitary gates plus bounded single-qubit Kraus channels:
+`bit_flip`, `phase_flip`, `depolarizing`, and `amplitude_damping`. It returns
+the density matrix, trace, purity, support report, and claim boundary:
+
+```python
+noisy_circuit = PhaseQNodeDensityCircuit(
+    n_qubits=1,
+    operations=(
+        ("x", (0,)),
+        PhaseQNodeNoiseChannel("amplitude_damping", (0,), 0.25),
+    ),
+    observable=PauliTerm(1.0, ((0, "z"),)),
+)
+noisy = execute_phase_qnode_density_matrix(noisy_circuit, np.array([]))
+print(noisy.value, noisy.trace, noisy.purity)
+```
+
+Noisy density execution is deterministic local simulator evidence. It is not a
+parameter-shift gradient route, not a pure-state Fubini-Study/QFI route, not a
+finite-shot estimator, and not provider or hardware evidence.
 
 Use `build_phase_qnode_template(...)` when the circuit should come from a
 registered multi-qubit ansatz rather than hand-authored operations. The current

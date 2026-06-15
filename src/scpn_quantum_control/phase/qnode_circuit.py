@@ -19,6 +19,8 @@ from numpy.typing import ArrayLike, NDArray
 FloatArray: TypeAlias = NDArray[np.float64]
 ComplexArray: TypeAlias = NDArray[np.complex128]
 OperationSpec: TypeAlias = tuple[object, ...]
+DensityOperationSpec: TypeAlias = tuple[object, ...]
+DensityOperation: TypeAlias = "PhaseQNodeOperation | PhaseQNodeNoiseChannel"
 
 _NON_PARAMETRIC_GATES = frozenset(
     (
@@ -90,6 +92,12 @@ _REGISTERED_TEMPLATES = (
     "hardware_efficient_ryrz",
 )
 _REGISTERED_DECOMPOSITIONS = ("ccnot", "cswap")
+_REGISTERED_NOISE_CHANNELS = (
+    "amplitude_damping",
+    "bit_flip",
+    "depolarizing",
+    "phase_flip",
+)
 
 _I = np.eye(2, dtype=np.complex128)
 _X = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
@@ -131,6 +139,31 @@ class PhaseQNodeOperation:
             raise ValueError("parameter_index must be a non-negative integer or None")
         object.__setattr__(self, "gate", gate)
         object.__setattr__(self, "qubits", qubits)
+
+
+@dataclass(frozen=True)
+class PhaseQNodeNoiseChannel:
+    """One registered local density-matrix noise channel."""
+
+    channel: str
+    qubits: tuple[int, ...]
+    probability: float
+
+    def __post_init__(self) -> None:
+        channel = str(self.channel).strip().lower()
+        if not channel:
+            raise ValueError("noise channel must be non-empty")
+        qubits = tuple(self.qubits)
+        if not qubits:
+            raise ValueError("noise channel qubits must be non-empty")
+        if any(isinstance(qubit, bool) or qubit < 0 for qubit in qubits):
+            raise ValueError("noise channel qubits must be non-negative integers")
+        if len(set(qubits)) != len(qubits):
+            raise ValueError("noise channel qubits must be unique")
+        probability = _as_probability(self.probability)
+        object.__setattr__(self, "channel", channel)
+        object.__setattr__(self, "qubits", qubits)
+        object.__setattr__(self, "probability", probability)
 
 
 @dataclass(frozen=True)
@@ -307,6 +340,34 @@ class PhaseQNodeCircuit:
 
 
 @dataclass(frozen=True)
+class PhaseQNodeDensityCircuit:
+    """Bounded density-matrix Phase-QNode declaration with local noise."""
+
+    n_qubits: int
+    operations: tuple[DensityOperation | DensityOperationSpec, ...]
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    )
+
+    def __post_init__(self) -> None:
+        if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
+            raise ValueError("n_qubits must be a positive integer")
+        parsed = tuple(_parse_density_operation(operation) for operation in self.operations)
+        if not parsed:
+            raise ValueError("operations must be non-empty")
+        for operation in parsed:
+            if any(qubit >= self.n_qubits for qubit in operation.qubits):
+                raise ValueError("operation qubit exceeds n_qubits")
+        observable = _normalise_observable(self.observable, self.n_qubits)
+        object.__setattr__(self, "operations", parsed)
+        object.__setattr__(self, "observable", observable)
+
+
+@dataclass(frozen=True)
 class PhaseQNodeTemplateSpec:
     """Registered multi-qubit Phase-QNode template declaration."""
 
@@ -426,6 +487,30 @@ class PhaseQNodeExecutionResult:
 
 
 @dataclass(frozen=True)
+class PhaseQNodeDensityExecutionResult:
+    """Density-matrix execution result for a supported local Phase-QNode."""
+
+    value: float
+    density_matrix: ComplexArray
+    trace: float
+    purity: float
+    support_report: PhaseQNodeSupportReport
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready density-matrix execution evidence."""
+        return {
+            "value": self.value,
+            "density_matrix_real": self.density_matrix.real.tolist(),
+            "density_matrix_imag": self.density_matrix.imag.tolist(),
+            "trace": self.trace,
+            "purity": self.purity,
+            "support_report": self.support_report.to_dict(),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseQNodeGradientResult:
     """Parameter-shift gradient result for a supported Phase-QNode circuit."""
 
@@ -510,6 +595,11 @@ def registered_phase_qnode_templates() -> tuple[str, ...]:
 def registered_phase_qnode_decompositions() -> tuple[str, ...]:
     """Return gates with exact registered operation-list decompositions."""
     return _REGISTERED_DECOMPOSITIONS
+
+
+def registered_phase_qnode_noise_channels() -> tuple[str, ...]:
+    """Return the registered local density-matrix noise channels."""
+    return _REGISTERED_NOISE_CHANNELS
 
 
 def decompose_phase_qnode_controlled_gate(
@@ -762,6 +852,106 @@ def phase_qnode_support_report(
     )
 
 
+def phase_qnode_density_support_report(
+    circuit: PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeSupportReport:
+    """Return a fail-closed support report for density-matrix execution."""
+    values = _as_parameter_vector(parameters)
+    operations = _parsed_density_operations(circuit)
+    unitary_operations = tuple(
+        operation for operation in operations if isinstance(operation, PhaseQNodeOperation)
+    )
+    noise_operations = tuple(
+        operation for operation in operations if isinstance(operation, PhaseQNodeNoiseChannel)
+    )
+    gates = tuple(
+        operation.gate if isinstance(operation, PhaseQNodeOperation) else operation.channel
+        for operation in operations
+    )
+    unsupported_gates = tuple(
+        operation.gate
+        for operation in unitary_operations
+        if operation.gate not in _REGISTERED_GATES
+    )
+    unsupported_noise = tuple(
+        operation.channel
+        for operation in noise_operations
+        if operation.channel not in _REGISTERED_NOISE_CHANNELS
+    )
+    invalid_arities = tuple(
+        f"{index}:{operation.gate}/{len(operation.qubits)}"
+        for index, operation in enumerate(operations)
+        if isinstance(operation, PhaseQNodeOperation)
+        and operation.gate in _GATE_ARITY
+        and len(operation.qubits) != _GATE_ARITY[operation.gate]
+    )
+    invalid_noise_arities = tuple(
+        f"{index}:{operation.channel}/{len(operation.qubits)}"
+        for index, operation in enumerate(operations)
+        if isinstance(operation, PhaseQNodeNoiseChannel) and len(operation.qubits) != 1
+    )
+    unsupported_parameters = tuple(
+        operation.parameter_index
+        for operation in unitary_operations
+        if operation.gate in _PARAMETRIC_GATES
+        and operation.parameter_index is not None
+        and operation.parameter_index >= values.size
+    )
+    missing_parameters = tuple(
+        index
+        for index, operation in enumerate(operations)
+        if isinstance(operation, PhaseQNodeOperation)
+        and operation.gate in _PARAMETRIC_GATES
+        and operation.parameter_index is None
+    )
+    observable_kind = _observable_kind(circuit.observable)
+    unsupported_observables: tuple[str, ...] = ()
+    if observable_kind not in _REGISTERED_OBSERVABLES:
+        unsupported_observables = (observable_kind,)
+    differentiable = tuple(
+        sorted(
+            {
+                cast(int, operation.parameter_index)
+                for operation in unitary_operations
+                if operation.gate in _PARAMETRIC_GATES and operation.parameter_index is not None
+            }
+        )
+    )
+    reasons: list[str] = []
+    if unsupported_gates:
+        reasons.append(f"unsupported unitary gates: {', '.join(unsupported_gates)}")
+    if unsupported_noise:
+        reasons.append(f"unsupported noise channels: {', '.join(unsupported_noise)}")
+    if unsupported_observables:
+        reasons.append(f"unsupported observables: {', '.join(unsupported_observables)}")
+    if unsupported_parameters:
+        reasons.append(f"parameter indices outside supplied vector: {unsupported_parameters}")
+    if missing_parameters:
+        reasons.append(
+            f"parametric gates missing parameter indices at operations: {missing_parameters}"
+        )
+    if invalid_arities:
+        reasons.append(f"gate arity mismatches at operations: {invalid_arities}")
+    if invalid_noise_arities:
+        reasons.append(f"noise channel arity mismatches at operations: {invalid_noise_arities}")
+    return PhaseQNodeSupportReport(
+        supported=not reasons,
+        gates=gates,
+        observable_kind=observable_kind,
+        differentiable_parameters=differentiable,
+        unsupported_gates=unsupported_gates + unsupported_noise,
+        unsupported_observables=unsupported_observables,
+        unsupported_parameters=tuple(int(item) for item in unsupported_parameters),
+        failure_reason="; ".join(reasons),
+        alternatives=(
+            "use registered_phase_qnode_gates for unitary density operations",
+            "use registered_phase_qnode_noise_channels for local noisy channels",
+            "route provider, hardware, and finite-shot noise through explicit policy records",
+        ),
+    )
+
+
 def execute_phase_qnode_circuit(
     circuit: PhaseQNodeCircuit,
     parameters: ArrayLike,
@@ -777,6 +967,54 @@ def execute_phase_qnode_circuit(
         state = _apply_operation(state, circuit.n_qubits, operation, values)
     value = _expectation_value(state, circuit.n_qubits, circuit.observable)
     return PhaseQNodeExecutionResult(value=value, state=state, support_report=report)
+
+
+def execute_phase_qnode_density_matrix(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeDensityExecutionResult:
+    """Execute a registered local Phase-QNode through a density-matrix simulator."""
+    density_circuit = _as_density_circuit(circuit)
+    values = _as_parameter_vector(parameters)
+    report = phase_qnode_density_support_report(density_circuit, values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    dimension = 2**density_circuit.n_qubits
+    density = np.zeros((dimension, dimension), dtype=np.complex128)
+    density[0, 0] = 1.0 + 0.0j
+    for operation in _parsed_density_operations(density_circuit):
+        if isinstance(operation, PhaseQNodeOperation):
+            matrix = _operation_matrix(operation, values)
+            density = _apply_unitary_density_matrix(
+                density,
+                density_circuit.n_qubits,
+                operation.qubits,
+                matrix,
+            )
+        else:
+            density = _apply_noise_channel_density_matrix(
+                density,
+                density_circuit.n_qubits,
+                operation,
+            )
+    trace = float(np.real_if_close(np.trace(density)).real)
+    purity = float(np.real_if_close(np.trace(density @ density)).real)
+    value = _density_expectation_value(
+        density, density_circuit.n_qubits, density_circuit.observable
+    )
+    return PhaseQNodeDensityExecutionResult(
+        value=value,
+        density_matrix=density,
+        trace=trace,
+        purity=purity,
+        support_report=report,
+        claim_boundary=(
+            "local density-matrix Phase-QNode execution for registered unitary "
+            "gates and registered single-qubit Kraus noise channels; no "
+            "parameter-shift gradient, pure-state metric, finite-shot, provider, "
+            "hardware, or benchmark-promotion claim"
+        ),
+    )
 
 
 def parameter_shift_phase_qnode_gradient(
@@ -934,8 +1172,46 @@ def _parse_operation(operation: PhaseQNodeOperation | OperationSpec) -> PhaseQNo
     return PhaseQNodeOperation(gate=gate, qubits=qubits, parameter_index=parameter_index)
 
 
+def _parse_density_operation(
+    operation: DensityOperation | DensityOperationSpec,
+) -> DensityOperation:
+    if isinstance(operation, PhaseQNodeOperation | PhaseQNodeNoiseChannel):
+        return operation
+    if len(operation) not in {2, 3}:
+        raise ValueError(
+            "density operation specs must be (gate, qubits), "
+            "(gate, qubits, parameter_index), or (noise_channel, qubits, probability)"
+        )
+    name = str(operation[0]).strip().lower()
+    qubits_raw = operation[1]
+    if not isinstance(qubits_raw, Iterable):
+        raise ValueError("density operation qubits must be an iterable of integer qubits")
+    qubits = tuple(int(qubit) for qubit in cast(Iterable[int], qubits_raw))
+    if name in _REGISTERED_NOISE_CHANNELS:
+        if len(operation) != 3:
+            raise ValueError("noise channel specs must include a probability")
+        return PhaseQNodeNoiseChannel(name, qubits, float(cast(float, operation[2])))
+    return _parse_operation(cast(OperationSpec, operation))
+
+
 def _parsed_operations(circuit: PhaseQNodeCircuit) -> tuple[PhaseQNodeOperation, ...]:
     return cast(tuple[PhaseQNodeOperation, ...], circuit.operations)
+
+
+def _parsed_density_operations(circuit: PhaseQNodeDensityCircuit) -> tuple[DensityOperation, ...]:
+    return cast(tuple[DensityOperation, ...], circuit.operations)
+
+
+def _as_density_circuit(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+) -> PhaseQNodeDensityCircuit:
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        return circuit
+    return PhaseQNodeDensityCircuit(
+        n_qubits=circuit.n_qubits,
+        operations=circuit.operations,
+        observable=circuit.observable,
+    )
 
 
 def _as_template_width(value: int) -> int:
@@ -1104,6 +1380,13 @@ def _as_finite_scalar(name: str, value: object) -> float:
     if not np.isfinite(scalar):
         raise ValueError(f"{name} must be a finite real scalar")
     return scalar
+
+
+def _as_probability(value: object) -> float:
+    probability = _as_finite_scalar("probability", value)
+    if probability < 0.0 or probability > 1.0:
+        raise ValueError("probability must be between 0 and 1")
+    return probability
 
 
 def _as_min_probability(value: float) -> float:
@@ -1363,6 +1646,69 @@ def _apply_gate_matrix(
     return cast(ComplexArray, updated.reshape(-1).astype(np.complex128, copy=False))
 
 
+def _expanded_operator(
+    n_qubits: int,
+    qubits: tuple[int, ...],
+    matrix: ComplexArray,
+) -> ComplexArray:
+    dimension = 2**n_qubits
+    expanded = np.zeros((dimension, dimension), dtype=np.complex128)
+    for column in range(dimension):
+        basis = np.zeros(dimension, dtype=np.complex128)
+        basis[column] = 1.0 + 0.0j
+        expanded[:, column] = _apply_gate_matrix(basis, n_qubits, qubits, matrix)
+    return expanded
+
+
+def _apply_unitary_density_matrix(
+    density: ComplexArray,
+    n_qubits: int,
+    qubits: tuple[int, ...],
+    matrix: ComplexArray,
+) -> ComplexArray:
+    expanded = _expanded_operator(n_qubits, qubits, matrix)
+    return cast(ComplexArray, (expanded @ density @ expanded.conj().T).astype(np.complex128))
+
+
+def _apply_noise_channel_density_matrix(
+    density: ComplexArray,
+    n_qubits: int,
+    channel: PhaseQNodeNoiseChannel,
+) -> ComplexArray:
+    updated = np.zeros_like(density)
+    for kraus in _noise_channel_kraus(channel):
+        expanded = _expanded_operator(n_qubits, channel.qubits, kraus)
+        updated += expanded @ density @ expanded.conj().T
+    return cast(ComplexArray, updated.astype(np.complex128, copy=False))
+
+
+def _noise_channel_kraus(channel: PhaseQNodeNoiseChannel) -> tuple[ComplexArray, ...]:
+    probability = channel.probability
+    if channel.channel == "bit_flip":
+        return (
+            np.sqrt(1.0 - probability) * _I,
+            np.sqrt(probability) * _X,
+        )
+    if channel.channel == "phase_flip":
+        return (
+            np.sqrt(1.0 - probability) * _I,
+            np.sqrt(probability) * _Z,
+        )
+    if channel.channel == "depolarizing":
+        return (
+            np.sqrt(1.0 - probability) * _I,
+            np.sqrt(probability / 3.0) * _X,
+            np.sqrt(probability / 3.0) * _Y,
+            np.sqrt(probability / 3.0) * _Z,
+        )
+    if channel.channel == "amplitude_damping":
+        return (
+            np.array([[1.0, 0.0], [0.0, np.sqrt(1.0 - probability)]], dtype=np.complex128),
+            np.array([[0.0, np.sqrt(probability)], [0.0, 0.0]], dtype=np.complex128),
+        )
+    raise ValueError(f"unsupported noise channel: {channel.channel}")
+
+
 def _expectation_value(
     state: ComplexArray,
     n_qubits: int,
@@ -1384,6 +1730,41 @@ def _expectation_value(
     if isinstance(observable, PauliTerm):
         return _term_expectation(state, n_qubits, observable)
     raise ValueError(f"unsupported observable: {observable}")
+
+
+def _density_expectation_value(
+    density: ComplexArray,
+    n_qubits: int,
+    observable: (
+        str
+        | PauliTerm
+        | SparsePauliHamiltonian
+        | PauliCovarianceObservable
+        | DenseHermitianObservable
+    ),
+) -> float:
+    if isinstance(observable, DenseHermitianObservable):
+        value = np.trace(observable.matrix @ density)
+        return float(np.real_if_close(value).real)
+    if isinstance(observable, PauliCovarianceObservable):
+        return _density_covariance_expectation(density, n_qubits, observable)
+    if isinstance(observable, SparsePauliHamiltonian):
+        return float(
+            sum(_density_term_expectation(density, n_qubits, term) for term in observable.terms)
+        )
+    if isinstance(observable, PauliTerm):
+        return _density_term_expectation(density, n_qubits, observable)
+    raise ValueError(f"unsupported observable: {observable}")
+
+
+def _density_term_expectation(
+    density: ComplexArray,
+    n_qubits: int,
+    term: PauliTerm,
+) -> float:
+    operator = _term_operator(n_qubits, term)
+    value = term.coefficient * np.trace(operator @ density)
+    return float(np.real_if_close(value).real)
 
 
 def _term_expectation(state: ComplexArray, n_qubits: int, term: PauliTerm) -> float:
@@ -1474,6 +1855,29 @@ def _term_product_expectation(
     return complex(left.coefficient * right.coefficient * np.vdot(state, transformed))
 
 
+def _density_covariance_expectation(
+    density: ComplexArray,
+    n_qubits: int,
+    observable: PauliCovarianceObservable,
+) -> float:
+    left_operator = _term_operator(n_qubits, observable.left)
+    right_operator = _term_operator(n_qubits, observable.right)
+    symmetrized = 0.5 * np.trace(
+        (left_operator @ right_operator + right_operator @ left_operator) @ density
+    )
+    left_mean = _density_term_expectation(density, n_qubits, observable.left)
+    right_mean = _density_term_expectation(density, n_qubits, observable.right)
+    return float(np.real_if_close(symmetrized).real - left_mean * right_mean)
+
+
+def _term_operator(n_qubits: int, term: PauliTerm) -> ComplexArray:
+    operator = np.eye(2**n_qubits, dtype=np.complex128)
+    for qubit, label in term.factors:
+        expanded = _expanded_operator(n_qubits, (qubit,), _PAULI_MATRICES[label])
+        operator = expanded @ operator
+    return cast(ComplexArray, operator.astype(np.complex128, copy=False))
+
+
 def _apply_term_operator(state: ComplexArray, n_qubits: int, term: PauliTerm) -> ComplexArray:
     transformed = cast(ComplexArray, state.copy())
     for qubit, label in term.factors:
@@ -1488,9 +1892,12 @@ __all__ = [
     "PhaseQNodeClassicalFisherResult",
     "PhaseQNodeCircuit",
     "PhaseQNodeDepthProfile",
+    "PhaseQNodeDensityCircuit",
+    "PhaseQNodeDensityExecutionResult",
     "PhaseQNodeExecutionResult",
     "PhaseQNodeGradientResult",
     "PhaseQNodeMetricTensorResult",
+    "PhaseQNodeNoiseChannel",
     "PhaseQNodeOperation",
     "PhaseQNodeRegisteredCircuitSpec",
     "PhaseQNodeSupportError",
@@ -1501,8 +1908,10 @@ __all__ = [
     "build_phase_qnode_template",
     "decompose_phase_qnode_controlled_gate",
     "execute_phase_qnode_circuit",
+    "execute_phase_qnode_density_matrix",
     "parameter_shift_phase_qnode_gradient",
     "phase_qnode_computational_basis_fisher_information",
+    "phase_qnode_density_support_report",
     "phase_qnode_depth_profile",
     "phase_qnode_natural_gradient_metric",
     "phase_qnode_quantum_fisher_information",
@@ -1510,5 +1919,6 @@ __all__ = [
     "registered_phase_qnode_gates",
     "registered_phase_qnode_observables",
     "registered_phase_qnode_decompositions",
+    "registered_phase_qnode_noise_channels",
     "registered_phase_qnode_templates",
 ]

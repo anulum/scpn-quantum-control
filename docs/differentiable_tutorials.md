@@ -34,6 +34,7 @@ kernels are framework-native differentiable.
 |---|---|---|
 | Minimal QNode | `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, `parameter_shift_phase_qnode_gradient(...)` | Local statevector value and analytic parameter-shift gradient for a registered gate and observable. |
 | Controlled gates | `decompose_phase_qnode_controlled_gate(...)`, `registered_phase_qnode_decompositions()` | Exact registered Toffoli/Fredkin decompositions plus native controlled-H/S/T, Toffoli, CCZ, and Fredkin execution. |
+| Density and noise | `PhaseQNodeDensityCircuit`, `PhaseQNodeNoiseChannel`, `execute_phase_qnode_density_matrix(...)` | Local density-matrix value, trace, purity, and support report for registered unitary gates plus bounded single-qubit Kraus channels. |
 | Diagnostics | `explain_differentiability(...)` | Fail-closed reasons, suggested alternatives, dependency rows, device rows, backend rows, and support payload. |
 | Framework boundary | Bounded QNN bridge matrix inside the diagnostic report | Implemented JAX/PyTorch/TensorFlow bounded rows are separated from arbitrary simulator autodiff and provider hardware gaps. |
 | Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
@@ -167,6 +168,38 @@ print(value.value)
 
 The decomposition registry is intentionally explicit: unsupported controlled
 gates, wrong qubit arity, and parameterised decomposition requests fail closed.
+
+For mixed-state checks, build a density circuit and add registered local noise
+channels. The route reports density entries, trace, and purity; gradients and
+pure-state metrics remain separate fail-closed surfaces:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeDensityCircuit,
+    PhaseQNodeNoiseChannel,
+    execute_phase_qnode_density_matrix,
+    registered_phase_qnode_noise_channels,
+)
+
+print(registered_phase_qnode_noise_channels())
+circuit = PhaseQNodeDensityCircuit(
+    n_qubits=1,
+    operations=(
+        ("x", (0,)),
+        PhaseQNodeNoiseChannel("amplitude_damping", (0,), 0.25),
+    ),
+    observable=PauliTerm(1.0, ((0, "z"),)),
+)
+
+value = execute_phase_qnode_density_matrix(circuit, np.array([], dtype=float))
+print(value.value, value.trace, value.purity)
+```
+
+This is local deterministic noisy-channel evidence only. It is not finite-shot
+sampling, provider execution, hardware execution, or noisy-gradient evidence.
 
 ## Why A Route Is Blocked
 

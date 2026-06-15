@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 598,
     "public_documentation_pages": 241,
-    "python_model_classes": 1682,
+    "python_model_classes": 1685,
     "python_model_source_modules": 811,
     "rust_pyo3_model_wrappers": 122,
     "rust_source_modules": 30,
@@ -4780,6 +4780,14 @@
         "path": "src/scpn_quantum_control/phase/qnode_transforms.py"
       },
       {
+        "name": "PhaseQNodeDensityCircuit",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeDensityExecutionResult",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
         "name": "PhaseQNodeDepthProfile",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
@@ -4805,6 +4813,10 @@
       },
       {
         "name": "PhaseQNodeMetricTensorResult",
+        "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "PhaseQNodeNoiseChannel",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
       {

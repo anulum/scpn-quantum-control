@@ -1284,7 +1284,10 @@ build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec
 phase_qnode_depth_profile(circuit) -> PhaseQNodeDepthProfile
 registered_phase_qnode_decompositions() -> tuple[str, ...]
+registered_phase_qnode_noise_channels() -> tuple[str, ...]
 decompose_phase_qnode_controlled_gate(operation) -> tuple[PhaseQNodeOperation, ...]
+phase_qnode_density_support_report(circuit, parameters) -> PhaseQNodeSupportReport
+execute_phase_qnode_density_matrix(circuit, parameters) -> PhaseQNodeDensityExecutionResult
 build_pennylane_qnode_from_phase_qnode(circuit, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift") -> PennyLaneQNodeConversionResult
 check_pennylane_phase_qnode_round_trip(circuit, values, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6) -> PennyLaneRoundTripResult
 is_phase_torch_available() -> bool
