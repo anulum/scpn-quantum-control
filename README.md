@@ -124,7 +124,7 @@ Evidence boundary: this snapshot is a static inventory. Performance, coverage, h
 | Release and reproducibility scope | Stable core contracts and backend capability artefacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |
-| Paper 0 source-validation register | Paper 0 is fully promoted through the source-accounting register: the planner reports `0` remaining work orders and `0` remaining source records after `P0R00001`-`P0R06211`. The generated register contains 466 validation modules with colocated specs, fixtures, loaders, and tests; this is source-bounded ingestion, not external validation evidence. |
+| Paper 0 research trajectory | Paper 0 is the maintainer/creator research trajectory and source-accounting register. The repository keeps the generated register visible for review: the planner reports `0` remaining work orders and `0` remaining source records after `P0R00001`-`P0R06211`. The generated register contains 466 validation modules with colocated specs, fixtures, loaders, and tests; this is source-bounded ingestion, not external validation evidence, and it is intentionally excluded from pip wheel and sdist artefacts. |
 | Licence boundary | The possible lightweight core split is documented, but all in-repository code remains AGPL/commercial unless a future release changes metadata and SPDX headers. |
 
 For claim classes, raw-artefact pointers, and promotion rules, see the
@@ -147,7 +147,7 @@ surfaces needed to use the software responsibly:
 - differentiable-programming kernels for supported scalar, vector, and matrix
   primitives;
 - no-QPU release gates and hardware-result pack verifiers;
-- source-bounded Paper 0 validation fixtures;
+- source-bounded Paper 0 validation fixtures in the repository checkout;
 - claim-boundary documentation that separates simulator, hardware, and open
   scientific questions.
 
@@ -445,12 +445,14 @@ The package provides:
    Stable core contracts and backend capability artefacts are included in this
    hardening boundary and are replayed via reproducibility tooling.
 
-4. **Paper 0 source-validation register** — source-bounded Paper 0 ingestion is
-   complete across `P0R00001`-`P0R06211`. The register is exposed under
-   `scpn_quantum_control.paper0` with generated validation modules, spec
-   loaders, fixture runners, and focused tests. It records what the source
-   ledger says and what generated fixtures preserve; it does not promote those
-   source statements into measured hardware or external scientific validation.
+4. **Paper 0 research trajectory** — Paper 0 is the maintainer/creator research
+   trajectory and source-accounting register. Source-bounded ingestion is
+   complete across `P0R00001`-`P0R06211`; the repository checkout keeps the
+   generated validation modules, spec loaders, fixture runners, and focused
+   tests under `src/scpn_quantum_control/paper0`. The pip wheel and sdist
+   intentionally exclude this tree. The register records what the source ledger
+   says and what generated fixtures preserve; it does not promote those source
+   statements into measured hardware or external scientific validation.
 
 Think of it as a **quantum microscope for synchronisation**: classical Kuramoto
 tells you *when* oscillators lock in step; this package tells you *what the
@@ -616,9 +618,10 @@ noise-dominated (> 400).*
 ## Package Map
 
 Counts below are tracked Python source files under `src/scpn_quantum_control`,
-excluding package initialisers. Generated Paper 0 files are kept visible because
-they are part of the shipped source-accounting API, but they are not external
-scientific validation evidence.
+excluding package initialisers. Generated Paper 0 files are kept visible in the
+public repository because Paper 0 is the maintainer/creator research trajectory
+and source-accounting register. They are excluded from pip wheel and sdist
+artefacts and are not external scientific validation evidence.
 
 ```mermaid
 graph TD
@@ -668,7 +671,7 @@ graph TD
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `paper0` | 471 | Source-accounting validation modules and fixtures for processed Paper 0 records |
+| `paper0` | 471 | Checkout-only source-accounting register for the maintainer/creator Paper 0 research trajectory; excluded from pip wheel and sdist artefacts |
 | `analysis` | 58 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
@@ -823,7 +826,7 @@ All run on local AerSimulator. No IBM credentials needed.
 
 ```
 scpn_quantum_control/
-├── paper0/        471 modules — source-accounting validation register
+├── paper0/        471 modules — checkout-only Paper 0 research register
 ├── analysis/       58 modules — synchronisation probes
 ├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          29 modules — time evolution + variational + Lindblad
@@ -944,7 +947,7 @@ AGPL/commercial terms above.
 
 | Use case | Route |
 |----------|-------|
-| Academic research, teaching, private experiments | Use the AGPL terms in `LICENSE`. |
+| Academic research, teaching, and individual experiments | Use the AGPL terms in `LICENSE`. |
 | AGPL-compatible open-source redistribution | Use the AGPL terms and preserve notices/source obligations. |
 | Closed-source product, internal proprietary tool, SaaS, consulting deliverable, or embedded deployment | Obtain a commercial licence before distribution or network service use. |
 | Future lightweight core package | Not available yet; no permissive relicensing is implied by the facade docs. |

@@ -1109,7 +1109,8 @@ First-order error shows quadratic time scaling; the symmetric second order
 | List all experiments | 0.18 ms | 20 registered experiments |
 
 Every experiment has: runner as first param, docstring > 10 chars, lowercase
-underscore name, no private experiments. At least half accept shots parameter.
+underscore name, and no hidden experiment route. At least half accept shots
+parameter.
 
 ---
 

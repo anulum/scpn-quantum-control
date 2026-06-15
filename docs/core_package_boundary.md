@@ -44,6 +44,10 @@ The current candidate entry point is
 The following remain outside any lightweight core split unless separately
 approved:
 
+- the Paper 0 maintainer/creator research trajectory and source-accounting
+  register under `src/scpn_quantum_control/paper0`, which remains in the public
+  repository checkout for review but is intentionally excluded from pip wheel
+  and sdist artefacts;
 - SCPN-specific layer constants, names, and biological/theoretical bindings;
 - IBM hardware runners, credentials, queue management, and campaign scripts;
 - GUESS mitigation, DLA parity campaigns, and hardware result ledgers;

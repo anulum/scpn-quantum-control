@@ -128,10 +128,27 @@ Changelog = "https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.
 Documentation = "https://anulum.github.io/scpn-quantum-control"
 
 [tool.hatch.build.targets.sdist]
-exclude = [".github/", "dist/", "results/", "figures/", "notebooks/"]
+exclude = [
+    ".github/",
+    "dist/",
+    "results/",
+    "figures/",
+    "notebooks/",
+    "data/paper0_*",
+    "docs/paper0/",
+    "docs/paper0/**",
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/",
+    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/**",
+    "scripts/*paper0*.py",
+    "src/scpn_quantum_control/paper0/",
+    "src/scpn_quantum_control/paper0/**",
+    "tests/test_*paper0*.py",
+    "tests/test_reconcile_paper0_validation_coverage.py",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scpn_quantum_control"]
+exclude = ["src/scpn_quantum_control/paper0/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

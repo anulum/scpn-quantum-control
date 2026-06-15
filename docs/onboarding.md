@@ -67,7 +67,7 @@ a common route for those systems:
 | Hardware evidence ledger | Separates theory, simulator output, raw-count hardware evidence, mitigated evidence, and unpromoted artefacts. | `docs/hardware_status_ledger.md` |
 | Rust acceleration | Speeds up selected Hamiltonian, expectation, pulse, symmetry, and compiler-AD hot paths. | `scpn-quantum-engine` |
 | Differentiable programming | Provides parameter-shift VQE building blocks, supported scalar/vector/matrix AD primitives, native lowering reports, and fail-closed unsupported boundaries. | `scpn_quantum_control.phase.param_shift`, `scpn_quantum_control.compiler.mlir`, and `scpn_quantum_control.differentiable` |
-| Paper 0 source register | Preserves source-bounded validation fixtures and claim boundaries for Paper 0. | `scpn_quantum_control.paper0` |
+| Paper 0 source register | Preserves the maintainer/creator Paper 0 research trajectory, source-bounded validation fixtures, and claim boundaries in the repository checkout. This tree is excluded from pip wheel and sdist artefacts. | `src/scpn_quantum_control/paper0` |
 | Release gates | Make public release decisions repeatable instead of process-only statements. | `tools/audit_release_readiness.py` and `scpn-bench` gates |
 
 ## Adoption Checklist
@@ -137,7 +137,7 @@ dynamics matter and where uncontrolled evidence would be expensive:
 - Public documentation for hardware evidence status and claim classes.
 - Rust acceleration for selected hot paths.
 - Release-readiness and hardware-result-pack gates.
-- Source-bounded Paper 0 register and generated fixtures.
+- Checkout-only Paper 0 research register and generated fixtures.
 - Supported differentiable scalar, vector, and matrix primitive surfaces, plus
   inspectable native program-AD lowering reports for supported scalar traces
   with strict no-tie native `where`/selection/`clip` support,
@@ -185,8 +185,9 @@ dynamics matter and where uncontrolled evidence would be expensive:
   planning, QNN/QGNN/QSNN production examples, and analog oscillator mapping
   are planned roadmap surfaces until their tests, docs, and support matrix
   entries are complete.
-- Paper 0 ingestion records source structure and generated fixtures; it is not
-  an external validation of the propositions.
+- Paper 0 ingestion records the maintainer/creator research trajectory, source
+  structure, and generated fixtures in the repository checkout; it is excluded
+  from pip artefacts and is not an external validation of the propositions.
 
 ## Commercial Route
 

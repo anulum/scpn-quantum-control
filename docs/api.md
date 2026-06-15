@@ -75,7 +75,7 @@ advanced references for subsystem extension.
 | --- | --- | --- |
 | Stable facade | [Stable Facades API](stable_facades_api.md) | Building notebooks, tutorials, cross-repository integrations, or user-facing workflows. |
 | Workflow guide | [Kuramoto Core Facade](kuramoto_core_facade.md) | Compiling arbitrary `K_nm`/`omega` problems without depending on low-level module layout. |
-| Source-validation register | [Paper 0 Validation Register](paper0/paper0_validation_register.md) | Inspecting generated Paper 0 source-accounting specs, fixtures, and validation modules under their explicit claim boundary. |
+| Source-validation register | [Paper 0 Validation Register](paper0/paper0_validation_register.md) | Inspecting the checkout-only Paper 0 maintainer/creator research trajectory, source-accounting specs, fixtures, and validation modules under their explicit claim boundary. |
 | Runtime contract | [QPU Data Artifact](qpu_data_artifact.md), [Pipeline Runtime Contract](pipeline_runtime_contract.md) | Exchanging persisted QPU results or compute-unit metadata. |
 | Advanced module reference | This page and [Auto-Generated Module Index](autodoc.md) | Auditing, extending, or debugging subsystem internals. |
 
@@ -93,8 +93,9 @@ advanced references for subsystem extension.
 
 - Prefer `scpn_quantum_control.kuramoto_core` for user-facing `K_nm`/`omega`
   workflows.
-- Prefer `scpn_quantum_control.paper0` only for source-register inspection and
-  generated fixture validation, not for hardware or external-validation claims.
+- Treat `scpn_quantum_control.paper0` as a repository-checkout research
+  register for Paper 0. It is intentionally excluded from pip wheel and sdist
+  artefacts and must not be used for hardware or external-validation claims.
 - Prefer `scpn_quantum_control.compiler.mlir` when using supported bounded
   differentiable primitives.
 - Drop into lower-level packages only when you need a named subsystem contract
@@ -125,12 +126,14 @@ from scpn_quantum_control.paper0 import validate_upde_fixture
 from scpn_quantum_control.paper0.spec_loader import load_upde_validation_spec
 ```
 
-The `paper0` package exposes the completed source-accounting register for Paper
-0. Generated validation modules preserve ledger-bounded source spans, component
-labels, fixture summaries, spec bundles, and claim boundaries. These modules are
-documentation and regression infrastructure for source ingestion; they do not
-convert Paper 0 source statements into measured hardware evidence or external
-scientific validation. See [Paper 0 Validation Register](paper0/paper0_validation_register.md).
+The `paper0` tree is available only from a repository checkout. It is the
+maintainer/creator Paper 0 research trajectory and source-accounting register,
+not part of the pip wheel or sdist. Generated validation modules preserve
+ledger-bounded source spans, component labels, fixture summaries, spec bundles,
+and claim boundaries. These modules are documentation and regression
+infrastructure for source ingestion; they do not convert Paper 0 source
+statements into measured hardware evidence or external scientific validation.
+See [Paper 0 Validation Register](paper0/paper0_validation_register.md).
 
 ### `compiler.mlir`
 

@@ -194,8 +194,6 @@ def load_config(repo: Path, config_path: Path | None = None) -> CapabilityManife
                     r"\|\s*`mitigation`\s*\|\s*9\s*\|",
                     r"\|\s*`qec`\s*\|\s*[89]\s*\|",
                     r"\|\s*`paper0`\s*\|\s*470\s*\|",
-                    r"repository is private",
-                    r"GitHub repository is private",
                 ],
             )
         ),
