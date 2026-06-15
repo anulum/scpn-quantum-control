@@ -154,6 +154,7 @@ nav:
       - Differentiable Programming: differentiable_programming.md
       - Differentiable Tutorials: differentiable_tutorials.md
       - Quantum Gradients: quantum_gradients.md
+      - Wirtinger Calculus: wirtinger_calculus.md
       - Variational Methods: variational.md
       - Differentiable Roadmap: differentiable_roadmap.md
       - Notebooks: notebooks.md

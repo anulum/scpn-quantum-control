@@ -5,6 +5,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-15 — Added a Wirtinger (Cauchy-Riemann) calculus module
+  (`wirtinger_calculus.py`), the complex-derivative surface the registered
+  Phase-QNode engine leaves fail-closed (it differentiates real rotation angles).
+  `wirtinger_partials` returns `df/dz` and `df/dconj_z` for an arbitrary complex
+  callable `f: C^n -> C` by central differences in the real and imaginary
+  directions; `is_holomorphic` tests the Cauchy-Riemann residual;
+  `holomorphic_gradient` returns the complex derivative of a holomorphic function
+  and fails closed otherwise; and `real_objective_gradient` /
+  `minimise_real_objective` run CR steepest descent on a real-valued objective of
+  complex parameters. Verified against the textbook partials of `z**2`, `|z|**2`,
+  `conj(z)`, `Re(z)`, the Wirtinger product rule, and complex-parameter descent
+  convergence. Documented in `docs/wirtinger_calculus.md` and covered by
+  `tests/test_wirtinger_calculus.py`. A general complex-analysis utility,
+  independent of the real-parameter Phase-QNode route.
 - 2026-06-15 — Added a PennyLane import-from bridge
   (`phase/pennylane_import.py`), the inverse of the existing export bridge.
   `import_phase_qnode_from_pennylane` reads a `pennylane.tape.QuantumScript` and

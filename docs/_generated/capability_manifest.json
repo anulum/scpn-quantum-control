@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 627,
-    "public_documentation_pages": 250,
-    "python_model_classes": 1728,
-    "python_model_source_modules": 828,
+    "public_api_exports": 634,
+    "public_documentation_pages": 251,
+    "python_model_classes": 1730,
+    "python_model_source_modules": 829,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1945
+    "test_files": 1946
   },
   "documentation": {
     "examples": [
@@ -398,6 +398,7 @@
       "docs/tutorials.md",
       "docs/ultrascale_hls.md",
       "docs/variational.md",
+      "docs/wirtinger_calculus.md",
       "docs/witness_discovery.md",
       "docs/xy_compiler.md"
     ]
@@ -7926,6 +7927,14 @@
         "path": "src/scpn_quantum_control/gauge/wilson_loop.py"
       },
       {
+        "name": "WirtingerDerivative",
+        "path": "src/scpn_quantum_control/wirtinger_calculus.py"
+      },
+      {
+        "name": "WirtingerOptimisationResult",
+        "path": "src/scpn_quantum_control/wirtinger_calculus.py"
+      },
+      {
         "name": "WitnessCandidate",
         "path": "src/scpn_quantum_control/analysis/witness_discovery.py"
       },
@@ -8798,7 +8807,8 @@
       "src/scpn_quantum_control/topology_control/hardware_integration.py",
       "src/scpn_quantum_control/topology_control/objectives.py",
       "src/scpn_quantum_control/topology_control/optimizers.py",
-      "src/scpn_quantum_control/topology_control/qsnn_integration.py"
+      "src/scpn_quantum_control/topology_control/qsnn_integration.py",
+      "src/scpn_quantum_control/wirtinger_calculus.py"
     ],
     "rust_pyo3_wrappers": [
       "all_xy_expectations",
@@ -9196,6 +9206,8 @@
     "WholeProgramSemanticsReport",
     "WholeProgramSourceIRFeature",
     "WholeProgramTraceEvent",
+    "WirtingerDerivative",
+    "WirtingerOptimisationResult",
     "ZNEResult",
     "aggregator_provider_optional_dependency_matrix",
     "aggregator_provider_routes_for",
@@ -9346,12 +9358,14 @@
     "guess_extrapolate",
     "hardware_replay_backend",
     "hessian",
+    "holomorphic_gradient",
     "huber_residual_weights",
     "identity_fingerprint",
     "implicit_fixed_point_sensitivity",
     "implicit_stationary_sensitivity",
     "ionq_qis_workload",
     "iqm_qiskit_workload",
+    "is_holomorphic",
     "is_jax_autodiff_available",
     "jacfwd",
     "jacobian",
@@ -9401,6 +9415,7 @@
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_primitive_transform",
     "measure_order_parameter",
+    "minimise_real_objective",
     "mps_tebd_baseline",
     "multi_frequency_parameter_shift_rule",
     "native_whole_program_ad_compile_cache_stats",
@@ -9502,6 +9517,7 @@
     "quantum_to_ssgf_state",
     "qutip_backend",
     "qutip_lindblad_baseline",
+    "real_objective_gradient",
     "register_custom_derivative_rule",
     "register_primitive_batching_rule",
     "register_primitive_lowering_rule",
@@ -9601,6 +9617,7 @@
     "weighted_gradient_sum",
     "whole_program_grad",
     "whole_program_value_and_grad",
+    "wirtinger_partials",
     "write_bundle",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
@@ -11621,6 +11638,7 @@
       "tests/test_vqls_gs.py",
       "tests/test_vqs_alternative_readiness.py",
       "tests/test_wilson_loop.py",
+      "tests/test_wirtinger_calculus.py",
       "tests/test_witness_discovery.py",
       "tests/test_xxz_hamiltonian.py",
       "tests/test_xxz_phase_diagram.py",

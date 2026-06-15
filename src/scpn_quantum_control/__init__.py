@@ -673,6 +673,15 @@ from .stable_core_preflight import (
     stable_core_preflight_fixtures_markdown,
     stable_core_preflight_fixtures_payload,
 )
+from .wirtinger_calculus import (
+    WirtingerDerivative,
+    WirtingerOptimisationResult,
+    holomorphic_gradient,
+    is_holomorphic,
+    minimise_real_objective,
+    real_objective_gradient,
+    wirtinger_partials,
+)
 
 try:
     __version__ = version("scpn-quantum-control")
@@ -1307,4 +1316,11 @@ __all__ = [
     "psi_field",
     "fep",
     "l16",
+    "WirtingerDerivative",
+    "WirtingerOptimisationResult",
+    "wirtinger_partials",
+    "is_holomorphic",
+    "holomorphic_gradient",
+    "real_objective_gradient",
+    "minimise_real_objective",
 ]
