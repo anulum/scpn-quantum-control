@@ -25,6 +25,10 @@ from .provider_gradient import (
     ProviderGradientExecutionResult,
     execute_provider_parameter_shift_gradient,
 )
+from .provider_hardware_gradient_audit import (
+    ProviderHardwareGradientPreparationAuditResult,
+    run_provider_hardware_gradient_preparation_audit,
+)
 
 FloatArray: TypeAlias = NDArray[np.float64]
 
@@ -109,6 +113,31 @@ class QiskitParameterShiftGradientResult:
             "records": [record.to_dict() for record in self.records],
             "method": self.method,
             "evaluations": self.evaluations,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class QiskitMaturityAuditResult:
+    """Aggregate Qiskit local-gradient evidence and provider-execution blockers."""
+
+    local_gradient_ready: bool
+    ready_for_provider_exceedance: bool
+    evidence: dict[str, object]
+    required_capabilities: dict[str, str]
+    local_reference_metadata: dict[str, object]
+    open_gaps: tuple[str, ...]
+    claim_boundary: str = "bounded_qiskit_provider_maturity_audit"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready Qiskit maturity evidence."""
+        return {
+            "local_gradient_ready": self.local_gradient_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "evidence": {name: _result_to_dict(result) for name, result in self.evidence.items()},
+            "required_capabilities": dict(self.required_capabilities),
+            "local_reference_metadata": dict(self.local_reference_metadata),
+            "open_gaps": list(self.open_gaps),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -237,6 +266,145 @@ def execute_qiskit_finite_shot_parameter_shift(
     )
 
 
+def run_qiskit_maturity_audit(
+    circuit: QuantumCircuit,
+    observable: object,
+    parameters: Sequence[Parameter],
+    values: ArrayLike,
+    *,
+    shots: int,
+    rule: ParameterShiftRule | None = None,
+    shift: float = float(np.pi / 2.0),
+    confidence_level: float = 0.95,
+    confidence_z: float = 1.959963984540054,
+    provider_preparation_audit: ProviderHardwareGradientPreparationAuditResult | None = None,
+) -> QiskitMaturityAuditResult:
+    """Aggregate Qiskit local-gradient evidence and provider-level blockers.
+
+    The audit records fully bound shifted-circuit generation, deterministic
+    local statevector reference gradients, finite-shot surrogate uncertainty,
+    and the no-submit provider hardware-gradient preparation audit. It does not
+    claim live QPU execution, raw-count capture, calibration snapshots from a
+    live backend, or promotion-grade isolated benchmark evidence.
+    """
+
+    parameter_tuple = _normalise_parameters(parameters)
+    values_vector = _as_finite_vector("values", values, width=len(parameter_tuple))
+    shot_count = _normalise_shots(shots)
+    shifted_records = generate_qiskit_parameter_shift_circuits(
+        circuit,
+        parameter_tuple,
+        values_vector,
+        rule=rule,
+        shift=shift,
+    )
+    statevector_reference = execute_qiskit_statevector_parameter_shift(
+        circuit,
+        observable,
+        parameter_tuple,
+        values_vector,
+        rule=rule,
+        shift=shift,
+    )
+    finite_shot_surrogate = execute_qiskit_finite_shot_parameter_shift(
+        circuit,
+        observable,
+        parameter_tuple,
+        values_vector,
+        shots=shot_count,
+        rule=rule,
+        shift=shift,
+        confidence_level=confidence_level,
+        confidence_z=confidence_z,
+    )
+    preparation_audit = (
+        provider_preparation_audit
+        if provider_preparation_audit is not None
+        else run_provider_hardware_gradient_preparation_audit()
+    )
+    delta = statevector_reference.gradient - finite_shot_surrogate.gradient
+    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
+    local_reference_metadata: dict[str, object] = {
+        "parameter_count": len(parameter_tuple),
+        "shifted_record_count": len(shifted_records),
+        "statevector_evaluations": statevector_reference.evaluations,
+        "finite_shot_evaluations": finite_shot_surrogate.total_evaluations,
+        "shots": shot_count,
+        "finite_shot_total_shots": finite_shot_surrogate.total_shots,
+        "statevector_finite_shot_max_abs_error": max_abs_error,
+        "provider_preparation_record_count": preparation_audit.record_count,
+        "provider_preparation_approved_count": preparation_audit.approved_count,
+        "provider_preparation_blocked_count": preparation_audit.blocked_count,
+        "provider_preparation_hardware_execution_count": (
+            preparation_audit.hardware_execution_count
+        ),
+        "provider_preparation_gradient_available_count": (
+            preparation_audit.gradient_available_count
+        ),
+    }
+    evidence: dict[str, object] = {
+        "shifted_circuit_records": shifted_records,
+        "statevector_reference": statevector_reference,
+        "finite_shot_surrogate": finite_shot_surrogate,
+        "provider_preparation_audit": preparation_audit,
+    }
+    statevector_comparison_passed = max_abs_error <= 1e-10
+    provider_policy_passed = (
+        preparation_audit.passed
+        and preparation_audit.hardware_execution_count == 0
+        and preparation_audit.gradient_available_count == 0
+    )
+    required_capabilities = {
+        "shifted_circuit_generation": "passed" if shifted_records else "failed",
+        "statevector_reference": "passed"
+        if statevector_reference.gradient.shape == values_vector.shape
+        else "failed",
+        "finite_shot_surrogate_uncertainty": "passed"
+        if finite_shot_surrogate.gradient.shape == values_vector.shape
+        else "failed",
+        "statevector_reference_comparison": (
+            "passed" if statevector_comparison_passed else "failed"
+        ),
+        "provider_hardware_preparation_policy": ("passed" if provider_policy_passed else "failed"),
+        "backend_allowlist_policy": "passed" if provider_policy_passed else "failed",
+        "calibration_snapshot_policy": "passed" if provider_policy_passed else "failed",
+        "live_qpu_execution_ticket": "blocked",
+        "raw_count_capture_replay_harness": "blocked",
+        "live_backend_statevector_reference_comparison": "blocked",
+        "promotion_grade_isolated_benchmarks": "blocked",
+    }
+    local_gradient_ready = all(
+        required_capabilities[name] == "passed"
+        for name in (
+            "shifted_circuit_generation",
+            "statevector_reference",
+            "finite_shot_surrogate_uncertainty",
+            "statevector_reference_comparison",
+            "provider_hardware_preparation_policy",
+            "backend_allowlist_policy",
+            "calibration_snapshot_policy",
+        )
+    )
+    open_gaps = tuple(name for name, status in required_capabilities.items() if status != "passed")
+    return QiskitMaturityAuditResult(
+        local_gradient_ready=local_gradient_ready,
+        ready_for_provider_exceedance=local_gradient_ready and not open_gaps,
+        evidence=evidence,
+        required_capabilities=required_capabilities,
+        local_reference_metadata=local_reference_metadata,
+        open_gaps=open_gaps,
+    )
+
+
+def _result_to_dict(result: object) -> object:
+    to_dict = getattr(result, "to_dict", None)
+    if callable(to_dict):
+        return to_dict()
+    if isinstance(result, tuple):
+        return [_result_to_dict(item) for item in result]
+    return result
+
+
 def _expectation(circuit: QuantumCircuit, observable: object) -> float:
     state = Statevector.from_instruction(circuit)
     value = state.expectation_value(observable)
@@ -354,9 +522,11 @@ def _normalise_shots(value: int) -> int:
 
 
 __all__ = [
+    "QiskitMaturityAuditResult",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
+    "run_qiskit_maturity_audit",
 ]

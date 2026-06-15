@@ -18,6 +18,7 @@ from qiskit.quantum_info import SparsePauliOp
 from scpn_quantum_control.phase import (
     PauliTerm,
     PhaseQNodeCircuit,
+    QiskitMaturityAuditResult,
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
     execute_qiskit_finite_shot_parameter_shift,
@@ -26,6 +27,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_phase_qnode_gradient,
     plan_phase_qnode_parameter_shift_evaluations,
+    run_qiskit_maturity_audit,
 )
 
 
@@ -100,6 +102,37 @@ def test_execute_qiskit_finite_shot_parameter_shift_reports_uncertainty() -> Non
     np.testing.assert_allclose(result.standard_error, np.array([expected_standard_error]))
     assert result.records[0].plus.shots == shots
     assert result.records[0].minus.shots == shots
+
+
+def test_qiskit_maturity_audit_records_local_evidence_and_provider_gaps() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+
+    result = run_qiskit_maturity_audit(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=400,
+    )
+
+    assert isinstance(result, QiskitMaturityAuditResult)
+    assert result.local_gradient_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.evidence["shifted_circuit_records"][0].parameter_name == "theta"
+    assert result.evidence["statevector_reference"].method == "qiskit_statevector_parameter_shift"
+    assert result.evidence["finite_shot_surrogate"].backend == "finite_shot_simulator"
+    assert result.evidence["provider_preparation_audit"].passed
+    assert result.required_capabilities["shifted_circuit_generation"] == "passed"
+    assert result.required_capabilities["statevector_reference_comparison"] == "passed"
+    assert result.required_capabilities["provider_hardware_preparation_policy"] == "passed"
+    assert result.required_capabilities["raw_count_capture_replay_harness"] == "blocked"
+    assert result.local_reference_metadata["shots"] == 400
+    assert result.local_reference_metadata["statevector_finite_shot_max_abs_error"] <= 1e-12
+    assert "live_qpu_execution_ticket" in result.open_gaps
+    assert "raw_count_capture_replay_harness" in result.open_gaps
+    payload = result.to_dict()
+    assert payload["claim_boundary"] == "bounded_qiskit_provider_maturity_audit"
+    assert payload["local_reference_metadata"]["parameter_count"] == 1
 
 
 def test_qiskit_statevector_supports_multi_frequency_parameter_shift() -> None:

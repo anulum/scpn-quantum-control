@@ -717,7 +717,10 @@ from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 from qiskit.quantum_info import SparsePauliOp
 
-from scpn_quantum_control.phase import execute_qiskit_statevector_parameter_shift
+from scpn_quantum_control.phase import (
+    execute_qiskit_statevector_parameter_shift,
+    run_qiskit_maturity_audit,
+)
 
 theta = Parameter("theta")
 circuit = QuantumCircuit(1)
@@ -769,6 +772,27 @@ modelling because it produces the same serialisable shifted-sample records,
 standard errors, confidence radii, and shot totals as the provider callback
 route. It is still not hardware job submission; hardware aliases continue to
 fail closed until an explicit backend policy enables them.
+
+For reviewer-facing provider maturity evidence, use
+`run_qiskit_maturity_audit(...)`. It aggregates fully bound shifted-circuit
+generation, deterministic local Statevector reference gradients, finite-shot
+surrogate uncertainty, and the no-submit provider hardware-gradient preparation
+audit:
+
+```python
+maturity = run_qiskit_maturity_audit(
+    circuit,
+    observable,
+    (theta,),
+    np.array([0.4]),
+    shots=4096,
+)
+print(maturity.local_gradient_ready, maturity.ready_for_provider_exceedance)
+```
+
+The audit keeps `ready_for_provider_exceedance=False` until live QPU execution
+tickets, raw-count capture and replay, live-backend calibration/statevector
+comparison artefacts, and isolated benchmark evidence exist.
 
 ## Gradient Tape Boundary
 

@@ -56,6 +56,11 @@ local Statevector value and gradient against a supplied observable. Use
 `execute_qiskit_finite_shot_parameter_shift(...)` when the same Qiskit circuit
 needs provider-contract style shot accounting, sample variances, propagated
 standard errors, and confidence radii without submitting hardware jobs.
+Use `run_qiskit_maturity_audit(...)` to aggregate shifted-circuit generation,
+local Statevector reference gradients, finite-shot surrogate uncertainty, and
+no-submit provider hardware-gradient preparation while keeping live QPU,
+raw-count replay, calibration/statevector comparison, and benchmark promotion
+blocked until artefacts exist.
 
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
@@ -1286,6 +1291,7 @@ run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, to
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None) -> PennyLaneMaturityAuditResult
+run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None) -> QiskitMaturityAuditResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec
 build_sparse_ising_chain_hamiltonian(n_qubits, x_field=0.0, z_field=0.0, zz_coupling=1.0, periodic=False) -> SparsePauliHamiltonian

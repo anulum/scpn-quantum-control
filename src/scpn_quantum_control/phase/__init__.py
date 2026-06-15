@@ -276,11 +276,13 @@ from .qgnn import (
     synthetic_kuramoto_target,
 )
 from .qiskit_bridge import (
+    QiskitMaturityAuditResult,
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
+    run_qiskit_maturity_audit,
 )
 from .qnn_conformance import (
     ExternalGradientMap,
@@ -807,10 +809,12 @@ __all__ = [
     "train_parameter_shift_qnn_classifier",
     "verify_parameter_shift_qnn_classifier_gradient",
     "QiskitParameterShiftGradientResult",
+    "QiskitMaturityAuditResult",
     "QiskitParameterShiftRecord",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
+    "run_qiskit_maturity_audit",
     "is_phase_torch_available",
     "run_torch_compile_compatibility_audit",
     "run_torch_func_compatibility_audit",
