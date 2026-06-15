@@ -16,12 +16,16 @@ from __future__ import annotations
 
 import math
 import time
+from collections import deque
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Protocol
 
 import numpy as np
+from numpy.typing import NDArray
+
+_NS_PER_SECOND = 1_000_000_000
 
 
 class RealtimeClock(Protocol):
@@ -272,6 +276,251 @@ def enforce_realtime_sla(
     return report
 
 
+@dataclass(frozen=True)
+class CycleSample:
+    """Sub-microsecond timing record for one outer-loop cycle.
+
+    All timestamps are integer nanoseconds on a monotonic clock. A cycle misses
+    its deadline when ``end_ns`` exceeds ``deadline_ns``.
+    """
+
+    cycle_id: int
+    start_ns: int
+    end_ns: int
+    deadline_ns: int
+
+    def __post_init__(self) -> None:
+        for name in ("cycle_id", "start_ns", "end_ns", "deadline_ns"):
+            value = getattr(self, name)
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise TypeError(f"{name} must be a plain int, got {type(value).__name__}")
+        if self.end_ns < self.start_ns:
+            raise ValueError("end_ns must be >= start_ns")
+        if self.deadline_ns < self.start_ns:
+            raise ValueError("deadline_ns must be >= start_ns")
+
+    @property
+    def duration_ns(self) -> int:
+        """Return the executed cycle duration in nanoseconds."""
+        return self.end_ns - self.start_ns
+
+    @property
+    def deadline_missed(self) -> bool:
+        """Return whether the cycle finished after its deadline."""
+        return self.end_ns > self.deadline_ns
+
+
+@dataclass(frozen=True)
+class SubMicrosecondReport:
+    """Aggregate inter-cycle jitter and deadline-miss telemetry."""
+
+    jitter_p50_ns: float
+    jitter_p95_ns: float
+    jitter_p99_ns: float
+    jitter_max_ns: float
+    deadline_misses: int
+    cycles_observed: int
+    target_period_ns: float
+    window_size: int
+
+
+class SubMicrosecondTracker:
+    """Sub-microsecond outer-loop jitter and deadline tracker.
+
+    Records integer-nanosecond cycle samples and reports inter-cycle jitter
+    percentiles against the target period plus a deadline-miss count. The jitter
+    of a cycle is the absolute deviation of its start-to-start interval from the
+    target period ``1e9 / target_rate_hz`` nanoseconds; the first observed cycle
+    has zero jitter. Recent jitter samples are kept in a bounded ring of
+    ``ring_buffer_capacity`` entries for percentile estimation, while total
+    cycles and total deadline misses are running counters and stay exact across
+    ring overwrites.
+
+    This is software telemetry for the microsecond-scale outer loop, not an
+    intra-shot hardware-latency claim; the downstream sub-50 ns FPGA path is
+    covered by RTL assertions in the consumer.
+    """
+
+    def __init__(
+        self,
+        target_rate_hz: int = 100_000,
+        ring_buffer_capacity: int = 1 << 16,
+    ) -> None:
+        if not isinstance(target_rate_hz, int) or isinstance(target_rate_hz, bool):
+            raise TypeError("target_rate_hz must be an int")
+        if target_rate_hz < 1:
+            raise ValueError("target_rate_hz must be a positive integer")
+        if not isinstance(ring_buffer_capacity, int) or isinstance(ring_buffer_capacity, bool):
+            raise TypeError("ring_buffer_capacity must be an int")
+        if ring_buffer_capacity < 1:
+            raise ValueError("ring_buffer_capacity must be a positive integer")
+        self._target_rate_hz = target_rate_hz
+        self._target_period_ns = _NS_PER_SECOND / float(target_rate_hz)
+        self._capacity = ring_buffer_capacity
+        self._jitter_ring: deque[float] = deque(maxlen=ring_buffer_capacity)
+        self._total_cycles = 0
+        self._total_misses = 0
+        self._prev_start_ns: int | None = None
+
+    @property
+    def target_period_ns(self) -> float:
+        """Return the target start-to-start period in nanoseconds."""
+        return self._target_period_ns
+
+    @property
+    def cycles_observed(self) -> int:
+        """Return the total number of recorded cycles."""
+        return self._total_cycles
+
+    def record(self, sample: CycleSample) -> None:
+        """Record one cycle sample, updating jitter ring and miss counters."""
+        if not isinstance(sample, CycleSample):
+            raise TypeError("sample must be a CycleSample")
+        if self._prev_start_ns is None:
+            jitter = 0.0
+        else:
+            interval = float(sample.start_ns - self._prev_start_ns)
+            jitter = abs(interval - self._target_period_ns)
+        self._jitter_ring.append(jitter)
+        self._total_cycles += 1
+        if sample.deadline_missed:
+            self._total_misses += 1
+        self._prev_start_ns = sample.start_ns
+
+    def report(self) -> SubMicrosecondReport:
+        """Return jitter percentiles and deadline-miss telemetry."""
+        if self._total_cycles == 0:
+            raise ValueError("no cycles recorded")
+        jitters = np.asarray(self._jitter_ring, dtype=np.float64)
+        p50, p95, p99, jmax = _jitter_percentiles(jitters)
+        return SubMicrosecondReport(
+            jitter_p50_ns=p50,
+            jitter_p95_ns=p95,
+            jitter_p99_ns=p99,
+            jitter_max_ns=jmax,
+            deadline_misses=self._total_misses,
+            cycles_observed=self._total_cycles,
+            target_period_ns=self._target_period_ns,
+            window_size=len(self._jitter_ring),
+        )
+
+    def reset(self) -> None:
+        """Clear all retained samples and counters."""
+        self._jitter_ring.clear()
+        self._total_cycles = 0
+        self._total_misses = 0
+        self._prev_start_ns = None
+
+
+def summarise_cycle_samples(
+    start_ns: NDArray[np.int64] | list[int],
+    end_ns: NDArray[np.int64] | list[int],
+    deadline_ns: NDArray[np.int64] | list[int],
+    *,
+    target_rate_hz: int = 100_000,
+) -> SubMicrosecondReport:
+    """Summarise arrays of cycle timestamps in a single pass.
+
+    This is the batch path consumed by the throughput benchmark and by callers
+    that buffer cycle timestamps and summarise them periodically. It computes the
+    same jitter percentiles and deadline-miss count as
+    :class:`SubMicrosecondTracker` over the full input.
+    """
+
+    if not isinstance(target_rate_hz, int) or isinstance(target_rate_hz, bool):
+        raise TypeError("target_rate_hz must be an int")
+    if target_rate_hz < 1:
+        raise ValueError("target_rate_hz must be a positive integer")
+    start = np.ascontiguousarray(start_ns, dtype=np.int64)
+    end = np.ascontiguousarray(end_ns, dtype=np.int64)
+    deadline = np.ascontiguousarray(deadline_ns, dtype=np.int64)
+    if not (start.ndim == end.ndim == deadline.ndim == 1):
+        raise ValueError("start_ns, end_ns, deadline_ns must be one-dimensional")
+    if not (start.shape == end.shape == deadline.shape):
+        raise ValueError("start_ns, end_ns, deadline_ns must have equal length")
+    if start.size == 0:
+        raise ValueError("no cycles to summarise")
+    if np.any(end < start):
+        raise ValueError("every end_ns must be >= its start_ns")
+    if np.any(deadline < start):
+        raise ValueError("every deadline_ns must be >= its start_ns")
+
+    target_period_ns = _NS_PER_SECOND / float(target_rate_hz)
+    summary = _sub_us_summary(start, end, deadline, target_period_ns)
+    p50, p95, p99, jmax, misses, count = summary
+    return SubMicrosecondReport(
+        jitter_p50_ns=p50,
+        jitter_p95_ns=p95,
+        jitter_p99_ns=p99,
+        jitter_max_ns=jmax,
+        deadline_misses=misses,
+        cycles_observed=count,
+        target_period_ns=target_period_ns,
+        window_size=int(start.size),
+    )
+
+
+def _jitter_percentiles(jitters: NDArray[np.float64]) -> tuple[float, float, float, float]:
+    """Return ``(p50, p95, p99, max)`` jitter, via the Rust kernel when present."""
+    try:
+        import scpn_quantum_engine as _engine
+
+        if hasattr(_engine, "sub_us_jitter_percentiles"):
+            p50, p95, p99, jmax = _engine.sub_us_jitter_percentiles(
+                np.ascontiguousarray(jitters, dtype=np.float64)
+            )
+            return float(p50), float(p95), float(p99), float(jmax)
+    except (ImportError, AttributeError, ValueError):
+        pass
+    return _jitter_percentiles_numpy(jitters)
+
+
+def _jitter_percentiles_numpy(
+    jitters: NDArray[np.float64],
+) -> tuple[float, float, float, float]:
+    if jitters.size == 0:
+        return 0.0, 0.0, 0.0, 0.0
+    p50 = float(np.quantile(jitters, 0.50, method="linear"))
+    p95 = float(np.quantile(jitters, 0.95, method="linear"))
+    p99 = float(np.quantile(jitters, 0.99, method="linear"))
+    return p50, p95, p99, float(jitters.max())
+
+
+def _sub_us_summary(
+    start: NDArray[np.int64],
+    end: NDArray[np.int64],
+    deadline: NDArray[np.int64],
+    target_period_ns: float,
+) -> tuple[float, float, float, float, int, int]:
+    """Return ``(p50, p95, p99, max, misses, count)``, via Rust when present."""
+    try:
+        import scpn_quantum_engine as _engine
+
+        if hasattr(_engine, "sub_us_tracker_summary"):
+            p50, p95, p99, jmax, misses, count = _engine.sub_us_tracker_summary(
+                start, end, deadline, float(target_period_ns)
+            )
+            return float(p50), float(p95), float(p99), float(jmax), int(misses), int(count)
+    except (ImportError, AttributeError, ValueError):
+        pass
+    return _sub_us_summary_numpy(start, end, deadline, target_period_ns)
+
+
+def _sub_us_summary_numpy(
+    start: NDArray[np.int64],
+    end: NDArray[np.int64],
+    deadline: NDArray[np.int64],
+    target_period_ns: float,
+) -> tuple[float, float, float, float, int, int]:
+    intervals = np.diff(start.astype(np.float64))
+    jitters = np.empty(start.size, dtype=np.float64)
+    jitters[0] = 0.0
+    jitters[1:] = np.abs(intervals - target_period_ns)
+    p50, p95, p99, jmax = _jitter_percentiles_numpy(jitters)
+    misses = int(np.count_nonzero(end > deadline))
+    return p50, p95, p99, jmax, misses, int(start.size)
+
+
 def _normalise_metrics(metrics: Mapping[str, float]) -> dict[str, float]:
     normalised: dict[str, float] = {}
     for key, value in metrics.items():
@@ -294,6 +543,7 @@ def _require_non_negative(value: float, name: str) -> None:
 
 
 __all__ = [
+    "CycleSample",
     "RealtimeSLAConfig",
     "RealtimeSLAReport",
     "MonotonicRealtimeClock",
@@ -301,8 +551,11 @@ __all__ = [
     "RealtimeRunResult",
     "RealtimeRuntimeConfig",
     "RealtimeTickRecord",
+    "SubMicrosecondReport",
+    "SubMicrosecondTracker",
     "VirtualRealtimeClock",
     "enforce_realtime_sla",
     "evaluate_realtime_sla",
     "run_realtime_control_loop",
+    "summarise_cycle_samples",
 ]

@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 598,
-    "public_documentation_pages": 241,
-    "python_model_classes": 1687,
+    "public_api_exports": 602,
+    "public_documentation_pages": 242,
+    "python_model_classes": 1690,
     "python_model_source_modules": 811,
-    "rust_pyo3_model_wrappers": 122,
-    "rust_source_modules": 30,
-    "test_files": 1932
+    "rust_pyo3_model_wrappers": 124,
+    "rust_source_modules": 31,
+    "test_files": 1934
   },
   "documentation": {
     "examples": [
@@ -359,6 +359,7 @@
       "docs/quickstart.md",
       "docs/real_data_sync_forecasting.md",
       "docs/realtime_feedback.md",
+      "docs/realtime_runtime.md",
       "docs/release_readiness.md",
       "docs/research_gems.md",
       "docs/results.md",
@@ -1966,6 +1967,10 @@
       {
         "name": "CuttingRunResult",
         "path": "src/scpn_quantum_control/hardware/cutting_runner.py"
+      },
+      {
+        "name": "CycleSample",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
         "name": "CyclicOperatorConfig",
@@ -6708,6 +6713,14 @@
         "path": "src/scpn_quantum_control/paper0/stuart_landau_precision_validation.py"
       },
       {
+        "name": "SubMicrosecondReport",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
+        "name": "SubMicrosecondTracker",
+        "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
         "name": "SurfaceCode",
         "path": "src/scpn_quantum_control/qec/control_qec.py"
       },
@@ -8690,6 +8703,8 @@
       "score_regions_batch",
       "spsa_gradient_rust",
       "state_order_param_sparse",
+      "sub_us_jitter_percentiles",
+      "sub_us_tracker_summary",
       "symmetric_2x2_cholesky_jvp",
       "symmetric_2x2_cholesky_sum_gradient",
       "symmetric_2x2_cholesky_value",
@@ -8736,6 +8751,7 @@
       "scpn_quantum_engine/src/pulse_shaping.rs",
       "scpn_quantum_engine/src/qnode_metrics.rs",
       "scpn_quantum_engine/src/qpetri.rs",
+      "scpn_quantum_engine/src/realtime.rs",
       "scpn_quantum_engine/src/sectors.rs",
       "scpn_quantum_engine/src/stochastic_gradient.rs",
       "scpn_quantum_engine/src/symmetry_decay.rs",
@@ -8774,6 +8790,7 @@
     "CustomDerivativeCheckResult",
     "CustomDerivativeRegistry",
     "CustomDerivativeRule",
+    "CycleSample",
     "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
     "DWaveLeapHALAdapter",
     "DifferentiabilityDiagnosticReport",
@@ -8921,6 +8938,8 @@
     "StochasticGradientConfidenceInterval",
     "StochasticGradientResult",
     "StrangeworksComputeHALAdapter",
+    "SubMicrosecondReport",
+    "SubMicrosecondTracker",
     "SurfaceCodeSpec",
     "SurfaceCodeUPDE",
     "SymmetryDecayModel",
@@ -9306,6 +9325,7 @@
     "stable_core_preflight_fixtures_markdown",
     "stable_core_preflight_fixtures_payload",
     "strangeworks_program_to_workload",
+    "summarise_cycle_samples",
     "syndrome_flow_analysis",
     "tcbo",
     "transpile_for_trapped_ion",
@@ -10176,6 +10196,7 @@
       "tests/test_otoc_sync_probe.py",
       "tests/test_p_h1_derivation.py",
       "tests/test_p_h1_open_question_audit.py",
+      "tests/test_package_distribution_boundary.py",
       "tests/test_pairing_correlator.py",
       "tests/test_paper0_a_cascade_of_directed_couplings_validation.py",
       "tests/test_paper0_a_map_of_reality_validation.py",
@@ -11303,6 +11324,7 @@
       "tests/test_stochastic_gradient_rust_parity.py",
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
+      "tests/test_sub_us_tracker.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
       "tests/test_submit_phase3_large_system_ibm.py",
       "tests/test_submit_s1_ibm_feedback_pair.py",

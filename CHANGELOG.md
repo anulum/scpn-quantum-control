@@ -4,7 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
-No unreleased changes.
+### Added
+- 2026-06-15 — Added a sub-microsecond outer-loop telemetry surface to
+  `control/realtime_runtime.py`: `SubMicrosecondTracker`, `CycleSample`,
+  `SubMicrosecondReport`, and `summarise_cycle_samples`, reporting inter-cycle
+  jitter percentiles against a target period and a deadline-miss count over a
+  bounded ring with exact running counters. Percentile and summary computation
+  dispatch to new Rust kernels (`sub_us_jitter_percentiles`,
+  `sub_us_tracker_summary`) that are bit-true identical to the NumPy fallback,
+  with module-specific and property-based tests, a throughput benchmark
+  (`scripts/bench_sub_us_tracker.py`, `results/sub_us_tracker_benchmark.json`,
+  classified `functional_non_isolated`), and documentation
+  (`docs/realtime_runtime.md`).
 
 ## [0.9.12] - 2026-06-15
 

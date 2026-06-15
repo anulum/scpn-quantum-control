@@ -156,16 +156,20 @@ from .control.q_disruption_iter import (
 from .control.qaoa_mpc import QAOA_MPC
 from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, QuantumPetriStepReport
 from .control.realtime_runtime import (
+    CycleSample,
     MonotonicRealtimeClock,
     RealtimeRunResult,
     RealtimeRuntimeConfig,
     RealtimeSLAConfig,
     RealtimeSLAReport,
     RealtimeTickRecord,
+    SubMicrosecondReport,
+    SubMicrosecondTracker,
     VirtualRealtimeClock,
     enforce_realtime_sla,
     evaluate_realtime_sla,
     run_realtime_control_loop,
+    summarise_cycle_samples,
 )
 from .control.topological_optimizer import TopologicalCouplingOptimizer
 from .control.vqls_gs import VQLS_GradShafranov, VQLSGradShafranovResult
@@ -823,16 +827,20 @@ __all__ = [
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
     "compile_kuramoto_to_mlir",
+    "CycleSample",
     "MonotonicRealtimeClock",
     "RealtimeRunResult",
     "RealtimeSLAConfig",
     "RealtimeSLAReport",
     "RealtimeRuntimeConfig",
     "RealtimeTickRecord",
+    "SubMicrosecondReport",
+    "SubMicrosecondTracker",
     "VirtualRealtimeClock",
     "enforce_realtime_sla",
     "evaluate_realtime_sla",
     "run_realtime_control_loop",
+    "summarise_cycle_samples",
     "CloudDeploymentSpec",
     "CloudManifestBundle",
     "ContainerResources",

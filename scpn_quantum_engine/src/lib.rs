@@ -52,6 +52,7 @@ pub mod pec;
 pub mod pulse_shaping;
 pub mod qnode_metrics;
 pub mod qpetri;
+pub mod realtime;
 pub mod sectors;
 pub mod stochastic_gradient;
 pub mod symmetry_decay;
@@ -399,6 +400,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(qpetri::qpetri_state_metrics, m)?)?;
     m.add_function(wrap_pyfunction!(qpetri::qpetri_sample_marking, m)?)?;
     m.add_function(wrap_pyfunction!(qpetri::qpetri_campaign_aggregate, m)?)?;
+
+    // Sub-microsecond realtime telemetry
+    m.add_function(wrap_pyfunction!(realtime::sub_us_jitter_percentiles, m)?)?;
+    m.add_function(wrap_pyfunction!(realtime::sub_us_tracker_summary, m)?)?;
 
     Ok(())
 }
