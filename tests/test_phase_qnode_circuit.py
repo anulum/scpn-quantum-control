@@ -30,6 +30,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
     SparsePauliHamiltonian,
     build_phase_qnode_template,
     build_registered_phase_qnode_circuit,
+    build_sparse_ising_chain_hamiltonian,
     decompose_phase_qnode_controlled_gate,
     execute_phase_qnode_circuit,
     execute_phase_qnode_density_matrix,
@@ -163,6 +164,75 @@ def test_phase_qnode_parameter_shift_matches_finite_difference_for_registered_ge
     np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
     assert gradient.support_report.differentiable_parameters == (0, 1, 2)
     assert gradient.parameter_shift_evaluations == 6
+
+
+def test_phase_qnode_sparse_ising_chain_builder_matches_manual_hamiltonian() -> None:
+    x_field = np.linspace(0.05, 0.15, 6)
+    z_field = np.linspace(0.2, 0.7, 6)
+    zz_coupling = np.linspace(0.4, 0.9, 6)
+    observable = build_sparse_ising_chain_hamiltonian(
+        6,
+        x_field=x_field,
+        z_field=z_field,
+        zz_coupling=zz_coupling,
+        periodic=True,
+    )
+    manual = SparsePauliHamiltonian(
+        (
+            *(PauliTerm(float(weight), ((index, "x"),)) for index, weight in enumerate(x_field)),
+            *(PauliTerm(float(weight), ((index, "z"),)) for index, weight in enumerate(z_field)),
+            *(
+                PauliTerm(float(weight), ((index, "z"), ((index + 1) % 6, "z")))
+                for index, weight in enumerate(zz_coupling)
+            ),
+        )
+    )
+    circuit = PhaseQNodeCircuit(
+        n_qubits=6,
+        operations=tuple(("ry", (index,), index) for index in range(6)),
+        observable=observable,
+    )
+    manual_circuit = PhaseQNodeCircuit(
+        n_qubits=6,
+        operations=tuple(("ry", (index,), index) for index in range(6)),
+        observable=manual,
+    )
+    params = np.linspace(0.11, 0.61, 6, dtype=float)
+
+    result = execute_phase_qnode_circuit(circuit, params)
+    manual_result = execute_phase_qnode_circuit(manual_circuit, params)
+    gradient = parameter_shift_phase_qnode_gradient(circuit, params)
+    finite_difference = np.zeros_like(params)
+    eps = 1e-6
+    for index in range(params.size):
+        plus = params.copy()
+        minus = params.copy()
+        plus[index] += eps
+        minus[index] -= eps
+        finite_difference[index] = (
+            execute_phase_qnode_circuit(circuit, plus).value
+            - execute_phase_qnode_circuit(circuit, minus).value
+        ) / (2.0 * eps)
+
+    assert len(observable.terms) == 18
+    np.testing.assert_allclose(result.value, manual_result.value, atol=1e-12)
+    np.testing.assert_allclose(gradient.gradient, finite_difference, atol=1e-6)
+    assert result.support_report.observable_kind == "sparse_pauli_hamiltonian"
+
+
+def test_phase_qnode_sparse_ising_chain_builder_validates_coefficients() -> None:
+    open_chain = build_sparse_ising_chain_hamiltonian(4, zz_coupling=0.25)
+
+    assert len(open_chain.terms) == 3
+    assert phase.build_sparse_ising_chain_hamiltonian is build_sparse_ising_chain_hamiltonian
+    with pytest.raises(ValueError, match="at least two qubits"):
+        build_sparse_ising_chain_hamiltonian(1)
+    with pytest.raises(ValueError, match="periodic must be a boolean"):
+        build_sparse_ising_chain_hamiltonian(4, periodic=1)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match=r"zz_coupling must have shape \(3,\)"):
+        build_sparse_ising_chain_hamiltonian(4, zz_coupling=np.ones(4))
+    with pytest.raises(ValueError, match="at least one non-zero term"):
+        build_sparse_ising_chain_hamiltonian(4, x_field=0.0, z_field=0.0, zz_coupling=0.0)
 
 
 def test_phase_qnode_covariance_observable_matches_bell_reference() -> None:

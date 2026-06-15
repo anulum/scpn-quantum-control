@@ -34,6 +34,7 @@ kernels are framework-native differentiable.
 |---|---|---|
 | Minimal QNode | `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, `parameter_shift_phase_qnode_gradient(...)` | Local statevector value and analytic parameter-shift gradient for a registered gate and observable. |
 | Controlled gates | `decompose_phase_qnode_controlled_gate(...)`, `registered_phase_qnode_decompositions()` | Exact registered Toffoli/Fredkin decompositions plus native controlled-H/S/T, Toffoli, CCZ, and Fredkin execution. |
+| Sparse Ising observables | `build_sparse_ising_chain_hamiltonian(...)` | Validated nearest-neighbour sparse Pauli Hamiltonians with scalar or site/edge coefficient vectors for larger local Phase-QNode circuits. |
 | Density and noise | `PhaseQNodeDensityCircuit`, `PhaseQNodeNoiseChannel`, `execute_phase_qnode_density_matrix(...)` | Local density-matrix value, trace, purity, and support report for registered unitary gates plus bounded single-qubit Kraus channels. |
 | QNode route preflight | `phase_qnode_support_report(...)`, `phase_qnode_density_support_report(...)`, `phase_qnode_gradient_support_report(...)`, `phase_qnode_metric_support_report(...)`, `phase_qnode_computational_basis_fisher_support_report(...)` | Strict support reports for value, density, pure-state gradient, pure-state metric/QFI, exact computational-basis Fisher, and singular-probability boundary paths. |
 | Diagnostics | `explain_differentiability(...)` | Fail-closed reasons, suggested alternatives, dependency rows, device rows, backend rows, and support payload. |

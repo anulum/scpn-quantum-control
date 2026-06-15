@@ -1282,6 +1282,7 @@ is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec
+build_sparse_ising_chain_hamiltonian(n_qubits, x_field=0.0, z_field=0.0, zz_coupling=1.0, periodic=False) -> SparsePauliHamiltonian
 phase_qnode_depth_profile(circuit) -> PhaseQNodeDepthProfile
 registered_phase_qnode_decompositions() -> tuple[str, ...]
 registered_phase_qnode_noise_channels() -> tuple[str, ...]

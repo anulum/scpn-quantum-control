@@ -602,6 +602,43 @@ def registered_phase_qnode_noise_channels() -> tuple[str, ...]:
     return _REGISTERED_NOISE_CHANNELS
 
 
+def build_sparse_ising_chain_hamiltonian(
+    n_qubits: int,
+    *,
+    x_field: float | ArrayLike = 0.0,
+    z_field: float | ArrayLike = 0.0,
+    zz_coupling: float | ArrayLike = 1.0,
+    periodic: bool = False,
+) -> SparsePauliHamiltonian:
+    """Build a sparse nearest-neighbour Ising-chain Pauli Hamiltonian.
+
+    Coefficients are direct observable weights. Scalar values are broadcast
+    across all sites or edges; arrays must match the site or edge count exactly.
+    """
+    width = _as_ising_chain_width(n_qubits)
+    if not isinstance(periodic, bool):
+        raise ValueError("periodic must be a boolean")
+    edge_count = width if periodic else width - 1
+    x_coefficients = _as_broadcast_coefficients("x_field", x_field, width)
+    z_coefficients = _as_broadcast_coefficients("z_field", z_field, width)
+    zz_coefficients = _as_broadcast_coefficients("zz_coupling", zz_coupling, edge_count)
+    terms: list[PauliTerm] = []
+    for qubit, coefficient in enumerate(x_coefficients):
+        if coefficient != 0.0:
+            terms.append(PauliTerm(coefficient, ((qubit, "x"),)))
+    for qubit, coefficient in enumerate(z_coefficients):
+        if coefficient != 0.0:
+            terms.append(PauliTerm(coefficient, ((qubit, "z"),)))
+    for edge, coefficient in enumerate(zz_coefficients):
+        if coefficient != 0.0:
+            left = edge
+            right = (edge + 1) % width
+            terms.append(PauliTerm(coefficient, ((left, "z"), (right, "z"))))
+    if not terms:
+        raise ValueError("sparse Ising Hamiltonian must contain at least one non-zero term")
+    return SparsePauliHamiltonian(tuple(terms))
+
+
 def decompose_phase_qnode_controlled_gate(
     operation: PhaseQNodeOperation | OperationSpec,
 ) -> tuple[PhaseQNodeOperation, ...]:
@@ -1348,6 +1385,12 @@ def _as_template_width(value: int) -> int:
     return int(value)
 
 
+def _as_ising_chain_width(value: int) -> int:
+    if isinstance(value, bool) or value < 2:
+        raise ValueError("sparse Ising chain Hamiltonians require at least two qubits")
+    return int(value)
+
+
 def _as_template_layers(value: int) -> int:
     if isinstance(value, bool) or value < 1:
         raise ValueError("n_layers must be a positive integer")
@@ -1515,6 +1558,25 @@ def _as_probability(value: object) -> float:
     if probability < 0.0 or probability > 1.0:
         raise ValueError("probability must be between 0 and 1")
     return probability
+
+
+def _as_broadcast_coefficients(name: str, value: object, width: int) -> tuple[float, ...]:
+    raw = np.asarray(value)
+    if raw.dtype.kind in {"b", "c", "O", "S", "U"}:
+        raise ValueError(f"{name} must contain finite real numeric values")
+    values = np.asarray(value, dtype=np.float64)
+    if values.shape == ():
+        scalar = float(values.item())
+        if not np.isfinite(scalar):
+            raise ValueError(f"{name} must contain finite real numeric values")
+        return tuple(scalar for _ in range(width))
+    if values.ndim != 1:
+        raise ValueError(f"{name} must be a scalar or one-dimensional array")
+    if values.shape != (width,):
+        raise ValueError(f"{name} must have shape ({width},), got {values.shape}")
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{name} must contain finite real numeric values")
+    return tuple(float(item) for item in values)
 
 
 def _as_min_probability(value: float) -> float:
@@ -2032,6 +2094,7 @@ __all__ = [
     "PhaseQNodeSupportReport",
     "PhaseQNodeTemplateSpec",
     "SparsePauliHamiltonian",
+    "build_sparse_ising_chain_hamiltonian",
     "build_registered_phase_qnode_circuit",
     "build_phase_qnode_template",
     "decompose_phase_qnode_controlled_gate",
@@ -2039,8 +2102,11 @@ __all__ = [
     "execute_phase_qnode_density_matrix",
     "parameter_shift_phase_qnode_gradient",
     "phase_qnode_computational_basis_fisher_information",
+    "phase_qnode_computational_basis_fisher_support_report",
     "phase_qnode_density_support_report",
     "phase_qnode_depth_profile",
+    "phase_qnode_gradient_support_report",
+    "phase_qnode_metric_support_report",
     "phase_qnode_natural_gradient_metric",
     "phase_qnode_quantum_fisher_information",
     "phase_qnode_support_report",

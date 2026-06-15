@@ -1068,6 +1068,7 @@ import numpy as np
 from scpn_quantum_control.phase import (
     build_phase_qnode_template,
     build_registered_phase_qnode_circuit,
+    build_sparse_ising_chain_hamiltonian,
     decompose_phase_qnode_controlled_gate,
     DenseHermitianObservable,
     PauliCovarianceObservable,
@@ -1110,6 +1111,30 @@ controlled_circuit = PhaseQNodeCircuit(
     observable=PauliTerm(1.0, ((2, "z"),)),
 )
 print(execute_phase_qnode_circuit(controlled_circuit, np.array([])).value)
+```
+
+Use `build_sparse_ising_chain_hamiltonian(...)` for larger sparse Pauli
+Hamiltonian observables without hand-authoring every term. Scalar coefficients
+are broadcast across sites or edges; arrays must match the site or edge count:
+
+```python
+sparse_observable = build_sparse_ising_chain_hamiltonian(
+    n_qubits=6,
+    x_field=np.linspace(0.05, 0.15, 6),
+    z_field=np.linspace(0.2, 0.7, 6),
+    zz_coupling=np.linspace(0.4, 0.9, 6),
+    periodic=True,
+)
+sparse_circuit = PhaseQNodeCircuit(
+    n_qubits=6,
+    operations=tuple(("ry", (index,), index) for index in range(6)),
+    observable=sparse_observable,
+)
+sparse_gradient = parameter_shift_phase_qnode_gradient(
+    sparse_circuit,
+    np.linspace(0.11, 0.61, 6),
+)
+print(sparse_gradient.gradient)
 ```
 
 For local mixed-state evidence, use `PhaseQNodeDensityCircuit` and
