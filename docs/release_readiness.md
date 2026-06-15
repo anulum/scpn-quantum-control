@@ -57,8 +57,8 @@ single place to prove that the same route is repeatable across machines.
 | Check | Release meaning |
 |---|---|
 | Version consistency | `pyproject.toml`, package `__version__`, `CITATION.cff`, and `.zenodo.json` carry the same version. |
-| Required release artefacts | Paper 0, coverage, behavioural-test, K_nm, stable core contracts, stable core contract fixtures, backend capability artefacts, and S2 blocker artefacts are present. |
-| Coverage gap gate | A fresh `coverage.xml` exists, aggregate package coverage meets the release threshold, and unjustified missing files are blocked. Per-file gaps remain reported; `--fail-on-file-gap` can promote them to hard blockers. |
+| Required release artefacts | Paper 0, coverage, behavioural-test, K_nm, stable core contracts, stable core contract fixtures, backend capability artefacts, release coverage exclusions, and S2 blocker artefacts are present. |
+| Coverage gap gate | A fresh `coverage.xml` exists, aggregate package coverage meets the release threshold, and unjustified missing files are blocked. Intentional CPU-only omissions must be listed in [`release_coverage_exclusions.json`](release_coverage_exclusions.json). Per-file gaps remain reported; `--fail-on-file-gap` can promote them to hard blockers. |
 | Behavioural quality gate | Tests satisfy the smoke-only, assertion-density, and exception-contract-density thresholds. |
 | Core-artifact determinism | Stable core contracts and backend capability artefacts are reproducible from committed metadata, and exported digests are checked before tagging. |
 
@@ -305,11 +305,39 @@ Before tagging:
    measured-candidate claim text.
 7. If the release cites promoted hardware evidence, generate the hardware
    result-pack evidence packet and pass it to the release audit.
-8. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
+8. Confirm intentional CPU-only coverage omissions are justified in
+   [`release_coverage_exclusions.json`](release_coverage_exclusions.json).
+9. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
    result-pack evidence argument when applicable.
-9. Run the scoped docs build and version-consistency checks.
-10. Commit with the required authorship line after staged-diff audit.
-11. Push the commit and wait for CI before creating a release tag.
+10. Run the scoped docs build and version-consistency checks.
+11. Commit with the required authorship line after staged-diff audit.
+12. Push the commit and wait for CI before creating a release tag.
+
+## 0.9.12 release, documentation, and repository-hygiene scope
+
+The `0.9.12` source release packages the June 2026 differentiable-programming
+hardening queue and refreshes the public documentation surface so first-time
+users can understand the software, its applications, its commercial route, and
+its claim boundaries before reading subsystem internals. It does not promote
+broad quantum advantage, clinical validation, arbitrary simulator autodiff, or
+unbounded hardware-gradient execution.
+
+The release scope is:
+
+- version-consistent `pyproject.toml`, `CITATION.cff`, `.zenodo.json`, README,
+  capability manifest, documentation site pages, and changelog entries;
+- README, site home, onboarding, tutorials, notebook guide, API overview, and
+  release-readiness pages that route users by job, evidence class, and adoption
+  objective;
+- differentiable-programming additions from the current queue, including
+  bounded QNN/QNode gradient, convergence, framework, finite-shot, stochastic,
+  Rust/PyO3 parity, and compiler/adapter evidence surfaces already committed in
+  the release branch;
+- explicit benchmark classification boundaries: non-isolated rows remain local
+  regression or functional evidence, while production performance wording still
+  requires isolated-affinity artefacts;
+- GitHub push, tag, CI validation, security-alert inspection, open-PR review,
+  and safe Actions/deployment cleanup before public release promotion.
 
 
 ## 0.9.11 documentation, native AD, and release-polish scope

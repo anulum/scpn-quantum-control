@@ -27,6 +27,19 @@ The sequence is intentionally claim-aware: pages for gradients, hardware, and
 optimisation are introduced with explicit boundaries so teams can choose the
 minimum safe surface for their objective.
 
+## What each tutorial is allowed to prove
+
+Tutorials teach the workflow; they do not promote claims by themselves. Use
+this rule before copying a result into a paper, sales deck, release note, or
+application dossier:
+
+| Tutorial output | Evidence class | Promotion path |
+|---|---|---|
+| Local simulator curve | Simulator evidence | Preserve inputs, seed policy, versions, and script/notebook path. |
+| Gradient or convergence plot | Method evidence | Attach finite-difference, analytic, framework, or benchmark classification records. |
+| Hardware count distribution | Candidate hardware evidence | Promote only through the hardware ledger and result-pack release checklist. |
+| Application example | Pilot evidence | Bind the domain assumptions, data provenance, claim class, and licence route. |
+
 ---
 
 ## Learning Path Overview

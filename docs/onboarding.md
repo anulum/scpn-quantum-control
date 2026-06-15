@@ -23,7 +23,9 @@ equivalent. It separates:
 - **commercial readiness** (stable facades, release gates, and deployment boundaries).
 
 The goal is a single path from idea to auditable outcome, where every higher-cost
-route has a defined evidence burden.
+route has a defined evidence burden. A useful result in this repository is not
+only a plot or a notebook output; it is a result with inputs, code path,
+dependency context, claim class, and promotion rule.
 
 ## One-Sentence Description
 
@@ -40,6 +42,7 @@ release gates, and explicit scientific claim boundaries.
 | Hardware operator | run campaign planning and raw-count review without mixing simulator and hardware claims |
 | Product engineer | adopt stable facades and migrate into integrations with low risk |
 | Compliance reviewer | inspect explicit claim classes and verify promotion rules before release |
+| Commercial evaluator | see which parts are ready for pilots, which are research-only, and where a commercial licence is required |
 
 ## What Problem It Solves
 
@@ -113,6 +116,19 @@ coupled dynamics matter:
 - **Differentiable computation:** gradient-bearing primitive kernels used for
   optimisation, VQE training experiments, compiler-backed AD, CPU-only
   framework parity, and external ML-framework comparison rows.
+
+## Market-fit framing
+
+The strongest adoption case is not a claim of near-term quantum advantage. The
+adoption case is governed uncertainty reduction for domains where coupled
+dynamics matter and where uncontrolled evidence would be expensive:
+
+| Market problem | Why this package matters |
+|---|---|
+| Quantum pilots are hard to compare | Common `K_nm`/`omega` contracts, classical references, and claim classes make pilots reviewable. |
+| Hardware runs are costly and easy to overstate | No-QPU gates, provider readiness, and raw-count ledgers prevent simulator output from becoming hardware language. |
+| Optimisation stacks hide fallback behaviour | Gradient support matrices and fail-closed routes make unsupported AD visible before integration. |
+| Research notebooks do not become products cleanly | Stable facades, API docs, examples, and release gates provide a migration path from exploration to integration. |
 
 ## What Is Mature
 

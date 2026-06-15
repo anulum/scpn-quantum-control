@@ -115,6 +115,44 @@ def test_coverage_gap_outputs_are_deterministic(tmp_path: Path):
     assert "Coverage gap audit summary:" in format_audits(audits)
 
 
+def test_coverage_gap_audit_accepts_package_relative_xml_sources(tmp_path: Path):
+    project_root = tmp_path / "repo"
+    source_root = project_root / "src" / "scpn_quantum_control"
+    source_root.mkdir(parents=True)
+    (source_root / "module.py").write_text("x = 1\n", encoding="utf-8")
+    coverage_xml = project_root / "coverage.xml"
+    coverage_xml.write_text(
+        f"""<?xml version="1.0" ?>
+<coverage>
+  <sources>
+    <source>{source_root.as_posix()}</source>
+  </sources>
+  <packages>
+    <package name=".">
+      <classes>
+        <class filename="module.py" line-rate="1.0">
+          <lines><line number="1" hits="1"/></lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>
+""",
+        encoding="utf-8",
+    )
+
+    audits = audit_coverage_gaps(
+        project_root=project_root,
+        source_root=source_root,
+        coverage_xml=coverage_xml,
+        min_file_percent=95.0,
+        justified_exclusions=None,
+    )
+
+    assert audits[0].path == "src/scpn_quantum_control/module.py"
+    assert audits[0].status == "ok"
+
+
 def test_coverage_gap_summary_warns_when_report_matches_no_source_files(tmp_path: Path):
     project_root = tmp_path / "repo"
     source_root = project_root / "src" / "scpn_quantum_control"

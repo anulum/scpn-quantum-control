@@ -4,7 +4,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [0.9.12] - 2026-06-15
+
 ### Added
+- 2026-06-15 — Bumped the public release metadata and documentation surfaces
+  for the current differentiable-programming hardening queue, including README,
+  site home, onboarding, tutorial, notebook, API, reproducibility,
+  hardware-ledger, release-readiness, citation, Zenodo, and generated
+  capability inventory alignment.
+- 2026-06-15 — Added adoption-oriented documentation routes that explain the
+  software purpose, application lanes, commercial value, first user paths,
+  notebook governance, API selection, evidence classes, and release-hygiene
+  boundary without promoting unsupported hardware, clinical, or broad advantage
+  claims.
 - 2026-06-14 — Added bounded PyTorch module/layer wrapper evidence via
   `torch_bounded_qnn_module`, `torch_bounded_qnn_layer`, and
   `run_torch_module_wrapper_audit`, including `torch.nn.Module`/`Parameter`

@@ -57,6 +57,7 @@ REQUIRED_RELEASE_ARTIFACTS: tuple[str, ...] = (
     "docs/quantum_thermo.md",
     "docs/analog_native_readiness.md",
     "docs/quantum_sensing.md",
+    "docs/release_coverage_exclusions.json",
 )
 
 
@@ -365,15 +366,19 @@ def audit_release_readiness(
     """Run all release-readiness checks and return a deterministic payload."""
     project_root = project_root.resolve()
     if justified_exclusions is None:
-        default_exclusions = (
+        default_exclusion_candidates = (
+            project_root / "docs" / "release_coverage_exclusions.json",
             project_root
             / "docs"
             / "internal"
             / "audits"
             / "release_readiness"
-            / "coverage_justified_exclusions_2026-05-18.json"
+            / "coverage_justified_exclusions_2026-05-18.json",
         )
-        justified_exclusions = default_exclusions if default_exclusions.exists() else None
+        justified_exclusions = next(
+            (path for path in default_exclusion_candidates if path.exists()),
+            None,
+        )
     checks = (
         check_versions(project_root),
         check_required_artifacts(project_root),

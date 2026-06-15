@@ -79,6 +79,16 @@ advanced references for subsystem extension.
 | Runtime contract | [QPU Data Artifact](qpu_data_artifact.md), [Pipeline Runtime Contract](pipeline_runtime_contract.md) | Exchanging persisted QPU results or compute-unit metadata. |
 | Advanced module reference | This page and [Auto-Generated Module Index](autodoc.md) | Auditing, extending, or debugging subsystem internals. |
 
+## API choice by job
+
+| Job | Preferred API surface | Boundary |
+|---|---|---|
+| First local coupled-oscillator run | `scpn_quantum_control.kuramoto_core` and `QuantumKuramotoSolver` | Simulator evidence until a hardware ledger row is promoted. |
+| Differentiable optimisation | `scpn_quantum_control.phase.param_shift`, `scpn_quantum_control.phase.qnn_training`, and `scpn_quantum_control.differentiable` | Use support matrices and verification records before claiming gradient support. |
+| Hardware result packaging | `scpn_quantum_control.hardware_result_packs` and QPU artefact contracts | Raw counts and manifests must pass release gates before public promotion. |
+| Cross-repository integration | Stable facade pages and runtime contracts | Avoid internal module paths unless the contract page names them. |
+| Commercial pilot | Stable facades, examples, release-readiness gates, and licence boundary docs | Closed-source or SaaS use requires commercial licensing. |
+
 ## API Selection Rules
 
 - Prefer `scpn_quantum_control.kuramoto_core` for user-facing `K_nm`/`omega`

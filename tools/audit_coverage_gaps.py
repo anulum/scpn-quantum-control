@@ -66,6 +66,20 @@ def _normalise_path(path: str, project_root: Path) -> str:
     return raw.as_posix()
 
 
+def _coverage_sources(root: Any, project_root: Path) -> tuple[Path, ...]:
+    """Return normalised Cobertura source roots from a coverage XML tree."""
+    sources: list[Path] = []
+    for item in root.findall(".//source"):
+        text = (item.text or "").strip()
+        if not text:
+            continue
+        path = Path(text)
+        if not path.is_absolute():
+            path = project_root / path
+        sources.append(path)
+    return tuple(sources)
+
+
 def _class_entries(coverage_xml: Path, project_root: Path) -> dict[str, Any]:
     """Return coverage XML class entries by normalised filename."""
     if not coverage_xml.exists():
@@ -73,11 +87,20 @@ def _class_entries(coverage_xml: Path, project_root: Path) -> dict[str, Any]:
     root = ET.parse(coverage_xml).getroot()
     if root is None:
         return {}
+    sources = _coverage_sources(root, project_root)
     entries: dict[str, Any] = {}
     for item in root.findall(".//class"):
         filename = item.attrib.get("filename", "")
-        if filename:
-            entries[_normalise_path(filename, project_root)] = item
+        if not filename:
+            continue
+        entries[_normalise_path(filename, project_root)] = item
+        raw = Path(filename)
+        if raw.is_absolute():
+            continue
+        for source in sources:
+            with suppress(ValueError):
+                rel_path = (source / raw).resolve().relative_to(project_root.resolve())
+                entries[rel_path.as_posix()] = item
     return entries
 
 

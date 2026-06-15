@@ -18,6 +18,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## [0.9.12] - 2026-06-15
+
+### Added
+- Public release metadata and documentation alignment for the current
+  differentiable-programming hardening queue, including README, site home,
+  onboarding, tutorial, notebook, API, reproducibility, hardware-ledger,
+  release-readiness, citation, Zenodo, and generated capability inventory
+  surfaces.
+- Adoption-oriented documentation routes explaining the software purpose,
+  application lanes, commercial value, first user paths, notebook governance,
+  API selection, evidence classes, and release-hygiene boundary without
+  promoting unsupported hardware, clinical, or broad advantage claims.
+
 ## [0.9.11] - 2026-06-05
 
 ### Added

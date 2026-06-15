@@ -18,16 +18,18 @@
 [![PyPI Downloads](https://img.shields.io/pypi/dm/scpn-quantum-control)](https://pypi.org/project/scpn-quantum-control/)
 [![All-time Downloads](https://static.pepy.tech/badge/scpn-quantum-control)](https://pepy.tech/project/scpn-quantum-control)
 
-Quantum simulation of coupled Kuramoto oscillator networks on IBM superconducting
-hardware, with a hardware evidence ledger separating theory, simulator,
-unmitigated hardware, mitigated hardware, and noise-limited claims.
+Evidence-governed Kuramoto-XY quantum control and differentiable computation
+for coupled oscillator networks, with a hardware evidence ledger separating
+theory, simulator, unmitigated hardware, mitigated hardware, and noise-limited
+claims.
 
 ## Positioning and purpose
 
 `scpn-quantum-control` is an evidence-first platform for teams turning
-coupled-oscillator models into reproducible computational evidence. It is aimed at
-research groups and product teams that need a clearer path from model statement to
-auditable result than ad-hoc notebooks can provide.
+coupled-oscillator models into reproducible computational evidence. It is aimed
+at research groups, hardware operators, control engineers, and product teams
+that need a clearer path from model statement to auditable result than ad-hoc
+notebooks can provide.
 
 In practice, this means:
 
@@ -66,6 +68,15 @@ explicit evidence boundaries.
 | Hardware governance | Provider capability records, raw-count ledgers, result packs, and release gates. | Hardware claims stay auditable and safe to cite. |
 | Integration surface | Stable facades, notebooks, tutorials, API maps, and Rust acceleration hooks. | External projects can adopt supported entry points without depending on internal layout. |
 
+## Adoption value
+
+| Organisation need | Repository surface | Review output |
+|---|---|---|
+| Reduce quantum R&D uncertainty | Simulator-first Kuramoto-XY workflows and classical baselines. | A repeatable local result before hardware spend. |
+| Prepare a hardware campaign | Provider readiness, hardware result packs, and no-QPU gates. | Evidence classes that are clear before submission. |
+| Build an optimisation pilot | Parameter-shift, finite-shot, framework-agreement, and compiler-AD routes. | Gradient evidence with explicit unsupported scenarios. |
+| Assess commercial fit | Stable facades, AGPL/commercial boundary, release-readiness pages, and API maps. | A concrete route from research code to governed integration. |
+
 Use [Differentiable Programming](differentiable_programming.md) and
 [Quantum Gradients](quantum_gradients.md) when the central question is whether a
 workflow can be trained or optimised. Use [Hardware Status Ledger](hardware_status_ledger.md)
@@ -75,7 +86,7 @@ when the central question is whether a result can be promoted as hardware eviden
 
 | Area | Public status |
 |---|---|
-| Package line | Version `0.9.11`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
+| Package line | Version `0.9.12`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Paper 0 source-validation register | Fully promoted through the source-accounting register from `P0R00001` through `P0R06211`; the planner reports `0` remaining work orders and `0` remaining records. This is source-bounded ingestion and fixture preservation, not external validation evidence. |

@@ -32,6 +32,15 @@ Recommended first path:
 4. `10_qsnn_training.ipynb` for the current gradient-training notebook lane.
 5. `13_cross_repo_bridges.ipynb` for integration boundaries.
 
+## Notebook governance
+
+| Notebook role | Use it for | Do not use it for |
+|---|---|---|
+| Learning | Understanding the model path, plotting first results, and exploring examples. | Claiming hardware performance or external validation. |
+| Reproduction support | Re-running a documented result with matching inputs and dependency notes. | Replacing committed JSON, ledger, or benchmark artefacts. |
+| Product discovery | Showing how an integration might behave before implementation. | Licensing, support, or deployment commitments. |
+| Publication drafting | Building figures after the underlying artefact is promoted. | Citing an unpromoted exploratory cell output as evidence. |
+
 For differentiable-programming work, pair every notebook with the public
 [Quantum Gradients](quantum_gradients.md), [Differentiable API](differentiable_api.md),
 and [Differentiable Roadmap](differentiable_roadmap.md) pages. Build the
