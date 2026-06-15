@@ -31,6 +31,10 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
   API selection, evidence classes, and release-hygiene boundary without
   promoting unsupported hardware, clinical, or broad advantage claims.
 
+### Security
+- Updated the pinned CI `pip` package from `26.1.1` to `26.1.2` across the
+  Python 3.10-3.13 lockfiles to remediate `PYSEC-2026-196` / `CVE-2026-8643`.
+
 ## [0.9.11] - 2026-06-05
 
 ### Added
