@@ -1282,6 +1282,7 @@ is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 is_phase_jax_available() -> bool
 jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None, rule=None) -> PhaseJAXParameterShiftResult
+run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXMaturityAuditResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec

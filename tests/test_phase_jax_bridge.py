@@ -17,6 +17,7 @@ from scpn_quantum_control.phase import (
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
     PhaseJAXJITCompatibilityResult,
+    PhaseJAXMaturityAuditResult,
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXParameterShiftResult,
     PhaseJAXPyTreeCompatibilityResult,
@@ -30,6 +31,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_qnn_classifier_gradient,
     run_jax_jit_compatibility_audit,
+    run_jax_maturity_audit,
     run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
@@ -687,6 +689,59 @@ def test_phase_jax_pytree_compatibility_audit_fails_closed_without_tree_util(
             features=np.array([[0.0], [np.pi]], dtype=float),
             labels=np.array([0.0, 1.0], dtype=float),
             params_pytree={"phase": np.array([0.45], dtype=float)},
+        )
+
+
+def test_phase_jax_maturity_audit_records_bounded_passes_and_provider_gaps(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    fake_jax.local_device_count_value = 2
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    features = np.array([[0.0, 0.2], [np.pi, np.pi + 0.2]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.25, 0.45], dtype=float)
+    params_batch = np.array([[0.25, 0.45], [0.35, 0.55]], dtype=float)
+    params_tree = {"phase": params}
+
+    result = run_jax_maturity_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        params_batch=params_batch,
+        params_pytree=params_tree,
+        tolerance=1e-10,
+    )
+    payload = result.to_dict()
+
+    assert isinstance(result, PhaseJAXMaturityAuditResult)
+    assert result.bounded_model_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.evidence["custom_vjp"].passed
+    assert result.evidence["jit"].passed
+    assert result.evidence["vmap"].passed
+    assert result.evidence["pmap_sharding"].passed
+    assert result.evidence["pytree"].passed
+    assert "arbitrary_quantum_kernel_jax_lowering" in result.open_gaps
+    assert "hardware_or_provider_callback_transform_safety" in result.open_gaps
+    assert payload["required_capabilities"]["jit"] == "passed"
+    assert payload["required_capabilities"]["arbitrary_quantum_kernel_jax_lowering"] == "blocked"
+    assert payload["claim_boundary"] == "bounded_jax_provider_maturity_audit"
+
+
+def test_phase_jax_maturity_audit_fails_closed_on_bad_batch_shape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    with pytest.raises(ValueError, match="params_batch"):
+        run_jax_maturity_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params=np.array([0.25], dtype=float),
+            params_batch=np.array([0.25], dtype=float),
+            params_pytree={"phase": np.array([0.25], dtype=float)},
         )
 
 

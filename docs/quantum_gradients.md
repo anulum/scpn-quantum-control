@@ -1493,6 +1493,7 @@ import jax
 from scpn_quantum_control.phase import (
     jax_custom_vjp_qnn_value_and_grad,
     run_jax_jit_compatibility_audit,
+    run_jax_maturity_audit,
     run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
@@ -1541,6 +1542,15 @@ pytree_audit = run_jax_pytree_compatibility_audit(
     },
 )
 print(pytree_audit.passed, pytree_audit.leaf_shapes)
+
+maturity = run_jax_maturity_audit(
+    features=features,
+    labels=labels,
+    params=params,
+    params_batch=np.array([[0.25], [0.45]], dtype=float),
+    params_pytree={"phase": params},
+)
+print(maturity.bounded_model_ready, maturity.ready_for_provider_exceedance)
 ```
 
 `jax_custom_vjp_qnn_value_and_grad(...)` registers a JAX `custom_vjp` for the
@@ -1562,6 +1572,10 @@ routes: they are not arbitrary simulator autodiff, not provider-backed
 execution, not hardware gradients, and not claims that every quantum objective
 can be lowered into JAX JIT, VMAP, distributed sharding, or arbitrary PyTree
 programs.
+`run_jax_maturity_audit(...)` is the provider-parity gate for JAX: it aggregates
+the bounded passes and emits explicit blockers for arbitrary quantum-kernel JAX
+lowering, full nested-transform algebra, hardware/provider callback transform
+safety, and promotion-grade isolated benchmark evidence.
 
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:

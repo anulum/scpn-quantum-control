@@ -348,6 +348,30 @@ class PhaseJAXPyTreeCompatibilityResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXMaturityAuditResult:
+    """Aggregate JAX maturity evidence and explicit provider-parity blockers."""
+
+    bounded_model_ready: bool
+    ready_for_provider_exceedance: bool
+    evidence: dict[str, object]
+    required_capabilities: dict[str, str]
+    open_gaps: tuple[str, ...]
+    claim_boundary: str = "bounded_jax_provider_maturity_audit"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready JAX maturity evidence."""
+
+        return {
+            "bounded_model_ready": self.bounded_model_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "evidence": {name: _result_to_dict(result) for name, result in self.evidence.items()},
+            "required_capabilities": dict(self.required_capabilities),
+            "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -1369,10 +1393,111 @@ def run_jax_pytree_compatibility_audit(
     )
 
 
+def run_jax_maturity_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike,
+    params_batch: ArrayLike,
+    params_pytree: object,
+    tolerance: float = 1e-6,
+) -> PhaseJAXMaturityAuditResult:
+    """Aggregate bounded JAX evidence and provider-level parity blockers.
+
+    The audit intentionally separates the bounded phase-QNN evidence that is
+    implemented today from the larger JAX ecosystem maturity target. It does
+    not promote arbitrary quantum kernels, provider callbacks, hardware
+    gradients, or benchmark claims until those routes have their own artefacts.
+    """
+
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _as_parameter_vector(
+        "params",
+        params,
+        width=feature_matrix.shape[1],
+    )
+    parameter_batch = _as_parameter_batch(
+        "params_batch",
+        params_batch,
+        width=feature_matrix.shape[1],
+    )
+
+    custom_vjp = jax_custom_vjp_qnn_value_and_grad(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+        tolerance=tolerance_value,
+    )
+    jit = run_jax_jit_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params=parameter_values,
+        tolerance=tolerance_value,
+    )
+    vmap = run_jax_vmap_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params_batch=parameter_batch,
+        tolerance=tolerance_value,
+    )
+    sharding = run_jax_sharding_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params_batch=parameter_batch,
+        tolerance=tolerance_value,
+    )
+    pytree = run_jax_pytree_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params_pytree=params_pytree,
+        tolerance=tolerance_value,
+    )
+
+    evidence: dict[str, object] = {
+        "custom_vjp": custom_vjp,
+        "jit": jit,
+        "vmap": vmap,
+        "pmap_sharding": sharding,
+        "pytree": pytree,
+    }
+    bounded_model_ready = all(
+        bool(getattr(result, "passed", False)) for result in evidence.values()
+    )
+    required_capabilities = {
+        "custom_vjp": "passed" if custom_vjp.passed else "failed",
+        "jit": "passed" if jit.passed else "failed",
+        "vmap": "passed" if vmap.passed else "failed",
+        "pmap_sharding": "passed" if sharding.passed else "failed",
+        "pytree": "passed" if pytree.passed else "failed",
+        "arbitrary_quantum_kernel_jax_lowering": "blocked",
+        "full_transform_nesting_algebra": "blocked",
+        "hardware_or_provider_callback_transform_safety": "blocked",
+        "promotion_grade_isolated_benchmarks": "blocked",
+    }
+    open_gaps = tuple(name for name, status in required_capabilities.items() if status != "passed")
+    return PhaseJAXMaturityAuditResult(
+        bounded_model_ready=bounded_model_ready,
+        ready_for_provider_exceedance=bounded_model_ready and not open_gaps,
+        evidence=evidence,
+        required_capabilities=required_capabilities,
+        open_gaps=open_gaps,
+    )
+
+
+def _result_to_dict(result: object) -> object:
+    to_dict = getattr(result, "to_dict", None)
+    if callable(to_dict):
+        return to_dict()
+    return result
+
+
 __all__ = [
     "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
     "PhaseJAXJITCompatibilityResult",
+    "PhaseJAXMaturityAuditResult",
     "PhaseJAXNativeQNNGradientResult",
     "PhaseJAXParameterShiftResult",
     "PhaseJAXPyTreeCompatibilityResult",
@@ -1384,6 +1509,7 @@ __all__ = [
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
     "run_jax_jit_compatibility_audit",
+    "run_jax_maturity_audit",
     "run_jax_pytree_compatibility_audit",
     "run_jax_sharding_compatibility_audit",
     "run_jax_vmap_compatibility_audit",
