@@ -19,14 +19,14 @@ from numpy.typing import NDArray
 FloatArray: TypeAlias = NDArray[np.float64]
 
 CLAIM_BOUNDARY = (
-    "registered local QNN/QGNN/QSNN/Kuramoto-XY training evidence only; "
-    "not arbitrary architecture, not provider hardware execution, and not a "
-    "production benchmark"
+    "registered local QNN/QGNN/QSNN/Kuramoto-XY/open-system-control training "
+    "evidence only; not arbitrary architecture, not provider hardware "
+    "execution, and not a production benchmark"
 )
 REGISTERED_TRAINING_SUITE_AUDIT_BOUNDARY = (
     "registered local training-suite readiness audit only; closes seeded "
-    "QNN/QGNN/QSNN/Kuramoto-XY suite evidence and keeps open-system control "
-    "and inverse-coupling recovery blocked until dedicated training evidence exists"
+    "QNN/QGNN/QSNN/Kuramoto-XY/open-system-control suite evidence and keeps "
+    "inverse-coupling recovery blocked until dedicated training evidence exists"
 )
 
 
@@ -160,7 +160,7 @@ def run_differentiable_model_training_evidence_suite(
     *,
     gradient_tolerance: float = 1.0e-5,
 ) -> DifferentiableModelTrainingEvidenceSuite:
-    """Run deterministic registered QNN, QGNN, QSNN, and Kuramoto-XY cases."""
+    """Run deterministic registered local differentiable training cases."""
     if gradient_tolerance <= 0.0:
         raise ValueError("gradient_tolerance must be positive")
     records = (
@@ -168,6 +168,7 @@ def run_differentiable_model_training_evidence_suite(
         _qgnn_registered_case(gradient_tolerance),
         _qsnn_medium_case(gradient_tolerance),
         _kuramoto_xy_case(gradient_tolerance),
+        _open_system_control_case(gradient_tolerance),
     )
     return DifferentiableModelTrainingEvidenceSuite(
         records=records,
@@ -198,16 +199,7 @@ def run_registered_differentiable_training_suite_audit(
         _ready_training_suite_record("qgnn", evidence_by_family),
         _ready_training_suite_record("qsnn", evidence_by_family),
         _ready_training_suite_record("kuramoto_xy", evidence_by_family),
-        RegisteredDifferentiableTrainingSuiteRecord(
-            model_family="open_system_control",
-            ready=False,
-            evidence_names=(),
-            blocker=(
-                "open-system control training suite is not implemented; "
-                "requires Lindblad/noise-aware loss descent, gradient agreement, "
-                "and deterministic replay evidence before TODO closure"
-            ),
-        ),
+        _ready_training_suite_record("open_system_control", evidence_by_family),
         RegisteredDifferentiableTrainingSuiteRecord(
             model_family="inverse_coupling_recovery",
             ready=False,
@@ -370,6 +362,55 @@ def _kuramoto_xy_case(tolerance: float) -> DifferentiableModelTrainingRecord:
         analytic_gradient=grad,
         learning_rate=0.25,
         steps=36,
+        tolerance=tolerance,
+    )
+
+
+def _open_system_control_case(tolerance: float) -> DifferentiableModelTrainingRecord:
+    times = np.array([0.0, 0.4, 0.9, 1.3, 1.8], dtype=np.float64)
+    gamma_amp = 0.08
+    gamma_deph = 0.05
+    decay = np.exp(-(gamma_amp + 0.5 * gamma_deph) * times)
+    control_features = np.column_stack(
+        (
+            np.sin(0.7 * times + 0.15),
+            np.cos(1.1 * times - 0.2),
+            np.sin(1.6 * times + 0.4) * decay,
+        )
+    )
+    target_order = np.array([0.16, 0.24, 0.34, 0.43, 0.52], dtype=np.float64)
+    params = np.array([0.18, -0.22, 0.14], dtype=np.float64)
+
+    def residual(theta: FloatArray) -> FloatArray:
+        controlled_order = decay * np.tanh(control_features @ theta)
+        dissipative_penalty = 0.03 * gamma_amp * theta[0] ** 2 + 0.02 * gamma_deph * theta[1] ** 2
+        return np.asarray(controlled_order + dissipative_penalty - target_order, dtype=np.float64)
+
+    def loss(theta: FloatArray) -> float:
+        values = residual(theta)
+        smooth_control_penalty = 0.01 * float(theta @ theta)
+        return float(np.mean(values**2) + smooth_control_penalty)
+
+    def grad(theta: FloatArray) -> FloatArray:
+        activation = control_features @ theta
+        slope = 1.0 - np.tanh(activation) ** 2
+        jacobian = decay[:, None] * slope[:, None] * control_features
+        jacobian[:, 0] += 0.06 * gamma_amp * theta[0]
+        jacobian[:, 1] += 0.04 * gamma_deph * theta[1]
+        values = residual(theta)
+        return np.asarray(
+            (2.0 / values.size) * jacobian.T @ values + 0.02 * theta, dtype=np.float64
+        )
+
+    return _train_case(
+        name="open_system_control_noise_aware",
+        model_family="open_system_control",
+        seed=505,
+        params=params,
+        loss=loss,
+        analytic_gradient=grad,
+        learning_rate=0.45,
+        steps=44,
         tolerance=tolerance,
     )
 
