@@ -1307,7 +1307,9 @@ params = np.array([0.2, -0.3], dtype=float)
 value = execute_phase_qnode_circuit(circuit, params)
 plan = plan_phase_qnode_parameter_shift_evaluations(circuit, params)
 gradient = parameter_shift_phase_qnode_gradient(circuit, params)
-parity = run_phase_qnode_framework_parity_suite()
+parity = run_phase_qnode_framework_parity_suite(
+    scenario="registered_two_qubit_entangling_statevector"
+)
 print(value.value, plan.planned_shifted_evaluations, gradient.gradient, parity.frameworks)
 ```
 

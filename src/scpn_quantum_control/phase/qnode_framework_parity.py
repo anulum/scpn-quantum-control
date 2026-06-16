@@ -19,12 +19,17 @@ from numpy.typing import NDArray
 from .qnode_circuit import (
     PauliTerm,
     PhaseQNodeCircuit,
+    SparsePauliHamiltonian,
     execute_phase_qnode_circuit,
     parameter_shift_phase_qnode_gradient,
 )
 
 FloatArray: TypeAlias = NDArray[np.float64]
 FrameworkStatus = Literal["passed", "dependency_missing", "failed"]
+ParityScenario = Literal[
+    "single_qubit_ry_rx_pauli_z",
+    "registered_two_qubit_entangling_statevector",
+]
 FailureClass = Literal[
     "none",
     "dependency_missing",
@@ -36,6 +41,11 @@ FailureClass = Literal[
 CLAIM_BOUNDARY = (
     "local framework parity for one registered Phase-QNode circuit; no provider "
     "execution, no hardware gradients, and no arbitrary simulator-autodiff claim"
+)
+TWO_QUBIT_CLAIM_BOUNDARY = (
+    "local framework parity for one registered two-qubit entangling Phase-QNode "
+    "statevector circuit; no provider execution, no hardware gradients, no "
+    "finite-shot claim, and no unrestricted arbitrary simulator-autodiff claim"
 )
 
 
@@ -78,6 +88,7 @@ class PhaseQNodeFrameworkParitySuiteResult:
     reference_value: float
     reference_gradient: FloatArray
     tolerance: float
+    scenario: ParityScenario = "single_qubit_ry_rx_pauli_z"
     claim_boundary: str = CLAIM_BOUNDARY
     hardware_execution: bool = False
 
@@ -114,6 +125,7 @@ class PhaseQNodeFrameworkParitySuiteResult:
             "passed": self.passed,
             "dependency_sparse": self.dependency_sparse,
             "frameworks": list(self.frameworks),
+            "scenario": self.scenario,
             "reference_value": self.reference_value,
             "reference_gradient": self.reference_gradient.tolist(),
             "tolerance": self.tolerance,
@@ -127,22 +139,22 @@ def run_phase_qnode_framework_parity_suite(
     *,
     params: FloatArray | None = None,
     tolerance: float = 1.0e-7,
+    scenario: ParityScenario = "single_qubit_ry_rx_pauli_z",
 ) -> PhaseQNodeFrameworkParitySuiteResult:
     """Run parity checks against installed JAX, PyTorch, TensorFlow, and PennyLane."""
-    values = np.array([0.37, -0.29], dtype=np.float64) if params is None else _as_params(params)
-    circuit = PhaseQNodeCircuit(
-        n_qubits=1,
-        operations=(("ry", (0,), 0), ("rx", (0,), 1)),
-        observable=PauliTerm(1.0, ((0, "z"),)),
+    scenario_value = _as_scenario(scenario)
+    values = (
+        _default_params(scenario_value) if params is None else _as_params(params, scenario_value)
     )
+    circuit = _scenario_circuit(scenario_value)
     reference_value = execute_phase_qnode_circuit(circuit, values).value
     reference_gradient = parameter_shift_phase_qnode_gradient(circuit, values).gradient
     runners = (
         ("scpn", lambda: (reference_value, reference_gradient, "float64", "cpu")),
-        ("jax", lambda: _run_jax(values)),
-        ("torch", lambda: _run_torch(values)),
-        ("tensorflow", lambda: _run_tensorflow(values)),
-        ("pennylane", lambda: _run_pennylane(values)),
+        ("jax", lambda: _run_jax(values, scenario_value)),
+        ("torch", lambda: _run_torch(values, scenario_value)),
+        ("tensorflow", lambda: _run_tensorflow(values, scenario_value)),
+        ("pennylane", lambda: _run_pennylane(values, scenario_value)),
     )
     records = tuple(
         _run_framework_record(
@@ -159,14 +171,61 @@ def run_phase_qnode_framework_parity_suite(
         reference_value=reference_value,
         reference_gradient=reference_gradient,
         tolerance=float(tolerance),
+        scenario=scenario_value,
+        claim_boundary=_scenario_claim_boundary(scenario_value),
     )
 
 
-def _as_params(params: FloatArray) -> FloatArray:
+def _as_scenario(scenario: str) -> ParityScenario:
+    if scenario in {"single_qubit_ry_rx_pauli_z", "registered_two_qubit_entangling_statevector"}:
+        return cast(ParityScenario, scenario)
+    raise ValueError(f"unsupported Phase-QNode framework parity scenario: {scenario!r}")
+
+
+def _default_params(scenario: ParityScenario) -> FloatArray:
+    if scenario == "single_qubit_ry_rx_pauli_z":
+        return np.array([0.37, -0.29], dtype=np.float64)
+    return np.array([0.37, -0.29, 0.23], dtype=np.float64)
+
+
+def _as_params(params: FloatArray, scenario: ParityScenario) -> FloatArray:
     values = np.asarray(params, dtype=np.float64)
-    if values.shape != (2,) or not np.all(np.isfinite(values)):
-        raise ValueError("params must be a finite length-2 vector")
+    expected_shape = _default_params(scenario).shape
+    if values.shape != expected_shape or not np.all(np.isfinite(values)):
+        raise ValueError(f"params must be a finite vector with shape {expected_shape}")
     return cast(FloatArray, values.copy())
+
+
+def _scenario_circuit(scenario: ParityScenario) -> PhaseQNodeCircuit:
+    if scenario == "single_qubit_ry_rx_pauli_z":
+        return PhaseQNodeCircuit(
+            n_qubits=1,
+            operations=(("ry", (0,), 0), ("rx", (0,), 1)),
+            observable=PauliTerm(1.0, ((0, "z"),)),
+        )
+    return PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            ("ry", (0,), 0),
+            ("rx", (1,), 1),
+            ("cnot", (0, 1)),
+            ("rzz", (0, 1), 2),
+            ("ry", (1,), 1),
+        ),
+        observable=SparsePauliHamiltonian(
+            (
+                PauliTerm(0.7, ((0, "z"),)),
+                PauliTerm(-0.3, ((1, "x"),)),
+                PauliTerm(0.5, ((0, "z"), (1, "z"))),
+            )
+        ),
+    )
+
+
+def _scenario_claim_boundary(scenario: ParityScenario) -> str:
+    if scenario == "single_qubit_ry_rx_pauli_z":
+        return CLAIM_BOUNDARY
+    return TWO_QUBIT_CLAIM_BOUNDARY
 
 
 def _objective_numpy(values: FloatArray) -> float:
@@ -247,12 +306,14 @@ def _run_framework_record(
     )
 
 
-def _run_jax(values: FloatArray) -> tuple[float, FloatArray, str, str]:
+def _run_jax(values: FloatArray, scenario: ParityScenario) -> tuple[float, FloatArray, str, str]:
     jax = importlib.import_module("jax")
     jax.config.update("jax_enable_x64", True)
     jnp = importlib.import_module("jax.numpy")
 
     def objective(x: Any) -> Any:
+        if scenario == "registered_two_qubit_entangling_statevector":
+            return _registered_two_qubit_jax_objective(jnp, x)
         return jnp.cos(x[0]) * jnp.cos(x[1])
 
     array = jnp.asarray(values, dtype=jnp.float64)
@@ -265,10 +326,13 @@ def _run_jax(values: FloatArray) -> tuple[float, FloatArray, str, str]:
     )
 
 
-def _run_torch(values: FloatArray) -> tuple[float, FloatArray, str, str]:
+def _run_torch(values: FloatArray, scenario: ParityScenario) -> tuple[float, FloatArray, str, str]:
     torch = importlib.import_module("torch")
     tensor = torch.tensor(values, dtype=torch.float64, requires_grad=True)
-    value = torch.cos(tensor[0]) * torch.cos(tensor[1])
+    if scenario == "registered_two_qubit_entangling_statevector":
+        value = _registered_two_qubit_torch_objective(torch, tensor)
+    else:
+        value = torch.cos(tensor[0]) * torch.cos(tensor[1])
     value.backward()
     return (
         float(value.detach().cpu().item()),
@@ -278,11 +342,16 @@ def _run_torch(values: FloatArray) -> tuple[float, FloatArray, str, str]:
     )
 
 
-def _run_tensorflow(values: FloatArray) -> tuple[float, FloatArray, str, str]:
+def _run_tensorflow(
+    values: FloatArray, scenario: ParityScenario
+) -> tuple[float, FloatArray, str, str]:
     tf = importlib.import_module("tensorflow")
     tensor = tf.Variable(values, dtype=tf.float64)
     with tf.GradientTape() as tape:
-        value = tf.cos(tensor[0]) * tf.cos(tensor[1])
+        if scenario == "registered_two_qubit_entangling_statevector":
+            value = _registered_two_qubit_tensorflow_objective(tf, tensor)
+        else:
+            value = tf.cos(tensor[0]) * tf.cos(tensor[1])
     gradient = tape.gradient(value, tensor)
     return (
         float(value.numpy()),
@@ -292,9 +361,32 @@ def _run_tensorflow(values: FloatArray) -> tuple[float, FloatArray, str, str]:
     )
 
 
-def _run_pennylane(values: FloatArray) -> tuple[float, FloatArray, str, str]:
+def _run_pennylane(
+    values: FloatArray, scenario: ParityScenario
+) -> tuple[float, FloatArray, str, str]:
     qml = importlib.import_module("pennylane")
     pnp = importlib.import_module("pennylane.numpy")
+    if scenario == "registered_two_qubit_entangling_statevector":
+        device = qml.device("default.qubit", wires=2)
+
+        @qml.qnode(device)
+        def two_qubit_circuit(theta: Any) -> Any:
+            qml.RY(theta[0], wires=0)
+            qml.RX(theta[1], wires=1)
+            qml.CNOT(wires=(0, 1))
+            qml.IsingZZ(theta[2], wires=(0, 1))
+            qml.RY(theta[1], wires=1)
+            observable = (
+                0.7 * qml.PauliZ(0) - 0.3 * qml.PauliX(1) + 0.5 * qml.PauliZ(0) @ qml.PauliZ(1)
+            )
+            return qml.expval(observable)
+
+        gradient_fn = qml.grad(two_qubit_circuit)
+        theta = pnp.array(values, dtype=np.float64, requires_grad=True)
+        value = two_qubit_circuit(theta)
+        gradient = gradient_fn(theta)
+        return float(value), np.asarray(gradient, dtype=np.float64), "float64", "default.qubit"
+
     device = qml.device("default.qubit", wires=1)
 
     @qml.qnode(device)
@@ -310,8 +402,183 @@ def _run_pennylane(values: FloatArray) -> tuple[float, FloatArray, str, str]:
     return float(value), np.asarray(gradient, dtype=np.float64), "float64", "default.qubit"
 
 
+def _registered_two_qubit_jax_objective(jnp: Any, theta: Any) -> Any:
+    complex_dtype = jnp.complex128
+    real_dtype = jnp.float64
+    eye = jnp.eye(2, dtype=complex_dtype)
+    x = jnp.asarray([[0.0, 1.0], [1.0, 0.0]], dtype=complex_dtype)
+    z = jnp.asarray([[1.0, 0.0], [0.0, -1.0]], dtype=complex_dtype)
+    state = jnp.asarray([1.0, 0.0, 0.0, 0.0], dtype=complex_dtype)
+    cnot = jnp.asarray(
+        [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]],
+        dtype=complex_dtype,
+    )
+    state = jnp.kron(_jax_ry(jnp, theta[0]), eye) @ state
+    state = jnp.kron(eye, _jax_rx(jnp, theta[1])) @ state
+    state = cnot @ state
+    state = _jax_rzz(jnp, theta[2]) @ state
+    state = jnp.kron(eye, _jax_ry(jnp, theta[1])) @ state
+    observable = (
+        jnp.asarray(0.7, dtype=real_dtype) * jnp.kron(z, eye)
+        - jnp.asarray(0.3, dtype=real_dtype) * jnp.kron(eye, x)
+        + jnp.asarray(0.5, dtype=real_dtype) * jnp.kron(z, z)
+    )
+    return jnp.real(jnp.vdot(state, observable @ state))
+
+
+def _jax_rx(jnp: Any, theta: Any) -> Any:
+    return jnp.asarray(
+        [
+            [jnp.cos(theta / 2.0), -1.0j * jnp.sin(theta / 2.0)],
+            [-1.0j * jnp.sin(theta / 2.0), jnp.cos(theta / 2.0)],
+        ],
+        dtype=jnp.complex128,
+    )
+
+
+def _jax_ry(jnp: Any, theta: Any) -> Any:
+    return jnp.asarray(
+        [
+            [jnp.cos(theta / 2.0), -jnp.sin(theta / 2.0)],
+            [jnp.sin(theta / 2.0), jnp.cos(theta / 2.0)],
+        ],
+        dtype=jnp.complex128,
+    )
+
+
+def _jax_rzz(jnp: Any, theta: Any) -> Any:
+    phases = jnp.asarray(
+        [
+            jnp.exp(-0.5j * theta),
+            jnp.exp(0.5j * theta),
+            jnp.exp(0.5j * theta),
+            jnp.exp(-0.5j * theta),
+        ],
+        dtype=jnp.complex128,
+    )
+    return jnp.diag(phases)
+
+
+def _registered_two_qubit_torch_objective(torch: Any, theta: Any) -> Any:
+    complex_dtype = torch.complex128
+    eye = torch.eye(2, dtype=complex_dtype, device=theta.device)
+    x = torch.tensor([[0.0, 1.0], [1.0, 0.0]], dtype=complex_dtype, device=theta.device)
+    z = torch.tensor([[1.0, 0.0], [0.0, -1.0]], dtype=complex_dtype, device=theta.device)
+    state = torch.tensor([1.0, 0.0, 0.0, 0.0], dtype=complex_dtype, device=theta.device)
+    cnot = torch.tensor(
+        [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]],
+        dtype=complex_dtype,
+        device=theta.device,
+    )
+    state = torch.kron(_torch_ry(torch, theta[0]), eye) @ state
+    state = torch.kron(eye, _torch_rx(torch, theta[1])) @ state
+    state = cnot @ state
+    state = _torch_rzz(torch, theta[2]) @ state
+    state = torch.kron(eye, _torch_ry(torch, theta[1])) @ state
+    observable = 0.7 * torch.kron(z, eye) - 0.3 * torch.kron(eye, x) + 0.5 * torch.kron(z, z)
+    return torch.vdot(state, observable @ state).real
+
+
+def _torch_rx(torch: Any, theta: Any) -> Any:
+    zero = torch.zeros((), dtype=torch.float64, device=theta.device)
+    return torch.stack(
+        (
+            torch.stack((torch.cos(theta / 2.0), torch.complex(zero, -torch.sin(theta / 2.0)))),
+            torch.stack((torch.complex(zero, -torch.sin(theta / 2.0)), torch.cos(theta / 2.0))),
+        )
+    ).to(torch.complex128)
+
+
+def _torch_ry(torch: Any, theta: Any) -> Any:
+    return torch.stack(
+        (
+            torch.stack((torch.cos(theta / 2.0), -torch.sin(theta / 2.0))),
+            torch.stack((torch.sin(theta / 2.0), torch.cos(theta / 2.0))),
+        )
+    ).to(torch.complex128)
+
+
+def _torch_rzz(torch: Any, theta: Any) -> Any:
+    phases = torch.stack(
+        (
+            torch.exp(torch.complex(torch.zeros_like(theta), -0.5 * theta)),
+            torch.exp(torch.complex(torch.zeros_like(theta), 0.5 * theta)),
+            torch.exp(torch.complex(torch.zeros_like(theta), 0.5 * theta)),
+            torch.exp(torch.complex(torch.zeros_like(theta), -0.5 * theta)),
+        )
+    )
+    return torch.diag(phases.to(torch.complex128))
+
+
+def _registered_two_qubit_tensorflow_objective(tf: Any, theta: Any) -> Any:
+    complex_dtype = tf.complex128
+    eye = tf.eye(2, dtype=complex_dtype)
+    x = tf.constant([[0.0, 1.0], [1.0, 0.0]], dtype=complex_dtype)
+    z = tf.constant([[1.0, 0.0], [0.0, -1.0]], dtype=complex_dtype)
+    state = tf.constant([1.0, 0.0, 0.0, 0.0], dtype=complex_dtype)
+    cnot = tf.constant(
+        [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]],
+        dtype=complex_dtype,
+    )
+    state = tf.linalg.matvec(_tf_kron(tf, _tf_ry(tf, theta[0]), eye), state)
+    state = tf.linalg.matvec(_tf_kron(tf, eye, _tf_rx(tf, theta[1])), state)
+    state = tf.linalg.matvec(cnot, state)
+    state = tf.linalg.matvec(_tf_rzz(tf, theta[2]), state)
+    state = tf.linalg.matvec(_tf_kron(tf, eye, _tf_ry(tf, theta[1])), state)
+    observable = (
+        tf.cast(0.7, complex_dtype) * _tf_kron(tf, z, eye)
+        - tf.cast(0.3, complex_dtype) * _tf_kron(tf, eye, x)
+        + tf.cast(0.5, complex_dtype) * _tf_kron(tf, z, z)
+    )
+    return tf.math.real(tf.tensordot(tf.math.conj(state), tf.linalg.matvec(observable, state), 1))
+
+
+def _tf_kron(tf: Any, left: Any, right: Any) -> Any:
+    left_shape = tf.shape(left)
+    right_shape = tf.shape(right)
+    product = left[:, None, :, None] * right[None, :, None, :]
+    return tf.reshape(product, (left_shape[0] * right_shape[0], left_shape[1] * right_shape[1]))
+
+
+def _tf_rx(tf: Any, theta: Any) -> Any:
+    zero = tf.zeros((), dtype=tf.float64)
+    cosine = tf.complex(tf.cos(theta / 2.0), zero)
+    minus_i_sine = tf.complex(zero, -tf.sin(theta / 2.0))
+    return tf.stack(
+        (
+            tf.stack((cosine, minus_i_sine)),
+            tf.stack((minus_i_sine, cosine)),
+        )
+    )
+
+
+def _tf_ry(tf: Any, theta: Any) -> Any:
+    zero = tf.zeros((), dtype=tf.float64)
+    cosine = tf.complex(tf.cos(theta / 2.0), zero)
+    sine = tf.complex(tf.sin(theta / 2.0), zero)
+    return tf.stack(
+        (
+            tf.stack((cosine, -sine)),
+            tf.stack((sine, cosine)),
+        )
+    )
+
+
+def _tf_rzz(tf: Any, theta: Any) -> Any:
+    phases = tf.stack(
+        (
+            tf.exp(tf.complex(tf.zeros_like(theta), -0.5 * theta)),
+            tf.exp(tf.complex(tf.zeros_like(theta), 0.5 * theta)),
+            tf.exp(tf.complex(tf.zeros_like(theta), 0.5 * theta)),
+            tf.exp(tf.complex(tf.zeros_like(theta), -0.5 * theta)),
+        )
+    )
+    return tf.linalg.diag(tf.cast(phases, tf.complex128))
+
+
 __all__ = [
     "PhaseQNodeFrameworkParityRecord",
     "PhaseQNodeFrameworkParitySuiteResult",
+    "ParityScenario",
     "run_phase_qnode_framework_parity_suite",
 ]

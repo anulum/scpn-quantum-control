@@ -424,6 +424,7 @@ from .qnode_circuit import (
     registered_phase_qnode_templates,
 )
 from .qnode_framework_parity import (
+    ParityScenario,
     PhaseQNodeFrameworkParityRecord,
     PhaseQNodeFrameworkParitySuiteResult,
     run_phase_qnode_framework_parity_suite,
@@ -706,6 +707,7 @@ __all__ = [
     "registered_phase_qnode_decompositions",
     "registered_phase_qnode_noise_channels",
     "registered_phase_qnode_templates",
+    "ParityScenario",
     "PhaseQNodeFrameworkParityRecord",
     "PhaseQNodeFrameworkParitySuiteResult",
     "run_phase_qnode_framework_parity_suite",

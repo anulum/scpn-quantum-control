@@ -107,6 +107,13 @@ evidence gates.
 
 Optional framework parity uses an explicit CPU-only overlay instead of the
 repository `jax` extra, because that extra resolves to `jax[cuda12]`.
+`run_phase_qnode_framework_parity_suite()` now exposes explicit scenarios:
+the default `single_qubit_ry_rx_pauli_z` compatibility row and
+`registered_two_qubit_entangling_statevector`, which executes a registered
+two-qubit entangling Phase-QNode statevector tensor path across installed JAX,
+PyTorch, TensorFlow, and PennyLane backends. Both routes remain local parity
+evidence only; they do not promote provider execution, finite-shot sampling,
+hardware gradients, or unrestricted simulator-autodiff claims.
 
 ```bash
 PYTHONPATH=src:. python scripts/install_differentiable_framework_overlay.py \

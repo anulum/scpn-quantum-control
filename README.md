@@ -225,10 +225,14 @@ quantum hardware experimentation, and control-facing software:
   channels (`bit_flip`, `phase_flip`, `depolarizing`,
   `amplitude_damping`), returning trace, purity, density entries, support
   reports, and explicit non-gradient/non-metric/non-hardware claim boundaries.
-- `run_phase_qnode_framework_parity_suite()` runs the same bounded circuit
-  family through SCPN plus installed JAX, PyTorch, TensorFlow, and PennyLane
-  backends, recording value, gradient, dtype/device metadata, and dependency
-  sparse classifications without provider execution.
+- `run_phase_qnode_framework_parity_suite()` runs bounded local statevector
+  parity scenarios through SCPN plus installed JAX, PyTorch, TensorFlow, and
+  PennyLane backends. The default single-qubit row is joined by
+  `scenario="registered_two_qubit_entangling_statevector"`, which exercises a
+  registered two-qubit entangling Phase-QNode tensor path and records value,
+  gradient, dtype/device metadata, and dependency-sparse classifications without
+  provider execution, finite-shot sampling, hardware gradients, or unrestricted
+  simulator-autodiff claims.
 - `build_pennylane_qnode_from_phase_qnode(...)` and
   `check_pennylane_phase_qnode_round_trip(...)` generate bounded PennyLane
   QNodes from registered local `PhaseQNodeCircuit` declarations and verify

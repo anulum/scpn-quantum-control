@@ -19,6 +19,7 @@ from scpn_quantum_control.phase.qnode_framework_parity import (
 def test_phase_qnode_framework_parity_executes_or_classifies_every_local_framework() -> None:
     suite = run_phase_qnode_framework_parity_suite()
 
+    assert suite.scenario == "single_qubit_ry_rx_pauli_z"
     assert suite.frameworks == ("scpn", "jax", "torch", "tensorflow", "pennylane")
     assert suite.record_count == 5
     assert suite.record_by_framework("scpn").status == "passed"
@@ -44,6 +45,23 @@ def test_phase_qnode_framework_parity_executes_or_classifies_every_local_framewo
             assert record.gradient_max_abs_error <= suite.tolerance
             assert record.dtype
             assert record.device
-            np.testing.assert_allclose(
-                record.gradient, suite.reference_gradient, atol=suite.tolerance
-            )
+            gradient = record.gradient
+            assert gradient is not None
+            np.testing.assert_allclose(gradient, suite.reference_gradient, atol=suite.tolerance)
+
+
+def test_phase_qnode_framework_parity_supports_registered_two_qubit_scenario() -> None:
+    suite = run_phase_qnode_framework_parity_suite(
+        scenario="registered_two_qubit_entangling_statevector"
+    )
+
+    assert suite.scenario == "registered_two_qubit_entangling_statevector"
+    assert suite.frameworks == ("scpn", "jax", "torch", "tensorflow", "pennylane")
+    assert suite.record_by_framework("scpn").status == "passed"
+    assert suite.record_by_framework("scpn").gradient is not None
+    assert suite.reference_gradient.shape == (3,)
+    assert suite.passed
+    assert "registered two-qubit" in suite.claim_boundary
+
+    payload = suite.to_dict()
+    assert payload["scenario"] == "registered_two_qubit_entangling_statevector"
