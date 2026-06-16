@@ -40,7 +40,11 @@ def test_affinity_benchmark_downgrades_without_reserved_cpu_and_low_load() -> No
     assert result.to_dict()["evidence_label"] == "functional_non_isolated"
 
 
-def test_affinity_label_requires_all_isolation_criteria() -> None:
+def test_affinity_label_requires_all_isolation_criteria(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+
     assert (
         classify_affinity_evidence(
             reserved_cpus=(2, 3),
