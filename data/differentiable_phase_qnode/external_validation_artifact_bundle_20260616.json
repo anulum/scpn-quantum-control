@@ -1,0 +1,86 @@
+{
+  "artifact_id": "diff-external-validation-artifact-bundle-20260616",
+  "claim_boundary": "Reproducible artefact-bundle manifest only; it records committed evidence file checksums and does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
+  "classification": "functional_non_isolated",
+  "entries": [
+    {
+      "path": "data/differentiable_phase_qnode/claim_ledger.json",
+      "role": "Claim-ledger source of truth",
+      "sha256": "88398a6cf100099af016426fc7447461bf8035a19a31b8578921429a0eb02b59",
+      "size_bytes": 13723
+    },
+    {
+      "path": "data/differentiable_phase_qnode/claim_ledger.md",
+      "role": "Reviewer claim-ledger summary",
+      "sha256": "62da92488514488b3d019245cc9f00f4ece58cbcf23c637b8915254f47ffdf18",
+      "size_bytes": 3972
+    },
+    {
+      "path": "data/differentiable_phase_qnode/public_claim_table_20260616.md",
+      "role": "Public-safe claim wording table",
+      "sha256": "abb8b0ff49c6f2ff294c1b9327dbde5dd1c6ea55fe09e91660e621a60efddf9b",
+      "size_bytes": 4674
+    },
+    {
+      "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
+      "role": "Exact environment-lock manifest",
+      "sha256": "9043898e0ba5ac348c0dc8c2f374ea7b7ba63b687dd9876d1f32bc2ccc9ee8e9",
+      "size_bytes": 3507
+    },
+    {
+      "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
+      "role": "Environment-lock reviewer summary",
+      "sha256": "ca0e2bc0308e697297132b07e9563ad9a9291b8ae5ecfe68f90c9e4c4de0a193",
+      "size_bytes": 2520
+    },
+    {
+      "path": "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json",
+      "role": "Exact-answer domain dataset closure artefact",
+      "sha256": "f776e02d745652e122bfb41e30088a6515a53821f02cce30a5fcc35b7f52a5b3",
+      "size_bytes": 13589
+    },
+    {
+      "path": "data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json",
+      "role": "Identical-circuit Qiskit/PennyLane gradient comparison artefact",
+      "sha256": "9bda8b96ec64aa5d5740862db7873a961315dab22d855a445677c4bad99d9529",
+      "size_bytes": 3498
+    },
+    {
+      "path": "data/differentiable_phase_qnode/torch_maturity_audit_20260616.json",
+      "role": "PyTorch maturity audit artefact",
+      "sha256": "77b59dea1ede83e4441aadcab51af59267a44de32c437eee45cd06614b0da295",
+      "size_bytes": 11209
+    },
+    {
+      "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
+      "role": "Local benchmark evidence README and hardware boundary",
+      "sha256": "3374d98e2a3eecb88b534f382d9e83e9c4df2b9164c404b03291ae6b0b4d2eea",
+      "size_bytes": 5530
+    },
+    {
+      "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
+      "role": "Functional non-isolated CI evidence bundle",
+      "sha256": "d59ce1d72a12f8abee6fef738210c08ee322fc455f3f78c2578ac861f88357f2",
+      "size_bytes": 9834
+    },
+    {
+      "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json",
+      "role": "Functional non-isolated external comparison rows",
+      "sha256": "af737b139bedb3370600dc1052260584007a959c757e23e07f3156ee406cc2b6",
+      "size_bytes": 9599
+    },
+    {
+      "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json",
+      "role": "Phase-QNode affinity benchmark artefact",
+      "sha256": "e5e0a86508e365e8d6a88e16ad171abc2cf481782c2a94249e5ad8d66ab1bdf1",
+      "size_bytes": 8685
+    },
+    {
+      "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/host_readiness.json",
+      "role": "Host-readiness blocker metadata",
+      "sha256": "16bc50f32fc5bb7fbca2bb4282dfcc4c3ac9198d33afa920220938c593b30b68",
+      "size_bytes": 424
+    }
+  ],
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
+}

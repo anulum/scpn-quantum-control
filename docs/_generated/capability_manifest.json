@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 645,
     "public_documentation_pages": 253,
-    "python_model_classes": 1769,
+    "python_model_classes": 1771,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
@@ -2611,6 +2611,14 @@
       {
         "name": "ExternalComparisonRow",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+      },
+      {
+        "name": "ExternalValidationArtifactBundle",
+        "path": "src/scpn_quantum_control/differentiable_external_validation.py"
+      },
+      {
+        "name": "ExternalValidationArtifactEntry",
+        "path": "src/scpn_quantum_control/differentiable_external_validation.py"
       },
       {
         "name": "ExternalValidationEnvironmentLock",

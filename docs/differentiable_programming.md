@@ -126,6 +126,16 @@ digests against the current checkout. This is reproducibility evidence only:
 the artefact remains `functional_non_isolated` and does not promote hardware,
 provider, GPU, QPU, production-performance, or `isolated_affinity` benchmark
 claims.
+The reproducible artefact-bundle manifest is committed at
+`data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json`
+with a reviewer summary at
+`data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md`.
+`build_external_validation_artifact_bundle()` records SHA-256 digests for the
+claim ledger, public claim table, environment lock, domain dataset closure,
+identical-circuit comparison, PyTorch maturity audit, and local benchmark
+evidence files. `validate_external_validation_artifact_bundle()` rechecks those
+digests against the current checkout. The bundle is checksum provenance only
+and remains `functional_non_isolated`.
 
 Benchmark artefacts written by
 `scripts/run_differentiable_benchmark_evidence.py` are CI evidence only.
