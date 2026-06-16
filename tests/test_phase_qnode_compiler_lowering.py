@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
@@ -26,6 +28,11 @@ from scpn_quantum_control.compiler.mlir import (
     run_enzyme_mlir_maturity_audit,
 )
 from scpn_quantum_control.phase.qnode_circuit import PauliTerm, PhaseQNodeCircuit
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+ENZYME_MLIR_AUDIT_PATH = (
+    REPO_ROOT / "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json"
+)
 
 
 def test_phase_qnode_compiler_lowering_reports_registered_subset() -> None:
@@ -204,6 +211,41 @@ def test_enzyme_mlir_maturity_audit_keeps_runtime_gap_non_promotional() -> None:
     assert result.ready_for_provider_exceedance is False
 
 
+def test_enzyme_mlir_maturity_audit_separates_installed_toolchain_from_runtime_gap() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-runtime-gap-installed-stack-001",
+        status="hard_gap",
+        failure_class="runtime_error",
+        value_error=None,
+        gradient_error=None,
+        runtime_seconds=None,
+        toolchain={
+            "enzyme": "Enzyme LLVM plugin 0.0.79",
+            "opt": "Ubuntu LLVM version 18.1.3",
+            "mlir-opt": "Ubuntu LLVM version 18.1.3",
+            "clang": "Ubuntu clang version 18.1.3",
+        },
+        setup_instructions=(
+            "The compiler commands are installed; this row remains blocked by "
+            "native Enzyme execution correctness, not by PATH discovery."
+        ),
+        claim_boundary="Installed toolchain with runtime hard gap only.",
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/usr/bin/{command}",
+        version_probe=lambda executable: f"{executable} 18.1.3",
+        native_enzyme_execution_evidence=evidence,
+        mlir_llvm_correctness_artifact_id="mlir-correctness-installed-stack-001",
+    )
+
+    assert all(status.available for status in result.toolchain.values())
+    assert not any("toolchain unavailable" in gap for gap in result.hard_gaps)
+    assert "isolated benchmark artefact missing" in result.hard_gaps
+    assert "native Enzyme execution hard gap: runtime_error" in result.hard_gaps
+    assert result.ready_for_provider_exceedance is False
+
+
 def test_enzyme_mlir_maturity_audit_requires_all_artifacts_for_promotion() -> None:
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
@@ -227,6 +269,19 @@ def test_enzyme_mlir_maturity_audit_requires_all_artifacts_for_promotion() -> No
 
     assert result.hard_gaps == ()
     assert result.ready_for_provider_exceedance is True
+
+
+def test_committed_enzyme_mlir_audit_records_installed_native_probe() -> None:
+    payload = json.loads(ENZYME_MLIR_AUDIT_PATH.read_text(encoding="utf-8"))
+
+    assert payload["classification"] == "hard_gap"
+    assert payload["ready_for_provider_exceedance"] is False
+    assert payload["hard_gaps"] == ["isolated benchmark artefact missing"]
+    assert all(status["available"] for status in payload["toolchain"].values())
+    assert payload["native_enzyme_execution_evidence"]["status"] == "success"
+    assert payload["native_enzyme_execution_evidence"]["value_error"] == 0.0
+    assert payload["native_enzyme_execution_evidence"]["gradient_error"] == 0.0
+    assert "arbitrary-program AD" in payload["native_enzyme_execution_evidence"]["claim_boundary"]
 
 
 def test_enzyme_mlir_evidence_validation_paths() -> None:

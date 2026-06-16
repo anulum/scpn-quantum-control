@@ -1968,8 +1968,8 @@ four evidence classes:
   row or a named runtime hard gap;
 - attached MLIR/LLVM correctness evidence for the bounded SCPN MLIR-runtime and
   native LLVM/JIT support snapshot;
-- hard gaps for missing toolchains, failed native Enzyme execution, and missing
-  isolated benchmark artefacts.
+- hard gaps for missing toolchains when they are absent, failed native Enzyme
+  execution, and missing isolated benchmark artefacts.
 
 ```python
 from scpn_quantum_control import run_enzyme_mlir_maturity_audit
@@ -1982,11 +1982,11 @@ This audit is intentionally stricter than the diagnostic external-comparison
 row. A local SCPN MLIR-runtime pass is executable compiler evidence, but it is
 not an Enzyme parity claim. The committed artefact
 `data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json`
-attaches the current MLIR/LLVM correctness snapshot and the configured
-Enzyme-runner runtime hard gap. Provider-exceedance remains blocked until
-successful native Enzyme execution evidence, complete MLIR/LLVM version
-metadata, correctness checks, and `isolated_affinity` benchmark artefact IDs are
-present together.
+attaches the current MLIR/LLVM correctness snapshot and a bounded native LLVM
+Enzyme scalar derivative probe. The separate Enzyme-JAX external-comparison row
+remains a runtime hard gap. Provider-exceedance remains blocked until
+`isolated_affinity` benchmark artefact IDs are present with the correctness
+evidence.
 
 ## Verification requirements
 

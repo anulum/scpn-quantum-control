@@ -420,8 +420,10 @@ when present, validates attached native Enzyme execution evidence, validates an
 attached MLIR/LLVM correctness artefact ID, and returns hard-gap rows when the
 compiler stack or native Enzyme execution path is unavailable. The audit remains
 non-promotional until successful native Enzyme execution evidence, MLIR/LLVM
-correctness evidence, complete toolchain versions, and an isolated benchmark
-artefact are attached together.
+correctness evidence, and an isolated benchmark artefact are attached together.
+The 2026-06-16 committed evidence includes a bounded native LLVM Enzyme scalar
+probe; it is not arbitrary-program AD, provider execution, hardware execution,
+or performance evidence.
 `make_program_ad_linalg_matrix_power_executable_lowering_rule()`
 and `make_program_ad_linalg_multi_dot_executable_lowering_rule()` bind concrete
 static linalg signatures to verified MLIR-runtime value/JVP kernels derived from

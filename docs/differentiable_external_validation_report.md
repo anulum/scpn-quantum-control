@@ -44,7 +44,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 | TensorFlow | Bounded `GradientTape`, `tf.function`, XLA, and Keras-layer evidence exist for declared routes. | Arbitrary Phase-QNode lowering and isolated benchmark artefacts. |
 | PennyLane | Export/import and identical-circuit comparison evidence exists for bounded local circuits. | Plugin/provider hardware routes and promotion-grade isolated benchmark evidence. |
 | Qiskit | Shifted-circuit generation, local Statevector, finite-shot surrogate, and no-submit preparation evidence exist. | Live execution, raw-count replay, calibration/statevector comparison, and hardware-gradient artefacts. |
-| Enzyme/LLVM/MLIR | MLIR-runtime correctness evidence is attached; the configured Enzyme runner is attached as a `runtime_error` hard gap; local CLI toolchain probing records the missing `enzyme`, `opt`, and `mlir-opt` commands. | Successful native Enzyme execution, complete LLVM/MLIR toolchain versions, and isolated benchmark IDs. |
+| Enzyme/LLVM/MLIR | MLIR-runtime correctness evidence is attached; the local `enzyme`, `opt`, `mlir-opt`, and `clang` command/version snapshot is recorded; a bounded native LLVM Enzyme scalar derivative probe passes. | Arbitrary Enzyme/program AD, the Enzyme-JAX external-comparison runtime gap, and isolated benchmark IDs. |
 
 ## Reviewer Procedure
 

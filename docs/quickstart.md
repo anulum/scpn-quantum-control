@@ -228,12 +228,14 @@ claim against Enzyme/MLIR. The audit verifies the local SCPN MLIR-runtime
 adapter, records bounded native LLVM/JIT support metadata, probes local
 `enzyme`/LLVM/MLIR toolchain versions, validates attached native Enzyme
 execution evidence, and keeps provider-exceedance blocked until successful
-native Enzyme execution, MLIR/LLVM correctness evidence, complete toolchain
-metadata, and `isolated_affinity` benchmark artefacts are attached. The current
+native Enzyme execution, MLIR/LLVM correctness evidence, and
+`isolated_affinity` benchmark artefacts are attached. The current
 committed `enzyme_mlir_maturity_audit_20260616.json` snapshot is a hard-gap
-artefact: the SCPN MLIR-runtime correctness checks pass, but Enzyme/LLVM CLI
-tooling is incomplete on PATH and the configured Enzyme runner fails during
-runtime lowering.
+artefact: the SCPN MLIR-runtime correctness checks pass and local
+`enzyme`/`opt`/`mlir-opt`/`clang` version metadata is recorded. The bounded
+native LLVM Enzyme scalar probe passes, while the separate Enzyme-JAX external
+comparison still fails during runtime lowering and promotion remains blocked
+until isolated benchmark evidence exists.
 
 Program AD execution is registry-gated. Supported traced NumPy primitives must
 resolve through a primitive identity with derivative, batching, shape, dtype,

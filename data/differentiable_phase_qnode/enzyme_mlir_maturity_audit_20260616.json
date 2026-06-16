@@ -12,15 +12,11 @@
     "phase_qnode_value_close": true
   },
   "hard_gaps": [
-    "enzyme toolchain unavailable",
-    "opt toolchain unavailable",
-    "mlir-opt toolchain unavailable",
-    "isolated benchmark artefact missing",
-    "native Enzyme execution hard gap: runtime_error"
+    "isolated benchmark artefact missing"
   ],
   "isolated_benchmark_artifact_id": null,
   "mlir_llvm_correctness_evidence": {
-    "artifact_id": "mlir-llvm-correctness-20260616-scpn-runtime",
+    "artifact_id": "mlir-llvm-correctness-20260616-installed-stack",
     "checks": {
       "mlir_runtime_backend_verified": true,
       "native_llvm_jit_support_matrix_declared": true,
@@ -30,27 +26,31 @@
     "claim_boundary": "Bounded SCPN MLIR-runtime and native LLVM/JIT support snapshot; not native Enzyme execution, provider, hardware, or performance evidence.",
     "passed": true,
     "toolchain_versions": {
-      "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)"
+      "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+      "enzyme": "Enzyme LLVM plugin 0.0.79 (source tag v0.0.267), LLVM 18, plugin=/home/anulum/.local/opt/enzyme-v0.0.267/lib/LLVMEnzyme-18.so",
+      "mlir-opt": "Ubuntu LLVM version 18.1.3",
+      "opt": "Ubuntu LLVM version 18.1.3"
     }
   },
-  "native_enzyme_execution_artifact_id": "enzyme-jax-runtime-gap-20260616",
+  "native_enzyme_execution_artifact_id": "enzyme-native-square-gradient-20260616",
   "native_enzyme_execution_evidence": {
-    "artifact_id": "enzyme-jax-runtime-gap-20260616",
-    "claim_boundary": "Runtime comparison gap only; no hidden success or promoted claim.",
-    "failure_class": "runtime_error",
-    "gradient_error": null,
-    "passed": false,
-    "runtime_seconds": null,
-    "setup_instructions": "Configured Enzyme runner failed: Enzyme-JAX execution failed: loc(\"-\":3:10): error: invalid properties {limit_indices = dense<1> : tensor<1xi64>, start_indices = dense<0> : tensor<1xi64>, strides = dense<1> : tensor<1xi64>} for op mhlo.slice: this operation does not support properties",
-    "status": "hard_gap",
+    "artifact_id": "enzyme-native-square-gradient-20260616",
+    "claim_boundary": "Bounded native LLVM Enzyme scalar derivative probe only; no Enzyme-JAX, arbitrary-program AD, provider, hardware, or performance promotion claim.",
+    "failure_class": null,
+    "gradient_error": 0.0,
+    "passed": true,
+    "runtime_seconds": 0.05145477000041865,
+    "setup_instructions": null,
+    "status": "success",
     "toolchain": {
-      "enzyme": "not_installed",
-      "enzyme_ad": "not_installed",
-      "enzyme_llvm_plugin": "file:/home/anulum/.cache/scpn-qc-enzyme-py39/lib/python3.9/site-packages/enzyme_ad/jax/enzyme_call.so",
-      "enzyme_runner": "executable:data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_jax_runner.py",
-      "llvm": "not_installed"
+      "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+      "enzyme": "Enzyme LLVM plugin 0.0.79 (source tag v0.0.267), LLVM 18, plugin=/home/anulum/.local/opt/enzyme-v0.0.267/lib/LLVMEnzyme-18.so",
+      "enzyme_opt_pipeline": "opt -load-pass-plugin=<LLVMEnzyme-18.so> -passes=enzyme -S",
+      "mlir-opt": "Ubuntu LLVM version 18.1.3",
+      "native_probe": "LLVM IR square(x)=x*x, main checks value(3)=9 and derivative(3)=6",
+      "opt": "Ubuntu LLVM version 18.1.3"
     },
-    "value_error": null
+    "value_error": 0.0
   },
   "native_llvm_jit_surface": "available: bounded in-process native LLVM/JIT",
   "orcid": "0009-0009-3560-0851",
@@ -59,6 +59,7 @@
   "schema": "scpn_qc_enzyme_mlir_maturity_audit_v1",
   "scpn_mlir_runtime_verified": true,
   "source_external_comparison_artifact": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json",
+  "source_native_probe": "LLVM IR square derivative probe generated with opt -passes=enzyme and clang execution",
   "spdx_license_identifier": "AGPL-3.0-or-later",
   "toolchain": {
     "clang": {
@@ -70,28 +71,28 @@
       "version": "Ubuntu clang version 18.1.3 (1ubuntu1)"
     },
     "enzyme": {
-      "available": false,
+      "available": true,
       "command": "enzyme",
-      "executable": null,
-      "failure_class": "toolchain_missing",
-      "setup_instructions": "Install and expose enzyme on PATH before promoting Enzyme/MLIR compiler-AD maturity evidence.",
-      "version": null
+      "executable": "/home/anulum/.local/bin/enzyme",
+      "failure_class": null,
+      "setup_instructions": null,
+      "version": "Enzyme LLVM plugin 0.0.79 (source tag v0.0.267), LLVM 18, plugin=/home/anulum/.local/opt/enzyme-v0.0.267/lib/LLVMEnzyme-18.so"
     },
     "mlir-opt": {
-      "available": false,
+      "available": true,
       "command": "mlir-opt",
-      "executable": null,
-      "failure_class": "toolchain_missing",
-      "setup_instructions": "Install and expose mlir-opt on PATH before promoting Enzyme/MLIR compiler-AD maturity evidence.",
-      "version": null
+      "executable": "/usr/bin/mlir-opt",
+      "failure_class": null,
+      "setup_instructions": null,
+      "version": "Ubuntu LLVM version 18.1.3"
     },
     "opt": {
-      "available": false,
+      "available": true,
       "command": "opt",
-      "executable": null,
-      "failure_class": "toolchain_missing",
-      "setup_instructions": "Install and expose opt on PATH before promoting Enzyme/MLIR compiler-AD maturity evidence.",
-      "version": null
+      "executable": "/usr/bin/opt",
+      "failure_class": null,
+      "setup_instructions": null,
+      "version": "Ubuntu LLVM version 18.1.3"
     }
   }
 }
