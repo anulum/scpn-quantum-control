@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any, cast
 
 import numpy as np
@@ -843,6 +844,7 @@ def test_torch_module_wrapper_audit_checks_module_grad(
 
 def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
 ) -> None:
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
@@ -850,6 +852,31 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     labels = np.array([0.0, 1.0], dtype=float)
     params = np.array([0.45], dtype=float)
     params_batch = np.array([[0.25], [0.45], [0.65]], dtype=float)
+    live_overlay_artifact = tmp_path / "diff-qnode-external-comparison.json"
+    live_overlay_artifact.write_text(
+        json.dumps(
+            {
+                "artifact_id": "diff-qnode-external-comparison-local",
+                "classification": "functional_non_isolated",
+                "promotion_ready": False,
+                "rows": [
+                    {
+                        "backend": "pytorch",
+                        "status": "success",
+                        "value_error": 0.0,
+                        "gradient_error": 0.0,
+                        "runtime_seconds": 0.1,
+                        "memory_peak_bytes": 4096,
+                        "batching_support": "torch.func.vmap",
+                        "transform_support": "torch.func.grad/jacrev",
+                        "dependency_versions": {"torch": "2.11.0+cpu"},
+                        "claim_boundary": "bounded CPU comparison only",
+                    }
+                ],
+            },
+        ),
+        encoding="utf-8",
+    )
 
     result = run_torch_maturity_audit(
         features=features,
@@ -857,6 +884,7 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
         params=params,
         params_batch=params_batch,
         tolerance=1e-12,
+        live_overlay_artifact_path=live_overlay_artifact,
     )
 
     assert isinstance(result, PhaseTorchMaturityAuditResult)
@@ -868,13 +896,48 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert evidence["torch_func"].passed
     assert evidence["torch_compile"].passed
     assert evidence["module_layer_wrapper"].passed
+    assert evidence["live_overlay"].passed
+    assert evidence["live_overlay"].artifact_id == "diff-qnode-external-comparison-local"
     assert "arbitrary_phase_qnode_torch_lowering" in result.open_gaps
     assert "promotion_grade_isolated_benchmarks" in result.open_gaps
+    assert "live_overlay_execution" not in result.open_gaps
     payload = cast(dict[str, Any], result.to_dict())
+    json.dumps(payload)
     required_capabilities = cast(dict[str, str], payload["required_capabilities"])
     assert required_capabilities["torch_compile"] == "passed"
-    assert required_capabilities["live_overlay_execution"] == "blocked"
+    assert required_capabilities["live_overlay_execution"] == "passed"
+    assert (
+        cast(dict[str, Any], payload["evidence"])["live_overlay"]["torch_version"] == "2.11.0+cpu"
+    )
     assert payload["claim_boundary"] == "bounded_torch_provider_maturity_audit"
+
+
+def test_torch_maturity_audit_rejects_incomplete_live_overlay_artifact(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    bad_artifact = tmp_path / "diff-qnode-external-comparison.json"
+    bad_artifact.write_text(
+        json.dumps(
+            {
+                "artifact_id": "diff-qnode-external-comparison-local",
+                "classification": "functional_non_isolated",
+                "rows": [{"backend": "pytorch", "status": "hard_gap"}],
+            },
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="successful PyTorch row"):
+        run_torch_maturity_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params=np.array([0.45], dtype=float),
+            params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
+            live_overlay_artifact_path=bad_artifact,
+        )
 
 
 def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:

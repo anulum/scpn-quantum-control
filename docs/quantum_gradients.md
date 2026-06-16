@@ -1919,10 +1919,13 @@ gradients only for that same model. The separate
 `torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` wrapper route
 verifies a bounded PyTorch `nn.Module`/layer loss and gradient only for that same
 model. The separate `run_torch_maturity_audit(...)` route aggregates those
-bounded PyTorch passes into a provider-maturity record, but keeps provider
-exceedance blocked until live overlay execution, arbitrary registered
-Phase-QNode Torch lowering, full compiler/autograd integration, and
-promotion-grade isolated benchmark artefacts exist. The separate
+bounded PyTorch passes into a provider-maturity record. When called with
+`live_overlay_artifact_path`, it validates the external-comparison JSON and only
+marks live overlay execution passed when that artefact contains a successful
+PyTorch row with dependency version, value/gradient error, runtime, memory, and
+claim-boundary metadata. Provider exceedance still remains blocked until
+arbitrary registered Phase-QNode Torch lowering, full compiler/autograd
+integration, and promotion-grade isolated benchmark artefacts exist. The separate
 `run_torch_phase_qnode_lowering_matrix(...)` route makes that boundary explicit:
 bounded QNN tensor, custom-autograd, `torch.func`, `torch.compile`, and
 module/layer routes are marked passed, while arbitrary registered Phase-QNode

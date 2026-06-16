@@ -9,8 +9,10 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, TypeAlias
 
 import numpy as np
@@ -275,6 +277,43 @@ class PhaseTorchModuleWrapperAuditResult:
 
 
 @dataclass(frozen=True)
+class PhaseTorchLiveOverlayEvidence:
+    """Validated live CPU-overlay PyTorch external-comparison evidence."""
+
+    artifact_id: str
+    artifact_path: str
+    classification: str
+    torch_version: str
+    value_error: float
+    gradient_error: float
+    runtime_seconds: float
+    memory_peak_bytes: int
+    batching_support: str
+    transform_support: str
+    claim_boundary: str
+    promotion_ready: bool
+    passed: bool = True
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready live-overlay evidence metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "artifact_path": self.artifact_path,
+            "classification": self.classification,
+            "torch_version": self.torch_version,
+            "value_error": self.value_error,
+            "gradient_error": self.gradient_error,
+            "runtime_seconds": self.runtime_seconds,
+            "memory_peak_bytes": self.memory_peak_bytes,
+            "batching_support": self.batching_support,
+            "transform_support": self.transform_support,
+            "claim_boundary": self.claim_boundary,
+            "promotion_ready": self.promotion_ready,
+            "passed": self.passed,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseTorchMaturityAuditResult:
     """Aggregate PyTorch maturity evidence and explicit provider-parity blockers."""
 
@@ -290,7 +329,10 @@ class PhaseTorchMaturityAuditResult:
         return {
             "bounded_model_ready": self.bounded_model_ready,
             "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
-            "evidence": {name: _result_to_dict(result) for name, result in self.evidence.items()},
+            "evidence": {
+                name: _json_ready(_result_to_dict(result))
+                for name, result in self.evidence.items()
+            },
             "required_capabilities": dict(self.required_capabilities),
             "open_gaps": list(self.open_gaps),
             "claim_boundary": self.claim_boundary,
@@ -683,18 +725,11 @@ def _torch_bounded_qnn_loss_tensor(
     label_tensor: Any,
     parameter_tensor: Any,
 ) -> Any:
-    unsqueeze = getattr(parameter_tensor, "unsqueeze", None)
-    if not callable(unsqueeze):
-        raise RuntimeError("PyTorch tensor does not expose unsqueeze")
-    cos = getattr(torch_module, "cos", None)
-    mean = getattr(torch_module, "mean", None)
-    if not callable(cos) or not callable(mean):
-        raise RuntimeError("PyTorch module does not expose cos and mean")
-    shifted = feature_tensor + unsqueeze(0)
-    probabilities = 0.5 * (1.0 - cos(shifted))
-    predictions = mean(probabilities, dim=1)
+    shifted = feature_tensor + parameter_tensor.unsqueeze(0)
+    probabilities = 0.5 * (1.0 - torch_module.cos(shifted))
+    predictions = torch_module.mean(probabilities, dim=1)
     residual = predictions - label_tensor
-    return mean(residual * residual)
+    return torch_module.mean(residual * residual)
 
 
 def _bounded_qnn_loss_gradient_reference(
@@ -1061,10 +1096,10 @@ def run_torch_compile_compatibility_audit(
             parameter_tensor,
         )
 
-    compiled_loss_fn = compile_fn(loss_fn, fullgraph=bool(fullgraph), dynamic=bool(dynamic))
-    grad_fn = torch_func_grad(compiled_loss_fn)
+    grad_fn = torch_func_grad(loss_fn)
+    compiled_grad_fn = compile_fn(grad_fn, fullgraph=bool(fullgraph), dynamic=bool(dynamic))
     torch_params = _torch_tensor(torch_module, parameter_values)
-    torch_gradient = grad_fn(torch_params)
+    torch_gradient = compiled_grad_fn(torch_params)
     gradient = _torch_values_to_numpy(torch_gradient)
     parameter_shift_gradient = parameter_shift_qnn_classifier_gradient(
         feature_matrix,
@@ -1236,6 +1271,7 @@ def run_torch_maturity_audit(
     tolerance: float = 1e-6,
     fullgraph: bool = True,
     dynamic: bool = False,
+    live_overlay_artifact_path: str | Path | None = None,
 ) -> PhaseTorchMaturityAuditResult:
     """Aggregate bounded PyTorch evidence and provider-level parity blockers.
 
@@ -1294,6 +1330,11 @@ def run_torch_maturity_audit(
         initial_params=parameter_values,
         tolerance=tolerance_value,
     )
+    live_overlay = (
+        _load_torch_live_overlay_evidence(live_overlay_artifact_path)
+        if live_overlay_artifact_path is not None
+        else None
+    )
 
     evidence: dict[str, object] = {
         "analytic_tensor": analytic_tensor,
@@ -1303,6 +1344,8 @@ def run_torch_maturity_audit(
         "module_layer_wrapper": module_layer_wrapper,
         "phase_qnode_lowering_matrix": run_torch_phase_qnode_lowering_matrix(),
     }
+    if live_overlay is not None:
+        evidence["live_overlay"] = live_overlay
     bounded_model_ready = all(
         bool(getattr(result, "passed", False))
         for name, result in evidence.items()
@@ -1316,7 +1359,7 @@ def run_torch_maturity_audit(
         "torch_func": "passed" if torch_func.passed else "failed",
         "torch_compile": "passed" if torch_compile.passed else "failed",
         "module_layer_wrapper": "passed" if module_layer_wrapper.passed else "failed",
-        "live_overlay_execution": "blocked",
+        "live_overlay_execution": "passed" if live_overlay is not None else "blocked",
         "arbitrary_phase_qnode_torch_lowering": "blocked",
         "full_compiler_autograd_integration": "blocked",
         "promotion_grade_isolated_benchmarks": "blocked",
@@ -1338,6 +1381,72 @@ def run_torch_maturity_audit(
     )
 
 
+def _load_torch_live_overlay_evidence(
+    artifact_path: str | Path,
+) -> PhaseTorchLiveOverlayEvidence:
+    path = Path(artifact_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("PyTorch live overlay artefact must be a JSON object")
+    classification = _required_str(payload, "classification")
+    if classification != "functional_non_isolated":
+        raise ValueError("PyTorch live overlay artefact must be functional_non_isolated")
+    rows = payload.get("rows")
+    if not isinstance(rows, list):
+        raise ValueError("PyTorch live overlay artefact must include rows")
+    pytorch_rows = [
+        row
+        for row in rows
+        if isinstance(row, dict)
+        and row.get("backend") == "pytorch"
+        and row.get("status") == "success"
+    ]
+    if not pytorch_rows:
+        raise ValueError("PyTorch live overlay artefact requires a successful PyTorch row")
+    row = pytorch_rows[0]
+    dependency_versions = row.get("dependency_versions")
+    if not isinstance(dependency_versions, dict):
+        raise ValueError("successful PyTorch row must include dependency_versions")
+    torch_version = dependency_versions.get("torch")
+    if not isinstance(torch_version, str) or not torch_version:
+        raise ValueError("successful PyTorch row must include a torch dependency version")
+    return PhaseTorchLiveOverlayEvidence(
+        artifact_id=_required_str(payload, "artifact_id"),
+        artifact_path=str(path),
+        classification=classification,
+        torch_version=torch_version,
+        value_error=_required_float(row, "value_error"),
+        gradient_error=_required_float(row, "gradient_error"),
+        runtime_seconds=_required_float(row, "runtime_seconds"),
+        memory_peak_bytes=_required_int(row, "memory_peak_bytes"),
+        batching_support=_required_str(row, "batching_support"),
+        transform_support=_required_str(row, "transform_support"),
+        claim_boundary=_required_str(row, "claim_boundary"),
+        promotion_ready=bool(payload.get("promotion_ready", False)),
+    )
+
+
+def _required_str(payload: dict[Any, Any], key: str) -> str:
+    value = payload.get(key)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{key} must be a non-empty string")
+    return value
+
+
+def _required_float(payload: dict[Any, Any], key: str) -> float:
+    value = payload.get(key)
+    if not isinstance(value, int | float):
+        raise ValueError(f"{key} must be numeric")
+    return float(value)
+
+
+def _required_int(payload: dict[Any, Any], key: str) -> int:
+    value = payload.get(key)
+    if not isinstance(value, int):
+        raise ValueError(f"{key} must be an integer")
+    return int(value)
+
+
 def _result_to_dict(result: object) -> object:
     to_dict = getattr(result, "to_dict", None)
     if callable(to_dict):
@@ -1345,10 +1454,25 @@ def _result_to_dict(result: object) -> object:
     return result
 
 
+def _json_ready(value: object) -> object:
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, dict):
+        return {str(key): _json_ready(item) for key, item in value.items()}
+    if isinstance(value, tuple | list):
+        return [_json_ready(item) for item in value]
+    if isinstance(value, Path):
+        return str(value)
+    return value
+
+
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
     "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchFuncCompatibilityResult",
+    "PhaseTorchLiveOverlayEvidence",
     "PhaseTorchMaturityAuditResult",
     "PhaseTorchModuleWrapperAuditResult",
     "PhaseTorchParameterShiftResult",

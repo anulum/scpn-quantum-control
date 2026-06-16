@@ -1,0 +1,292 @@
+{
+  "artifact_id": "torch-maturity-audit-20260616",
+  "classification": "functional_non_isolated",
+  "promotion_ready": false,
+  "result": {
+    "bounded_model_ready": true,
+    "claim_boundary": "bounded_torch_provider_maturity_audit",
+    "evidence": {
+      "analytic_tensor": {
+        "analytic_framework_gradient": true,
+        "gradient": [
+          0.021651039648744277
+        ],
+        "host_boundary": false,
+        "l2_error": 6.938893903907228e-18,
+        "loss": 0.0024776948574946004,
+        "max_abs_error": 6.938893903907228e-18,
+        "method": "torch_bounded_phase_qnn_analytic_value_and_grad",
+        "native_framework_autodiff": false,
+        "parameter_shift_gradient": [
+          0.021651039648744284
+        ],
+        "passed": true,
+        "tolerance": 1e-06,
+        "torch_gradient_type": "Tensor",
+        "torch_loss_type": "Tensor",
+        "torch_parameter_shift_gradient_type": "Tensor"
+      },
+      "custom_autograd": {
+        "analytic_framework_gradient": false,
+        "custom_autograd_function": true,
+        "gradient": [
+          0.021651039648744277
+        ],
+        "host_boundary": false,
+        "l2_error": 6.938893903907228e-18,
+        "loss": 0.0024776948574946004,
+        "max_abs_error": 6.938893903907228e-18,
+        "method": "torch_bounded_phase_qnn_custom_autograd_function",
+        "native_framework_autodiff": true,
+        "parameter_shift_gradient": [
+          0.021651039648744284
+        ],
+        "passed": true,
+        "tolerance": 1e-06,
+        "torch_gradient_type": "Tensor",
+        "torch_loss_type": "Tensor",
+        "torch_parameter_shift_gradient_type": "Tensor"
+      },
+      "live_overlay": {
+        "artifact_id": "diff-qnode-external-comparison-local",
+        "artifact_path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json",
+        "batching_support": "torch.func.vmap",
+        "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+        "classification": "functional_non_isolated",
+        "gradient_error": 0.0,
+        "memory_peak_bytes": 33256387,
+        "passed": true,
+        "promotion_ready": false,
+        "runtime_seconds": 3.4701909339928534,
+        "torch_version": "2.11.0+cpu",
+        "transform_support": "torch.func.grad/jacrev",
+        "value_error": 0.0
+      },
+      "module_layer_wrapper": {
+        "claim_boundary": "bounded_torch_module_layer_wrapper",
+        "gradient": [
+          0.021651039648744277
+        ],
+        "host_boundary": false,
+        "l2_error": 6.938893903907228e-18,
+        "layer_wrapper_supported": true,
+        "loss": 0.0024776948574946004,
+        "max_abs_error": 6.938893903907228e-18,
+        "module_wrapper_supported": true,
+        "native_framework_autodiff": true,
+        "parameter_shift_gradient": [
+          0.021651039648744284
+        ],
+        "passed": true,
+        "tolerance": 1e-06,
+        "torch_gradient_type": "Tensor",
+        "torch_loss_type": "Tensor",
+        "torch_module_type": "_BoundedPhaseQNNModule",
+        "trainable_parameters": 1
+      },
+      "phase_qnode_lowering_matrix": {
+        "arbitrary_phase_qnode_lowering_ready": false,
+        "bounded_qnn_routes_ready": true,
+        "claim_boundary": "bounded_torch_phase_qnode_lowering_matrix",
+        "open_gaps": [
+          "registered_phase_qnode_statevector_lowering",
+          "registered_phase_qnode_finite_shot_lowering",
+          "registered_phase_qnode_provider_lowering",
+          "registered_phase_qnode_hardware_lowering",
+          "registered_phase_qnode_dynamic_circuit_lowering",
+          "isolated_benchmark_artifact"
+        ],
+        "ready_for_provider_exceedance": false,
+        "routes": {
+          "bounded_qnn_analytic_tensor": {
+            "name": "bounded_qnn_analytic_tensor",
+            "reason": "bounded phase-QNN analytic tensor value-and-gradient is implemented",
+            "requires": [],
+            "status": "passed"
+          },
+          "bounded_qnn_custom_autograd": {
+            "name": "bounded_qnn_custom_autograd",
+            "reason": "bounded phase-QNN custom torch.autograd.Function route is implemented",
+            "requires": [],
+            "status": "passed"
+          },
+          "bounded_qnn_module_layer_wrapper": {
+            "name": "bounded_qnn_module_layer_wrapper",
+            "reason": "bounded nn.Module and layer wrappers are implemented",
+            "requires": [],
+            "status": "passed"
+          },
+          "bounded_qnn_torch_compile": {
+            "name": "bounded_qnn_torch_compile",
+            "reason": "bounded torch.compile gradient compatibility is implemented",
+            "requires": [],
+            "status": "passed"
+          },
+          "bounded_qnn_torch_func": {
+            "name": "bounded_qnn_torch_func",
+            "reason": "bounded torch.func grad/vmap/jacrev compatibility is implemented",
+            "requires": [],
+            "status": "passed"
+          },
+          "isolated_benchmark_artifact": {
+            "name": "isolated_benchmark_artifact",
+            "reason": "provider-exceedance promotion needs isolated benchmark evidence",
+            "requires": [
+              "isolated_affinity_benchmark_id"
+            ],
+            "status": "blocked"
+          },
+          "registered_phase_qnode_dynamic_circuit_lowering": {
+            "name": "registered_phase_qnode_dynamic_circuit_lowering",
+            "reason": "mid-circuit measurement and feedback are outside the Torch lowering boundary",
+            "requires": [
+              "dynamic_circuit_semantics",
+              "classical_feedback_contract",
+              "gradient_policy"
+            ],
+            "status": "blocked"
+          },
+          "registered_phase_qnode_finite_shot_lowering": {
+            "name": "registered_phase_qnode_finite_shot_lowering",
+            "reason": "finite-shot Torch lowering needs uncertainty and sampler provenance",
+            "requires": [
+              "shot_policy",
+              "rng_seed_provenance",
+              "uncertainty_artifact"
+            ],
+            "status": "blocked"
+          },
+          "registered_phase_qnode_hardware_lowering": {
+            "name": "registered_phase_qnode_hardware_lowering",
+            "reason": "live hardware lowering requires explicit ticketed execution evidence",
+            "requires": [
+              "live_ticket",
+              "provider_allowlist",
+              "shot_budget",
+              "hardware_evidence_id"
+            ],
+            "status": "blocked"
+          },
+          "registered_phase_qnode_provider_lowering": {
+            "name": "registered_phase_qnode_provider_lowering",
+            "reason": "provider callbacks are not Torch compiler/autograd-safe yet",
+            "requires": [
+              "provider_allowlist",
+              "callback_transform_safety_audit",
+              "provider_execution_artifact"
+            ],
+            "status": "blocked"
+          },
+          "registered_phase_qnode_statevector_lowering": {
+            "name": "registered_phase_qnode_statevector_lowering",
+            "reason": "arbitrary registered Phase-QNode circuits do not yet lower into Torch graphs",
+            "requires": [
+              "torch_fx_lowering_rules",
+              "gate_observable_coverage_matrix",
+              "statevector_gradient_parity_artifact"
+            ],
+            "status": "blocked"
+          }
+        }
+      },
+      "torch_compile": {
+        "claim_boundary": "bounded_torch_compile_compatibility",
+        "compiled_gradient_supported": true,
+        "compiled_loss_supported": true,
+        "dynamic": false,
+        "fullgraph": true,
+        "gradient": [
+          0.021651039648744277
+        ],
+        "host_boundary": false,
+        "l2_error": 6.938893903907228e-18,
+        "max_abs_error": 6.938893903907228e-18,
+        "native_framework_autodiff": true,
+        "parameter_shift_gradient": [
+          0.021651039648744284
+        ],
+        "passed": true,
+        "tolerance": 1e-06,
+        "torch_compile_supported": true,
+        "torch_gradient_type": "Tensor"
+      },
+      "torch_func": {
+        "claim_boundary": "bounded_torch_func_compatibility",
+        "func_grad_supported": true,
+        "func_jacrev_supported": true,
+        "func_vmap_supported": true,
+        "grad_gradient": [
+          0.021651039648744277
+        ],
+        "host_boundary": false,
+        "jacrev_gradient": [
+          0.021651039648744277
+        ],
+        "l2_error": 8.488188272304068e-17,
+        "max_abs_error": 8.326672684688674e-17,
+        "native_framework_autodiff": true,
+        "parameter_shift_batch_gradients": [
+          [
+            0.003845594976210724
+          ],
+          [
+            0.021651039648744284
+          ],
+          [
+            0.061703656513721575
+          ]
+        ],
+        "parameter_shift_gradient": [
+          0.021651039648744284
+        ],
+        "passed": true,
+        "tolerance": 1e-06,
+        "torch_grad_gradient_type": "Tensor",
+        "torch_jacrev_gradient_type": "Tensor",
+        "torch_vmap_gradients_type": "Tensor",
+        "vmap_gradients": [
+          [
+            0.003845594976210713
+          ],
+          [
+            0.021651039648744277
+          ],
+          [
+            0.06170365651372149
+          ]
+        ]
+      }
+    },
+    "open_gaps": [
+      "arbitrary_phase_qnode_torch_lowering",
+      "full_compiler_autograd_integration",
+      "promotion_grade_isolated_benchmarks",
+      "phase_qnode_lowering:registered_phase_qnode_statevector_lowering",
+      "phase_qnode_lowering:registered_phase_qnode_finite_shot_lowering",
+      "phase_qnode_lowering:registered_phase_qnode_provider_lowering",
+      "phase_qnode_lowering:registered_phase_qnode_hardware_lowering",
+      "phase_qnode_lowering:registered_phase_qnode_dynamic_circuit_lowering",
+      "phase_qnode_lowering:isolated_benchmark_artifact"
+    ],
+    "ready_for_provider_exceedance": false,
+    "required_capabilities": {
+      "analytic_tensor": "passed",
+      "arbitrary_phase_qnode_torch_lowering": "blocked",
+      "custom_autograd": "passed",
+      "full_compiler_autograd_integration": "blocked",
+      "live_overlay_execution": "passed",
+      "module_layer_wrapper": "passed",
+      "phase_qnode_lowering:isolated_benchmark_artifact": "blocked",
+      "phase_qnode_lowering:registered_phase_qnode_dynamic_circuit_lowering": "blocked",
+      "phase_qnode_lowering:registered_phase_qnode_finite_shot_lowering": "blocked",
+      "phase_qnode_lowering:registered_phase_qnode_hardware_lowering": "blocked",
+      "phase_qnode_lowering:registered_phase_qnode_provider_lowering": "blocked",
+      "phase_qnode_lowering:registered_phase_qnode_statevector_lowering": "blocked",
+      "promotion_grade_isolated_benchmarks": "blocked",
+      "torch_compile": "passed",
+      "torch_func": "passed"
+    }
+  },
+  "schema": "scpn_qc_torch_maturity_audit_v1",
+  "source_artifact": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json"
+}
