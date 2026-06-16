@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pytest
 
@@ -23,6 +25,7 @@ from scpn_quantum_control.phase import (
     PhaseTorchMaturityAuditResult,
     PhaseTorchModuleWrapperAuditResult,
     PhaseTorchParameterShiftResult,
+    PhaseTorchPhaseQNodeLoweringMatrixResult,
     PhaseTorchQNNGradientResult,
     is_phase_tensorflow_available,
     is_phase_torch_available,
@@ -34,6 +37,7 @@ from scpn_quantum_control.phase import (
     run_torch_func_compatibility_audit,
     run_torch_maturity_audit,
     run_torch_module_wrapper_audit,
+    run_torch_phase_qnode_lowering_matrix,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
@@ -856,17 +860,46 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert isinstance(result, PhaseTorchMaturityAuditResult)
     assert result.bounded_model_ready
     assert not result.ready_for_provider_exceedance
-    assert result.evidence["analytic_tensor"].passed
-    assert result.evidence["custom_autograd"].passed
-    assert result.evidence["torch_func"].passed
-    assert result.evidence["torch_compile"].passed
-    assert result.evidence["module_layer_wrapper"].passed
+    evidence = cast(dict[str, Any], result.evidence)
+    assert evidence["analytic_tensor"].passed
+    assert evidence["custom_autograd"].passed
+    assert evidence["torch_func"].passed
+    assert evidence["torch_compile"].passed
+    assert evidence["module_layer_wrapper"].passed
     assert "arbitrary_phase_qnode_torch_lowering" in result.open_gaps
     assert "promotion_grade_isolated_benchmarks" in result.open_gaps
-    payload = result.to_dict()
-    assert payload["required_capabilities"]["torch_compile"] == "passed"
-    assert payload["required_capabilities"]["live_overlay_execution"] == "blocked"
+    payload = cast(dict[str, Any], result.to_dict())
+    required_capabilities = cast(dict[str, str], payload["required_capabilities"])
+    assert required_capabilities["torch_compile"] == "passed"
+    assert required_capabilities["live_overlay_execution"] == "blocked"
     assert payload["claim_boundary"] == "bounded_torch_provider_maturity_audit"
+
+
+def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
+    result = run_torch_phase_qnode_lowering_matrix()
+
+    assert isinstance(result, PhaseTorchPhaseQNodeLoweringMatrixResult)
+    assert result.bounded_qnn_routes_ready
+    assert not result.arbitrary_phase_qnode_lowering_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.route_status("bounded_qnn_custom_autograd") == "passed"
+    assert result.route_status("registered_phase_qnode_statevector_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_hardware_lowering") == "blocked"
+    assert "registered_phase_qnode_statevector_lowering" in result.open_gaps
+    assert "isolated_benchmark_artifact" in result.open_gaps
+    assert result.claim_boundary == "bounded_torch_phase_qnode_lowering_matrix"
+
+    payload = cast(dict[str, Any], result.to_dict())
+    routes = cast(dict[str, dict[str, Any]], payload["routes"])
+    assert routes["bounded_qnn_torch_compile"]["status"] == "passed"
+    assert routes["registered_phase_qnode_hardware_lowering"]["status"] == "blocked"
+    assert routes["registered_phase_qnode_hardware_lowering"]["requires"] == [
+        "live_ticket",
+        "provider_allowlist",
+        "shot_budget",
+        "hardware_evidence_id",
+    ]
 
 
 def test_torch_maturity_audit_fails_closed_on_bad_batch_shape(

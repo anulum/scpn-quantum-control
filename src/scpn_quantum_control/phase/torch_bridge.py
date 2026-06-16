@@ -297,6 +297,79 @@ class PhaseTorchMaturityAuditResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTorchPhaseQNodeLoweringRoute:
+    """One PyTorch lowering route in the registered Phase-QNode parity matrix."""
+
+    name: str
+    status: str
+    reason: str
+    requires: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready route metadata."""
+        return {
+            "name": self.name,
+            "status": self.status,
+            "reason": self.reason,
+            "requires": list(self.requires),
+        }
+
+
+@dataclass(frozen=True)
+class PhaseTorchPhaseQNodeLoweringMatrixResult:
+    """Fail-closed PyTorch parity matrix for arbitrary registered Phase-QNodes."""
+
+    routes: tuple[PhaseTorchPhaseQNodeLoweringRoute, ...]
+    claim_boundary: str = "bounded_torch_phase_qnode_lowering_matrix"
+
+    @property
+    def bounded_qnn_routes_ready(self) -> bool:
+        """Return whether the bounded QNN Torch routes are declared ready."""
+        return all(
+            route.status == "passed"
+            for route in self.routes
+            if route.name.startswith("bounded_qnn_")
+        )
+
+    @property
+    def arbitrary_phase_qnode_lowering_ready(self) -> bool:
+        """Return whether arbitrary registered Phase-QNode lowering is ready."""
+        return all(
+            route.status == "passed"
+            for route in self.routes
+            if route.name.startswith("registered_phase_qnode_")
+        )
+
+    @property
+    def ready_for_provider_exceedance(self) -> bool:
+        """Return whether this matrix permits PyTorch provider-exceedance claims."""
+        return all(route.status == "passed" for route in self.routes)
+
+    @property
+    def open_gaps(self) -> tuple[str, ...]:
+        """Return routes that still block PyTorch provider-exceedance claims."""
+        return tuple(route.name for route in self.routes if route.status != "passed")
+
+    def route_status(self, name: str) -> str:
+        """Return the status for a named route, failing closed on unknown names."""
+        for route in self.routes:
+            if route.name == name:
+                return route.status
+        raise KeyError(f"unknown PyTorch Phase-QNode lowering route: {name}")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PyTorch Phase-QNode lowering parity metadata."""
+        return {
+            "bounded_qnn_routes_ready": self.bounded_qnn_routes_ready,
+            "arbitrary_phase_qnode_lowering_ready": self.arbitrary_phase_qnode_lowering_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "routes": {route.name: route.to_dict() for route in self.routes},
+            "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_torch() -> Any:
     try:
         import torch
@@ -312,6 +385,102 @@ def is_phase_torch_available() -> bool:
     except ImportError:
         return False
     return True
+
+
+def run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatrixResult:
+    """Return the PyTorch parity matrix for registered Phase-QNode lowering.
+
+    The current PyTorch surface is production-grade for the bounded QNN routes
+    listed here, but arbitrary registered Phase-QNode lowering is intentionally
+    blocked until Torch lowering rules, provider safety, hardware evidence, and
+    isolated benchmark artefacts exist.
+    """
+
+    routes = (
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="bounded_qnn_analytic_tensor",
+            status="passed",
+            reason="bounded phase-QNN analytic tensor value-and-gradient is implemented",
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="bounded_qnn_custom_autograd",
+            status="passed",
+            reason="bounded phase-QNN custom torch.autograd.Function route is implemented",
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="bounded_qnn_torch_func",
+            status="passed",
+            reason="bounded torch.func grad/vmap/jacrev compatibility is implemented",
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="bounded_qnn_torch_compile",
+            status="passed",
+            reason="bounded torch.compile gradient compatibility is implemented",
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="bounded_qnn_module_layer_wrapper",
+            status="passed",
+            reason="bounded nn.Module and layer wrappers are implemented",
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_statevector_lowering",
+            status="blocked",
+            reason="arbitrary registered Phase-QNode circuits do not yet lower into Torch graphs",
+            requires=(
+                "torch_fx_lowering_rules",
+                "gate_observable_coverage_matrix",
+                "statevector_gradient_parity_artifact",
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_finite_shot_lowering",
+            status="blocked",
+            reason="finite-shot Torch lowering needs uncertainty and sampler provenance",
+            requires=(
+                "shot_policy",
+                "rng_seed_provenance",
+                "uncertainty_artifact",
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_provider_lowering",
+            status="blocked",
+            reason="provider callbacks are not Torch compiler/autograd-safe yet",
+            requires=(
+                "provider_allowlist",
+                "callback_transform_safety_audit",
+                "provider_execution_artifact",
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_hardware_lowering",
+            status="blocked",
+            reason="live hardware lowering requires explicit ticketed execution evidence",
+            requires=(
+                "live_ticket",
+                "provider_allowlist",
+                "shot_budget",
+                "hardware_evidence_id",
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_dynamic_circuit_lowering",
+            status="blocked",
+            reason="mid-circuit measurement and feedback are outside the Torch lowering boundary",
+            requires=(
+                "dynamic_circuit_semantics",
+                "classical_feedback_contract",
+                "gradient_policy",
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="isolated_benchmark_artifact",
+            status="blocked",
+            reason="provider-exceedance promotion needs isolated benchmark evidence",
+            requires=("isolated_affinity_benchmark_id",),
+        ),
+    )
+    return PhaseTorchPhaseQNodeLoweringMatrixResult(routes=routes)
 
 
 def _as_parameter_vector(name: str, values: object, *, width: int | None = None) -> FloatArray:
@@ -1132,10 +1301,15 @@ def run_torch_maturity_audit(
         "torch_func": torch_func,
         "torch_compile": torch_compile,
         "module_layer_wrapper": module_layer_wrapper,
+        "phase_qnode_lowering_matrix": run_torch_phase_qnode_lowering_matrix(),
     }
     bounded_model_ready = all(
-        bool(getattr(result, "passed", False)) for result in evidence.values()
+        bool(getattr(result, "passed", False))
+        for name, result in evidence.items()
+        if name != "phase_qnode_lowering_matrix"
     )
+    lowering_matrix = evidence["phase_qnode_lowering_matrix"]
+    assert isinstance(lowering_matrix, PhaseTorchPhaseQNodeLoweringMatrixResult)
     required_capabilities = {
         "analytic_tensor": "passed" if analytic_tensor.passed else "failed",
         "custom_autograd": "passed" if custom_autograd.passed else "failed",
@@ -1147,6 +1321,13 @@ def run_torch_maturity_audit(
         "full_compiler_autograd_integration": "blocked",
         "promotion_grade_isolated_benchmarks": "blocked",
     }
+    required_capabilities.update(
+        {
+            f"phase_qnode_lowering:{route.name}": route.status
+            for route in lowering_matrix.routes
+            if route.status != "passed"
+        }
+    )
     open_gaps = tuple(name for name, status in required_capabilities.items() if status != "passed")
     return PhaseTorchMaturityAuditResult(
         bounded_model_ready=bounded_model_ready,
@@ -1171,12 +1352,15 @@ __all__ = [
     "PhaseTorchMaturityAuditResult",
     "PhaseTorchModuleWrapperAuditResult",
     "PhaseTorchParameterShiftResult",
+    "PhaseTorchPhaseQNodeLoweringMatrixResult",
+    "PhaseTorchPhaseQNodeLoweringRoute",
     "PhaseTorchQNNGradientResult",
     "is_phase_torch_available",
     "run_torch_compile_compatibility_audit",
     "run_torch_func_compatibility_audit",
     "run_torch_maturity_audit",
     "run_torch_module_wrapper_audit",
+    "run_torch_phase_qnode_lowering_matrix",
     "torch_autograd_qnn_value_and_grad",
     "torch_bounded_qnn_value_and_grad",
     "torch_bounded_qnn_layer",

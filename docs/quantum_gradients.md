@@ -1795,6 +1795,7 @@ from scpn_quantum_control.phase import (
     run_tensorflow_keras_layer_wrapper_audit,
     run_tensorflow_xla_compatibility_audit,
     run_torch_maturity_audit,
+    run_torch_phase_qnode_lowering_matrix,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
     torch_parameter_shift_value_and_grad,
@@ -1838,9 +1839,11 @@ torch_maturity = run_torch_maturity_audit(
     params=np.array([0.45], dtype=float),
     params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
 )
+torch_lowering = run_torch_phase_qnode_lowering_matrix()
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
+print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
 ```
 
@@ -1861,6 +1864,13 @@ bounded PyTorch passes into a provider-maturity record, but keeps provider
 exceedance blocked until live overlay execution, arbitrary registered
 Phase-QNode Torch lowering, full compiler/autograd integration, and
 promotion-grade isolated benchmark artefacts exist. The separate
+`run_torch_phase_qnode_lowering_matrix(...)` route makes that boundary explicit:
+bounded QNN tensor, custom-autograd, `torch.func`, `torch.compile`, and
+module/layer routes are marked passed, while arbitrary registered Phase-QNode
+statevector lowering, finite-shot lowering, provider callbacks, hardware
+lowering, dynamic-circuit lowering, and isolated-benchmark promotion remain
+blocked with the required artefacts listed in the returned route metadata. The
+separate
 `run_tensorflow_gradient_tape_compatibility_audit(...)`
 route verifies TensorFlow `GradientTape` only for the same bounded classifier
 loss and checks the returned gradient against the SCPN parameter-shift
