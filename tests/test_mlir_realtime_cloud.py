@@ -1429,6 +1429,106 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     assert kernel.verification.passed is True
 
 
+def test_static_linalg_lowering_rules_register_multi_shape_compiler_ad_plan() -> None:
+    """Static linalg lowerings should plan and verify multiple concrete signatures."""
+
+    registry = CustomDerivativeRegistry()
+    matrix_power_identity = PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
+    multi_dot_identity = PrimitiveIdentity("scpn.program_ad.linalg", "multi_dot", "1")
+
+    matrix_power_contract = primitive_contract_for(matrix_power_identity)
+    matrix_power_values = np.array(
+        [[1.5, -0.25, 0.5], [0.0, 2.0, 0.75], [0.25, -0.5, 1.25]],
+        dtype=np.float64,
+    )
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=matrix_power_identity,
+            derivative_rule=matrix_power_contract.derivative_rule,
+            batching_rule=matrix_power_contract.batching_rule,
+            lowering_rule=make_program_ad_linalg_matrix_power_executable_lowering_rule(
+                3,
+                matrix_power_values.reshape(-1),
+            ),
+            lowering_metadata={
+                **matrix_power_contract.lowering_metadata,
+                "mlir": "available: executable scpn_diff MLIR-runtime linalg kernel",
+                "mlir_runtime_verification": "verified: 3x3 matrix_power power=3 sample JVP",
+            },
+            shape_rule=matrix_power_contract.shape_rule,
+            dtype_rule=matrix_power_contract.dtype_rule,
+            static_argument_rule=matrix_power_contract.static_argument_rule,
+            nondifferentiable_policy=matrix_power_contract.nondifferentiable_policy,
+            effect=matrix_power_contract.effect,
+        )
+    )
+
+    multi_dot_contract = primitive_contract_for(multi_dot_identity)
+    left = np.array([[1.0, -0.5, 0.75], [0.25, 1.5, -1.0]], dtype=np.float64)
+    middle = np.array(
+        [[1.25, -0.5, 0.0, 0.5], [0.75, 1.0, -0.25, 0.25], [0.0, 0.5, 1.5, -0.75]],
+        dtype=np.float64,
+    )
+    right = np.array(
+        [[1.0, -0.25], [0.5, 1.25], [-0.75, 0.0], [0.25, 0.5]],
+        dtype=np.float64,
+    )
+    multi_dot_values = np.concatenate((left.reshape(-1), middle.reshape(-1), right.reshape(-1)))
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=multi_dot_identity,
+            derivative_rule=multi_dot_contract.derivative_rule,
+            batching_rule=multi_dot_contract.batching_rule,
+            lowering_rule=make_program_ad_linalg_multi_dot_executable_lowering_rule(
+                ((2, 3), (3, 4), (4, 2)),
+                multi_dot_values,
+            ),
+            lowering_metadata={
+                **multi_dot_contract.lowering_metadata,
+                "mlir": "available: executable scpn_diff MLIR-runtime linalg kernel",
+                "mlir_runtime_verification": "verified: 2x3__3x4__4x2 multi_dot sample JVP",
+            },
+            shape_rule=multi_dot_contract.shape_rule,
+            dtype_rule=multi_dot_contract.dtype_rule,
+            static_argument_rule=multi_dot_contract.static_argument_rule,
+            nondifferentiable_policy=multi_dot_contract.nondifferentiable_policy,
+            effect=multi_dot_contract.effect,
+        )
+    )
+
+    plan = build_compiler_ad_transform_plan(registry)
+    module = compile_compiler_ad_transform_plan_to_mlir(plan)
+    matrix_power_kernel = compile_registered_primitive_to_executable(
+        registry, matrix_power_identity, matrix_power_values.reshape(-1)
+    )
+    multi_dot_kernel = compile_registered_primitive_to_executable(
+        registry, multi_dot_identity, multi_dot_values
+    )
+
+    assert [status.identity for status in plan.statuses] == [
+        matrix_power_identity,
+        multi_dot_identity,
+    ]
+    assert module.metadata["mlir_runtime_lowering_primitives"] == [
+        "scpn.program_ad.linalg:matrix_power@1",
+        "scpn.program_ad.linalg:multi_dot@1",
+    ]
+    assert module.metadata["mlir_runtime_incomplete_primitives"] == []
+    assert module.resource_counts["mlir_runtime_contracts"] == 2
+    assert module.resource_counts["mlir_runtime_verifications"] == 2
+    assert module.metadata["primitive_readiness_verdict_counts"] == {"mlir_runtime_verified": 2}
+    assert matrix_power_kernel.verification.passed is True
+    assert multi_dot_kernel.verification.passed is True
+    np.testing.assert_allclose(
+        matrix_power_kernel.value(matrix_power_values.reshape(-1)),
+        np.linalg.matrix_power(matrix_power_values, 3).reshape(-1),
+    )
+    np.testing.assert_allclose(
+        multi_dot_kernel.value(multi_dot_values),
+        np.linalg.multi_dot((left, middle, right)).reshape(-1),
+    )
+
+
 def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims() -> None:
     """Compiler AD planning must fail closed until executable backends exist."""
 

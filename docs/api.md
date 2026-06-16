@@ -427,7 +427,11 @@ or performance evidence.
 `make_program_ad_linalg_matrix_power_executable_lowering_rule()`
 and `make_program_ad_linalg_multi_dot_executable_lowering_rule()` bind concrete
 static linalg signatures to verified MLIR-runtime value/JVP kernels derived from
-the direct derivative factories.
+the direct derivative factories. Module-specific compiler tests cover registering
+multiple concrete static linalg signatures in one compiler AD plan, including a
+3x3 `matrix_power(..., 3)` kernel and a rectangular `multi_dot` chain, while
+leaving Rust, LLVM/JIT, and native-backend promotion fail-closed unless those
+separate executable backends are verified.
 `compile_scalar_quadratic_ad_to_native_llvm_jit()` is the native executable
 LLVM MCJIT backend for scalar quadratic primitives: it emits MLIR provenance,
 generates LLVM IR for value, JVP, VJP, and gradient functions, verifies native
