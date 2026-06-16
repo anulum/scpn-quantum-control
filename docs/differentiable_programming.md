@@ -142,6 +142,18 @@ evidence files. `validate_external_validation_artifact_bundle()` rechecks those
 digests against the current checkout. The bundle is checksum provenance only
 and remains `functional_non_isolated`.
 
+Differentiable CI reproducibility is split into explicit sparse, full, optional
+GPU-contract, scheduled metadata, and isolated-runner lanes. The sparse and full
+CPU profiles run across Python 3.10, 3.11, 3.12, and 3.13 using the pinned
+per-version Linux requirement locks. Full profiles build the CPU-only framework
+overlay for `jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`; sparse
+profiles keep the baseline dependency surface. The same workflow runs the
+module-specific test-quality audit after the differentiable parity tests, so
+new differentiable tests cannot be hidden in a generic coverage bucket. The
+manual optional GPU lane runs GPU request/fail-closed contract tests on a
+GitHub-hosted runner and uploads a `functional_non_isolated` JSON record; it is
+not live GPU, provider, QPU, or production-performance evidence.
+
 Benchmark artefacts written by
 `scripts/run_differentiable_benchmark_evidence.py` are CI evidence only.
 External comparison artefacts written by
