@@ -39,9 +39,33 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-## Functions (122)
+**Static FFI safety audit (2026-06-16):** `tools/audit_rust_ffi_safety.py`
+inventories the Rust `src/*.rs` boundary before binding expansion. The current
+committed artefact,
+`data/rust_ffi_safety/rust_ffi_safety_audit_2026-06-16.json`, reports:
 
-The Rust crate exports 122 PyO3 bindings across 29 Rust source files. They are organised
+- 134 exported `#[pyfunction]` boundaries.
+- 1 `#[pymodule]` initializer.
+- 0 unregistered PyO3 functions.
+- 0 `unsafe` occurrences.
+- 0 `extern "C"` declarations.
+
+Run the gate with:
+
+```bash
+PYTHONPATH=src ./.venv/bin/python tools/audit_rust_ffi_safety.py \
+  --crate-root scpn_quantum_engine
+```
+
+The audit is intentionally fail-closed: introducing any literal Rust `unsafe`
+token or any unregistered `#[pyfunction]` changes the status to `fail`. Its
+claim boundary is static source inventory only; it does not replace Miri,
+sanitizer, fuzzing, or formal memory-safety evidence if unsafe Rust is ever
+introduced.
+
+## Functions (134)
+
+The Rust crate exports 134 PyO3 bindings across 37 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
