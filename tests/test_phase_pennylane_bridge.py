@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any, cast
+
 import numpy as np
 import pytest
 
@@ -19,6 +22,7 @@ from scpn_quantum_control.phase import (
     PauliTerm,
     PennyLaneGradientAgreementResult,
     PennyLaneMaturityAuditResult,
+    PennyLanePluginMatrixResult,
     PennyLaneQNodeConversionResult,
     PennyLaneRoundTripResult,
     PhaseQNodeCircuit,
@@ -31,6 +35,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_phase_qnode_gradient,
     run_pennylane_maturity_audit,
+    run_pennylane_plugin_matrix,
 )
 
 
@@ -70,22 +75,26 @@ class _FakePennyLane:
         self.devices.append(payload)
         return payload
 
-    def qnode(self, device: object, **metadata: object):
-        def decorate(function):
-            def wrapper(params):
+    def qnode(
+        self,
+        device: object,
+        **metadata: object,
+    ) -> Callable[[Callable[[np.ndarray], object]], Callable[[np.ndarray], float]]:
+        def decorate(function: Callable[[np.ndarray], object]) -> Callable[[np.ndarray], float]:
+            def wrapper(params: np.ndarray) -> float:
                 function(params)
-                circuit = wrapper._scpn_phase_qnode_circuit
+                circuit = cast(Any, wrapper)._scpn_phase_qnode_circuit
                 return execute_phase_qnode_circuit(circuit, params).value
 
-            wrapper.device = device
-            wrapper.metadata = metadata
+            cast(Any, wrapper).device = device
+            cast(Any, wrapper).metadata = metadata
             return wrapper
 
         return decorate
 
-    def grad(self, qnode):
-        def gradient(params):
-            circuit = qnode._scpn_phase_qnode_circuit
+    def grad(self, qnode: Callable[[np.ndarray], object]) -> Callable[[np.ndarray], np.ndarray]:
+        def gradient(params: np.ndarray) -> np.ndarray:
+            circuit = cast(Any, qnode)._scpn_phase_qnode_circuit
             return parameter_shift_phase_qnode_gradient(circuit, params).gradient
 
         return gradient
@@ -106,7 +115,7 @@ class _FakePennyLane:
         self.calls.append(("Hermitian", (np.asarray(matrix),), {"wires": tuple(wires)}))
         return _FakeObservable("Hermitian", tuple(wires))
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name: str) -> Callable[..., _FakeObservable]:
         if name in {
             "Hadamard",
             "PauliX",
@@ -136,9 +145,10 @@ class _FakePennyLane:
     def _operation(self, name: str, *args: object, **kwargs: object) -> _FakeObservable:
         self.calls.append((name, args, kwargs))
         wires = kwargs.get("wires", ())
+        wire_value = cast(int | tuple[int, ...] | list[int], wires)
         if name in {"PauliX", "PauliY", "PauliZ"}:
-            return _FakeObservable(name, wires)
-        return _FakeObservable(name, wires)
+            return _FakeObservable(name, wire_value)
+        return _FakeObservable(name, wire_value)
 
 
 def _objective(values: np.ndarray) -> float:
@@ -171,7 +181,7 @@ def test_pennylane_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
     def shifted_gradient(values: np.ndarray) -> np.ndarray:
-        return _closed_form_gradient(values) + np.array([0.01, 0.0], dtype=float)
+        return cast(np.ndarray, _closed_form_gradient(values) + np.array([0.01, 0.0], dtype=float))
 
     result = check_pennylane_parameter_shift_agreement(
         _objective,
@@ -279,10 +289,10 @@ def test_pennylane_bridge_builds_phase_qnode_conversion_and_round_trips(
     params = np.array([0.37, -0.29], dtype=float)
 
     conversion = build_pennylane_qnode_from_phase_qnode(circuit, shots=None)
-    value = conversion.qnode(params)
-    gradient = conversion.gradient(params)
+    value = cast(float, conversion.qnode(params))
+    gradient = cast(np.ndarray, conversion.gradient(params))
     round_trip = check_pennylane_phase_qnode_round_trip(circuit, params)
-    payload = conversion.to_dict()
+    payload = cast(dict[str, Any], conversion.to_dict())
 
     assert isinstance(conversion, PennyLaneQNodeConversionResult)
     assert conversion.device_name == "default.qubit"
@@ -291,7 +301,7 @@ def test_pennylane_bridge_builds_phase_qnode_conversion_and_round_trips(
     assert conversion.observable_kind == "pauli_z"
     assert conversion.differentiable_parameters == (0, 1)
     assert payload["hardware_execution"] is False
-    assert payload["claim_boundary"].startswith("bounded PennyLane QNode conversion")
+    assert cast(str, payload["claim_boundary"]).startswith("bounded PennyLane QNode conversion")
     np.testing.assert_allclose(value, execute_phase_qnode_circuit(circuit, params).value)
     np.testing.assert_allclose(
         gradient,
@@ -337,20 +347,63 @@ def test_pennylane_maturity_audit_records_export_metadata_and_provider_gaps(
     assert isinstance(result, PennyLaneMaturityAuditResult)
     assert not result.identical_circuit_ready
     assert not result.ready_for_provider_exceedance
-    assert result.evidence["gradient_agreement"].passed
-    assert result.evidence["caller_qnode_round_trip"].passed
-    assert result.evidence["phase_qnode_export_round_trip"].passed
+    gradient_agreement = cast(
+        PennyLaneGradientAgreementResult,
+        result.evidence["gradient_agreement"],
+    )
+    caller_qnode_round_trip = cast(
+        PennyLaneRoundTripResult,
+        result.evidence["caller_qnode_round_trip"],
+    )
+    phase_qnode_export_round_trip = cast(
+        PennyLaneRoundTripResult,
+        result.evidence["phase_qnode_export_round_trip"],
+    )
+    assert gradient_agreement.passed
+    assert caller_qnode_round_trip.passed
+    assert phase_qnode_export_round_trip.passed
     assert result.evidence["phase_qnode_import_round_trip"] is None
+    plugin_matrix = result.evidence["pennylane_plugin_matrix"]
+    assert isinstance(plugin_matrix, PennyLanePluginMatrixResult)
+    assert plugin_matrix.local_plugin_parity_ready
+    assert not plugin_matrix.provider_plugin_execution_ready
+    assert not plugin_matrix.ready_for_provider_exceedance
+    assert plugin_matrix.route_status("default_qubit_exact_state") == "passed"
+    assert plugin_matrix.route_status("provider_plugin_execution") == "blocked"
     assert result.required_capabilities["phase_qnode_import_round_trip"] == "blocked"
+    assert result.required_capabilities["pennylane_plugin_matrix"] == "passed"
     assert result.promotion_metadata["device_name"] == "default.qubit"
     assert result.promotion_metadata["shots"] is None
     assert result.promotion_metadata["diff_method"] == "parameter-shift"
     assert result.promotion_metadata["phase_qnode_parameter_shift_evaluations"] == 4
-    assert len(result.promotion_metadata["phase_qnode_evaluation_groups"]) == 2
-    assert "pennylane_plugin_matrix" in result.open_gaps
-    payload = result.to_dict()
+    evaluation_groups = cast(
+        list[dict[str, object]],
+        result.promotion_metadata["phase_qnode_evaluation_groups"],
+    )
+    assert len(evaluation_groups) == 2
+    assert "provider_plugin_execution" in result.open_gaps
+    payload = cast(dict[str, Any], result.to_dict())
+    required_capabilities = cast(dict[str, str], payload["required_capabilities"])
     assert payload["claim_boundary"] == "bounded_pennylane_provider_maturity_audit"
-    assert payload["required_capabilities"]["device_metadata"] == "passed"
+    assert required_capabilities["device_metadata"] == "passed"
+    assert required_capabilities["pennylane_plugin_matrix"] == "passed"
+
+
+def test_pennylane_plugin_matrix_fails_closed_for_provider_plugins() -> None:
+    result = run_pennylane_plugin_matrix()
+
+    assert isinstance(result, PennyLanePluginMatrixResult)
+    assert result.local_plugin_parity_ready
+    assert not result.provider_plugin_execution_ready
+    assert not result.hardware_plugin_execution_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.route_status("default_qubit_exact_state") == "passed"
+    assert result.route_status("phase_qnode_export_default_qubit") == "passed"
+    assert result.route_status("provider_plugin_execution") == "blocked"
+    assert result.route_status("hardware_plugin_execution") == "blocked"
+    assert "provider_plugin_execution" in result.open_gaps
+    assert "isolated_benchmark_artifact" in result.open_gaps
+    assert result.claim_boundary == "bounded_pennylane_plugin_matrix"
 
 
 def test_pennylane_bridge_converts_dense_hermitian_observable(
@@ -365,7 +418,7 @@ def test_pennylane_bridge_converts_dense_hermitian_observable(
     )
 
     conversion = build_pennylane_qnode_from_phase_qnode(circuit, shots=128)
-    value = conversion.qnode(np.array([0.4], dtype=float))
+    value = cast(float, conversion.qnode(np.array([0.4], dtype=float)))
 
     np.testing.assert_allclose(
         value,

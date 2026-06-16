@@ -9,19 +9,22 @@
 
 import numpy as np
 import pytest
+from typing import cast
 
 qml = pytest.importorskip("pennylane")
 
+from scpn_quantum_control.phase.pennylane_bridge import run_pennylane_maturity_audit
 from scpn_quantum_control.phase.pennylane_import import (
     PennyLaneImportResult,
+    PennyLaneImportRoundTripResult,
     check_pennylane_phase_qnode_import_round_trip,
     import_phase_qnode_from_pennylane,
     is_pennylane_import_available,
 )
-from scpn_quantum_control.phase.pennylane_bridge import run_pennylane_maturity_audit
 from scpn_quantum_control.phase.qnode_circuit import (
     PauliTerm,
     PhaseQNodeCircuit,
+    PhaseQNodeOperation,
     SparsePauliHamiltonian,
 )
 
@@ -53,7 +56,8 @@ def test_import_structure_and_parameter_order():
     assert result.n_qubits == 2
     # Parameters follow tape order: RX, CRY, RZ.
     assert np.allclose(result.parameter_values, [0.6, 0.9, 0.3])
-    gates = [op.gate for op in result.circuit.operations]
+    operations = tuple(cast(PhaseQNodeOperation, op) for op in result.circuit.operations)
+    gates = [op.gate for op in operations]
     assert gates == ["h", "rx", "cnot", "cry", "rz"]
     assert isinstance(result.circuit.observable, PauliTerm)
     assert "claim_boundary" in result.provenance
@@ -148,8 +152,11 @@ def test_pennylane_maturity_audit_records_live_import_round_trip():
     assert result.identical_circuit_ready
     assert not result.ready_for_provider_exceedance
     assert result.required_capabilities["phase_qnode_import_round_trip"] == "passed"
-    assert "pennylane_plugin_matrix" in result.open_gaps
-    imported = result.evidence["phase_qnode_import_round_trip"]
+    assert result.required_capabilities["pennylane_plugin_matrix"] == "passed"
+    assert "provider_plugin_execution" in result.open_gaps
+    imported = cast(
+        PennyLaneImportRoundTripResult, result.evidence["phase_qnode_import_round_trip"]
+    )
     assert imported.value_match
     assert imported.gradient_match
     assert result.promotion_metadata["phase_qnode_parameter_shift_evaluations"] == 4
