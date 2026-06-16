@@ -417,6 +417,10 @@ classes, Python/platform metadata, and the fixed `functional_non_isolated`
 classification. It is a reproducibility and correctness artefact only:
 `production_eligible` and `promotion_ready` are false until the isolated
 benchmark gate supplies artefact IDs and the claim ledger is updated.
+The writer publishes a `row_schema.required_fields` list and rejects rows that
+do not carry value error, gradient error, runtime, memory, batching support,
+transform support, failure class, dependency versions, toolchain slot, and
+claim-boundary fields.
 `scripts/run_differentiable_benchmark_evidence.py` writes this companion JSON
 file as `diff-qnode-external-comparison.json` and inserts the real
 external-comparison artefact ID into the benchmark evidence bundle's

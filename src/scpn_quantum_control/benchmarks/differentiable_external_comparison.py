@@ -40,6 +40,28 @@ from ..phase.torch_bridge import is_phase_torch_available
 
 ComparisonStatus = Literal["success", "hard_gap"]
 
+REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS = frozenset(
+    {
+        "case_id",
+        "backend",
+        "status",
+        "failure_class",
+        "value_error",
+        "gradient_error",
+        "runtime_seconds",
+        "memory_peak_bytes",
+        "batching_support",
+        "transform_support",
+        "dtype",
+        "device",
+        "source_of_truth",
+        "setup_instructions",
+        "claim_boundary",
+        "dependency_versions",
+        "toolchain",
+    }
+)
+
 
 @dataclass(frozen=True)
 class ExternalComparisonRow:
@@ -107,7 +129,14 @@ class ExternalComparisonRow:
     def artifact_fields_ready(self) -> bool:
         """Return whether this row is serializable as an evidence artefact."""
 
-        return bool(self.case_id and self.backend and self.status and self.claim_boundary)
+        payload = self.to_dict()
+        return bool(
+            self.case_id
+            and self.backend
+            and self.status
+            and self.claim_boundary
+            and REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS.issubset(payload)
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready row."""
@@ -378,6 +407,13 @@ def write_differentiable_external_comparison(
     if not evidence_rows:
         raise ValueError("at least one external comparison row is required")
     row_payloads = [row.to_dict() for row in evidence_rows]
+    for row, row_payload in zip(evidence_rows, row_payloads, strict=True):
+        missing_fields = REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS.difference(row_payload)
+        if not getattr(row, "artifact_fields_ready", False) or missing_fields:
+            missing = ", ".join(sorted(missing_fields)) or "row readiness predicate"
+            raise ValueError(
+                f"external comparison row missing required artefact fields: {missing}"
+            )
     success_count = sum(1 for row in evidence_rows if row.status == "success")
     hard_gap_count = sum(1 for row in evidence_rows if row.status == "hard_gap")
     failure_classes = sorted(
@@ -395,6 +431,16 @@ def write_differentiable_external_comparison(
         "production_eligible": False,
         "promotion_ready": False,
         "source_of_truth": "scpn_reference",
+        "row_schema": {
+            "required_fields": sorted(REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS),
+            "success_numeric_fields": [
+                "value_error",
+                "gradient_error",
+                "runtime_seconds",
+                "memory_peak_bytes",
+            ],
+            "hard_gap_required_fields": ["failure_class", "setup_instructions"],
+        },
         "claim_boundary": (
             "External comparison artefact for bounded CPU framework correctness rows; "
             "not isolated benchmark evidence, not provider execution, and not a "
@@ -1268,6 +1314,7 @@ __all__ = [
     "ExternalComparisonRow",
     "IdenticalCircuitGradientComparisonArtifact",
     "IdenticalCircuitGradientComparisonRow",
+    "REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS",
     "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",
     "run_identical_circuit_gradient_comparison_suite",

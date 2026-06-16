@@ -16,6 +16,7 @@ from .classical_baselines import (
     scipy_ode_baseline,
 )
 from .differentiable_external_comparison import (
+    REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS,
     ExternalComparisonArtifact,
     ExternalComparisonRow,
     IdenticalCircuitGradientComparisonArtifact,
@@ -69,6 +70,7 @@ __all__ = [
     "ExternalComparisonRow",
     "IdenticalCircuitGradientComparisonArtifact",
     "IdenticalCircuitGradientComparisonRow",
+    "REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS",
     "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",
     "run_identical_circuit_gradient_comparison_suite",

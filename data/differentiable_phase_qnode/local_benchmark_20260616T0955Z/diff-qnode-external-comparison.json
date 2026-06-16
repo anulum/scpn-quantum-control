@@ -6,11 +6,42 @@
     "machine": "x86_64",
     "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
     "processor": "x86_64",
-    "python": "3.12.13"
+    "python": "3.12.3"
   },
-  "generated_at_unix": 1781597702,
+  "generated_at_unix": 1781601250,
   "production_eligible": false,
   "promotion_ready": false,
+  "row_schema": {
+    "hard_gap_required_fields": [
+      "failure_class",
+      "setup_instructions"
+    ],
+    "required_fields": [
+      "backend",
+      "batching_support",
+      "case_id",
+      "claim_boundary",
+      "dependency_versions",
+      "device",
+      "dtype",
+      "failure_class",
+      "gradient_error",
+      "memory_peak_bytes",
+      "runtime_seconds",
+      "setup_instructions",
+      "source_of_truth",
+      "status",
+      "toolchain",
+      "transform_support",
+      "value_error"
+    ],
+    "success_numeric_fields": [
+      "value_error",
+      "gradient_error",
+      "runtime_seconds",
+      "memory_peak_bytes"
+    ]
+  },
   "rows": [
     {
       "backend": "jax",
@@ -18,15 +49,15 @@
       "case_id": "bounded_phase_objective",
       "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
       "dependency_versions": {
-        "jax": "0.10.1",
-        "jaxlib": "0.10.1"
+        "jax": "0.6.2",
+        "jaxlib": "0.6.2"
       },
       "device": "cpu",
       "dtype": "float64",
       "failure_class": null,
       "gradient_error": 0.0,
-      "memory_peak_bytes": 3728091,
-      "runtime_seconds": 0.9943478149943985,
+      "memory_peak_bytes": 1918948,
+      "runtime_seconds": 0.5162902970041614,
       "setup_instructions": null,
       "source_of_truth": "scpn_reference",
       "status": "success",
@@ -40,14 +71,14 @@
       "case_id": "bounded_phase_objective",
       "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
       "dependency_versions": {
-        "torch": "2.12.0+cpu"
+        "torch": "2.11.0+cpu"
       },
       "device": "cpu",
       "dtype": "float64",
       "failure_class": null,
       "gradient_error": 0.0,
-      "memory_peak_bytes": 66034541,
-      "runtime_seconds": 4.934263761009788,
+      "memory_peak_bytes": 33256387,
+      "runtime_seconds": 3.4701909339928534,
       "setup_instructions": null,
       "source_of_truth": "scpn_reference",
       "status": "success",
@@ -68,8 +99,8 @@
       "dtype": "float64",
       "failure_class": null,
       "gradient_error": 0.0,
-      "memory_peak_bytes": 426033,
-      "runtime_seconds": 0.03378906499710865,
+      "memory_peak_bytes": 452789,
+      "runtime_seconds": 0.07043693598825485,
       "setup_instructions": null,
       "source_of_truth": "scpn_reference",
       "status": "success",
@@ -83,14 +114,14 @@
       "case_id": "bounded_phase_objective",
       "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
       "dependency_versions": {
-        "pennylane": "0.45.0"
+        "pennylane": "0.44.1"
       },
       "device": "cpu",
       "dtype": "float64",
       "failure_class": null,
       "gradient_error": 5.551115123125783e-17,
-      "memory_peak_bytes": 255256,
-      "runtime_seconds": 0.01788222198956646,
+      "memory_peak_bytes": 256912,
+      "runtime_seconds": 0.019934126001317054,
       "setup_instructions": null,
       "source_of_truth": "scpn_reference",
       "status": "success",
@@ -105,9 +136,9 @@
       "claim_boundary": "Runtime comparison gap only; no hidden success or promoted claim.",
       "dependency_versions": {
         "enzyme": "not_installed",
-        "enzyme_ad": "0.0.6",
+        "enzyme_ad": "not_installed",
         "enzyme_llvm_plugin": "file:/home/anulum/.cache/scpn-qc-enzyme-py39/lib/python3.9/site-packages/enzyme_ad/jax/enzyme_call.so",
-        "enzyme_runner": "executable:/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_jax_runner.py",
+        "enzyme_runner": "executable:data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_jax_runner.py",
         "llvm": "not_installed"
       },
       "device": "cpu",
@@ -129,8 +160,8 @@
       "case_id": "bounded_phase_objective_unsupported_batching",
       "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
-        "jax": "0.10.1",
-        "jaxlib": "0.10.1"
+        "jax": "0.6.2",
+        "jaxlib": "0.6.2"
       },
       "device": "cpu",
       "dtype": "float64",
@@ -151,7 +182,7 @@
       "case_id": "bounded_phase_objective_unsupported_transform",
       "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
-        "torch": "2.12.0+cpu"
+        "torch": "2.11.0+cpu"
       },
       "device": "cpu",
       "dtype": "float64",
@@ -194,7 +225,7 @@
       "case_id": "bounded_phase_objective_unsupported_device",
       "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
-        "pennylane": "0.45.0"
+        "pennylane": "0.44.1"
       },
       "device": "hardware_qpu",
       "dtype": "float64",

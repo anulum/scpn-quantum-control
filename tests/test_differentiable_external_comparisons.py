@@ -16,6 +16,7 @@ import numpy as np
 
 import scpn_quantum_control.benchmarks.differentiable_external_comparison as comparison
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
+    REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS,
     ExternalComparisonArtifact,
     ExternalComparisonRow,
     IdenticalCircuitGradientComparisonArtifact,
@@ -478,7 +479,35 @@ def test_external_comparison_writer_records_non_promotional_artifact(tmp_path) -
     assert payload["summary"]["hard_gap_count"] == 1
     assert payload["summary"]["failure_classes"] == ["unsupported_dtype"]
     assert payload["rows"][0]["dependency_versions"] == {"jax": "0.0", "jaxlib": "0.0"}
+    assert set(payload["row_schema"]["required_fields"]) == REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS
+    for row in payload["rows"]:
+        assert set(row) >= REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS
     assert "not isolated benchmark evidence" in payload["claim_boundary"]
+
+
+def test_external_comparison_writer_rejects_incomplete_row_payload(tmp_path) -> None:
+    class IncompleteExternalRow:
+        case_id = "bounded_phase_objective"
+        backend = "jax"
+        status = "success"
+        failure_class = None
+
+        @property
+        def artifact_fields_ready(self) -> bool:
+            return False
+
+        def to_dict(self) -> dict[str, object]:
+            return {"case_id": self.case_id, "backend": self.backend}
+
+    try:
+        write_differentiable_external_comparison(
+            tmp_path / "comparison.json",
+            (IncompleteExternalRow(),),  # type: ignore[arg-type]
+        )
+    except ValueError as exc:
+        assert "required artefact fields" in str(exc)
+    else:
+        raise AssertionError("incomplete external comparison row was accepted")
 
 
 def test_external_comparison_writer_rejects_invalid_outputs(tmp_path) -> None:
