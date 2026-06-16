@@ -9,8 +9,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
+from typing import cast
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control as scpn
 import scpn_quantum_control.compiler.mlir as compiler_mlir
@@ -70,27 +74,29 @@ from scpn_quantum_control.differentiable import (
 )
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
 
+FloatArray = NDArray[np.float64]
 
-def _dense_determinant_offsets(size: int) -> np.ndarray:
+
+def _dense_determinant_offsets(size: int) -> FloatArray:
     """Return a deterministic non-diagonal perturbation for native determinant tests."""
 
     rows = np.arange(size, dtype=np.float64).reshape(size, 1) + 1.0
     cols = np.arange(size, dtype=np.float64).reshape(1, size) + 1.0
     offsets = 0.011 * np.sin(rows * (cols + 0.5)) + 0.007 * np.cos(rows + 2.0 * cols)
     np.fill_diagonal(offsets, 0.0)
-    return offsets
+    return cast(FloatArray, offsets)
 
 
-def _dense_solve_values(size: int, *, shift: float) -> np.ndarray:
+def _dense_solve_values(size: int, *, shift: float) -> FloatArray:
     """Return deterministic nonsingular matrix and vector entries for solve tests."""
 
     matrix = np.diag(np.linspace(1.7 + shift, 2.5 + shift, size))
     matrix = matrix + _dense_determinant_offsets(size) * (1.0 + shift)
     rhs = np.linspace(0.25 + shift, 0.95 + shift, size)
-    return np.concatenate((matrix.reshape(-1), rhs)).astype(np.float64)
+    return cast(FloatArray, np.concatenate((matrix.reshape(-1), rhs)).astype(np.float64))
 
 
-def _dense_solve_matrix_values(size: int, rhs_cols: int, *, shift: float) -> np.ndarray:
+def _dense_solve_matrix_values(size: int, rhs_cols: int, *, shift: float) -> FloatArray:
     """Return deterministic nonsingular matrix and matrix RHS entries for solve tests."""
 
     matrix = np.diag(np.linspace(1.8 + shift, 2.6 + shift, size))
@@ -98,7 +104,25 @@ def _dense_solve_matrix_values(size: int, rhs_cols: int, *, shift: float) -> np.
     rhs_rows = np.arange(size, dtype=np.float64).reshape(size, 1) + 1.0
     rhs_columns = np.arange(rhs_cols, dtype=np.float64).reshape(1, rhs_cols) + 1.0
     rhs = 0.17 * rhs_rows + 0.09 * rhs_columns + shift
-    return np.concatenate((matrix.reshape(-1), rhs.reshape(-1))).astype(np.float64)
+    return cast(
+        FloatArray,
+        np.concatenate((matrix.reshape(-1), rhs.reshape(-1))).astype(np.float64),
+    )
+
+
+def _eager_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    """Small primitive batching rule used by compiler-AD registry tests."""
+
+    del axes, out_axes
+    if len(args) != 1:
+        raise ValueError("test batching rule expects one batched argument")
+    batch = np.asarray(args[0], dtype=np.float64)
+    return np.asarray([function(item) for item in batch], dtype=np.float64)
 
 
 def _problem():
@@ -489,29 +513,7 @@ def test_compiler_ad_rust_backend_metadata_requires_static_signature_parity() ->
     """Rust backend claims should fail closed unless they bind the same static contract."""
 
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "rust_signature_guard", "1")
-    base_kwargs = {
-        "identity": identity,
-        "rule_name": "rust_signature_guard_rule",
-        "has_jvp": True,
-        "has_vjp": True,
-        "mlir_op": "scpn_diff.rust_signature_guard",
-        "has_batching_rule": True,
-        "has_shape_rule": True,
-        "has_dtype_rule": True,
-        "has_static_argument_rule": True,
-        "has_lowering_rule": True,
-        "static_derivative_factory": "native_rust_signature_guard_llvm_jit",
-        "static_signature": "primitive:eig;dimension:2;layout:row_major",
-        "nondifferentiable_policy": "real_simple_domain",
-        "nondifferentiable_boundary": "real_simple_boundary",
-        "nondifferentiable_boundary_policy": "fail_closed",
-        "mlir_lowering": "available: executable scpn_diff MLIR-runtime primitive kernel",
-        "mlir_runtime_verification": "verified: rust signature guard JVP",
-        "rust_lowering": "available: Rust PyO3 rust signature guard kernel",
-        "llvm_lowering": "available: native LLVM MCJIT rust signature guard AD kernel",
-        "jit_lowering": "available: native LLVM MCJIT rust signature guard AD kernel",
-    }
-    base_metadata = {
+    base_metadata: dict[str, str] = {
         "native_backend": "native_llvm_jit",
         "native_backend_verification": "verified: native rust signature guard value/JVP/VJP",
         "static_derivative_factory": "native_rust_signature_guard_llvm_jit",
@@ -523,8 +525,33 @@ def test_compiler_ad_rust_backend_metadata_requires_static_signature_parity() ->
         "rust_backend_functions": "rust_signature_guard_value,rust_signature_guard_jvp",
     }
 
+    def status_for(lowering_metadata: Mapping[str, str]) -> PrimitiveLoweringStatus:
+        return PrimitiveLoweringStatus(
+            identity=identity,
+            rule_name="rust_signature_guard_rule",
+            has_jvp=True,
+            has_vjp=True,
+            mlir_op="scpn_diff.rust_signature_guard",
+            has_batching_rule=True,
+            has_shape_rule=True,
+            has_dtype_rule=True,
+            has_static_argument_rule=True,
+            has_lowering_rule=True,
+            static_derivative_factory="native_rust_signature_guard_llvm_jit",
+            static_signature="primitive:eig;dimension:2;layout:row_major",
+            nondifferentiable_policy="real_simple_domain",
+            nondifferentiable_boundary="real_simple_boundary",
+            nondifferentiable_boundary_policy="fail_closed",
+            mlir_lowering="available: executable scpn_diff MLIR-runtime primitive kernel",
+            mlir_runtime_verification="verified: rust signature guard JVP",
+            rust_lowering="available: Rust PyO3 rust signature guard kernel",
+            llvm_lowering="available: native LLVM MCJIT rust signature guard AD kernel",
+            jit_lowering="available: native LLVM MCJIT rust signature guard AD kernel",
+            lowering_metadata=dict(lowering_metadata),
+        )
+
     with pytest.raises(ValueError, match="rust_backend_signature"):
-        PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=base_metadata)
+        status_for(base_metadata)
 
     missing_functions_metadata = {
         **base_metadata,
@@ -532,20 +559,20 @@ def test_compiler_ad_rust_backend_metadata_requires_static_signature_parity() ->
     }
     del missing_functions_metadata["rust_backend_functions"]
     with pytest.raises(ValueError, match="rust_backend_functions"):
-        PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=missing_functions_metadata)
+        status_for(missing_functions_metadata)
 
     mismatched_metadata = {
         **base_metadata,
         "rust_backend_signature": "primitive:determinant;dimension:2;layout:row_major",
     }
     with pytest.raises(ValueError, match="rust_backend_signature must match static_signature"):
-        PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=mismatched_metadata)
+        status_for(mismatched_metadata)
 
     valid_metadata = {
         **base_metadata,
         "rust_backend_signature": "primitive:eig;dimension:2;layout:row_major",
     }
-    status = PrimitiveLoweringStatus(**base_kwargs, lowering_metadata=valid_metadata)
+    status = status_for(valid_metadata)
 
     assert status.lowering_metadata["rust_backend"] == "rust_pyo3"
     assert status.lowering_metadata["rust_backend_signature"] == status.static_signature
@@ -1807,7 +1834,7 @@ def test_native_llvm_jit_scalar_quadratic_kernel_executes_and_marks_plan_native(
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_scalar_quadratic_native_llvm_jit_lowering_rule(
                 quadratic=3.0,
                 linear=-2.0,
@@ -1929,7 +1956,7 @@ def test_native_llvm_jit_scalar_unary_sin_kernel_executes_and_marks_plan_native(
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=(
                 compiler_mlir.make_scalar_unary_elementwise_native_llvm_jit_lowering_rule(
                     primitive="sin",
@@ -2039,7 +2066,7 @@ def test_native_llvm_jit_scalar_binary_multiply_kernel_executes_and_marks_plan_n
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=(
                 compiler_mlir.make_scalar_binary_elementwise_native_llvm_jit_lowering_rule(
                     primitive="multiply",
@@ -2150,7 +2177,7 @@ def test_native_llvm_jit_vector_dot_kernel_executes_and_marks_plan_native() -> N
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_vector_dot_native_llvm_jit_lowering_rule(
                 dimension=2,
                 sample_values=values,
@@ -2272,7 +2299,9 @@ def test_native_llvm_jit_matrix_quadratic_form_kernel_executes_and_marks_plan_na
         cotangent_value = cotangent[0]
         matrix_gradient = np.outer(vector, vector).reshape(-1)
         vector_gradient = (matrix + matrix.T) @ vector
-        return np.concatenate([matrix_gradient, vector_gradient]) * cotangent_value
+        return cast(
+            FloatArray, np.concatenate([matrix_gradient, vector_gradient]) * cotangent_value
+        )
 
     rule = CustomDerivativeRule(
         name="native_matrix_quadratic_form_rule",
@@ -2328,7 +2357,7 @@ def test_native_llvm_jit_matrix_quadratic_form_kernel_executes_and_marks_plan_na
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_quadratic_form_native_llvm_jit_lowering_rule(
                 dimension=2,
                 sample_values=values,
@@ -2505,7 +2534,7 @@ def test_native_llvm_jit_vector_squared_norm_kernel_executes_and_marks_plan_nati
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_vector_squared_norm_native_llvm_jit_lowering_rule(
                 dimension=3,
                 sample_values=values,
@@ -2598,12 +2627,12 @@ def test_native_llvm_jit_matrix_vector_kernel_executes_and_marks_plan_native() -
 
     def value_fn(values: np.ndarray) -> np.ndarray:
         matrix, vector = unpack(values)
-        return matrix @ vector
+        return cast(FloatArray, matrix @ vector)
 
     def jvp_rule(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
         matrix, vector = unpack(values)
         matrix_tangent, vector_tangent = unpack(tangent)
-        return matrix_tangent @ vector + matrix @ vector_tangent
+        return cast(FloatArray, matrix_tangent @ vector + matrix @ vector_tangent)
 
     def vjp_rule(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
         matrix, vector = unpack(values)
@@ -2663,7 +2692,7 @@ def test_native_llvm_jit_matrix_vector_kernel_executes_and_marks_plan_native() -
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_vector_product_native_llvm_jit_lowering_rule(
                 dimension=2,
                 sample_values=values,
@@ -2766,11 +2795,14 @@ def test_native_llvm_jit_matrix_vector_kernel_executes_and_marks_plan_native() -
         "transform_contract": True,
         "verdict": "native_executable",
     }
-    batched_value = vmap(
-        lambda row: row,
-        primitive_identity=identity,
-        registry=rust_registry,
-    )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2, 0.3, -0.4])]))
+    batched_value = cast(
+        FloatArray,
+        vmap(
+            lambda row: row,
+            primitive_identity=identity,
+            registry=rust_registry,
+        )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2, 0.3, -0.4])])),
+    )
     np.testing.assert_allclose(
         batched_value[0],
         rust_registered_kernel.value(values),
@@ -2794,12 +2826,12 @@ def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -
 
     def value_fn(values: np.ndarray) -> np.ndarray:
         left, right = unpack(values)
-        return (left @ right).reshape(-1)
+        return cast(FloatArray, (left @ right).reshape(-1))
 
     def jvp_rule(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
         left, right = unpack(values)
         left_tangent, right_tangent = unpack(tangent)
-        return (left_tangent @ right + left @ right_tangent).reshape(-1)
+        return cast(FloatArray, (left_tangent @ right + left @ right_tangent).reshape(-1))
 
     def vjp_rule(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
         left, right = unpack(values)
@@ -2868,7 +2900,7 @@ def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_matrix_product_native_llvm_jit_lowering_rule(
                 dimension=2,
                 sample_values=values,
@@ -2971,11 +3003,14 @@ def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -
         "transform_contract": True,
         "verdict": "native_executable",
     }
-    batched_value = vmap(
-        lambda row: row,
-        primitive_identity=identity,
-        registry=rust_registry,
-    )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2, 0.3, -0.4, 0.2, 0.1])]))
+    batched_value = cast(
+        FloatArray,
+        vmap(
+            lambda row: row,
+            primitive_identity=identity,
+            registry=rust_registry,
+        )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2, 0.3, -0.4, 0.2, 0.1])])),
+    )
     np.testing.assert_allclose(
         batched_value[0],
         rust_registered_kernel.value(values),
@@ -3051,7 +3086,7 @@ def test_native_llvm_jit_matrix_trace_kernel_executes_and_marks_plan_native() ->
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_trace_native_llvm_jit_lowering_rule(
                 dimension=2,
                 sample_values=values,
@@ -3215,7 +3250,7 @@ def test_native_llvm_jit_matrix_frobenius_norm_squared_kernel_executes_and_marks
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule(
                 dimension=2,
                 sample_values=values,
@@ -3385,7 +3420,7 @@ def test_native_llvm_jit_matrix_2x2_determinant_kernel_executes_and_marks_plan_n
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_2x2_determinant_native_llvm_jit_lowering_rule(
                 sample_values=values,
                 config=config,
@@ -3587,9 +3622,15 @@ def test_executable_ad_kernel_batching_rule_dispatches_native_value_jvp_and_vjp(
     expected_vjps = np.asarray(
         [kernel.vjp(row, cotangent) for row, cotangent in zip(values, cotangents)]
     )
-    np.testing.assert_allclose(batched_value, expected_values, rtol=1.0e-12, atol=1.0e-12)
-    np.testing.assert_allclose(batched_jvp, expected_jvps, rtol=1.0e-12, atol=1.0e-12)
-    np.testing.assert_allclose(batched_vjp, expected_vjps, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(
+        cast(FloatArray, batched_value), expected_values, rtol=1.0e-12, atol=1.0e-12
+    )
+    np.testing.assert_allclose(
+        cast(FloatArray, batched_jvp), expected_jvps, rtol=1.0e-12, atol=1.0e-12
+    )
+    np.testing.assert_allclose(
+        cast(FloatArray, batched_vjp), expected_vjps, rtol=1.0e-12, atol=1.0e-12
+    )
     assert registry.require_complete_contract(identity).batching_rule is not None
 
     with pytest.raises(ValueError, match="ambiguous"):
@@ -3626,12 +3667,15 @@ def test_native_llvm_jit_matrix_2x2_inverse_kernel_executes_and_marks_plan_nativ
     def inverse_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
         inverse_matrix = np.linalg.inv(values.reshape(2, 2))
         tangent_matrix = tangent.reshape(2, 2)
-        return (-inverse_matrix @ tangent_matrix @ inverse_matrix).reshape(4)
+        return cast(FloatArray, (-inverse_matrix @ tangent_matrix @ inverse_matrix).reshape(4))
 
     def inverse_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
         inverse_matrix = np.linalg.inv(values.reshape(2, 2))
         cotangent_matrix = cotangent.reshape(2, 2)
-        return (-(inverse_matrix.T @ cotangent_matrix @ inverse_matrix.T)).reshape(4)
+        return cast(
+            FloatArray,
+            (-(inverse_matrix.T @ cotangent_matrix @ inverse_matrix.T)).reshape(4),
+        )
 
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_2x2_inverse", "1")
     rule = CustomDerivativeRule(
@@ -3688,7 +3732,7 @@ def test_native_llvm_jit_matrix_2x2_inverse_kernel_executes_and_marks_plan_nativ
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_2x2_inverse_native_llvm_jit_lowering_rule(
                 sample_values=values,
                 config=config,
@@ -3863,7 +3907,7 @@ def test_native_llvm_jit_matrix_2x2_solve_kernel_executes_and_marks_plan_native(
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_2x2_solve_native_llvm_jit_lowering_rule(
                 sample_values=values,
                 config=config,
@@ -4056,7 +4100,7 @@ def test_native_llvm_jit_symmetric_2x2_cholesky_kernel_executes_and_marks_plan_n
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule(
                 sample_values=values,
                 config=config,
@@ -4252,7 +4296,7 @@ def test_native_llvm_jit_symmetric_2x2_eigenvalues_kernel_executes_and_marks_pla
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule(
                 sample_values=values,
                 config=config,
@@ -4455,7 +4499,7 @@ def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_n
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule(
                 sample_values=values,
                 config=config,
@@ -4565,11 +4609,14 @@ def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_n
         "transform_contract": True,
         "verdict": "native_executable",
     }
-    batched_value = vmap(
-        lambda row: row,
-        primitive_identity=identity,
-        registry=rust_registry,
-    )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2], dtype=np.float64)]))
+    batched_value = cast(
+        FloatArray,
+        vmap(
+            lambda row: row,
+            primitive_identity=identity,
+            registry=rust_registry,
+        )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2], dtype=np.float64)])),
+    )
     np.testing.assert_allclose(
         batched_value[0],
         rust_registered_kernel.value(values),
@@ -4715,7 +4762,7 @@ def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_n
         PrimitiveTransformRule(
             identity=identity,
             derivative_rule=rule,
-            batching_rule=lambda batch, fn: np.asarray([fn(item) for item in batch]),
+            batching_rule=_eager_batching_rule,
             lowering_rule=compiler_mlir.make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
                 sample_values=values,
                 config=config,
@@ -4829,11 +4876,14 @@ def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_n
         "transform_contract": True,
         "verdict": "native_executable",
     }
-    batched_value = vmap(
-        lambda row: row,
-        primitive_identity=identity,
-        registry=rust_registry,
-    )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2], dtype=np.float64)]))
+    batched_value = cast(
+        FloatArray,
+        vmap(
+            lambda row: row,
+            primitive_identity=identity,
+            registry=rust_registry,
+        )(np.vstack([values, values + np.array([0.25, 0.1, 0.05, -0.2], dtype=np.float64)])),
+    )
     np.testing.assert_allclose(
         batched_value[0],
         rust_registered_kernel.value(values),
@@ -5144,7 +5194,7 @@ def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     assert first.mlir_module.metadata["native_compile_cache_hit"] is False
     assert second.mlir_module.metadata["native_compile_cache_hit"] is True
     assert first_stats["entries"] == 1
-    assert first_stats["max_size"] >= 1
+    assert cast(int, first_stats["max_size"]) >= 1
     assert first_stats["keys"] == (first.cache_key,)
     assert second_stats["entries"] == 1
     assert second_stats["keys"] == (first.cache_key,)
