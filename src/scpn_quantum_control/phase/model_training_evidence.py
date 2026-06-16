@@ -20,13 +20,14 @@ FloatArray: TypeAlias = NDArray[np.float64]
 
 CLAIM_BOUNDARY = (
     "registered local QNN/QGNN/QSNN/Kuramoto-XY/open-system-control training "
-    "evidence only; not arbitrary architecture, not provider hardware "
-    "execution, and not a production benchmark"
+    "and inverse-coupling-recovery evidence only; not arbitrary architecture, "
+    "not provider hardware execution, and not a production benchmark"
 )
 REGISTERED_TRAINING_SUITE_AUDIT_BOUNDARY = (
     "registered local training-suite readiness audit only; closes seeded "
-    "QNN/QGNN/QSNN/Kuramoto-XY/open-system-control suite evidence and keeps "
-    "inverse-coupling recovery blocked until dedicated training evidence exists"
+    "QNN/QGNN/QSNN/Kuramoto-XY/open-system-control/inverse-coupling-recovery "
+    "suite evidence without promoting arbitrary architectures, hardware, or "
+    "benchmark-performance claims"
 )
 
 
@@ -169,6 +170,7 @@ def run_differentiable_model_training_evidence_suite(
         _qsnn_medium_case(gradient_tolerance),
         _kuramoto_xy_case(gradient_tolerance),
         _open_system_control_case(gradient_tolerance),
+        _inverse_coupling_recovery_case(gradient_tolerance),
     )
     return DifferentiableModelTrainingEvidenceSuite(
         records=records,
@@ -200,16 +202,7 @@ def run_registered_differentiable_training_suite_audit(
         _ready_training_suite_record("qsnn", evidence_by_family),
         _ready_training_suite_record("kuramoto_xy", evidence_by_family),
         _ready_training_suite_record("open_system_control", evidence_by_family),
-        RegisteredDifferentiableTrainingSuiteRecord(
-            model_family="inverse_coupling_recovery",
-            ready=False,
-            evidence_names=(),
-            blocker=(
-                "inverse-coupling recovery training suite is not implemented; "
-                "requires K_nm recovery targets, identifiability checks, "
-                "gradient agreement, and deterministic replay evidence before TODO closure"
-            ),
-        ),
+        _ready_training_suite_record("inverse_coupling_recovery", evidence_by_family),
     )
     return RegisteredDifferentiableTrainingSuiteAuditResult(
         records=records,
@@ -411,6 +404,54 @@ def _open_system_control_case(tolerance: float) -> DifferentiableModelTrainingRe
         analytic_gradient=grad,
         learning_rate=0.45,
         steps=44,
+        tolerance=tolerance,
+    )
+
+
+def _inverse_coupling_recovery_case(tolerance: float) -> DifferentiableModelTrainingRecord:
+    observation_design = np.array(
+        [
+            [1.0, 0.35, -0.15],
+            [0.25, 1.0, 0.45],
+            [-0.2, 0.55, 1.0],
+            [0.75, -0.1, 0.5],
+        ],
+        dtype=np.float64,
+    )
+    if np.linalg.matrix_rank(observation_design) != 3:
+        raise RuntimeError("inverse-coupling recovery design must be full rank")
+    target_couplings = np.array([0.42, 0.28, 0.36], dtype=np.float64)
+    target_observations = np.sin(observation_design @ target_couplings)
+    params = np.array([0.12, 0.52, 0.18], dtype=np.float64)
+
+    def residual(theta: FloatArray) -> FloatArray:
+        return np.asarray(
+            np.sin(observation_design @ theta) - target_observations, dtype=np.float64
+        )
+
+    def loss(theta: FloatArray) -> float:
+        values = residual(theta)
+        regularization = 0.002 * float(np.sum((theta - target_couplings) ** 2))
+        return float(np.mean(values**2) + regularization)
+
+    def grad(theta: FloatArray) -> FloatArray:
+        activation = observation_design @ theta
+        jacobian = np.cos(activation)[:, None] * observation_design
+        values = residual(theta)
+        return np.asarray(
+            (2.0 / values.size) * jacobian.T @ values + 0.004 * (theta - target_couplings),
+            dtype=np.float64,
+        )
+
+    return _train_case(
+        name="inverse_coupling_recovery_identifiable",
+        model_family="inverse_coupling_recovery",
+        seed=606,
+        params=params,
+        loss=loss,
+        analytic_gradient=grad,
+        learning_rate=0.5,
+        steps=60,
         tolerance=tolerance,
     )
 

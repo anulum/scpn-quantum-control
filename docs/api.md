@@ -44,11 +44,12 @@ so notebooks, CI, and provider adapters can share the same verification record.
 
 For registered local training-suite evidence, use
 `run_differentiable_model_training_evidence_suite(...)` to replay the seeded
-QNN, QGNN, QSNN, Kuramoto-XY, and open-system-control cases. Use
+QNN, QGNN, QSNN, Kuramoto-XY, open-system-control, and
+inverse-coupling-recovery cases. Use
 `run_registered_differentiable_training_suite_audit(...)` when you need the
-TODO/promotion boundary: the five registered local families are evidenced, but
-inverse-coupling recovery training remains blocked until a dedicated
-deterministic training suite exists.
+TODO/promotion boundary: the registered local training-suite families are
+evidenced without promoting arbitrary architectures, provider hardware, or
+benchmark-performance claims.
 
 For backend execution, use
 `execute_provider_parameter_shift_gradient(...)` with a

@@ -111,11 +111,14 @@ parameter estimate.
 ## Registered Training-Suite Audit
 
 The registered medium training evidence suite covers seeded local QNN, QGNN,
-QSNN, Kuramoto-XY, and open-system-control cases. The open-system case uses a
-noise-aware damped residual with damping/dephasing parameters and an analytic
-gradient checked against finite differences. Use the training-suite audit when
-the question is not "did those cases pass?" but "which requested training lanes
-can be closed from current evidence?":
+QSNN, Kuramoto-XY, open-system-control, and inverse-coupling-recovery cases.
+The open-system case uses a noise-aware damped residual with damping/dephasing
+parameters and an analytic gradient checked against finite differences. The
+inverse-coupling case uses a full-rank synthetic observation design for
+identifiable `K_nm` edge recovery and checks the analytic gradient against
+finite differences. Use the training-suite audit when the question is not "did
+those cases pass?" but "which requested training lanes can be closed from
+current evidence?":
 
 ```python
 from scpn_quantum_control.phase import run_registered_differentiable_training_suite_audit
@@ -128,11 +131,9 @@ print(audit.blocked_model_families)
 print(audit.ready_for_training_suite_promotion)
 ```
 
-The current audit keeps the promotion gate closed because inverse-coupling
-recovery training does not yet have dedicated loss descent, gradient agreement,
-identifiability checks, and deterministic replay evidence. This separates
-registered local model evidence from arbitrary architecture support, provider
-hardware execution, and production benchmark claims.
+The current audit closes the registered local training-suite lanes while still
+separating that evidence from arbitrary architecture support, provider hardware
+execution, and production benchmark claims.
 
 ## Evidence Checklist
 

@@ -25,6 +25,7 @@ def test_model_training_evidence_suite_covers_registered_medium_cases() -> None:
         "qsnn_medium_batch",
         "kuramoto_xy_vqe_medium",
         "open_system_control_noise_aware",
+        "inverse_coupling_recovery_identifiable",
     )
     assert suite.unsuitable_scenarios
     assert not suite.hardware_execution
@@ -50,18 +51,33 @@ def test_open_system_control_training_case_records_noise_aware_evidence() -> Non
     assert record.gradient_max_abs_error <= record.gradient_tolerance
 
 
+def test_inverse_coupling_recovery_case_records_identifiable_knm_evidence() -> None:
+    suite = run_differentiable_model_training_evidence_suite()
+
+    record = next(
+        item for item in suite.records if item.name == "inverse_coupling_recovery_identifiable"
+    )
+    assert record.model_family == "inverse_coupling_recovery"
+    assert record.passed
+    assert record.loss_reduction > 0.0
+    assert record.best_loss < 1.0e-3
+    assert record.final_loss < record.initial_loss
+    assert record.gradient_max_abs_error <= record.gradient_tolerance
+
+
 def test_registered_training_suite_audit_closes_only_evidenced_lanes() -> None:
     audit = run_registered_differentiable_training_suite_audit()
 
-    assert not audit.ready_for_training_suite_promotion
+    assert audit.ready_for_training_suite_promotion
     assert audit.passed_model_families == (
         "qnn",
         "qgnn",
         "qsnn",
         "kuramoto_xy",
         "open_system_control",
+        "inverse_coupling_recovery",
     )
-    assert audit.blocked_model_families == ("inverse_coupling_recovery",)
+    assert audit.blocked_model_families == ()
     assert audit.evidence_suite_passed
     assert not audit.hardware_execution
     assert "registered local training-suite readiness" in audit.claim_boundary
@@ -72,16 +88,16 @@ def test_registered_training_suite_audit_closes_only_evidenced_lanes() -> None:
     assert records["qsnn"].ready
     assert records["kuramoto_xy"].ready
     assert records["open_system_control"].ready
-    assert not records["inverse_coupling_recovery"].ready
-    assert "not implemented" in records["inverse_coupling_recovery"].blocker
+    assert records["inverse_coupling_recovery"].ready
 
     payload = audit.to_dict()
-    assert payload["ready_for_training_suite_promotion"] is False
+    assert payload["ready_for_training_suite_promotion"] is True
     assert payload["passed_model_families"] == [
         "qnn",
         "qgnn",
         "qsnn",
         "kuramoto_xy",
         "open_system_control",
+        "inverse_coupling_recovery",
     ]
-    assert payload["blocked_model_families"] == ["inverse_coupling_recovery"]
+    assert payload["blocked_model_families"] == []

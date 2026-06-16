@@ -238,14 +238,14 @@ quantum hardware experimentation, and control-facing software:
   rows; evidence is labelled `isolated_affinity` only when the isolation policy
   passes, otherwise `functional_non_isolated`.
 - `run_differentiable_model_training_evidence_suite()` packages seeded
-  registered QNN, QGNN, QSNN, Kuramoto-XY, and open-system-control local
-  training cases with loss reduction and finite-difference gradient-agreement
-  evidence.
+  registered QNN, QGNN, QSNN, Kuramoto-XY, open-system-control, and
+  inverse-coupling-recovery local training cases with loss reduction and
+  finite-difference gradient-agreement evidence.
 - `run_registered_differentiable_training_suite_audit()` records which
   requested differentiable training-suite lanes are actually evidenced:
-  registered local QNN/QGNN/QSNN/Kuramoto-XY/open-system-control pass, while
-  inverse-coupling recovery stays blocked until dedicated training evidence
-  exists.
+  registered local QNN/QGNN/QSNN/Kuramoto-XY/open-system-control/
+  inverse-coupling-recovery pass without promoting arbitrary architectures,
+  provider hardware, or benchmark-performance claims.
 - `execute_phase_qnode_transform(...)` and
   `run_phase_qnode_transform_readiness_suite()` execute supported scalar local
   QNode transforms for `grad`, `value_and_grad`, `hessian`, `jvp`, `vjp`,
