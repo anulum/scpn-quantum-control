@@ -183,10 +183,78 @@ class PennyLanePluginMatrixRoute:
 
 
 @dataclass(frozen=True)
+class PennyLaneProviderPluginExecutionArtifact:
+    """Validated PennyLane provider-plugin execution evidence."""
+
+    artifact_id: str
+    plugin_name: str
+    provider_name: str
+    device_name: str
+    backend_name: str
+    circuit_fingerprint: str
+    execution_mode: str
+    shots: int | None
+    result_digest: str
+    metadata_digest: str
+    hardware_execution: bool = False
+    raw_result_replay_artifact_id: str | None = None
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "plugin_name",
+            "provider_name",
+            "device_name",
+            "backend_name",
+            "circuit_fingerprint",
+            "execution_mode",
+        ):
+            if not str(getattr(self, field_name)).strip():
+                raise ValueError(f"{field_name} must be non-empty")
+        if self.shots is not None and self.shots <= 0:
+            raise ValueError("shots must be positive when provided")
+        if self.hardware_execution:
+            raise ValueError(
+                "provider-plugin execution artefacts must not claim hardware execution"
+            )
+        if self.raw_result_replay_artifact_id is not None and not (
+            self.raw_result_replay_artifact_id.strip()
+        ):
+            raise ValueError("raw_result_replay_artifact_id must be non-empty when provided")
+        for field_name in ("result_digest", "metadata_digest"):
+            digest = str(getattr(self, field_name))
+            hex_digest = digest.removeprefix("sha256:")
+            if not (
+                digest.startswith("sha256:")
+                and len(hex_digest) == 64
+                and all(char in "0123456789abcdefABCDEF" for char in hex_digest)
+            ):
+                raise ValueError(f"{field_name} must be a sha256:<64-hex> digest")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready provider-plugin execution metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "plugin_name": self.plugin_name,
+            "provider_name": self.provider_name,
+            "device_name": self.device_name,
+            "backend_name": self.backend_name,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "execution_mode": self.execution_mode,
+            "shots": self.shots,
+            "result_digest": self.result_digest,
+            "metadata_digest": self.metadata_digest,
+            "hardware_execution": self.hardware_execution,
+            "raw_result_replay_artifact_id": self.raw_result_replay_artifact_id,
+        }
+
+
+@dataclass(frozen=True)
 class PennyLanePluginMatrixResult:
     """Fail-closed PennyLane plugin/provider parity matrix."""
 
     routes: tuple[PennyLanePluginMatrixRoute, ...]
+    provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None
     claim_boundary: str = "bounded_pennylane_plugin_matrix"
 
     @property
@@ -201,11 +269,7 @@ class PennyLanePluginMatrixResult:
     @property
     def provider_plugin_execution_ready(self) -> bool:
         """Return whether provider-plugin execution artefacts are attached."""
-        return all(
-            route.status == "passed"
-            for route in self.routes
-            if route.name.startswith("provider_plugin_")
-        )
+        return self.route_status("provider_plugin_execution") == "passed"
 
     @property
     def hardware_plugin_execution_ready(self) -> bool:
@@ -240,6 +304,11 @@ class PennyLanePluginMatrixResult:
             "provider_plugin_execution_ready": self.provider_plugin_execution_ready,
             "hardware_plugin_execution_ready": self.hardware_plugin_execution_ready,
             "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "provider_execution_artifact": (
+                None
+                if self.provider_execution_artifact is None
+                else self.provider_execution_artifact.to_dict()
+            ),
             "routes": {route.name: route.to_dict() for route in self.routes},
             "open_gaps": list(self.open_gaps),
             "claim_boundary": self.claim_boundary,
@@ -265,7 +334,10 @@ def is_phase_pennylane_available() -> bool:
     return True
 
 
-def run_pennylane_plugin_matrix() -> PennyLanePluginMatrixResult:
+def run_pennylane_plugin_matrix(
+    *,
+    provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
+) -> PennyLanePluginMatrixResult:
     """Return a fail-closed PennyLane plugin/provider parity matrix.
 
     The current evidence covers bounded local `default.qubit` exact-state
@@ -275,6 +347,12 @@ def run_pennylane_plugin_matrix() -> PennyLanePluginMatrixResult:
     until concrete artefacts are attached.
     """
 
+    provider_execution_status = "passed" if provider_execution_artifact is not None else "blocked"
+    provider_execution_reason = (
+        "validated PennyLane provider-plugin execution artefact is attached"
+        if provider_execution_artifact is not None
+        else "PennyLane provider-plugin execution artefacts are not attached"
+    )
     routes = (
         PennyLanePluginMatrixRoute(
             name="default_qubit_exact_state",
@@ -298,8 +376,8 @@ def run_pennylane_plugin_matrix() -> PennyLanePluginMatrixResult:
         ),
         PennyLanePluginMatrixRoute(
             name="provider_plugin_execution",
-            status="blocked",
-            reason="PennyLane provider-plugin execution artefacts are not attached",
+            status=provider_execution_status,
+            reason=provider_execution_reason,
             requires=(
                 "plugin_inventory",
                 "provider_plugin_adapter",
@@ -335,7 +413,10 @@ def run_pennylane_plugin_matrix() -> PennyLanePluginMatrixResult:
             requires=("isolated_affinity_benchmark_id",),
         ),
     )
-    return PennyLanePluginMatrixResult(routes=routes)
+    return PennyLanePluginMatrixResult(
+        routes=routes,
+        provider_execution_artifact=provider_execution_artifact,
+    )
 
 
 def _as_parameter_vector(name: str, values: object, *, width: int | None = None) -> FloatArray:
@@ -630,6 +711,7 @@ def run_pennylane_maturity_audit(
     gradient_tolerance: float = 1e-6,
     parameters: Sequence[Parameter] | None = None,
     rule: ParameterShiftRule | None = None,
+    provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
 ) -> PennyLaneMaturityAuditResult:
     """Aggregate PennyLane agreement, export, and optional import evidence.
 
@@ -712,7 +794,9 @@ def run_pennylane_maturity_audit(
         promotion_metadata["import_round_trip_parameters"] = int(
             getattr(phase_qnode_import_round_trip, "n_parameters", 0)
         )
-    plugin_matrix = run_pennylane_plugin_matrix()
+    plugin_matrix = run_pennylane_plugin_matrix(
+        provider_execution_artifact=provider_execution_artifact,
+    )
 
     import_passed = bool(
         phase_qnode_import_round_trip is not None
@@ -744,7 +828,9 @@ def run_pennylane_maturity_audit(
         "pennylane_plugin_matrix": (
             "passed" if plugin_matrix.local_plugin_parity_ready else "failed"
         ),
-        "provider_plugin_execution": "blocked",
+        "provider_plugin_execution": (
+            "passed" if plugin_matrix.provider_plugin_execution_ready else "blocked"
+        ),
         "hardware_execution": "blocked",
         "provider_plugin_gradient_parity": "blocked",
         "promotion_grade_isolated_benchmarks": "blocked",

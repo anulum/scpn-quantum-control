@@ -1790,19 +1790,25 @@ PennyLane equivalents, including CH, Toffoli, Fredkin, and controlled phase
 equivalents for CS/CT/CCZ where the optional dependency is installed. Provider
 submission, hardware execution, dynamic circuits, noise models, and covariance
 observable conversion remain explicit non-claims.
+`PennyLaneProviderPluginExecutionArtifact` validates provider-plugin execution
+metadata with non-empty plugin/provider/device/backend identities, positive
+shots when present, SHA-256 result and metadata digests, optional replay
+metadata, and `hardware_execution=False`.
 `run_pennylane_plugin_matrix(...)` records local `default.qubit` exact-state,
 shot-policy metadata, generated Phase-QNode export, and supported tape-import
-routes as passed. Provider-plugin execution, hardware-plugin execution,
+routes as passed. Passing a validated provider execution artefact marks only
+`provider_plugin_execution` as passed. Hardware-plugin execution,
 provider-plugin gradient parity, and isolated-benchmark promotion remain
 blocked with required artefacts listed per route.
 `run_pennylane_maturity_audit(...)` combines caller-supplied gradient agreement,
 caller-supplied QNode round-trip parity, generated Phase-QNode export parity,
 optional PennyLane tape import parity, device metadata, shot policy, diff
-method, grouped registered Phase-QNode parameter-shift evaluation counts, and
-the plugin matrix. The audit can mark `identical_circuit_ready=True` only when a
-PennyLane import tape is supplied and every bounded route passes. It keeps
-provider exceedance blocked until provider-plugin execution, hardware
-execution, and promotion-grade isolated benchmark artefacts exist.
+method, grouped registered Phase-QNode parameter-shift evaluation counts,
+optional provider execution artefact, and the plugin matrix. The audit can mark
+`identical_circuit_ready=True` only when a PennyLane import tape is supplied and
+every bounded route passes. It keeps provider exceedance blocked until
+provider-plugin gradient parity, hardware execution, and promotion-grade
+isolated benchmark artefacts exist.
 
 ### Importing a PennyLane tape
 

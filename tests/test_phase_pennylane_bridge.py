@@ -23,6 +23,7 @@ from scpn_quantum_control.phase import (
     PennyLaneGradientAgreementResult,
     PennyLaneMaturityAuditResult,
     PennyLanePluginMatrixResult,
+    PennyLaneProviderPluginExecutionArtifact,
     PennyLaneQNodeConversionResult,
     PennyLaneRoundTripResult,
     PhaseQNodeCircuit,
@@ -404,6 +405,88 @@ def test_pennylane_plugin_matrix_fails_closed_for_provider_plugins() -> None:
     assert "provider_plugin_execution" in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
     assert result.claim_boundary == "bounded_pennylane_plugin_matrix"
+
+
+def _provider_plugin_execution_artifact() -> PennyLaneProviderPluginExecutionArtifact:
+    return PennyLaneProviderPluginExecutionArtifact(
+        artifact_id="pl-provider-sim-20260616",
+        plugin_name="pennylane-provider-simulator",
+        provider_name="example-provider",
+        device_name="example.simulator",
+        backend_name="example_sim_v1",
+        circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+        execution_mode="provider_simulator",
+        shots=4096,
+        result_digest="sha256:" + "a" * 64,
+        metadata_digest="sha256:" + "b" * 64,
+        hardware_execution=False,
+        raw_result_replay_artifact_id="pl-provider-replay-20260616",
+    )
+
+
+def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_promotion() -> None:
+    artifact = _provider_plugin_execution_artifact()
+
+    result = run_pennylane_plugin_matrix(provider_execution_artifact=artifact)
+
+    assert result.provider_plugin_execution_ready
+    assert result.route_status("provider_plugin_execution") == "passed"
+    assert result.provider_execution_artifact is artifact
+    assert not result.hardware_plugin_execution_ready
+    assert not result.ready_for_provider_exceedance
+    assert "provider_plugin_execution" not in result.open_gaps
+    assert "provider_plugin_gradient_parity" in result.open_gaps
+    payload = cast(dict[str, Any], result.to_dict())
+    provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
+    assert provider_payload["artifact_id"] == artifact.artifact_id
+
+
+def test_pennylane_provider_plugin_execution_artifact_rejects_hardware_claim() -> None:
+    with pytest.raises(ValueError, match="must not claim hardware execution"):
+        PennyLaneProviderPluginExecutionArtifact(
+            artifact_id="pl-provider-sim-20260616",
+            plugin_name="pennylane-provider-simulator",
+            provider_name="example-provider",
+            device_name="example.simulator",
+            backend_name="example_sim_v1",
+            circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+            execution_mode="provider_simulator",
+            shots=4096,
+            result_digest="sha256:" + "a" * 64,
+            metadata_digest="sha256:" + "b" * 64,
+            hardware_execution=True,
+        )
+
+
+def test_pennylane_maturity_audit_records_provider_execution_artifact_without_promotion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0), ("rx", (0,), 1)),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+    artifact = _provider_plugin_execution_artifact()
+
+    result = run_pennylane_maturity_audit(
+        objective=_objective,
+        pennylane_objective=_objective,
+        pennylane_gradient=_closed_form_gradient,
+        values=np.array([0.4, -0.2], dtype=float),
+        circuit=circuit,
+        phase_qnode_values=np.array([0.37, -0.29], dtype=float),
+        provider_execution_artifact=artifact,
+    )
+
+    plugin_matrix = cast(PennyLanePluginMatrixResult, result.evidence["pennylane_plugin_matrix"])
+    assert result.required_capabilities["provider_plugin_execution"] == "passed"
+    assert plugin_matrix.provider_execution_artifact is artifact
+    assert not result.ready_for_provider_exceedance
+    assert "provider_plugin_execution" not in result.open_gaps
+    assert "provider_plugin_gradient_parity" in result.open_gaps
+    assert "hardware_execution" in result.open_gaps
 
 
 def test_pennylane_bridge_converts_dense_hermitian_observable(
