@@ -19,6 +19,7 @@ PromotionStatus = Literal["promoted", "SOTA-candidate", "hard_gap", "blocked"]
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_PATH = REPO_ROOT / "data" / "differentiable_phase_qnode" / "claim_ledger.json"
+DEFAULT_CAPABILITY_MANIFEST_PATH = REPO_ROOT / "docs" / "_generated" / "capability_manifest.json"
 
 
 @dataclass(frozen=True)
@@ -111,6 +112,27 @@ class ClaimLedgerValidation:
     errors: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class DifferentiableSupportSurfaceAlignment:
+    """Docs/API/generated-manifest alignment result for differentiable claims."""
+
+    passed: bool
+    errors: tuple[str, ...]
+    checked_claim_ids: tuple[str, ...]
+    checked_paths: tuple[str, ...]
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return JSON-ready support-surface alignment evidence."""
+        return {
+            "passed": self.passed,
+            "errors": list(self.errors),
+            "checked_claim_ids": list(self.checked_claim_ids),
+            "checked_paths": list(self.checked_paths),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 MappingLike = dict[str, Any]
 
 
@@ -186,6 +208,88 @@ def validate_public_language_against_ledger(
     return ClaimLedgerValidation(passed=not errors, errors=tuple(errors))
 
 
+def validate_differentiable_support_surface_alignment(
+    rows: Sequence[ClaimLedgerRow] | None = None,
+    *,
+    repo_root: Path = REPO_ROOT,
+    ledger_path: Path = DEFAULT_LEDGER_PATH,
+    manifest_path: Path = DEFAULT_CAPABILITY_MANIFEST_PATH,
+) -> DifferentiableSupportSurfaceAlignment:
+    """Validate that claim-ledger surfaces exist and match generated inventory."""
+
+    ledger = load_differentiable_claim_ledger(ledger_path) if rows is None else None
+    claim_rows = ledger.rows if ledger is not None else tuple(rows or ())
+    manifest_paths, manifest_errors = _load_manifest_paths(manifest_path)
+    errors: list[str] = list(manifest_errors)
+    ledger_validation = validate_claim_ledger(claim_rows)
+    errors.extend(ledger_validation.errors)
+
+    checked_paths: set[str] = {str(manifest_path.relative_to(repo_root))}
+    for row in claim_rows:
+        for surface_name, paths in (
+            ("implementation_surface", row.implementation_surface),
+            ("test_surface", row.test_surface),
+            ("docs_surface", row.docs_surface),
+        ):
+            for path in paths:
+                checked_paths.add(path)
+                if not (repo_root / path).exists():
+                    errors.append(f"{row.claim_id}: {surface_name} path does not exist: {path}")
+                if _requires_manifest_membership(path) and path not in manifest_paths:
+                    errors.append(
+                        f"{row.claim_id}: {surface_name} path is absent from "
+                        f"generated capability manifest: {path}"
+                    )
+
+    return DifferentiableSupportSurfaceAlignment(
+        passed=not errors,
+        errors=tuple(errors),
+        checked_claim_ids=tuple(row.claim_id for row in claim_rows),
+        checked_paths=tuple(sorted(checked_paths)),
+        claim_boundary=(
+            "support-surface alignment audit only; verifies claim-ledger paths "
+            "against the generated capability manifest without promoting "
+            "differentiable performance, hardware, or provider claims"
+        ),
+    )
+
+
+def _load_manifest_paths(manifest_path: Path) -> tuple[set[str], tuple[str, ...]]:
+    if not manifest_path.exists():
+        return set(), (f"generated capability manifest is missing: {manifest_path}",)
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return set(), (f"generated capability manifest is not valid JSON: {exc}",)
+    return _collect_manifest_paths(payload), ()
+
+
+def _collect_manifest_paths(value: Any) -> set[str]:
+    paths: set[str] = set()
+    if isinstance(value, dict):
+        for child in value.values():
+            paths.update(_collect_manifest_paths(child))
+    elif isinstance(value, list | tuple):
+        for child in value:
+            paths.update(_collect_manifest_paths(child))
+    elif isinstance(value, str) and _looks_like_repo_path(value):
+        paths.add(value)
+    return paths
+
+
+def _looks_like_repo_path(value: str) -> bool:
+    return (
+        "/" in value
+        and not value.startswith(("http://", "https://"))
+        and not value.endswith("/")
+        and any(value.startswith(prefix) for prefix in ("src/", "tests/", "docs/", "scripts/"))
+    )
+
+
+def _requires_manifest_membership(path: str) -> bool:
+    return path.startswith(("src/", "tests/", "docs/")) and path != "README.md"
+
+
 def render_claim_ledger_markdown(rows_or_ledger: ClaimLedger | Iterable[ClaimLedgerRow]) -> str:
     """Render a compact Markdown summary for reviewers."""
 
@@ -231,9 +335,12 @@ __all__ = [
     "ClaimLedger",
     "ClaimLedgerRow",
     "ClaimLedgerValidation",
+    "DEFAULT_CAPABILITY_MANIFEST_PATH",
     "DEFAULT_LEDGER_PATH",
+    "DifferentiableSupportSurfaceAlignment",
     "load_differentiable_claim_ledger",
     "render_claim_ledger_markdown",
+    "validate_differentiable_support_surface_alignment",
     "validate_claim_ledger",
     "validate_public_language_against_ledger",
 ]

@@ -70,6 +70,11 @@ ledger, isolated CI benchmark artefact, and external comparison rows all pass.
 The ledger is committed at
 `data/differentiable_phase_qnode/claim_ledger.json` with a reviewer summary in
 `data/differentiable_phase_qnode/claim_ledger.md`.
+`validate_differentiable_support_surface_alignment()` checks that each ledger
+row still points to existing implementation, test, and documentation surfaces
+and that source/test/docs paths are present in the generated capability
+manifest. This is a consistency gate only; it does not promote hardware,
+provider, or performance claims.
 
 Optional framework parity uses an explicit CPU-only overlay instead of the
 repository `jax` extra, because that extra resolves to `jax[cuda12]`.

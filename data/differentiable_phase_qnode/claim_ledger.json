@@ -122,6 +122,33 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Bounded Phase-QNode differentiable execution only; no broad quantum advantage, provider, QPU, or production performance claim."
+    },
+    {
+      "claim_id": "support_surface_alignment",
+      "claim_text": "Differentiable claim-ledger rows are checked against existing implementation, test, docs, and generated capability-manifest surfaces.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_claim_ledger.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_claim_ledger.py"
+      ],
+      "docs_surface": [
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-support-surface-alignment-audit-v1"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-support-surface-alignment-audit-v1"
+      ],
+      "known_gaps": [
+        "The audit checks committed generated-manifest inventory and does not replace isolated benchmark artefacts.",
+        "It validates support-surface wiring, not provider hardware execution or production performance."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Support-surface alignment only; verifies implementation, tests, docs, and generated inventory without promoting performance, provider, or QPU claims."
     }
   ]
 }

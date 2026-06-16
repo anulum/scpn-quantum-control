@@ -18,6 +18,7 @@ from scpn_quantum_control.differentiable_claim_ledger import (
     load_differentiable_claim_ledger,
     render_claim_ledger_markdown,
     validate_claim_ledger,
+    validate_differentiable_support_surface_alignment,
     validate_public_language_against_ledger,
 )
 
@@ -123,3 +124,39 @@ def test_public_language_cannot_exceed_unpromoted_ledger() -> None:
 
     assert not validation.passed
     assert "world-leading" in validation.errors[0]
+
+
+def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger() -> None:
+    alignment = validate_differentiable_support_surface_alignment()
+
+    assert alignment.passed
+    assert {
+        "framework_overlay_parity",
+        "ci_benchmark_evidence",
+        "external_framework_comparison",
+        "phase_qnode_claim_boundary",
+    } <= set(alignment.checked_claim_ids)
+    assert "README.md" in alignment.checked_paths
+    assert "docs/differentiable_programming.md" in alignment.checked_paths
+    assert "docs/_generated/capability_manifest.json" in alignment.checked_paths
+    assert "support-surface alignment audit" in alignment.claim_boundary
+
+
+def test_support_surface_alignment_audit_rejects_missing_manifest_path() -> None:
+    row = ClaimLedgerRow(
+        claim_id="missing_manifest",
+        claim_text="A bounded differentiable surface that is not in the manifest.",
+        implementation_surface=("src/scpn_quantum_control/differentiable_claim_ledger.py",),
+        test_surface=("tests/test_differentiable_claim_ledger.py",),
+        docs_surface=("docs/not_in_manifest.md",),
+        evidence_artifact_ids=("artifact",),
+        benchmark_artifact_ids=("artifact",),
+        known_gaps=("none",),
+        promotion_status="SOTA-candidate",
+        claim_boundary="bounded",
+    )
+
+    alignment = validate_differentiable_support_surface_alignment(rows=[row])
+
+    assert not alignment.passed
+    assert any("docs/not_in_manifest.md" in error for error in alignment.errors)
