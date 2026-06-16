@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any, cast
 
 import numpy as np
@@ -3620,6 +3621,93 @@ def test_whole_program_ad_captures_bytecode_source_alias_mutation_and_loop_seman
     }
     assert any(node.op.startswith("branch:") for node in result.ir_nodes)
     np.testing.assert_allclose(result.gradient, [math.cos(0.5) + 1.0, 1.0], atol=1.0e-12)
+
+
+def test_whole_program_ad_reports_accepted_python_calling_semantics() -> None:
+    """Whole-program AD should expose accepted closure/default/kwargs semantics."""
+
+    scale = 2.5
+
+    def objective(
+        values: np.ndarray,
+        bias: float = 0.25,
+        **metadata: float,
+    ) -> object:
+        return sum(item for item in (scale * values[0], bias, metadata.get("offset", 0.0)))
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([3.0], dtype=np.float64),
+        parameters=(Parameter("theta"),),
+    )
+
+    assert result.semantics_report is not None
+    assert result.semantics_report.unsupported_python_semantics == ()
+    assert set(result.semantics_report.accepted_python_semantics) >= {
+        "closure",
+        "default_argument",
+        "generator_expression",
+        "var_keyword_parameter",
+    }
+    assert any(
+        feature.kind == "python_semantics" and feature.detail == "closure"
+        for feature in result.source_ir_features
+    )
+    np.testing.assert_allclose(result.gradient, [scale], atol=1.0e-12)
+
+
+def test_whole_program_ad_fails_closed_for_unsupported_python_semantics() -> None:
+    """Unsupported Python constructs should be rejected before objective execution."""
+
+    @dataclass(frozen=True)
+    class ScaleHolder:
+        scale: float
+
+    holder = ScaleHolder(scale=2.0)
+
+    def comprehension_objective(values: np.ndarray) -> object:
+        return sum([item for item in values])
+
+    def generator_objective(values: np.ndarray) -> object:
+        yield values[0]
+
+    def context_manager_objective(values: np.ndarray) -> object:
+        with pytest.raises(RuntimeError):
+            raise RuntimeError("sentinel")
+        return values[0]
+
+    def exception_objective(values: np.ndarray) -> object:
+        try:
+            return values[0]
+        except RuntimeError:
+            return values[0] * 0.0
+
+    def recursive_objective(values: np.ndarray) -> object:
+        if values[0] <= 0.0:
+            return values[0]
+        return recursive_objective(values - 1.0)
+
+    def object_attribute_objective(values: np.ndarray) -> object:
+        return holder.scale * values[0]
+
+    def passthrough(function: Callable[[np.ndarray], object]) -> Callable[[np.ndarray], object]:
+        return function
+
+    @passthrough
+    def decorated_objective(values: np.ndarray) -> object:
+        return values[0]
+
+    for objective, diagnostic in (
+        (comprehension_objective, "comprehension"),
+        (generator_objective, "generator"),
+        (context_manager_objective, "context_manager"),
+        (exception_objective, "exception_control_flow"),
+        (recursive_objective, "recursion"),
+        (object_attribute_objective, "object_attribute"),
+        (decorated_objective, "decorator"),
+    ):
+        with pytest.raises(ValueError, match=diagnostic):
+            whole_program_value_and_grad(objective, np.array([1.0], dtype=np.float64))
 
 
 def test_whole_program_ad_handles_vector_numpy_reductions_dot_and_array_mutation() -> None:

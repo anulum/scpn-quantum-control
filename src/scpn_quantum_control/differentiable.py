@@ -311,6 +311,8 @@ class WholeProgramSemanticsReport:
     control_flow_observed: bool
     numpy_observed: bool
     differentiation_semantics: str
+    accepted_python_semantics: tuple[str, ...] = ()
+    unsupported_python_semantics: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         for name in (
@@ -327,6 +329,12 @@ class WholeProgramSemanticsReport:
                 raise ValueError(f"{name} must be a boolean")
         if not self.differentiation_semantics:
             raise ValueError("differentiation_semantics must be non-empty")
+        for name in ("accepted_python_semantics", "unsupported_python_semantics"):
+            semantics = getattr(self, name)
+            if not isinstance(semantics, tuple):
+                raise ValueError(f"{name} must be a tuple")
+            if any(not isinstance(item, str) or not item for item in semantics):
+                raise ValueError(f"{name} entries must be non-empty strings")
 
 
 @dataclass(frozen=True)
@@ -436,6 +444,18 @@ def whole_program_value_and_grad(
         raise ValueError("whole-program objective must be callable")
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
+    source = _objective_source(objective)
+    bytecode_instructions = _objective_bytecode(objective)
+    accepted_python_semantics = _accepted_python_semantics(objective, source)
+    unsupported_python_semantics = _unsupported_python_semantics(objective, source)
+    source_ir_features = _source_ir_features(
+        source,
+        accepted_python_semantics=accepted_python_semantics,
+        unsupported_python_semantics=unsupported_python_semantics,
+    )
+    if unsupported_python_semantics:
+        unsupported = ", ".join(unsupported_python_semantics)
+        raise ValueError(f"unsupported whole-program AD Python semantics: {unsupported}")
     context = _WholeProgramTraceContext(parameter_values.size)
     traced_values: list[TraceADScalar] = []
     for index, (value, parameter) in enumerate(zip(parameter_values, parameter_meta, strict=True)):
@@ -450,26 +470,26 @@ def whole_program_value_and_grad(
         raw = raw.item()
     if not isinstance(raw, TraceADScalar):
         raise ValueError("whole-program objective must return a whole-program AD scalar")
-    source = _objective_source(objective)
     trace_events = (
         _trace_whole_program_objective(cast(ScalarObjective, objective), parameter_values)
         if trace
         else ()
     )
-    bytecode_instructions = _objective_bytecode(objective)
-    source_ir_features = _source_ir_features(source)
     semantics_report = _whole_program_semantics_report(
         bytecode_instructions=bytecode_instructions,
         source_ir_features=source_ir_features,
         trace_events=trace_events,
         source=source,
+        accepted_python_semantics=accepted_python_semantics,
+        unsupported_python_semantics=unsupported_python_semantics,
         numpy_observed=_source_mentions_numpy(source)
         or any(node.op in {"sin", "cos", "exp", "log"} for node in context.nodes),
         differentiation_semantics=(
             "operator-intercepted exact forward AD over the executed Python program; "
-            "loops, branches, local aliasing, list mutation, and supported NumPy scalar "
-            "ufuncs execute with derivative-carrying values, while unsupported "
-            "derivative-losing operations fail closed"
+            "loops, branches, local aliasing, list mutation, closure/default/keyword "
+            "calling semantics, and supported NumPy scalar ufuncs execute with "
+            "derivative-carrying values, while unsupported derivative-losing or "
+            "interpreter-level Python semantics fail closed"
         ),
     )
     program_ir = context.program_ir(
@@ -503,9 +523,11 @@ def whole_program_value_and_grad(
         },
         claim_boundary=(
             "whole-program operator-intercepted AD for executed Python scalar arithmetic, "
-            "loops, local aliasing, list mutation, supported NumPy scalar ufuncs, and "
-            "executed-branch control flow with deterministic SSA/effect IR evidence; no "
-            "finite-difference fallback and no executable Rust, LLVM, or JIT AD lowering claim"
+            "loops, local aliasing, list mutation, supported closure/default/keyword calling "
+            "semantics, supported NumPy scalar ufuncs, and executed-branch control flow with "
+            "deterministic SSA/effect IR evidence; unsupported interpreter-level Python "
+            "constructs fail closed before execution; no finite-difference fallback and no "
+            "executable Rust, LLVM, or JIT AD lowering claim"
         ),
         bytecode_instructions=bytecode_instructions,
         source_ir_features=source_ir_features,
@@ -7624,16 +7646,25 @@ def _objective_bytecode(
     )
 
 
-def _source_ir_features(source: str | None) -> tuple[WholeProgramSourceIRFeature, ...]:
+def _source_ir_features(
+    source: str | None,
+    *,
+    accepted_python_semantics: tuple[str, ...] = (),
+    unsupported_python_semantics: tuple[str, ...] = (),
+) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return source-level control, alias, mutation, and loop features."""
 
+    features: list[WholeProgramSourceIRFeature] = []
+    for detail in accepted_python_semantics:
+        features.append(WholeProgramSourceIRFeature("python_semantics", detail, 1))
+    for detail in unsupported_python_semantics:
+        features.append(WholeProgramSourceIRFeature("unsupported_python_semantics", detail, 1))
     if source is None:
-        return ()
+        return tuple(features)
     try:
         tree = ast.parse(source)
     except SyntaxError:
-        return ()
-    features: list[WholeProgramSourceIRFeature] = []
+        return tuple(features)
 
     def add(node: ast.AST, kind: str, detail: str) -> None:
         line_number = int(getattr(node, "lineno", 1) or 1)
@@ -7682,6 +7713,98 @@ def _source_ir_features(source: str | None) -> tuple[WholeProgramSourceIRFeature
     return tuple(features)
 
 
+def _accepted_python_semantics(
+    objective: Callable[..., object],
+    source: str | None,
+) -> tuple[str, ...]:
+    """Return Python calling semantics supported by whole-program AD preflight."""
+
+    accepted: set[str] = set()
+    code = getattr(objective, "__code__", None)
+    if code is not None and code.co_freevars:
+        accepted.add("closure")
+    try:
+        signature = inspect.signature(objective)
+    except (TypeError, ValueError):
+        signature = None
+    if signature is not None:
+        for parameter in signature.parameters.values():
+            if parameter.default is not inspect.Signature.empty:
+                accepted.add("default_argument")
+            if parameter.kind is inspect.Parameter.KEYWORD_ONLY:
+                accepted.add("keyword_only_parameter")
+            elif parameter.kind is inspect.Parameter.VAR_KEYWORD:
+                accepted.add("var_keyword_parameter")
+            elif parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+                accepted.add("var_positional_parameter")
+    if _source_has_node(source, ast.GeneratorExp):
+        accepted.add("generator_expression")
+    return tuple(sorted(accepted))
+
+
+def _unsupported_python_semantics(
+    objective: Callable[..., object],
+    source: str | None,
+) -> tuple[str, ...]:
+    """Return unsupported Python semantics detected before objective execution."""
+
+    unsupported: set[str] = set()
+    if source is None:
+        return ()
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return ()
+
+    objective_name = getattr(objective, "__name__", "")
+    captured_attribute_roots = _captured_or_global_names(objective)
+    allowed_attribute_roots = {"math", "np", "numpy"}
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ListComp | ast.SetComp | ast.DictComp):
+            unsupported.add("comprehension")
+        elif isinstance(node, ast.Yield | ast.YieldFrom):
+            unsupported.add("generator")
+        elif isinstance(node, ast.With | ast.AsyncWith):
+            unsupported.add("context_manager")
+        elif isinstance(node, ast.Try | ast.Raise | ast.Assert):
+            unsupported.add("exception_control_flow")
+        elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            if node.decorator_list:
+                unsupported.add("decorator")
+        elif isinstance(node, ast.Call) and objective_name:
+            call_name = _ast_call_name(node.func)
+            if call_name.rsplit(".", 1)[-1] == objective_name:
+                unsupported.add("recursion")
+        elif isinstance(node, ast.Attribute):
+            root_name = _ast_attribute_root(node)
+            if root_name in captured_attribute_roots and root_name not in allowed_attribute_roots:
+                unsupported.add("object_attribute")
+    return tuple(sorted(unsupported))
+
+
+def _captured_or_global_names(objective: Callable[..., object]) -> set[str]:
+    """Return names whose attributes would resolve through closure/global objects."""
+
+    code = getattr(objective, "__code__", None)
+    if code is None:
+        return set()
+    names = set(code.co_freevars)
+    globals_mapping = getattr(objective, "__globals__", {})
+    if isinstance(globals_mapping, Mapping):
+        names.update(name for name in code.co_names if name in globals_mapping)
+    return names
+
+
+def _ast_attribute_root(node: ast.Attribute) -> str:
+    current: ast.AST = node
+    while isinstance(current, ast.Attribute):
+        current = current.value
+    if isinstance(current, ast.Name):
+        return current.id
+    return ""
+
+
 def _is_mutation_target(node: ast.AST) -> bool:
     return isinstance(node, ast.Subscript | ast.Attribute)
 
@@ -7701,6 +7824,8 @@ def _whole_program_semantics_report(
     source_ir_features: tuple[WholeProgramSourceIRFeature, ...],
     trace_events: tuple[WholeProgramTraceEvent, ...],
     source: str | None,
+    accepted_python_semantics: tuple[str, ...],
+    unsupported_python_semantics: tuple[str, ...],
     numpy_observed: bool,
     differentiation_semantics: str,
 ) -> WholeProgramSemanticsReport:
@@ -7722,21 +7847,39 @@ def _whole_program_semantics_report(
         or bool(jump_ops),
         numpy_observed=numpy_observed or "numpy" in feature_kinds,
         differentiation_semantics=differentiation_semantics,
+        accepted_python_semantics=accepted_python_semantics,
+        unsupported_python_semantics=unsupported_python_semantics,
     )
 
 
 def _source_has_control_flow(source: str | None) -> bool:
     """Return whether source contains explicit Python control-flow nodes."""
 
+    return _source_has_node(source, ast.If, ast.For, ast.While, ast.IfExp)
+
+
+def _source_has_node(source: str | None, *node_types: type[ast.AST]) -> bool:
+    """Return whether source contains any AST node of the requested types."""
+
     if source is None:
         return False
     try:
         tree = ast.parse(source)
     except SyntaxError:
-        return any(token in source for token in ("if ", "for ", "while "))
-    return any(
-        isinstance(node, (ast.If, ast.For, ast.While, ast.IfExp)) for node in ast.walk(tree)
-    )
+        tokens = {
+            ast.If: "if ",
+            ast.For: "for ",
+            ast.While: "while ",
+            ast.IfExp: " if ",
+            ast.GeneratorExp: " for ",
+        }
+        return any(
+            token in source
+            for node_type in node_types
+            for token in (tokens.get(node_type),)
+            if token
+        )
+    return any(isinstance(node, node_types) for node in ast.walk(tree))
 
 
 def _source_mentions_numpy(source: str | None) -> bool:
