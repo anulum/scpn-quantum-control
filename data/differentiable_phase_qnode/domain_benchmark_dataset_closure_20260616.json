@@ -1,0 +1,339 @@
+{
+  "artifact_id": "differentiable-domain-benchmark-closure-20260616",
+  "claim_boundary": "Exact-answer and published public-domain differentiable dataset validation evidence only; no hardware execution or isolated benchmark promotion.",
+  "classification": "functional_non_isolated",
+  "parent_ready": true,
+  "promotion_ready": false,
+  "published_dataset_suite": {
+    "case_count": 4,
+    "cases": [
+      {
+        "artifact_path": "/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks/eeg_alpha_plv_8ch.json",
+        "artifact_sha256": "fde5e68ba4b20fd5ebeb2e06fe909d15aae64e4a17e828927a4ab9c0ec311c57",
+        "claim_boundary": "published domain benchmark cases reference committed public QPU data artifacts and validate their Kuramoto conversion path; they are not hardware execution, live provider, or performance benchmark evidence",
+        "coupling_frobenius_norm": 2.631653472628948,
+        "dataset_id": "eeg_alpha_plv_8ch",
+        "domain": "eeg",
+        "evidence_class": "published_domain_artifact",
+        "n_oscillators": 8,
+        "omega_l2_norm": 29.03446228191595,
+        "publication_safe": true,
+        "source_equation_ids": [
+          "PLV001",
+          "KUR001"
+        ],
+        "source_formulae": [
+          "PLV_nm = |N^-1 * sum_k exp(i * (phi_n(k) - phi_m(k)))|",
+          "K_nm = normalise_symmetric(PLV_nm)"
+        ],
+        "source_licence": "curated small benchmark matrix, no raw participant recording",
+        "source_mode": "curated",
+        "source_reference": "Stam et al., Clinical Neurophysiology 118, 2317 (2007); Breakspear, Nature Neuroscience 20, 340 (2017)",
+        "transform": "alpha-band PLV matrix normalised to a symmetric Kuramoto K_nm"
+      },
+      {
+        "artifact_path": "/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks/iter_mhd_8mode.json",
+        "artifact_sha256": "829b6550834b4843c4e35b42252704dcd400929c4899bb42a93590a58b592df8",
+        "claim_boundary": "published domain benchmark cases reference committed public QPU data artifacts and validate their Kuramoto conversion path; they are not hardware execution, live provider, or performance benchmark evidence",
+        "coupling_frobenius_norm": 1.8656902208030142,
+        "dataset_id": "iter_mhd_8mode",
+        "domain": "plasma",
+        "evidence_class": "published_domain_artifact",
+        "n_oscillators": 8,
+        "omega_l2_norm": 18.648056198971517,
+        "publication_safe": true,
+        "source_equation_ids": [
+          "MHD001",
+          "KUR001"
+        ],
+        "source_formulae": [
+          "dA_m/dt = gamma_m * A_m + sum_n C_mn * A_n",
+          "K_mn = normalise_symmetric(|C_mn|)"
+        ],
+        "source_licence": "curated small benchmark matrix, no proprietary discharge trace",
+        "source_mode": "curated",
+        "source_reference": "La Haye, Physics of Plasmas 13, 055501 (2006)",
+        "transform": "NTM/RWM mode-coupling weights normalised to a symmetric Kuramoto K_nm"
+      },
+      {
+        "artifact_path": "/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks/ieee5bus_power_grid.json",
+        "artifact_sha256": "44600f6590d74691dc5efbb64f5abb86397182747e78d4e9c67649fbd5e16459",
+        "claim_boundary": "published domain benchmark cases reference committed public QPU data artifacts and validate their Kuramoto conversion path; they are not hardware execution, live provider, or performance benchmark evidence",
+        "coupling_frobenius_norm": 0.005568213121779326,
+        "dataset_id": "ieee5bus_power_grid",
+        "domain": "power-grid",
+        "evidence_class": "published_domain_artifact",
+        "n_oscillators": 5,
+        "omega_l2_norm": 0.027386127875258303,
+        "publication_safe": true,
+        "source_equation_ids": [
+          "PWR001",
+          "KUR001"
+        ],
+        "source_formulae": [
+          "P_i = sum_j V_i * V_j * B_ij * sin(delta_i - delta_j)",
+          "K_ij = V_i * V_j * B_ij / (2 * H_i * omega_0)"
+        ],
+        "source_licence": "small public benchmark constants",
+        "source_mode": "curated",
+        "source_reference": "IEEE PES public test feeder / Stagg-El-Abiad 5-bus constants",
+        "transform": "V_i V_j B_ij / (2 H_i omega_0) Kuramoto conversion"
+      },
+      {
+        "artifact_path": "/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/public_application_benchmarks/friston_fep_6node.json",
+        "artifact_sha256": "97d53aed4d8a4b5274982a54c6e49484c5f49c25381f8be65053440cca8bf9f2",
+        "claim_boundary": "published domain benchmark cases reference committed public QPU data artifacts and validate their Kuramoto conversion path; they are not hardware execution, live provider, or performance benchmark evidence",
+        "coupling_frobenius_norm": 1.1794066304714417,
+        "dataset_id": "friston_fep_6node",
+        "domain": "fep",
+        "evidence_class": "published_domain_artifact",
+        "n_oscillators": 6,
+        "omega_l2_norm": 0.2525866188063018,
+        "publication_safe": true,
+        "source_equation_ids": [
+          "FEP001",
+          "KUR001"
+        ],
+        "source_formulae": [
+          "F = E_q[ln q(s) - ln p(o,s)]",
+          "K_nm = normalise_symmetric(precision_graph_nm)"
+        ],
+        "source_licence": "curated small workflow benchmark, no human-subject data",
+        "source_mode": "curated",
+        "source_reference": "Friston, Nature Reviews Neuroscience 11, 127 (2010); Buckley et al., Entropy 19, 318 (2017)",
+        "transform": "predictive-coding precision graph exposed as a Kuramoto K_nm"
+      }
+    ],
+    "claim_boundary": "published domain benchmark cases reference committed public QPU data artifacts and validate their Kuramoto conversion path; they are not hardware execution, live provider, or performance benchmark evidence",
+    "dataset_ids": [
+      "eeg_alpha_plv_8ch",
+      "iter_mhd_8mode",
+      "ieee5bus_power_grid",
+      "friston_fep_6node"
+    ],
+    "evidence_class": "published_domain_artifact"
+  },
+  "published_validation": {
+    "case_count": 4,
+    "claim_boundary": "published domain benchmark cases reference committed public QPU data artifacts and validate their Kuramoto conversion path; they are not hardware execution, live provider, or performance benchmark evidence",
+    "evidence_class": "published_domain_artifact",
+    "passed": true,
+    "results": [
+      {
+        "artifact_sha256": "fde5e68ba4b20fd5ebeb2e06fe909d15aae64e4a17e828927a4ab9c0ec311c57",
+        "dataset_id": "eeg_alpha_plv_8ch",
+        "domain": "eeg",
+        "formula_preservation_passed": true,
+        "kuramoto_conversion_passed": true,
+        "metadata_roundtrip_passed": true,
+        "n_oscillators": 8,
+        "passed": true,
+        "publication_safe": true
+      },
+      {
+        "artifact_sha256": "829b6550834b4843c4e35b42252704dcd400929c4899bb42a93590a58b592df8",
+        "dataset_id": "iter_mhd_8mode",
+        "domain": "plasma",
+        "formula_preservation_passed": true,
+        "kuramoto_conversion_passed": true,
+        "metadata_roundtrip_passed": true,
+        "n_oscillators": 8,
+        "passed": true,
+        "publication_safe": true
+      },
+      {
+        "artifact_sha256": "44600f6590d74691dc5efbb64f5abb86397182747e78d4e9c67649fbd5e16459",
+        "dataset_id": "ieee5bus_power_grid",
+        "domain": "power-grid",
+        "formula_preservation_passed": true,
+        "kuramoto_conversion_passed": true,
+        "metadata_roundtrip_passed": true,
+        "n_oscillators": 5,
+        "passed": true,
+        "publication_safe": true
+      },
+      {
+        "artifact_sha256": "97d53aed4d8a4b5274982a54c6e49484c5f49c25381f8be65053440cca8bf9f2",
+        "dataset_id": "friston_fep_6node",
+        "domain": "fep",
+        "formula_preservation_passed": true,
+        "kuramoto_conversion_passed": true,
+        "metadata_roundtrip_passed": true,
+        "n_oscillators": 6,
+        "passed": true,
+        "publication_safe": true
+      }
+    ]
+  },
+  "schema": "scpn_qc_differentiable_domain_benchmark_closure_v1",
+  "synthetic_dataset_suite": {
+    "case_count": 3,
+    "claim_boundary": "synthetic exact-answer datasets validate bounded differentiable math and training fixtures; they are not hardware, external measured-system, or isolated performance benchmark evidence",
+    "dataset_ids": [
+      "bounded_qnn_phase_separable_exact",
+      "bounded_qnn_two_feature_mixed_exact",
+      "kuramoto_xy_two_oscillator_pi_over_3"
+    ],
+    "evidence_class": "synthetic_exact_answer",
+    "kuramoto_cases": [
+      {
+        "analytic_contract": "two-oscillator XY phase energy E=-K*cos(theta_1-theta_0), gradient=(-K*sin(delta), K*sin(delta)), and R=|(exp(i theta_0)+exp(i theta_1))/2|",
+        "claim_boundary": "synthetic exact-answer datasets validate bounded differentiable math and training fixtures; they are not hardware, external measured-system, or isolated performance benchmark evidence",
+        "coupling": [
+          [
+            0.0,
+            0.5
+          ],
+          [
+            0.5,
+            0.0
+          ]
+        ],
+        "dataset_id": "kuramoto_xy_two_oscillator_pi_over_3",
+        "domain": "kuramoto_xy_pair",
+        "evidence_class": "synthetic_exact_answer",
+        "expected_energy_gradient": [
+          -0.4330127018922193,
+          0.4330127018922193
+        ],
+        "expected_mean_phase": 0.5235987755982988,
+        "expected_order_parameter": 0.8660254037844386,
+        "expected_xy_energy": -0.25000000000000006,
+        "n_oscillators": 2,
+        "natural_frequencies": [
+          0.0,
+          0.0
+        ],
+        "phases": [
+          0.0,
+          1.0471975511965976
+        ],
+        "source_kind": "synthetic_closed_form"
+      }
+    ],
+    "qnn_cases": [
+      {
+        "analytic_contract": "single-feature bounded phase response p=0.5*(1-cos(x+theta)) has exact labels and zero MSE gradient at theta=0",
+        "claim_boundary": "synthetic exact-answer datasets validate bounded differentiable math and training fixtures; they are not hardware, external measured-system, or isolated performance benchmark evidence",
+        "dataset_id": "bounded_qnn_phase_separable_exact",
+        "domain": "bounded_phase_qnn",
+        "evidence_class": "synthetic_exact_answer",
+        "expected_gradient": [
+          0.0
+        ],
+        "expected_loss": 0.0,
+        "expected_probabilities": [
+          0.0,
+          1.0
+        ],
+        "features": [
+          [
+            0.0
+          ],
+          [
+            3.141592653589793
+          ]
+        ],
+        "labels": [
+          0.0,
+          1.0
+        ],
+        "n_features": 1,
+        "n_samples": 2,
+        "params": [
+          0.0
+        ],
+        "source_kind": "synthetic_closed_form"
+      },
+      {
+        "analytic_contract": "two-feature bounded phase response with full-batch MSE and multi-frequency parameter-shift gradient",
+        "claim_boundary": "synthetic exact-answer datasets validate bounded differentiable math and training fixtures; they are not hardware, external measured-system, or isolated performance benchmark evidence",
+        "dataset_id": "bounded_qnn_two_feature_mixed_exact",
+        "domain": "bounded_phase_qnn",
+        "evidence_class": "synthetic_exact_answer",
+        "expected_gradient": [
+          -0.09945648943575436,
+          -0.0709249819235928
+        ],
+        "expected_loss": 0.20112073737315475,
+        "expected_probabilities": [
+          0.08733219254516089,
+          0.2629200591104811,
+          0.02098371017977227
+        ],
+        "features": [
+          [
+            0.2,
+            -0.4
+          ],
+          [
+            1.1,
+            0.7
+          ],
+          [
+            -0.8,
+            0.3
+          ]
+        ],
+        "labels": [
+          0.0,
+          1.0,
+          0.25
+        ],
+        "n_features": 2,
+        "n_samples": 3,
+        "params": [
+          0.4,
+          -0.2
+        ],
+        "source_kind": "synthetic_closed_form"
+      }
+    ]
+  },
+  "synthetic_validation": {
+    "case_count": 3,
+    "claim_boundary": "synthetic exact-answer datasets validate bounded differentiable math and training fixtures; they are not hardware, external measured-system, or isolated performance benchmark evidence",
+    "evidence_class": "synthetic_exact_answer",
+    "max_abs_error": 0.0,
+    "passed": true,
+    "results": [
+      {
+        "checked_quantities": [
+          "probabilities",
+          "mse_loss",
+          "parameter_shift_gradient"
+        ],
+        "dataset_id": "bounded_qnn_phase_separable_exact",
+        "domain": "bounded_phase_qnn",
+        "max_abs_error": 0.0,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      {
+        "checked_quantities": [
+          "probabilities",
+          "mse_loss",
+          "parameter_shift_gradient"
+        ],
+        "dataset_id": "bounded_qnn_two_feature_mixed_exact",
+        "domain": "bounded_phase_qnn",
+        "max_abs_error": 0.0,
+        "passed": true,
+        "tolerance": 1e-12
+      },
+      {
+        "checked_quantities": [
+          "order_parameter",
+          "mean_phase",
+          "xy_energy",
+          "energy_gradient"
+        ],
+        "dataset_id": "kuramoto_xy_two_oscillator_pi_over_3",
+        "domain": "kuramoto_xy_pair",
+        "max_abs_error": 0.0,
+        "passed": true,
+        "tolerance": 1e-12
+      }
+    ]
+  }
+}

@@ -360,6 +360,11 @@ arbitrary feature maps are differentiable.
 
 ## Exact-answer differentiable domain datasets
 
+Closure artefact:
+`data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json`.
+It combines exact-answer synthetic validation with the published public-domain
+artefact validation suite and remains `functional_non_isolated`.
+
 ```python
 from scpn_quantum_control.phase import (
     load_differentiable_domain_benchmark_datasets,
