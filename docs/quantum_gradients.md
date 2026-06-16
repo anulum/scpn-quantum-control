@@ -1944,11 +1944,17 @@ route traces only that same bounded loss through `tf.function` and checks its
 `tensorflow_bounded_qnn_keras_layer(...)` and
 `run_tensorflow_keras_layer_wrapper_audit(...)` routes expose only that same
 bounded loss through a Keras `Layer` and checks its `GradientTape` gradient
-against the same reference. `run_tensorflow_maturity_audit(...)` aggregates the
-bounded TensorFlow tensor, `GradientTape`, `tf.function`, XLA, and Keras-layer
-passes into a provider-maturity record while keeping arbitrary Phase-QNode
-TensorFlow lowering, full graph autodiff-through-simulator, provider callbacks,
-hardware gradients, and isolated benchmark promotion blocked. All remain outside
+against the same reference. `run_tensorflow_phase_qnode_lowering_matrix(...)`
+then records the route-level boundary: bounded tensor, `GradientTape`,
+`tf.function`, XLA, and Keras-layer routes are marked passed, while arbitrary
+registered Phase-QNode statevector lowering, graph autodiff, finite-shot
+lowering, provider callbacks, hardware lowering, dynamic circuits, and
+isolated-benchmark promotion remain blocked with their required artefacts
+listed in the returned route metadata. `run_tensorflow_maturity_audit(...)`
+aggregates the bounded TensorFlow evidence plus that matrix into a
+provider-maturity record while keeping arbitrary Phase-QNode TensorFlow
+lowering, full graph autodiff-through-simulator, provider callbacks, hardware
+gradients, and isolated benchmark promotion blocked. All remain outside
 arbitrary provider or simulator autodiff and do not claim broad XLA or
 unrestricted Keras training-loop coverage.
 

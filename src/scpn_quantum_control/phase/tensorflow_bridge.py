@@ -282,6 +282,79 @@ class PhaseTensorFlowMaturityAuditResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTensorFlowPhaseQNodeLoweringRoute:
+    """One TensorFlow route in the registered Phase-QNode parity matrix."""
+
+    name: str
+    status: str
+    reason: str
+    requires: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready TensorFlow route metadata."""
+        return {
+            "name": self.name,
+            "status": self.status,
+            "reason": self.reason,
+            "requires": list(self.requires),
+        }
+
+
+@dataclass(frozen=True)
+class PhaseTensorFlowPhaseQNodeLoweringMatrixResult:
+    """Fail-closed TensorFlow parity matrix for arbitrary registered Phase-QNodes."""
+
+    routes: tuple[PhaseTensorFlowPhaseQNodeLoweringRoute, ...]
+    claim_boundary: str = "bounded_tensorflow_phase_qnode_lowering_matrix"
+
+    @property
+    def bounded_qnn_routes_ready(self) -> bool:
+        """Return whether the bounded TensorFlow QNN routes are declared ready."""
+        return all(
+            route.status == "passed"
+            for route in self.routes
+            if route.name.startswith("bounded_qnn_")
+        )
+
+    @property
+    def arbitrary_phase_qnode_lowering_ready(self) -> bool:
+        """Return whether arbitrary registered Phase-QNode TensorFlow lowering is ready."""
+        return all(
+            route.status == "passed"
+            for route in self.routes
+            if route.name.startswith("registered_phase_qnode_")
+        )
+
+    @property
+    def ready_for_provider_exceedance(self) -> bool:
+        """Return whether this matrix permits TensorFlow provider-exceedance claims."""
+        return all(route.status == "passed" for route in self.routes)
+
+    @property
+    def open_gaps(self) -> tuple[str, ...]:
+        """Return routes that still block TensorFlow provider-exceedance claims."""
+        return tuple(route.name for route in self.routes if route.status != "passed")
+
+    def route_status(self, name: str) -> str:
+        """Return the status for a named route, failing closed on unknown names."""
+        for route in self.routes:
+            if route.name == name:
+                return route.status
+        raise KeyError(f"unknown TensorFlow Phase-QNode lowering route: {name}")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready TensorFlow Phase-QNode lowering parity metadata."""
+        return {
+            "bounded_qnn_routes_ready": self.bounded_qnn_routes_ready,
+            "arbitrary_phase_qnode_lowering_ready": self.arbitrary_phase_qnode_lowering_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "routes": {route.name: route.to_dict() for route in self.routes},
+            "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_tensorflow() -> Any:
     try:
         import tensorflow as tf
@@ -299,6 +372,113 @@ def is_phase_tensorflow_available() -> bool:
     except ImportError:
         return False
     return True
+
+
+def run_tensorflow_phase_qnode_lowering_matrix() -> PhaseTensorFlowPhaseQNodeLoweringMatrixResult:
+    """Return the TensorFlow parity matrix for registered Phase-QNode lowering.
+
+    The current TensorFlow surface is implemented for bounded phase-QNN tensor,
+    ``GradientTape``, ``tf.function``, XLA, and Keras-layer routes. Arbitrary
+    registered Phase-QNode graph lowering remains blocked until native lowering
+    rules, graph autodiff parity artefacts, provider safety evidence, hardware
+    evidence, and isolated benchmark artefacts exist.
+    """
+
+    routes = (
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="bounded_qnn_analytic_tensor",
+            status="passed",
+            reason="bounded phase-QNN analytic TensorFlow tensor value-and-gradient is implemented",
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="bounded_qnn_gradient_tape",
+            status="passed",
+            reason="bounded phase-QNN GradientTape compatibility is implemented",
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="bounded_qnn_tf_function",
+            status="passed",
+            reason="bounded phase-QNN tf.function compatibility is implemented",
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="bounded_qnn_xla",
+            status="passed",
+            reason="bounded phase-QNN XLA compatibility is implemented",
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="bounded_qnn_keras_layer_wrapper",
+            status="passed",
+            reason="bounded TensorFlow Keras layer wrapper is implemented",
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_statevector_lowering",
+            status="blocked",
+            reason="arbitrary registered Phase-QNode circuits do not yet lower into TensorFlow graphs",
+            requires=(
+                "native_tensorflow_lowering_rules",
+                "gate_observable_coverage_matrix",
+                "statevector_gradient_parity_artifact",
+            ),
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_graph_lowering",
+            status="blocked",
+            reason="full graph autodiff through arbitrary simulators is not implemented",
+            requires=(
+                "graph_autodiff_contract",
+                "simulator_lowering_rules",
+                "gradient_tape_parity_artifact",
+            ),
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_finite_shot_lowering",
+            status="blocked",
+            reason="finite-shot TensorFlow lowering needs sampler, seed, and uncertainty provenance",
+            requires=(
+                "shot_policy",
+                "rng_seed_provenance",
+                "uncertainty_artifact",
+            ),
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_provider_lowering",
+            status="blocked",
+            reason="provider callbacks are not native TensorFlow graph-safe routes",
+            requires=(
+                "provider_allowlist",
+                "callback_transform_safety_audit",
+                "provider_execution_artifact",
+            ),
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_hardware_lowering",
+            status="blocked",
+            reason="live hardware TensorFlow lowering requires ticketed execution evidence",
+            requires=(
+                "live_ticket",
+                "provider_allowlist",
+                "shot_budget",
+                "hardware_evidence_id",
+            ),
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_dynamic_circuit_lowering",
+            status="blocked",
+            reason="mid-circuit measurement and feedback are outside the TensorFlow lowering boundary",
+            requires=(
+                "dynamic_circuit_semantics",
+                "classical_feedback_contract",
+                "gradient_policy",
+            ),
+        ),
+        PhaseTensorFlowPhaseQNodeLoweringRoute(
+            name="isolated_benchmark_artifact",
+            status="blocked",
+            reason="provider-exceedance promotion requires isolated benchmark evidence",
+            requires=("isolated_affinity_benchmark_id",),
+        ),
+    )
+    return PhaseTensorFlowPhaseQNodeLoweringMatrixResult(routes=routes)
 
 
 def _as_parameter_vector(name: str, values: object, *, width: int | None = None) -> FloatArray:
@@ -1011,6 +1191,7 @@ def run_tensorflow_maturity_audit(
         initial_params=parameter_values,
         tolerance=tolerance_value,
     )
+    phase_qnode_lowering_matrix = run_tensorflow_phase_qnode_lowering_matrix()
 
     evidence: dict[str, object] = {
         "analytic_tensor": analytic_tensor,
@@ -1018,9 +1199,17 @@ def run_tensorflow_maturity_audit(
         "tf_function": tf_function,
         "xla": xla,
         "keras_layer": keras_layer,
+        "phase_qnode_lowering_matrix": phase_qnode_lowering_matrix,
     }
     bounded_model_ready = all(
-        bool(getattr(result, "passed", False)) for result in evidence.values()
+        result.passed
+        for result in (
+            analytic_tensor,
+            gradient_tape,
+            tf_function,
+            xla,
+            keras_layer,
+        )
     )
     required_capabilities = {
         "analytic_tensor": "passed" if analytic_tensor.passed else "failed",
@@ -1028,6 +1217,9 @@ def run_tensorflow_maturity_audit(
         "tf_function": "passed" if tf_function.passed else "failed",
         "xla": "passed" if xla.passed else "failed",
         "keras_layer": "passed" if keras_layer.passed else "failed",
+        "bounded_phase_qnode_lowering_matrix": (
+            "passed" if phase_qnode_lowering_matrix.bounded_qnn_routes_ready else "failed"
+        ),
         "arbitrary_phase_qnode_tensorflow_lowering": "blocked",
         "full_graph_autodiff_through_simulator": "blocked",
         "provider_callbacks": "blocked",
@@ -1057,6 +1249,8 @@ __all__ = [
     "PhaseTensorFlowKerasLayerWrapperAuditResult",
     "PhaseTensorFlowMaturityAuditResult",
     "PhaseTensorFlowParameterShiftResult",
+    "PhaseTensorFlowPhaseQNodeLoweringMatrixResult",
+    "PhaseTensorFlowPhaseQNodeLoweringRoute",
     "PhaseTensorFlowQNNGradientResult",
     "PhaseTensorFlowXLACompatibilityResult",
     "is_phase_tensorflow_available",
@@ -1064,6 +1258,7 @@ __all__ = [
     "run_tensorflow_gradient_tape_compatibility_audit",
     "run_tensorflow_keras_layer_wrapper_audit",
     "run_tensorflow_maturity_audit",
+    "run_tensorflow_phase_qnode_lowering_matrix",
     "run_tensorflow_xla_compatibility_audit",
     "tensorflow_bounded_qnn_value_and_grad",
     "tensorflow_bounded_qnn_keras_layer",

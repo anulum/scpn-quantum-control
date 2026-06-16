@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from typing import Any, cast
 
 import numpy as np
@@ -20,6 +21,7 @@ import scpn_quantum_control.phase.torch_bridge as torch_bridge
 from scpn_quantum_control.phase import (
     PhaseTensorFlowMaturityAuditResult,
     PhaseTensorFlowParameterShiftResult,
+    PhaseTensorFlowPhaseQNodeLoweringMatrixResult,
     PhaseTensorFlowQNNGradientResult,
     PhaseTorchAutogradQNNGradientResult,
     PhaseTorchCompileCompatibilityResult,
@@ -36,6 +38,7 @@ from scpn_quantum_control.phase import (
     parameter_shift_qnn_classifier_loss,
     run_tensorflow_keras_layer_wrapper_audit,
     run_tensorflow_maturity_audit,
+    run_tensorflow_phase_qnode_lowering_matrix,
     run_torch_compile_compatibility_audit,
     run_torch_func_compatibility_audit,
     run_torch_maturity_audit,
@@ -107,10 +110,10 @@ class _FakeTorchAutogradFunction:
     @classmethod
     def apply(cls, *args: object) -> _FakeTorchTensor:
         ctx = type("_FakeAutogradContext", (), {})()
-        result = cls.forward(ctx, *args)
+        result = cast(Any, cls).forward(ctx, *args)
         result._ctx = ctx  # type: ignore[attr-defined]
         result._function_cls = cls  # type: ignore[attr-defined]
-        return result
+        return cast(_FakeTorchTensor, result)
 
 
 class _FakeTorchAutograd:
@@ -147,7 +150,7 @@ class _FakeTorchModule:
         return (params,)
 
     def __call__(self, *args: object, **kwargs: object) -> object:
-        return self.forward(*args, **kwargs)
+        return cast(Any, self).forward(*args, **kwargs)
 
 
 class _FakeTorchNN:
@@ -238,23 +241,23 @@ class _FakeTorch:
 class _FakeTorchWithoutAutogradFunction(_FakeTorch):
     def __init__(self) -> None:
         super().__init__()
-        self.autograd = object()
+        cast(Any, self).autograd = object()
 
 
 class _FakeTorchWithoutFunc(_FakeTorch):
     def __init__(self) -> None:
         super().__init__()
-        self.func = object()
+        cast(Any, self).func = object()
 
 
 class _FakeTorchWithoutCompile(_FakeTorch):
-    compile = None
+    compile: Any = None
 
 
 class _FakeTorchWithoutNN(_FakeTorch):
     def __init__(self) -> None:
         super().__init__()
-        self.nn = object()
+        cast(Any, self).nn = object()
 
 
 class _FakeTensorFlowTensor:
@@ -439,7 +442,7 @@ class _FakeTensorFlowKerasLayer:
         return variable
 
     def __call__(self, *args: object, **kwargs: object) -> object:
-        return self.call(*args, **kwargs)
+        return cast(Any, self).call(*args, **kwargs)
 
 
 class _FakeTensorFlowConstantInitializer:
@@ -503,7 +506,7 @@ class _FakeTensorFlow:
 
         def wrapped(*args: object, **kwargs: object) -> object:
             self.function_calls += 1
-            return fn(*args, **kwargs)
+            return cast(Callable[..., object], fn)(*args, **kwargs)
 
         return wrapped
 
@@ -1157,7 +1160,7 @@ def test_tensorflow_gradient_tape_compatibility_fails_closed_without_gradient_ta
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_tf = _FakeTensorFlow()
-    fake_tf.GradientTape = None  # type: ignore[method-assign]
+    fake_tf.GradientTape = None  # type: ignore[assignment]
     monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
 
     with pytest.raises(RuntimeError, match="GradientTape"):
@@ -1212,7 +1215,7 @@ def test_tensorflow_function_compatibility_fails_closed_without_tf_function(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_tf = _FakeTensorFlow()
-    fake_tf.function = None  # type: ignore[method-assign]
+    fake_tf.function = None  # type: ignore[assignment]
     monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
 
     with pytest.raises(RuntimeError, match="tf.function"):
@@ -1271,7 +1274,7 @@ def test_tensorflow_xla_compatibility_fails_closed_without_jit_compile(
     def function_without_jit(fn: object) -> object:
         return fn
 
-    fake_tf.function = function_without_jit  # type: ignore[method-assign]
+    fake_tf.function = function_without_jit  # type: ignore[assignment]
     monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
 
     with pytest.raises(RuntimeError, match="jit_compile"):
@@ -1370,24 +1373,74 @@ def test_tensorflow_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert isinstance(result, PhaseTensorFlowMaturityAuditResult)
     assert result.bounded_model_ready
     assert not result.ready_for_provider_exceedance
-    assert result.evidence["analytic_tensor"].passed
-    assert result.evidence["gradient_tape"].passed
-    assert result.evidence["tf_function"].passed
-    assert result.evidence["xla"].passed
-    assert result.evidence["keras_layer"].passed
+    analytic_tensor = cast(
+        PhaseTensorFlowQNNGradientResult,
+        result.evidence["analytic_tensor"],
+    )
+    gradient_tape = cast(
+        tensorflow_bridge.PhaseTensorFlowGradientTapeCompatibilityResult,
+        result.evidence["gradient_tape"],
+    )
+    tf_function = cast(
+        tensorflow_bridge.PhaseTensorFlowFunctionCompatibilityResult,
+        result.evidence["tf_function"],
+    )
+    xla = cast(
+        tensorflow_bridge.PhaseTensorFlowXLACompatibilityResult,
+        result.evidence["xla"],
+    )
+    keras_layer = cast(
+        tensorflow_bridge.PhaseTensorFlowKerasLayerWrapperAuditResult,
+        result.evidence["keras_layer"],
+    )
+    assert analytic_tensor.passed
+    assert gradient_tape.passed
+    assert tf_function.passed
+    assert xla.passed
+    assert keras_layer.passed
     assert "arbitrary_phase_qnode_tensorflow_lowering" in result.open_gaps
     assert "hardware_gradient_execution" in result.open_gaps
-    payload = result.to_dict()
-    assert payload["required_capabilities"]["xla"] == "passed"
-    assert payload["required_capabilities"]["provider_callbacks"] == "blocked"
+    payload = cast(dict[str, Any], result.to_dict())
+    required_capabilities = cast(dict[str, str], payload["required_capabilities"])
+    assert required_capabilities["xla"] == "passed"
+    assert required_capabilities["provider_callbacks"] == "blocked"
     assert payload["claim_boundary"] == "bounded_tensorflow_provider_maturity_audit"
+
+
+def test_tensorflow_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
+    result = run_tensorflow_phase_qnode_lowering_matrix()
+
+    assert isinstance(result, PhaseTensorFlowPhaseQNodeLoweringMatrixResult)
+    assert result.bounded_qnn_routes_ready
+    assert not result.arbitrary_phase_qnode_lowering_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.route_status("bounded_qnn_gradient_tape") == "passed"
+    assert result.route_status("bounded_qnn_tf_function") == "passed"
+    assert result.route_status("bounded_qnn_xla") == "passed"
+    assert result.route_status("registered_phase_qnode_statevector_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_graph_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_hardware_lowering") == "blocked"
+    assert "registered_phase_qnode_statevector_lowering" in result.open_gaps
+    assert "isolated_benchmark_artifact" in result.open_gaps
+    assert result.claim_boundary == "bounded_tensorflow_phase_qnode_lowering_matrix"
+
+    payload = cast(dict[str, Any], result.to_dict())
+    routes = cast(dict[str, dict[str, Any]], payload["routes"])
+    assert routes["bounded_qnn_keras_layer_wrapper"]["status"] == "passed"
+    assert routes["registered_phase_qnode_hardware_lowering"]["requires"] == [
+        "live_ticket",
+        "provider_allowlist",
+        "shot_budget",
+        "hardware_evidence_id",
+    ]
 
 
 def test_tensorflow_keras_layer_fails_closed_without_keras_layer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fake_tf = _FakeTensorFlow()
-    fake_tf.keras = object()
+    fake_tf.keras = object()  # type: ignore[assignment]
     monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
 
     with pytest.raises(RuntimeError, match="tf.keras.layers.Layer"):
