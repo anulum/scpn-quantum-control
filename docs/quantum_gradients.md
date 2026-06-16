@@ -698,6 +698,27 @@ provider/backend aliases, and live preparation without a ticket. A passing audit
 means all records preserved `hardware_execution == False` and
 `gradient_available == False`; it is not a live QPU result.
 
+The aggregate provider/hardware safety gate combines every differentiable
+provider-facing safety surface:
+
+```python
+from scpn_quantum_control.phase import run_differentiable_provider_hardware_safety_audit
+
+safety = run_differentiable_provider_hardware_safety_audit()
+assert safety.passed
+assert safety.ready_for_hardware_gradient_promotion is False
+print(safety.promotion_blockers)
+```
+
+`run_differentiable_provider_hardware_safety_audit()` aggregates provider
+gradient readiness, provider hardware-gradient preparation, provider QNode
+transforms, QNode tape records, and no-submit hardware-gradient campaign
+readiness. The result is the promotion guard for hardware-gradient claims:
+every local safety surface must preserve zero hardware execution and zero
+hardware-gradient production, and promotion remains blocked until a live ticket,
+raw-count replay artefact, calibration snapshot artefact, statevector comparison
+artefact, and `isolated_affinity` benchmark artefact ID are all attached.
+
 For the full differentiable-programming lane, `run_differentiable_readiness_audit()`
 aggregates the gradient support matrix, transform nesting, QNode tape and
 transform suites, provider-gradient readiness, hardware policy, and provider
