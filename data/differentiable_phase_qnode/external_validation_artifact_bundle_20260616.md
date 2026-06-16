@@ -16,9 +16,9 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 
 | Artefact | Role | SHA-256 | Size bytes |
 |---|---|---|---:|
-| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `88398a6cf100099af016426fc7447461bf8035a19a31b8578921429a0eb02b59` | 13723 |
-| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `62da92488514488b3d019245cc9f00f4ece58cbcf23c637b8915254f47ffdf18` | 3972 |
-| `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `abb8b0ff49c6f2ff294c1b9327dbde5dd1c6ea55fe09e91660e621a60efddf9b` | 4674 |
+| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `a31a99bfdef2108dd1c0ee594042a5cfda0e970d38dba3d6ecda2bed2d90e8f7` | 15064 |
+| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `43865071ab2ce3b1e38fc37d9f9e3c21e7d6aaa8dbaef8793dd6cb34c8739253` | 4329 |
+| `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `af7ce430a3b172f2656e782abf60145ab5a23b9323bf1425b9ca103c448511e3` | 5102 |
 | `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json` | Exact environment-lock manifest | `9043898e0ba5ac348c0dc8c2f374ea7b7ba63b687dd9876d1f32bc2ccc9ee8e9` | 3507 |
 | `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md` | Environment-lock reviewer summary | `ca0e2bc0308e697297132b07e9563ad9a9291b8ae5ecfe68f90c9e4c4de0a193` | 2520 |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact | `f776e02d745652e122bfb41e30088a6515a53821f02cce30a5fcc35b7f52a5b3` | 13589 |

@@ -77,6 +77,11 @@ release note, README, package description, or reviewer response needs
 claim-boundary language. Every current row is a bounded candidate, so the table
 blocks hardware, provider, QPU, GPU, production-performance, and
 `isolated_affinity` claims until promoted evidence exists.
+The current public technical report is
+[Differentiable External-Validation Technical Report](differentiable_external_validation_report.md).
+It summarizes the comparison package, provider-family status, reproducibility
+artefacts, and promotion blockers without upgrading any row beyond bounded
+candidate evidence.
 `validate_differentiable_support_surface_alignment()` checks that each ledger
 row still points to existing implementation, test, and documentation surfaces
 and that source/test/docs paths are present in the generated capability
