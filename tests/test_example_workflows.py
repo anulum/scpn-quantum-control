@@ -53,7 +53,7 @@ def test_all_example_scripts_are_documented_and_import_safe() -> None:
     scripts = _example_scripts()
     readme = README.read_text(encoding="utf-8")
 
-    assert len(scripts) == 24
+    assert len(scripts) == 29
     for script in scripts:
         tree = ast.parse(script.read_text(encoding="utf-8"), filename=str(script))
         public_functions = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}

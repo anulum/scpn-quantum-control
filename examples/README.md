@@ -27,6 +27,9 @@ Recommended researcher quick path:
 - `22_quantum_neuromorphic_bridge.py` for the QSNN LIF/STDP/dynamic-coupling bridge.
 - `23_differentiable_api_workflow.py` for the unified differentiable API workflow.
 - `24_differentiable_benchmark_reproduction.py` for local benchmark evidence reproduction.
+- `25_qrng_streaming_quickstart.py` for QRNG stream-health checks.
+- `27_pqc_trigger_signer_demo.py` for ML-DSA trigger signing.
+- `28_pulse_to_hls_quickstart.py` for UltraScale+ pulse-code generation.
 
 ## Route by Goal
 
@@ -42,6 +45,9 @@ Recommended researcher quick path:
 | Inspect topology diagnostics | `20_quantum_persistent_homology.py` |
 | Inspect differentiable API readiness | `23_differentiable_api_workflow.py` |
 | Reproduce differentiable benchmark evidence | `24_differentiable_benchmark_reproduction.py` |
+| Inspect QRNG stream readiness | `25_qrng_streaming_quickstart.py` |
+| Inspect post-quantum trigger signing | `27_pqc_trigger_signer_demo.py` |
+| Generate pulse HLS artefacts | `28_pulse_to_hls_quickstart.py` |
 
 Examples are onboarding aids. Reusable production logic belongs in `src/`,
 scripts, committed fixtures, and release gates.
@@ -182,6 +188,16 @@ circuit classifier benchmark.
 python examples/13_iter_disruption_demo.py
 ```
 
+## 14_frc_pulsed_shot_qaoa_demo.py — FRC Pulsed-Shot QAOA
+
+Builds the field-reversed-configuration pulsed-shot QAOA cost with
+Magneto-Rayleigh-Taylor growth, dwell-time, and pulsed-field terms, then prints
+the bounded simulator-only claim boundary for the control-facing cost path.
+
+```bash
+python examples/14_frc_pulsed_shot_qaoa_demo.py
+```
+
 ## 14_quantum_advantage_demo.py — Quantum Advantage Scaling
 
 Classical vs quantum wall-clock timing with crossover extrapolation.
@@ -290,4 +306,41 @@ harness.
 
 ```bash
 python examples/24_differentiable_benchmark_reproduction.py
+```
+
+## 25_qrng_streaming_quickstart.py — QRNG Streaming Quickstart
+
+Runs the deterministic QRNG stream harness and reports NIST-style online
+health statistics. The example is a simulator/fixture quickstart; hardware
+promotion requires the separate QRNG evidence ledger.
+
+```bash
+python examples/25_qrng_streaming_quickstart.py
+```
+
+## 26_nv_magnetometry_20T_demo.py — NV Magnetometry 20 T Demo
+
+Generates the NV-centre ODMR calibration surface used by the 20 T magnetometry
+readiness lane and records the hardware-blocked calibration boundary.
+
+```bash
+python examples/26_nv_magnetometry_20T_demo.py
+```
+
+## 27_pqc_trigger_signer_demo.py — PQC Trigger Signer Demo
+
+Signs and verifies deterministic trigger payloads with the ML-DSA trigger
+signer interface, exercising the fail-closed message and key-shape contracts.
+
+```bash
+python examples/27_pqc_trigger_signer_demo.py
+```
+
+## 28_pulse_to_hls_quickstart.py — Pulse to HLS Quickstart
+
+Renders a quantised pulse waveform into the UltraScale+ HLS C++/XDC artefact
+set and reports the fixed-point range used by the generated source.
+
+```bash
+python examples/28_pulse_to_hls_quickstart.py
 ```

@@ -45,7 +45,7 @@ def _check_exports(submod: str) -> int:
     mod = __import__(f"scpn_quantum_control.{submod}", fromlist=["__all__"])
     for name in mod.__all__:
         obj = getattr(mod, name)
-        assert callable(obj) or isinstance(obj, (type, np.ndarray, dict, list, str)), (
+        assert callable(obj) or isinstance(obj, (type, np.ndarray, dict, frozenset, list, str)), (
             f"{submod}.{name} has unexpected type {type(obj)}"
         )
     return len(mod.__all__)
