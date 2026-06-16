@@ -33,6 +33,12 @@ from .benchmarks.classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from .benchmarks.differentiable_hardening_gate import (
+    DifferentiableBenchmarkClassificationCase,
+    DifferentiableHardeningGateCheck,
+    DifferentiableHardeningSliceGateResult,
+    run_differentiable_hardening_slice_gate,
+)
 from .benchmarks.differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
@@ -1302,6 +1308,10 @@ __all__ = [
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
     "QuantumGradientBenchmarkResult",
+    "DifferentiableBenchmarkClassificationCase",
+    "DifferentiableHardeningGateCheck",
+    "DifferentiableHardeningSliceGateResult",
+    "run_differentiable_hardening_slice_gate",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_quantum_gradient_benchmark_suite",

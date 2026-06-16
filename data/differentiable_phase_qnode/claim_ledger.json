@@ -149,6 +149,35 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Support-surface alignment only; verifies implementation, tests, docs, and generated inventory without promoting performance, provider, or QPU claims."
+    },
+    {
+      "claim_id": "hardening_slice_gate",
+      "claim_text": "Every differentiable hardening slice has a typed checklist for focused Ruff, mypy, module-specific pytest, test-quality audit, claim-ledger validation, and benchmark-evidence classification checks.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_hardening_gate.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "docs/benchmarks_api.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-hardening-slice-gate-v1"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-hardening-slice-gate-v1"
+      ],
+      "known_gaps": [
+        "The gate builds an auditable verification checklist but does not execute shell commands.",
+        "It checks benchmark-classification invariants and does not upgrade functional_non_isolated rows to isolated_affinity evidence."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Per-slice hardening governance only; no provider execution, QPU execution, accelerator execution, or production benchmark promotion is implied."
     }
   ]
 }

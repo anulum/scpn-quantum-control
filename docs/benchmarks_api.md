@@ -432,6 +432,22 @@ the SCPN reference. These rows are comparison evidence only; they do not claim
 provider execution, QPU execution, GPU execution, arbitrary-program AD, or
 production performance.
 
+#### `run_differentiable_hardening_slice_gate()`
+
+Returns a JSON-ready `DifferentiableHardeningSliceGateResult` for the focused
+closeout checks required by every differentiable hardening slice. Callers pass
+changed source paths and module-specific pytest files; the gate records the
+expected Ruff, mypy, pytest, test-quality audit, and claim-ledger validation
+commands and rejects bucket-wide pytest targets such as `tests`.
+
+The result also replays benchmark-evidence classification smoke cases:
+GitHub-hosted runners remain `functional_non_isolated`, incomplete
+self-hosted isolated metadata remains a `hard_gap`, complete isolated-runner
+metadata is the only `isolated_affinity` path, and requested accelerator
+execution without visible device evidence remains `silent_accelerator_fallback`.
+This API does not execute the listed commands and does not promote any
+benchmark row to production evidence.
+
 The CI benchmark evidence writer records accelerator metadata in every bundle.
 The default is explicit CPU-only evidence. To request accelerator evidence, set
 `SCPN_BENCH_ACCELERATOR_BACKEND=cuda` or `rocm` and provide visible-device

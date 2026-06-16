@@ -166,6 +166,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [BenchmarkIsolationMetadata, DifferentiableBenchmarkEvidenceBundle, capture_host_load, infer_heavy_jobs_running, read_cpu_frequency_mhz, read_cpu_governor, write_differentiable_benchmark_evidence_bundle]
 
+::: scpn_quantum_control.benchmarks.differentiable_hardening_gate
+    options:
+      members: [DifferentiableBenchmarkClassificationCase, DifferentiableHardeningGateCheck, DifferentiableHardeningSliceGateResult, run_differentiable_hardening_slice_gate]
+
 ::: scpn_quantum_control.benchmarks.differentiable_external_comparison
     options:
       members: [ExternalComparisonArtifact, ExternalComparisonRow, run_differentiable_external_comparison_suite, write_differentiable_external_comparison]

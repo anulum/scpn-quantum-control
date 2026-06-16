@@ -75,6 +75,16 @@ row still points to existing implementation, test, and documentation surfaces
 and that source/test/docs paths are present in the generated capability
 manifest. This is a consistency gate only; it does not promote hardware,
 provider, or performance claims.
+`run_differentiable_hardening_slice_gate(...)` records the required closeout
+checklist for each differentiable hardening slice: focused Ruff formatting and
+linting, mypy over changed source targets, module-specific pytest targets,
+the repository test-quality audit, claim-ledger validation, and benchmark
+classification smoke cases. It also verifies that GitHub-hosted runners remain
+`functional_non_isolated`, incomplete isolated-runner metadata remains a
+`hard_gap`, complete self-hosted isolated metadata is the only
+`isolated_affinity` path, and silent accelerator fallback remains a hard gap.
+The gate is planning and classification evidence only; it does not run shell
+commands or promote benchmark artefacts.
 
 Optional framework parity uses an explicit CPU-only overlay instead of the
 repository `jax` extra, because that extra resolves to `jax[cuda12]`.

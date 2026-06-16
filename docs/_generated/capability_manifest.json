@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 637,
+    "public_api_exports": 641,
     "public_documentation_pages": 253,
-    "python_model_classes": 1758,
-    "python_model_source_modules": 832,
+    "python_model_classes": 1761,
+    "python_model_source_modules": 833,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1950
+    "test_files": 1951
   },
   "documentation": {
     "examples": [
@@ -453,7 +453,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 11
+        "python_modules": 12
       },
       {
         "package": "bridge",
@@ -2181,6 +2181,10 @@
         "path": "src/scpn_quantum_control/differentiable_api.py"
       },
       {
+        "name": "DifferentiableBenchmarkClassificationCase",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py"
+      },
+      {
         "name": "DifferentiableBenchmarkEvidenceBundle",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_evidence.py"
       },
@@ -2195,6 +2199,14 @@
       {
         "name": "DifferentiableDomainBenchmarkValidationSuite",
         "path": "src/scpn_quantum_control/phase/domain_benchmark_datasets.py"
+      },
+      {
+        "name": "DifferentiableHardeningGateCheck",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py"
+      },
+      {
+        "name": "DifferentiableHardeningSliceGateResult",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py"
       },
       {
         "name": "DifferentiableKuramotoExactAnswerCase",
@@ -8181,6 +8193,7 @@
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
       "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
@@ -9141,6 +9154,9 @@
     "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
     "DWaveLeapHALAdapter",
     "DifferentiabilityDiagnosticReport",
+    "DifferentiableBenchmarkClassificationCase",
+    "DifferentiableHardeningGateCheck",
+    "DifferentiableHardeningSliceGateResult",
     "DifferentiableMLIRCompileConfig",
     "DifferentiableOptimizer",
     "DifferentiableProgrammingBenchmarkResult",
@@ -9653,6 +9669,7 @@
     "rigetti_quil_workload",
     "run_biological_qec_batch_execution",
     "run_biological_qec_execution",
+    "run_differentiable_hardening_slice_gate",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_documented_classical_baselines",
@@ -10409,6 +10426,7 @@
       "tests/test_differentiable_external_comparisons.py",
       "tests/test_differentiable_framework_ci_workflow.py",
       "tests/test_differentiable_framework_overlay.py",
+      "tests/test_differentiable_hardening_gate.py",
       "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_differentiable_score_function.py",
       "tests/test_differentiable_spsa.py",
