@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from scpn_quantum_control.phase.model_training_evidence import (
     run_differentiable_model_training_evidence_suite,
+    run_registered_differentiable_training_suite_audit,
 )
 
 
@@ -35,3 +36,32 @@ def test_model_training_evidence_suite_covers_registered_medium_cases() -> None:
         assert record.gradient_max_abs_error <= record.gradient_tolerance
         assert record.seed is not None
         assert record.training_steps > 0
+
+
+def test_registered_training_suite_audit_closes_only_evidenced_lanes() -> None:
+    audit = run_registered_differentiable_training_suite_audit()
+
+    assert not audit.ready_for_training_suite_promotion
+    assert audit.passed_model_families == ("qnn", "qgnn", "qsnn", "kuramoto_xy")
+    assert audit.blocked_model_families == ("open_system_control", "inverse_coupling_recovery")
+    assert audit.evidence_suite_passed
+    assert not audit.hardware_execution
+    assert "registered local training-suite readiness" in audit.claim_boundary
+
+    records = {record.model_family: record for record in audit.records}
+    assert records["qnn"].ready
+    assert records["qgnn"].ready
+    assert records["qsnn"].ready
+    assert records["kuramoto_xy"].ready
+    assert not records["open_system_control"].ready
+    assert not records["inverse_coupling_recovery"].ready
+    assert "not implemented" in records["open_system_control"].blocker
+    assert "not implemented" in records["inverse_coupling_recovery"].blocker
+
+    payload = audit.to_dict()
+    assert payload["ready_for_training_suite_promotion"] is False
+    assert payload["passed_model_families"] == ["qnn", "qgnn", "qsnn", "kuramoto_xy"]
+    assert payload["blocked_model_families"] == [
+        "open_system_control",
+        "inverse_coupling_recovery",
+    ]

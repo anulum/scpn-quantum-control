@@ -98,7 +98,7 @@ has a defined commercial licensing route.
 | Package version | 0.9.12 |
 | Public API exports | 637 |
 | Python source modules | 832 |
-| Public Python classes | 1755 |
+| Public Python classes | 1757 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
@@ -240,6 +240,11 @@ quantum hardware experimentation, and control-facing software:
 - `run_differentiable_model_training_evidence_suite()` packages seeded
   registered QNN, QGNN, QSNN, and Kuramoto-XY local training cases with loss
   reduction and finite-difference gradient-agreement evidence.
+- `run_registered_differentiable_training_suite_audit()` records which
+  requested differentiable training-suite lanes are actually evidenced:
+  registered local QNN/QGNN/QSNN/Kuramoto-XY pass, while open-system control
+  and inverse-coupling recovery stay blocked until dedicated training evidence
+  exists.
 - `execute_phase_qnode_transform(...)` and
   `run_phase_qnode_transform_readiness_suite()` execute supported scalar local
   QNode transforms for `grad`, `value_and_grad`, `hessian`, `jvp`, `vjp`,

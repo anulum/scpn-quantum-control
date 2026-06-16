@@ -23,6 +23,11 @@ CLAIM_BOUNDARY = (
     "not arbitrary architecture, not provider hardware execution, and not a "
     "production benchmark"
 )
+REGISTERED_TRAINING_SUITE_AUDIT_BOUNDARY = (
+    "registered local training-suite readiness audit only; closes seeded "
+    "QNN/QGNN/QSNN/Kuramoto-XY suite evidence and keeps open-system control "
+    "and inverse-coupling recovery blocked until dedicated training evidence exists"
+)
 
 
 @dataclass(frozen=True)
@@ -89,6 +94,68 @@ class DifferentiableModelTrainingEvidenceSuite:
         }
 
 
+@dataclass(frozen=True)
+class RegisteredDifferentiableTrainingSuiteRecord:
+    """Readiness status for one requested differentiable training-suite lane."""
+
+    model_family: str
+    ready: bool
+    evidence_names: tuple[str, ...]
+    blocker: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready training-suite readiness evidence."""
+        return {
+            "model_family": self.model_family,
+            "ready": self.ready,
+            "evidence_names": list(self.evidence_names),
+            "blocker": self.blocker,
+        }
+
+
+@dataclass(frozen=True)
+class RegisteredDifferentiableTrainingSuiteAuditResult:
+    """Aggregated readiness audit for the TODO training-suite promotion lane."""
+
+    records: tuple[RegisteredDifferentiableTrainingSuiteRecord, ...]
+    evidence_suite: DifferentiableModelTrainingEvidenceSuite
+    claim_boundary: str = REGISTERED_TRAINING_SUITE_AUDIT_BOUNDARY
+    hardware_execution: bool = False
+
+    @property
+    def evidence_suite_passed(self) -> bool:
+        """Return true when the underlying registered evidence suite passes."""
+        return self.evidence_suite.passed
+
+    @property
+    def passed_model_families(self) -> tuple[str, ...]:
+        """Return model families with local training-suite evidence."""
+        return tuple(record.model_family for record in self.records if record.ready)
+
+    @property
+    def blocked_model_families(self) -> tuple[str, ...]:
+        """Return model families still blocked from training-suite promotion."""
+        return tuple(record.model_family for record in self.records if not record.ready)
+
+    @property
+    def ready_for_training_suite_promotion(self) -> bool:
+        """Return true only when every requested training-suite lane is evidenced."""
+        return self.evidence_suite_passed and all(record.ready for record in self.records)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered training-suite audit evidence."""
+        return {
+            "ready_for_training_suite_promotion": self.ready_for_training_suite_promotion,
+            "evidence_suite_passed": self.evidence_suite_passed,
+            "passed_model_families": list(self.passed_model_families),
+            "blocked_model_families": list(self.blocked_model_families),
+            "records": [record.to_dict() for record in self.records],
+            "evidence_suite": self.evidence_suite.to_dict(),
+            "claim_boundary": self.claim_boundary,
+            "hardware_execution": self.hardware_execution,
+        }
+
+
 def run_differentiable_model_training_evidence_suite(
     *,
     gradient_tolerance: float = 1.0e-5,
@@ -110,6 +177,64 @@ def run_differentiable_model_training_evidence_suite(
             "unseeded stochastic training is not reproducibility evidence",
             "framework-native simulator autodiff is recorded by the parity suite, not assumed",
         ),
+    )
+
+
+def run_registered_differentiable_training_suite_audit(
+    *,
+    gradient_tolerance: float = 1.0e-5,
+) -> RegisteredDifferentiableTrainingSuiteAuditResult:
+    """Audit which requested differentiable training-suite lanes are evidenced."""
+    suite = run_differentiable_model_training_evidence_suite(
+        gradient_tolerance=gradient_tolerance,
+    )
+    evidence_by_family: dict[str, list[str]] = {}
+    for record in suite.records:
+        if record.passed:
+            evidence_by_family.setdefault(record.model_family, []).append(record.name)
+
+    records = (
+        _ready_training_suite_record("qnn", evidence_by_family),
+        _ready_training_suite_record("qgnn", evidence_by_family),
+        _ready_training_suite_record("qsnn", evidence_by_family),
+        _ready_training_suite_record("kuramoto_xy", evidence_by_family),
+        RegisteredDifferentiableTrainingSuiteRecord(
+            model_family="open_system_control",
+            ready=False,
+            evidence_names=(),
+            blocker=(
+                "open-system control training suite is not implemented; "
+                "requires Lindblad/noise-aware loss descent, gradient agreement, "
+                "and deterministic replay evidence before TODO closure"
+            ),
+        ),
+        RegisteredDifferentiableTrainingSuiteRecord(
+            model_family="inverse_coupling_recovery",
+            ready=False,
+            evidence_names=(),
+            blocker=(
+                "inverse-coupling recovery training suite is not implemented; "
+                "requires K_nm recovery targets, identifiability checks, "
+                "gradient agreement, and deterministic replay evidence before TODO closure"
+            ),
+        ),
+    )
+    return RegisteredDifferentiableTrainingSuiteAuditResult(
+        records=records,
+        evidence_suite=suite,
+    )
+
+
+def _ready_training_suite_record(
+    model_family: str,
+    evidence_by_family: dict[str, list[str]],
+) -> RegisteredDifferentiableTrainingSuiteRecord:
+    evidence_names = tuple(evidence_by_family.get(model_family, ()))
+    return RegisteredDifferentiableTrainingSuiteRecord(
+        model_family=model_family,
+        ready=bool(evidence_names),
+        evidence_names=evidence_names,
+        blocker="" if evidence_names else "registered local training evidence did not pass",
     )
 
 
@@ -307,5 +432,8 @@ def _finite_difference_gradient(
 __all__ = [
     "DifferentiableModelTrainingEvidenceSuite",
     "DifferentiableModelTrainingRecord",
+    "RegisteredDifferentiableTrainingSuiteAuditResult",
+    "RegisteredDifferentiableTrainingSuiteRecord",
     "run_differentiable_model_training_evidence_suite",
+    "run_registered_differentiable_training_suite_audit",
 ]

@@ -108,6 +108,30 @@ for multi-term rules. This keeps provider data honest: every shift term must
 carry its own sample variance instead of being collapsed into a single opaque
 parameter estimate.
 
+## Registered Training-Suite Audit
+
+The registered medium training evidence suite covers seeded local QNN, QGNN,
+QSNN, and Kuramoto-XY cases. Use the training-suite audit when the question is
+not "did those cases pass?" but "which requested training lanes can be closed
+from current evidence?":
+
+```python
+from scpn_quantum_control.phase import run_registered_differentiable_training_suite_audit
+
+
+audit = run_registered_differentiable_training_suite_audit()
+
+print(audit.passed_model_families)
+print(audit.blocked_model_families)
+print(audit.ready_for_training_suite_promotion)
+```
+
+The current audit keeps the promotion gate closed because open-system control
+training and inverse-coupling recovery training do not yet have dedicated loss
+descent, gradient-agreement, and deterministic replay evidence. This separates
+registered local model evidence from arbitrary architecture support, provider
+hardware execution, and production benchmark claims.
+
 ## Evidence Checklist
 
 Before promoting a quantum-gradient result, record:

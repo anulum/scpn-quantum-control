@@ -42,6 +42,14 @@ shift-compatible objectives. They emit finite-difference agreement certificates
 with pass/fail status, absolute and relative error maxima, and evaluation counts
 so notebooks, CI, and provider adapters can share the same verification record.
 
+For registered local training-suite evidence, use
+`run_differentiable_model_training_evidence_suite(...)` to replay the seeded
+QNN, QGNN, QSNN, and Kuramoto-XY cases. Use
+`run_registered_differentiable_training_suite_audit(...)` when you need the
+TODO/promotion boundary: the four registered local families are evidenced, but
+open-system control training and inverse-coupling recovery training remain
+blocked until dedicated deterministic training suites exist.
+
 For backend execution, use
 `execute_provider_parameter_shift_gradient(...)` with a
 `ProviderExpectationSample` callback. This is the supported bridge between SCPN

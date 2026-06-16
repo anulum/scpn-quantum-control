@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 637,
     "public_documentation_pages": 253,
-    "python_model_classes": 1755,
+    "python_model_classes": 1757,
     "python_model_source_modules": 832,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
@@ -5991,6 +5991,14 @@
       {
         "name": "RealtimeTickRecord",
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
+      },
+      {
+        "name": "RegisteredDifferentiableTrainingSuiteAuditResult",
+        "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
+      },
+      {
+        "name": "RegisteredDifferentiableTrainingSuiteRecord",
+        "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
       },
       {
         "name": "RepetitionCodeUPDE",

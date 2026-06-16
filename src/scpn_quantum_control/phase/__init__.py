@@ -155,7 +155,10 @@ from .lindblad_engine import LindbladSyncEngine
 from .model_training_evidence import (
     DifferentiableModelTrainingEvidenceSuite,
     DifferentiableModelTrainingRecord,
+    RegisteredDifferentiableTrainingSuiteAuditResult,
+    RegisteredDifferentiableTrainingSuiteRecord,
     run_differentiable_model_training_evidence_suite,
+    run_registered_differentiable_training_suite_audit,
 )
 from .natural_gradient import (
     NaturalGradientDirection,
@@ -701,7 +704,10 @@ __all__ = [
     "run_phase_qnode_affinity_benchmark",
     "DifferentiableModelTrainingEvidenceSuite",
     "DifferentiableModelTrainingRecord",
+    "RegisteredDifferentiableTrainingSuiteAuditResult",
+    "RegisteredDifferentiableTrainingSuiteRecord",
     "run_differentiable_model_training_evidence_suite",
+    "run_registered_differentiable_training_suite_audit",
     "ProviderQNodeTransformReadinessSuiteResult",
     "ProviderQNodeTransformResult",
     "execute_provider_qnode_transform",
