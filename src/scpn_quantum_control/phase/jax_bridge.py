@@ -459,6 +459,83 @@ class PhaseJAXNestedTransformAlgebraResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXPhaseQNodeLoweringRoute:
+    """One JAX lowering route in the registered Phase-QNode parity matrix."""
+
+    name: str
+    status: str
+    reason: str
+    host_callback: bool
+    requires: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready route metadata."""
+        return {
+            "name": self.name,
+            "status": self.status,
+            "reason": self.reason,
+            "host_callback": self.host_callback,
+            "requires": list(self.requires),
+        }
+
+
+@dataclass(frozen=True)
+class PhaseJAXPhaseQNodeLoweringMatrixResult:
+    """Fail-closed JAX parity matrix for registered Phase-QNode lowering."""
+
+    routes: tuple[PhaseJAXPhaseQNodeLoweringRoute, ...]
+    claim_boundary: str = "bounded_jax_phase_qnode_lowering_matrix"
+
+    @property
+    def bounded_no_host_callback_routes_ready(self) -> bool:
+        """Return whether bounded JAX QNN routes pass without host callbacks."""
+        return all(
+            route.status == "passed" and not route.host_callback
+            for route in self.routes
+            if route.name.startswith("bounded_qnn_")
+        )
+
+    @property
+    def arbitrary_phase_qnode_lowering_ready(self) -> bool:
+        """Return whether arbitrary registered Phase-QNode JAX lowering is ready."""
+        return all(
+            route.status == "passed" and not route.host_callback
+            for route in self.routes
+            if route.name.startswith("registered_phase_qnode_")
+        )
+
+    @property
+    def ready_for_provider_exceedance(self) -> bool:
+        """Return whether this matrix permits JAX provider-exceedance claims."""
+        return self.bounded_no_host_callback_routes_ready and all(
+            route.status == "passed" and not route.host_callback for route in self.routes
+        )
+
+    @property
+    def open_gaps(self) -> tuple[str, ...]:
+        """Return routes that still block JAX provider-exceedance claims."""
+        return tuple(route.name for route in self.routes if route.status != "passed")
+
+    def route_status(self, name: str) -> str:
+        """Return the status for a named route, failing closed on unknown names."""
+        for route in self.routes:
+            if route.name == name:
+                return route.status
+        raise KeyError(f"unknown JAX Phase-QNode lowering route: {name}")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready JAX Phase-QNode lowering parity metadata."""
+        return {
+            "bounded_no_host_callback_routes_ready": (self.bounded_no_host_callback_routes_ready),
+            "arbitrary_phase_qnode_lowering_ready": self.arbitrary_phase_qnode_lowering_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "routes": {route.name: route.to_dict() for route in self.routes},
+            "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -1636,6 +1713,112 @@ def run_jax_nested_transform_algebra_audit(
     )
 
 
+def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixResult:
+    """Return the JAX parity matrix for registered Phase-QNode lowering.
+
+    The bounded phase-QNN JAX routes are no-host-callback native framework
+    evidence. Arbitrary registered Phase-QNode circuit lowering remains blocked
+    until native JAX lowering rules and parity artefacts exist.
+    """
+
+    routes = (
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="bounded_qnn_native_value_and_grad",
+            status="passed",
+            reason="bounded phase-QNN loss is expressed directly in JAX operations",
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="bounded_qnn_custom_vjp",
+            status="passed",
+            reason="bounded phase-QNN custom VJP route is registered without host callbacks",
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="bounded_qnn_jit_value_and_grad",
+            status="passed",
+            reason="bounded phase-QNN JIT value-and-gradient route is no-host-callback",
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="bounded_qnn_vmap_value_and_grad",
+            status="passed",
+            reason="bounded phase-QNN VMAP value-and-gradient route is no-host-callback",
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="bounded_qnn_pytree_value_and_grad",
+            status="passed",
+            reason="bounded phase-QNN PyTree value-and-gradient route is no-host-callback",
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_statevector_lowering",
+            status="blocked",
+            reason="arbitrary registered Phase-QNode circuits do not yet lower into native JAX kernels",
+            host_callback=False,
+            requires=(
+                "native_jax_lowering_rules",
+                "gate_observable_coverage_matrix",
+                "statevector_gradient_parity_artifact",
+            ),
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_finite_shot_lowering",
+            status="blocked",
+            reason="finite-shot JAX lowering needs sampler, seed, and uncertainty provenance",
+            host_callback=False,
+            requires=(
+                "shot_policy",
+                "rng_seed_provenance",
+                "uncertainty_artifact",
+            ),
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_provider_lowering",
+            status="blocked",
+            reason="provider callbacks are not native JAX transform-safe routes",
+            host_callback=False,
+            requires=(
+                "provider_allowlist",
+                "callback_transform_safety_audit",
+                "provider_execution_artifact",
+            ),
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_hardware_lowering",
+            status="blocked",
+            reason="live hardware JAX lowering requires ticketed execution evidence",
+            host_callback=False,
+            requires=(
+                "live_ticket",
+                "provider_allowlist",
+                "shot_budget",
+                "hardware_evidence_id",
+            ),
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_dynamic_circuit_lowering",
+            status="blocked",
+            reason="mid-circuit measurement and feedback are outside the native JAX lowering boundary",
+            host_callback=False,
+            requires=(
+                "dynamic_circuit_semantics",
+                "classical_feedback_contract",
+                "gradient_policy",
+            ),
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
+            name="isolated_benchmark_artifact",
+            status="blocked",
+            reason="provider-exceedance promotion requires isolated benchmark evidence",
+            host_callback=False,
+            requires=("isolated_affinity_benchmark_id",),
+        ),
+    )
+    return PhaseJAXPhaseQNodeLoweringMatrixResult(routes=routes)
+
+
 def run_jax_maturity_audit(
     *,
     features: ArrayLike,
@@ -1704,6 +1887,7 @@ def run_jax_maturity_audit(
         params_pytree=params_pytree,
         tolerance=tolerance_value,
     )
+    phase_qnode_lowering_matrix = run_jax_phase_qnode_lowering_matrix()
 
     evidence: dict[str, object] = {
         "custom_vjp": custom_vjp,
@@ -1712,9 +1896,12 @@ def run_jax_maturity_audit(
         "pmap_sharding": sharding,
         "pytree": pytree,
         "nested_transform_algebra": nested_transform_algebra,
+        "phase_qnode_lowering_matrix": phase_qnode_lowering_matrix,
     }
     bounded_model_ready = all(
-        bool(getattr(result, "passed", False)) for result in evidence.values()
+        bool(getattr(result, "passed", False))
+        for name, result in evidence.items()
+        if name != "phase_qnode_lowering_matrix"
     )
     required_capabilities = {
         "custom_vjp": "passed" if custom_vjp.passed else "failed",
@@ -1723,6 +1910,9 @@ def run_jax_maturity_audit(
         "pmap_sharding": "passed" if sharding.passed else "failed",
         "pytree": "passed" if pytree.passed else "failed",
         "nested_transform_algebra": "passed" if nested_transform_algebra.passed else "failed",
+        "phase_qnode_lowering_matrix": (
+            "passed" if phase_qnode_lowering_matrix.ready_for_provider_exceedance else "blocked"
+        ),
         "arbitrary_quantum_kernel_jax_lowering": "blocked",
         "hardware_or_provider_callback_transform_safety": "blocked",
         "promotion_grade_isolated_benchmarks": "blocked",
@@ -1731,6 +1921,13 @@ def run_jax_maturity_audit(
         {
             f"nested_transform:{route.name}": route.status
             for route in nested_transform_algebra.routes
+            if route.status != "passed"
+        }
+    )
+    required_capabilities.update(
+        {
+            f"phase_qnode_lowering:{route.name}": route.status
+            for route in phase_qnode_lowering_matrix.routes
             if route.status != "passed"
         }
     )
@@ -1760,6 +1957,8 @@ __all__ = [
     "PhaseJAXNestedTransformAlgebraResult",
     "PhaseJAXNestedTransformRoute",
     "PhaseJAXParameterShiftResult",
+    "PhaseJAXPhaseQNodeLoweringMatrixResult",
+    "PhaseJAXPhaseQNodeLoweringRoute",
     "PhaseJAXPyTreeCompatibilityResult",
     "PhaseJAXShardingCompatibilityResult",
     "PhaseJAXVMAPCompatibilityResult",
@@ -1771,6 +1970,7 @@ __all__ = [
     "run_jax_jit_compatibility_audit",
     "run_jax_maturity_audit",
     "run_jax_nested_transform_algebra_audit",
+    "run_jax_phase_qnode_lowering_matrix",
     "run_jax_pytree_compatibility_audit",
     "run_jax_sharding_compatibility_audit",
     "run_jax_vmap_compatibility_audit",

@@ -1540,6 +1540,7 @@ from scpn_quantum_control.phase import (
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
     run_jax_nested_transform_algebra_audit,
+    run_jax_phase_qnode_lowering_matrix,
     run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
@@ -1597,6 +1598,9 @@ nested_audit = run_jax_nested_transform_algebra_audit(
 )
 print(nested_audit.passed, nested_audit.ready_for_provider_exceedance)
 
+lowering_matrix = run_jax_phase_qnode_lowering_matrix()
+print(lowering_matrix.route_status("registered_phase_qnode_statevector_lowering"))
+
 maturity = run_jax_maturity_audit(
     features=features,
     labels=labels,
@@ -1633,6 +1637,11 @@ references. The same record keeps arbitrary Phase-QNode JAX lowering,
 arbitrary `jacfwd`/`jacrev`, arbitrary Hessian algebra,
 hardware/provider-callback transform safety, and isolated-benchmark promotion
 blocked until dedicated artefacts exist.
+`run_jax_phase_qnode_lowering_matrix(...)` makes the native-lowering boundary
+explicit: bounded QNN native, custom-VJP, JIT, VMAP, and PyTree routes are
+listed as no-host-callback passes, while arbitrary registered Phase-QNode
+statevector, finite-shot, provider, hardware, and dynamic-circuit JAX lowering
+remain blocked until native lowering rules and parity artefacts exist.
 `run_jax_maturity_audit(...)` is the provider-parity gate for JAX: it aggregates
 the bounded passes and emits explicit blockers for arbitrary quantum-kernel JAX
 lowering, full nested-transform algebra, hardware/provider callback transform

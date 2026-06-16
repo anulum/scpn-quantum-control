@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 637,
     "public_documentation_pages": 253,
-    "python_model_classes": 1753,
+    "python_model_classes": 1755,
     "python_model_source_modules": 832,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
@@ -4954,6 +4954,14 @@
       },
       {
         "name": "PhaseJAXParameterShiftResult",
+        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+      },
+      {
+        "name": "PhaseJAXPhaseQNodeLoweringMatrixResult",
+        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+      },
+      {
+        "name": "PhaseJAXPhaseQNodeLoweringRoute",
         "path": "src/scpn_quantum_control/phase/jax_bridge.py"
       },
       {

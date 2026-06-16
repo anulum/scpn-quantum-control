@@ -21,6 +21,7 @@ from scpn_quantum_control.phase import (
     PhaseJAXNativeQNNGradientResult,
     PhaseJAXNestedTransformAlgebraResult,
     PhaseJAXParameterShiftResult,
+    PhaseJAXPhaseQNodeLoweringMatrixResult,
     PhaseJAXPyTreeCompatibilityResult,
     PhaseJAXShardingCompatibilityResult,
     PhaseJAXVMAPCompatibilityResult,
@@ -34,6 +35,7 @@ from scpn_quantum_control.phase import (
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
     run_jax_nested_transform_algebra_audit,
+    run_jax_phase_qnode_lowering_matrix,
     run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
@@ -773,6 +775,31 @@ def test_phase_jax_nested_transform_algebra_audit_verifies_bounded_routes(
     )
     payload = result.to_dict()
     assert payload["routes"]["arbitrary_phase_qnode_hessian"]["status"] == "blocked"
+
+
+def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
+    result = run_jax_phase_qnode_lowering_matrix()
+
+    assert isinstance(result, PhaseJAXPhaseQNodeLoweringMatrixResult)
+    assert result.bounded_no_host_callback_routes_ready
+    assert not result.arbitrary_phase_qnode_lowering_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.route_status("bounded_qnn_native_value_and_grad") == "passed"
+    assert result.route_status("bounded_qnn_jit_value_and_grad") == "passed"
+    assert result.route_status("bounded_qnn_vmap_value_and_grad") == "passed"
+    assert result.route_status("registered_phase_qnode_statevector_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
+    assert "registered_phase_qnode_statevector_lowering" in result.open_gaps
+    assert "isolated_benchmark_artifact" in result.open_gaps
+    assert result.claim_boundary == "bounded_jax_phase_qnode_lowering_matrix"
+
+    payload = result.to_dict()
+    assert payload["routes"]["bounded_qnn_jit_value_and_grad"]["host_callback"] is False
+    assert payload["routes"]["registered_phase_qnode_statevector_lowering"]["requires"] == [
+        "native_jax_lowering_rules",
+        "gate_observable_coverage_matrix",
+        "statevector_gradient_parity_artifact",
+    ]
 
 
 def test_phase_jax_maturity_audit_fails_closed_on_bad_batch_shape(
