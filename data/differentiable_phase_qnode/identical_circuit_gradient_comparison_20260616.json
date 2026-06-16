@@ -1,0 +1,120 @@
+{
+  "artifact_id": "identical-circuit-gradient-comparison-20260616",
+  "claim_boundary": "Exact-state identical-circuit gradient comparison for local Qiskit and PennyLane correctness. It is not hardware execution, finite-shot evidence, or isolated benchmark promotion.",
+  "classification": "functional_non_isolated",
+  "environment": {
+    "machine": "x86_64",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.13"
+  },
+  "generated_at_unix": 1781600777,
+  "identical_circuit_ready": true,
+  "production_eligible": false,
+  "promotion_ready": false,
+  "rows": [
+    {
+      "backend": "qiskit",
+      "backend_gradient": [
+        -0.38941834230865047
+      ],
+      "backend_value": 0.9210609940028851,
+      "case_id": "single_ry_z_expectation_exact_state",
+      "circuit_fingerprint": "1eea4a4a5007574933136030fd1a1d52ddad8c82fe1f1fcef15f45c2190291e4",
+      "claim_boundary": "Exact-state same-circuit local gradient comparison against SCPN Phase-QNode; no provider submission, hardware execution, finite-shot sampling, or production performance claim.",
+      "dependency_versions": {
+        "qiskit": "2.4.1"
+      },
+      "evaluations": 3,
+      "execution_mode": "exact_state",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "observable": "Z0",
+      "operations": [
+        [
+          "ry",
+          [
+            0
+          ],
+          0
+        ]
+      ],
+      "parameter_values": [
+        0.4
+      ],
+      "performance_claim_eligible": false,
+      "scpn_gradient": [
+        -0.38941834230865047
+      ],
+      "scpn_value": 0.9210609940028851,
+      "shots": null,
+      "status": "success",
+      "value_error": 0.0
+    },
+    {
+      "backend": "pennylane",
+      "backend_gradient": [
+        -0.3894183423086506
+      ],
+      "backend_value": 0.9210609940028851,
+      "case_id": "single_ry_z_expectation_exact_state",
+      "circuit_fingerprint": "1eea4a4a5007574933136030fd1a1d52ddad8c82fe1f1fcef15f45c2190291e4",
+      "claim_boundary": "Exact-state same-circuit local gradient comparison against SCPN Phase-QNode; no provider submission, hardware execution, finite-shot sampling, or production performance claim.",
+      "dependency_versions": {
+        "pennylane": "0.45.0"
+      },
+      "evaluations": 3,
+      "execution_mode": "exact_state",
+      "failure_class": null,
+      "gradient_error": 1.1102230246251565e-16,
+      "observable": "Z0",
+      "operations": [
+        [
+          "ry",
+          [
+            0
+          ],
+          0
+        ]
+      ],
+      "parameter_values": [
+        0.4
+      ],
+      "performance_claim_eligible": false,
+      "scpn_gradient": [
+        -0.38941834230865047
+      ],
+      "scpn_value": 0.9210609940028851,
+      "shots": null,
+      "status": "success",
+      "value_error": 0.0
+    }
+  ],
+  "same_circuit_contract": {
+    "case_id": "single_ry_z_expectation_exact_state",
+    "circuit_fingerprint": "1eea4a4a5007574933136030fd1a1d52ddad8c82fe1f1fcef15f45c2190291e4",
+    "execution_mode": "exact_state",
+    "observable": "Z0",
+    "operations": [
+      [
+        "ry",
+        [
+          0
+        ],
+        0
+      ]
+    ],
+    "parameter_values": [
+      0.4
+    ],
+    "shots": null
+  },
+  "schema": "scpn_qc_identical_circuit_gradient_comparison_v1",
+  "source_of_truth": "scpn_phase_qnode_reference",
+  "summary": {
+    "failure_classes": [],
+    "hard_gap_count": 0,
+    "row_count": 2,
+    "success_count": 2
+  }
+}

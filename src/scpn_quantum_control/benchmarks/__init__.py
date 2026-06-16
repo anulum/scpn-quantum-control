@@ -18,9 +18,13 @@ from .classical_baselines import (
 from .differentiable_external_comparison import (
     ExternalComparisonArtifact,
     ExternalComparisonRow,
+    IdenticalCircuitGradientComparisonArtifact,
+    IdenticalCircuitGradientComparisonRow,
     external_comparison_failure_mode_rows,
     run_differentiable_external_comparison_suite,
+    run_identical_circuit_gradient_comparison_suite,
     write_differentiable_external_comparison,
+    write_identical_circuit_gradient_comparison,
 )
 from .differentiable_hardening_gate import (
     DifferentiableBenchmarkClassificationCase,
@@ -63,9 +67,13 @@ __all__ = [
     "QuantumGradientBenchmarkResult",
     "ExternalComparisonArtifact",
     "ExternalComparisonRow",
+    "IdenticalCircuitGradientComparisonArtifact",
+    "IdenticalCircuitGradientComparisonRow",
     "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",
+    "run_identical_circuit_gradient_comparison_suite",
     "write_differentiable_external_comparison",
+    "write_identical_circuit_gradient_comparison",
     "DifferentiableBenchmarkClassificationCase",
     "DifferentiableHardeningGateCheck",
     "DifferentiableHardeningSliceGateResult",

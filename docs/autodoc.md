@@ -176,7 +176,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.benchmarks.differentiable_external_comparison
     options:
-      members: [ExternalComparisonArtifact, ExternalComparisonRow, run_differentiable_external_comparison_suite, write_differentiable_external_comparison]
+      members: [ExternalComparisonArtifact, ExternalComparisonRow, IdenticalCircuitGradientComparisonArtifact, IdenticalCircuitGradientComparisonRow, run_differentiable_external_comparison_suite, run_identical_circuit_gradient_comparison_suite, write_differentiable_external_comparison, write_identical_circuit_gradient_comparison]
 
 ::: scpn_quantum_control.differentiable_claim_ledger
     options:

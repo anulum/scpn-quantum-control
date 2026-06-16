@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -28,6 +29,12 @@ from numpy.typing import NDArray
 
 from ..phase.jax_bridge import is_phase_jax_available
 from ..phase.pennylane_bridge import is_phase_pennylane_available
+from ..phase.qnode_circuit import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+)
 from ..phase.tensorflow_bridge import is_phase_tensorflow_available
 from ..phase.torch_bridge import is_phase_torch_available
 
@@ -149,6 +156,144 @@ class ExternalComparisonArtifact:
             "row_count": self.row_count,
             "success_count": self.success_count,
             "hard_gap_count": self.hard_gap_count,
+            "classification": self.classification,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class IdenticalCircuitGradientComparisonRow:
+    """One same-circuit gradient comparison row against an external framework."""
+
+    case_id: str
+    backend: str
+    status: ComparisonStatus
+    failure_class: str | None
+    circuit_fingerprint: str
+    operations: tuple[tuple[object, ...], ...]
+    observable: str
+    parameter_values: tuple[float, ...]
+    execution_mode: str
+    shots: int | None
+    scpn_value: float | None
+    backend_value: float | None
+    value_error: float | None
+    scpn_gradient: tuple[float, ...] | None
+    backend_gradient: tuple[float, ...] | None
+    gradient_error: float | None
+    evaluations: int | None
+    dependency_versions: dict[str, str] | None
+    claim_boundary: str
+    performance_claim_eligible: bool = False
+
+    def __post_init__(self) -> None:
+        if not self.case_id:
+            raise ValueError("case_id must be non-empty")
+        if self.backend not in {"qiskit", "pennylane"}:
+            raise ValueError("backend must be qiskit or pennylane")
+        if self.status not in {"success", "hard_gap"}:
+            raise ValueError("status must be success or hard_gap")
+        if not self.circuit_fingerprint:
+            raise ValueError("circuit_fingerprint must be non-empty")
+        if not self.operations:
+            raise ValueError("operations must be non-empty")
+        if not self.observable:
+            raise ValueError("observable must be non-empty")
+        if self.execution_mode != "exact_state":
+            raise ValueError("execution_mode must be exact_state")
+        if self.shots is not None:
+            raise ValueError(
+                "identical-circuit comparison uses exact-state mode; shots must be None"
+            )
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        if self.status == "success":
+            if (
+                self.failure_class is not None
+                or self.scpn_value is None
+                or self.backend_value is None
+                or self.value_error is None
+                or self.scpn_gradient is None
+                or self.backend_gradient is None
+                or self.gradient_error is None
+                or self.evaluations is None
+            ):
+                raise ValueError("success rows require numeric value and gradient evidence")
+            if self.value_error < 0.0 or self.gradient_error < 0.0:
+                raise ValueError("success row errors must be non-negative")
+        if self.status == "hard_gap" and self.failure_class is None:
+            raise ValueError("hard_gap rows require a failure_class")
+
+    @property
+    def artifact_fields_ready(self) -> bool:
+        """Return whether the row carries the required same-circuit fields."""
+
+        return bool(
+            self.case_id
+            and self.backend
+            and self.circuit_fingerprint
+            and self.operations
+            and self.observable
+            and self.execution_mode
+            and self.claim_boundary
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-ready row."""
+
+        return {
+            "case_id": self.case_id,
+            "backend": self.backend,
+            "status": self.status,
+            "failure_class": self.failure_class,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "operations": _jsonify_operations(self.operations),
+            "observable": self.observable,
+            "parameter_values": list(self.parameter_values),
+            "execution_mode": self.execution_mode,
+            "shots": self.shots,
+            "scpn_value": self.scpn_value,
+            "backend_value": self.backend_value,
+            "value_error": self.value_error,
+            "scpn_gradient": list(self.scpn_gradient) if self.scpn_gradient is not None else None,
+            "backend_gradient": (
+                list(self.backend_gradient) if self.backend_gradient is not None else None
+            ),
+            "gradient_error": self.gradient_error,
+            "evaluations": self.evaluations,
+            "dependency_versions": (
+                dict(self.dependency_versions) if self.dependency_versions is not None else None
+            ),
+            "claim_boundary": self.claim_boundary,
+            "performance_claim_eligible": self.performance_claim_eligible,
+        }
+
+
+@dataclass(frozen=True)
+class IdenticalCircuitGradientComparisonArtifact:
+    """Written same-circuit comparison artefact summary."""
+
+    artifact_id: str
+    path: Path
+    row_count: int
+    success_count: int
+    hard_gap_count: int
+    identical_circuit_ready: bool
+    promotion_ready: bool
+    classification: str
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-ready artefact summary."""
+
+        return {
+            "artifact_id": self.artifact_id,
+            "path": str(self.path),
+            "row_count": self.row_count,
+            "success_count": self.success_count,
+            "hard_gap_count": self.hard_gap_count,
+            "identical_circuit_ready": self.identical_circuit_ready,
+            "promotion_ready": self.promotion_ready,
             "classification": self.classification,
             "claim_boundary": self.claim_boundary,
         }
@@ -277,6 +422,121 @@ def write_differentiable_external_comparison(
         row_count=len(evidence_rows),
         success_count=success_count,
         hard_gap_count=hard_gap_count,
+        classification="functional_non_isolated",
+        claim_boundary=str(payload["claim_boundary"]),
+    )
+
+
+def run_identical_circuit_gradient_comparison_suite() -> tuple[
+    IdenticalCircuitGradientComparisonRow, ...
+]:
+    """Run exact-state same-circuit gradient comparisons for Qiskit and PennyLane."""
+
+    circuit, values, operations, observable_label, fingerprint = _identical_circuit_problem()
+    scpn_value = execute_phase_qnode_circuit(circuit, values).value
+    scpn_gradient_result = parameter_shift_phase_qnode_gradient(circuit, values)
+    scpn_gradient = tuple(float(item) for item in scpn_gradient_result.gradient)
+    return (
+        _qiskit_identical_circuit_row(
+            values=values,
+            operations=operations,
+            observable_label=observable_label,
+            fingerprint=fingerprint,
+            scpn_value=float(scpn_value),
+            scpn_gradient=scpn_gradient,
+        ),
+        _pennylane_identical_circuit_row(
+            circuit=circuit,
+            values=values,
+            operations=operations,
+            observable_label=observable_label,
+            fingerprint=fingerprint,
+            scpn_value=float(scpn_value),
+            scpn_gradient=scpn_gradient,
+        ),
+    )
+
+
+def write_identical_circuit_gradient_comparison(
+    output_path: str | os.PathLike[str],
+    rows: tuple[IdenticalCircuitGradientComparisonRow, ...] | None = None,
+    *,
+    artifact_id: str = "identical-circuit-gradient-comparison-local",
+) -> IdenticalCircuitGradientComparisonArtifact:
+    """Write exact-state same-circuit comparison rows as JSON evidence."""
+
+    destination = Path(output_path)
+    if destination.suffix.lower() != ".json":
+        raise ValueError("output_path must end with .json")
+    if not artifact_id.strip():
+        raise ValueError("artifact_id must be non-empty")
+    evidence_rows = rows if rows is not None else run_identical_circuit_gradient_comparison_suite()
+    if not evidence_rows:
+        raise ValueError("at least one identical-circuit comparison row is required")
+    fingerprints = {row.circuit_fingerprint for row in evidence_rows}
+    backends = {row.backend for row in evidence_rows}
+    success_count = sum(row.status == "success" for row in evidence_rows)
+    hard_gap_count = sum(row.status == "hard_gap" for row in evidence_rows)
+    identical_circuit_ready = (
+        fingerprints == {next(iter(fingerprints))}
+        and {"qiskit", "pennylane"}.issubset(backends)
+        and all(row.status == "success" for row in evidence_rows)
+        and all(row.execution_mode == "exact_state" and row.shots is None for row in evidence_rows)
+    )
+    first_row = evidence_rows[0]
+    payload = {
+        "schema": "scpn_qc_identical_circuit_gradient_comparison_v1",
+        "artifact_id": artifact_id.strip(),
+        "generated_at_unix": int(time.time()),
+        "classification": "functional_non_isolated",
+        "production_eligible": False,
+        "identical_circuit_ready": identical_circuit_ready,
+        "promotion_ready": False,
+        "source_of_truth": "scpn_phase_qnode_reference",
+        "claim_boundary": (
+            "Exact-state identical-circuit gradient comparison for local Qiskit and "
+            "PennyLane correctness. It is not hardware execution, finite-shot evidence, "
+            "or isolated benchmark promotion."
+        ),
+        "same_circuit_contract": {
+            "case_id": first_row.case_id,
+            "circuit_fingerprint": first_row.circuit_fingerprint,
+            "operations": _jsonify_operations(first_row.operations),
+            "observable": first_row.observable,
+            "parameter_values": list(first_row.parameter_values),
+            "execution_mode": "exact_state",
+            "shots": None,
+        },
+        "environment": {
+            "python": sys.version.split()[0],
+            "platform": platform.platform(),
+            "machine": platform.machine(),
+            "processor": platform.processor() or "unknown",
+        },
+        "summary": {
+            "row_count": len(evidence_rows),
+            "success_count": success_count,
+            "hard_gap_count": hard_gap_count,
+            "failure_classes": sorted(
+                {
+                    row.failure_class
+                    for row in evidence_rows
+                    if row.status == "hard_gap" and row.failure_class is not None
+                }
+            ),
+        },
+        "rows": [row.to_dict() for row in evidence_rows],
+    }
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return IdenticalCircuitGradientComparisonArtifact(
+        artifact_id=artifact_id.strip(),
+        path=destination,
+        row_count=len(evidence_rows),
+        success_count=success_count,
+        hard_gap_count=hard_gap_count,
+        identical_circuit_ready=identical_circuit_ready,
+        promotion_ready=False,
         classification="functional_non_isolated",
         claim_boundary=str(payload["claim_boundary"]),
     )
@@ -540,6 +800,258 @@ def _unsupported_gap_row(
     )
 
 
+def _identical_circuit_problem() -> tuple[
+    PhaseQNodeCircuit,
+    NDArray[np.float64],
+    tuple[tuple[object, ...], ...],
+    str,
+    str,
+]:
+    operations: tuple[tuple[object, ...], ...] = (("ry", (0,), 0),)
+    observable_label = "Z0"
+    values = np.array([0.4], dtype=np.float64)
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=operations,
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+    fingerprint = _same_circuit_fingerprint(operations, observable_label, values)
+    return circuit, values, operations, observable_label, fingerprint
+
+
+def _same_circuit_fingerprint(
+    operations: tuple[tuple[object, ...], ...],
+    observable: str,
+    values: NDArray[np.float64],
+) -> str:
+    payload = {
+        "case_id": "single_ry_z_expectation_exact_state",
+        "operations": _jsonify_operations(operations),
+        "observable": observable,
+        "parameter_values": values.tolist(),
+        "execution_mode": "exact_state",
+        "shots": None,
+    }
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _qiskit_identical_circuit_row(
+    *,
+    values: NDArray[np.float64],
+    operations: tuple[tuple[object, ...], ...],
+    observable_label: str,
+    fingerprint: str,
+    scpn_value: float,
+    scpn_gradient: tuple[float, ...],
+) -> IdenticalCircuitGradientComparisonRow:
+    try:
+        from qiskit import QuantumCircuit
+        from qiskit.circuit import Parameter
+        from qiskit.quantum_info import SparsePauliOp
+
+        from ..phase.qiskit_bridge import execute_qiskit_statevector_parameter_shift
+    except ImportError:
+        return _identical_circuit_gap_row(
+            backend="qiskit",
+            failure_class="dependency_missing",
+            setup="Install qiskit to run exact-state identical-circuit comparison.",
+            operations=operations,
+            observable_label=observable_label,
+            values=values,
+            fingerprint=fingerprint,
+        )
+    try:
+        theta = Parameter("theta")
+        qiskit_circuit = QuantumCircuit(1)
+        qiskit_circuit.ry(theta, 0)
+        result = execute_qiskit_statevector_parameter_shift(
+            qiskit_circuit,
+            SparsePauliOp.from_list([("Z", 1.0)]),
+            (theta,),
+            values,
+        )
+    except Exception as exc:  # pragma: no cover - defensive optional boundary
+        return _identical_circuit_gap_row(
+            backend="qiskit",
+            failure_class="runtime_error",
+            setup=str(exc),
+            operations=operations,
+            observable_label=observable_label,
+            values=values,
+            fingerprint=fingerprint,
+        )
+    backend_gradient = tuple(float(item) for item in result.gradient)
+    return _identical_circuit_success_row(
+        backend="qiskit",
+        operations=operations,
+        observable_label=observable_label,
+        values=values,
+        fingerprint=fingerprint,
+        scpn_value=scpn_value,
+        backend_value=float(result.value),
+        scpn_gradient=scpn_gradient,
+        backend_gradient=backend_gradient,
+        evaluations=result.evaluations,
+    )
+
+
+def _pennylane_identical_circuit_row(
+    *,
+    circuit: PhaseQNodeCircuit,
+    values: NDArray[np.float64],
+    operations: tuple[tuple[object, ...], ...],
+    observable_label: str,
+    fingerprint: str,
+    scpn_value: float,
+    scpn_gradient: tuple[float, ...],
+) -> IdenticalCircuitGradientComparisonRow:
+    try:
+        from ..phase.pennylane_bridge import check_pennylane_phase_qnode_round_trip
+    except ImportError:
+        return _identical_circuit_gap_row(
+            backend="pennylane",
+            failure_class="dependency_missing",
+            setup="Install pennylane to run exact-state identical-circuit comparison.",
+            operations=operations,
+            observable_label=observable_label,
+            values=values,
+            fingerprint=fingerprint,
+        )
+    try:
+        result = check_pennylane_phase_qnode_round_trip(
+            circuit,
+            values,
+            shots=None,
+            value_tolerance=1.0e-12,
+            gradient_tolerance=1.0e-12,
+        )
+    except ImportError:
+        return _identical_circuit_gap_row(
+            backend="pennylane",
+            failure_class="dependency_missing",
+            setup="Install pennylane to run exact-state identical-circuit comparison.",
+            operations=operations,
+            observable_label=observable_label,
+            values=values,
+            fingerprint=fingerprint,
+        )
+    except Exception as exc:  # pragma: no cover - defensive optional boundary
+        return _identical_circuit_gap_row(
+            backend="pennylane",
+            failure_class="runtime_error",
+            setup=str(exc),
+            operations=operations,
+            observable_label=observable_label,
+            values=values,
+            fingerprint=fingerprint,
+        )
+    backend_gradient = tuple(float(item) for item in result.pennylane_gradient)
+    return _identical_circuit_success_row(
+        backend="pennylane",
+        operations=operations,
+        observable_label=observable_label,
+        values=values,
+        fingerprint=fingerprint,
+        scpn_value=scpn_value,
+        backend_value=float(result.pennylane_value),
+        scpn_gradient=scpn_gradient,
+        backend_gradient=backend_gradient,
+        evaluations=result.evaluations,
+    )
+
+
+def _identical_circuit_success_row(
+    *,
+    backend: str,
+    operations: tuple[tuple[object, ...], ...],
+    observable_label: str,
+    values: NDArray[np.float64],
+    fingerprint: str,
+    scpn_value: float,
+    backend_value: float,
+    scpn_gradient: tuple[float, ...],
+    backend_gradient: tuple[float, ...],
+    evaluations: int,
+) -> IdenticalCircuitGradientComparisonRow:
+    gradient_delta = np.asarray(scpn_gradient, dtype=np.float64) - np.asarray(
+        backend_gradient,
+        dtype=np.float64,
+    )
+    return IdenticalCircuitGradientComparisonRow(
+        case_id="single_ry_z_expectation_exact_state",
+        backend=backend,
+        status="success",
+        failure_class=None,
+        circuit_fingerprint=fingerprint,
+        operations=operations,
+        observable=observable_label,
+        parameter_values=tuple(float(item) for item in values),
+        execution_mode="exact_state",
+        shots=None,
+        scpn_value=scpn_value,
+        backend_value=backend_value,
+        value_error=abs(scpn_value - backend_value),
+        scpn_gradient=scpn_gradient,
+        backend_gradient=backend_gradient,
+        gradient_error=float(np.max(np.abs(gradient_delta))) if gradient_delta.size else 0.0,
+        evaluations=int(evaluations),
+        dependency_versions=_backend_dependency_versions(backend),
+        claim_boundary=(
+            "Exact-state same-circuit local gradient comparison against SCPN Phase-QNode; "
+            "no provider submission, hardware execution, finite-shot sampling, or "
+            "production performance claim."
+        ),
+    )
+
+
+def _identical_circuit_gap_row(
+    *,
+    backend: str,
+    failure_class: str,
+    setup: str,
+    operations: tuple[tuple[object, ...], ...],
+    observable_label: str,
+    values: NDArray[np.float64],
+    fingerprint: str,
+) -> IdenticalCircuitGradientComparisonRow:
+    return IdenticalCircuitGradientComparisonRow(
+        case_id="single_ry_z_expectation_exact_state",
+        backend=backend,
+        status="hard_gap",
+        failure_class=failure_class,
+        circuit_fingerprint=fingerprint,
+        operations=operations,
+        observable=observable_label,
+        parameter_values=tuple(float(item) for item in values),
+        execution_mode="exact_state",
+        shots=None,
+        scpn_value=None,
+        backend_value=None,
+        value_error=None,
+        scpn_gradient=None,
+        backend_gradient=None,
+        gradient_error=None,
+        evaluations=None,
+        dependency_versions=_backend_dependency_versions(backend),
+        claim_boundary=f"{setup} No hidden success or promoted comparison claim.",
+    )
+
+
+def _jsonify_operations(operations: tuple[tuple[object, ...], ...]) -> list[list[object]]:
+    return [[_jsonify_operation_part(part) for part in operation] for operation in operations]
+
+
+def _jsonify_operation_part(part: object) -> object:
+    if isinstance(part, tuple):
+        return [_jsonify_operation_part(item) for item in part]
+    if isinstance(part, np.integer):
+        return int(part)
+    if isinstance(part, np.floating):
+        return float(part)
+    return part
+
+
 def _bounded_phase_objective(values: NDArray[np.float64]) -> float:
     return float(math.cos(values[0]) + 0.25 * math.sin(values[1]))
 
@@ -692,6 +1204,7 @@ def _backend_dependency_versions(backend: str) -> dict[str, str]:
         "pytorch": ("torch",),
         "tensorflow": ("tensorflow", "tensorflow-cpu"),
         "pennylane": ("pennylane",),
+        "qiskit": ("qiskit",),
         "enzyme": ("llvm", "enzyme", "enzyme_ad"),
     }
     versions = {
@@ -753,7 +1266,11 @@ def _enzyme_runner_configured() -> bool:
 __all__ = [
     "ExternalComparisonArtifact",
     "ExternalComparisonRow",
+    "IdenticalCircuitGradientComparisonArtifact",
+    "IdenticalCircuitGradientComparisonRow",
     "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",
+    "run_identical_circuit_gradient_comparison_suite",
     "write_differentiable_external_comparison",
+    "write_identical_circuit_gradient_comparison",
 ]

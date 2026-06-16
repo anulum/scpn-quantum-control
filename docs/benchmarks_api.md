@@ -422,6 +422,32 @@ file as `diff-qnode-external-comparison.json` and inserts the real
 external-comparison artefact ID into the benchmark evidence bundle's
 `evidence_artifact_ids` list.
 
+#### `run_identical_circuit_gradient_comparison_suite()`
+
+Runs a stricter exact-state competitor-gradient comparison for the same
+registered Phase-QNode circuit across SCPN, Qiskit, and PennyLane:
+
+- Circuit: one-qubit `RY(theta)`.
+- Parameters: `[0.4]`.
+- Observable: `Z0`.
+- Shot policy: exact-state mode, `shots=None`.
+- Failure classes: dependency missing or runtime error per backend.
+
+Both Qiskit and PennyLane rows must carry the same circuit fingerprint and pass
+value and gradient agreement before the artefact reports
+`identical_circuit_ready=True`.
+
+#### `write_identical_circuit_gradient_comparison()`
+
+Writes the identical-circuit rows to a JSON artefact with schema
+`scpn_qc_identical_circuit_gradient_comparison_v1`. The committed local
+artefact
+`data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json`
+records two success rows, one for Qiskit and one for PennyLane, with the same
+circuit, same parameters, same observable, and exact-state shot policy. It is a
+correctness artefact only: `promotion_ready` remains false until separate
+isolated benchmark evidence and claim-ledger promotion metadata exist.
+
 For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an executable that reads a JSON
 request on stdin and writes JSON with:
 

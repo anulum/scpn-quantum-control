@@ -18,9 +18,13 @@ import scpn_quantum_control.benchmarks.differentiable_external_comparison as com
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
     ExternalComparisonArtifact,
     ExternalComparisonRow,
+    IdenticalCircuitGradientComparisonArtifact,
+    IdenticalCircuitGradientComparisonRow,
     external_comparison_failure_mode_rows,
     run_differentiable_external_comparison_suite,
+    run_identical_circuit_gradient_comparison_suite,
     write_differentiable_external_comparison,
+    write_identical_circuit_gradient_comparison,
 )
 
 
@@ -91,6 +95,74 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
         "unsupported_dtype",
         "unsupported_device",
     }.issubset(failure_classes)
+
+
+def test_identical_circuit_gradient_comparison_records_qiskit_and_pennylane_rows() -> None:
+    rows = run_identical_circuit_gradient_comparison_suite()
+    by_backend = {row.backend: row for row in rows}
+
+    assert set(by_backend) == {"qiskit", "pennylane"}
+    for row in rows:
+        assert row.status == "success"
+        assert row.failure_class is None
+        assert row.case_id == "single_ry_z_expectation_exact_state"
+        assert row.circuit_fingerprint
+        assert row.execution_mode == "exact_state"
+        assert row.shots is None
+        assert row.observable == "Z0"
+        assert row.parameter_values == (0.4,)
+        assert row.value_error <= 1e-12
+        assert row.gradient_error <= 1e-12
+        assert row.dependency_versions
+        assert row.artifact_fields_ready
+        assert not row.performance_claim_eligible
+
+
+def test_identical_circuit_gradient_comparison_writer_marks_ready_not_promoted(
+    tmp_path,
+) -> None:
+    output = tmp_path / "identical-circuit.json"
+
+    artifact = write_identical_circuit_gradient_comparison(output)
+    payload = json.loads(output.read_text(encoding="utf-8"))
+
+    assert isinstance(artifact, IdenticalCircuitGradientComparisonArtifact)
+    assert artifact.identical_circuit_ready
+    assert not artifact.promotion_ready
+    assert payload["summary"]["success_count"] == 2
+    assert payload["summary"]["hard_gap_count"] == 0
+    assert payload["identical_circuit_ready"] is True
+    assert payload["promotion_ready"] is False
+    assert payload["same_circuit_contract"]["shots"] is None
+
+
+def test_identical_circuit_gradient_comparison_row_requires_success_evidence() -> None:
+    try:
+        IdenticalCircuitGradientComparisonRow(
+            case_id="case",
+            backend="qiskit",
+            status="success",
+            failure_class=None,
+            circuit_fingerprint="abc",
+            operations=(("ry", (0,), 0),),
+            observable="Z0",
+            parameter_values=(0.4,),
+            execution_mode="exact_state",
+            shots=None,
+            scpn_value=1.0,
+            backend_value=None,
+            value_error=0.0,
+            scpn_gradient=(0.0,),
+            backend_gradient=None,
+            gradient_error=None,
+            evaluations=3,
+            dependency_versions={"qiskit": "test"},
+            claim_boundary="bounded comparison",
+        )
+    except ValueError as exc:
+        assert "success rows require numeric" in str(exc)
+    else:
+        raise AssertionError("success row without backend gradient was accepted")
 
 
 def test_external_comparison_suite_classifies_runtime_failures(monkeypatch) -> None:

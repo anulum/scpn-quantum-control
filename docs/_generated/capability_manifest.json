@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 645,
     "public_documentation_pages": 253,
-    "python_model_classes": 1763,
+    "python_model_classes": 1765,
     "python_model_source_modules": 834,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
-    "test_files": 1952
+    "test_files": 1954
   },
   "documentation": {
     "examples": [
@@ -3283,6 +3283,14 @@
       {
         "name": "ITheUnifyingComputationalPrincipleHierarchicalPredictiveCodingHpFixtureResult",
         "path": "src/scpn_quantum_control/paper0/i_the_unifying_computational_principle_hierarchical_predictive_coding_hp_validation.py"
+      },
+      {
+        "name": "IdenticalCircuitGradientComparisonArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+      },
+      {
+        "name": "IdenticalCircuitGradientComparisonRow",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
       },
       {
         "name": "IdentityAttractor",
@@ -11708,7 +11716,9 @@
       "tests/test_run_paper0_xi_the_mathematics_of_hierarchy_and_scale_invariance_fixture.py",
       "tests/test_run_paper0_xiii_the_constructive_role_of_noise_msr_and_nis_fixture.py",
       "tests/test_runner_guards.py",
+      "tests/test_rust_ffi_safety_audit.py",
       "tests/test_rust_ffi_validation.py",
+      "tests/test_rust_kernel_execution_audit.py",
       "tests/test_rust_new_functions.py",
       "tests/test_rust_parity.py",
       "tests/test_rust_path_benchmarks.py",
