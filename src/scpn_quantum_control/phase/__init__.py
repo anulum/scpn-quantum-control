@@ -294,9 +294,11 @@ from .qgnn import (
     synthetic_kuramoto_target,
 )
 from .qiskit_bridge import (
+    QiskitCalibrationStatevectorComparisonArtifact,
     QiskitMaturityAuditResult,
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
+    QiskitRawCountReplayArtifact,
     QiskitRuntimePrimitiveExecutionArtifact,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
@@ -853,8 +855,10 @@ __all__ = [
     "train_parameter_shift_qnn_classifier",
     "verify_parameter_shift_qnn_classifier_gradient",
     "QiskitParameterShiftGradientResult",
+    "QiskitCalibrationStatevectorComparisonArtifact",
     "QiskitMaturityAuditResult",
     "QiskitParameterShiftRecord",
+    "QiskitRawCountReplayArtifact",
     "QiskitRuntimePrimitiveExecutionArtifact",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",

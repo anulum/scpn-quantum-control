@@ -184,6 +184,130 @@ class QiskitRuntimePrimitiveExecutionArtifact:
 
 
 @dataclass(frozen=True)
+class QiskitRawCountReplayArtifact:
+    """Validated Qiskit raw-count capture and replay evidence."""
+
+    artifact_id: str
+    provider_name: str
+    backend_name: str
+    job_id: str
+    circuit_fingerprint: str
+    counts_digest: str
+    replay_digest: str
+    shots: int
+    measured_qubits: int
+    expectation_value: float
+    standard_error: float
+    hardware_execution: bool
+    live_ticket_id: str
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "provider_name",
+            "backend_name",
+            "job_id",
+            "circuit_fingerprint",
+            "live_ticket_id",
+        ):
+            if not str(getattr(self, field_name)).strip():
+                raise ValueError(f"{field_name} must be non-empty")
+        _normalise_shots(self.shots)
+        if isinstance(self.measured_qubits, bool) or self.measured_qubits <= 0:
+            raise ValueError("measured_qubits must be a positive integer")
+        expectation_value = _as_finite_scalar("expectation_value", self.expectation_value)
+        if not -1.0 <= expectation_value <= 1.0:
+            raise ValueError("expectation_value must be in [-1, 1]")
+        standard_error = _as_finite_scalar("standard_error", self.standard_error)
+        if standard_error < 0.0:
+            raise ValueError("standard_error must be non-negative")
+        if not self.hardware_execution:
+            raise ValueError("raw-count replay artefacts must cite hardware execution")
+        _validate_sha256_digest("counts_digest", self.counts_digest)
+        _validate_sha256_digest("replay_digest", self.replay_digest)
+        object.__setattr__(self, "expectation_value", expectation_value)
+        object.__setattr__(self, "standard_error", standard_error)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible raw-count replay metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "provider_name": self.provider_name,
+            "backend_name": self.backend_name,
+            "job_id": self.job_id,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "counts_digest": self.counts_digest,
+            "replay_digest": self.replay_digest,
+            "shots": self.shots,
+            "measured_qubits": self.measured_qubits,
+            "expectation_value": self.expectation_value,
+            "standard_error": self.standard_error,
+            "hardware_execution": self.hardware_execution,
+            "live_ticket_id": self.live_ticket_id,
+        }
+
+
+@dataclass(frozen=True)
+class QiskitCalibrationStatevectorComparisonArtifact:
+    """Validated live-backend calibration and statevector comparison evidence."""
+
+    artifact_id: str
+    provider_name: str
+    backend_name: str
+    calibration_snapshot_id: str
+    statevector_reference_artifact_id: str
+    circuit_fingerprint: str
+    calibration_digest: str
+    comparison_digest: str
+    max_abs_error: float
+    tolerance: float
+    hardware_execution: bool
+    live_ticket_id: str
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "provider_name",
+            "backend_name",
+            "calibration_snapshot_id",
+            "statevector_reference_artifact_id",
+            "circuit_fingerprint",
+            "live_ticket_id",
+        ):
+            if not str(getattr(self, field_name)).strip():
+                raise ValueError(f"{field_name} must be non-empty")
+        max_abs_error = _as_finite_scalar("max_abs_error", self.max_abs_error)
+        tolerance = _as_positive_scalar("tolerance", self.tolerance)
+        if max_abs_error < 0.0:
+            raise ValueError("max_abs_error must be non-negative")
+        if max_abs_error > tolerance:
+            raise ValueError("max_abs_error must be within tolerance")
+        if not self.hardware_execution:
+            raise ValueError("calibration comparison artefacts must cite hardware execution")
+        _validate_sha256_digest("calibration_digest", self.calibration_digest)
+        _validate_sha256_digest("comparison_digest", self.comparison_digest)
+        object.__setattr__(self, "max_abs_error", max_abs_error)
+        object.__setattr__(self, "tolerance", tolerance)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible calibration comparison metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "provider_name": self.provider_name,
+            "backend_name": self.backend_name,
+            "calibration_snapshot_id": self.calibration_snapshot_id,
+            "statevector_reference_artifact_id": self.statevector_reference_artifact_id,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "calibration_digest": self.calibration_digest,
+            "comparison_digest": self.comparison_digest,
+            "max_abs_error": self.max_abs_error,
+            "tolerance": self.tolerance,
+            "hardware_execution": self.hardware_execution,
+            "live_ticket_id": self.live_ticket_id,
+        }
+
+
+@dataclass(frozen=True)
 class QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-execution blockers."""
 
@@ -345,6 +469,8 @@ def run_qiskit_maturity_audit(
     confidence_z: float = 1.959963984540054,
     provider_preparation_audit: ProviderHardwareGradientPreparationAuditResult | None = None,
     runtime_primitive_artifact: QiskitRuntimePrimitiveExecutionArtifact | None = None,
+    raw_count_replay_artifact: QiskitRawCountReplayArtifact | None = None,
+    calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact | None = None,
 ) -> QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-level blockers.
 
@@ -419,12 +545,32 @@ def run_qiskit_maturity_audit(
         local_reference_metadata["runtime_primitive_backend_name"] = (
             runtime_primitive_artifact.backend_name
         )
+    if raw_count_replay_artifact is not None:
+        local_reference_metadata["raw_count_replay_artifact_id"] = (
+            raw_count_replay_artifact.artifact_id
+        )
+        local_reference_metadata["raw_count_replay_shots"] = raw_count_replay_artifact.shots
+        local_reference_metadata["raw_count_replay_standard_error"] = (
+            raw_count_replay_artifact.standard_error
+        )
+    if calibration_comparison_artifact is not None:
+        local_reference_metadata["calibration_comparison_artifact_id"] = (
+            calibration_comparison_artifact.artifact_id
+        )
+        local_reference_metadata["calibration_comparison_max_abs_error"] = (
+            calibration_comparison_artifact.max_abs_error
+        )
+        local_reference_metadata["calibration_comparison_tolerance"] = (
+            calibration_comparison_artifact.tolerance
+        )
     evidence: dict[str, object] = {
         "shifted_circuit_records": shifted_records,
         "statevector_reference": statevector_reference,
         "finite_shot_surrogate": finite_shot_surrogate,
         "provider_preparation_audit": preparation_audit,
         "runtime_primitive_artifact": runtime_primitive_artifact,
+        "raw_count_replay_artifact": raw_count_replay_artifact,
+        "calibration_comparison_artifact": calibration_comparison_artifact,
     }
     statevector_comparison_passed = max_abs_error <= 1e-10
     provider_policy_passed = (
@@ -450,8 +596,12 @@ def run_qiskit_maturity_audit(
             "passed" if runtime_primitive_artifact is not None else "blocked"
         ),
         "live_qpu_execution_ticket": "blocked",
-        "raw_count_capture_replay_harness": "blocked",
-        "live_backend_statevector_reference_comparison": "blocked",
+        "raw_count_capture_replay_harness": (
+            "passed" if raw_count_replay_artifact is not None else "blocked"
+        ),
+        "live_backend_statevector_reference_comparison": (
+            "passed" if calibration_comparison_artifact is not None else "blocked"
+        ),
         "promotion_grade_isolated_benchmarks": "blocked",
     }
     local_gradient_ready = all(
@@ -613,9 +763,11 @@ def _normalise_shots(value: int) -> int:
 
 
 __all__ = [
+    "QiskitCalibrationStatevectorComparisonArtifact",
     "QiskitMaturityAuditResult",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
+    "QiskitRawCountReplayArtifact",
     "QiskitRuntimePrimitiveExecutionArtifact",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",

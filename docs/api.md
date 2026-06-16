@@ -70,8 +70,9 @@ local Statevector reference gradients, finite-shot surrogate uncertainty, and
 no-submit provider hardware-gradient preparation. A validated
 `QiskitRuntimePrimitiveExecutionArtifact` can attach Runtime primitive execution
 metadata and clear only the runtime-primitive evidence gate; live QPU,
-raw-count replay, calibration/statevector comparison, and benchmark promotion
-remain blocked until artefacts exist.
+raw-count replay and calibration/statevector comparison require their own
+validated artefacts, and benchmark promotion remains blocked until isolated
+artefacts exist.
 
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
@@ -1322,7 +1323,7 @@ is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_plugin_matrix(provider_execution_artifact=None) -> PennyLanePluginMatrixResult
 run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None, provider_execution_artifact=None) -> PennyLaneMaturityAuditResult
-run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None) -> QiskitMaturityAuditResult
+run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None) -> QiskitMaturityAuditResult
 run_differentiable_provider_hardware_safety_audit(*, live_execution_ticket=None, raw_count_replay_artifact_id=None, calibration_snapshot_artifact_id=None, statevector_comparison_artifact_id=None, isolated_benchmark_artifact_id=None) -> DifferentiableProviderHardwareSafetyAuditResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec

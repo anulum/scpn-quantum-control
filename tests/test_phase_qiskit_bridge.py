@@ -20,9 +20,11 @@ from qiskit.quantum_info import SparsePauliOp
 from scpn_quantum_control.phase import (
     PauliTerm,
     PhaseQNodeCircuit,
+    QiskitCalibrationStatevectorComparisonArtifact,
     QiskitMaturityAuditResult,
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
+    QiskitRawCountReplayArtifact,
     QiskitRuntimePrimitiveExecutionArtifact,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
@@ -223,6 +225,114 @@ def test_qiskit_runtime_primitive_artifact_rejects_hardware_execution_claim() ->
             metadata_digest="sha256:" + "3" * 64,
             shots=400,
             hardware_execution=True,
+        )
+
+
+def _qiskit_raw_count_replay_artifact() -> QiskitRawCountReplayArtifact:
+    return QiskitRawCountReplayArtifact(
+        artifact_id="qiskit-raw-count-replay-20260616",
+        provider_name="ibm_quantum",
+        backend_name="ibm_brisbane",
+        job_id="runtime-job-20260616",
+        circuit_fingerprint="qiskit:ry(theta):z:v1",
+        counts_digest="sha256:" + "4" * 64,
+        replay_digest="sha256:" + "5" * 64,
+        shots=4096,
+        measured_qubits=1,
+        expectation_value=0.9210609940028851,
+        standard_error=0.006,
+        hardware_execution=True,
+        live_ticket_id="live-ticket-20260616",
+    )
+
+
+def _qiskit_calibration_comparison_artifact() -> QiskitCalibrationStatevectorComparisonArtifact:
+    return QiskitCalibrationStatevectorComparisonArtifact(
+        artifact_id="qiskit-calibration-comparison-20260616",
+        provider_name="ibm_quantum",
+        backend_name="ibm_brisbane",
+        calibration_snapshot_id="calibration-20260616",
+        statevector_reference_artifact_id="statevector-reference-20260616",
+        circuit_fingerprint="qiskit:ry(theta):z:v1",
+        calibration_digest="sha256:" + "6" * 64,
+        comparison_digest="sha256:" + "7" * 64,
+        max_abs_error=0.012,
+        tolerance=0.05,
+        hardware_execution=True,
+        live_ticket_id="live-ticket-20260616",
+    )
+
+
+def test_qiskit_maturity_audit_accepts_raw_count_and_calibration_artifacts_without_promotion() -> (
+    None
+):
+    circuit, parameters, observable = _single_rotation_problem()
+    raw_count_artifact = _qiskit_raw_count_replay_artifact()
+    calibration_artifact = _qiskit_calibration_comparison_artifact()
+
+    result = run_qiskit_maturity_audit(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=400,
+        raw_count_replay_artifact=raw_count_artifact,
+        calibration_comparison_artifact=calibration_artifact,
+    )
+
+    assert result.required_capabilities["raw_count_capture_replay_harness"] == "passed"
+    assert (
+        result.required_capabilities["live_backend_statevector_reference_comparison"] == "passed"
+    )
+    assert result.evidence["raw_count_replay_artifact"] is raw_count_artifact
+    assert result.evidence["calibration_comparison_artifact"] is calibration_artifact
+    assert result.local_reference_metadata["raw_count_replay_artifact_id"] == (
+        raw_count_artifact.artifact_id
+    )
+    assert result.local_reference_metadata["calibration_comparison_artifact_id"] == (
+        calibration_artifact.artifact_id
+    )
+    assert not result.ready_for_provider_exceedance
+    assert "raw_count_capture_replay_harness" not in result.open_gaps
+    assert "live_backend_statevector_reference_comparison" not in result.open_gaps
+    assert "live_qpu_execution_ticket" in result.open_gaps
+    assert "promotion_grade_isolated_benchmarks" in result.open_gaps
+
+
+def test_qiskit_raw_count_replay_artifact_rejects_non_live_counts() -> None:
+    with pytest.raises(ValueError, match="must cite hardware execution"):
+        QiskitRawCountReplayArtifact(
+            artifact_id="qiskit-raw-count-replay-20260616",
+            provider_name="ibm_quantum",
+            backend_name="ibm_brisbane",
+            job_id="runtime-job-20260616",
+            circuit_fingerprint="qiskit:ry(theta):z:v1",
+            counts_digest="sha256:" + "4" * 64,
+            replay_digest="sha256:" + "5" * 64,
+            shots=4096,
+            measured_qubits=1,
+            expectation_value=0.9,
+            standard_error=0.006,
+            hardware_execution=False,
+            live_ticket_id="live-ticket-20260616",
+        )
+
+
+def test_qiskit_calibration_comparison_artifact_rejects_failed_tolerance() -> None:
+    with pytest.raises(ValueError, match="max_abs_error must be within tolerance"):
+        QiskitCalibrationStatevectorComparisonArtifact(
+            artifact_id="qiskit-calibration-comparison-20260616",
+            provider_name="ibm_quantum",
+            backend_name="ibm_brisbane",
+            calibration_snapshot_id="calibration-20260616",
+            statevector_reference_artifact_id="statevector-reference-20260616",
+            circuit_fingerprint="qiskit:ry(theta):z:v1",
+            calibration_digest="sha256:" + "6" * 64,
+            comparison_digest="sha256:" + "7" * 64,
+            max_abs_error=0.08,
+            tolerance=0.05,
+            hardware_execution=True,
+            live_ticket_id="live-ticket-20260616",
         )
 
 

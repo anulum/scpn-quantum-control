@@ -843,10 +843,17 @@ metadata with non-empty provider, primitive, backend, job, circuit, and
 observable identities, optional session and replay IDs, positive shots when
 present, SHA-256 parameter/result/metadata digests, and
 `hardware_execution=False`. Attaching it marks only
-`runtime_primitive_execution_evidence` as passed. The audit keeps
-`ready_for_provider_exceedance=False` until live QPU execution tickets,
-raw-count capture and replay, live-backend calibration/statevector comparison
-artefacts, and isolated benchmark evidence exist.
+`runtime_primitive_execution_evidence` as passed.
+`QiskitRawCountReplayArtifact` validates raw-count capture and replay metadata
+with live-ticket ID, hardware-execution citation, shot count, measured-qubit
+count, expectation value, standard error, and SHA-256 count/replay digests.
+`QiskitCalibrationStatevectorComparisonArtifact` validates a live-backend
+calibration snapshot against a statevector reference with SHA-256 calibration
+and comparison digests, finite non-negative error, positive tolerance, and
+hardware-execution citation. These artefacts can clear only the raw-count replay
+and calibration/statevector comparison gates. The audit keeps
+`ready_for_provider_exceedance=False` until live QPU execution ticket handling
+and isolated benchmark evidence exist.
 
 ## Gradient Tape Boundary
 
