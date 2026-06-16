@@ -107,6 +107,19 @@ The generated manifest prints the exact `PYTHONPATH` for parity runs, records
 package versions when verification succeeds, and lists only CPU wheels:
 `jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`.
 
+The external-validation package also has an exact environment lock manifest at
+`data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json`
+with a reviewer summary at
+`data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md`.
+`build_external_validation_environment_lock()` records SHA-256 digests, byte
+sizes, line counts, and pinned-package counts for the runtime, development,
+Python 3.10-3.13 CI, CPU framework overlay, and Python 3.9 Enzyme runner
+lockfiles. `validate_external_validation_environment_lock()` rechecks those
+digests against the current checkout. This is reproducibility evidence only:
+the artefact remains `functional_non_isolated` and does not promote hardware,
+provider, GPU, QPU, production-performance, or `isolated_affinity` benchmark
+claims.
+
 Benchmark artefacts written by
 `scripts/run_differentiable_benchmark_evidence.py` are CI evidence only.
 External comparison artefacts written by

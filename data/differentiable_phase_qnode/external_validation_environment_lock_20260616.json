@@ -1,0 +1,90 @@
+{
+  "artifact_id": "diff-external-validation-environment-lock-20260616",
+  "claim_boundary": "Exact environment lockfile manifest for reviewer reproduction only; it does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
+  "classification": "functional_non_isolated",
+  "lockfiles": [
+    {
+      "line_count": 382,
+      "path": "pyproject.toml",
+      "pinned_package_count": 0,
+      "role": "Package metadata and bounded dependency ranges",
+      "sha256": "33c12f682479f3712a58a44558de82d28976a49eba4f209e6d9100df7563fb2f",
+      "size_bytes": 14431
+    },
+    {
+      "line_count": 20,
+      "path": "requirements.txt",
+      "pinned_package_count": 10,
+      "role": "Runtime dependency lock input",
+      "sha256": "9861cad54a8eb39dba41eebfe886a097529969444384f7ace56de3926e27b809",
+      "size_bytes": 736
+    },
+    {
+      "line_count": 39,
+      "path": "requirements-dev.txt",
+      "pinned_package_count": 27,
+      "role": "Developer verification dependency lock input",
+      "sha256": "9f8355a32fa6762931df15257bfa38a6304e83bd44ed008f8e45cb4a678ee01f",
+      "size_bytes": 966
+    },
+    {
+      "line_count": 335,
+      "path": "requirements-ci-cross-platform-smoke.txt",
+      "pinned_package_count": 17,
+      "role": "Cross-platform smoke CI lockfile",
+      "sha256": "1bdb1fe6fca2e94f9d379af7d1bb3df223d0d38d4b3fa126932e135fbaa49a89",
+      "size_bytes": 25508
+    },
+    {
+      "line_count": 2879,
+      "path": "requirements-ci-py310-linux.txt",
+      "pinned_package_count": 157,
+      "role": "Python 3.10 Linux CI lockfile",
+      "sha256": "631f57a206dafcb53c6423db8d903a8e25748b502cc1f5c6be1bf561e20e2d6c",
+      "size_bytes": 211367
+    },
+    {
+      "line_count": 2891,
+      "path": "requirements-ci-py311-linux.txt",
+      "pinned_package_count": 155,
+      "role": "Python 3.11 Linux CI lockfile",
+      "sha256": "a4e8cfa3d5ba52f448c063f9dc401f6ecb46a29ecd5430911afbcb239ec479f8",
+      "size_bytes": 212632
+    },
+    {
+      "line_count": 2846,
+      "path": "requirements-ci-py312-linux.txt",
+      "pinned_package_count": 155,
+      "role": "Python 3.12 Linux CI lockfile",
+      "sha256": "d2ecd9238ee3f5e1b730edac4aabd99dc03f6b4b85d7e5e1a04717b2d902527d",
+      "size_bytes": 208807
+    },
+    {
+      "line_count": 2891,
+      "path": "requirements-ci-py313-linux.txt",
+      "pinned_package_count": 155,
+      "role": "Python 3.13 Linux CI lockfile",
+      "sha256": "f213a5d4ab2d3cfbd99c950d0cfa7bff79d57a5def584e0567bec86647cf8afc",
+      "size_bytes": 212632
+    },
+    {
+      "line_count": 54,
+      "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt",
+      "pinned_package_count": 54,
+      "role": "CPU framework overlay freeze used for JAX, PyTorch, TensorFlow, and PennyLane rows",
+      "sha256": "11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6",
+      "size_bytes": 916
+    },
+    {
+      "line_count": 10,
+      "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt",
+      "pinned_package_count": 10,
+      "role": "Python 3.9 Enzyme/JAX runner freeze used for installed-toolchain hard-gap evidence",
+      "sha256": "2770738675e8ac3fbf3edd5f8b004a3c0d2621fd3324b77aa3a238437b947d32",
+      "size_bytes": 160
+    }
+  ],
+  "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+  "python_version": "3.12.13",
+  "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
+}
